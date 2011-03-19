@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="JOSM">
+  <node id="-26" visible="true" lat="-0.0758398356392741" lon="0.4919413819744184" version="424242"/>
+  <node id="-24" visible="true" lat="-0.07585509521399153" lon="0.49187212692078847" version="424242"/>
+  <node id="-22" visible="true" lat="-0.07577214573084735" lon="0.4918764309071722" version="424242"/>
+  <node id="-21" visible="true" lat="-0.07578310132296985" lon="0.4919362954450558" version="424242"/>
+  <node id="-18" visible="true" lat="-0.07585705156972414" lon="0.4918549109752532" version="424242"/>
+  <node id="-16" visible="true" lat="-0.07584022691042076" lon="0.4918173489122674" version="424242"/>
+  <node id="-15" visible="true" lat="-0.07577762352690895" lon="0.49183534740078144" version="424242"/>
+  <node id="-12" visible="true" lat="-0.07588170165194749" lon="0.49181343619737306" version="424242"/>
+  <node id="-10" visible="true" lat="-0.07588287546538634" lon="0.4919233834859045" version="424242"/>
+  <node id="-8" visible="true" lat="-0.07580031725344245" lon="0.4920043766842175" version="424242"/>
+  <node id="-6" visible="true" lat="-0.07574827819085664" lon="0.49193903434548186" version="424242"/>
+  <node id="-4" visible="true" lat="-0.07574827819085664" lon="0.4918306521429082" version="424242"/>
+  <node id="-3" action="modify" visible="true" lat="-0.07581557682818" lon="0.4917680487045985" version="424242"/>
+  <way id="-23" action="modify" visible="true" version="424242">
+    <nd ref="-21"/>
+    <nd ref="-22"/>
+    <nd ref="-24"/>
+    <nd ref="-26"/>
+    <nd ref="-21"/>
+  </way>
+  <way id="-17" action="modify" visible="true" version="424242">
+    <nd ref="-15"/>
+    <nd ref="-18"/>
+    <nd ref="-16"/>
+    <nd ref="-15"/>
+  </way>
+  <way id="-5" action="modify" visible="true" version="424242">
+    <nd ref="-3"/>
+    <nd ref="-4"/>
+    <nd ref="-6"/>
+    <nd ref="-8"/>
+    <nd ref="-10"/>
+    <nd ref="-12"/>
+    <nd ref="-3"/>
+  </way>
+  <relation id="-34" visible="true" version="424242">
+    <member type="way" ref="-5" role="outer"/>
+    <member type="way" ref="-23" role="inner"/>
+    <member type="way" ref="-17" role="inner"/>
+    <tag k="area" v="yes"/>
+    <tag k="highway" v="service"/>
+    <tag k="type" v="multipolygon"/>
+  </relation>
+</osm>

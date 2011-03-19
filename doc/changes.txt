@@ -1,0 +1,20 @@
+
+--------------------------------------------------------------------------------
+ OSM2World 0.1.2                                                     2011-03-18 
+--------------------------------------------------------------------------------
+ 
+ * fixed multipolygon support
+ * help/version text in empty viewer
+ * new build script
+ 
+ 
+--------------------------------------------------------------------------------
+ OSM2World 0.1.1                                                     2011-03-12 
+--------------------------------------------------------------------------------
+ 
+ * new export format: Wavefront .obj
+ * introduced tunnel junction nodes
+ * improved keyboard controls in viewer (multiple simultaneous keys)
+ * visual activity indicator during exports
+ * fixed NullPointerException in AABBDebugView 
+ * various small fixes

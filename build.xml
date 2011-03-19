@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project default="jar">
+
+    <property name="releaseVersion" value="noversion" />
+
+    <target name="clean">
+	<delete includeemptydirs="true"><fileset dir="bin" includes="**/*"/></delete>
+	<delete includeemptydirs="true"><fileset dir="build" includes="**/*"/></delete>
+	<delete dir="doc/javadoc"/>
+    </target>
+
+    <target name="compile">
+	<mkdir dir="bin"/>
+        <javac srcdir="src" destdir="bin" classpath="lib/jogl/gluegen-rt.jar:lib/jogl/jogl.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jts/jts-1.11.jar:lib/osmosis/commons-compress-1.0.jar:lib/osmosis/osmosis-core-0.38.jar:lib/osmosis/osmosis-xml-0.38.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/javaproj/javaproj-1.0.6.jar:lib/guava/guava-r08.jar" includeantruntime="false"/>
+    </target>    
+
+    <target name="jar" depends="compile">
+	<mkdir dir="build"/>
+        <jar destfile="build/OSM2World.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.osm2world.console.OSM2World"/>
+                <attribute name="Class-Path" value=". lib/jogl/gluegen-rt.jar lib/jogl/jogl.jar lib/jewelcli/jewelcli-0.6.jar lib/jts/jts-1.11.jar lib/osmosis/commons-compress-1.0.jar lib/osmosis/osmosis-core-0.38.jar lib/osmosis/osmosis-xml-0.38.jar lib/osmosis/xercesImpl-2.9.1.jar lib/javaproj/javaproj-1.0.6.jar lib/guava/guava-r08.jar"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+        <delete dir="build/lib"/>
+        <mkdir dir="build/lib"/>
+        <copy todir="build/lib"><fileset dir="lib"/></copy>
+    </target>
+    
+   	<target name="release.bin" depends="jar">
+		<mkdir dir="build/temp"/>
+       		<copy todir="build/temp" file="build/OSM2World.jar"/>
+       		<copy todir="build/temp"><fileset dir="build-adds"/></copy>
+       		<copy todir="build/temp/lib"><fileset dir="lib"/></copy>
+       		<copy todir="build/temp"><fileset dir="." includes="*.txt"/></copy>
+		<zip destfile="build/OSM2World-${releaseVersion}-bin.zip" basedir="build/temp"/>
+		<delete dir="build/temp"/>
+	</target>
+    
+   	<target name="release.src" depends="javadoc">
+		<mkdir dir="build/temp"/>
+       		<copy todir="build/temp/build-adds"><fileset dir="build-adds"/></copy>
+       		<copy todir="build/temp/doc"><fileset dir="doc"/></copy>
+       		<copy todir="build/temp/lib"><fileset dir="lib"/></copy>
+       		<copy todir="build/temp/src"><fileset dir="src"/></copy>
+       		<copy todir="build/temp/test"><fileset dir="test"/></copy>
+       		<copy todir="build/temp"><fileset dir="." includes="*.txt"/></copy>
+		<copy todir="build/temp" file="build.xml"/>	
+		<zip destfile="build/OSM2World-${releaseVersion}-src.zip" basedir="build/temp"/>
+		<delete dir="build/temp"/>
+	</target>
+
+    <target name="release" depends="release.src,release.bin"/>
+
+    <target name="javadoc">
+        <javadoc access="protected" additionalparam=" -windowtitle &quot;OSM2World Javadoc&quot; -group &quot;OSM2World Core&quot; &quot;org.osm2world.core*&quot; -group &quot;OSM2World GUI&quot; &quot;org.osm2world.viewer*&quot; -group &quot;OSM2World Command Line&quot; &quot;org.osm2world.console*&quot; -noqualifier all " author="false" classpath="lib/guava/guava-r08.jar:lib/javaproj/javaproj-1.0.6.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/osmosis/commons-compress-1.0.jar:lib/jogl/gluegen-rt.jar:lib/osmosis/osmosis-xml-0.38.jar:lib/osmosis/osmosis-core-0.38.jar:lib/jts/jts-1.11.jar:/usr/lib/eclipse/plugins/org.hamcrest.core_1.1.0.jar:/usr/lib/eclipse/plugins/org.junit4_4.5.0.v20090824/junit.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jogl/jogl.jar" destdir="doc/javadoc" doctitle="OSM2World Documentation" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" source="1.6" sourcepath="src" splitindex="true" use="true" version="false"/>
+    </target>
+
+</project>

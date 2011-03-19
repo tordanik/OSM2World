@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="Conversion Overview.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.1">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path4134"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mend"
+       style="overflow:visible;">
+      <path
+         id="path4140"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-2"
+       style="overflow:visible">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4134-5"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-4"
+       style="overflow:visible">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4134-3"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="458.7841"
+     inkscape:cy="843.13571"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1280"
+     inkscape:window-height="722"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     showgrid="false"
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4818" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/osm/data/OSMData.html"
+       id="a3133">
+      <text
+         sodipodi:linespacing="125%"
+         id="text2982"
+         y="217.2605"
+         x="295.59262"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="217.2605"
+           x="295.59262"
+           id="tspan2984"
+           sodipodi:role="line">OSMData</tspan></text>
+    </a>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="84.285713"
+       y="159.50504"
+       id="text2986"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan2988"
+         x="84.285713"
+         y="159.50504" /></text>
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:0.95888984;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 337.29052,61.631715 15.7532,13.013507"
+       id="path3051-3"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <a
+       id="a3182"
+       xlink:href="http://wiki.openstreetmap.org/wiki/.osm">
+      <g
+         id="g3177">
+        <path
+           style="color:#000000;fill:none;stroke:#000000;stroke-width:0.95888984;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           d="m 247.03875,61.631706 90.08053,0 2e-5,12.499815 15.92442,0.513701 0,53.117548 -106.48928,0.48431 z"
+           id="rect3019-7"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccccc" />
+        <text
+           xml:space="preserve"
+           style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           x="283.86807"
+           y="99.78833"
+           id="text3291"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3293"
+             x="283.86807"
+             y="99.78833">.osm</tspan></text>
+      </g>
+    </a>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 297.00005,141.20459 0,55.55839"
+       id="path3295"
+       inkscape:connector-curvature="0" />
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/osm/package-summary.html"
+       id="a3058">
+      <text
+         sodipodi:linespacing="125%"
+         id="text3297-1"
+         y="230.8076"
+         x="297.11392"
+         style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="230.8076"
+           x="297.11392"
+           id="tspan3299-1"
+           sodipodi:role="line">osm.* Packages</tspan></text>
+    </a>
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/map_data/data/MapData.html"
+       id="a3137">
+      <text
+         sodipodi:linespacing="125%"
+         id="text2982-2"
+         y="316.39746"
+         x="295.46976"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="316.39746"
+           x="295.46976"
+           id="tspan2984-8"
+           sodipodi:role="line">MapData</tspan></text>
+    </a>
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/map_data/data/MapData.html"
+       id="a3121">
+      <text
+         sodipodi:linespacing="125%"
+         id="text3297-1-1"
+         y="329.94458"
+         x="296.99106"
+         style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="329.94458"
+           x="296.99106"
+           id="tspan3299-1-7"
+           sodipodi:role="line">map_data.* Packages</tspan></text>
+    </a>
+    <path
+       inkscape:connector-curvature="0"
+       id="path4758"
+       d="m 297.00005,241.20459 0,55.55839"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)" />
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/world/data/WorldObject.html"
+       id="a3157">
+      <text
+         xml:space="preserve"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="295.46976"
+         y="496.39746"
+         id="text4760"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan4762"
+           x="295.46976"
+           y="496.39746">MapData with WorldObjects</tspan></text>
+    </a>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 297.00005,346.91888 0,129.8441"
+       id="path4768"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="229.30571"
+       y="400.52463"
+       id="text4770"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="229.30571"
+         y="400.52463"
+         id="tspan4778">application of</tspan></text>
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/world/creation/WorldModule.html"
+       id="a3141">
+      <text
+         xml:space="preserve"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="229.30571"
+         y="414.52463"
+         id="text4782"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           x="229.30571"
+           y="414.52463"
+           id="tspan4784">WorldModules</tspan></text>
+    </a>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="229.30571"
+       y="428.52463"
+       id="text4786"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="229.30571"
+         y="428.52463"
+         id="tspan4788">world.modules Package</tspan></text>
+    <a
+       id="a3153">
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="296.99106"
+         y="509.94455"
+         id="text4790"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan4792"
+           x="296.99106"
+           y="509.94455">world.* Packages</tspan></text>
+    </a>
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/heightmap/data/TerrainElevation.html"
+       id="a3173">
+      <text
+         xml:space="preserve"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="515.59265"
+         y="217.2605"
+         id="text4794"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan4796"
+           x="515.59265"
+           y="217.2605">TerrainElevation</tspan></text>
+    </a>
+    <path
+       inkscape:connector-curvature="0"
+       id="path4798"
+       d="m 517.00005,141.20459 0,55.55839"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4800"
+       y="230.8076"
+       x="517.11389"
+       style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       xml:space="preserve"><tspan
+         y="230.8076"
+         x="517.11389"
+         id="tspan4802"
+         sodipodi:role="line">heightmap.* Packages</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 517.00005,241.20459 0,412.80788"
+       id="path4812"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:FreeSans;-inkscape-font-specification:FreeSans Oblique"
+       x="515.59265"
+       y="111.26049"
+       id="text4814"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4816"
+         x="515.59265"
+         y="111.26049">(not yet implemented)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="408.15436"
+       y="569.95312"
+       id="text4828"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4830"
+         x="408.15436"
+         y="569.95312">calculation/modification</tspan><tspan
+         sodipodi:role="line"
+         x="408.15436"
+         y="584.95312"
+         id="tspan4865">of elevations by</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="349.49261"
+       y="600.33472"
+       id="text4828-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4830-4"
+         x="349.49261"
+         y="600.33472">ElevationCalculator</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="295.46976"
+       y="676.3974"
+       id="text4853"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4855"
+         x="295.46976"
+         y="676.3974">MapData with WorldObjects</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="296.99106"
+       y="705.94452"
+       id="text4857"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4859"
+         x="296.99106"
+         y="705.94452">map_elevation.* Packages</tspan></text>
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path4861"
+       d="m 297.00005,526.91888 0,129.8441"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)" />
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/map_elevation/data/ElevationProfile.html"
+       id="a3161">
+      <text
+         xml:space="preserve"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="295.46976"
+         y="690.3974"
+         id="text4869"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan4871"
+           x="295.46976"
+           y="690.3974">and ElevationProfiles</tspan></text>
+    </a>
+    <text
+       sodipodi:linespacing="125%"
+       id="text4898"
+       y="675.26044"
+       x="515.59265"
+       style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:center;text-decoration:none;line-height:125%;letter-spacing:0px;word-spacing:0px;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:middle;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Sans"
+       xml:space="preserve"><tspan
+         y="675.26044"
+         x="515.59265"
+         id="tspan4900"
+         sodipodi:role="line">TerrainElevation</tspan><tspan
+         y="690.26044"
+         x="515.59265"
+         sodipodi:role="line"
+         id="tspan4940">(modified)</tspan></text>
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/terrain/data/Terrain.html"
+       id="a3169">
+      <text
+         sodipodi:linespacing="125%"
+         id="text4942"
+         y="817.26044"
+         x="515.59265"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="817.26044"
+           x="515.59265"
+           id="tspan4944"
+           sodipodi:role="line">Terrain</tspan></text>
+    </a>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       x="517.11389"
+       y="830.80756"
+       id="text4946"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4948"
+         x="517.11389"
+         y="830.80756">terrain.* Packages</tspan></text>
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;marker-end:url(#Arrow1Lend);visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 517.1981,700.8291 0,91.92388"
+       id="path4950"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 2;stroke-dashoffset:0"
+       d="m 276.7818,408.89501 20.20305,0"
+       id="path4952"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 2;stroke-dashoffset:0"
+       d="m 466.69048,582.64125 49.49747,0"
+       id="path4952-3"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 2;stroke-dashoffset:0"
+       d="m 296.86302,582.66155 47.47717,0"
+       id="path4952-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 297.00005,715.4903 1.01015,241.23934"
+       id="path5026"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 297.00005,241.20459 0,55.55839"
+       id="path5032"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 515.68965,845.03114 0,112.70125"
+       id="path5032-3"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/target/Target.html"
+       id="a3165">
+      <text
+         xml:space="preserve"
+         style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         x="406.30695"
+         y="935.83185"
+         id="text5133"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan5135"
+           x="406.30695"
+           y="935.83185">output to Target</tspan></text>
+    </a>
+    <a
+       xlink:href="javadoc/index.html?org/osm2world/core/target/package-summary.html"
+       id="a3125">
+      <a
+         id="a3129">
+        <text
+           sodipodi:linespacing="125%"
+           id="text5137"
+           y="949.37897"
+           x="407.82819"
+           style="font-size:10px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+           xml:space="preserve"><tspan
+             y="949.37897"
+             x="407.82819"
+             id="tspan5139"
+             sodipodi:role="line">target.* Packages</tspan></text>
+      </a>
+    </a>
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 2;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 459.26108,939.23891 56.42857,0"
+       id="path5145"
+       inkscape:connector-curvature="0" />
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 2;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 354.97537,939.23891 -57.14286,0"
+       id="path5147"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

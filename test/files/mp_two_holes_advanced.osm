@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="JOSM">
+  <node id="-91" action="modify" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07581557682818" lon="0.4917680487045985" version="424242"/>
+  <node id="-89" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07574827819085664" lon="0.4918306521429082" version="424242"/>
+  <node id="-87" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07574827819085664" lon="0.49193903434548186" version="424242"/>
+  <node id="-85" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07580031725344245" lon="0.4920043766842175" version="424242"/>
+  <node id="-83" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07588287546538634" lon="0.4919233834859045" version="424242"/>
+  <node id="-81" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07588170165194749" lon="0.49181343619737306" version="424242"/>
+  <node id="-79" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07577762352690895" lon="0.49183534740078144" version="424242"/>
+  <node id="-77" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07584022691042076" lon="0.4918173489122674" version="424242"/>
+  <node id="-75" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07585705156972414" lon="0.4918549109752532" version="424242"/>
+  <node id="-73" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07578310132296985" lon="0.4919362954450558" version="424242"/>
+  <node id="-71" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07577214573084735" lon="0.4918764309071722" version="424242"/>
+  <node id="-69" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.07585509521399153" lon="0.49187212692078847" version="424242"/>
+  <node id="-67" timestamp="2011-03-16T20:56:47Z" visible="true" lat="-0.0758398356392741" lon="0.4919413819744184" version="424242"/>
+  <way id="-103" visible="true" version="424242">
+    <nd ref="-69"/>
+    <nd ref="-67"/>
+    <nd ref="-73"/>
+  </way>
+  <way id="-100" visible="true" version="424242">
+    <nd ref="-83"/>
+    <nd ref="-81"/>
+    <nd ref="-91"/>
+  </way>
+  <way id="-97" action="modify" timestamp="2011-03-16T20:56:47Z" visible="true" version="424242">
+    <nd ref="-91"/>
+    <nd ref="-89"/>
+    <nd ref="-87"/>
+    <nd ref="-85"/>
+    <nd ref="-83"/>
+  </way>
+  <way id="-95" action="modify" timestamp="2011-03-16T20:56:47Z" visible="true" version="424242">
+    <nd ref="-79"/>
+    <nd ref="-75"/>
+    <nd ref="-77"/>
+    <nd ref="-79"/>
+  </way>
+  <way id="-93" action="modify" timestamp="2011-03-16T20:56:47Z" visible="true" version="424242">
+    <nd ref="-73"/>
+    <nd ref="-71"/>
+    <nd ref="-69"/>
+  </way>
+  <relation id="-99" action="modify" timestamp="2011-03-16T20:56:47Z" visible="true" version="424242">
+    <member type="way" ref="-97" role="outer"/>
+    <member type="way" ref="-100" role="outer"/>
+    <member type="way" ref="-93" role="inner"/>
+    <member type="way" ref="-103" role="inner"/>
+    <member type="way" ref="-95" role="inner"/>
+    <tag k="area" v="yes"/>
+    <tag k="highway" v="service"/>
+    <tag k="type" v="multipolygon"/>
+  </relation>
+</osm>
