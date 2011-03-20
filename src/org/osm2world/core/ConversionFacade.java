@@ -26,6 +26,7 @@ import org.osm2world.core.world.modules.BuildingModule;
 import org.osm2world.core.world.modules.ParkingModule;
 import org.osm2world.core.world.modules.RailwayModule;
 import org.osm2world.core.world.modules.RoadModule;
+import org.osm2world.core.world.modules.StreetFurnitureModule;
 import org.osm2world.core.world.modules.SurfaceAreaModule;
 import org.osm2world.core.world.modules.TreeModule;
 import org.osm2world.core.world.modules.TunnelModule;
@@ -77,7 +78,7 @@ public class ConversionFacade {
 			return eleData;
 		}
 		
-		/** 
+		/**
 		 * collects and returns all representations that implement a
 		 * renderableType, including terrain.
 		 * Convenience method.
@@ -120,11 +121,11 @@ public class ConversionFacade {
 	 */
 	public Results createRepresentations(File osmFile) throws IOException {
 
-		/* create grid from file */		
+		/* create grid from file */
 		updatePhase(Phase.MAP_DATA);
 		
 		OSMData osmData = new OsmosisReader(osmFile).getData();
-		MapProjection mapProjection = new HackMapProjection(osmData); 
+		MapProjection mapProjection = new HackMapProjection(osmData);
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData grid = converter.createMapData(osmData);
 		
@@ -136,8 +137,9 @@ public class ConversionFacade {
 					new RoadModule(),
 					new RailwayModule(),
 					new BuildingModule(),
-					new ParkingModule(),					
+					new ParkingModule(),
 					new TreeModule(),
+					new StreetFurnitureModule(),
 					new WaterModule(),
 					new BarrierModule(),
 					new BridgeModule(),
@@ -152,7 +154,7 @@ public class ConversionFacade {
 			
 		new ElevationCalculator().calculateElevations(grid, eleData);
 		
-		/* create terrain */		
+		/* create terrain */
 		updatePhase(Phase.TERRAIN);
 		
 		Terrain terrain = new TerrainCreator().createTerrain(grid, eleData);

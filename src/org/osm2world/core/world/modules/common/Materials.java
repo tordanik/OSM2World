@@ -35,6 +35,8 @@ public final class Materials {
 		new Material(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final Material SAND =
 		new Material(Lighting.FLAT, new Color(241, 233, 80));
+	public static final Material STEEL =
+		new Material(Lighting.FLAT, new Color(200, 200, 200));
 	public static final Material WOOD =
 		new Material(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final Material TARTAN =
