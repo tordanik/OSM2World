@@ -32,7 +32,7 @@ public class Data extends Observable {
 			ConversionFacade converter = new ConversionFacade();
 			converter.addProgressListener(listener);
 			
-			conversionResults = converter.createRepresentations(osmFile);
+			conversionResults = converter.createRepresentations(osmFile, null);
 			
 			gridPrimitiveBuffer = createPrimitiveBuffer(conversionResults, true, false);
 			terrainPrimitiveBuffer = createPrimitiveBuffer(conversionResults, false, true);

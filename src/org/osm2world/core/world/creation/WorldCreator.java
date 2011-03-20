@@ -2,6 +2,7 @@ package org.osm2world.core.world.creation;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.osm2world.core.map_data.data.MapData;
 
@@ -13,7 +14,7 @@ public class WorldCreator {
 		this.modules = Arrays.asList(modules);
 	}
 	
-	public WorldCreator(Collection<WorldModule> modules) {
+	public WorldCreator(List<WorldModule> modules) {
 		this.modules = modules;
 	}
 	

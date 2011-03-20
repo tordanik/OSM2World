@@ -3,7 +3,9 @@ package org.osm2world.core;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.heightmap.creation.FlatTerrainElevation;
@@ -21,6 +23,8 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.terrain.creation.TerrainCreator;
 import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.world.creation.WorldCreator;
+import org.osm2world.core.world.creation.WorldModule;
+import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BarrierModule;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.BuildingModule;
@@ -114,16 +118,40 @@ public class ConversionFacade {
 		}
 		
 	}
-			
+	
+	/**
+	 * default list of modules for the conversion; unmodifiable
+	 */
+	public static final List<WorldModule> DEFAULT_MODULES =
+		Collections.unmodifiableList(Arrays.asList(
+				new RoadModule(),
+				new RailwayModule(),
+				new BuildingModule(),
+				new ParkingModule(),
+				new TreeModule(),
+				new StreetFurnitureModule(),
+				new WaterModule(),
+				new BarrierModule(),
+				new BridgeModule(),
+				new TunnelModule(),
+				new SurfaceAreaModule()
+		));
+	
 	/**
 	 * performs all necessary steps to go from
-	 * an OSM file to the renderable representations.
+	 * an OSM file to the renderable {@link WorldObject}s.
 	 * Sends updates to {@link ProgressListener}s.
+	 * 
+	 * @param osmFile       file to read OSM data from; != null
+	 * @param worldModules  modules that will create the {@link WorldObject}s
+	 *                      in the result; null to use {@link #DEFAULT_MODULES}
 	 */
-	public Results createRepresentations(File osmFile) throws IOException {
+	public Results createRepresentations(File osmFile,
+			List<WorldModule> worldModules) throws IOException {
 		
-		/* create grid from file */
-		updatePhase(Phase.MAP_DATA);
+		if (osmFile == null) {
+			throw new IllegalArgumentException("osmFile must not be null");
+		}
 		
 		OSMData osmData;
 		
@@ -145,6 +173,30 @@ public class ConversionFacade {
 			
 		}
 		
+		return createRepresentations(osmData, worldModules);
+		
+	}
+	
+	
+	/**
+	 * variant of {@link #createRepresentations(File)} that accepts
+	 * {@link OSMData} instead of a file. Use this when all data is already
+	 * in memory, for example with editor applications.
+	 * 
+	 * @param osmData       input data; != null
+	 * @param worldModules  modules that will create the {@link WorldObject}s
+	 *                      in the result; null to use {@link #DEFAULT_MODULES}
+	 */
+	public Results createRepresentations(OSMData osmData,
+			List<WorldModule> worldModules) throws IOException {
+		
+		if (osmData == null) {
+			throw new IllegalArgumentException("osmData must not be null");
+		}
+		
+		/* create grid from OSM data */
+		updatePhase(Phase.MAP_DATA);
+		
 		MapProjection mapProjection = new HackMapProjection(osmData);
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData grid = converter.createMapData(osmData);
@@ -152,19 +204,12 @@ public class ConversionFacade {
 		/* apply world modules */
 		updatePhase(Phase.REPRESENTATION);
 		
+		if (worldModules == null) {
+			worldModules = DEFAULT_MODULES;
+		}
+		
 		WorldCreator moduleManager =
-			new WorldCreator(
-					new RoadModule(),
-					new RailwayModule(),
-					new BuildingModule(),
-					new ParkingModule(),
-					new TreeModule(),
-					new StreetFurnitureModule(),
-					new WaterModule(),
-					new BarrierModule(),
-					new BridgeModule(),
-					new TunnelModule(),
-					new SurfaceAreaModule());
+			new WorldCreator(worldModules);
 		moduleManager.addRepresentationsTo(grid);
 		
 		/* determine elevations */
