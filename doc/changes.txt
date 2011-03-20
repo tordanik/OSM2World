@@ -3,6 +3,7 @@
  OSM2World 0.1.3                                                     2011-03-?? 
 --------------------------------------------------------------------------------
  
+ * workaround that allows reading JOSM XML files
  * new StreetFurnitureModule
  
  

@@ -14,6 +14,7 @@ import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Renderable;
@@ -120,11 +121,30 @@ public class ConversionFacade {
 	 * Sends updates to {@link ProgressListener}s.
 	 */
 	public Results createRepresentations(File osmFile) throws IOException {
-
+		
 		/* create grid from file */
 		updatePhase(Phase.MAP_DATA);
 		
-		OSMData osmData = new OsmosisReader(osmFile).getData();
+		OSMData osmData;
+		
+		try {
+			osmData = new OsmosisReader(osmFile).getData();
+		} catch (IOException e) {
+			
+			System.out.println("could not read file," +
+					" trying workaround for files created by JOSM");
+			
+			File tempFile;
+			try {
+				tempFile = JOSMFileHack.createTempOSMFile(osmFile);
+			} catch (Exception e2) {
+				throw new IOException("could not create temporary" +
+						" modified copy of the file");
+			}
+			osmData = new OsmosisReader(tempFile).getData();
+			
+		}
+		
 		MapProjection mapProjection = new HackMapProjection(osmData);
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData grid = converter.createMapData(osmData);
@@ -146,12 +166,12 @@ public class ConversionFacade {
 					new TunnelModule(),
 					new SurfaceAreaModule());
 		moduleManager.addRepresentationsTo(grid);
-				
+		
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 		
 		CellularTerrainElevation eleData = createEleData(grid);
-			
+		
 		new ElevationCalculator().calculateElevations(grid, eleData);
 		
 		/* create terrain */
