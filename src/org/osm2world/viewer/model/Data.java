@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
@@ -17,6 +19,7 @@ import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 public class Data extends Observable {
 	
+	private Configuration config = new BaseConfiguration();
 	private File osmFile = null;
 	private Results conversionResults = null;
 	private PrimitiveBuffer gridPrimitiveBuffer = null;
@@ -32,7 +35,8 @@ public class Data extends Observable {
 			ConversionFacade converter = new ConversionFacade();
 			converter.addProgressListener(listener);
 			
-			conversionResults = converter.createRepresentations(osmFile, null);
+			conversionResults = converter.createRepresentations(
+					osmFile, null, config);
 			
 			gridPrimitiveBuffer = createPrimitiveBuffer(conversionResults, true, false);
 			terrainPrimitiveBuffer = createPrimitiveBuffer(conversionResults, false, true);

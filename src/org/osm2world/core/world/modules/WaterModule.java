@@ -3,11 +3,8 @@ package org.osm2world.core.world.modules;
 import static com.google.common.collect.Iterables.any;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.util.Predicates.hasType;
-import static org.osm2world.core.world.modules.common.Materials.EMPTY_GROUND;
-import static org.osm2world.core.world.modules.common.Materials.WATER;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVectorsForTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.Materials.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +25,10 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
-import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.Materials;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -41,7 +38,7 @@ import org.osm2world.core.world.network.NetworkAreaWorldObject;
 /**
  * adds water bodies, streams, rivers and fountains to the world
  */
-public class WaterModule implements WorldModule {
+public class WaterModule extends ConfigurableWorldModule {
 
 	//TODO: add canal, ditch, drain
 
@@ -76,14 +73,14 @@ public class WaterModule implements WorldModule {
 			
 			int connectedRivers = 0;
 			
-			for (MapWaySegment line : node.getConnectedWaySegments()) {				
+			for (MapWaySegment line : node.getConnectedWaySegments()) {
 				if (any(line.getRepresentations(), hasType(Waterway.class))) {
 					connectedRivers += 1;
-				}				
-			}			
+				}
+			}
 						
-			if (connectedRivers > 2) {				
-				node.addRepresentation(new RiverJunction(node));				
+			if (connectedRivers > 2) {
+				node.addRepresentation(new RiverJunction(node));
 			}
 			
 		}
@@ -138,7 +135,7 @@ public class WaterModule implements WorldModule {
 					return width;
 				}
 			}
-			return WATERWAY_WIDTHS.get(line.getTags().getValue("waterway"));			
+			return WATERWAY_WIDTHS.get(line.getTags().getValue("waterway"));
 		}
 		
 		@Override
@@ -208,9 +205,9 @@ public class WaterModule implements WorldModule {
 		}
 
 		private boolean isContainedWithinRiverbank() {
-			boolean containedWithinRiverbank = false; 
+			boolean containedWithinRiverbank = false;
 			
-			for (MapOverlap<?,?> overlap : line.getOverlaps()) {				
+			for (MapOverlap<?,?> overlap : line.getOverlaps()) {
 				if (overlap.getOther(line) instanceof MapArea) {
 					MapArea area = (MapArea)overlap.getOther(line);
 					if (area.getPrimaryRepresentation() instanceof Water &&
@@ -218,7 +215,7 @@ public class WaterModule implements WorldModule {
 						containedWithinRiverbank = true;
 						break;
 					}
-				}				
+				}
 			}
 			return containedWithinRiverbank;
 		}
@@ -232,7 +229,7 @@ public class WaterModule implements WorldModule {
 		
 	}
 
-	public static class RiverJunction 
+	public static class RiverJunction
 		extends JunctionNodeWorldObject
 		implements NodeWorldObject, TerrainBoundaryWorldObject,
 			RenderableToAllTargets {
@@ -272,7 +269,7 @@ public class WaterModule implements WorldModule {
 		
 	}
 	
-	public static class Water extends NetworkAreaWorldObject 
+	public static class Water extends NetworkAreaWorldObject
 		implements RenderableToAllTargets, RenderableToPOVRay,
 		TerrainBoundaryWorldObject {
 		
@@ -301,18 +298,18 @@ public class WaterModule implements WorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {						
-			target.drawTriangles(WATER, getTriangulation());			
+		public void renderTo(Target target) {
+			target.drawTriangles(WATER, getTriangulation());
 		}
 		
 		@Override
-		public void renderTo(POVRayTarget target) {			
+		public void renderTo(POVRayTarget target) {
 			renderTo((Target)target);
 		}
 		
 	}
 	
-	private static class AreaFountain extends AbstractAreaWorldObject		
+	private static class AreaFountain extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public AreaFountain(MapArea area) {
@@ -354,7 +351,7 @@ public class WaterModule implements WorldModule {
 					new VectorXYZ(+width/2, 0, 0)
 				};
 				
-				List<VectorXYZ> path = 
+				List<VectorXYZ> path =
 					area.getElevationProfile().getWithEle(area.getOuterPolygon().getVertexLoop());
 				
 				List<VectorXYZ[]> strips = createShapeExtrusionAlong(wallShape,

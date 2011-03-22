@@ -54,7 +54,7 @@ public class TreeModule extends AbstractModule {
 	@Override
 	protected void applyToWaySegment(MapWaySegment segment) {
 
-		if (segment.getTags().contains(new Tag("natural", "tree_row"))) {				
+		if (segment.getTags().contains(new Tag("natural", "tree_row"))) {
 			segment.addRepresentation(new TreeRow(segment));
 		}
 
@@ -71,19 +71,19 @@ public class TreeModule extends AbstractModule {
 		
 	}
 
-	private static class Tree 
+	private static class Tree
 		implements NodeWorldObject, RenderableToAllTargets, RenderableToPOVRay {
 
 		private static final float DEFAULT_HEIGHT = 10;
 		private static final float RADIUS_PER_HEIGHT = 0.2f;
 		
 		private final MapElement element;
-		private final VectorXZ pos;		
+		private final VectorXZ pos;
 		private final float height;
 
 		public Tree(MapElement element, VectorXZ pos) {
 
-			this.element = element;			
+			this.element = element;
 			this.pos = pos;
 			
 			/* parse height (for forests, add some random factor) */
@@ -94,7 +94,7 @@ public class TreeModule extends AbstractModule {
 				heightFactor += -0.25f + 0.5f * Math.random();
 			}
 			
-			this.height = heightFactor * 
+			this.height = heightFactor *
 				WorldModuleParseUtil.parseHeight(element.getTags(), DEFAULT_HEIGHT);
 			
 		}
@@ -129,7 +129,7 @@ public class TreeModule extends AbstractModule {
 			double stemRatio = isConiferous()?0.3:0.5;
 			double radius = height*RADIUS_PER_HEIGHT;
 			
-			target.drawColumn(Materials.WOOD,					
+			target.drawColumn(Materials.WOOD,
 					null, posXYZ, height*stemRatio,
 					radius / 4, radius / 5, false, true);
 			
@@ -153,7 +153,7 @@ public class TreeModule extends AbstractModule {
 				target.append("union { coniferous_tree rotate ");
 			} else {
 				target.append("union { tree rotate ");
-			} 
+			}
 			target.append(Float.toString(yRotation));
 			target.append("*y scale ");
 			target.append(height);
@@ -168,11 +168,11 @@ public class TreeModule extends AbstractModule {
 			String typeValue = element.getTags().getValue("wood");
 			
 			if (typeValue == null) {
-				typeValue = element.getTags().getValue("type");				
+				typeValue = element.getTags().getValue("type");
 			}
 			
 			if ("broad_leaved".equals(typeValue)
-					|| "deciduous".equals(typeValue)) { 
+					|| "deciduous".equals(typeValue)) {
 				return false;
 			} else if ("coniferous".equals(typeValue)) {
 				return true;
@@ -256,7 +256,7 @@ public class TreeModule extends AbstractModule {
 	}
 	
 
-	private static class Forest implements AreaWorldObject,
+	private class Forest implements AreaWorldObject,
 		RenderableToPOVRay, RenderableToAllTargets {
 
 		private final MapArea area;
@@ -273,25 +273,25 @@ public class TreeModule extends AbstractModule {
 			
 			Collection<WorldObject> avoidedObjects = new ArrayList<WorldObject>();
 			
-			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {					
+			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				for (WorldObject otherRep : overlap.getOther(area).getRepresentations()) {
 					
 					if (otherRep.getGroundState() == GroundState.ON) {
-						avoidedObjects.add(otherRep);					
+						avoidedObjects.add(otherRep);
 					}
 				
-				}										
+				}
 			}
 			
 			/* place the trees */
 			
-			List<VectorXZ> treePositions = 
+			List<VectorXZ> treePositions =
 				GeometryUtil.randomlyDistributePointsOn(
 						area.getPolygon(), density, 0.3f);
 			
 			trees = new ArrayList<Tree>(treePositions.size());
 			
-			for (VectorXZ treePosition : treePositions) {	
+			for (VectorXZ treePosition : treePositions) {
 				if (!piercesWorldObject(treePosition, avoidedObjects)) {
 					trees.add(new Tree(area, treePosition));
 				}
@@ -322,7 +322,7 @@ public class TreeModule extends AbstractModule {
 		@Override
 		public void renderTo(POVRayTarget target) {
 			if (trees == null) {
-				createTrees(0.01f);
+				createTrees(config.getDouble("treesPerSquareMeter", 0.01f));
 			}
 			for (Tree tree : trees) {
 				tree.renderTo(target);
@@ -332,7 +332,8 @@ public class TreeModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 			if (trees == null) {
-				createTrees(0.001f); //lower density than POVRay for performance
+				createTrees(config.getDouble("treesPerSquareMeter", 0.001f));
+					//lower default density than POVRay for performance reasons
 			}
 			for (Tree tree : trees) {
 				tree.renderTo(target);

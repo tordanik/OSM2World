@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.heightmap.creation.FlatTerrainElevation;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.creation.HackMapProjection;
@@ -120,10 +121,11 @@ public class ConversionFacade {
 	}
 	
 	/**
-	 * default list of modules for the conversion; unmodifiable
+	 * generates a default list of modules for the conversion
 	 */
-	public static final List<WorldModule> DEFAULT_MODULES =
-		Collections.unmodifiableList(Arrays.asList(
+	private static final List<WorldModule> createDefaultModuleList() {
+		
+		return Arrays.asList((WorldModule)
 				new RoadModule(),
 				new RailwayModule(),
 				new BuildingModule(),
@@ -135,7 +137,9 @@ public class ConversionFacade {
 				new BridgeModule(),
 				new TunnelModule(),
 				new SurfaceAreaModule()
-		));
+		);
+		
+	}
 	
 	/**
 	 * performs all necessary steps to go from
@@ -144,10 +148,13 @@ public class ConversionFacade {
 	 * 
 	 * @param osmFile       file to read OSM data from; != null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
-	 *                      in the result; null to use {@link #DEFAULT_MODULES}
+	 *                      in the result; null to use a default module list
+	 * @param config        set of parameters that controls various aspects
+	 *                      of the modules' behavior; null to use defaults
 	 */
 	public Results createRepresentations(File osmFile,
-			List<WorldModule> worldModules) throws IOException {
+			List<WorldModule> worldModules, Configuration config)
+			throws IOException {
 		
 		if (osmFile == null) {
 			throw new IllegalArgumentException("osmFile must not be null");
@@ -173,7 +180,7 @@ public class ConversionFacade {
 			
 		}
 		
-		return createRepresentations(osmData, worldModules);
+		return createRepresentations(osmData, worldModules, config);
 		
 	}
 	
@@ -185,10 +192,13 @@ public class ConversionFacade {
 	 * 
 	 * @param osmData       input data; != null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
-	 *                      in the result; null to use {@link #DEFAULT_MODULES}
+	 *                      in the result; null to use a default module list
+	 * @param config        set of parameters that controls various aspects
+	 *                      of the modules' behavior; null to use defaults
 	 */
 	public Results createRepresentations(OSMData osmData,
-			List<WorldModule> worldModules) throws IOException {
+			List<WorldModule> worldModules, Configuration config)
+			throws IOException {
 		
 		if (osmData == null) {
 			throw new IllegalArgumentException("osmData must not be null");
@@ -204,12 +214,15 @@ public class ConversionFacade {
 		/* apply world modules */
 		updatePhase(Phase.REPRESENTATION);
 		
+		if (config == null) {
+			config = new BaseConfiguration();
+		}
 		if (worldModules == null) {
-			worldModules = DEFAULT_MODULES;
+			worldModules = createDefaultModuleList();
 		}
 		
 		WorldCreator moduleManager =
-			new WorldCreator(worldModules);
+			new WorldCreator(config, worldModules);
 		moduleManager.addRepresentationsTo(grid);
 		
 		/* determine elevations */

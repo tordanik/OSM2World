@@ -15,8 +15,8 @@ import org.osm2world.core.world.data.WorldObject;
  * for each {@link MapElement} in isolation.
  * This can make parallel application of the module possible.
  */
-public class AbstractModule implements WorldModule {
-	
+public abstract class AbstractModule extends ConfigurableWorldModule {
+		
 	@Override
 	public final void applyTo(MapData grid) {
 		
@@ -34,14 +34,14 @@ public class AbstractModule implements WorldModule {
 		
 	}
 
-	/** 
+	/**
 	 * create {@link WorldObject}s for a {@link MapElement}.
 	 * Can be overwritten by subclasses.
 	 * The default implementation does not create any objects.
 	 */
 	protected void applyToElement(MapElement element) {}
 	
-	/** 
+	/**
 	 * create {@link WorldObject}s for a {@link MapNode}.
 	 * Can be overwritten by subclasses.
 	 * The default implementation calls {@link #applyToElement(MapElement)}.
@@ -50,7 +50,7 @@ public class AbstractModule implements WorldModule {
 		applyToElement(node);
 	}
 	
-	/** 
+	/**
 	 * create {@link WorldObject}s for a {@link MapWaySegment}.
 	 * Can be overwritten by subclasses.
 	 * The default implementation calls {@link #applyToElement(MapElement)}.
@@ -59,7 +59,7 @@ public class AbstractModule implements WorldModule {
 		applyToElement(segment);
 	}
 	
-	/** 
+	/**
 	 * create {@link WorldObject}s for a {@link MapArea}.
 	 * Can be overwritten by subclasses.
 	 * The default implementation calls {@link #applyToElement(MapElement)}.

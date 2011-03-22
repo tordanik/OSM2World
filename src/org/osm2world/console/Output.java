@@ -35,7 +35,8 @@ public final class Output {
 		PerformanceListener perfListener = new PerformanceListener(args);
 		cf.addProgressListener(perfListener);
 		
-		Results results = cf.createRepresentations(args.getInput(), null);
+		Results results =
+			cf.createRepresentations(args.getInput(), null, null);
 		
 		Camera camera = null;
 		Projection projection = null;

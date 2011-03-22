@@ -24,12 +24,12 @@ import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.Material.Lighting;
-import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
-import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
+import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
+import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkAreaWorldObject;
@@ -38,17 +38,17 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
 /**
  * adds roads to the world
  */
-public class RoadModule implements WorldModule {
+public class RoadModule extends ConfigurableWorldModule {
 
 	public static final Material MARKING_MAT = new Material(Lighting.FLAT, new Color(1f, 1f, 1f));
 	
 	@Override
 	public void applyTo(MapData grid) {
 		
-		for (MapWaySegment line : grid.getMapWaySegments()) {			
+		for (MapWaySegment line : grid.getMapWaySegments()) {
 			if (isRoad(line.getTags())) {
 				line.addRepresentation(new Road(line, line.getTags()));
-			}			
+			}
 		}
 
 		for (MapArea area : grid.getMapAreas()) {
@@ -84,7 +84,7 @@ public class RoadModule implements WorldModule {
 				if (line.getPrimaryRepresentation() instanceof Road) {
 					outboundRoads.add(line);
 				}
-			}			
+			}
 			
 			//END COPY&PASTE
 			
@@ -116,16 +116,16 @@ public class RoadModule implements WorldModule {
 
 	//TODO: materials for junctions and crossings
 	
-	/** 
+	/**
 	 * representation for junctions between roads.
 	 */
 	public static class RoadJunction
-		extends JunctionNodeWorldObject 
+		extends JunctionNodeWorldObject
 		implements NodeWorldObject, RenderableToAllTargets,
 		TerrainBoundaryWorldObject {
 						
-		public RoadJunction(MapNode node) {			
-			super(node);						
+		public RoadJunction(MapNode node) {
+			super(node);
 		}
 		
 		@Override
@@ -157,15 +157,15 @@ public class RoadModule implements WorldModule {
 	
 	/* TODO: crossings at junctions - when there is, e.g., a footway connecting to the road!
 	 * (ideally, this would be implemented using more flexibly configurable
-	 * junctions which can have "preferred" segments that influence 
+	 * junctions which can have "preferred" segments that influence
 	 * the junction shape more/exclusively)
-	 */  
+	 */
 	
-	/** 
+	/**
 	 * representation for crossings (zebra crossing etc.) on roads
 	 */
 	public static class RoadCrossingAtConnector
-		extends VisibleConnectorNodeWorldObject 
+		extends VisibleConnectorNodeWorldObject
 		implements NodeWorldObject, RenderableToAllTargets,
 		TerrainBoundaryWorldObject {
 		
@@ -271,11 +271,11 @@ public class RoadModule implements WorldModule {
 
 	}
 		
-	/** representation of a road */	
+	/** representation of a road */
 	public static class Road
 		extends AbstractNetworkWaySegmentWorldObject
 		implements WaySegmentWorldObject, RenderableToAllTargets,
-		TerrainBoundaryWorldObject { 
+		TerrainBoundaryWorldObject {
 			
 		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
 		
@@ -312,10 +312,10 @@ public class RoadModule implements WorldModule {
 
 		private static float getDefaultWidth (TagGroup tags) {
 			
-			String highwayValue = tags.getValue("highway");	
+			String highwayValue = tags.getValue("highway");
 			
 			if (isPath(tags)) {
-				return 1f;				
+				return 1f;
 			}
 			
 			if ("service".equals(highwayValue)
@@ -379,11 +379,11 @@ public class RoadModule implements WorldModule {
 				} catch (NumberFormatException e) { /* don't overwrite default length */ }
 			}
 			
-			/* locate the position on the line at the beginning/end of each step 
+			/* locate the position on the line at the beginning/end of each step
 			 * (positions on the line spaced by step length),
 			 * interpolate heights between adjacent points with elevation */
 			
-			List<VectorXZ> stepBorderPositionsXZ = 
+			List<VectorXZ> stepBorderPositionsXZ =
 				GeometryUtil.equallyDistributePointsAlong(
 					stepLength, true, startWithOffset, endWithOffset);
 			
@@ -391,7 +391,7 @@ public class RoadModule implements WorldModule {
 			for (VectorXZ posXZ : stepBorderPositionsXZ) {
 				VectorXYZ posXYZ = posXZ.xyz(elevationProfile.getEleAt(posXZ));
 				stepBorderPositions.add(posXYZ);
-			}			
+			}
 			
 			/* draw steps */
 			
@@ -425,8 +425,8 @@ public class RoadModule implements WorldModule {
 				target.drawTriangleStrip(getMaterial(surface, ASPHALT), vs);
 				
 						
-			} else {				
-				renderStepsUsing(target);					
+			} else {
+				renderStepsUsing(target);
 			}
 			
 		}
@@ -444,16 +444,16 @@ public class RoadModule implements WorldModule {
 		
 		@Override
 		public double getClearingAbove(VectorXZ pos) {
-			return WorldModuleParseUtil.parseClearing(tags, 
+			return WorldModuleParseUtil.parseClearing(tags,
 					isPath(tags) ? DEFAULT_PATH_CLEARING : DEFAULT_ROAD_CLEARING);
 		}
 		
 		@Override
-		public double getClearingBelow(VectorXZ pos) {			
+		public double getClearingBelow(VectorXZ pos) {
 			return 0;
 		}
 		
-	}	
+	}
 	
 	public static class RoadArea extends NetworkAreaWorldObject
 		implements  RenderableToAllTargets, TerrainBoundaryWorldObject {
@@ -467,7 +467,7 @@ public class RoadModule implements WorldModule {
 		@Override
 		public void renderTo(Target target) {
 			String surface = area.getTags().getValue("surface");
-			target.drawTriangles(getMaterial(surface, ASPHALT), getTriangulation());			
+			target.drawTriangles(getMaterial(surface, ASPHALT), getTriangulation());
 		}
 		
 		@Override

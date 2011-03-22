@@ -19,10 +19,10 @@ import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.Material.Lighting;
-import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
@@ -30,7 +30,7 @@ import org.osm2world.core.world.network.JunctionNodeWorldObject;
 /**
  * adds rails to the world
  */
-public class RailwayModule implements WorldModule {
+public class RailwayModule extends ConfigurableWorldModule {
 	
 	@Override
 	public void applyTo(MapData grid) {
@@ -87,7 +87,7 @@ public class RailwayModule implements WorldModule {
 			for (int i=0; i < RAIL_SHAPE.length; i++) {
 				RAIL_SHAPE[i] = RAIL_SHAPE[i].mult(0.25f);
 				RAIL_SHAPE[i] = RAIL_SHAPE[i].y(RAIL_SHAPE[i].y + SLEEPER_HEIGHT);
-			}			
+			}
 		}
 		
 		private final TagGroup tags;
@@ -124,7 +124,7 @@ public class RailwayModule implements WorldModule {
 			/* draw ground */
 			
 			VectorXYZ[] groundVs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
-					getOutline(false), getOutline(true));			
+					getOutline(false), getOutline(true));
 			
 			target.drawTriangleStrip(new Material(Lighting.FLAT, Color.DARK_GRAY), groundVs);
 			
@@ -144,9 +144,9 @@ public class RailwayModule implements WorldModule {
 
 			for (List<VectorXYZ> railLine : railLines) {
 				
-				List<VectorXYZ[]> stripVectors = 
+				List<VectorXYZ[]> stripVectors =
 					WorldModuleGeometryUtil.createShapeExtrusionAlong(
-					RAIL_SHAPE, railLine, 
+					RAIL_SHAPE, railLine,
 					Collections.nCopies(railLine.size(), VectorXYZ.Y_UNIT));
 					
 				for (VectorXYZ[] stripVector : stripVectors) {
@@ -158,40 +158,40 @@ public class RailwayModule implements WorldModule {
 			
 			/* draw railway ties/sleepers */
 			
-			List<VectorXZ> sleeperPositions = GeometryUtil.equallyDistributePointsAlong(3, false, 
+			List<VectorXZ> sleeperPositions = GeometryUtil.equallyDistributePointsAlong(3, false,
 					getStartWithOffset(), getEndWithOffset());
 			
 			VectorXYZ sleeperRight = line.getRightNormal().mult(SLEEPER_WIDTH).xyz(0);
 			VectorXYZ sleeperBack = line.getDirection().mult(SLEEPER_LENGTH).xyz(0);
 			
-			VectorXYZ frontLowerLeftOffset = 
+			VectorXYZ frontLowerLeftOffset =
 				sleeperRight.mult(-0.5f).add(sleeperBack.mult(-0.5f));
 			
 			for (VectorXZ sleeperPosition : sleeperPositions) {
 			
 				VectorXYZ sleeperCenter = sleeperPosition.xyz(line.getElevationProfile().getEleAt(sleeperPosition));
 				
-				VectorXYZ sleeperFrontLowerLeft = 
+				VectorXYZ sleeperFrontLowerLeft =
 					sleeperCenter.add(frontLowerLeftOffset);
 				
 				target.drawBox(new Material(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f)),
 						sleeperFrontLowerLeft,
 						sleeperRight, SLEEPER_UP, sleeperBack);
 				
-			}			
+			}
 			
 		}
 
 		@Override
 		public float getWidth() {
 			return GROUND_WIDTH;
-		}		
+		}
 		
 	}
 	
-	public static class RailJunction 
+	public static class RailJunction
 		extends JunctionNodeWorldObject
-		implements NodeWorldObject, RenderableToAllTargets, 
+		implements NodeWorldObject, RenderableToAllTargets,
 		TerrainBoundaryWorldObject {
 		
 		public RailJunction(MapNode node) {
@@ -241,7 +241,7 @@ public class RailwayModule implements WorldModule {
 
 			/* draw connection between each pair of rails */
 
-			/* TODO: use node.getConnectedLines() instead? 
+			/* TODO: use node.getConnectedLines() instead?
 			 * (allows access to information from there,
 			 *  such as getOutline!)
 			 */
