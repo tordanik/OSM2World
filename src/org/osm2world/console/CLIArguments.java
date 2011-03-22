@@ -21,6 +21,10 @@ public interface CLIArguments {
 	List<File> getOutput();
 	boolean isOutput();
 	
+	@Option(description="properties file with configuration parameters")
+	File getConfig();
+	boolean isConfig();
+	
 	@Option(description="output size in pixels", pattern=Resolution.PATTERN,
 			defaultValue="800,600")
 	Resolution getResolution();
