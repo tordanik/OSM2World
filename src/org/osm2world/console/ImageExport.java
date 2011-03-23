@@ -11,6 +11,7 @@ import javax.media.opengl.GLCapabilities;
 import javax.swing.JFrame;
 
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
@@ -51,9 +52,8 @@ public final class ImageExport {
 		
 		PrimitiveBuffer buffer = new PrimitiveBuffer();
 		
-		buffer.addWorldObjects(results.getMapData(), camera);
-        
-        results.getTerrain().renderTo(buffer);
+		TargetUtil.renderWorldObjects(buffer, results.getMapData());
+		TargetUtil.renderObject(buffer, results.getTerrain());
 		
 		/* create image (maybe in multiple parts) */
 				

@@ -15,7 +15,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Material;
 import org.osm2world.core.target.common.AbstractTarget;
 
-public class POVRayTarget extends AbstractTarget {
+public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	
 	private static final String INDENT = "  ";
 	
@@ -23,6 +23,16 @@ public class POVRayTarget extends AbstractTarget {
 
 	public POVRayTarget(PrintStream output) {
 		this.output = output;
+	}
+	
+	@Override
+	public Class<RenderableToPOVRay> getRenderableType() {
+		return RenderableToPOVRay.class;
+	}
+	
+	@Override
+	public void render(RenderableToPOVRay renderable) {
+		renderable.renderTo(this);
 	}
 	
 //	int openBrackets = 0;

@@ -32,7 +32,7 @@ public class MapDataElevationDebugView extends DebugView {
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		for (MapArea area : map.getMapAreas()) {
 			if (area.getElevationProfile() == null) continue;
@@ -51,7 +51,7 @@ public class MapDataElevationDebugView extends DebugView {
 			
 			/* draw line itself */
 			
-			target.drawArrow(LINE_COLOR, 0.7f, 
+			target.drawArrow(LINE_COLOR, 0.7f,
 					line.getElevationProfile().getPointsWithEle().toArray(new VectorXYZ[0]));
 			
 			/* draw points with non-interpolated elevation */

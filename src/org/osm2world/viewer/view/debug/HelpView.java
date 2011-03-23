@@ -25,7 +25,7 @@ public class HelpView extends DebugView {
 		
 		if (!canBeUsed()) { return; }
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 
 		//TODO: needs real panel measures; currently guesses 800x600
 
@@ -33,11 +33,11 @@ public class HelpView extends DebugView {
 				+ "to load a file containing OpenStreetMap data.",
 				50, 550, 800, 600, Color.LIGHT_GRAY);
 		
-		target.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,				
+		target.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,
 				50, 100, 800, 600, Color.LIGHT_GRAY);
-		target.drawText("Website: " + GlobalValues.OSM2WORLD_URI,				
+		target.drawText("Website: " + GlobalValues.OSM2WORLD_URI,
 				50, 75, 800, 600, Color.LIGHT_GRAY);
-		target.drawText("Usage instructions: " + GlobalValues.WIKI_URI,				
+		target.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
 				50, 50, 800, 600, Color.LIGHT_GRAY);
 				
 	}

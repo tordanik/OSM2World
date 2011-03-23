@@ -46,7 +46,7 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 		
 		if (map == null) { return; }
 		
-		JOGLTarget util = new JOGLTarget(gl);
+		JOGLTarget util = new JOGLTarget(gl, camera);
 		
 		for (MapArea area : map.getMapAreas()) {
 			Vector3D[] vs = new Vector3D[area.getBoundaryNodes().size()];
@@ -54,7 +54,7 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 				vs[i] = area.getBoundaryNodes().get(i).getPos();
 			}
 
-			Collection<TriangleXZ> triangles = 
+			Collection<TriangleXZ> triangles =
 				TriangulationUtil.triangulate(area.getPolygon());
 			
 			for (TriangleXZ t : triangles) {
@@ -64,7 +64,7 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 		}
 				
 		for (MapWaySegment line : map.getMapWaySegments()) {
-			util.drawArrow(LINE_COLOR, 0.7f, 
+			util.drawArrow(LINE_COLOR, 0.7f,
 					line.getStartNode().getPos().xyz(0),
 					line.getEndNode().getPos().xyz(0));
 		}
@@ -75,7 +75,7 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 		}
 		
 		for (MapWaySegment line : map.getMapWaySegments()) {
-			for (MapIntersectionWW intersection : line.getIntersectionsWW()) {				
+			for (MapIntersectionWW intersection : line.getIntersectionsWW()) {
 				drawBoxAround(util, intersection.pos,
 						INTERSECTION_COLOR, HALF_NODE_WIDTH);
 			}

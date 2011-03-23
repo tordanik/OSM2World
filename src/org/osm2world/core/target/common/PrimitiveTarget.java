@@ -12,6 +12,7 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Material;
+import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Material.Lighting;
 
 /**
@@ -20,7 +21,8 @@ import org.osm2world.core.target.Material.Lighting;
  * They convert them all to a list of vertices
  * and represent the primitive type using an enum or flags.
  */
-public abstract class PrimitiveTarget extends AbstractTarget {
+public abstract class PrimitiveTarget<R extends Renderable>
+		extends AbstractTarget<R> {
 
 	/**
 	 * @param vs       vertices that form the primitive
@@ -31,7 +33,7 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 
 	@Override
 	public void drawTriangleStrip(Material material, VectorXYZ... vs) {
-		drawTriangleStrip(material, Arrays.asList(vs));        
+		drawTriangleStrip(material, Arrays.asList(vs));
 	}
 	
 	@Override
@@ -50,13 +52,13 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 	
 	@Override
 	public void drawPolygon(Material material, VectorXYZ... vs) {
-		drawPolygon(material, Arrays.asList(vs));        
+		drawPolygon(material, Arrays.asList(vs));
 	}
 
 	public void drawPolygon(Material material, List<? extends VectorXYZ> vs) {
 		boolean smooth = (material.lighting == Lighting.SMOOTH);
 		drawPrimitive(CONVEX_POLYGON, material, vs,
-				calculateTriangleFanNormals(vs, smooth));        
+				calculateTriangleFanNormals(vs, smooth));
 	}
 	
 	@Override
@@ -70,7 +72,7 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 			vectors.add(triangle.v3);
 		}
 		
-		drawPrimitive(TRIANGLES, material, vectors, 
+		drawPrimitive(TRIANGLES, material, vectors,
 				calculateTriangleNormals(vectors, material.lighting == Lighting.SMOOTH));
 		
 	}

@@ -8,15 +8,17 @@ import java.util.List;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Material;
+import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
  * superclass for {@link Target} implementations that defines some
  * of the required methods using others. Extending it reduces the number of
- * methods that have to be provided by the implementation 
+ * methods that have to be provided by the implementation
  */
-public abstract class AbstractTarget implements Target {
+public abstract class AbstractTarget<R extends Renderable>
+		implements Target<R> {
 	
 	@Override
 	public void beginObject(WorldObject object) {}
@@ -34,7 +36,7 @@ public abstract class AbstractTarget implements Target {
 		final VectorXYZ backUpperLeft   = frontUpperLeft.add(backVector);
 		final VectorXYZ backUpperRight  = frontUpperRight.add(backVector);
 		
-		drawTriangleStrip(material, 
+		drawTriangleStrip(material,
 				frontLowerLeft, frontLowerRight,
 				frontUpperLeft, frontUpperRight,
 				backUpperLeft, backUpperRight,
@@ -43,7 +45,7 @@ public abstract class AbstractTarget implements Target {
 		drawTriangleStrip(material,
 				backUpperRight, frontUpperRight,
 				backLowerRight, frontLowerRight,
-				backLowerLeft, frontLowerLeft, 
+				backLowerLeft, frontLowerLeft,
 				backUpperLeft, frontUpperLeft);
 		
 	}
@@ -113,7 +115,7 @@ public abstract class AbstractTarget implements Target {
 	}
 	
 	@Override
-	public void drawTriangleFan(Material material, List<? extends VectorXYZ> vs) {		
+	public void drawTriangleFan(Material material, List<? extends VectorXYZ> vs) {
 		drawTriangles(material, GeometryUtil.trianglesFromTriangleFan(vs));
 	}
 	

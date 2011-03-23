@@ -24,7 +24,7 @@ public class MapDataBoundsDebugView extends DebugView {
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 
 		List<VectorXZ> vs = map.getBoundary().polygonXZ().getVertexLoop();
 		target.drawLineLoop(BB_COLOR, VectorXZ.listXYZ(vs, 0));

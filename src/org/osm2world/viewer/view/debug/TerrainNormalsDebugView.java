@@ -24,7 +24,7 @@ public class TerrainNormalsDebugView extends DebugView {
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		for (Material material : terrainPrimitiveBuffer.getMaterials()) {
 					

@@ -10,6 +10,7 @@ import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.terrain.data.Terrain;
@@ -23,7 +24,7 @@ public final class ObjWriter {
 	private ObjWriter() { }
 	
 	public static final void writeObjFile(
-			File objFile, MapData grid, 
+			File objFile, MapData grid,
 			CellularTerrainElevation eleData, Terrain terrain,
 			MapProjection mapProjection,
 			Camera camera, Projection projection)
@@ -74,14 +75,14 @@ public final class ObjWriter {
 
 	private static final void writeObjStringToStream(
 			PrintStream objStream, PrintStream matStream,
-			MapData mapData, 
+			MapData mapData,
 			CellularTerrainElevation eleData, Terrain terrain,
 			Camera camera, Projection projection) {
-	
+		
 		ObjTarget target = new ObjTarget(objStream, matStream);
-		target.addWorldObjects(mapData);
-		terrain.renderTo(target);
-				
+		TargetUtil.renderWorldObjects(target, mapData);
+		TargetUtil.renderObject(target, terrain);
+		
 	}
 		
 }

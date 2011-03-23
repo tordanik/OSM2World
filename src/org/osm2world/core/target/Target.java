@@ -8,8 +8,24 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.world.data.WorldObject;
 
-public interface Target {
-
+/**
+ * @param <R>  subtype of {@link Renderable} designed for visualization
+ *             with this target
+ */
+public interface Target<R extends Renderable> {
+	
+	/**
+	 * returns the renderable type designed for this target
+	 */
+	Class<R> getRenderableType();
+	
+	/**
+	 * renders a renderable object to this target.
+	 * Usually, this means calling a "renderTo" method on that renderable,
+	 * with this target as a parameter.
+	 */
+	void render(R renderable);
+	
 	/**
 	 * announces the begin of the draw* calls for a {@link WorldObject}.
 	 * This allows targets to group them, if desired.
@@ -32,11 +48,11 @@ public interface Target {
 	/**
 	 * draws a box with outward-facing polygons
 	 */
-	void drawBox(Material material, VectorXYZ frontLowerLeft, 
+	void drawBox(Material material, VectorXYZ frontLowerLeft,
 			VectorXYZ rightVector, VectorXYZ upVector, VectorXYZ backVector);
 
 	/**
-	 * draws a column with outward-facing polygons around a point. 
+	 * draws a column with outward-facing polygons around a point.
 	 * A column is a polygon with > 3 corners extruded upwards.
 	 * 
 	 * The implementation may decide to reduce the number of corners
@@ -45,7 +61,7 @@ public interface Target {
 	 * @param corners  number of corners; null creates a cylinder
 	 *  for radiusBottom == radiusTop or (truncated) cone otherwise
 	 */
-	void drawColumn(Material material, Integer corners, 
+	void drawColumn(Material material, Integer corners,
 			VectorXYZ base, double height, double radiusBottom,
 			double radiusTop, boolean drawBottom, boolean drawTop);
 	

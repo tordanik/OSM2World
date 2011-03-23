@@ -28,13 +28,13 @@ public class TerrainOutlineDebugView extends DebugView {
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		for (TerrainPatch patch : terrain.getPatches()) {
 			if (patch instanceof GenericTerrainPatch) {
 				GenericTerrainPatch p = (GenericTerrainPatch) patch;
 				
-				List<VectorXZ> outline = 
+				List<VectorXZ> outline =
 					new ArrayList<VectorXZ>(p.getOuterPolygon().getVertexLoop());
 				
 				EarClippingTriangulationUtil.insertHolesInPolygonOutline(outline, p.getHoles());

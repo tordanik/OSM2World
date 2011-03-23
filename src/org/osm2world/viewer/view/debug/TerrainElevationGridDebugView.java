@@ -21,17 +21,17 @@ public class TerrainElevationGridDebugView extends DebugView implements Renderab
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
 
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 
 		TerrainPoint[][] grid = eleData.getTerrainPointGrid();
 		for (int x = 0; x < grid.length; x++) {
 			for (int z = 0; z < grid[x].length; z++) {
 				if (x + 1 < grid.length) {
-					target.drawLineStrip(GRID_COLOR, 1, 
+					target.drawLineStrip(GRID_COLOR, 1,
 							grid[x][z].getPosXYZ(), grid[x+1][z].getPosXYZ());
-				}				
+				}
 				if (z + 1 < grid[x].length) {
-					target.drawLineStrip(GRID_COLOR, 1, 
+					target.drawLineStrip(GRID_COLOR, 1,
 							grid[x][z].getPosXYZ(), grid[x][z+1].getPosXYZ());
 				}
 			}

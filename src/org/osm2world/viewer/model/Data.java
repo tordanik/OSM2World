@@ -12,9 +12,8 @@ import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
-import org.osm2world.core.target.primitivebuffer.RenderableToPrimitiveBuffer;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 public class Data extends Observable {
@@ -66,16 +65,8 @@ public class Data extends Observable {
 			results.getRenderables(Renderable.class, includeGrid, includeTerrain);
 		
 		iterate(renderables, new Operation<Renderable>() {
-			@Override public void perform(Renderable input) {
-				
-				if (input instanceof RenderableToPrimitiveBuffer) {
-					((RenderableToPrimitiveBuffer) input)
-					.renderTo(newPrimitiveBuffer);
-				} else if (input instanceof RenderableToAllTargets) {
-					((RenderableToAllTargets) input)
-					.renderTo(newPrimitiveBuffer);
-				}
-				
+			@Override public void perform(Renderable renderable) {
+				TargetUtil.renderObject(newPrimitiveBuffer, renderable);
 			}
 		});
 		

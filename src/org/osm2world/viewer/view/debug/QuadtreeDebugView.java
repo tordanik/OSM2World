@@ -47,7 +47,7 @@ public class QuadtreeDebugView extends DebugView {
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		for (QuadLeaf leaf : mapQuadtree.getLeaves()) {
 			

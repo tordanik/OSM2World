@@ -24,7 +24,7 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 
 	private static final int LINE_WIDTH = 5;
 	private static final float HALF_NODE_WIDTH = 0.4f;
-	private static final int NODE_COLUMN_WIDTH = 5;	
+	private static final int NODE_COLUMN_WIDTH = 5;
 	
 	private static final Color LINE_SURFACE_COLOR = Color.LIGHT_GRAY;
 	private static final Color LINE_BELOW_COLOR = Color.YELLOW;
@@ -33,14 +33,14 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 
 		for (MapWaySegment line : map.getMapWaySegments()) {
 
 			for (WorldObject rep : line.getRepresentations()) {
 
 				WaySegmentElevationProfile profile = line.getElevationProfile();
-				List<VectorXYZ> pointsWithEle = profile.getPointsWithEle();			
+				List<VectorXYZ> pointsWithEle = profile.getPointsWithEle();
 				int size = pointsWithEle.size();
 
 				VectorXYZ[] linePoints = new VectorXYZ[size];
@@ -80,7 +80,7 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 
 			}
 			
-		}		
+		}
 
 		for (MapNode node : map.getMapNodes()) {
 			
@@ -92,7 +92,7 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 				
 				drawBoxAround(target, profile.getPointWithEle(), color, HALF_NODE_WIDTH);
 				
-				target.drawLineStrip(color, NODE_COLUMN_WIDTH, 
+				target.drawLineStrip(color, NODE_COLUMN_WIDTH,
 						p.y(p.y-rep.getClearingBelow(p.xz())),
 						p.y(p.y+rep.getClearingAbove(p.xz())));
 				

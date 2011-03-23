@@ -1,7 +1,5 @@
 package org.osm2world.core.target.jogl;
 
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.nio.FloatBuffer;
@@ -12,31 +10,38 @@ import java.util.List;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Material;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Material.Lighting;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
-import org.osm2world.core.world.data.WorldObject;
 
 import com.sun.opengl.util.j2d.TextRenderer;
 
-public class JOGLTarget extends PrimitiveTarget {
+public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	
 	private final GL gl;
+	private final Camera camera;
 		
-	public JOGLTarget(GL gl) {
+	public JOGLTarget(GL gl, Camera camera) {
 		this.gl = gl;
+		this.camera = camera;
+	}
+	
+	@Override
+	public Class<RenderableToJOGL> getRenderableType() {
+		return RenderableToJOGL.class;
+	}
+	
+	@Override
+	public void render(RenderableToJOGL renderable) {
+		renderable.renderTo(gl, camera);
 	}
 
 	@Override
@@ -67,7 +72,7 @@ public class JOGLTarget extends PrimitiveTarget {
 		gl.glBegin(primitive);
         
 		for (VectorXYZ v : vs) {
-	        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());			
+	        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());
 		}
 		
         gl.glEnd();
@@ -89,11 +94,11 @@ public class JOGLTarget extends PrimitiveTarget {
 	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
 		gl.glLineWidth(width);
 		drawLineStrip(color, vs);
-		gl.glLineWidth(1);        
+		gl.glLineWidth(1);
 	}
 
 	public void drawLineLoop(Color color, List<? extends VectorXYZ> vs) {
-		drawPrimitive(GL.GL_LINE_LOOP, color, vs);        
+		drawPrimitive(GL.GL_LINE_LOOP, color, vs);
 	}
 
 	public void drawArrow(Color color, float headLength, VectorXYZ... vs) {
@@ -113,15 +118,15 @@ public class JOGLTarget extends PrimitiveTarget {
 			endDirXZ = VectorXZ.X_UNIT;
 		} else {
 			endDirXZ = endDirXZ.normalize();
-		}			
+		}
 		VectorXZ endNormalXZ = endDirXZ.rightNormal();
 				
-		drawTriangleStrip(color, 
+		drawTriangleStrip(color,
 				lastV,
 				headStart.add(endDirXZ.mult(headLength/2)),
 				headStart.subtract(endDirXZ.mult(headLength/2)));
         		
-		drawTriangleStrip(color, 
+		drawTriangleStrip(color,
 				lastV,
 				headStart.add(endNormalXZ.mult(headLength/2)),
 				headStart.subtract(endNormalXZ.mult(headLength/2)));
@@ -129,7 +134,7 @@ public class JOGLTarget extends PrimitiveTarget {
 	}
 	
 	public void drawTriangleStrip(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL.GL_TRIANGLE_STRIP, color, Arrays.asList(vs));        
+		drawPrimitive(GL.GL_TRIANGLE_STRIP, color, Arrays.asList(vs));
 	}
 	
 	public void drawTriangles(Color color, Collection<TriangleXYZ> triangles) {
@@ -148,69 +153,69 @@ public class JOGLTarget extends PrimitiveTarget {
 	}
 
 	public void drawPolygon(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL.GL_POLYGON, color, Arrays.asList(vs));        
+		drawPrimitive(GL.GL_POLYGON, color, Arrays.asList(vs));
 	}
 	
 //	//TODO: own class for Texture, so Target classes can offer load texture
 //	public void drawBillboard(VectorXYZ center, float halfWidth, float halfHeight,
 //			Texture texture, Camera camera) {
-//		
+//
 //		VectorXYZ right = camera.getRight();
 //		double rightXScaled = halfWidth*right.getX();
 //		double rightZScaled = halfWidth*right.getZ();
-//		
+//
 //		TextureCoords tc = texture.getImageTexCoords();
-//				
+//
 //    	gl.glColor3f(1, 1, 1);
-//		    	
-//		gl.glEnable(GL.GL_TEXTURE_2D);        
+//
+//		gl.glEnable(GL.GL_TEXTURE_2D);
 //        gl.glEnable(GL.GL_BLEND);
 //        gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 //        gl.glEnable(GL.GL_ALPHA_TEST);
 //        gl.glAlphaFunc(GL.GL_GREATER, 0);
 //        //TODO: disable calls?
-//        
+//
 //        gl.glBegin(GL.GL_QUADS);
 //
 //		texture.bind();
-//		
+//
 //		gl.glTexCoord2f(tc.left(), tc.bottom());
 //        gl.glVertex3d(
 //        		center.getX() - rightXScaled,
 //        		center.getY() - halfHeight,
 //        		-(center.getZ() - rightZScaled));
-//		
+//
 //		gl.glTexCoord2f(tc.right(), tc.bottom());
 //        gl.glVertex3d(
 //        		center.getX() + rightXScaled,
 //        		center.getY() - halfHeight,
 //        		-(center.getZ() + rightZScaled));
-//		
+//
 //		gl.glTexCoord2f(tc.right(), tc.top());
 //        gl.glVertex3d(
 //        		center.getX() + rightXScaled,
 //        		center.getY() + halfHeight,
 //        		-(center.getZ() + rightZScaled));
-//		
+//
 //		gl.glTexCoord2f(tc.left(), tc.top());
 //        gl.glVertex3d(
 //        		center.getX() - rightXScaled,
 //        		center.getY() + halfHeight,
 //        		-(center.getZ() - rightZScaled));
-//        
+//
 //        gl.glDisable(GL.GL_TEXTURE_2D);
-//        
+//
 //	}
-//	
+//
 //	public static Texture loadTexture(String fileName) throws GLException, IOException
 //	{
 //	  File file = new File("resources" + File.separator + fileName);
 //	  Texture result = null;
-//		  
+//
 //	  result = TextureIO.newTexture(file, false);
 //	  result.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR); //TODO (performance): GL_NEAREST for performance?
 //	  result.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR); //TODO (performance): GL_NEAREST for performance?
-//	
+//
 //	  return result;
 //	}
 
@@ -218,7 +223,7 @@ public class JOGLTarget extends PrimitiveTarget {
 			new Font("SansSerif", Font.PLAIN, 12), true, false);
 	//needs quite a bit of memory, so it must not be created for each instance!
 	
-	public void drawText(String string, Vector3D pos, Color color) {		
+	public void drawText(String string, Vector3D pos, Color color) {
 		textRenderer.setColor(color);
 		textRenderer.begin3DRendering();
 		textRenderer.draw3D(string, (float)pos.getX(), (float)pos.getY(), -(float)pos.getZ(), 0.05f);
@@ -239,7 +244,7 @@ public class JOGLTarget extends PrimitiveTarget {
 //		VectorXYZ right = dir.cross(VectorXYZ.Y_UNIT).normalize();
 //		VectorXYZ up = right.cross(dir);
 		new GLU().gluLookAt(
-				pos.x, pos.y, -pos.z, 
+				pos.x, pos.y, -pos.z,
 				lookAt.x, lookAt.y, -lookAt.z,
 				0, 1f, 0f);
 	}
@@ -274,9 +279,9 @@ public class JOGLTarget extends PrimitiveTarget {
 			double volumeWidth = projection.getAspectRatio() * projection.getVolumeHeight();
 			
 			gl.glOrtho(
-					(-0.5 + xStart) * volumeWidth, 
-					(-0.5 + xEnd  ) * volumeWidth, 
-					(-0.5 + yStart) * projection.getVolumeHeight(), 
+					(-0.5 + xStart) * volumeWidth,
+					(-0.5 + xEnd  ) * volumeWidth,
+					(-0.5 + yStart) * projection.getVolumeHeight(),
 					(-0.5 + yEnd  ) * projection.getVolumeHeight(),
 					projection.getNearClippingDistance(),
 					projection.getFarClippingDistance());
@@ -309,29 +314,9 @@ public class JOGLTarget extends PrimitiveTarget {
 	}
 
 	public static final void setFrontMaterialColor(GL gl, int pname, Color color) {
-		float ambientColor[] = {0, 0, 0, 1};		
-		color.getRGBColorComponents(ambientColor);	
+		float ambientColor[] = {0, 0, 0, 1};
+		color.getRGBColorComponents(ambientColor);
 		gl.glMaterialfv(GL.GL_FRONT, pname, FloatBuffer.wrap(ambientColor));
-	}
-
-	public void addWorldObjects(final MapData mapData, final Camera camera) {
-		
-		iterate(mapData.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement e) {
-				
-				for (WorldObject representation : e.getRepresentations()) {
-		        	if (representation instanceof RenderableToJOGL) {
-		        		RenderableToJOGL r = (RenderableToJOGL)representation;
-						r.renderTo(gl, camera);
-		        	} else if (representation instanceof RenderableToAllTargets) {
-		        		RenderableToAllTargets r = (RenderableToAllTargets)representation;
-						r.renderTo(JOGLTarget.this);
-		        	}
-				}
-				
-			}
-		});
-			
 	}
 
 	public static final int getGLConstant(Type type) {

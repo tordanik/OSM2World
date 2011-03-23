@@ -1,7 +1,5 @@
 package org.osm2world.core.target.primitivebuffer;
 
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,16 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Material;
-import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 /**
  * Storage for low-level rendering information (vertex and primitive data)
@@ -26,18 +19,29 @@ import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
  * Higher-level information, such as object coherence, OSM attributes
  * or representations, isn't present in an OGLBuffer.
  */
-public class PrimitiveBuffer extends PrimitiveTarget {
+public class PrimitiveBuffer extends
+		PrimitiveTarget<RenderableToPrimitiveBuffer> {
 
+	@Override
+	public Class<RenderableToPrimitiveBuffer> getRenderableType() {
+		return RenderableToPrimitiveBuffer.class;
+	}
+	
+	@Override
+	public void render(RenderableToPrimitiveBuffer renderable) {
+		renderable.renderTo(this);
+	}
+	
 	private ArrayList<VectorXYZ> vertexCollection = new ArrayList<VectorXYZ>();
 	private Map<Material, List<Primitive>> primitiveMap = new HashMap<Material, List<Primitive>>();
 	
 	private Map<VectorXYZ, Integer> indexMap = new HashMap<VectorXYZ, Integer>();
-	
+		
 	@Override
 	protected void drawPrimitive(Type type, Material material,
 			List<? extends VectorXYZ> vertices, VectorXYZ[] normals) {
 		int[] indices = generateIndices(vertices);
-		addPrimitive(material, new Primitive(type, indices, normals));	
+		addPrimitive(material, new Primitive(type, indices, normals));
 	}
 	
 	private int[] generateIndices(List<? extends VectorXYZ> newVertices) {
@@ -87,17 +91,17 @@ public class PrimitiveBuffer extends PrimitiveTarget {
 	}
 
 	/**
-	 * merge individual primitive groups into a single 
+	 * merge individual primitive groups into a single
 	 * large primitive group (if they have the same material)
 	 */
 	private void mergePrimitiveGroups(Type type) {
 		
-		//TODO: reactivate, seems not to solve material problem; but watch out for normals! 
+		//TODO: reactivate, seems not to solve material problem; but watch out for normals!
 //		for (Material material : primitiveMap.keySet()) {
-//			
+//
 //			List<Primitive> primitives = new ArrayList<Primitive>();
 //			List<Integer> indices = new ArrayList<Integer>();
-//			
+//
 //			for (Primitive primitive : primitiveMap.get(material)) {
 //				if (primitive.type == type) {
 //					primitives.add(primitive);
@@ -106,7 +110,7 @@ public class PrimitiveBuffer extends PrimitiveTarget {
 //					}
 //				}
 //			}
-//			
+//
 //			if (primitives.size() > 1) {
 //				primitiveMap.get(material).removeAll(primitives);
 //				int[] indicesArray = new int[indices.size()];
@@ -115,24 +119,8 @@ public class PrimitiveBuffer extends PrimitiveTarget {
 //				}
 //				primitiveMap.get(material).add(new Primitive(type, indicesArray));
 //			}
-//			
+//
 //		}
-		
-	}
-	
-	public void addWorldObjects(final MapData mapData, final Camera camera) {
-		
-		iterate(mapData.getWorldObjects(Renderable.class), new Operation<Renderable>() {
-			@Override public void perform(Renderable input) {
-				
-				if (input instanceof RenderableToPrimitiveBuffer) {
-					((RenderableToPrimitiveBuffer) input).renderTo(PrimitiveBuffer.this);
-				} else if (input instanceof RenderableToAllTargets) {
-					((RenderableToAllTargets) input).renderTo(PrimitiveBuffer.this);
-				}
-				
-			}
-		});
 		
 	}
 

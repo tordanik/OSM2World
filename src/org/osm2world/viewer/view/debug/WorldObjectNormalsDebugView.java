@@ -26,7 +26,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		for (Material material : mapDataPrimitiveBuffer.getMaterials()) {
 			
@@ -47,7 +47,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 					}
 				}
 		        
-			}			
+			}
 		
 		}
 		

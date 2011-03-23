@@ -6,17 +6,13 @@ import java.io.PrintStream;
 
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.terrain.data.Terrain;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.Materials;
-
-import static org.osm2world.core.util.FaultTolerantIterationUtil.*;
 
 /**
  * utility class for creating a POVRay file
@@ -26,7 +22,7 @@ public final class POVRayWriter {
 	/** prevents instantiation */
 	private POVRayWriter() { }
 	
-	public static final void writePOVInstructionFile(File file, MapData mapData, 
+	public static final void writePOVInstructionFile(File file, MapData mapData,
 			CellularTerrainElevation eleData, Terrain terrain,
 			Camera camera, Projection projection)
 			throws IOException {
@@ -45,7 +41,7 @@ public final class POVRayWriter {
 	}
 
 	private static final void writePOVInstructionStringToStream(
-			PrintStream stream, MapData mapData, 
+			PrintStream stream, MapData mapData,
 			CellularTerrainElevation eleData, Terrain terrain,
 			Camera camera, Projection projection) {
 				
@@ -77,34 +73,13 @@ public final class POVRayWriter {
 		target.append("\n}\n\n");
 		
 		target.append("\n\n//\n//Grid\n//\n\n");
-				
-		addDefinitionsForWorldObjects(target, mapData);
+		
+		TargetUtil.renderWorldObjects(target, mapData);
 
 		target.append("\n\n//\n//Terrain\n//\n\n");
 		
 		terrain.renderTo(target);
 		
-	}
-
-	private static final void addDefinitionsForWorldObjects(
-			final POVRayTarget target, MapData grid) {
-		
-		iterate(grid.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement e) {
-				
-				for (WorldObject representation : e.getRepresentations()) {
-		        	if (representation instanceof RenderableToPOVRay) {
-		        		RenderableToPOVRay r = (RenderableToPOVRay)representation;
-						r.renderTo(target);
-		        	} else if (representation instanceof RenderableToAllTargets) {
-		        		RenderableToAllTargets r = (RenderableToAllTargets)representation;
-						r.renderTo(target);
-		        	}
-				}
-				
-			}
-		});
-        
 	}
 		
 	private static final void addCameraDefinition(POVRayTarget target,

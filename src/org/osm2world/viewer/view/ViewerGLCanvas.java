@@ -1,5 +1,7 @@
 package org.osm2world.viewer.view;
 
+import static javax.media.opengl.GL.*;
+
 import java.awt.Color;
 
 import javax.media.opengl.GL;
@@ -17,8 +19,6 @@ import org.osm2world.viewer.model.MessageManager.Message;
 import org.osm2world.viewer.view.debug.DebugView;
 
 import com.sun.opengl.util.FPSAnimator;
-
-import static javax.media.opengl.GL.*;
 
 public class ViewerGLCanvas extends GLCanvas {
 
@@ -73,7 +73,7 @@ public class ViewerGLCanvas extends GLCanvas {
 //		        double tanAngle = Math.tan(renderOptions.projection.getVertAngle());
 //		        double height = tanAngle * dist;
 //		        renderOptions.projection = renderOptions.projection.withVolumeHeight(height);
-//		        
+//
 	        }
 	        
 	        JOGLTarget.setProjectionMatrices(gl, renderOptions.projection);
@@ -112,7 +112,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        
 	        int messageCount = 0;
 	        for (Message message : messageManager.getLiveMessages()) {
-	        	new JOGLTarget(gl).drawText(message.messageString, 
+	        	new JOGLTarget(gl, renderOptions.camera).drawText(message.messageString,
 	        			10, 10 + messageCount * 20,
 	        			ViewerGLCanvas.this.getWidth(),
 	        			ViewerGLCanvas.this.getHeight(),
@@ -153,7 +153,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        	        
 	        gl.glViewport(0, 0, width, height);
 	        
-	        renderOptions.projection = 
+	        renderOptions.projection =
 	        	renderOptions.projection.withAspectRatio(width / height);
 	        
 	        System.out.println("reshape called");

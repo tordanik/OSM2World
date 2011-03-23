@@ -19,7 +19,7 @@ public class TerrainCellLabelsView extends DebugView {
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 
 		for (TerrainElevationCell cell : eleData.getCells()) {
 			

@@ -5,8 +5,7 @@ package org.osm2world.core.target;
  * and can therefore render to all targets supporting these features
  */
 public interface RenderableToAllTargets extends Renderable {
-	//TODO: extend all other Renderables
-
-	public void renderTo(Target target);
+	
+	public void renderTo(Target<?> target);
 	
 }

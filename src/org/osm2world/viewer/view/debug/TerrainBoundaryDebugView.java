@@ -21,7 +21,7 @@ public class TerrainBoundaryDebugView extends DebugView {
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
 				
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 				
 		/* draw terrain boundaries */
 		

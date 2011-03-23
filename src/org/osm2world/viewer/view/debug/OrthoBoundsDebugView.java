@@ -34,7 +34,7 @@ public class OrthoBoundsDebugView extends DebugView
 		
 		if (map == null) { return; }
 		
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		Camera orthoCam = OrthoTilesUtil.cameraForBounds(map.getBoundary(), 30);
 		

@@ -1,7 +1,5 @@
 package org.osm2world.core.target.obj;
 
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
-
 import java.awt.Color;
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -11,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -20,22 +17,20 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.Material;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.common.AbstractTarget;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.Materials;
 
-public class ObjTarget extends AbstractTarget {
+public class ObjTarget extends AbstractTarget<RenderableToObj> {
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
 	
 	private final Map<VectorXYZ, Integer> vertexIndexMap = new HashMap<VectorXYZ, Integer>();
-	private final Map<VectorXYZ, Integer> normalsIndexMap = new HashMap<VectorXYZ, Integer>();	
-	private final Map<Material, String> materialMap = new HashMap<Material, String>();	
+	private final Map<VectorXYZ, Integer> normalsIndexMap = new HashMap<VectorXYZ, Integer>();
+	private final Map<Material, String> materialMap = new HashMap<Material, String>();
 	
-	private Class<? extends WorldObject> currentWOGroup = null;	
+	private Class<? extends WorldObject> currentWOGroup = null;
 	private int anonymousWOCounter = 0;
 	
 	private Material currentMaterial = null;
@@ -46,6 +41,16 @@ public class ObjTarget extends AbstractTarget {
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
 				
+	}
+	
+	@Override
+	public Class<RenderableToObj> getRenderableType() {
+		return RenderableToObj.class;
+	}
+	
+	@Override
+	public void render(RenderableToObj renderable) {
+		renderable.renderTo(this);
 	}
 
 	@Override
@@ -59,7 +64,7 @@ public class ObjTarget extends AbstractTarget {
 			
 		} else {
 			
-			/* maybe start a group depending on the object's class */ 
+			/* maybe start a group depending on the object's class */
 			
 			if (!object.getClass().equals(currentWOGroup)) {
 				currentWOGroup = object.getClass();
@@ -112,7 +117,7 @@ public class ObjTarget extends AbstractTarget {
 		useMaterial(material);
 		
 		for (TriangleXYZWithNormals triangle : triangles) {
-			writeFace(verticesToIndices(triangle.getVertices()), 
+			writeFace(verticesToIndices(triangle.getVertices()),
 					normalsToIndices(triangle.getNormals()));
 		}
 		
@@ -121,7 +126,7 @@ public class ObjTarget extends AbstractTarget {
 	@Override
 	public void drawPolygon(Material material, VectorXYZ... vs) {
 		useMaterial(material);
-		writeFace(verticesToIndices(Arrays.asList(vs)), null);		
+		writeFace(verticesToIndices(Arrays.asList(vs)), null);
 	}
 
 	private void useMaterial(Material material) {
@@ -143,12 +148,12 @@ public class ObjTarget extends AbstractTarget {
 		}
 	}
 	
-	private int[] verticesToIndices(List<? extends VectorXYZ> vs) {		
-		return vectorsToIndices(vertexIndexMap, "v ", vs);		
+	private int[] verticesToIndices(List<? extends VectorXYZ> vs) {
+		return vectorsToIndices(vertexIndexMap, "v ", vs);
 	}
 
-	private int[] normalsToIndices(List<? extends VectorXYZ> normals) {		
-		return vectorsToIndices(normalsIndexMap, "vn ", normals);		
+	private int[] normalsToIndices(List<? extends VectorXYZ> normals) {
+		return vectorsToIndices(normalsIndexMap, "vn ", normals);
 	}
 	
 	private int[] vectorsToIndices(Map<VectorXYZ, Integer> indexMap,
@@ -208,30 +213,6 @@ public class ObjTarget extends AbstractTarget {
 				+ " " + color.getRed() / 255f
 				+ " " + color.getGreen() / 255f
 				+ " " + color.getBlue() / 255f);
-		
-	}
-	
-	public void addWorldObjects(MapData mapData) {
-
-		iterate(mapData.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement e) {
-				
-				for (WorldObject representation : e.getRepresentations()) {
-		        	if (representation instanceof RenderableToObj) {
-		        		beginObject(representation);
-		        		RenderableToObj r = (RenderableToObj)representation;
-						r.renderTo(ObjTarget.this);
-		        	} else if (representation instanceof RenderableToAllTargets) {
-		        		beginObject(representation);
-		        		RenderableToAllTargets r = (RenderableToAllTargets)representation;
-						r.renderTo(ObjTarget.this);
-		        	}
-				}
-				
-			}
-		});
-		
-		beginObject(null);
 		
 	}
 

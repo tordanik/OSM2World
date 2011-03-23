@@ -13,7 +13,7 @@ import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.network.NetworkWaySegmentWorldObject;
 
-/** 
+/**
  * shows information about {@link NetworkWaySegmentWorldObject}s
  */
 public class NetworkDebugView extends DebugView {
@@ -24,7 +24,7 @@ public class NetworkDebugView extends DebugView {
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
 				
-		JOGLTarget target = new JOGLTarget(gl);
+		JOGLTarget target = new JOGLTarget(gl, camera);
 						
 		for (MapWaySegment line : map.getMapWaySegments()) {
 			for (WorldObject worldObject : line.getRepresentations()) {
@@ -35,7 +35,7 @@ public class NetworkDebugView extends DebugView {
 
 					/* draw lines */
 
-//					util.drawLineStrip(LINE_COLOR, 
+//					util.drawLineStrip(LINE_COLOR,
 //					line.getStartNode().getPos(), line.getEndNode().getPos());
 
 					/* draw offsets */
