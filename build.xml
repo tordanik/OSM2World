@@ -4,6 +4,9 @@
 
     <property name="releaseVersion" value="noversion" />
 
+	<!-- classpath used for javadoc and javac, don't forget to manually update the jar manifest classpath! -->
+    <property name="classpath" value="lib/configuration/commons-collections-3.2.1.jar:lib/configuration/commons-configuration-1.6.jar:lib/configuration/commons-lang-2.6.jar:lib/configuration/commons-logging-1.1.1.jar:lib/jogl/gluegen-rt.jar:lib/jogl/jogl.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jts/jts-1.11.jar:lib/osmosis/commons-compress-1.0.jar:lib/osmosis/osmosis-core-0.38.jar:lib/osmosis/osmosis-xml-0.38.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/javaproj/javaproj-1.0.6.jar:lib/guava/guava-r08.jar" />
+		
     <target name="clean">
 	<delete includeemptydirs="true"><fileset dir="bin" includes="**/*"/></delete>
 	<delete includeemptydirs="true"><fileset dir="build" includes="**/*"/></delete>
@@ -12,7 +15,7 @@
 
     <target name="compile">
 	<mkdir dir="bin"/>
-        <javac srcdir="src" destdir="bin" classpath="lib/configuration/commons-collections-3.2.1.jar:lib/configuration/commons-configuration-1.6.jar:lib/configuration/commons-lang-2.6.jar:lib/configuration/commons-logging-1.1.1.jar:lib/jogl/gluegen-rt.jar:lib/jogl/jogl.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jts/jts-1.11.jar:lib/osmosis/commons-compress-1.0.jar:lib/osmosis/osmosis-core-0.38.jar:lib/osmosis/osmosis-xml-0.38.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/javaproj/javaproj-1.0.6.jar:lib/guava/guava-r08.jar" includeantruntime="false"/>
+        <javac srcdir="src" destdir="bin" classpath="${classpath}" includeantruntime="false"/>
     </target>
 	
     <target name="jar" depends="compile">
@@ -55,7 +58,7 @@
     <target name="release" depends="release.src,release.bin"/>
 
     <target name="javadoc">
-        <javadoc access="protected" additionalparam=" -windowtitle &quot;OSM2World Javadoc&quot; -group &quot;OSM2World Core&quot; &quot;org.osm2world.core*&quot; -group &quot;OSM2World GUI&quot; &quot;org.osm2world.viewer*&quot; -group &quot;OSM2World Command Line&quot; &quot;org.osm2world.console*&quot; -noqualifier all " author="false" classpath="lib/guava/guava-r08.jar:lib/javaproj/javaproj-1.0.6.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/osmosis/commons-compress-1.0.jar:lib/jogl/gluegen-rt.jar:lib/osmosis/osmosis-xml-0.38.jar:lib/osmosis/osmosis-core-0.38.jar:lib/jts/jts-1.11.jar:/usr/lib/eclipse/plugins/org.hamcrest.core_1.1.0.jar:/usr/lib/eclipse/plugins/org.junit4_4.5.0.v20090824/junit.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jogl/jogl.jar" destdir="doc/javadoc" doctitle="OSM2World Documentation" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" source="1.6" sourcepath="src" splitindex="true" use="true" version="false"/>
+        <javadoc access="protected" additionalparam=" -windowtitle &quot;OSM2World Javadoc&quot; -group &quot;OSM2World Core&quot; &quot;org.osm2world.core*&quot; -group &quot;OSM2World GUI&quot; &quot;org.osm2world.viewer*&quot; -group &quot;OSM2World Command Line&quot; &quot;org.osm2world.console*&quot; -noqualifier all " author="false" classpath="${classpath}" destdir="doc/javadoc" doctitle="OSM2World Documentation" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" source="1.6" sourcepath="src" splitindex="true" use="true" version="false"/>
     </target>
 
 </project>

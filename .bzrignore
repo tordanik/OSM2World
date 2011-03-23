@@ -6,3 +6,4 @@ build
 .bzrignore
 .classpath
 .project
+doc/javadoc

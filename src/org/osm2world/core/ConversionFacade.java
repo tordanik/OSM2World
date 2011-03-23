@@ -189,8 +189,10 @@ public class ConversionFacade {
 	
 	
 	/**
-	 * variant of {@link #createRepresentations(File)} that accepts
-	 * {@link OSMData} instead of a file. Use this when all data is already
+	 * variant of
+	 * {@link #createRepresentations(File, List, Configuration, List)}
+	 * that accepts {@link OSMData} instead of a file.
+	 * Use this when all data is already
 	 * in memory, for example with editor applications.
 	 * 
 	 * @param osmData       input data; != null

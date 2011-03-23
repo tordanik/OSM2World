@@ -156,8 +156,6 @@ public class ViewerGLCanvas extends GLCanvas {
 	        renderOptions.projection =
 	        	renderOptions.projection.withAspectRatio(width / height);
 	        
-	        System.out.println("reshape called");
-	        
 		}
 	
 	}
