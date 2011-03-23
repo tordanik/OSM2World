@@ -35,7 +35,7 @@ public class Data extends Observable {
 			converter.addProgressListener(listener);
 			
 			conversionResults = converter.createRepresentations(
-					osmFile, null, config);
+					osmFile, null, config, null);
 			
 			gridPrimitiveBuffer = createPrimitiveBuffer(conversionResults, true, false);
 			terrainPrimitiveBuffer = createPrimitiveBuffer(conversionResults, false, true);

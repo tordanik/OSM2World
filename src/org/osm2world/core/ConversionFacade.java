@@ -21,6 +21,8 @@ import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Renderable;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.terrain.creation.TerrainCreator;
 import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.world.creation.WorldCreator;
@@ -43,8 +45,6 @@ import org.osm2world.core.world.modules.WaterModule;
  * in the correct order
  */
 public class ConversionFacade {
-
-	//TODO: allow configuration options in or after constructor
 	
 	/**
 	 * all results of a conversion run
@@ -151,9 +151,12 @@ public class ConversionFacade {
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
 	 *                      of the modules' behavior; null to use defaults
+	 * @param targets       receivers of the conversion results; can be null if
+	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(File osmFile,
-			List<WorldModule> worldModules, Configuration config)
+			List<WorldModule> worldModules, Configuration config,
+			List<Target<?>> targets)
 			throws IOException {
 		
 		if (osmFile == null) {
@@ -180,7 +183,7 @@ public class ConversionFacade {
 			
 		}
 		
-		return createRepresentations(osmData, worldModules, config);
+		return createRepresentations(osmData, worldModules, config, targets);
 		
 	}
 	
@@ -195,21 +198,24 @@ public class ConversionFacade {
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
 	 *                      of the modules' behavior; null to use defaults
+	 * @param targets       receivers of the conversion results; can be null if
+	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(OSMData osmData,
-			List<WorldModule> worldModules, Configuration config)
+			List<WorldModule> worldModules, Configuration config,
+			List<Target<?>> targets)
 			throws IOException {
 		
 		if (osmData == null) {
 			throw new IllegalArgumentException("osmData must not be null");
 		}
 		
-		/* create grid from OSM data */
+		/* create map data from OSM data */
 		updatePhase(Phase.MAP_DATA);
 		
 		MapProjection mapProjection = new HackMapProjection(osmData);
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
-		MapData grid = converter.createMapData(osmData);
+		MapData mapData = converter.createMapData(osmData);
 		
 		/* apply world modules */
 		updatePhase(Phase.REPRESENTATION);
@@ -223,24 +229,31 @@ public class ConversionFacade {
 		
 		WorldCreator moduleManager =
 			new WorldCreator(config, worldModules);
-		moduleManager.addRepresentationsTo(grid);
+		moduleManager.addRepresentationsTo(mapData);
 		
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 		
-		CellularTerrainElevation eleData = createEleData(grid);
+		CellularTerrainElevation eleData = createEleData(mapData);
 		
-		new ElevationCalculator().calculateElevations(grid, eleData);
+		new ElevationCalculator().calculateElevations(mapData, eleData);
 		
 		/* create terrain */
 		updatePhase(Phase.TERRAIN);
 		
-		Terrain terrain = new TerrainCreator().createTerrain(grid, eleData);
+		Terrain terrain = new TerrainCreator().createTerrain(mapData, eleData);
 		
-		/* return results */
+		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
 		
-		return new Results(mapProjection, grid, terrain, eleData);
+		if (targets != null) {
+			for (Target<?> target : targets) {
+				TargetUtil.renderWorldObjects(target, mapData);
+				TargetUtil.renderObject(target, terrain);
+			}
+		}
+		
+		return new Results(mapProjection, mapData, terrain, eleData);
 		
 	}
 	

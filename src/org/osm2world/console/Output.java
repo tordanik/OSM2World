@@ -51,7 +51,7 @@ public final class Output {
 		}
 		
 		Results results =
-			cf.createRepresentations(args.getInput(), null, config);
+			cf.createRepresentations(args.getInput(), null, config, null);
 		
 		Camera camera = null;
 		Projection projection = null;
