@@ -15,7 +15,7 @@ import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
@@ -238,7 +238,7 @@ public class ConversionFacade {
 		
 		CellularTerrainElevation eleData = createEleData(mapData);
 		
-		new ElevationCalculator().calculateElevations(mapData, eleData);
+		new ForceElevationCalculator().calculateElevations(mapData, eleData);
 		
 		/* create terrain */
 		updatePhase(Phase.TERRAIN);

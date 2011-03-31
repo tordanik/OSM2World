@@ -14,13 +14,14 @@ import org.osm2world.core.target.jogl.JOGLTarget;
  * ElevationCalculator that allows to set the number of calculation steps
  * and displays the forces that would be in effect during the next step.
  */
-public class RenderingElevationCalculator extends ElevationCalculator {
+public class RenderingForceElevationCalculator
+		extends ForceElevationCalculator {
 
 	private final int steps;
 	private final Collection<RenderingElevationDeterminationScenario> scenarios
 		= new ArrayList<RenderingElevationDeterminationScenario>();
 		
-	public RenderingElevationCalculator(int steps) {
+	public RenderingForceElevationCalculator(int steps) {
 		super();
 		this.steps = steps;
 	}
