@@ -48,10 +48,14 @@ public class OpenOSMAction extends AbstractAction {
 
 		if (osmFile != null) {
 
-			new OpenOSMThread(osmFile).start();
+			openOSMFile(osmFile);
 
 		}
 
+	}
+
+	public void openOSMFile(File osmFile) {
+		new OpenOSMThread(osmFile).start();
 	}
 
 	private File askFile() {

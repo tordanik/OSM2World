@@ -2,16 +2,17 @@ package org.osm2world.viewer.view;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
+import java.io.File;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 
+import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
 import org.osm2world.viewer.control.actions.ExportPOVRayAction;
 import org.osm2world.viewer.control.actions.ExportScreenshotAction;
-import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.HelpControlsAction;
 import org.osm2world.viewer.control.actions.OpenOSMAction;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
@@ -51,10 +52,11 @@ public class ViewerFrame extends JFrame {
 	public final ViewerGLCanvas glCanvas;
 	
 	private final Data data;
-	private final RenderOptions renderOptions;	
+	private final RenderOptions renderOptions;
 	private final MessageManager messageManager;
 		
-	public ViewerFrame(Data data, MessageManager messageManager, RenderOptions renderOptions) {
+	public ViewerFrame(final Data data, final MessageManager messageManager,
+			final RenderOptions renderOptions) {
 
 		super("OSM2World Viewer");
 
@@ -67,6 +69,16 @@ public class ViewerFrame extends JFrame {
 		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions);
 		add(glCanvas, BorderLayout.CENTER);
 		
+		new FileDrop(glCanvas, new FileDrop.Listener() {
+			@Override
+			public void filesDropped(File[] files) {
+				if (files.length >= 1) {
+					new OpenOSMAction(ViewerFrame.this, data, renderOptions)
+						.openOSMFile(files[0]);
+				}
+			}
+		});
+		
 		DefaultNavigation navigation = new DefaultNavigation(this, renderOptions);
 		glCanvas.addMouseListener(navigation);
 		glCanvas.addMouseMotionListener(navigation);
@@ -75,7 +87,7 @@ public class ViewerFrame extends JFrame {
 		
 		// also add the help view, but don't include it in the menu
 		new ToggleDebugViewAction(new HelpView(), -1, true,
-				this, data, renderOptions);		
+				this, data, renderOptions);
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
@@ -90,7 +102,7 @@ public class ViewerFrame extends JFrame {
 		{ //"File"
 
 			JMenu subMenu = new JMenu("File");
-			subMenu.setMnemonic(KeyEvent.VK_F);			
+			subMenu.setMnemonic(KeyEvent.VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
@@ -99,7 +111,7 @@ public class ViewerFrame extends JFrame {
 
 		} { //"View"
 
-			JMenu subMenu = new JMenu("View");			
+			JMenu subMenu = new JMenu("View");
 			subMenu.setMnemonic(KeyEvent.VK_V);
 			
 			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(this, data, renderOptions)));
@@ -109,7 +121,7 @@ public class ViewerFrame extends JFrame {
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new TerrainView(), KeyEvent.VK_T, true,
-					this, data, renderOptions)));			
+					this, data, renderOptions)));
 
 			subMenu.addSeparator();
 			
@@ -118,7 +130,7 @@ public class ViewerFrame extends JFrame {
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new TerrainAABBDebugView(), -1, false,
-					this, data, renderOptions)));			
+					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new ClearingDebugView(), KeyEvent.VK_L, false,
 					this, data, renderOptions)));
@@ -185,9 +197,9 @@ public class ViewerFrame extends JFrame {
 
 			menu.add(subMenu);
 
-		}		
+		}
 
-		this.setJMenuBar(menu);	
+		this.setJMenuBar(menu);
 		
 	}
 	
