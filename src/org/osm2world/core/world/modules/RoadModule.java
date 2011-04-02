@@ -129,7 +129,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			target.drawTriangles(ASPHALT, super.getTriangulation());
 						
@@ -181,7 +181,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 							
 			NodeElevationProfile eleProfile = node.getElevationProfile();
 			
@@ -351,7 +351,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			return width;
 		}
 		
-		private void renderStepsUsing(Target target) {
+		private void renderStepsUsing(Target<?> target) {
 
 			WaySegmentElevationProfile elevationProfile = line.getElevationProfile();
 			
@@ -400,21 +400,31 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			for (int step = 0; step < stepBorderPositions.size() - 1; step++) {
 				
-				VectorXYZ frontLowerCenter = stepBorderPositions.get(step);
-				VectorXYZ backUpperCenter = stepBorderPositions.get(step+1);
+				VectorXYZ frontCenter = stepBorderPositions.get(step);
+				VectorXYZ backCenter = stepBorderPositions.get(step+1);
+				
+				VectorXYZ frontLowerCenter;
+				if (frontCenter.y > backCenter.y /* segment goes downwards */) {
+					frontLowerCenter = frontCenter.y(backCenter.y);
+				} else {
+					frontLowerCenter = frontCenter;
+				}
+				
+				VectorXYZ upVector = new VectorXYZ(
+						0, Math.abs(frontCenter.y - backCenter.y), 0);
 				
 				target.drawBox(new Material(Lighting.FLAT, Color.DARK_GRAY),
 						frontLowerCenter.add(halfLeftVector),
 						fullRightVector,
-						new VectorXYZ(0, backUpperCenter.y - frontLowerCenter.y, 0),
-						backUpperCenter.subtract(frontLowerCenter).y(0));
-					
+						upVector,
+						backCenter.subtract(frontCenter).y(0));
+				
 			}
 			
 		}
-						
+
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 		
 			if (!steps) {
 				
@@ -465,7 +475,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			String surface = area.getTags().getValue("surface");
 			target.drawTriangles(getMaterial(surface, ASPHALT), getTriangulation());
 		}
