@@ -1,5 +1,7 @@
 package org.osm2world.core.map_elevation.creation;
 
+import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.heightmap.data.TerrainPoint;
@@ -131,12 +134,10 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			nodeMap.put(node, fNode);
 			forceNodes.add(fNode);
 			
-			if (node.getOsmNode().tags.containsKey("ele")) {
-				try {
-					float ele = Float.parseFloat(
-							node.getOsmNode().tags.getValue("ele"));
-					forces.add(new NodeElevationForce(fNode, ele, true));
-				} catch (NumberFormatException e) { }
+			if (node.getTags().containsKey("ele")) {
+				Float ele = ValueStringParser.parseOsmDecimal(
+						node.getTags().getValue("ele"), true);
+				forces.add(new NodeElevationForce(fNode, ele, true));
 			}
 			
 			node.setElevationProfile(new NodeElevationProfile(node));
@@ -212,7 +213,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			
 			final ForceNode fNode1 = new ForceNodeOnLine(line1, pos);
 			final ForceNode fNode2 = new ForceNodeOnLine(line2, pos);
-			
+						
 			addVerticalDistanceForce(line1, line2, pos, fNode1, fNode2);
 
 			forceNodes.add(fNode1);
@@ -655,6 +656,14 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			public void changeCurrentEle(double up) {
 				currentEle += up;
 			}
+			
+			/**
+			 * sets the current elevation to an absolute value.
+			 * Usually only used during initialization.
+			 */
+			protected void setCurrentEle(double currentEle) {
+				this.currentEle = (float)currentEle;
+			}
 
 			/** writes the current elevation information back to the grid */
 			public abstract void writeResult();
@@ -662,7 +671,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 		}
 
 		/** {@link ForceNode} based on a {@link MapNode} */
-		public static final class ForceNodeOnNode extends ForceNode {
+		public final class ForceNodeOnNode extends ForceNode {
 
 			private final MapNode node;
 			
@@ -679,7 +688,15 @@ public class ForceElevationCalculator implements ElevationCalculator {
 //			private Collection<MapArea> affectedAreas;
 			
 			public ForceNodeOnNode(MapNode node) {
+				
 				this.node = node;
+				
+				if (node.getTags().containsKey("ele")) {
+					Float ele = ValueStringParser.parseOsmDecimal(
+							node.getTags().getValue("ele"), true);
+					setCurrentEle(ele);
+				}
+				
 			}
 
 			@Override
@@ -741,14 +758,20 @@ public class ForceElevationCalculator implements ElevationCalculator {
 		}
 
 		/** {@link ForceNode} representing a point on a {@link MapWaySegment} */
-		public static class ForceNodeOnLine extends ForceNode {
+		public class ForceNodeOnLine extends ForceNode {
 
 			private final MapWaySegment line;
 			private final VectorXZ pos;
 
 			public ForceNodeOnLine(MapWaySegment line, VectorXZ pos) {
+				
 				this.line = line;
 				this.pos = pos;
+				
+				setCurrentEle(interpolateElevation(pos,
+						nodeMap.get(line.getStartNode()).getCurrentXYZ(),
+						nodeMap.get(line.getEndNode()).getCurrentXYZ()).y);
+				
 			}
 
 			@Override
@@ -764,14 +787,25 @@ public class ForceElevationCalculator implements ElevationCalculator {
 		}
 
 		/** {@link ForceNode} representing a point on a {@link MapArea} */
-		public static class ForceNodeOnArea extends ForceNode {
+		public class ForceNodeOnArea extends ForceNode {
 
 			private final MapArea area;
 			private final VectorXZ pos;
 
 			public ForceNodeOnArea(MapArea area, VectorXZ pos) {
+				
 				this.area = area;
 				this.pos = pos;
+				
+				//use average of the area's outline node inclines as start value
+				double average = 0;
+				for (MapNode node : area.getBoundaryNodes()) {
+					average += nodeMap.get(node).getCurrentEle()
+						/ area.getBoundaryNodes().size();
+				}
+				
+				setCurrentEle(average);
+				
 			}
 
 			@Override
@@ -783,25 +817,25 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			public void writeResult() {
 				area.getElevationProfile().addPointWithEle(pos.xyz(currentEle));
 			}
-
+			
 		}
-
-		public static class ForceNodeOnTerrainPoint extends ForceNode {
+		
+		public class ForceNodeOnTerrainPoint extends ForceNode {
 			
 			private final TerrainPoint point;
-
+			
 			public ForceNodeOnTerrainPoint(TerrainPoint point) {
 				this.point = point;
 				if (point.getEle() != null) {
 					this.currentEle = point.getEle();
 				}
 			}
-
+			
 			@Override
 			public VectorXZ getPos() {
 				return point.getPos();
 			}
-
+			
 			@Override
 			public void writeResult() {
 				point.setEle(currentEle);
