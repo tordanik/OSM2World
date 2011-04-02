@@ -37,13 +37,15 @@ public final class ValueStringParser {
 
 				try {
 
+					boolean negative = stringBeforePoint.startsWith("-");
+					
 					float beforePoint = Integer.parseInt(stringBeforePoint);
 					float afterPoint = Integer.parseInt(stringAfterPoint);
 
-					double result = Math.signum(beforePoint) *
-					(Math.abs(beforePoint)
-							+ Math.pow(10, -stringAfterPoint.length()) * afterPoint);
-
+					double result = Math.abs(beforePoint)
+							+ Math.pow(10, -stringAfterPoint.length()) * afterPoint;
+					if (negative) { result = - result; }
+					
 					if (result >= 0 || allowNegative) {
 						return (float)result;
 					}
