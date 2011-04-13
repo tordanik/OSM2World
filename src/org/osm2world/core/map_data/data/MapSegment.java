@@ -28,6 +28,16 @@ public class MapSegment {
 		return endNode;
 	}
 	
+	public MapNode getOtherNode(MapNode node) {
+		if (node == startNode) {
+			return endNode;
+		} else if (node == endNode) {
+			return startNode;
+		} else {
+			throw new IllegalArgumentException("not a node of this segment");
+		}
+	}
+	
 	public List<MapNode> getStartEndNodes() {
 		return ImmutableList.of(startNode, endNode);
 	}

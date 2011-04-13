@@ -31,13 +31,17 @@ public class NodeElevationProfile extends ElevationProfile {
 		}
 		return pointWithEle;
 	}
+		
+	public double getEle() {
+		if (pointWithEle == null) {
+			throw new IllegalStateException("elevations have not been calculated yet");
+		}
+		return pointWithEle.y;
+	}
 	
 	@Override
 	public double getEleAt(VectorXZ pos) {
-		if (pointWithEle == null) {
-			throw new IllegalStateException("elevations have not been calculated yet");
-		}		
-		return pointWithEle.y;
+		return getEle();
 	}
 
 	public void setEle(double ele) {
@@ -48,7 +52,7 @@ public class NodeElevationProfile extends ElevationProfile {
 	public double getMaxEle() {
 		if (pointWithEle == null) {
 			throw new IllegalStateException("elevations have not been calculated yet");
-		}		
+		}
 		return pointWithEle.y;
 	}
 	
@@ -56,7 +60,7 @@ public class NodeElevationProfile extends ElevationProfile {
 	public double getMinEle() {
 		if (pointWithEle == null) {
 			throw new IllegalStateException("elevations have not been calculated yet");
-		}		
+		}
 		return pointWithEle.y;
 	}
 	

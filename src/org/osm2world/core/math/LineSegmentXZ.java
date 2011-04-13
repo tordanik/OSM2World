@@ -38,4 +38,11 @@ public class LineSegmentXZ {
 				segmentP1, segmentP2, p1, p2);
 	}
 
+	/**
+	 * returns the distance between this segment's two end nodes
+	 */
+	public double getLength() {
+		return VectorXZ.distance(p1, p2);
+	}
+
 }
