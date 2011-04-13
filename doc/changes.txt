@@ -5,6 +5,7 @@
  
  * support for dragging files into the viewer
  * addition of some missing library files
+ * Mac OS X support in start script
  
  
 --------------------------------------------------------------------------------
