@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import javax.swing.UIManager;
 
+import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
@@ -22,21 +23,35 @@ public class OSM2World {
 
 	public static void main(String[] unparsedArgs) {
 		
+		ProgramMode programMode;
 		CLIArguments args = null;
 		
-		try {
-			args = CliFactory.parseArguments(CLIArguments.class, unparsedArgs);
-		} catch (ArgumentValidationException e) {
-			System.err.println(e.getMessage());
-			System.exit(1);
+		if (unparsedArgs.length > 0) {
+			
+			try {
+				args = CliFactory.parseArguments(CLIArguments.class, unparsedArgs);
+			} catch (ArgumentValidationException e) {
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+			
+			if (!CLIArgumentsUtil.isValid(args)) {
+				System.err.println(CLIArgumentsUtil.getErrorString(args));
+				System.exit(1);
+			}
+			
+			programMode = CLIArgumentsUtil.getProgramMode(args);
+			
+		} else {
+		 
+			System.out.println("No parameters, running graphical interface.\n"
+					+ "If you want to use the command line, use the --help"
+					+ " parameter for a list of available parameters.");
+			programMode = ProgramMode.GUI;
+			
 		}
 		
-		if (!CLIArgumentsUtil.isValid(args)) {
-			System.err.println(CLIArgumentsUtil.getErrorString(args));
-			System.exit(1);
-		}
-				
-		switch (CLIArgumentsUtil.getProgramMode(args)) {
+		switch (programMode) {
 		
 		case HELP:
 			//parser.printHelp();
