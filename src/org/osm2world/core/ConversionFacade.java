@@ -15,6 +15,7 @@ import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
@@ -141,6 +142,18 @@ public class ConversionFacade {
 		
 	}
 	
+	private ElevationCalculator elevationCalculator =
+		new ForceElevationCalculator();
+	
+	/**
+	 * sets the {@link ElevationCalculator} that is used during subsequent calls
+	 * to {@link #createRepresentations(OSMData, List, Configuration, List)}
+	 */
+	public void setElevationCalculator(
+			ElevationCalculator elevationCalculator) {
+		this.elevationCalculator = elevationCalculator;
+	}
+	
 	/**
 	 * performs all necessary steps to go from
 	 * an OSM file to the renderable {@link WorldObject}s.
@@ -238,7 +251,7 @@ public class ConversionFacade {
 		
 		CellularTerrainElevation eleData = createEleData(mapData);
 		
-		new ForceElevationCalculator().calculateElevations(mapData, eleData);
+		elevationCalculator.calculateElevations(mapData, eleData);
 		
 		/* create terrain */
 		updatePhase(Phase.TERRAIN);

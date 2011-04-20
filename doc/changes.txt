@@ -1,11 +1,12 @@
 
 --------------------------------------------------------------------------------
- OSM2World 0.1.4                                                     2011-??-?? 
+ OSM2World 0.1.4                                                     2011-04-20 
 --------------------------------------------------------------------------------
  
  * support for dragging files into the viewer
  * addition of some missing library files
  * Mac OS X support in start script
+ * alternative ElevationCalculators available for library users 
  
  
 --------------------------------------------------------------------------------
