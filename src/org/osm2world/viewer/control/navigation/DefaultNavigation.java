@@ -32,7 +32,7 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 		this.viewerFrame = viewerFrame;
 		this.renderOptions = renderOptions;
 		
-		Timer timer = new Timer("KeyboardNavigation"); 
+		Timer timer = new Timer("KeyboardNavigation");
 		timer.scheduleAtFixedRate(KEYBOARD_TASK, 0, 20);
 		
 	}
@@ -126,18 +126,22 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 
-		Camera c = renderOptions.camera;
+		zoom(e.getWheelRotation() < 0, 1);
 
+	}
+
+	private void zoom(boolean zoomIn, double scale) {
+		Camera c = renderOptions.camera;
+		
 		if (c != null) {
 
 			VectorXYZ toLookAt = c.getLookAt().subtract(c.getPos());
-			VectorXYZ move = toLookAt.mult(e.getWheelRotation() < 0 ? 0.2f : -0.25f);
+			VectorXYZ move = toLookAt.mult(scale * (zoomIn ? 0.2f : -0.25f));
 			VectorXYZ newPos = c.getPos().add(move);
 
 			c.setPos(newPos);
 
 		}
-
 	}
 	
 	private final TimerTask KEYBOARD_TASK = new TimerTask() {
@@ -177,7 +181,13 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 							break;
 						case KeyEvent.VK_LEFT:
 							c.rotateY(-Math.PI/100);
-							break;	
+							break;
+						case KeyEvent.VK_PLUS:
+							zoom(true, 0.5);
+							break;
+						case KeyEvent.VK_MINUS:
+							zoom(false, 0.5);
+							break;
 						}
 
 					}
