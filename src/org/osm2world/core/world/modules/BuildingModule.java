@@ -52,7 +52,7 @@ public class BuildingModule extends AbstractModule {
 
 		private final MapArea area;
 		
-		private double height;		
+		private double height;
 		private Material materialWall;
 		private Material materialRoof;
 		
@@ -85,7 +85,7 @@ public class BuildingModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 
 			double roofEle = area.getElevationProfile().getMaxEle() + height;
 			
@@ -95,12 +95,28 @@ public class BuildingModule extends AbstractModule {
 			
 		}
 
-		private void renderRoof(Target target, double roofEle) {
+		private void renderFloor(Target<?> target, double floorEle) {
 			
-			Collection<TriangleXZ> triangles = 
+			Collection<TriangleXZ> triangles =
 				TriangulationUtil.triangulate(area.getPolygon());
 
-			List<TriangleXYZ> trianglesXYZ = 
+			List<TriangleXYZ> trianglesXYZ =
+				new ArrayList<TriangleXYZ>(triangles.size());
+				
+			for (TriangleXZ triangle : triangles) {
+				trianglesXYZ.add(triangle.makeClockwise().xyz(floorEle));
+			}
+				
+			target.drawTriangles(materialWall, trianglesXYZ);
+			
+		}
+		
+		private void renderRoof(Target<?> target, double roofEle) {
+			
+			Collection<TriangleXZ> triangles =
+				TriangulationUtil.triangulate(area.getPolygon());
+
+			List<TriangleXYZ> trianglesXYZ =
 				new ArrayList<TriangleXYZ>(triangles.size());
 				
 			for (TriangleXZ triangle : triangles) {
@@ -111,9 +127,23 @@ public class BuildingModule extends AbstractModule {
 			
 		}
 
-		private void renderWalls(Target target, double roofEle) {
+		private void renderWalls(Target<?> target, double roofEle) {
 			
 			double floorEle = area.getElevationProfile().getMinEle();
+			boolean renderFloor = false;
+			
+			if (area.getTags().containsKey("building:min_level")
+					&& area.getTags().containsKey("building:levels")) {
+				Float minLevel = parseOsmDecimal(
+						area.getTags().getValue("building:min_level"), true);
+				Float levels = parseOsmDecimal(
+						area.getTags().getValue("building:levels"), false);
+				if (minLevel != null && levels != null) {
+					double totalHeight = roofEle - floorEle;
+					floorEle += (totalHeight / levels) * minLevel;
+					renderFloor = true;
+				}
+			}
 			
 			if (area.getOverlaps().isEmpty()) {
 				
@@ -121,8 +151,8 @@ public class BuildingModule extends AbstractModule {
 				
 			} else {
 							
-				/* find terrain boundaries on the ground 
-				 * that overlap with the building */				
+				/* find terrain boundaries on the ground
+				 * that overlap with the building */
 				
 				List<TerrainBoundaryWorldObject> tbWorldObjects = new ArrayList<TerrainBoundaryWorldObject>();
 								
@@ -131,7 +161,7 @@ public class BuildingModule extends AbstractModule {
 					if (other.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject
 							&& other.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
 						tbWorldObjects.add((TerrainBoundaryWorldObject)
-								other.getPrimaryRepresentation());						
+								other.getPrimaryRepresentation());
 					}
 				}
 				
@@ -149,6 +179,9 @@ public class BuildingModule extends AbstractModule {
 				
 				for (PolygonWithHolesXZ p : buildingPartPolys) {
 					renderWalls(target, p, false, floorEle, roofEle);
+					if (renderFloor) {
+						renderFloor(target, floorEle);
+					}
 				}
 				
 				/* render building parts above the terrain boundaries */
@@ -164,7 +197,7 @@ public class BuildingModule extends AbstractModule {
 					
 					if (area.getHoles().isEmpty()) {
 						raisedBuildingPartPolys = polysAboveTBWOs;
-					} else {						
+					} else {
 						raisedBuildingPartPolys = new ArrayList<PolygonWithHolesXZ>();
 						for (PolygonWithHolesXZ p : polysAboveTBWOs) {
 							List<SimplePolygonXZ> subPolys = new ArrayList<SimplePolygonXZ>();
@@ -177,9 +210,12 @@ public class BuildingModule extends AbstractModule {
 					
 					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
 						double clearing = o.getClearingAbove(o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
-						renderWalls(target, p, false, 
-								area.getElevationProfile().getMaxEle() + clearing,
-								roofEle);
+						double newFloorEle = area.getElevationProfile().getMaxEle() + clearing;
+						if (newFloorEle < floorEle) {
+							newFloorEle = floorEle;
+						}
+						renderWalls(target, p, false, newFloorEle, roofEle);
+						renderFloor(target, newFloorEle);
 					}
 					
 				}
@@ -188,18 +224,18 @@ public class BuildingModule extends AbstractModule {
 				
 		}
 
-		private void renderWalls(Target target, PolygonWithHolesXZ p,
+		private void renderWalls(Target<?> target, PolygonWithHolesXZ p,
 				boolean renderFloor, double floorEle, double roofEle) {
 			
 			drawWallOnPolygon(target, floorEle, roofEle, p.getOuter().makeCounterclockwise());
 			
 			for (SimplePolygonXZ polygon : p.getHoles()) {
-				drawWallOnPolygon(target, floorEle, roofEle, polygon.makeClockwise());				
+				drawWallOnPolygon(target, floorEle, roofEle, polygon.makeClockwise());
 			}
 			
 		}
 
-		private void drawWallOnPolygon(Target target, double roofEle,
+		private void drawWallOnPolygon(Target<?> target, double roofEle,
 				double floorEle, SimplePolygonXZ polygon) {
 			
 			List<VectorXZ> vertices = polygon.getVertexLoop();
