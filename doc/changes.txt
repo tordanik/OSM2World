@@ -5,6 +5,7 @@
  
  * zoom with +/- keys
  * support for building:min_level
+ * prevent silent InvalidGeometryException crashes during conversions
  
  
 --------------------------------------------------------------------------------

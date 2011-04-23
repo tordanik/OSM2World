@@ -14,6 +14,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
@@ -75,12 +76,12 @@ public class OpenOSMAction extends AbstractAction {
 		}
 
 		//		/* alternative implementation using FileDialog */
-		//		
+		//
 		//		FileDialog dialog =
 		//            new FileDialog(viewerFrame, "Open OSM file", FileDialog.LOAD);
 		//
 		//		dialog.setVisible(true);
-		//		
+		//
 		//		return new File(dialog.getFile());
 
 	}
@@ -114,9 +115,18 @@ public class OpenOSMAction extends AbstractAction {
 						e.toString(),
 						"Could not open OSM file", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
+			} catch (InvalidGeometryException e) {
+				JOptionPane.showMessageDialog(viewerFrame,
+						"The OSM data contains broken geometry.\n"
+						+ "Make sure you are not using an extract with"
+						+ " incomplete areas!\nIf you are e.g. using Osmosis,"
+						+ " you need to use its completeWays=yes parameter.\n"
+						+ "See command line output for error details.",
+						"Could not perform conversion", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
 			}
 
-			progressDialog.dispose();			
+			progressDialog.dispose();
 			
 			viewerFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			viewerFrame.setEnabled(true);
@@ -130,25 +140,25 @@ public class OpenOSMAction extends AbstractAction {
 				progressDialog.setProgress(0);
 				progressDialog.setText("1/5: Organize information from .osm file...");
 				break;
-			case REPRESENTATION: 
+			case REPRESENTATION:
 				progressDialog.setProgress(20);
 				progressDialog.setText("2/5: Choose visual representations for OSM objects...");
 				break;
-			case ELEVATION: 
+			case ELEVATION:
 				progressDialog.setProgress(40);
 				progressDialog.setText("3/5: Guess elevations from available information...");
-				break;			
-			case TERRAIN: 
+				break;
+			case TERRAIN:
 				progressDialog.setProgress(60);
 				progressDialog.setText("4/5: Generate terrain...");
-				break;		
-			case FINISHED: 
+				break;
+			case FINISHED:
 				progressDialog.setProgress(80);
 				progressDialog.setText("5/5: Represent objects by 3D primitives...");
 				break;
 			}
 
-		}		
+		}
 
 	}
 
