@@ -39,6 +39,7 @@ public class AreaElevationProfile extends ElevationProfile {
 	 * Points are not sorted in any way. Must not be used before calculation
 	 * results have been set using {@link #addPointWithEle(VectorXYZ)}
 	 */
+	@Override
 	public Collection<VectorXYZ> getPointsWithEle() {
 		
 		if (pointsWithEle == null) {
@@ -55,9 +56,9 @@ public class AreaElevationProfile extends ElevationProfile {
 		
 //		if (triangulation == null) {
 //			calculateTriangulation();
-//		}		
+//		}
 		//TODO: calculate correctly and with better performance.
-		//Should be possible using a triangulation.		
+		//Should be possible using a triangulation.
 		
 		//temporary solution: find closest point with ele
 				
@@ -65,7 +66,7 @@ public class AreaElevationProfile extends ElevationProfile {
 			public int compare(VectorXYZ p1, VectorXYZ p2) {
 				return Double.compare(
 						p1.xz().distanceTo(pos),
-						p2.xz().distanceTo(pos));						
+						p2.xz().distanceTo(pos));
 			};
 		});
 		
@@ -94,7 +95,7 @@ public class AreaElevationProfile extends ElevationProfile {
 		}
 		double maxEle = Double.MIN_VALUE;
 		for (VectorXYZ pointWithEle : pointsWithEle) {
-			maxEle = Math.max(maxEle, pointWithEle.y);			
+			maxEle = Math.max(maxEle, pointWithEle.y);
 		}
 		return maxEle;
 	}
@@ -106,7 +107,7 @@ public class AreaElevationProfile extends ElevationProfile {
 		}
 		double minEle = Double.MAX_VALUE;
 		for (VectorXYZ pointWithEle : pointsWithEle) {
-			minEle = Math.min(minEle, pointWithEle.y);			
+			minEle = Math.min(minEle, pointWithEle.y);
 		}
 		return minEle;
 	}
@@ -115,30 +116,30 @@ public class AreaElevationProfile extends ElevationProfile {
 //	/**
 //	 * returns a triangulation of the associated area
 //	 * (the one returned by {@link #getElement()}),
-//	 * with elevation information 
+//	 * with elevation information
 //	 */
 //	public Collection<TriangleXYZ> getTriangulation() {
 //		return triangulation;
 //	}
-//	
+//
 //	/**
 //	 * calculates a triangulation of this area
 //	 * and writes the result to {@link #triangulation}
 //	 */
 //	private void calculateTriangulation() {
-//		
+//
 //		if (pointsWithEle == null) {
 //			throw new IllegalStateException("elevations have not been calculated yet");
 //		} else if (pointsWithEle.size() < 2) {
 //			throw new IllegalStateException("an area must have at least two points with elevation");
 //		}
-//		
-//		Collection<TriangleXZ> trianglesXZ = 
+//
+//		Collection<TriangleXZ> trianglesXZ =
 //			TriangulationUtil.triangulate(area.getPolygon());
-//		
-//		Collection<TriangleXYZ> trianglesXYZ = 
+//
+//		Collection<TriangleXYZ> trianglesXYZ =
 //			new ArrayList<TriangleXYZ>(trianglesXZ.size());
-//		
+//
 //		for (TriangleXZ triangleXZ : trianglesXZ) {
 //			VectorXYZ v1 = eleProfile.getWithEle(triangleXZ.v1);
 //			VectorXYZ v2 = eleProfile.getWithEle(triangleXZ.v2);
@@ -149,7 +150,7 @@ public class AreaElevationProfile extends ElevationProfile {
 //				trianglesXYZ.add(new TriangleXYZ(v1, v2, v3));
 //			}
 //		}
-//		
-//	}	
+//
+//	}
 	
 }

@@ -54,6 +54,7 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 	 * in between are ordered along the line. Must not be used before calculation
 	 * results have been set using {@link #addPointWithEle(VectorXYZ)}
 	 */
+	@Override
 	public List<VectorXYZ> getPointsWithEle() {
 		
 		if (pointsWithEle == null) {
@@ -143,7 +144,7 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 		}
 		double maxEle = Double.MIN_VALUE;
 		for (VectorXYZ pointWithEle : pointsWithEle) {
-			maxEle = Math.max(maxEle, pointWithEle.y);			
+			maxEle = Math.max(maxEle, pointWithEle.y);
 		}
 		return maxEle;
 	}
@@ -155,9 +156,9 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 		}
 		double minEle = Double.MAX_VALUE;
 		for (VectorXYZ pointWithEle : pointsWithEle) {
-			minEle = Math.min(minEle, pointWithEle.y);			
+			minEle = Math.min(minEle, pointWithEle.y);
 		}
 		return minEle;
-	}	
+	}
 	
 }

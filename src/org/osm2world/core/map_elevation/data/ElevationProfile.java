@@ -1,6 +1,7 @@
 package org.osm2world.core.map_elevation.data;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapElement;
@@ -25,6 +26,8 @@ abstract public class ElevationProfile {
 		}
 		return result;
 	}
+
+	public abstract Collection<VectorXYZ> getPointsWithEle();
 	
 	public abstract double getMinEle();
 	public abstract double getMaxEle();
