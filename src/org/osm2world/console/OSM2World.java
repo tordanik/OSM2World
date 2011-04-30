@@ -61,7 +61,7 @@ public class OSM2World {
 
 		Configuration config = new BaseConfiguration();
 		
-		if (args.isConfig()) {
+		if (args != null && args.isConfig()) {
 			try {
 				config = new PropertiesConfiguration(args.getConfig());
 			} catch (ConfigurationException e) {
