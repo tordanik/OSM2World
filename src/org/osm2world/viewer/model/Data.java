@@ -24,6 +24,10 @@ public class Data extends Observable {
 	private PrimitiveBuffer gridPrimitiveBuffer = null;
 	private PrimitiveBuffer terrainPrimitiveBuffer = null;
 	
+	public void setConfig(Configuration config) {
+		this.config = config;
+	}
+	
 	public void loadOSMFile(File osmFile, ProgressListener listener)
 	throws IOException {
 		

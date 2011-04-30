@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
 import org.osm2world.viewer.control.actions.ExportPOVRayAction;
@@ -57,13 +58,15 @@ public class ViewerFrame extends JFrame {
 	private final MessageManager messageManager;
 		
 	public ViewerFrame(final Data data, final MessageManager messageManager,
-			final RenderOptions renderOptions) {
+			final RenderOptions renderOptions, final Configuration config) {
 
 		super("OSM2World Viewer");
 
 		this.data = data;
 		this.renderOptions = renderOptions;
 		this.messageManager = messageManager;
+		
+		data.setConfig(config);
 		
 		createMenuBar();
 		

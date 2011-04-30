@@ -21,8 +21,8 @@ public class Viewer {
 			System.out.println("Error setting native look and feel: " + e);
 		}
 		
-		new ViewerFrame(new Data(), new MessageManager(), new RenderOptions())
-			.setVisible(true);
+		new ViewerFrame(new Data(), new MessageManager(), new RenderOptions(),
+				null).setVisible(true);
 		
 	}
 	

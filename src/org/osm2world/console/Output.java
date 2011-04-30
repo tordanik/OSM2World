@@ -9,10 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
@@ -31,24 +28,14 @@ public final class Output {
 
 	private Output() {}
 
-	public static void output(CLIArguments args) throws IOException {
+	public static void output(Configuration config, CLIArguments args)
+		throws IOException {
 				
 		long start = System.currentTimeMillis();
 		
 		ConversionFacade cf = new ConversionFacade();
 		PerformanceListener perfListener = new PerformanceListener(args);
 		cf.addProgressListener(perfListener);
-		
-		Configuration config = new BaseConfiguration();
-		
-		if (args.isConfig()) {
-			try {
-				config = new PropertiesConfiguration(args.getConfig());
-			} catch (ConfigurationException e) {
-				System.err.println("could not read config, ignoring it: ");
-				System.err.println(e);
-			}
-		}
 		
 		Results results =
 			cf.createRepresentations(args.getInput(), null, config, null);

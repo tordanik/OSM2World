@@ -1,9 +1,10 @@
 
 --------------------------------------------------------------------------------
- OSM2World 0.1.5                                                     2011-??-?? 
+ OSM2World 0.1.5                                                     2011-04-30 
 --------------------------------------------------------------------------------
  
  * configurable materials
+ * configuration file no longer limited to command line interface
  * zoom with +/- keys
  * support for building:min_level
  * prevent silent InvalidGeometryException crashes during conversions

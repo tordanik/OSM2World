@@ -6,6 +6,10 @@ import java.io.IOException;
 
 import javax.swing.UIManager;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.viewer.model.Data;
@@ -25,6 +29,8 @@ public class OSM2World {
 		
 		ProgramMode programMode;
 		CLIArguments args = null;
+		
+		/* parse command line arguments */
 		
 		if (unparsedArgs.length > 0) {
 			
@@ -51,6 +57,21 @@ public class OSM2World {
 			
 		}
 		
+		/* load configuration file */
+
+		Configuration config = new BaseConfiguration();
+		
+		if (args.isConfig()) {
+			try {
+				config = new PropertiesConfiguration(args.getConfig());
+			} catch (ConfigurationException e) {
+				System.err.println("could not read config, ignoring it: ");
+				System.err.println(e);
+			}
+		}
+		
+		/* run selected mode */
+		
 		switch (programMode) {
 		
 		case HELP:
@@ -70,13 +91,13 @@ public class OSM2World {
 			} catch(Exception e) {
 				System.out.println("Error setting native look and feel: " + e);
 			}
-			new ViewerFrame(new Data(), new MessageManager(), new RenderOptions())
-				.setVisible(true);
+			new ViewerFrame(new Data(), new MessageManager(),
+					new RenderOptions(), config).setVisible(true);
 			break;
 			
 		case CONVERT:
 			try {
-				Output.output(args);
+				Output.output(config, args);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
