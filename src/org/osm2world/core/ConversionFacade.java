@@ -24,6 +24,7 @@ import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.terrain.creation.TerrainCreator;
 import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.world.creation.WorldCreator;
@@ -241,6 +242,10 @@ public class ConversionFacade {
 		if (worldModules == null) {
 			worldModules = createDefaultModuleList();
 		}
+		
+		Materials.configureMaterials(config);
+			//this will cause problems if multiple conversions are run
+			//at the same time, because global variables are being modified
 		
 		WorldCreator moduleManager =
 			new WorldCreator(config, worldModules);

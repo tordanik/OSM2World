@@ -8,13 +8,13 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-import org.osm2world.core.world.modules.common.Materials;
 
 /**
  * adds generic areas with surface information to the world.
@@ -64,7 +64,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 			
-			Material material = Materials.getMaterial(surface);
+			Material material = Materials.getSurfaceMaterial(surface);
 			
 			if (material != null) {
 				target.drawTriangles(material, getTriangulation());

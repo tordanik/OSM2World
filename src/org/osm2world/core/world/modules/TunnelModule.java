@@ -2,7 +2,6 @@ package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVectorsForTriangleStripBetween;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,10 +16,9 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -110,9 +108,6 @@ public class TunnelModule extends AbstractModule {
 		
 	}
 	
-	private static final Material TUNNEL_WALL_MAT =
-		new Material(Lighting.FLAT, Color.GRAY, 0.2f, 0.5f);
-	
 	public static class Tunnel implements WaySegmentWorldObject,
 		RenderableToAllTargets {
 		
@@ -156,7 +151,7 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			List<VectorXYZ> leftOutline = primaryRep.getOutline(false);
 			List<VectorXYZ> rightOutline = primaryRep.getOutline(true);
@@ -183,9 +178,9 @@ public class TunnelModule extends AbstractModule {
 			VectorXYZ[] strip3 = createVectorsForTriangleStripBetween(
 					aboveLeftOutline, leftOutline);
 			
-			target.drawTriangleStrip(TUNNEL_WALL_MAT, strip1);
-			target.drawTriangleStrip(TUNNEL_WALL_MAT, strip2);
-			target.drawTriangleStrip(TUNNEL_WALL_MAT, strip3);
+			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip1);
+			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip2);
+			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip3);
 					
 		}
 		
@@ -293,7 +288,7 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			List<VectorXYZ> topOutline = new ArrayList<VectorXYZ>();
 			
@@ -323,7 +318,7 @@ public class TunnelModule extends AbstractModule {
 				
 				// draw wall
 				
-				target.drawTriangleStrip(TUNNEL_WALL_MAT,
+				target.drawTriangleStrip(Materials.TUNNEL_DEFAULT,
 						createVectorsForTriangleStripBetween(line, lineTop));
 				
 				//collect nodes for top outline
@@ -334,7 +329,7 @@ public class TunnelModule extends AbstractModule {
 			
 			// draw top
 			
-			target.drawPolygon(TUNNEL_WALL_MAT,
+			target.drawPolygon(Materials.TUNNEL_DEFAULT,
 					topOutline.toArray(new VectorXYZ[0]));
 			
 		}

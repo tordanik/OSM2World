@@ -3,8 +3,8 @@ package org.osm2world.core.target.primitivebuffer;
 import javax.media.opengl.GL;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**

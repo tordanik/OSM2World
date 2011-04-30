@@ -10,7 +10,7 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
-import static org.osm2world.core.world.modules.common.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.*;
 
 /**
  * adds parking spaces to the world
@@ -55,7 +55,7 @@ public class ParkingModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 			String surface = area.getTags().getValue("surface");
-			target.drawTriangles(getMaterial(surface, ASPHALT), getTriangulation());
+			target.drawTriangles(getSurfaceMaterial(surface, ASPHALT), getTriangulation());
 		}
 		
 	}

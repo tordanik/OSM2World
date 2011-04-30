@@ -16,10 +16,10 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.data.OSMElement;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.common.Materials;
 
 public class ObjTarget extends AbstractTarget<RenderableToObj> {
 

@@ -6,6 +6,7 @@ import java.util.List;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
 /**

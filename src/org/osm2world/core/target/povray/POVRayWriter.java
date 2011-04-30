@@ -9,10 +9,10 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.terrain.data.Terrain;
-import org.osm2world.core.world.modules.common.Materials;
 
 /**
  * utility class for creating a POVRay file
@@ -69,7 +69,7 @@ public final class POVRayWriter {
 			.getVertexLoop().toArray(new VectorXZ[0]);
 		target.appendPrism( -100, 1, boundary);
 		target.append("\n");
-		target.appendMaterial(Materials.EMPTY_GROUND);
+		target.appendMaterial(Materials.TERRAIN_DEFAULT);
 		target.append("\n}\n\n");
 		
 		target.append("\n\n//\n//Grid\n//\n\n");

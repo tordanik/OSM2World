@@ -20,10 +20,12 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.terrain.creation.CAGUtil;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -265,12 +267,13 @@ public class BuildingModule extends AbstractModule {
 			
 			double defaultHeight = 10;
 			double defaultHeightPerLevel = 2.5;
-			Material defaultMaterialWall = new Material(Lighting.FLAT, new Color(1f, 0.9f, 0.55f));
-			Material defaultMaterialRoof = new Material(Lighting.FLAT, new Color(0.8f, 0, 0));
+			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
+			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
 			
 			if ("greenhouse".equals(buildingValue)) {
 				defaultHeight = 2.5;
-				defaultMaterialWall = new Material(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+				defaultMaterialWall = new ImmutableMaterial(Lighting.FLAT,
+						new Color(0.9f, 0.9f, 0.9f));
 				defaultMaterialRoof = defaultMaterialWall;
 			}
 			

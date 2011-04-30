@@ -1,10 +1,9 @@
 package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.world.modules.common.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +19,9 @@ import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -39,8 +37,6 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  * adds roads to the world
  */
 public class RoadModule extends ConfigurableWorldModule {
-
-	public static final Material MARKING_MAT = new Material(Lighting.FLAT, new Color(1f, 1f, 1f));
 	
 	@Override
 	public void applyTo(MapData grid) {
@@ -228,12 +224,12 @@ public class RoadModule extends ConfigurableWorldModule {
 					end.add(cutVector.mult(halfEndWidth)));
 
 			/** lines across road */
-			target.drawTriangleStrip(MARKING_MAT,
+			target.drawTriangleStrip(Materials.ROAD_MARKING,
 					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
 					startLines1.add(cutVector.mult(halfStartLines1Width)),
 					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
 					endLines1.add(cutVector.mult(halfEndLines1Width)));
-			target.drawTriangleStrip(MARKING_MAT,
+			target.drawTriangleStrip(Materials.ROAD_MARKING,
 					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
 					startLines2.add(cutVector.mult(halfStartLines2Width)),
 					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
@@ -413,7 +409,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				VectorXYZ upVector = new VectorXYZ(
 						0, Math.abs(frontCenter.y - backCenter.y), 0);
 				
-				target.drawBox(new Material(Lighting.FLAT, Color.DARK_GRAY),
+				target.drawBox(Materials.STEPS_DEFAULT,
 						frontLowerCenter.add(halfLeftVector),
 						fullRightVector,
 						upVector,
@@ -432,7 +428,7 @@ public class RoadModule extends ConfigurableWorldModule {
 							getOutline(false), getOutline(true));
 				
 				String surface = tags.getValue("surface");
-				target.drawTriangleStrip(getMaterial(surface, ASPHALT), vs);
+				target.drawTriangleStrip(getSurfaceMaterial(surface, ASPHALT), vs);
 				
 						
 			} else {
@@ -477,7 +473,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			String surface = area.getTags().getValue("surface");
-			target.drawTriangles(getMaterial(surface, ASPHALT), getTriangulation());
+			target.drawTriangles(getSurfaceMaterial(surface, ASPHALT), getTriangulation());
 		}
 		
 		@Override

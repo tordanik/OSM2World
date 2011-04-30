@@ -7,8 +7,8 @@ import java.util.List;
 import javax.media.opengl.GL;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 import com.sun.opengl.util.BufferUtil;
@@ -76,9 +76,9 @@ public class JOGL_VBOPrimitiveBufferRenderer {
 		
 			//TODO introduce materials as in JOGLPrimitiveBufferRenderer
 			
-			gl.glColor3f(material.color.getRed()/255f,
-					material.color.getGreen()/255f,
-					material.color.getBlue()/255f);
+			gl.glColor3f(material.getColor().getRed()/255f,
+					material.getColor().getGreen()/255f,
+					material.getColor().getBlue()/255f);
 			
 			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 				

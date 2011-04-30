@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
+import org.osm2world.core.target.common.material.Material;
 
 /**
  * Storage for low-level rendering information (vertex and primitive data)

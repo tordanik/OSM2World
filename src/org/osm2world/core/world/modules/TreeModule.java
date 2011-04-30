@@ -2,7 +2,6 @@ package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.piercesWorldObject;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -17,10 +16,9 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -28,7 +26,6 @@ import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-import org.osm2world.core.world.modules.common.Materials;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
 import com.sun.opengl.util.texture.Texture;
@@ -118,22 +115,20 @@ public class TreeModule extends AbstractModule {
 		public double getClearingBelow(VectorXZ pos) {
 			return 0;
 		}
-
-		private static final Material TREE_COLUMN_MAT = new Material(Lighting.SMOOTH, new Color(0, 0.5f, 0));
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			VectorXYZ posXYZ = element.getElevationProfile().getWithEle(pos);
 
 			double stemRatio = isConiferous()?0.3:0.5;
 			double radius = height*RADIUS_PER_HEIGHT;
 			
-			target.drawColumn(Materials.WOOD,
+			target.drawColumn(Materials.TREE_TRUNK,
 					null, posXYZ, height*stemRatio,
 					radius / 4, radius / 5, false, true);
 			
-			target.drawColumn(TREE_COLUMN_MAT,
+			target.drawColumn(Materials.TREE_CROWN,
 					null, posXYZ.y(posXYZ.y+height*stemRatio),
 					height*(1-stemRatio),
 					radius,
@@ -240,7 +235,7 @@ public class TreeModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			for (Tree tree : trees) {
 				tree.renderTo(target);
 			}
@@ -330,7 +325,7 @@ public class TreeModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			if (trees == null) {
 				createTrees(config.getDouble("treesPerSquareMeter", 0.001f));
 					//lower default density than POVRay for performance reasons

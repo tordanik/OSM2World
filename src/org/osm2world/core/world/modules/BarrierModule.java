@@ -1,13 +1,12 @@
 package org.osm2world.core.world.modules;
 
-import java.awt.Color;
 import static java.util.Collections.nCopies;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapElement;
@@ -17,10 +16,10 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -62,14 +61,14 @@ public class BarrierModule extends AbstractModule {
 		
 	}
 	
-	private static abstract class LinearBarrier 
+	private static abstract class LinearBarrier
 		extends AbstractNetworkWaySegmentWorldObject
 		implements WaySegmentWorldObject, RenderableToAllTargets {
 				
 		protected final float height;
 		protected final float width;
 		
-		public LinearBarrier(MapWaySegment waySegment, 
+		public LinearBarrier(MapWaySegment waySegment,
 				float defaultHeight, float defaultWidth) {
 			
 			super(waySegment);
@@ -130,7 +129,7 @@ public class BarrierModule extends AbstractModule {
 		}
 				
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			//TODO: join ways back together to reduce the number of caps
 			
@@ -141,7 +140,7 @@ public class BarrierModule extends AbstractModule {
 				new VectorXYZ(+width/2, 0, 0)
 			};
 			
-			List<VectorXYZ> path = 
+			List<VectorXYZ> path =
 				line.getElevationProfile().getPointsWithEle();
 			
 			List<VectorXYZ[]> strips = createShapeExtrusionAlong(wallShape,
@@ -169,61 +168,61 @@ public class BarrierModule extends AbstractModule {
 		
 	}
 	
-	private static class Wall extends ColoredWall {		
+	private static class Wall extends ColoredWall {
 		public static boolean fits(TagGroup tags) {
 			return "wall".equals(tags.getValue("barrier"));
-		}		
+		}
 		public Wall(MapWaySegment segment) {
-			super(new Material(Lighting.FLAT, Color.GRAY), segment, 1f, 0.25f);
+			super(Materials.WALL_DEFAULT, segment, 1f, 0.25f);
 		}
 	}
 	
-	private static class CityWall extends ColoredWall {		
+	private static class CityWall extends ColoredWall {
 		public static boolean fits(TagGroup tags) {
 			return "city_wall".equals(tags.getValue("barrier"));
-		}		
+		}
 		public CityWall(MapWaySegment segment) {
-			super(new Material(Lighting.FLAT, Color.GRAY), segment, 10, 2);
-		}		
+			super(Materials.WALL_DEFAULT, segment, 10, 2);
+		}
 	}
 	
 	private static class Hedge extends ColoredWall {
 		public static boolean fits(TagGroup tags) {
 			return "hedge".equals(tags.getValue("barrier"));
-		}		
+		}
 		public Hedge(MapWaySegment segment) {
-			super(new Material(Lighting.FLAT, new Color(0,0.5f,0)), segment, 1f, 0.5f);
+			super(Materials.HEDGE, segment, 1f, 0.5f);
 		}
 	}
 	
-	private static class Fence extends LinearBarrier {	
+	private static class Fence extends LinearBarrier {
 		
 		public static boolean fits(TagGroup tags) {
 			return "fence".equals(tags.getValue("barrier"));
 		}
 		
-		private static final Map<String, Color> COLOR_MAP;
+		private static final Map<String, Material> MATERIAL_MAP;
 		static {
-			COLOR_MAP = new HashMap<String, Color>();
-			COLOR_MAP.put("split_rail", new Color(0.3f, 0.2f, 0.2f));
+			MATERIAL_MAP = new HashMap<String, Material>();
+			MATERIAL_MAP.put("split_rail", Materials.SPLIT_RAIL_FENCE);
 		}
 		
-		private Color color = new Color(0.3f, 0.2f, 0.2f); //this is the default color
+		private final Material material;
 		
 		public Fence(MapWaySegment segment, TagGroup tags) {
 			super(segment, 0.5f, 0.1f);
 			
-			Color colorFromMap = COLOR_MAP.get(tags.getValue("fence_type"));
-			if (colorFromMap != null) {
-				color = colorFromMap;
+			Material materialFromMap = MATERIAL_MAP.get(tags.getValue("fence_type"));
+			if (materialFromMap != null) {
+				material = materialFromMap;
+			} else {
+				material = Materials.FENCE_DEFAULT;
 			}
 			
 		}
 		
 		@Override
-		public void renderTo(Target util) {
-			
-			Material material = new Material(Lighting.FLAT, color);
+		public void renderTo(Target<?> util) {
 			
 			/* render bars */
 			
@@ -249,7 +248,7 @@ public class BarrierModule extends AbstractModule {
 			
 			/* render poles */
 			
-			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(1f, false, 
+			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(1f, false,
 					line.getStartNode().getPos(), line.getEndNode().getPos());
 			
 			for (VectorXZ polePosition : polePositions) {
@@ -269,7 +268,7 @@ public class BarrierModule extends AbstractModule {
 
 		public static boolean fits(TagGroup tags) {
 			return "bollard".equals(tags.getValue("barrier"));
-		}		
+		}
 		
 		private final MapNode node;
 		private final float height;
@@ -304,9 +303,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target util) {
+		public void renderTo(Target<?> util) {
 			VectorXYZ pos = node.getElevationProfile().getPointWithEle();
-			util.drawColumn(new Material(Lighting.FLAT, Color.LIGHT_GRAY),
+			util.drawColumn(Materials.BOLLARD_DEFAULT,
 					null, pos, height, 0.15f, 0.15f, false, true);
 		}
 		

@@ -1,6 +1,6 @@
 package org.osm2world.core.target.povray;
 
-import static org.osm2world.core.world.modules.common.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.*;
 
 import java.awt.Color;
 import java.io.PrintStream;
@@ -12,8 +12,8 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.material.Material;
 
 public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	
@@ -384,7 +384,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 	private static Map<Material, String> DEFINED_MATERIALS = new HashMap<Material, String>();
 	static {
-		DEFINED_MATERIALS.put(EMPTY_GROUND, "empty_ground");
+		DEFINED_MATERIALS.put(TERRAIN_DEFAULT, "empty_ground");
 		DEFINED_MATERIALS.put(ASPHALT, "asphalt");
 		DEFINED_MATERIALS.put(WATER, "water");
 	}
@@ -397,10 +397,10 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			
 //			append("  texture { ");
 			append("    pigment { ");
-			appendRGBColor(material.color);
+			appendRGBColor(material.getColor());
 			append("    }\n  finish {\n");
-			append("      ambient " + material.ambientFactor + "\n");
-			append("      diffuse " + material.diffuseFactor + "\n");
+			append("      ambient " + material.getAmbientFactor() + "\n");
+			append("      diffuse " + material.getDiffuseFactor() + "\n");
 			append("    }\n");
 //			append("  }\n");
 			

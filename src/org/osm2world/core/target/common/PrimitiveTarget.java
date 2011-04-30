@@ -11,9 +11,9 @@ import java.util.List;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Lighting;
 
 /**
  * superclass for targets that are based on OpenGL primitives.
@@ -38,14 +38,14 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	
 	@Override
 	public void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs) {
-		boolean smooth = (material.lighting == Lighting.SMOOTH);
+		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
 		drawPrimitive(TRIANGLE_STRIP, material, vs,
 				calculateTriangleStripNormals(vs, smooth));
 	}
 
 	@Override
 	public void drawTriangleFan(Material material, List<? extends VectorXYZ> vs) {
-		boolean smooth = (material.lighting == Lighting.SMOOTH);
+		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
 		drawPrimitive(TRIANGLE_FAN, material, vs,
 				calculateTriangleFanNormals(vs, smooth));
 	}
@@ -56,7 +56,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	}
 
 	public void drawPolygon(Material material, List<? extends VectorXYZ> vs) {
-		boolean smooth = (material.lighting == Lighting.SMOOTH);
+		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
 		drawPrimitive(CONVEX_POLYGON, material, vs,
 				calculateTriangleFanNormals(vs, smooth));
 	}
@@ -73,7 +73,8 @@ public abstract class PrimitiveTarget<R extends Renderable>
 		}
 		
 		drawPrimitive(TRIANGLES, material, vectors,
-				calculateTriangleNormals(vectors, material.lighting == Lighting.SMOOTH));
+				calculateTriangleNormals(vectors,
+						material.getLighting() == Lighting.SMOOTH));
 		
 	}
 	

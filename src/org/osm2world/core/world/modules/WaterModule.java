@@ -2,8 +2,8 @@ package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
 import static java.util.Collections.nCopies;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.util.Predicates.hasType;
-import static org.osm2world.core.world.modules.common.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.HashMap;
@@ -23,13 +23,13 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.modules.common.Materials;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
@@ -181,15 +181,15 @@ public class WaterModule extends ConfigurableWorldModule {
 				
 				/* render ground */
 				
-				util.drawTriangleStrip(EMPTY_GROUND, createVectorsForTriangleStripBetween(
+				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						leftOutline, leftWaterBorder));
-				util.drawTriangleStrip(EMPTY_GROUND, createVectorsForTriangleStripBetween(
+				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						leftWaterBorder, leftGround));
-				util.drawTriangleStrip(EMPTY_GROUND, createVectorsForTriangleStripBetween(
+				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						leftGround, rightGround));
-				util.drawTriangleStrip(EMPTY_GROUND, createVectorsForTriangleStripBetween(
+				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						rightGround, rightWaterBorder));
-				util.drawTriangleStrip(EMPTY_GROUND, createVectorsForTriangleStripBetween(
+				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						rightWaterBorder, rightOutline));
 	
 				

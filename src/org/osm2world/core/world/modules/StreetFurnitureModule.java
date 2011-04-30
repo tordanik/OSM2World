@@ -8,9 +8,9 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-import org.osm2world.core.world.modules.common.Materials;
 
 /**
  * adds various types of street furniture to the world

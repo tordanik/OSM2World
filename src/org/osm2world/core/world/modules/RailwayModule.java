@@ -3,7 +3,6 @@ package org.osm2world.core.world.modules;
 import static com.google.common.collect.Iterables.any;
 import static org.osm2world.core.util.Predicates.hasType;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,10 +14,9 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Material;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.Material.Lighting;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -119,14 +117,14 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 
 			/* draw ground */
 			
 			VectorXYZ[] groundVs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
 					getOutline(false), getOutline(true));
 			
-			target.drawTriangleStrip(new Material(Lighting.FLAT, Color.DARK_GRAY), groundVs);
+			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, groundVs);
 			
 			
 			/* draw rails */
@@ -150,7 +148,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 					Collections.nCopies(railLine.size(), VectorXYZ.Y_UNIT));
 					
 				for (VectorXYZ[] stripVector : stripVectors) {
-					target.drawTriangleStrip(new Material(Lighting.FLAT, Color.LIGHT_GRAY), stripVector);
+					target.drawTriangleStrip(Materials.RAIL_DEFAULT, stripVector);
 				}
 			
 			}
@@ -174,7 +172,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 				VectorXYZ sleeperFrontLowerLeft =
 					sleeperCenter.add(frontLowerLeftOffset);
 				
-				target.drawBox(new Material(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f)),
+				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
 						sleeperFrontLowerLeft,
 						sleeperRight, SLEEPER_UP, sleeperBack);
 				
@@ -228,7 +226,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target util) {
+		public void renderTo(Target<?> util) {
 			
 			if (getJunctionArea() == null) return;
 			
@@ -237,7 +235,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vectorList = getJunctionArea().getVertexLoop();
 			VectorXYZ[] vectors = vectorList.toArray(new VectorXYZ[vectorList.size()]);
 
-			util.drawPolygon(new Material(Lighting.FLAT, Color.DARK_GRAY), vectors);
+			util.drawPolygon(Materials.RAIL_BALLAST_DEFAULT, vectors);
 
 			/* draw connection between each pair of rails */
 

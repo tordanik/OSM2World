@@ -5,9 +5,9 @@ import java.awt.Color;
 import javax.media.opengl.GL;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Material;
-import org.osm2world.core.target.Material.Lighting;
 import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
@@ -28,7 +28,7 @@ public class TerrainNormalsDebugView extends DebugView {
 		
 		for (Material material : terrainPrimitiveBuffer.getMaterials()) {
 					
-			Color color = material.lighting == Lighting.FLAT ?
+			Color color = material.getLighting() == Lighting.FLAT ?
 					FLAT_NORMALS_COLOR : SMOOTH_NORMALS_COLOR;
 			
 			for (Primitive primitive : terrainPrimitiveBuffer.getPrimitives(material)) {

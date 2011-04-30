@@ -3,6 +3,7 @@
  OSM2World 0.1.5                                                     2011-??-?? 
 --------------------------------------------------------------------------------
  
+ * configurable materials
  * zoom with +/- keys
  * support for building:min_level
  * prevent silent InvalidGeometryException crashes during conversions
