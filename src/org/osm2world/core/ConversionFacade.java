@@ -177,14 +177,31 @@ public class ConversionFacade {
 			throw new IllegalArgumentException("osmFile must not be null");
 		}
 		
-		OSMData osmData;
+		OSMData osmData = null;
+		boolean useJOSMHack = false;
 		
-		try {
-			osmData = new OsmosisReader(osmFile).getData();
-		} catch (IOException e) {
+		if (JOSMFileHack.isJOSMGenerated(osmFile)) {
+			useJOSMHack = true;
+		} else {
 			
-			System.out.println("could not read file," +
-					" trying workaround for files created by JOSM");
+			/* try to read file using Osmosis */
+			
+			try {
+				osmData = new OsmosisReader(osmFile).getData();
+			} catch (IOException e) {
+				
+				System.out.println("could not read file," +
+						" trying workaround for files created by JOSM");
+				
+				useJOSMHack = true;
+							
+			}
+			
+		}
+		
+		/* create a temporary "cleaned up" file as workaround for JOSM files */
+		
+		if (useJOSMHack) {
 			
 			File tempFile;
 			try {
@@ -193,6 +210,7 @@ public class ConversionFacade {
 				throw new IOException("could not create temporary" +
 						" modified copy of the file");
 			}
+			
 			osmData = new OsmosisReader(tempFile).getData();
 			
 		}
