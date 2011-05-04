@@ -45,7 +45,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		
 		for (MapArea area : mapData.getMapAreas()) {
 			
-			if (!area.getRepresentations().isEmpty()) return;
+			if (!area.getRepresentations().isEmpty()) continue;
 			
 			String buildingValue = area.getTags().getValue("building");
 			
