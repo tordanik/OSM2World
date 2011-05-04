@@ -10,7 +10,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -28,27 +30,44 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.terrain.creation.CAGUtil;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
-import org.osm2world.core.world.modules.common.AbstractModule;
+import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
+import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
 /**
  * adds buildings to the world
  */
-public class BuildingModule extends AbstractModule {
-
+public class BuildingModule extends ConfigurableWorldModule {
+	
 	@Override
-	protected void applyToArea(MapArea area) {
+	public void applyTo(MapData mapData) {
 		
-		if (!area.getRepresentations().isEmpty()) return;
-		
-		String buildingValue = area.getTags().getValue("building");
-
-		if (buildingValue != null && !buildingValue.equals("no")) {
-			area.addRepresentation(new Building(area));
+		for (MapArea area : mapData.getMapAreas()) {
+			
+			if (!area.getRepresentations().isEmpty()) return;
+			
+			String buildingValue = area.getTags().getValue("building");
+			
+			if (buildingValue != null && !buildingValue.equals("no")) {
+				
+				Building building = new Building(area);
+				area.addRepresentation(building);
+				
+				for (MapNode node : area.getBoundaryNodes()) {
+					if (node.getTags().contains("building", "entrance")
+							&& node.getRepresentations().isEmpty()) {
+						node.addRepresentation(
+								new BuildingEntrance(building, node));
+					}
+				}
+				
+			}
+			
 		}
 		
 	}
-
+	
 	private static class Building implements AreaWorldObject,
 			RenderableToAllTargets {
 
@@ -292,6 +311,86 @@ public class BuildingModule extends AbstractModule {
 						
 		}
 
+	}
+	
+	private static class BuildingEntrance implements NodeWorldObject,
+		RenderableToAllTargets {
+		
+		private final Building building;
+		private final MapNode node;
+		
+		public BuildingEntrance(Building building, MapNode node) {
+			this.building = building;
+			this.node = node;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			/* calculate a vector that points into the building */
+			
+			VectorXZ intoBuilding = VectorXZ.Z_UNIT;
+			
+			for (SimplePolygonXZ polygon :
+				building.area.getPolygon().getPolygons()) {
+				
+				final List<VectorXZ> vs = polygon.getVertexLoop();
+				int entranceI = vs.indexOf(node.getPos());
+				
+				if (entranceI != -1) {
+					
+					VectorXZ posBefore = vs.get((entranceI - 1) % vs.size());
+					VectorXZ posAfter = vs.get((entranceI + 1) % vs.size());
+					
+					intoBuilding = posAfter.subtract(posBefore).rightNormal();
+					if (polygon.isClockwise()) {
+						intoBuilding = intoBuilding.invert();
+					}
+					
+					break;
+					
+				}
+				
+			}
+			
+			/* use height and width */
+			
+			float height = WorldModuleParseUtil.parseHeight(node.getTags(), 2);
+			float width = WorldModuleParseUtil.parseWidth(node.getTags(), 1);
+			
+			VectorXYZ right = intoBuilding.rightNormal().mult(width).xyz(0);
+			VectorXYZ up = VectorXYZ.Y_UNIT.mult(height);
+			
+			/* draw the entrance as a box protruding from the building */
+			
+			VectorXYZ center = node.getElevationProfile().getPointWithEle();
+			
+			target.drawBox(Materials.ENTRANCE_DEFAULT,
+					center.subtract(right.mult(0.5)),
+					right, up, intoBuilding.xyz(0).mult(0.1));
+			
+		}
+		
 	}
 
 }
