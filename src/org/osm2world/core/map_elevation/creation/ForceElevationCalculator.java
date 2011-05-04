@@ -20,9 +20,11 @@ import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -691,9 +693,41 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				
 				this.node = node;
 				
+				Float ele = null;
+				
 				if (node.getTags().containsKey("ele")) {
-					Float ele = ValueStringParser.parseOsmDecimal(
+					
+					ele = ValueStringParser.parseOsmDecimal(
 							node.getTags().getValue("ele"), true);
+					
+				}
+				
+				if (ele == null) {
+					
+					/* use elevation information from nodes or areas containing
+					 * this node. If they have contradicting information, the
+					 * results will be unpredictable.
+					 */
+					
+					for (MapSegment segment : node.getConnectedSegments()) {
+						
+						TagGroup tags;
+						if (segment instanceof MapWaySegment) {
+							tags = ((MapWaySegment) segment).getTags();
+						} else {
+							tags = ((MapAreaSegment) segment).getArea().getTags();
+						}
+						
+						if (tags.containsKey("ele")) {
+							ele = ValueStringParser.parseOsmDecimal(
+									tags.getValue("ele"), true);
+						}
+						
+					}
+					
+				}
+				
+				if (ele != null) {
 					setCurrentEle(ele);
 				}
 				
