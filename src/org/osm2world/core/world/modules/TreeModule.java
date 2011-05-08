@@ -4,6 +4,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.pi
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
@@ -13,9 +14,11 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
@@ -69,7 +72,8 @@ public class TreeModule extends AbstractModule {
 	}
 
 	private static class Tree
-		implements NodeWorldObject, RenderableToAllTargets, RenderableToPOVRay {
+		implements NodeWorldObject, IntersectionTestObject,
+		RenderableToAllTargets, RenderableToPOVRay {
 
 		private static final float DEFAULT_HEIGHT = 10;
 		private static final float RADIUS_PER_HEIGHT = 0.2f;
@@ -114,6 +118,11 @@ public class TreeModule extends AbstractModule {
 		@Override
 		public double getClearingBelow(VectorXZ pos) {
 			return 0;
+		}
+		
+		@Override
+		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+			return new AxisAlignedBoundingBoxXZ(Collections.singleton(pos));
 		}
 		
 		@Override

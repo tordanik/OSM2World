@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -20,7 +19,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -262,7 +261,8 @@ public class BarrierModule extends AbstractModule {
 		
 	}
 	
-	private static class Bollard implements NodeWorldObject, RenderableToAllTargets {
+	private static class Bollard extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
 
 		private static final float DEFAULT_HEIGHT = 1;
 
@@ -270,21 +270,14 @@ public class BarrierModule extends AbstractModule {
 			return "bollard".equals(tags.getValue("barrier"));
 		}
 		
-		private final MapNode node;
 		private final float height;
 		
 		public Bollard(MapNode node, TagGroup tags) {
 			
-			this.node = node;
-
+			super(node);
+			
 			height = parseHeight(tags, DEFAULT_HEIGHT);
-			
-			
-		}
-
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
+						
 		}
 
 		@Override

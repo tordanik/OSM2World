@@ -9,7 +9,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -24,13 +24,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 	}
 	
-	private static final class Flagpole implements NodeWorldObject,
-			RenderableToAllTargets {
-		
-		private final MapNode node;
+	private static final class Flagpole extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
 		
 		public Flagpole(MapNode node) {
-			this.node = node;
+			super(node);
 		}
 		
 		@Override
@@ -54,7 +52,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			target.drawColumn(Materials.STEEL, null,
 					node.getElevationProfile().getWithEle(node.getPos()),

@@ -2,6 +2,7 @@
  OSM2World 0.1.6                                                     2011-05-?? 
 --------------------------------------------------------------------------------
  
+ * unconnected WorldObjects influence terrain triangulation
  * new WorldObject: building entrance
  * always use JOSM workaround for .osm files with generator='JOSM'
  * use ele tags on ways and areas for elevation calculation

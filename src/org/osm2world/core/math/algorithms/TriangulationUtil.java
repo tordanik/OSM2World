@@ -49,7 +49,7 @@ public class TriangulationUtil {
 		
 		try {
 			
-			return JTSTriangulationUtil.triangulate(outerPolygon, holes);
+			return JTSTriangulationUtil.triangulate(outerPolygon, holes, points);
 			
 		} catch (ConstraintEnforcementException e2) {
 			

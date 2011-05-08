@@ -4,21 +4,20 @@ import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_elevation.data.ElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
@@ -28,8 +27,11 @@ import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.terrain.data.TerrainPatch;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.data.WorldObject;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 import com.vividsolutions.jts.geom.TopologyException;
 
 /**
@@ -40,20 +42,19 @@ public class TerrainCreator {
 
 	public Terrain createTerrain(MapData grid, CellularTerrainElevation eleData) {
 
-		/* find the terrain boundaries for each cell and
+		/* find the terrain boundaries and ele info for each cell and
 		 * those cells that are completely within a terrain boundary
 		 * (and will not be drawn) */
 		
-		Map<TerrainElevationCell, List<TerrainBoundaryWorldObject>> terrainBoundaryMap
-			= new HashMap<TerrainElevationCell, List<TerrainBoundaryWorldObject>>();
+		Multimap<TerrainElevationCell, TerrainBoundaryWorldObject>
+			terrainBoundaryMap = HashMultimap.create();
+		
+		Multimap<TerrainElevationCell, VectorXYZ>
+			unconnectedEleMap = HashMultimap.create();
 
 		Set<TerrainElevationCell> ignoredCells
 			= new HashSet<TerrainElevationCell>();
 		
-		for (TerrainElevationCell cell : eleData.getCells()) {
-			terrainBoundaryMap.put(cell, new ArrayList<TerrainBoundaryWorldObject>(0));
-		}
-
 		// perform intersection tests for pairs of a cell and a boundary
 		// that are in the same cell of the intersection grid
 
@@ -63,46 +64,65 @@ public class TerrainCreator {
 
 			Iterable<TerrainElevationCell> terrainCells =
 				Iterables.filter(intersectionCell, TerrainElevationCell.class);
-			Iterable<TerrainBoundaryWorldObject> boundaries =
-				Iterables.filter(intersectionCell, TerrainBoundaryWorldObject.class);
-
+			Iterable<WorldObject> worldObjects =
+				Iterables.filter(intersectionCell, WorldObject.class);
+			
 			for (TerrainElevationCell terrainCell : terrainCells) {
-			for (TerrainBoundaryWorldObject terrainBoundary : boundaries) {
-
-				if (terrainBoundaryMap.get(terrainCell).contains(terrainBoundary)) {
-					continue;
-				} // elements can be in more than 1 cell together,
-				  // so the intersection might have been handled before
-
-				SimplePolygonXZ cellPolyXZ = terrainCell.getPolygonXZ();
-				PolygonXYZ outlinePolygon = terrainBoundary.getOutlinePolygon();
-
-				if (outlinePolygon.getXZPolygon().isSimple()) {
-
-					SimplePolygonXZ outlinePolygonXZ = outlinePolygon.getSimpleXZPolygon();
-
-					if (cellPolyXZ.contains(outlinePolygonXZ)
-							|| cellPolyXZ.intersects(outlinePolygonXZ)) {
-
-						terrainBoundaryMap.get(terrainCell).add(terrainBoundary);
-
-					} else if (outlinePolygonXZ.contains(cellPolyXZ)) {
-
-						ignoredCells.add(terrainCell);
-
+			for (WorldObject worldObject : worldObjects) {
+				
+				if (worldObject instanceof TerrainBoundaryWorldObject) {
+					
+					TerrainBoundaryWorldObject terrainBoundary =
+						(TerrainBoundaryWorldObject)worldObject;
+					
+					if (terrainBoundaryMap.containsEntry(
+							terrainCell, terrainBoundary)) {
+						continue;
+					} // elements can be in more than 1 cell together,
+					  // so the intersection might have been handled before
+					
+					SimplePolygonXZ cellPolyXZ = terrainCell.getPolygonXZ();
+					PolygonXYZ outlinePolygon = terrainBoundary.getOutlinePolygon();
+					
+					if (outlinePolygon.getXZPolygon().isSimple()) {
+						
+						SimplePolygonXZ outlinePolygonXZ = outlinePolygon.getSimpleXZPolygon();
+						
+						if (cellPolyXZ.contains(outlinePolygonXZ)
+								|| cellPolyXZ.intersects(outlinePolygonXZ)) {
+							
+							terrainBoundaryMap.put(terrainCell, terrainBoundary);
+							
+						} else if (outlinePolygonXZ.contains(cellPolyXZ)) {
+							
+							ignoredCells.add(terrainCell);
+							
+						}
+						
 					}
-
+					
+				} else {
+					
+					// no boundary, but ele data can be relevant
+					
+					ElevationProfile eleProfile = worldObject
+							.getPrimaryMapElement().getElevationProfile();
+					
+					unconnectedEleMap.putAll(terrainCell,
+							eleProfile.getPointsWithEle());
+					
 				}
-
+				
 			}
 			}
-
+			
 		}
 						
 		/* create terrain patches and terrain */
 		
 		Collection<TerrainPatch> patches = generateTerrainPatches(
-				eleData.getCells(), terrainBoundaryMap, ignoredCells);
+				eleData.getCells(), terrainBoundaryMap,
+				unconnectedEleMap, ignoredCells);
 				
 		finishTerrainPatches(patches);
 				
@@ -114,36 +134,39 @@ public class TerrainCreator {
 	 * creates an IntersectionGrid with all terrain cells and boundaries
 	 */
 	private IntersectionGrid prepareSpeedupGrid(
-			MapData grid, CellularTerrainElevation eleData) {
+			MapData mapData, CellularTerrainElevation eleData) {
 		
 		final IntersectionGrid speedupGrid = new IntersectionGrid(
-				grid.getBoundary().pad(20),
+				mapData.getBoundary().pad(20),
 				50, 50); //TODO (performance): choose appropriate cell size params
-
+		
 		for (TerrainElevationCell cell : eleData.getCells()) {
 			speedupGrid.insert(cell);
 		}
 		
-		/* add all TerrainBoundaryWorldObjects to the speedupGrid */
+		/* add all IntersectionTestObjects to the speedupGrid */
 		
-		iterate(grid.getWorldObjects(TerrainBoundaryWorldObject.class),
-			new Operation<TerrainBoundaryWorldObject>() {
-				@Override public void perform(TerrainBoundaryWorldObject boundary) {
+		iterate(mapData.getWorldObjects(IntersectionTestObject.class),
+			new Operation<IntersectionTestObject>() {
+				@Override public void perform(IntersectionTestObject object) {
 					
-					if (boundary.getGroundState() == GroundState.ON
-							&& boundary.getOutlinePolygon() != null) {
-						speedupGrid.insert(boundary);
+					if (((WorldObject)object).getGroundState()
+							== GroundState.ON) {
+						
+						speedupGrid.insert(object);
+						
 					}
 					
 				}
 			});
-				
+		
 		return speedupGrid;
 	}
 
 	private static Collection<TerrainPatch> generateTerrainPatches(
 			Iterable<? extends TerrainElevationCell> terrainCells,
-			Map<TerrainElevationCell, List<TerrainBoundaryWorldObject>> terrainBoundaryMap,
+			Multimap<TerrainElevationCell, TerrainBoundaryWorldObject> terrainBoundaryMap,
+			Multimap<TerrainElevationCell, VectorXYZ> unconnectedEleMap,
 			Set<TerrainElevationCell> ignoredCells) {
 		
 		Collection<TerrainPatch> patches = new ArrayList<TerrainPatch>();
@@ -152,19 +175,23 @@ public class TerrainCreator {
 			
 			if (ignoredCells.contains(cell)) continue; //TODO: only correct until inner polys of mulitpolys etc. are used!
 			
-			List<TerrainBoundaryWorldObject> terrainBoundarys =
+			Collection<TerrainBoundaryWorldObject> terrainBoundarys =
 				terrainBoundaryMap.get(cell);
 			
+			Collection<VectorXYZ> unconnectedEles =
+				unconnectedEleMap.get(cell);
+						
 			// handle the common "empty cell" special case
 			// in a more efficient way
 			
-			if (terrainBoundarys.isEmpty()) {
+			if (terrainBoundarys.isEmpty() && unconnectedEles.isEmpty()) {
 				
 				patches.add(new EmptyCellTerrainPatch(cell));
 				
 			} else {
 				
-				addPatchesForCell(patches, cell, terrainBoundarys);
+				addPatchesForCell(patches, cell,
+						terrainBoundarys, unconnectedEles);
 			
 			}
 		
@@ -181,7 +208,8 @@ public class TerrainCreator {
 	 */
 	private static void addPatchesForCell(Collection<TerrainPatch> patches,
 			TerrainElevationCell cell,
-			List<TerrainBoundaryWorldObject> terrainBoundarys) {
+			Collection<TerrainBoundaryWorldObject> terrainBoundarys,
+			Collection<VectorXYZ> unconnectedEles) {
 		
 		PolygonXYZ cellPoly = cell.getPolygonXYZ();
 		SimplePolygonXZ cellPolyXZ = cell.getPolygonXZ();
@@ -202,6 +230,14 @@ public class TerrainCreator {
 								
 		}
 		
+		Collection<VectorXZ> elePoints = new ArrayList<VectorXZ>();
+		
+		for (VectorXYZ v : unconnectedEles) {
+			VectorXZ vXZ = v.xz();
+			elePoints.add(vXZ);
+			eleStorage.addVector(vXZ, v);
+		}
+		
 		eleStorage.addPolygon(cellPolyXZ, cellPoly);
 									
 		/* subtract terrain borders from the cell polygon */
@@ -212,15 +248,22 @@ public class TerrainCreator {
 				CAGUtil.subtractPolygons(
 						cellPoly.getSimpleXZPolygon(),
 						subtractPolysXZ);
-					
+			
 			/* create terrain patches */
 			
 			for (PolygonWithHolesXZ remainingPolygon : remainingPolygons) {
-							patches.add(new GenericTerrainPatch(
-						remainingPolygon,
-						Collections.<VectorXZ>emptyList(),
-						eleStorage));
-							
+								
+				Collection<VectorXZ> points = new ArrayList<VectorXZ>();
+				
+				for (VectorXZ elePoint : elePoints) {
+					if (remainingPolygon.contains(elePoint)) {
+						points.add(elePoint);
+					}
+				}
+				
+				patches.add(new GenericTerrainPatch(
+					remainingPolygon, points, eleStorage));
+				
 			}
 			
 		} catch (InvalidGeometryException e) {
