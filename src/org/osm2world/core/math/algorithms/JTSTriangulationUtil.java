@@ -1,8 +1,7 @@
 package org.osm2world.core.math.algorithms;
 
-import static org.osm2world.core.math.JTSConversionUtil.GF;
-import static org.osm2world.core.math.JTSConversionUtil.polygonXZToJTSPolygon;
-import static org.osm2world.core.math.JTSConversionUtil.polygonsXZFromJTSGeometry;
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.JTSConversionUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,11 +10,15 @@ import java.util.List;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXZ;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 
 /**
@@ -29,19 +32,27 @@ final class JTSTriangulationUtil {
 	private JTSTriangulationUtil() { }
 	
 	/**
-	 * triangulates a two-dimensional polygon
-	 * by creating a simple polygon first
-	 * (integrating holes into the polygon outline),
-	 * then using Ear Clipping on that simple polygon
-	 * 
-	 * @param simplify  if true, the polygon will be modified in a way
-	 *                  that improves the robustness of the algorithm,
-	 *                  but does not preserve the original shape entirely.
-	 *                  This should be used if a first attempt to triangulate failed.
+	 * triangulation of a polygon with holes, based on a
+	 * conforming delaunay triangulation
 	 */
 	public static final List<TriangleXZ> triangulate(
 			SimplePolygonXZ polygon,
 			Collection<SimplePolygonXZ> holes) {
+		
+		List<VectorXZ> points = emptyList();
+		return triangulate(polygon, holes, points);
+		
+	}
+	
+	/**
+	 * variant of {@link #triangulate(SimplePolygonXZ, Collection)}
+	 * that accepts some unconnected points within the polygon area
+	 * and will try to create triangle vertices at these points.
+	 */
+	public static final List<TriangleXZ> triangulate(
+			SimplePolygonXZ polygon,
+			Collection<SimplePolygonXZ> holes,
+			Collection<VectorXZ> points) {
 			
 		ConformingDelaunayTriangulationBuilder triangulationBuilder =
 			new ConformingDelaunayTriangulationBuilder();
@@ -52,10 +63,16 @@ final class JTSTriangulationUtil {
 			polys.add(polygonXZToJTSPolygon(hole));
 		}
 		
-		ArrayList<Point> points = new ArrayList<Point>();
+		ArrayList<Point> jtsPoints = new ArrayList<Point>();
+		for (VectorXZ p : points) {
+			CoordinateSequence coordinateSequence =
+				new CoordinateArraySequence(new Coordinate[] {
+						vectorXZToJTSCoordinate(p)});
+			jtsPoints.add(new Point(coordinateSequence, GF));
+		}
 		
 		triangulationBuilder.setSites(
-				new GeometryCollection(points.toArray(EMPTY_GEOM_ARRAY), GF));
+				new GeometryCollection(jtsPoints.toArray(EMPTY_GEOM_ARRAY), GF));
 		triangulationBuilder.setConstraints(
 				new GeometryCollection(polys.toArray(EMPTY_GEOM_ARRAY), GF));
 		triangulationBuilder.setTolerance(0.01);
@@ -82,8 +99,8 @@ final class JTSTriangulationUtil {
 				}
 			}
 			
-			if (!triangleInHole && 
-					polygon.contains(triangleAsPolygon.getOuter().getCenter())) { //TODO: create single method for this query within PolygonWithHoles
+			if (!triangleInHole && polygon.contains(
+					triangleAsPolygon.getOuter().getCenter())) { //TODO: create single method for this query within PolygonWithHoles
 				
 				triangles.add(triangleAsPolygon.asTriangleXZ());
 				

@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.terrain.creation.TemporaryElevationStorage;
 
@@ -17,40 +18,41 @@ import org.osm2world.core.terrain.creation.TemporaryElevationStorage;
  */
 public class GenericTerrainPatch extends TerrainPatch {
 	
-	private final SimplePolygonXZ outerPolygon;
-	private final Collection<SimplePolygonXZ> holes;
+	private final PolygonWithHolesXZ polygon;
+	private final Collection<VectorXZ> points;
 	private final TemporaryElevationStorage eleStorage;
 	
-	public GenericTerrainPatch(SimplePolygonXZ outerPoly,
-			Collection<SimplePolygonXZ> holes,
+	public GenericTerrainPatch(PolygonWithHolesXZ polygon,
+			Collection<VectorXZ> points,
 			TemporaryElevationStorage eleStorage) {
 		
-		this.outerPolygon = outerPoly;
-		this.holes = holes;
+		this.polygon = polygon;
+		this.points = points;
 		this.eleStorage = eleStorage;
 		
 	}
 	
-	public SimplePolygonXZ getOuterPolygon() {
-		return outerPolygon;
+	public PolygonWithHolesXZ getPolygon() {
+		return polygon;
 	}
-
-	public Collection<SimplePolygonXZ> getHoles() {
-		return holes;
+	
+	public Collection<VectorXZ> getPoints() {
+		return points;
 	}
-		
+	
 	@Override
 	public void build() {
-
+		
 		if (triangulation != null) {
-			throw new IllegalStateException("this patch has already been triangulated");
+			throw new IllegalStateException(
+					"this patch has already been triangulated");
 		}
 		
 		/* perform triangulation */
 		
-		List<TriangleXZ> trianglesXZ = 
-			TriangulationUtil.triangulate(outerPolygon, holes);
-					
+		List<TriangleXZ> trianglesXZ =
+			TriangulationUtil.triangulate(polygon, points);
+		
 		/* write triangulation, restoring the third (y) dimension */
 		
 		triangulation = new ArrayList<TriangleXYZ>(trianglesXZ.size());
@@ -59,7 +61,7 @@ public class GenericTerrainPatch extends TerrainPatch {
 			TriangleXZ ccwTriangle = triangleXZ.makeCounterclockwise();
 			triangulation.add(eleStorage.restoreElevationForTriangle(ccwTriangle));
 		}
-				
-	}
 		
+	}
+	
 }

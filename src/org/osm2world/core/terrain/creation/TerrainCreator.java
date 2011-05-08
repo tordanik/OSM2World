@@ -1,15 +1,15 @@
 package org.osm2world.core.terrain.creation;
 
+import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-
-import static org.osm2world.core.util.FaultTolerantIterationUtil.*;
 
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
@@ -19,12 +19,14 @@ import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.terrain.data.EmptyCellTerrainPatch;
 import org.osm2world.core.terrain.data.GenericTerrainPatch;
 import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.terrain.data.TerrainPatch;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 
 import com.google.common.collect.Iterables;
@@ -59,7 +61,7 @@ public class TerrainCreator {
 
 		for (Collection<IntersectionTestObject> intersectionCell : speedupGrid.getCells()) {
 
-			Iterable<TerrainElevationCell> terrainCells = 
+			Iterable<TerrainElevationCell> terrainCells =
 				Iterables.filter(intersectionCell, TerrainElevationCell.class);
 			Iterable<TerrainBoundaryWorldObject> boundaries =
 				Iterables.filter(intersectionCell, TerrainBoundaryWorldObject.class);
@@ -108,7 +110,7 @@ public class TerrainCreator {
 		
 	}
 
-	/** 
+	/**
 	 * creates an IntersectionGrid with all terrain cells and boundaries
 	 */
 	private IntersectionGrid prepareSpeedupGrid(
@@ -194,7 +196,7 @@ public class TerrainCreator {
 			PolygonXYZ tbPolygon = tb.getOutlinePolygon();
 			SimplePolygonXZ tbPolygonXZ = tbPolygon.getSimpleXZPolygon();
 			
-			subtractPolysXZ.add(tbPolygonXZ);				
+			subtractPolysXZ.add(tbPolygonXZ);
 			
 			eleStorage.addPolygon(tbPolygonXZ, tbPolygon);
 								
@@ -206,7 +208,7 @@ public class TerrainCreator {
 
 		try {
 			
-			Collection<PolygonWithHolesXZ> remainingPolygons = 
+			Collection<PolygonWithHolesXZ> remainingPolygons =
 				CAGUtil.subtractPolygons(
 						cellPoly.getSimpleXZPolygon(),
 						subtractPolysXZ);
@@ -215,8 +217,8 @@ public class TerrainCreator {
 			
 			for (PolygonWithHolesXZ remainingPolygon : remainingPolygons) {
 							patches.add(new GenericTerrainPatch(
-						remainingPolygon.getOuter(),
-						remainingPolygon.getHoles(),
+						remainingPolygon,
+						Collections.<VectorXZ>emptyList(),
 						eleStorage));
 							
 			}
@@ -235,7 +237,7 @@ public class TerrainCreator {
 		
 		iterate(patches, new Operation<TerrainPatch>() {
 			@Override public void perform(TerrainPatch patch) {
-				patch.build();	
+				patch.build();
 			}
 		});
 		

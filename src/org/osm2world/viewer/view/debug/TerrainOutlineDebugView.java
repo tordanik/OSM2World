@@ -19,6 +19,7 @@ import org.osm2world.core.terrain.data.TerrainPatch;
 public class TerrainOutlineDebugView extends DebugView {
 
 	private static final Color OUTLINE_COLOR = Color.GREEN;
+	private static final Color POINT_COLOR = Color.YELLOW;
 	
 	@Override
 	public String getDescription() {
@@ -34,13 +35,18 @@ public class TerrainOutlineDebugView extends DebugView {
 			if (patch instanceof GenericTerrainPatch) {
 				GenericTerrainPatch p = (GenericTerrainPatch) patch;
 				
-				List<VectorXZ> outline =
-					new ArrayList<VectorXZ>(p.getOuterPolygon().getVertexLoop());
+				List<VectorXZ> outline = new ArrayList<VectorXZ>(
+							p.getPolygon().getOuter().getVertexLoop());
 				
-				EarClippingTriangulationUtil.insertHolesInPolygonOutline(outline, p.getHoles());
+				EarClippingTriangulationUtil.insertHolesInPolygonOutline(
+						outline, p.getPolygon().getHoles());
 				
 				target.drawLineStrip(OUTLINE_COLOR, VectorXZ.listXYZ(outline, 0));
-					
+				
+				for (VectorXZ point : p.getPoints()) {
+					drawBoxAround(target, point, POINT_COLOR, 0.5f);
+				}
+				
 			}
 		}
 		
