@@ -8,6 +8,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.AreaElevationProfile;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -103,15 +104,24 @@ public class MapArea implements MapElement {
 		
 		if (polygon == null) {
 			
-			SimplePolygonXZ outerPolygon = polygonFromGridNodeSequence(nodes);
-			
-			List<SimplePolygonXZ> holePolygons =
-				new ArrayList<SimplePolygonXZ>(holes.size());
-			for (List<MapNode> hole : holes) {
-				holePolygons.add(polygonFromGridNodeSequence(hole));
+			try {
+				
+				SimplePolygonXZ outerPolygon =
+					polygonFromGridNodeSequence(nodes);
+						
+				List<SimplePolygonXZ> holePolygons =
+					new ArrayList<SimplePolygonXZ>(holes.size());
+				for (List<MapNode> hole : holes) {
+					holePolygons.add(polygonFromGridNodeSequence(hole));
+				}
+				
+				polygon = new PolygonWithHolesXZ(outerPolygon, holePolygons);
+				
+			} catch (InvalidGeometryException e) {
+				throw new InvalidGeometryException(
+						"outer polygon is not simple for this object: "
+						+ objectWithTags, e);
 			}
-			
-			polygon = new PolygonWithHolesXZ(outerPolygon, holePolygons);
 			
 		}
 		
