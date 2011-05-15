@@ -8,7 +8,7 @@ public class TerrainPoint {
 	private final VectorXZ pos;
 	private Float ele;
 	
-	public TerrainPoint(VectorXZ pos, float ele) {
+	public TerrainPoint(VectorXZ pos, Float ele) {
 		this.pos = pos;
 		this.ele = ele;
 	}

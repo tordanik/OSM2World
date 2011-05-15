@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -57,6 +58,35 @@ public abstract class AbstractCellularTerrainElevation implements
 		}
 		
 		return new PolygonXYZ(vertices);
+		
+	}
+
+	@Override
+	public PolygonXZ getBoundaryPolygonXZ() {
+		
+		List<VectorXZ> vertices = new ArrayList<VectorXZ>();
+		
+		// first row
+		for (int x = 0; x < numPointsX; x++) {
+			vertices.add(vectorXZForPointAt(x, 0));
+		}
+
+		// last column
+		for (int z = 1; z < numPointsZ - 1; z++) {
+			vertices.add(vectorXZForPointAt(numPointsX - 1, z));
+		}
+
+		// last row
+		for (int x = numPointsX - 1; x >= 0; x--) {
+			vertices.add(vectorXZForPointAt(x, numPointsZ - 1));
+		}
+
+		// first column
+		for (int z = numPointsZ - 2; z >= 0 /* [0][0] will be added again*/; z--) {
+			vertices.add(vectorXZForPointAt(0, z));
+		}
+		
+		return new PolygonXZ(vertices);
 		
 	}
 

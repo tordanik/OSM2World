@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------------
- OSM2World 0.1.6                                                     2011-05-15 
+ OSM2World 0.1.6                                                     2011-05-16 
 --------------------------------------------------------------------------------
  
+ * fewer visual artifacts when scenes mix known and unknown ele
  * unconnected WorldObjects influence terrain triangulation
  * new WorldObject: building entrance
  * always use JOSM workaround for .osm files with generator='JOSM'

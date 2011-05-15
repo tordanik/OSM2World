@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.heightmap.creation.FlatTerrainElevation;
+import org.osm2world.core.heightmap.creation.EmptyTerrainElevationGrid;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
@@ -308,7 +308,7 @@ public class ConversionFacade {
 		int numPointsX = Math.max(2, (int) (terrainBoundary.sizeX() / 30));
 		int numPointsZ = Math.max(2, (int) (terrainBoundary.sizeZ() / 30));
 				
-		CellularTerrainElevation eleData = new FlatTerrainElevation(
+		CellularTerrainElevation eleData = new EmptyTerrainElevationGrid(
 				terrainBoundary,
 				numPointsX, numPointsZ); //TODO: change to distance between points
 		

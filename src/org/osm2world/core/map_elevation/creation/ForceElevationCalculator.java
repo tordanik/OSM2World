@@ -1,5 +1,6 @@
 package org.osm2world.core.map_elevation.creation;
 
+import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 
 import java.util.ArrayList;
@@ -35,10 +36,20 @@ import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.IntersectionGrid;
+import org.osm2world.core.math.datastructures.IntersectionTestObject;
+import org.osm2world.core.util.MinUtil;
 import org.osm2world.core.world.data.WorldObject;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 
 public class ForceElevationCalculator implements ElevationCalculator {
 
@@ -335,6 +346,8 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			
 			//FIXME: will be added each time if called multiple times!
 			
+			initializeElevations();
+			
 			/* perform calculations */
 			
 			for (int step=0; step < getCalculationSteps(); step++) {
@@ -360,14 +373,13 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				/* sort nodes by distance from line start node */
 				
 				//TODO: partial duplicate to LineElevationProfile method
-				//TODO: (performance) "distance[Squared]" method instead of subtract().length[Squared]()
 				Collections.sort(lineFNodes, new Comparator<ForceNode>() {
 					final VectorXZ start = line.getStartNode().getPos();
 					@Override
 					public int compare(ForceNode n1, ForceNode n2) {
-						return Double.compare(n1.getPos().subtract(start)
-								.lengthSquared(), n2.getPos().subtract(start)
-								.lengthSquared());
+						return Double.compare(
+								VectorXZ.distanceSquared(n1.getPos(), start),
+								VectorXZ.distanceSquared(n2.getPos(), start));
 					}
 				});
 				
@@ -438,7 +450,53 @@ public class ForceElevationCalculator implements ElevationCalculator {
 		 * </ul>
 		 */
 		private void addNeighborshipForces() {
-
+			
+			/* create IntersectionGrid for answering
+			 * "nodes in this cell" queries faster */
+			
+			final IntersectionGrid speedupGrid = new IntersectionGrid(
+					new AxisAlignedBoundingBoxXZ(
+							eleData.getBoundaryPolygonXZ().getVertices()).pad(20),
+							50, 50); //TODO (performance): choose appropriate cell size params
+			
+			for (TerrainElevationCell cell : eleData.getCells()) {
+				speedupGrid.insert(cell);
+			}
+			
+			//add nodes based on ways and areas
+			for (Map<? extends MapElement, List<ForceNode>> map
+					: asList(lineMap, areaMap)) {
+				for (MapElement segment : map.keySet()) {
+					
+					if (segment.getPrimaryRepresentation() != null &&
+							segment.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
+						
+						for (ForceNode fNode : map.get(segment)) {
+							speedupGrid.insert(fNode);
+						}
+						
+					}
+					
+				}
+			}
+			
+			//add nodes that have their own representations
+			for (MapNode node : nodeMap.keySet()) {
+				
+				if (node.getPrimaryRepresentation() != null
+						&& node.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
+					
+					ForceNode fNode = nodeMap.get(node);
+					
+					speedupGrid.insert(fNode);
+					
+				}
+				
+			}
+			
+			/* end of IntersectionGrid creation;
+			 * begin creating the forces */
+			
 			for (TerrainElevationCell cell : eleData.getCells()) {
 				
 				/* forces between TerrainPoints:
@@ -454,87 +512,139 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				
 				//TODO: right column and bottom row of cells need special treatment
 				
-
+				
 				/* forces within grid cells */
 				
-				/* TODO: find a way to create less forces and still ensure adequate connectedness
-				/* (the current full connections create very stiff patches of heavily interlinked nodes) */
+				Set<ForceNode> forceNodesInCell = new HashSet<ForceNode>();
 				
-//				{
-//
-//					AxisAlignedBoundingBoxXZ bbox = cell.getAxisAlignedBoundingBoxXZ();
-//
-//					/* collect force nodes from the cell */
-//
-//					//TODO (performance) avoid full iterations, use QuadTree (or something similar) instead
-//
-//					Set<ForceNode> forceNodesInCell = new HashSet<ForceNode>();
-//
-//					for (MapWaySegment segment : lineMap.keySet()) {
-//
-//						if (segment.getPrimaryRepresentation() != null &&
-//								segment.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
-//
-//							for (ForceNode fNode : lineMap.get(segment)) {
-//								if (bbox.contains(fNode.getPos())) {
-//									forceNodesInCell.add(fNode);
-//								}
-//							}
-//
-//						}
-//
-//					}
-//
-//					for (MapNode node : nodeMap.keySet()) {
-//
-//						if (node.getPrimaryRepresentation() != null
-//								&& node.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
-//
-//							ForceNode fNode = nodeMap.get(node);
-//
-//							if (bbox.contains(fNode.getPos())) {
-//								forceNodesInCell.add(fNode);
-//							}
-//
-//						}
-//
-//					}
-//
-//					//TODO: nodes from area outlines
-//
-//					/* add forces between the nodes within the cell and the cell corners */
-//
-//					for (final ForceNode fNode : forceNodesInCell) {
-//
-//						TerrainPoint closestTerrainPoint = MinUtil.min(
-//								cell.getTerrainPoints(),
-//								new Function<TerrainPoint, Double>() {
-//									@Override public Double apply(TerrainPoint p) {
-//										return VectorXZ.distance(fNode.getPos(), p.getPos());
-//									}
-//								});
-//
-//						forces.add(new NeighborshipForce(fNode,
-//								terrainPointMap.get(closestTerrainPoint)));
-//
-//					}
-						
-					/* add forces between nodes within the cell */
+				Iterable<IntersectionTestObject> potentialNodes =
+					Iterables.concat(speedupGrid.cellsFor(cell));
+				
+				for (IntersectionTestObject potentialNode : potentialNodes) {
+					if (potentialNode instanceof ForceNode) {
+						ForceNode node = (ForceNode) potentialNode;
+						if (cell.getPolygonXZ().contains(node.getPos())) {
+							forceNodesInCell.add(node);
+						}
+					}
+				}
+				
+				/* add forces between the nodes within the cell and the cell corners */
+				
+				for (final ForceNode fNode : forceNodesInCell) {
 					
-	//				for (int i = 0; i < forceNodesInCell.size(); i++) {
-	//					for (int j = i+1; j < forceNodesInCell.size(); j++) {
-	//
-	//						forces.add(new NeighborshipForce(
-	//								forceNodesInCell.get(i),
-	//								forceNodesInCell.get(j)));
-	//
-	//					}
-	//				}
+					TerrainPoint closestTerrainPoint = MinUtil.min(
+							cell.getTerrainPoints(),
+							new Function<TerrainPoint, Double>() {
+								@Override public Double apply(TerrainPoint p) {
+									return VectorXZ.distance(fNode.getPos(), p.getPos());
+								}
+							});
 					
-//				}
+					forces.add(new NeighborshipForce(fNode,
+							terrainPointMap.get(closestTerrainPoint)));
 					
+				}
+				
+				/* add forces between nodes within the cell */
+				
+				//				for (int i = 0; i < forceNodesInCell.size(); i++) {
+				//					for (int j = i+1; j < forceNodesInCell.size(); j++) {
+				//
+				//						forces.add(new NeighborshipForce(
+				//								forceNodesInCell.get(i),
+				//								forceNodesInCell.get(j)));
+				//
+				//					}
+				//				}
+				
 			}
+			
+		}
 		
+		/**
+		 * sets elevations for nodes with unknown (null) elevations.
+		 * To do this, elevations are derived from nodes with known elevations
+		 * that are connected via connection forces or neighborship forces.
+		 */
+		private void initializeElevations() {
+			
+			/* identify connections as a peparation */
+			
+			Multimap<ForceNode, ForceNode> connectedNodes =
+				HashMultimap.create(forceNodes.size(), 6);
+			
+			for (Force force : forces) {
+				if (force instanceof ConnectionForce) {
+					
+					ConnectionForce c = (ConnectionForce)force;
+					
+					connectedNodes.put(c.node1, c.node2);
+					connectedNodes.put(c.node2, c.node1);
+					
+				}
+			}
+			
+			/* initially, gather all nodes with known elevations */
+			
+			Set<ForceNode> nodesWithRecentEle = new HashSet<ForceNode>();
+			
+			for (ForceNode fNode : forceNodes) {
+				if (fNode.getCurrentEle() != null) {
+					nodesWithRecentEle.add(fNode);
+				}
+			}
+			
+			/* propagate elevations along connections to immediate neighbors
+			 * and from/to terrain cell boundaries.
+			 * Average is used if a node with unknown ele has multiple
+			 * immediate neighbors with known ele. */
+			
+			while (!nodesWithRecentEle.isEmpty()) {
+				
+				Multimap<ForceNode, Float> suggestedEles =
+					ArrayListMultimap.create();
+				
+				for (ForceNode fNode : nodesWithRecentEle) {
+					for (ForceNode connectedNode : connectedNodes.get(fNode)) {
+						
+						if (connectedNode.getCurrentEle() == null) {
+							
+							suggestedEles.put(
+									connectedNode, fNode.getCurrentEle());
+							
+						}
+						
+					}
+				}
+				
+				nodesWithRecentEle = new HashSet<ForceNode>();
+				
+				for (ForceNode fNode : suggestedEles.keys()) {
+					
+					float eleSum = 0;
+					
+					for (float suggestedEle : suggestedEles.get(fNode)) {
+						eleSum += suggestedEle;
+					}
+					
+					fNode.setCurrentEle(eleSum /
+							suggestedEles.get(fNode).size());
+					
+					nodesWithRecentEle.add(fNode);
+					
+				}
+				
+			}
+			
+			/* use 0 for everything that is still unknown */
+			
+			for (ForceNode fNode : forceNodes) {
+				if (fNode.getCurrentEle() == null) {
+					fNode.setCurrentEle(0);
+				}
+			}
+			
 		}
 		
 		protected final float forceScaleForStep(int step) {
@@ -625,9 +735,9 @@ public class ForceElevationCalculator implements ElevationCalculator {
 		 * Can be based on a {@link MapNode}, but also on points within a
 		 * {@link MapWaySegment} or {@link MapArea}.
 		 */
-		protected static abstract class ForceNode {
+		protected static abstract class ForceNode implements IntersectionTestObject {
 
-			protected float currentEle;
+			protected Float currentEle = null;
 
 			/**
 			 * returns the x-z-position of this node
@@ -639,7 +749,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			 * returns the current elevation that has resulted from
 			 * force application so far.
 			 */
-			public float getCurrentEle() {
+			public Float getCurrentEle() {
 				return currentEle;
 			}
 
@@ -656,7 +766,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			 * @param up  amount of upwards movement (negative values move downwards)
 			 */
 			public void changeCurrentEle(double up) {
-				currentEle += up;
+				currentEle += (float)up;
 			}
 			
 			/**
@@ -667,6 +777,13 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				this.currentEle = (float)currentEle;
 			}
 
+			@Override
+			public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+				return new AxisAlignedBoundingBoxXZ(
+						getPos().x, getPos().z,
+						getPos().x, getPos().z);
+			}
+			
 			/** writes the current elevation information back to the grid */
 			public abstract void writeResult();
 
@@ -802,9 +919,17 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				this.line = line;
 				this.pos = pos;
 				
-				setCurrentEle(interpolateElevation(pos,
-						nodeMap.get(line.getStartNode()).getCurrentXYZ(),
-						nodeMap.get(line.getEndNode()).getCurrentXYZ()).y);
+				ForceNodeOnNode startEleNode = nodeMap.get(line.getStartNode());
+				ForceNodeOnNode endEleNode = nodeMap.get(line.getEndNode());
+				
+				if (startEleNode.getCurrentEle() != null
+						&& endEleNode.getCurrentEle() != null) {
+					
+					setCurrentEle(interpolateElevation(pos,
+							startEleNode.getCurrentXYZ(),
+							endEleNode.getCurrentXYZ()).y);
+					
+				}
 				
 			}
 
@@ -830,16 +955,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				
 				this.area = area;
 				this.pos = pos;
-				
-				//use average of the area's outline node inclines as start value
-				double average = 0;
-				for (MapNode node : area.getBoundaryNodes()) {
-					average += nodeMap.get(node).getCurrentEle()
-						/ area.getBoundaryNodes().size();
-				}
-				
-				setCurrentEle(average);
-				
+								
 			}
 
 			@Override
@@ -1152,7 +1268,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 							
 				float heightDiff = Math.abs(node1.getCurrentEle() - node2.getCurrentEle());
 				effect = heightDiff * distanceFactor * forceScale;
-				effect *= 0.8f;
+				effect *= 0.4f;
 				
 				if (node1.getCurrentEle() > node2.getCurrentEle()) {
 					effect = -effect;

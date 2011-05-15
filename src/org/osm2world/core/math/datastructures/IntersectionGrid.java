@@ -19,7 +19,7 @@ public class IntersectionGrid {
 	private final AxisAlignedBoundingBoxXZ gridBounds;
 	private Collection<IntersectionTestObject>[][] cells;
 	
-	private final int cellCountX, cellCountZ; 
+	private final int cellCountX, cellCountZ;
 	
 	private final double cellSizeX, cellSizeZ;
 	
@@ -50,7 +50,7 @@ public class IntersectionGrid {
 			double approxCellSizeX, double approxCellSizeZ) {
 		this(gridBounds,
 				((int) (gridBounds.sizeX() / approxCellSizeX)) + 1,
-				((int) (gridBounds.sizeZ() / approxCellSizeZ)) + 1);	
+				((int) (gridBounds.sizeZ() / approxCellSizeZ)) + 1);
 	}
 	
 	public Collection<IntersectionTestObject>[][] getCellArray() {
@@ -109,6 +109,39 @@ public class IntersectionGrid {
 		
 	}
 	
+	/**
+	 * returns all non-empty cells that would contain the object.
+	 * Will not modify the intersection grid, and it doesn't matter
+	 * whether the object has been inserted or not.
+	 */
+	public Collection<Collection<IntersectionTestObject>> cellsFor(
+			IntersectionTestObject object) {
+
+		assert(gridBounds.contains(object));
+
+		AxisAlignedBoundingBoxXZ objectAABB = object.getAxisAlignedBoundingBoxXZ();
+		
+		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
+		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
+		int maxCellX = cellXForCoord(objectAABB.maxX, objectAABB.maxZ);
+		int maxCellZ = cellZForCoord(objectAABB.maxX, objectAABB.maxZ);
+		
+		Collection<Collection<IntersectionTestObject>> result =
+			new ArrayList<Collection<IntersectionTestObject>>(
+					(maxCellX - minCellX) * (maxCellZ - minCellZ));
+		
+		for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
+			for (int cellZ = minCellZ; cellZ <= maxCellZ; cellZ ++) {
+				if (cells[cellX][cellZ] != null) {
+					result.add(cells[cellX][cellZ]);
+				}
+			}
+		}
+		
+		return result;
+		
+	}
+	
 	public void insert(IntersectionTestObject object) {
 		
 		assert(gridBounds.contains(object));
@@ -130,7 +163,7 @@ public class IntersectionGrid {
 
 	private void addToCell(int cellX, int cellZ, IntersectionTestObject object) {
 		if (cells[cellX][cellZ] == null) {
-			cells[cellX][cellZ] = new ArrayList<IntersectionTestObject>(); 
+			cells[cellX][cellZ] = new ArrayList<IntersectionTestObject>();
 		}
 		cells[cellX][cellZ].add(object);
 	}
