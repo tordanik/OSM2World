@@ -1,6 +1,10 @@
 package org.osm2world.core.world.modules;
 
+import org.osm2world.core.map_data.data.MapAreaSegment;
+import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapSegment;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
@@ -16,7 +20,27 @@ public class InvisibleModule extends AbstractModule {
 	protected void applyToNode(MapNode node) {
 		if (node.getTags().containsKey("ele")
 				&& node.getRepresentations().isEmpty()) {
-			node.addRepresentation(new InvisibleEleNode(node));
+			
+			boolean isInGroundSegment = false;
+			for (MapSegment segment : node.getConnectedSegments()) {
+				MapElement element;
+				if (segment instanceof MapWaySegment) {
+					element = (MapWaySegment)segment;
+				} else {
+					element = ((MapAreaSegment)segment).getArea();
+				}
+				if (element.getPrimaryRepresentation() != null
+						&& element.getPrimaryRepresentation().getGroundState()
+							== GroundState.ON) {
+					isInGroundSegment = true;
+					break;
+				}
+			}
+			
+			if (node.getConnectedSegments().isEmpty() || isInGroundSegment) {
+				node.addRepresentation(new InvisibleEleNode(node));
+			}
+			
 		}
 	}
 	
