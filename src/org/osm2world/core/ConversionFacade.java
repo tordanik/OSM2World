@@ -209,8 +209,8 @@ public class ConversionFacade {
 			try {
 				tempFile = JOSMFileHack.createTempOSMFile(osmFile);
 			} catch (Exception e2) {
-				throw new IOException("could not create temporary" +
-						" modified copy of the file");
+				throw new IOException("could not read OSM file" +
+						" (not even with workaround for JOSM files)", e2);
 			}
 			
 			osmData = new OsmosisReader(tempFile).getData();

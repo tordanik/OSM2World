@@ -5,11 +5,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.core.ConversionFacade.Phase;
@@ -56,7 +58,10 @@ public class OpenOSMAction extends AbstractAction {
 	}
 
 	public void openOSMFile(File osmFile) {
-		new OpenOSMThread(osmFile).start();
+		OpenOSMThread thread = new OpenOSMThread(osmFile);
+		thread.setUncaughtExceptionHandler(
+				new ConversionExceptionHandler(viewerFrame));
+		thread.start();
 	}
 
 	private File askFile() {
@@ -112,7 +117,8 @@ public class OpenOSMAction extends AbstractAction {
 
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(viewerFrame,
-						e.toString(),
+						e.toString() + "\nCause: " +
+						(e.getCause() == null ? "unknown" : e.getCause()),
 						"Could not open OSM file", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
 			} catch (InvalidGeometryException e) {
@@ -161,5 +167,48 @@ public class OpenOSMAction extends AbstractAction {
 		}
 
 	}
-
+	
+	private static class ConversionExceptionHandler
+			implements UncaughtExceptionHandler {
+		
+		private final ViewerFrame viewerFrame;
+		
+		public ConversionExceptionHandler(ViewerFrame viewerFrame) {
+			this.viewerFrame = viewerFrame;
+		}
+		
+		@Override
+		public void uncaughtException(final Thread t, final Throwable e) {
+			if (SwingUtilities.isEventDispatchThread()) {
+				showException(t, e);
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						showException(t, e);
+					}
+				});
+			}
+			
+		}
+		
+		private void showException(Thread t, Throwable e) {
+			
+			// TODO log
+			e.printStackTrace();
+			
+			String msg = String.format(
+					"Unexpected problem on thread %s:\n%s\n\n"
+					+ "OSM2World will be closed now.\n\nLocation:\n%s\n%s",
+					t.getName(), e.toString(),
+					e.getStackTrace()[0], e.getStackTrace()[1]);
+			
+			JOptionPane.showMessageDialog(viewerFrame, msg,
+					"Error", JOptionPane.ERROR_MESSAGE);
+			
+			System.exit(1);
+			
+		}
+		
+	}
+	
 }
