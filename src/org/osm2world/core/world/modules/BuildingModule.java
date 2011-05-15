@@ -1,6 +1,6 @@
 package org.osm2world.core.world.modules;
 
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.awt.Color;
@@ -153,8 +153,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 			double floorEle = area.getElevationProfile().getMinEle();
 			boolean renderFloor = false;
 			
-			if (area.getTags().containsKey("building:min_level")
+			if (area.getTags().containsKey("min_height")) {
+				
+				Float minEle = parseMeasure(
+						area.getTags().getValue("min_height"));
+				if (minEle != null) {
+					floorEle += minEle;
+					renderFloor = true;
+				}
+				
+			} else if (area.getTags().containsKey("building:min_level")
 					&& area.getTags().containsKey("building:levels")) {
+				
 				Float minLevel = parseOsmDecimal(
 						area.getTags().getValue("building:min_level"), true);
 				Float levels = parseOsmDecimal(

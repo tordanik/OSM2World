@@ -5,6 +5,7 @@
  * fewer visual artifacts when scenes mix known and unknown ele
  * unconnected WorldObjects influence terrain triangulation
  * new WorldObject: building entrance
+ * support for min_height
  * always use JOSM workaround for .osm files with generator='JOSM'
  * use ele tags on ways and areas for elevation calculation
  * show error message box even for unexpected errors
