@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
@@ -27,10 +28,19 @@ public abstract class NoOutlineWaySegmentWorldObject
 	}
 	
 	@Override
+	public VectorXZ getStartPosition() {
+		return segment.getStartNode().getPos();
+	}
+	
+	@Override
+	public VectorXZ getEndPosition() {
+		return segment.getEndNode().getPos();
+	}
+	
+	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		return new AxisAlignedBoundingBoxXZ(Arrays.asList(
-				segment.getStartNode().getPos(),
-				segment.getEndNode().getPos()));
+				getStartPosition(), getEndPosition()));
 	}
 	
 }
