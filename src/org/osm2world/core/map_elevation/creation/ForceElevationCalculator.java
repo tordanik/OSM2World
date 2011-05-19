@@ -324,7 +324,7 @@ public class ForceElevationCalculator implements ElevationCalculator {
 				forces.add(new VerticalDistanceForce(fNode1, fNode2, minDistance));
 				
 			} else {
-				//no force if both are on the same layer and have the same GroundState
+				forces.add(new SameEleForce(fNode1, fNode2));
 			}
 			
 		}
@@ -1128,6 +1128,26 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			public void prepare(float forceScale) {
 				effect = 0f;
 				//TODO: implement
+			}
+			
+		}
+		
+		/**
+		 * force that tries to keep two nodes at the same elevation
+		 */
+		protected static final class SameEleForce extends ConnectionForce {
+			
+			public SameEleForce(ForceNode node1, ForceNode node2) {
+				super(node1, node2);
+			}
+			
+			@Override
+			public void prepare(float forceScale) {
+				effect = Math.abs(node1.getCurrentEle() - node2.getCurrentEle());
+				effect *= forceScale;
+				if (node1.getCurrentEle() > node2.getCurrentEle()) {
+					effect = -effect;
+				}
 			}
 			
 		}

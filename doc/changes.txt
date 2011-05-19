@@ -2,6 +2,7 @@
  OSM2World 0.1.7                                                     2011-??-?? 
 --------------------------------------------------------------------------------
  
+ * use ele tags on invisible ways and areas
  * new Exit action (menu item and shortcut)
  
  
