@@ -11,6 +11,7 @@ import javax.swing.JMenuBar;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.viewer.control.actions.AboutAction;
+import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
 import org.osm2world.viewer.control.actions.ExportPOVRayAction;
 import org.osm2world.viewer.control.actions.ExportScreenshotAction;
@@ -111,6 +112,7 @@ public class ViewerFrame extends JFrame {
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportScreenshotAction(this, data, messageManager, renderOptions));
+			subMenu.add(new ExitAction());
 			menu.add(subMenu);
 
 		} { //"View"
