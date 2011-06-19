@@ -3,6 +3,7 @@
 --------------------------------------------------------------------------------
  
  * use ele tags on invisible ways and areas
+ * artificial nodes in ways for better terrain elevation
  * new Exit action (menu item and shortcut)
  
  

@@ -1,7 +1,7 @@
 package org.osm2world.core.map_elevation.creation;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +54,7 @@ import com.google.common.collect.Multimap;
 public class ForceElevationCalculator implements ElevationCalculator {
 
 	public static final int CALCULATION_STEPS = 100;
+	private static final int DIST_INVISIBLE_NODES = 50;
 	
 	@Override
 	public void calculateElevations(MapData mapData,
@@ -173,9 +174,24 @@ public class ForceElevationCalculator implements ElevationCalculator {
 			lineForceNodes.add(nodeMap.get(line.getStartNode()));
 			lineForceNodes.add(nodeMap.get(line.getEndNode()));
 			
-			/* insert additional nodes to make the resulting curve smoother */
+			/* insert additional nodes to make the resulting curve smoother.
+			 * This also makes it less likely that a way passes through a
+			 * terrain cell without having a single node within that cell. */
 			
-			//TODO: additional Nodes for smooth curves
+			if (line.getLineSegment().getLength() > DIST_INVISIBLE_NODES) {
+			
+			List<VectorXZ> positions = equallyDistributePointsAlong(
+					DIST_INVISIBLE_NODES, false,
+					line.getStartNode().getPos(),
+					line.getEndNode().getPos());
+			
+				for (VectorXZ pos : positions) {
+					ForceNodeOnLine forceNode = new ForceNodeOnLine(line, pos);
+					forceNodes.add(forceNode);
+					lineForceNodes.add(forceNode);
+				}
+				
+			}
 			
 			//TODO: terrain nodes below/above elements above/below the ground
 
