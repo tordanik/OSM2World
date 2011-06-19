@@ -33,7 +33,7 @@ public class EleDebugView extends DebugView {
 		List<VectorXYZ> points = new ArrayList<VectorXYZ>();
 		
 		for (TerrainPatch patch : terrain.getPatches()) {
-			for (TriangleXYZ t : patch.triangulation) {
+			for (TriangleXYZ t : patch.getTriangulation()) {
 				points.addAll(t.getVertices());
 			}
 		}

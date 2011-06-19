@@ -23,15 +23,14 @@ public abstract class TerrainPatch implements RenderableToAllTargets, Renderable
 	/**
 	 * counterclockwise triangles
 	 */
-	public Collection<TriangleXYZ> triangulation;
+	protected Collection<TriangleXYZ> triangulation;
 		
 	@Override
 	public void renderTo(Target<?> target) {
 
 		if (triangulation == null) {
-			// TODO (error handling): reactivate exception later
-			// throw new IllegalStateException("build must be called before renderTo");
-			return;
+			throw new IllegalStateException(
+					"build must be called before renderTo");
 		}
 		
 		target.drawTriangles(Materials.TERRAIN_DEFAULT, triangulation);
@@ -41,6 +40,17 @@ public abstract class TerrainPatch implements RenderableToAllTargets, Renderable
 	@Override
 	public void renderTo(POVRayTarget target) {
 		renderTo(target);
+	}
+
+	public Collection<TriangleXYZ> getTriangulation() {
+		
+		if (triangulation == null) {
+			throw new IllegalStateException(
+					"build must be called before getTriangulation");
+		}
+		
+		return triangulation;
+		
 	}
 		
 }

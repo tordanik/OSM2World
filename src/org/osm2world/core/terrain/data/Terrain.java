@@ -42,7 +42,7 @@ public class Terrain implements RenderableToAllTargets , RenderableToPOVRay {
 		Collection<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>();
 		
 		for (TerrainPatch patch : patches) {
-			triangles.addAll(patch.triangulation);
+			triangles.addAll(patch.getTriangulation());
 		}
 		
 		return triangles;

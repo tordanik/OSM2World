@@ -2,6 +2,7 @@ package org.osm2world.core.terrain.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -47,6 +48,8 @@ public class GenericTerrainPatch extends TerrainPatch {
 			throw new IllegalStateException(
 					"this patch has already been triangulated");
 		}
+		
+		triangulation = Collections.emptyList();
 		
 		/* perform triangulation */
 		
