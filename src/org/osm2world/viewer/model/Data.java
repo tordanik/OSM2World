@@ -11,6 +11,7 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
@@ -28,14 +29,16 @@ public class Data extends Observable {
 		this.config = config;
 	}
 	
-	public void loadOSMFile(File osmFile, ProgressListener listener)
-	throws IOException {
+	public void loadOSMFile(File osmFile, ElevationCalculator eleCalculator,
+			ProgressListener listener) throws IOException {
 		
 		try {
 			
 			this.osmFile = osmFile;
 			
 			ConversionFacade converter = new ConversionFacade();
+			converter.setElevationCalculator(eleCalculator);
+			
 			converter.addProgressListener(listener);
 			
 			conversionResults = converter.createRepresentations(

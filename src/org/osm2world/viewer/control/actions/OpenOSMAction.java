@@ -111,7 +111,7 @@ public class OpenOSMAction extends AbstractAction {
 			
 			try {
 
-				data.loadOSMFile(osmFile, this);
+				data.loadOSMFile(osmFile, renderOptions.getEleCalculator(), this);
 
 				new ResetCameraAction(viewerFrame, data, renderOptions).actionPerformed(null);
 

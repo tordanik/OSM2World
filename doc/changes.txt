@@ -2,6 +2,7 @@
  OSM2World 0.1.7                                                     2011-??-?? 
 --------------------------------------------------------------------------------
  
+ * viewer: add option to choose between different elevation calculation methods
  * use ele tags on invisible ways and areas
  * artificial nodes in ways for better terrain elevation
  * new Exit action (menu item and shortcut)

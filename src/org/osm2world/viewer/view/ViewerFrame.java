@@ -1,15 +1,23 @@
 package org.osm2world.viewer.view;
 
+import static java.util.Arrays.asList;
+
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JRadioButtonMenuItem;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
+import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
@@ -21,6 +29,7 @@ import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 import org.osm2world.viewer.control.actions.OrthoTileAction;
 import org.osm2world.viewer.control.actions.ResetCameraAction;
 import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
+import org.osm2world.viewer.control.actions.SetElevationCalculatorAction;
 import org.osm2world.viewer.control.actions.ToggleBackfaceCullingAction;
 import org.osm2world.viewer.control.actions.ToggleDebugViewAction;
 import org.osm2world.viewer.control.actions.ToggleOrthographicProjectionAction;
@@ -195,6 +204,31 @@ public class ViewerFrame extends JFrame {
 			subMenu.add(new OrthoBoundsAction(this, data, renderOptions));
 			subMenu.add(new JCheckBoxMenuItem(
 					new ToggleOrthographicProjectionAction(this, data, renderOptions)));
+			menu.add(subMenu);
+
+		} { //"Options"
+
+			JMenu subMenu = new JMenu("Options");
+			JMenu eleCalcMenu = new JMenu("ElevationCalculator");
+			subMenu.add(eleCalcMenu);
+			subMenu.setMnemonic(KeyEvent.VK_O);
+			
+			ButtonGroup eleCalcGroup = new ButtonGroup();
+			
+			for (ElevationCalculator eleCalc : asList(
+					new ForceElevationCalculator(),
+					new EleTagElevationCalculator(),
+					new LevelTagElevationCalculator())) {
+				
+				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
+						new SetElevationCalculatorAction(
+								eleCalc, this,  data, renderOptions));
+				
+				eleCalcGroup.add(item);
+				eleCalcMenu.add(item);
+				
+			}
+
 			menu.add(subMenu);
 
 		} { //"Help"
