@@ -84,7 +84,8 @@ public class TerrainCreator {
 					SimplePolygonXZ cellPolyXZ = terrainCell.getPolygonXZ();
 					PolygonXYZ outlinePolygon = terrainBoundary.getOutlinePolygon();
 					
-					if (outlinePolygon.getXZPolygon().isSimple()) {
+					if (outlinePolygon != null
+							&& outlinePolygon.getXZPolygon().isSimple()) {
 						
 						SimplePolygonXZ outlinePolygonXZ = outlinePolygon.getSimpleXZPolygon();
 						

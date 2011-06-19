@@ -39,7 +39,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	 * 
 	 * Cut information will not be created for all way/area segments.
 	 * The lists can therefore contain null entries.
-	 *  
+	 * 
 	 * @param cutCenters  centers of the cuts to each;
 	 *                    indices are the same as for the GridNode's
 	 *                    {@link MapNode#getConnectedSegments()}
@@ -72,7 +72,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	/**
 	 * provides outline for the areas covered by the junction.
 	 * 
-	 * The from and to indices refer to the list 
+	 * The from and to indices refer to the list
 	 * returned by the underlying {@link MapNode}'s
 	 * {@link MapNode#getConnectedSegments()} method.
 	 */
@@ -102,7 +102,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 			VectorXZ newNodeB = getCutNode(nextI, true);
 			if (newNodeB != null) {
 				outline.add(node.getElevationProfile().getWithEle(newNodeB));
-			}				
+			}
 
 			i = nextI;
 
@@ -123,7 +123,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 			
 			if (junctionArea.getSimpleXZPolygon().isClockwise()) {
 				return junctionArea.reverse();
-			} else {	
+			} else {
 				return junctionArea;
 			}
 			
@@ -136,7 +136,9 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 		if (getOutlinePolygon() != null) {
 			return new AxisAlignedBoundingBoxXZ(getOutlinePolygon().getVertices());
 		} else {
-			return null;
+			return new AxisAlignedBoundingBoxXZ(
+					node.getPos().x, node.getPos().z,
+					node.getPos().x, node.getPos().z);
 		}
 	}
 	
@@ -185,7 +187,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 				getOutlinePolygon().getSimpleXZPolygon(),
 				Collections.<SimplePolygonXZ>emptyList());
 		
-		Collection<TriangleXYZ> trianglesXYZ = 
+		Collection<TriangleXYZ> trianglesXYZ =
 			new ArrayList<TriangleXYZ>(trianglesXZ.size());
 
 		final NodeElevationProfile eleProfile = node.getElevationProfile();
@@ -217,7 +219,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 				
 		checkInformationProvided();
 		
-		List<VectorXYZ> vectors = 
+		List<VectorXYZ> vectors =
 			new ArrayList<VectorXYZ>(cutCenters.size()*2+1);
 		
 		for (int i=0; i < cutCenters.size(); i++) {
@@ -227,7 +229,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 			VectorXZ left = getCutNode(i, false);
 			VectorXZ right = getCutNode(i, true);
 			
-			if (left != null) {						
+			if (left != null) {
 				vectors.add(left.xyz(node.getElevationProfile().getEleAt(left)));
 			}
 			if (right != null) {
@@ -269,8 +271,8 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 			return null;
 		} else {
 			
-			if (right) {			
-				return cutCenter.add(cutVector.mult(width * 0.5f));			
+			if (right) {
+				return cutCenter.add(cutVector.mult(width * 0.5f));
 			} else {
 				return cutCenter.subtract(cutVector.mult(width * 0.5f));
 			}
