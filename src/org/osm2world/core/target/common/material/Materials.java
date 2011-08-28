@@ -52,6 +52,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(1f, 1f, 1f));
 	public static final ConfMaterial STEPS_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.DARK_GRAY);
+	public static final ConfMaterial HANDRAIL_DEFAULT =
+		new ConfMaterial(Lighting.FLAT, Color.LIGHT_GRAY);
 		
 	public static final ConfMaterial RAIL_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.LIGHT_GRAY);

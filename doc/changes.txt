@@ -6,6 +6,7 @@
  * use ele tags on invisible ways and areas
  * artificial nodes in ways for better terrain elevation
  * more street furniture: advertising columns, billboards, benches
+ * render handrails on steps
  * new Exit action (menu item and shortcut)
  
  

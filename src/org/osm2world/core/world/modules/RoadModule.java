@@ -2,9 +2,11 @@ package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
@@ -278,6 +280,10 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
 		protected static final float DEFAULT_PATH_CLEARING = 2;
 		
+		protected static final VectorXYZ[] HANDRAIL_SHAPE = {
+			new VectorXYZ(-0.02f, -0.05f, 0), new VectorXYZ(-0.02f,     0f, 0),
+			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0)};
+		
 		public final float width;
 		
 		final private TagGroup tags;
@@ -354,13 +360,17 @@ public class RoadModule extends ConfigurableWorldModule {
 			final VectorXZ startWithOffset = getStartPosition();
 			final VectorXZ endWithOffset = getEndPosition();
 		
+			List<VectorXYZ> leftOutline = getOutline(false);
+			List<VectorXYZ> rightOutline = getOutline(true);
+			
+			
 			double lineLength = VectorXZ.distance (
 					line.getStartNode().getPos(), line.getEndNode().getPos());
 			
 			/* render ground first (so gaps between the steps look better) */
 			
 			VectorXYZ[] vs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
-					getOutline(false), getOutline(true));
+					leftOutline, rightOutline);
 		
 			target.drawTriangleStrip(ASPHALT, vs);
 			
@@ -414,6 +424,60 @@ public class RoadModule extends ConfigurableWorldModule {
 						fullRightVector,
 						upVector,
 						backCenter.subtract(frontCenter).y(0));
+				
+			}
+			
+			/* draw handrails */
+			
+			List<List<VectorXYZ>> handrailFootprints =
+				new ArrayList<List<VectorXYZ>>();
+
+			if (line.getTags().contains("handrail:left","yes")) {
+				handrailFootprints.add(leftOutline);
+			}
+			if (line.getTags().contains("handrail:right","yes")) {
+				handrailFootprints.add(rightOutline);
+			}
+			
+			int centerHandrails = 0;
+			if (line.getTags().contains("handrail:center","yes")) {
+				centerHandrails = 1;
+			} else if (line.getTags().containsKey("handrail:center")) {
+				try {
+					centerHandrails = Integer.parseInt(
+							line.getTags().getValue("handrail:center"));
+				} catch (NumberFormatException e) {}
+			}
+			
+			
+			for (int i = 0; i < centerHandrails; i++) {
+				handrailFootprints.add(createLineBetween(
+						leftOutline, rightOutline,
+						(i + 1.0f) / (centerHandrails + 1)));
+			}
+			
+			for (List<VectorXYZ> handrailFootprint : handrailFootprints) {
+				
+				List<VectorXYZ> handrailLine = new ArrayList<VectorXYZ>();
+				for (VectorXYZ v : handrailFootprint) {
+					handrailLine.add(v.y(v.y + 1));
+				}
+				
+				List<VectorXYZ[]> stripVectors =
+					createShapeExtrusionAlong(
+					HANDRAIL_SHAPE, handrailLine,
+					Collections.nCopies(handrailLine.size(), VectorXYZ.Y_UNIT));
+				
+				for (VectorXYZ[] stripVector : stripVectors) {
+					target.drawTriangleStrip(HANDRAIL_DEFAULT, stripVector);
+				}
+				
+				target.drawColumn(HANDRAIL_DEFAULT, 4,
+						handrailFootprint.get(0),
+						1, 0.03, 0.03, false, true);
+				target.drawColumn(HANDRAIL_DEFAULT, 4,
+						handrailFootprint.get(handrailFootprint.size()-1),
+						1, 0.03, 0.03, false, true);
 				
 			}
 			
