@@ -1,5 +1,8 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.PI;
+import static org.osm2world.core.math.VectorXZ.fromAngle;
+
 import org.junit.Test;
 
 public class VectorXZTest {
@@ -13,6 +16,16 @@ public class VectorXZTest {
 		VectorXZ testA = new VectorXZ(0.5f, 0.5f);
 		VectorXZ testARightNormal = testA.rightNormal();
 		assertVectorEpsilon(0.707f, -0.707f, testARightNormal);
+		
+	}
+	
+	@Test
+	public void testFromAngle() {
+		
+		assertVectorEpsilon( 0, +1, fromAngle(0));
+		assertVectorEpsilon(+1,  0, fromAngle(0.5*PI));
+		assertVectorEpsilon( 0, -1, fromAngle(PI));
+		assertVectorEpsilon(-1,  0, fromAngle(1.5*PI));
 		
 	}
 	

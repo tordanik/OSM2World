@@ -6,6 +6,7 @@ import java.util.List;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -52,6 +53,12 @@ public interface Target<R extends Renderable> {
 	void drawBox(Material material, VectorXYZ frontLowerLeft,
 			VectorXYZ rightVector, VectorXYZ upVector, VectorXYZ backVector);
 
+	/**
+	 * draws a box with outward-facing polygons
+	 */
+	void drawBox(Material material, VectorXYZ bottomCenter, VectorXZ direction,
+			double height, double width, double depth);
+	
 	/**
 	 * draws a column with outward-facing polygons around a point.
 	 * A column is a polygon with > 3 corners extruded upwards.

@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.*;
+
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -96,8 +98,8 @@ public class VectorXZ implements Vector3D {
 		return "(" + x + "," + z + ")";
 	}
 	
-	public static final VectorXZ NULL_VECTOR = new VectorXZ(0, 0);	
-	public static final VectorXZ X_UNIT = new VectorXZ(1, 0);	
+	public static final VectorXZ NULL_VECTOR = new VectorXZ(0, 0);
+	public static final VectorXZ X_UNIT = new VectorXZ(1, 0);
 	public static final VectorXZ Z_UNIT = new VectorXZ(0, 1);
 
 
@@ -127,6 +129,20 @@ public class VectorXZ implements Vector3D {
 	}
 	
 	//TODO: angle bisection as method in this class
+
+	/**
+	 * returns a unit vector based on an angular direction.
+	 * For example,
+	 * angle 0    creates vector (0,1),
+	 * angle PI/2 creates vector (1,0).
+	 * 
+	 * @param directionRad  direction angle in radians
+	 */
+	public static VectorXZ fromAngle(double directionRad) {
+		return new VectorXZ(
+				sin(directionRad),
+				cos(directionRad));
+	}
 	
 	public static final double distance(VectorXZ v1, VectorXZ v2) {
 		//SUGGEST (performance): don't create temporary vector
@@ -145,7 +161,7 @@ public class VectorXZ implements Vector3D {
 
 	public static final Function<VectorXZ, Double> distanceFunction(final VectorXZ v1) {
 		
-		return new Function<VectorXZ, Double>() {			
+		return new Function<VectorXZ, Double>() {
 			@Override
 			public Double apply(VectorXZ v2) {
 				return distance(v1, v2);

@@ -31,6 +31,8 @@ public final class Materials {
 	
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
+	public static final ConfMaterial CONCRETE =
+		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial EARTH =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0, 0));
 	public static final ConfMaterial GRASS =
@@ -92,6 +94,8 @@ public final class Materials {
 	public static final ConfMaterial TREE_CROWN =
 		new ConfMaterial(Lighting.SMOOTH, new Color(0, 0.5f, 0));
 	
+	public static final ConfMaterial ADVERTISING_POSTER =
+		new ConfMaterial(Lighting.FLAT, new Color(1, 1, 0.8f));
 	
 	private static final Map<String, ConfMaterial> surfaceMaterialMap =
 		new HashMap<String, ConfMaterial>();
@@ -103,7 +107,7 @@ public final class Materials {
 		surfaceMaterialMap.put("asphalt", ASPHALT);
 		surfaceMaterialMap.put("cobblestone", ASPHALT);
 		surfaceMaterialMap.put("compacted", GRAVEL);
-		surfaceMaterialMap.put("concrete", ASPHALT);
+		surfaceMaterialMap.put("concrete", CONCRETE);
 		surfaceMaterialMap.put("grass", GRASS);
 		surfaceMaterialMap.put("gravel", GRAVEL);
 		surfaceMaterialMap.put("grass_paver", ASPHALT);

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -47,6 +48,22 @@ public abstract class AbstractTarget<R extends Renderable>
 				backLowerRight, frontLowerRight,
 				backLowerLeft, frontLowerLeft,
 				backUpperLeft, frontUpperLeft);
+		
+	}
+	
+	@Override
+	public void drawBox(Material material, VectorXYZ bottomCenter,
+			VectorXZ backDirection, double height, double width, double depth) {
+		
+		VectorXYZ backVector = backDirection.mult(depth).xyz(0);
+		VectorXYZ rightVector = backDirection.rightNormal().mult(width).xyz(0);
+		VectorXYZ upVector = VectorXYZ.Y_UNIT.mult(height);
+		
+		drawBox(material,
+				bottomCenter
+					.add(rightVector.mult(-0.5))
+					.add(backVector.mult(-0.5)),
+				rightVector, upVector, backVector);
 		
 	}
 

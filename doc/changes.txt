@@ -5,6 +5,7 @@
  * viewer: add option to choose between different elevation calculation methods
  * use ele tags on invisible ways and areas
  * artificial nodes in ways for better terrain elevation
+ * more street furniture: advertising columns, billboards, benches
  * new Exit action (menu item and shortcut)
  
  
