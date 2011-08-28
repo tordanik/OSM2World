@@ -219,4 +219,41 @@ public final class ValueStringParser {
 		return null;
 	}
 
+	/**
+	 * parses an angular value as given for the "direction" key.
+	 *
+	 * @return  angle in degrees measured from north, range [0, 360[;
+	 *          null if value had syntax errors
+	 */
+	public static final Float parseAngle(String value) {
+
+		/* try numeric angle */
+		
+		Float measure = parseOsmDecimal(value, false);
+		if (measure != null) {
+			return measure % 360;
+		}
+		
+		/* try cardinal directions (represented by letters) */
+
+		if ("N"  .equals(value)) { return   0.0f; }
+		if ("NNE".equals(value)) { return  22.5f; }
+		if ("NE" .equals(value)) { return  45.0f; }
+		if ("NEE".equals(value)) { return  67.5f; }
+		if ("E"  .equals(value)) { return  90.0f; }
+		if ("SEE".equals(value)) { return 112.5f; }
+		if ("SE" .equals(value)) { return 135.0f; }
+		if ("SSE".equals(value)) { return 157.5f; }
+		if ("S"  .equals(value)) { return 180.0f; }
+		if ("SSW".equals(value)) { return 202.5f; }
+		if ("SW" .equals(value)) { return 225.0f; }
+		if ("SWW".equals(value)) { return 247.5f; }
+		if ("W"  .equals(value)) { return 270.0f; }
+		if ("NNW".equals(value)) { return 292.5f; }
+		if ("NW" .equals(value)) { return 315.0f; }
+		if ("NNW".equals(value)) { return 337.5f; }
+		
+		return null;
+	}
+	
 }
