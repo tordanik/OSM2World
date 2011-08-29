@@ -3,6 +3,7 @@
 --------------------------------------------------------------------------------
  
  * viewer: add option to choose between different elevation calculation methods
+ * new ZeroElevationCalculator that sets everything to elevation 0
  * use ele tags on invisible ways and areas
  * artificial nodes in ways for better terrain elevation
  * more street furniture: advertising columns, billboards, benches

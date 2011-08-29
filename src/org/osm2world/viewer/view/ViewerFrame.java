@@ -18,6 +18,7 @@ import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
@@ -216,6 +217,7 @@ public class ViewerFrame extends JFrame {
 			ButtonGroup eleCalcGroup = new ButtonGroup();
 			
 			for (ElevationCalculator eleCalc : asList(
+					new ZeroElevationCalculator(),
 					new ForceElevationCalculator(),
 					new EleTagElevationCalculator(),
 					new LevelTagElevationCalculator())) {
