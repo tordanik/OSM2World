@@ -5,8 +5,8 @@
     <property name="releaseVersion" value="noversion" />
 
 	<!-- classpath used for javadoc and javac, don't forget to manually update the jar manifest classpath! -->
-    <property name="classpath" value="lib/configuration/commons-collections-3.2.1.jar:lib/configuration/commons-configuration-1.6.jar:lib/configuration/commons-lang-2.6.jar:lib/configuration/commons-logging-1.1.1.jar:lib/jogl/gluegen-rt.jar:lib/jogl/jogl.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jts/jts-1.11.jar:lib/osmosis/commons-compress-1.0.jar:lib/osmosis/osmosis-core-0.38.jar:lib/osmosis/osmosis-xml-0.38.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/javaproj/javaproj-1.0.6.jar:lib/guava/guava-r08.jar" />
-		
+    <property name="classpath" value="lib/configuration/commons-collections-3.2.1.jar:lib/configuration/commons-configuration-1.6.jar:lib/configuration/commons-lang-2.6.jar:lib/configuration/commons-logging-1.1.1.jar:lib/jogl/gluegen-rt.jar:lib/jogl/jogl.jar:lib/jewelcli/jewelcli-0.6.jar:lib/jts/jts-1.11.jar:lib/osmosis/commons-compress-1.0.jar:lib/osmosis/osmosis-core-0.39.jar:lib/osmosis/osmosis-pbf-SNAPSHOT-r26381.jar:lib/osmosis/osmosis-xml-0.39.jar:lib/osmosis/osmpbf-1.1.1-754a33af.jar:lib/osmosis/protobuf-java-2.3.0.jar:lib/osmosis/xercesImpl-2.9.1.jar:lib/javaproj/javaproj-1.0.6.jar:lib/guava/guava-r08.jar" />
+
     <target name="clean">
 	<delete includeemptydirs="true"><fileset dir="bin" includes="**/*"/></delete>
 	<delete includeemptydirs="true"><fileset dir="build" includes="**/*"/></delete>
@@ -23,7 +23,7 @@
         <jar destfile="build/OSM2World.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.osm2world.console.OSM2World"/>
-                <attribute name="Class-Path" value=". lib/configuration/commons-collections-3.2.1.jar lib/configuration/commons-configuration-1.6.jar lib/configuration/commons-lang-2.6.jar lib/configuration/commons-logging-1.1.1.jar lib/jogl/gluegen-rt.jar lib/jogl/jogl.jar lib/jewelcli/jewelcli-0.6.jar lib/jts/jts-1.11.jar lib/osmosis/commons-compress-1.0.jar lib/osmosis/osmosis-core-0.38.jar lib/osmosis/osmosis-xml-0.38.jar lib/osmosis/xercesImpl-2.9.1.jar lib/javaproj/javaproj-1.0.6.jar lib/guava/guava-r08.jar"/>
+            	<attribute name="Class-Path" value=". lib/configuration/commons-collections-3.2.1.jar lib/configuration/commons-configuration-1.6.jar lib/configuration/commons-lang-2.6.jar lib/configuration/commons-logging-1.1.1.jar lib/jogl/gluegen-rt.jar lib/jogl/jogl.jar lib/jewelcli/jewelcli-0.6.jar lib/jts/jts-1.11.jar lib/osmosis/commons-compress-1.0.jar lib/osmosis/osmosis-core-0.39.jar lib/osmosis/osmosis-pbf-SNAPSHOT-r26381.jar lib/osmosis/osmosis-xml-0.39.jar lib/osmosis/osmpbf-1.1.1-754a33af.jar lib/osmosis/protobuf-java-2.3.0.jar lib/osmosis/xercesImpl-2.9.1.jar lib/javaproj/javaproj-1.0.6.jar lib/guava/guava-r08.jar"/>
             </manifest>
             <fileset dir="bin"/>
         </jar>

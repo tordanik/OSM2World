@@ -1,6 +1,9 @@
 package org.osm2world.core.osm.creation;
 
+import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.*;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
@@ -19,6 +21,7 @@ import org.openstreetmap.osmosis.core.domain.v0_6.Relation;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
 import org.openstreetmap.osmosis.core.domain.v0_6.Way;
 import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
+import org.openstreetmap.osmosis.core.task.v0_6.RunnableSource;
 import org.openstreetmap.osmosis.core.task.v0_6.Sink;
 import org.openstreetmap.osmosis.xml.common.CompressionMethod;
 import org.openstreetmap.osmosis.xml.v0_6.XmlReader;
@@ -57,10 +60,10 @@ public class OsmosisReader implements OSMDataReader {
 	private final Sink sinkImplementation = new Sink() {
 		public void release() {
 			/* do nothing */
-		}		
+		}
 		public void complete() {
 			setCompleteTrue();
-		}		
+		}
 		public void process(EntityContainer entityContainer) {
 			Entity entity = entityContainer.getEntity();
 			if (entity instanceof Node) {
@@ -75,15 +78,26 @@ public class OsmosisReader implements OSMDataReader {
 	
 	public OsmosisReader(File file) throws IOException {
 		
+		boolean pbf = false;
 		CompressionMethod compression = CompressionMethod.None;
-				
-		if (file.getName().endsWith(".gz")) {
+		
+		if (file.getName().endsWith(".pbf")) {
+			pbf = true;
+		} else if (file.getName().endsWith(".gz")) {
 			compression = CompressionMethod.GZip;
 		} else if (file.getName().endsWith(".bz2")) {
 			compression = CompressionMethod.BZip2;
 		}
 		
-		XmlReader reader = new XmlReader(file, false, compression);
+		RunnableSource reader;
+		
+		if (pbf) {
+			reader = new crosby.binary.osmosis.OsmosisReader(
+					new FileInputStream(file));
+		} else {
+			reader = new XmlReader(file, false, compression);
+		}
+		
 		reader.setSink(sinkImplementation);
 		
 		Thread readerThread = new Thread(reader);
@@ -213,7 +227,7 @@ public class OsmosisReader implements OSMDataReader {
 	}
 	
 	@Override
-	public OSMData getData() {		
+	public OSMData getData() {
 		return new OSMData(ownNodes, ownWays, ownRelations);
 	}
 	

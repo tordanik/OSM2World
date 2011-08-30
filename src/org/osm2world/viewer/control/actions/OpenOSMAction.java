@@ -68,7 +68,8 @@ public class OpenOSMAction extends AbstractAction {
 
 		JFileChooser chooser = new JFileChooser(lastPath);
 		chooser.setDialogTitle("Open OSM file");
-		chooser.setFileFilter(new FileNameExtensionFilter("OpenStreetMap data files", "osm", "gz", "bz2"));
+		chooser.setFileFilter(new FileNameExtensionFilter(
+				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf"));
 
 		int returnVal = chooser.showOpenDialog(null);
 
