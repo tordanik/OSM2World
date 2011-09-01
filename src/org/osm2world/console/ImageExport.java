@@ -6,9 +6,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
-import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
-import javax.swing.JFrame;
+import javax.media.opengl.GLDrawableFactory;
+import javax.media.opengl.GLPbuffer;
 
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.target.TargetUtil;
@@ -48,6 +48,10 @@ public final class ImageExport {
 			final Results results, final Camera camera,
 			final Projection projection) throws IOException {
 		
+		if (! GLDrawableFactory.getFactory().canCreateGLPbuffer()) {
+			throw new Error("Cannot create GLPbuffer for OpenGL output!");
+		}
+		
 		/* render map data into buffer */
 		
 		PrimitiveBuffer buffer = new PrimitiveBuffer();
@@ -78,17 +82,17 @@ public final class ImageExport {
 						
 			/* create and configure canvas */
 			
-			GLCanvas canvas = new GLCanvas(new GLCapabilities());
-			canvas.setSize(xSize, ySize);
-			        
-			JFrame frame = new JFrame();
-			frame.add(canvas);
-			frame.pack();
-			frame.setVisible(true); // TODO remove this line
+			final GL gl;
 			
-			final GL gl = canvas.getGL();
-			canvas.getContext().makeCurrent();
-	        
+			GLCapabilities cap = new GLCapabilities();
+			cap.setDoubleBuffered(false);
+			
+			GLPbuffer pBuffer = GLDrawableFactory.getFactory().createGLPbuffer(
+					cap, null, xSize, ySize, null);
+			
+			gl = pBuffer.getGL();
+			pBuffer.getContext().makeCurrent();
+			
 			gl.glFrontFace(GL.GL_CCW);                  // use ccw polygons
 			
 	        gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);    // Black Background
@@ -121,7 +125,7 @@ public final class ImageExport {
 			
 	        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
 	        
-	        /* render to canvas */
+	        /* render to pBuffer */
 	        
 	        new JOGLPrimitiveBufferRenderer(gl, buffer).render();
 	        
@@ -137,8 +141,9 @@ public final class ImageExport {
 	        
 	        /* clean up */
 			
-			canvas.getContext().release();
-			frame.dispose();
+	        pBuffer.getContext().release();
+	        pBuffer.destroy();
+	        pBuffer = null;
 			
 		}
 		}

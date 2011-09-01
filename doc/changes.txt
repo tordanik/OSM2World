@@ -9,6 +9,7 @@
  * more street furniture: advertising columns, billboards, benches
  * render handrails on steps
  * update of Osmosis lib version and support for .osm.pbf files
+ * GLPbuffer for command line rendering (png output no longer requires a window)
  * new Exit action (menu item and shortcut)
  
  
