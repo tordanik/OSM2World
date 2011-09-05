@@ -97,7 +97,7 @@ public class ValueStringParserTest {
     public void testParseAngleLetters() {
         assertClose(  0.0f, parseAngle("N"));
         assertClose(225.0f, parseAngle("SW"));
-        assertClose(112.5f, parseAngle("SEE"));
+        assertClose(112.5f, parseAngle("ESE"));
     }
 
     @Test
