@@ -1,7 +1,5 @@
 package org.osm2world.core.map_elevation.creation;
 
-import static java.util.Arrays.asList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +14,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.heightmap.data.TerrainPoint;
-import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -208,21 +206,31 @@ public class ForceElevationCalculator extends AdvancedAbstractElevationCalculato
 			}
 			
 			//add nodes based on ways and areas
-			for (Multimap<? extends MapElement, ForceNode> map
-					: asList(lineMap, areaMap)) {
-				for (MapElement segment : map.keySet()) {
+			
+			for (MapWaySegment segment : lineMap.keySet()) {
+				
+				if (segment.getPrimaryRepresentation() != null &&
+						segment.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
 					
-					if (segment.getPrimaryRepresentation() != null &&
-							segment.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
-						
-						for (ForceNode fNode :
-							((Multimap<Object, ForceNode>)map).get(segment)) {
-							speedupGrid.insert(fNode);
-						}
-						
+					for (ForceNode fNode : lineMap.get(segment)) {
+						speedupGrid.insert(fNode);
 					}
 					
 				}
+				
+			}
+
+			for (MapArea area : areaMap.keySet()) {
+				
+				if (area.getPrimaryRepresentation() != null &&
+						area.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
+					
+					for (ForceNode fNode : areaMap.get(area)) {
+						speedupGrid.insert(fNode);
+					}
+					
+				}
+				
 			}
 			
 			//add nodes that have their own representations
