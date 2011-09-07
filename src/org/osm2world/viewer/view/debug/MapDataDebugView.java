@@ -42,10 +42,13 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 	private static final float HALF_NODE_WIDTH = 0.4f;
 	
 	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
 	public void renderToImpl(GL gl, Camera camera) {
-		
-		if (map == null) { return; }
-		
+				
 		JOGLTarget util = new JOGLTarget(gl, camera);
 		
 		for (MapArea area : map.getMapAreas()) {

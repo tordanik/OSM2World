@@ -75,6 +75,9 @@ public class ConversionFacade {
 			return map;
 		}
 		
+		/**
+		 * returns the terrain. Will be null if terrain creation was disabled.
+		 */
 		public Terrain getTerrain() {
 			return terrain;
 		}
@@ -281,7 +284,11 @@ public class ConversionFacade {
 		/* create terrain */
 		updatePhase(Phase.TERRAIN);
 		
-		Terrain terrain = new TerrainCreator().createTerrain(mapData, eleData);
+		Terrain terrain = null;
+		
+		if (config.getBoolean("createTerrain", true)) {
+			terrain = new TerrainCreator().createTerrain(mapData, eleData);
+		}
 		
 		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
@@ -289,7 +296,9 @@ public class ConversionFacade {
 		if (targets != null) {
 			for (Target<?> target : targets) {
 				TargetUtil.renderWorldObjects(target, mapData);
-				TargetUtil.renderObject(target, terrain);
+				if (terrain != null) {
+					TargetUtil.renderObject(target, terrain);
+				}
 			}
 		}
 		

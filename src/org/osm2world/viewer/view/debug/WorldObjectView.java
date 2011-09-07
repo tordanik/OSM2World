@@ -24,7 +24,12 @@ public class WorldObjectView extends DebugView {
 		renderer = null;
 		
 	}
-		
+
+	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 
@@ -34,13 +39,13 @@ public class WorldObjectView extends DebugView {
 		
 		// define light source
 		
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT, 
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE, 
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR, 
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, 
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION,
 				new float[] {1.0f, 1.5f, -(-1.0f), 0.0f}, 0);
 		
 		gl.glEnable(GL.GL_LIGHT0);

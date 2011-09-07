@@ -28,6 +28,11 @@ public class MapDataElevationDebugView extends DebugView {
 	
 	private static final float HALF_NODE_WIDTH = 0.4f;
 	private static final float HALF_POINT_WITH_ELE_WIDTH = 0.2f;
+
+	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
 	
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
