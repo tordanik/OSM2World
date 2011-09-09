@@ -21,6 +21,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
@@ -48,15 +49,18 @@ public final class Output {
 			camera = OrthoTilesUtil.cameraForTiles(
 					results.getMapProjection(),
 					args.getOviewTiles(),
-					args.getOviewAngle());
+					args.getOviewAngle(),
+					args.getOviewFrom());
 			projection = OrthoTilesUtil.projectionForTiles(
 					results.getMapProjection(),
 					args.getOviewTiles(),
-					args.getOviewAngle());
+					args.getOviewAngle(),
+					args.getOviewFrom());
 			
 		} else if (args.isOviewBoundingBox()) {
 			
 			double angle = args.getOviewAngle();
+			CardinalDirection from = args.getOviewFrom();
 			
 			Collection<VectorXZ> pointsXZ = new ArrayList<VectorXZ>();
 			for (LatLonEle l : args.getOviewBoundingBox()) {
@@ -65,8 +69,8 @@ public final class Output {
 			AxisAlignedBoundingBoxXZ bounds =
 				new AxisAlignedBoundingBoxXZ(pointsXZ);
 						
-			camera = OrthoTilesUtil.cameraForBounds(bounds, angle);
-			projection = OrthoTilesUtil.projectionForBounds(bounds, angle);
+			camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
+			projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
 			
 		} else if (args.isPviewPos()) {
 			

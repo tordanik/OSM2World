@@ -8,6 +8,7 @@ import javax.media.opengl.GL;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
+import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.RenderableToJOGL;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
@@ -36,7 +37,8 @@ public class OrthoBoundsDebugView extends DebugView
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		
-		Camera orthoCam = OrthoTilesUtil.cameraForBounds(map.getBoundary(), 30);
+		Camera orthoCam = OrthoTilesUtil.cameraForBounds(
+				map.getBoundary(), 30, CardinalDirection.S);
 		
 		List<VectorXYZ> boundVertices = map.getBoundary().polygonXZ().xyz(0).getVertices();
 		target.drawLineLoop(LINE_COLOR, boundVertices);

@@ -1,9 +1,9 @@
 package org.osm2world.core.target.common.rendering;
 
+import static org.osm2world.core.math.AxisAlignedBoundingBoxXZ.union;
+
 import java.util.Arrays;
 import java.util.List;
-
-import static org.osm2world.core.math.AxisAlignedBoundingBoxXZ.union;
 
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -19,75 +19,107 @@ import org.osm2world.core.math.VectorXZ;
  */
 public final class OrthoTilesUtil {
 
+	/** 4 cardinal directions, can be used for camera placement */
+	public static enum CardinalDirection {N, E, S, W};
+	
 	/** prevents instantiation */
 	private OrthoTilesUtil() { }
 	
 	public static final Camera cameraForTile(MapProjection mapProjection,
-			TileNumber tile, double angleDeg) {
-		return cameraForBounds(boundsForTile(mapProjection, tile), angleDeg);
+			TileNumber tile, double angleDeg, CardinalDirection from) {
+		return cameraForBounds(boundsForTile(mapProjection, tile),
+				angleDeg, from);
 	}
 	
 	public static final Camera cameraForTiles(MapProjection mapProjection,
-			List<TileNumber> tiles, double angleDeg) {		
+			List<TileNumber> tiles, double angleDeg, CardinalDirection from) {
 		
 		if (tiles.isEmpty()) { throw new IllegalArgumentException("empty tiles list"); }
 		
 		AxisAlignedBoundingBoxXZ result = boundsForTiles(mapProjection, tiles);
 		
-		return cameraForBounds(result, angleDeg);
+		return cameraForBounds(result, angleDeg, from);
 		
 	}
 
 	public static final Camera cameraForBounds(
-			AxisAlignedBoundingBoxXZ bounds, double angleDeg) {
+			AxisAlignedBoundingBoxXZ bounds, double angleDeg,
+			CardinalDirection from) {
 		
 		Camera result = new Camera();
 		
 		VectorXYZ lookAt = new VectorXYZ(
 				bounds.minX + bounds.sizeX() / 2,
 				0,
-				bounds.minZ + bounds.sizeZ() / 2);		
+				bounds.minZ + bounds.sizeZ() / 2);
 		result.setLookAt(lookAt);
 		
+		// calculate camera position (start with position for view from south,
+		// then modify it depending on parameters)
+		
 		double cameraDistance = Math.max(bounds.sizeX(), bounds.sizeZ());
+			
+		double cameraOffsetX = 0;
+		double cameraOffsetZ = - cameraDistance * Math.cos(Math.toRadians(angleDeg));
+				
+		if (from == CardinalDirection.W || from == CardinalDirection.E) {
+			double temp = cameraOffsetX;
+			cameraOffsetX = cameraOffsetZ;
+			cameraOffsetZ = temp;
+		}
+		
+		if (from == CardinalDirection.N || from == CardinalDirection.E) {
+			cameraOffsetX = -cameraOffsetX;
+			cameraOffsetZ = -cameraOffsetZ;
+		}
 		
 		result.setPos(new VectorXYZ(
-				lookAt.x,
+				lookAt.x + cameraOffsetX,
 				cameraDistance * Math.sin(Math.toRadians(angleDeg)),
-				lookAt.z - cameraDistance * Math.cos(Math.toRadians(angleDeg))));
+				lookAt.z + cameraOffsetZ));
 		
 		return result;
 	}
 	
 	public static final Projection projectionForTile(MapProjection mapProjection,
-			TileNumber tile, double angleDeg) {
+			TileNumber tile, double angleDeg, CardinalDirection from) {
 		AxisAlignedBoundingBoxXZ tileBounds = boundsForTile(mapProjection, tile);
-		return projectionForBounds(tileBounds, angleDeg);
+		return projectionForBounds(tileBounds, angleDeg, from);
 	}
 
 	public static final Projection projectionForTiles(MapProjection mapProjection,
-			List<TileNumber> tiles, double angleDeg) {
+			List<TileNumber> tiles, double angleDeg, CardinalDirection from) {
 		
 		if (tiles.isEmpty()) { throw new IllegalArgumentException("empty tiles list"); }
 		
 		AxisAlignedBoundingBoxXZ result = boundsForTiles(mapProjection, tiles);
 		
-		return projectionForBounds(result, angleDeg);
+		return projectionForBounds(result, angleDeg, from);
 		
 	}
 	
 	public static final Projection projectionForBounds(
-			AxisAlignedBoundingBoxXZ bounds, double angleDeg) {
+			AxisAlignedBoundingBoxXZ bounds, double angleDeg,
+			CardinalDirection from) {
 		
 		double sin = Math.sin(Math.toRadians(angleDeg));
 		
+		double sizeX = bounds.sizeX();
+		double sizeZ = bounds.sizeZ();
+		
+		if (from == CardinalDirection.W || from == CardinalDirection.E) {
+			double temp = sizeX;
+			sizeX = sizeZ;
+			sizeZ = temp;
+		}
+		
 		return new Projection(true,
-				 bounds.sizeX() / (bounds.sizeZ() * sin),
-				 1, 
-				 bounds.sizeZ() * sin,
+				 sizeX / (sizeZ * sin),
+				 1,
+				 sizeZ * sin,
 				 -1000000, 1000000);
 		
-	}		
+	}
 	
 	private static final AxisAlignedBoundingBoxXZ boundsForTile(
 			MapProjection mapProjection, TileNumber tile) {

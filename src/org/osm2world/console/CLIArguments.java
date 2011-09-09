@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import org.osm2world.core.target.common.rendering.TileNumber;
+import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 
 import uk.co.flamingpenguin.jewel.cli.Option;
 
@@ -36,6 +37,11 @@ public interface CLIArguments {
 			longName="oview.angle", defaultValue="30")
 	double getOviewAngle();
 	boolean isOviewAngle();
+	
+	@Option(description="direction from which the orthographic view is rendered",
+			pattern="[NESW]", longName="oview.from", defaultValue="S")
+	CardinalDirection getOviewFrom();
+	boolean isOviewFrom();
 	
 	@Option(description="lat,lon pairs defining a bounding box for orthographic view",
 			pattern=LatLonEle.PATTERN, longName="oview.bbox")
