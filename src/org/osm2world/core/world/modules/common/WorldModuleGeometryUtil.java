@@ -13,7 +13,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
-import org.osm2world.core.world.modules.WaterModule.Water;
 
 /**
  * offers some geometry-related utility functions for {@link WorldModule}s
@@ -24,7 +23,7 @@ public final class WorldModuleGeometryUtil {
 	
 	/**
 	 * creates the vectors for a vertical triangle strip
-	 * at a given elevation above a line of points 
+	 * at a given elevation above a line of points
 	 */
 	public static final VectorXYZ[] createVectorsForVerticalTriangleStrip(
 			List<? extends VectorXYZ> baseLine, float stripLowerYBound, float stripUpperYBound) {
@@ -91,19 +90,19 @@ public final class WorldModuleGeometryUtil {
 	}
 	
 
-	//TODO: many uses of VisualizationUtil#drawColumn are a special case of this	
+	//TODO: many uses of VisualizationUtil#drawColumn are a special case of this
 	/**
 	 * creates triangle stip vectors for a shape extruded along a line of coordinates
 	 * 
 	 * @param shape          shape relative to origin
 	 * @param extrusionPath  nodes to extrude the shape along; needs at least 2 nodes
 	 * @param upVectors      vector for "up" direction at each extrusion path node.
-	 *                       You can use {@link Collections#nCopies(int, Object)} 
+	 *                       You can use {@link Collections#nCopies(int, Object)}
 	 *                       if you want the same up vector for all nodes.
 	 * @return               list of vector arrays for triangle strips
 	 */
-	public static final List<VectorXYZ[]> createShapeExtrusionAlong(	
-			VectorXYZ[] shape, 
+	public static final List<VectorXYZ[]> createShapeExtrusionAlong(
+			VectorXYZ[] shape,
 			List<VectorXYZ> extrusionPath,
 			List<VectorXYZ> upVectors) {
 		
@@ -115,7 +114,7 @@ public final class WorldModuleGeometryUtil {
 		
 		VectorXYZ[][] shapeVectors = new VectorXYZ[extrusionPath.size()][shape.length];
 
-		/* 
+		/*
 		 * create shape at each node of the extrusion path.
 		 * Special handling for first and last node,
 		 * where calculation of "forward" vector is different.
@@ -128,7 +127,7 @@ public final class WorldModuleGeometryUtil {
 		
 		for (int pathI = 1; pathI < extrusionPath.size()-1; pathI ++) {
 						
-			VectorXYZ forwardVector = 
+			VectorXYZ forwardVector =
 				extrusionPath.get(pathI+1).subtract(extrusionPath.get(pathI-1));
 			forwardVector = forwardVector.normalize();
 			
@@ -177,7 +176,7 @@ public final class WorldModuleGeometryUtil {
 	 * @param up       new up direction (unit vector)
 	 * @return         array of 3d vectors; same length as shape
 	 */
-	public static final VectorXYZ[] transformShape (VectorXYZ[] shape, 
+	public static final VectorXYZ[] transformShape (VectorXYZ[] shape,
 			VectorXYZ center, VectorXYZ forward, VectorXYZ up) {
 
 		VectorXYZ[] result = new VectorXYZ[shape.length];
@@ -187,8 +186,8 @@ public final class WorldModuleGeometryUtil {
 		final double[][] m = { //rotation matrix
 				{right.x,   right.y,   right.z},
 				{up.x,      up.y,      up.z},
-				{forward.x, forward.y, forward.z}			
-		};		
+				{forward.x, forward.y, forward.z}
+		};
 		
 		for (int i = 0; i < shape.length; i++) {
 			
@@ -220,7 +219,7 @@ public final class WorldModuleGeometryUtil {
 	 * and other randomly distributed features on roads, rails
 	 * or other similar places where they don't belong.
 	 * 
-	 * @return true if the position is on at least one of the 
+	 * @return true if the position is on at least one of the
 	 *         {@link WorldObjectWithOutline} from the collection
 	 */
 	public static final boolean piercesWorldObject(VectorXZ pos,
@@ -232,11 +231,9 @@ public final class WorldModuleGeometryUtil {
 		for (WorldObject worldObject : worldObjects) {
 			
 			if (worldObject.getGroundState() == GroundState.ON
-				&& (worldObject instanceof WorldObjectWithOutline
-					&& !(worldObject instanceof Water)) //TODO: choose better criterion!
-			) {
+				&& (worldObject instanceof WorldObjectWithOutline)) {
 				
-				PolygonXYZ otherOutline = 
+				PolygonXYZ otherOutline =
 					((WorldObjectWithOutline)worldObject).getOutlinePolygon();
 				
 				if (otherOutline != null &&
