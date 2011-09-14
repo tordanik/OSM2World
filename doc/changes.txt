@@ -13,6 +13,7 @@
  * render handrails on steps
  * update of Osmosis lib version and support for .osm.pbf files
  * GLPbuffer for command line rendering (png output no longer requires a window)
+ * filter degenerate triangles from POVRay output
  * new Exit action (menu item and shortcut)
  
  

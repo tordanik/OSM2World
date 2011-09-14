@@ -345,6 +345,23 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			VectorXYZ na, VectorXYZ nb, VectorXYZ nc,
 			boolean smooth) {
 
+		// filter degenerate triangles
+		
+		if (a.equals(b) || a.equals(c) || b.equals(c)) {
+			return;
+		} else if (a.x == b.x && b.x == c.x
+				&& a.y == b.y && b.y == c.y) {
+			return;
+		} else if (a.x == b.x && b.x == c.x
+				&& a.z == b.z && b.z == c.z) {
+			return;
+		} else if (a.y == b.y && b.y == c.y
+				&& a.z == b.z && b.z == c.z) {
+			return;
+		}
+		
+		// append the triangle
+		
 		if (smooth) append("smooth_");
 		append("triangle { ");
 		appendVector(a);
