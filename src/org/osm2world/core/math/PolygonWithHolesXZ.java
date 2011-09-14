@@ -10,7 +10,7 @@ public class PolygonWithHolesXZ {
 	private final SimplePolygonXZ outerPolygon;
 	private final List<SimplePolygonXZ> holes;
 	
-	public PolygonWithHolesXZ(SimplePolygonXZ outerPolygon, 
+	public PolygonWithHolesXZ(SimplePolygonXZ outerPolygon,
 			List<SimplePolygonXZ> holes) {
 		this.outerPolygon = outerPolygon;
 		this.holes = holes;
@@ -49,7 +49,7 @@ public class PolygonWithHolesXZ {
 		//FIXME currently returns true if boundary intersects one of the holes!
 		if (!outerPolygon.contains(boundary)) {
 			return false;
-		} else {			
+		} else {
 			for (SimplePolygonXZ hole : holes) {
 				if (hole.contains(boundary)) {
 					return false;
@@ -115,8 +115,15 @@ public class PolygonWithHolesXZ {
 		return intersectionPositions;
 	}
 
-	public Collection<VectorXZ> intersectionPositions(PolygonWithHolesXZ e2) {
-		return Collections.emptyList(); //TODO implement
+	public Collection<VectorXZ> intersectionPositions(PolygonWithHolesXZ p2) {
+		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
+		for (SimplePolygonXZ simplePoly : p2.getPolygons()) {
+			for (LineSegmentXZ lineSegment : simplePoly.getSegments()) {
+				intersectionPositions.addAll(
+						intersectionPositions(lineSegment));
+			}
+		}
+		return intersectionPositions;
 	}
 	
 	public double getArea() {

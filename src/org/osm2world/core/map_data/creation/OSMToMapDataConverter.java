@@ -5,8 +5,10 @@ import static org.osm2world.core.math.VectorXZ.distance;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
@@ -20,11 +22,13 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.MapQuadtree.QuadLeaf;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.data.OSMMember;
@@ -386,8 +390,84 @@ public class OSMToMapDataConverter {
 	private static void addOverlapBetween(
 			MapArea area1, MapArea area2) {
 		
-		//TODO implement addOverlapBetween(area, area)
+		/* check whether the areas have a shared segment */
+				
+		for (MapAreaSegment area1Segment : area1.getAreaSegments()) {
+			for (MapAreaSegment area2Segment : area2.getAreaSegments()) {
+				if (area1Segment.sharesBothNodes(area2Segment)) {
+					
+					MapOverlapAA newOverlap =
+						new MapOverlapAA(area1, area2, MapOverlapType.SHARE_SEGMENT);
+					area1.addOverlap(newOverlap);
+					area2.addOverlap(newOverlap);
+					
+					return;
+					
+				}
+			}
+		}
+		
+		/* calculate whether one area contains the other
+		 * or whether their outlines intersect (or neither) */
+		
+		boolean contains;
+		boolean intersects;
+		
+		{
+			final PolygonWithHolesXZ polygon1 = area1.getPolygon();
+			final PolygonWithHolesXZ polygon2 = area2.getPolygon();
+			
+			/* determine common nodes */
+			
+			Set<VectorXZ> commonNodes = new HashSet<VectorXZ>();
+			for (SimplePolygonXZ p : polygon1.getPolygons()) {
+				commonNodes.addAll(p.getVertices());
+			}
+			
+			Set<VectorXZ> nodes2 = new HashSet<VectorXZ>();
+			for (SimplePolygonXZ p : polygon2.getPolygons()) {
+				nodes2.addAll(p.getVertices());
+			}
+			
+			commonNodes.retainAll(nodes2);
+			
+			/* check whether the areas' outlines intersects somewhere
+			 * else than just at the common node(s).
+			 */
+			
+			intersects = false;
+			
+			intersectionPosCheck:
+			for (VectorXZ pos : polygon1.intersectionPositions(polygon2)) {
+				for (VectorXZ commonNode : commonNodes) {
+					if (distance(pos, commonNode) > 0.01) {
+						intersects = true;
+						break intersectionPosCheck;
+					}
+				}
+			}
 
+			/* check whether one area contains the other */
+			
+			contains = polygon1.contains(polygon2.getOuter())
+				|| polygon2.contains(polygon2.getOuter());
+									
+		}
+		
+		/* add an overlap if detected */
+					
+		if (contains || intersects) {
+			
+			/* add the overlap */
+			
+			MapOverlapAA newOverlap = new MapOverlapAA(area1, area2,
+				intersects ? MapOverlapType.INTERSECT : MapOverlapType.CONTAIN);
+			
+			area1.addOverlap(newOverlap);
+			area2.addOverlap(newOverlap);
+			
+		}
+		
 	}
 
 }
