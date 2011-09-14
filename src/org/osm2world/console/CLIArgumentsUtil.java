@@ -2,11 +2,18 @@ package org.osm2world.console;
 
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class CLIArgumentsUtil {
 	
-	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION};
+	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE};
 	public static enum OutputMode {OBJ, POV, PNG};
 	
 	private CLIArgumentsUtil() { }
@@ -73,10 +80,11 @@ public final class CLIArgumentsUtil {
 	}
 
 	public static final ProgramMode getProgramMode(CLIArguments args) {
-		return args.getHelp() ? HELP
-				: args.getVersion() ? VERSION
-					: args.getGui() ? GUI
-						: CONVERT;
+		return args.isParameterFile() ? PARAMFILE
+				: args.getHelp() ? HELP
+					: args.getVersion() ? VERSION
+						: args.getGui() ? GUI
+							: CONVERT;
 	}
 	
 	public static final OutputMode getOutputMode(File outputFile) {
@@ -89,6 +97,43 @@ public final class CLIArgumentsUtil {
 		} else {
 			return null;
 		}
+	}
+	
+	public static final List<String[]> getUnparsedParameterGroups(
+			File parameterFile) throws IOException {
+		
+		List<String[]> result = new ArrayList<String[]>();
+		
+		BufferedReader in = new BufferedReader(new FileReader(parameterFile));
+			
+		String line;
+		
+		while ((line = in.readLine()) != null) {
+			
+			List<String> argList = new ArrayList<String>();
+			
+			Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+			Matcher matcher = regex.matcher(line);
+			
+			while (matcher.find()) {
+			    if (matcher.group(1) != null) {
+			        // Add double-quoted string without the quotes
+			    	argList.add(matcher.group(1));
+			    } else if (matcher.group(2) != null) {
+			        // Add single-quoted string without the quotes
+			    	argList.add(matcher.group(2));
+			    } else {
+			        // Add unquoted word
+			    	argList.add(matcher.group());
+			    }
+			}
+			
+			result.add(argList.toArray(new String[argList.size()]));
+			
+		}
+		
+		return result;
+		
 	}
 	
 }

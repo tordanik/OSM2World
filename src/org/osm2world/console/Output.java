@@ -29,109 +29,116 @@ public final class Output {
 
 	private Output() {}
 
-	public static void output(Configuration config, CLIArguments args)
+	public static void output(Configuration config,
+			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
-				
+		
 		long start = System.currentTimeMillis();
 		
 		ConversionFacade cf = new ConversionFacade();
-		PerformanceListener perfListener = new PerformanceListener(args);
+		PerformanceListener perfListener =
+			new PerformanceListener(argumentsGroup.getRepresentative());
 		cf.addProgressListener(perfListener);
 		
-		Results results =
-			cf.createRepresentations(args.getInput(), null, config, null);
+		Results results = cf.createRepresentations(
+				argumentsGroup.getRepresentative().getInput(), null, config, null);
 		
-		Camera camera = null;
-		Projection projection = null;
-		
-		if (args.isOviewTiles()) {
+		for (CLIArguments args : argumentsGroup.getCLIArgumentsList()) {
 			
-			camera = OrthoTilesUtil.cameraForTiles(
-					results.getMapProjection(),
-					args.getOviewTiles(),
-					args.getOviewAngle(),
-					args.getOviewFrom());
-			projection = OrthoTilesUtil.projectionForTiles(
-					results.getMapProjection(),
-					args.getOviewTiles(),
-					args.getOviewAngle(),
-					args.getOviewFrom());
+			Camera camera = null;
+			Projection projection = null;
 			
-		} else if (args.isOviewBoundingBox()) {
-			
-			double angle = args.getOviewAngle();
-			CardinalDirection from = args.getOviewFrom();
-			
-			Collection<VectorXZ> pointsXZ = new ArrayList<VectorXZ>();
-			for (LatLonEle l : args.getOviewBoundingBox()) {
-				pointsXZ.add(results.getMapProjection().calcPos(l.lat, l.lon));
-			}
-			AxisAlignedBoundingBoxXZ bounds =
-				new AxisAlignedBoundingBoxXZ(pointsXZ);
-						
-			camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
-			projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
-			
-		} else if (args.isPviewPos()) {
-			
-			MapProjection proj = results.getMapProjection();
-			
-			LatLonEle pos = args.getPviewPos();
-			LatLonEle lookAt = args.getPviewLookat();
-			
-			camera = new Camera();
-			camera.setPos(proj.calcPos(pos.lat, pos.lon).xyz(pos.ele));
-			camera.setLookAt(proj.calcPos(lookAt.lat, lookAt.lon).xyz(lookAt.ele));
-			
-			projection = new Projection(false,
-					args.isPviewAspect() ? args.getPviewAspect() :
-						(double)args.getResolution().x / args.getResolution().y,
-					args.getPviewFovy(),
-					0,
-					1, 50000);
-						
-		}
-		
-		for (File outputFile : args.getOutput()) {
-			
-			OutputMode outputMode =
-				CLIArgumentsUtil.getOutputMode(outputFile);
-			
-			switch (outputMode) {
-
-			case OBJ:
-				ObjWriter.writeObjFile(outputFile,
-						results.getMapData(), results.getEleData(),
-						results.getTerrain(), results.getMapProjection(),
-						camera, projection);
-				break;
+			if (args.isOviewTiles()) {
 				
-			case POV:
-				POVRayWriter.writePOVInstructionFile(outputFile,
-						results.getMapData(), results.getEleData(), results.getTerrain(),
-						camera, projection);
-				break;
+				camera = OrthoTilesUtil.cameraForTiles(
+						results.getMapProjection(),
+						args.getOviewTiles(),
+						args.getOviewAngle(),
+						args.getOviewFrom());
+				projection = OrthoTilesUtil.projectionForTiles(
+						results.getMapProjection(),
+						args.getOviewTiles(),
+						args.getOviewAngle(),
+						args.getOviewFrom());
 				
-			case PNG:
-				if (camera == null || projection == null) {
-					System.err.println("camera or projection missing");
+			} else if (args.isOviewBoundingBox()) {
+				
+				double angle = args.getOviewAngle();
+				CardinalDirection from = args.getOviewFrom();
+				
+				Collection<VectorXZ> pointsXZ = new ArrayList<VectorXZ>();
+				for (LatLonEle l : args.getOviewBoundingBox()) {
+					pointsXZ.add(results.getMapProjection().calcPos(l.lat, l.lon));
 				}
-				ImageExport.writeImageFile(outputFile,
-						args.getResolution().x, args.getResolution().y,
-						results, camera, projection);
-				break;
+				AxisAlignedBoundingBoxXZ bounds =
+					new AxisAlignedBoundingBoxXZ(pointsXZ);
+							
+				camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
+				projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
+				
+			} else if (args.isPviewPos()) {
+				
+				MapProjection proj = results.getMapProjection();
+				
+				LatLonEle pos = args.getPviewPos();
+				LatLonEle lookAt = args.getPviewLookat();
+				
+				camera = new Camera();
+				camera.setPos(proj.calcPos(pos.lat, pos.lon).xyz(pos.ele));
+				camera.setLookAt(proj.calcPos(lookAt.lat, lookAt.lon).xyz(lookAt.ele));
+				
+				projection = new Projection(false,
+						args.isPviewAspect() ? args.getPviewAspect() :
+							(double)args.getResolution().x / args.getResolution().y,
+							args.getPviewFovy(),
+						0,
+						1, 50000);
+							
+			}
+			
+			for (File outputFile : args.getOutput()) {
+				
+				OutputMode outputMode =
+					CLIArgumentsUtil.getOutputMode(outputFile);
+				
+				switch (outputMode) {
+	
+				case OBJ:
+					ObjWriter.writeObjFile(outputFile,
+							results.getMapData(), results.getEleData(),
+							results.getTerrain(), results.getMapProjection(),
+							camera, projection);
+					break;
+					
+				case POV:
+					POVRayWriter.writePOVInstructionFile(outputFile,
+							results.getMapData(), results.getEleData(), results.getTerrain(),
+							camera, projection);
+					break;
+					
+				case PNG:
+					if (camera == null || projection == null) {
+						System.err.println("camera or projection missing");
+					}
+					ImageExport.writeImageFile(outputFile,
+							args.getResolution().x, args.getResolution().y,
+							results, camera, projection);
+					break;
+					
+				}
 				
 			}
 			
 		}
-		
-		if (args.getPerformancePrint()) {
+			
+		if (argumentsGroup.getRepresentative().getPerformancePrint()) {
 			long timeSec = (System.currentTimeMillis() - start) / 1000;
 			System.out.println("finished after " + timeSec + " s");
 		}
 		
-		if (args.isPerformanceTable()) {
-			PrintWriter w = new PrintWriter(new FileWriter(args.getPerformanceTable(), true), true);
+		if (argumentsGroup.getRepresentative().isPerformanceTable()) {
+			PrintWriter w = new PrintWriter(new FileWriter(
+					argumentsGroup.getRepresentative().getPerformanceTable(), true), true);
 			w.printf("|%6d |%6d |%6d |%6d |%6d |%6d |\n",
 				(perfListener.getPhaseDuration(Phase.MAP_DATA) + 500) / 1000,
 				(perfListener.getPhaseDuration(Phase.REPRESENTATION) + 500) / 1000,

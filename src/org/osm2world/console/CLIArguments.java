@@ -81,7 +81,7 @@ public interface CLIArguments {
 	@Option(description="appends a line with execution times to a file")
 	File getPerformanceTable();
 	boolean isPerformanceTable();
-	
+		
 	/* other parameters */
 	
 	@Option(description="start the graphical user interface")
@@ -92,5 +92,11 @@ public interface CLIArguments {
 	
 	@Option(description="print software version and exit")
 	boolean getVersion();
+	
+	/* parameter files */
+	
+	@Option(description="a file containing one set of parameters per line")
+	File getParameterFile();
+	boolean isParameterFile();
 	
 }

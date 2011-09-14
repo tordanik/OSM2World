@@ -8,6 +8,7 @@
  * use ele tags on invisible ways and areas
  * artificial nodes in ways for better terrain elevation
  * ability to render orthographic view from north, west, or east
+ * support for parameter files
  * more street furniture: advertising columns, billboards, benches
  * render handrails on steps
  * update of Osmosis lib version and support for .osm.pbf files
