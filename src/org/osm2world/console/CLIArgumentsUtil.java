@@ -110,6 +110,8 @@ public final class CLIArgumentsUtil {
 		
 		while ((line = in.readLine()) != null) {
 			
+			if (line.startsWith("#")) continue;
+			
 			List<String> argList = new ArrayList<String>();
 			
 			Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
