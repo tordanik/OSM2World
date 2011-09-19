@@ -51,7 +51,7 @@ import java.io.Reader;
  * @author  rharder@users.sf.net
  * @version 1.0.1
  */
-public class FileDrop
+class FileDrop
 {
     private transient javax.swing.border.Border normalBorder;
     private transient java.awt.dnd.DropTargetListener dropListener;

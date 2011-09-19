@@ -53,7 +53,7 @@ public final class POVRayWriter {
 		target.append("#include \"m2w_definitions.inc\"\n\n");
 				
 		target.append("global_settings { ambient_light rgb 1 }\n");
-		target.append("light_source{ <100000,150000,-100000> color White fade_power 0 }\n\n");
+		target.append("light_source{ <100000,150000,-100000> color White parallel point_at <0,0,0> fade_power 0 }\n\n");
 		
 		if (camera != null && projection != null) {
 			addCameraDefinition(target, camera, projection);

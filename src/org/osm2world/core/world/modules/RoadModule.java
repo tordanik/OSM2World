@@ -327,6 +327,10 @@ public class RoadModule extends ConfigurableWorldModule {
 				} else {
 					return DEFAULT_LANE_WIDTH;
 				}
+			} else if ("primary".equals(highwayValue) || "secondary".equals(highwayValue)) {
+				return 2 * DEFAULT_LANE_WIDTH;
+			} else if ("motorway".equals(highwayValue)) {
+				return 2.5f * DEFAULT_LANE_WIDTH;
 			}
 			
 			if (tags.containsKey("oneway") && !tags.getValue("oneway").equals("no")) {
