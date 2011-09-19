@@ -11,11 +11,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
 /**
- * calculates camera and projection information for viewing a given pair of
- * z12 tiles.
- * The viewer will look at the scene at an angle of 30°. The tiles' projection
- * on the screen will therefore be only half as high as it is wide.
- * Using a pair of z12 tiles will result in a square image.
+ * calculates camera and projection information for orthographic tiles.
  */
 public final class OrthoTilesUtil {
 
@@ -115,7 +111,7 @@ public final class OrthoTilesUtil {
 		
 		return new Projection(true,
 				 sizeX / (sizeZ * sin),
-				 1,
+				 Double.NaN,
 				 sizeZ * sin,
 				 -1000000, 1000000);
 		

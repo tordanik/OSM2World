@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
- OSM2World 0.1.7                                                     2011-??-?? 
+ OSM2World 0.1.7                                                     2011-09-19 
 --------------------------------------------------------------------------------
  
  * viewer: add option to choose between different elevation calculation methods
@@ -8,6 +8,7 @@
  * use ele tags on invisible ways and areas
  * artificial nodes in ways for better terrain elevation
  * ability to render orthographic view from north, west, or east
+ * bugfix related to orthographic tile boundaries in POVRay
  * support for parameter files
  * more street furniture: advertising columns, billboards, benches
  * render handrails on steps

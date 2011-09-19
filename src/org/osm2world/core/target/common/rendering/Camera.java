@@ -12,17 +12,17 @@ public class Camera {
 		
 	/** returns the view direction vector with length 1 */
 	public VectorXYZ getViewDirection() {
-		//TODO: (performance)? cache viewDirection		
-		return lookAt.subtract(pos).normalize();		
+		//TODO: (performance)? cache viewDirection
+		return lookAt.subtract(pos).normalize();
 	}
 	
-	/** 
+	/**
 	 * returns the vector that is orthogonal to the connection
 	 * between pos and lookAt and points to the right of it.
 	 * The result has length 1 and is parallel to the XZ plane.
 	 */
 	public VectorXYZ getRight() {
-		return getViewDirection().cross(UP);		
+		return getViewDirection().cross(UP).normalize();
 	}
 	
 	public VectorXYZ getPos() {
@@ -92,7 +92,7 @@ public class Camera {
 	 */
 	public void rotateY(double d) {
 		
-		VectorXYZ toOldLookAt = lookAt.subtract(pos);		
+		VectorXYZ toOldLookAt = lookAt.subtract(pos);
 		VectorXYZ toNewLookAt = toOldLookAt.rotateY(d);
 		
 		lookAt = pos.add(toNewLookAt);
@@ -106,8 +106,8 @@ public class Camera {
 	 * 
 	 * @param d  angle in radians
 	 */
-	public void rotateAroundRight(double d) {	
-		throw new UnsupportedOperationException("not yet implemented");		
+	public void rotateAroundRight(double d) {
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 	
 	@Override
