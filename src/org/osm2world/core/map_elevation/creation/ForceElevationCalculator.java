@@ -85,8 +85,6 @@ public class ForceElevationCalculator extends AdvancedAbstractElevationCalculato
 			addConnectionForces();
 			addNeighborshipForces();
 			
-			//FIXME: will be added each time if called multiple times!
-			
 			initializeElevations();
 			
 			/* perform calculations */
@@ -95,8 +93,6 @@ public class ForceElevationCalculator extends AdvancedAbstractElevationCalculato
 				float forceScale = forceScaleForStep(step);
 				calculateStep(forceScale);
 			}
-
-			writeResult();
 
 		}
 
