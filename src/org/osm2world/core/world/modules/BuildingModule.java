@@ -1,26 +1,36 @@
 package org.osm2world.core.world.modules;
 
+import static java.lang.Math.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -76,6 +86,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private double height;
 		private Material materialWall;
 		private Material materialRoof;
+		private RoofData roofData;
 		
 		public Building(MapArea area) {
 
@@ -107,12 +118,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		@Override
 		public void renderTo(Target<?> target) {
-
-			double roofEle = area.getElevationProfile().getMaxEle() + height;
 			
-			renderWalls(target, roofEle);
+			renderWalls(target, roofData);
 			
-			renderRoof(target, roofEle);
+			renderRoof(target, roofData);
 			
 		}
 
@@ -132,23 +141,76 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 		
-		private void renderRoof(Target<?> target, double roofEle) {
-			
+		private void renderRoof(Target<?> target, RoofData roofData) {
+						
 			Collection<TriangleXZ> triangles =
-				TriangulationUtil.triangulate(area.getPolygon());
+				JTSTriangulationUtil.triangulate(
+						roofData.getPolygon().getOuter(),
+						roofData.getPolygon().getHoles(),
+						roofData.getInnerSegments(),
+						roofData.getInnerPoints());
 
 			List<TriangleXYZ> trianglesXYZ =
 				new ArrayList<TriangleXYZ>(triangles.size());
 				
 			for (TriangleXZ triangle : triangles) {
-				trianglesXYZ.add(triangle.makeCounterclockwise().xyz(roofEle));
+				TriangleXZ tCCW = triangle.makeCounterclockwise();
+				trianglesXYZ.add(new TriangleXYZ(
+						getWithRoofEle(tCCW.v1, roofData),
+						getWithRoofEle(tCCW.v2, roofData),
+						getWithRoofEle(tCCW.v3, roofData)));
 			}
-				
+			
 			target.drawTriangles(materialRoof, trianglesXYZ);
 			
 		}
 
-		private void renderWalls(Target<?> target, double roofEle) {
+		private VectorXYZ getWithRoofEle(VectorXZ v, RoofData roofData) {
+			
+			Double ele = roofData.getRoofEleAt(v);
+			
+			if (ele != null) {
+				return v.xyz(ele);
+			} else {
+				
+				// get all segments from the roof
+				
+				//TODO (performance): avoid doing this for every node
+				
+				Collection<LineSegmentXZ> segments =
+					new ArrayList<LineSegmentXZ>();
+				
+				segments.addAll(roofData.getInnerSegments());
+				segments.addAll(roofData.getPolygon().getOuter().getSegments());
+				for (SimplePolygonXZ hole : roofData.getPolygon().getHoles()) {
+					segments.addAll(hole.getSegments());
+				}
+				
+				// find the segment with the closest distance to the node
+				
+				LineSegmentXZ closestSegment = null;
+				double closestSegmentDistance = Double.MAX_VALUE;
+				
+				for (LineSegmentXZ segment : segments) {
+					double segmentDistance = distanceFromLineSegment(v, segment);
+					if (segmentDistance < closestSegmentDistance) {
+						closestSegment = segment;
+						closestSegmentDistance = segmentDistance;
+					}
+				}
+				
+				// use that segment for height interpolation
+				
+				return v.xyz(interpolateValue(v,
+						closestSegment.p1,
+						roofData.getRoofEleAt(closestSegment.p1),
+						closestSegment.p2,
+						roofData.getRoofEleAt(closestSegment.p2)));
+				
+			}
+		}
+
+		private void renderWalls(Target<?> target, RoofData roofData) {
 			
 			double floorEle = area.getElevationProfile().getMinEle();
 			boolean renderFloor = false;
@@ -170,7 +232,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				Float levels = parseOsmDecimal(
 						area.getTags().getValue("building:levels"), false);
 				if (minLevel != null && levels != null) {
-					double totalHeight = roofEle - floorEle;
+					double totalHeight = roofData.getMaxRoofEle() - floorEle;
 					floorEle += (totalHeight / levels) * minLevel;
 					renderFloor = true;
 				}
@@ -178,7 +240,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (area.getOverlaps().isEmpty()) {
 				
-				renderWalls(target, area.getPolygon(), false, floorEle, roofEle);
+				renderWalls(target, area.getPolygon(), false, floorEle, roofData);
 				
 			} else {
 							
@@ -202,14 +264,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 				for (TerrainBoundaryWorldObject o : tbWorldObjects) {
 					subtractPolygons.add(o.getOutlinePolygon().getSimpleXZPolygon());
 				}
-				subtractPolygons.addAll(area.getPolygon().getHoles());
+				subtractPolygons.addAll(roofData.getPolygon().getHoles());
 				
 				Collection<PolygonWithHolesXZ> buildingPartPolys =
 					CAGUtil.subtractPolygons(
-							area.getOuterPolygon(), subtractPolygons);
+							roofData.getPolygon().getOuter(),
+							subtractPolygons);
 				
 				for (PolygonWithHolesXZ p : buildingPartPolys) {
-					renderWalls(target, p, false, floorEle, roofEle);
+					renderWalls(target, p, false, floorEle, roofData);
 					if (renderFloor) {
 						renderFloor(target, floorEle);
 					}
@@ -241,11 +304,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 					
 					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
 						double clearing = o.getClearingAbove(o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
-						double newFloorEle = area.getElevationProfile().getMaxEle() + clearing;
+						double newFloorEle = area.getElevationProfile().getMinEle() + clearing;
 						if (newFloorEle < floorEle) {
 							newFloorEle = floorEle;
 						}
-						renderWalls(target, p, false, newFloorEle, roofEle);
+						renderWalls(target, p, false, newFloorEle, roofData);
 						renderFloor(target, newFloorEle);
 					}
 					
@@ -256,18 +319,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		private void renderWalls(Target<?> target, PolygonWithHolesXZ p,
-				boolean renderFloor, double floorEle, double roofEle) {
+				boolean renderFloor, double floorEle, RoofData roofData) {
 			
-			drawWallOnPolygon(target, floorEle, roofEle, p.getOuter().makeCounterclockwise());
+			drawWallOnPolygon(target, floorEle, roofData, p.getOuter().makeCounterclockwise());
 			
 			for (SimplePolygonXZ polygon : p.getHoles()) {
-				drawWallOnPolygon(target, floorEle, roofEle, polygon.makeClockwise());
+				drawWallOnPolygon(target, floorEle, roofData, polygon.makeClockwise());
 			}
 			
 		}
 
-		private void drawWallOnPolygon(Target<?> target, double roofEle,
-				double floorEle, SimplePolygonXZ polygon) {
+		private void drawWallOnPolygon(Target<?> target, double floorEle,
+				RoofData roofData, SimplePolygonXZ polygon) {
 			
 			List<VectorXZ> vertices = polygon.getVertexLoop();
 			
@@ -275,8 +338,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			for (int i = 0; i < vertices.size(); i++) {
 				final VectorXZ coord = vertices.get(i);
-				wallVectors[i*2] = new VectorXYZ(coord.x, floorEle, coord.z);
-				wallVectors[i*2 + 1] = new VectorXYZ(coord.x, roofEle, coord.z);
+				wallVectors[i*2] = getWithRoofEle(coord, roofData);
+				double upperEle = wallVectors[i*2].y;
+				wallVectors[i*2 + 1] = new VectorXYZ(coord.x,
+						min(floorEle, upperEle), coord.z);
 			}
 
 			target.drawTriangleStrip(materialWall, wallVectors);
@@ -294,10 +359,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			String buildingValue = area.getTags().getValue("building");
 			
+			/* determine defaults for building type */
+			
 			double defaultHeight = 10;
 			double defaultHeightPerLevel = 2.5;
 			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
+			String defaultRoofType = "flat";
 			
 			if ("greenhouse".equals(buildingValue)) {
 				defaultHeight = 2.5;
@@ -305,6 +373,21 @@ public class BuildingModule extends ConfigurableWorldModule {
 						new Color(0.9f, 0.9f, 0.9f));
 				defaultMaterialRoof = defaultMaterialWall;
 			}
+			
+			/* determine roof type */
+						
+			if (hasComplexRoof(area)) {
+				roofData = new ComplexRoofData();
+			} else {
+				
+				String roofType = area.getTags().getValue("roofType");
+				if (roofType == null) { roofType = defaultRoofType; }
+				
+				roofData = new FlatRoofData();
+				
+			}
+			
+			/* determine height */
 			
 			Float levels = null;
 			if (area.getTags().containsKey("building:levels")) {
@@ -315,12 +398,248 @@ public class BuildingModule extends ConfigurableWorldModule {
 				?  defaultHeight
 				: (levels * defaultHeightPerLevel);
 			
+			fallbackHeight += roofData.getRoofHeight();
+			
 			height = parseHeight(area.getTags(), (float)fallbackHeight);
+			
+			/* determine materials */
+			
 			materialWall = defaultMaterialWall;
 			materialRoof = defaultMaterialRoof;
 						
 		}
+		
+		private static interface RoofData {
+						
+			/**
+			 * returns the outline (with holes) of the roof.
+			 * The shape will be generally identical to that of the
+			 * building itself, but additional vertices might have
+			 * been inserted into segments.
+			 */
+			PolygonWithHolesXZ getPolygon();
 
+			/**
+			 * returns segments within the roof polygon
+			 * that define ridges or edges of the roof
+			 */
+			Collection<LineSegmentXZ> getInnerSegments();
+
+			/**
+			 * returns segments within the roof polygon
+			 * that define apex nodes of the roof
+			 */
+			Collection<VectorXZ> getInnerPoints();
+			
+			/**
+			 * returns maximum roof height
+			 */
+			double getRoofHeight();
+
+			/**
+			 * returns roof elevation at a position.
+			 * Only required to work for positions that are part of the
+			 * polygon, segments or points for the roof.
+			 * 
+			 * @return  elevation, null if unknown
+			 */
+			Double getRoofEleAt(VectorXZ pos);
+
+			/**
+			 * returns maximum roof elevation
+			 */
+			double getMaxRoofEle();
+			
+		}
+		
+		private class FlatRoofData implements RoofData {
+				
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				return area.getPolygon();
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public double getRoofHeight() {
+				return 0;
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+				return getMaxRoofEle();
+			}
+			
+			@Override
+			public double getMaxRoofEle() {
+				return area.getElevationProfile().getMinEle() + height;
+			}
+			
+		}
+
+		//TODO: simple roof shapes based on tags instead of explicit geometry
+		
+		/**
+		 * roof that has been mapped with explicit roof edge/ridge/apex elements
+		 */
+		private class ComplexRoofData implements RoofData {
+			
+			private static final double DEFAULT_RIDGE_HEIGHT = 5;
+						
+			private double roofHeight = 0;
+			private final Map<VectorXZ, Double> roofHeightMap;
+			
+			private final Collection<LineSegmentXZ> ridgeAndEdgeSegments;
+			
+			public ComplexRoofData() {
+
+				/* find ridge and/or edges
+				 * (apex nodes don't need to be handled separately
+				 *  as they should always be part of an edge segment) */
+				
+				roofHeightMap = new HashMap<VectorXZ, Double>();
+				
+				ridgeAndEdgeSegments = new ArrayList<LineSegmentXZ>();
+				
+				for (MapOverlap<?,?> overlap : area.getOverlaps()) {
+					
+					if (overlap instanceof MapOverlapWA) {
+						
+						MapWaySegment waySegment = ((MapOverlapWA)overlap).e1;
+						
+						boolean isRidge = waySegment.getTags().contains("roof:ridge", "yes");
+						boolean isEdge = waySegment.getTags().contains("roof:edge", "yes");
+												
+						if (isRidge || isEdge) {
+							
+							ridgeAndEdgeSegments.add(waySegment.getLineSegment());
+							
+							for (MapNode node : waySegment.getStartEndNodes()) {
+								
+								// height of node (above roof base)
+								double nodeHeight = Double.NaN;
+								
+								if (node.getTags().containsKey("height")) {
+									nodeHeight =
+										parseHeight(node.getTags(), Float.NaN);
+								} else if (waySegment.getTags().containsKey("height")) {
+									nodeHeight =
+										parseHeight(waySegment.getTags(), Float.NaN);
+								} else if (node.getTags().contains("roof:apex", "yes")) {
+									nodeHeight = DEFAULT_RIDGE_HEIGHT;
+								} else if (isRidge) {
+									nodeHeight = DEFAULT_RIDGE_HEIGHT;
+								}
+								
+								if (!Double.isNaN(nodeHeight)) {
+									
+									roofHeightMap.put(node.getPos(), nodeHeight);
+									
+									roofHeight = max(roofHeight, nodeHeight);
+									
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+				/* add heights for outline nodes that don't have one yet */
+				
+				for (MapNode node : area.getBoundaryNodes()) {
+					if (!roofHeightMap.containsKey(node.getPos())) {
+						roofHeightMap.put(node.getPos(), 0.0);
+					}
+				}
+				
+				for (List<MapNode> hole : area.getHoles()) {
+					for (MapNode node : hole) {
+						if (!roofHeightMap.containsKey(node.getPos())) {
+							roofHeightMap.put(node.getPos(), height - roofHeight);
+						}
+					}
+				}
+
+				/* add heights for edge nodes that are not also
+				 * ridge/outline/apex nodes. This will just use base height
+				 * for them instead of trying to interpolate heights along
+				 * chains of edge segments. Results are therefore wrong,
+				 * but there's no reason to map them like that anyway. */
+				
+				for (LineSegmentXZ segment : ridgeAndEdgeSegments) {
+					if (!roofHeightMap.containsKey(segment.p1)) {
+						roofHeightMap.put(segment.p1, height - roofHeight);
+					}
+					if (!roofHeightMap.containsKey(segment.p2)) {
+						roofHeightMap.put(segment.p2, height - roofHeight);
+					}
+				}
+				
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				return area.getPolygon();
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return ridgeAndEdgeSegments;
+			}
+			
+			@Override
+			public double getRoofHeight() {
+				return roofHeight;
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+				if (roofHeightMap.containsKey(pos)) {
+					return area.getElevationProfile().getMinEle()
+						+ height + roofHeightMap.get(pos);
+				} else {
+					return null;
+				}
+			}
+			
+			@Override
+			public double getMaxRoofEle() {
+				return area.getElevationProfile().getMinEle()
+					+ height + roofHeight;
+			}
+			
+		}
+		
+		public static boolean hasComplexRoof(MapArea area) {
+			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
+				if (overlap instanceof MapOverlapWA) {
+					TagGroup tags = overlap.e1.getTags();
+					if (tags.contains("roof:ridge", "yes")
+							|| tags.contains("roof:edge", "yes")) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
 	}
 	
 	private static class BuildingEntrance implements NodeWorldObject,
@@ -369,8 +688,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				if (entranceI != -1) {
 					
-					VectorXZ posBefore = vs.get((entranceI - 1) % vs.size());
-					VectorXZ posAfter = vs.get((entranceI + 1) % vs.size());
+					VectorXZ posBefore = vs.get((vs.size() + entranceI - 1) % vs.size());
+					VectorXZ posAfter = vs.get((vs.size() + entranceI + 1) % vs.size());
 					
 					intoBuilding = posAfter.subtract(posBefore).rightNormal();
 					if (polygon.isClockwise()) {

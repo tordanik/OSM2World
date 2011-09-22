@@ -40,6 +40,17 @@ public class JTSConversionUtil {
 	public static final VectorXYZ vectorXYZFromJTSCoordinate(Coordinate c) {
 		return new VectorXYZ(c.x, c.z, c.y);
 	}
+
+	public static LineString lineSegmentXZToJTSLineString(LineSegmentXZ segment) {
+		
+		Coordinate[] points = {
+				vectorXZToJTSCoordinate(segment.p1),
+				vectorXZToJTSCoordinate(segment.p2)
+		};
+		
+		return new LineString(new CoordinateArraySequence(points), GF);
+		
+	}
 	
 	public static final Polygon polygonXZToJTSPolygon(SimplePolygonXZ polygon) {
 	
@@ -58,12 +69,12 @@ public class JTSConversionUtil {
 		
 	}
 	
-	public static final PolygonWithHolesXZ 
+	public static final PolygonWithHolesXZ
 		polygonXZFromJTSPolygon(Polygon polygon) {
 		
 		/* create outer polygon */
 		
-		SimplePolygonXZ outerPolygon = 
+		SimplePolygonXZ outerPolygon =
 			polygonXZFromLineString(polygon.getExteriorRing());
 		
 		/* create holes */
@@ -114,6 +125,6 @@ public class JTSConversionUtil {
 		
 		return result;
 		
-	}	
+	}
 		
 }

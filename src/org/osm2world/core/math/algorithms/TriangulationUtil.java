@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -48,8 +49,9 @@ public class TriangulationUtil {
 		/* use JTS if there are unconnected points, or as a fallback */
 		
 		try {
-			
-			return JTSTriangulationUtil.triangulate(outerPolygon, holes, points);
+
+			return JTSTriangulationUtil.triangulate(outerPolygon, holes,
+					Collections.<LineSegmentXZ>emptyList(), points);
 			
 		} catch (ConstraintEnforcementException e2) {
 			

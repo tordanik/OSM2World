@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -17,7 +18,6 @@ import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 
@@ -25,7 +25,7 @@ import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder
  * uses the JTS library for triangulation.
  * Creates a Conforming Delaunay Triangulation with Steiner points!
  */
-final class JTSTriangulationUtil {
+public final class JTSTriangulationUtil {
 
 	private static final Geometry[] EMPTY_GEOM_ARRAY = new Geometry[0];
 
@@ -40,7 +40,8 @@ final class JTSTriangulationUtil {
 			Collection<SimplePolygonXZ> holes) {
 		
 		List<VectorXZ> points = emptyList();
-		return triangulate(polygon, holes, points);
+		List<LineSegmentXZ> segments = emptyList();
+		return triangulate(polygon, holes, segments, points);
 		
 	}
 	
@@ -48,19 +49,29 @@ final class JTSTriangulationUtil {
 	 * variant of {@link #triangulate(SimplePolygonXZ, Collection)}
 	 * that accepts some unconnected points within the polygon area
 	 * and will try to create triangle vertices at these points.
+	 * It will also accept line segment as edges that must be integrated
+	 * into the resulting triangulation.
 	 */
 	public static final List<TriangleXZ> triangulate(
 			SimplePolygonXZ polygon,
 			Collection<SimplePolygonXZ> holes,
+			Collection<LineSegmentXZ> segments,
 			Collection<VectorXZ> points) {
 			
 		ConformingDelaunayTriangulationBuilder triangulationBuilder =
 			new ConformingDelaunayTriangulationBuilder();
 		
-		List<Polygon> polys = new ArrayList<Polygon>(holes.size() + 1);
-		polys.add(polygonXZToJTSPolygon(polygon));
+		List<Geometry> constraints =
+			new ArrayList<Geometry>(1 + holes.size() + segments.size());
+		
+		constraints.add(polygonXZToJTSPolygon(polygon));
+		
 		for (SimplePolygonXZ hole : holes) {
-			polys.add(polygonXZToJTSPolygon(hole));
+			constraints.add(polygonXZToJTSPolygon(hole));
+		}
+		
+		for (LineSegmentXZ segment : segments) {
+			constraints.add(lineSegmentXZToJTSLineString(segment));
 		}
 		
 		ArrayList<Point> jtsPoints = new ArrayList<Point>();
@@ -74,7 +85,7 @@ final class JTSTriangulationUtil {
 		triangulationBuilder.setSites(
 				new GeometryCollection(jtsPoints.toArray(EMPTY_GEOM_ARRAY), GF));
 		triangulationBuilder.setConstraints(
-				new GeometryCollection(polys.toArray(EMPTY_GEOM_ARRAY), GF));
+				new GeometryCollection(constraints.toArray(EMPTY_GEOM_ARRAY), GF));
 		triangulationBuilder.setTolerance(0.01);
 		
 		/* run triangulation */
