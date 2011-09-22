@@ -9,6 +9,9 @@ import java.util.List;
  */
 public class SimplePolygonXZ extends PolygonXZ {
 	
+	/** stores the signed area */
+	private Double signedArea;
+	
 	/** stores the result for {@link #getArea()} */
 	private Double area;
 
@@ -30,11 +33,11 @@ public class SimplePolygonXZ extends PolygonXZ {
 				
 	}
 
-	private void calculateArea(List<VectorXZ> vertexLoop) {
-		double signedArea = calculateSignedArea(vertexLoop);
+	private void calculateArea() {
+		this.signedArea = calculateSignedArea(vertexLoop);
 		this.area = Math.abs(signedArea);
 		this.clockwise = signedArea < 0;
-				
+		
 		assertNonzeroArea();
 	}
 	
@@ -49,15 +52,38 @@ public class SimplePolygonXZ extends PolygonXZ {
 	/** returns the polygon's area */
 	public double getArea() {
 		if (area == null) {
-			calculateArea(vertexLoop);
+			calculateArea();
 		}
 		return area;
+	}
+	
+	/** returns the centroid (or "barycenter") of the polygon */
+	public VectorXZ getCentroid() {
+		
+		if (signedArea == null) { calculateArea(); }
+		
+		double xSum = 0, zSum = 0;
+		
+		int numVertices = vertexLoop.size() - 1;
+		for (int i = 0; i < numVertices; i++) {
+			
+			double factor = vertexLoop.get(i).x * vertexLoop.get(i+1).z
+				- vertexLoop.get(i+1).x * vertexLoop.get(i).z;
+			
+			xSum += (vertexLoop.get(i).x + vertexLoop.get(i+1).x) * factor;
+			zSum += (vertexLoop.get(i).z + vertexLoop.get(i+1).z) * factor;
+			
+		}
+		
+		double areaFactor = 1 / (6 * signedArea);
+		return new VectorXZ(areaFactor * xSum, areaFactor * zSum);
+		
 	}
 	
 	/** returns true if the polygon has clockwise orientation */
 	public boolean isClockwise() {
 		if (area == null) {
-			calculateArea(vertexLoop);
+			calculateArea();
 		}
 		return clockwise;
 	}
@@ -65,10 +91,10 @@ public class SimplePolygonXZ extends PolygonXZ {
 	@Override
 	public boolean isSelfIntersecting() {
 		return false;
-	}	
+	}
 
 	@Override
-	public boolean isSimple() {		
+	public boolean isSimple() {
 		return true;
 	}
 	
@@ -147,7 +173,7 @@ public class SimplePolygonXZ extends PolygonXZ {
 	 * returns true if the polygon contains a given position
 	 */
 	public boolean contains(VectorXZ test) {
-		return SimplePolygonXZ.contains(vertexLoop, test);		  
+		return SimplePolygonXZ.contains(vertexLoop, test);
 	}
 
 	/**
@@ -164,21 +190,18 @@ public class SimplePolygonXZ extends PolygonXZ {
 	
 	/**
 	 * calculates the area of a planar non-self-intersecting polygon.
-	 * This isn't supposed to deal with projection issues.
 	 * The result is negative if the polygon is clockwise.
 	 */
-	private static double calculateSignedArea(List<VectorXZ> vertices) {
+	private static double calculateSignedArea(List<VectorXZ> vertexLoop) {
+				
+		double sum = 0f;
 		
-		//TODO: find source of algorithm
-		
-		double area = 0f;
-			
-		for (int i = 0; i + 1 < vertices.size(); i++) {
-			area += vertices.get(i).x * vertices.get(i+1).z;
-			area -= vertices.get(i+1).x * vertices.get(i).z;
+		for (int i = 0; i + 1 < vertexLoop.size(); i++) {
+			sum += vertexLoop.get(i).x * vertexLoop.get(i+1).z;
+			sum -= vertexLoop.get(i+1).x * vertexLoop.get(i).z;
 		}
 		
-		return area;
+		return sum / 2;
 		
 	}
 

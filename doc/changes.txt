@@ -2,7 +2,7 @@
  OSM2World 0.1.8                                                     2011-??-?? 
 --------------------------------------------------------------------------------
  
- * support for roof shapes (as ridge/edge geometry)
+ * support for roof shapes (as ridge/edge geometry or building tags)
  * bugfix in ForceEC. (duplicate points with ele) solves missing walls in POVRay
  
  

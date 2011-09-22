@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.*;
+import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
@@ -9,7 +10,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +25,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -365,7 +366,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			double defaultHeightPerLevel = 2.5;
 			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
-			String defaultRoofType = "flat";
+			String defaultRoofShape = "flat";
 			
 			if ("greenhouse".equals(buildingValue)) {
 				defaultHeight = 2.5;
@@ -374,16 +375,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialRoof = defaultMaterialWall;
 			}
 			
-			/* determine roof type */
-						
+			/* determine roof shape */
+				
 			if (hasComplexRoof(area)) {
 				roofData = new ComplexRoofData();
 			} else {
 				
-				String roofType = area.getTags().getValue("roofType");
-				if (roofType == null) { roofType = defaultRoofType; }
+				String roofShape = area.getTags().getValue("roof:shape");
+				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
-				roofData = new FlatRoofData();
+				if ("pyramidal".equals(roofShape)) {
+					roofData = new PyramidalRoofData();
+				} else {
+					roofData = new FlatRoofData();
+				}
 				
 			}
 			
@@ -408,6 +413,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			materialRoof = defaultMaterialRoof;
 						
 		}
+		
+		private static final double DEFAULT_RIDGE_HEIGHT = 5;
 		
 		private static interface RoofData {
 						
@@ -461,12 +468,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			@Override
 			public Collection<VectorXZ> getInnerPoints() {
-				return Collections.emptyList();
+				return emptyList();
 			}
 
 			@Override
 			public Collection<LineSegmentXZ> getInnerSegments() {
-				return Collections.emptyList();
+				return emptyList();
 			}
 
 			@Override
@@ -486,14 +493,96 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 
-		//TODO: simple roof shapes based on tags instead of explicit geometry
+		/**
+		 * superclass for roofs based on roof:type tags.
+		 * Contains common functionality, such as roof height parsing.
+		 */
+		abstract private class TaggedRoofData implements RoofData {
+		
+			protected final double roofHeight;
+			
+			TaggedRoofData() {
+				
+				Float taggedHeight = null;
+				
+				if (area.getTags().containsKey("roof:height")) {
+					String valueString = area.getTags().getValue("roof:height");
+					taggedHeight = parseMeasure(valueString);
+				}
+				
+				roofHeight =
+					taggedHeight != null ? taggedHeight : DEFAULT_RIDGE_HEIGHT;
+				
+			}
+			
+			@Override
+			public double getRoofHeight() {
+				return height;
+			}
+			
+			@Override
+			public double getMaxRoofEle() {
+				return area.getElevationProfile().getMinEle() + height;
+			}
+			
+		}
+		
+		private class PyramidalRoofData extends TaggedRoofData {
+			
+			private final VectorXZ apex;
+			private final List<LineSegmentXZ> innerSegments;
+			
+			public PyramidalRoofData() {
+			
+				super();
+				
+				PolygonXZ polygon = area.getPolygon().getOuter();
+				
+				if (polygon.isSimple()) {
+					apex = polygon.asSimplePolygon().getCentroid();
+				} else {
+					apex = polygon.getCenter();
+				}
+				
+				innerSegments = new ArrayList<LineSegmentXZ>();
+				for (VectorXZ v : polygon.getVertices()) {
+					innerSegments.add(new LineSegmentXZ(v, apex));
+				}
+				
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				return area.getPolygon();
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return singletonList(apex);
+			}
+
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return innerSegments;
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+				if (apex.equals(pos)) {
+					return getMaxRoofEle();
+				} else if (area.getPolygon().getOuter().getVertices().contains(pos)) {
+					return getMaxRoofEle() - roofHeight;
+				} else {
+					return null;
+				}
+			}
+			
+		}
 		
 		/**
 		 * roof that has been mapped with explicit roof edge/ridge/apex elements
 		 */
 		private class ComplexRoofData implements RoofData {
-			
-			private static final double DEFAULT_RIDGE_HEIGHT = 5;
 						
 			private double roofHeight = 0;
 			private final Map<VectorXZ, Double> roofHeightMap;
@@ -596,7 +685,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			@Override
 			public Collection<VectorXZ> getInnerPoints() {
-				return Collections.emptyList();
+				return emptyList();
 			}
 
 			@Override
