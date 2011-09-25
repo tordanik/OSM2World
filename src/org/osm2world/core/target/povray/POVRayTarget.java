@@ -1,12 +1,8 @@
 package org.osm2world.core.target.povray;
 
-import static org.osm2world.core.target.common.material.Materials.*;
-
 import java.awt.Color;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
@@ -14,13 +10,14 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
 
 public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	
 	private static final String INDENT = "  ";
 	
 	private final PrintStream output;
-
+			
 	public POVRayTarget(PrintStream output) {
 		this.output = output;
 	}
@@ -99,6 +96,22 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 //		}
 //	}
 	
+	public void appendMaterialDefinitions() {
+
+		append("//\n// material definitions\n//\n\n");
+		
+		for (Material material : Materials.getMaterials()) {
+			String name = "texture_" + Materials.getUniqueName(material);
+
+			append("#ifndef (" + name + ")\n");
+			append("#declare " + name + " = ");
+			appendMaterial(material);
+			append("#end\n\n");
+			
+		}
+		
+	}
+	
 	@Override
 	public void drawTriangles(Material material,
 			Collection<? extends TriangleXYZ> triangles) {
@@ -117,7 +130,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		}
 
-		appendMaterial(material);
+		appendMaterialOrName(material);
 		
 		append("}\n");
 		
@@ -156,7 +169,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		}
 
-		appendMaterial(material);
+		appendMaterialOrName(material);
 		
 		append("}\n");
 
@@ -228,7 +241,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			appendVector(v);
 		}
 		
-		appendMaterial(material);
+		appendMaterialOrName(material);
 		
 		append("}\n");
 
@@ -269,7 +282,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 				append(" open");
 			}
 			
-			appendMaterial(material);
+			appendMaterialOrName(material);
 			
 			append("}\n");
 
@@ -327,7 +340,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		}
 		
-		appendMaterial(material);
+		appendMaterialOrName(material);
 		
 		append("}\n");
 
@@ -398,30 +411,29 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 				color.getBlue()/255f);
 		
 	}
-
-	private static Map<Material, String> DEFINED_MATERIALS = new HashMap<Material, String>();
-	static {
-		DEFINED_MATERIALS.put(TERRAIN_DEFAULT, "empty_ground");
-		DEFINED_MATERIALS.put(ASPHALT, "asphalt");
-		DEFINED_MATERIALS.put(WATER, "water");
-	}
 	
-	public void appendMaterial(Material material) {
+	public void appendMaterialOrName(Material material) {
 		
-		if (DEFINED_MATERIALS.containsKey(material)) {
-			append(" texture {" + DEFINED_MATERIALS.get(material) + "}");
+		String materialName = Materials.getUniqueName(material);
+		
+		if (materialName != null) {
+			append(" texture { texture_" + materialName + " }");
 		} else {
-			
-//			append("  texture { ");
-			append("    pigment { ");
-			appendRGBColor(material.getColor());
-			append("    }\n  finish {\n");
-			append("      ambient " + material.getAmbientFactor() + "\n");
-			append("      diffuse " + material.getDiffuseFactor() + "\n");
-			append("    }\n");
-//			append("  }\n");
-			
+			appendMaterial(material);
 		}
+		
+	}
+
+	private void appendMaterial(Material material) {
+		
+		append("  texture {\n");
+		append("    pigment { ");
+		appendRGBColor(material.getColor());
+		append(" }\n    finish {\n");
+		append("      ambient " + material.getAmbientFactor() + "\n");
+		append("      diffuse " + material.getDiffuseFactor() + "\n");
+		append("    }\n");
+		append("  }\n");
 		
 	}
 	

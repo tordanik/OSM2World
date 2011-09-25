@@ -50,7 +50,7 @@ public final class POVRayWriter {
 		addRenderParameters(target);
 		
 		target.append("\n#include \"textures.inc\"\n#include \"colors.inc\"\n");
-		target.append("#include \"m2w_definitions.inc\"\n\n");
+		target.append("#include \"osm2world_definitions.inc\"\n\n");
 				
 		target.append("global_settings { ambient_light rgb 1 }\n");
 		target.append("light_source{ <100000,150000,-100000> color White parallel point_at <0,0,0> fade_power 0 }\n\n");
@@ -59,9 +59,16 @@ public final class POVRayWriter {
 			addCameraDefinition(target, camera, projection);
 		}
 		
-		target.append("sky_sphere {\n");
+		target.append("#ifndef (sky_sphere_def)\n");
+		target.append("#declare sky_sphere_def = sky_sphere {\n");
 		target.append("  pigment { Blue_Sky3 }\n");
-		target.append("}\n\n");
+		target.append("}\n");
+		target.append("#end\n\n");
+		target.append("sky_sphere {sky_sphere_def}\n\n");
+		
+		target.appendMaterialDefinitions();
+		
+		target.append("//\n// empty ground around the scene\n//\n\n");
 		
 		target.append("difference {\n");
 		target.append("  plane { y, -0.001 }\n  ");
@@ -69,10 +76,10 @@ public final class POVRayWriter {
 			.getVertexLoop().toArray(new VectorXZ[0]);
 		target.appendPrism( -100, 1, boundary);
 		target.append("\n");
-		target.appendMaterial(Materials.TERRAIN_DEFAULT);
+		target.appendMaterialOrName(Materials.TERRAIN_DEFAULT);
 		target.append("\n}\n\n");
 		
-		target.append("\n\n//\n//Grid\n//\n\n");
+		target.append("\n\n//\n//Map data\n//\n\n");
 		
 		TargetUtil.renderWorldObjects(target, mapData);
 
