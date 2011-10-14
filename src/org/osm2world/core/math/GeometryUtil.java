@@ -1,13 +1,13 @@
 package org.osm2world.core.math;
 
+import static org.osm2world.core.math.VectorXZ.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
-
-import static org.osm2world.core.math.VectorXZ.*;
 
 /**
  * utility class for some useful calculations
@@ -55,7 +55,7 @@ public final class GeometryUtil {
 				triangles.add(new TriangleXYZ(
 						vs.get(triangle),
 						vs.get(triangle + 2),
-						vs.get(triangle + 1)));				
+						vs.get(triangle + 1)));
 			}
 
 		}
@@ -97,7 +97,7 @@ public final class GeometryUtil {
 		
 		//calculate dot product of directionA and directionB;
 		//if dot product is (approximately) 0, the lines are parallel
-		double denom = directionA.z*directionB.x - directionA.x*directionB.z; 
+		double denom = directionA.z*directionB.x - directionA.x*directionB.z;
 		if(approxZero(denom)) { return null; }
 		
 		//TODO: why?
@@ -137,7 +137,7 @@ public final class GeometryUtil {
 		
 		//calculate dot product;
 		//if dot product is (approximately) 0, the lines are parallel
-		double denom = vz*qx - vx*qz; 
+		double denom = vz*qx - vx*qz;
 		if(approxZero(denom)) { return null; }
 		
 		//TODO: why?
@@ -164,7 +164,7 @@ public final class GeometryUtil {
 	
 	/**
 	 * variant of {@link #getLineSegmentIntersection(VectorXZ, VectorXZ, VectorXZ, VectorXZ)}
-	 * that also returns null (= does not announce an intersection) 
+	 * that also returns null (= does not announce an intersection)
 	 * if the two segments share an end point
 	 */
 	public static final VectorXZ getTrueLineSegmentIntersection(
@@ -181,7 +181,7 @@ public final class GeometryUtil {
 	}
 	
 	/**
-	 * returns true if the point p is on the right of the line though l1 and l2 
+	 * returns true if the point p is on the right of the line though l1 and l2
 	 */
 	public static final boolean isRightOf(VectorXZ p, VectorXZ l1, VectorXZ l2) {
 		
@@ -251,7 +251,7 @@ public final class GeometryUtil {
 				pos1.z * (1-influenceRatioPos2) + pos2.z * influenceRatioPos2);
 	}
 
-	/** 
+	/**
 	 * three-dimensional version of
 	 * {@link #interpolateBetween(VectorXZ, VectorXZ, double)}
 	 */
@@ -282,8 +282,8 @@ public final class GeometryUtil {
 	public static double interpolateValue(VectorXZ posForValue,
 			VectorXZ pos1, double valueAt1, VectorXZ pos2, double valueAt2) {
 		
-		double distRatio = 
-			distance(pos1, posForValue) 
+		double distRatio =
+			distance(pos1, posForValue)
 			/ (distance(pos1, posForValue) + distance(posForValue, pos2));
 
 		return valueAt1 * (1 - distRatio)
@@ -299,10 +299,10 @@ public final class GeometryUtil {
 	 * 
 	 * @param preferredDistance  ideal distance between resulting points;
 	 * this method will try to keep the actual distance as close to this as possible
-	 *  
+	 * 
 	 * @param pointsAtStartAndEnd  if true, there will be a point at lineStart
 	 * and lineEnd each; if false, the closest points will be half the usual
-	 * distance away from these 
+	 * distance away from these
 	 */
 	public static List<VectorXZ> equallyDistributePointsAlong(
 			double preferredDistance, boolean pointsAtStartAndEnd,
@@ -328,7 +328,7 @@ public final class GeometryUtil {
 				lineStart :
 				lineStart.add(pointDiff.mult(0.5f));
 		
-		result.add(mostRecentPoint);			
+		result.add(mostRecentPoint);
 
 		for (int point = 1; point < numPoints; point ++) {
 			
@@ -349,7 +349,7 @@ public final class GeometryUtil {
 	 * 
 	 * @param preferredDistance  ideal distance between resulting points;
 	 * this method will try to keep the actual distance as close to this as possible
-	 *  
+	 * 
 	 * @param pointsAtStartAndEnd  if true, there will be a point at lineStart
 	 * and lineEnd each; if false, the closest points will be half the usual
 	 * distance away from these
@@ -395,7 +395,53 @@ public final class GeometryUtil {
 				
 	}
 	
-	/** 
+	/**
+	 * returns a polygon that is constructed from a given polygon
+	 * by inserting a point into one of the segments of the original polygon.
+	 * The segment chosen for this purpose is the one closest to the new node.
+	 * 
+	 * @param polygon       original polygon, will not be modified by this method
+	 * @param point         the new point
+	 * @param snapDistance  minimum distance of new point from segment endpoints;
+	 *                      if the new point is closer, the unmodified
+	 *                      original polygon will be returned.
+	 */
+	public static PolygonXZ insertIntoPolygon(PolygonXZ polygon,
+			VectorXZ point, double snapDistance) {
+		
+		LineSegmentXZ segment = polygon.getClosestSegment(point);
+		
+		for (int i = 0; i + 1 <= polygon.size() ; i++) {
+			
+			if (polygon.getVertex(i).equals(segment.p1)
+					&& polygon.getVertexAfter(i).equals(segment.p2)){
+				
+				if (polygon.getVertex(i).distanceTo(point) <= snapDistance
+						|| polygon.getVertexAfter(i).distanceTo(point) <= snapDistance) {
+					
+					return polygon;
+					
+				} else {
+
+					ArrayList<VectorXZ> vertexLoop =
+						new ArrayList<VectorXZ>(polygon.getVertexLoop());
+					
+					vertexLoop.add(i + 1, point);
+					
+					return new PolygonXZ(vertexLoop);
+					
+				}
+				
+			}
+			
+		}
+		
+		throw new IllegalArgumentException("segment " + segment +
+				" was not found in polygon " + polygon);
+		
+	}
+	
+	/**
 	 * maximum number of consecutive failures to place a point during random
 	 * distribution to be tolerated before stopping the process.
 	 */
@@ -409,7 +455,7 @@ public final class GeometryUtil {
 	 * 
 	 * Note that the density isn't guaranteed. After several failed attempts
 	 * to place a point, the distribution will stop even if the density
-	 * hasn't been reached. 
+	 * hasn't been reached.
 	 * 
 	 * @param polygonWithHolesXZ  polygon on which the points should be placed
 	 * @param density             desired number of points per unit of area
@@ -446,7 +492,7 @@ public final class GeometryUtil {
 				//TODO: check minimumDistance
 				
 				result.add(v);
-				failedAttempts = 0;				
+				failedAttempts = 0;
 				
 			} else {
 				failedAttempts ++;

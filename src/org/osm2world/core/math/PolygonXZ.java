@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,24 +22,8 @@ public class PolygonXZ {
 		
 		assertLoopProperty(vertexLoop);
 		
-		this.vertexLoop = vertexLoop;		
+		this.vertexLoop = vertexLoop;
 				
-	}
-
-	/** 
-	 * returns the polygon's vertices.
-	 * Unlike {@link #getVertexLoop()}, there is no duplication
-	 * of the first/last vertex.
-	 */
-	public List<VectorXZ> getVertices() {
-		return vertexLoop.subList(0, vertexLoop.size()-1);
-	}
-	
-	/** 
-	 * returns the polygon's vertices. First and last vertex are equal.
-	 */
-	public List<VectorXZ> getVertexLoop() {
-		return vertexLoop;
 	}
 	
 	/**
@@ -48,6 +34,50 @@ public class PolygonXZ {
 	public int size() {
 		return vertexLoop.size()-1;
 	}
+
+	/**
+	 * returns the polygon's vertices.
+	 * Unlike {@link #getVertexLoop()}, there is no duplication
+	 * of the first/last vertex.
+	 */
+	public List<VectorXZ> getVertices() {
+		return vertexLoop.subList(0, vertexLoop.size()-1);
+	}
+	
+	/**
+	 * returns the polygon's vertices. First and last vertex are equal.
+	 */
+	public List<VectorXZ> getVertexLoop() {
+		return vertexLoop;
+	}
+	
+	/**
+	 * returns the vertex at a position in the vertex sequence
+	 */
+	public VectorXZ getVertex(int index) {
+		assert 0 <= index && index < vertexLoop.size()-1;
+		return vertexLoop.get(index);
+	}
+	
+	/**
+	 * returns the successor of the vertex at a position in the vertex sequence.
+	 * This wraps around the vertex loop, so the successor of the last vertex
+	 * is the first vertex.
+	 */
+	public VectorXZ getVertexAfter(int index) {
+		assert 0 <= index && index < vertexLoop.size()-1;
+		return getVertex((index + 1) % size());
+	}
+	
+	/**
+	 * returns the predecessor of the vertex at a position in the vertex sequence.
+	 * This wraps around the vertex loop, so the predecessor of the first vertex
+	 * is the last vertex.
+	 */
+	public VectorXZ getVertexBefore(int index) {
+		assert 0 <= index && index < vertexLoop.size()-1;
+		return getVertex((index + size() - 1) % size());
+	}
 	
 	public List<LineSegmentXZ> getSegments() {
 		List<LineSegmentXZ> segments = new ArrayList<LineSegmentXZ>(vertexLoop.size());
@@ -55,6 +85,26 @@ public class PolygonXZ {
 			segments.add(new LineSegmentXZ(vertexLoop.get(i), vertexLoop.get(i+1)));
 		}
 		return segments;
+	}
+	
+	/**
+	 * returns the polygon segment with minimum distance to a given point
+	 */
+	public LineSegmentXZ getClosestSegment(VectorXZ point) {
+		
+		LineSegmentXZ closestSegment = null;
+		double closestDistance = Double.MAX_VALUE;
+		
+		for (LineSegmentXZ segment : getSegments()) {
+			double distance = distanceFromLineSegment(point, segment);
+			if (distance < closestDistance) {
+				closestSegment = segment;
+				closestDistance = distance;
+			}
+		}
+		
+		return closestSegment;
+		
 	}
 	
 	/**
@@ -92,16 +142,38 @@ public class PolygonXZ {
 
 		//TODO (performance): currently performs pairwise intersection checks for sides of this and other - this might not be the fastest method
 		
-		for (int i=0; i+1<vertexLoop.size(); i++) {			
+		for (int i=0; i+1<vertexLoop.size(); i++) {
 			if (outlinePolygonXZ.intersects(vertexLoop.get(i), vertexLoop.get(i+1))) {
 				return true;
-			}			
+			}
 		}
 		
 		return false;
 	}
 
-	public Collection<? extends VectorXZ> intersectionPositions(
+	public Collection<LineSegmentXZ> intersectionSegments(
+			LineSegmentXZ lineSegment) {
+
+		List<LineSegmentXZ> intersectionSegments = new ArrayList<LineSegmentXZ>();
+
+		for (LineSegmentXZ polygonSegment : getSegments()) {
+			
+			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
+					lineSegment.p1, lineSegment.p2,
+					polygonSegment.p1, polygonSegment.p2
+					);
+			
+			if (intersection != null) {
+				intersectionSegments.add(polygonSegment);
+			}
+			
+		}
+		
+		return intersectionSegments;
+		
+	}
+
+	public Collection<VectorXZ> intersectionPositions(
 			LineSegmentXZ lineSegment) {
 		
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
@@ -189,8 +261,8 @@ public class PolygonXZ {
 					": " + vertexLoop);
 		} else {
 			return new TriangleXZ(
-					vertexLoop.get(0), 
-					vertexLoop.get(1), 
+					vertexLoop.get(0),
+					vertexLoop.get(1),
 					vertexLoop.get(2));
 		}
 	}
@@ -205,18 +277,18 @@ public class PolygonXZ {
 		return new PolygonXZ(newVertexLoop);
 	}
 	
-	/** 
+	/**
 	 * returns the average of all vertex coordinates.
 	 * The result is not necessarily contained by this polygon.
 	 */
 	public VectorXZ getCenter() {
-		double x=0, z=0;		
+		double x=0, z=0;
 		int numberVertices = vertexLoop.size()-1;
 		for (VectorXZ vertex : getVertices()) {
 			x += vertex.x / numberVertices;
 			z += vertex.z / numberVertices;
 			/* single division per coordinate after loop would be faster,
-			 * but might cause numbers to get too large */ 
+			 * but might cause numbers to get too large */
 		}
 		return new VectorXZ(x, z);
 	}

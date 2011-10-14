@@ -1,5 +1,8 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.min;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -150,10 +153,6 @@ public class SimplePolygonXZ extends PolygonXZ {
 	
 		assertLoopProperty(polygonVertexLoop);
 		
-		// uses algorithm from
-		// http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-		// TODO: contact author
-		
 		int i, j;
 		boolean c = false;
 
@@ -186,6 +185,58 @@ public class SimplePolygonXZ extends PolygonXZ {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * returns the distance of a point to the segments this polygon.
+	 * Note that the distance can be > 0 even if the polygon contains the point
+	 */
+	public double distanceToSegments(VectorXZ p) {
+		double minDistance = Double.MAX_VALUE;
+		for (LineSegmentXZ s : getSegments()) {
+			minDistance = min(minDistance, distanceFromLineSegment(p, s));
+		}
+		return minDistance;
+	}
+	
+	/**
+	 * returns a different polygon that is constructed from this polygon
+	 * by removing all vertices where this has an angle close to 180°
+	 * (i.e. where removing the vertex does not change the polygon very much).
+	 */
+	public SimplePolygonXZ getSimplifiedPolygon() {
+		
+		boolean[] delete = new boolean[size()];
+		int deleteCount = 0;
+		
+		for (int i = 0; i < size(); i++) {
+			VectorXZ segmentBefore = getVertex(i).subtract(getVertexBefore(i));
+			VectorXZ segmentAfter = getVertexAfter(i).subtract(getVertex(i));
+			double dot = segmentBefore.normalize().dot(segmentAfter.normalize());
+			if (Math.abs(dot - 1) < 0.05) {
+				delete[i] = true;
+				deleteCount += 1;
+			}
+		}
+		
+		if (deleteCount == 0 || deleteCount > size() - 3) {
+			return this;
+		} else {
+			
+			List<VectorXZ> newVertexList = new ArrayList<VectorXZ>(getVertices());
+			
+			//iterate backwards => it doesn't matter when higher indices change
+			for (int i = size() - 1; i >= 0; i--) {
+				if (delete[i]) {
+					newVertexList.remove(i);
+				}
+			}
+			
+			newVertexList.add(newVertexList.get(0));
+			return new SimplePolygonXZ(newVertexList);
+			
+		}
+		
 	}
 	
 	/**

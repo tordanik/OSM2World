@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.*;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.math.GeometryUtil.*;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,14 +39,17 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.terrain.creation.CAGUtil;
+import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
+
+import com.google.common.base.Function;
 
 /**
  * adds buildings to the world
@@ -79,12 +84,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 		
 	}
 	
-	private static class Building implements AreaWorldObject,
+	public static class Building implements AreaWorldObject,
 			RenderableToAllTargets {
 
 		private final MapArea area;
 		
-		private double height;
+		private double heightWithoutRoof;
 		private Material materialWall;
 		private Material materialRoof;
 		private RoofData roofData;
@@ -95,6 +100,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			setAttributes();
 			
+		}
+				
+		public RoofData getRoofData() {
+			return roofData;
 		}
 
 		@Override
@@ -109,7 +118,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		@Override
 		public double getClearingAbove(VectorXZ pos) {
-			return height;
+			return heightWithoutRoof + roofData.getRoofHeight();
 		}
 
 		@Override
@@ -241,7 +250,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (area.getOverlaps().isEmpty()) {
 				
-				renderWalls(target, area.getPolygon(), false, floorEle, roofData);
+				renderWalls(target, roofData.getPolygon(), false, floorEle, roofData);
 				
 			} else {
 							
@@ -362,7 +371,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* determine defaults for building type */
 			
-			double defaultHeight = 10;
+			double defaultHeight = 7.5;
 			double defaultHeightPerLevel = 2.5;
 			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
@@ -376,7 +385,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 			
 			/* determine roof shape */
-				
+						
 			if (hasComplexRoof(area)) {
 				roofData = new ComplexRoofData();
 			} else {
@@ -386,6 +395,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				if ("pyramidal".equals(roofShape)) {
 					roofData = new PyramidalRoofData();
+				} else if ("gabled".equals(roofShape)) {
+					roofData = new GabledRoofData();
+				} else if ("hipped".equals(roofShape)) {
+					roofData = new HippedRoofData();
+				} else if ("half-hipped".equals(roofShape)) {
+					roofData = new HalfHippedRoofData();
+				} else if ("gambrel".equals(roofShape)) {
+					roofData = new GambrelRoofData();
+				} else if ("mansard".equals(roofShape)) {
+					roofData = new MansardRoofData();
 				} else {
 					roofData = new FlatRoofData();
 				}
@@ -405,7 +424,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			fallbackHeight += roofData.getRoofHeight();
 			
-			height = parseHeight(area.getTags(), (float)fallbackHeight);
+			double height = parseHeight(area.getTags(), (float)fallbackHeight);
+		    heightWithoutRoof = height - roofData.getRoofHeight();
 			
 			/* determine materials */
 			
@@ -416,7 +436,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		
 		private static final double DEFAULT_RIDGE_HEIGHT = 5;
 		
-		private static interface RoofData {
+		public static interface RoofData {
 						
 			/**
 			 * returns the outline (with holes) of the roof.
@@ -488,7 +508,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return area.getElevationProfile().getMinEle() + height;
+				return area.getElevationProfile().getMinEle() + heightWithoutRoof;
 			}
 			
 		}
@@ -517,12 +537,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getRoofHeight() {
-				return height;
+				return roofHeight;
 			}
 			
 			@Override
 			public double getMaxRoofEle() {
-				return area.getElevationProfile().getMinEle() + height;
+				return area.getElevationProfile().getMinEle() +
+						heightWithoutRoof + roofHeight;
 			}
 			
 		}
@@ -536,13 +557,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 				super();
 				
-				PolygonXZ polygon = area.getPolygon().getOuter();
+				SimplePolygonXZ polygon = area.getOuterPolygon();
 				
-				if (polygon.isSimple()) {
-					apex = polygon.asSimplePolygon().getCentroid();
-				} else {
-					apex = polygon.getCenter();
-				}
+				apex = polygon.getCentroid();
 				
 				innerSegments = new ArrayList<LineSegmentXZ>();
 				for (VectorXZ v : polygon.getVertices()) {
@@ -570,11 +587,411 @@ public class BuildingModule extends ConfigurableWorldModule {
 			public Double getRoofEleAt(VectorXZ pos) {
 				if (apex.equals(pos)) {
 					return getMaxRoofEle();
-				} else if (area.getPolygon().getOuter().getVertices().contains(pos)) {
+				} else if (area.getOuterPolygon().getVertices().contains(pos)) {
 					return getMaxRoofEle() - roofHeight;
 				} else {
 					return null;
 				}
+			}
+			
+		}
+				
+		/**
+		 * tagged roof with a ridge.
+		 * Deals with ridge calculation for various subclasses.
+		 */
+		abstract private class RoofDataWithRidge extends TaggedRoofData {
+			
+			/** absolute distance of ridge to outline */
+			protected final double ridgeOffset;
+			
+			protected final LineSegmentXZ ridge;
+			
+			/** the roof cap that is closer to the first vertex of the ridge */
+			protected final LineSegmentXZ cap1;
+			/** the roof cap that is closer to the second vertex of the ridge */
+			protected final LineSegmentXZ cap2;
+			
+			/** maximum distance of any outline vertex to the ridge */
+			protected final double maxDistanceToRidge;
+			
+			/**
+			 * creates an instance and calculates the final fields
+			 * 
+			 * @param relativeRoofOffset  distance of ridge to outline
+			 *    relative to length of roof cap; 0 if ridge ends at outline
+			 */
+			public RoofDataWithRidge(double relativeRoofOffset) {
+			
+				super();
+				
+				SimplePolygonXZ polygon = area.getOuterPolygon();
+				
+				SimplePolygonXZ simplifiedPolygon =
+					polygon.getSimplifiedPolygon();
+				
+				/* determine ridge direction based on tag if it exists,
+				 * otherwise choose direction of longest polygon segment */
+				
+				VectorXZ ridgeDirection = null;
+				
+				if (area.getTags().containsKey("roof:ridge:direction")) {
+					Float angle = parseAngle(
+							area.getTags().getValue("roof:ridge:direction"));
+					if (angle != null) {
+						ridgeDirection = VectorXZ.fromAngle(toRadians(angle));
+					}
+				}
+				
+				if (ridgeDirection == null) {
+					
+					LineSegmentXZ longestSeg = MinMaxUtil.max(
+							simplifiedPolygon.getSegments(),
+							new Function<LineSegmentXZ, Double>() {
+								public Double apply(LineSegmentXZ s) {
+									return s.getLength();
+								};
+							});
+							
+					ridgeDirection =
+						longestSeg.p2.subtract(longestSeg.p1).normalize();
+						
+				}
+				
+				/* calculate the two outermost intersections of the
+				 * quasi-infinite ridge line with segments of the polygon */
+				
+				VectorXZ p1 = polygon.getCentroid();
+				
+				Collection<LineSegmentXZ> intersections =
+					simplifiedPolygon.intersectionSegments(new LineSegmentXZ(
+							p1.add(ridgeDirection.mult(-1000)),
+							p1.add(ridgeDirection.mult(1000))
+					));
+
+				//TODO choose outermost instead of any pair of intersections
+				Iterator<LineSegmentXZ> it = intersections.iterator();
+				cap1 = it.next();
+				cap2 = it.next();
+				
+				/* base ridge on the centers of the intersected segments
+				 * (the intersections itself are not used because the
+				 * tagged ridge direction is likely not precise)       */
+
+				VectorXZ c1 = cap1.getCenter();
+				VectorXZ c2 = cap2.getCenter();
+				
+				ridgeOffset = min(
+						cap1.getLength() * relativeRoofOffset,
+						0.4 * c1.distanceTo(c2));
+				
+				if (relativeRoofOffset == 0) {
+					
+					ridge = new LineSegmentXZ(c1, c2);
+					
+				} else {
+					
+					ridge = new LineSegmentXZ(
+							c1.add( p1.subtract(c1).normalize().mult(ridgeOffset) ),
+							c2.add( p1.subtract(c2).normalize().mult(ridgeOffset) ));
+					
+				}
+				
+				/* calculate maxDistanceToRidge */
+				
+				double maxDistance = 0;
+				
+				for (VectorXZ v : polygon.getVertices()) {
+					maxDistance = max (maxDistance,
+							distanceFromLineSegment(v, ridge));
+				}
+				
+				maxDistanceToRidge = maxDistance;
+				
+			}
+			
+		}
+		
+		private class GabledRoofData extends RoofDataWithRidge {
+
+			public GabledRoofData() {
+				super(0);
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				
+				PolygonXZ newOuter = area.getOuterPolygon();
+				
+				newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+				
+				return new PolygonWithHolesXZ(
+						newOuter.asSimplePolygon(),
+						area.getPolygon().getHoles());
+				
+			}
+			
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return singleton(ridge);
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+				double distRidge = distanceFromLineSegment(pos, ridge);
+				double relativePlacement = distRidge / maxDistanceToRidge;
+				return getMaxRoofEle() - roofHeight * relativePlacement;
+			}
+			
+		}
+		
+		private class HippedRoofData extends RoofDataWithRidge {
+
+			public HippedRoofData() {
+				super(1/3.0);
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				return area.getPolygon();
+			}
+			
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return asList(
+						ridge,
+						new LineSegmentXZ(ridge.p1, cap1.p1),
+						new LineSegmentXZ(ridge.p1, cap1.p2),
+						new LineSegmentXZ(ridge.p2, cap2.p1),
+						new LineSegmentXZ(ridge.p2, cap2.p2));
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+				if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) {
+					return getMaxRoofEle();
+				} else if (getPolygon().getOuter().getVertexLoop().contains(pos)) {
+					return getMaxRoofEle() - roofHeight;
+				} else {
+					return null;
+				}
+			}
+			
+		}
+		
+		private class HalfHippedRoofData extends RoofDataWithRidge {
+
+			private final LineSegmentXZ cap1part, cap2part;
+			
+			public HalfHippedRoofData() {
+				
+				super(1/6.0);
+				
+				cap1part = new LineSegmentXZ(
+						interpolateBetween(cap1.p1, cap1.p2,
+								0.5 - ridgeOffset / cap1.getLength()),
+						interpolateBetween(cap1.p1, cap1.p2,
+								0.5 + ridgeOffset / cap1.getLength()));
+				
+				cap2part = new LineSegmentXZ(
+						interpolateBetween(cap2.p1, cap2.p2,
+								0.5 - ridgeOffset / cap1.getLength()),
+						interpolateBetween(cap2.p1, cap2.p2,
+								0.5 + ridgeOffset / cap1.getLength()));
+				
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				
+				PolygonXZ newOuter = area.getOuterPolygon();
+				
+				newOuter = insertIntoPolygon(newOuter, cap1part.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap1part.p2, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap2part.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap2part.p2, 0.2);
+				
+				return new PolygonWithHolesXZ(
+						newOuter.asSimplePolygon(),
+						area.getPolygon().getHoles());
+				
+			}
+			
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return asList(ridge,
+						new LineSegmentXZ(ridge.p1, cap1part.p1),
+						new LineSegmentXZ(ridge.p1, cap1part.p2),
+						new LineSegmentXZ(ridge.p2, cap2part.p1),
+						new LineSegmentXZ(ridge.p2, cap2part.p2));
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+				if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) {
+					return getMaxRoofEle();
+				} else if (getPolygon().getOuter().getVertexLoop().contains(pos)) {
+					if (distanceFromLineSegment(pos, cap1part) < 0.05) {
+						return getMaxRoofEle()
+							- roofHeight * ridgeOffset / (cap1.getLength()/2);
+					} else if (distanceFromLineSegment(pos, cap2part) < 0.05) {
+						return getMaxRoofEle()
+							- roofHeight * ridgeOffset / (cap2.getLength()/2);
+					} else {
+						return getMaxRoofEle() - roofHeight;
+					}
+				} else {
+					return null;
+				}
+			}
+			
+		}
+		
+		private class GambrelRoofData extends RoofDataWithRidge {
+
+			private final LineSegmentXZ cap1part, cap2part;
+			
+			public GambrelRoofData() {
+				
+				super(0);
+				
+				cap1part = new LineSegmentXZ(
+						interpolateBetween(cap1.p1, cap1.p2, 1/6.0),
+						interpolateBetween(cap1.p1, cap1.p2, 5/6.0));
+
+				cap2part = new LineSegmentXZ(
+						interpolateBetween(cap2.p1, cap2.p2, 1/6.0),
+						interpolateBetween(cap2.p1, cap2.p2, 5/6.0));
+				
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				
+				PolygonXZ newOuter = area.getOuterPolygon();
+
+				newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap1part.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap1part.p2, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap2part.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, cap2part.p2, 0.2);
+				
+				//TODO: add intersections of additional edges with outline?
+				
+				return new PolygonWithHolesXZ(
+						newOuter.asSimplePolygon(),
+						area.getPolygon().getHoles());
+				
+			}
+			
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return asList(ridge,
+						new LineSegmentXZ(cap1part.p1, cap2part.p2),
+						new LineSegmentXZ(cap1part.p2, cap2part.p1));
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+
+				double distRidge = distanceFromLineSegment(pos, ridge);
+				double relativePlacement = distRidge / maxDistanceToRidge;
+				
+				if (relativePlacement < 2/3.0) {
+					return getMaxRoofEle()
+						- 1/2.0 * roofHeight * relativePlacement;
+				} else {
+					return getMaxRoofEle() - 1/3.0 * roofHeight
+						- 2 * roofHeight * (relativePlacement - 2/3.0);
+				}
+				
+			}
+			
+		}
+		
+		private class MansardRoofData extends RoofDataWithRidge {
+
+			private final LineSegmentXZ mansardEdge1, mansardEdge2;
+			
+			public MansardRoofData() {
+				
+				super(1/3.0);
+				
+				mansardEdge1 = new LineSegmentXZ(
+						interpolateBetween(cap1.p1, ridge.p1, 1/3.0),
+						interpolateBetween(cap2.p2, ridge.p2, 1/3.0));
+
+				mansardEdge2 = new LineSegmentXZ(
+						interpolateBetween(cap1.p2, ridge.p1, 1/3.0),
+						interpolateBetween(cap2.p1, ridge.p2, 1/3.0));
+				
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				return area.getPolygon();
+			}
+			
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return asList(ridge,
+						mansardEdge1,
+						mansardEdge2,
+						new LineSegmentXZ(ridge.p1, mansardEdge1.p1),
+						new LineSegmentXZ(ridge.p1, mansardEdge2.p1),
+						new LineSegmentXZ(ridge.p2, mansardEdge1.p2),
+						new LineSegmentXZ(ridge.p2, mansardEdge2.p2),
+						new LineSegmentXZ(cap1.p1, mansardEdge1.p1),
+						new LineSegmentXZ(cap2.p2, mansardEdge1.p2),
+						new LineSegmentXZ(cap1.p2, mansardEdge2.p1),
+						new LineSegmentXZ(cap2.p1, mansardEdge2.p2),
+						new LineSegmentXZ(mansardEdge1.p1, mansardEdge2.p1),
+						new LineSegmentXZ(mansardEdge1.p2, mansardEdge2.p2));
+			}
+
+			@Override
+			public Double getRoofEleAt(VectorXZ pos) {
+
+				if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) {
+					return getMaxRoofEle();
+				} else if (getPolygon().getOuter().getVertexLoop().contains(pos)) {
+					return getMaxRoofEle() - roofHeight;
+				} else if (mansardEdge1.p1.equals(pos)
+						|| mansardEdge1.p2.equals(pos)
+						|| mansardEdge2.p1.equals(pos)
+						|| mansardEdge2.p2.equals(pos)) {
+					return getMaxRoofEle() - 1/3.0 * roofHeight;
+				} else {
+					return null;
+				}
+				
 			}
 			
 		}
@@ -656,7 +1073,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				for (List<MapNode> hole : area.getHoles()) {
 					for (MapNode node : hole) {
 						if (!roofHeightMap.containsKey(node.getPos())) {
-							roofHeightMap.put(node.getPos(), height - roofHeight);
+							roofHeightMap.put(node.getPos(), 0.0);
 						}
 					}
 				}
@@ -669,10 +1086,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				for (LineSegmentXZ segment : ridgeAndEdgeSegments) {
 					if (!roofHeightMap.containsKey(segment.p1)) {
-						roofHeightMap.put(segment.p1, height - roofHeight);
+						roofHeightMap.put(segment.p1, 0.0);
 					}
 					if (!roofHeightMap.containsKey(segment.p2)) {
-						roofHeightMap.put(segment.p2, height - roofHeight);
+						roofHeightMap.put(segment.p2, 0.0);
 					}
 				}
 				
@@ -702,7 +1119,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			public Double getRoofEleAt(VectorXZ pos) {
 				if (roofHeightMap.containsKey(pos)) {
 					return area.getElevationProfile().getMinEle()
-						+ height + roofHeightMap.get(pos);
+						+ heightWithoutRoof + roofHeightMap.get(pos);
 				} else {
 					return null;
 				}
@@ -711,7 +1128,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			@Override
 			public double getMaxRoofEle() {
 				return area.getElevationProfile().getMinEle()
-					+ height + roofHeight;
+					+ heightWithoutRoof + roofHeight;
 			}
 			
 		}

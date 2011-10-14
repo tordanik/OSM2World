@@ -23,7 +23,7 @@ import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
-import org.osm2world.core.util.MinUtil;
+import org.osm2world.core.util.MinMaxUtil;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
@@ -282,7 +282,7 @@ public class ForceElevationCalculator extends AdvancedAbstractElevationCalculato
 				
 				for (final ForceNode fNode : forceNodesInCell) {
 					
-					TerrainPoint closestTerrainPoint = MinUtil.min(
+					TerrainPoint closestTerrainPoint = MinMaxUtil.min(
 							cell.getTerrainPoints(),
 							new Function<TerrainPoint, Double>() {
 								@Override public Double apply(TerrainPoint p) {

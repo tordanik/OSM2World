@@ -48,6 +48,7 @@ import org.osm2world.viewer.view.debug.MapDataElevationDebugView;
 import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
+import org.osm2world.viewer.view.debug.RoofDataDebugView;
 import org.osm2world.viewer.view.debug.TerrainAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
@@ -157,6 +158,9 @@ public class ViewerFrame extends JFrame {
 					new MapDataElevationDebugView(), KeyEvent.VK_E, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
+					new RoofDataDebugView(), KeyEvent.VK_R, false,
+					this, data, renderOptions)));
+			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new NetworkDebugView(), KeyEvent.VK_X, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
@@ -178,7 +182,7 @@ public class ViewerFrame extends JFrame {
 					new WorldObjectNormalsDebugView(), -1, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TriangulationDebugView(), KeyEvent.VK_T, false,
+					new TriangulationDebugView(), -1, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new MapDataBoundsDebugView(), -1, false,

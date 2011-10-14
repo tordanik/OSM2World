@@ -129,7 +129,7 @@ public class VectorXZ implements Vector3D {
 	}
 	
 	//TODO: angle bisection as method in this class
-
+	
 	/**
 	 * returns a unit vector based on an angular direction.
 	 * For example,

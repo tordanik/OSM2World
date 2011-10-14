@@ -44,5 +44,10 @@ public class LineSegmentXZ {
 	public double getLength() {
 		return VectorXZ.distance(p1, p2);
 	}
+	
+	@Override
+	public String toString() {
+		return "[" + p1 + ", " + p2 + "]";
+	}
 
 }
