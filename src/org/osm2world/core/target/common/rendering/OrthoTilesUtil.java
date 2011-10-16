@@ -113,7 +113,7 @@ public final class OrthoTilesUtil {
 				 sizeX / (sizeZ * sin),
 				 Double.NaN,
 				 sizeZ * sin,
-				 -1000000, 1000000);
+				 -10000, 10000);
 		
 	}
 	
