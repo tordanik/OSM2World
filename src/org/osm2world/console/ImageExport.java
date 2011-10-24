@@ -1,5 +1,6 @@
 package org.osm2world.console;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLPbuffer;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -30,6 +32,8 @@ public final class ImageExport {
 	 * (which would lead to crashes)
 	 */
 	private static final int CANVAS_LIMIT = 1024;
+
+	private static final String BG_COLOR_CONFIG_KEY = "backgroundColor";
 	
 	private ImageExport() { }
 	
@@ -44,6 +48,7 @@ public final class ImageExport {
 	 * @throws IOException
 	 */
 	public static void writeImageFile(
+			Configuration config,
 			File outputFile, int x, int y,
 			final Results results, final Camera camera,
 			final Projection projection) throws IOException {
@@ -52,6 +57,20 @@ public final class ImageExport {
 			throw new Error("Cannot create GLPbuffer for OpenGL output!");
 		}
 		
+		/* parse background color */
+		
+		float[] clearColor = {0f, 0f, 0f};
+		
+		if (config.containsKey(BG_COLOR_CONFIG_KEY)) {
+			try {
+				Color.decode(config.getString(BG_COLOR_CONFIG_KEY))
+					.getColorComponents(clearColor);
+			} catch (NumberFormatException e) {
+				System.err.println("incorrect color value: "
+						+ config.getString(BG_COLOR_CONFIG_KEY));
+			}
+		}
+				
 		/* render map data into buffer */
 		
 		PrimitiveBuffer buffer = new PrimitiveBuffer();
@@ -94,8 +113,8 @@ public final class ImageExport {
 			pBuffer.getContext().makeCurrent();
 			
 			gl.glFrontFace(GL.GL_CCW);                  // use ccw polygons
-			
-	        gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);    // Black Background
+						
+			gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
 	        gl.glEnable (GL.GL_DEPTH_TEST);             // z buffer
 			gl.glCullFace(GL.GL_BACK);
 	        gl.glEnable (GL.GL_CULL_FACE);              // backface culling

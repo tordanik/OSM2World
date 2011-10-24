@@ -135,7 +135,7 @@ public final class Output {
 					if (camera == null || projection == null) {
 						System.err.println("camera or projection missing");
 					}
-					ImageExport.writeImageFile(outputFile,
+					ImageExport.writeImageFile(config, outputFile,
 							args.getResolution().x, args.getResolution().y,
 							results, camera, projection);
 					break;
