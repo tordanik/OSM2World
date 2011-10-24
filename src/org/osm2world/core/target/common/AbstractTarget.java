@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -20,6 +21,13 @@ import org.osm2world.core.world.data.WorldObject;
  */
 public abstract class AbstractTarget<R extends Renderable>
 		implements Target<R> {
+	
+	protected Configuration config;
+	
+	@Override
+	public void setConfiguration(Configuration config) {
+		this.config = config;
+	}
 	
 	@Override
 	public void beginObject(WorldObject object) {}

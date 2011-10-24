@@ -3,6 +3,7 @@ package org.osm2world.core.target;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
@@ -20,6 +21,8 @@ public interface Target<R extends Renderable> {
 	 * returns the renderable type designed for this target
 	 */
 	Class<R> getRenderableType();
+
+	void setConfiguration(Configuration config);
 	
 	/**
 	 * renders a renderable object to this target.

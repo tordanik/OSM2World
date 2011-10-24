@@ -7,6 +7,8 @@
  * make elevation calculator configurable, default to ZeroElevationCalculator
  * bugfix in ForceEC. (duplicate points with ele) solves missing walls in POVRay
  * better minimum and maximum depths for orthographic view
+ * configurable Targets
+ * configurable OpenGL background color
  
  
 --------------------------------------------------------------------------------
