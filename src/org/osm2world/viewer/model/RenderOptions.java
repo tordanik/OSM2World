@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;
@@ -21,7 +21,7 @@ public class RenderOptions {
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
 	
-	ElevationCalculator eleCalculator = new ForceElevationCalculator();
+	ElevationCalculator eleCalculator = new ZeroElevationCalculator();
 	
 	public boolean isShowGrid() {
 		return showGrid;

@@ -16,12 +16,16 @@ import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
+import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
+import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
@@ -39,6 +43,17 @@ public final class Output {
 		PerformanceListener perfListener =
 			new PerformanceListener(argumentsGroup.getRepresentative());
 		cf.addProgressListener(perfListener);
+		
+		String ecType = config.getString("elevationCalculator", "ZeroElevationCalculator");
+		if ("ZeroElevationCalculator".equals(ecType)) {
+			cf.setElevationCalculator(new ZeroElevationCalculator());
+		} else if ("ForceElevationCalculator".equals(ecType)) {
+			cf.setElevationCalculator(new ForceElevationCalculator());
+		} else if ("EleTagElevationCalculator".equals(ecType)) {
+			cf.setElevationCalculator(new EleTagElevationCalculator());
+		} else if ("LevelTagElevationCalculator".equals(ecType)) {
+			cf.setElevationCalculator(new LevelTagElevationCalculator());
+		}
 		
 		Results results = cf.createRepresentations(
 				argumentsGroup.getRepresentative().getInput(), null, config, null);
