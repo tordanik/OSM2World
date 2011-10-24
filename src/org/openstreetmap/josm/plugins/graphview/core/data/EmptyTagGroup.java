@@ -21,7 +21,7 @@ public final class EmptyTagGroup implements TagGroup {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
-		}		
+		}
 	};
 	
 	private static final EmptyTagIterator EMPTY_TAG_ITERATOR = new EmptyTagIterator();
@@ -54,6 +54,11 @@ public final class EmptyTagGroup implements TagGroup {
 	@Override
 	public int size() {
 		return 0;
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return true;
 	}
 
 	@Override

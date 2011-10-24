@@ -33,10 +33,9 @@ public class ResetCameraAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		MapData grid = data.getConversionResults().getMapData();
+		MapData mapData = data.getConversionResults().getMapData();
 
-		VectorXZ camLookAt = new VectorXZ(
-				grid.getCenter().x, grid.getCenter().z);
+		VectorXZ camLookAt = mapData.getCenter();
 
 		renderOptions.camera = new Camera();
 		renderOptions.camera.setLookAt(camLookAt.x, 0, camLookAt.z);

@@ -43,4 +43,9 @@ public interface TagGroup extends Iterable<Tag> {
 	 */
 	public int size();
 	
+	/**
+	 * returns true if this group contains any tags
+	 */
+	public boolean isEmpty();
+	
 }

@@ -12,7 +12,7 @@ public class OSMRelation extends OSMElement {
 	
 	public OSMRelation(TagGroup tags, long id, int initialMemberSize) {
 		super(tags, id);
-		this.relationMembers = 
+		this.relationMembers =
 			new ArrayList<OSMMember>(initialMemberSize);
 	}
 	

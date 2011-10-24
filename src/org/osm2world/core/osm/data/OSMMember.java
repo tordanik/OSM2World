@@ -1,6 +1,6 @@
 package org.osm2world.core.osm.data;
 
-public class OSMMember {	
+public class OSMMember {
 	
 	static final boolean useDebugLabels = true;
 	
@@ -11,6 +11,11 @@ public class OSMMember {
 		assert role != null && member != null;
 		this.role = role;
 		this.member = member;
+	}
+	
+	@Override
+	public String toString() {
+		return role + ":" + member;
 	}
 	
 }

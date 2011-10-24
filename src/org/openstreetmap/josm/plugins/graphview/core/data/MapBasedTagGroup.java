@@ -87,6 +87,11 @@ public class MapBasedTagGroup implements TagGroup {
 	public int size() {
 		return tagMap.size();
 	}
+	
+	@Override
+	public boolean isEmpty() {
+		return tagMap.isEmpty();
+	}
 
 	/**
 	 * returns an Iterator providing access to all Tags.

@@ -8,8 +8,8 @@
  * bugfix in ForceEC. (duplicate points with ele) solves missing walls in POVRay
  * better minimum and maximum depths for orthographic view
  * configurable PNG output background color
- * configurable Targets
  * support for entrance=*
+ * code improvements (configurable Targets, toString and isEmpty for OSM data)
  
  
 --------------------------------------------------------------------------------
