@@ -71,7 +71,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				area.addRepresentation(building);
 				
 				for (MapNode node : area.getBoundaryNodes()) {
-					if (node.getTags().contains("building", "entrance")
+					if ((node.getTags().contains("building", "entrance")
+							|| node.getTags().containsKey("entrance"))
 							&& node.getRepresentations().isEmpty()) {
 						node.addRepresentation(
 								new BuildingEntrance(building, node));

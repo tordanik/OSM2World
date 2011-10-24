@@ -9,6 +9,7 @@
  * better minimum and maximum depths for orthographic view
  * configurable PNG output background color
  * configurable Targets
+ * support for entrance=*
  
  
 --------------------------------------------------------------------------------
