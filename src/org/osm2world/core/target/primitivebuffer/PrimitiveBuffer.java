@@ -9,8 +9,9 @@ import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
+import org.osm2world.core.target.common.PrimitiveTarget;
+import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
 
 /**
@@ -20,15 +21,15 @@ import org.osm2world.core.target.common.material.Material;
  * or representations, isn't present in an OGLBuffer.
  */
 public class PrimitiveBuffer extends
-		PrimitiveTarget<RenderableToPrimitiveBuffer> {
+		PrimitiveTarget<RenderableToPrimitiveTarget> {
 
 	@Override
-	public Class<RenderableToPrimitiveBuffer> getRenderableType() {
-		return RenderableToPrimitiveBuffer.class;
+	public Class<RenderableToPrimitiveTarget> getRenderableType() {
+		return RenderableToPrimitiveTarget.class;
 	}
 	
 	@Override
-	public void render(RenderableToPrimitiveBuffer renderable) {
+	public void render(RenderableToPrimitiveTarget renderable) {
 		renderable.renderTo(this);
 	}
 	

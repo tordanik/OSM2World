@@ -31,6 +31,7 @@ import org.osm2world.viewer.control.actions.OrthoTileAction;
 import org.osm2world.viewer.control.actions.ResetCameraAction;
 import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
 import org.osm2world.viewer.control.actions.SetElevationCalculatorAction;
+import org.osm2world.viewer.control.actions.StatisticsAction;
 import org.osm2world.viewer.control.actions.ToggleBackfaceCullingAction;
 import org.osm2world.viewer.control.actions.ToggleDebugViewAction;
 import org.osm2world.viewer.control.actions.ToggleOrthographicProjectionAction;
@@ -123,6 +124,7 @@ public class ViewerFrame extends JFrame {
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportScreenshotAction(this, data, messageManager, renderOptions));
+			subMenu.add(new StatisticsAction(this, data));
 			subMenu.add(new ExitAction());
 			menu.add(subMenu);
 
@@ -234,7 +236,7 @@ public class ViewerFrame extends JFrame {
 				eleCalcMenu.add(item);
 				
 			}
-
+			
 			menu.add(subMenu);
 
 		} { //"Help"

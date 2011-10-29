@@ -9,6 +9,7 @@
  * better minimum and maximum depths for orthographic view
  * configurable PNG output background color
  * support for entrance=*
+ * statistics dialog in viewer
  * code improvements (configurable Targets, toString and isEmpty for OSM data)
  
  

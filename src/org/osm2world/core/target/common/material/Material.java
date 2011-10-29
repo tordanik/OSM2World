@@ -66,8 +66,8 @@ public abstract class Material {
 	}
 	
 	public String toString() {
-		return "{" + lighting + ", " + color + ", a" + ambientFactor +
-			", d" + diffuseFactor + "}";
+		return String.format("{%s, #%06x, a%3f, d%3f}", lighting,
+				color.getRGB() & 0x00ffffff, ambientFactor, diffuseFactor);
 	}
 		
 	/*
