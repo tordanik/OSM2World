@@ -119,10 +119,19 @@ public final class Output {
 				switch (outputMode) {
 	
 				case OBJ:
-					ObjWriter.writeObjFile(outputFile,
-							results.getMapData(), results.getEleData(),
-							results.getTerrain(), results.getMapProjection(),
-							camera, projection);
+					Integer primitiveThresholdOBJ =
+						config.getInteger("primitiveThresholdOBJ", null);
+					if (primitiveThresholdOBJ == null) {
+						ObjWriter.writeObjFile(outputFile,
+								results.getMapData(), results.getEleData(),
+								results.getTerrain(), results.getMapProjection(),
+								camera, projection);
+					} else {
+						ObjWriter.writeObjFiles(outputFile,
+								results.getMapData(), results.getEleData(),
+								results.getTerrain(), results.getMapProjection(),
+								camera, projection, primitiveThresholdOBJ);
+					}
 					break;
 					
 				case POV:

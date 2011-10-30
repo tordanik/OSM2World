@@ -169,6 +169,15 @@ public class StatisticsTarget extends
 		
 	}
 	
+	public void clear() {
+		for (int i=0; i < globalCounts.length; ++i) {
+			globalCounts[i] = 0;
+		}
+		countsPerMaterial.clear();
+		countsPerClass.clear();
+		currentObject = null;
+	}
+	
 	public long getGlobalCount(Stat stat) {
 		return globalCounts[stat.ordinal()];
 	}

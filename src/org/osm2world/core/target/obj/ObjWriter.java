@@ -1,8 +1,13 @@
 package org.osm2world.core.target.obj;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Iterator;
 
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
@@ -24,7 +29,7 @@ public final class ObjWriter {
 	private ObjWriter() { }
 	
 	public static final void writeObjFile(
-			File objFile, MapData grid,
+			File objFile, MapData mapData,
 			CellularTerrainElevation eleData, Terrain terrain,
 			MapProjection mapProjection,
 			Camera camera, Projection projection)
@@ -33,7 +38,7 @@ public final class ObjWriter {
 		if (!objFile.exists()) {
 			objFile.createNewFile();
 		}
-				
+		
 		File mtlFile = new File(objFile.getAbsoluteFile() + ".mtl");
 		if (!mtlFile.exists()) {
 			mtlFile.createNewFile();
@@ -44,7 +49,115 @@ public final class ObjWriter {
 		
 		/* write comments at the beginning of both files */
 		
-		objStream.println("# This file was created by OSM2World - "
+		writeObjHeader(objStream, mapProjection);
+		
+		writeMtlHeader(mtlStream);
+				
+		/* write path of mtl file to obj file */
+		
+		objStream.println("mtllib " + mtlFile.getName() + "\n");
+		
+		/* write actual file content */
+		
+		ObjTarget target = new ObjTarget(objStream, mtlStream);
+		TargetUtil.renderWorldObjects(target, mapData);
+		TargetUtil.renderObject(target, terrain);
+		
+		objStream.close();
+		mtlStream.close();
+		
+	}
+	
+	public static final void writeObjFiles(
+			final File objDirectory, MapData mapData,
+			CellularTerrainElevation eleData, Terrain terrain,
+			final MapProjection mapProjection,
+			Camera camera, Projection projection,
+			int primitiveThresholdPerFile)
+			throws IOException {
+					
+		if (!objDirectory.exists()) {
+			objDirectory.mkdir();
+		}
+		
+		checkArgument(objDirectory.isDirectory());
+		
+		final File mtlFile = new File(objDirectory.getPath()
+				+ File.separator + "materials.mtl");
+		if (!mtlFile.exists()) {
+			mtlFile.createNewFile();
+		}
+		
+		final PrintStream mtlStream = new PrintStream(mtlFile);
+		
+		writeMtlHeader(mtlStream);
+		
+		/* create iterator which creates and wraps .obj files as needed */
+				
+		Iterator<ObjTarget> objIterator = new Iterator<ObjTarget>() {
+
+			private int fileCounter = 0;
+			PrintStream objStream = null;
+
+			@Override
+			public boolean hasNext() {
+				return true;
+			}
+
+			@Override
+			public ObjTarget next() {
+
+				try {
+					
+					if (objStream != null) {
+						objStream.close();
+						fileCounter ++;
+					}
+					
+					File objFile = new File(objDirectory.getPath() + File.separator
+							+ "part" + format("%04d", fileCounter) + ".obj");
+					
+					if (!objFile.exists()) {
+						objFile.createNewFile();
+					}
+					
+					objStream = new PrintStream(objFile);
+					
+					writeObjHeader(objStream, mapProjection);
+	
+					objStream.println("mtllib " + mtlFile.getName() + "\n");
+					
+					return new ObjTarget(objStream, mtlStream);
+					
+				} catch (FileNotFoundException e) {
+					throw new RuntimeException(e);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+		
+		/* write file content */
+		
+		TargetUtil.renderWorldObjects(objIterator, mapData, primitiveThresholdPerFile);
+		TargetUtil.renderObject(objIterator.next(), terrain);
+		
+		mtlStream.close();
+		
+	}
+
+	private static final void writeObjHeader(PrintStream objStream,
+			MapProjection mapProjection) {
+		
+		objStream.println("# This file was created by OSM2World "
+				+ GlobalValues.VERSION_STRING + " - "
 				+ GlobalValues.OSM2WORLD_URI + "\n");
 		objStream.println("# Projection information:");
 		objStream.println("# Coordinate origin (0,0,0): "
@@ -57,32 +170,14 @@ public final class ObjWriter {
 		objStream.println("# 1 coordinate unit corresponds to roughly "
 				+ "1 m in reality\n");
 		
-		mtlStream.println("# This file was created by OSM2World - "
-				+ GlobalValues.OSM2WORLD_URI + "\n");
-				
-		/* write path of mtl file to obj file */
-		
-		objStream.println("mtllib " + mtlFile.getName() + "\n");
-		
-		/* write actual file content */
-		
-		writeObjStringToStream(objStream, mtlStream,
-				grid, eleData, terrain, camera, projection);
-		
-		objStream.close();
-		
 	}
 
-	private static final void writeObjStringToStream(
-			PrintStream objStream, PrintStream matStream,
-			MapData mapData,
-			CellularTerrainElevation eleData, Terrain terrain,
-			Camera camera, Projection projection) {
+	private static final void writeMtlHeader(PrintStream mtlStream) {
 		
-		ObjTarget target = new ObjTarget(objStream, matStream);
-		TargetUtil.renderWorldObjects(target, mapData);
-		TargetUtil.renderObject(target, terrain);
+		mtlStream.println("# This file was created by OSM2World "
+				+ GlobalValues.VERSION_STRING + " - "
+				+ GlobalValues.OSM2WORLD_URI + "\n");
 		
 	}
-		
+			
 }
