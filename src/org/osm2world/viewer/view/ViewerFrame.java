@@ -22,6 +22,7 @@ import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
+import org.osm2world.viewer.control.actions.ExportObjDirAction;
 import org.osm2world.viewer.control.actions.ExportPOVRayAction;
 import org.osm2world.viewer.control.actions.ExportScreenshotAction;
 import org.osm2world.viewer.control.actions.HelpControlsAction;
@@ -122,6 +123,7 @@ public class ViewerFrame extends JFrame {
 			subMenu.setMnemonic(KeyEvent.VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
+			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportScreenshotAction(this, data, messageManager, renderOptions));
 			subMenu.add(new StatisticsAction(this, data));

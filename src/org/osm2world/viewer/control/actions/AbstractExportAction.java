@@ -37,6 +37,8 @@ public abstract class AbstractExportAction extends AbstractAction {
 		
 	}
 
+	protected boolean chooseDirectory() { return false; }
+	
 	abstract protected FileNameExtensionFilter getFileNameExtensionFilter();
 
 	abstract protected void performExport(File file);
@@ -56,7 +58,12 @@ public abstract class AbstractExportAction extends AbstractAction {
 		
 		JFileChooser chooser = new JFileChooser(lastPath);
 		chooser.setDialogTitle("Export file");
-		chooser.setFileFilter(getFileNameExtensionFilter());
+		
+		if (chooseDirectory()) {
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		} else {
+			chooser.setFileFilter(getFileNameExtensionFilter());
+		}
 		
 		int returnVal = chooser.showSaveDialog(null);
 	
@@ -67,8 +74,9 @@ public abstract class AbstractExportAction extends AbstractAction {
 			lastPath = selectedFile.getParentFile();
 			
 			/* make sure that file uses correct extension */
-			
-			if (getFileNameExtensionFilter().getExtensions().length == 1) {
+					
+			if (getFileNameExtensionFilter() != null &&
+					getFileNameExtensionFilter().getExtensions().length == 1) {
 				
 				String extension = getFileNameExtensionFilter().getExtensions()[0];
 								
@@ -102,9 +110,13 @@ public abstract class AbstractExportAction extends AbstractAction {
 					.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			viewerFrame.setEnabled(false);
 
-			progressDialog = new ProgressDialog(viewerFrame,
-					"Export file of type "
-							+ getFileNameExtensionFilter().getDescription());
+			String progressDescription = "Export file";
+			if (getFileNameExtensionFilter() != null) {
+				progressDescription += " of type "
+						+ getFileNameExtensionFilter().getDescription();
+			}
+			
+			progressDialog = new ProgressDialog(viewerFrame, progressDescription);
 			progressDialog.setProgress(null);
 			progressDialog.setText("Writing file: " + file.getAbsolutePath());
 			
