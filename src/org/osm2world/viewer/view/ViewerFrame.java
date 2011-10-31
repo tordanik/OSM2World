@@ -29,6 +29,7 @@ import org.osm2world.viewer.control.actions.HelpControlsAction;
 import org.osm2world.viewer.control.actions.OpenOSMAction;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 import org.osm2world.viewer.control.actions.OrthoTileAction;
+import org.osm2world.viewer.control.actions.ReloadOSMAction;
 import org.osm2world.viewer.control.actions.ResetCameraAction;
 import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
 import org.osm2world.viewer.control.actions.SetElevationCalculatorAction;
@@ -122,6 +123,7 @@ public class ViewerFrame extends JFrame {
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(KeyEvent.VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
+			subMenu.add(new ReloadOSMAction(this, data, renderOptions));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));

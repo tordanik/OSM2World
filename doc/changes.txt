@@ -11,6 +11,7 @@
  * configurable PNG output background color
  * support for entrance=*
  * statistics dialog in viewer
+ * reload menu item in viewer
  * code improvements (configurable Targets, toString and isEmpty for OSM data)
  
  
