@@ -1,9 +1,10 @@
 package org.osm2world.viewer.control.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.target.TargetUtil;
@@ -13,7 +14,7 @@ import org.osm2world.viewer.view.StatisticsDialog;
 import org.osm2world.viewer.view.ViewerFrame;
 
 
-public class StatisticsAction extends AbstractAction {
+public class StatisticsAction extends AbstractAction implements Observer {
 
 	private final ViewerFrame viewerFrame;
 	private final Data data;
@@ -26,6 +27,14 @@ public class StatisticsAction extends AbstractAction {
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		
+		setEnabled(false);
+		data.addObserver(this);
+		
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		setEnabled(data.getConversionResults() != null);
 	}
 	
 	@Override
@@ -33,20 +42,11 @@ public class StatisticsAction extends AbstractAction {
 		
 		Results conversionResults = data.getConversionResults();
 		
-		if (conversionResults == null) {
-			
-			JOptionPane.showMessageDialog(viewerFrame, "Open an OSM file first!",
-					"No scene active", JOptionPane.INFORMATION_MESSAGE);
-			
-		} else {
-			
-			StatisticsTarget stats = new StatisticsTarget();
-			
-			TargetUtil.renderWorldObjects(stats, conversionResults.getMapData());
-			TargetUtil.renderObject(stats, conversionResults.getTerrain());
-			new StatisticsDialog(viewerFrame, stats).setVisible(true);
-			
-		}
+		StatisticsTarget stats = new StatisticsTarget();
+		
+		TargetUtil.renderWorldObjects(stats, conversionResults.getMapData());
+		TargetUtil.renderObject(stats, conversionResults.getTerrain());
+		new StatisticsDialog(viewerFrame, stats).setVisible(true);
 		
 	}
 		

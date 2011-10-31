@@ -3,6 +3,8 @@ package org.osm2world.viewer.control.actions;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -14,7 +16,8 @@ import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
 import org.osm2world.viewer.view.ViewerFrame;
 
-public abstract class AbstractExportAction extends AbstractAction {
+public abstract class AbstractExportAction
+	extends AbstractAction implements Observer {
 
 	protected final ViewerFrame viewerFrame;
 	protected final Data data;
@@ -35,6 +38,14 @@ public abstract class AbstractExportAction extends AbstractAction {
 		this.data = data;
 		this.renderOptions = renderOptions;
 		
+		setEnabled(false);
+		data.addObserver(this);
+		
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		setEnabled(data.getConversionResults() != null);
 	}
 
 	protected boolean chooseDirectory() { return false; }
