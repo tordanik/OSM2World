@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -24,13 +23,12 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.povray.POVRayTarget;
-import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
+import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkAreaWorldObject;
@@ -59,9 +57,9 @@ public class WaterModule extends ConfigurableWorldModule {
 	//TODO: apply to is almost always the same! create a superclass handling this!
 	
 	@Override
-	public void applyTo(MapData grid) {
+	public void applyTo(MapData mapData) {
 		
-		for (MapWaySegment line : grid.getMapWaySegments()) {
+		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			for (String value : WATERWAY_WIDTHS.keySet()) {
 				if (line.getTags().contains("waterway", value)) {
 					line.addRepresentation(new Waterway(line));
@@ -69,7 +67,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			}
 		}
 
-		for (MapNode node : grid.getMapNodes()) {
+		for (MapNode node : mapData.getMapNodes()) {
 			
 			int connectedRivers = 0;
 			
@@ -85,7 +83,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			
 		}
 
-		for (MapArea area : grid.getMapAreas()) {
+		for (MapArea area : mapData.getMapAreas()) {
 			if (area.getTags().contains(WATER_TAG)
 					|| area.getTags().contains(RIVERBANK_TAG)) {
 				area.addRepresentation(new Water(area));
@@ -128,14 +126,8 @@ public class WaterModule extends ConfigurableWorldModule {
 		
 		@Override
 		public float getWidth() {
-			String widthValue = line.getTags().getValue("width");
-			if (widthValue != null) {
-				Float width = ValueStringParser.parseMeasure(widthValue);
-				if (width != null) {
-					return width;
-				}
-			}
-			return WATERWAY_WIDTHS.get(line.getTags().getValue("waterway"));
+			return WorldModuleParseUtil.parseWidth(line.getTags(),
+					WATERWAY_WIDTHS.get(line.getTags().getValue("waterway")));
 		}
 		
 		@Override
@@ -148,7 +140,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target util) {
+		public void renderTo(Target<?> target) {
 			
 			//note: simply "extending" a river cannot work - unlike streets -
 			//      because there can be islands within the riverbank polygon.
@@ -181,15 +173,15 @@ public class WaterModule extends ConfigurableWorldModule {
 				
 				/* render ground */
 				
-				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
+				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						leftOutline, leftWaterBorder));
-				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
+				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						leftWaterBorder, leftGround));
-				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
+				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						leftGround, rightGround));
-				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
+				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						rightGround, rightWaterBorder));
-				util.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
+				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
 						rightWaterBorder, rightOutline));
 	
 				
@@ -198,7 +190,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				VectorXYZ[] vs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
 						leftWaterBorder, rightWaterBorder);
 				
-				util.drawTriangleStrip(WATER, vs);
+				target.drawTriangleStrip(WATER, vs);
 				
 			}
 			
@@ -254,7 +246,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			
 			//TODO: check whether it's within a riverbank (as with Waterway)
 			
@@ -270,8 +262,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 	
 	public static class Water extends NetworkAreaWorldObject
-		implements RenderableToAllTargets, RenderableToPOVRay,
-		TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
 		// possible algorithm: for each node of the outer polygon, check whether it
@@ -298,13 +289,8 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 			target.drawTriangles(WATER, getTriangulation());
-		}
-		
-		@Override
-		public void renderTo(POVRayTarget target) {
-			renderTo((Target)target);
 		}
 		
 	}
@@ -332,7 +318,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
 
 			/* render water */
 				
