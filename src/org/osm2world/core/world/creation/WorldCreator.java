@@ -11,8 +11,8 @@ public class WorldCreator {
 
 	private Collection<WorldModule> modules;
 		
-	public WorldCreator(Configuration configuration, WorldModule... modules) {
-		this.modules = Arrays.asList(modules);
+	public WorldCreator(Configuration config, WorldModule... modules) {
+		this(config, Arrays.asList(modules));
 	}
 	
 	public WorldCreator(Configuration config, List<WorldModule> modules) {
@@ -22,13 +22,13 @@ public class WorldCreator {
 		}
 	}
 	
-	public void addRepresentationsTo(MapData grid) {
+	public void addRepresentationsTo(MapData mapData) {
 		
 		for (WorldModule module : modules) {
-			module.applyTo(grid);
+			module.applyTo(mapData);
 		}
 		
-		NetworkCalculator.calculateNetworkInformationInGrid(grid);
+		NetworkCalculator.calculateNetworkInformationInGrid(mapData);
 		
 	}
 	
