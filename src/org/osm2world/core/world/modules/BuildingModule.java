@@ -27,6 +27,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -46,6 +47,7 @@ import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
@@ -86,7 +88,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	}
 	
 	public static class Building implements AreaWorldObject,
-			RenderableToAllTargets {
+		WorldObjectWithOutline, RenderableToAllTargets {
 
 		private final MapArea area;
 		
@@ -114,7 +116,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			return  GroundState.ON;
 		}
 
 		@Override
@@ -127,6 +129,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 			return 0;
 		}
 
+		@Override
+		public PolygonXYZ getOutlinePolygon() {
+			double floorEle = calculateFloorEle(roofData);
+			return area.getPolygon().getOuter().xyz(floorEle);
+		}
+		
 		@Override
 		public void renderTo(Target<?> target) {
 			
@@ -223,31 +231,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private void renderWalls(Target<?> target, RoofData roofData) {
 			
-			double floorEle = area.getElevationProfile().getMinEle();
-			boolean renderFloor = false;
-			
-			if (area.getTags().containsKey("min_height")) {
-				
-				Float minEle = parseMeasure(
-						area.getTags().getValue("min_height"));
-				if (minEle != null) {
-					floorEle += minEle;
-					renderFloor = true;
-				}
-				
-			} else if (area.getTags().containsKey("building:min_level")
-					&& area.getTags().containsKey("building:levels")) {
-				
-				Float minLevel = parseOsmDecimal(
-						area.getTags().getValue("building:min_level"), true);
-				Float levels = parseOsmDecimal(
-						area.getTags().getValue("building:levels"), false);
-				if (minLevel != null && levels != null) {
-					double totalHeight = roofData.getMaxRoofEle() - floorEle;
-					floorEle += (totalHeight / levels) * minLevel;
-					renderFloor = true;
-				}
-			}
+			double floorEle = calculateFloorEle(roofData);
+			boolean renderFloor = (floorEle > area.getElevationProfile().getMinEle());
 			
 			if (area.getOverlaps().isEmpty()) {
 				
@@ -327,6 +312,32 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 			}
 				
+		}
+
+		private double calculateFloorEle(RoofData roofData) {
+			double floorEle = area.getElevationProfile().getMinEle();
+			
+			if (area.getTags().containsKey("min_height")) {
+				
+				Float minEle = parseMeasure(
+						area.getTags().getValue("min_height"));
+				if (minEle != null) {
+					floorEle += minEle;
+				}
+				
+			} else if (area.getTags().containsKey("building:min_level")
+					&& area.getTags().containsKey("building:levels")) {
+				
+				Float minLevel = parseOsmDecimal(
+						area.getTags().getValue("building:min_level"), true);
+				Float levels = parseOsmDecimal(
+						area.getTags().getValue("building:levels"), false);
+				if (minLevel != null && levels != null) {
+					double totalHeight = roofData.getMaxRoofEle() - floorEle;
+					floorEle += (totalHeight / levels) * minLevel;
+				}
+			}
+			return floorEle;
 		}
 
 		private void renderWalls(Target<?> target, PolygonWithHolesXZ p,
