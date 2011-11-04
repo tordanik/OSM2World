@@ -18,8 +18,8 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapQuadtree;
-import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.MapQuadtree.QuadLeaf;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
@@ -439,11 +439,15 @@ public class OSMToMapDataConverter {
 			
 			intersectionPosCheck:
 			for (VectorXZ pos : polygon1.intersectionPositions(polygon2)) {
+				boolean trueIntersection = true;
 				for (VectorXZ commonNode : commonNodes) {
-					if (distance(pos, commonNode) > 0.01) {
-						intersects = true;
-						break intersectionPosCheck;
+					if (distance(pos, commonNode) < 0.01) {
+						trueIntersection = false;
 					}
+				}
+				if (trueIntersection) {
+					intersects = true;
+					break intersectionPosCheck;
 				}
 			}
 
