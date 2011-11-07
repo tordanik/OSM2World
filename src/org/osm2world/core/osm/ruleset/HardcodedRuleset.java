@@ -21,6 +21,7 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("waterway", "riverbank"));
 		
 		areaKeys.add("building");
+		areaKeys.add("building:part");
 	}
 	
 	@Override
