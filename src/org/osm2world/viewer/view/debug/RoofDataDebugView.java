@@ -10,7 +10,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.modules.BuildingModule.Building;
-import org.osm2world.core.world.modules.BuildingModule.Building.RoofData;
+import org.osm2world.core.world.modules.BuildingModule.Building.HeightfieldRoof;
 
 public class RoofDataDebugView extends DebugView {
 
@@ -25,7 +25,9 @@ public class RoofDataDebugView extends DebugView {
 		
 		for (Building building : map.getWorldObjects(Building.class)) {
 			
-			RoofData roofData = building.getRoofData();
+			if (!(building.getRoof() instanceof HeightfieldRoof)) return;
+			
+			HeightfieldRoof roofData = (HeightfieldRoof)building.getRoof();
 			
 			for (PolygonXZ polygon : roofData.getPolygon().getPolygons()) {
 				for (VectorXZ v : polygon.getVertices()) {
