@@ -129,20 +129,23 @@ public class TreeModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 			
 			VectorXYZ posXYZ = element.getElevationProfile().getWithEle(pos);
+			
+			renderTree(target, posXYZ, isConiferous(), height);
+			
+		}
+		
+		@Override
+		public void addDeclarationsTo(POVRayTarget target) {
 
-			double stemRatio = isConiferous()?0.3:0.5;
-			double radius = height*RADIUS_PER_HEIGHT;
+			target.append("#ifndef (broad_leaved_tree)\n");
+			target.append("#declare broad_leaved_tree = object { union {\n");
+			renderTree(target, VectorXYZ.NULL_VECTOR, false, 1);
+			target.append("} }\n#end\n\n");
 			
-			target.drawColumn(Materials.TREE_TRUNK,
-					null, posXYZ, height*stemRatio,
-					radius / 4, radius / 5, false, true);
-			
-			target.drawColumn(Materials.TREE_CROWN,
-					null, posXYZ.y(posXYZ.y+height*stemRatio),
-					height*(1-stemRatio),
-					radius,
-					isConiferous() ? 0 : radius,
-					true, true);
+			target.append("#ifndef (coniferous_tree)\n");
+			target.append("#declare coniferous_tree = object { union {\n");
+			renderTree(target, VectorXYZ.NULL_VECTOR, true, 1);
+			target.append("} }\n#end\n\n");
 			
 		}
 		
@@ -154,10 +157,11 @@ public class TreeModule extends AbstractModule {
 			
 			//add union of stem and leaves
 			if (isConiferous()) {
-				target.append("union { coniferous_tree rotate ");
+				target.append("object { coniferous_tree rotate ");
 			} else {
-				target.append("union { tree rotate ");
+				target.append("object { broad_leaved_tree rotate ");
 			}
+			
 			target.append(Float.toString(yRotation));
 			target.append("*y scale ");
 			target.append(height);
@@ -165,6 +169,24 @@ public class TreeModule extends AbstractModule {
 			target.appendVector(pos.x, 0, pos.z);
 			target.append(" }\n");
 			
+		}
+
+		private static void renderTree(Target<?> target,
+				VectorXYZ posXYZ, boolean coniferous, double height) {
+			
+			double stemRatio = coniferous?0.3:0.5;
+			double radius = height*RADIUS_PER_HEIGHT;
+			
+			target.drawColumn(Materials.TREE_TRUNK,
+					null, posXYZ, height*stemRatio,
+					radius / 4, radius / 5, false, true);
+			
+			target.drawColumn(Materials.TREE_CROWN,
+					null, posXYZ.y(posXYZ.y+height*stemRatio),
+					height*(1-stemRatio),
+					radius,
+					coniferous ? 0 : radius,
+					true, true);
 		}
 		
 		private boolean isConiferous() {
@@ -251,6 +273,9 @@ public class TreeModule extends AbstractModule {
 		}
 
 		@Override
+		public void addDeclarationsTo(POVRayTarget target) {}
+		
+		@Override
 		public void renderTo(POVRayTarget target) {
 			for (Tree tree : trees) {
 				tree.renderTo(target);
@@ -332,6 +357,9 @@ public class TreeModule extends AbstractModule {
 				tree.renderTo(target);
 			}
 		}
+		
+		@Override
+		public void addDeclarationsTo(POVRayTarget target) {}
 		
 		@Override
 		public void renderTo(Target<?> target) {

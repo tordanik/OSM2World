@@ -6,10 +6,8 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.povray.POVRayTarget;
-import org.osm2world.core.target.povray.RenderableToPOVRay;
 
-public abstract class TerrainPatch implements RenderableToAllTargets, RenderableToPOVRay {
+public abstract class TerrainPatch implements RenderableToAllTargets {
 	
 	/**
 	 * Required preparation for rendering.
@@ -35,11 +33,6 @@ public abstract class TerrainPatch implements RenderableToAllTargets, Renderable
 		
 		target.drawTriangles(Materials.TERRAIN_DEFAULT, triangulation);
 				
-	}
-	
-	@Override
-	public void renderTo(POVRayTarget target) {
-		renderTo(target);
 	}
 
 	public Collection<TriangleXYZ> getTriangulation() {

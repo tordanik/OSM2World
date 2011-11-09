@@ -61,6 +61,9 @@ public class Terrain implements RenderableToAllTargets , RenderableToPOVRay {
 	}
 	
 	@Override
+	public void addDeclarationsTo(POVRayTarget target) {}
+	
+	@Override
 	public void renderTo(POVRayTarget target) {
 		
 		Collection<TriangleXYZ> triangles = getTriangulation();

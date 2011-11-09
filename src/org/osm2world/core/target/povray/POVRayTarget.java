@@ -95,10 +95,16 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 //			stack.peek().append(closedBlock);
 //		}
 //	}
+
+	public void appendDefaultParameterValue(String name, String value) {
+		
+		append("#ifndef (" + name + ")\n");
+		append("#declare " + name + " = " + value);
+		append("\n#end\n\n");
+		
+	}
 	
 	public void appendMaterialDefinitions() {
-
-		append("//\n// material definitions\n//\n\n");
 		
 		for (Material material : Materials.getMaterials()) {
 			String name = "texture_" + Materials.getUniqueName(material);

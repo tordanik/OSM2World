@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.osm2world.core.GlobalValues;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
@@ -13,6 +15,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.terrain.data.Terrain;
+import org.osm2world.core.world.data.WorldObject;
 
 /**
  * utility class for creating a POVRay file
@@ -46,27 +49,39 @@ public final class POVRayWriter {
 			Camera camera, Projection projection) {
 				
 		POVRayTarget target = new POVRayTarget(stream);
-
-		addRenderParameters(target);
+		
+		addCommentHeader(target);
 		
 		target.append("\n#include \"textures.inc\"\n#include \"colors.inc\"\n");
 		target.append("#include \"osm2world_definitions.inc\"\n\n");
-				
-		target.append("global_settings { ambient_light rgb 1 }\n");
-		target.append("light_source{ <100000,150000,-100000> color White parallel point_at <0,0,0> fade_power 0 }\n\n");
 		
 		if (camera != null && projection != null) {
 			addCameraDefinition(target, camera, projection);
 		}
+
+		target.append("//\n// global scene parameters\n//\n\n");
+
+		target.append("global_settings { ambient_light rgb 1 }\n");
+		target.append("light_source{ <100000,150000,-100000> color White parallel point_at <0,0,0> fade_power 0 }\n\n");
 		
-		target.append("#ifndef (sky_sphere_def)\n");
-		target.append("#declare sky_sphere_def = sky_sphere {\n");
-		target.append("  pigment { Blue_Sky3 }\n");
-		target.append("}\n");
-		target.append("#end\n\n");
+		target.appendDefaultParameterValue("season", "summer");
+		target.appendDefaultParameterValue("time", "day");
+		
+		target.append("//\n// material and object definitions\n//\n\n");
+		
+		target.appendDefaultParameterValue("sky_sphere_def",
+				"sky_sphere {\n pigment { Blue_Sky3 }\n} ");
 		target.append("sky_sphere {sky_sphere_def}\n\n");
 		
 		target.appendMaterialDefinitions();
+		
+		for (MapElement element : mapData.getMapElements()) {
+			for (WorldObject r : element.getRepresentations()) {
+				if (r instanceof RenderableToPOVRay) {
+					((RenderableToPOVRay)r).addDeclarationsTo(target);
+				}
+			}
+		}
 		
 		target.append("//\n// empty ground around the scene\n//\n\n");
 		
@@ -86,6 +101,20 @@ public final class POVRayWriter {
 		target.append("\n\n//\n//Terrain\n//\n\n");
 		
 		terrain.renderTo(target);
+		
+	}
+	
+	private static final void addCommentHeader(POVRayTarget target) {
+		
+		target.append("/*\n"
+				+ " * This file was created by OSM2World "
+				+ GlobalValues.VERSION_STRING + " - "
+				+ GlobalValues.OSM2WORLD_URI + "\n"
+				+ " * \n"
+				+ " * Make sure that a \"osm2world_definitions.inc\" file exists!\n"
+				+ " * You can start with the one in the \"resources\" folder from your\n"
+				+ " * OSM2World installation or even just create an empty file.\n"
+				+ " */\n");
 		
 	}
 		
@@ -124,15 +153,6 @@ public final class POVRayWriter {
 		
 		target.append("\n}\n\n");
 		
-	}
-
-	private static final void addRenderParameters(POVRayTarget target) {
-		
-		target.append("//chooses the season (possible values: spring, summer, autumn, winter)\n");
-		target.append("#declare season=\"summer\";\n");
-		target.append("//chooses the time of day (possible values: day, night)\n");
-		target.append("#declare time=\"day\";\n\n\n");
-				
 	}
 	
 }
