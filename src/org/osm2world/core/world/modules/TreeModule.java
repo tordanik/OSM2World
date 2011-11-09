@@ -134,18 +134,26 @@ public class TreeModule extends AbstractModule {
 			
 		}
 		
+		private static POVRayTarget previousDeclarationTarget = null;
+		
 		@Override
 		public void addDeclarationsTo(POVRayTarget target) {
 
-			target.append("#ifndef (broad_leaved_tree)\n");
-			target.append("#declare broad_leaved_tree = object { union {\n");
-			renderTree(target, VectorXYZ.NULL_VECTOR, false, 1);
-			target.append("} }\n#end\n\n");
+			if (target != previousDeclarationTarget) {
 			
-			target.append("#ifndef (coniferous_tree)\n");
-			target.append("#declare coniferous_tree = object { union {\n");
-			renderTree(target, VectorXYZ.NULL_VECTOR, true, 1);
-			target.append("} }\n#end\n\n");
+				previousDeclarationTarget = target;
+				
+				target.append("#ifndef (broad_leaved_tree)\n");
+				target.append("#declare broad_leaved_tree = object { union {\n");
+				renderTree(target, VectorXYZ.NULL_VECTOR, false, 1);
+				target.append("} }\n#end\n\n");
+				
+				target.append("#ifndef (coniferous_tree)\n");
+				target.append("#declare coniferous_tree = object { union {\n");
+				renderTree(target, VectorXYZ.NULL_VECTOR, true, 1);
+				target.append("} }\n#end\n\n");
+				
+			}
 			
 		}
 		
