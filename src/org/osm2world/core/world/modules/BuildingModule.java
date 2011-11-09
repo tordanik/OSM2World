@@ -468,7 +468,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						
 		}
 		
-		private static final double DEFAULT_RIDGE_HEIGHT = 5;
+		private static final float DEFAULT_RIDGE_HEIGHT = 5;
 		
 		public static interface Roof extends RenderableToAllTargets {
 						
@@ -1246,6 +1246,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 						
 						MapWaySegment waySegment = ((MapOverlapWA)overlap).e1;
 						
+						if (!polygon.contains(waySegment.getCenter())) {
+							continue;
+						}
+						
 						boolean isRidge = waySegment.getTags().contains("roof:ridge", "yes");
 						boolean isEdge = waySegment.getTags().contains("roof:edge", "yes");
 												
@@ -1256,23 +1260,23 @@ public class BuildingModule extends ConfigurableWorldModule {
 							for (MapNode node : waySegment.getStartEndNodes()) {
 								
 								// height of node (above roof base)
-								double nodeHeight = Double.NaN;
+								Float nodeHeight = null;
 								
-								if (node.getTags().containsKey("height")) {
-									nodeHeight =
-										parseHeight(node.getTags(), Float.NaN);
-								} else if (waySegment.getTags().containsKey("height")) {
-									nodeHeight =
-										parseHeight(waySegment.getTags(), Float.NaN);
+								if (node.getTags().containsKey("roof:height")) {
+									nodeHeight = parseMeasure(
+											node.getTags().getValue("roof:height"));
+								} else if (waySegment.getTags().containsKey("roof:height")) {
+									nodeHeight = parseMeasure(
+											waySegment.getTags().getValue("roof:height"));
 								} else if (node.getTags().contains("roof:apex", "yes")) {
 									nodeHeight = DEFAULT_RIDGE_HEIGHT;
 								} else if (isRidge) {
 									nodeHeight = DEFAULT_RIDGE_HEIGHT;
 								}
 								
-								if (!Double.isNaN(nodeHeight)) {
+								if (nodeHeight != null) {
 									
-									roofHeightMap.put(node.getPos(), nodeHeight);
+									roofHeightMap.put(node.getPos(), (double)nodeHeight);
 									
 									roofHeight = max(roofHeight, nodeHeight);
 									
@@ -1288,16 +1292,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				/* add heights for outline nodes that don't have one yet */
 				
-				for (MapNode node : area.getBoundaryNodes()) {
-					if (!roofHeightMap.containsKey(node.getPos())) {
-						roofHeightMap.put(node.getPos(), 0.0);
+				for (VectorXZ v : polygon.getOuter().getVertices()) {
+					if (!roofHeightMap.containsKey(v)) {
+						roofHeightMap.put(v, 0.0);
 					}
 				}
 				
-				for (List<MapNode> hole : area.getHoles()) {
-					for (MapNode node : hole) {
-						if (!roofHeightMap.containsKey(node.getPos())) {
-							roofHeightMap.put(node.getPos(), 0.0);
+				for (SimplePolygonXZ hole : polygon.getHoles()) {
+					for (VectorXZ v : hole.getVertices()) {
+						if (!roofHeightMap.containsKey(v)) {
+							roofHeightMap.put(v, 0.0);
 						}
 					}
 				}
