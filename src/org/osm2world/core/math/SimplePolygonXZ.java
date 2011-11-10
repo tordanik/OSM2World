@@ -144,6 +144,21 @@ public class SimplePolygonXZ extends PolygonXZ {
 		Collections.reverse(newVertexLoop);
 		return new SimplePolygonXZ(newVertexLoop);
 	}
+
+	/**
+	 * creates a new polygon by adding a shift vector to each vector of this
+	 */
+	public SimplePolygonXZ shift(VectorXZ shiftVector) {
+		List<VectorXZ> newVertexLoop = new ArrayList<VectorXZ>(vertexLoop.size());
+		newVertexLoop.add(vertexLoop.get(0).add(shiftVector));
+		for (VectorXZ v : vertexLoop) {
+			if (!v.equals(vertexLoop.get(0))) {
+				newVertexLoop.add(v.add(shiftVector));
+			}
+		}
+		newVertexLoop.add(newVertexLoop.get(0));
+		return new SimplePolygonXZ(newVertexLoop);
+	}
 	
 	/**
 	 * returns true if the polygon defined by the polygonVertexLoop parameter

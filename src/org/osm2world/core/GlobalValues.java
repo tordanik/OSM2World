@@ -8,7 +8,7 @@ public final class GlobalValues {
 	private GlobalValues() {};
 	
 	/** version string */
-	public static final String VERSION_STRING = "0.1.8";
+	public static final String VERSION_STRING = "0.1.9";
 	
 	/** link to the OSM wiki documentation */
 	public static final String WIKI_URI = "http://wiki.osm.org/OSM2World";

@@ -52,6 +52,15 @@ public class PolygonXZ {
 	}
 	
 	/**
+	 * returns a collection that contains all vertices of this polygon
+	 * at least once. Can be used if you don't care about whether the first/last
+	 * vector is duplicated.
+	 */
+	public Collection<VectorXZ> getVertexCollection() {
+		return vertexLoop;
+	}
+	
+	/**
 	 * returns the vertex at a position in the vertex sequence
 	 */
 	public VectorXZ getVertex(int index) {

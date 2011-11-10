@@ -48,6 +48,7 @@ import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
@@ -277,9 +278,47 @@ public class BuildingModule extends ConfigurableWorldModule {
 				/* render building parts where the building polygon does not overlap with terrain boundaries */
 				
 				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
+				
 				for (TerrainBoundaryWorldObject o : tbWorldObjects) {
-					subtractPolygons.add(o.getOutlinePolygon().getSimpleXZPolygon());
+					
+					SimplePolygonXZ subtractPoly =
+							o.getOutlinePolygon().getSimpleXZPolygon();
+					
+					subtractPolygons.add(subtractPoly);
+					
+					if (o instanceof WaySegmentWorldObject) {
+						
+						// extend the subtract polygon for segments that end
+						// at a common node with this building part's outline.
+						// (otherwise, the subtract polygon will probably
+						// not exactly line up with the polygon boundary)
+						
+						WaySegmentWorldObject waySegmentWO = (WaySegmentWorldObject)o;
+						VectorXZ start = waySegmentWO.getStartPosition();
+						VectorXZ end = waySegmentWO.getEndPosition();
+						
+						boolean startCommonNode = false;
+						boolean endCommonNode = false;
+						
+						for (SimplePolygonXZ p : polygon.getPolygons()) {
+							startCommonNode |= p.getVertexCollection().contains(start);
+							endCommonNode |= p.getVertexCollection().contains(end);
+						}
+						
+						VectorXZ direction = end.subtract(start).normalize();
+						
+						if (startCommonNode) {
+							subtractPolygons.add(subtractPoly.shift(direction));
+						}
+						
+						if (endCommonNode) {
+							subtractPolygons.add(subtractPoly.shift(direction.invert()));
+						}
+						
+					}
+					
 				}
+				
 				subtractPolygons.addAll(roof.getPolygon().getHoles());
 				
 				Collection<PolygonWithHolesXZ> buildingPartPolys =

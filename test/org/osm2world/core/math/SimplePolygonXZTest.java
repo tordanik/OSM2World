@@ -2,7 +2,7 @@ package org.osm2world.core.math;
 
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
@@ -63,6 +63,21 @@ public class SimplePolygonXZTest {
 		assertAlmostEquals(1, p1.distanceToSegments(NULL_VECTOR));
 		
 		assertAlmostEquals(sqrt(0.5), p2.distanceToSegments(NULL_VECTOR));
+		
+	}
+	
+	@Test
+	public void testShift() {
+
+		SimplePolygonXZ shiftP = p1.shift(VectorXZ.X_UNIT);
+		
+		assertSame(p1.size(), shiftP.size());
+		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexLoop().get(0));
+		assertAlmostEquals(new VectorXZ( 0,  0), shiftP.getVertexLoop().get(1));
+		assertAlmostEquals(new VectorXZ( 0, +1), shiftP.getVertexLoop().get(2));
+		assertAlmostEquals(new VectorXZ( 2, +1), shiftP.getVertexLoop().get(3));
+		assertAlmostEquals(new VectorXZ( 2, -1), shiftP.getVertexLoop().get(4));
+		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexLoop().get(5));
 		
 	}
 	
