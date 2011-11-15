@@ -45,7 +45,7 @@ public class ReloadOSMAction extends AbstractAction implements Observer {
 	public void actionPerformed(ActionEvent arg0) {
 		
 		new OpenOSMAction(viewerFrame, data, renderOptions)
-				.openOSMFile(data.getOsmFile());
+				.openOSMFile(data.getOsmFile(), false);
 		
 	}
 	

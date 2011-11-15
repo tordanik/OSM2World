@@ -51,14 +51,14 @@ public class OpenOSMAction extends AbstractAction {
 
 		if (osmFile != null) {
 
-			openOSMFile(osmFile);
+			openOSMFile(osmFile, true);
 
 		}
 
 	}
 
-	public void openOSMFile(File osmFile) {
-		OpenOSMThread thread = new OpenOSMThread(osmFile);
+	public void openOSMFile(File osmFile, boolean resetCamera) {
+		OpenOSMThread thread = new OpenOSMThread(osmFile, resetCamera);
 		thread.setUncaughtExceptionHandler(
 				new ConversionExceptionHandler(viewerFrame));
 		thread.start();
@@ -95,11 +95,14 @@ public class OpenOSMAction extends AbstractAction {
 	private class OpenOSMThread extends Thread implements ProgressListener {
 
 		private final File osmFile;
+		private final boolean resetCamera;
+		
 		private ProgressDialog progressDialog;
 
-		public OpenOSMThread(File osmFile) {
+		public OpenOSMThread(File osmFile, boolean resetCamera) {
 			super("OpenOSMThread");
 			this.osmFile = osmFile;
+			this.resetCamera = resetCamera;
 		}
 
 		@Override
@@ -114,7 +117,9 @@ public class OpenOSMAction extends AbstractAction {
 
 				data.loadOSMFile(osmFile, renderOptions.getEleCalculator(), this);
 
-				new ResetCameraAction(viewerFrame, data, renderOptions).actionPerformed(null);
+				if (resetCamera) {
+					new ResetCameraAction(viewerFrame, data, renderOptions).actionPerformed(null);
+				}
 
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(viewerFrame,

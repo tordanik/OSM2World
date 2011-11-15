@@ -93,7 +93,7 @@ public class ViewerFrame extends JFrame {
 			public void filesDropped(File[] files) {
 				if (files.length >= 1) {
 					new OpenOSMAction(ViewerFrame.this, data, renderOptions)
-						.openOSMFile(files[0]);
+						.openOSMFile(files[0], true);
 				}
 			}
 		});

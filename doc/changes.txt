@@ -3,6 +3,7 @@
 --------------------------------------------------------------------------------
  
  * correct rendering of covered ways through buildings
+ * keep camera position after reload (only works well with same bounding box)
  
  
 --------------------------------------------------------------------------------
