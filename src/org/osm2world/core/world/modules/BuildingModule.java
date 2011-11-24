@@ -269,7 +269,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 					MapElement other = overlap.getOther(area);
 					if (other.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject
-							&& other.getPrimaryRepresentation().getGroundState() == GroundState.ON) {
+							&& other.getPrimaryRepresentation().getGroundState() == GroundState.ON
+							&& other.getTags().contains("tunnel", "passage")) {
 						tbWorldObjects.add((TerrainBoundaryWorldObject)
 								other.getPrimaryRepresentation());
 					}
