@@ -15,8 +15,8 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
+import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -57,7 +57,6 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		for (int i = 0; i < vertices.size(); i++) {
 			gl.glNormal3d(normals[i].x, normals[i].y, -normals[i].z);
 	        gl.glVertex3d(vertices.get(i).x, vertices.get(i).y, -vertices.get(i).z);
-			i ++;
 		}
 		
         gl.glEnd();
