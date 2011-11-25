@@ -14,8 +14,8 @@ import javax.media.opengl.glu.GLU;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
-import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.model.MessageManager.Message;
+import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.DebugView;
 
 import com.sun.opengl.util.FPSAnimator;
@@ -77,6 +77,8 @@ public class ViewerGLCanvas extends GLCanvas {
 	        }
 	        
 	        JOGLTarget.setProjectionMatrices(gl, renderOptions.projection);
+	        
+	        System.out.println(renderOptions.projection.getAspectRatio());
 	        
 	        /* prepare modelview matrix stack with camera information */
 	        
@@ -154,7 +156,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        gl.glViewport(0, 0, width, height);
 	        
 	        renderOptions.projection =
-	        	renderOptions.projection.withAspectRatio(width / height);
+	        	renderOptions.projection.withAspectRatio((double)width / height);
 	        
 		}
 	
