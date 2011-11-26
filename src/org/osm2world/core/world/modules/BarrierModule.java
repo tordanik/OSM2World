@@ -33,7 +33,7 @@ public class BarrierModule extends AbstractModule {
 	protected void applyToWaySegment(MapWaySegment line) {
 
 		TagGroup tags = line.getTags();
-		if (!tags.containsKey("barrier")) return; //fast exit for common case
+		if (!tags.containsKey("barrier") && !tags.containsKey("power")) return; //fast exit for common case
 		
 		if (Wall.fits(tags)) {
 			line.addRepresentation(new Wall(line));
@@ -43,6 +43,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new Hedge(line));
 		} else if (Fence.fits(tags)) {
 			line.addRepresentation(new Fence(line, tags));
+		} else if (Powerline.fits(tags)) {
+			line.addRepresentation(new Powerline(line));
 		}
 			
 	}
@@ -51,7 +53,7 @@ public class BarrierModule extends AbstractModule {
 	protected void applyToNode(MapNode node) {
 
 		TagGroup tags = node.getTags();
-		if (!tags.containsKey("barrier")) return; //fast exit for common case
+		if (!tags.containsKey("barrier") && !tags.containsKey("power")) return; //fast exit for common case
 
 		if (Bollard.fits(tags)) {
 			node.addRepresentation(new Bollard(node, tags));
@@ -255,6 +257,51 @@ public class BarrierModule extends AbstractModule {
 				VectorXYZ base = polePosition.xyz(line.getElevationProfile().getEleAt(polePosition));
 				util.drawColumn(material, null , base, height, width, width, false, true);
 			
+			}
+			
+		}
+		
+	}
+	
+	private static class Powerline extends LinearBarrier {
+		private static final float DEFAULT_THICKN = 0.1f; // width and height
+		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
+		private static final Material material = Materials.STEEL;
+	
+		public static boolean fits(TagGroup tags) {
+			return "minor_line".equals(tags.getValue("power"));
+		}
+		
+		public Powerline(MapWaySegment segment) {
+			// one could evaluate the cables tag here but drawing each single cable wouldn't probably look very nice
+			super(segment, DEFAULT_THICKN, DEFAULT_THICKN);
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) { // required?
+			return DEFAULT_CLEARING_BL;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) { // copied from Fence class, caps drawing removed
+			
+			//TODO: join ways back together to reduce the number of caps
+			
+			VectorXYZ[] wallShape = {
+				new VectorXYZ(-width/2, DEFAULT_CLEARING_BL, 0),
+				new VectorXYZ(-width/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN, 0),
+				new VectorXYZ(+width/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN, 0),
+				new VectorXYZ(+width/2, DEFAULT_CLEARING_BL, 0)
+			};
+			
+			List<VectorXYZ> path =
+				line.getElevationProfile().getPointsWithEle();
+			
+			List<VectorXYZ[]> strips = createShapeExtrusionAlong(wallShape,
+					path, nCopies(path.size(), VectorXYZ.Y_UNIT));
+			
+			for (VectorXYZ[] strip : strips) {
+				target.drawTriangleStrip(material, strip);
 			}
 			
 		}

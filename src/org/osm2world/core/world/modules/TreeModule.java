@@ -206,6 +206,7 @@ public class TreeModule extends AbstractModule {
 			}
 			
 			if ("broad_leaved".equals(typeValue)
+					|| "broad_leafed".equals(typeValue) // both values are common
 					|| "deciduous".equals(typeValue)) {
 				return false;
 			} else if ("coniferous".equals(typeValue)) {

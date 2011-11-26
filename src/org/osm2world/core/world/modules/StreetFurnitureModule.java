@@ -29,6 +29,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("man_made", "flagpole")) {
 			node.addRepresentation(new Flagpole(node));
 		}
+		if (node.getTags().contains("power", "pole")) {
+			node.addRepresentation(new Powerpole(node));
+		}
 		if (node.getTags().contains("advertising", "column")) {
 			node.addRepresentation(new AdvertisingColumn(node));
 		}
@@ -73,6 +76,45 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.drawColumn(Materials.STEEL, null,
 					node.getElevationProfile().getWithEle(node.getPos()),
 					parseHeight(node.getTags(), 10f),
+					0.15, 0.15, false, true);
+			
+		}
+		
+	}
+	
+	private static final class Powerpole extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		public Powerpole(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			target.drawColumn(Materials.WOOD, null,
+					node.getElevationProfile().getWithEle(node.getPos()),
+					parseHeight(node.getTags(), 8f),
 					0.15, 0.15, false, true);
 			
 		}
