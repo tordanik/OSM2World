@@ -1,10 +1,11 @@
 package org.osm2world.core.target.primitivebuffer;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
@@ -13,6 +14,9 @@ import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Storage for low-level rendering information (vertex and primitive data)
@@ -34,24 +38,24 @@ public class PrimitiveBuffer extends
 	}
 	
 	private ArrayList<VectorXYZ> vertexCollection = new ArrayList<VectorXYZ>();
-	private Map<Material, List<Primitive>> primitiveMap = new HashMap<Material, List<Primitive>>();
+	private Multimap<Material, Primitive> primitiveMap = HashMultimap.create();
 	
-	private Map<VectorXYZ, Integer> indexMap = new HashMap<VectorXYZ, Integer>();
-		
+	private TObjectIntMap<VectorXYZ> indexMap = new TObjectIntHashMap<VectorXYZ>();
+	
 	@Override
 	protected void drawPrimitive(Type type, Material material,
 			List<? extends VectorXYZ> vertices, VectorXYZ[] normals) {
 		int[] indices = generateIndices(vertices);
-		addPrimitive(material, new Primitive(type, indices, normals));
+		primitiveMap.put(material, new Primitive(type, indices, normals));
 	}
 	
 	private int[] generateIndices(List<? extends VectorXYZ> newVertices) {
 		int[] indices = new int[newVertices.size()];
 		for (int i = 0; i < newVertices.size(); i++) {
 			VectorXYZ vertex = VectorXYZ.xyz(newVertices.get(i));
-			Integer existingIndex = indexMap.get(vertex);
-			if (existingIndex != null) {
-				indices[i] = existingIndex;
+			
+			if (indexMap.containsKey(vertex)) {
+				indices[i] = indexMap.get(vertex);
 			} else {
 				int nextIndex = vertexCollection.size();
 				indices[i] = nextIndex;
@@ -60,19 +64,6 @@ public class PrimitiveBuffer extends
 			}
 		}
 		return indices;
-	}
-	
-	private void addPrimitive(Material material, Primitive primitive) {
-		
-		List<Primitive> primitiveList = primitiveMap.get(material);
-		
-		if (primitiveList == null) {
-			primitiveList = new ArrayList<Primitive>();
-			primitiveMap.put(material, primitiveList);
-		}
-		
-		primitiveList.add(primitive);
-		
 	}
 	
 //	@Override

@@ -70,14 +70,20 @@ public final class ImageExport {
 						+ config.getString(BG_COLOR_CONFIG_KEY));
 			}
 		}
-				
-		/* render map data into buffer */
 		
-		PrimitiveBuffer buffer = new PrimitiveBuffer();
+		/* render map data into buffer if it needs to be rendered multiple times */
 		
-		TargetUtil.renderWorldObjects(buffer, results.getMapData());
-		TargetUtil.renderObject(buffer, results.getTerrain());
+		PrimitiveBuffer buffer = null;
 		
+		if (true) {
+			
+			buffer = new PrimitiveBuffer();
+			
+			TargetUtil.renderWorldObjects(buffer, results.getMapData());
+			TargetUtil.renderObject(buffer, results.getTerrain());
+			
+		}
+					
 		/* create image (maybe in multiple parts) */
 				
         BufferedImage image = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
@@ -146,9 +152,18 @@ public final class ImageExport {
 	        
 	        /* render to pBuffer */
 	        
-	        new JOGLPrimitiveBufferRenderer(gl, buffer).render();
-	        
-	        //TODO add from buffer
+	        if (buffer != null) {
+	        	
+		        new JOGLPrimitiveBufferRenderer(gl, buffer).render();
+
+	        } else {
+	        	
+		        JOGLTarget jogl = new JOGLTarget(gl, camera);
+		        
+				TargetUtil.renderWorldObjects(jogl, results.getMapData());
+				TargetUtil.renderObject(jogl, results.getTerrain());
+				
+			}
 	        
 	        /* make screenshot and paste into the buffer
 	         * that will contain the entire image*/

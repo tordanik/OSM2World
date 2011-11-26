@@ -11,29 +11,43 @@ import org.osm2world.core.world.creation.WorldModule;
 public class WorldModuleParseUtil {
 
 	private WorldModuleParseUtil() { }
+
+	/**
+	 * returns the value of the first key that exists,
+	 * or the fallback value if none of the keys exists
+	 */
+	public static final String getValueWithFallback(String fallback,
+			TagGroup tags, String... keys) {
+		for (String key : keys) {
+			if (tags.containsKey(key)) {
+				return tags.getValue(key);
+			}
+		}
+		return fallback;
+	}
 	
 	/**
-	 * retrieves width using (in this priority order) 
+	 * retrieves width using (in this priority order)
 	 * width tag, est_width tag, defaultValue parameter
 	 */
-	public static final float parseWidth(TagGroup tags, float defaultValue) {		
-		return parseMeasure(tags, defaultValue, "width", "est_width");		
+	public static final float parseWidth(TagGroup tags, float defaultValue) {
+		return parseMeasure(tags, defaultValue, "width", "est_width");
 	}
 
 	/**
-	 * retrieves height using (in this priority order) 
+	 * retrieves height using (in this priority order)
 	 * height tag, building:height tag, est_height tag, defaultValue parameter
 	 */
-	public static final float parseHeight(TagGroup tags, float defaultValue) {		
-		return parseMeasure(tags, defaultValue, "height", "building:height", "est_height");		
+	public static final float parseHeight(TagGroup tags, float defaultValue) {
+		return parseMeasure(tags, defaultValue, "height", "building:height", "est_height");
 	}
 
 	/**
-	 * retrieves clearing using (in this priority order) 
+	 * retrieves clearing using (in this priority order)
 	 * practical:maxheight tag, maxheight tag, defaultValue parameter
 	 */
-	public static final float parseClearing(TagGroup tags, float defaultValue) {		
-		return parseMeasure(tags, defaultValue, "maxheight:physical", "maxheight");		
+	public static final float parseClearing(TagGroup tags, float defaultValue) {
+		return parseMeasure(tags, defaultValue, "maxheight:physical", "maxheight");
 	}
 	
 	private static final float parseMeasure(TagGroup tags, float defaultValue,

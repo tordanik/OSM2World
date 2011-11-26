@@ -52,8 +52,8 @@ public class JOGLPrimitiveBufferRenderer {
 				int i = 0;
 				for (int index : primitive.indices) {
 					VectorXYZ v = primitiveBuffer.getVertex(index);
-					gl.glNormal3d(primitive.normals[i].x, 
-			        		 primitive.normals[i].y, 
+					gl.glNormal3d(primitive.normals[i].x,
+			        		 primitive.normals[i].y,
 			        		-primitive.normals[i].z);
 			        gl.glVertex3d(v.x, v.y, -v.z);
 			        ++ i;
