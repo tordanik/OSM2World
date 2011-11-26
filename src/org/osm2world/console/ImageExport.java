@@ -75,7 +75,8 @@ public final class ImageExport {
 		
 		PrimitiveBuffer buffer = null;
 		
-		if (true) {
+		if ((x > CANVAS_LIMIT || y > CANVAS_LIMIT)
+				&& !config.getBoolean("forceUnbufferedPNGRendering", false)) {
 			
 			buffer = new PrimitiveBuffer();
 			
