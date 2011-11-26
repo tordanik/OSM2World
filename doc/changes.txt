@@ -2,6 +2,7 @@
  OSM2World 0.1.9                                                     ????-??-?? 
 --------------------------------------------------------------------------------
  
+ * new PowerModule with power poles and minor power lines
  * correct rendering of covered ways through buildings, require tunnel=passage
  * keep camera position after reload (only works well with same bounding box)
  * correct aspect ratio depending on window dimensions
