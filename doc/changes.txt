@@ -3,6 +3,7 @@
 --------------------------------------------------------------------------------
  
  * new PowerModule with power poles and minor power lines
+ * fire hydrant in StreetFurnitureModule
  * correct rendering of covered ways through buildings, require tunnel=passage
  * keep camera position after reload (only works well with same bounding box)
  * correct aspect ratio depending on window dimensions

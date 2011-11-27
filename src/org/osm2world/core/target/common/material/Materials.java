@@ -99,6 +99,9 @@ public final class Materials {
 	public static final ConfMaterial ADVERTISING_POSTER =
 		new ConfMaterial(Lighting.FLAT, new Color(1, 1, 0.8f));
 	
+	public static final ConfMaterial FIREHYDRANT =
+		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
+	
 	private static final Map<String, ConfMaterial> surfaceMaterialMap =
 		new HashMap<String, ConfMaterial>();
 	private static final Map<ConfMaterial, String> fieldNameMap =

@@ -38,6 +38,10 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("amenity", "bench")) {
 			node.addRepresentation(new Bench(node));
 		}
+		if (node.getTags().contains("emergency", "fire_hydrant")
+			&& node.getTags().contains("fire_hydrant:type", "pillar")) {
+			node.addRepresentation(new FireHydrant(node));
+		}
 	}
 	
 	private static final class Flagpole extends NoOutlineNodeWorldObject
@@ -308,6 +312,60 @@ public class StreetFurnitureModule extends AbstractModule {
 						faceVector, 0.5, 0.08, 0.08);
 			}
 			
+		}
+		
+	}
+	
+	private static final class FireHydrant extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		public FireHydrant(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double ele = node.getElevationProfile().getEle();
+			float height = parseHeight(node.getTags(), 1f);
+			
+			/* draw main pole */
+			target.drawColumn(Materials.FIREHYDRANT, null,
+					node.getElevationProfile().getWithEle(node.getPos()),
+					height,
+					0.15, 0.15, false, true);
+			
+			/* draw two small and one large valve */
+			VectorXYZ valveBaseVector = node.getPos().xyz(ele + height - 0.3);
+			VectorXZ smallValveVector = new VectorXZ(1f, 0f);
+			VectorXZ largeValveVector = new VectorXZ(0f, 1f);
+			
+			target.drawBox(Materials.FIREHYDRANT,
+				valveBaseVector,
+				smallValveVector, 0.1f, 0.5f, 0.1f);
+			target.drawBox(Materials.FIREHYDRANT,
+				valveBaseVector.add(0.2f, -0.1f, 0f),
+				largeValveVector, 0.15f, 0.15f, 0.15f);
 		}
 		
 	}
