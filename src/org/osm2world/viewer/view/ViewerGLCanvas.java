@@ -78,8 +78,6 @@ public class ViewerGLCanvas extends GLCanvas {
 	        
 	        JOGLTarget.setProjectionMatrices(gl, renderOptions.projection);
 	        
-	        System.out.println(renderOptions.projection.getAspectRatio());
-	        
 	        /* prepare modelview matrix stack with camera information */
 	        
 	        gl.glLoadIdentity();
