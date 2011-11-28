@@ -38,9 +38,15 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("amenity", "bench")) {
 			node.addRepresentation(new Bench(node));
 		}
+		if (node.getTags().contains("amenity", "waste_basket")) {
+			node.addRepresentation(new WasteBasket(node));
+		}
 		if (node.getTags().contains("emergency", "fire_hydrant")
 			&& node.getTags().contains("fire_hydrant:type", "pillar")) {
 			node.addRepresentation(new FireHydrant(node));
+		}
+		if (node.getTags().contains("highway", "street_lamp")) {
+			node.addRepresentation(new StreetLamp(node));
 		}
 	}
 	
@@ -316,6 +322,67 @@ public class StreetFurnitureModule extends AbstractModule {
 		
 	}
 	
+	private static final class WasteBasket extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		public WasteBasket(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double ele = node.getElevationProfile().getEle();
+			
+			/* determine material */
+			
+			Material material = null;
+			
+			//TODO parse color
+			
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("material"));
+			}
+				
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("surface"), Materials.STEEL);
+			}
+			
+			/* draw pole */
+			target.drawColumn(material, null,
+					node.getElevationProfile().getWithEle(node.getPos()),
+					1.2, 0.06, 0.06, false, true);
+			
+			/* draw basket */
+			target.drawColumn(material, null,
+					node.getPos().xyz(ele + 0.5).add(0.25, 0f, 0f),
+					0.5, 0.2, 0.2, true, true);
+		}
+		
+	}
+	
 	private static final class FireHydrant extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
 		
@@ -366,6 +433,90 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.drawBox(Materials.FIREHYDRANT,
 				valveBaseVector.add(0.2f, -0.1f, 0f),
 				largeValveVector, 0.15f, 0.15f, 0.15f);
+		}
+		
+	}
+	
+	private static final class StreetLamp extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		public StreetLamp(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double ele = node.getElevationProfile().getEle();
+			float lampHeight = 0.8f;
+			float lampHalfWidth = 0.4f;
+			float poleHeight = parseHeight(node.getTags(), 5f) - lampHeight;
+			
+			/* determine material */
+			
+			Material material = null;
+			
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("material"));
+			}
+				
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("surface"), Materials.STEEL);
+			}
+			
+			/* draw pole */
+			target.drawColumn(material, null,
+					node.getPos().xyz(ele),
+					0.5, 0.16, 0.08, false, false);
+			target.drawColumn(material, null,
+					node.getPos().xyz(ele + 0.5),
+					poleHeight, 0.08, 0.08, false, false);
+			
+			/* draw lamp */
+					
+			// lower part
+			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+			vs.add(node.getPos().xyz(ele + poleHeight));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			
+			target.drawTriangleFan(material, vs);
+			
+			// upper part
+			vs.clear();
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			
+			target.drawTriangleFan(material, vs);
 		}
 		
 	}
