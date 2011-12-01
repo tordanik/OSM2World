@@ -1,5 +1,7 @@
 package org.osm2world.core.world.modules.common;
 
+import static java.lang.Math.toRadians;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -164,6 +166,28 @@ public final class WorldModuleGeometryUtil {
 		}
 				
 		return triangleStripList;
+		
+	}
+	
+	/**
+	 * creates an rotated version of an array of vectors
+	 * by rotating them by the given angle around the parallel of the x axis
+	 * defined by the given Y and Z coordinates
+	 * 
+	 * @angle  rotation angle in degrees
+	 */
+	public static final VectorXYZ[] rotateShapeX(VectorXYZ[] shape,
+			double angle, double posY, double posZ) {
+		
+		VectorXYZ[] result = new VectorXYZ[shape.length];
+
+		for (int i = 0; i < shape.length; ++i) {
+			result[i] = shape[i].add(0f, -posY, -posZ);
+			result[i] = result[i].rotateX(toRadians(angle));
+			result[i] = result[i].add(0f, posY, posZ);
+		}
+		
+		return result;
 		
 	}
 	

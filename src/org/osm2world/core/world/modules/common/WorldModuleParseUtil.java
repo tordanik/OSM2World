@@ -1,5 +1,7 @@
 package org.osm2world.core.world.modules.common;
 
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseAngle;
+
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
 import org.osm2world.core.world.creation.WorldModule;
@@ -48,6 +50,26 @@ public class WorldModuleParseUtil {
 	 */
 	public static final float parseClearing(TagGroup tags, float defaultValue) {
 		return parseMeasure(tags, defaultValue, "maxheight:physical", "maxheight");
+	}
+	
+	/**
+	 * parses the direction tag and returns the direction
+	 * (or a default value) as radians
+	 */
+	public static final double parseDirection(TagGroup tags, double defaultValue) {
+		
+		Float directionAngle = null;
+		
+		if (tags.containsKey("direction")) {
+			directionAngle = parseAngle(tags.getValue("direction"));
+		}
+		
+		if (directionAngle != null) {
+			return Math.toRadians(directionAngle);
+		} else {
+			return defaultValue;
+		}
+		
 	}
 	
 	private static final float parseMeasure(TagGroup tags, float defaultValue,

@@ -1,10 +1,8 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.toRadians;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.List;
 
@@ -126,17 +124,6 @@ public class PowerModule extends AbstractModule {
 			return node;
 		}
 		
-		/** returns an array of vectors rotated by the given angle around the given Y and Z coordinates */
-		public VectorXYZ[] rotateVectorsX(VectorXYZ[] vectors, double angle, double posY, double posZ) {
-			for(int i = 0; i < vectors.length; ++i) {
-				vectors[i] = vectors[i].add(0f, -posY, -posZ);
-				vectors[i] = vectors[i].rotateX(toRadians(angle));
-				vectors[i] = vectors[i].add(0f, posY, posZ);
-			}
-
-			return vectors;
-		}
-		
 		@Override
 		public void renderTo(Target<?> target) {
 			
@@ -197,16 +184,16 @@ public class PowerModule extends AbstractModule {
 			double rotCenterY = ele + poleHeight + nacelleHeight/2;
 			double rotCenterZ = node.getPos().getZ();
 			
-			bladeFront = rotateVectorsX(bladeFront, 60, rotCenterY, rotCenterZ);
-			bladeBack  = rotateVectorsX(bladeBack, 60, rotCenterY, rotCenterZ);
+			bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
+			bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
 			target.drawTriangleStrip(bladeMaterial, bladeFront);
 			target.drawTriangleStrip(bladeMaterial, bladeBack);
-			bladeFront = rotateVectorsX(bladeFront, 120, rotCenterY, rotCenterZ);
-			bladeBack  = rotateVectorsX(bladeBack, 120, rotCenterY, rotCenterZ);
+			bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
+			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
 			target.drawTriangleStrip(bladeMaterial, bladeFront);
 			target.drawTriangleStrip(bladeMaterial, bladeBack);
-			bladeFront = rotateVectorsX(bladeFront, 120, rotCenterY, rotCenterZ);
-			bladeBack  = rotateVectorsX(bladeBack, 120, rotCenterY, rotCenterZ);
+			bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
+			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
 			target.drawTriangleStrip(bladeMaterial, bladeFront);
 			target.drawTriangleStrip(bladeMaterial, bladeBack);
 			

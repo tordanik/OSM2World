@@ -1,7 +1,6 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.toRadians;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseAngle;
+import static java.lang.Math.PI;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
@@ -192,12 +191,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			float height = parseHeight(node.getTags(), 3.5f);
 			float minHeight = height / 5;
 						
-			Float directionAngle = 180f;
-			if (node.getTags().containsKey("direction")) {
-				directionAngle = parseAngle(node.getTags().getValue("direction"));
-			}
-			
-			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			double directionAngle = parseDirection(node.getTags(), PI);
+						
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
 			
 			/* draw board */
@@ -295,12 +291,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			/* calculate vectors and corners */
 
-			Float directionAngle = 180f;
-			if (node.getTags().containsKey("direction")) {
-				directionAngle = parseAngle(node.getTags().getValue("direction"));
-			}
+			double directionAngle = parseDirection(node.getTags(), PI);
 			
-			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
 			
 			List<VectorXZ> cornerOffsets = new ArrayList<VectorXZ>(4);
@@ -448,12 +441,9 @@ public class StreetFurnitureModule extends AbstractModule {
 						node.getTags().getValue("surface"), Materials.GRITBIN_DEFAULT);
 			}
 			
-			Float directionAngle = 180f;
-			if (node.getTags().containsKey("direction")) {
-				directionAngle = parseAngle(node.getTags().getValue("direction"));
-			}
-			
-			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			double directionAngle = parseDirection(node.getTags(), PI);
+						
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
 			
 			/* draw box */
@@ -509,12 +499,8 @@ public class StreetFurnitureModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 			double ele = node.getElevationProfile().getEle();
 			
-			Float directionAngle = 180f;
-			if (node.getTags().containsKey("direction")) {
-				directionAngle = parseAngle(node.getTags().getValue("direction"));
-			}
-			
-			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			double directionAngle = parseDirection(node.getTags(), PI);
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			
 			Material boxMaterial = null;
 			Material poleMaterial = null;
@@ -604,15 +590,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 			double ele = node.getElevationProfile().getEle();
 			
-			Float directionAngle = 180f;
-			if (node.getTags().containsKey("direction")) {
-				directionAngle = parseAngle(node.getTags().getValue("direction"));
-			}
+			double directionAngle = parseDirection(node.getTags(), PI);
 			
 			Material boxMaterial = Materials.POSTBOX_DEUTSCHEPOST;
 			Material otherMaterial = Materials.STEEL;
 			
-			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ rightVector = faceVector.rightNormal();
 			
 			// shape depends on type
