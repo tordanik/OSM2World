@@ -50,6 +50,16 @@ public abstract class Material {
 		return multiplyColor(getColor(), getDiffuseFactor());
 	}
 	
+	public Material brighter() {
+		return new ImmutableMaterial(lighting, getColor().brighter(),
+				getAmbientFactor(), getDiffuseFactor());
+	}
+	
+	public Material darker() {
+		return new ImmutableMaterial(lighting, getColor().darker(),
+				getAmbientFactor(), getDiffuseFactor());
+	}
+	
 	private static final Color multiplyColor(Color c, float factor) {
 		float[] colorComponents = new float[3];
 		c.getColorComponents(colorComponents);

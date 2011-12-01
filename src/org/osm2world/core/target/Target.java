@@ -63,6 +63,15 @@ public interface Target<R extends Renderable> {
 			double height, double width, double depth);
 	
 	/**
+	 * draws a box with outward-facing polygons where all 8 corners can be defined separately
+	 */
+	public void drawBox(Material material,
+			VectorXYZ frontLowerLeft, VectorXYZ frontLowerRight,
+			VectorXYZ frontUpperLeft, VectorXYZ frontUpperRight,
+			VectorXYZ backLowerLeft, VectorXYZ backLowerRight,
+			VectorXYZ backUpperLeft, VectorXYZ backUpperRight);
+	
+	/**
 	 * draws a column with outward-facing polygons around a point.
 	 * A column is a polygon with > 3 corners extruded upwards.
 	 * 

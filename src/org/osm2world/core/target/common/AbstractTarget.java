@@ -74,6 +74,27 @@ public abstract class AbstractTarget<R extends Renderable>
 				rightVector, upVector, backVector);
 		
 	}
+	
+	@Override
+	public void drawBox(Material material,
+			VectorXYZ frontLowerLeft, VectorXYZ frontLowerRight,
+			VectorXYZ frontUpperLeft, VectorXYZ frontUpperRight,
+			VectorXYZ backLowerLeft, VectorXYZ backLowerRight,
+			VectorXYZ backUpperLeft, VectorXYZ backUpperRight) {
+		
+		drawTriangleStrip(material,
+				frontLowerLeft, frontLowerRight,
+				frontUpperLeft, frontUpperRight,
+				backUpperLeft, backUpperRight,
+				backLowerLeft, backLowerRight);
+		
+		drawTriangleStrip(material,
+				backUpperRight, frontUpperRight,
+				backLowerRight, frontLowerRight,
+				backLowerLeft, frontLowerLeft,
+				backUpperLeft, frontUpperLeft);
+		
+	}
 
 	private static final int EDGES_FOR_CYLINDER = 16;
 	

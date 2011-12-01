@@ -41,6 +41,19 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("amenity", "waste_basket")) {
 			node.addRepresentation(new WasteBasket(node));
 		}
+		if (node.getTags().contains("amenity", "grit_bin")) {
+			node.addRepresentation(new GritBin(node));
+		}
+		if (node.getTags().contains("amenity", "post_box")
+			&& (node.getTags().containsKey("operator")
+				|| node.getTags().containsKey("brand"))) {
+			node.addRepresentation(new PostBox(node));
+		}
+		if (node.getTags().contains("amenity", "vending_machine")
+			&& (node.getTags().contains("vending", "parcel_pickup;parcel_mail_in")
+				|| node.getTags().contains("vending", "parcel_mail_in"))) {
+			node.addRepresentation(new ParcelMachine(node));
+		}
 		if (node.getTags().contains("emergency", "fire_hydrant")
 			&& node.getTags().contains("fire_hydrant:type", "pillar")) {
 			node.addRepresentation(new FireHydrant(node));
@@ -382,6 +395,286 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 	}
+
+	private static final class GritBin extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+	
+		public GritBin(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double ele = node.getElevationProfile().getEle();
+			
+			float height = parseHeight(node.getTags(), 0.5f);
+			float width = parseWidth(node.getTags(), 1);
+			float depth = width / 2f;
+			
+			/* determine material */
+			
+			Material material = null;
+			
+			//TODO parse color
+			
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("material"));
+			}
+				
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("surface"), Materials.GRITBIN_DEFAULT);
+			}
+			
+			Float directionAngle = 180f;
+			if (node.getTags().containsKey("direction")) {
+				directionAngle = parseAngle(node.getTags().getValue("direction"));
+			}
+			
+			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			VectorXZ boardVector = faceVector.rightNormal();
+			
+			/* draw box */
+			target.drawBox(material,
+					node.getElevationProfile().getWithEle(node.getPos()),
+					faceVector, height, width, depth);
+			
+			/* draw lid */
+			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+			vs.add(node.getPos().xyz(ele + height + 0.2));
+			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
+			vs.add(node.getPos().add(boardVector.mult(-width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
+			vs.add(node.getPos().add(boardVector.mult(-width/2)).add(faceVector.mult(-depth/2)).xyz(ele + height));
+			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(-depth/2)).xyz(ele + height));
+			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
+			
+			target.drawTriangleFan(material.brighter(), vs);
+			
+		}
+	
+	}
+	
+	private static final class PostBox extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		private static enum Type {WALL, PILLAR};
+	
+		public PostBox(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			double ele = node.getElevationProfile().getEle();
+			
+			Float directionAngle = 180f;
+			if (node.getTags().containsKey("direction")) {
+				directionAngle = parseAngle(node.getTags().getValue("direction"));
+			}
+			
+			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			
+			Material boxMaterial = null;
+			Material poleMaterial = null;
+			Type type = null;
+			
+			
+			// post boxes differ widely in appearance, hence we draw them only for known operators or brands
+			if (node.getTags().contains("operator", "Deutsche Post AG")
+				|| node.getTags().contains("brand", "Deutsche Post")) {
+				boxMaterial = Materials.POSTBOX_DEUTSCHEPOST;
+				poleMaterial = Materials.STEEL;
+				type = Type.WALL;
+			} else if (node.getTags().contains("operator", "Royal Mail")) {
+				boxMaterial = Materials.POSTBOX_ROYALMAIL;
+				type = Type.PILLAR;
+			} else {
+				System.err.println("warning: unknown operator or brand for post box " + node.toString());
+				return;
+			}
+			
+			assert (type != Type.WALL || poleMaterial != null) : "post box of type wall requires a pole material";
+			
+			// default dimensions will differ depending on the post box type
+			float height = 0f;
+			float width = 0f;
+			
+			switch(type) {
+				case WALL:
+					height = parseHeight(node.getTags(), 0.8f);
+					width = parseWidth(node.getTags(), 0.3f);
+					
+					target.drawBox(poleMaterial,
+						node.getPos().xyz(ele),
+						faceVector, height, 0.08, 0.08);
+					
+					target.drawBox(boxMaterial,
+						node.getPos().add(faceVector.mult(width/2 - 0.08/2)).xyz(ele + height),
+						faceVector, width, width, width);
+					break;
+				case PILLAR:
+					height = parseHeight(node.getTags(), 2f);
+					width = parseWidth(node.getTags(), 0.5f);
+					
+					target.drawColumn(boxMaterial, null,
+						node.getPos().xyz(ele),
+						height - 0.1, width, width, false, false);
+					target.drawColumn(boxMaterial, null,
+						node.getPos().xyz(ele + height - 0.1),
+						0.1, width + 0.1, 0, true, true);
+					break;
+				default:
+					assert false : "unknown post box type";
+			}
+			
+		}
+	
+	}
+	
+	private static final class ParcelMachine extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+	
+		public ParcelMachine(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public MapElement getPrimaryMapElement() {
+			return node;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			double ele = node.getElevationProfile().getEle();
+			
+			Float directionAngle = 180f;
+			if (node.getTags().containsKey("direction")) {
+				directionAngle = parseAngle(node.getTags().getValue("direction"));
+			}
+			
+			Material boxMaterial = Materials.POSTBOX_DEUTSCHEPOST;
+			Material otherMaterial = Materials.STEEL;
+			
+			VectorXZ faceVector = VectorXZ.fromAngle(toRadians(directionAngle));
+			VectorXZ rightVector = faceVector.rightNormal();
+			
+			// shape depends on type
+			if (node.getTags().contains("type", "Rondell")) {
+				float height = parseHeight(node.getTags(), 2.2f);
+				float width = parseWidth(node.getTags(), 3f);
+				float rondelWidth  = width * 2/3;
+				float boxWidth     = width * 1/3;
+				float roofOverhang = 0.3f;
+				
+				/* draw rondel */
+				target.drawColumn(boxMaterial, null,
+					node.getPos().add(rightVector.mult(-rondelWidth/2)).xyz(ele),
+					height,	rondelWidth/2, rondelWidth/2, false, true);
+				/* draw box */
+				target.drawBox(boxMaterial,
+					node.getPos().add(rightVector.mult(boxWidth/2)).add(faceVector.mult(-boxWidth/2)).xyz(ele),
+					faceVector, height, boxWidth, boxWidth);
+				/* draw roof */
+				target.drawColumn(otherMaterial, null,
+					node.getPos().xyz(ele + height),
+					0.1, rondelWidth/2 + roofOverhang/2, rondelWidth/2 + roofOverhang/2, true, true);
+			} else if (node.getTags().contains("type", "Paketbox")) {
+				float height = parseHeight(node.getTags(), 1.5f) / 2f;
+				float halfWidth = parseHeight(node.getTags(), 1.0f) / 2f;
+				float halfDepth = halfWidth;
+				
+				VectorXYZ upVector = VectorXYZ.Y_UNIT.mult(height*2);
+				
+				/* define box corners */
+				VectorXYZ frontLowerLeft  = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele);
+				VectorXYZ frontLowerRight = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele);
+				VectorXYZ frontUpperLeft  = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele).add(upVector.mult(height));
+				VectorXYZ frontUpperRight = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele).add(upVector.mult(height));
+				VectorXYZ backLowerLeft   = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele);
+				VectorXYZ backLowerRight  = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele);
+				VectorXYZ backUpperLeft   = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele).add(upVector.mult(height*0.8));
+				VectorXYZ backUpperRight  = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele).add(upVector.mult(height*0.8));
+				
+				/* draw box */
+				target.drawBox(boxMaterial,
+					frontLowerLeft, frontLowerRight, frontUpperLeft, frontUpperRight,
+					backLowerLeft, backLowerRight, backUpperLeft, backUpperRight);
+			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
+				float height = parseHeight(node.getTags(), 2.2f);
+				float width = parseWidth(node.getTags(), 3.5f);
+				float depth = width/3;
+				float roofOverhang = 0.3f;
+				
+				/* draw box */
+				target.drawBox(boxMaterial,
+					node.getPos().xyz(ele),
+					faceVector, height, width, depth);
+				/*  draw small roof */
+				target.drawBox(otherMaterial,
+					node.getPos().add(faceVector.mult(roofOverhang)).xyz(ele + height),
+					faceVector, 0.1, width, depth + roofOverhang*2);
+			}
+			
+		}
+	
+	}
 	
 	private static final class FireHydrant extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
@@ -424,8 +717,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			/* draw two small and one large valve */
 			VectorXYZ valveBaseVector = node.getPos().xyz(ele + height - 0.3);
-			VectorXZ smallValveVector = new VectorXZ(1f, 0f);
-			VectorXZ largeValveVector = new VectorXZ(0f, 1f);
+			VectorXZ smallValveVector = VectorXZ.X_UNIT;
+			VectorXZ largeValveVector = VectorXZ.Z_UNIT;
 			
 			target.drawBox(Materials.FIREHYDRANT,
 				valveBaseVector,

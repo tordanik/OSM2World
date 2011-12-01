@@ -99,6 +99,14 @@ public final class Materials {
 	public static final ConfMaterial ADVERTISING_POSTER =
 		new ConfMaterial(Lighting.FLAT, new Color(1, 1, 0.8f));
 	
+	public static final ConfMaterial GRITBIN_DEFAULT =
+			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.5f, 0.4f));
+	
+	public static final ConfMaterial POSTBOX_DEUTSCHEPOST =
+			new ConfMaterial(Lighting.FLAT, new Color(1f, 0.8f, 0f));
+	public static final ConfMaterial POSTBOX_ROYALMAIL =
+			new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
+	
 	public static final ConfMaterial FIREHYDRANT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
 	
