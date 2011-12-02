@@ -1,10 +1,12 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.sqrt;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -442,62 +444,75 @@ public final class GeometryUtil {
 	}
 	
 	/**
-	 * maximum number of consecutive failures to place a point during random
-	 * distribution to be tolerated before stopping the process.
+	 * constant used by
+	 * {@link #reproducablyDistributePointsOn(long, PolygonWithHolesXZ, double, double)}
 	 */
-	private static final int MAX_FAILED_ATTEMPTS = 500;
-
+	private static final int POINTS_PER_BOX = 100;
+	
 	/**
-	 * distributes points randomly on a polygon area.
+	 * distributes points pseudo-randomly on a polygon area.
+	 * The distribution for a set of parameters will always be identical.
 	 * 
-	 * This can be used for different features, such as
-	 * trees in a forest.
+	 * This can be used for features such as trees in a forest.
 	 * 
-	 * Note that the density isn't guaranteed. After several failed attempts
-	 * to place a point, the distribution will stop even if the density
-	 * hasn't been reached.
+	 * Distribution works by slicing the area's bounding box into smaller boxes
+	 * with POINTS_PER_BOX potential points each, the size of these boxes
+	 * depending on density. In each of the boxes, POINTS_PER_BOX pseudo-random
+	 * positions will be calculated. If a position is far enough from previous
+	 * ones and not inside a hole, the position will be contained in the result.
 	 * 
+	 * @param seed                a seed for random number generation
 	 * @param polygonWithHolesXZ  polygon on which the points should be placed
 	 * @param density             desired number of points per unit of area
 	 * @param minimumDistance     minimum distance between resulting points
+	 *                            (not yet implemented)
 	 */
-	public static List<VectorXZ> randomlyDistributePointsOn(
-			PolygonWithHolesXZ polygonWithHolesXZ, double density, double minimumDistance) {
+	public static List<VectorXZ> distributePointsOn(
+			long seed,
+			PolygonWithHolesXZ polygonWithHolesXZ, double density,
+			double minimumDistance) {
 		
-		int pointsToDistribute = (int)(polygonWithHolesXZ.getArea() * density);
-		
-		/* calculate axis-aligned boundaries */
-		
-		List<VectorXZ> vertices = polygonWithHolesXZ.getOuter().getVertices();
-		
-		AxisAlignedBoundingBoxXZ box = new AxisAlignedBoundingBoxXZ(vertices);
-		
-		/* randomly choose points in the boundaries
-		 * and check whether they are contained in the polygon */
-		
-		List<VectorXZ> result = new ArrayList<VectorXZ>(pointsToDistribute);
+		List<VectorXZ> result = new ArrayList<VectorXZ>();
 
-		int failedAttempts = 0;
+		Random rand = new Random(seed);
 		
-		while (result.size() < pointsToDistribute
-				&& failedAttempts <= MAX_FAILED_ATTEMPTS) {
-			
-			double x = box.minX + (box.maxX - box.minX) * Math.random();
-			double z = box.minZ + (box.maxZ - box.minZ) * Math.random();
-			
-			VectorXZ v = new VectorXZ(x, z);
-			
-			if (polygonWithHolesXZ.contains(v)) {
+		AxisAlignedBoundingBoxXZ outerBox = new AxisAlignedBoundingBoxXZ(
+				polygonWithHolesXZ.getOuter().getVertices());
+		
+		double boxSize = sqrt(100 / density);
+		
+		for (int boxZ = 0; boxZ <= (int)(outerBox.sizeZ() / boxSize); ++boxZ) {
+			for (int boxX = 0; boxX <= (int)(outerBox.sizeX() / boxSize); ++boxX) {
 				
-				//TODO: check minimumDistance
+				AxisAlignedBoundingBoxXZ box = new AxisAlignedBoundingBoxXZ(
+						outerBox.minX + boxSize * boxX,
+						outerBox.minZ + boxSize * boxZ,
+						outerBox.minX + boxSize * (boxX + 1),
+						outerBox.minZ + boxSize * (boxZ + 1));
 				
-				result.add(v);
-				failedAttempts = 0;
+				if (!polygonWithHolesXZ.contains(box.polygonXZ())
+						&& !polygonWithHolesXZ.intersects(box.polygonXZ())) {
+					continue;
+				}
 				
-			} else {
-				failedAttempts ++;
+				for (int i = 0; i < POINTS_PER_BOX; ++i) {
+					
+					double x = box.minX + boxSize * rand.nextDouble();
+					double z = box.minZ + boxSize * rand.nextDouble();
+					
+					VectorXZ v = new VectorXZ(x, z);
+					
+					if (polygonWithHolesXZ.contains(v)) {
+						
+						//TODO: check minimumDistance
+						
+						result.add(v);
+						
+					}
+					
+				}
+
 			}
-			
 		}
 		
 		return result;

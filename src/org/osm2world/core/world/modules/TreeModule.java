@@ -324,7 +324,7 @@ public class TreeModule extends AbstractModule {
 			/* place the trees */
 			
 			List<VectorXZ> treePositions =
-				GeometryUtil.randomlyDistributePointsOn(
+				GeometryUtil.distributePointsOn(area.getOsmObject().id,
 						area.getPolygon(), density, 0.3f);
 			
 			trees = new ArrayList<Tree>(treePositions.size());
