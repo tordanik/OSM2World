@@ -463,14 +463,16 @@ public final class GeometryUtil {
 	 * 
 	 * @param seed                a seed for random number generation
 	 * @param polygonWithHolesXZ  polygon on which the points should be placed
+	 * @param boundary            boundary of the relevant area or null;
+	 *                            points outside of the boundary are optional.
 	 * @param density             desired number of points per unit of area
 	 * @param minimumDistance     minimum distance between resulting points
 	 *                            (not yet implemented)
 	 */
 	public static List<VectorXZ> distributePointsOn(
-			long seed,
-			PolygonWithHolesXZ polygonWithHolesXZ, double density,
-			double minimumDistance) {
+			long seed, PolygonWithHolesXZ polygonWithHolesXZ,
+			AxisAlignedBoundingBoxXZ boundary,
+			double density,	double minimumDistance) {
 		
 		List<VectorXZ> result = new ArrayList<VectorXZ>();
 
@@ -489,6 +491,10 @@ public final class GeometryUtil {
 						outerBox.minZ + boxSize * boxZ,
 						outerBox.minX + boxSize * (boxX + 1),
 						outerBox.minZ + boxSize * (boxZ + 1));
+				
+				if (boundary != null && !boundary.overlaps(box)) {
+					continue;
+				}
 				
 				if (!polygonWithHolesXZ.contains(box.polygonXZ())
 						&& !polygonWithHolesXZ.intersects(box.polygonXZ())) {

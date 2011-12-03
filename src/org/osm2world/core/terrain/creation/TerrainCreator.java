@@ -138,7 +138,7 @@ public class TerrainCreator {
 			MapData mapData, CellularTerrainElevation eleData) {
 		
 		final IntersectionGrid speedupGrid = new IntersectionGrid(
-				mapData.getBoundary().pad(20),
+				mapData.getDataBoundary().pad(20),
 				50, 50); //TODO (performance): choose appropriate cell size params
 		
 		for (TerrainElevationCell cell : eleData.getCells()) {

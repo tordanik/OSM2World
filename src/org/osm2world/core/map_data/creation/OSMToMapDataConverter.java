@@ -4,6 +4,7 @@ import static org.osm2world.core.math.VectorXZ.distance;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
+import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
@@ -25,6 +27,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -61,8 +64,9 @@ public class OSMToMapDataConverter {
 		final List<MapArea> mapAreas = new ArrayList<MapArea>();
 
 		createGridElements(osmData, mapNodes, gridWaySegs, mapAreas);
-
-		MapData mapData = new MapData(mapNodes, gridWaySegs, mapAreas);
+		
+		MapData mapData = new MapData(mapNodes, gridWaySegs, mapAreas,
+				calculateFileBoundary(osmData.getBounds()));
 		
 		calculateIntersectionsInMapData(mapData);
 
@@ -470,6 +474,28 @@ public class OSMToMapDataConverter {
 			area1.addOverlap(newOverlap);
 			area2.addOverlap(newOverlap);
 			
+		}
+		
+	}
+
+	private AxisAlignedBoundingBoxXZ calculateFileBoundary(
+			Collection<Bound> bounds) {
+		
+		Collection<VectorXZ> boundedPoints = new ArrayList<VectorXZ>();
+		
+		for (Bound bound : bounds) {
+			
+			boundedPoints.add(mapProjection.calcPos(bound.getBottom(), bound.getLeft()));
+			boundedPoints.add(mapProjection.calcPos(bound.getBottom(), bound.getRight()));
+			boundedPoints.add(mapProjection.calcPos(bound.getTop(), bound.getLeft()));
+			boundedPoints.add(mapProjection.calcPos(bound.getTop(), bound.getRight()));
+			
+		}
+		
+		if (boundedPoints.isEmpty()) {
+			return null;
+		} else {
+			return new AxisAlignedBoundingBoxXZ(boundedPoints);
 		}
 		
 	}

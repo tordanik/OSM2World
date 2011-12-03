@@ -44,7 +44,7 @@ public class OrthoBoundsAction extends AbstractAction implements Observer {
 	public void actionPerformed(ActionEvent e) {
 
 		AxisAlignedBoundingBoxXZ bounds =
-			data.getConversionResults().getMapData().getBoundary();
+			data.getConversionResults().getMapData().getDataBoundary();
 		
 		renderOptions.camera =
 			OrthoTilesUtil.cameraForBounds(bounds, 30, CardinalDirection.S);

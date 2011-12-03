@@ -38,9 +38,9 @@ public class OrthoBoundsDebugView extends DebugView
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		Camera orthoCam = OrthoTilesUtil.cameraForBounds(
-				map.getBoundary(), 30, CardinalDirection.S);
+				map.getDataBoundary(), 30, CardinalDirection.S);
 		
-		List<VectorXYZ> boundVertices = map.getBoundary().polygonXZ().xyz(0).getVertices();
+		List<VectorXYZ> boundVertices = map.getDataBoundary().polygonXZ().xyz(0).getVertices();
 		target.drawLineLoop(LINE_COLOR, boundVertices);
 		target.drawLineStrip(LINE_COLOR, boundVertices.get(0), boundVertices.get(2));
 		target.drawLineStrip(LINE_COLOR, boundVertices.get(1), boundVertices.get(3));

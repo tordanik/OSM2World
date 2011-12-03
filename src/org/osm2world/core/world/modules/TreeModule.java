@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -28,7 +29,7 @@ import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.common.AbstractModule;
+import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
 import com.sun.opengl.util.texture.Texture;
@@ -36,37 +37,37 @@ import com.sun.opengl.util.texture.Texture;
 /**
  * adds trees, tree rows, tree groups and forests to the world
  */
-public class TreeModule extends AbstractModule {
+public class TreeModule extends ConfigurableWorldModule {
 
 	protected static Texture treeTexture;
-
-	@Override
-	protected void applyToNode(MapNode node) {
-
-		String naturalValue = node.getTags().getValue("natural");
-
-		if ("tree".equals(naturalValue)) {
-			node.addRepresentation(new Tree(node, node.getPos()));
-		}
-
-	}
 	
 	@Override
-	protected void applyToWaySegment(MapWaySegment segment) {
-
-		if (segment.getTags().contains(new Tag("natural", "tree_row"))) {
-			segment.addRepresentation(new TreeRow(segment));
+	public final void applyTo(MapData mapData) {
+		
+		for (MapNode node : mapData.getMapNodes()) {
+			
+			if (node.getTags().contains("natural", "tree")) {
+				node.addRepresentation(new Tree(node, node.getPos()));
+			}
+			
 		}
 
-	}
-	
-	@Override
-	protected void applyToArea(MapArea area) {
-					
-		if (area.getTags().contains("natural", "wood")
-				|| area.getTags().contains("landuse", "forest")
-				|| area.getTags().containsKey("wood")) {
-			area.addRepresentation(new Forest(area));
+		for (MapWaySegment segment : mapData.getMapWaySegments()) {
+			
+			if (segment.getTags().contains(new Tag("natural", "tree_row"))) {
+				segment.addRepresentation(new TreeRow(segment));
+			}
+			
+		}
+
+		for (MapArea area : mapData.getMapAreas()) {
+			
+			if (area.getTags().contains("natural", "wood")
+					|| area.getTags().contains("landuse", "forest")
+					|| area.getTags().containsKey("wood")) {
+				area.addRepresentation(new Forest(area, mapData));
+			}
+			
 		}
 		
 	}
@@ -298,11 +299,13 @@ public class TreeModule extends AbstractModule {
 		RenderableToPOVRay, RenderableToAllTargets {
 
 		private final MapArea area;
+		private final MapData mapData;
 		
 		private Collection<Tree> trees = null;
 		
-		public Forest(MapArea area) {
+		public Forest(MapArea area, MapData mapData) {
 			this.area = area;
+			this.mapData = mapData;
 		}
 
 		private void createTrees(double density) {
@@ -325,7 +328,8 @@ public class TreeModule extends AbstractModule {
 			
 			List<VectorXZ> treePositions =
 				GeometryUtil.distributePointsOn(area.getOsmObject().id,
-						area.getPolygon(), density, 0.3f);
+						area.getPolygon(), mapData.getBoundary(),
+						density, 0.3f);
 			
 			trees = new ArrayList<Tree>(treePositions.size());
 			

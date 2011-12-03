@@ -1,13 +1,12 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
-
-import static java.lang.Math.min;
-import static java.lang.Math.max;
 
 /**
  * immutable representation of an axis-aligned bounding box
@@ -79,6 +78,20 @@ public class AxisAlignedBoundingBoxXZ {
 				minZ - paddingSize,
 				maxX + paddingSize,
 				maxZ + paddingSize);
+	}
+
+	public boolean overlaps(AxisAlignedBoundingBoxXZ otherBox) {
+		return !(maxX <= otherBox.minX
+				|| minX >= otherBox.maxX
+				|| maxZ <= otherBox.minZ
+				|| minZ >= otherBox.maxZ);
+	}
+
+	public boolean contains(AxisAlignedBoundingBoxXZ otherBox) {
+		return minX <= otherBox.minX
+				&& minZ <= otherBox.minZ
+				&& maxX >= otherBox.maxX
+				&& maxZ >= otherBox.maxZ;
 	}
 
 	public boolean contains(IntersectionTestObject object) {

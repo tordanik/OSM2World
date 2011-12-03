@@ -236,8 +236,8 @@ public class MapQuadtree {
 	public MapQuadtree(MapData grid) {
 		
 		root = new QuadInnerNode(
-				grid.getBoundary().minX, grid.getBoundary().maxX,
-				grid.getBoundary().minZ, grid.getBoundary().maxZ);
+				grid.getDataBoundary().minX, grid.getDataBoundary().maxX,
+				grid.getDataBoundary().minZ, grid.getDataBoundary().maxZ);
 		
 		FaultTolerantIterationUtil.iterate(grid.getMapElements(), new Operation<MapElement>() {
 			@Override public void perform(MapElement element) {				

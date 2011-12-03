@@ -24,25 +24,27 @@ public class MapData {
 	final List<MapWaySegment> mapWaySegments;
 	final List<MapArea> mapAreas;
 
-	AxisAlignedBoundingBoxXZ boundary;
+	AxisAlignedBoundingBoxXZ fileBoundary;
+	AxisAlignedBoundingBoxXZ dataBoundary;
 	
 	public MapData(List<MapNode> mapNodes, List<MapWaySegment> mapWaySegments,
-			List<MapArea> mapAreas) {
+			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ fileBoundary) {
 
 		this.mapNodes = mapNodes;
 		this.mapWaySegments = mapWaySegments;
 		this.mapAreas = mapAreas;
+		this.fileBoundary = fileBoundary;
 
-		calculateBoundary();
+		calculateDataBoundary();
 		
 	}
 	
-	private void calculateBoundary() {
-
-		double minX = Double.POSITIVE_INFINITY;
-		double maxX = Double.NEGATIVE_INFINITY;
-		double minZ = Double.POSITIVE_INFINITY;
-		double maxZ = Double.NEGATIVE_INFINITY;			
+	private void calculateDataBoundary() {
+		
+		double minX = fileBoundary.minX;
+		double maxX = fileBoundary.maxX;
+		double minZ = fileBoundary.minZ;
+		double maxZ = fileBoundary.maxZ;
 		
 		for (MapNode node : mapNodes) {
 			final double nodeX = node.getPos().x;
@@ -53,7 +55,7 @@ public class MapData {
 			if (nodeZ > maxZ) { maxZ = nodeZ; }
 		}
 		
-		boundary = new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
+		dataBoundary = new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
 		
 	}
 
@@ -77,8 +79,20 @@ public class MapData {
 	 * returns a rectangular boundary polygon from the minimum/maximum of
 	 * coordinates in the map data
 	 */
+	public AxisAlignedBoundingBoxXZ getDataBoundary() {
+		return dataBoundary;
+	}
+	
+	/**
+	 * returns a boundary based on the bounds in the input file if available,
+	 * otherwise returns the same as {@link #getBoundary()}
+	 */
 	public AxisAlignedBoundingBoxXZ getBoundary() {
-		return boundary;
+		if (fileBoundary != null) {
+			return fileBoundary;
+		} else {
+			return dataBoundary;
+		}
 	}
 
 	/**
@@ -104,9 +118,9 @@ public class MapData {
 	 */
 	public Iterable<WorldObject> getWorldObjects() {
 		
-		return Iterables.concat(		
-				Iterables.transform(getMapElements(), 
-						new Function<MapElement, Iterable<? extends WorldObject>>() {			
+		return Iterables.concat(
+				Iterables.transform(getMapElements(),
+						new Function<MapElement, Iterable<? extends WorldObject>>() {
 					@Override public Iterable<? extends WorldObject> apply(MapElement e) {
 						return e.getRepresentations();
 					}

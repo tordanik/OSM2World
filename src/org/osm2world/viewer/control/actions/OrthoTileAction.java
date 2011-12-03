@@ -57,7 +57,7 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 					JOptionPane.showInputDialog(viewerFrame, "from cardinal direction"));
 			
 			AxisAlignedBoundingBoxXZ tileBounds =
-				data.getConversionResults().getMapData().getBoundary();
+				data.getConversionResults().getMapData().getDataBoundary();
 			
 			renderOptions.camera = OrthoTilesUtil.cameraForTile(
 					data.getConversionResults().getMapProjection(),

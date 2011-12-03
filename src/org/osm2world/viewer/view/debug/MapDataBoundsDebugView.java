@@ -10,25 +10,29 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
- * shows the bounding box of map data
+ * shows the bounding boxes of map data
  */
 public class MapDataBoundsDebugView extends DebugView {
 
 	@Override
 	public String getDescription() {
-		return "shows the bounding box of map data";
+		return "shows the bounding boxes of map data";
 	}
 	
-	private static final Color BB_COLOR = Color.YELLOW;
+	private static final Color DATA_BB_COLOR = Color.YELLOW;
+	private static final Color FILE_BB_COLOR = Color.GREEN;
 		
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 
-		List<VectorXZ> vs = map.getBoundary().polygonXZ().getVertexLoop();
-		target.drawLineLoop(BB_COLOR, VectorXZ.listXYZ(vs, 0));
-				
+		List<VectorXZ> vs = map.getDataBoundary().polygonXZ().getVertexLoop();
+		target.drawLineLoop(DATA_BB_COLOR, VectorXZ.listXYZ(vs, 0));
+
+		vs = map.getBoundary().polygonXZ().getVertexLoop();
+		target.drawLineLoop(FILE_BB_COLOR, VectorXZ.listXYZ(vs, 0));
+		
 	}
 	
 }

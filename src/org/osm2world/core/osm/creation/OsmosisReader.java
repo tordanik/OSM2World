@@ -14,6 +14,7 @@ import java.util.Map;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
+import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.domain.v0_6.EntityType;
 import org.openstreetmap.osmosis.core.domain.v0_6.Node;
@@ -49,6 +50,7 @@ public class OsmosisReader implements OSMDataReader {
 		this.complete = true;
 	}
 	
+	private List<Bound> bounds = new ArrayList<Bound>();
 	private Map<Long, Node> nodesById = new HashMap<Long, Node>();
 	private Map<Long, Way> waysById = new HashMap<Long, Way>();
 	private Map<Long, Relation> relationsById = new HashMap<Long, Relation>();
@@ -72,6 +74,8 @@ public class OsmosisReader implements OSMDataReader {
 				waysById.put(entity.getId(), ((Way) entity));
 			} else if (entity instanceof Relation) {
 				relationsById.put(entity.getId(), ((Relation) entity));
+			} else if (entity instanceof Bound) {
+				bounds.add((Bound) entity);
 			}
 		}
 	};
@@ -228,7 +232,7 @@ public class OsmosisReader implements OSMDataReader {
 	
 	@Override
 	public OSMData getData() {
-		return new OSMData(ownNodes, ownWays, ownRelations);
+		return new OSMData(bounds, ownNodes, ownWays, ownRelations);
 	}
 	
 }

@@ -312,9 +312,10 @@ public class ConversionFacade {
 	 * generates some fake elevation data;
 	 * will no longer be necessary when real data can be used
 	 */
-	private static CellularTerrainElevation createEleData(MapData grid) {
+	private static CellularTerrainElevation createEleData(MapData mapData) {
 		
-		AxisAlignedBoundingBoxXZ terrainBoundary = grid.getBoundary().pad(10.0);
+		AxisAlignedBoundingBoxXZ terrainBoundary =
+				mapData.getBoundary().pad(30.0);
 		
 		int numPointsX = Math.max(2, (int) (terrainBoundary.sizeX() / 30));
 		int numPointsZ = Math.max(2, (int) (terrainBoundary.sizeZ() / 30));
