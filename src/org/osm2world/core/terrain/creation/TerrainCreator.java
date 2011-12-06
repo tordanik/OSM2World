@@ -1,5 +1,6 @@
 package org.osm2world.core.terrain.creation;
 
+import static org.osm2world.core.math.AxisAlignedBoundingBoxXZ.union;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.data.ElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -137,8 +139,13 @@ public class TerrainCreator {
 	private IntersectionGrid prepareSpeedupGrid(
 			MapData mapData, CellularTerrainElevation eleData) {
 		
+		AxisAlignedBoundingBoxXZ speedupGridBounds = union(
+				mapData.getDataBoundary(),
+				new AxisAlignedBoundingBoxXZ(
+						eleData.getBoundaryPolygonXZ().getVertexCollection()));
+				
 		final IntersectionGrid speedupGrid = new IntersectionGrid(
-				mapData.getDataBoundary().pad(20),
+				speedupGridBounds.pad(20),
 				50, 50); //TODO (performance): choose appropriate cell size params
 		
 		for (TerrainElevationCell cell : eleData.getCells()) {
