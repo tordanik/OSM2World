@@ -41,10 +41,18 @@ public class MapData {
 	
 	private void calculateDataBoundary() {
 		
-		double minX = fileBoundary.minX;
-		double maxX = fileBoundary.maxX;
-		double minZ = fileBoundary.minZ;
-		double maxZ = fileBoundary.maxZ;
+		double minX = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY;
+		double minZ = Double.POSITIVE_INFINITY;
+		double maxZ = Double.NEGATIVE_INFINITY;
+		
+		if (fileBoundary != null) {
+			// use the file boundary as the minimum extent of the data boundary
+			minX = fileBoundary.minX;
+			maxX = fileBoundary.maxX;
+			minZ = fileBoundary.minZ;
+			maxZ = fileBoundary.maxZ;
+		}
 		
 		for (MapNode node : mapNodes) {
 			final double nodeX = node.getPos().x;
