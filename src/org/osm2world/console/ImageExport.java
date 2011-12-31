@@ -25,15 +25,16 @@ import com.sun.opengl.util.Screenshot;
 public final class ImageExport {
 
 	/**
-	 * the canvas used for rendering the exported image must be at most
-	 * CANVAS_LIMIT wide and high. If the requested image is larger,
+	 * the width and height of the canvas used for rendering the exported image
+	 * each must not exceed the canvas limit. If the requested image is larger,
 	 * it will be rendered in multiple passes and combined afterwards.
 	 * This is intended to avoid overwhelmingly large canvases
 	 * (which would lead to crashes)
 	 */
-	private static final int CANVAS_LIMIT = 1024;
+	private static final int DEFAULT_CANVAS_LIMIT = 1024;
 
 	private static final String BG_COLOR_CONFIG_KEY = "backgroundColor";
+	private static final String CANVAS_LIMIT_CONFIG_KEY = "canvasLimit";
 	
 	private ImageExport() { }
 	
@@ -57,7 +58,7 @@ public final class ImageExport {
 			throw new Error("Cannot create GLPbuffer for OpenGL output!");
 		}
 		
-		/* parse background color */
+		/* parse background color and other configuration options */
 		
 		float[] clearColor = {0f, 0f, 0f};
 		
@@ -71,11 +72,13 @@ public final class ImageExport {
 			}
 		}
 		
+		int canvasLimit = config.getInt(CANVAS_LIMIT_CONFIG_KEY, DEFAULT_CANVAS_LIMIT);
+		
 		/* render map data into buffer if it needs to be rendered multiple times */
 		
 		PrimitiveBuffer buffer = null;
 		
-		if ((x > CANVAS_LIMIT || y > CANVAS_LIMIT)
+		if ((x > canvasLimit || y > canvasLimit)
 				&& !config.getBoolean("forceUnbufferedPNGRendering", false)) {
 			
 			buffer = new PrimitiveBuffer();
@@ -89,8 +92,8 @@ public final class ImageExport {
 				
         BufferedImage image = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
         		
-		int xParts = 1 + ((x-1) / CANVAS_LIMIT);
-		int yParts = 1 + ((y-1) / CANVAS_LIMIT);
+		int xParts = 1 + ((x-1) / canvasLimit);
+		int yParts = 1 + ((y-1) / canvasLimit);
 		
 		for (int xPart = 0; xPart < xParts; ++xPart) {
 		for (int yPart = 0; yPart < yParts; ++yPart) {
@@ -98,12 +101,12 @@ public final class ImageExport {
 			/* calculate start, end and size (in pixels)
 			 * of the image part that will be rendered in this pass */
 			
-			int xStart = xPart * CANVAS_LIMIT;
-			int xEnd   = (xPart+1 < xParts) ? (xStart + (CANVAS_LIMIT-1)) : (x-1);
+			int xStart = xPart * canvasLimit;
+			int xEnd   = (xPart+1 < xParts) ? (xStart + (canvasLimit-1)) : (x-1);
 			int xSize  = (xEnd - xStart) + 1;
 			
-			int yStart = yPart * CANVAS_LIMIT;
-			int yEnd   = (yPart+1 < yParts) ? (yStart + (CANVAS_LIMIT-1)) : (y-1);
+			int yStart = yPart * canvasLimit;
+			int yEnd   = (yPart+1 < yParts) ? (yStart + (canvasLimit-1)) : (y-1);
 			int ySize  = (yEnd - yStart) + 1;
 						
 			/* create and configure canvas */
