@@ -14,6 +14,10 @@
 #include "textures.inc"
 #include "colors.inc"
 
+// activate this #include if you have downloaded the tree models
+// that are available from http://osm2world.org/download (optional)
+// #include "osm2world_trees.inc"
+
 // chooses the season - possible values: spring, summer, autumn, winter
 // (has no effect on the generated scenes yet, could be used in custom model declarations)
 #declare season="summer"

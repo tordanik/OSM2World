@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
- OSM2World 0.1.9                                                     ????-??-?? 
+ OSM2World 0.1.9                                                     2012-??-?? 
 --------------------------------------------------------------------------------
  
  * new PowerModule with power poles, minor power lines and wind turbines
@@ -9,6 +9,7 @@
  * keep camera position after reload (only works well with same bounding box)
  * correct aspect ratio depending on window dimensions
  * use Trove lib in PrimitiveBuffer, make buffering optional for PNG output
+ * make canvas limit for PNG export configurable 
  
  
 --------------------------------------------------------------------------------
