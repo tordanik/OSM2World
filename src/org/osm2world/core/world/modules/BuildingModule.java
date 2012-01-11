@@ -270,7 +270,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					MapElement other = overlap.getOther(area);
 					if (other.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject
 							&& other.getPrimaryRepresentation().getGroundState() == GroundState.ON
-							&& other.getTags().contains("tunnel", "passage")) {
+							&& (other.getTags().contains("tunnel", "passage")
+									|| other.getTags().contains("tunnel", "building_passage"))) {
 						tbWorldObjects.add((TerrainBoundaryWorldObject)
 								other.getPrimaryRepresentation());
 					}
@@ -462,7 +463,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				roof = new ComplexRoof();
 			} else {
 				
-				String roofShape = area.getTags().getValue("roof:shape");
+				String roofShape = area.getTags().getValue("building:roof:shape");
+				if (roofShape == null) { area.getTags().getValue("roof:shape"); }
 				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
 				if ("pyramidal".equals(roofShape)) {

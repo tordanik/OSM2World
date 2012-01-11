@@ -1,15 +1,17 @@
 --------------------------------------------------------------------------------
- OSM2World 0.1.9                                                     2012-??-?? 
+ OSM2World 0.1.9                                                     2012-01-11 
 --------------------------------------------------------------------------------
  
  * new PowerModule with power poles, minor power lines and wind turbines
  * many new WorldObject types in StreetFurnitureModule
- * correct rendering of covered ways through buildings, require tunnel=passage
+ * correct rendering of covered ways through buildings
+ * ways through buildings require tunnel=[building_]passage
+ * treat roof:shape and building:roof:shape as synonyms
  * use bounds from input file for terrain and forest boundaries
  * keep camera position after reload (only works well with same bounding box)
  * correct aspect ratio depending on window dimensions
  * use Trove lib in PrimitiveBuffer, make buffering optional for PNG output
- * make canvas limit for PNG export configurable 
+ * make canvas limit for PNG export configurable
  
  
 --------------------------------------------------------------------------------
