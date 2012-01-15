@@ -464,7 +464,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			} else {
 				
 				String roofShape = area.getTags().getValue("building:roof:shape");
-				if (roofShape == null) { area.getTags().getValue("roof:shape"); }
+				if (roofShape == null) { roofShape = area.getTags().getValue("roof:shape"); }
 				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
 				if ("pyramidal".equals(roofShape)) {
