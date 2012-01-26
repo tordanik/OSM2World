@@ -1,14 +1,20 @@
 #!/bin/bash
 
+# choose path for the native JOGL libs depending on system and java version
+
 MACHINE_TYPE=`uname -m`
 KERNEL_NAME=`uname -s`
 
 if [ ${KERNEL_NAME} == 'Darwin' ]; then
-  java -Djava.library.path="lib/jogl/macosx-universal" -Xmx2G -jar OSM2World.jar $*
-else
-  if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-    java -Djava.library.path="lib/jogl/linux-amd64" -Xmx2G -jar OSM2World.jar $*
+  joglpath="macosx-universal"
+else  
+  if [ `java -version 2>&1|grep -c 64-Bit` -gt 0 ]; then
+    joglpath="lib/jogl/linux-amd64"
   else
-    java -Djava.library.path="lib/jogl/linux-i586" -Xmx2G -jar OSM2World.jar $*
-  fi
+    joglpath="lib/jogl/linux-i586"
+  fi 
 fi
+
+# run OSM2World
+
+java -Djava.library.path=$joglpath -Xmx2G -jar OSM2World.jar $*
