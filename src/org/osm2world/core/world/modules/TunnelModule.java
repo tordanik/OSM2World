@@ -37,7 +37,9 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
 public class TunnelModule extends AbstractModule {
 
 	public static final boolean isTunnel(TagGroup tags) {
-		return tags.containsKey("tunnel") && !"no".equals(tags.getValue("tunnel"));
+		return tags.containsKey("tunnel")
+				&& !"no".equals(tags.getValue("tunnel"))
+				&& !"building_passage".equals(tags.getValue("tunnel"));
 	}
 
 	public static final boolean isTunnel(MapSegment segment) {
