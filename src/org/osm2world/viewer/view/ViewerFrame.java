@@ -14,6 +14,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
@@ -227,6 +228,7 @@ public class ViewerFrame extends JFrame {
 			ButtonGroup eleCalcGroup = new ButtonGroup();
 			
 			for (ElevationCalculator eleCalc : asList(
+					new BridgeTunnelElevationCalculator(),
 					new ZeroElevationCalculator(),
 					new ForceElevationCalculator(),
 					new EleTagElevationCalculator(),

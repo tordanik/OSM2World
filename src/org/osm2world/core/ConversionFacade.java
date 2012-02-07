@@ -15,8 +15,8 @@ import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
@@ -151,7 +151,7 @@ public class ConversionFacade {
 	}
 	
 	private ElevationCalculator elevationCalculator =
-		new ZeroElevationCalculator();
+		new BridgeTunnelElevationCalculator();
 	
 	/**
 	 * sets the {@link ElevationCalculator} that is used during subsequent calls

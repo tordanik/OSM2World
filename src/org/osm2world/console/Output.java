@@ -16,6 +16,7 @@ import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
@@ -44,8 +45,10 @@ public final class Output {
 			new PerformanceListener(argumentsGroup.getRepresentative());
 		cf.addProgressListener(perfListener);
 		
-		String ecType = config.getString("elevationCalculator", "ZeroElevationCalculator");
-		if ("ZeroElevationCalculator".equals(ecType)) {
+		String ecType = config.getString("elevationCalculator", "BridgeTunnelElevationCalculator");
+		if ("BridgeTunnelElevationCalculator".equals(ecType)) {
+			cf.setElevationCalculator(new BridgeTunnelElevationCalculator());
+		} else if ("ZeroElevationCalculator".equals(ecType)) {
 			cf.setElevationCalculator(new ZeroElevationCalculator());
 		} else if ("ForceElevationCalculator".equals(ecType)) {
 			cf.setElevationCalculator(new ForceElevationCalculator());
