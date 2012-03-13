@@ -22,15 +22,20 @@ public final class TargetUtil {
 	 */
 	public static <R extends Renderable> void renderWorldObjects(
 			final Target<R> target, final MapData mapData) {
-
-		iterate(mapData.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement e) {
-				for (WorldObject r : e.getRepresentations()) {
+		
+		for (MapElement mapElement : mapData.getMapElements()) {
+			for (WorldObject r : mapElement.getRepresentations()) {
+				try {
 					renderObject(target, r);
+				} catch (Exception e) {
+					System.err.println("ignored exception:");
+					//TODO proper logging
+					e.printStackTrace();
+					System.err.println("this exception occurred for the following input:\n"
+							+ mapElement);
 				}
 			}
-		});
-		
+		}
 	}
 
 	/**

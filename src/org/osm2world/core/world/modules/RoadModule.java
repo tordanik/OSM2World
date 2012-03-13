@@ -1,13 +1,21 @@
 package org.osm2world.core.world.modules;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.reverse;
+import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.addYList;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -19,10 +27,15 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -68,32 +81,25 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			TagGroup tags = node.getOsmNode().tags;
 			
-			//TODO: BEGIN COPY&PASTE
+			List<Road> connectedRoads = getConnectedRoads(node, false);
 			
-			List<MapWaySegment> inboundRoads = new ArrayList<MapWaySegment>();
-			List<MapWaySegment> outboundRoads = new ArrayList<MapWaySegment>();
-			
-			for (MapWaySegment line : node.getInboundLines()) {
-				if (line.getPrimaryRepresentation() instanceof Road) {
-					inboundRoads.add(line);
-				}
-			}
-			for (MapWaySegment line : node.getOutboundLines()) {
-				if (line.getPrimaryRepresentation() instanceof Road) {
-					outboundRoads.add(line);
-				}
-			}
-			
-			//END COPY&PASTE
-			
-			if (inboundRoads.size() > 0 || outboundRoads.size() > 0) {
+			if (connectedRoads.size() > 2) {
 				
-				if (inboundRoads.size() + outboundRoads.size() > 2){
-					node.addRepresentation(new RoadJunction(node));
-				} else if (inboundRoads.size() + outboundRoads.size() == 2
-						&& "crossing".equals(tags.getValue("highway"))) {
-					node.addRepresentation(
-						new RoadCrossingAtConnector(node));
+				node.addRepresentation(new RoadJunction(node));
+				
+			} else if (connectedRoads.size() == 2
+					&& "crossing".equals(tags.getValue("highway"))) {
+				
+				node.addRepresentation(new RoadCrossingAtConnector(node));
+				
+			} else if (connectedRoads.size() == 2) {
+				
+				Road road1 = connectedRoads.get(0);
+				Road road2 = connectedRoads.get(1);
+				
+				if (road1.getWidth() != road2.getWidth()
+						/* TODO: || lane layouts not identical */) {
+					node.addRepresentation(new RoadConnector(node));
 				}
 				
 			}
@@ -103,17 +109,380 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	private static boolean isRoad(TagGroup tags) {
-		return tags.containsKey("highway")
-			|| tags.contains("railway", "platform")
-			|| tags.contains("leisure", "track");
+		if (tags.containsKey("highway")
+				&& !tags.contains("highway", "construction")
+				&& !tags.contains("highway", "proposed")) {
+			return true;
+		} else {
+			return tags.contains("railway", "platform")
+				|| tags.contains("leisure", "track");
+		}
 	}
 	
 	private static boolean isSteps(TagGroup tags) {
 		return tags.contains(new Tag("highway","steps"));
 	}
 
-	//TODO: materials for junctions and crossings
+	private static boolean isPath(TagGroup tags) {
+		String highwayValue = tags.getValue("highway");
+		return "path".equals(highwayValue)
+			|| "footway".equals(highwayValue)
+			|| "cycleway".equals(highwayValue)
+			|| "bridleway".equals(highwayValue)
+			|| "steps".equals(highwayValue);
+	}
+
+	private static boolean isOneway(TagGroup tags) {
+		return tags.contains("oneway", "yes")
+				|| (!tags.contains("oneway", "no")
+					&& (tags.contains("highway", "motorway")
+					|| (tags.contains("highway", "motorway_link"))));
+	}
+
+	private static int getDefaultLanes(TagGroup tags) {
+		String highwayValue = tags.getValue("highway");
+		if (highwayValue == null
+				|| isPath(tags)
+				|| highwayValue.endsWith("_link")
+				|| "service".equals(highwayValue)
+				|| "track".equals(highwayValue)
+				|| "residential".equals(highwayValue)) {
+			return 1;
+		} else if ("motorway".equals(highwayValue)){
+			return 2;
+		} else {
+			return isOneway(tags) ? 1 : 2;
+		}
+	}
+
+	/**
+	 * determines surface for a junction or connector/crossing.
+	 * If the node has an explicit surface tag, this is evaluated.
+	 * Otherwise, the result depends on the surface values of adjacent roads.
+	 */
+	private static Material getSurfaceForNode(MapNode node) {
+		
+		Material surface = getSurfaceMaterial(
+				node.getTags().getValue("surface"), null);
+		
+		if (surface == null) {
+			
+			/* choose the surface of any adjacent road */
+			
+			for (MapWaySegment segment : node.getConnectedWaySegments()) {
+				
+				if (segment.getPrimaryRepresentation() instanceof Road) {
+					Road road = (Road)segment.getPrimaryRepresentation();
+					surface = road.getSurface();
+					break;
+				}
+				
+			}
+			
+		}
+		
+		return surface;
+		
+	}
+
+	/**
+	 * returns all roads connected to a node
+	 * @param requireLanes  only include roads that are not paths and have lanes
+	 */
+	private static List<Road> getConnectedRoads(MapNode node,
+			boolean requireLanes) {
+		
+		List<Road> connectedRoadsWithLanes = new ArrayList<Road>();
+				
+		for (MapWaySegment segment : node.getConnectedWaySegments()) {
+			
+			if (segment.getPrimaryRepresentation() instanceof Road) {
+				Road road = (Road)segment.getPrimaryRepresentation();
+				if (!requireLanes ||
+						(road.getLaneLayout() != null && !isPath(road.tags))) {
+					connectedRoadsWithLanes.add(road);
+				}
+			}
+			
+		}
+		
+		return connectedRoadsWithLanes;
+		
+	}
 	
+	/**
+	 * find matching lane pairs
+	 * (lanes that can be connected at a junction or connector)
+	 */
+	private static Map<Integer, Integer> findMatchingLanes(
+			List<Lane> lanes1, List<Lane> lanes2,
+			boolean isJunction, boolean isCrossing) {
+		
+		Map<Integer, Integer> matches = new HashMap<Integer, Integer>();
+		
+		/*
+		 * iterate from inside to outside
+		 * (only for connectors, where it will lead to desirable connections
+		 * between straight motorcar lanes e.g. at highway exits)
+		 */
+		
+		if (!isJunction) {
+			
+			for (int laneI = 0; laneI < lanes1.size()
+					&& laneI < lanes2.size(); ++laneI) {
+				
+				final Lane lane1 = lanes1.get(laneI);
+				final Lane lane2 = lanes2.get(laneI);
+				
+				if (isCrossing && !lane1.type.isConnectableAtCrossings) {
+					continue;
+				} else if (isJunction && !lane1.type.isConnectableAtJunctions) {
+					continue;
+				}
+				
+				if (lane2.type.equals(lane1.type)) {
+					
+					matches.put(laneI, laneI);
+					
+				}
+				
+			}
+			
+		}
+		
+		/* iterate from outside to inside.
+		 * Mostly intended to gather sidewalks and other non-car lanes. */
+		
+		for (int laneI = 0; laneI < lanes1.size()
+				&& laneI < lanes2.size(); ++laneI) {
+			
+			int lane1Index = lanes1.size() - 1 - laneI;
+			int lane2Index = lanes2.size() - 1 - laneI;
+			
+			final Lane lane1 = lanes1.get(lane1Index);
+			final Lane lane2 = lanes2.get(lane2Index);
+						
+			if (isCrossing && !lane1.type.isConnectableAtCrossings) {
+				continue;
+			} else if (isJunction && !lane1.type.isConnectableAtJunctions) {
+				continue;
+			}
+			
+			if (matches.containsKey(lane1Index)
+					|| matches.containsKey(lane2Index)) {
+				continue;
+			}
+			
+			if (lane2.type.equals(lane1.type)) {
+				matches.put(lane1Index,	lane2Index);
+			}
+			
+		}
+		
+		return matches;
+		
+	}
+
+	/**
+	 * determines connected lanes at a junction, crossing or connector
+	 */
+	private static List<LaneConnection> buildLaneConnections(
+			MapNode node, boolean isJunction, boolean isCrossing) {
+		
+		List<Road> roads = getConnectedRoads(node, true);
+		
+		/* check whether the oneway special case applies */
+
+		if (isJunction) {
+						
+			boolean allOneway = true;
+			int firstInboundIndex = -1;
+			
+			for (int i = 0; i < roads.size(); i++) {
+				
+				Road road = roads.get(i);
+				
+				if (!isOneway(road.tags)) {
+					allOneway = false;
+					break;
+				}
+				
+				if (firstInboundIndex == -1 && road.line.getEndNode() == node) {
+					firstInboundIndex = i;
+				}
+				
+			}
+			
+			if (firstInboundIndex != -1) {
+			
+				// sort into inbound and outbound oneways
+				// (need to be sequential blocks in the road list)
+				
+				List<Road> inboundOnewayRoads = new ArrayList<Road>();
+				List<Road> outboundOnewayRoads = new ArrayList<Road>();
+				
+				int i = 0;
+				
+				for (i = firstInboundIndex; i < roads.size(); i++) {
+					
+					if (roads.get(i).line.getEndNode() != node) {
+						break; //not inbound
+					}
+					
+					inboundOnewayRoads.add(roads.get(i));
+					
+				}
+				
+				reverse(inboundOnewayRoads);
+				
+				for (/* continue previous loop */;
+						i % roads.size() != firstInboundIndex; i++) {
+					
+					outboundOnewayRoads.add(roads.get(i % roads.size()));
+					
+				}
+			
+				if (allOneway) {
+					return buildLaneConnections_allOneway(node,
+							inboundOnewayRoads, outboundOnewayRoads);
+				}
+				
+			}
+			
+		}
+		
+		/* apply normal treatment (not oneway-specific) */
+		
+		List<LaneConnection> result = new ArrayList<LaneConnection>();
+		
+		for (int i = 0; i < roads.size(); i++) {
+
+			final Road road1 = roads.get(i);
+			final Road road2 = roads.get(
+					(i+1) % roads.size());
+
+			addLaneConnectionsForRoadPair(result,
+					node, road1, road2,
+					isJunction, isCrossing);
+			
+		}
+		
+		return result;
+		
+	}
+
+	/**
+	 * builds lane connections at a junction of just oneway roads.
+	 * Intended to handle motorway merges and splits well.
+	 * Inbound and outbound roads must not be mixed,
+	 * but build two separate continuous blocks instead.
+	 * 
+	 * @param inboundOnewayRoadsLTR  inbound roads, left to right
+	 * @param inboundOnewayRoadsLTR  outbound roads, left to right
+	 */
+	private static List<LaneConnection> buildLaneConnections_allOneway(
+			MapNode node, List<Road> inboundOnewayRoadsLTR,
+			List<Road> outboundOnewayRoadsLTR) {
+
+		List<Lane> inboundLanes = new ArrayList<Lane>();
+		List<Lane> outboundLanes = new ArrayList<Lane>();
+		
+		for (Road road : inboundOnewayRoadsLTR) {
+			inboundLanes.addAll(road.getLaneLayout().getLanesLeftToRight());
+		}
+		for (Road road : outboundOnewayRoadsLTR) {
+			outboundLanes.addAll(road.getLaneLayout().getLanesLeftToRight());
+		}
+		
+		Map<Integer, Integer> matches = findMatchingLanes(inboundLanes,
+				outboundLanes, false, false);
+		
+		/* build connections */
+		
+		List<LaneConnection> result = new ArrayList<RoadModule.LaneConnection>();
+		
+		for (int lane1Index : matches.keySet()) {
+			
+			final Lane lane1 = inboundLanes.get(lane1Index);
+			final Lane lane2 = outboundLanes.get(matches.get(lane1Index));
+			
+			result.add(buildLaneConnection(lane1, lane2,
+					RoadPart.LEFT, //TODO: road part is not always the same
+					false, true));
+			
+		}
+		
+		return result;
+		
+	}
+
+	/**
+	 * determines connected lanes at a junction, crossing or connector
+	 * for a pair of two of the junction's roads.
+	 * Only connections between the left part of road1 with the right part of
+	 * road2 will be taken into account.
+	 */
+	private static void addLaneConnectionsForRoadPair(
+			List<LaneConnection> result,
+			MapNode node, Road road1, Road road2,
+			boolean isJunction, boolean isCrossing) {
+		
+		/* get some basic info about the roads */
+		
+		final boolean isRoad1Inbound = road1.line.getEndNode() == node;
+		final boolean isRoad2Inbound = road2.line.getEndNode() == node;
+		
+		final List<Lane> lanes1, lanes2;
+		
+		lanes1 = road1.getLaneLayout().getLanes(
+				isRoad1Inbound ? RoadPart.LEFT : RoadPart.RIGHT);
+
+		lanes2 = road2.getLaneLayout().getLanes(
+				isRoad2Inbound ? RoadPart.RIGHT : RoadPart.LEFT);
+		
+		/* determine which lanes are connected */
+		
+		Map<Integer, Integer> matches =
+				findMatchingLanes(lanes1, lanes2, isJunction, isCrossing);
+		
+		/* build the lane connections */
+		
+		for (int lane1Index : matches.keySet()) {
+			
+			final Lane lane1 = lanes1.get(lane1Index);
+			final Lane lane2 = lanes2.get(matches.get(lane1Index));
+			
+			result.add(buildLaneConnection(lane1, lane2, RoadPart.LEFT,
+					!isRoad1Inbound, !isRoad2Inbound));
+			
+		}
+		
+		//TODO: connect "disappearing" lanes to a point on the other side
+		//      or draw caps (only for connectors)
+		
+	}
+	
+	private static LaneConnection buildLaneConnection(
+			Lane lane1, Lane lane2, RoadPart roadPart,
+			boolean atLane1Start, boolean atLane2Start) {
+				
+		List<VectorXYZ> leftLaneBorder = new ArrayList<VectorXYZ>();
+		leftLaneBorder.add(lane1.getBorderNode(
+				atLane1Start, atLane1Start));
+		leftLaneBorder.add(lane2.getBorderNode(
+				atLane2Start, !atLane2Start));
+		
+		List<VectorXYZ> rightLaneBorder = new ArrayList<VectorXYZ>();
+		rightLaneBorder.add(lane1.getBorderNode(
+				atLane1Start, !atLane1Start));
+		rightLaneBorder.add(lane2.getBorderNode(
+				atLane2Start, atLane2Start));
+		
+		return new LaneConnection(lane1.type, RoadPart.LEFT,
+				leftLaneBorder, rightLaneBorder);
+		
+	}
+
 	/**
 	 * representation for junctions between roads.
 	 */
@@ -129,8 +498,17 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			target.drawTriangles(ASPHALT, super.getTriangulation());
-						
+			target.drawTriangles(getSurfaceForNode(node), super.getTriangulation());
+			
+			/* connect some lanes such as sidewalks between adjacent roads */
+			
+			List<LaneConnection> connections = buildLaneConnections(
+					node, true, false);
+			
+			for (LaneConnection connection : connections) {
+				connection.renderTo(target);
+			}
+			
 		}
 		
 		@Override
@@ -160,6 +538,96 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	
 	/**
+	 * visible connectors where a road changes width or lane layout
+	 */
+	public static class RoadConnector
+		extends VisibleConnectorNodeWorldObject
+		implements NodeWorldObject, RenderableToAllTargets,
+		TerrainBoundaryWorldObject {
+		
+		private static final double MAX_CONNECTOR_LENGTH = 5;
+		
+		public RoadConnector(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public float getLength() {
+			
+			// length is at most a third of the shorter road segment's length
+						
+			List<Road> roads = getConnectedRoads(node, false);
+			
+			return (float)Math.min(Math.min(
+					roads.get(0).line.getLineSegment().getLength() / 3,
+					roads.get(1).line.getLineSegment().getLength() / 3),
+					MAX_CONNECTOR_LENGTH);
+			
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			List<LaneConnection> connections = buildLaneConnections(
+					node, false, false);
+			
+			/* render connections */
+			
+			for (LaneConnection connection : connections) {
+				connection.renderTo(target);
+			}
+			
+			/* render area not covered by connections */
+			
+			//TODO: subtract area covered by connections
+			
+			List<TriangleXZ> trianglesXZ = triangulate(
+					getOutlinePolygon().getSimpleXZPolygon(),
+					Collections.<SimplePolygonXZ>emptySet());
+			
+			List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>();
+			
+			for (TriangleXZ triangle : trianglesXZ) {
+				trianglesXYZ.add(
+						triangle.makeCounterclockwise().xyz(
+								node.getElevationProfile().getEle()));
+			}
+				
+			target.drawTriangles(getSurfaceForNode(node), trianglesXYZ);
+			
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			GroundState currentGroundState = null;
+			checkEachLine: {
+				for (MapWaySegment line : this.node.getConnectedWaySegments()) {
+					if (line.getPrimaryRepresentation() == null) continue;
+					GroundState lineGroundState = line.getPrimaryRepresentation().getGroundState();
+					if (currentGroundState == null) {
+						currentGroundState = lineGroundState;
+					} else if (currentGroundState != lineGroundState) {
+						currentGroundState = GroundState.ON;
+						break checkEachLine;
+					}
+				}
+			}
+			return currentGroundState;
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+	
+	}
+	
+	/**
 	 * representation for crossings (zebra crossing etc.) on roads
 	 */
 	public static class RoadCrossingAtConnector
@@ -175,16 +643,18 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		public float getLength() {
-			return CROSSING_WIDTH;
+			return parseWidth(node.getTags(), CROSSING_WIDTH);
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-							
+					
 			NodeElevationProfile eleProfile = node.getElevationProfile();
 			
 			VectorXYZ start = eleProfile.getWithEle(startPos);
 			VectorXYZ end = eleProfile.getWithEle(endPos);
+
+			/* draw crossing markings */
 			
 			VectorXYZ startLines1 = eleProfile.getWithEle(
 					interpolateBetween(startPos, endPos, 0.1f));
@@ -208,24 +678,25 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			//TODO: don't always use halfStart/EndWith - you need to interpolate!
 			
-			/** area outside and inside lines */
-			target.drawTriangleStrip(ASPHALT,
+			// area outside and inside lines
+			Material surface = getSurfaceForNode(node);
+			target.drawTriangleStrip(surface,
 					start.subtract(cutVector.mult(halfStartWidth)),
 					start.add(cutVector.mult(halfStartWidth)),
 					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
 					startLines1.add(cutVector.mult(halfStartLines1Width)));
-			target.drawTriangleStrip(ASPHALT,
+			target.drawTriangleStrip(surface,
 					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
 					endLines1.add(cutVector.mult(halfEndLines1Width)),
 					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
 					startLines2.add(cutVector.mult(halfStartLines2Width)));
-			target.drawTriangleStrip(ASPHALT,
+			target.drawTriangleStrip(surface,
 					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
 					endLines2.add(cutVector.mult(halfEndLines2Width)),
 					end.subtract(cutVector.mult(halfEndWidth)),
 					end.add(cutVector.mult(halfEndWidth)));
 
-			/** lines across road */
+			// lines across road
 			target.drawTriangleStrip(Materials.ROAD_MARKING,
 					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
 					startLines1.add(cutVector.mult(halfStartLines1Width)),
@@ -236,6 +707,15 @@ public class RoadModule extends ConfigurableWorldModule {
 					startLines2.add(cutVector.mult(halfStartLines2Width)),
 					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
 					endLines2.add(cutVector.mult(halfEndLines2Width)));
+			
+			/* draw lane connections */
+			
+			List<LaneConnection> connections = buildLaneConnections(
+					node, false, true);
+			
+			for (LaneConnection connection : connections) {
+				connection.renderTo(target);
+			}
 			
 		}
 		
@@ -274,7 +754,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		extends AbstractNetworkWaySegmentWorldObject
 		implements WaySegmentWorldObject, RenderableToAllTargets,
 		TerrainBoundaryWorldObject {
-			
+		
 		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
 		
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
@@ -283,7 +763,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected static final VectorXYZ[] HANDRAIL_SHAPE = {
 			new VectorXYZ(-0.02f, -0.05f, 0), new VectorXYZ(-0.02f,     0f, 0),
 			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0)};
-		
+
+		public final LaneLayout laneLayout;
 		public final float width;
 		
 		final private TagGroup tags;
@@ -299,65 +780,193 @@ public class RoadModule extends ConfigurableWorldModule {
 			this.startCoord = line.getStartNode().getPos();
 			this.endCoord = line.getEndNode().getPos();
 			
-			float fallbackWidth = getDefaultWidth(tags);
+			this.steps = isSteps(tags);
+			
+			if (steps) {
+				this.laneLayout = null;
+				this.width = parseWidth(tags, 1.0f);
+			} else {
+				this.laneLayout = buildBasicLaneLayout();
+				this.width = parseWidth(tags, (float)calculateFallbackWidth());
+				laneLayout.setCalculatedValues(width);
+			}
+			
+		}
+
+		/**
+		 * creates a lane layout from several basic tags.
+		 */
+		private LaneLayout buildBasicLaneLayout() {
+			
+			boolean isOneway = isOneway(tags);
+			
+			/* determine which lanes exist */
+						
+			String divider = tags.getValue("divider");
+			
+			String sidewalk = tags.containsKey("sidewalk") ?
+					tags.getValue("sidewalk") : tags.getValue("footway");
+			
+			boolean leftSidewalk = "left".equals(sidewalk)
+					|| "both".equals(sidewalk);
+			boolean rightSidewalk = "right".equals(sidewalk)
+					|| "both".equals(sidewalk);
+						
+			boolean leftCycleway = tags.contains("cycleway:left", "lane")
+					|| tags.contains("cycleway", "lane");
+			boolean rightCycleway = tags.contains("cycleway:right", "lane")
+					|| tags.contains("cycleway", "lane");
+			
+			Float lanes = null;
 			if (tags.containsKey("lanes")) {
-				try {
-					fallbackWidth = Integer.parseInt(tags.getValue("lanes")) * DEFAULT_LANE_WIDTH;
-				} catch (NumberFormatException e) {}
+				lanes = parseOsmDecimal(tags.getValue("lanes"), false);
 			}
 			
-			this.width = parseWidth(tags, fallbackWidth);
+			int vehicleLaneCount = (lanes != null)
+					? (int)(float)lanes : getDefaultLanes(tags);
 			
-			steps = isSteps(tags);
+			/* create the layout */
 			
-		}
-
-		private static float getDefaultWidth (TagGroup tags) {
-			
-			String highwayValue = tags.getValue("highway");
-			
-			if (isPath(tags)) {
-				return 1f;
-			}
-			
-			if ("service".equals(highwayValue)
-					|| "track".equals(highwayValue)) {
-				if (tags.contains("service", "parking_aisle")) {
-					return DEFAULT_LANE_WIDTH * 0.8f;
-				} else {
-					return DEFAULT_LANE_WIDTH;
+			LaneLayout layout = new LaneLayout();
+						
+			for (int i = 0; i < vehicleLaneCount; ++ i) {
+				
+				RoadPart roadPart = (i%2 == 0 || isOneway)
+						? RoadPart.RIGHT : RoadPart.LEFT;
+				
+				if (i == 1 && !isOneway) {
+					
+					//central divider
+					
+					LaneType dividerType = DASHED_LINE;
+					
+					if ("dashed_line".equals(divider)) {
+						dividerType = DASHED_LINE;
+					} else if ("solid_line".equals(divider)) {
+						dividerType = SOLID_LINE;
+					} else if ("no".equals(divider)) {
+						dividerType = null;
+					}
+					
+					if (dividerType != null) {
+						layout.getLanes(roadPart).add(new Lane(this,
+								dividerType, roadPart, EMPTY_TAG_GROUP));
+					}
+					
+				} else if (i >= 1) {
+					
+					//other divider
+					
+					layout.getLanes(roadPart).add(new Lane(this,
+							DASHED_LINE, roadPart, EMPTY_TAG_GROUP));
+					
 				}
-			} else if ("primary".equals(highwayValue) || "secondary".equals(highwayValue)) {
-				return 2 * DEFAULT_LANE_WIDTH;
-			} else if ("motorway".equals(highwayValue)) {
-				return 2.5f * DEFAULT_LANE_WIDTH;
+				
+				//lane itself
+				
+				layout.getLanes(roadPart).add(new Lane(this,
+						VEHICLE_LANE, roadPart, EMPTY_TAG_GROUP));
+				
 			}
 			
-			if (tags.containsKey("oneway") && !tags.getValue("oneway").equals("no")) {
-				return DEFAULT_LANE_WIDTH;
+			if (leftCycleway) {
+				layout.leftLanes.add(new Lane(this,
+						CYCLEWAY, RoadPart.LEFT, EMPTY_TAG_GROUP));
+			}
+			if (rightCycleway) {
+				layout.rightLanes.add(new Lane(this,
+						CYCLEWAY, RoadPart.RIGHT, EMPTY_TAG_GROUP));
 			}
 			
-			else {
-				return 4f;
+			if (leftSidewalk) {
+				layout.leftLanes.add(new Lane(this,
+						KERB, RoadPart.LEFT, EMPTY_TAG_GROUP));
+				layout.leftLanes.add(new Lane(this,
+						SIDEWALK, RoadPart.LEFT, EMPTY_TAG_GROUP));
 			}
+			if (rightSidewalk) {
+				layout.rightLanes.add(new Lane(this,
+						KERB, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+				layout.rightLanes.add(new Lane(this,
+						SIDEWALK, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+			}
+			
+			return layout;
 			
 		}
 
-		private static boolean isPath(TagGroup tags) {
+		private double calculateFallbackWidth() {
+			
 			String highwayValue = tags.getValue("highway");
-			return "path".equals(highwayValue)
-				|| "footway".equals(highwayValue)
-				|| "cycleway".equals(highwayValue)
-				|| "bridleway".equals(highwayValue)
-				|| "steps".equals(highwayValue);
+			
+			double width = 0;
+			boolean ignoreVehicleLanes = false;
+			
+			/* guess the combined width of all vehicle lanes */
+			
+			if (!tags.containsKey("lanes") && !tags.containsKey("divider")) {
+				
+				ignoreVehicleLanes = true;
+				
+				if (isPath(tags)) {
+					width = 1f;
+				}
+				
+				else if ("service".equals(highwayValue)
+						|| "track".equals(highwayValue)) {
+					if (tags.contains("service", "parking_aisle")) {
+						width = DEFAULT_LANE_WIDTH * 0.8;
+					} else {
+						width = DEFAULT_LANE_WIDTH;
+					}
+				} else if ("primary".equals(highwayValue) || "secondary".equals(highwayValue)) {
+					width = 2 * DEFAULT_LANE_WIDTH;
+				} else if ("motorway".equals(highwayValue)) {
+					width = 2.5f * DEFAULT_LANE_WIDTH;
+				}
+				
+				else if (tags.containsKey("oneway") && !tags.getValue("oneway").equals("no")) {
+					width = DEFAULT_LANE_WIDTH;
+				}
+				
+				else {
+					width = 4;
+				}
+				
+			}
+			
+			/* calculate sum of lane widths */
+			
+			for (Lane lane : laneLayout.getLanesLeftToRight()) {
+				
+				if (lane.type == VEHICLE_LANE && ignoreVehicleLanes) continue;
+				
+				if (lane.getAbsoluteWidth() == null) {
+					width += DEFAULT_LANE_WIDTH;
+				} else {
+					width += lane.getAbsoluteWidth();
+				}
+				
+			}
+		
+			return width;
+			
 		}
 
 		@Override
 		public float getWidth() {
 			return width;
 		}
+				
+		public Material getSurface() {
+			return getSurfaceMaterial(tags.getValue("surface"), ASPHALT);
+		}
 		
-		private void renderStepsUsing(Target<?> target) {
+		public LaneLayout getLaneLayout() {
+			return laneLayout;
+		}
+		
+		private void renderStepsTo(Target<?> target) {
 
 			WaySegmentElevationProfile elevationProfile = line.getElevationProfile();
 			
@@ -487,20 +1096,50 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 		}
 
+		private void renderLanesTo(Target<?> target) {
+
+			List<Lane> lanesLeftToRight = laneLayout.getLanesLeftToRight();
+			
+			/* draw lanes themselves */
+			
+			for (Lane lane : lanesLeftToRight) {
+				lane.renderTo(target);
+			}
+			
+			/* close height gaps at left and right border of the road */
+			
+			Lane firstLane = lanesLeftToRight.get(0);
+			Lane lastLane = lanesLeftToRight.get(lanesLeftToRight.size() - 1);
+			
+			if (firstLane.getHeightAboveRoad() > 0) {
+				
+				VectorXYZ[] vs = createVectorsForTriangleStripBetween(
+						getOutline(false),
+						addYList(getOutline(false), firstLane.getHeightAboveRoad()));
+				
+				target.drawTriangleStrip(getSurface(), vs);
+				
+			}
+			
+			if (lastLane.getHeightAboveRoad() > 0) {
+				
+				VectorXYZ[] vs = createVectorsForTriangleStripBetween(
+						addYList(getOutline(true), lastLane.getHeightAboveRoad()),
+						getOutline(true));
+				
+				target.drawTriangleStrip(getSurface(), vs);
+				
+			}
+						
+		}
+
 		@Override
 		public void renderTo(Target<?> target) {
 		
-			if (!steps) {
-				
-				VectorXYZ[] vs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
-							getOutline(false), getOutline(true));
-				
-				String surface = tags.getValue("surface");
-				target.drawTriangleStrip(getSurfaceMaterial(surface, ASPHALT), vs);
-				
-						
+			if (steps) {
+				renderStepsTo(target);
 			} else {
-				renderStepsUsing(target);
+				renderLanesTo(target);
 			}
 			
 		}
@@ -530,7 +1169,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 	
 	public static class RoadArea extends NetworkAreaWorldObject
-		implements  RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		private static final float DEFAULT_CLEARING = 5f;
 		
@@ -567,5 +1206,476 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 		
 	}
+	
+	private static enum RoadPart {
+		LEFT, RIGHT
+		//TODO add CENTRE lane support
+	}
+	
+	private static class LaneLayout {
+	
+		public final List<Lane> leftLanes = new ArrayList<Lane>();
+		public final List<Lane> rightLanes = new ArrayList<Lane>();
+				
+		public List<Lane> getLanes(RoadPart roadPart) {
+			switch (roadPart) {
+			case LEFT: return leftLanes;
+			case RIGHT: return rightLanes;
+			default: throw new Error("unhandled road part value");
+			}
+		}
+		
+		public List<Lane> getLanesLeftToRight() {
+			List<Lane> result = new ArrayList<Lane>();
+			result.addAll(leftLanes);
+			Collections.reverse(result);
+			result.addAll(rightLanes);
+			return result;
+		}
+		
+		/**
+		 * calculates and sets all lane attributes
+		 * that are not known during lane creation
+		 */
+		public void setCalculatedValues(double totalRoadWidth) {
+			
+			/* determine width of lanes without explicitly assigned width */
+			
+			int lanesWithImplicitWidth = 0;
+			double remainingWidth = totalRoadWidth;
+			
+			for (RoadPart part : RoadPart.values()) {
+				for (Lane lane : getLanes(part)) {
+					if (lane.getAbsoluteWidth() == null) {
+						lanesWithImplicitWidth += 1;
+					} else {
+						remainingWidth -= lane.getAbsoluteWidth();
+					}
+				}
+			}
+			
+			double implicitLaneWidth = remainingWidth / lanesWithImplicitWidth;
+			
+			/* calculate a factor to reduce all lanes' width
+			 * if the sum of their widths would otherwise
+			 * be larger than that of the road */
+			
+			double laneWidthScaling = 1.0;
+			
+			if (remainingWidth < 0) {
+				
+				double widthSum = totalRoadWidth - remainingWidth;
+				
+				implicitLaneWidth = 1;
+				widthSum += lanesWithImplicitWidth * implicitLaneWidth;
+				
+				laneWidthScaling = totalRoadWidth / widthSum;
+				
+			}
+			
+			/* assign values */
+			
+			for (RoadPart part : asList(RoadPart.LEFT, RoadPart.RIGHT)) {
+							
+				double heightAboveRoad = 0;
+				
+				for (Lane lane : getLanes(part)) {
+					
+					double relativeWidth;
+					
+					if (lane.getAbsoluteWidth() == null) {
+						relativeWidth = laneWidthScaling *
+								(implicitLaneWidth / totalRoadWidth);
+					} else {
+						relativeWidth = laneWidthScaling *
+								(lane.getAbsoluteWidth() / totalRoadWidth);
+					}
+					
+					lane.setCalculatedValues1(relativeWidth, heightAboveRoad);
+					
+					heightAboveRoad += lane.getHeightOffset();
+					
+				}
+				
+			}
+			
+			/* calculate relative lane positions based on relative width */
+			
+			double accumulatedWidth = 0;
+			
+			for (Lane lane : getLanesLeftToRight()) {
+							
+				double relativePositionLeft = accumulatedWidth;
+
+				accumulatedWidth += lane.getRelativeWidth();
+				
+				double relativePositionRight = accumulatedWidth;
+				
+				lane.setCalculatedValues2(relativePositionLeft,
+						relativePositionRight);
+												
+			}
+			
+		}
+		
+		/**
+		 * calculates and sets all lane attributes
+		 * that are not known during lane creation
+		 */
+		
+		
+	}
+	
+	/**
+	 * a lane or lane divider of the road segment.
+	 * 
+	 * Field values depend on neighboring lanes and are therefore calculated
+	 * and defined in two phases. Results are then set using
+	 * {@link #setCalculatedValues1(double, double)} and
+	 * {@link #setCalculatedValues2(double, double)}, respectively.
+	 */
+	private static final class Lane implements RenderableToAllTargets {
+		
+		public final Road road;
+		public final LaneType type;
+		public final RoadPart roadPart;
+		public final TagGroup laneTags;
+		
+		private int phase = 0;
+		
+		private double relativeWidth;
+		private double heightAboveRoad;
+		
+		private double relativePositionLeft;
+		private double relativePositionRight;
+				
+		public Lane(Road road, LaneType type, RoadPart roadPart,
+				TagGroup laneTags) {
+			this.road = road;
+			this.type = type;
+			this.roadPart = roadPart;
+			this.laneTags = laneTags;
+		}
+
+		/** returns width in meters or null for undefined width */
+		public Double getAbsoluteWidth() {
+			return type.getAbsoluteWidth(road.tags, laneTags);
+		}
+
+		/** returns height increase relative to inner neighbor */
+		public double getHeightOffset() {
+			return type.getHeightOffset(road.tags, laneTags);
+		}
+		
+		public void setCalculatedValues1(double relativeWidth,
+				double heightAboveRoad) {
+			
+			assert phase == 0;
+			
+			this.relativeWidth = relativeWidth;
+			this.heightAboveRoad = heightAboveRoad;
+			
+			phase = 1;
+			
+		}
+		
+		public void setCalculatedValues2(double relativePositionLeft,
+				double relativePositionRight) {
+			
+			assert phase == 1;
+			
+			this.relativePositionLeft = relativePositionLeft;
+			this.relativePositionRight = relativePositionRight;
+			
+			phase = 2;
+			
+		}
+		
+		public Double getRelativeWidth() {
+			assert phase > 0;
+			return relativeWidth;
+		}
+		
+		public double getHeightAboveRoad() {
+			assert phase > 0;
+			return heightAboveRoad;
+		}
+		
+		/**
+		 * provides access to the first and last node
+		 * of the lane's left and right border
+		 */
+		public VectorXYZ getBorderNode(boolean start, boolean right) {
+			
+			assert phase > 1;
+			
+			double relativePosition = right
+					? relativePositionRight
+					: relativePositionLeft;
+			
+			VectorXYZ roadPoint = road.getPointOnCut(start, relativePosition);
+			
+			return roadPoint.add(0, getHeightAboveRoad(), 0);
+			
+		}
+		
+		public void renderTo(Target<?> target) {
+			
+			assert phase > 1;
+			
+			List<VectorXYZ> leftLaneBorder = createLineBetween(
+					road.getOutline(false), road.getOutline(true),
+					(float)relativePositionLeft);
+			leftLaneBorder = addYList(leftLaneBorder, getHeightAboveRoad());
+			
+			List<VectorXYZ> rightLaneBorder = createLineBetween(
+					road.getOutline(false), road.getOutline(true),
+					(float)relativePositionRight);
+			rightLaneBorder = addYList(rightLaneBorder, getHeightAboveRoad());
+						
+			type.render(target, roadPart, road.tags, laneTags,
+					leftLaneBorder, rightLaneBorder);
+			
+		}
+		
+		@Override
+		public String toString() {
+			return "{" + type + ", " + roadPart + "}";
+		}
+		
+	}
+	
+	/**
+	 * a connection between two lanes (e.g. at a junction)
+	 */
+	private static class LaneConnection implements RenderableToAllTargets {
+		
+		public final LaneType type;
+		public final RoadPart roadPart;
+		
+		private final List<VectorXYZ> leftBorder;
+		private final List<VectorXYZ> rightBorder;
+		
+		private LaneConnection(LaneType type, RoadPart roadPart,
+				List<VectorXYZ> leftBorder, List<VectorXYZ> rightBorder) {
+			this.type = type;
+			this.roadPart = roadPart;
+			this.leftBorder = leftBorder;
+			this.rightBorder = rightBorder;
+		}
+
+		/**
+		 * returns the outline of this connection.
+		 * For determining the total terrain covered by junctions and connectors.
+		 */
+		public PolygonXYZ getOutline() {
+			
+			List<VectorXYZ> outline = new ArrayList<VectorXYZ>();
+
+			outline.addAll(leftBorder);
+			
+			List<VectorXYZ>rOutline = new ArrayList<VectorXYZ>(rightBorder);
+			Collections.reverse(rOutline);
+			outline.addAll(rOutline);
+			
+			outline.add(outline.get(0));
+			
+			return new PolygonXYZ(outline);
+			
+		}
+		
+		public void renderTo(Target<?> target) {
+			
+			type.render(target, roadPart, EMPTY_TAG_GROUP, EMPTY_TAG_GROUP,
+					leftBorder, rightBorder);
+			
+		}
+		
+	}
+	
+	/**
+	 * a type of lanes. Determines visual appearance,
+	 * and contains the intelligence for evaluating type-specific tags.
+	 */
+	private static abstract class LaneType {
+		
+		private final String typeName;
+		public final boolean isConnectableAtCrossings;
+		public final boolean isConnectableAtJunctions;
+				
+		private LaneType(String typeName,
+				boolean isConnectableAtCrossings,
+				boolean isConnectableAtJunctions) {
+			
+			this.typeName = typeName;
+			this.isConnectableAtCrossings = isConnectableAtCrossings;
+			this.isConnectableAtJunctions = isConnectableAtJunctions;
+			
+		}
+
+		public abstract void render(Target<?> target, RoadPart roadPart,
+				TagGroup roadTags, TagGroup laneTags,
+				List<VectorXYZ> leftLaneBorder,
+				List<VectorXYZ> rightLaneBorder);
+		
+		public abstract Double getAbsoluteWidth(
+				TagGroup roadTags, TagGroup laneTags);
+
+		public abstract double getHeightOffset(
+				TagGroup roadTags, TagGroup laneTags);
+	
+		@Override
+		public String toString() {
+			return typeName;
+		}
+		
+	}
+	
+	private static abstract class FlatTexturedLane extends LaneType {
+				
+		private FlatTexturedLane(String typeName,
+				boolean isConnectableAtCrossings,
+				boolean isConnectableAtJunctions) {
+			
+			super(typeName, isConnectableAtCrossings, isConnectableAtJunctions);
+			
+		}
+
+		@Override
+		public void render(Target<?> target, RoadPart roadPart,
+				TagGroup roadTags, TagGroup laneTags,
+				List<VectorXYZ> leftLaneBorder,
+				List<VectorXYZ> rightLaneBorder) {
+			
+			VectorXYZ[] vs = createVectorsForTriangleStripBetween(
+					leftLaneBorder, rightLaneBorder);
+			
+			target.drawTriangleStrip(getSurface(roadTags, laneTags), vs);
+			
+		}
+		
+		@Override
+		public double getHeightOffset(TagGroup roadTags, TagGroup laneTags) {
+			return 0;
+		}
+		
+		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+			
+			return getSurfaceMaterial(laneTags.getValue("surface"),
+					getSurfaceMaterial(roadTags.getValue("surface"),
+					ASPHALT));
+			
+		}
+		
+	};
+	
+	private static final LaneType VEHICLE_LANE = new FlatTexturedLane(
+			"VEHICLE_LANE", false, false) {
+		
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			return null;
+		};
+		
+	};
+	
+	private static final LaneType CYCLEWAY = new FlatTexturedLane(
+			"CYCLEWAY", false, false) {
+		
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			return (double)parseWidth(laneTags, 0.5f);
+		};
+		
+		@Override
+		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+			Material material = super.getSurface(roadTags, laneTags);
+			if (material == ASPHALT) return RED_ROAD_MARKING;
+			else return material;
+		};
+		
+	};
+	
+	private static final LaneType SIDEWALK = new FlatTexturedLane(
+			"SIDEWALK", true, true) {
+				
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			return (double)parseWidth(laneTags, 1.0f);
+		};
+		
+	};
+
+	private static final LaneType SOLID_LINE = new FlatTexturedLane(
+			"SOLID_LINE", false, false) {
+
+		@Override
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			return (double)parseWidth(laneTags, 0.1f);
+		}
+		
+		@Override
+		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+			return ROAD_MARKING;
+		}
+		
+	};
+
+	private static final LaneType DASHED_LINE = new FlatTexturedLane(
+			"DASHED_LINE", false, false) {
+
+		@Override
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			return (double)parseWidth(laneTags, 0.1f);
+		}
+		
+		@Override
+		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+			return ROAD_MARKING;
+			//TODO: use a dashed texture instead
+		}
+		
+	};
+	
+	private static final LaneType KERB = new LaneType(
+			"KERB", true, true) {
+		
+		@Override
+		public void render(Target<?> target, RoadPart roadPart,
+				TagGroup roadTags, TagGroup laneTags,
+				List<VectorXYZ> leftLaneBorder,
+				List<VectorXYZ> rightLaneBorder) {
+
+			List<VectorXYZ> border1, border2, border3;
+			double height = getHeightOffset(roadTags, laneTags);
+			
+			if (roadPart == RoadPart.LEFT) {
+				border1 = addYList(leftLaneBorder, height);
+				border2 = addYList(rightLaneBorder, height);
+				border3 = rightLaneBorder;
+			} else {
+				border1 = leftLaneBorder;
+				border2 = addYList(leftLaneBorder, height);
+				border3 = addYList(rightLaneBorder, height);
+			}
+
+			VectorXYZ[] vs1_2 = createVectorsForTriangleStripBetween(
+					border1, border2);
+			target.drawTriangleStrip(Materials.CONCRETE, vs1_2);
+
+			VectorXYZ[] vs2_3 = createVectorsForTriangleStripBetween(
+					border2, border3);
+			target.drawTriangleStrip(Materials.CONCRETE, vs2_3);
+			
+		}
+		
+		@Override
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			return (double)parseWidth(laneTags, 0.15f);
+		}
+
+		@Override
+		public double getHeightOffset(TagGroup roadTags, TagGroup laneTags) {
+			return (double)parseHeight(laneTags, 0.12f);
+		}
+
+	};
 	
 }

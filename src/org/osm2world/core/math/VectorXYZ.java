@@ -1,5 +1,8 @@
 package org.osm2world.core.math;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class VectorXYZ implements Vector3D {
 
 	public final double x, y, z;
@@ -50,7 +53,7 @@ public class VectorXYZ implements Vector3D {
 				this.x + other.x,
 				this.y,
 				this.z + other.z);
-	}	
+	}
 
 	public VectorXYZ add(double x, double y, double z) {
 		return new VectorXYZ(
@@ -94,7 +97,7 @@ public class VectorXYZ implements Vector3D {
 		return "(" + x + ", " + y + ", " + z + ")";
 	}
 
-	/** 
+	/**
 	 * returns the result of rotating this vector around the x axis
 	 * @param angleRad  angle in radians
 	 */
@@ -104,7 +107,7 @@ public class VectorXYZ implements Vector3D {
 		return new VectorXYZ(x, y*cos - z*sin, y*sin + z*cos);
 	}
 
-	/** 
+	/**
 	 * returns the result of rotating this vector around the y axis
 	 * @param angleRad  angle in radians
 	 */
@@ -114,7 +117,7 @@ public class VectorXYZ implements Vector3D {
 		return new VectorXYZ(sin*z + cos*x, y, cos*z - sin*x);
 	}
 
-	/** 
+	/**
 	 * returns the result of rotating this vector around the z axis
 	 * @param angleRad  angle in radians
 	 */
@@ -122,7 +125,7 @@ public class VectorXYZ implements Vector3D {
 		double sin = Math.sin(angleRad);
 		double cos = Math.cos(angleRad);
 		return new VectorXYZ(x*cos - y*sin, x*sin + y*cos, z);
-	} 
+	}
 
 	/**
 	 * calculates the angle between this vector and other,
@@ -134,18 +137,6 @@ public class VectorXYZ implements Vector3D {
 	
 	public VectorXZ xz() {
 		return new VectorXZ(x, z);
-	}
-
-	/**
-	 * creates a VectorXYZ for any Vector3D object.
-	 * If the Vector3D is already a VectorXYZ, this can return the original vector.
-	 */
-	public static VectorXYZ xyz(VectorXYZ vector3D) {
-		if (vector3D instanceof VectorXYZ) {
-			return (VectorXYZ)vector3D;
-		} else {
-			return new VectorXYZ(vector3D.getX(), vector3D.getY(), vector3D.getZ());
-		}
 	}
 	
 	public VectorXYZ x(double x) {
@@ -186,10 +177,30 @@ public class VectorXYZ implements Vector3D {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
+	/**
+	 * creates a VectorXYZ for any Vector3D object.
+	 * If the Vector3D is already a VectorXYZ, this can return the original vector.
+	 */
+	public static VectorXYZ xyz(VectorXYZ vector3D) {
+		if (vector3D instanceof VectorXYZ) {
+			return (VectorXYZ)vector3D;
+		} else {
+			return new VectorXYZ(vector3D.getX(), vector3D.getY(), vector3D.getZ());
+		}
+	}
 	
-	public static final VectorXYZ NULL_VECTOR = new VectorXYZ(0, 0, 0);	
+	public static List<VectorXYZ> addYList(List<VectorXYZ> list, double addY) {
+		List<VectorXYZ> result = new ArrayList<VectorXYZ>(list.size());
+		for (VectorXYZ listEntry : list) {
+			result.add(listEntry.y(listEntry.y + addY));
+		}
+		return result;
+	}
+	
+	public static final VectorXYZ NULL_VECTOR = new VectorXYZ(0, 0, 0);
 	public static final VectorXYZ X_UNIT = new VectorXYZ(1, 0, 0);
-	public static final VectorXYZ Y_UNIT = new VectorXYZ(0, 1, 0);	
+	public static final VectorXYZ Y_UNIT = new VectorXYZ(0, 1, 0);
 	public static final VectorXYZ Z_UNIT = new VectorXYZ(0, 0, 1);
 	
 }

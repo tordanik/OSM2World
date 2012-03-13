@@ -199,7 +199,6 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 	}
 
-
 	private void calculateOutlines() {
 
 		if (startCutVector == null || endCutVector == null) {
@@ -231,6 +230,27 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		rightOutline.add(centerEnd.add(endCutVector.mult(halfWidth)));
 		
 		//TODO: what if offset moves start/end *BEHIND* an intersection-induced node?
+		
+	}
+	
+	/**
+	 * returns a point on the start or end cut line.
+	 * 
+	 * @param start  point is on the start cut if true, on the end cut if false
+	 * @param relativePosFromLeft  0 is the leftmost point, 1 the rightmost.
+	 *                             Values in between are for interpolation.
+	 */
+	public VectorXYZ getPointOnCut(boolean start, double relativePosFromLeft) {
+		
+		assert 0 <= relativePosFromLeft && relativePosFromLeft <= 1;
+		
+		VectorXZ position = start ? getStartPosition() : getEndPosition();
+		VectorXZ cutVector = start ? getStartCutVector() : getEndCutVector();
+		
+		VectorXZ resultXZ = position.add(cutVector.mult(
+				(-0.5 + relativePosFromLeft) * getWidth()));
+		
+		return line.getElevationProfile().getWithEle(resultXZ);
 		
 	}
 

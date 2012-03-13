@@ -21,7 +21,7 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  */
 public class NetworkCalculator {
 	
-	private NetworkCalculator() {}	
+	private NetworkCalculator() {}
 	
 	
 	
@@ -33,7 +33,7 @@ public class NetworkCalculator {
 	
 	
 	/**
-	 * calculates cut and offset information for all 
+	 * calculates cut and offset information for all
 	 * NetworkNode/Line/AreaRepresentations of elements in a grid.
 	 */
 	public static void calculateNetworkInformationInGrid(MapData grid) {
@@ -104,20 +104,20 @@ public class NetworkCalculator {
 	 * calculates the effects of both visible and invisible connector nodes.
 	 */
 	private static void calculateConnectorNodeEffects(
-			NodeWorldObject nodeRepresentation, 
+			NodeWorldObject nodeRepresentation,
 			MapWaySegment line1, MapWaySegment line2,
 			boolean inbound1, boolean inbound2) {
 					
-		NetworkWaySegmentWorldObject renderable1 = 
+		NetworkWaySegmentWorldObject renderable1 =
 			((NetworkWaySegmentWorldObject)line1.getPrimaryRepresentation());
-		NetworkWaySegmentWorldObject renderable2 = 
+		NetworkWaySegmentWorldObject renderable2 =
 			((NetworkWaySegmentWorldObject)line2.getPrimaryRepresentation());
 		
 		VisibleConnectorNodeWorldObject visibleConnectorRep = null;
 		
-		if (nodeRepresentation instanceof VisibleConnectorNodeWorldObject) {			
+		if (nodeRepresentation instanceof VisibleConnectorNodeWorldObject) {
 			visibleConnectorRep =
-				(VisibleConnectorNodeWorldObject)nodeRepresentation;			
+				(VisibleConnectorNodeWorldObject)nodeRepresentation;
 		}
 		
 		/* calculate cut as angle bisector between the two lines */
@@ -130,11 +130,11 @@ public class NetworkCalculator {
 		
 		VectorXZ cutVector;
 		
-		if (inVector.equals(outVector)) { //TODO: allow for some small difference?			
+		if (inVector.equals(outVector)) { //TODO: allow for some small difference?
 			cutVector = outVector.rightNormal();
-		} else {			
+		} else {
 			cutVector = outVector.subtract(inVector);
-			cutVector = cutVector.normalize();						
+			cutVector = cutVector.normalize();
 		}
 		
 		//make sure that cutVector points to the right, which is equivalent to:
@@ -230,7 +230,7 @@ public class NetworkCalculator {
 			final List<MapWaySegment> inboundNLines, List<MapWaySegment> outboundNLines) {
 		
 		/* create list of all connected roads.
-		 * Order of adds is important, it needs to match 
+		 * Order of adds is important, it needs to match
 		 * the order of cutVectors, coords and widths adds. */
 		
 		List<MapWaySegment> connectedNSegments = new ArrayList<MapWaySegment>();
@@ -247,7 +247,7 @@ public class NetworkCalculator {
 				
 		for (MapWaySegment in : inboundNLines) {
 			
-			NetworkWaySegmentWorldObject inRenderable = 
+			NetworkWaySegmentWorldObject inRenderable =
 				((NetworkWaySegmentWorldObject)in.getPrimaryRepresentation());
 			
 			VectorXZ cutVector = in.getRightNormal();
@@ -285,16 +285,16 @@ public class NetworkCalculator {
 			
 			overlapPossible = false;
 			
-			overlapCheck:					
+			overlapCheck:
 			for (int r1=0; r1 < coords.size(); r1++) {
 				for (int r2=r1+1; r2 < coords.size(); r2++) {
 					
 					/* ignore overlapping (or almost overlapping) way segments
 					 * as no reasonable amount of pushing would separate these */
 					if (VectorXZ.distance(connectedNSegments.get(r1).getDirection(),
-							connectedNSegments.get(r2).getDirection()) < 0.5
+							connectedNSegments.get(r2).getDirection()) < 0.1
 						||	VectorXZ.distance(connectedNSegments.get(r1).getDirection(),
-								connectedNSegments.get(r2).getDirection().invert()) < 0.5) {						
+								connectedNSegments.get(r2).getDirection().invert()) < 0.1) {
 						continue;
 					}
 					
@@ -305,7 +305,7 @@ public class NetworkCalculator {
 						System.err.println("distance has exceeded 200 at node " + node
 								+ "\n (representation: " + nodeRepresentation + ")");
 						// overlapCheck will remain false, no further size increase
-						break overlapCheck;						
+						break overlapCheck;
 					}
 					
 					if (distance <= widths.get(r1)*0.5 + widths.get(r2)*0.5) {
@@ -324,7 +324,7 @@ public class NetworkCalculator {
 				
 				for (MapWaySegment in : inboundNLines) {
 					
-					NetworkWaySegmentWorldObject inRenderable = 
+					NetworkWaySegmentWorldObject inRenderable =
 						((NetworkWaySegmentWorldObject)in.getPrimaryRepresentation());
 					VectorXZ inVector = in.getDirection();
 					
@@ -338,7 +338,7 @@ public class NetworkCalculator {
 
 				for (MapWaySegment out : outboundNLines) {
 					
-					NetworkWaySegmentWorldObject outRenderable = 
+					NetworkWaySegmentWorldObject outRenderable =
 						((NetworkWaySegmentWorldObject)out.getPrimaryRepresentation());
 					VectorXZ outVector = out.getDirection();
 					
@@ -370,7 +370,7 @@ public class NetworkCalculator {
 				
 				junctionCutCenters.add(coords.get(index));
 				junctionCutVectors.add(cutVectors.get(index));
-				junctionWidths.add(widths.get(index));				
+				junctionWidths.add(widths.get(index));
 				
 			} else {
 				
@@ -378,7 +378,7 @@ public class NetworkCalculator {
 				junctionCutVectors.add(null);
 				junctionWidths.add(null);
 				
-			}			
+			}
 			
 		}
 		
@@ -394,7 +394,7 @@ public class NetworkCalculator {
 
 		VectorXZ cutVector = l.getRightNormal();
 		
-		NetworkWaySegmentWorldObject lRepresentation = 
+		NetworkWaySegmentWorldObject lRepresentation =
 			(NetworkWaySegmentWorldObject)l.getPrimaryRepresentation();
 		
 		if (setStartVector) {
