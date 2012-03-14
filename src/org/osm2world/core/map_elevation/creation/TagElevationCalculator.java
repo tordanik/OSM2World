@@ -25,16 +25,19 @@ import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 public abstract class TagElevationCalculator implements ElevationCalculator {
 	
 	Double terrainElevation;
+	boolean enableUnknownEleWarning;
 	
 	/**
 	 * @param terrainElevation  elevation for the terrain
 	 */
-	public TagElevationCalculator(Double terrainElevation) {
+	public TagElevationCalculator(Double terrainElevation,
+			boolean enableUnknownEleWarning) {
 		this.terrainElevation = terrainElevation;
+		this.enableUnknownEleWarning = enableUnknownEleWarning;
 	}
 	
 	public TagElevationCalculator() {
-		this(0.0);
+		this(0.0, false);
 	}
 	
 	@Override
@@ -106,7 +109,9 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 				double ele = 0;
 				
 				if (connections.size() < 2) {
-					System.err.println("node without ele information: " + node);
+					if (enableUnknownEleWarning) {
+						System.err.println("node without ele information: " + node);
+					}
 				} else {
 					
 					/* interpolate between 2 closest connected nodes */

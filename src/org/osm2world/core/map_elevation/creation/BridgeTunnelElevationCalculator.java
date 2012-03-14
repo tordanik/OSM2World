@@ -13,7 +13,7 @@ public class BridgeTunnelElevationCalculator extends TagElevationCalculator {
 	final double eleTunnel;
 			
 	private BridgeTunnelElevationCalculator(double eleBridge, double eleTunnel) {
-		super(0.0);
+		super(0.0, false);
 		this.eleBridge = eleBridge;
 		this.eleTunnel = eleTunnel;
 	}
