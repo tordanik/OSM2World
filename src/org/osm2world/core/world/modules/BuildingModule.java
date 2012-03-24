@@ -463,8 +463,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				roof = new ComplexRoof();
 			} else {
 				
-				String roofShape = area.getTags().getValue("building:roof:shape");
-				if (roofShape == null) { roofShape = area.getTags().getValue("roof:shape"); }
+				String roofShape = area.getTags().getValue("roof:shape");
+				if (roofShape == null) { roofShape = area.getTags().getValue("building:roof:shape"); }
 				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
 				if ("pyramidal".equals(roofShape)) {
@@ -481,6 +481,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					roof = new GambrelRoof();
 				} else if ("mansard".equals(roofShape)) {
 					roof = new MansardRoof();
+				} else if ("dome".equals(roofShape)) {
+					roof = new DomeRoof();
 				} else {
 					roof = new FlatRoof();
 				}
@@ -574,7 +576,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 		
-		private class OnionRoof extends TaggedRoof {
+		private abstract class SpindleRoof extends TaggedRoof {
 
 			@Override
 			public PolygonWithHolesXZ getPolygon() {
@@ -586,24 +588,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 				return getMaxRoofEle() - getRoofHeight();
 			}
 			
-			@Override
-			public void renderTo(Target<?> target) {
-				
-				double roofY = getMaxRoofEle() - getRoofHeight();
-				
-				renderSpindle(target, materialRoof,
-						polygon.getOuter(),
-						asList(roofY,
-								roofY + 0.15 * roofHeight,
-								roofY + 0.52 * roofHeight,
-								roofY + 0.72 * roofHeight,
-								roofY + 0.82 * roofHeight,
-								roofY + 1.0 * roofHeight),
-						asList(1.0, 0.8, 1.0, 0.7, 0.15, 0.0));
-				
-			}
 
-			private void renderSpindle(
+
+			protected void renderSpindle(
 					Target<?> target, Material material,
 					SimplePolygonXZ polygon,
 					List<Double> heights, List<Double> scaleFactors) {
@@ -669,6 +656,55 @@ public class BuildingModule extends ConfigurableWorldModule {
 					
 					
 				}
+				
+			}
+			
+		}
+		
+		private class OnionRoof extends SpindleRoof {
+			
+			@Override
+			public void renderTo(Target<?> target) {
+				
+				double roofY = getMaxRoofEle() - getRoofHeight();
+				
+				renderSpindle(target, materialRoof,
+						polygon.getOuter(),
+						asList(roofY,
+								roofY + 0.15 * roofHeight,
+								roofY + 0.52 * roofHeight,
+								roofY + 0.72 * roofHeight,
+								roofY + 0.82 * roofHeight,
+								roofY + 1.0 * roofHeight),
+						asList(1.0, 0.8, 1.0, 0.7, 0.15, 0.0));
+				
+			}
+			
+		}
+		
+		private class DomeRoof extends SpindleRoof {
+
+			/**
+			 * number of height rings to approximate the round dome shape
+			 */
+			private static final int HEIGHT_RINGS = 10;
+						
+			@Override
+			public void renderTo(Target<?> target) {
+				
+				double roofY = getMaxRoofEle() - getRoofHeight();
+
+				List<Double> heights = new ArrayList<Double>();
+				List<Double> scales = new ArrayList<Double>();
+				
+				for (int ring = 0; ring < HEIGHT_RINGS; ++ring) {
+					double relativeHeight = (double)ring / (HEIGHT_RINGS - 1);
+					heights.add(roofY + relativeHeight * roofHeight);
+					scales.add(sqrt(1.0 - relativeHeight * relativeHeight));
+				}
+				
+				renderSpindle(target, materialRoof,
+						polygon.getOuter(), heights, scales);
 				
 			}
 			
