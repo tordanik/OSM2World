@@ -1,5 +1,6 @@
 package org.openstreetmap.josm.plugins.graphview.core.util;
 
+import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -254,6 +255,21 @@ public final class ValueStringParser {
 		if ("NNW".equals(value)) { return 337.5f; }
 		
 		return null;
+	}
+
+	/**
+	 * parses an hexadecimal color value
+	 *
+	 * @return  color; null if value had syntax errors
+	 */
+	public static final Color parseColor(String value) {
+		
+		try {
+			return Color.decode(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+		
 	}
 	
 }

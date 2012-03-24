@@ -572,7 +572,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				} else if ("orange".equals(colorString)) {
 					color = new Color(255, 225, 150);
 				} else {
-					color = null; //TODO parseColor(color);
+					color = parseColor(colorString);
 				}
 				
 				if (color != null) {
@@ -637,6 +637,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if (area.getTags().containsKey("roof:height")) {
 					String valueString = area.getTags().getValue("roof:height");
 					taggedHeight = parseMeasure(valueString);
+				} else if (area.getTags().containsKey("roof:levels")) {
+					try {
+						String valueString = area.getTags().getValue("roof:levels");
+						taggedHeight = 2.5f * Integer.parseInt(valueString);
+					} catch (NumberFormatException e) {}
 				}
 				
 				roofHeight =
@@ -1043,10 +1048,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 									return s.getLength();
 								};
 							});
-							
+					
 					ridgeDirection =
 						longestSeg.p2.subtract(longestSeg.p1).normalize();
-						
+					
+					if (area.getTags().contains("roof:orientation", "across")) {
+						ridgeDirection = ridgeDirection.rightNormal();
+					}
+					
 				}
 				
 				/* calculate the two outermost intersections of the

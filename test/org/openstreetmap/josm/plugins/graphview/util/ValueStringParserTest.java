@@ -1,7 +1,10 @@
 package org.openstreetmap.josm.plugins.graphview.util;
 
 import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+
+import java.awt.Color;
 
 import org.junit.Test;
 
@@ -106,6 +109,17 @@ public class ValueStringParserTest {
         assertNull(parseAngle("-90"));
     }
     
+    @Test
+    public void testParseColorDefault() {
+    	assertEquals(new Color(255, 0, 0), parseColor("#ff0000"));
+    	assertEquals(new Color(1, 2, 3), parseColor("#010203"));
+    }
+    
+    @Test
+    public void testParseColorInvalid() {
+    	assertNull(parseColor("ff0000"));
+    	assertNull(parseColor("#"));
+    }
     
     /* utility methods for testing */
     
