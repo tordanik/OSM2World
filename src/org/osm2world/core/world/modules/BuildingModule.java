@@ -549,6 +549,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 		
 			protected final double roofHeight;
 			
+			/*
+			 * default roof height if no value is tagged explicitly.
+			 * Can optionally be overwritten by subclasses.
+			 */
+			protected float getDefaultRoofHeight() {
+				return DEFAULT_RIDGE_HEIGHT;
+			}
+			
 			TaggedRoof() {
 				
 				Float taggedHeight = null;
@@ -559,10 +567,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				roofHeight =
-					taggedHeight != null ? taggedHeight : DEFAULT_RIDGE_HEIGHT;
+					taggedHeight != null ? taggedHeight : getDefaultRoofHeight();
 				
 			}
-			
+
 			@Override
 			public double getRoofHeight() {
 				return roofHeight;
@@ -588,8 +596,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 				return getMaxRoofEle() - getRoofHeight();
 			}
 			
-
-
 			protected void renderSpindle(
 					Target<?> target, Material material,
 					SimplePolygonXZ polygon,
@@ -659,6 +665,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 			}
 			
+			@Override
+			protected float getDefaultRoofHeight() {
+				return (float)polygon.getOuter().getDiameter() / 2;
+			}
+			
 		}
 		
 		private class OnionRoof extends SpindleRoof {
@@ -678,6 +689,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 								roofY + 1.0 * roofHeight),
 						asList(1.0, 0.8, 1.0, 0.7, 0.15, 0.0));
 				
+			}
+			
+			@Override
+			protected float getDefaultRoofHeight() {
+				return (float)polygon.getOuter().getDiameter();
 			}
 			
 		}

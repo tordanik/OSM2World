@@ -82,6 +82,23 @@ public class SimplePolygonXZ extends PolygonXZ {
 		return new VectorXZ(areaFactor * xSum, areaFactor * zSum);
 		
 	}
+
+	/**
+	 * returns the largest distance between any pair of vertices
+	 * of this polygon
+	 */
+	public double getDiameter() {
+		double maxDistance = 0;
+		for (int i = 1; i < vertexLoop.size() - 1; i++) {
+			for (int j = 0; j < i; j++) {
+				double distance = vertexLoop.get(i).distanceTo(vertexLoop.get(j));
+				if (distance > maxDistance) {
+					maxDistance = distance;
+				}
+			}
+		}
+		return maxDistance;
+	}
 	
 	/** returns true if the polygon has clockwise orientation */
 	public boolean isClockwise() {

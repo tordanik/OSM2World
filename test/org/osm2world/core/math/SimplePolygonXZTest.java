@@ -48,6 +48,14 @@ public class SimplePolygonXZTest {
 	}
 	
 	@Test
+	public void testGetDiameter() {
+		
+		assertAlmostEquals(sqrt(8), p1.getDiameter());
+		assertAlmostEquals(sqrt(8), p2.getDiameter());
+		
+	}
+	
+	@Test
 	public void testGetSimplifiedPolygon() {
 		
 		assertEquals(p2, p2.getSimplifiedPolygon());
