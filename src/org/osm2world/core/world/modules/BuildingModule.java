@@ -63,6 +63,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 		
+		boolean useBuildingColors = config.getBoolean("useBuildingColors", false);
+		
 		for (MapArea area : mapData.getMapAreas()) {
 			
 			if (!area.getRepresentations().isEmpty()) continue;
@@ -71,8 +73,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (buildingValue != null && !buildingValue.equals("no")) {
 				
-				Building buildingPart = new Building(area);
-				area.addRepresentation(buildingPart);
+				Building building = new Building(area, useBuildingColors);
+				area.addRepresentation(building);
 								
 			}
 			
@@ -87,7 +89,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final List<BuildingPart> parts =
 				new ArrayList<BuildingModule.BuildingPart>();
 		
-		public Building(MapArea area) {
+		public Building(MapArea area, boolean useBuildingColors) {
 			
 			this.area = area;
 			
@@ -101,7 +103,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 					if (area.getOuterPolygon().contains(
 							otherArea.getOuterPolygon().getCenter())) {
 						parts.add(new BuildingPart(this, otherArea,
-								otherArea.getPolygon()));
+								otherArea.getPolygon(), useBuildingColors));
 					}
 					
 				}
@@ -110,7 +112,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/* add part(s) for area not covered by building:part polygons */
 			
 			if (parts.isEmpty()) {
-				parts.add(new BuildingPart(this, area, area.getPolygon()));
+				parts.add(new BuildingPart(this, area,
+						area.getPolygon(), useBuildingColors));
 			} else {
 				
 				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
@@ -126,7 +129,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 							subtractPolygons);
 				
 				for (PolygonWithHolesXZ remainingPoly : remainingPolys) {
-					parts.add(new BuildingPart(this, area, remainingPoly));
+					parts.add(new BuildingPart(this, area, remainingPoly, false));
 				}
 				
 			}
@@ -193,13 +196,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private Roof roof;
 		
 		public BuildingPart(Building building,
-				MapArea area, PolygonWithHolesXZ polygon) {
+				MapArea area, PolygonWithHolesXZ polygon,
+				boolean useBuildingColors) {
 
 			this.building = building;
 			this.area = area;
 			this.polygon = polygon;
 
-			setAttributes();
+			setAttributes(useBuildingColors);
 			
 			for (MapNode node : area.getBoundaryNodes()) {
 				if ((node.getTags().contains("building", "entrance")
@@ -438,9 +442,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * (level height) or ultimately the building class as determined
 		 * by the "building" key.
 		 */
-		private void setAttributes() {
+		private void setAttributes(boolean useBuildingColors) {
 			
-			String buildingValue = area.getTags().getValue("building");
+			TagGroup tags = area.getTags();
+			String buildingValue = tags.getValue("building");
 			
 			/* determine defaults for building type */
 			
@@ -463,8 +468,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				roof = new ComplexRoof();
 			} else {
 				
-				String roofShape = area.getTags().getValue("roof:shape");
-				if (roofShape == null) { roofShape = area.getTags().getValue("building:roof:shape"); }
+				String roofShape = tags.getValue("roof:shape");
+				if (roofShape == null) { roofShape = tags.getValue("building:roof:shape"); }
 				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
 				if ("pyramidal".equals(roofShape)) {
@@ -492,8 +497,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/* determine height */
 			
 			Float levels = null;
-			if (area.getTags().containsKey("building:levels")) {
-				levels = parseOsmDecimal(area.getTags().getValue("building:levels"), false);
+			if (tags.containsKey("building:levels")) {
+				levels = parseOsmDecimal(tags.getValue("building:levels"), false);
 			}
 			
 			double fallbackHeight = (levels == null)
@@ -502,16 +507,84 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			fallbackHeight += roof.getRoofHeight();
 			
-			double height = parseHeight(area.getTags(), (float)fallbackHeight);
+			double height = parseHeight(tags, (float)fallbackHeight);
 		    heightWithoutRoof = height - roof.getRoofHeight();
 			
 			/* determine materials */
+		    
+		    if (useBuildingColors) {
+		    	
+		    	materialWall = buildMaterial(
+		    			tags.getValue("building:material"),
+		    			tags.getValue("building:colour"),
+		    			defaultMaterialWall, false);
+		    	materialRoof = buildMaterial(
+		    			tags.getValue("roof:material"),
+		    			tags.getValue("roof:colour"),
+		    			defaultMaterialRoof, true);
+		    	
+		    } else {
+		    	materialWall = defaultMaterialWall;
+		    	materialRoof = defaultMaterialRoof;
+		    }
+		    
 			
-			materialWall = defaultMaterialWall;
-			materialRoof = defaultMaterialRoof;
-						
 		}
 		
+		private Material buildMaterial(String materialString,
+				String colorString, Material defaultMaterial,
+				boolean roof) {
+			
+			if (materialString != null) {
+				if ("brick".equals(materialString)) {
+					return Materials.BRICK;
+				} else if ("wood".equals(materialString)) {
+					return Materials.WOOD;
+				}
+			}
+			
+			if (colorString != null) {
+				
+				Color color;
+				
+				if ("white".equals(colorString)) {
+					color = new Color(240, 240, 240);
+				} else if ("black".equals(colorString)) {
+					color = new Color(76, 76, 76);
+				} else if ("red".equals(colorString)) {
+					if (roof) {
+						color = new Color(255, 0, 0);
+					} else {
+						color = new Color(255, 190, 190);
+					}
+				} else if ("green".equals(colorString)) {
+					color = new Color(190, 255, 190);
+				} else if ("blue".equals(colorString)) {
+					if (roof) {
+						color = new Color(100, 50, 200);
+					} else {
+						color = new Color(190, 190, 255);
+					}
+				} else if ("yellow".equals(colorString)) {
+					color = new Color(255, 255, 175);
+				} else if ("pink".equals(colorString)) {
+					color = new Color(225, 175, 225);
+				} else if ("orange".equals(colorString)) {
+					color = new Color(255, 225, 150);
+				} else {
+					color = null; //TODO parseColor(color);
+				}
+				
+				if (color != null) {
+					return new ImmutableMaterial(Lighting.FLAT, color);
+				}
+				
+			}
+			
+			return defaultMaterial;
+			
+		}
+
 		private static final float DEFAULT_RIDGE_HEIGHT = 5;
 		
 		public static interface Roof extends RenderableToAllTargets {

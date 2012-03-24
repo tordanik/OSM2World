@@ -31,6 +31,8 @@ public final class Materials {
 	
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
+	public static final ConfMaterial BRICK =
+			new ConfMaterial(Lighting.FLAT, new Color(1.0f, 0.5f, 0.25f));
 	public static final ConfMaterial CONCRETE =
 		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial EARTH =
