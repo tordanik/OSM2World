@@ -27,7 +27,7 @@ public class TriangulationUtil {
 			Collection<SimplePolygonXZ> holes,
 			Collection<VectorXZ> points) {
 		
-		if (points.isEmpty()) {
+		if (points.isEmpty() && outerPolygon.size() <= 100) {
 			
 			try {
 				
