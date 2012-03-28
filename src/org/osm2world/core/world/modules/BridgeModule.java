@@ -138,28 +138,28 @@ public class BridgeModule extends AbstractModule {
 					primaryRep.getStartPosition(),
 					primaryRep.getEndPosition());
 			
-			for (VectorXZ pos : pillarPositions) {
-				
-				//make sure that the pillar doesn't pierce anything on the ground
-				
-				Collection<WorldObject> avoidedObjects = new ArrayList<WorldObject>();
-				
-				for (MapIntersectionWW i : segment.getIntersectionsWW()) {
-					for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
-						
-						if (otherRep.getGroundState() == GroundState.ON
-								&& !(otherRep instanceof Water) //TODO: choose better criterion!
-						) {
-							avoidedObjects.add(otherRep);
-						}
+			//make sure that the pillars doesn't pierce anything on the ground
+			
+			Collection<WorldObject> avoidedObjects = new ArrayList<WorldObject>();
+			
+			for (MapIntersectionWW i : segment.getIntersectionsWW()) {
+				for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
 					
+					if (otherRep.getGroundState() == GroundState.ON
+							&& !(otherRep instanceof Water) //TODO: choose better criterion!
+					) {
+						avoidedObjects.add(otherRep);
 					}
-				}
-								
-				if (!piercesWorldObject(pos, avoidedObjects)) {
-					drawBridgePillarAt(target, pos);
-				}
 				
+				}
+			}
+			
+			filterWorldObjectCollisions(pillarPositions, avoidedObjects);
+			
+			//draw the pillars
+			
+			for (VectorXZ pos : pillarPositions) {
+				drawBridgePillarAt(target, pos);
 			}
 			
 		}

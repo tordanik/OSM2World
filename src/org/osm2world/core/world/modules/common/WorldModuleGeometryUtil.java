@@ -5,11 +5,13 @@ import static java.lang.Math.toRadians;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.WorldModule;
@@ -235,42 +237,61 @@ public final class WorldModuleGeometryUtil {
 	
 
 	/**
-	 * checks whether a position is on the area covered by a
-	 * {@link WorldObjectWithOutline} from a collection
-	 * of {@link WorldObject}s.
+	 * removes positions from a collection if they are on the area covered by a
+	 * {@link WorldObjectWithOutline} from a collection of {@link WorldObject}s.
 	 * 
 	 * This can be used to avoid placing trees, bridge pillars
 	 * and other randomly distributed features on roads, rails
 	 * or other similar places where they don't belong.
-	 * 
-	 * @return true if the position is on at least one of the
-	 *         {@link WorldObjectWithOutline} from the collection
 	 */
-	public static final boolean piercesWorldObject(VectorXZ pos,
+	public static final void filterWorldObjectCollisions(
+			Collection<VectorXZ> positions,
 			Collection<WorldObject> worldObjects) {
 		
 		//TODO: add support for avoiding a radius around the position, too.
 		//this is easily possible once "inflating"/"shrinking" polygons is supported [would also be useful for water bodies etc.]
+		
+		/*
+		 * prepare filter polygons.
+		 * It improves performance to construct the outline polygons only once
+		 * instead of doing this within the loop iterating over positions.
+		 */
+		
+		List<SimplePolygonXZ> filterPolygons = new ArrayList<SimplePolygonXZ>();
 		
 		for (WorldObject worldObject : worldObjects) {
 			
 			if (worldObject.getGroundState() == GroundState.ON
 				&& (worldObject instanceof WorldObjectWithOutline)) {
 				
-				PolygonXYZ otherOutline =
+				PolygonXYZ outline =
 					((WorldObjectWithOutline)worldObject).getOutlinePolygon();
 				
-				if (otherOutline != null &&
-						otherOutline.getXZPolygon().isSimple() &&
-						otherOutline.getSimpleXZPolygon().contains(pos)) {
-					return true;
+				if (outline != null &&
+						outline.getXZPolygon().isSimple()) {
+					filterPolygons.add(outline.getSimpleXZPolygon());
 				}
 				
 			}
 		
 		}
 		
-		return false;
+		/* perform filtering of positions */
+		
+		Iterator<VectorXZ> positionIterator = positions.iterator();
+		
+		while (positionIterator.hasNext()) {
+			
+			VectorXZ pos = positionIterator.next();
+			
+			for (SimplePolygonXZ filterPolygon : filterPolygons) {
+				if (filterPolygon.contains(pos)) {
+					positionIterator.remove();
+					break;
+				}
+			}
+			
+		}
 		
 	}
 	

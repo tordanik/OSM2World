@@ -1,6 +1,6 @@
 package org.osm2world.core.world.modules;
 
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.piercesWorldObject;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -331,12 +331,12 @@ public class TreeModule extends ConfigurableWorldModule {
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 			
+			filterWorldObjectCollisions(treePositions, avoidedObjects);
+						
 			trees = new ArrayList<Tree>(treePositions.size());
-			
+						
 			for (VectorXZ treePosition : treePositions) {
-				if (!piercesWorldObject(treePosition, avoidedObjects)) {
-					trees.add(new Tree(area, treePosition));
-				}
+				trees.add(new Tree(area, treePosition));
 			}
 			
 		}
