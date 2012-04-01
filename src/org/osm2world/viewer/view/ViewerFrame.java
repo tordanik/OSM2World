@@ -46,6 +46,7 @@ import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.HelpView;
+import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
 import org.osm2world.viewer.view.debug.MapDataElevationDebugView;
@@ -172,6 +173,9 @@ public class ViewerFrame extends JFrame {
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new QuadtreeDebugView(), KeyEvent.VK_Q, false,
+					this, data, renderOptions)));
+			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
+					new Map2dTreeDebugView(), -1, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new TerrainCellLabelsView(), -1, false,

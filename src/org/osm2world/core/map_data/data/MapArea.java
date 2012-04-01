@@ -8,6 +8,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.AreaElevationProfile;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -129,7 +130,7 @@ public class MapArea implements MapElement {
 	}
 
 	public SimplePolygonXZ getOuterPolygon() {
-		return polygon.getOuter();
+		return getPolygon().getOuter();
 	}
 
 	private static SimplePolygonXZ polygonFromGridNodeSequence(
@@ -226,6 +227,11 @@ public class MapArea implements MapElement {
 	@Override
 	public Collection<MapOverlap<?,?>> getOverlaps() {
 		return overlaps;
+	}
+
+	@Override
+	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		return new AxisAlignedBoundingBoxXZ(getOuterPolygon().getVertexCollection());
 	}
 	
 	@Override

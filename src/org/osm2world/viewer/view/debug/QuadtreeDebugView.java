@@ -9,12 +9,12 @@ import java.util.Arrays;
 import javax.media.opengl.GL;
 
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.map_data.creation.index.MapQuadtree;
+import org.osm2world.core.map_data.creation.index.MapQuadtree.QuadLeaf;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapQuadtree;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.MapQuadtree.QuadLeaf;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.jogl.JOGLTarget;
@@ -32,7 +32,7 @@ public class QuadtreeDebugView extends DebugView {
 	@Override
 	public void setConversionResults(Results conversionResults) {
 		super.setConversionResults(conversionResults);
-		this.mapQuadtree = new MapQuadtree(map);
+		this.mapQuadtree = null;
 	}
 	
 	public void setArrowsEnabled(boolean arrowsEnabled) {
@@ -41,11 +41,15 @@ public class QuadtreeDebugView extends DebugView {
 	
 	@Override
 	public boolean canBeUsed() {
-		return mapQuadtree != null;
+		return map != null;
 	}
 	
 	@Override
 	public void renderToImpl(GL gl, Camera camera) {
+		
+		if (mapQuadtree == null) {
+			mapQuadtree = new MapQuadtree(map);
+		}
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		
@@ -70,7 +74,7 @@ public class QuadtreeDebugView extends DebugView {
 						(leaf.minX + leaf.maxX)/2,
 						(leaf.minZ + leaf.maxZ)/2);
 				
-				for (MapElement e : leaf.getElements()) {
+				for (MapElement e : leaf) {
 					
 					if (e instanceof MapNode) {
 						

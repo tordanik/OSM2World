@@ -14,10 +14,10 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
  * When testing for intersections or inclusions, only elements in the same
  * cell need to be compared.
  */
-public class IntersectionGrid {
+public class IntersectionGrid<T extends IntersectionTestObject> {
 	
 	private final AxisAlignedBoundingBoxXZ gridBounds;
-	private Collection<IntersectionTestObject>[][] cells;
+	private Collection<T>[][] cells;
 	
 	private final int cellCountX, cellCountZ;
 	
@@ -29,7 +29,7 @@ public class IntersectionGrid {
 		this.gridBounds = gridBounds;
 
 		@SuppressWarnings("unchecked") //cannot create generic array
-		Collection<IntersectionTestObject>[][] newCells
+		Collection<T>[][] newCells
 			= new Collection[cellCountX][cellCountZ];
 		
 		this.cells = newCells;
@@ -53,16 +53,16 @@ public class IntersectionGrid {
 				((int) (gridBounds.sizeZ() / approxCellSizeZ)) + 1);
 	}
 	
-	public Collection<IntersectionTestObject>[][] getCellArray() {
+	public Collection<T>[][] getCellArray() {
 		return cells;
 	}
 
 	/**
 	 * returns the content object collections for all non-empty cells
 	 */
-	public Iterable<Collection<IntersectionTestObject>> getCells() {
-		return new Iterable<Collection<IntersectionTestObject>>() {
-			@Override public Iterator<Collection<IntersectionTestObject>> iterator() {
+	public Iterable<Collection<T>> getCells() {
+		return new Iterable<Collection<T>>() {
+			@Override public Iterator<Collection<T>> iterator() {
 				return new CellIterator();
 			}
 		};
@@ -71,7 +71,7 @@ public class IntersectionGrid {
 	/**
 	 * read-only iterator for non-null cells
 	 */
-	private class CellIterator implements Iterator<Collection<IntersectionTestObject>> {
+	private class CellIterator implements Iterator<Collection<T>> {
 
 		int x =  0;
 		int z = -1;
@@ -86,8 +86,8 @@ public class IntersectionGrid {
 		}
 
 		@Override
-		public Collection<IntersectionTestObject> next() {
-			Collection<IntersectionTestObject> result = cells[x][z];
+		public Collection<T> next() {
+			Collection<T> result = cells[x][z];
 			toNext();
 			return result;
 		}
@@ -114,7 +114,7 @@ public class IntersectionGrid {
 	 * Will not modify the intersection grid, and it doesn't matter
 	 * whether the object has been inserted or not.
 	 */
-	public Collection<Collection<IntersectionTestObject>> cellsFor(
+	public Collection<Collection<T>> cellsFor(
 			IntersectionTestObject object) {
 
 		assert(gridBounds.contains(object));
@@ -126,8 +126,8 @@ public class IntersectionGrid {
 		int maxCellX = cellXForCoord(objectAABB.maxX, objectAABB.maxZ);
 		int maxCellZ = cellZForCoord(objectAABB.maxX, objectAABB.maxZ);
 		
-		Collection<Collection<IntersectionTestObject>> result =
-			new ArrayList<Collection<IntersectionTestObject>>(
+		Collection<Collection<T>> result =
+			new ArrayList<Collection<T>>(
 					(maxCellX - minCellX) * (maxCellZ - minCellZ));
 		
 		for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
@@ -142,7 +142,7 @@ public class IntersectionGrid {
 		
 	}
 	
-	public void insert(IntersectionTestObject object) {
+	public void insert(T object) {
 		
 		assert(gridBounds.contains(object));
 		
@@ -161,9 +161,9 @@ public class IntersectionGrid {
 		
 	}
 
-	private void addToCell(int cellX, int cellZ, IntersectionTestObject object) {
+	private void addToCell(int cellX, int cellZ, T object) {
 		if (cells[cellX][cellZ] == null) {
-			cells[cellX][cellZ] = new ArrayList<IntersectionTestObject>();
+			cells[cellX][cellZ] = new ArrayList<T>();
 		}
 		cells[cellX][cellZ].add(object);
 	}

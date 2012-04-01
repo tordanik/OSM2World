@@ -42,7 +42,7 @@ import com.vividsolutions.jts.geom.TopologyException;
  */
 public class TerrainCreator {
 
-	public Terrain createTerrain(MapData grid, CellularTerrainElevation eleData) {
+	public Terrain createTerrain(MapData mapData, CellularTerrainElevation eleData) {
 
 		/* find the terrain boundaries and ele info for each cell and
 		 * those cells that are completely within a terrain boundary
@@ -60,7 +60,7 @@ public class TerrainCreator {
 		// perform intersection tests for pairs of a cell and a boundary
 		// that are in the same cell of the intersection grid
 
-		IntersectionGrid speedupGrid = prepareSpeedupGrid(grid, eleData);
+		IntersectionGrid<IntersectionTestObject> speedupGrid = prepareSpeedupGrid(mapData, eleData);
 
 		for (Collection<IntersectionTestObject> intersectionCell : speedupGrid.getCells()) {
 
@@ -136,7 +136,7 @@ public class TerrainCreator {
 	/**
 	 * creates an IntersectionGrid with all terrain cells and boundaries
 	 */
-	private IntersectionGrid prepareSpeedupGrid(
+	private IntersectionGrid<IntersectionTestObject> prepareSpeedupGrid(
 			MapData mapData, CellularTerrainElevation eleData) {
 		
 		AxisAlignedBoundingBoxXZ speedupGridBounds = union(
@@ -144,7 +144,8 @@ public class TerrainCreator {
 				new AxisAlignedBoundingBoxXZ(
 						eleData.getBoundaryPolygonXZ().getVertexCollection()));
 				
-		final IntersectionGrid speedupGrid = new IntersectionGrid(
+		final IntersectionGrid<IntersectionTestObject> speedupGrid =
+				new IntersectionGrid<IntersectionTestObject>(
 				speedupGridBounds.pad(20),
 				50, 50); //TODO (performance): choose appropriate cell size params
 		

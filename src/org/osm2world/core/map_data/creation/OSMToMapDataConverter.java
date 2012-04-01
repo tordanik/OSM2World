@@ -14,13 +14,13 @@ import java.util.Set;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
+import org.osm2world.core.map_data.creation.index.Map2dTree;
+import org.osm2world.core.map_data.creation.index.MapDataIndex;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapQuadtree;
-import org.osm2world.core.map_data.data.MapQuadtree.QuadLeaf;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -225,15 +225,15 @@ public class OSMToMapDataConverter {
 	 */
 	private static void calculateIntersectionsInMapData(MapData grid) {
 		
-		MapQuadtree quadtree = new MapQuadtree(grid);
+		MapDataIndex index = new Map2dTree(grid);
 		
-		// find intersections, using a quadtree to reduce the number of checks
+		// find intersections, using an index to reduce the number of checks
 		
-		for (QuadLeaf leaf : quadtree.getLeaves()) {
+		for (Iterable<MapElement> leaf : index.getLeaves()) {
 			
-			for (MapElement e1 : leaf.getElements()) {
+			for (MapElement e1 : leaf) {
 				secondElementLoop :
-				for (MapElement e2 : leaf.getElements()) {
+				for (MapElement e2 : leaf) {
 			
 					//TODO: use for (int ...) loop
 					
@@ -396,8 +396,11 @@ public class OSMToMapDataConverter {
 		
 		/* check whether the areas have a shared segment */
 				
-		for (MapAreaSegment area1Segment : area1.getAreaSegments()) {
-			for (MapAreaSegment area2Segment : area2.getAreaSegments()) {
+		Collection<MapAreaSegment> area1Segments = area1.getAreaSegments();
+		Collection<MapAreaSegment> area2Segments = area2.getAreaSegments();
+		
+		for (MapAreaSegment area1Segment : area1Segments) {
+			for (MapAreaSegment area2Segment : area2Segments) {
 				if (area1Segment.sharesBothNodes(area2Segment)) {
 					
 					MapOverlapAA newOverlap =

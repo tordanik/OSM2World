@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 
@@ -68,6 +70,12 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	
 	public Iterable<MapIntersectionWW> getIntersectionsWW() {
 		return Iterables.filter(overlaps, MapIntersectionWW.class);
+	}
+	
+	@Override
+	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		return new AxisAlignedBoundingBoxXZ(Arrays.asList(
+				startNode.getPos(), endNode.getPos()));
 	}
 	
 	@Override

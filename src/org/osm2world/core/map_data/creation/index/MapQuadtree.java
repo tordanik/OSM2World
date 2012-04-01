@@ -1,9 +1,15 @@
-package org.osm2world.core.map_data.data;
+package org.osm2world.core.map_data.creation.index;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
+import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
@@ -13,7 +19,7 @@ import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
  * a Quadtree managing {@link MapElement}s of a data set
  * according on their coordinates in the XZ plane.
  */
-public class MapQuadtree {
+public class MapQuadtree implements MapDataIndex {
 	
 	static final int LEAF_SPLIT_SIZE = 11;
 	
@@ -49,7 +55,7 @@ public class MapQuadtree {
 				
 				return contains(((MapNode)element).getPos());
 				
-			} else if (element instanceof MapWaySegment) {				
+			} else if (element instanceof MapWaySegment) {
 				MapWaySegment line = (MapWaySegment)element;
 								
 				VectorXZ lineStart = line.getStartNode().getPos();
@@ -60,10 +66,10 @@ public class MapQuadtree {
 				} else if (boundary.intersects(lineStart, lineEnd)) {
 					//SUGGEST (performance): use that the box is axis-aligned?
 					return true;
-				}				
+				}
 				return false;
 				
-			} else { // element instanceof MapArea				
+			} else { // element instanceof MapArea
 				MapArea area = ((MapArea)element);
 								
 				for (MapNode node : area.getBoundaryNodes()) {
@@ -91,12 +97,12 @@ public class MapQuadtree {
 
 		abstract void addAll(Collection<MapElement> elements);
 
-		/** adds all leaves in the subtree starting at this node to a list */		
+		/** adds all leaves in the subtree starting at this node to a list */
 		abstract void collectLeaves(List<QuadLeaf> leaves);
 		
 	}
 	
-	class QuadInnerNode extends QuadNode {
+	static class QuadInnerNode extends QuadNode {
 		
 		/** array with four elements */
 		final QuadNode childNodes[];
@@ -143,14 +149,14 @@ public class MapQuadtree {
 			boolean nodeSizeReduced = true;
 						
 			for (int i=0; i<4; i++) {
-				boolean newLeafcontainsAllElements = true;
-				for (MapElement element : leaf.getElements()) {
+				boolean newLeafContainsAllElements = true;
+				for (MapElement element : leaf) {
 					if (!newChild.childNodes[i].contains(element)) {
-						newLeafcontainsAllElements = false;
+						newLeafContainsAllElements = false;
 						break;
 					}
 				}
-				if (newLeafcontainsAllElements) {
+				if (newLeafContainsAllElements) {
 					nodeSizeReduced = false;
 					break;
 				}
@@ -165,7 +171,7 @@ public class MapQuadtree {
 						childNodes[i] = newChild;
 						childNodes[i].addAll(leaf.elements);
 						return;
-					}					
+					}
 				}
 				
 				throw new AssertionError("leaf is not a child of this node");
@@ -182,7 +188,7 @@ public class MapQuadtree {
 		
 	}
 	
-	public class QuadLeaf extends QuadNode {
+	static public class QuadLeaf extends QuadNode implements Iterable<MapElement> {
 
 		final QuadInnerNode parent;
 		final ArrayList<MapElement> elements;
@@ -195,10 +201,6 @@ public class MapQuadtree {
 			elements = new ArrayList<MapElement>(LEAF_SPLIT_SIZE);
 			
 		}
-		
-		public List<MapElement> getElements() {
-			return elements;
-		};
 		
 		@Override
 		void add(MapElement element) {
@@ -227,26 +229,32 @@ public class MapQuadtree {
 		}
 		
 		@Override
+		public Iterator<MapElement> iterator() {
+			return elements.iterator();
+		}
+		
+		@Override
 		void collectLeaves(List<QuadLeaf> leaves) {
 			leaves.add(this);
 		}
 		
 	}
 	
-	public MapQuadtree(MapData grid) {
+	public MapQuadtree(MapData mapData) {
 		
 		root = new QuadInnerNode(
-				grid.getDataBoundary().minX, grid.getDataBoundary().maxX,
-				grid.getDataBoundary().minZ, grid.getDataBoundary().maxZ);
+				mapData.getDataBoundary().minX, mapData.getDataBoundary().maxX,
+				mapData.getDataBoundary().minZ, mapData.getDataBoundary().maxZ);
 		
-		FaultTolerantIterationUtil.iterate(grid.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement element) {				
+		FaultTolerantIterationUtil.iterate(mapData.getMapElements(), new Operation<MapElement>() {
+			@Override public void perform(MapElement element) {
 				root.add(element);
 			}
 		});
 		
 	}
 	
+	@Override
 	public Iterable<QuadLeaf> getLeaves() {
 		
 		List<QuadLeaf> leaves = new ArrayList<QuadLeaf>();

@@ -11,6 +11,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.NodeElevationProfile;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.world.data.NodeWorldObject;
@@ -49,15 +50,15 @@ public class MapNode implements MapElement {
 	}
 	
 	@Override
-	public int getLayer() {		
+	public int getLayer() {
 		if (osmNode.tags.containsKey("layer")) {
 			try {
 				return Integer.parseInt(osmNode.tags.getValue("layer"));
-			} catch (NumberFormatException nfe) { 
+			} catch (NumberFormatException nfe) {
 				return 0;
 			}
-		}		
-		return 0;		
+		}
+		return 0;
 	}
 	
 	public OSMNode getOsmNode() {
@@ -113,12 +114,12 @@ public class MapNode implements MapElement {
 		return outboundLines;
 	}
 	
-	public void addAdjacentArea(MapArea adjacentArea) {		
-		adjacentAreas.add(adjacentArea);				
+	public void addAdjacentArea(MapArea adjacentArea) {
+		adjacentAreas.add(adjacentArea);
 	}
 
 	//TODO: with all that "needs to be called before x" etc. stuff (also in MapArea), switch to BUILDER?
-	/** needs to be called after adding and completing all adjacent areas */  
+	/** needs to be called after adding and completing all adjacent areas */
 	public void calculateAdjacentAreaSegments() {
 	
 		for (MapArea adjacentArea : adjacentAreas) {
@@ -201,7 +202,7 @@ public class MapNode implements MapElement {
 					return (comparison > 0) ? +1 : -1;
 				}
 				
-			}					
+			}
 		});
 	}
 	
@@ -219,7 +220,7 @@ public class MapNode implements MapElement {
 		}
 	}
 
-	/** 
+	/**
 	 * adds a visual representation for this node
 	 */
 	public void addRepresentation(NodeWorldObject representation) {
@@ -243,6 +244,11 @@ public class MapNode implements MapElement {
 	@Override
 	public Collection<MapOverlap<?,?>> getOverlaps() {
 		return Collections.emptyList();
+	}
+
+	@Override
+	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		return new AxisAlignedBoundingBoxXZ(pos.x, pos.z, pos.x, pos.z);
 	}
 	
 }
