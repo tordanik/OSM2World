@@ -553,12 +553,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 					color = new Color(76, 76, 76);
 				} else if ("red".equals(colorString)) {
 					if (roof) {
-						color = new Color(255, 0, 0);
+						color = new Color(204, 0, 0);
 					} else {
 						color = new Color(255, 190, 190);
 					}
 				} else if ("green".equals(colorString)) {
-					color = new Color(190, 255, 190);
+					if (roof) {
+						color = new Color(150, 200, 130);
+					} else {
+						color = new Color(190, 255, 190);
+					}
 				} else if ("blue".equals(colorString)) {
 					if (roof) {
 						color = new Color(100, 50, 200);
