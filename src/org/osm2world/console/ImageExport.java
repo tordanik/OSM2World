@@ -198,10 +198,14 @@ public final class ImageExport {
 		/* write the entire image */
         
 		switch (outputMode) {
-			case PNG: ImageIO.write(image, "png", outputFile);
-			case PPM: writePPMFile(image, outputFile);
+			
+			case PNG: ImageIO.write(image, "png", outputFile); break;
+			case PPM: writePPMFile(image, outputFile); break;
+			
+			default: throw new IllegalArgumentException(
+					"output mode not supported " + outputMode);
+			
 		}
-		
 		
 	}
 
