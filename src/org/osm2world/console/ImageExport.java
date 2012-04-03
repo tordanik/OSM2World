@@ -2,8 +2,14 @@ package org.osm2world.console;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferInt;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
@@ -12,6 +18,7 @@ import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLPbuffer;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -41,6 +48,7 @@ public final class ImageExport {
 	/**
 	 * 
 	 * @param outputFile
+	 * @param outputMode   one of the image output modes
 	 * @param x            horizontal resolution
 	 * @param y            vertical resolution
 	 * @param results
@@ -50,7 +58,8 @@ public final class ImageExport {
 	 */
 	public static void writeImageFile(
 			Configuration config,
-			File outputFile, int x, int y,
+			File outputFile, OutputMode outputMode,
+			int x, int y,
 			final Results results, final Camera camera,
 			final Projection projection) throws IOException {
 		
@@ -174,7 +183,7 @@ public final class ImageExport {
 
 	        BufferedImage imagePart =
 	        	Screenshot.readToBufferedImage(xSize, ySize);
-	        	        
+	        
 	        image.getGraphics().drawImage(imagePart, xStart, y-1-yEnd, null);
 	        
 	        /* clean up */
@@ -188,8 +197,61 @@ public final class ImageExport {
 		
 		/* write the entire image */
         
-        ImageIO.write(image, "png", outputFile);
+		switch (outputMode) {
+			case PNG: ImageIO.write(image, "png", outputFile);
+			case PPM: writePPMFile(image, outputFile);
+		}
 		
+		
+	}
+
+	private static void writePPMFile(BufferedImage image, File outputFile)
+			throws IOException {
+				
+		FileOutputStream out = null;
+		FileChannel fc = null;
+		
+		try {
+			
+			out = new FileOutputStream(outputFile);
+			
+			// write header
+			
+			Charset charSet = Charset.forName("US-ASCII");
+			out.write("P6\n".getBytes(charSet));
+			out.write(String.format("%d %d\n", image.getWidth(), image.getHeight())
+					.getBytes(charSet));
+			out.write("255\n".getBytes(charSet));
+						
+			// collect and write content
+
+			ByteBuffer writeBuffer = ByteBuffer.allocate(
+					3 * image.getWidth() * image.getHeight());
+			
+			DataBuffer imageDataBuffer = image.getRaster().getDataBuffer();
+			int[] data = (((DataBufferInt)imageDataBuffer).getData());
+			
+			for (int value : data) {
+				writeBuffer.put((byte)(value >>> 16));
+				writeBuffer.put((byte)(value >>> 8));
+				writeBuffer.put((byte)(value));
+			}
+			
+			writeBuffer.position(0);
+			
+			fc = out.getChannel();
+			fc.write(writeBuffer);
+			
+		} finally {
+			
+			if (fc != null) {
+				fc.close();
+			} else if(out != null) {
+				out.close();
+			}
+			
+		}
+
 	}
 	
 }

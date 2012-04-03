@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public final class CLIArgumentsUtil {
 	
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE};
-	public static enum OutputMode {OBJ, POV, PNG};
+	public static enum OutputMode {OBJ, POV, PNG, PPM};
 	
 	private CLIArgumentsUtil() { }
 	
@@ -94,6 +94,8 @@ public final class CLIArgumentsUtil {
 			return OutputMode.POV;
 		} else if (outputFile.getName().toLowerCase().endsWith(".png")) {
 			return OutputMode.PNG;
+		} else if (outputFile.getName().toLowerCase().endsWith(".ppm")) {
+			return OutputMode.PPM;
 		} else {
 			return null;
 		}

@@ -144,10 +144,11 @@ public final class Output {
 					break;
 					
 				case PNG:
+				case PPM:
 					if (camera == null || projection == null) {
 						System.err.println("camera or projection missing");
 					}
-					ImageExport.writeImageFile(config, outputFile,
+					ImageExport.writeImageFile(config, outputFile, outputMode,
 							args.getResolution().x, args.getResolution().y,
 							results, camera, projection);
 					break;

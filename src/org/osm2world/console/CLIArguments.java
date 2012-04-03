@@ -3,14 +3,14 @@ package org.osm2world.console;
 import java.io.File;
 import java.util.List;
 
-import org.osm2world.core.target.common.rendering.TileNumber;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.core.target.common.rendering.TileNumber;
 
 import uk.co.flamingpenguin.jewel.cli.Option;
 
 public interface CLIArguments {
 	
-	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|pov|png)";
+	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|pov|png|ppm)";
 	
 	/* input and output */
 	
