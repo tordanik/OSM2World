@@ -9,62 +9,81 @@ import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
  * renders the contents of a {@link PrimitiveBuffer} using JOGL.
+ * Uses display lists to speed up the process.
  * 
- * This class attempts to use the {@link JOGL_VBOPrimitiveBufferRenderer}
- * if VertexBufferObjects are supported, and falls back to slower individual
- * calls otherwise.
+ * If you don't need the renderer anymore, it's recommended to manually call
+ * {@link #freeResources()} to delete the display lists. Otherwise, this will
+ * not be done before a destructor call.
  */
 public class JOGLPrimitiveBufferRenderer {
 	
-	private final GL gl;
-	private final PrimitiveBuffer primitiveBuffer;
-	
-	JOGL_VBOPrimitiveBufferRenderer vboRenderer;
+	private GL gl;
+	private Integer displayListPointer;
 	
 	public JOGLPrimitiveBufferRenderer(GL gl, PrimitiveBuffer primitiveBuffer) {
 		
 		this.gl = gl;
-		this.primitiveBuffer = primitiveBuffer;
 		
 		primitiveBuffer.optimize();
 		
-		if (JOGL_VBOPrimitiveBufferRenderer.isSupported(gl)) {
-			vboRenderer = new JOGL_VBOPrimitiveBufferRenderer(gl, primitiveBuffer);
+		displayListPointer = gl.glGenLists(1);
+		
+		gl.glNewList(displayListPointer, GL.GL_COMPILE);
+		
+		for (Material material : primitiveBuffer.getMaterials()) {
+			
+			JOGLTarget.setMaterial(gl, material);
+			
+			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
+				
+				gl.glBegin(JOGLTarget.getGLConstant(primitive.type));
+				
+				int i = 0;
+				for (int index : primitive.indices) {
+					VectorXYZ v = primitiveBuffer.getVertex(index);
+					gl.glNormal3d(primitive.normals[i].x,
+							primitive.normals[i].y,
+							-primitive.normals[i].z);
+					gl.glVertex3d(v.x, v.y, -v.z);
+					++ i;
+				}
+				
+				gl.glEnd();
+				
+			}
+			
 		}
+		
+		gl.glEndList();
 		
 	}
 	
 	public void render() {
 		
-		if (vboRenderer != null) {
-			vboRenderer.render();
-			return;
-		}
+		if (displayListPointer == null)
+			throw new IllegalStateException("display list has been deleted");
 		
-		for (Material material : primitiveBuffer.getMaterials()) {
-
-			JOGLTarget.setMaterial(gl, material);
-			
-			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
-								
-				gl.glBegin(JOGLTarget.getGLConstant(primitive.type));
-		        
-				int i = 0;
-				for (int index : primitive.indices) {
-					VectorXYZ v = primitiveBuffer.getVertex(index);
-					gl.glNormal3d(primitive.normals[i].x,
-			        		 primitive.normals[i].y,
-			        		-primitive.normals[i].z);
-			        gl.glVertex3d(v.x, v.y, -v.z);
-			        ++ i;
-				}
+		gl.glCallList(displayListPointer);
 				
-		        gl.glEnd();
-		        
-			}
+	}
+	
+	/**
+	 * frees all OpenGL resources associated with this object.
+	 * Rendering will no longer be possible afterwards!
+	 */
+	public void freeResources() {
 		
+		if (displayListPointer != null) {
+			gl.glDeleteLists(displayListPointer, 1);
+			displayListPointer = null;
+			gl = null;
 		}
-		
+	
+	}
+	
+	@Override
+	public void finalize() {
+		freeResources();
 	}
 	
 }

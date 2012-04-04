@@ -6,6 +6,7 @@
  * implement basic lane rendering
  * support for tags from "Simple 3D Buildings" proposal
  * ppm output format
+ * improved performance in some use cases by using display lists
  
 --------------------------------------------------------------------------------
  OSM2World 0.1.9                                                     2012-01-11 

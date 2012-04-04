@@ -83,17 +83,63 @@ public final class ImageExport {
 		
 		int canvasLimit = config.getInt(CANVAS_LIMIT_CONFIG_KEY, DEFAULT_CANVAS_LIMIT);
 		
+		/* determine the number of "parts" to split the rendering in */
+		
+		int xParts = 1 + ((x-1) / canvasLimit);
+		int yParts = 1 + ((y-1) / canvasLimit);
+		
+		/* create GL canvas and set rendering parameters */
+		
+		final GL gl;
+		
+		GLCapabilities cap = new GLCapabilities();
+		cap.setDoubleBuffered(false);
+		
+		int pBufferX = xParts > 1 ? canvasLimit : x;
+		int pBufferY = yParts > 1 ? canvasLimit : y;
+		
+		GLPbuffer pBuffer = GLDrawableFactory.getFactory().createGLPbuffer(
+				cap, null, pBufferX, pBufferY, null);
+		
+		gl = pBuffer.getGL();
+		pBuffer.getContext().makeCurrent();
+		
+		gl.glFrontFace(GL.GL_CCW);                  // use ccw polygons
+					
+		gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
+        gl.glEnable (GL.GL_DEPTH_TEST);             // z buffer
+		gl.glCullFace(GL.GL_BACK);
+        gl.glEnable (GL.GL_CULL_FACE);              // backface culling
+       
+
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT,
+				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE,
+				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR,
+				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
+		gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION,
+				new float[] {1.0f, 1.5f, -(-1.0f), 0.0f}, 0);
+		
+		gl.glEnable(GL.GL_LIGHT0);
+		gl.glEnable(GL.GL_LIGHTING);
+				
+        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
+        
+        
 		/* render map data into buffer if it needs to be rendered multiple times */
 		
-		PrimitiveBuffer buffer = null;
+		JOGLPrimitiveBufferRenderer bufferRenderer = null;
 		
-		if ((x > canvasLimit || y > canvasLimit)
+		if ((xParts > 1 || yParts > 1)
 				&& !config.getBoolean("forceUnbufferedPNGRendering", false)) {
 			
-			buffer = new PrimitiveBuffer();
+			PrimitiveBuffer buffer = new PrimitiveBuffer();
 			
 			TargetUtil.renderWorldObjects(buffer, results.getMapData());
 			TargetUtil.renderObject(buffer, results.getTerrain());
+			
+			bufferRenderer = new JOGLPrimitiveBufferRenderer(gl, buffer);
 			
 		}
 					
@@ -101,9 +147,6 @@ public final class ImageExport {
 				
         BufferedImage image = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
         		
-		int xParts = 1 + ((x-1) / canvasLimit);
-		int yParts = 1 + ((y-1) / canvasLimit);
-		
 		for (int xPart = 0; xPart < xParts; ++xPart) {
 		for (int yPart = 0; yPart < yParts; ++yPart) {
 			
@@ -117,57 +160,25 @@ public final class ImageExport {
 			int yStart = yPart * canvasLimit;
 			int yEnd   = (yPart+1 < yParts) ? (yStart + (canvasLimit-1)) : (y-1);
 			int ySize  = (yEnd - yStart) + 1;
-						
-			/* create and configure canvas */
 			
-			final GL gl;
-			
-			GLCapabilities cap = new GLCapabilities();
-			cap.setDoubleBuffered(false);
-			
-			GLPbuffer pBuffer = GLDrawableFactory.getFactory().createGLPbuffer(
-					cap, null, xSize, ySize, null);
-			
-			gl = pBuffer.getGL();
-			pBuffer.getContext().makeCurrent();
-			
-			gl.glFrontFace(GL.GL_CCW);                  // use ccw polygons
-						
-			gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
-	        gl.glEnable (GL.GL_DEPTH_TEST);             // z buffer
-			gl.glCullFace(GL.GL_BACK);
-	        gl.glEnable (GL.GL_CULL_FACE);              // backface culling
-	        			
+			/* configure rendering */
 	        
 	        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-	               
+	        
+	        gl.glLoadIdentity();
+	        
 	        JOGLTarget.setProjectionMatricesForPart(gl, projection,
 	        		xStart / (double)(x-1), xEnd / (double)(x-1),
 	        		yStart / (double)(y-1), yEnd / (double)(y-1));
 	        
 	       	JOGLTarget.setCameraMatrices(gl, camera);
-	        
-	        
-			gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT,
-					new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-			gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE,
-					new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-			gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR,
-					new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-			gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION,
-					new float[] {1.0f, 1.5f, -(-1.0f), 0.0f}, 0);
-			
-			gl.glEnable(GL.GL_LIGHT0);
-			gl.glEnable(GL.GL_LIGHTING);
-			
-			
-	        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
+	             
 	        
 	        /* render to pBuffer */
 	        
-	        if (buffer != null) {
+	        if (bufferRenderer != null) {
 	        	
-		        new JOGLPrimitiveBufferRenderer(gl, buffer).render();
+	        	bufferRenderer.render();
 
 	        } else {
 	        	
@@ -182,18 +193,22 @@ public final class ImageExport {
 	         * that will contain the entire image*/
 
 	        BufferedImage imagePart =
-	        	Screenshot.readToBufferedImage(xSize, ySize);
+	        	Screenshot.readToBufferedImage(pBufferX, pBufferY);
 	        
-	        image.getGraphics().drawImage(imagePart, xStart, y-1-yEnd, null);
-	        
-	        /* clean up */
-			
-	        pBuffer.getContext().release();
-	        pBuffer.destroy();
-	        pBuffer = null;
-			
+	        image.getGraphics().drawImage(imagePart,
+	        		xStart, y-1-yEnd, xSize, ySize, null);
+	        			
 		}
 		}
+		
+        /* clean up */
+		
+		bufferRenderer.freeResources();
+		bufferRenderer = null;
+		
+        pBuffer.getContext().release();
+        pBuffer.destroy();
+        pBuffer = null;
 		
 		/* write the entire image */
         

@@ -21,7 +21,10 @@ public class WorldObjectView extends DebugView {
 		
 		super.setPrimitiveBuffers(gridPrimitiveBuffer, terrainPrimitiveBuffer);
 		
-		renderer = null;
+		if (renderer != null) {
+			renderer.freeResources();
+			renderer = null;
+		}
 		
 	}
 
