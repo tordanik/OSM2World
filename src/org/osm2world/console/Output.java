@@ -61,6 +61,8 @@ public final class Output {
 		Results results = cf.createRepresentations(
 				argumentsGroup.getRepresentative().getInput(), null, config, null);
 		
+		ImageExporter exporter = null;
+		
 		for (CLIArguments args : argumentsGroup.getCLIArgumentsList()) {
 			
 			Camera camera = null;
@@ -148,9 +150,13 @@ public final class Output {
 					if (camera == null || projection == null) {
 						System.err.println("camera or projection missing");
 					}
-					ImageExport.writeImageFile(config, outputFile, outputMode,
+					if (exporter == null) {
+						exporter = new ImageExporter(
+								config, results, argumentsGroup);
+					}
+					exporter.writeImageFile(outputFile, outputMode,
 							args.getResolution().x, args.getResolution().y,
-							results, camera, projection);
+							camera, projection);
 					break;
 					
 				}
@@ -158,7 +164,12 @@ public final class Output {
 			}
 			
 		}
-			
+		
+		if (exporter != null) {
+			exporter.freeResources();
+			exporter = null;
+		}
+		
 		if (argumentsGroup.getRepresentative().getPerformancePrint()) {
 			long timeSec = (System.currentTimeMillis() - start) / 1000;
 			System.out.println("finished after " + timeSec + " s");

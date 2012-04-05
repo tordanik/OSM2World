@@ -82,7 +82,7 @@ public class JOGLPrimitiveBufferRenderer {
 	}
 	
 	@Override
-	public void finalize() {
+	protected void finalize() {
 		freeResources();
 	}
 	

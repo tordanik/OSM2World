@@ -1,5 +1,7 @@
 package org.osm2world.console;
 
+import static java.lang.Math.*;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -29,7 +31,7 @@ import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 import com.sun.opengl.util.Screenshot;
 
-public final class ImageExport {
+public class ImageExporter {
 
 	/**
 	 * the width and height of the canvas used for rendering the exported image
@@ -43,30 +45,30 @@ public final class ImageExport {
 	private static final String BG_COLOR_CONFIG_KEY = "backgroundColor";
 	private static final String CANVAS_LIMIT_CONFIG_KEY = "canvasLimit";
 	
-	private ImageExport() { }
+	private final Results results;
 	
+	private GL gl;
+	private GLPbuffer pBuffer;
+	private final int pBufferSizeX;
+	private final int pBufferSizeY;
+	
+	/** renderer with pre-calculated display lists; can be null */
+	private JOGLPrimitiveBufferRenderer bufferRenderer;
+		
 	/**
+	 * Creates an {@link ImageExporter} for later use.
+	 * Also performs calculations that only need to be done once for a group
+	 * of files, based on a {@link CLIArgumentsGroup}.
 	 * 
-	 * @param outputFile
-	 * @param outputMode   one of the image output modes
-	 * @param x            horizontal resolution
-	 * @param y            vertical resolution
-	 * @param results
-	 * @param camera
-	 * @param projection
-	 * @throws IOException
+	 * @param expectedGroup  group that should contain at least the arguments
+	 *                       for the files that will later be requested.
+	 *                       Basis for optimization preparations.
 	 */
-	public static void writeImageFile(
-			Configuration config,
-			File outputFile, OutputMode outputMode,
-			int x, int y,
-			final Results results, final Camera camera,
-			final Projection projection) throws IOException {
+	public ImageExporter(Configuration config, Results results,
+			CLIArgumentsGroup expectedGroup) {
 		
-		if (! GLDrawableFactory.getFactory().canCreateGLPbuffer()) {
-			throw new Error("Cannot create GLPbuffer for OpenGL output!");
-		}
-		
+		this.results = results;
+
 		/* parse background color and other configuration options */
 		
 		float[] clearColor = {0f, 0f, 0f};
@@ -83,23 +85,39 @@ public final class ImageExport {
 		
 		int canvasLimit = config.getInt(CANVAS_LIMIT_CONFIG_KEY, DEFAULT_CANVAS_LIMIT);
 		
-		/* determine the number of "parts" to split the rendering in */
+		/* find out what number and size of image file requests to expect */
 		
-		int xParts = 1 + ((x-1) / canvasLimit);
-		int yParts = 1 + ((y-1) / canvasLimit);
+		int expectedFileCalls = 0;
+		int expectedMaxSizeX = 1;
+		int expectedMaxSizeY = 1;
+		
+		for (CLIArguments args : expectedGroup.getCLIArgumentsList()) {
+			
+			for (File outputFile : args.getOutput()) {
+				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
+				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM) {
+					expectedFileCalls = 1;
+					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().x);
+					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().y);
+				}
+			}
+			
+		}
 		
 		/* create GL canvas and set rendering parameters */
-		
-		final GL gl;
+
+		if (! GLDrawableFactory.getFactory().canCreateGLPbuffer()) {
+			throw new Error("Cannot create GLPbuffer for OpenGL output!");
+		}
 		
 		GLCapabilities cap = new GLCapabilities();
 		cap.setDoubleBuffered(false);
-		
-		int pBufferX = xParts > 1 ? canvasLimit : x;
-		int pBufferY = yParts > 1 ? canvasLimit : y;
-		
-		GLPbuffer pBuffer = GLDrawableFactory.getFactory().createGLPbuffer(
-				cap, null, pBufferX, pBufferY, null);
+				
+		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
+		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
+				
+		pBuffer = GLDrawableFactory.getFactory().createGLPbuffer(
+				cap, null, pBufferSizeX, pBufferSizeY, null);
 		
 		gl = pBuffer.getGL();
 		pBuffer.getContext().makeCurrent();
@@ -126,14 +144,13 @@ public final class ImageExport {
 				
         gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
         
-        
+
 		/* render map data into buffer if it needs to be rendered multiple times */
 		
-		JOGLPrimitiveBufferRenderer bufferRenderer = null;
-		
-		if ((xParts > 1 || yParts > 1)
-				&& !config.getBoolean("forceUnbufferedPNGRendering", false)) {
-			
+		if (config.getBoolean("forceUnbufferedPNGRendering", false)
+				|| (expectedFileCalls <= 1 && expectedMaxSizeX <= canvasLimit
+						&& expectedMaxSizeY <= canvasLimit) ) {
+						
 			PrimitiveBuffer buffer = new PrimitiveBuffer();
 			
 			TargetUtil.renderWorldObjects(buffer, results.getMapData());
@@ -141,8 +158,62 @@ public final class ImageExport {
 			
 			bufferRenderer = new JOGLPrimitiveBufferRenderer(gl, buffer);
 			
+		} else {
+			
+			bufferRenderer = null;
+			
 		}
-					
+		
+	}
+	
+	protected void finalize() throws Throwable {
+		freeResources();
+	};
+
+	/**
+	 * manually frees resources that would otherwise remain used
+	 * until the finalize call. It is no longer possible to use
+	 * {@link #writeImageFile(File, OutputMode, int, int, Camera, Projection)}
+	 * afterwards.
+	 */
+	public void freeResources() {
+		
+		if (bufferRenderer != null) {
+			bufferRenderer.freeResources();
+			bufferRenderer = null;
+		}
+		
+		if (pBuffer != null) {
+			pBuffer.getContext().release();
+	        pBuffer.destroy();
+	        pBuffer = null;
+	        gl = null;
+		}
+		
+	}
+	
+	/**
+	 * 
+	 * @param outputFile
+	 * @param outputMode   one of the image output modes
+	 * @param x            horizontal resolution
+	 * @param y            vertical resolution
+	 * @param results
+	 * @param camera
+	 * @param projection
+	 * @throws IOException
+	 */
+	public void writeImageFile(
+			File outputFile, OutputMode outputMode,
+			int x, int y,
+			final Camera camera,
+			final Projection projection) throws IOException {
+						
+		/* determine the number of "parts" to split the rendering in */
+		
+		int xParts = 1 + ((x-1) / pBufferSizeX);
+		int yParts = 1 + ((y-1) / pBufferSizeY);
+		
 		/* create image (maybe in multiple parts) */
 				
         BufferedImage image = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
@@ -153,12 +224,12 @@ public final class ImageExport {
 			/* calculate start, end and size (in pixels)
 			 * of the image part that will be rendered in this pass */
 			
-			int xStart = xPart * canvasLimit;
-			int xEnd   = (xPart+1 < xParts) ? (xStart + (canvasLimit-1)) : (x-1);
+			int xStart = xPart * pBufferSizeX;
+			int xEnd   = (xPart+1 < xParts) ? (xStart + (pBufferSizeX-1)) : (x-1);
 			int xSize  = (xEnd - xStart) + 1;
 			
-			int yStart = yPart * canvasLimit;
-			int yEnd   = (yPart+1 < yParts) ? (yStart + (canvasLimit-1)) : (y-1);
+			int yStart = yPart * pBufferSizeY;
+			int yEnd   = (yPart+1 < yParts) ? (yStart + (pBufferSizeY-1)) : (y-1);
 			int ySize  = (yEnd - yStart) + 1;
 			
 			/* configure rendering */
@@ -193,23 +264,14 @@ public final class ImageExport {
 	         * that will contain the entire image*/
 
 	        BufferedImage imagePart =
-	        	Screenshot.readToBufferedImage(pBufferX, pBufferY);
+	        	Screenshot.readToBufferedImage(pBufferSizeX, pBufferSizeY);
 	        
 	        image.getGraphics().drawImage(imagePart,
 	        		xStart, y-1-yEnd, xSize, ySize, null);
 	        			
 		}
 		}
-		
-        /* clean up */
-		
-		bufferRenderer.freeResources();
-		bufferRenderer = null;
-		
-        pBuffer.getContext().release();
-        pBuffer.destroy();
-        pBuffer = null;
-		
+				
 		/* write the entire image */
         
 		switch (outputMode) {
@@ -223,7 +285,7 @@ public final class ImageExport {
 		}
 		
 	}
-
+	
 	private static void writePPMFile(BufferedImage image, File outputFile)
 			throws IOException {
 				
