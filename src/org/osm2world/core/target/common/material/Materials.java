@@ -37,6 +37,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial EARTH =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0, 0));
+	public static final ConfMaterial GLASS =
+		new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial GRASS =
 		new ConfMaterial(Lighting.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial GRAVEL =

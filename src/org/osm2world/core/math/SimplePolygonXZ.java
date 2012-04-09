@@ -211,8 +211,9 @@ public class SimplePolygonXZ extends PolygonXZ {
 	 * returns true if this polygon contains the parameter polygon
 	 */
 	public boolean contains(PolygonXZ p) {
+		//FIXME: it is possible that a polygon contains all vertices of another polygon, but still not the entire polygon
 		for (VectorXZ v : p.getVertices()) {
-			if (!this.contains(v)) {
+			if (!vertexLoop.contains(v) && !this.contains(v)) {
 				return false;
 			}
 		}

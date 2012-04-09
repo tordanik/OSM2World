@@ -100,10 +100,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 					
 					MapArea otherArea = (MapArea)other;
 					
-					if (area.getOuterPolygon().contains(
-							otherArea.getOuterPolygon().getCenter())) {
+					//TODO: check whether the building contains the part (instead of just touching it)
+					if (area.getPolygon().contains(
+							otherArea.getPolygon().getOuter())) {
 						parts.add(new BuildingPart(this, otherArea,
-								otherArea.getPolygon(), useBuildingColors));
+							otherArea.getPolygon(), useBuildingColors));
 					}
 					
 				}
@@ -382,7 +383,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private double calculateFloorEle(Roof roof) {
 			double floorEle = building.getArea().getElevationProfile().getMinEle();
 			
-			if (area.getTags().containsKey("min_height")) {
+			if (getValue("min_height") != null) {
 				
 				Float minEle = parseMeasure(
 						area.getTags().getValue("min_height"));
@@ -390,13 +391,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 					floorEle += minEle;
 				}
 				
-			} else if (area.getTags().containsKey("building:min_level")
-					&& area.getTags().containsKey("building:levels")) {
+			} else if (getValue("building:min_level") != null
+					&& getValue("building:levels") != null) {
 				
 				Float minLevel = parseOsmDecimal(
-						area.getTags().getValue("building:min_level"), true);
+						getValue("building:min_level"), true);
 				Float levels = parseOsmDecimal(
-						area.getTags().getValue("building:levels"), false);
+						getValue("building:levels"), false);
 				if (minLevel != null && levels != null) {
 					double totalHeight = heightWithoutRoof + roof.getRoofHeight();
 					floorEle += (totalHeight / levels) * minLevel;
@@ -436,16 +437,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 		
 		/**
-		 * sets the building attributes (height, colors) depending on
-		 * the building's tags. If available, explicitly tagged data
-		 * is used. Otherwise, the values depend on indirect assumptions
+		 * sets the building part attributes (height, colors) depending on
+		 * the building's and building part's tags.
+		 * If available, explicitly tagged data is used,
+		 * with tags of the building part overriding building tags.
+		 * Otherwise, the values depend on indirect assumptions
 		 * (level height) or ultimately the building class as determined
 		 * by the "building" key.
 		 */
 		private void setAttributes(boolean useBuildingColors) {
 			
 			TagGroup tags = area.getTags();
-			String buildingValue = tags.getValue("building");
+			TagGroup buildingTags = building.area.getTags();
 			
 			/* determine defaults for building type */
 			
@@ -455,11 +458,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
 			String defaultRoofShape = "flat";
 			
+			String buildingValue = getValue("building");
+			
 			if ("greenhouse".equals(buildingValue)) {
 				defaultHeight = 2.5;
-				defaultMaterialWall = new ImmutableMaterial(Lighting.FLAT,
-						new Color(0.9f, 0.9f, 0.9f));
-				defaultMaterialRoof = defaultMaterialWall;
+				defaultMaterialWall = Materials.GLASS;
+				defaultMaterialRoof = Materials.GLASS;
 			}
 			
 			/* determine roof shape */
@@ -468,8 +472,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				roof = new ComplexRoof();
 			} else {
 				
-				String roofShape = tags.getValue("roof:shape");
-				if (roofShape == null) { roofShape = tags.getValue("building:roof:shape"); }
+				String roofShape = getValue("roof:shape");
+				if (roofShape == null) { roofShape = getValue("building:roof:shape"); }
 				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
 				if ("pyramidal".equals(roofShape)) {
@@ -498,7 +502,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			Float levels = null;
 			if (tags.containsKey("building:levels")) {
-				levels = parseOsmDecimal(tags.getValue("building:levels"), false);
+				levels = parseOsmDecimal(getValue("building:levels"), false);
 			}
 			
 			double fallbackHeight = (levels == null)
@@ -506,6 +510,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				: (levels * defaultHeightPerLevel);
 			
 			fallbackHeight += roof.getRoofHeight();
+			
+			fallbackHeight = parseHeight(buildingTags, (float)fallbackHeight);
 			
 			double height = parseHeight(tags, (float)fallbackHeight);
 		    heightWithoutRoof = height - roof.getRoofHeight();
@@ -515,12 +521,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    if (useBuildingColors) {
 		    	
 		    	materialWall = buildMaterial(
-		    			tags.getValue("building:material"),
-		    			tags.getValue("building:colour"),
+		    			getValue("building:material"),
+		    			getValue("building:colour"),
 		    			defaultMaterialWall, false);
 		    	materialRoof = buildMaterial(
-		    			tags.getValue("roof:material"),
-		    			tags.getValue("roof:colour"),
+		    			getValue("roof:material"),
+		    			getValue("roof:colour"),
 		    			defaultMaterialRoof, true);
 		    	
 		    } else {
@@ -538,6 +544,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if (materialString != null) {
 				if ("brick".equals(materialString)) {
 					return Materials.BRICK;
+				} else if ("glass".equals(materialString)) {
+					return Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
 					return Materials.WOOD;
 				}
@@ -586,6 +594,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 			
 			return defaultMaterial;
+			
+		}
+		
+		/**
+		 * returns the value for a key from the building part's tags or the
+		 * building's tags (if the part doesn't have a tag with this key)
+		 */
+		private String getValue(String key) {
+
+			if (area.getTags().containsKey(key)) {
+				return area.getTags().getValue(key);
+			} else {
+				return building.area.getTags().getValue(key);
+			}
 			
 		}
 
@@ -639,12 +661,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				Float taggedHeight = null;
 				
 				if (area.getTags().containsKey("roof:height")) {
-					String valueString = area.getTags().getValue("roof:height");
+					String valueString = getValue("roof:height");
 					taggedHeight = parseMeasure(valueString);
-				} else if (area.getTags().containsKey("roof:levels")) {
+				} else if (getValue("roof:levels") != null) {
 					try {
-						String valueString = area.getTags().getValue("roof:levels");
-						taggedHeight = 2.5f * Integer.parseInt(valueString);
+						taggedHeight = 2.5f * Integer.parseInt(getValue("roof:levels"));
 					} catch (NumberFormatException e) {}
 				}
 				
@@ -1035,9 +1056,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				VectorXZ ridgeDirection = null;
 				
-				if (area.getTags().containsKey("roof:ridge:direction")) {
+				if (getValue("roof:ridge:direction") != null) {
 					Float angle = parseAngle(
-							area.getTags().getValue("roof:ridge:direction"));
+							getValue("roof:ridge:direction"));
 					if (angle != null) {
 						ridgeDirection = VectorXZ.fromAngle(toRadians(angle));
 					}
