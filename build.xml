@@ -31,18 +31,21 @@
         <mkdir dir="build/lib"/>
         <copy todir="build/lib"><fileset dir="lib"/></copy>
     </target>
-    
-   	<target name="release.bin" depends="jar">
+	
+	<target name="release.bin" depends="jar">
 		<mkdir dir="build/temp"/>
-       		<copy todir="build/temp" file="build/OSM2World.jar"/>
-       		<copy todir="build/temp"><fileset dir="build-adds"/></copy>
-       		<copy todir="build/temp/resources"><fileset dir="resources"/></copy>
-       		<copy todir="build/temp/lib"><fileset dir="lib" excludes="jts/jts-1.11-src.zip"/></copy>
-       		<copy todir="build/temp"><fileset dir="." includes="*.txt"/></copy>
-		<zip destfile="build/OSM2World-${releaseVersion}-bin.zip" basedir="build/temp"/>
+		<copy todir="build/temp" file="build/OSM2World.jar"/>
+		<copy todir="build/temp"><fileset dir="build-adds"/></copy>
+		<copy todir="build/temp/resources"><fileset dir="resources"/></copy>
+		<copy todir="build/temp/lib"><fileset dir="lib" excludes="jts/jts-1.11-src.zip"/></copy>
+		<copy todir="build/temp"><fileset dir="." includes="*.txt"/></copy>
+		<zip destfile="build/OSM2World-${releaseVersion}-bin.zip">
+			<zipfileset dir="build/temp" includes="*.sh" filemode="755"/>
+			<zipfileset dir="build/temp" excludes="*.sh"/>
+		</zip>
 		<delete dir="build/temp"/>
 	</target>
-    
+	
    	<target name="release.src" depends="javadoc">
 		<mkdir dir="build/temp"/>
        		<copy todir="build/temp/build-adds"><fileset dir="build-adds"/></copy>
@@ -52,7 +55,7 @@
        		<copy todir="build/temp/src"><fileset dir="src"/></copy>
        		<copy todir="build/temp/test"><fileset dir="test"/></copy>
        		<copy todir="build/temp"><fileset dir="." includes="*.txt"/></copy>
-		<copy todir="build/temp" file="build.xml"/>	
+		<copy todir="build/temp" file="build.xml"/>
 		<zip destfile="build/OSM2World-${releaseVersion}-src.zip" basedir="build/temp"/>
 		<delete dir="build/temp"/>
 	</target>
