@@ -113,6 +113,7 @@ public final class CLIArgumentsUtil {
 		while ((line = in.readLine()) != null) {
 			
 			if (line.startsWith("#")) continue;
+			if (line.trim().isEmpty()) continue;
 			
 			List<String> argList = new ArrayList<String>();
 			

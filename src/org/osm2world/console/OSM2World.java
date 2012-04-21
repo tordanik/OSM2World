@@ -4,6 +4,7 @@ import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class OSM2World {
 						argumentsList.add(parseArguments(unparsedArgsLine));
 					} catch (Exception e) {
 						System.err.println("Could not parse parameters from file:");
-						System.err.println(unparsedArgsLine);
+						System.err.println(Arrays.toString(unparsedArgsLine));
 						System.err.println("Ignoring it. Reason:");
 						System.err.println(e.getMessage());
 					}
