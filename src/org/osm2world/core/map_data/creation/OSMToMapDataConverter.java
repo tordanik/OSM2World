@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -178,6 +180,38 @@ public class OSMToMapDataConverter {
 				
 				if (area != null) {
 					area.setHoles(holes);
+				}
+				
+			}
+			
+		}
+		
+		/* remove areas with invalid geometry */
+				
+		for (Iterator<MapArea> it = mapAreas.iterator(); it.hasNext(); ) {
+			
+			MapArea area = it.next();
+			
+			try {
+				// try to retrieve the area
+				area.getPolygon();
+			} catch (InvalidGeometryException e) {
+				
+				// remove from mapAreas and its nodes
+				
+				System.err.println("ignoring map area " + area.getOsmObject().id
+						+ ". Reason: " + e);
+				
+				it.remove();
+				
+				for (MapNode node : area.getBoundaryNodes()) {
+					node.getAdjacentAreas().remove(area);
+				}
+				
+				for (List<MapNode> hole : area.getHoles()) {
+					for (MapNode node : hole) {
+						node.getAdjacentAreas().remove(area);
+					}
 				}
 				
 			}

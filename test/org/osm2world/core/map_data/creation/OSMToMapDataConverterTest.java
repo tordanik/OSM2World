@@ -81,4 +81,14 @@ public class OSMToMapDataConverterTest {
 		
 	}
 	
+	/**
+	 * reads a self intersecting polygon (can be filtered, but must not crash)
+	 */
+	@Test
+	public void testSelfIntersection() throws IOException {
+		
+		MapData mapData = loadMapData("self_intersection.osm");
+		
+	}
+	
 }
