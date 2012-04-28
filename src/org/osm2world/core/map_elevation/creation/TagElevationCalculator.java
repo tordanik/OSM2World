@@ -58,13 +58,15 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 				 */
 				
 				for (MapSegment segment : node.getConnectedSegments()) {
-					TagGroup tags;
-					if (segment instanceof MapWaySegment) {
-						tags = ((MapWaySegment) segment).getTags();
-					} else {
-						tags = ((MapAreaSegment) segment).getArea().getTags();
+					if (ele == null) {
+						TagGroup tags;
+						if (segment instanceof MapWaySegment) {
+							tags = ((MapWaySegment) segment).getTags();
+						} else {
+							tags = ((MapAreaSegment) segment).getArea().getTags();
+						}
+						ele = getEleForTags(tags);
 					}
-					ele = getEleForTags(tags);
 				}
 				
 			}
