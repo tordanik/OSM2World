@@ -1,5 +1,8 @@
 package org.osm2world.core.target.common;
 
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.GeometryUtil.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -173,7 +175,17 @@ public abstract class AbstractTarget<R extends Renderable>
 	@Override
 	public void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs,
 			List<List<VectorXZ>> textureCoordLists) {
-		drawTriangles(material, GeometryUtil.trianglesFromTriangleStrip(vs));
+		
+		List<List<VectorXZ>> newTexCoordLists = emptyList();
+		if (!textureCoordLists.isEmpty()) {
+			newTexCoordLists = new ArrayList<List<VectorXZ>>(textureCoordLists.size());
+			for (List<VectorXZ> texCoordList : textureCoordLists) {
+				newTexCoordLists.add(
+						triangleVertexListFromTriangleStrip(texCoordList));
+			}
+		}
+				
+		drawTriangles(material, trianglesFromTriangleStrip(vs), newTexCoordLists);
 	}
 	
 	@Override
@@ -185,7 +197,18 @@ public abstract class AbstractTarget<R extends Renderable>
 	@Override
 	public void drawTriangleFan(Material material, List<? extends VectorXYZ> vs,
 			List<List<VectorXZ>> textureCoordLists) {
-		drawTriangles(material, GeometryUtil.trianglesFromTriangleFan(vs));
+		
+		List<List<VectorXZ>> newTexCoordLists = emptyList();
+		if (!textureCoordLists.isEmpty()) {
+			newTexCoordLists = new ArrayList<List<VectorXZ>>(textureCoordLists.size());
+			for (List<VectorXZ> texCoordList : textureCoordLists) {
+				newTexCoordLists.add(
+						triangleVertexListFromTriangleFan(texCoordList));
+			}
+		}
+		
+		drawTriangles(material, trianglesFromTriangleFan(vs), newTexCoordLists);
+		
 	}
 	
 	@Override

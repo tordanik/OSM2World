@@ -18,6 +18,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
@@ -29,6 +30,7 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	
 	private final Map<VectorXYZ, Integer> vertexIndexMap = new HashMap<VectorXYZ, Integer>();
 	private final Map<VectorXYZ, Integer> normalsIndexMap = new HashMap<VectorXYZ, Integer>();
+	private final Map<VectorXZ, Integer> texCoordsIndexMap = new HashMap<VectorXZ, Integer>();
 	private final Map<Material, String> materialMap = new HashMap<Material, String>();
 	
 	private Class<? extends WorldObject> currentWOGroup = null;
@@ -106,8 +108,21 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 		
 		useMaterial(material);
 		
+		int triangleNumber = 0;
 		for (TriangleXYZ triangle : triangles) {
-			writeFace(verticesToIndices(triangle.getVertices()), null);
+			
+			int[] texCoordIndices = null;
+			if (!textureCoordLists.isEmpty()) {
+				List<VectorXZ> texCoords = textureCoordLists.get(0);
+				texCoordIndices = texCoordsToIndices(
+						texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
+			}
+			
+			writeFace(verticesToIndices(triangle.getVertices()),
+					null, texCoordIndices);
+			
+			triangleNumber ++;
+			
 		}
 		
 	}
@@ -120,7 +135,7 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 		
 		for (TriangleXYZWithNormals triangle : triangles) {
 			writeFace(verticesToIndices(triangle.getVertices()),
-					normalsToIndices(triangle.getNormals()));
+					normalsToIndices(triangle.getNormals()), null);
 		}
 		
 	}
@@ -128,7 +143,7 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	@Override
 	public void drawPolygon(Material material, VectorXYZ... vs) {
 		useMaterial(material);
-		writeFace(verticesToIndices(Arrays.asList(vs)), null);
+		writeFace(verticesToIndices(Arrays.asList(vs)), null, null);
 	}
 
 	private void useMaterial(Material material) {
@@ -157,18 +172,22 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	private int[] normalsToIndices(List<? extends VectorXYZ> normals) {
 		return vectorsToIndices(normalsIndexMap, "vn ", normals);
 	}
+
+	private int[] texCoordsToIndices(List<VectorXZ> texCoords) {
+		return vectorsToIndices(texCoordsIndexMap, "vt ", texCoords);
+	}
 	
-	private int[] vectorsToIndices(Map<VectorXYZ, Integer> indexMap,
-			String objLineStart, List<? extends VectorXYZ> vectors) {
+	private <V> int[] vectorsToIndices(Map<V, Integer> indexMap,
+			String objLineStart, List<? extends V> vectors) {
 		
 		int[] indices = new int[vectors.size()];
 		
 		for (int i=0; i<vectors.size(); i++) {
-			final VectorXYZ v = vectors.get(i);
+			final V v = vectors.get(i);
 			Integer index = indexMap.get(v);
 			if (index == null) {
 				index = indexMap.size();
-				objStream.println(objLineStart + " " + v.x + " " + v.y + " " + (-v.z));
+				objStream.println(objLineStart + " " + formatVector(v));
 				indexMap.put(v, index);
 			}
 			indices[i] = index;
@@ -177,8 +196,21 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 		return indices;
 		
 	}
+	
+	private String formatVector(Object v) {
+		
+		if (v instanceof VectorXYZ) {
+			VectorXYZ vXYZ = (VectorXYZ)v;
+			return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
+		} else {
+			VectorXZ vXZ = (VectorXZ)v;
+			return vXZ.x + " " + vXZ.z;
+		}
+		
+	}
 
-	private void writeFace(int[] vertexIndices, int[] normalIndices) {
+	private void writeFace(int[] vertexIndices, int[] normalIndices,
+			int[] texCoordIndices) {
 
 		assert normalIndices == null
 				|| vertexIndices.length == normalIndices.length;
@@ -189,8 +221,13 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 
 			objStream.print(" " + (vertexIndices[i]+1));
 
-			if (normalIndices != null) {
-				objStream.print("//" + normalIndices[i]);
+			if (texCoordIndices != null && normalIndices == null) {
+				objStream.print("/" + (texCoordIndices[i]+1));
+			} else if (texCoordIndices == null && normalIndices != null) {
+				objStream.print("//" + (normalIndices[i]+1));
+			} else if (texCoordIndices != null && normalIndices != null) {
+				objStream.print("/" + (texCoordIndices[i]+1)
+						+ "/" + (normalIndices[i]+1));
 			}
 
 		}
@@ -200,11 +237,20 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	
 	private void writeMaterial(Material material, String name) {
 		
+		TextureData textureData = null;
+		if (!material.getTextureDataList().isEmpty()) {
+			textureData = material.getTextureDataList().get(0);
+		}
+		
 		mtlStream.println("newmtl " + name);
 		writeColorLine("Ka", material.ambientColor());
 		writeColorLine("Kd", material.diffuseColor());
 		//Ks
 		//Ns
+		if (textureData != null) {
+			mtlStream.println("map_Ka " + textureData.file);
+			mtlStream.println("map_Kd " + textureData.file);
+		}
 		mtlStream.println();
 		
 	}

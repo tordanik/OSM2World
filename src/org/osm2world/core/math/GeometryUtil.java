@@ -44,45 +44,58 @@ public final class GeometryUtil {
 	public static final List<TriangleXYZ> trianglesFromTriangleStrip(
 			List<? extends VectorXYZ> vs) {
 		
-		List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>(vs.size() - 2);
+		return trianglesFromVertexList(
+				triangleVertexListFromTriangleStrip(vs));
+		
+	}
+	
+	public static final <V> List<V> triangleVertexListFromTriangleStrip(
+			List<? extends V> vs) {
+		
+		List<V> result = new ArrayList<V>((vs.size() - 2) * 3);
 		
 		for (int triangle = 0; triangle + 2 < vs.size(); triangle++) {
 			
 			if (triangle % 2 == 0) {
-				triangles.add(new TriangleXYZ(
-						vs.get(triangle),
-						vs.get(triangle + 1),
-						vs.get(triangle + 2)));
+				result.add(vs.get(triangle));
+				result.add(vs.get(triangle + 1));
+				result.add(vs.get(triangle + 2));
 			} else {
-				triangles.add(new TriangleXYZ(
-						vs.get(triangle),
-						vs.get(triangle + 2),
-						vs.get(triangle + 1)));
+				result.add(vs.get(triangle));
+				result.add(vs.get(triangle + 2));
+				result.add(vs.get(triangle + 1));
 			}
 
 		}
 
-		return triangles;
+		return result;
 		
 	}
 
 	public static final List<TriangleXYZ> trianglesFromTriangleFan(
 			List<? extends VectorXYZ> vs) {
-		
-		List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>(vs.size() - 2);
 
-		VectorXYZ center = vs.get(0);
+		return trianglesFromVertexList(
+				triangleVertexListFromTriangleFan(vs));
+		
+	}
+
+	public static final <V> List<V> triangleVertexListFromTriangleFan(
+			List<? extends V> vs) {
+		
+		List<V> result = new ArrayList<V>((vs.size() - 2) * 3);
+
+		V center = vs.get(0);
 		
 		for (int triangle = 0; triangle + 2 < vs.size(); triangle++) {
-			
-			triangles.add(new TriangleXYZ(
-					center,
-					vs.get(triangle + 1),
-					vs.get(triangle + 2)));
+
+			result.add(center);
+			result.add(vs.get(triangle + 1));
+			result.add(vs.get(triangle + 2));
 
 		}
 
-		return triangles;
+		return result;
 		
 	}
 	
