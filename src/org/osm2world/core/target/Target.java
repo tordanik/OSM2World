@@ -40,13 +40,32 @@ public interface Target<R extends Renderable> {
 	
 	void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles);
 
+	void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
+			List<List<VectorXZ>> textureCoordLists);
+	
 	void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles);
 
 	void drawTriangleStrip(Material material, VectorXYZ... vs); //TODO: delete this, use only collections
 	
 	void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs);
 	
+	/**
+	 * draws a triangle strip with texture coordinates
+	 * 
+	 * @param textureCoordLists  one texture coordinate list per texture,
+	 *          each must have the same length as the "vs" parameter
+	 */
+	void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs,
+			List<List<VectorXZ>> textureCoordLists);
+	
 	void drawTriangleFan(Material material, List<? extends VectorXYZ> vs);
+	
+	/**
+	 * draws a triangle fan with texture coordinates,
+	 * @see #drawTriangleStrip(Material, List, List)
+	 */
+	void drawTriangleFan(Material material, List<? extends VectorXYZ> vs,
+			List<List<VectorXZ>> textureCoordLists);
 	
 	void drawPolygon(Material material, VectorXYZ... vs);
 
@@ -84,5 +103,11 @@ public interface Target<R extends Renderable> {
 	void drawColumn(Material material, Integer corners,
 			VectorXYZ base, double height, double radiusBottom,
 			double radiusTop, boolean drawBottom, boolean drawTop);
+
+	/**
+	 * gives the target the chance to perform finish/cleanup operations
+	 * after all objects have been drawn.
+	 */
+	void finish();
 	
 }

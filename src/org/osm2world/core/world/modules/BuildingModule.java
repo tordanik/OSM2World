@@ -52,6 +52,7 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
+import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 
 import com.google.common.base.Function;
 
@@ -422,17 +423,19 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			List<VectorXZ> vertices = polygon.getVertexLoop();
 			
-			VectorXYZ[] wallVectors = new VectorXYZ[vertices.size() * 2];
+			List<VectorXYZ> wallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
 
 			for (int i = 0; i < vertices.size(); i++) {
 				final VectorXZ coord = vertices.get(i);
-				wallVectors[i*2] = coord.xyz(roof.getRoofEleAt(coord));
-				double upperEle = wallVectors[i*2].y;
-				wallVectors[i*2 + 1] = new VectorXYZ(coord.x,
-						min(floorEle, upperEle), coord.z);
+				final VectorXYZ upperVector = coord.xyz(roof.getRoofEleAt(coord));
+				wallVectors.add(upperVector);
+				double upperEle = upperVector.y;
+				wallVectors.add(new VectorXYZ(coord.x,
+						min(floorEle, upperEle), coord.z));
 			}
 
-			target.drawTriangleStrip(materialWall, wallVectors);
+			target.drawTriangleStrip(materialWall, wallVectors,
+					WorldModuleTexturingUtil.generateWallTextureCoordLists(wallVectors, materialWall));
 			
 		}
 		

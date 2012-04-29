@@ -1,6 +1,9 @@
 package org.osm2world.core.target.common;
 
+import java.util.List;
+
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 
 public class Primitive {
 
@@ -15,10 +18,14 @@ public class Primitive {
 		
 	public final VectorXYZ[] normals; //TODO: why have indexed vertices, but direct refs to normals?
 	
-	public Primitive(Type type, int[] indices, VectorXYZ[] normals) {
+	public final List<List<VectorXZ>> textureCoordLists;
+	
+	public Primitive(Type type, int[] indices, VectorXYZ[] normals,
+			List<List<VectorXZ>> textureCoordLists) {
 		this.type = type;
 		this.indices = indices;
 		this.normals = normals;
+		this.textureCoordLists = textureCoordLists;
 	}
 	
 	@Override

@@ -301,6 +301,7 @@ public class ConversionFacade {
 				if (terrain != null) {
 					TargetUtil.renderObject(target, terrain);
 				}
+				target.finish();
 			}
 		}
 		

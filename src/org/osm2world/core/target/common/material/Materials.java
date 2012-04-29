@@ -1,8 +1,12 @@
 package org.osm2world.core.target.common.material;
 
+import static java.util.Collections.singletonList;
+
 import java.awt.Color;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -11,6 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.world.creation.WorldModule;
 
@@ -95,7 +101,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, Color.GRAY);
 	
 	public static final ConfMaterial TUNNEL_DEFAULT =
-		new ConfMaterial(Lighting.FLAT, Color.GRAY, 0.2f, 0.5f);
+		new ConfMaterial(Lighting.FLAT, Color.GRAY, 0.2f, 0.5f,
+				Collections.<TextureData>emptyList());
 	
 	public static final ConfMaterial TREE_TRUNK =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
@@ -192,7 +199,8 @@ public final class Materials {
 		return fieldNameMap.get(material);
 	}
 	
-	private static final String CONF_KEY_REGEX = "material_(.+)_(color)";
+	private static final String CONF_KEY_REGEX =
+			"material_(.+)_(color|texture_(?:file|width|height|))";
 		
 	/**
 	 * configures the attributes of the materials within this class
@@ -212,7 +220,8 @@ public final class Materials {
 			
 			if (matcher.matches()) {
 				
-				ConfMaterial material = getMaterial(matcher.group(1));
+				String materialName = matcher.group(1);
+				ConfMaterial material = getMaterial(materialName);
 				
 				if (material != null) {
 				
@@ -228,13 +237,35 @@ public final class Materials {
 									+ config.getString(key));
 						}
 						
+					} else if (attribute.startsWith("texture")) {
+						
+						String fileKey = "material_" + materialName + "_texture_file";
+						String widthKey = "material_" + materialName + "_texture_width";
+						String heightKey = "material_" + materialName + "_texture_height";
+						String wrapKey = "material_" + materialName + "_texture_wrap";
+						String colorableKey = "material_" + materialName + "_texture_colorable";
+
+						File file = new File(config.getString(fileKey));
+						
+						double width = config.getDouble(widthKey, 1);
+						double height = config.getDouble(heightKey, 1);
+						boolean colorable = config.getBoolean(colorableKey, false);
+						
+						String wrapString = config.getString(wrapKey);
+						Wrap wrap = "clamp".equalsIgnoreCase(wrapString) ?
+								Wrap.CLAMP : Wrap.REPEAT;
+						
+						TextureData textureData = new TextureData(
+								file, width, height, wrap, colorable);
+						material.setTextureDataList(singletonList(textureData));
+						
 					} else {
 						System.err.println("unknown material attribute: "
 								+ attribute);
 					}
 				
 				} else {
-					System.err.println("unknown material: " + matcher.group(1));
+					System.err.println("unknown material: " + materialName);
 				}
 				
 			}

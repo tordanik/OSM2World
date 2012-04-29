@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules;
 import static com.google.common.collect.Iterables.any;
 import static org.osm2world.core.util.Predicates.hasType;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
+import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 
@@ -124,7 +126,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 			VectorXYZ[] groundVs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
 					getOutline(false), getOutline(true));
 			
-			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, groundVs);
+			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, Arrays.asList(groundVs),
+					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT));
 			
 			
 			/* draw rails */

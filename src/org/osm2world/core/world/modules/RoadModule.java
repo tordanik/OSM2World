@@ -12,6 +12,8 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +45,7 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
+import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkAreaWorldObject;
@@ -499,7 +502,11 @@ public class RoadModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			target.drawTriangles(getSurfaceForNode(node), super.getTriangulation());
+			Material material = getSurfaceForNode(node);
+			Collection<TriangleXYZ> triangles = super.getTriangulation();
+			
+			target.drawTriangles(material, triangles,
+					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(triangles, material));
 			
 			/* connect some lanes such as sidewalks between adjacent roads */
 			
@@ -594,7 +601,10 @@ public class RoadModule extends ConfigurableWorldModule {
 								node.getElevationProfile().getEle()));
 			}
 				
-			target.drawTriangles(getSurfaceForNode(node), trianglesXYZ);
+			Material material = getSurfaceForNode(node);
+			
+			target.drawTriangles(material, trianglesXYZ,
+					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(trianglesXYZ, material));
 			
 		}
 		
@@ -1180,8 +1190,14 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
+			
 			String surface = area.getTags().getValue("surface");
-			target.drawTriangles(getSurfaceMaterial(surface, ASPHALT), getTriangulation());
+			Material material = getSurfaceMaterial(surface, ASPHALT);
+			Collection<TriangleXYZ> triangles = getTriangulation();
+			
+			target.drawTriangles(material, triangles,
+					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(triangles, material));
+			
 		}
 		
 		@Override
@@ -1551,10 +1567,13 @@ public class RoadModule extends ConfigurableWorldModule {
 			VectorXYZ[] vs = createVectorsForTriangleStripBetween(
 					leftLaneBorder, rightLaneBorder);
 			
-			target.drawTriangleStrip(getSurface(roadTags, laneTags), vs);
+			Material material = getSurface(roadTags, laneTags);
+			
+			target.drawTriangleStrip(material, Arrays.asList(vs),
+					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(vs, material));
 			
 		}
-		
+
 		@Override
 		public double getHeightOffset(TagGroup roadTags, TagGroup laneTags) {
 			return 0;

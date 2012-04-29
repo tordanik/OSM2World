@@ -17,21 +17,27 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
+import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
 import com.sun.opengl.util.j2d.TextRenderer;
+import com.sun.opengl.util.texture.Texture;
 
 public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
-	
+		
 	private final GL gl;
 	private final Camera camera;
-		
+
+	private final JOGLTextureManager textureManager;
+	
 	public JOGLTarget(GL gl, Camera camera) {
 		this.gl = gl;
 		this.camera = camera;
+		this.textureManager = new JOGLTextureManager(gl);
 	}
 	
 	@Override
@@ -46,11 +52,12 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 
 	@Override
 	protected void drawPrimitive(Primitive.Type type, Material material,
-			List<? extends VectorXYZ> vertices, VectorXYZ[] normals) {
+			List<? extends VectorXYZ> vertices, VectorXYZ[] normals,
+			List<List<VectorXZ>> textureCoordLists) {
 		
 		assert vertices.size() == normals.length;
 		
-		setMaterial(gl, material);
+		setMaterial(gl, material, textureManager);
 		
 		gl.glBegin(getGLConstant(type));
         		
@@ -235,6 +242,11 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		textRenderer.draw(string, x, y);
 		textRenderer.endRendering();
 	}
+	
+	@Override
+	public void finish() {
+		textureManager.releaseAll();
+	}
 
 	public static final void setCameraMatrices(GL gl, Camera camera) {
 		VectorXYZ pos = camera.getPos();
@@ -299,7 +311,8 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 
-	public static final void setMaterial(GL gl, Material material) {
+	public static final void setMaterial(GL gl, Material material,
+			JOGLTextureManager textureManager) {
 		
 		if (material.getLighting() == Lighting.SMOOTH) {
 			gl.glShadeModel(GL.GL_SMOOTH);
@@ -307,8 +320,36 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			gl.glShadeModel(GL.GL_FLAT);
 		}
 
-		setFrontMaterialColor(gl, GL.GL_AMBIENT, material.ambientColor());
-		setFrontMaterialColor(gl, GL.GL_DIFFUSE, material.diffuseColor());
+		boolean textured = material.getTextureDataList().size() > 0;
+
+		if (!textured || material.getTextureDataList().get(0).colorable) {
+			setFrontMaterialColor(gl, GL.GL_AMBIENT, material.ambientColor());
+			setFrontMaterialColor(gl, GL.GL_DIFFUSE, material.diffuseColor());
+		} else {
+			setFrontMaterialColor(gl, GL.GL_AMBIENT, Color.WHITE);
+			setFrontMaterialColor(gl, GL.GL_DIFFUSE, Color.WHITE);
+		}
+		
+		if (!textured) {
+			gl.glDisable(GL.GL_TEXTURE_2D);
+		} else {
+			
+			TextureData textureData = material.getTextureDataList().get(0);
+						
+			gl.glEnable(GL.GL_TEXTURE_2D);
+	        			
+	        Texture texture = textureManager.getTextureForFile(textureData.file);
+	        texture.enable(); //TODO: should this be called every time?
+	        texture.bind();
+
+			int wrap = (textureData.wrap == Wrap.CLAMP) ?
+					GL.GL_CLAMP : GL.GL_REPEAT;
+			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, wrap);
+	        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, wrap);
+			
+	        gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
+		      
+		}
 		
 	}
 

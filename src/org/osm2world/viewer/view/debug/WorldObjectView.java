@@ -1,5 +1,8 @@
 package org.osm2world.viewer.view.debug;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import javax.media.opengl.GL;
 
 import org.osm2world.core.target.common.rendering.Camera;
@@ -14,7 +17,18 @@ public class WorldObjectView extends DebugView {
 	};
 	
 	JOGLPrimitiveBufferRenderer renderer = null;
-		
+	
+	/**
+	 * old renderers that are no longer needed but may still have OpenGL
+	 * resources associated with them. They cannot be deleted in
+	 * {@link #setPrimitiveBuffers(PrimitiveBuffer, PrimitiveBuffer)}
+	 * because that thread doesn't have the GL context associated with it.
+	 * Instead, they will be stored here until the next call to
+	 * {@link #renderToImpl(GL, Camera)}.
+	 */
+	Collection<JOGLPrimitiveBufferRenderer> rendererTrashBin =
+			new ArrayList<JOGLPrimitiveBufferRenderer>();
+	
 	@Override
 	public void setPrimitiveBuffers(PrimitiveBuffer gridPrimitiveBuffer,
 			PrimitiveBuffer terrainPrimitiveBuffer) {
@@ -22,7 +36,7 @@ public class WorldObjectView extends DebugView {
 		super.setPrimitiveBuffers(gridPrimitiveBuffer, terrainPrimitiveBuffer);
 		
 		if (renderer != null) {
-			renderer.freeResources();
+			rendererTrashBin.add(renderer);
 			renderer = null;
 		}
 		
@@ -36,6 +50,20 @@ public class WorldObjectView extends DebugView {
 	@Override
 	protected void renderToImpl(GL gl, Camera camera) {
 
+		// clean up old renderers
+		
+		if (!rendererTrashBin.isEmpty()) {
+			
+			for (JOGLPrimitiveBufferRenderer oldRenderer : rendererTrashBin) {
+				oldRenderer.freeResources();
+			}
+		
+			rendererTrashBin.clear();
+			
+		}
+		
+		// create new renderer
+		
 		if (renderer == null) {
 			renderer = new JOGLPrimitiveBufferRenderer(gl, mapDataPrimitiveBuffer);
 		}

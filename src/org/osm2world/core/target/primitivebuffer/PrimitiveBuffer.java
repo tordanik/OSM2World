@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
@@ -44,9 +45,11 @@ public class PrimitiveBuffer extends
 	
 	@Override
 	protected void drawPrimitive(Type type, Material material,
-			List<? extends VectorXYZ> vertices, VectorXYZ[] normals) {
+			List<? extends VectorXYZ> vertices, VectorXYZ[] normals,
+			List<List<VectorXZ>> textureCoordLists) {
 		int[] indices = generateIndices(vertices);
-		primitiveMap.put(material, new Primitive(type, indices, normals));
+		primitiveMap.put(material,
+				new Primitive(type, indices, normals, textureCoordLists));
 	}
 	
 	private int[] generateIndices(List<? extends VectorXYZ> newVertices) {

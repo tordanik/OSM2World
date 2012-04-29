@@ -1,16 +1,25 @@
 package org.osm2world.core.target.common.material;
 
 import java.awt.Color;
+import java.util.List;
+
+import org.osm2world.core.target.common.TextureData;
 
 
 /**
  * a material whose attributes can be configured at runtime.
  */
 public class ConfMaterial extends Material {
+
+	public ConfMaterial(Lighting lighting, Color color,
+			float ambientFactor, float diffuseFactor,
+			List<TextureData> textureDataList) {
+		super(lighting, color, ambientFactor, diffuseFactor, textureDataList);
+	}
 	
-	public ConfMaterial(Lighting lighting, Color color, float ambientFactor,
-			float diffuseFactor) {
-		super(lighting, color, ambientFactor, diffuseFactor);
+	public ConfMaterial(Lighting lighting, Color color,
+			List<TextureData> textureDataList) {
+		super(lighting, color, textureDataList);
 	}
 	
 	public ConfMaterial(Lighting lighting, Color color) {
@@ -31,6 +40,10 @@ public class ConfMaterial extends Material {
 	
 	public void setDiffuseFactor(float diffuseFactor) {
 		this.diffuseFactor = diffuseFactor;
+	}
+	
+	public void setTextureDataList(List<TextureData> textureDataList) {
+		this.textureDataList = textureDataList;
 	}
 	
 	/*

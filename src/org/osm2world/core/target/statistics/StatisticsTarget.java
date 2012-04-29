@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
@@ -145,7 +146,8 @@ public class StatisticsTarget extends
 	
 	@Override
 	protected void drawPrimitive(Type type, Material material,
-			List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+			List<? extends VectorXYZ> vs, VectorXYZ[] normals,
+			List<List<VectorXZ>> textureCoordLists) {
 		
 		if (!countsPerMaterial.containsKey(material)) {
 			countsPerMaterial.put(material, new long[Stat.values().length]);

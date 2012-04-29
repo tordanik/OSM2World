@@ -15,6 +15,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.material.Material;
@@ -100,7 +101,8 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	
 	@Override
 	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles) {
+			Collection<? extends TriangleXYZ> triangles,
+			List<List<VectorXZ>> textureCoordLists) {
 		
 		useMaterial(material);
 		

@@ -1,6 +1,10 @@
 package org.osm2world.core.target.common.material;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.List;
+
+import org.osm2world.core.target.common.TextureData;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -14,16 +18,25 @@ public abstract class Material {
 	protected float ambientFactor;
 	protected float diffuseFactor;
 	
+	protected List<TextureData> textureDataList;
+
 	public Material(Lighting lighting, Color color,
-			float ambientFactor, float diffuseFactor) {
+			float ambientFactor, float diffuseFactor,
+			List<TextureData> textureDataList) {
 		this.lighting = lighting;
 		this.color = color;
 		this.ambientFactor = ambientFactor;
 		this.diffuseFactor = diffuseFactor;
+		this.textureDataList = textureDataList;
+	}
+	
+	public Material(Lighting lighting, Color color,
+			List<TextureData> textureDataList) {
+		this(lighting, color, 0.5f, 0.5f, textureDataList);
 	}
 	
 	public Material(Lighting lighting, Color color) {
-		this(lighting, color, 0.5f, 0.5f);
+		this(lighting, color, Collections.<TextureData>emptyList());
 	}
 		
 	public Lighting getLighting() {
@@ -52,12 +65,14 @@ public abstract class Material {
 	
 	public Material brighter() {
 		return new ImmutableMaterial(lighting, getColor().brighter(),
-				getAmbientFactor(), getDiffuseFactor());
+				getAmbientFactor(), getDiffuseFactor(),
+				getTextureDataList());
 	}
 	
 	public Material darker() {
 		return new ImmutableMaterial(lighting, getColor().darker(),
-				getAmbientFactor(), getDiffuseFactor());
+				getAmbientFactor(), getDiffuseFactor(),
+				getTextureDataList());
 	}
 	
 	private static final Color multiplyColor(Color c, float factor) {
@@ -72,7 +87,12 @@ public abstract class Material {
 
 	public Material makeSmooth() {
 		return new ImmutableMaterial(Lighting.SMOOTH, getColor(),
-				getAmbientFactor(), getDiffuseFactor());
+				getAmbientFactor(), getDiffuseFactor(),
+				getTextureDataList());
+	}
+		
+	public List<TextureData> getTextureDataList() {
+		return textureDataList;
 	}
 	
 	public String toString() {

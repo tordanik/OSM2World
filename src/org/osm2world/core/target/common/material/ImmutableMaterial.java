@@ -1,16 +1,25 @@
 package org.osm2world.core.target.common.material;
 
 import java.awt.Color;
+import java.util.List;
+
+import org.osm2world.core.target.common.TextureData;
 
 /**
  * a simple material class that offers no capabilities beyond the minimum
  * requirements of {@link Material}
  */
 public final class ImmutableMaterial extends Material {
-		
+	
 	public ImmutableMaterial(Lighting lighting, Color color,
-			float ambientFactor, float diffuseFactor) {
-		super(lighting, color, ambientFactor, diffuseFactor);
+			float ambientFactor, float diffuseFactor,
+			List<TextureData> textureDataList) {
+		super(lighting, color, ambientFactor, diffuseFactor, textureDataList);
+	}
+	
+	public ImmutableMaterial(Lighting lighting, Color color,
+			List<TextureData> textureDataList) {
+		super(lighting, color, textureDataList);
 	}
 	
 	public ImmutableMaterial(Lighting lighting, Color color) {

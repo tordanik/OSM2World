@@ -3,6 +3,7 @@ package org.osm2world.core.target.povray;
 import java.awt.Color;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
@@ -120,7 +121,8 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	
 	@Override
 	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles) {
+			Collection<? extends TriangleXYZ> triangles,
+			List<List<VectorXZ>> textureCoordLists) {
 
 		for (TriangleXYZ triangle : triangles) {
 			performNaNCheck(triangle);

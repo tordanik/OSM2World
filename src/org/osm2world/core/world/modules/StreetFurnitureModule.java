@@ -1,6 +1,9 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
+import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
@@ -92,7 +95,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			target.drawColumn(Materials.STEEL, null,
+			target.drawColumn(STEEL, null,
 					node.getElevationProfile().getWithEle(node.getPos()),
 					parseHeight(node.getTags(), 10f),
 					0.15, 0.15, false, true);
@@ -136,17 +139,17 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			/* draw socket, poster and cap */
 			
-			target.drawColumn(Materials.CONCRETE, null,
+			target.drawColumn(CONCRETE, null,
 					node.getPos().xyz(ele),
 					0.15 * height,
 					0.5, 0.5, false, false);
 			
-			target.drawColumn(Materials.ADVERTISING_POSTER, null,
+			target.drawColumn(ADVERTISING_POSTER, null,
 					node.getPos().xyz(ele),
 					0.98 * height,
 					0.48, 0.48, false, false);
 
-			target.drawColumn(Materials.CONCRETE, null,
+			target.drawColumn(CONCRETE, null,
 					node.getPos().xyz(ele + 0.95 * height),
 					0.05 * height,
 					0.5, 0.5, false, true);
@@ -209,7 +212,8 @@ public class StreetFurnitureModule extends AbstractModule {
 					.xyz(ele + height)
 			};
 			
-			target.drawTriangleStrip(Materials.ADVERTISING_POSTER, vs);
+			target.drawTriangleStrip(ADVERTISING_POSTER, asList(vs), nCopies(
+					ADVERTISING_POSTER.getTextureDataList().size(), BILLBOARD_TEX_COORDS));
 			
 			VectorXYZ temp = vs[2];
 			vs[2] = vs[0];
@@ -219,7 +223,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs[3] = vs[1];
 			vs[1] = temp;
 			
-			target.drawTriangleStrip(Materials.CONCRETE, vs);
+			target.drawTriangleStrip(CONCRETE, vs);
 			
 						
 			/* draw poles */
@@ -230,12 +234,18 @@ public class StreetFurnitureModule extends AbstractModule {
 			};
 			
 			for (VectorXZ pole : poles) {
-				target.drawBox(Materials.CONCRETE,
+				target.drawBox(CONCRETE,
 						node.getElevationProfile().getWithEle(pole),
 						faceVector, minHeight, 0.2, 0.1);
 			}
 			
 		}
+		
+		List<VectorXZ> BILLBOARD_TEX_COORDS = asList(
+				new VectorXZ(1, 1),
+				new VectorXZ(1, 0),
+				new VectorXZ(0, 1),
+				new VectorXZ(0, 0));
 		
 	}
 	
@@ -373,7 +383,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				
 			if (material == null) {
 				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.STEEL);
+						node.getTags().getValue("surface"), STEEL);
 			}
 			
 			/* draw pole */
@@ -510,11 +520,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			// post boxes differ widely in appearance, hence we draw them only for known operators or brands
 			if (node.getTags().contains("operator", "Deutsche Post AG")
 				|| node.getTags().contains("brand", "Deutsche Post")) {
-				boxMaterial = Materials.POSTBOX_DEUTSCHEPOST;
-				poleMaterial = Materials.STEEL;
+				boxMaterial = POSTBOX_DEUTSCHEPOST;
+				poleMaterial = STEEL;
 				type = Type.WALL;
 			} else if (node.getTags().contains("operator", "Royal Mail")) {
-				boxMaterial = Materials.POSTBOX_ROYALMAIL;
+				boxMaterial = POSTBOX_ROYALMAIL;
 				type = Type.PILLAR;
 			} else {
 				System.err.println("warning: unknown operator or brand for post box " + node.toString());
@@ -592,8 +602,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			double directionAngle = parseDirection(node.getTags(), PI);
 			
-			Material boxMaterial = Materials.POSTBOX_DEUTSCHEPOST;
-			Material otherMaterial = Materials.STEEL;
+			Material boxMaterial = POSTBOX_DEUTSCHEPOST;
+			Material otherMaterial = STEEL;
 			
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ rightVector = faceVector.rightNormal();
@@ -693,7 +703,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			float height = parseHeight(node.getTags(), 1f);
 			
 			/* draw main pole */
-			target.drawColumn(Materials.FIREHYDRANT, null,
+			target.drawColumn(FIREHYDRANT, null,
 					node.getElevationProfile().getWithEle(node.getPos()),
 					height,
 					0.15, 0.15, false, true);
@@ -703,10 +713,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ smallValveVector = VectorXZ.X_UNIT;
 			VectorXZ largeValveVector = VectorXZ.Z_UNIT;
 			
-			target.drawBox(Materials.FIREHYDRANT,
+			target.drawBox(FIREHYDRANT,
 				valveBaseVector,
 				smallValveVector, 0.1f, 0.5f, 0.1f);
-			target.drawBox(Materials.FIREHYDRANT,
+			target.drawBox(FIREHYDRANT,
 				valveBaseVector.add(0.2f, -0.1f, 0f),
 				largeValveVector, 0.15f, 0.15f, 0.15f);
 		}
@@ -756,10 +766,10 @@ public class StreetFurnitureModule extends AbstractModule {
 				material = Materials.getSurfaceMaterial(
 						node.getTags().getValue("material"));
 			}
-				
+			
 			if (material == null) {
 				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.STEEL);
+						node.getTags().getValue("surface"), STEEL);
 			}
 			
 			/* draw pole */
