@@ -75,7 +75,7 @@ public abstract class Material {
 				getTextureDataList());
 	}
 	
-	private static final Color multiplyColor(Color c, float factor) {
+	public static final Color multiplyColor(Color c, float factor) {
 		float[] colorComponents = new float[3];
 		c.getColorComponents(colorComponents);
 		

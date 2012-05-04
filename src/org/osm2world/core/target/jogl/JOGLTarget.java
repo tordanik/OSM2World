@@ -326,8 +326,10 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			setFrontMaterialColor(gl, GL.GL_AMBIENT, material.ambientColor());
 			setFrontMaterialColor(gl, GL.GL_DIFFUSE, material.diffuseColor());
 		} else {
-			setFrontMaterialColor(gl, GL.GL_AMBIENT, Color.WHITE);
-			setFrontMaterialColor(gl, GL.GL_DIFFUSE, Color.WHITE);
+			setFrontMaterialColor(gl, GL.GL_AMBIENT, Material.multiplyColor(
+					Color.WHITE, material.getAmbientFactor()));
+			setFrontMaterialColor(gl, GL.GL_DIFFUSE, Material.multiplyColor(
+					Color.WHITE, material.getDiffuseFactor()));
 		}
 		
 		if (!textured) {
@@ -337,7 +339,10 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			TextureData textureData = material.getTextureDataList().get(0);
 						
 			gl.glEnable(GL.GL_TEXTURE_2D);
-	        			
+	        
+			gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			
 	        Texture texture = textureManager.getTextureForFile(textureData.file);
 	        texture.enable(); //TODO: should this be called every time?
 	        texture.bind();
