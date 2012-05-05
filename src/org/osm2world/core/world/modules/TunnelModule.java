@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVectorsForTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -331,8 +332,9 @@ public class TunnelModule extends AbstractModule {
 			
 			// draw top
 			
-			target.drawPolygon(Materials.TUNNEL_DEFAULT,
-					topOutline.toArray(new VectorXYZ[0]));
+			target.drawPolygon(Materials.TUNNEL_DEFAULT, topOutline,
+					generateGlobalTextureCoordLists(
+							topOutline.toArray(new VectorXYZ[0]), Materials.TUNNEL_DEFAULT));
 			
 		}
 

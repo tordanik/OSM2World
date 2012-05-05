@@ -47,7 +47,9 @@ public final class TestUtil {
 	
 	public static final void assertAlmostEquals(
 			double expected, double actual) {
-		assert Math.abs(expected - actual) < 0.001;
+		if (Math.abs(expected - actual) > 0.001) {
+			throw new AssertionError("expected " + expected + ", was " + actual);
+		}
 	}
 	
 	public static final void assertAlmostEquals(
@@ -56,11 +58,26 @@ public final class TestUtil {
 		assertAlmostEquals(expected.z, actual.z);
 	}
 	
+	public static void assertAlmostEquals(
+			double expectedX, double expectedZ,
+			VectorXZ actual) {
+		assertAlmostEquals(expectedX, actual.x);
+		assertAlmostEquals(expectedZ, actual.z);
+	}
+		
 	public static final void assertAlmostEquals(
 			VectorXYZ expected, VectorXYZ actual) {
 		assertAlmostEquals(expected.x, actual.x);
 		assertAlmostEquals(expected.y, actual.y);
 		assertAlmostEquals(expected.z, actual.z);
+	}
+	
+	public static final void assertAlmostEquals(
+			double expectedX, double expectedY, double expectedZ,
+			VectorXYZ actual) {
+		assertAlmostEquals(expectedX, actual.x);
+		assertAlmostEquals(expectedY, actual.y);
+		assertAlmostEquals(expectedZ, actual.z);
 	}
 	
 	public static final void assertSameCyclicOrder(

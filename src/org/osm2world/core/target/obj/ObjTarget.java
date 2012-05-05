@@ -2,7 +2,6 @@ package org.osm2world.core.target.obj;
 
 import java.awt.Color;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -129,21 +128,43 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 
 	@Override
 	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles) {
+			Collection<? extends TriangleXYZWithNormals> triangles,
+			List<List<VectorXZ>> textureCoordLists) {
 		
 		useMaterial(material);
-		
+
+		int triangleNumber = 0;
 		for (TriangleXYZWithNormals triangle : triangles) {
+			
+			int[] texCoordIndices = null;
+			if (!textureCoordLists.isEmpty()) {
+				List<VectorXZ> texCoords = textureCoordLists.get(0);
+				texCoordIndices = texCoordsToIndices(
+						texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
+			}
+			
 			writeFace(verticesToIndices(triangle.getVertices()),
-					normalsToIndices(triangle.getNormals()), null);
+					normalsToIndices(triangle.getNormals()), texCoordIndices);
+			
+			triangleNumber ++;
+			
 		}
 		
 	}
 	
 	@Override
-	public void drawPolygon(Material material, VectorXYZ... vs) {
+	public void drawPolygon(Material material, List<? extends VectorXYZ> vs,
+			List<List<VectorXZ>> textureCoordLists) {
+		
 		useMaterial(material);
-		writeFace(verticesToIndices(Arrays.asList(vs)), null, null);
+		
+		int[] texCoordIndices = null;
+		if (!textureCoordLists.isEmpty()) {
+			texCoordIndices = texCoordsToIndices(textureCoordLists.get(0));
+		}
+		
+		writeFace(verticesToIndices(vs), null, texCoordIndices);
+		
 	}
 
 	private void useMaterial(Material material) {

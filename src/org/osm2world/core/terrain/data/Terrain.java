@@ -1,5 +1,7 @@
 package org.osm2world.core.terrain.data;
 
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -56,7 +58,8 @@ public class Terrain implements RenderableToAllTargets , RenderableToPOVRay {
 		
 		target.drawTrianglesWithNormals(
 				Materials.TERRAIN_DEFAULT,
-				NormalCalculationUtil.calculateTrianglesWithNormals(triangles));
+				NormalCalculationUtil.calculateTrianglesWithNormals(triangles),
+				generateGlobalTextureCoordLists(triangles, Materials.TERRAIN_DEFAULT));
 		
 	}
 	
@@ -71,6 +74,7 @@ public class Terrain implements RenderableToAllTargets , RenderableToPOVRay {
 		target.drawTrianglesWithNormals(
 				Materials.TERRAIN_DEFAULT,
 				NormalCalculationUtil.calculateTrianglesWithNormals(triangles),
+				generateGlobalTextureCoordLists(triangles, Materials.TERRAIN_DEFAULT),
 				true);
 		
 	}

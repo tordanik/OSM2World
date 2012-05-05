@@ -2,6 +2,7 @@ package org.osm2world.core.math;
 
 import static java.lang.Math.PI;
 import static org.osm2world.core.math.VectorXZ.fromAngle;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
 
@@ -11,38 +12,35 @@ public class VectorXZTest {
 	public void testRightNormal() {
 		
 		VectorXZ xUnitRightNormal = VectorXZ.X_UNIT.rightNormal();
-		assertVectorEpsilon(0, -1, xUnitRightNormal);
+		assertAlmostEquals(0, -1, xUnitRightNormal);
 		
 		VectorXZ testA = new VectorXZ(0.5f, 0.5f);
 		VectorXZ testARightNormal = testA.rightNormal();
-		assertVectorEpsilon(0.707f, -0.707f, testARightNormal);
+		assertAlmostEquals(0.707f, -0.707f, testARightNormal);
+		
+	}
+	
+	@Test
+	public void testAngle() {
+		
+		assertAlmostEquals(     0, new VectorXZ( 0, +1).angle());
+		assertAlmostEquals(0.5*PI, new VectorXZ(+1,  0).angle());
+		assertAlmostEquals(    PI, new VectorXZ( 0, -1).angle());
+		assertAlmostEquals(1.5*PI, new VectorXZ(-1,  0).angle());
+
+		assertAlmostEquals(0.25*PI, new VectorXZ(1, 1).angle());
+		assertAlmostEquals(0.25*PI, new VectorXZ(5, 5).angle());
 		
 	}
 	
 	@Test
 	public void testFromAngle() {
 		
-		assertVectorEpsilon( 0, +1, fromAngle(0));
-		assertVectorEpsilon(+1,  0, fromAngle(0.5*PI));
-		assertVectorEpsilon( 0, -1, fromAngle(PI));
-		assertVectorEpsilon(-1,  0, fromAngle(1.5*PI));
+		assertAlmostEquals( 0, +1, fromAngle(0));
+		assertAlmostEquals(+1,  0, fromAngle(0.5*PI));
+		assertAlmostEquals( 0, -1, fromAngle(PI));
+		assertAlmostEquals(-1,  0, fromAngle(1.5*PI));
 		
 	}
 	
-	public static final float EPSILON = 0.01f;
-	
-	public static void assertEpsilon(float expected, float actual) {
-		if (Math.abs(expected - actual) > EPSILON) {
-			throw new AssertionError("expected " + expected + ", was " + actual);
-		}
-	}
-	
-	public static void assertVectorEpsilon(float x, float z, VectorXZ vector) {
-		if (Math.abs(x - vector.x) > EPSILON) {
-			throw new AssertionError("expected x=" + x + ", was " + vector.x);
-		}
-		if (Math.abs(z - vector.z) > EPSILON) {
-			throw new AssertionError("expected z=" + z + ", was " + vector.z);
-		}
-	}
 }

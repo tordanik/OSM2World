@@ -1,16 +1,21 @@
 package org.osm2world.core.world.modules;
 
+import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
+
+import java.util.Collection;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
-
-import static org.osm2world.core.target.common.material.Materials.*;
 
 /**
  * adds parking spaces to the world
@@ -53,9 +58,16 @@ public class ParkingModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(Target<?> target) {
+			
 			String surface = area.getTags().getValue("surface");
-			target.drawTriangles(getSurfaceMaterial(surface, ASPHALT), getTriangulation());
+			Material material = getSurfaceMaterial(surface, ASPHALT);
+			
+			Collection<TriangleXYZ> triangles = getTriangulation();
+			
+			target.drawTriangles(material, triangles,
+					generateGlobalTextureCoordLists(triangles, material));
+			
 		}
 		
 	}

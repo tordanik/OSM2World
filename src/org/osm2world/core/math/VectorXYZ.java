@@ -135,6 +135,21 @@ public class VectorXYZ implements Vector3D {
 		return Math.acos(this.dot(other));
 	}
 	
+	public double distanceTo(VectorXYZ other) {
+		//SUGGEST (performance): don't create temporary vector
+		return (other.subtract(this)).length();
+	}
+	
+	public double distanceToXZ(VectorXZ other) {
+		//SUGGEST (performance): don't create temporary vector
+		return VectorXZ.distance(this.xz(), other);
+	}
+	
+	public double distanceToXZ(VectorXYZ other) {
+		//SUGGEST (performance): don't create temporary vector
+		return VectorXZ.distance(this.xz(), other.xz());
+	}
+	
 	public VectorXZ xz() {
 		return new VectorXZ(x, z);
 	}

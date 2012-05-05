@@ -1,7 +1,9 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
+import static java.util.Arrays.asList;
 import static org.osm2world.core.util.Predicates.hasType;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,6 +19,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -238,7 +241,10 @@ public class RailwayModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vectorList = getJunctionArea().getVertexLoop();
 			VectorXYZ[] vectors = vectorList.toArray(new VectorXYZ[vectorList.size()]);
 
-			util.drawPolygon(Materials.RAIL_BALLAST_DEFAULT, vectors);
+			Material material = Materials.RAIL_BALLAST_DEFAULT;
+			
+			util.drawPolygon(material, asList(vectors),
+					generateGlobalTextureCoordLists(vectors, material));
 
 			/* draw connection between each pair of rails */
 

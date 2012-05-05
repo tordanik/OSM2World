@@ -146,14 +146,16 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 	@Override
 	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles) {
+			Collection<? extends TriangleXYZWithNormals> triangles,
+			List<List<VectorXZ>> textureCoordLists) {
 		
-		drawTrianglesWithNormals(material, triangles, false);
+		drawTrianglesWithNormals(material, triangles, textureCoordLists, false);
 		
 	}
 
 	public void drawTrianglesWithNormals(Material material,
 			Collection<? extends TriangleXYZWithNormals> triangles,
+			List<List<VectorXZ>> textureCoordLists,
 			boolean asMesh) {
 		
 		if (asMesh) {
@@ -237,13 +239,15 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 //	}
 
 	@Override
-	public void drawPolygon(Material material, VectorXYZ... vs) {
+	public void drawPolygon(Material material, List<? extends VectorXYZ> vs,
+			List<List<VectorXZ>> textureCoordLists) {
+		
 		for (VectorXYZ vector : vs) {
 			performNaNCheck(vector);
 		}
 
 		append("polygon {\n  ");
-		append(vs.length);
+		append(vs.size());
 		append(", ");
 		for (VectorXYZ v : vs) {
 			appendVector(v);

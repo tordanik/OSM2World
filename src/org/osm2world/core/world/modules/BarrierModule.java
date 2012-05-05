@@ -1,9 +1,14 @@
 package org.osm2world.core.world.modules;
 
-import static java.util.Collections.nCopies;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateWallTextureCoordLists;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +45,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new CityWall(line));
 		} else if (Hedge.fits(tags)) {
 			line.addRepresentation(new Hedge(line));
+		} else if (ChainLinkFence.fits(tags)) {
+			line.addRepresentation(new ChainLinkFence(line, tags));
 		} else if (Fence.fits(tags)) {
 			line.addRepresentation(new Fence(line, tags));
 		}
@@ -159,8 +166,8 @@ public class BarrierModule extends AbstractModule {
 					line.getDirection().invert().xyz(0),
 					VectorXYZ.Y_UNIT);
 			
-			target.drawPolygon(material, startCap);
-			target.drawPolygon(material, endCap);
+			target.drawPolygon(material, asList(startCap), EMPTY_LIST);
+			target.drawPolygon(material, asList(endCap), EMPTY_LIST);
 			
 		}
 		
@@ -191,6 +198,61 @@ public class BarrierModule extends AbstractModule {
 		public Hedge(MapWaySegment segment) {
 			super(Materials.HEDGE, segment, 1f, 0.5f);
 		}
+	}
+	
+	private static class ChainLinkFence extends LinearBarrier {
+		
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "fence")
+					&& tags.contains("fence_type", "chain_link");
+		}
+		
+		public ChainLinkFence(MapWaySegment segment, TagGroup tags) {
+			super(segment, 1f, 0.02f);
+		}
+		
+		@Override
+		public void renderTo(Target<?> util) {
+			
+			/* render fence */
+			
+			List<VectorXYZ> pointsWithEle =
+					line.getElevationProfile().getPointsWithEle();
+			
+			List<VectorXYZ> vsFence = asList(createVectorsForVerticalTriangleStrip(
+					pointsWithEle, 0, height));
+			List<List<VectorXZ>> texCoordListsFence = generateWallTextureCoordLists(
+					vsFence, CHAIN_LINK_FENCE);
+			
+			util.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence, texCoordListsFence);
+
+			List<VectorXYZ> pointsWithEleBack =
+					new ArrayList<VectorXYZ>(pointsWithEle);
+			Collections.reverse(pointsWithEleBack);
+			
+			List<VectorXYZ> vsFenceBack = asList(createVectorsForVerticalTriangleStrip(
+					pointsWithEleBack,0, height));
+			List<List<VectorXZ>> texCoordListsFenceBack = generateWallTextureCoordLists(
+					vsFenceBack, CHAIN_LINK_FENCE);
+			
+			util.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
+					texCoordListsFenceBack);
+						
+			/* render poles */
+			
+			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
+					line.getStartNode().getPos(), line.getEndNode().getPos());
+			
+			for (VectorXZ polePosition : polePositions) {
+			
+				VectorXYZ base = polePosition.xyz(line.getElevationProfile().getEleAt(polePosition));
+				util.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
+						height, width, width, false, true);
+			
+			}
+			
+		}
+		
 	}
 	
 	private static class Fence extends LinearBarrier {
@@ -297,7 +359,7 @@ public class BarrierModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> util) {
 			VectorXYZ pos = node.getElevationProfile().getPointWithEle();
-			util.drawColumn(Materials.BOLLARD_DEFAULT,
+			util.drawColumn(Materials.CONCRETE,
 					null, pos, height, 0.15f, 0.15f, false, true);
 		}
 		

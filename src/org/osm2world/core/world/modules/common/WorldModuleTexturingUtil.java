@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules.common;
 
+import static java.lang.Math.abs;
 import static java.util.Collections.*;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import org.osm2world.core.world.creation.WorldModule;
 public class WorldModuleTexturingUtil {
 	
 	private WorldModuleTexturingUtil() { }
-
+	
 	/**
 	 * creates texture coordinates based only on the vertex coordinates
 	 * in the global coordinate system and the texture size
@@ -89,6 +90,88 @@ public class WorldModuleTexturingUtil {
 		return generateGlobalTextureCoordLists(vs, material);
 		
 	}
+	
+	/**
+	 * creates texture coordinates for triangles that orient the texture
+	 * based on each triangle's downward slope.
+	 */
+	public static final List<List<VectorXZ>> generateSlopedFaceTextureCoordLists(
+			Collection<TriangleXYZ> triangles, Material material) {
+		
+		List<TextureData> textureDataList = material.getTextureDataList();
+		
+		if (textureDataList.size() == 0) {
+			
+			return emptyList();
+			
+		} else if (textureDataList.size() == 1) {
+			
+			return singletonList(generateSlopedFaceTextureCoordList(
+					triangles, textureDataList.get(0)));
+			
+		} else {
+			
+			List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
+			
+			for (TextureData textureData : textureDataList) {
+				result.add(generateSlopedFaceTextureCoordList(triangles, textureData));
+			}
+			
+			return result;
+			
+		}
+		
+	}
+		
+	
+	private static final List<VectorXZ> generateSlopedFaceTextureCoordList(
+			Collection<TriangleXYZ> triangles, TextureData textureData) {
+		
+		List<VectorXZ> texCoords = new ArrayList<VectorXZ>(3 * triangles.size());
+		
+		List<Double> knownAngles = new ArrayList<Double>();
+		
+		for (TriangleXYZ triangle : triangles) {
+		
+			VectorXZ normalXZProjection = triangle.getNormal().xz();
+			
+			double downAngle = 0;
+			
+			if (normalXZProjection.x != 0 || normalXZProjection.z != 0) {
+				
+				downAngle = normalXZProjection.angle();
+				
+				//try to avoid differences between triangles of the same face
+				
+				Double similarKnownAngle = null;
+				
+				for (double knownAngle : knownAngles) {
+					if (abs(downAngle - knownAngle) < 0.02) {
+						similarKnownAngle = knownAngle;
+						break;
+					}
+				}
+				
+				if (similarKnownAngle == null) {
+					knownAngles.add(downAngle);
+				} else {
+					downAngle = similarKnownAngle;
+				}
+				
+			}
+			
+			for (VectorXYZ v : triangle.getVertices()) {
+				VectorXZ baseTexCoord = v.rotateY(-downAngle).xz();
+				texCoords.add(new VectorXZ(
+						baseTexCoord.x / textureData.width,
+						baseTexCoord.z / textureData.height));
+			}
+			
+		}
+		
+		return texCoords;
+		
+	}
 
 	/**
 	 * creates texture coordinates for a triangle strip,
@@ -129,6 +212,18 @@ public class WorldModuleTexturingUtil {
 	private static final List<VectorXZ> generateWallTextureCoordList(
 			List<VectorXYZ> vs, TextureData textureData) {
 		
+		/* calculate length of the wall (if needed later) */
+		
+		double totalLength = 0;
+		
+		if (textureData.width == 0) {
+			for (int i = 0; i+1 < vs.size(); i++) {
+				totalLength += vs.get(i).distanceToXZ(vs.get(i+1));
+			}
+		}
+		
+		/* calculate texture coordinate list */
+		
 		List<VectorXZ> textureCoords = new ArrayList<VectorXZ>(vs.size());
 				
 		double accumulatedLength = 0;
@@ -137,13 +232,30 @@ public class WorldModuleTexturingUtil {
 			
 			VectorXYZ v = vs.get(i);
 			
+			// increase accumulated length after every second vector
+			
 			if (i > 0 && i % 2 == 0) {
 				accumulatedLength += v.xz().distanceTo(vs.get(i-2).xz());
 			}
 			
-			textureCoords.add(new VectorXZ(
-					accumulatedLength / textureData.width,
-					v.y / textureData.height));
+			// calculate texture coords.
+			// height/width of 0 means: the texture should fit exactly onto the wall
+			
+			double s, t;
+			
+			if (textureData.width > 0) {
+				s = accumulatedLength / textureData.width;
+			} else {
+				s = accumulatedLength / totalLength;
+			}
+			
+			if (textureData.height > 0) {
+				t = v.y / textureData.height;
+			} else {
+				t = (i % 2 == 0) ? 1 : 0;
+			}
+			
+			textureCoords.add(new VectorXZ(s, t));
 			
 		}
 		

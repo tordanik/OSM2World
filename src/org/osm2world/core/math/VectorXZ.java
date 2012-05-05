@@ -93,6 +93,25 @@ public class VectorXZ implements Vector3D {
 		return distance(this, other);
 	}
 	
+	/**
+	 * gets this vector's angle relative to (0,1).
+	 * Inverse of {@link #fromAngle(double)}.
+	 * 
+	 * @return angle in radians
+	 */
+	public double angle() {
+		if (x == 0 && z == 0) {
+			return 0;
+		} else {
+			VectorXZ normalized = this.normalize();
+			if (x >= 0) {
+				return acos(normalized.dot(Z_UNIT));
+			} else {
+				return 2*PI - acos(normalized.dot(Z_UNIT));
+			}
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return "(" + x + "," + z + ")";

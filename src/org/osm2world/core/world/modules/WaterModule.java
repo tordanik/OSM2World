@@ -1,10 +1,12 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
+import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
 
 import java.util.HashMap;
 import java.util.List;
@@ -190,7 +192,8 @@ public class WaterModule extends ConfigurableWorldModule {
 				VectorXYZ[] vs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
 						leftWaterBorder, rightWaterBorder);
 				
-				target.drawTriangleStrip(WATER, vs);
+				target.drawTriangleStrip(WATER, asList(vs),
+						generateGlobalTextureCoordLists(vs, WATER));
 				
 			}
 			
@@ -253,7 +256,8 @@ public class WaterModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vertices = getOutlinePolygon().getVertices();
 			VectorXYZ[] vertexArray = vertices.toArray(new VectorXYZ[vertices.size()]);
 			
-			target.drawPolygon(WATER, vertexArray);
+			target.drawPolygon(WATER, asList(vertexArray),
+					generateGlobalTextureCoordLists(vertexArray, WATER));
 			
 			//TODO: only cover with water to 0.95 * distance to center; add land below
 			
@@ -290,7 +294,8 @@ public class WaterModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			target.drawTriangles(WATER, getTriangulation());
+			target.drawTriangles(WATER, getTriangulation(),
+					generateGlobalTextureCoordLists(getTriangulation(), WATER));
 		}
 		
 	}
@@ -322,7 +327,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			/* render water */
 				
-			target.drawTriangles(WATER, getTriangulation());
+			target.drawTriangles(WATER, getTriangulation(),
+					generateGlobalTextureCoordLists(getTriangulation(), WATER));
 			
 			/* render walls */
 			//note: mostly copy-pasted from BarrierModule

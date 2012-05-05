@@ -38,12 +38,16 @@ public interface Target<R extends Renderable> {
 	 */
 	void beginObject(WorldObject object);
 	
-	void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles);
+	void drawTriangles(Material material,
+			Collection<? extends TriangleXYZ> triangles);
 
-	void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
+	void drawTriangles(Material material,
+			Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> textureCoordLists);
 	
-	void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles);
+	void drawTrianglesWithNormals(Material material,
+			Collection<? extends TriangleXYZWithNormals> triangles,
+			List<List<VectorXZ>> textureCoordLists);
 
 	void drawTriangleStrip(Material material, VectorXYZ... vs); //TODO: delete this, use only collections
 	
@@ -67,7 +71,8 @@ public interface Target<R extends Renderable> {
 	void drawTriangleFan(Material material, List<? extends VectorXYZ> vs,
 			List<List<VectorXZ>> textureCoordLists);
 	
-	void drawPolygon(Material material, VectorXYZ... vs);
+	void drawPolygon(Material material, List<? extends VectorXYZ> vs,
+			List<List<VectorXZ>> textureCoordLists);
 
 	/**
 	 * draws a box with outward-facing polygons
@@ -76,7 +81,7 @@ public interface Target<R extends Renderable> {
 			VectorXYZ rightVector, VectorXYZ upVector, VectorXYZ backVector);
 
 	/**
-	 * draws a box with outward-facing polygons
+	 * draws a box with outward-facing polygons.
 	 */
 	void drawBox(Material material, VectorXYZ bottomCenter, VectorXZ direction,
 			double height, double width, double depth);

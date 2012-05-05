@@ -39,6 +39,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial BRICK =
 			new ConfMaterial(Lighting.FLAT, new Color(1.0f, 0.5f, 0.25f));
+	public static final ConfMaterial COBBLESTONE =
+			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial CONCRETE =
 		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial EARTH =
@@ -47,13 +49,21 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial GRASS =
 		new ConfMaterial(Lighting.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial GRASS_PAVER =
+			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.5f, 0.3f));
 	public static final ConfMaterial GRAVEL =
 		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial PAVING_STONE =
+			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial PEBBLESTONE =
+			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial SAND =
 		new ConfMaterial(Lighting.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial STEEL =
 		new ConfMaterial(Lighting.FLAT, new Color(200, 200, 200));
 	public static final ConfMaterial WOOD =
+		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
+	public static final ConfMaterial WOOD_WALL =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial TARTAN =
 		new ConfMaterial(Lighting.FLAT, new Color(206, 109, 90));
@@ -91,10 +101,11 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial SPLIT_RAIL_FENCE =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
-	
-	public static final ConfMaterial BOLLARD_DEFAULT =
-		new ConfMaterial(Lighting.FLAT, Color.LIGHT_GRAY);
-	
+	public static final ConfMaterial CHAIN_LINK_FENCE =
+			new ConfMaterial(Lighting.FLAT, Color.LIGHT_GRAY);
+	public static final ConfMaterial CHAIN_LINK_FENCE_POST =
+			new ConfMaterial(Lighting.FLAT, new Color(0.1f, 0.5f, 0.1f));
+		
 	public static final ConfMaterial BRIDGE_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.GRAY);
 	public static final ConfMaterial BRIDGE_PILLAR_DEFAULT =
@@ -131,16 +142,16 @@ public final class Materials {
 	static {
 		
 		surfaceMaterialMap.put("asphalt", ASPHALT);
-		surfaceMaterialMap.put("cobblestone", ASPHALT);
+		surfaceMaterialMap.put("cobblestone", COBBLESTONE);
 		surfaceMaterialMap.put("compacted", GRAVEL);
 		surfaceMaterialMap.put("concrete", CONCRETE);
 		surfaceMaterialMap.put("grass", GRASS);
 		surfaceMaterialMap.put("gravel", GRAVEL);
-		surfaceMaterialMap.put("grass_paver", ASPHALT);
+		surfaceMaterialMap.put("grass_paver", GRASS_PAVER);
 		surfaceMaterialMap.put("ground", EARTH);
 		surfaceMaterialMap.put("paved", ASPHALT);
-		surfaceMaterialMap.put("paving_stones", ASPHALT);
-		surfaceMaterialMap.put("pebblestone", ASPHALT);
+		surfaceMaterialMap.put("paving_stones", PAVING_STONE);
+		surfaceMaterialMap.put("pebblestone", PEBBLESTONE);
 		surfaceMaterialMap.put("sand", SAND);
 		surfaceMaterialMap.put("tartan", TARTAN);
 		surfaceMaterialMap.put("unpaved", EARTH);
@@ -201,7 +212,7 @@ public final class Materials {
 	
 	private static final String CONF_KEY_REGEX =
 			"material_(.+)_(color|texture_(?:file|width|height|))";
-		
+	
 	/**
 	 * configures the attributes of the materials within this class
 	 * based on external configuration settings

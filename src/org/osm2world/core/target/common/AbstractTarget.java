@@ -1,7 +1,9 @@
 package org.osm2world.core.target.common;
 
-import static java.util.Collections.emptyList;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,17 +51,11 @@ public abstract class AbstractTarget<R extends Renderable>
 		final VectorXYZ backUpperLeft   = frontUpperLeft.add(backVector);
 		final VectorXYZ backUpperRight  = frontUpperRight.add(backVector);
 		
-		drawTriangleStrip(material,
+		drawBox(material,
 				frontLowerLeft, frontLowerRight,
 				frontUpperLeft, frontUpperRight,
-				backUpperLeft, backUpperRight,
-				backLowerLeft, backLowerRight);
-		
-		drawTriangleStrip(material,
-				backUpperRight, frontUpperRight,
-				backLowerRight, frontLowerRight,
-				backLowerLeft, frontLowerLeft,
-				backUpperLeft, frontUpperLeft);
+				backLowerLeft, backLowerRight,
+				backUpperLeft, backUpperRight);
 		
 	}
 	
@@ -86,19 +82,39 @@ public abstract class AbstractTarget<R extends Renderable>
 			VectorXYZ backLowerLeft, VectorXYZ backLowerRight,
 			VectorXYZ backUpperLeft, VectorXYZ backUpperRight) {
 		
-		drawTriangleStrip(material,
+		VectorXYZ[] vsStrip1 = {
+				backLowerLeft, backLowerRight,
 				frontLowerLeft, frontLowerRight,
 				frontUpperLeft, frontUpperRight,
-				backUpperLeft, backUpperRight,
-				backLowerLeft, backLowerRight);
+				backUpperLeft, backUpperRight};
 		
-		drawTriangleStrip(material,
-				backUpperRight, frontUpperRight,
-				backLowerRight, frontLowerRight,
-				backLowerLeft, frontLowerLeft,
-				backUpperLeft, frontUpperLeft);
+		VectorXYZ[] vsStrip2 = {
+				frontUpperRight, frontLowerRight,
+				backUpperRight, backLowerRight,
+				backUpperLeft, backLowerLeft,
+				frontUpperLeft, frontLowerLeft};
+		
+		drawTriangleStrip(material, asList(vsStrip1), nCopies(
+				material.getTextureDataList().size(), asList(BOX_TEX_COORDS_1)));
+
+		drawTriangleStrip(material, asList(vsStrip2), nCopies(
+				material.getTextureDataList().size(), asList(BOX_TEX_COORDS_2)));
 		
 	}
+	
+	protected static final VectorXZ[] BOX_TEX_COORDS_1 = {
+		new VectorXZ(0,     0), new VectorXZ(0.25,     0),
+		new VectorXZ(0, 1.0/3), new VectorXZ(0.25, 1.0/3),
+		new VectorXZ(0, 2.0/3), new VectorXZ(0.25, 2.0/3),
+		new VectorXZ(0,     1), new VectorXZ(0.25,     1)
+	};
+	
+	protected static final VectorXZ[] BOX_TEX_COORDS_2 = {
+		new VectorXZ(0.25, 1.0/3), new VectorXZ(0.25, 2.0/3),
+		new VectorXZ(0.50, 1.0/3), new VectorXZ(0.50, 2.0/3),
+		new VectorXZ(0.75, 1.0/3), new VectorXZ(0.75, 2.0/3),
+		new VectorXZ(1.00, 1.0/3), new VectorXZ(1.00, 2.0/3)
+	};
 
 	private static final int EDGES_FOR_CYLINDER = 16;
 	
@@ -148,9 +164,16 @@ public abstract class AbstractTarget<R extends Renderable>
 		
 		/* draw the 3 primitives */
 
-		if (drawBottom) { drawTriangleFan(material, bottomFan); }
-		if (drawTop) { drawTriangleFan(material, topFan); }
-		drawTriangleStrip(material, mantleStrip);
+		if (drawBottom) { drawTriangleFan(material, bottomFan,
+				generateGlobalTextureCoordLists(
+						bottomFan.toArray(new VectorXYZ[bottomFan.size()]), material)); }
+		
+		if (drawTop) { drawTriangleFan(material, topFan,
+				generateGlobalTextureCoordLists(
+						topFan.toArray(new VectorXYZ[topFan.size()]), material)); }
+		
+		drawTriangleStrip(material, mantleStrip,
+				generateWallTextureCoordLists(mantleStrip, material));
 		
 	}
 
@@ -212,8 +235,9 @@ public abstract class AbstractTarget<R extends Renderable>
 	}
 	
 	@Override
-	public void drawPolygon(Material material, VectorXYZ... vs) {
-		drawTriangleFan(material, Arrays.asList(vs));
+	public void drawPolygon(Material material, List<? extends VectorXYZ> vs,
+			List<List<VectorXZ>> textureCoordLists) {
+		drawTriangleFan(material, vs, textureCoordLists);
 	}
 	
 	@Override

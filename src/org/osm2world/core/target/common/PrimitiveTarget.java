@@ -4,7 +4,6 @@ import static org.osm2world.core.math.algorithms.NormalCalculationUtil.*;
 import static org.osm2world.core.target.common.Primitive.Type.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,18 +54,6 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	}
 	
 	@Override
-	public void drawPolygon(Material material, VectorXYZ... vs) {
-		drawPolygon(material, Arrays.asList(vs));
-	}
-
-	public void drawPolygon(Material material, List<? extends VectorXYZ> vs) {
-		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
-		drawPrimitive(CONVEX_POLYGON, material, vs,
-				calculateTriangleFanNormals(vs, smooth),
-				Collections.<List<VectorXZ>>emptyList());
-	}
-	
-	@Override
 	public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles) {
 		drawTriangles(material, triangles, Collections.<List<VectorXZ>>emptyList());
 	}
@@ -93,7 +80,8 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	
 	@Override
 	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles) {
+			Collection<? extends TriangleXYZWithNormals> triangles,
+			List<List<VectorXZ>> textureCoordLists) {
 
 		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
 		List<VectorXYZ> normals = new ArrayList<VectorXYZ>(triangles.size()*3);
@@ -109,7 +97,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 		
 		drawPrimitive(TRIANGLES, material, vectors,
 				normals.toArray(new VectorXYZ[normals.size()]),
-				Collections.<List<VectorXZ>>emptyList());
+				textureCoordLists);
 		
 	}
 	

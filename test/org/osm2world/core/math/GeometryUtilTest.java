@@ -3,7 +3,7 @@ package org.osm2world.core.math;
 import static junit.framework.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 import static org.osm2world.core.math.VectorXZ.*;
-import static org.osm2world.core.test.TestUtil.anyVectorXZ;
+import static org.osm2world.core.test.TestUtil.*;
 
 import java.util.List;
 
@@ -59,13 +59,13 @@ public class GeometryUtilTest {
 				1f, true, new VectorXZ(-2, 5), new VectorXZ(+4, 5));
 		
 		assertSame(7, result.size());
-		VectorXZTest.assertVectorEpsilon(-2, 5, result.get(0));
-		VectorXZTest.assertVectorEpsilon(-1, 5, result.get(1));
-		VectorXZTest.assertVectorEpsilon( 0, 5, result.get(2));
-		VectorXZTest.assertVectorEpsilon(+1, 5, result.get(3));
-		VectorXZTest.assertVectorEpsilon(+2, 5, result.get(4));
-		VectorXZTest.assertVectorEpsilon(+3, 5, result.get(5));
-		VectorXZTest.assertVectorEpsilon(+4, 5, result.get(6));
+		assertAlmostEquals(-2, 5, result.get(0));
+		assertAlmostEquals(-1, 5, result.get(1));
+		assertAlmostEquals( 0, 5, result.get(2));
+		assertAlmostEquals(+1, 5, result.get(3));
+		assertAlmostEquals(+2, 5, result.get(4));
+		assertAlmostEquals(+3, 5, result.get(5));
+		assertAlmostEquals(+4, 5, result.get(6));
 		
 	}
 
@@ -76,12 +76,12 @@ public class GeometryUtilTest {
 				1f, false, new VectorXZ(-2, 5), new VectorXZ(+4, 5));
 		
 		assertSame(6, result.size());
-		VectorXZTest.assertVectorEpsilon(-1.5f, 5, result.get(0));
-		VectorXZTest.assertVectorEpsilon(-0.5f, 5, result.get(1));
-		VectorXZTest.assertVectorEpsilon(+0.5f, 5, result.get(2));
-		VectorXZTest.assertVectorEpsilon(+1.5f, 5, result.get(3));
-		VectorXZTest.assertVectorEpsilon(+2.5f, 5, result.get(4));
-		VectorXZTest.assertVectorEpsilon(+3.5f, 5, result.get(5));
+		assertAlmostEquals(-1.5f, 5, result.get(0));
+		assertAlmostEquals(-0.5f, 5, result.get(1));
+		assertAlmostEquals(+0.5f, 5, result.get(2));
+		assertAlmostEquals(+1.5f, 5, result.get(3));
+		assertAlmostEquals(+2.5f, 5, result.get(4));
+		assertAlmostEquals(+3.5f, 5, result.get(5));
 		
 	}
 }

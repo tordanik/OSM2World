@@ -7,6 +7,7 @@ import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateSlopedFaceTextureCoordLists;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.terrain.creation.CAGUtil;
 import org.osm2world.core.util.MinMaxUtil;
@@ -550,7 +550,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				} else if ("glass".equals(materialString)) {
 					return Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
-					return Materials.WOOD;
+					return Materials.WOOD_WALL;
 				}
 			}
 			
@@ -591,7 +591,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				if (color != null) {
-					return new ImmutableMaterial(Lighting.FLAT, color);
+					return new ImmutableMaterial(
+							defaultMaterial.getLighting(), color,
+							defaultMaterial.getAmbientFactor(),
+							defaultMaterial.getDiffuseFactor(),
+							defaultMaterial.getTextureDataList());
 				}
 				
 			}
@@ -709,13 +713,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				checkArgument(heights.size() == scaleFactors.size(),
 						"heights and scaleFactors must have same size");
-
+				
 				int numRings = heights.size();
 				VectorXZ center = polygon.getCenter();
-							
+				
 				@SuppressWarnings("unchecked")
 				List<VectorXYZ>[] rings = new List[numRings];
-				
+
 				for (int i = 0; i < numRings; i++) {
 					
 					double y = heights.get(i);
@@ -908,6 +912,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			@Override
 			public void renderTo(Target<?> target) {
 				
+				/* create the triangulation of the roof */
+				
 				Collection<TriangleXZ> triangles =
 						JTSTriangulationUtil.triangulate(
 								getPolygon().getOuter(),
@@ -926,9 +932,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 							withRoofEle(tCCW.v3)));
 					//TODO: avoid duplicate objects for points in more than one triangle
 				}
+								
+				/* draw triangles */
 				
-				target.drawTriangles(materialRoof, trianglesXYZ);
-					
+				target.drawTriangles(materialRoof, trianglesXYZ,
+						generateSlopedFaceTextureCoordLists(
+								trianglesXYZ, materialRoof));
+				
 			}
 			
 			private VectorXYZ withRoofEle(VectorXZ v) {
@@ -1629,7 +1639,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 					VectorXZ posBefore = vs.get((vs.size() + entranceI - 1) % vs.size());
 					VectorXZ posAfter = vs.get((vs.size() + entranceI + 1) % vs.size());
 					
-					intoBuilding = posAfter.subtract(posBefore).rightNormal();
+					intoBuilding = posBefore.subtract(posAfter).rightNormal();
 					if (polygon.isClockwise()) {
 						intoBuilding = intoBuilding.invert();
 					}
@@ -1652,9 +1662,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			VectorXYZ center = node.getElevationProfile().getPointWithEle();
 			
+			VectorXYZ backVector = intoBuilding.xyz(0).mult(0.1);
 			target.drawBox(Materials.ENTRANCE_DEFAULT,
-					center.subtract(right.mult(0.5)),
-					right, up, intoBuilding.xyz(0).mult(0.1));
+					center.subtract(right.mult(0.5)).subtract(backVector),
+					right, up, backVector);
 			
 		}
 		
