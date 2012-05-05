@@ -16,16 +16,16 @@ public class Primitive {
 	
 	public final int[] indices;
 		
-	public final VectorXYZ[] normals; //TODO: why have indexed vertices, but direct refs to normals?
+	public final List<VectorXYZ> normals; //TODO: why have indexed vertices, but direct refs to normals?
 	
-	public final List<List<VectorXZ>> textureCoordLists;
+	public final List<List<VectorXZ>> texCoordLists;
 	
-	public Primitive(Type type, int[] indices, VectorXYZ[] normals,
-			List<List<VectorXZ>> textureCoordLists) {
+	public Primitive(Type type, int[] indices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 		this.type = type;
 		this.indices = indices;
 		this.normals = normals;
-		this.textureCoordLists = textureCoordLists;
+		this.texCoordLists = texCoordLists;
 	}
 	
 	@Override

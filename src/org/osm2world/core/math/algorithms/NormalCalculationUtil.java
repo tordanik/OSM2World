@@ -1,5 +1,7 @@
 package org.osm2world.core.math.algorithms;
 
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,8 +20,8 @@ public final class NormalCalculationUtil {
 	/**
 	 * calculates normals for a collection of triangles
 	 */
-	public static final VectorXYZ[] calculateTriangleNormals(
-			List<? extends VectorXYZ> vertices, boolean smooth) {
+	public static final List<VectorXYZ> calculateTriangleNormals(
+			List<VectorXYZ> vertices, boolean smooth) {
 
 		assert vertices.size() % 3 == 0;
 		
@@ -45,18 +47,19 @@ public final class NormalCalculationUtil {
 			
 		}
 		
-		return normals;
+		return asList(normals);
 		
 	}
 
 
-	public static final VectorXYZ[] calculateTriangleStripNormals(
-			List<? extends VectorXYZ> vertices, boolean smooth) {
+	public static final List<VectorXYZ> calculateTriangleStripNormals(
+			List<VectorXYZ> vertices, boolean smooth) {
 
 		assert vertices.size() > 3;
 		
-		VectorXYZ[] normals = calculateTriangleFanNormals(vertices, false);
-			
+		VectorXYZ[] normals = calculateTriangleFanNormals(vertices, false)
+				.toArray(new VectorXYZ[0]);
+		
 		//TODO: implement smooth case
 		if (/*!smooth*/ true) { //flat
 			
@@ -68,12 +71,12 @@ public final class NormalCalculationUtil {
 			
 		}
 			
-		return normals;
+		return asList(normals);
 		
 	}
 	
-	public static final VectorXYZ[] calculateTriangleFanNormals(
-			List<? extends VectorXYZ> vertices, boolean smooth) {
+	public static final List<VectorXYZ> calculateTriangleFanNormals(
+			List<VectorXYZ> vertices, boolean smooth) {
 		
 		assert vertices.size() > 3;
 
@@ -99,7 +102,7 @@ public final class NormalCalculationUtil {
 		
 		}
 		
-		return normals;
+		return asList(normals);
 		
 	}
 
@@ -160,7 +163,7 @@ public final class NormalCalculationUtil {
 			}
 		}
 		
-		/* calculate sum of relevant normals, 
+		/* calculate sum of relevant normals,
 		 * normalize it and set the result as normal for the vertex */
 
 		VectorXYZ normal = new VectorXYZ(0, 0, 0);
@@ -176,7 +179,7 @@ public final class NormalCalculationUtil {
 			Collection<TriangleXYZ> triangles) {
 		
 		Map<VectorXYZ, List<TriangleXYZ>> result =
-			new HashMap<VectorXYZ, List<TriangleXYZ>>(); 
+			new HashMap<VectorXYZ, List<TriangleXYZ>>();
 		
 		for (TriangleXYZ triangle : triangles) {
 			for (VectorXYZ vertex : triangle.getVertices()) {

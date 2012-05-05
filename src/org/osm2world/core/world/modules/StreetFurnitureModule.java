@@ -2,9 +2,9 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -199,6 +199,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
 			
+			
 			/* draw board */
 			
 			VectorXYZ[] vs = {
@@ -212,8 +213,10 @@ public class StreetFurnitureModule extends AbstractModule {
 					.xyz(ele + height)
 			};
 			
-			target.drawTriangleStrip(ADVERTISING_POSTER, asList(vs), nCopies(
-					ADVERTISING_POSTER.getTextureDataList().size(), BILLBOARD_TEX_COORDS));
+			List<VectorXYZ> vsListView = asList(vs);
+			
+			target.drawTriangleStrip(ADVERTISING_POSTER, vsListView,
+					wallTexCoordLists(vsListView, ADVERTISING_POSTER));
 			
 			VectorXYZ temp = vs[2];
 			vs[2] = vs[0];
@@ -223,9 +226,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs[3] = vs[1];
 			vs[1] = temp;
 			
-			target.drawTriangleStrip(CONCRETE, vs);
+			target.drawTriangleStrip(CONCRETE, vsListView,
+					wallTexCoordLists(vsListView, CONCRETE));
 			
-						
+			
 			/* draw poles */
 			
 			VectorXZ[] poles = {
@@ -240,12 +244,6 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 			
 		}
-		
-		List<VectorXZ> BILLBOARD_TEX_COORDS = asList(
-				new VectorXZ(1, 1),
-				new VectorXZ(1, 0),
-				new VectorXZ(0, 1),
-				new VectorXZ(0, 0));
 		
 	}
 	
@@ -470,7 +468,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(-depth/2)).xyz(ele + height));
 			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
 			
-			target.drawTriangleFan(material.brighter(), vs);
+			target.drawTriangleFan(material.brighter(), vs, null);
 			
 		}
 	
@@ -598,7 +596,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
+			
 			double ele = node.getElevationProfile().getEle();
+			VectorXYZ posWithEle = node.getElevationProfile().getPointWithEle();
 			
 			double directionAngle = parseDirection(node.getTags(), PI);
 			
@@ -610,6 +610,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			// shape depends on type
 			if (node.getTags().contains("type", "Rondell")) {
+				
 				float height = parseHeight(node.getTags(), 2.2f);
 				float width = parseWidth(node.getTags(), 3f);
 				float rondelWidth  = width * 2/3;
@@ -628,28 +629,18 @@ public class StreetFurnitureModule extends AbstractModule {
 				target.drawColumn(otherMaterial, null,
 					node.getPos().xyz(ele + height),
 					0.1, rondelWidth/2 + roofOverhang/2, rondelWidth/2 + roofOverhang/2, true, true);
+				
 			} else if (node.getTags().contains("type", "Paketbox")) {
-				float height = parseHeight(node.getTags(), 1.5f) / 2f;
-				float halfWidth = parseHeight(node.getTags(), 1.0f) / 2f;
-				float halfDepth = halfWidth;
 				
-				VectorXYZ upVector = VectorXYZ.Y_UNIT.mult(height*2);
+				float height = parseHeight(node.getTags(), 1.5f);
+				float width = parseHeight(node.getTags(), 1.0f);
+				float depth = width;
 				
-				/* define box corners */
-				VectorXYZ frontLowerLeft  = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele);
-				VectorXYZ frontLowerRight = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele);
-				VectorXYZ frontUpperLeft  = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele).add(upVector.mult(height));
-				VectorXYZ frontUpperRight = node.getPos().add(faceVector.mult(+halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele).add(upVector.mult(height));
-				VectorXYZ backLowerLeft   = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele);
-				VectorXYZ backLowerRight  = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele);
-				VectorXYZ backUpperLeft   = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(+halfWidth)).xyz(ele).add(upVector.mult(height*0.8));
-				VectorXYZ backUpperRight  = node.getPos().add(faceVector.mult(-halfDepth)).add(rightVector.mult(-halfWidth)).xyz(ele).add(upVector.mult(height*0.8));
+				target.drawBox(boxMaterial,	posWithEle,
+						faceVector, height, width * 2, depth * 2);
 				
-				/* draw box */
-				target.drawBox(boxMaterial,
-					frontLowerLeft, frontLowerRight, frontUpperLeft, frontUpperRight,
-					backLowerLeft, backLowerRight, backUpperLeft, backUpperRight);
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
+				
 				float height = parseHeight(node.getTags(), 2.2f);
 				float width = parseWidth(node.getTags(), 3.5f);
 				float depth = width/3;
@@ -663,6 +654,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				target.drawBox(otherMaterial,
 					node.getPos().add(faceVector.mult(roofOverhang)).xyz(ele + height),
 					faceVector, 0.1, width, depth + roofOverhang*2);
+				
 			}
 			
 		}
@@ -791,7 +783,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
 			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
-			target.drawTriangleFan(material, vs);
+			target.drawTriangleFan(material, vs, null);
 			
 			// upper part
 			vs.clear();
@@ -802,7 +794,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
 			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
-			target.drawTriangleFan(material, vs);
+			target.drawTriangleFan(material, vs, null);
 		}
 		
 	}

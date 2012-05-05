@@ -5,7 +5,6 @@ import static org.osm2world.core.target.common.Primitive.Type.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
@@ -28,40 +27,35 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	/**
 	 * @param vs       vertices that form the primitive
 	 * @param normals  normal vector for each vertex; same size as vs
-	 * @param textureCoordLists  texture coordinates for each texture layer,
-	 *                           each list has the same size as vs
+	 * @param texCoordLists  texture coordinates for each texture layer,
+	 *                       each list has the same size as vs
 	 */
 	abstract protected void drawPrimitive(Primitive.Type type, Material material,
-			List<? extends VectorXYZ> vs, VectorXYZ[] normals,
-			List<List<VectorXZ>> textureCoordLists);
+			List<VectorXYZ> vs, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists);
 	
 	@Override
-	public void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs,
-			List<List<VectorXZ>> textureCoordLists) {
+	public void drawTriangleStrip(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists) {
 		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
 		drawPrimitive(TRIANGLE_STRIP, material, vs,
 				calculateTriangleStripNormals(vs, smooth),
-				textureCoordLists);
+				texCoordLists);
 	}
 
 	@Override
-	public void drawTriangleFan(Material material, List<? extends VectorXYZ> vs,
-			List<List<VectorXZ>> textureCoordLists) {
+	public void drawTriangleFan(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists) {
 		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
 		drawPrimitive(TRIANGLE_FAN, material, vs,
 				calculateTriangleFanNormals(vs, smooth),
-				textureCoordLists);
-	}
-	
-	@Override
-	public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles) {
-		drawTriangles(material, triangles, Collections.<List<VectorXZ>>emptyList());
+				texCoordLists);
 	}
 	
 	@Override
 	public void drawTriangles(Material material,
 			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<List<VectorXZ>> texCoordLists) {
 		
 		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
 		
@@ -74,14 +68,14 @@ public abstract class PrimitiveTarget<R extends Renderable>
 		drawPrimitive(TRIANGLES, material, vectors,
 				calculateTriangleNormals(vectors,
 						material.getLighting() == Lighting.SMOOTH),
-						textureCoordLists);
+						texCoordLists);
 		
 	}
 	
 	@Override
 	public void drawTrianglesWithNormals(Material material,
 			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<List<VectorXZ>> texCoordLists) {
 
 		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
 		List<VectorXYZ> normals = new ArrayList<VectorXYZ>(triangles.size()*3);
@@ -95,9 +89,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 			normals.add(triangle.n3);
 		}
 		
-		drawPrimitive(TRIANGLES, material, vectors,
-				normals.toArray(new VectorXYZ[normals.size()]),
-				textureCoordLists);
+		drawPrimitive(TRIANGLES, material, vectors, normals, texCoordLists);
 		
 	}
 	

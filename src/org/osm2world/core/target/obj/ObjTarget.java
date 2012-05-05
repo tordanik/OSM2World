@@ -103,7 +103,7 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	@Override
 	public void drawTriangles(Material material,
 			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<List<VectorXZ>> texCoordLists) {
 		
 		useMaterial(material);
 		
@@ -111,8 +111,8 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 		for (TriangleXYZ triangle : triangles) {
 			
 			int[] texCoordIndices = null;
-			if (!textureCoordLists.isEmpty()) {
-				List<VectorXZ> texCoords = textureCoordLists.get(0);
+			if (texCoordLists != null && !texCoordLists.isEmpty()) {
+				List<VectorXZ> texCoords = texCoordLists.get(0);
 				texCoordIndices = texCoordsToIndices(
 						texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
 			}
@@ -129,7 +129,7 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	@Override
 	public void drawTrianglesWithNormals(Material material,
 			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<List<VectorXZ>> texCoordLists) {
 		
 		useMaterial(material);
 
@@ -137,8 +137,8 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 		for (TriangleXYZWithNormals triangle : triangles) {
 			
 			int[] texCoordIndices = null;
-			if (!textureCoordLists.isEmpty()) {
-				List<VectorXZ> texCoords = textureCoordLists.get(0);
+			if (texCoordLists != null && !texCoordLists.isEmpty()) {
+				List<VectorXZ> texCoords = texCoordLists.get(0);
 				texCoordIndices = texCoordsToIndices(
 						texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
 			}
@@ -153,14 +153,14 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	}
 	
 	@Override
-	public void drawPolygon(Material material, List<? extends VectorXYZ> vs,
-			List<List<VectorXZ>> textureCoordLists) {
+	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists) {
 		
 		useMaterial(material);
 		
 		int[] texCoordIndices = null;
-		if (!textureCoordLists.isEmpty()) {
-			texCoordIndices = texCoordsToIndices(textureCoordLists.get(0));
+		if (texCoordLists != null && !texCoordLists.isEmpty()) {
+			texCoordIndices = texCoordsToIndices(texCoordLists.get(0));
 		}
 		
 		writeFace(verticesToIndices(vs), null, texCoordIndices);

@@ -72,7 +72,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			if (material != null) {
 				Collection<TriangleXYZ> triangles = getTriangulation();
 				target.drawTriangles(material, triangles,
-						WorldModuleTexturingUtil.generateGlobalTextureCoordLists(triangles, material));
+						WorldModuleTexturingUtil.globalTexCoordLists(triangles, material));
 			}
 			
 		}

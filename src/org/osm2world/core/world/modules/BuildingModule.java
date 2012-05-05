@@ -6,8 +6,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateSlopedFaceTextureCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -51,7 +51,6 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 
 import com.google.common.base.Function;
@@ -251,7 +250,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				trianglesXYZ.add(triangle.makeClockwise().xyz(floorEle));
 			}
 				
-			target.drawTriangles(materialWall, trianglesXYZ);
+			target.drawTriangles(materialWall, trianglesXYZ,
+					globalTexCoordLists(trianglesXYZ, materialWall));
 			
 		}
 
@@ -435,7 +435,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			target.drawTriangleStrip(materialWall, wallVectors,
-					WorldModuleTexturingUtil.generateWallTextureCoordLists(wallVectors, materialWall));
+					WorldModuleTexturingUtil.wallTexCoordLists(wallVectors, materialWall));
 			
 		}
 		
@@ -751,14 +751,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 							vs.add(rings[i+1].get(v));
 						}
 						
-						target.drawTriangleStrip(material, vs);
+						target.drawTriangleStrip(material, vs, null);
 						
 					} else if (rings[i].size() == 1 && rings[i+1].size() > 1) {
 						
 						List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 						vs.add(rings[i].get(0));
 						vs.addAll(rings[i+1]);
-						target.drawTriangleFan(material, vs);
+						target.drawTriangleFan(material, vs, null);
 						
 					} else if (rings[i].size() > 1 && rings[i+1].size() == 1) {
 						
@@ -766,7 +766,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						vs.addAll(rings[i]);
 						vs.add(rings[i+1].get(0));
 						reverse(vs);
-						target.drawTriangleFan(material, vs);
+						target.drawTriangleFan(material, vs, null);
 						
 					}
 					
@@ -936,7 +936,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				/* draw triangles */
 				
 				target.drawTriangles(materialRoof, trianglesXYZ,
-						generateSlopedFaceTextureCoordLists(
+						slopedFaceTexCoordLists(
 								trianglesXYZ, materialRoof));
 				
 			}
@@ -1624,9 +1624,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			/* calculate a vector that points into the building */
+			/* calculate a vector that points out of the building */
 			
-			VectorXZ intoBuilding = VectorXZ.Z_UNIT;
+			VectorXZ outOfBuilding = VectorXZ.Z_UNIT;
 			
 			for (SimplePolygonXZ polygon :
 				buildingPart.polygon.getPolygons()) {
@@ -1639,9 +1639,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 					VectorXZ posBefore = vs.get((vs.size() + entranceI - 1) % vs.size());
 					VectorXZ posAfter = vs.get((vs.size() + entranceI + 1) % vs.size());
 					
-					intoBuilding = posBefore.subtract(posAfter).rightNormal();
-					if (polygon.isClockwise()) {
-						intoBuilding = intoBuilding.invert();
+					outOfBuilding = posBefore.subtract(posAfter).rightNormal();
+					if (!polygon.isClockwise()) {
+						outOfBuilding = outOfBuilding.invert();
 					}
 					
 					break;
@@ -1650,22 +1650,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 			}
 			
-			/* use height and width */
-			
-			float height = WorldModuleParseUtil.parseHeight(node.getTags(), 2);
-			float width = WorldModuleParseUtil.parseWidth(node.getTags(), 1);
-			
-			VectorXYZ right = intoBuilding.rightNormal().mult(width).xyz(0);
-			VectorXYZ up = VectorXYZ.Y_UNIT.mult(height);
-			
 			/* draw the entrance as a box protruding from the building */
 			
 			VectorXYZ center = node.getElevationProfile().getPointWithEle();
 			
-			VectorXYZ backVector = intoBuilding.xyz(0).mult(0.1);
+			float height = parseHeight(node.getTags(), 2);
+			float width = parseWidth(node.getTags(), 1);
+			
 			target.drawBox(Materials.ENTRANCE_DEFAULT,
-					center.subtract(right.mult(0.5)).subtract(backVector),
-					right, up, backVector);
+					center, outOfBuilding, height, width, 0.1);
 			
 		}
 		

@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules.common;
 
 import static java.lang.Math.toRadians;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +30,7 @@ public final class WorldModuleGeometryUtil {
 	 * creates the vectors for a vertical triangle strip
 	 * at a given elevation above a line of points
 	 */
-	public static final VectorXYZ[] createVectorsForVerticalTriangleStrip(
+	public static final List<VectorXYZ> createVerticalTriangleStrip(
 			List<? extends VectorXYZ> baseLine, float stripLowerYBound, float stripUpperYBound) {
 
 		VectorXYZ[] result = new VectorXYZ[baseLine.size() * 2];
@@ -50,15 +51,15 @@ public final class WorldModuleGeometryUtil {
 
 		}
 		
-		return result;
+		return asList(result);
 		
 	}
 
 	/**
 	 * creates a triangle strip between two outlines with identical number of vectors
 	 */
-	public static final VectorXYZ[] createVectorsForTriangleStripBetween(
-			List<? extends VectorXYZ> leftOutline, List<? extends VectorXYZ> rightOutline) {
+	public static final List<VectorXYZ> createTriangleStripBetween(
+			List<VectorXYZ> leftOutline, List<VectorXYZ> rightOutline) {
 
 		assert leftOutline.size() == rightOutline.size();
 		
@@ -69,7 +70,7 @@ public final class WorldModuleGeometryUtil {
 			vs[i*2+1] = rightOutline.get(i);
 		}
 		
-		return vs;
+		return asList(vs);
 		
 	}
 			
@@ -96,17 +97,17 @@ public final class WorldModuleGeometryUtil {
 
 	//TODO: many uses of VisualizationUtil#drawColumn are a special case of this
 	/**
-	 * creates triangle stip vectors for a shape extruded along a line of coordinates
+	 * creates triangle strip vectors for a shape extruded along a line of coordinates
 	 * 
 	 * @param shape          shape relative to origin
 	 * @param extrusionPath  nodes to extrude the shape along; needs at least 2 nodes
 	 * @param upVectors      vector for "up" direction at each extrusion path node.
 	 *                       You can use {@link Collections#nCopies(int, Object)}
 	 *                       if you want the same up vector for all nodes.
-	 * @return               list of vector arrays for triangle strips
+	 * @return               list of triangle strip vertex lists
 	 */
-	public static final List<VectorXYZ[]> createShapeExtrusionAlong(
-			VectorXYZ[] shape,
+	public static final List<List<VectorXYZ>> createShapeExtrusionAlong(
+			List<VectorXYZ> shape,
 			List<VectorXYZ> extrusionPath,
 			List<VectorXYZ> upVectors) {
 		
@@ -116,7 +117,8 @@ public final class WorldModuleGeometryUtil {
 			throw new IllegalArgumentException("extrusionPath and upVectors must have same size");
 		}
 		
-		VectorXYZ[][] shapeVectors = new VectorXYZ[extrusionPath.size()][shape.length];
+		@SuppressWarnings("unchecked")
+		List<VectorXYZ>[] shapeVectors = new List[extrusionPath.size()];
 
 		/*
 		 * create shape at each node of the extrusion path.
@@ -150,20 +152,21 @@ public final class WorldModuleGeometryUtil {
 		
 		/* draw triangle strips */
 		
-		List<VectorXYZ[]> triangleStripList = new ArrayList<VectorXYZ[]>(shape.length-1);
+		List<List<VectorXYZ>> triangleStripList =
+				new ArrayList<List<VectorXYZ>>(shape.size()-1);
 		
-		for (int i = 0; i+1 < shape.length; i++) {
+		for (int i = 0; i+1 < shape.size(); i++) {
 			
 			VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
 			
 			for (int j=0; j < shapeVectors.length; j++) {
 				
-				triangleStripVectors[j*2+1] = shapeVectors[j][i];
-				triangleStripVectors[j*2+0] = shapeVectors[j][i+1];
+				triangleStripVectors[j*2+1] = shapeVectors[j].get(i);
+				triangleStripVectors[j*2+0] = shapeVectors[j].get(i+1);
 				
 			}
 			
-			triangleStripList.add(triangleStripVectors);
+			triangleStripList.add(asList(triangleStripVectors));
 			
 		}
 				
@@ -172,40 +175,40 @@ public final class WorldModuleGeometryUtil {
 	}
 	
 	/**
-	 * creates an rotated version of an array of vectors
+	 * creates an rotated version of a list of vectors
 	 * by rotating them by the given angle around the parallel of the x axis
 	 * defined by the given Y and Z coordinates
 	 * 
 	 * @angle  rotation angle in degrees
 	 */
-	public static final VectorXYZ[] rotateShapeX(VectorXYZ[] shape,
+	public static final List<VectorXYZ> rotateShapeX(List<VectorXYZ> shape,
 			double angle, double posY, double posZ) {
 		
-		VectorXYZ[] result = new VectorXYZ[shape.length];
+		VectorXYZ[] result = new VectorXYZ[shape.size()];
 
-		for (int i = 0; i < shape.length; ++i) {
-			result[i] = shape[i].add(0f, -posY, -posZ);
+		for (int i = 0; i < shape.size(); ++i) {
+			result[i] = shape.get(i).add(0f, -posY, -posZ);
 			result[i] = result[i].rotateX(toRadians(angle));
 			result[i] = result[i].add(0f, posY, posZ);
 		}
 		
-		return result;
+		return asList(result);
 		
 	}
 	
 	/**
 	 * moves a shape that was defined at the origin to a new position.
-	 * This is used by {@link #createShapeExtrusionAlong(VectorXYZ[], List, List)}
+	 * This is used by {@link #createShapeExtrusionAlong(List, List, List)}
 	 * 
 	 * @param center   new center coordinate
 	 * @param forward  new forward direction (unit vector)
 	 * @param up       new up direction (unit vector)
-	 * @return         array of 3d vectors; same length as shape
+	 * @return         list of 3d vectors; same length as shape
 	 */
-	public static final VectorXYZ[] transformShape (VectorXYZ[] shape,
+	public static final List<VectorXYZ> transformShape (List<VectorXYZ> shape,
 			VectorXYZ center, VectorXYZ forward, VectorXYZ up) {
 
-		VectorXYZ[] result = new VectorXYZ[shape.length];
+		VectorXYZ[] result = new VectorXYZ[shape.size()];
 		
 		VectorXYZ right = forward.cross(up);
 		
@@ -215,9 +218,9 @@ public final class WorldModuleGeometryUtil {
 				{forward.x, forward.y, forward.z}
 		};
 		
-		for (int i = 0; i < shape.length; i++) {
+		for (int i = 0; i < shape.size(); i++) {
 			
-			VectorXYZ v = shape[i];
+			VectorXYZ v = shape.get(i);
 	
 			v = new VectorXYZ(
 					m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z,
@@ -231,7 +234,7 @@ public final class WorldModuleGeometryUtil {
 			
 		}
 		
-		return result;
+		return asList(result);
 		
 	}
 	

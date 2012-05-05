@@ -36,7 +36,7 @@ public class TerrainNormalsDebugView extends DebugView {
 				for (int i = 0; i < primitive.indices.length; i++) {
 					int index = primitive.indices[i];
 					VectorXYZ v = terrainPrimitiveBuffer.getVertex(index);
-					target.drawArrow(color, 0.3f, v, v.add(primitive.normals[i]));
+					target.drawArrow(color, 0.3f, v, v.add(primitive.normals.get(i)));
 				}
 		        
 			}

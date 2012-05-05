@@ -3,9 +3,8 @@ package org.osm2world.core.world.modules;
 import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.util.Predicates.hasType;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -77,19 +76,21 @@ public class RailwayModule extends ConfigurableWorldModule {
 		private static final float SLEEPER_WIDTH = 2.0f;
 		private static final float SLEEPER_LENGTH = 0.75f;
 		private static final float SLEEPER_HEIGHT = 0.125f;
-		private static final VectorXYZ SLEEPER_UP = VectorXYZ.Y_UNIT.mult(SLEEPER_HEIGHT);
 		
-		private static final VectorXYZ[] RAIL_SHAPE = new VectorXYZ[]{
+		private static final List<VectorXYZ> RAIL_SHAPE = asList(
 			new VectorXYZ(-0.45f, 0, 0), new VectorXYZ(-0.1f, 0.1f, 0),
 			new VectorXYZ(-0.1f, 0.5f, 0), new VectorXYZ(-0.25f, 0.55f, 0),
 			new VectorXYZ(-0.25f, 0.75f, 0), new VectorXYZ(+0.25f, 0.75f, 0),
 			new VectorXYZ(+0.25f, 0.55f, 0), new VectorXYZ(+0.1f, 0.5f, 0),
-			new VectorXYZ(+0.1f, 0.1f, 0), new VectorXYZ(+0.45f, 0, 0), };
+			new VectorXYZ(+0.1f, 0.1f, 0), new VectorXYZ(+0.45f, 0, 0)
+		);
 		
 		static {
-			for (int i=0; i < RAIL_SHAPE.length; i++) {
-				RAIL_SHAPE[i] = RAIL_SHAPE[i].mult(0.25f);
-				RAIL_SHAPE[i] = RAIL_SHAPE[i].y(RAIL_SHAPE[i].y + SLEEPER_HEIGHT);
+			for (int i=0; i < RAIL_SHAPE.size(); i++) {
+				VectorXYZ v = RAIL_SHAPE.get(i);
+				v = v.mult(0.25f);
+				v = v.y(v.y + SLEEPER_HEIGHT);
+				RAIL_SHAPE.set(i, v);
 			}
 		}
 		
@@ -126,11 +127,11 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			/* draw ground */
 			
-			VectorXYZ[] groundVs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
+			List<VectorXYZ> groundVs = WorldModuleGeometryUtil.createTriangleStripBetween(
 					getOutline(false), getOutline(true));
 			
-			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, Arrays.asList(groundVs),
-					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT));
+			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, groundVs,
+					WorldModuleTexturingUtil.globalTexCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT));
 			
 			
 			/* draw rails */
@@ -148,13 +149,13 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			for (List<VectorXYZ> railLine : railLines) {
 				
-				List<VectorXYZ[]> stripVectors =
+				List<List<VectorXYZ>> stripVectors =
 					WorldModuleGeometryUtil.createShapeExtrusionAlong(
 					RAIL_SHAPE, railLine,
 					Collections.nCopies(railLine.size(), VectorXYZ.Y_UNIT));
 					
-				for (VectorXYZ[] stripVector : stripVectors) {
-					target.drawTriangleStrip(Materials.RAIL_DEFAULT, stripVector);
+				for (List<VectorXYZ> stripVector : stripVectors) {
+					target.drawTriangleStrip(Materials.RAIL_DEFAULT, stripVector, null);
 				}
 			
 			}
@@ -164,23 +165,15 @@ public class RailwayModule extends ConfigurableWorldModule {
 			
 			List<VectorXZ> sleeperPositions = GeometryUtil.equallyDistributePointsAlong(3, false,
 					getStartWithOffset(), getEndWithOffset());
-			
-			VectorXYZ sleeperRight = line.getRightNormal().mult(SLEEPER_WIDTH).xyz(0);
-			VectorXYZ sleeperBack = line.getDirection().mult(SLEEPER_LENGTH).xyz(0);
-			
-			VectorXYZ frontLowerLeftOffset =
-				sleeperRight.mult(-0.5f).add(sleeperBack.mult(-0.5f));
-			
+						
 			for (VectorXZ sleeperPosition : sleeperPositions) {
 			
-				VectorXYZ sleeperCenter = sleeperPosition.xyz(line.getElevationProfile().getEleAt(sleeperPosition));
-				
-				VectorXYZ sleeperFrontLowerLeft =
-					sleeperCenter.add(frontLowerLeftOffset);
+				VectorXYZ sleeperPositionXYZ =
+						line.getElevationProfile().getWithEle(sleeperPosition);
 				
 				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
-						sleeperFrontLowerLeft,
-						sleeperRight, SLEEPER_UP, sleeperBack);
+						sleeperPositionXYZ, line.getDirection(),
+						SLEEPER_HEIGHT, SLEEPER_WIDTH, SLEEPER_LENGTH);
 				
 			}
 			
@@ -232,19 +225,18 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void renderTo(Target<?> util) {
+		public void renderTo(Target<?> target) {
 			
 			if (getJunctionArea() == null) return;
 			
 			/* draw ground */
 
-			List<VectorXYZ> vectorList = getJunctionArea().getVertexLoop();
-			VectorXYZ[] vectors = vectorList.toArray(new VectorXYZ[vectorList.size()]);
+			List<VectorXYZ> vectors = getJunctionArea().getVertexLoop();
 
 			Material material = Materials.RAIL_BALLAST_DEFAULT;
 			
-			util.drawPolygon(material, asList(vectors),
-					generateGlobalTextureCoordLists(vectors, material));
+			target.drawConvexPolygon(material, vectors,
+					globalTexCoordLists(vectors, material));
 
 			/* draw connection between each pair of rails */
 

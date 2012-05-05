@@ -52,17 +52,17 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 
 	@Override
 	protected void drawPrimitive(Primitive.Type type, Material material,
-			List<? extends VectorXYZ> vertices, VectorXYZ[] normals,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 		
-		assert vertices.size() == normals.length;
+		assert vertices.size() == normals.size();
 		
 		setMaterial(gl, material, textureManager);
 		
 		gl.glBegin(getGLConstant(type));
         		
 		for (int i = 0; i < vertices.size(); i++) {
-			gl.glNormal3d(normals[i].x, normals[i].y, -normals[i].z);
+			gl.glNormal3d(normals.get(i).x, normals.get(i).y, -normals.get(i).z);
 	        gl.glVertex3d(vertices.get(i).x, vertices.get(i).y, -vertices.get(i).z);
 		}
 		

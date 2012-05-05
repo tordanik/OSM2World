@@ -33,7 +33,8 @@ public class StatisticsTarget extends
 		}
 		
 		public long countPrimitive(Type type, Material material,
-				List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+				List<VectorXYZ> vs, List<VectorXYZ> normals,
+				List<List<VectorXZ>> texCoordLists) {
 			return 0;
 		}
 		
@@ -49,14 +50,16 @@ public class StatisticsTarget extends
 		
 		PRIMITIVE_COUNT(new StatImpl() {
 			@Override public long countPrimitive(Type type, Material material,
-					List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
 				return 1;
 			}
 		}),
 		
 		TOTAL_TRIANGLE_COUNT(new StatImpl() {
 			@Override public long countPrimitive(Type type, Material material,
-					List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
 				if (type == Type.TRIANGLES) {
 					return vs.size() / 3;
 				} else {
@@ -67,28 +70,32 @@ public class StatisticsTarget extends
 		
 		TRIANGLES_COUNT(new StatImpl() {
 			@Override public long countPrimitive(Type type, Material material,
-					List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.TRIANGLES ? 1 : 0;
 			}
 		}),
 		
 		TRIANGLE_STRIP_COUNT(new StatImpl() {
 			@Override public long countPrimitive(Type type, Material material,
-					List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.TRIANGLE_STRIP ? 1 : 0;
 			}
 		}),
 		
 		TRIANGLE_FAN_COUNT(new StatImpl() {
 			@Override public long countPrimitive(Type type, Material material,
-					List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.TRIANGLE_FAN ? 1 : 0;
 			}
 		}),
 		
 		CONVEX_POLYGON_COUNT(new StatImpl() {
 			@Override public long countPrimitive(Type type, Material material,
-					List<? extends VectorXYZ> vs, VectorXYZ[] normals) {
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.CONVEX_POLYGON ? 1 : 0;
 			}
 		});
@@ -146,8 +153,8 @@ public class StatisticsTarget extends
 	
 	@Override
 	protected void drawPrimitive(Type type, Material material,
-			List<? extends VectorXYZ> vs, VectorXYZ[] normals,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<VectorXYZ> vs, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 		
 		if (!countsPerMaterial.containsKey(material)) {
 			countsPerMaterial.put(material, new long[Stat.values().length]);
@@ -155,7 +162,8 @@ public class StatisticsTarget extends
 		
 		for (Stat stat : Stat.values()) {
 			
-			long count = stat.impl.countPrimitive(type, material, vs, normals);
+			long count = stat.impl.countPrimitive(
+					type, material, vs, normals, texCoordLists);
 			
 			globalCounts[stat.ordinal()] += count;
 			

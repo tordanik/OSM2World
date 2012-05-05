@@ -118,16 +118,16 @@ public class BridgeModule extends AbstractModule {
 			List<VectorXYZ> belowLeftOutline = sequenceAbove(leftOutline, -BRIDGE_UNDERSIDE_HEIGHT);
 			List<VectorXYZ> belowRightOutline = sequenceAbove(rightOutline, -BRIDGE_UNDERSIDE_HEIGHT);
 			
-			VectorXYZ[] strip1 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> strip1 = createTriangleStripBetween(
 					belowLeftOutline, leftOutline);
-			VectorXYZ[] strip2 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> strip2 = createTriangleStripBetween(
 					belowRightOutline, belowLeftOutline);
-			VectorXYZ[] strip3 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					rightOutline, belowRightOutline);
 			
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip1);
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip2);
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip3);
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip1, null);
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip2, null);
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip3, null);
 			
 		}
 

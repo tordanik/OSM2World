@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.Collection;
 
@@ -66,7 +66,7 @@ public class ParkingModule extends AbstractModule {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					generateGlobalTextureCoordLists(triangles, material));
+					globalTexCoordLists(triangles, material));
 			
 		}
 		

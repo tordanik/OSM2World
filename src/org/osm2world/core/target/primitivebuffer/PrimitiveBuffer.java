@@ -45,11 +45,11 @@ public class PrimitiveBuffer extends
 	
 	@Override
 	protected void drawPrimitive(Type type, Material material,
-			List<? extends VectorXYZ> vertices, VectorXYZ[] normals,
-			List<List<VectorXZ>> textureCoordLists) {
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 		int[] indices = generateIndices(vertices);
 		primitiveMap.put(material,
-				new Primitive(type, indices, normals, textureCoordLists));
+				new Primitive(type, indices, normals, texCoordLists));
 	}
 	
 	private int[] generateIndices(List<? extends VectorXYZ> newVertices) {

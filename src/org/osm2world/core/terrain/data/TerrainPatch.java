@@ -1,11 +1,13 @@
 package org.osm2world.core.terrain.data;
 
+import static org.osm2world.core.target.common.material.Materials.TERRAIN_DEFAULT;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
+
 import java.util.Collection;
 
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Materials;
 
 public abstract class TerrainPatch implements RenderableToAllTargets {
 	
@@ -31,7 +33,8 @@ public abstract class TerrainPatch implements RenderableToAllTargets {
 					"build must be called before renderTo");
 		}
 		
-		target.drawTriangles(Materials.TERRAIN_DEFAULT, triangulation);
+		target.drawTriangles(TERRAIN_DEFAULT, triangulation,
+				globalTexCoordLists(triangulation, TERRAIN_DEFAULT));
 				
 	}
 

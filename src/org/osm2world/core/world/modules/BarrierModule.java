@@ -1,11 +1,11 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateWallTextureCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,36 +138,36 @@ public class BarrierModule extends AbstractModule {
 			
 			//TODO: join ways back together to reduce the number of caps
 			
-			VectorXYZ[] wallShape = {
+			List<VectorXYZ> wallShape = asList(
 				new VectorXYZ(-width/2, 0, 0),
 				new VectorXYZ(-width/2, height, 0),
 				new VectorXYZ(+width/2, height, 0),
 				new VectorXYZ(+width/2, 0, 0)
-			};
+			);
 			
 			List<VectorXYZ> path =
 				line.getElevationProfile().getPointsWithEle();
 			
-			List<VectorXYZ[]> strips = createShapeExtrusionAlong(wallShape,
+			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(wallShape,
 					path, nCopies(path.size(), VectorXYZ.Y_UNIT));
 			
-			for (VectorXYZ[] strip : strips) {
-				target.drawTriangleStrip(material, strip);
+			for (List<VectorXYZ> strip : strips) {
+				target.drawTriangleStrip(material, strip, null);
 			}
 			
 			/* draw caps */
 			
-			VectorXYZ[] startCap = transformShape(wallShape,
+			List<VectorXYZ> startCap = transformShape(wallShape,
 					path.get(0),
 					line.getDirection().xyz(0),
 					VectorXYZ.Y_UNIT);
-			VectorXYZ[] endCap = transformShape(wallShape,
+			List<VectorXYZ> endCap = transformShape(wallShape,
 					path.get(path.size()-1),
 					line.getDirection().invert().xyz(0),
 					VectorXYZ.Y_UNIT);
 			
-			target.drawPolygon(material, asList(startCap), EMPTY_LIST);
-			target.drawPolygon(material, asList(endCap), EMPTY_LIST);
+			target.drawConvexPolygon(material, startCap, null);
+			target.drawConvexPolygon(material, endCap, null);
 			
 		}
 		
@@ -212,30 +212,30 @@ public class BarrierModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target<?> util) {
+		public void renderTo(Target<?> target) {
 			
 			/* render fence */
 			
 			List<VectorXYZ> pointsWithEle =
 					line.getElevationProfile().getPointsWithEle();
 			
-			List<VectorXYZ> vsFence = asList(createVectorsForVerticalTriangleStrip(
-					pointsWithEle, 0, height));
-			List<List<VectorXZ>> texCoordListsFence = generateWallTextureCoordLists(
+			List<VectorXYZ> vsFence = createVerticalTriangleStrip(
+					pointsWithEle, 0, height);
+			List<List<VectorXZ>> texCoordListsFence = wallTexCoordLists(
 					vsFence, CHAIN_LINK_FENCE);
 			
-			util.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence, texCoordListsFence);
+			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence, texCoordListsFence);
 
 			List<VectorXYZ> pointsWithEleBack =
 					new ArrayList<VectorXYZ>(pointsWithEle);
 			Collections.reverse(pointsWithEleBack);
 			
-			List<VectorXYZ> vsFenceBack = asList(createVectorsForVerticalTriangleStrip(
-					pointsWithEleBack,0, height));
-			List<List<VectorXZ>> texCoordListsFenceBack = generateWallTextureCoordLists(
+			List<VectorXYZ> vsFenceBack = createVerticalTriangleStrip(
+					pointsWithEleBack, 0, height);
+			List<List<VectorXZ>> texCoordListsFenceBack = wallTexCoordLists(
 					vsFenceBack, CHAIN_LINK_FENCE);
 			
-			util.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
+			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
 					texCoordListsFenceBack);
 						
 			/* render poles */
@@ -246,7 +246,7 @@ public class BarrierModule extends AbstractModule {
 			for (VectorXZ polePosition : polePositions) {
 			
 				VectorXYZ base = polePosition.xyz(line.getElevationProfile().getEleAt(polePosition));
-				util.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
+				target.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
 						height, width, width, false, true);
 			
 			}
@@ -282,29 +282,29 @@ public class BarrierModule extends AbstractModule {
 		}
 		
 		@Override
-		public void renderTo(Target<?> util) {
+		public void renderTo(Target<?> target) {
 			
 			/* render bars */
 			
-			VectorXYZ[] vsLowFront = createVectorsForVerticalTriangleStrip(
+			List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(
 					line.getElevationProfile().getPointsWithEle(),
 					0.2f * height, 0.5f * height);
-			VectorXYZ[] vsLowBack = createVectorsForVerticalTriangleStrip(
+			List<VectorXYZ> vsLowBack = createVerticalTriangleStrip(
 					line.getElevationProfile().getPointsWithEle(),
 					0.5f * height, 0.2f * height);
 			
-			util.drawTriangleStrip(material, vsLowFront);
-			util.drawTriangleStrip(material, vsLowBack);
+			target.drawTriangleStrip(material, vsLowFront, null);
+			target.drawTriangleStrip(material, vsLowBack, null);
 
-			VectorXYZ[] vsHighFront = createVectorsForVerticalTriangleStrip(
+			List<VectorXYZ> vsHighFront = createVerticalTriangleStrip(
 					line.getElevationProfile().getPointsWithEle(),
 					0.65f * height, 0.95f * height);
-			VectorXYZ[] vsHighBack = createVectorsForVerticalTriangleStrip(
+			List<VectorXYZ> vsHighBack = createVerticalTriangleStrip(
 					line.getElevationProfile().getPointsWithEle(),
 					0.95f * height, 0.65f * height);
 			
-			util.drawTriangleStrip(material, vsHighFront);
-			util.drawTriangleStrip(material, vsHighBack);
+			target.drawTriangleStrip(material, vsHighFront, null);
+			target.drawTriangleStrip(material, vsHighBack, null);
 			
 			/* render poles */
 			
@@ -314,7 +314,7 @@ public class BarrierModule extends AbstractModule {
 			for (VectorXZ polePosition : polePositions) {
 			
 				VectorXYZ base = polePosition.xyz(line.getElevationProfile().getEleAt(polePosition));
-				util.drawColumn(material, null , base, height, width, width, false, true);
+				target.drawColumn(material, null , base, height, width, width, false, true);
 			
 			}
 			
@@ -357,9 +357,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> util) {
+		public void renderTo(Target<?> target) {
 			VectorXYZ pos = node.getElevationProfile().getPointWithEle();
-			util.drawColumn(Materials.CONCRETE,
+			target.drawColumn(Materials.CONCRETE,
 					null, pos, height, 0.15f, 0.15f, false, true);
 		}
 		

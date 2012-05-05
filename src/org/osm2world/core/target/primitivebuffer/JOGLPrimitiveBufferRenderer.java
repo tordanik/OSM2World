@@ -46,15 +46,16 @@ public class JOGLPrimitiveBufferRenderer {
 				int i = 0;
 				for (int index : primitive.indices) {
 					
-					if (primitive.textureCoordLists.size() > 0) {
+					if (primitive.texCoordLists != null
+							&& !primitive.texCoordLists.isEmpty()) {
 						VectorXZ textureCoord =
-								primitive.textureCoordLists.get(0).get(i);
+								primitive.texCoordLists.get(0).get(i);
 						gl.glTexCoord2d(textureCoord.x, textureCoord.z);
 					}
 					
-					gl.glNormal3d(primitive.normals[i].x,
-							primitive.normals[i].y,
-							-primitive.normals[i].z);
+					gl.glNormal3d(primitive.normals.get(i).x,
+							primitive.normals.get(i).y,
+							-primitive.normals.get(i).z);
 					
 					VectorXYZ v = primitiveBuffer.getVertex(index);
 					gl.glVertex3d(v.x, v.y, -v.z);

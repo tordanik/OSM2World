@@ -26,8 +26,8 @@ public class WorldModuleTexturingUtil {
 	 * creates texture coordinates based only on the vertex coordinates
 	 * in the global coordinate system and the texture size
 	 */
-	public static final List<List<VectorXZ>> generateGlobalTextureCoordLists(
-			VectorXYZ[] vs, Material material) {
+	public static final List<List<VectorXZ>> globalTexCoordLists(
+			List<VectorXYZ> vs, Material material) {
 		
 		List<TextureData> textureDataList = material.getTextureDataList();
 		
@@ -37,7 +37,7 @@ public class WorldModuleTexturingUtil {
 			
 		} else if (textureDataList.size() == 1) {
 			
-			return singletonList(generateGlobalTextureCoordList(
+			return singletonList(globalTexCoordList(
 					vs, textureDataList.get(0)));
 			
 		} else {
@@ -45,7 +45,7 @@ public class WorldModuleTexturingUtil {
 			List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
 			
 			for (TextureData textureData : textureDataList) {
-				result.add(generateGlobalTextureCoordList(vs, textureData));
+				result.add(globalTexCoordList(vs, textureData));
 			}
 			
 			return result;
@@ -54,10 +54,10 @@ public class WorldModuleTexturingUtil {
 		
 	}
 
-	private static final List<VectorXZ> generateGlobalTextureCoordList(
-			VectorXYZ[] vs, TextureData textureData) {
+	private static final List<VectorXZ> globalTexCoordList(
+			List<VectorXYZ> vs, TextureData textureData) {
 		
-		List<VectorXZ> textureCoords = new ArrayList<VectorXZ>(vs.length);
+		List<VectorXZ> textureCoords = new ArrayList<VectorXZ>(vs.size());
 		
 		for (VectorXYZ v : vs) {
 			textureCoords.add(new VectorXZ(
@@ -70,24 +70,21 @@ public class WorldModuleTexturingUtil {
 	}
 
 	/**
-	 * variant of
-	 * {@link #generateGlobalTextureCoordList(VectorXYZ[], TextureData)}
+	 * variant of {@link #globalTexCoordLists(List, Material)}
 	 * based on a triangle collection
 	 */
-	public static final List<List<VectorXZ>> generateGlobalTextureCoordLists(
+	public static final List<List<VectorXZ>> globalTexCoordLists(
 			Collection<TriangleXYZ> triangles, Material material) {
 		
-		VectorXYZ[] vs = new VectorXYZ[triangles.size() * 3];
+		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(triangles.size() * 3);
 		
-		int i = 0;
 		for (TriangleXYZ triangle : triangles) {
-			vs[i*3 + 0] = triangle.v1;
-			vs[i*3 + 1] = triangle.v2;
-			vs[i*3 + 2] = triangle.v3;
-			i++;
+			vs.add(triangle.v1);
+			vs.add(triangle.v2);
+			vs.add(triangle.v3);
 		}
 		
-		return generateGlobalTextureCoordLists(vs, material);
+		return globalTexCoordLists(vs, material);
 		
 	}
 	
@@ -95,7 +92,7 @@ public class WorldModuleTexturingUtil {
 	 * creates texture coordinates for triangles that orient the texture
 	 * based on each triangle's downward slope.
 	 */
-	public static final List<List<VectorXZ>> generateSlopedFaceTextureCoordLists(
+	public static final List<List<VectorXZ>> slopedFaceTexCoordLists(
 			Collection<TriangleXYZ> triangles, Material material) {
 		
 		List<TextureData> textureDataList = material.getTextureDataList();
@@ -106,7 +103,7 @@ public class WorldModuleTexturingUtil {
 			
 		} else if (textureDataList.size() == 1) {
 			
-			return singletonList(generateSlopedFaceTextureCoordList(
+			return singletonList(slopedFaceTexCoordList(
 					triangles, textureDataList.get(0)));
 			
 		} else {
@@ -114,7 +111,7 @@ public class WorldModuleTexturingUtil {
 			List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
 			
 			for (TextureData textureData : textureDataList) {
-				result.add(generateSlopedFaceTextureCoordList(triangles, textureData));
+				result.add(slopedFaceTexCoordList(triangles, textureData));
 			}
 			
 			return result;
@@ -124,7 +121,7 @@ public class WorldModuleTexturingUtil {
 	}
 		
 	
-	private static final List<VectorXZ> generateSlopedFaceTextureCoordList(
+	private static final List<VectorXZ> slopedFaceTexCoordList(
 			Collection<TriangleXYZ> triangles, TextureData textureData) {
 		
 		List<VectorXZ> texCoords = new ArrayList<VectorXZ>(3 * triangles.size());
@@ -181,7 +178,7 @@ public class WorldModuleTexturingUtil {
 	 * @param vs  wall vertices, ordered along the wall, for a triangle strip
 	 *            alternating between upper and lower vertex
 	 */
-	public static final List<List<VectorXZ>> generateWallTextureCoordLists(
+	public static final List<List<VectorXZ>> wallTexCoordLists(
 			List<VectorXYZ> vs, Material material) {
 		
 		List<TextureData> textureDataList = material.getTextureDataList();
@@ -192,7 +189,7 @@ public class WorldModuleTexturingUtil {
 			
 		} else if (textureDataList.size() == 1) {
 			
-			return singletonList(generateWallTextureCoordList(
+			return singletonList(wallTexCoordList(
 					vs, textureDataList.get(0)));
 			
 		} else {
@@ -200,7 +197,7 @@ public class WorldModuleTexturingUtil {
 			List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
 			
 			for (TextureData textureData : textureDataList) {
-				result.add(generateWallTextureCoordList(vs, textureData));
+				result.add(wallTexCoordList(vs, textureData));
 			}
 			
 			return result;
@@ -209,7 +206,7 @@ public class WorldModuleTexturingUtil {
 		
 	}
 
-	private static final List<VectorXZ> generateWallTextureCoordList(
+	private static final List<VectorXZ> wallTexCoordList(
 			List<VectorXYZ> vs, TextureData textureData) {
 		
 		/* calculate length of the wall (if needed later) */

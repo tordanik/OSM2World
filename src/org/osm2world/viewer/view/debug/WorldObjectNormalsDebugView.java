@@ -43,7 +43,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 					int index = primitive.indices[i];
 					VectorXYZ v = mapDataPrimitiveBuffer.getVertex(index);
 					if (GeometryUtil.isRightOf(v.xz(), cam, rightOfCam)) {
-						target.drawArrow(color, 0.3f, v, v.add(primitive.normals[i]));
+						target.drawArrow(color, 0.3f, v, v.add(primitive.normals.get(i)));
 					}
 				}
 		        

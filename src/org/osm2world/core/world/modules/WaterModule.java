@@ -6,7 +6,7 @@ import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +29,6 @@ import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
@@ -175,25 +174,32 @@ public class WaterModule extends ConfigurableWorldModule {
 				
 				/* render ground */
 				
-				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
-						leftOutline, leftWaterBorder));
-				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
-						leftWaterBorder, leftGround));
-				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
-						leftGround, rightGround));
-				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
-						rightGround, rightWaterBorder));
-				target.drawTriangleStrip(TERRAIN_DEFAULT, createVectorsForTriangleStripBetween(
-						rightWaterBorder, rightOutline));
-	
+				@SuppressWarnings("unchecked") // generic vararg is intentional
+				List<List<VectorXYZ>> strips = asList(
+					createTriangleStripBetween(
+							leftOutline, leftWaterBorder),
+					createTriangleStripBetween(
+							leftWaterBorder, leftGround),
+					createTriangleStripBetween(
+							leftGround, rightGround),
+					createTriangleStripBetween(
+							rightGround, rightWaterBorder),
+					createTriangleStripBetween(
+							rightWaterBorder, rightOutline)
+				);
+				
+				for (List<VectorXYZ> strip : strips) {
+					target.drawTriangleStrip(TERRAIN_DEFAULT, strip,
+						globalTexCoordLists(strip, TERRAIN_DEFAULT));
+				}
 				
 				/* render water */
 				
-				VectorXYZ[] vs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
+				List<VectorXYZ> vs = createTriangleStripBetween(
 						leftWaterBorder, rightWaterBorder);
 				
-				target.drawTriangleStrip(WATER, asList(vs),
-						generateGlobalTextureCoordLists(vs, WATER));
+				target.drawTriangleStrip(WATER, vs,
+						globalTexCoordLists(vs, WATER));
 				
 			}
 			
@@ -254,10 +260,9 @@ public class WaterModule extends ConfigurableWorldModule {
 			//TODO: check whether it's within a riverbank (as with Waterway)
 			
 			List<VectorXYZ> vertices = getOutlinePolygon().getVertices();
-			VectorXYZ[] vertexArray = vertices.toArray(new VectorXYZ[vertices.size()]);
 			
-			target.drawPolygon(WATER, asList(vertexArray),
-					generateGlobalTextureCoordLists(vertexArray, WATER));
+			target.drawConvexPolygon(WATER, vertices,
+					globalTexCoordLists(vertices, WATER));
 			
 			//TODO: only cover with water to 0.95 * distance to center; add land below
 			
@@ -295,7 +300,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			target.drawTriangles(WATER, getTriangulation(),
-					generateGlobalTextureCoordLists(getTriangulation(), WATER));
+					globalTexCoordLists(getTriangulation(), WATER));
 		}
 		
 	}
@@ -328,7 +333,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			/* render water */
 				
 			target.drawTriangles(WATER, getTriangulation(),
-					generateGlobalTextureCoordLists(getTriangulation(), WATER));
+					globalTexCoordLists(getTriangulation(), WATER));
 			
 			/* render walls */
 			//note: mostly copy-pasted from BarrierModule
@@ -336,22 +341,24 @@ public class WaterModule extends ConfigurableWorldModule {
 			double width=0.1;
 			double height=0.5;
 			
-			VectorXYZ[] wallShape = {
+			List<VectorXYZ> wallShape = asList(
 					new VectorXYZ(-width/2, 0, 0),
 					new VectorXYZ(-width/2, height, 0),
 					new VectorXYZ(+width/2, height, 0),
 					new VectorXYZ(+width/2, 0, 0)
-				};
-				
-				List<VectorXYZ> path =
+			);
+			
+			List<VectorXYZ> path =
 					area.getElevationProfile().getWithEle(area.getOuterPolygon().getVertexLoop());
-				
-				List<VectorXYZ[]> strips = createShapeExtrusionAlong(wallShape,
-						path, nCopies(path.size(), VectorXYZ.Y_UNIT));
-				
-				for (VectorXYZ[] strip : strips) {
-					target.drawTriangleStrip(Materials.ASPHALT, strip);
-				}
+			
+			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
+					wallShape,
+					path,
+					nCopies(path.size(), VectorXYZ.Y_UNIT));
+			
+			for (List<VectorXYZ> strip : strips) {
+				target.drawTriangleStrip(Materials.ASPHALT, strip, null);
+			}
 							
 		}
 

@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules;
 
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVectorsForTriangleStripBetween;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.generateGlobalTextureCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,16 +174,16 @@ public class TunnelModule extends AbstractModule {
 				
 			}
 			
-			VectorXYZ[] strip1 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> strip1 = createTriangleStripBetween(
 					rightOutline, aboveRightOutline);
-			VectorXYZ[] strip2 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> strip2 = createTriangleStripBetween(
 					aboveRightOutline, aboveLeftOutline);
-			VectorXYZ[] strip3 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					aboveLeftOutline, leftOutline);
 			
-			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip1);
-			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip2);
-			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip3);
+			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip1, null);
+			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip2, null);
+			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip3, null);
 					
 		}
 		
@@ -322,7 +322,7 @@ public class TunnelModule extends AbstractModule {
 				// draw wall
 				
 				target.drawTriangleStrip(Materials.TUNNEL_DEFAULT,
-						createVectorsForTriangleStripBetween(line, lineTop));
+						createTriangleStripBetween(line, lineTop), null);
 				
 				//collect nodes for top outline
 				
@@ -332,9 +332,9 @@ public class TunnelModule extends AbstractModule {
 			
 			// draw top
 			
-			target.drawPolygon(Materials.TUNNEL_DEFAULT, topOutline,
-					generateGlobalTextureCoordLists(
-							topOutline.toArray(new VectorXYZ[0]), Materials.TUNNEL_DEFAULT));
+			target.drawConvexPolygon(Materials.TUNNEL_DEFAULT, topOutline,
+					globalTexCoordLists(
+							topOutline, Materials.TUNNEL_DEFAULT));
 			
 		}
 

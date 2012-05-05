@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -169,16 +170,16 @@ public class PowerModule extends AbstractModule {
 			/* draw blades */
 			
 			// define first blade
-			VectorXYZ[] bladeFront = {
+			List<VectorXYZ> bladeFront = asList(
 				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, +nacelleHeight/2),
 				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2 - bladeLength, 0f),
-				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, -nacelleHeight/2),
-			};
-			VectorXYZ[] bladeBack = {
-				bladeFront[0],
-				bladeFront[2],
-				bladeFront[1]
-			};
+				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, -nacelleHeight/2)
+			);
+			List<VectorXYZ> bladeBack = asList(
+				bladeFront.get(0),
+				bladeFront.get(2),
+				bladeFront.get(1)
+			);
 			
 			// rotate and draw blades
 			double rotCenterY = ele + poleHeight + nacelleHeight/2;
@@ -186,16 +187,16 @@ public class PowerModule extends AbstractModule {
 			
 			bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
 			bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
-			target.drawTriangleStrip(bladeMaterial, bladeFront);
-			target.drawTriangleStrip(bladeMaterial, bladeBack);
+			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
+			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
 			bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
 			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-			target.drawTriangleStrip(bladeMaterial, bladeFront);
-			target.drawTriangleStrip(bladeMaterial, bladeBack);
+			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
+			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
 			bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
 			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-			target.drawTriangleStrip(bladeMaterial, bladeFront);
-			target.drawTriangleStrip(bladeMaterial, bladeBack);
+			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
+			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
 			
 		}
 		
@@ -237,21 +238,23 @@ public class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			VectorXYZ[] wallShape = {
+			List<VectorXYZ> powerlineShape = asList(
 				new VectorXYZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL, 0),
 				new VectorXYZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN, 0),
 				new VectorXYZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN, 0),
 				new VectorXYZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL, 0)
-			};
+			);
 			
 			List<VectorXYZ> path =
 				line.getElevationProfile().getPointsWithEle();
 			
-			List<VectorXYZ[]> strips = createShapeExtrusionAlong(wallShape,
-					path, nCopies(path.size(), VectorXYZ.Y_UNIT));
+			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
+					powerlineShape,
+					path,
+					nCopies(path.size(), VectorXYZ.Y_UNIT));
 			
-			for (VectorXYZ[] strip : strips) {
-				target.drawTriangleStrip(material, strip);
+			for (List<VectorXYZ> strip : strips) {
+				target.drawTriangleStrip(material, strip, null);
 			}
 			
 		}

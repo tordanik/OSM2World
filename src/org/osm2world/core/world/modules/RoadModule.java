@@ -1,18 +1,19 @@
 package org.osm2world.core.world.modules;
 
+import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.addYList;
+import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +44,6 @@ import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -506,7 +506,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(triangles, material));
+					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material));
 			
 			/* connect some lanes such as sidewalks between adjacent roads */
 			
@@ -604,7 +604,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = getSurfaceForNode(node);
 			
 			target.drawTriangles(material, trianglesXYZ,
-					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(trianglesXYZ, material));
+					WorldModuleTexturingUtil.globalTexCoordLists(trianglesXYZ, material));
 			
 		}
 		
@@ -690,34 +690,55 @@ public class RoadModule extends ConfigurableWorldModule {
 			//TODO: don't always use halfStart/EndWith - you need to interpolate!
 			
 			// area outside and inside lines
+			
 			Material surface = getSurfaceForNode(node);
-			target.drawTriangleStrip(surface,
+			
+			List<VectorXYZ> vs = asList(
 					start.subtract(cutVector.mult(halfStartWidth)),
 					start.add(cutVector.mult(halfStartWidth)),
 					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
 					startLines1.add(cutVector.mult(halfStartLines1Width)));
-			target.drawTriangleStrip(surface,
+			
+			target.drawTriangleStrip(surface, vs,
+					globalTexCoordLists(vs, surface));
+			
+			vs = asList(
 					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
 					endLines1.add(cutVector.mult(halfEndLines1Width)),
 					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
 					startLines2.add(cutVector.mult(halfStartLines2Width)));
-			target.drawTriangleStrip(surface,
+			
+			target.drawTriangleStrip(surface, vs,
+					globalTexCoordLists(vs, surface));
+			
+			vs = asList(
 					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
 					endLines2.add(cutVector.mult(halfEndLines2Width)),
 					end.subtract(cutVector.mult(halfEndWidth)),
 					end.add(cutVector.mult(halfEndWidth)));
+			
+			target.drawTriangleStrip(surface, vs,
+					globalTexCoordLists(vs, surface));
 
 			// lines across road
-			target.drawTriangleStrip(Materials.ROAD_MARKING,
+			
+			vs = asList(
 					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
 					startLines1.add(cutVector.mult(halfStartLines1Width)),
 					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
 					endLines1.add(cutVector.mult(halfEndLines1Width)));
-			target.drawTriangleStrip(Materials.ROAD_MARKING,
+			
+			target.drawTriangleStrip(ROAD_MARKING, vs,
+					globalTexCoordLists(vs, ROAD_MARKING));
+			
+			vs = asList(
 					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
 					startLines2.add(cutVector.mult(halfStartLines2Width)),
 					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
 					endLines2.add(cutVector.mult(halfEndLines2Width)));
+			
+			target.drawTriangleStrip(ROAD_MARKING, vs,
+					globalTexCoordLists(vs, ROAD_MARKING));
 			
 			/* draw lane connections */
 			
@@ -771,9 +792,9 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
 		protected static final float DEFAULT_PATH_CLEARING = 2;
 		
-		protected static final VectorXYZ[] HANDRAIL_SHAPE = {
+		protected static final List<VectorXYZ> HANDRAIL_SHAPE = asList(
 			new VectorXYZ(-0.02f, -0.05f, 0), new VectorXYZ(-0.02f,     0f, 0),
-			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0)};
+			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0));
 
 		public final LaneLayout laneLayout;
 		public final float width;
@@ -993,10 +1014,10 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			/* render ground first (so gaps between the steps look better) */
 			
-			VectorXYZ[] vs = WorldModuleGeometryUtil.createVectorsForTriangleStripBetween(
+			List<VectorXYZ> vs = createTriangleStripBetween(
 					leftOutline, rightOutline);
-		
-			target.drawTriangleStrip(ASPHALT, vs);
+
+			target.drawTriangleStrip(ASPHALT, vs, null);
 			
 			/* determine the length of each individual step */
 			
@@ -1025,29 +1046,25 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			/* draw steps */
 			
-			VectorXYZ fullRightVector = line.getRightNormal().mult(width).xyz(0);
-			VectorXYZ halfLeftVector = fullRightVector.mult(-0.5f);
-			
 			for (int step = 0; step < stepBorderPositions.size() - 1; step++) {
 				
 				VectorXYZ frontCenter = stepBorderPositions.get(step);
 				VectorXYZ backCenter = stepBorderPositions.get(step+1);
 				
-				VectorXYZ frontLowerCenter;
-				if (frontCenter.y > backCenter.y /* segment goes downwards */) {
-					frontLowerCenter = frontCenter.y(backCenter.y);
-				} else {
-					frontLowerCenter = frontCenter;
+				double height = abs(frontCenter.y - backCenter.y);
+								
+				VectorXYZ center = (frontCenter.add(backCenter)).mult(0.5);
+				center = center.subtract(Y_UNIT.mult(0.5 * height));
+				
+				VectorXZ faceDirection = line.getDirection();
+				if (frontCenter.y < backCenter.y) {
+					//invert if upwards
+					faceDirection = faceDirection.invert();
 				}
 				
-				VectorXYZ upVector = new VectorXYZ(
-						0, Math.abs(frontCenter.y - backCenter.y), 0);
-				
 				target.drawBox(Materials.STEPS_DEFAULT,
-						frontLowerCenter.add(halfLeftVector),
-						fullRightVector,
-						upVector,
-						backCenter.subtract(frontCenter).y(0));
+						center, faceDirection,
+						height, width, backCenter.distanceToXZ(frontCenter));
 				
 			}
 			
@@ -1087,13 +1104,12 @@ public class RoadModule extends ConfigurableWorldModule {
 					handrailLine.add(v.y(v.y + 1));
 				}
 				
-				List<VectorXYZ[]> stripVectors =
-					createShapeExtrusionAlong(
+				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
 					HANDRAIL_SHAPE, handrailLine,
 					Collections.nCopies(handrailLine.size(), VectorXYZ.Y_UNIT));
 				
-				for (VectorXYZ[] stripVector : stripVectors) {
-					target.drawTriangleStrip(HANDRAIL_DEFAULT, stripVector);
+				for (List<VectorXYZ> strip : strips) {
+					target.drawTriangleStrip(HANDRAIL_DEFAULT, strip, null);
 				}
 				
 				target.drawColumn(HANDRAIL_DEFAULT, 4,
@@ -1124,21 +1140,23 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			if (firstLane.getHeightAboveRoad() > 0) {
 				
-				VectorXYZ[] vs = createVectorsForTriangleStripBetween(
+				List<VectorXYZ> vs = createTriangleStripBetween(
 						getOutline(false),
 						addYList(getOutline(false), firstLane.getHeightAboveRoad()));
 				
-				target.drawTriangleStrip(getSurface(), vs);
+				target.drawTriangleStrip(getSurface(), vs,
+						wallTexCoordLists(vs, getSurface()));
 				
 			}
 			
 			if (lastLane.getHeightAboveRoad() > 0) {
 				
-				VectorXYZ[] vs = createVectorsForTriangleStripBetween(
+				List<VectorXYZ> vs = createTriangleStripBetween(
 						addYList(getOutline(true), lastLane.getHeightAboveRoad()),
 						getOutline(true));
 				
-				target.drawTriangleStrip(getSurface(), vs);
+				target.drawTriangleStrip(getSurface(), vs,
+						wallTexCoordLists(vs, getSurface()));
 				
 			}
 						
@@ -1196,7 +1214,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(triangles, material));
+					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material));
 			
 		}
 		
@@ -1564,13 +1582,13 @@ public class RoadModule extends ConfigurableWorldModule {
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
 			
-			VectorXYZ[] vs = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> vs = createTriangleStripBetween(
 					leftLaneBorder, rightLaneBorder);
 			
 			Material material = getSurface(roadTags, laneTags);
 			
-			target.drawTriangleStrip(material, Arrays.asList(vs),
-					WorldModuleTexturingUtil.generateGlobalTextureCoordLists(vs, material));
+			target.drawTriangleStrip(material, vs,
+					globalTexCoordLists(vs, material));
 			
 		}
 
@@ -1676,13 +1694,13 @@ public class RoadModule extends ConfigurableWorldModule {
 				border3 = addYList(rightLaneBorder, height);
 			}
 
-			VectorXYZ[] vs1_2 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> vs1_2 = createTriangleStripBetween(
 					border1, border2);
-			target.drawTriangleStrip(Materials.CONCRETE, vs1_2);
+			target.drawTriangleStrip(Materials.CONCRETE, vs1_2, null);
 
-			VectorXYZ[] vs2_3 = createVectorsForTriangleStripBetween(
+			List<VectorXYZ> vs2_3 = createTriangleStripBetween(
 					border2, border3);
-			target.drawTriangleStrip(Materials.CONCRETE, vs2_3);
+			target.drawTriangleStrip(Materials.CONCRETE, vs2_3, null);
 			
 		}
 		

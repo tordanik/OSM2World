@@ -38,62 +38,61 @@ public interface Target<R extends Renderable> {
 	 */
 	void beginObject(WorldObject object);
 	
-	void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles);
-
+	/**
+	 * draws triangles.
+	 * 
+	 * @param texCoordLists  one texture coordinate list per texture.
+	 *          Each must have three coordinates per triangle.
+	 *          Can be null if no texturing information is available.
+	 */
 	void drawTriangles(Material material,
 			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> textureCoordLists);
+			List<List<VectorXZ>> texCoordLists);
 	
+	/**
+	 * draws triangles with explicitly defined normal vectors.
+	 * 
+	 * @see #drawTriangles(Material, Collection, List)
+	 */
 	void drawTrianglesWithNormals(Material material,
 			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> textureCoordLists);
-
-	void drawTriangleStrip(Material material, VectorXYZ... vs); //TODO: delete this, use only collections
-	
-	void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs);
+			List<List<VectorXZ>> texCoordLists);
 	
 	/**
-	 * draws a triangle strip with texture coordinates
+	 * draws a triangle strip.
 	 * 
-	 * @param textureCoordLists  one texture coordinate list per texture,
-	 *          each must have the same length as the "vs" parameter
+	 * @param vs             vertices of the triangle strip
+	 * @param texCoordsList  one texture coordinate list per texture.
+	 *          Each must have the same length as the "vs" parameter.
+	 *          Can be null if no texturing information is available.
 	 */
-	void drawTriangleStrip(Material material, List<? extends VectorXYZ> vs,
-			List<List<VectorXZ>> textureCoordLists);
-	
-	void drawTriangleFan(Material material, List<? extends VectorXYZ> vs);
+	void drawTriangleStrip(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists);
 	
 	/**
-	 * draws a triangle fan with texture coordinates,
+	 * draws a triangle fan.
+	 * 
 	 * @see #drawTriangleStrip(Material, List, List)
 	 */
-	void drawTriangleFan(Material material, List<? extends VectorXYZ> vs,
-			List<List<VectorXZ>> textureCoordLists);
-	
-	void drawPolygon(Material material, List<? extends VectorXYZ> vs,
-			List<List<VectorXZ>> textureCoordLists);
+	void drawTriangleFan(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists);
 
 	/**
-	 * draws a box with outward-facing polygons
+	 * draws a <em>convex</em> polygon
+	 * 
+	 * @see #drawTriangleStrip(Material, List, List)
 	 */
-	void drawBox(Material material, VectorXYZ frontLowerLeft,
-			VectorXYZ rightVector, VectorXYZ upVector, VectorXYZ backVector);
-
+	void drawConvexPolygon(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists);
+	
 	/**
 	 * draws a box with outward-facing polygons.
+	 * 
+	 * @param faceDirection  direction for the "front" of the box
 	 */
-	void drawBox(Material material, VectorXYZ bottomCenter, VectorXZ direction,
+	void drawBox(Material material,
+			VectorXYZ bottomCenter, VectorXZ faceDirection,
 			double height, double width, double depth);
-	
-	/**
-	 * draws a box with outward-facing polygons where all 8 corners can be defined separately
-	 */
-	public void drawBox(Material material,
-			VectorXYZ frontLowerLeft, VectorXYZ frontLowerRight,
-			VectorXYZ frontUpperLeft, VectorXYZ frontUpperRight,
-			VectorXYZ backLowerLeft, VectorXYZ backLowerRight,
-			VectorXYZ backUpperLeft, VectorXYZ backUpperRight);
 	
 	/**
 	 * draws a column with outward-facing polygons around a point.
