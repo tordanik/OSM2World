@@ -483,6 +483,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					roof = new PyramidalRoof();
 				} else if ("onion".equals(roofShape)) {
 					roof = new OnionRoof();
+				} else if ("skillion".equals(roofShape)) {
+					roof = new SkillionRoof();
 				} else if ("gabled".equals(roofShape)) {
 					roof = new GabledRoof();
 				} else if ("hipped".equals(roofShape)) {
@@ -1027,6 +1029,105 @@ public class BuildingModule extends ConfigurableWorldModule {
 					return null;
 				}
 			}
+			
+		}
+		
+		private class SkillionRoof extends HeightfieldRoof {
+			
+			private final LineSegmentXZ ridge;
+			private final double roofLength;
+			
+			public SkillionRoof() {
+				
+				/* parse slope direction */
+				
+				VectorXZ slopeDirection = null;
+				
+				if (getValue("roof:slope:direction") != null) {
+					Float angle = parseAngle(
+							getValue("roof:slope:direction"));
+					if (angle != null) {
+						slopeDirection = VectorXZ.fromAngle(toRadians(angle));
+					}
+				}
+				
+				if (slopeDirection != null) {
+					
+					SimplePolygonXZ simplifiedOuter =
+							polygon.getOuter().getSimplifiedPolygon();
+					
+					/* find ridge by calculating the outermost intersections of
+					 * the quasi-infinite slope "line" towards the centroid vector
+					 * with segments of the polygon */
+					
+					VectorXZ center = simplifiedOuter.getCentroid();
+					
+					Collection<LineSegmentXZ> intersections =
+							simplifiedOuter.intersectionSegments(new LineSegmentXZ(
+								center.add(slopeDirection.mult(-1000)), center));
+					
+					LineSegmentXZ outermostIntersection = null;
+					double distanceOutermostIntersection = -1;
+					
+					for (LineSegmentXZ i : intersections) {
+						double distance = distanceFromLineSegment(center, i);
+						if (distance > distanceOutermostIntersection) {
+							outermostIntersection = i;
+							distanceOutermostIntersection = distance;
+						}
+					}
+					
+					ridge = outermostIntersection;
+					
+					/* calculate maximum distance from ridge */
+					
+					double maxDistance = 0.1;
+					
+					for (VectorXZ v : polygon.getOuter().getVertexLoop()) {
+						double distance = distanceFromLine(v, ridge.p1, ridge.p2);
+						if (distance > maxDistance) {
+							maxDistance = distance;
+						}
+					}
+					
+					roofLength = maxDistance;
+					
+				} else {
+					
+					ridge = null;
+					roofLength = Double.NaN;
+					
+				}
+				
+			}
+			
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+				return polygon;
+			}
+
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+				return emptyList();
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+
+			@Override
+			protected Double getRoofEleAt_noInterpolation(VectorXZ pos) {
+				if (ridge == null) {
+					return getMaxRoofEle();
+				} else {
+					double distance = distanceFromLineSegment(pos, ridge);
+					double relativeDistance = distance / roofLength;
+					return getMaxRoofEle() - relativeDistance * roofHeight;
+				}
+			}
+			
+			
 			
 		}
 				

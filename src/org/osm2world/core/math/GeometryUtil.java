@@ -3,6 +3,7 @@ package org.osm2world.core.math;
 import static java.lang.Math.sqrt;
 import static org.osm2world.core.math.VectorXZ.*;
 
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -221,6 +222,13 @@ public final class GeometryUtil {
 		return distSqQ1Q2 < distSqPQ1
 			&& distSqQ1Q2 < distSqPQ2;
 		
+	}
+	
+	/**
+	 * returns the closest distance between point p and a line defined by two points
+	 */
+	public static final double distanceFromLine(VectorXZ p,	VectorXZ v1, VectorXZ v2) {
+		return Line2D.ptLineDist(v1.x, v1.z, v2.x, v2.z, p.x, p.z);
 	}
 	
 	/**
