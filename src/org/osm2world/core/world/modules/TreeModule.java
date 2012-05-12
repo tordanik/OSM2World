@@ -1,5 +1,8 @@
 package org.osm2world.core.world.modules;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
 import java.util.ArrayList;
@@ -7,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -22,6 +26,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
@@ -32,14 +37,18 @@ import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
-import com.sun.opengl.util.texture.Texture;
-
 /**
  * adds trees, tree rows, tree groups and forests to the world
  */
 public class TreeModule extends ConfigurableWorldModule {
 
-	protected static Texture treeTexture;
+	private boolean useBillboards = false;
+	
+	@Override
+	public void setConfiguration(Configuration config) {
+		super.setConfiguration(config);
+		useBillboards = config.getBoolean("useBillboards", false);
+	}
 	
 	@Override
 	public final void applyTo(MapData mapData) {
@@ -71,8 +80,16 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 		
 	}
+	
+	private static final List<VectorXZ> BILLBOARD_TEX_COORDS = asList(
+			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
+			new VectorXZ(1, 1), VectorXZ.X_UNIT);
 
-	private static class Tree
+	
+	
+	private static POVRayTarget previousDeclarationTarget = null;
+	
+	private class Tree
 		implements NodeWorldObject, IntersectionTestObject,
 		RenderableToAllTargets, RenderableToPOVRay {
 
@@ -131,11 +148,21 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 			VectorXYZ posXYZ = element.getElevationProfile().getWithEle(pos);
 			
-			renderTree(target, posXYZ, isConiferous(), height);
+			if (useBillboards) {
+				
+				Material material = isConiferous()
+						? Materials.TREE_BILLBOARD_CONIFEROUS
+						: Materials.TREE_BILLBOARD_BROAD_LEAVED;
+				
+				renderBillboard(target, material, posXYZ, 0.5*height, height);
+				
+			} else {
+				
+				renderTree(target, posXYZ, isConiferous(), height);
+				
+			}
 			
 		}
-		
-		private static POVRayTarget previousDeclarationTarget = null;
 		
 		@Override
 		public void addDeclarationsTo(POVRayTarget target) {
@@ -180,7 +207,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 		}
 
-		private static void renderTree(Target<?> target,
+		private void renderTree(Target<?> target,
 				VectorXYZ posXYZ, boolean coniferous, double height) {
 			
 			double stemRatio = coniferous?0.3:0.5;
@@ -196,6 +223,26 @@ public class TreeModule extends ConfigurableWorldModule {
 					radius,
 					coniferous ? 0 : radius,
 					true, true);
+		}
+		
+		private void renderBillboard(Target<?> target,
+				Material material, VectorXYZ pos,
+				double width, double height) {
+			
+			//TODO use camera position
+			
+			VectorXYZ halfRight = VectorXYZ.X_UNIT.mult(0.5 * width);
+			VectorXYZ up = Y_UNIT.mult(height);
+			
+			VectorXYZ rightBottom = pos.add(halfRight);
+			VectorXYZ leftBottom = pos.subtract(halfRight);
+			
+			target.drawTriangleStrip(material, asList(
+					leftBottom.add(up), leftBottom,
+					rightBottom.add(up), rightBottom),
+					nCopies(material.getTextureDataList().size(),
+							BILLBOARD_TEX_COORDS));
+			
 		}
 		
 		private boolean isConiferous() {
@@ -221,7 +268,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 
-	private static class TreeRow implements WaySegmentWorldObject, RenderableToAllTargets, RenderableToPOVRay {
+	private class TreeRow implements WaySegmentWorldObject, RenderableToAllTargets, RenderableToPOVRay {
 
 		private final List<Tree> trees;
 		private final MapWaySegment line;
