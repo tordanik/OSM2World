@@ -129,25 +129,30 @@ public class TreeModule extends ConfigurableWorldModule {
 			Material material, VectorXYZ pos,
 			double width, double height) {
 		
-		//TODO use camera position
-		
-		VectorXYZ halfRight = VectorXYZ.X_UNIT.mult(0.5 * width);
 		VectorXYZ up = Y_UNIT.mult(height);
 		
-		VectorXYZ rightBottom = pos.add(halfRight);
-		VectorXYZ leftBottom = pos.subtract(halfRight);
-		
-		target.drawTriangleStrip(material, asList(
-				leftBottom.add(up), leftBottom,
-				rightBottom.add(up), rightBottom),
-				nCopies(material.getTextureDataList().size(),
-						BILLBOARD_TEX_COORDS));
+		for (VectorXYZ halfRight : new VectorXYZ[]{
+			VectorXYZ.X_UNIT.mult(0.5 * width),
+			VectorXYZ.Z_UNIT.mult(0.5 * width),
+			VectorXYZ.X_UNIT.mult(-0.5 * width),
+			VectorXYZ.Z_UNIT.mult(-0.5 * width)}) {
+			
+			VectorXYZ rightBottom = pos.add(halfRight);
+			VectorXYZ leftBottom = pos.subtract(halfRight);
+			
+			target.drawTriangleStrip(material, asList(
+					leftBottom.add(up), leftBottom,
+					rightBottom.add(up), rightBottom),
+					nCopies(material.getTextureDataList().size(),
+							BILLBOARD_TEX_COORDS));
+			
+		}
 		
 	}
 	
 	private static final List<VectorXZ> BILLBOARD_TEX_COORDS = asList(
-			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
-			new VectorXZ(1, 1), VectorXZ.X_UNIT);
+			VectorXZ.NULL_VECTOR, VectorXZ.Z_UNIT,
+			VectorXZ.X_UNIT, new VectorXZ(1, 1));
 	
 	private static boolean isConiferousTree(MapElement element, VectorXZ pos) {
 		
@@ -297,7 +302,7 @@ public class TreeModule extends ConfigurableWorldModule {
 					4 /* TODO: derive from tree count */ ,
 					false /* TODO: should be true once a full way is covered */,
 					line.getStartNode().getPos(), line.getEndNode().getPos());
-						
+			
 		}
 		
 		@Override
