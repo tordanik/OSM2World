@@ -17,26 +17,28 @@ public abstract class Material {
 	protected Color color;
 	protected float ambientFactor;
 	protected float diffuseFactor;
+	protected boolean useAlpha;
 	
 	protected List<TextureData> textureDataList;
 
 	public Material(Lighting lighting, Color color,
 			float ambientFactor, float diffuseFactor,
-			List<TextureData> textureDataList) {
+			boolean useAlpha, List<TextureData> textureDataList) {
 		this.lighting = lighting;
 		this.color = color;
 		this.ambientFactor = ambientFactor;
 		this.diffuseFactor = diffuseFactor;
+		this.useAlpha = useAlpha;
 		this.textureDataList = textureDataList;
 	}
 	
 	public Material(Lighting lighting, Color color,
-			List<TextureData> textureDataList) {
-		this(lighting, color, 0.5f, 0.5f, textureDataList);
+			boolean useAlpha, List<TextureData> textureDataList) {
+		this(lighting, color, 0.5f, 0.5f, useAlpha, textureDataList);
 	}
 	
 	public Material(Lighting lighting, Color color) {
-		this(lighting, color, Collections.<TextureData>emptyList());
+		this(lighting, color, false, Collections.<TextureData>emptyList());
 	}
 		
 	public Lighting getLighting() {
@@ -66,13 +68,13 @@ public abstract class Material {
 	public Material brighter() {
 		return new ImmutableMaterial(lighting, getColor().brighter(),
 				getAmbientFactor(), getDiffuseFactor(),
-				getTextureDataList());
+				getUseAlpha(), getTextureDataList());
 	}
 	
 	public Material darker() {
 		return new ImmutableMaterial(lighting, getColor().darker(),
 				getAmbientFactor(), getDiffuseFactor(),
-				getTextureDataList());
+				getUseAlpha(), getTextureDataList());
 	}
 	
 	public static final Color multiplyColor(Color c, float factor) {
@@ -88,7 +90,11 @@ public abstract class Material {
 	public Material makeSmooth() {
 		return new ImmutableMaterial(Lighting.SMOOTH, getColor(),
 				getAmbientFactor(), getDiffuseFactor(),
-				getTextureDataList());
+				getUseAlpha(), getTextureDataList());
+	}
+
+	public boolean getUseAlpha() {
+		return useAlpha;
 	}
 		
 	public List<TextureData> getTextureDataList() {

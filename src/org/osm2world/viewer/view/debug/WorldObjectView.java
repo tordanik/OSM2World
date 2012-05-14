@@ -84,7 +84,7 @@ public class WorldObjectView extends DebugView {
 		
 		// render
 		
-		renderer.render();
+		renderer.render(camera);
 		
 		// switch lighting off
 		

@@ -340,8 +340,12 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 						
 			gl.glEnable(GL.GL_TEXTURE_2D);
 	        
-			gl.glEnable(GL.GL_BLEND);
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			if (material.getUseAlpha()) {
+				gl.glEnable(GL.GL_BLEND);
+				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			} else {
+				gl.glDisable(GL.GL_BLEND);
+			}
 			
 	        Texture texture = textureManager.getTextureForFile(textureData.file);
 	        texture.enable(); //TODO: should this be called every time?
