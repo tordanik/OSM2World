@@ -249,7 +249,7 @@ public class ImageExporter {
 	        
 	        if (bufferRenderer != null) {
 	        	
-	        	bufferRenderer.render(camera);
+	        	bufferRenderer.render(camera, projection);
 
 	        } else {
 	        	

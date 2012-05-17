@@ -10,15 +10,15 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 import org.osm2world.core.terrain.data.Terrain;
 
 /**
  * contains some common methods for debug views
  */
-public abstract class DebugView implements RenderableToJOGL {
+public abstract class DebugView {
 
 	protected MapData map;
 	protected Terrain terrain;
@@ -59,18 +59,18 @@ public abstract class DebugView implements RenderableToJOGL {
 		return "";
 	}
 	
-	@Override
-	public void renderTo(GL gl, Camera camera) {
+	public void renderTo(GL gl, Camera camera, Projection projection) {
 		if (canBeUsed()) {
-			renderToImpl(gl, camera);
+			renderToImpl(gl, camera, projection);
 		}
 	}
 	
 	/**
 	 * implementation for the renderTo method, provided by subclasses.
 	 * Will only be called if the DebugView {@link #canBeUsed()}.
+	 * @param projection TODO
 	 */
-	protected abstract void renderToImpl(GL gl, Camera camera);
+	protected abstract void renderToImpl(GL gl, Camera camera, Projection projection);
 	
 	
 	protected static final void drawBoxAround(JOGLTarget target,
@@ -80,7 +80,7 @@ public abstract class DebugView implements RenderableToJOGL {
 
 	protected static final void drawBoxAround(JOGLTarget target,
 			VectorXYZ center, Color color, float halfWidth) {
-		drawBox(target, color, 
+		drawBox(target, color,
 			new VectorXYZ(center.x - halfWidth,
 				center.y,
 				center.z - halfWidth),
@@ -96,8 +96,8 @@ public abstract class DebugView implements RenderableToJOGL {
 	}
 	
 	protected static final void drawBox(JOGLTarget target, Color color,
-			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {		
-		target.drawLineStrip(color, v1, v2, v3, v4, v1);		
+			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {
+		target.drawLineStrip(color, v1, v2, v3, v4, v1);
 	}
 	
 }

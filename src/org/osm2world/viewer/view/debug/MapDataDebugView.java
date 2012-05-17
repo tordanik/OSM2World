@@ -20,13 +20,13 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 
 /**
  * shows the plain {@link MapData} as a network of nodes, lines and areas
  */
-public class MapDataDebugView extends DebugView implements RenderableToJOGL {
+public class MapDataDebugView extends DebugView {
 
 	@Override
 	public String getDescription() {
@@ -47,7 +47,7 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 	}
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL gl, Camera camera, Projection projection) {
 				
 		JOGLTarget util = new JOGLTarget(gl, camera);
 		

@@ -17,6 +17,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 public class QuadtreeDebugView extends DebugView {
@@ -45,7 +46,7 @@ public class QuadtreeDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		if (mapQuadtree == null) {
 			mapQuadtree = new MapQuadtree(map);

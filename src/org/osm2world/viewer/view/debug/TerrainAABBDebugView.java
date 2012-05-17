@@ -7,6 +7,7 @@ import javax.media.opengl.GL;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -22,7 +23,7 @@ public class TerrainAABBDebugView extends DebugView {
 	private static final Color BB_COLOR = Color.WHITE;
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

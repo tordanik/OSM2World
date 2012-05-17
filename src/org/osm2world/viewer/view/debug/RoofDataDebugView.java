@@ -8,6 +8,7 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.modules.BuildingModule.Building;
 import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
@@ -20,7 +21,7 @@ public class RoofDataDebugView extends DebugView {
 	private static final Color POLYGON_COLOR = Color.BLUE;
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

@@ -105,7 +105,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        /* draw debug views */
 	        
 	        for (DebugView debugView : renderOptions.activeDebugViews) {
-	        	debugView.renderTo(gl, renderOptions.camera);
+	        	debugView.renderTo(gl, renderOptions.camera, renderOptions.projection);
 	        }
 	        
 	        /* write messages */

@@ -1,5 +1,8 @@
 package org.osm2world.core.target.primitivebuffer;
 
+import static java.lang.Math.*;
+import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +15,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
@@ -37,7 +42,13 @@ public class JOGLPrimitiveBufferRenderer {
 	private List<PrimitiveWithMaterial> transparentPrimitives =
 			new ArrayList<PrimitiveWithMaterial>();
 	
-	private final class PrimitiveWithMaterial {
+	/**
+	 * the camera direction that was the basis for the previous sorting
+	 * of {@link #transparentPrimitives}.
+	 */
+	private CardinalDirection currentPrimitiveSortDirection = null;
+	
+	private static final class PrimitiveWithMaterial {
 		
 		public final Primitive primitive;
 		public final Material material;
@@ -116,7 +127,7 @@ public class JOGLPrimitiveBufferRenderer {
 		
 	}
 	
-	public void render(final Camera camera) {
+	public void render(final Camera camera, final Projection projection) {
 		
 		/* render static geometry */
 		
@@ -126,17 +137,10 @@ public class JOGLPrimitiveBufferRenderer {
 		gl.glCallList(displayListPointer);
 		
 		/* render transparent primitives back-to-front */
+
+		sortPrimitivesBackToFront(camera, projection);
 		
 		Material previousMaterial = null;
-		
-		Collections.sort(transparentPrimitives, new Comparator<PrimitiveWithMaterial>() {
-			@Override
-			public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
-				return Double.compare(
-						distanceToCamera(camera, p2),
-						distanceToCamera(camera, p1));
-			}
-		});
 		
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
 			
@@ -151,9 +155,95 @@ public class JOGLPrimitiveBufferRenderer {
 		
 	}
 
-	private double distanceToCamera(Camera camera, PrimitiveWithMaterial p) {
-		return primitiveBuffer.getVertex(p.primitive.indices[0])
-				.distanceTo(camera.getPos());
+	private void sortPrimitivesBackToFront(final Camera camera,
+			final Projection projection) {
+		
+		if (projection.isOrthographic() &&
+				abs(camera.getViewDirection().xz().angle() % (PI/2)) < 0.01 ) {
+			
+			/* faster sorting for cardinal directions */
+			
+			CardinalDirection closestCardinal = closestCardinal(camera.getViewDirection().xz().angle());
+			
+			if (closestCardinal.isOppositeOf(currentPrimitiveSortDirection)) {
+			
+				Collections.reverse(transparentPrimitives);
+				
+			} else if (closestCardinal != currentPrimitiveSortDirection) {
+					
+				Comparator<PrimitiveWithMaterial> comparator = null;
+				
+				switch(closestCardinal) {
+				
+				case N:
+					comparator = new Comparator<PrimitiveWithMaterial>() {
+						@Override
+						public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
+							return Double.compare(primitivePos(p2).z, primitivePos(p1).z);
+						}
+					};
+					break;
+				
+				case E:
+					comparator = new Comparator<PrimitiveWithMaterial>() {
+						@Override
+						public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
+							return Double.compare(primitivePos(p2).x, primitivePos(p1).x);
+						}
+					};
+					break;
+					
+				case S:
+					comparator = new Comparator<PrimitiveWithMaterial>() {
+						@Override
+						public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
+							return Double.compare(primitivePos(p1).z, primitivePos(p2).z);
+						}
+					};
+					break;
+					
+				case W:
+					comparator = new Comparator<PrimitiveWithMaterial>() {
+						@Override
+						public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
+							return Double.compare(primitivePos(p1).x, primitivePos(p2).x);
+						}
+					};
+					break;
+					
+				}
+				
+				Collections.sort(transparentPrimitives, comparator);
+				
+			}
+				
+			currentPrimitiveSortDirection = closestCardinal;
+			
+		} else {
+			
+			/* sort based on distance to camera */
+			
+			Collections.sort(transparentPrimitives, new Comparator<PrimitiveWithMaterial>() {
+				@Override
+				public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
+					return Double.compare(
+							distanceToCameraSq(camera, p2),
+							distanceToCameraSq(camera, p1));
+				}
+			});
+			
+			currentPrimitiveSortDirection = null;
+			
+		}
+		
+	}
+
+	private double distanceToCameraSq(Camera camera, PrimitiveWithMaterial p) {
+		return primitivePos(p).distanceToSquared(camera.getPos());
+	}
+
+	private VectorXYZ primitivePos(PrimitiveWithMaterial p) {
+		return primitiveBuffer.getVertex(p.primitive.indices[0]);
 	}
 	
 	/**

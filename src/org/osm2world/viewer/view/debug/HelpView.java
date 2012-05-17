@@ -6,6 +6,7 @@ import javax.media.opengl.GL;
 
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -21,7 +22,7 @@ public class HelpView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		if (!canBeUsed()) { return; }
 		

@@ -9,6 +9,7 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 public class TerrainNormalsDebugView extends DebugView {
@@ -22,7 +23,7 @@ public class TerrainNormalsDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

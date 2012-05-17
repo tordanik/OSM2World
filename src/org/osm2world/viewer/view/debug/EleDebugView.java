@@ -12,6 +12,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.terrain.data.TerrainPatch;
 
@@ -26,7 +27,7 @@ public class EleDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		/* collect all points */
 		

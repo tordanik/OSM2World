@@ -9,6 +9,7 @@ import javax.media.opengl.GL;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.EarClippingTriangulationUtil;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.terrain.data.GenericTerrainPatch;
 import org.osm2world.core.terrain.data.TerrainPatch;
@@ -27,7 +28,7 @@ public class TerrainOutlineDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

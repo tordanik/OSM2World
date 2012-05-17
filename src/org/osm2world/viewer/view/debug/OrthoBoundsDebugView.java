@@ -9,16 +9,15 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 
 /**
  * illustrates the construction of the orthogonal perspective
  * as set by {@link OrthoBoundsAction}
  */
-public class OrthoBoundsDebugView extends DebugView
-		implements RenderableToJOGL {
+public class OrthoBoundsDebugView extends DebugView {
 	
 	@Override
 	public String getDescription() {
@@ -31,7 +30,7 @@ public class OrthoBoundsDebugView extends DebugView
 	private static final float HALF_POINT_WIDTH = 0.4f;
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL gl, Camera camera, Projection projection) {
 		
 		if (map == null) { return; }
 		

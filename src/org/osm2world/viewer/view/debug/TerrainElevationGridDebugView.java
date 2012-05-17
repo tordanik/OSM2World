@@ -7,19 +7,19 @@ import javax.media.opengl.GL;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 
 /**
  * shows the {@link CellularTerrainElevation}
  */
-public class TerrainElevationGridDebugView extends DebugView implements RenderableToJOGL {
+public class TerrainElevationGridDebugView extends DebugView {
 
 	private static final Color NODE_COLOR = Color.LIGHT_GRAY;
 	private static final Color GRID_COLOR = Color.LIGHT_GRAY;
 		
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL gl, Camera camera, Projection projection) {
 
 		JOGLTarget target = new JOGLTarget(gl, camera);
 

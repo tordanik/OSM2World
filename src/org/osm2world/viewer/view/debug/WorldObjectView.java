@@ -6,6 +6,7 @@ import java.util.Collection;
 import javax.media.opengl.GL;
 
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
@@ -24,7 +25,7 @@ public class WorldObjectView extends DebugView {
 	 * {@link #setPrimitiveBuffers(PrimitiveBuffer, PrimitiveBuffer)}
 	 * because that thread doesn't have the GL context associated with it.
 	 * Instead, they will be stored here until the next call to
-	 * {@link #renderToImpl(GL, Camera)}.
+	 * {@link #renderToImpl(GL, Camera, Projection)}.
 	 */
 	Collection<JOGLPrimitiveBufferRenderer> rendererTrashBin =
 			new ArrayList<JOGLPrimitiveBufferRenderer>();
@@ -48,7 +49,7 @@ public class WorldObjectView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL gl, Camera camera, Projection projection) {
 
 		// clean up old renderers
 		
@@ -84,7 +85,7 @@ public class WorldObjectView extends DebugView {
 		
 		// render
 		
-		renderer.render(camera);
+		renderer.render(camera, projection);
 		
 		// switch lighting off
 		
