@@ -6,7 +6,7 @@ import static org.osm2world.core.math.VectorXZ.*;
 import java.awt.Color;
 import java.util.Arrays;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.index.MapQuadtree;
@@ -45,7 +45,7 @@ public class QuadtreeDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 		
 		if (mapQuadtree == null) {
 			mapQuadtree = new MapQuadtree(map);

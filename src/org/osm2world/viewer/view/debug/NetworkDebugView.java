@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -22,7 +22,7 @@ public class NetworkDebugView extends DebugView {
 	private static final Color CUT_COLOR = Color.ORANGE;
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 				
 		JOGLTarget target = new JOGLTarget(gl, camera);
 						

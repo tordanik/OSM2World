@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.jogl.JOGLTarget;
@@ -20,7 +20,7 @@ public class TriangulationDebugView extends DebugView implements RenderableToJOG
 	private static final Color ROT_COLOR = Color.WHITE;
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 	
 		JOGLTarget target = new JOGLTarget(gl, camera);
 //

@@ -1,6 +1,8 @@
 package org.osm2world.core.target.primitivebuffer;
 
-import javax.media.opengl.GL;
+import static javax.media.opengl.GL2.GL_COMPILE;
+
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -19,12 +21,12 @@ import org.osm2world.core.target.jogl.JOGLTextureManager;
  */
 public class JOGLPrimitiveBufferRenderer {
 	
-	private GL gl;
+	private GL2 gl;
 	private Integer displayListPointer;
 	
 	private JOGLTextureManager textureManager;
 	
-	public JOGLPrimitiveBufferRenderer(GL gl, PrimitiveBuffer primitiveBuffer) {
+	public JOGLPrimitiveBufferRenderer(GL2 gl, PrimitiveBuffer primitiveBuffer) {
 		
 		this.gl = gl;
 		this.textureManager = new JOGLTextureManager(gl);
@@ -33,7 +35,7 @@ public class JOGLPrimitiveBufferRenderer {
 		
 		displayListPointer = gl.glGenLists(1);
 		
-		gl.glNewList(displayListPointer, GL.GL_COMPILE);
+		gl.glNewList(displayListPointer, GL_COMPILE);
 
 		for (Material material : primitiveBuffer.getMaterials()) {
 						

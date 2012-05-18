@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -17,7 +17,7 @@ public class TerrainCellLabelsView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL2 gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 

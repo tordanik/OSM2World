@@ -3,7 +3,7 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 import java.util.List;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -23,7 +23,7 @@ public class MapDataBoundsDebugView extends DebugView {
 	private static final Color FILE_BB_COLOR = Color.GREEN;
 		
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL2 gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 

@@ -6,7 +6,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.TriangleXYZ;
@@ -26,7 +26,7 @@ public class EleDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL2 gl, Camera camera) {
 		
 		/* collect all points */
 		

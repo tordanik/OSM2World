@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.EarClippingTriangulationUtil;
@@ -27,7 +27,7 @@ public class TerrainOutlineDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL2 gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -35,7 +35,7 @@ public class MapDataElevationDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

@@ -1,6 +1,9 @@
 package org.osm2world.console;
 
 import static java.lang.Math.*;
+import static javax.media.opengl.GL.*;
+import static javax.media.opengl.GL2GL3.GL_FILL;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -14,10 +17,11 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLPbuffer;
+import javax.media.opengl.GLProfile;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
@@ -29,7 +33,7 @@ import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
-import com.sun.opengl.util.Screenshot;
+import com.jogamp.opengl.util.awt.Screenshot;
 
 public class ImageExporter {
 
@@ -47,7 +51,7 @@ public class ImageExporter {
 	
 	private final Results results;
 	
-	private GL gl;
+	private GL2 gl;
 	private GLPbuffer pBuffer;
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
@@ -106,43 +110,46 @@ public class ImageExporter {
 		
 		/* create GL canvas and set rendering parameters */
 
-		if (! GLDrawableFactory.getFactory().canCreateGLPbuffer()) {
+		GLProfile profile = GLProfile.getDefault();
+		GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
+		
+		if (! factory.canCreateGLPbuffer(null)) {
 			throw new Error("Cannot create GLPbuffer for OpenGL output!");
 		}
 		
-		GLCapabilities cap = new GLCapabilities();
+		GLCapabilities cap = new GLCapabilities(profile);
 		cap.setDoubleBuffered(false);
 				
 		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
 		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
 				
-		pBuffer = GLDrawableFactory.getFactory().createGLPbuffer(
+		pBuffer = factory.createGLPbuffer(null,
 				cap, null, pBufferSizeX, pBufferSizeY, null);
 		
-		gl = pBuffer.getGL();
+		gl = pBuffer.getGL().getGL2();
 		pBuffer.getContext().makeCurrent();
 		
-		gl.glFrontFace(GL.GL_CCW);                  // use ccw polygons
+		gl.glFrontFace(GL_CCW);                  // use ccw polygons
 					
 		gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
-        gl.glEnable (GL.GL_DEPTH_TEST);             // z buffer
-		gl.glCullFace(GL.GL_BACK);
-        gl.glEnable (GL.GL_CULL_FACE);              // backface culling
+        gl.glEnable (GL_DEPTH_TEST);             // z buffer
+		gl.glCullFace(GL_BACK);
+        gl.glEnable (GL_CULL_FACE);              // backface culling
        
 
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT,
+		gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE,
+		gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR,
+		gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION,
+		gl.glLightfv(GL_LIGHT0, GL_POSITION,
 				new float[] {1.0f, 1.5f, -(-1.0f), 0.0f}, 0);
 		
-		gl.glEnable(GL.GL_LIGHT0);
-		gl.glEnable(GL.GL_LIGHTING);
+		gl.glEnable(GL_LIGHT0);
+		gl.glEnable(GL_LIGHTING);
 				
-        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
+        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
 
 		/* render map data into buffer if it needs to be rendered multiple times */
@@ -234,7 +241,7 @@ public class ImageExporter {
 			
 			/* configure rendering */
 	        
-	        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+	        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	        
 	        gl.glLoadIdentity();
 	        

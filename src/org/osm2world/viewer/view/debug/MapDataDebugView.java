@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -47,7 +47,7 @@ public class MapDataDebugView extends DebugView implements RenderableToJOGL {
 	}
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 				
 		JOGLTarget util = new JOGLTarget(gl, camera);
 		

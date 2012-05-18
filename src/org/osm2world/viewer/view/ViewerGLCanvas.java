@@ -1,14 +1,17 @@
 package org.osm2world.viewer.view;
 
 import static javax.media.opengl.GL.*;
+import static javax.media.opengl.GL2GL3.*;
 
 import java.awt.Color;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLProfile;
+import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.glu.GLU;
 
 import org.osm2world.core.target.jogl.JOGLTarget;
@@ -18,13 +21,13 @@ import org.osm2world.viewer.model.MessageManager.Message;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.DebugView;
 
-import com.sun.opengl.util.FPSAnimator;
+import com.jogamp.opengl.util.FPSAnimator;
 
 public class ViewerGLCanvas extends GLCanvas {
 
 	public ViewerGLCanvas(Data data, MessageManager messageManager, RenderOptions renderOptions) {
 
-		super(new GLCapabilities());
+		super(new GLCapabilities(GLProfile.getDefault()));
 		
 		setSize(800, 600);
 		setIgnoreRepaint(true);
@@ -32,7 +35,6 @@ public class ViewerGLCanvas extends GLCanvas {
 		addGLEventListener(new ViewerGLEventListener(data, messageManager, renderOptions));
 
 		FPSAnimator animator = new FPSAnimator( this, 60 );
-		animator.setRunAsFastAsPossible(false);
         
 		animator.start();
 
@@ -56,7 +58,7 @@ public class ViewerGLCanvas extends GLCanvas {
 		@Override
 		public void display(GLAutoDrawable glDrawable) {
 			
-	        final GL gl = glDrawable.getGL();
+	        final GL2 gl = glDrawable.getGL().getGL2();
 	        
 	        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	        
@@ -125,11 +127,6 @@ public class ViewerGLCanvas extends GLCanvas {
 		}
 
 		@Override
-		public void displayChanged(GLAutoDrawable arg0, boolean arg1, boolean arg2) {
-			// apparently never used by JOGL
-		}
-
-		@Override
 		public void init(GLAutoDrawable glDrawable) {
 			final GL gl = glDrawable.getGL();
 					    		
@@ -158,6 +155,11 @@ public class ViewerGLCanvas extends GLCanvas {
 	        
 		}
 	
+		@Override
+		public void dispose(GLAutoDrawable arg0) {
+			
+		}
+		
 	}
 
 }

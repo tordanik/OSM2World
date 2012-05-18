@@ -32,7 +32,7 @@ import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
-import com.sun.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.Texture;
 
 /**
  * adds trees, tree rows, tree groups and forests to the world

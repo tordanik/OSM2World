@@ -1,9 +1,13 @@
 package org.osm2world.viewer.view.debug;
 
+import static javax.media.opengl.GL2ES1.GL_LIGHT_MODEL_AMBIENT;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
@@ -48,7 +52,7 @@ public class WorldObjectView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL gl, Camera camera) {
+	protected void renderToImpl(GL2 gl, Camera camera) {
 
 		// clean up old renderers
 		
@@ -70,17 +74,20 @@ public class WorldObjectView extends DebugView {
 		
 		// define light source
 		
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT,
+		gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE,
+		gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR,
+		gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
 				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION,
+		gl.glLightfv(GL_LIGHT0, GL_POSITION,
 				new float[] {1.0f, 1.5f, -(-1.0f), 0.0f}, 0);
 		
-		gl.glEnable(GL.GL_LIGHT0);
-		gl.glEnable(GL.GL_LIGHTING);
+		gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
+				new float[] { 1.0f , 1.0f , 1.0f , 1.0f } , 0);
+		
+		gl.glEnable(GL_LIGHT0);
+		gl.glEnable(GL_LIGHTING);
 		
 		// render
 		
@@ -88,8 +95,8 @@ public class WorldObjectView extends DebugView {
 		
 		// switch lighting off
 		
-		gl.glDisable(GL.GL_LIGHT0);
-		gl.glDisable(GL.GL_LIGHTING);
+		gl.glDisable(GL_LIGHT0);
+		gl.glDisable(GL_LIGHTING);
 		
 	}
 

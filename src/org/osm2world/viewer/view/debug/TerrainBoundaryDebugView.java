@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonXYZ;
@@ -19,7 +19,7 @@ public class TerrainBoundaryDebugView extends DebugView {
 	private static final Color AREA_BOUNDARY_COLOR = Color.BLUE;
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 				
 		JOGLTarget target = new JOGLTarget(gl, camera);
 				

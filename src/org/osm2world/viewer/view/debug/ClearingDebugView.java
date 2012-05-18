@@ -3,7 +3,7 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 import java.util.List;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -31,7 +31,7 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 	private static final Color LINE_ABOVE_COLOR = Color.BLUE;
 
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 
@@ -73,10 +73,10 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 				target.drawLineStrip(color, upperClearingPoints);
 				target.drawLineStrip(color, lowerClearingPoints);
 
-				gl.glEnable(GL.GL_POLYGON_STIPPLE);
+				gl.glEnable(GL2.GL_POLYGON_STIPPLE);
 				gl.glPolygonStipple(STIPPLE_PATTERN, 0);
 				target.drawPolygon(color, clearingPolygonPoints);
-				gl.glDisable(GL.GL_POLYGON_STIPPLE);
+				gl.glDisable(GL2.GL_POLYGON_STIPPLE);
 
 			}
 			

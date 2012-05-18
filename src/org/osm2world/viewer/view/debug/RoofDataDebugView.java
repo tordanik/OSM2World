@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
@@ -20,7 +20,7 @@ public class RoofDataDebugView extends DebugView {
 	private static final Color POLYGON_COLOR = Color.BLUE;
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 		

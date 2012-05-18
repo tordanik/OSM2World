@@ -1,28 +1,25 @@
 package org.osm2world.core.target.jogl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
-import com.sun.opengl.util.texture.Texture;
-import com.sun.opengl.util.texture.TextureData;
-import com.sun.opengl.util.texture.TextureIO;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 /**
  * loads textures from files to JOGL and keeps them available for future use
  */
 public class JOGLTextureManager {
 
-	private final GL gl;
+	private final GL2 gl;
 	
 	private final Map<File, Texture> availableTextures = new HashMap<File, Texture>();
 	
-	public JOGLTextureManager(GL gl) {
+	public JOGLTextureManager(GL2 gl) {
 		this.gl = gl;
 	}
 	
@@ -32,27 +29,27 @@ public class JOGLTextureManager {
 		
 		if (result == null) {
 			
-			String fileType;
-			if (file.getName().endsWith(".jpg")) {
-				fileType = "jpg";
-			} else {
-				fileType = "png";
-			}
-			
-			try {
-								
-				InputStream stream = new FileInputStream(file);
-				TextureData data = TextureIO.newTextureData(stream, true, fileType);
-				result = TextureIO.newTexture(data);
+			synchronized (this) {
 				
-				availableTextures.put(file, result);
+				//try again
 				
-			} catch (IOException exc) {
+				if (availableTextures.containsKey(file)) {
+					return availableTextures.get(file);
+				}
 				
-				exc.printStackTrace();
-				System.exit(2);
-				//TODO error handling
-				
+				try {
+					
+					result = TextureIO.newTexture(file, true);
+					
+					availableTextures.put(file, result);
+					
+				} catch (IOException exc) {
+					
+					exc.printStackTrace();
+					System.exit(2);
+					//TODO error handling
+					
+				}
 			}
 			
 		}
@@ -65,7 +62,7 @@ public class JOGLTextureManager {
 	public void releaseAll() {
 				
 		for (Texture texture : availableTextures.values()) {
-			texture.dispose();
+			texture.destroy(gl);
 		}
 		
 		availableTextures.clear();

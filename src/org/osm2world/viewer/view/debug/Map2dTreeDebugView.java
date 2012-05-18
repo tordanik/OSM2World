@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.index.Map2dTree;
@@ -27,7 +27,7 @@ public class Map2dTreeDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera) {
 		
 		if (map2dTree == null) {
 			map2dTree = new RenderableMap2dTree(map);
