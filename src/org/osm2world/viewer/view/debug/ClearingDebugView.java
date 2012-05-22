@@ -12,15 +12,15 @@ import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
  * shows information from elevation calculation
  */
-public class ClearingDebugView extends DebugView implements RenderableToJOGL {
+public class ClearingDebugView extends DebugView {
 
 	private static final int LINE_WIDTH = 5;
 	private static final float HALF_NODE_WIDTH = 0.4f;
@@ -31,7 +31,7 @@ public class ClearingDebugView extends DebugView implements RenderableToJOGL {
 	private static final Color LINE_ABOVE_COLOR = Color.BLUE;
 
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 		
 		JOGLTarget target = new JOGLTarget(gl, camera);
 

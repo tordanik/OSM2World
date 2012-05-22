@@ -5,8 +5,8 @@ import java.awt.Color;
 import javax.media.opengl.GL2;
 
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 import org.osm2world.core.terrain.data.TerrainPatch;
 
 /**
@@ -14,13 +14,13 @@ import org.osm2world.core.terrain.data.TerrainPatch;
  * of {@link TerrainPatch}es
  * //TODO: does this *do* anything useful?
  */
-public class TriangulationDebugView extends DebugView implements RenderableToJOGL {
+public class TriangulationDebugView extends DebugView {
 
 	private static final Color LINE_COLOR = Color.PINK;
 	private static final Color ROT_COLOR = Color.WHITE;
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 	
 		JOGLTarget target = new JOGLTarget(gl, camera);
 //

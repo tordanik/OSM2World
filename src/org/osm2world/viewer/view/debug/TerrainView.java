@@ -5,6 +5,7 @@ import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 import javax.media.opengl.GL2;
 
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
@@ -31,7 +32,7 @@ public class TerrainView extends DebugView {
 	}
 		
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera) {
+	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 		
 		if (renderer == null) {
 			renderer = new JOGLPrimitiveBufferRenderer(gl, terrainPrimitiveBuffer);
@@ -53,7 +54,7 @@ public class TerrainView extends DebugView {
 		
 		// render
 		
-		renderer.render();
+		renderer.render(camera, projection);
 
 		// switch lighting off
 		

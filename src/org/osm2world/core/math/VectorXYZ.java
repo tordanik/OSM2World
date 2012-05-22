@@ -140,6 +140,11 @@ public class VectorXYZ implements Vector3D {
 		return (other.subtract(this)).length();
 	}
 	
+	public double distanceToSquared(VectorXYZ other) {
+		//SUGGEST (performance): don't create temporary vector
+		return (other.subtract(this)).lengthSquared();
+	}
+	
 	public double distanceToXZ(VectorXZ other) {
 		//SUGGEST (performance): don't create temporary vector
 		return VectorXZ.distance(this.xz(), other);

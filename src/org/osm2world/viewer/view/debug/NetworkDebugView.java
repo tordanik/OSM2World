@@ -9,6 +9,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.network.NetworkWaySegmentWorldObject;
@@ -22,7 +23,7 @@ public class NetworkDebugView extends DebugView {
 	private static final Color CUT_COLOR = Color.ORANGE;
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 				
 		JOGLTarget target = new JOGLTarget(gl, camera);
 						

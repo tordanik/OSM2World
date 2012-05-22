@@ -13,13 +13,14 @@ public final class ImmutableMaterial extends Material {
 	
 	public ImmutableMaterial(Lighting lighting, Color color,
 			float ambientFactor, float diffuseFactor,
-			List<TextureData> textureDataList) {
-		super(lighting, color, ambientFactor, diffuseFactor, textureDataList);
+			boolean useAlpha, List<TextureData> textureDataList) {
+		super(lighting, color, ambientFactor, diffuseFactor,
+				useAlpha, textureDataList);
 	}
 	
 	public ImmutableMaterial(Lighting lighting, Color color,
-			List<TextureData> textureDataList) {
-		super(lighting, color, textureDataList);
+			boolean useAlpha, List<TextureData> textureDataList) {
+		super(lighting, color, useAlpha, textureDataList);
 	}
 	
 	public ImmutableMaterial(Lighting lighting, Color color) {

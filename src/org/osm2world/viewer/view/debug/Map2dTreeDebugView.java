@@ -9,6 +9,7 @@ import org.osm2world.core.map_data.creation.index.Map2dTree;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 public class Map2dTreeDebugView extends DebugView {
@@ -27,7 +28,7 @@ public class Map2dTreeDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera) {
+	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 		
 		if (map2dTree == null) {
 			map2dTree = new RenderableMap2dTree(map);

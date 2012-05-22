@@ -10,15 +10,15 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.RenderableToJOGL;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 import org.osm2world.core.terrain.data.Terrain;
 
 /**
  * contains some common methods for debug views
  */
-public abstract class DebugView implements RenderableToJOGL {
+public abstract class DebugView {
 
 	protected MapData map;
 	protected Terrain terrain;
@@ -59,19 +59,18 @@ public abstract class DebugView implements RenderableToJOGL {
 		return "";
 	}
 	
-	@Override
-	public void renderTo(GL2 gl, Camera camera) {
+	public void renderTo(GL2 gl, Camera camera, Projection projection) {
 		if (canBeUsed()) {
-			renderToImpl(gl, camera);
+			renderToImpl(gl, camera, projection);
 		}
 	}
 	
 	/**
 	 * implementation for the renderTo method, provided by subclasses.
 	 * Will only be called if the DebugView {@link #canBeUsed()}.
+	 * @param projection TODO
 	 */
-	protected abstract void renderToImpl(GL2 gl, Camera camera);
-	
+	protected abstract void renderToImpl(GL2 gl, Camera camera, Projection projection);
 	
 	protected static final void drawBoxAround(JOGLTarget target,
 			VectorXZ center, Color color, float halfWidth) {

@@ -597,6 +597,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 							defaultMaterial.getLighting(), color,
 							defaultMaterial.getAmbientFactor(),
 							defaultMaterial.getDiffuseFactor(),
+							defaultMaterial.getUseAlpha(),
 							defaultMaterial.getTextureDataList());
 				}
 				
