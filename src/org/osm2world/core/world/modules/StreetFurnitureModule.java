@@ -203,14 +203,14 @@ public class StreetFurnitureModule extends AbstractModule {
 			/* draw board */
 			
 			VectorXYZ[] vs = {
-				node.getPos().add(boardVector.mult(-width/2))
+				node.getPos().add(boardVector.mult(width/2))
+					.xyz(ele + height),
+				node.getPos().add(boardVector.mult(width/2))
 					.xyz(ele + minHeight),
 				node.getPos().add(boardVector.mult(-width/2))
 					.xyz(ele + height),
-				node.getPos().add(boardVector.mult(+width/2))
-					.xyz(ele + minHeight),
-				node.getPos().add(boardVector.mult(+width/2))
-					.xyz(ele + height)
+				node.getPos().add(boardVector.mult(-width/2))
+					.xyz(ele + minHeight)
 			};
 			
 			List<VectorXYZ> vsListView = asList(vs);

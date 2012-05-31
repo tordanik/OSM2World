@@ -151,8 +151,8 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 	
 	private static final List<VectorXZ> BILLBOARD_TEX_COORDS = asList(
-			VectorXZ.NULL_VECTOR, VectorXZ.Z_UNIT,
-			VectorXZ.X_UNIT, new VectorXZ(1, 1));
+			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
+			new VectorXZ(1, 1), VectorXZ.X_UNIT);
 	
 	private static boolean isConiferousTree(MapElement element, VectorXZ pos) {
 		
