@@ -54,7 +54,9 @@ public class TerrainView extends DebugView {
 		
 		// render
 		
-		renderer.render(camera, projection);
+		if (camera != null && projection != null) {
+			renderer.render(camera, projection);
+		}
 
 		// switch lighting off
 		
