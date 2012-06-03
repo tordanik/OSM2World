@@ -188,6 +188,50 @@ public class RoadModule extends ConfigurableWorldModule {
 		return surface;
 		
 	}
+	
+	private static Material getSurfaceForRoad(TagGroup tags,
+			Material defaultSurface) {
+
+		Material result;
+		
+		if (tags.containsKey("tracktype")) {
+			if (tags.contains("tracktype", "grade1")) {
+				result = ASPHALT;
+			} else if (tags.contains("tracktype", "grade2")) {
+				result = GRAVEL;
+			} else {
+				result = EARTH;
+			}
+		} else {
+			result = defaultSurface;
+		}
+		
+		return getSurfaceMaterial(tags.getValue("surface"), result);
+		
+	}
+	
+	private static Material getSurfaceMiddleForRoad(TagGroup tags,
+			Material defaultSurface) {
+
+		Material result;
+		
+		if (tags.contains("tracktype", "grade4")
+				|| tags.contains("tracktype", "grade5")) {
+			result = TERRAIN_DEFAULT;
+			// ideally, this would be the terrain type surrounds the track...
+		} else {
+			result = defaultSurface;
+		}
+		
+		result = getSurfaceMaterial(tags.getValue("surface:middle"), result);
+		
+		if (result == GRASS) {
+			result = TERRAIN_DEFAULT;
+		}
+		
+		return result;
+		
+	}
 
 	/**
 	 * returns all roads connected to a node
@@ -991,7 +1035,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 				
 		public Material getSurface() {
-			return getSurfaceMaterial(tags.getValue("surface"), ASPHALT);
+			return getSurfaceForRoad(tags, ASPHALT);
 		}
 		
 		public LaneLayout getLaneLayout() {
@@ -1582,14 +1626,40 @@ public class RoadModule extends ConfigurableWorldModule {
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
 			
-			List<VectorXYZ> vs = createTriangleStripBetween(
-					leftLaneBorder, rightLaneBorder);
-			
-			Material material = getSurface(roadTags, laneTags);
-			
-			target.drawTriangleStrip(material, vs,
-					globalTexCoordLists(vs, material));
-			
+			Material surface = getSurface(roadTags, laneTags);
+			Material surfaceMiddle = getSurfaceMiddle(roadTags, laneTags);
+						
+			if (surfaceMiddle == null || surfaceMiddle.equals(surface)) {
+				
+				List<VectorXYZ> vs = createTriangleStripBetween(
+						leftLaneBorder, rightLaneBorder);
+				
+				target.drawTriangleStrip(surface, vs,
+						globalTexCoordLists(vs, surface));
+				
+			} else {
+
+				List<VectorXYZ> leftMiddleBorder =
+					createLineBetween(leftLaneBorder, rightLaneBorder, 0.3f);
+				List<VectorXYZ> rightMiddleBorder =
+					createLineBetween(leftLaneBorder, rightLaneBorder, 0.7f);
+				
+				List<VectorXYZ> vsLeft = createTriangleStripBetween(
+						leftLaneBorder, leftMiddleBorder);
+				List<VectorXYZ> vsMiddle = createTriangleStripBetween(
+						leftMiddleBorder, rightMiddleBorder);
+				List<VectorXYZ> vsRight = createTriangleStripBetween(
+						rightMiddleBorder, rightLaneBorder);
+				
+				target.drawTriangleStrip(surface, vsLeft,
+						globalTexCoordLists(vsLeft, surface));
+				target.drawTriangleStrip(surfaceMiddle, vsMiddle,
+						globalTexCoordLists(vsMiddle, surfaceMiddle));
+				target.drawTriangleStrip(surface, vsRight,
+						globalTexCoordLists(vsRight, surface));
+				
+			}
+				
 		}
 
 		@Override
@@ -1600,8 +1670,14 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
 			
 			return getSurfaceMaterial(laneTags.getValue("surface"),
-					getSurfaceMaterial(roadTags.getValue("surface"),
-					ASPHALT));
+					getSurfaceForRoad(roadTags, ASPHALT));
+			
+		}
+		
+		protected Material getSurfaceMiddle(TagGroup roadTags, TagGroup laneTags) {
+			
+			return getSurfaceMaterial(laneTags.getValue("surface:middle"),
+					getSurfaceMiddleForRoad(roadTags, null));
 			
 		}
 		
