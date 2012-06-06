@@ -40,8 +40,8 @@ public class SetElevationCalculatorAction extends AbstractAction {
 				renderOptions.getEleCalculator() == eleCalculator);
 		
 		if (data.getConversionResults() != null) {
-			JOptionPane.showMessageDialog(viewerFrame, "You need to open a new" +
-					" OSM file for this option to have any effect!",
+			JOptionPane.showMessageDialog(viewerFrame, "You need to reload or" +
+					" open a new OSM file for this option to have any effect!",
 					"Reload required", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
