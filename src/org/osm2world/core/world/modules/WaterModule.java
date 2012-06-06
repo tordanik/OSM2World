@@ -190,7 +190,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				
 				for (List<VectorXYZ> strip : strips) {
 					target.drawTriangleStrip(TERRAIN_DEFAULT, strip,
-						globalTexCoordLists(strip, TERRAIN_DEFAULT));
+						globalTexCoordLists(strip, TERRAIN_DEFAULT, false));
 				}
 				
 				/* render water */
@@ -199,7 +199,7 @@ public class WaterModule extends ConfigurableWorldModule {
 						leftWaterBorder, rightWaterBorder);
 				
 				target.drawTriangleStrip(WATER, vs,
-						globalTexCoordLists(vs, WATER));
+						globalTexCoordLists(vs, WATER, false));
 				
 			}
 			
@@ -262,7 +262,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vertices = getOutlinePolygon().getVertices();
 			
 			target.drawConvexPolygon(WATER, vertices,
-					globalTexCoordLists(vertices, WATER));
+					globalTexCoordLists(vertices, WATER, false));
 			
 			//TODO: only cover with water to 0.95 * distance to center; add land below
 			
@@ -300,7 +300,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			target.drawTriangles(WATER, getTriangulation(),
-					globalTexCoordLists(getTriangulation(), WATER));
+					globalTexCoordLists(getTriangulation(), WATER, false));
 		}
 		
 	}
@@ -333,7 +333,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			/* render water */
 				
 			target.drawTriangles(WATER, getTriangulation(),
-					globalTexCoordLists(getTriangulation(), WATER));
+					globalTexCoordLists(getTriangulation(), WATER, false));
 			
 			/* render walls */
 			//note: mostly copy-pasted from BarrierModule

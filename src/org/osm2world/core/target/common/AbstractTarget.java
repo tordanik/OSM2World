@@ -142,10 +142,10 @@ public abstract class AbstractTarget<R extends Renderable>
 		/* draw the 3 primitives */
 
 		if (drawBottom) { drawTriangleFan(material, bottomFan,
-				globalTexCoordLists(bottomFan, material)); }
+				globalTexCoordLists(bottomFan, material, false)); }
 		
 		if (drawTop) { drawTriangleFan(material, topFan,
-				globalTexCoordLists(topFan, material)); }
+				globalTexCoordLists(topFan, material, false)); }
 		
 		drawTriangleStrip(material, mantleStrip,
 				wallTexCoordLists(mantleStrip, material));

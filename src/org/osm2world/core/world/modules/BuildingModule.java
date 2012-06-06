@@ -251,7 +251,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 				
 			target.drawTriangles(materialWall, trianglesXYZ,
-					globalTexCoordLists(trianglesXYZ, materialWall));
+					globalTexCoordLists(trianglesXYZ, materialWall, false));
 			
 		}
 

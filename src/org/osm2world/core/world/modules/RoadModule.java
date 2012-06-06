@@ -550,7 +550,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material));
+					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material, false));
 			
 			/* connect some lanes such as sidewalks between adjacent roads */
 			
@@ -648,7 +648,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = getSurfaceForNode(node);
 			
 			target.drawTriangles(material, trianglesXYZ,
-					WorldModuleTexturingUtil.globalTexCoordLists(trianglesXYZ, material));
+					WorldModuleTexturingUtil.globalTexCoordLists(trianglesXYZ, material, false));
 			
 		}
 		
@@ -744,7 +744,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					startLines1.add(cutVector.mult(halfStartLines1Width)));
 			
 			target.drawTriangleStrip(surface, vs,
-					globalTexCoordLists(vs, surface));
+					globalTexCoordLists(vs, surface, false));
 			
 			vs = asList(
 					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
@@ -753,7 +753,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					startLines2.add(cutVector.mult(halfStartLines2Width)));
 			
 			target.drawTriangleStrip(surface, vs,
-					globalTexCoordLists(vs, surface));
+					globalTexCoordLists(vs, surface, false));
 			
 			vs = asList(
 					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
@@ -762,7 +762,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					end.add(cutVector.mult(halfEndWidth)));
 			
 			target.drawTriangleStrip(surface, vs,
-					globalTexCoordLists(vs, surface));
+					globalTexCoordLists(vs, surface, false));
 
 			// lines across road
 			
@@ -773,7 +773,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					endLines1.add(cutVector.mult(halfEndLines1Width)));
 			
 			target.drawTriangleStrip(ROAD_MARKING, vs,
-					globalTexCoordLists(vs, ROAD_MARKING));
+					globalTexCoordLists(vs, ROAD_MARKING, false));
 			
 			vs = asList(
 					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
@@ -782,7 +782,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					endLines2.add(cutVector.mult(halfEndLines2Width)));
 			
 			target.drawTriangleStrip(ROAD_MARKING, vs,
-					globalTexCoordLists(vs, ROAD_MARKING));
+					globalTexCoordLists(vs, ROAD_MARKING, false));
 			
 			/* draw lane connections */
 			
@@ -1258,7 +1258,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material));
+					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material, false));
 			
 		}
 		
@@ -1635,7 +1635,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						leftLaneBorder, rightLaneBorder);
 				
 				target.drawTriangleStrip(surface, vs,
-						globalTexCoordLists(vs, surface));
+						globalTexCoordLists(vs, surface, false));
 				
 			} else {
 
@@ -1652,11 +1652,11 @@ public class RoadModule extends ConfigurableWorldModule {
 						rightMiddleBorder, rightLaneBorder);
 				
 				target.drawTriangleStrip(surface, vsLeft,
-						globalTexCoordLists(vsLeft, surface));
+						globalTexCoordLists(vsLeft, surface, false));
 				target.drawTriangleStrip(surfaceMiddle, vsMiddle,
-						globalTexCoordLists(vsMiddle, surfaceMiddle));
+						globalTexCoordLists(vsMiddle, surfaceMiddle, false));
 				target.drawTriangleStrip(surface, vsRight,
-						globalTexCoordLists(vsRight, surface));
+						globalTexCoordLists(vsRight, surface, false));
 				
 			}
 				

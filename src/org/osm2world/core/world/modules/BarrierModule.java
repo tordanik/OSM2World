@@ -5,7 +5,7 @@ import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -152,7 +152,8 @@ public class BarrierModule extends AbstractModule {
 					path, nCopies(path.size(), VectorXYZ.Y_UNIT));
 			
 			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(material, strip, null);
+				target.drawTriangleStrip(material, strip,
+						wallTexCoordLists(strip, material));
 			}
 			
 			/* draw caps */
@@ -166,8 +167,11 @@ public class BarrierModule extends AbstractModule {
 					line.getDirection().invert().xyz(0),
 					VectorXYZ.Y_UNIT);
 			
-			target.drawConvexPolygon(material, startCap, null);
-			target.drawConvexPolygon(material, endCap, null);
+			List<List<VectorXZ>> texCoordLists =
+				globalTexCoordLists(wallShape, material, true);
+			
+			target.drawConvexPolygon(material, startCap, texCoordLists);
+			target.drawConvexPolygon(material, endCap, texCoordLists);
 			
 		}
 		

@@ -131,7 +131,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 					getOutline(false), getOutline(true));
 			
 			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, groundVs,
-					WorldModuleTexturingUtil.globalTexCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT));
+					WorldModuleTexturingUtil.globalTexCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, false));
 			
 			
 			/* draw rails */
@@ -236,7 +236,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			Material material = Materials.RAIL_BALLAST_DEFAULT;
 			
 			target.drawConvexPolygon(material, vectors,
-					globalTexCoordLists(vectors, material));
+					globalTexCoordLists(vectors, material, false));
 
 			/* draw connection between each pair of rails */
 
