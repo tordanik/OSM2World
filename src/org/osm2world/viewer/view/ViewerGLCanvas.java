@@ -17,9 +17,10 @@ import javax.media.opengl.glu.GLU;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
-import org.osm2world.viewer.model.MessageManager.Message;
 import org.osm2world.viewer.model.RenderOptions;
+import org.osm2world.viewer.model.MessageManager.Message;
 import org.osm2world.viewer.view.debug.DebugView;
+import org.osm2world.viewer.view.debug.WorldObjectView;
 
 import com.jogamp.opengl.util.FPSAnimator;
 
@@ -106,8 +107,19 @@ public class ViewerGLCanvas extends GLCanvas {
 
 	        /* draw debug views */
 	        
+	        DebugView activeWorldObjectView = null;
+	        
 	        for (DebugView debugView : renderOptions.activeDebugViews) {
+	        	if (debugView instanceof WorldObjectView) {
+	        		// needs to be rendered last because of transparency
+	        		activeWorldObjectView = debugView;
+	        		continue;
+	        	}
 	        	debugView.renderTo(gl, renderOptions.camera, renderOptions.projection);
+	        }
+	        
+	        if (activeWorldObjectView != null) {
+	        	activeWorldObjectView.renderTo(gl, renderOptions.camera, renderOptions.projection);
 	        }
 	        
 	        /* write messages */
