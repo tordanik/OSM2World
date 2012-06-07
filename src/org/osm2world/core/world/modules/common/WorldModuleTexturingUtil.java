@@ -25,9 +25,11 @@ public class WorldModuleTexturingUtil {
 	/**
 	 * creates texture coordinates based only on the vertex coordinates
 	 * in the global coordinate system and the texture size
+	 * 
+	 * @param vertical  uses x,y coordinates instead of x,z coordinates
 	 */
 	public static final List<List<VectorXZ>> globalTexCoordLists(
-			List<VectorXYZ> vs, Material material) {
+			List<VectorXYZ> vs, Material material, boolean vertical) {
 		
 		List<TextureData> textureDataList = material.getTextureDataList();
 		
@@ -38,14 +40,14 @@ public class WorldModuleTexturingUtil {
 		} else if (textureDataList.size() == 1) {
 			
 			return singletonList(globalTexCoordList(
-					vs, textureDataList.get(0)));
+					vs, textureDataList.get(0), vertical));
 			
 		} else {
 			
 			List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
 			
 			for (TextureData textureData : textureDataList) {
-				result.add(globalTexCoordList(vs, textureData));
+				result.add(globalTexCoordList(vs, textureData, vertical));
 			}
 			
 			return result;
@@ -55,14 +57,14 @@ public class WorldModuleTexturingUtil {
 	}
 
 	private static final List<VectorXZ> globalTexCoordList(
-			List<VectorXYZ> vs, TextureData textureData) {
+			List<VectorXYZ> vs, TextureData textureData, boolean vertical) {
 		
 		List<VectorXZ> textureCoords = new ArrayList<VectorXZ>(vs.size());
 		
 		for (VectorXYZ v : vs) {
 			textureCoords.add(new VectorXZ(
 					v.x / textureData.width,
-					v.z / textureData.height));
+					(vertical ? v.y : v.z) / textureData.height));
 		}
 		
 		return textureCoords;
@@ -70,11 +72,12 @@ public class WorldModuleTexturingUtil {
 	}
 
 	/**
-	 * variant of {@link #globalTexCoordLists(List, Material)}
+	 * variant of {@link #globalTexCoordLists(List, Material, boolean)}
 	 * based on a triangle collection
+	 * @param vertical TODO
 	 */
 	public static final List<List<VectorXZ>> globalTexCoordLists(
-			Collection<TriangleXYZ> triangles, Material material) {
+			Collection<TriangleXYZ> triangles, Material material, boolean vertical) {
 		
 		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(triangles.size() * 3);
 		
@@ -84,7 +87,7 @@ public class WorldModuleTexturingUtil {
 			vs.add(triangle.v3);
 		}
 		
-		return globalTexCoordLists(vs, material);
+		return globalTexCoordLists(vs, material, vertical);
 		
 	}
 	
@@ -247,7 +250,7 @@ public class WorldModuleTexturingUtil {
 			}
 			
 			if (textureData.height > 0) {
-				t = v.y / textureData.height;
+				t = (i % 2 == 0) ? (v.distanceTo(vs.get(i+1))) / textureData.height : 0;
 			} else {
 				t = (i % 2 == 0) ? 1 : 0;
 			}

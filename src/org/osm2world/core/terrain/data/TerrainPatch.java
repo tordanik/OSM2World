@@ -34,7 +34,7 @@ public abstract class TerrainPatch implements RenderableToAllTargets {
 		}
 		
 		target.drawTriangles(TERRAIN_DEFAULT, triangulation,
-				globalTexCoordLists(triangulation, TERRAIN_DEFAULT));
+				globalTexCoordLists(triangulation, TERRAIN_DEFAULT, false));
 				
 	}
 

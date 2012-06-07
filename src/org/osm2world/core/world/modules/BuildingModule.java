@@ -40,6 +40,7 @@ import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -251,7 +252,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 				
 			target.drawTriangles(materialWall, trianglesXYZ,
-					globalTexCoordLists(trianglesXYZ, materialWall));
+					globalTexCoordLists(trianglesXYZ, materialWall, false));
 			
 		}
 
@@ -720,6 +721,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				int numRings = heights.size();
 				VectorXZ center = polygon.getCenter();
 				
+				/* calculate the vertex rings */
+				
 				@SuppressWarnings("unchecked")
 				List<VectorXYZ>[] rings = new List[numRings];
 
@@ -730,7 +733,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 					
 					if (scale == 0) {
 						
-						rings[i] = singletonList(center.xyz(y));
+						rings[i] = nCopies(polygon.size() + 1, center.xyz(y));
 						
 					} else {
 						
@@ -742,42 +745,99 @@ public class BuildingModule extends ConfigurableWorldModule {
 					}
 					
 				}
+					
+				/* draw the triangle strips (or fans) between the rings */
+				
+				List<List<VectorXZ>> texCoordData[] = spindleTexCoordLists(
+						rings, polygon.getOutlineLength(), material);
 				
 				for (int i = 0; i+1 < numRings; i++) {
 					
-					if (rings[i].size() > 1 && rings[i+1].size() > 1) {
-
-						List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-						
-						for (int v = 0; v < rings[i].size(); v ++) {
-							vs.add(rings[i].get(v));
-							vs.add(rings[i+1].get(v));
-						}
-						
-						target.drawTriangleStrip(material, vs, null);
-						
-					} else if (rings[i].size() == 1 && rings[i+1].size() > 1) {
-						
-						List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-						vs.add(rings[i].get(0));
-						vs.addAll(rings[i+1]);
-						target.drawTriangleFan(material, vs, null);
-						
-					} else if (rings[i].size() > 1 && rings[i+1].size() == 1) {
-						
-						List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-						vs.addAll(rings[i]);
-						vs.add(rings[i+1].get(0));
-						reverse(vs);
-						target.drawTriangleFan(material, vs, null);
-						
+					List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+										
+					for (int v = 0; v < rings[i].size(); v ++) {
+						vs.add(rings[i].get(v));
+						vs.add(rings[i+1].get(v));
 					}
-					
+												
+					target.drawTriangleStrip(material, vs, texCoordData[i]);
 					
 				}
 				
 			}
 			
+			protected List<List<VectorXZ>>[] spindleTexCoordLists(
+					List<VectorXYZ>[] rings, double polygonLength,
+					Material material) {
+				
+				@SuppressWarnings("unchecked")
+				List<List<VectorXZ>>[] result = new List[rings.length - 1];
+				
+				double accumulatedTexHeight = 0;
+				
+				for (int i = 0; i+1 < rings.length; i++) {
+					
+					double texHeight =
+						rings[i].get(0).distanceTo(rings[i+1].get(0));
+					
+					List<TextureData> textureDataList =
+						material.getTextureDataList();
+					
+					if (textureDataList.size() == 0) {
+						
+						result[i] = emptyList();
+						
+					} else if (textureDataList.size() == 1) {
+						
+						result[i] = singletonList(spindleTexCoordList(
+								rings[i], rings[i+1], polygonLength,
+								accumulatedTexHeight, textureDataList.get(0)));
+						
+					} else {
+						
+						result[i] = new ArrayList<List<VectorXZ>>();
+						
+						for (TextureData textureData : textureDataList) {
+							result[i].add(spindleTexCoordList(
+									rings[i], rings[i+1], polygonLength,
+									accumulatedTexHeight, textureData));
+						}
+						
+					}
+					
+					accumulatedTexHeight += texHeight;
+					
+				}
+				
+				return result;
+				
+			}
+
+			private List<VectorXZ> spindleTexCoordList(
+					List<VectorXYZ> lowerRing, List<VectorXYZ> upperRing,
+					double polygonLength, double accumulatedTexHeight,
+					TextureData textureData) {
+				
+				double textureRepeats = max(1,
+						round(polygonLength / textureData.width));
+				
+				double texWidthSteps = textureRepeats / (lowerRing.size() - 1);
+				double texHeight = lowerRing.get(0).distanceTo(upperRing.get(0));
+				
+				double texZ1 = accumulatedTexHeight / textureData.height;
+				double texZ2 = (accumulatedTexHeight + texHeight) / textureData.height;
+				
+				VectorXZ[] texCoords = new VectorXZ[2 * lowerRing.size()];
+				
+				for (int i = 0; i < lowerRing.size(); i++) {
+					texCoords[2*i] = new VectorXZ(i*texWidthSteps, -texZ1);
+					texCoords[2*i+1] = new VectorXZ(i*texWidthSteps, -texZ2);
+				}
+				
+				return asList(texCoords);
+				
+			}
+
 			@Override
 			protected float getDefaultRoofHeight() {
 				return (float)polygon.getOuter().getDiameter() / 2;

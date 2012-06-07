@@ -66,7 +66,7 @@ public class ParkingModule extends AbstractModule {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					globalTexCoordLists(triangles, material));
+					globalTexCoordLists(triangles, material, false));
 			
 		}
 		

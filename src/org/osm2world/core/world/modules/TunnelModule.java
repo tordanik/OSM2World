@@ -334,7 +334,7 @@ public class TunnelModule extends AbstractModule {
 			
 			target.drawConvexPolygon(Materials.TUNNEL_DEFAULT, topOutline,
 					globalTexCoordLists(
-							topOutline, Materials.TUNNEL_DEFAULT));
+							topOutline, Materials.TUNNEL_DEFAULT, false));
 			
 		}
 
