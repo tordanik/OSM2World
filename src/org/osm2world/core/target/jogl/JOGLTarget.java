@@ -388,9 +388,9 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	}
 
 	public static final void setFrontMaterialColor(GL2 gl, int pname, Color color) {
-		float ambientColor[] = {0, 0, 0, 1};
-		color.getRGBColorComponents(ambientColor);
-		gl.glMaterialfv(GL_FRONT, pname, FloatBuffer.wrap(ambientColor));
+		float colorArray[] = {0, 0, 0, 1};
+		color.getRGBColorComponents(colorArray);
+		gl.glMaterialfv(GL_FRONT, pname, FloatBuffer.wrap(colorArray));
 	}
 
 	public static final int getGLConstant(Type type) {
