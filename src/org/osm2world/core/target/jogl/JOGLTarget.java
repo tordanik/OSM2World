@@ -22,9 +22,9 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
@@ -62,18 +62,36 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 		
-		assert vertices.size() == normals.size();
-		
 		setMaterial(gl, material, textureManager);
 		
-		gl.glBegin(getGLConstant(type));
-        		
+		drawPrimitive(gl, getGLConstant(type), vertices, normals, texCoordLists);
+		
+	}
+
+	public static void drawPrimitive(GL2 gl, int glPrimitiveType,
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
+		
+		assert vertices.size() == normals.size();
+		
+		gl.glBegin(glPrimitiveType);
+		
 		for (int i = 0; i < vertices.size(); i++) {
-			gl.glNormal3d(normals.get(i).x, normals.get(i).y, -normals.get(i).z);
-	        gl.glVertex3d(vertices.get(i).x, vertices.get(i).y, -vertices.get(i).z);
+			
+			if (texCoordLists != null && !texCoordLists.isEmpty()) {
+				VectorXZ textureCoord =	texCoordLists.get(0).get(i);
+				gl.glTexCoord2d(textureCoord.x, textureCoord.z);
+			}
+			
+			VectorXYZ n = normals.get(i);
+			gl.glNormal3d(n.x, n.y,	-n.z);
+			
+			VectorXYZ v = vertices.get(i);
+			gl.glVertex3d(v.x, v.y, -v.z);
+			
 		}
 		
-        gl.glEnd();
+		gl.glEnd();
 		
 	}
 	

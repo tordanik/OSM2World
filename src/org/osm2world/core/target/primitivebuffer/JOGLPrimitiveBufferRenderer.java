@@ -12,12 +12,11 @@ import java.util.List;
 import javax.media.opengl.GL2;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
@@ -100,31 +99,16 @@ public class JOGLPrimitiveBufferRenderer {
 
 	private void renderPrimitive(GL2 gl, PrimitiveBuffer primitiveBuffer,
 			Primitive primitive) {
+
+		List<VectorXYZ> vertices =
+			new ArrayList<VectorXYZ>(primitive.indices.length);
 		
-		gl.glBegin(JOGLTarget.getGLConstant(primitive.type));
-		
-		int i = 0;
 		for (int index : primitive.indices) {
-			
-			if (primitive.texCoordLists != null
-					&& !primitive.texCoordLists.isEmpty()) {
-				VectorXZ textureCoord =
-						primitive.texCoordLists.get(0).get(i);
-				gl.glTexCoord2d(textureCoord.x, textureCoord.z);
-			}
-			
-			gl.glNormal3d(primitive.normals.get(i).x,
-					primitive.normals.get(i).y,
-					-primitive.normals.get(i).z);
-			
-			VectorXYZ v = primitiveBuffer.getVertex(index);
-			gl.glVertex3d(v.x, v.y, -v.z);
-				
-			++ i;
-			
+			vertices.add(primitiveBuffer.getVertex(index));
 		}
 		
-		gl.glEnd();
+		JOGLTarget.drawPrimitive(gl, JOGLTarget.getGLConstant(primitive.type),
+				vertices, primitive.normals, primitive.texCoordLists);
 		
 	}
 	
