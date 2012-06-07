@@ -139,6 +139,10 @@ public final class Materials {
 	
 	public static final ConfMaterial FIREHYDRANT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
+
+	public static final ConfMaterial SKYBOX =
+		new ConfMaterial(Lighting.FLAT, new Color(0, 0, 1),
+				1, 0, false, null);
 	
 	private static final Map<String, ConfMaterial> surfaceMaterialMap =
 		new HashMap<String, ConfMaterial>();

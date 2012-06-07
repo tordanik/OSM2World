@@ -54,6 +54,7 @@ import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
+import org.osm2world.viewer.view.debug.SkyboxView;
 import org.osm2world.viewer.view.debug.TerrainAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
@@ -146,6 +147,9 @@ public class ViewerFrame extends JFrame {
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new TerrainView(), KeyEvent.VK_T, true,
+					this, data, renderOptions)));
+			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
+					new SkyboxView(), -1, true,
 					this, data, renderOptions)));
 
 			subMenu.addSeparator();
