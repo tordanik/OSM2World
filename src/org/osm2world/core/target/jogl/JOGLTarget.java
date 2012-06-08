@@ -78,9 +78,12 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 		for (int i = 0; i < vertices.size(); i++) {
 			
-			if (texCoordLists != null && !texCoordLists.isEmpty()) {
-				VectorXZ textureCoord =	texCoordLists.get(0).get(i);
-				gl.glTexCoord2d(textureCoord.x, textureCoord.z);
+			if (texCoordLists != null) {
+				for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer++) {
+					VectorXZ textureCoord =	texCoordLists.get(texLayer).get(i);
+					gl.glMultiTexCoord2d(getGLTextureConstant(texLayer),
+							textureCoord.x, textureCoord.z);
+				}
 			}
 			
 			VectorXYZ n = normals.get(i);
@@ -273,6 +276,8 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		textureManager.releaseAll();
 	}
 
+	private static final int NUM_TEXTURE_LAYERS = 4;
+	
 	public static final void setCameraMatrices(GL2 gl, Camera camera) {
 		VectorXYZ pos = camera.getPos();
 		VectorXYZ lookAt = camera.getLookAt();
@@ -339,14 +344,18 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	public static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 		
+		boolean textured = material.getTextureDataList().size() > 0;
+		
+		/* set lighting */
+		
 		if (material.getLighting() == Lighting.SMOOTH) {
 			gl.glShadeModel(GL_SMOOTH);
 		} else {
 			gl.glShadeModel(GL_FLAT);
 		}
-
-		boolean textured = material.getTextureDataList().size() > 0;
-
+		
+		/* set color */
+		
 		if (!textured || material.getTextureDataList().get(0).colorable) {
 			setFrontMaterialColor(gl, GL_AMBIENT, material.ambientColor());
 			setFrontMaterialColor(gl, GL_DIFFUSE, material.diffuseColor());
@@ -357,32 +366,58 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 					Color.WHITE, material.getDiffuseFactor()));
 		}
 		
-		if (!textured) {
-			gl.glDisable(GL_TEXTURE_2D);
-		} else {
+		/* set textures and associated parameters */
+		
+		for (int i = 0; i < NUM_TEXTURE_LAYERS; i++) {
 			
-			TextureData textureData = material.getTextureDataList().get(0);
+			gl.glActiveTexture(getGLTextureConstant(i));
 						
-			gl.glEnable(GL_TEXTURE_2D);
-	        
-			if (material.getUseAlpha()) {
-				gl.glEnable(GL.GL_BLEND);
-				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			if (i >= material.getTextureDataList().size()) {
+				
+				gl.glDisable(GL_TEXTURE_2D);
+								
 			} else {
-				gl.glDisable(GL.GL_BLEND);
+				
+				gl.glEnable(GL_TEXTURE_2D);
+				
+				if (material.getUseAlpha()) {
+					gl.glEnable(GL.GL_BLEND);
+					gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+				} else {
+					gl.glDisable(GL.GL_BLEND);
+				}
+				
+				TextureData textureData = material.getTextureDataList().get(i);
+				
+				Texture texture = textureManager.getTextureForFile(textureData.file);
+		        texture.enable(gl); //TODO: should this be called every time?
+		        texture.bind(gl);
+
+				int wrap = (textureData.wrap == Wrap.CLAMP) ?
+						GL_CLAMP : GL_REPEAT;
+				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+
+		        if (i == 0) {
+		        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		        } else {
+		        	
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_TEXTURE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_PREVIOUS );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE2_RGB, GL_TEXTURE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_ALPHA );
+
+		        }
+		        
 			}
 			
-	        Texture texture = textureManager.getTextureForFile(textureData.file);
-	        texture.enable(gl); //TODO: should this be called every time?
-	        texture.bind(gl);
-
-			int wrap = (textureData.wrap == Wrap.CLAMP) ?
-					GL_CLAMP : GL_REPEAT;
-			gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
-	        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-
-	        gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		    
 		}
 		
 	}
@@ -400,6 +435,16 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		case TRIANGLES: return GL_TRIANGLES;
 		case CONVEX_POLYGON: return GL_POLYGON;
 		default: throw new Error("programming error: unhandled primitive type");
+		}
+	}
+
+	public static final int getGLTextureConstant(int textureNumber) {
+		switch (textureNumber) {
+		case 0: return GL_TEXTURE0;
+		case 1: return GL_TEXTURE1;
+		case 2: return GL_TEXTURE2;
+		case 3: return GL_TEXTURE3;
+		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
 	

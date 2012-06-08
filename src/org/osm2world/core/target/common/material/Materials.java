@@ -1,14 +1,14 @@
 package org.osm2world.core.target.common.material;
 
-import static java.util.Collections.singletonList;
-
 import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -221,7 +221,7 @@ public final class Materials {
 	}
 	
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|use_alpha|texture_(?:file|width|height|))";
+			"material_(.+)_(color|use_alpha|texture\\d*_(?:file|width|height|))";
 	
 	/**
 	 * configures the attributes of the materials within this class
@@ -264,26 +264,37 @@ public final class Materials {
 												
 					} else if (attribute.startsWith("texture")) {
 						
-						String fileKey = "material_" + materialName + "_texture_file";
-						String widthKey = "material_" + materialName + "_texture_width";
-						String heightKey = "material_" + materialName + "_texture_height";
-						String wrapKey = "material_" + materialName + "_texture_wrap";
-						String colorableKey = "material_" + materialName + "_texture_colorable";
+						List<TextureData> textureDataList =
+							new ArrayList<TextureData>();
+						
+						for (int i = 0; i < 32; i++) {
+							
+							String fileKey = "material_" + materialName + "_texture" + i + "_file";
+							String widthKey = "material_" + materialName + "_texture" + i + "_width";
+							String heightKey = "material_" + materialName + "_texture" + i + "_height";
+							String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
+							String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
 
-						File file = new File(config.getString(fileKey));
+							if (config.getString(fileKey) == null) break;
+							
+							File file = new File(config.getString(fileKey));
+							
+							double width = config.getDouble(widthKey, 1);
+							double height = config.getDouble(heightKey, 1);
+							boolean colorable = config.getBoolean(colorableKey, false);
+							
+							String wrapString = config.getString(wrapKey);
+							Wrap wrap = "clamp".equalsIgnoreCase(wrapString) ?
+									Wrap.CLAMP : Wrap.REPEAT;
+							
+							TextureData textureData = new TextureData(
+									file, width, height, wrap, colorable);
+							textureDataList.add(textureData);
+							
+						}
 						
-						double width = config.getDouble(widthKey, 1);
-						double height = config.getDouble(heightKey, 1);
-						boolean colorable = config.getBoolean(colorableKey, false);
-						
-						String wrapString = config.getString(wrapKey);
-						Wrap wrap = "clamp".equalsIgnoreCase(wrapString) ?
-								Wrap.CLAMP : Wrap.REPEAT;
-						
-						TextureData textureData = new TextureData(
-								file, width, height, wrap, colorable);
-						material.setTextureDataList(singletonList(textureData));
-						
+						material.setTextureDataList(textureDataList);
+							
 					} else {
 						System.err.println("unknown material attribute: "
 								+ attribute);
