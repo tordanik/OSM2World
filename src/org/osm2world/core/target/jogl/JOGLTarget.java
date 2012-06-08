@@ -190,69 +190,6 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		drawPrimitive(GL_POLYGON, color, Arrays.asList(vs));
 	}
 	
-//	//TODO: own class for Texture, so Target classes can offer load texture
-//	public void drawBillboard(VectorXYZ center, float halfWidth, float halfHeight,
-//			Texture texture, Camera camera) {
-//
-//		VectorXYZ right = camera.getRight();
-//		double rightXScaled = halfWidth*right.getX();
-//		double rightZScaled = halfWidth*right.getZ();
-//
-//		TextureCoords tc = texture.getImageTexCoords();
-//
-//    	gl.glColor3f(1, 1, 1);
-//
-//		gl.glEnable(GL_TEXTURE_2D);
-//        gl.glEnable(GL_BLEND);
-//        gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//        gl.glEnable(GL_ALPHA_TEST);
-//        gl.glAlphaFunc(GL_GREATER, 0);
-//        //TODO: disable calls?
-//
-//        gl.glBegin(GL_QUADS);
-//
-//		texture.bind();
-//
-//		gl.glTexCoord2f(tc.left(), tc.bottom());
-//        gl.glVertex3d(
-//        		center.getX() - rightXScaled,
-//        		center.getY() - halfHeight,
-//        		-(center.getZ() - rightZScaled));
-//
-//		gl.glTexCoord2f(tc.right(), tc.bottom());
-//        gl.glVertex3d(
-//        		center.getX() + rightXScaled,
-//        		center.getY() - halfHeight,
-//        		-(center.getZ() + rightZScaled));
-//
-//		gl.glTexCoord2f(tc.right(), tc.top());
-//        gl.glVertex3d(
-//        		center.getX() + rightXScaled,
-//        		center.getY() + halfHeight,
-//        		-(center.getZ() + rightZScaled));
-//
-//		gl.glTexCoord2f(tc.left(), tc.top());
-//        gl.glVertex3d(
-//        		center.getX() - rightXScaled,
-//        		center.getY() + halfHeight,
-//        		-(center.getZ() - rightZScaled));
-//
-//        gl.glDisable(GL_TEXTURE_2D);
-//
-//	}
-//
-//	public static Texture loadTexture(String fileName) throws GLException, IOException
-//	{
-//	  File file = new File("resources" + File.separator + fileName);
-//	  Texture result = null;
-//
-//	  result = TextureIO.newTexture(file, false);
-//	  result.setTexParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR); //TODO (performance): GL_NEAREST for performance?
-//	  result.setTexParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR); //TODO (performance): GL_NEAREST for performance?
-//
-//	  return result;
-//	}
-
 	private static final TextRenderer textRenderer = new TextRenderer(
 			new Font("SansSerif", Font.PLAIN, 12), true, false);
 	//needs quite a bit of memory, so it must not be created for each instance!
