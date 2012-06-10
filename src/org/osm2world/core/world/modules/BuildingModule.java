@@ -63,7 +63,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 		
-		boolean useBuildingColors = config.getBoolean("useBuildingColors", false);
+		boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
 		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", false);
 		
 		for (MapArea area : mapData.getMapAreas()) {
@@ -506,7 +506,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 					// determine t (height dimension) coordinates
 					
 					if (textureData.height > 0) {
-					
+						
 						lowerT = (floorEle - baseEle) / textureData.height;
 						middleT = (middleEle - baseEle) / textureData.height;
 						
@@ -515,7 +515,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						lowerT = buildingLevels *
 							(floorEle - baseEle) / (middleEle - baseEle);
 						middleT = buildingLevels;
-												
+						
 					}
 					
 					// set texture coordinates
@@ -696,6 +696,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					return Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
 					return Materials.WOOD_WALL;
+				} else if (Materials.getSurfaceMaterial(materialString) != null) {
+					return Materials.getSurfaceMaterial(materialString);
 				}
 			}
 			
@@ -707,6 +709,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					color = new Color(240, 240, 240);
 				} else if ("black".equals(colorString)) {
 					color = new Color(76, 76, 76);
+				} else if ("grey".equals(colorString)) {
+					color = new Color(100, 100, 100);
 				} else if ("red".equals(colorString)) {
 					if (roof) {
 						color = new Color(204, 0, 0);
