@@ -92,6 +92,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
 	public static final ConfMaterial ENTRANCE_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.2f, 0, 0));
+	public static final ConfMaterial GARAGE_DOORS =
+			new ConfMaterial(Lighting.FLAT, new Color(1f, 0.9f, 0.55f));
 	
 	public static final ConfMaterial WALL_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.GRAY);

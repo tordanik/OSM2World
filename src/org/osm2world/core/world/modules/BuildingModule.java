@@ -565,6 +565,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWall = Materials.GLASS;
 				defaultMaterialRoof = Materials.GLASS;
 				defaultMaterialWindows = null;
+			} else if ("garage".equals(buildingValue)
+					|| "garages".equals(buildingValue)) {
+				defaultLevels = 1;
+				defaultMaterialWall = Materials.CONCRETE;
+				defaultMaterialRoof = Materials.CONCRETE;
+				defaultMaterialWindows = Materials.GARAGE_DOORS;
+			} else if ("church".equals(buildingValue)
+					|| "hangar".equals(buildingValue)
+					|| "industrial".equals(buildingValue)) {
+				defaultMaterialWindows = null;
 			}
 			
 			/* determine roof shape */
