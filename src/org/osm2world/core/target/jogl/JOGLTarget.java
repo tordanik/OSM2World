@@ -22,9 +22,9 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
@@ -281,7 +281,10 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	public static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 		
-		boolean textured = material.getTextureDataList().size() > 0;
+		int numTexLayers = 0;
+		if (material.getTextureDataList() != null) {
+			numTexLayers = material.getTextureDataList().size();
+		}
 		
 		/* set lighting */
 		
@@ -293,7 +296,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 		/* set color */
 		
-		if (!textured || material.getTextureDataList().get(0).colorable) {
+		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
 			setFrontMaterialColor(gl, GL_AMBIENT, material.ambientColor());
 			setFrontMaterialColor(gl, GL_DIFFUSE, material.diffuseColor());
 		} else {
@@ -309,7 +312,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			
 			gl.glActiveTexture(getGLTextureConstant(i));
 						
-			if (i >= material.getTextureDataList().size()) {
+			if (i >= numTexLayers) {
 				
 				gl.glDisable(GL_TEXTURE_2D);
 								

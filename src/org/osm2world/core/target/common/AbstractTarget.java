@@ -71,11 +71,15 @@ public abstract class AbstractTarget<R extends Renderable>
 				frontUpperLeft, frontLowerLeft
 		);
 		
-		drawTriangleStrip(material, vsStrip1, nCopies(
-				material.getTextureDataList().size(), BOX_TEX_COORDS_1));
-
-		drawTriangleStrip(material, vsStrip2, nCopies(
-				material.getTextureDataList().size(), BOX_TEX_COORDS_2));
+		List<List<VectorXZ>> texCoords1 = null, texCoords2 = null;
+		
+		if (material.getTextureDataList() != null) {
+			texCoords1 = nCopies(material.getTextureDataList().size(), BOX_TEX_COORDS_1);
+			texCoords2 = nCopies(material.getTextureDataList().size(), BOX_TEX_COORDS_2);
+		}
+		
+		drawTriangleStrip(material, vsStrip1, texCoords1);
+		drawTriangleStrip(material, vsStrip2, texCoords2);
 		
 	}
 	
@@ -157,7 +161,7 @@ public abstract class AbstractTarget<R extends Renderable>
 			List<List<VectorXZ>> texCoordLists) {
 		
 		List<List<VectorXZ>> newTexCoordLists = emptyList();
-		if (!texCoordLists.isEmpty()) {
+		if (texCoordLists != null && !texCoordLists.isEmpty()) {
 			newTexCoordLists = new ArrayList<List<VectorXZ>>(texCoordLists.size());
 			for (List<VectorXZ> texCoordList : texCoordLists) {
 				newTexCoordLists.add(
@@ -173,7 +177,7 @@ public abstract class AbstractTarget<R extends Renderable>
 			List<List<VectorXZ>> texCoordLists) {
 		
 		List<List<VectorXZ>> newTexCoordLists = emptyList();
-		if (!texCoordLists.isEmpty()) {
+		if (texCoordLists != null && !texCoordLists.isEmpty()) {
 			newTexCoordLists = new ArrayList<List<VectorXZ>>(texCoordLists.size());
 			for (List<VectorXZ> texCoordList : texCoordLists) {
 				newTexCoordLists.add(
