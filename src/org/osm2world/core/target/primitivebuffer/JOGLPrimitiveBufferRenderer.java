@@ -15,8 +15,8 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
@@ -228,7 +228,20 @@ public class JOGLPrimitiveBufferRenderer {
 	}
 
 	private VectorXYZ primitivePos(PrimitiveWithMaterial p) {
-		return primitiveBuffer.getVertex(p.primitive.indices[0]);
+		
+		double sumX = 0, sumY = 0, sumZ = 0;
+		
+		for (int index : p.primitive.indices) {
+			VectorXYZ v = primitiveBuffer.getVertex(index);
+			sumX += v.x;
+			sumY += v.y;
+			sumZ += v.z;
+		}
+		
+		return new VectorXYZ(sumX / p.primitive.indices.length,
+				sumY / p.primitive.indices.length,
+				sumZ / p.primitive.indices.length);
+		
 	}
 	
 	/**

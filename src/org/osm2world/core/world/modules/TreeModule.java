@@ -142,17 +142,27 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 			target.drawTriangleStrip(material, asList(
 					leftBottom.add(up), leftBottom,
-					rightBottom.add(up), rightBottom),
+					pos.add(up), pos),
 					nCopies(material.getTextureDataList().size(),
-							BILLBOARD_TEX_COORDS));
+							BILLBOARD_LEFT_TEX_COORDS));
+
+			target.drawTriangleStrip(material, asList(
+					rightBottom, rightBottom.add(up),
+					pos, pos.add(up)),
+					nCopies(material.getTextureDataList().size(),
+							BILLBOARD_RIGHT_TEX_COORDS));
 			
 		}
 		
 	}
 	
-	private static final List<VectorXZ> BILLBOARD_TEX_COORDS = asList(
+	private static final List<VectorXZ> BILLBOARD_LEFT_TEX_COORDS = asList(
 			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
-			new VectorXZ(1, 1), VectorXZ.X_UNIT);
+			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0));
+	
+	private static final List<VectorXZ> BILLBOARD_RIGHT_TEX_COORDS = asList(
+			VectorXZ.X_UNIT, new VectorXZ(1, 1),
+			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
 	
 	private static boolean isConiferousTree(MapElement element, VectorXZ pos) {
 		
