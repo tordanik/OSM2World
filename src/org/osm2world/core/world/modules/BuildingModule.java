@@ -52,7 +52,6 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 
 import com.google.common.base.Function;
 
@@ -65,6 +64,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	public void applyTo(MapData mapData) {
 		
 		boolean useBuildingColors = config.getBoolean("useBuildingColors", false);
+		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", false);
 		
 		for (MapArea area : mapData.getMapAreas()) {
 			
@@ -74,7 +74,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (buildingValue != null && !buildingValue.equals("no")) {
 				
-				Building building = new Building(area, useBuildingColors);
+				Building building = new Building(area,
+						useBuildingColors, drawBuildingWindows);
 				area.addRepresentation(building);
 								
 			}
@@ -90,7 +91,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final List<BuildingPart> parts =
 				new ArrayList<BuildingModule.BuildingPart>();
 		
-		public Building(MapArea area, boolean useBuildingColors) {
+		public Building(MapArea area, boolean useBuildingColors,
+				boolean drawBuildingWindows) {
 			
 			this.area = area;
 			
@@ -105,7 +107,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					if (area.getPolygon().contains(
 							otherArea.getPolygon().getOuter())) {
 						parts.add(new BuildingPart(this, otherArea,
-							otherArea.getPolygon(), useBuildingColors));
+							otherArea.getPolygon(), useBuildingColors,
+							drawBuildingWindows));
 					}
 					
 				}
@@ -115,7 +118,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (parts.isEmpty()) {
 				parts.add(new BuildingPart(this, area,
-						area.getPolygon(), useBuildingColors));
+						area.getPolygon(), useBuildingColors, drawBuildingWindows));
 			} else {
 				
 				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
@@ -131,7 +134,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 							subtractPolygons);
 				
 				for (PolygonWithHolesXZ remainingPoly : remainingPolys) {
-					parts.add(new BuildingPart(this, area, remainingPoly, false));
+					parts.add(new BuildingPart(this, area, remainingPoly,
+							useBuildingColors, drawBuildingWindows));
 				}
 				
 			}
@@ -192,20 +196,26 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final MapArea area;
 		private final PolygonWithHolesXZ polygon;
 		
+		private int buildingLevels;
+		private int minLevel;
+		
 		private double heightWithoutRoof;
+		
 		private Material materialWall;
+		private Material materialWallWithWindows;
 		private Material materialRoof;
+		
 		private Roof roof;
 		
 		public BuildingPart(Building building,
 				MapArea area, PolygonWithHolesXZ polygon,
-				boolean useBuildingColors) {
+				boolean useBuildingColors, boolean drawBuildingWindows) {
 
 			this.building = building;
 			this.area = area;
 			this.polygon = polygon;
 
-			setAttributes(useBuildingColors);
+			setAttributes(useBuildingColors, drawBuildingWindows);
 			
 			for (MapNode node : area.getBoundaryNodes()) {
 				if ((node.getTags().contains("building", "entrance")
@@ -258,13 +268,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private void renderWalls(Target<?> target, Roof roof) {
 			
-			double floorEle = calculateFloorEle(roof);
-			boolean renderFloor = (floorEle >
-				building.getArea().getElevationProfile().getMinEle());
+			double baseEle = building.getArea().getElevationProfile().getMinEle();
+			
+			double floorHeight = calculateFloorHeight(roof);
+			boolean renderFloor = (floorHeight > 0);
 			
 			if (area.getOverlaps().isEmpty()) {
 				
-				renderWalls(target, roof.getPolygon(), false, floorEle, roof);
+				renderWalls(target, roof.getPolygon(), false,
+						baseEle, floorHeight, roof);
 				
 			} else {
 							
@@ -336,9 +348,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 							subtractPolygons);
 				
 				for (PolygonWithHolesXZ p : buildingPartPolys) {
-					renderWalls(target, p, false, floorEle, roof);
+					renderWalls(target, p, false, baseEle, floorHeight, roof);
 					if (renderFloor) {
-						renderFloor(target, floorEle);
+						renderFloor(target, baseEle + floorHeight);
 					}
 				}
 				
@@ -367,13 +379,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 					}
 					
 					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
-						double clearing = o.getClearingAbove(o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
-						double newFloorEle = building.getArea().getElevationProfile().getMinEle() + clearing;
-						if (newFloorEle < floorEle) {
-							newFloorEle = floorEle;
+						double newFloorHeight = o.getClearingAbove(
+								o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
+						if (newFloorHeight < floorHeight) {
+							newFloorHeight = floorHeight;
 						}
-						renderWalls(target, p, false, newFloorEle, roof);
-						renderFloor(target, newFloorEle);
+						renderWalls(target, p, false, baseEle, newFloorHeight, roof);
+						renderFloor(target, baseEle);
 					}
 					
 				}
@@ -382,61 +394,143 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 		}
 
-		private double calculateFloorEle(Roof roof) {
-			double floorEle = building.getArea().getElevationProfile().getMinEle();
+		private double calculateFloorHeight(Roof roof) {
 			
 			if (getValue("min_height") != null) {
 				
 				Float minEle = parseMeasure(
 						area.getTags().getValue("min_height"));
 				if (minEle != null) {
-					floorEle += minEle;
+					return minEle;
 				}
 				
-			} else if (getValue("building:min_level") != null
-					&& getValue("building:levels") != null) {
-				
-				Float minLevel = parseOsmDecimal(
-						getValue("building:min_level"), true);
-				Float levels = parseOsmDecimal(
-						getValue("building:levels"), false);
-				if (minLevel != null && levels != null) {
-					double totalHeight = heightWithoutRoof + roof.getRoofHeight();
-					floorEle += (totalHeight / levels) * minLevel;
-				}
 			}
-			return floorEle;
+			
+			if (minLevel > 0) {
+				
+				double totalHeight = heightWithoutRoof + roof.getRoofHeight();
+				return (totalHeight / buildingLevels) * minLevel;
+				
+			}
+			
+			return 0;
+						
 		}
 
 		private void renderWalls(Target<?> target, PolygonWithHolesXZ p,
-				boolean renderFloor, double floorEle, Roof roof) {
+				boolean renderFloor, double baseEle, double floorHeight,
+				Roof roof) {
 			
-			drawWallOnPolygon(target, floorEle, roof, p.getOuter().makeCounterclockwise());
+			drawWallOnPolygon(target, baseEle, floorHeight,
+					roof, p.getOuter().makeCounterclockwise());
 			
 			for (SimplePolygonXZ polygon : p.getHoles()) {
-				drawWallOnPolygon(target, floorEle, roof, polygon.makeClockwise());
+				drawWallOnPolygon(target, baseEle, floorHeight,
+						roof, polygon.makeClockwise());
 			}
 			
 		}
 
-		private void drawWallOnPolygon(Target<?> target, double floorEle,
-				Roof roof, SimplePolygonXZ polygon) {
+		private void drawWallOnPolygon(Target<?> target, double baseEle,
+				double floorHeight, Roof roof, SimplePolygonXZ polygon) {
 			
+			double floorEle = baseEle + floorHeight;
+			
+			List<TextureData> textureDataList = materialWallWithWindows.getTextureDataList();
 			List<VectorXZ> vertices = polygon.getVertexLoop();
 			
-			List<VectorXYZ> wallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
-
+			List<VectorXYZ> mainWallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
+			List<VectorXYZ> roofWallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
+			
+			List<List<VectorXZ>> mainWallTexCoordLists = new ArrayList<List<VectorXZ>>(
+					textureDataList.size());
+			
+			for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
+				mainWallTexCoordLists.add(new ArrayList<VectorXZ>());
+			}
+			
+			double accumulatedLength = 0;
+			double[] previousS = new double[textureDataList.size()];
+			
 			for (int i = 0; i < vertices.size(); i++) {
+				
 				final VectorXZ coord = vertices.get(i);
+				
+				/* update accumulated wall length */
+				
+				if (i > 0) {
+					accumulatedLength += coord.distanceTo(vertices.get(i-1));
+				}
+				
+				/* add wall vectors */
+				
 				final VectorXYZ upperVector = coord.xyz(roof.getRoofEleAt(coord));
-				wallVectors.add(upperVector);
+				final VectorXYZ middleVector = coord.xyz(baseEle + heightWithoutRoof);
+				
 				double upperEle = upperVector.y;
-				wallVectors.add(new VectorXYZ(coord.x,
-						min(floorEle, upperEle), coord.z));
+				double middleEle = middleVector.y;
+				
+				mainWallVectors.add(middleVector);
+				mainWallVectors.add(new VectorXYZ(coord.x,
+						min(floorEle, middleEle), coord.z));
+				
+				roofWallVectors.add(upperVector);
+				roofWallVectors.add(new VectorXYZ(coord.x,
+						min(middleEle, upperEle), coord.z));
+				
+				
+				/* add texture coordinates */
+				
+				for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
+					
+					TextureData textureData = textureDataList.get(texLayer);
+					List<VectorXZ> texCoordList = mainWallTexCoordLists.get(texLayer);
+					
+					double s, lowerT, middleT;
+					
+					// determine s (width dimension) coordinate
+					
+					if (textureData.height > 0) {
+						s = accumulatedLength / textureData.width;
+					} else {
+						if (i == 0) {
+							s = 0;
+						} else {
+							s = previousS[texLayer] + round(vertices.get(i-1)
+									.distanceTo(coord) / textureData.width);
+						}
+					}
+					
+					previousS[texLayer] = s;
+					
+					// determine t (height dimension) coordinates
+					
+					if (textureData.height > 0) {
+					
+						lowerT = (floorEle - baseEle) / textureData.height;
+						middleT = (middleEle - baseEle) / textureData.height;
+						
+					} else {
+						
+						lowerT = buildingLevels *
+							(floorEle - baseEle) / (middleEle - baseEle);
+						middleT = buildingLevels;
+												
+					}
+					
+					// set texture coordinates
+					
+					texCoordList.add(new VectorXZ(s, middleT));
+					texCoordList.add(new VectorXZ(s, lowerT));
+					
+				}
+								
 			}
 
-			target.drawTriangleStrip(materialWall, wallVectors,
-					WorldModuleTexturingUtil.wallTexCoordLists(wallVectors, materialWall));
+			target.drawTriangleStrip(materialWallWithWindows, mainWallVectors,
+					mainWallTexCoordLists);
+			target.drawTriangleStrip(materialWall, roofWallVectors,
+					wallTexCoordLists(roofWallVectors, materialWall));
 			
 		}
 		
@@ -449,25 +543,28 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * (level height) or ultimately the building class as determined
 		 * by the "building" key.
 		 */
-		private void setAttributes(boolean useBuildingColors) {
+		private void setAttributes(boolean useBuildingColors,
+				boolean drawBuildingWindows) {
 			
 			TagGroup tags = area.getTags();
 			TagGroup buildingTags = building.area.getTags();
 			
 			/* determine defaults for building type */
 			
-			double defaultHeight = 7.5;
+			int defaultLevels = 3;
 			double defaultHeightPerLevel = 2.5;
 			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
+			Material defaultMaterialWindows = Materials.BUILDING_WINDOWS;
 			String defaultRoofShape = "flat";
 			
 			String buildingValue = getValue("building");
 			
 			if ("greenhouse".equals(buildingValue)) {
-				defaultHeight = 2.5;
+				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
 				defaultMaterialRoof = Materials.GLASS;
+				defaultMaterialWindows = null;
 			}
 			
 			/* determine roof shape */
@@ -504,16 +601,37 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 			}
 			
-			/* determine height */
+			/* determine levels */
 			
-			Float levels = null;
-			if (tags.containsKey("building:levels")) {
-				levels = parseOsmDecimal(getValue("building:levels"), false);
+			buildingLevels = defaultLevels;
+			
+			Float parsedLevels = null;
+			
+			if (getValue("building:levels") != null) {
+				parsedLevels = parseOsmDecimal(
+						getValue("building:levels"), false);
 			}
 			
-			double fallbackHeight = (levels == null)
-				?  defaultHeight
-				: (levels * defaultHeightPerLevel);
+			if (parsedLevels != null) {
+				buildingLevels = (int)(float)parsedLevels;
+			} else if (parseHeight(tags, parseHeight(buildingTags, -1)) > 0) {
+				buildingLevels = max(1, (int)(parseHeight(tags, parseHeight(
+						buildingTags, -1)) / defaultHeightPerLevel));
+			}
+			
+			minLevel = 0;
+			
+			if (getValue("building:min_level") != null) {
+				Float parsedMinLevel = parseOsmDecimal(
+						getValue("building:min_level"), false);
+				if (parsedMinLevel != null) {
+					minLevel = (int)(float)parsedMinLevel;
+				}
+			}
+			
+			/* determine height */
+			
+			double fallbackHeight = buildingLevels * defaultHeightPerLevel;
 			
 			fallbackHeight += roof.getRoofHeight();
 			
@@ -534,13 +652,37 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    			getValue("roof:material"),
 		    			getValue("roof:colour"),
 		    			defaultMaterialRoof, true);
-		    	
+		    		    	
 		    } else {
+		    	
 		    	materialWall = defaultMaterialWall;
 		    	materialRoof = defaultMaterialRoof;
+		    	
 		    }
 		    
-			
+		    materialWallWithWindows = materialWall;
+		    
+		    if (drawBuildingWindows) {
+
+		    	Material materialWindows = defaultMaterialWindows;
+		    	
+		    	if (materialWindows != null) {
+		    		
+			    	List<TextureData> textureDataListWithWindows =
+			    		new ArrayList<TextureData>(
+			    				materialWall.getTextureDataList());
+			    	textureDataListWithWindows.addAll(
+			    			materialWindows.getTextureDataList());
+			    	
+			    	materialWallWithWindows = new ImmutableMaterial(
+			    			materialWall.getLighting(), materialWall.getColor(),
+			    			materialWall.getAmbientFactor(), materialWall.getDiffuseFactor(),
+			    			materialWall.getUseAlpha(), textureDataListWithWindows);
+			    	
+		    	}
+		    	
+		    }
+		    
 		}
 		
 		private Material buildMaterial(String materialString,
