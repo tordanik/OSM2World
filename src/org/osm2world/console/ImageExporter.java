@@ -126,8 +126,8 @@ public class ImageExporter {
 		pBuffer = factory.createGLPbuffer(null,
 				cap, null, pBufferSizeX, pBufferSizeY, null);
 		
-		gl = pBuffer.getGL().getGL2();
 		pBuffer.getContext().makeCurrent();
+		gl = pBuffer.getGL().getGL2();
 		
 		gl.glFrontFace(GL_CCW);                  // use ccw polygons
 					
