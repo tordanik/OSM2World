@@ -1771,11 +1771,13 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vs1_2 = createTriangleStripBetween(
 					border1, border2);
-			target.drawTriangleStrip(Materials.CONCRETE, vs1_2, null);
+			target.drawTriangleStrip(Materials.KERB, vs1_2,
+					wallTexCoordLists(vs1_2, Materials.KERB));
 
 			List<VectorXYZ> vs2_3 = createTriangleStripBetween(
 					border2, border3);
-			target.drawTriangleStrip(Materials.CONCRETE, vs2_3, null);
+			target.drawTriangleStrip(Materials.KERB, vs2_3,
+					wallTexCoordLists(vs2_3, Materials.KERB));
 			
 		}
 		

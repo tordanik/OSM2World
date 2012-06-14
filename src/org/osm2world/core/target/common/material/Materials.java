@@ -72,6 +72,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial RED_ROAD_MARKING =
 			new ConfMaterial(Lighting.FLAT, new Color(0.6f, 0.3f, 0.3f));
+	public static final ConfMaterial KERB =
+			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial STEPS_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.DARK_GRAY);
 	public static final ConfMaterial HANDRAIL_DEFAULT =
