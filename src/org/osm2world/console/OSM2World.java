@@ -114,6 +114,10 @@ public class OSM2World {
 		
 		/* execute conversions */
 		
+		if (argumentsGroups.isEmpty()) {
+			System.err.println("warning: empty parameter file, doing nothing");
+		}
+		
 		for (CLIArgumentsGroup argumentsGroup : argumentsGroups) {
 						
 			if (argumentsList.size() > 1) {
