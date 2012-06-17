@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.heightmap.creation.EmptyTerrainElevationGrid;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.creation.HackMapProjection;
@@ -241,14 +242,32 @@ public class ConversionFacade {
 	 *                      of the modules' behavior; null to use defaults
 	 * @param targets       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
+	 * 
+	 * @throws BoundingBoxSizeException  for oversized bounding boxes
 	 */
 	public Results createRepresentations(OSMData osmData,
 			List<WorldModule> worldModules, Configuration config,
 			List<Target<?>> targets)
-			throws IOException {
+			throws IOException, BoundingBoxSizeException {
+		
+		/* check the inputs */
 		
 		if (osmData == null) {
 			throw new IllegalArgumentException("osmData must not be null");
+		}
+		
+		if (config == null) {
+			config = new BaseConfiguration();
+		}
+		
+		Double maxBoundingBoxDegrees = config.getDouble("maxBoundingBoxDegrees", null);
+		if (maxBoundingBoxDegrees != null) {
+			for (Bound bound : osmData.getBounds()) {
+				if (bound.getTop() - bound.getBottom() > maxBoundingBoxDegrees
+						|| bound.getRight() - bound.getLeft() > maxBoundingBoxDegrees) {
+					throw new BoundingBoxSizeException(bound);
+				}
+			}
 		}
 		
 		/* create map data from OSM data */
@@ -261,9 +280,6 @@ public class ConversionFacade {
 		/* apply world modules */
 		updatePhase(Phase.REPRESENTATION);
 		
-		if (config == null) {
-			config = new BaseConfiguration();
-		}
 		if (worldModules == null) {
 			worldModules = createDefaultModuleList();
 		}
@@ -368,5 +384,24 @@ public class ConversionFacade {
 //			listener.updatePhaseProgress(phaseProgress);
 //		}
 //	}
+	
+	/**
+	 * exception to be thrown if the OSM input data covers an area
+	 * larger than the maxBoundingBoxDegrees config property
+	 */
+	public static class BoundingBoxSizeException extends RuntimeException {
+		
+		public final Bound bound;
+
+		private BoundingBoxSizeException(Bound bound) {
+			this.bound = bound;
+		}
+		
+		@Override
+		public String toString() {
+			return "oversized bounding box: " + bound;
+		}
+		
+	}
 	
 }

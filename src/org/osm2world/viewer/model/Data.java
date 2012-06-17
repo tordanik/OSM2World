@@ -9,6 +9,7 @@ import java.util.Observable;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade;
+import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
@@ -29,8 +30,12 @@ public class Data extends Observable {
 		this.config = config;
 	}
 	
+	/**
+	 * 
+	 */
 	public void loadOSMFile(File osmFile, ElevationCalculator eleCalculator,
-			ProgressListener listener) throws IOException {
+			boolean failOnLargeBBox, ProgressListener listener)
+					throws IOException, BoundingBoxSizeException {
 		
 		try {
 			
@@ -40,6 +45,10 @@ public class Data extends Observable {
 			converter.setElevationCalculator(eleCalculator);
 			
 			converter.addProgressListener(listener);
+			
+			if (failOnLargeBBox) {
+				config.addProperty("maxBoundingBoxDegrees", 1);
+			}
 			
 			conversionResults = converter.createRepresentations(
 					osmFile, null, config, null);
@@ -55,6 +64,19 @@ public class Data extends Observable {
 			terrainPrimitiveBuffer = null;
 			
 			throw e;
+			
+		} catch (BoundingBoxSizeException e) {
+			
+			osmFile = null;
+			conversionResults = null;
+			gridPrimitiveBuffer = null;
+			terrainPrimitiveBuffer = null;
+			
+			throw e;
+			
+		} finally {
+			
+			config.clearProperty("maxBoundingBoxDegrees");
 			
 		}
 		
