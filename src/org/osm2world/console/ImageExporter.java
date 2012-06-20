@@ -154,20 +154,23 @@ public class ImageExporter {
 
 		/* render map data into buffer if it needs to be rendered multiple times */
 		
+		boolean onlyOneRenderPass = (expectedFileCalls <= 1
+				&& expectedMaxSizeX <= canvasLimit
+				&& expectedMaxSizeY <= canvasLimit);
+		
 		if (config.getBoolean("forceUnbufferedPNGRendering", false)
-				|| (expectedFileCalls <= 1 && expectedMaxSizeX <= canvasLimit
-						&& expectedMaxSizeY <= canvasLimit) ) {
-						
+				|| onlyOneRenderPass ) {
+			
+			bufferRenderer = null;
+			
+		} else {
+			
 			PrimitiveBuffer buffer = new PrimitiveBuffer();
 			
 			TargetUtil.renderWorldObjects(buffer, results.getMapData());
 			TargetUtil.renderObject(buffer, results.getTerrain());
 			
 			bufferRenderer = new JOGLPrimitiveBufferRenderer(gl, buffer);
-			
-		} else {
-			
-			bufferRenderer = null;
 			
 		}
 		
