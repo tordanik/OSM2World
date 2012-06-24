@@ -525,7 +525,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				boxMaterial = POSTBOX_ROYALMAIL;
 				type = Type.PILLAR;
 			} else {
-				System.err.println("warning: unknown operator or brand for post box " + node.toString());
+				//no rendering, unknown operator or brand for post box //TODO log info
 				return;
 			}
 			
