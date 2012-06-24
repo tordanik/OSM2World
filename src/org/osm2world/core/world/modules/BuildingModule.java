@@ -575,6 +575,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 					|| "hangar".equals(buildingValue)
 					|| "industrial".equals(buildingValue)) {
 				defaultMaterialWindows = null;
+			} else {
+				if (getValue("building:levels") == null) {
+					defaultMaterialWindows = null;
+				}
 			}
 			
 			/* determine roof shape */
