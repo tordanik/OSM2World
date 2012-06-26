@@ -27,6 +27,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -591,25 +592,32 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if (roofShape == null) { roofShape = getValue("building:roof:shape"); }
 				if (roofShape == null) { roofShape = defaultRoofShape; }
 				
-				if ("pyramidal".equals(roofShape)) {
-					roof = new PyramidalRoof();
-				} else if ("onion".equals(roofShape)) {
-					roof = new OnionRoof();
-				} else if ("skillion".equals(roofShape)) {
-					roof = new SkillionRoof();
-				} else if ("gabled".equals(roofShape)) {
-					roof = new GabledRoof();
-				} else if ("hipped".equals(roofShape)) {
-					roof = new HippedRoof();
-				} else if ("half-hipped".equals(roofShape)) {
-					roof = new HalfHippedRoof();
-				} else if ("gambrel".equals(roofShape)) {
-					roof = new GambrelRoof();
-				} else if ("mansard".equals(roofShape)) {
-					roof = new MansardRoof();
-				} else if ("dome".equals(roofShape)) {
-					roof = new DomeRoof();
-				} else {
+				try {
+					
+					if ("pyramidal".equals(roofShape)) {
+						roof = new PyramidalRoof();
+					} else if ("onion".equals(roofShape)) {
+						roof = new OnionRoof();
+					} else if ("skillion".equals(roofShape)) {
+						roof = new SkillionRoof();
+					} else if ("gabled".equals(roofShape)) {
+						roof = new GabledRoof();
+					} else if ("hipped".equals(roofShape)) {
+						roof = new HippedRoof();
+					} else if ("half-hipped".equals(roofShape)) {
+						roof = new HalfHippedRoof();
+					} else if ("gambrel".equals(roofShape)) {
+						roof = new GambrelRoof();
+					} else if ("mansard".equals(roofShape)) {
+						roof = new MansardRoof();
+					} else if ("dome".equals(roofShape)) {
+						roof = new DomeRoof();
+					} else {
+						roof = new FlatRoof();
+					}
+					
+				} catch (InvalidGeometryException e) {
+					System.err.println("falling back to FlatRoof: " + e);
 					roof = new FlatRoof();
 				}
 				
@@ -1429,6 +1437,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 							p1.add(ridgeDirection.mult(1000))
 					));
 
+				if (intersections.size() < 2) {
+					throw new InvalidGeometryException(
+							"cannot handle roof geometry for id "
+									+ area.getOsmObject().id);
+				}
+				
 				//TODO choose outermost instead of any pair of intersections
 				Iterator<LineSegmentXZ> it = intersections.iterator();
 				cap1 = it.next();
