@@ -8,6 +8,7 @@ import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -386,6 +387,73 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		case 3: return GL_TEXTURE3;
 		default: throw new Error("programming error: unhandled texture number");
 		}
+	}
+
+	public static void drawBackgoundImage(GL2 gl, File backgroundImage,
+			int startPixelX, int startPixelY,
+			int pixelWidth, int pixelHeight,
+			JOGLTextureManager textureManager) {
+		
+		gl.glMatrixMode(GL_PROJECTION);
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		gl.glOrtho(0, 1, 0, 1, 0, 1);
+		
+		gl.glMatrixMode(GL_MODELVIEW);
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+				
+		gl.glDepthMask( false );
+		
+		/* texture binding */
+
+		gl.glEnable(GL_TEXTURE_2D);
+		gl.glActiveTexture(GL_TEXTURE0);
+		
+		gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		
+		Texture backgroundTexture =
+				textureManager.getTextureForFile(backgroundImage);
+
+		backgroundTexture.enable(gl);
+		backgroundTexture.bind(gl);
+		
+		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		
+		int texWidth = backgroundTexture.getImageWidth();
+		int texHeight = backgroundTexture.getImageHeight();
+		
+		/* draw quad */
+				
+		gl.glBegin( GL_QUADS ); {
+			gl.glTexCoord2f(
+					(float) startPixelX / texWidth,
+					(float) startPixelY / texHeight );
+			gl.glVertex2f( 0, 0 );
+			gl.glTexCoord2f(
+					(float) (startPixelX + pixelWidth) / texWidth,
+					(float) startPixelY / texHeight );
+			gl.glVertex2f( 1f, 0 );
+			gl.glTexCoord2f(
+					(float) (startPixelX + pixelWidth) / texWidth,
+					(float) (startPixelY + pixelHeight) / texHeight );
+			gl.glVertex2f( 1f, 1f );
+			gl.glTexCoord2f(
+					(float) startPixelX / texWidth,
+					(float) (startPixelY + pixelHeight) / texHeight );
+			gl.glVertex2f( 0, 1f );
+		} gl.glEnd();
+		
+		/* restore some settings */
+		
+		gl.glDepthMask( true );
+		
+		gl.glPopMatrix();
+		gl.glMatrixMode(GL_PROJECTION);
+		gl.glPopMatrix();
+		gl.glMatrixMode(GL_MODELVIEW);
+		
 	}
 	
 }

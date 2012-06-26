@@ -30,6 +30,7 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTextureManager;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
@@ -47,9 +48,13 @@ public class ImageExporter {
 	private static final int DEFAULT_CANVAS_LIMIT = 1024;
 
 	private static final String BG_COLOR_CONFIG_KEY = "backgroundColor";
+	private static final String BG_IMAGE_CONFIG_KEY = "backgroundImage";
 	private static final String CANVAS_LIMIT_CONFIG_KEY = "canvasLimit";
 	
 	private final Results results;
+	
+	private File backgroundImage;
+	private JOGLTextureManager backgroundTextureManager;
 	
 	private GL2 gl;
 	private GLPbuffer pBuffer;
@@ -73,7 +78,7 @@ public class ImageExporter {
 		
 		this.results = results;
 
-		/* parse background color and other configuration options */
+		/* parse background color/image and other configuration options */
 		
 		float[] clearColor = {0f, 0f, 0f};
 		
@@ -84,6 +89,18 @@ public class ImageExporter {
 			} catch (NumberFormatException e) {
 				System.err.println("incorrect color value: "
 						+ config.getString(BG_COLOR_CONFIG_KEY));
+			}
+		}
+		
+		if (config.containsKey(BG_IMAGE_CONFIG_KEY)) {
+			String fileString = config.getString(BG_IMAGE_CONFIG_KEY);
+			if (fileString != null) {
+				backgroundImage = new File(fileString);
+				if (!backgroundImage.exists()) {
+					System.err.println("background image file doesn't exist: "
+							+ backgroundImage);
+					backgroundImage = null;
+				}
 			}
 		}
 		
@@ -151,6 +168,7 @@ public class ImageExporter {
 				
         gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
+        backgroundTextureManager = new JOGLTextureManager(gl);
 
 		/* render map data into buffer if it needs to be rendered multiple times */
 		
@@ -187,6 +205,11 @@ public class ImageExporter {
 	 * afterwards.
 	 */
 	public void freeResources() {
+
+		if (backgroundTextureManager != null) {
+			backgroundTextureManager.releaseAll();
+			backgroundTextureManager = null;
+		}
 		
 		if (bufferRenderer != null) {
 			bufferRenderer.freeResources();
@@ -218,7 +241,7 @@ public class ImageExporter {
 			int x, int y,
 			final Camera camera,
 			final Projection projection) throws IOException {
-						
+		
 		/* determine the number of "parts" to split the rendering in */
 		
 		int xParts = 1 + ((x-1) / pBufferSizeX);
@@ -227,7 +250,7 @@ public class ImageExporter {
 		/* create image (maybe in multiple parts) */
 				
         BufferedImage image = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
-        		
+        
 		for (int xPart = 0; xPart < xParts; ++xPart) {
 		for (int yPart = 0; yPart < yParts; ++yPart) {
 			
@@ -246,6 +269,13 @@ public class ImageExporter {
 	        
 	        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	        
+	       	if (backgroundImage != null) {
+		       	JOGLTarget.drawBackgoundImage(gl, backgroundImage,
+		       			xStart, yStart,
+		       			xSize, ySize,
+		       			backgroundTextureManager);
+	       	}
+	        
 	        gl.glLoadIdentity();
 	        
 	        JOGLTarget.setProjectionMatricesForPart(gl, projection,
@@ -253,7 +283,6 @@ public class ImageExporter {
 	        		yStart / (double)(y-1), yEnd / (double)(y-1));
 	        
 	       	JOGLTarget.setCameraMatrices(gl, camera);
-	             
 	        
 	        /* render to pBuffer */
 	        
