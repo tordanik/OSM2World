@@ -70,7 +70,7 @@ public class SimplePolygonXZTest {
 		
 		assertAlmostEquals(1, p1.distanceToSegments(NULL_VECTOR));
 		
-		assertAlmostEquals(sqrt(0.5), p2.distanceToSegments(NULL_VECTOR));
+		assertAlmostEquals(0.5, p2.distanceToSegments(NULL_VECTOR));
 		
 	}
 	
