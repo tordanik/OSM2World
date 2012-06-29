@@ -102,10 +102,13 @@ public abstract class Material {
 	}
 	
 	public String toString() {
-		return String.format("{%s, #%06x, a%3f, d%3f}", lighting,
-				color.getRGB() & 0x00ffffff, ambientFactor, diffuseFactor);
+		return String.format("{%s, #%06x, a%3f, d%3f, %d tex",
+				lighting, color.getRGB() & 0x00ffffff, ambientFactor,
+				diffuseFactor, textureDataList.size())
+				+ (useAlpha ? ", alpha" : "")
+				+ "}";
 	}
-		
+	
 	/*
 	 * some possible later additions: specular (obvious ...),
 	 * as well as brilliance, phong, metallic, reflection, crand and iridescence for POVRay

@@ -26,7 +26,7 @@ public final class ImmutableMaterial extends Material {
 	public ImmutableMaterial(Lighting lighting, Color color) {
 		super(lighting, color);
 	}
-	
+		
 	// auto-generated
 	@Override
 	public int hashCode() {
@@ -35,11 +35,12 @@ public final class ImmutableMaterial extends Material {
 		result = prime * result + Float.floatToIntBits(ambientFactor);
 		result = prime * result + ((color == null) ? 0 : color.hashCode());
 		result = prime * result + Float.floatToIntBits(diffuseFactor);
-		result = prime * result
-		+ ((lighting == null) ? 0 : lighting.hashCode());
+		result = prime * result + ((lighting == null) ? 0 : lighting.hashCode());
+		result = prime * result + ((textureDataList == null) ? 0 : textureDataList.hashCode());
+		result = prime * result + (useAlpha ? 1231 : 1237);
 		return result;
 	}
-	
+
 	// auto-generated
 	@Override
 	public boolean equals(Object obj) {
@@ -49,22 +50,24 @@ public final class ImmutableMaterial extends Material {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ImmutableMaterial other = (ImmutableMaterial) obj;
-		if (Float.floatToIntBits(ambientFactor) != Float
-				.floatToIntBits(other.ambientFactor))
+		Material other = (Material) obj;
+		if (Float.floatToIntBits(ambientFactor) != Float.floatToIntBits(other.ambientFactor))
 			return false;
 		if (color == null) {
 			if (other.color != null)
 				return false;
 		} else if (!color.equals(other.color))
 			return false;
-		if (Float.floatToIntBits(diffuseFactor) != Float
-				.floatToIntBits(other.diffuseFactor))
+		if (Float.floatToIntBits(diffuseFactor) != Float.floatToIntBits(other.diffuseFactor))
 			return false;
-		if (lighting == null) {
-			if (other.lighting != null)
+		if (lighting != other.lighting)
+			return false;
+		if (textureDataList == null) {
+			if (other.textureDataList != null)
 				return false;
-		} else if (!lighting.equals(other.lighting))
+		} else if (!textureDataList.equals(other.textureDataList))
+			return false;
+		if (useAlpha != other.useAlpha)
 			return false;
 		return true;
 	}

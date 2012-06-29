@@ -39,5 +39,55 @@ public class TextureData {
 		this.colorable = colorable;
 		
 	}
+
+	//auto-generated
+	@Override
+	public String toString() {
+		return "TextureData [file=" + file + ", width=" + width
+				+ ", height=" + height + ", wrap=" + wrap
+				+ ", colorable=" + colorable + "]";
+	}
+
+	//auto-generated
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (colorable ? 1231 : 1237);
+		result = prime * result + ((file == null) ? 0 : file.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(height);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(width);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((wrap == null) ? 0 : wrap.hashCode());
+		return result;
+	}
+
+	//auto-generated
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TextureData other = (TextureData) obj;
+		if (colorable != other.colorable)
+			return false;
+		if (file == null) {
+			if (other.file != null)
+				return false;
+		} else if (!file.equals(other.file))
+			return false;
+		if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
+			return false;
+		if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
+			return false;
+		if (wrap != other.wrap)
+			return false;
+		return true;
+	}
 	
 }
