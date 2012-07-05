@@ -73,7 +73,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 			if (area.getTags().contains("natural", "wood")
 					|| area.getTags().contains("landuse", "forest")
-					|| area.getTags().containsKey("wood")) {
+					|| area.getTags().containsKey("wood")
+					|| area.getTags().contains("landuse", "orchard")) {
 				area.addRepresentation(new Forest(area, mapData));
 			}
 			
@@ -88,16 +89,20 @@ public class TreeModule extends ConfigurableWorldModule {
 			MapElement element,	VectorXZ pos) {
 		
 		VectorXYZ posXYZ = element.getElevationProfile().getWithEle(pos);
+		boolean fruit = isFruitTree(element, pos);
 		boolean coniferous = isConiferousTree(element, pos);
 		double height = getTreeHeight(element);
 		
 		if (useBillboards) {
 			
-			Material material = coniferous
+			Material material = fruit
+					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
+					: coniferous
 					? Materials.TREE_BILLBOARD_CONIFEROUS
 					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
 			
-			renderBillboard(target, material, posXYZ, 0.5*height, height);
+			renderBillboard(target, material, posXYZ,
+					(fruit ? 1.0 : 0.5 ) * height, height);
 			
 		} else {
 			
@@ -185,14 +190,26 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 	
+	private static boolean isFruitTree(MapElement element, VectorXZ pos) {
+		
+		if (element.getTags().contains("landuse", "orchard")) {
+			return true;
+		}
+		
+		String species = element.getTags().getValue("species");
+		
+		return species != null &&
+				species.contains("malus");
+		
+	}
+	
 	/**
 	 * parse height (for forests, add some random factor)
 	 */
 	private static double getTreeHeight(MapElement element) {
 		
 		float heightFactor = 1;
-		if (element.getTags().contains("natural", "wood")
-				|| element.getTags().contains("landuse", "forest")) {
+		if (element instanceof MapArea) {
 			heightFactor += -0.25f + 0.5f * Math.random();
 		}
 		

@@ -14,7 +14,6 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("area", "yes"));
 		areaTags.add(new Tag("amenity", "fountain"));
 		areaTags.add(new Tag("amenity", "parking"));
-		areaTags.add(new Tag("landuse", "forest"));
 		areaTags.add(new Tag("leisure", "pitch"));
 		areaTags.add(new Tag("natural", "water"));
 		areaTags.add(new Tag("natural", "wood"));
@@ -22,6 +21,7 @@ public class HardcodedRuleset implements Ruleset {
 		
 		areaKeys.add("building");
 		areaKeys.add("building:part");
+		areaKeys.add("landuse");
 	}
 	
 	@Override
