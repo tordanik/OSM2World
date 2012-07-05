@@ -95,6 +95,9 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		if (useBillboards) {
 			
+			//"random" decision based on x coord
+			boolean mirrored = (long)(pos.getX()) % 2 == 0;
+			
 			Material material = fruit
 					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
 					: coniferous
@@ -102,7 +105,7 @@ public class TreeModule extends ConfigurableWorldModule {
 					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
 			
 			renderBillboard(target, material, posXYZ,
-					(fruit ? 1.0 : 0.5 ) * height, height);
+					(fruit ? 1.0 : 0.5 ) * height, height, mirrored);
 			
 		} else {
 			
@@ -132,7 +135,8 @@ public class TreeModule extends ConfigurableWorldModule {
 	
 	private static void renderBillboard(Target<?> target,
 			Material material, VectorXYZ pos,
-			double width, double height) {
+			double width, double height,
+			boolean mirrored) {
 		
 		VectorXYZ up = Y_UNIT.mult(height);
 		
@@ -148,14 +152,37 @@ public class TreeModule extends ConfigurableWorldModule {
 			target.drawTriangleStrip(material, asList(
 					leftBottom.add(up), leftBottom,
 					pos.add(up), pos),
-					nCopies(material.getTextureDataList().size(),
-							BILLBOARD_LEFT_TEX_COORDS));
+					billboardTexCoordLists(false, mirrored,
+							material.getTextureDataList().size()));
 
 			target.drawTriangleStrip(material, asList(
 					rightBottom, rightBottom.add(up),
 					pos, pos.add(up)),
-					nCopies(material.getTextureDataList().size(),
-							BILLBOARD_RIGHT_TEX_COORDS));
+					billboardTexCoordLists(true, mirrored,
+							material.getTextureDataList().size()));
+			
+		}
+		
+	}
+	
+	private static List<List<VectorXZ>> billboardTexCoordLists(
+			boolean right, boolean mirrored, int copies) {
+		
+		if (right) {
+			
+			if (mirrored) {
+				return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED);
+			} else {
+				return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS);
+			}
+			
+		} else {
+			
+			if (mirrored) {
+				return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS_MIRRORED);
+			} else {
+				return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS);
+			}
 			
 		}
 		
@@ -165,8 +192,16 @@ public class TreeModule extends ConfigurableWorldModule {
 			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
 			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0));
 	
+	private static final List<VectorXZ> BILLBOARD_LEFT_TEX_COORDS_MIRRORED = asList(
+			new VectorXZ(1, 1), VectorXZ.X_UNIT,
+			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0));
+	
 	private static final List<VectorXZ> BILLBOARD_RIGHT_TEX_COORDS = asList(
 			VectorXZ.X_UNIT, new VectorXZ(1, 1),
+			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
+	
+	private static final List<VectorXZ> BILLBOARD_RIGHT_TEX_COORDS_MIRRORED = asList(
+			VectorXZ.NULL_VECTOR, VectorXZ.Z_UNIT,
 			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
 	
 	private static boolean isConiferousTree(MapElement element, VectorXZ pos) {
