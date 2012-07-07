@@ -2,7 +2,6 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
@@ -41,7 +40,7 @@ import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
  * adds trees, tree rows, tree groups and forests to the world
  */
 public class TreeModule extends ConfigurableWorldModule {
-
+	
 	private boolean useBillboards = false;
 	
 	@Override
@@ -137,31 +136,59 @@ public class TreeModule extends ConfigurableWorldModule {
 			Material material, VectorXYZ pos,
 			double width, double height,
 			boolean mirrored) {
-		
-		VectorXYZ up = Y_UNIT.mult(height);
-		
-		for (VectorXYZ halfRight : new VectorXYZ[]{
-			VectorXYZ.X_UNIT.mult(0.5 * width),
-			VectorXYZ.Z_UNIT.mult(0.5 * width),
-			VectorXYZ.X_UNIT.mult(-0.5 * width),
-			VectorXYZ.Z_UNIT.mult(-0.5 * width)}) {
-			
-			VectorXYZ rightBottom = pos.add(halfRight);
-			VectorXYZ leftBottom = pos.subtract(halfRight);
-			
-			target.drawTriangleStrip(material, asList(
-					leftBottom.add(up), leftBottom,
-					pos.add(up), pos),
-					billboardTexCoordLists(false, mirrored,
-							material.getTextureDataList().size()));
 
-			target.drawTriangleStrip(material, asList(
-					rightBottom, rightBottom.add(up),
-					pos, pos.add(up)),
-					billboardTexCoordLists(true, mirrored,
-							material.getTextureDataList().size()));
-			
-		}
+		double halfWidth = 0.5 * width;
+		
+		VectorXYZ xPosBottom = pos.add(halfWidth, 0, 0);
+		VectorXYZ xNegBottom = pos.add(-halfWidth, 0, 0);
+		VectorXYZ zPosBottom = pos.add(0, 0, halfWidth);
+		VectorXYZ zNegBottom = pos.add(0, 0, -halfWidth);
+
+		VectorXYZ xPosTop = xPosBottom.add(0, height, 0);
+		VectorXYZ xNegTop = xNegBottom.add(0, height, 0);
+		VectorXYZ zPosTop = zPosBottom.add(0, height, 0);
+		VectorXYZ zNegTop = zNegBottom.add(0, height, 0);
+		VectorXYZ posTop = pos.add(0, height, 0);
+		
+		target.drawTriangleStrip(material, asList(
+				xNegTop, xNegBottom, posTop, pos),
+				billboardTexCoordLists(false, mirrored,
+						material.getTextureDataList().size()));
+		
+		target.drawTriangleStrip(material, asList(
+				xPosBottom, xPosTop, pos, posTop),
+				billboardTexCoordLists(true, mirrored,
+						material.getTextureDataList().size()));
+
+		target.drawTriangleStrip(material, asList(
+				zNegTop, zNegBottom, posTop, pos),
+				billboardTexCoordLists(false, mirrored,
+						material.getTextureDataList().size()));
+		
+		target.drawTriangleStrip(material, asList(
+				zPosBottom, zPosTop, pos, posTop),
+				billboardTexCoordLists(true, mirrored,
+						material.getTextureDataList().size()));
+
+		target.drawTriangleStrip(material, asList(
+				xPosTop, xPosBottom, posTop, pos),
+				billboardTexCoordLists(false, mirrored,
+						material.getTextureDataList().size()));
+		
+		target.drawTriangleStrip(material, asList(
+				xNegBottom, xNegTop, pos, posTop),
+				billboardTexCoordLists(true, mirrored,
+						material.getTextureDataList().size()));
+
+		target.drawTriangleStrip(material, asList(
+				zPosTop, zPosBottom, posTop, pos),
+				billboardTexCoordLists(false, mirrored,
+						material.getTextureDataList().size()));
+		
+		target.drawTriangleStrip(material, asList(
+				zNegBottom, zNegTop, pos, posTop),
+				billboardTexCoordLists(true, mirrored,
+						material.getTextureDataList().size()));
 		
 	}
 	
@@ -171,17 +198,21 @@ public class TreeModule extends ConfigurableWorldModule {
 		if (right) {
 			
 			if (mirrored) {
-				return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED);
+				if (copies <= 3) { return BILLBOARD_RIGHT_TEX_COORDS_MIRRORED_COPIES[copies]; }
+				else { return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED); }
 			} else {
-				return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS);
+				if (copies <= 3) { return BILLBOARD_RIGHT_TEX_COORDS_COPIES[copies]; }
+				else { return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS); }
 			}
 			
 		} else {
 			
 			if (mirrored) {
-				return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS_MIRRORED);
+				if (copies <= 3) { return BILLBOARD_LEFT_TEX_COORDS_MIRRORED_COPIES[copies]; }
+				else { return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS_MIRRORED); }
 			} else {
-				return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS);
+				if (copies <= 3) { return BILLBOARD_LEFT_TEX_COORDS_COPIES[copies]; }
+				else { return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS); }
 			}
 			
 		}
@@ -195,7 +226,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	private static final List<VectorXZ> BILLBOARD_LEFT_TEX_COORDS_MIRRORED = asList(
 			new VectorXZ(1, 1), VectorXZ.X_UNIT,
 			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0));
-	
+		
 	private static final List<VectorXZ> BILLBOARD_RIGHT_TEX_COORDS = asList(
 			VectorXZ.X_UNIT, new VectorXZ(1, 1),
 			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
@@ -204,6 +235,38 @@ public class TreeModule extends ConfigurableWorldModule {
 			VectorXZ.NULL_VECTOR, VectorXZ.Z_UNIT,
 			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
 	
+	@SuppressWarnings("unchecked")
+	private static final List<List<VectorXZ>>[] BILLBOARD_LEFT_TEX_COORDS_COPIES = new List[]{
+		nCopies(0, BILLBOARD_LEFT_TEX_COORDS),
+		nCopies(1, BILLBOARD_LEFT_TEX_COORDS),
+		nCopies(2, BILLBOARD_LEFT_TEX_COORDS),
+		nCopies(3, BILLBOARD_LEFT_TEX_COORDS)
+	};
+	
+	@SuppressWarnings("unchecked")
+	private static final List<List<VectorXZ>>[] BILLBOARD_LEFT_TEX_COORDS_MIRRORED_COPIES = new List[]{
+		nCopies(0, BILLBOARD_LEFT_TEX_COORDS_MIRRORED),
+		nCopies(1, BILLBOARD_LEFT_TEX_COORDS_MIRRORED),
+		nCopies(2, BILLBOARD_LEFT_TEX_COORDS_MIRRORED),
+		nCopies(3, BILLBOARD_LEFT_TEX_COORDS_MIRRORED)
+	};
+	
+	@SuppressWarnings("unchecked")
+	private static final List<List<VectorXZ>>[] BILLBOARD_RIGHT_TEX_COORDS_COPIES = new List[]{
+		nCopies(0, BILLBOARD_RIGHT_TEX_COORDS),
+		nCopies(1, BILLBOARD_RIGHT_TEX_COORDS),
+		nCopies(2, BILLBOARD_RIGHT_TEX_COORDS),
+		nCopies(3, BILLBOARD_RIGHT_TEX_COORDS)
+	};
+	
+	@SuppressWarnings("unchecked")
+	private static final List<List<VectorXZ>>[] BILLBOARD_RIGHT_TEX_COORDS_MIRRORED_COPIES = new List[]{
+		nCopies(0, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED),
+		nCopies(1, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED),
+		nCopies(2, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED),
+		nCopies(3, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED)
+	};
+		
 	private static boolean isConiferousTree(MapElement element, VectorXZ pos) {
 		
 		String typeValue = element.getTags().getValue("wood");
