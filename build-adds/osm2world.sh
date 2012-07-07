@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# retrieve VM parameters
+
+vmparams="-Xmx2G"
+
+if [[ $1 == --vm-params=* ]]
+  then
+    vmparams=${1:12}
+    shift
+fi
+
 # run OSM2World
 
-java -Xmx2G -jar OSM2World.jar $*
+java $vmparams -jar OSM2World.jar $@
