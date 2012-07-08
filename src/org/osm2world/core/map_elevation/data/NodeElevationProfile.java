@@ -51,6 +51,15 @@ public class NodeElevationProfile extends ElevationProfile {
 	public double getEleAt(VectorXZ pos) {
 		return getEle();
 	}
+	
+	@Override
+	public VectorXYZ getWithEle(VectorXZ pos) {
+		if (pointWithEle.x == pos.x && pointWithEle.z == pos.z) {
+			return pointWithEle;
+		} else {
+			return super.getWithEle(pos);
+		}
+	}
 
 	public void setEle(double ele) {
 		pointWithEle = node.getPos().xyz(ele);

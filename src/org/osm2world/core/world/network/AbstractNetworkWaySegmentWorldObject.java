@@ -13,6 +13,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
@@ -92,6 +93,51 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 
 	/**
+	 * returns all points along this way segment between, but not including,
+	 * {@link #getStartWithOffset()} and {@link #getEndWithOffset()}
+	 */
+	private List<VectorXYZ> getPointsBetweenStartAndEnd() {
+				
+		WaySegmentElevationProfile eleProfile = line.getElevationProfile();
+		List<VectorXYZ> pointsWithEle = eleProfile.getPointsWithEle();
+		
+		if (pointsWithEle.size() == 2) {
+			
+			return Collections.emptyList();
+			
+		} else {
+			
+			VectorXZ startWithOffset = getStartWithOffset();
+			VectorXZ endWithOffset = getEndWithOffset();
+			
+			List<VectorXYZ> result = new ArrayList<VectorXYZ>();
+			
+			for (int i = 1; i < pointsWithEle.size() - 1; ++i) {
+				
+				VectorXYZ p = pointsWithEle.get(i);
+				
+				//check whether p is between start and end and
+				//is sufficiently far away from them to avoid artifacts due to (almost) zero-length segments
+	
+				VectorXZ pXZ = p.xz();
+				
+				if (isBetween(pXZ, startWithOffset, endWithOffset)
+						&& distanceSquared(pXZ, startWithOffset) > 0.1
+						&& distanceSquared(pXZ, endWithOffset) > 0.1) {
+					
+					result.add(p);
+					
+				}
+				
+			}
+			
+			return result;
+			
+		}
+			
+	}
+	
+	/**
 	 * returns a sequence of node running along the center of the
 	 * line from start to end (each with offset).
 	 * Uses the {@link WaySegmentElevationProfile} for adding
@@ -109,30 +155,13 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		} else {
 			
 			List<VectorXYZ> centerline = new ArrayList<VectorXYZ>();
-						
+			
 			VectorXZ startWithOffset = getStartWithOffset();
 			VectorXZ endWithOffset = getEndWithOffset();
 			
 			centerline.add(startWithOffset.xyz(eleProfile.getEleAt(startWithOffset)));
 			
-			for (int i = 1; i < eleProfile.getPointsWithEle().size() - 1; ++i) {
-				
-				VectorXYZ p = eleProfile.getPointsWithEle().get(i);
-				
-				//check whether p is between start and end and
-				//is sufficiently far away from them to avoid artifacts due to (almost) zero-length segments
-
-				VectorXZ pXZ = p.xz();
-				
-				if (isBetween(pXZ, startWithOffset, endWithOffset)
-						&& distanceSquared(pXZ, startWithOffset) > 0.1
-						&& distanceSquared(pXZ, endWithOffset) > 0.1) {
-					
-					centerline.add(p);
-					
-				}
-				
-			}
+			centerline.addAll(getPointsBetweenStartAndEnd());
 	
 			centerline.add(endWithOffset.xyz(eleProfile.getEleAt(endWithOffset)));
 			
@@ -141,7 +170,26 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		}
 		
 	}
-
+	
+	/**
+	 * version of {@link #getCenterline()} in the XZ plane
+	 */
+	public List<VectorXZ> getCenterlineXZ() {
+		
+		List<VectorXZ> centerline = new ArrayList<VectorXZ>();
+		
+		centerline.add(getStartWithOffset());
+		
+		for (VectorXYZ v : getPointsBetweenStartAndEnd()) {
+			centerline.add(v.xz());
+		}
+		
+		centerline.add(getEndWithOffset());
+		
+		return centerline;
+		
+	}
+	
 	/**
 	 * provides the left or right border (a line at an appropriate distance
 	 * from the center line), taking into account cut vectors, offsets and
@@ -181,7 +229,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
-				
+		
 		List<VectorXYZ> outline = new ArrayList<VectorXYZ>();
 
 		List<VectorXYZ> lOutline = getOutline(false);
@@ -198,6 +246,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		return new PolygonXYZ(outline);
 		
 	}
+	
+	@Override
+	public SimplePolygonXZ getOutlinePolygonXZ() {
+		return getOutlinePolygon().getSimpleXZPolygon();
+	}
 
 	private void calculateOutlines() {
 
@@ -212,7 +265,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 		assert centerLine.size() >= 2;
 		
-		float halfWidth = getWidth() * 0.5f;
+		double halfWidth = getWidth() * 0.5f;
 				
 		VectorXYZ centerStart = centerLine.get(0);
 		leftOutline.add(centerStart.add(startCutVector.mult(-halfWidth)));
@@ -229,7 +282,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		leftOutline.add(centerEnd.add(endCutVector.mult(-halfWidth)));
 		rightOutline.add(centerEnd.add(endCutVector.mult(halfWidth)));
 		
-		//TODO: what if offset moves start/end *BEHIND* an intersection-induced node?
+		//TODO: what if adding the cut vector moves start/end *BEHIND* the
+		//outline node from an intersection-induced node?
 		
 	}
 	

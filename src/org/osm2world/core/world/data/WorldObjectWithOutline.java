@@ -1,6 +1,7 @@
 package org.osm2world.core.world.data;
 
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 
 /**
  * world object that has a defined outline that can be used for purposes
@@ -16,5 +17,13 @@ public interface WorldObjectWithOutline extends WorldObject {
 	 * @return outline polygon; null if this world object doesn't cover any area
 	 */
 	public PolygonXYZ getOutlinePolygon();
+
+	/**
+	 * returns a counterclockwise polygon defining the object's ground footprint,
+	 * projected onto the XZ plane.
+	 * 
+	 * @return outline polygon; null if this world object doesn't cover any area
+	 */
+	public SimplePolygonXZ getOutlinePolygonXZ();
 	
 }

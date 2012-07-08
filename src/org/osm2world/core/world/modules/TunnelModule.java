@@ -15,6 +15,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -255,6 +256,11 @@ public class TunnelModule extends AbstractModule {
 			
 			return new PolygonXYZ(vertexLoop);
 			
+		}
+	
+		@Override
+		public SimplePolygonXZ getOutlinePolygonXZ() {
+			return getOutlinePolygon().getSimpleXZPolygon();
 		}
 		
 	}

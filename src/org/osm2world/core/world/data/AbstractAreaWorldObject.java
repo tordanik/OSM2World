@@ -33,13 +33,16 @@ public abstract class AbstractAreaWorldObject
 	protected AbstractAreaWorldObject(MapArea area) {
 		this.area = area;
 	}
+	
+	@Override
+	public SimplePolygonXZ getOutlinePolygonXZ() {
+		return area.getPolygon().getOuter().makeCounterclockwise();
+	}
 
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
-	
-		SimplePolygonXZ outerPolygon = area.getPolygon().getOuter();
 		
-		List<VectorXZ> vertices = outerPolygon.makeCounterclockwise().getVertexLoop();
+		List<VectorXZ> vertices = getOutlinePolygonXZ().getVertexLoop();
 		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(vertices.size()+1);
 		
 		for (int i = 0; i < vertices.size(); i++) {
@@ -70,10 +73,10 @@ public abstract class AbstractAreaWorldObject
 		
 		final AreaElevationProfile eleProfile = area.getElevationProfile();
 		
-		Collection<TriangleXZ> trianglesXZ = 
+		Collection<TriangleXZ> trianglesXZ =
 			TriangulationUtil.triangulate(area.getPolygon());
 		
-		Collection<TriangleXYZ> trianglesXYZ = 
+		Collection<TriangleXYZ> trianglesXYZ =
 			new ArrayList<TriangleXYZ>(trianglesXZ.size());
 		
 		for (TriangleXZ triangleXZ : trianglesXZ) {

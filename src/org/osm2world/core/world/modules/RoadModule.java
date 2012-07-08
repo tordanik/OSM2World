@@ -633,8 +633,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			//TODO: subtract area covered by connections
 			
-			List<TriangleXZ> trianglesXZ = triangulate(
-					getOutlinePolygon().getSimpleXZPolygon(),
+			List<TriangleXZ> trianglesXZ = triangulate(getOutlinePolygonXZ(),
 					Collections.<SimplePolygonXZ>emptySet());
 			
 			List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>();

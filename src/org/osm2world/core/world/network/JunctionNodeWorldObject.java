@@ -11,7 +11,9 @@ import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -117,14 +119,53 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 		
 		PolygonXYZ junctionArea = getJunctionArea();
 		
-		if (junctionArea == null || !junctionArea.getXZPolygon().isSimple()) { //TODO: isSimple should ALWAYS be the case!
+		if (junctionArea == null) {
 			return null;
 		} else {
 			
-			if (junctionArea.getSimpleXZPolygon().isClockwise()) {
-				return junctionArea.reverse();
-			} else {
-				return junctionArea;
+			try {
+				
+				SimplePolygonXZ simplePoly = junctionArea.getSimpleXZPolygon();
+				
+				if (simplePoly.isClockwise()) {
+					return junctionArea.reverse();
+				} else {
+					return junctionArea;
+				}
+				
+			} catch (InvalidGeometryException e) {
+				//deal with non-simple polygons
+				//TODO: this should be prevented from ever happening
+				return null;
+			}
+			
+		}
+		
+	}
+
+	@Override
+	public SimplePolygonXZ getOutlinePolygonXZ() {
+		
+		PolygonXYZ junctionArea = getJunctionArea();
+		
+		if (junctionArea == null) {
+			return null;
+		} else {
+			
+			try {
+				
+				SimplePolygonXZ simplePoly = junctionArea.getSimpleXZPolygon();
+				
+				if (simplePoly.isClockwise()) {
+					return simplePoly.reverse();
+				} else {
+					return simplePoly;
+				}
+				
+			} catch (InvalidGeometryException e) {
+				//deal with non-simple polygons
+				//TODO: this should be prevented from ever happening
+				return null;
 			}
 			
 		}
@@ -184,7 +225,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	public Collection<TriangleXYZ> getTriangulation() {
 
 		Collection<TriangleXZ> trianglesXZ = TriangulationUtil.triangulate(
-				getOutlinePolygon().getSimpleXZPolygon(),
+				getOutlinePolygonXZ(),
 				Collections.<SimplePolygonXZ>emptyList());
 		
 		Collection<TriangleXYZ> trianglesXYZ =
@@ -218,25 +259,9 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	protected PolygonXYZ getJunctionArea() {
 				
 		checkInformationProvided();
-		
-		List<VectorXYZ> vectors =
-			new ArrayList<VectorXYZ>(cutCenters.size()*2+1);
-		
-		for (int i=0; i < cutCenters.size(); i++) {
 
-			if (cutCenters.get(i) == null) continue;
-			
-			VectorXZ left = getCutNode(i, false);
-			VectorXZ right = getCutNode(i, true);
-			
-			if (left != null) {
-				vectors.add(left.xyz(node.getElevationProfile().getEleAt(left)));
-			}
-			if (right != null) {
-				vectors.add(right.xyz(node.getElevationProfile().getEleAt(right)));
-			}
-								
-		}
+		List<VectorXZ> vectorsXZ = getJunctionAreaOutlineXZ();
+		List<VectorXYZ> vectors = node.getElevationProfile().getWithEle(vectorsXZ);
 		
 		if (vectors.size() > 2) {
 		
@@ -250,6 +275,51 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 			
 		}
 		
+	}
+	
+	/**
+	 * variant of {@link #getJunctionArea()} in the XZ plane
+	 */
+	protected PolygonXZ getJunctionAreaXZ() {
+		
+		checkInformationProvided();
+		
+		List<VectorXZ> vectors = getJunctionAreaOutlineXZ();
+		
+		if (vectors.size() > 2) {
+		
+			vectors.add(vectors.get(0)); //close polygon
+			
+			return new PolygonXZ(vectors);
+			
+		} else {
+			
+			return null;
+			
+		}
+		
+	}
+
+	private List<VectorXZ> getJunctionAreaOutlineXZ() {
+		
+		List<VectorXZ> vectors = new ArrayList<VectorXZ>(cutCenters.size()*2+1);
+		
+		for (int i=0; i < cutCenters.size(); i++) {
+
+			if (cutCenters.get(i) == null) continue;
+			
+			VectorXZ left = getCutNode(i, false);
+			VectorXZ right = getCutNode(i, true);
+			
+			if (left != null) {
+				vectors.add(left);
+			}
+			if (right != null) {
+				vectors.add(right);
+			}
+								
+		}
+		return vectors;
 	}
 
 	/**

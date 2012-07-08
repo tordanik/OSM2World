@@ -9,6 +9,7 @@ import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
@@ -31,7 +32,7 @@ public abstract class VisibleConnectorNodeWorldObject
 
 	/**
 	 * returns the length required by this node representation.
-	 * Adjacent lines will be pushed back accordingly. 
+	 * Adjacent lines will be pushed back accordingly.
 	 * 
 	 * If this is 0, this has the same effect as an invisible
 	 * connector node (adjacent line representations
@@ -72,19 +73,13 @@ public abstract class VisibleConnectorNodeWorldObject
 	}
 	
 	/**
-	 * provides outline for the areas covered by the connector.
-	 * 
-	 * The from and to indices refer to the list 
-	 * returned by the underlying {@link MapNode}'s
-	 * {@link MapNode#getConnectedSegments()} method.
-	 * 
-	 * TODO: method necessary after Terrain change?
+	 * variant of {@link #getOutline(int, int)} for the XZ plane
 	 */
-	public List<VectorXYZ> getOutline(int from, int to) {
+	public List<VectorXZ> getOutlineXZ(int from, int to) {
 
 		checkInformationProvided();
 		
-		List<VectorXYZ> outline = new ArrayList<VectorXYZ>();
+		List<VectorXZ> outline = new ArrayList<VectorXZ>();
 
 		List<MapSegment> segments = node.getConnectedSegments();
 
@@ -101,8 +96,8 @@ public abstract class VisibleConnectorNodeWorldObject
 				VectorXZ pos2 = endPos
 					.add(cutVector.mult(endWidth));
 				
-				outline.add(node.getElevationProfile().getWithEle(pos1));
-				outline.add(node.getElevationProfile().getWithEle(pos2));
+				outline.add(pos1);
+				outline.add(pos2);
 				
 			} else {
 
@@ -112,19 +107,19 @@ public abstract class VisibleConnectorNodeWorldObject
 				VectorXZ pos2 = startPos
 					.subtract(cutVector.mult(startWidth));
 				
-				outline.add(node.getElevationProfile().getWithEle(pos1));
-				outline.add(node.getElevationProfile().getWithEle(pos2));
+				outline.add(pos1);
+				outline.add(pos2);
 				
 			}
 			
-		} else if (from == to 
+		} else if (from == to
 				&& segments.get(from) instanceof MapWaySegment) { //usually at the end of a noexit road
 			
 			MapWaySegment segment = (MapWaySegment) segments.get(from);
 			
 			if (segment.getPrimaryRepresentation() instanceof NetworkWaySegmentWorldObject) {
 				
-				NetworkWaySegmentWorldObject rep = 
+				NetworkWaySegmentWorldObject rep =
 					(NetworkWaySegmentWorldObject) segment.getPrimaryRepresentation();
 				
 				//TODO: the calculations for pos1/2 should be part of the NetworkLineRepresentation (it's used quite often)
@@ -139,8 +134,8 @@ public abstract class VisibleConnectorNodeWorldObject
 						.add(rep.getEndOffset())
 						.subtract(rep.getEndCutVector().mult(rep.getWidth()/2));
 										
-					outline.add(node.getElevationProfile().getWithEle(pos1));					
-					outline.add(node.getElevationProfile().getWithEle(pos2));
+					outline.add(pos1);
+					outline.add(pos2);
 					
 				} else { //outbound segment
 
@@ -152,8 +147,8 @@ public abstract class VisibleConnectorNodeWorldObject
 						.add(rep.getStartOffset())
 						.add(rep.getStartCutVector().mult(rep.getWidth()/2));
 
-					outline.add(node.getElevationProfile().getWithEle(pos1));					
-					outline.add(node.getElevationProfile().getWithEle(pos2));
+					outline.add(pos1);
+					outline.add(pos2);
 										
 				}
 				
@@ -164,13 +159,35 @@ public abstract class VisibleConnectorNodeWorldObject
 		return outline;
 		
 	}
+	
+	/**
+	 * provides outline for the areas covered by the connector.
+	 * 
+	 * The from and to indices refer to the list
+	 * returned by the underlying {@link MapNode}'s
+	 * {@link MapNode#getConnectedSegments()} method.
+	 * 
+	 * TODO: method necessary after Terrain change?
+	 */
+	public List<VectorXYZ> getOutline(int from, int to) {
+		
+		return node.getElevationProfile().getWithEle(getOutlineXZ(from, to));
+		
+	}
+	
+	@Override
+	public SimplePolygonXZ getOutlinePolygonXZ() {
+		List<VectorXZ> outlineXZ = new ArrayList<VectorXZ>(getOutlineXZ(0, 0));
+		outlineXZ.addAll(getOutlineXZ(1, 1));
+		outlineXZ.add(outlineXZ.get(0));
+		return new SimplePolygonXZ(outlineXZ);
+	}
 
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
 		List<VectorXYZ> outline = new ArrayList<VectorXYZ>(getOutline(0, 0));
 		outline.addAll(getOutline(1, 1));
 		outline.add(outline.get(0));
-		//Collections.reverse(outline);
 		return new PolygonXYZ(outline);
 	}
 

@@ -177,8 +177,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
+		public SimplePolygonXZ getOutlinePolygonXZ() {
+			return area.getPolygon().getOuter().makeCounterclockwise();
+		}
+
+		@Override
 		public PolygonXYZ getOutlinePolygon() {
-			return area.getPolygon().getOuter().xyz(
+			return getOutlinePolygonXZ().xyz(
 					area.getElevationProfile().getMinEle());
 		}
 		
@@ -303,8 +308,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				for (TerrainBoundaryWorldObject o : tbWorldObjects) {
 					
-					SimplePolygonXZ subtractPoly =
-							o.getOutlinePolygon().getSimpleXZPolygon();
+					SimplePolygonXZ subtractPoly = o.getOutlinePolygonXZ();
 					
 					subtractPolygons.add(subtractPoly);
 					
