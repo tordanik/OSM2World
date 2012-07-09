@@ -54,24 +54,13 @@ public final class NormalCalculationUtil {
 
 	public static final List<VectorXYZ> calculateTriangleStripNormals(
 			List<VectorXYZ> vertices, boolean smooth) {
-
+		
 		assert vertices.size() > 3;
 		
-		VectorXYZ[] normals = calculateTriangleFanNormals(vertices, false)
-				.toArray(new VectorXYZ[0]);
+		VectorXYZ[] normals = calculatePerTriangleNormals(vertices, false);
+		return asList(normals);
 		
 		//TODO: implement smooth case
-		if (/*!smooth*/ true) { //flat
-			
-			for (int triangle = 0; triangle < vertices.size() - 2; triangle++) {
-				if (triangle % 2 == 1) {
-					normals[2 + triangle] = normals[2 + triangle].invert();
-				}
-			}
-			
-		}
-			
-		return asList(normals);
 		
 	}
 	
@@ -79,30 +68,48 @@ public final class NormalCalculationUtil {
 			List<VectorXYZ> vertices, boolean smooth) {
 		
 		assert vertices.size() > 3;
+		
+		VectorXYZ[] normals = calculatePerTriangleNormals(vertices, true);
+		return asList(normals);
 
-		VectorXYZ[] normals = new VectorXYZ[vertices.size()];
-			
 		//TODO: implement smooth case
-		if (/*!smooth*/ true) { //flat
-				            
-			for (int triangle = 0; triangle < vertices.size() - 2; triangle++) {
-				
-				int i = triangle + 1;
-				
-				VectorXYZ vBefore = vertices.get(i-1);
-				VectorXYZ vAt = vertices.get(i);
-				VectorXYZ vAfter = vertices.get(i+1);
-				
-				normals[i+1] = (vBefore.subtract(vAt)).cross((vAfter.subtract(vAt))).normalize();
-							
+		
+	}
+
+	/**
+	 * calculates "flat" lighting normals for triangle strips and triangle fans
+	 * 
+	 * @param vertices  fan/strip vertices
+	 * @param fan       true for fans, false for strips
+	 */
+	private static VectorXYZ[] calculatePerTriangleNormals(
+			List<VectorXYZ> vertices, boolean fan) {
+		
+		VectorXYZ[] normals = new VectorXYZ[vertices.size()];
+		
+		for (int triangle = 0; triangle < vertices.size() - 2; triangle++) {
+			
+			int i = triangle + 1;
+			
+			VectorXYZ vBefore = vertices.get( fan ? 0 : (i-1) );
+			VectorXYZ vAt = vertices.get(i);
+			VectorXYZ vAfter = vertices.get(i+1);
+			
+			VectorXYZ toBefore = vBefore.subtract(vAt);
+			VectorXYZ toAfter = vAfter.subtract(vAt);
+			
+			if (triangle % 2 == 0 || fan) {
+				normals[i+1] = toBefore.cross(toAfter).normalize();
+			} else {
+				normals[i+1] = toAfter.cross(toBefore).normalize();
 			}
 			
-			normals[0] = VectorXYZ.NULL_VECTOR;
-			normals[1] = VectorXYZ.NULL_VECTOR;
-		
 		}
 		
-		return asList(normals);
+		normals[0] = VectorXYZ.NULL_VECTOR;
+		normals[1] = VectorXYZ.NULL_VECTOR;
+		
+		return normals;
 		
 	}
 
