@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.sqrt;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,6 +84,23 @@ public class VectorXYZ implements Vector3D {
 				this.y * other.z - this.z * other.y,
 				this.z * other.x - this.x * other.z,
 				this.x * other.y - this.y * other.x);
+	}
+
+	/**
+	 * same result as calling {@link #normalize()} after
+	 * {@link #cross(VectorXYZ)}, but avoids creating a temporary vector
+	 */
+	public VectorXYZ crossNormalized(VectorXYZ other) {
+		
+		//cross
+		double x = this.y * other.z - this.z * other.y;
+		double y = this.z * other.x - this.x * other.z;
+		double z = this.x * other.y - this.y * other.x;
+		
+		//normalize
+		double length = sqrt(x*x + y*y + z*z);
+		return new VectorXYZ(x / length, y / length, z / length);
+		
 	}
 
 	public double dot(VectorXYZ other) {

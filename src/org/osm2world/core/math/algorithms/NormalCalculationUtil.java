@@ -38,7 +38,10 @@ public final class NormalCalculationUtil {
 				VectorXYZ vAt = vertices.get(i);
 				VectorXYZ vAfter = vertices.get(i+1);
 				
-				normals[i] = (vBefore.subtract(vAt)).cross((vAfter.subtract(vAt))).normalize();
+				VectorXYZ toBefore = vBefore.subtract(vAt);
+				VectorXYZ toAfter = vAfter.subtract(vAt);
+				
+				normals[i] = toBefore.crossNormalized(toAfter);
 				
 				normals[i-1] = normals[i];
 				normals[i+1] = normals[i];
@@ -99,9 +102,9 @@ public final class NormalCalculationUtil {
 			VectorXYZ toAfter = vAfter.subtract(vAt);
 			
 			if (triangle % 2 == 0 || fan) {
-				normals[i+1] = toBefore.cross(toAfter).normalize();
+				normals[i+1] = toBefore.crossNormalized(toAfter);
 			} else {
-				normals[i+1] = toAfter.cross(toBefore).normalize();
+				normals[i+1] = toAfter.crossNormalized(toBefore);
 			}
 			
 		}

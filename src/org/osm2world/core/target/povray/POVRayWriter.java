@@ -138,8 +138,8 @@ public final class POVRayWriter {
 			target.appendVector(camera.getRight().mult(width).invert()); //invert compensates for left-handed vs. right handed coordinates
 			
 			target.append("\n  up ");
-			VectorXYZ up = camera.getRight().cross(camera.getViewDirection());
-			target.appendVector(up.normalize().mult(projection.getVolumeHeight()));
+			VectorXYZ up = camera.getRight().crossNormalized(camera.getViewDirection());
+			target.appendVector(up.mult(projection.getVolumeHeight()));
 						
 			target.append("\n  look_at ");
 			target.appendVector(camera.getLookAt());

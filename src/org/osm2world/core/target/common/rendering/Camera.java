@@ -22,7 +22,7 @@ public class Camera {
 	 * The result has length 1 and is parallel to the XZ plane.
 	 */
 	public VectorXYZ getRight() {
-		return getViewDirection().cross(UP).normalize();
+		return getViewDirection().crossNormalized(UP);
 	}
 	
 	public VectorXYZ getPos() {

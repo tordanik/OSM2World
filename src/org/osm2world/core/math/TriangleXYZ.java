@@ -23,8 +23,7 @@ public class TriangleXYZ {
 	 */
 	public VectorXYZ getNormal() {
 		//TODO: account for clockwise vs. counterclockwise
-		VectorXYZ normal = v2.subtract(v1).cross(v2.subtract(v3));
-		return normal.normalize();
+		return v2.subtract(v1).crossNormalized(v2.subtract(v3));
 	}
 
 	public VectorXYZ getCenter() {
