@@ -181,8 +181,10 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 		
 		/* set terrain elevation */
 		
-		for (TerrainPoint point : eleData.getTerrainPoints()) {
-			point.setEle((float)(double)terrainElevation);
+		if (eleData != null) {
+			for (TerrainPoint point : eleData.getTerrainPoints()) {
+				point.setEle((float)(double)terrainElevation);
+			}
 		}
 		
 	}

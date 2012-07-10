@@ -71,8 +71,10 @@ public class ZeroElevationCalculator implements ElevationCalculator {
 			
 		}
 		
-		for (TerrainPoint point : eleData.getTerrainPoints()) {
-			point.setEle(0);
+		if (eleData != null) {
+			for (TerrainPoint point : eleData.getTerrainPoints()) {
+				point.setEle(0);
+			}
 		}
 		
 	}

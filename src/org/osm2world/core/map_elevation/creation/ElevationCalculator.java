@@ -23,7 +23,8 @@ public interface ElevationCalculator {
 	 * 
 	 * @param mapData  map data without elevation profiles; != null
 	 * @param eleData  terrain elevation data, possibly with points
-	 *                 with unknown information; != null
+	 *                 with unknown information;
+	 *                 whether null is allowed depends on the implementation
 	 */
 	public void calculateElevations(MapData mapData,
 			CellularTerrainElevation eleData);

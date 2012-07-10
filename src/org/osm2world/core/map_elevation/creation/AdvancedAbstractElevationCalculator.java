@@ -50,6 +50,12 @@ public abstract class AdvancedAbstractElevationCalculator
 	public void calculateElevations(MapData mapData,
 			CellularTerrainElevation eleData) {
 		
+		if (eleData == null) {
+			throw new IllegalArgumentException(
+					"cannot use this ElevationCalculator " +
+					"if terrain creation is switched off");
+		}
+		
 		ElevationDeterminationScenario scenario = createScenario(eleData);
 		
 		/* create empty elevation profiles for the elements

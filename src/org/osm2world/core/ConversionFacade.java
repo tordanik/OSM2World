@@ -295,7 +295,10 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 		
-		CellularTerrainElevation eleData = createEleData(mapData);
+		CellularTerrainElevation eleData = null;
+		if (config.getBoolean("createTerrain", true)) {
+			eleData = createEleData(mapData);
+		}
 		
 		elevationCalculator.calculateElevations(mapData, eleData);
 		
@@ -304,7 +307,7 @@ public class ConversionFacade {
 		
 		Terrain terrain = null;
 		
-		if (config.getBoolean("createTerrain", true)) {
+		if (eleData != null) {
 			terrain = new TerrainCreator().createTerrain(mapData, eleData);
 		}
 		
