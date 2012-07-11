@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -266,8 +267,14 @@ public final class WorldModuleGeometryUtil {
 			if (worldObject.getGroundState() == GroundState.ON
 				&& (worldObject instanceof WorldObjectWithOutline)) {
 				
-				SimplePolygonXZ outline =
-					((WorldObjectWithOutline)worldObject).getOutlinePolygonXZ();
+				SimplePolygonXZ outline = null;
+				
+				try {
+					outline = ((WorldObjectWithOutline)worldObject).
+							getOutlinePolygonXZ();
+				} catch (InvalidGeometryException e) {
+					//ignore this outline
+				}
 				
 				if (outline != null) {
 					filterPolygons.add(outline);
