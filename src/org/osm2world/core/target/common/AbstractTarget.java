@@ -91,10 +91,10 @@ public abstract class AbstractTarget<R extends Renderable>
 	);
 	
 	protected static final List<VectorXZ> BOX_TEX_COORDS_2 = asList(
-		new VectorXZ(0.25, 1.0/3), new VectorXZ(0.25, 2.0/3),
-		new VectorXZ(0.50, 1.0/3), new VectorXZ(0.50, 2.0/3),
-		new VectorXZ(0.75, 1.0/3), new VectorXZ(0.75, 2.0/3),
-		new VectorXZ(1.00, 1.0/3), new VectorXZ(1.00, 2.0/3)
+		new VectorXZ(0.25, 2.0/3), new VectorXZ(0.25, 1.0/3),
+		new VectorXZ(0.50, 2.0/3), new VectorXZ(0.50, 1.0/3),
+		new VectorXZ(0.75, 2.0/3), new VectorXZ(0.75, 1.0/3),
+		new VectorXZ(1.00, 2.0/3), new VectorXZ(1.00, 1.0/3)
 	);
 
 	private static final int EDGES_FOR_CYLINDER = 16;
