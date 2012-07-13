@@ -126,13 +126,13 @@ public final class Materials {
 	public static final ConfMaterial TREE_CROWN =
 		new ConfMaterial(Lighting.SMOOTH, new Color(0, 0.5f, 0));
 	public static final ConfMaterial TREE_BILLBOARD_BROAD_LEAVED =
-			new ConfMaterial(Lighting.SMOOTH, new Color(0, 0.5f, 0), 1f, 0f,
+			new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
 					false, Collections.<TextureData>emptyList());
 	public static final ConfMaterial TREE_BILLBOARD_BROAD_LEAVED_FRUIT =
-		new ConfMaterial(Lighting.SMOOTH, new Color(0, 0.5f, 0), 1f, 0f,
+		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
 				false, Collections.<TextureData>emptyList());
 	public static final ConfMaterial TREE_BILLBOARD_CONIFEROUS =
-		new ConfMaterial(Lighting.SMOOTH, new Color(0, 0.5f, 0), 1f, 0f,
+		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
 				false, Collections.<TextureData>emptyList());
 	
 	public static final ConfMaterial ADVERTISING_POSTER =

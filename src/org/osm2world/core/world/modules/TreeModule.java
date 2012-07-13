@@ -145,7 +145,8 @@ public class TreeModule extends ConfigurableWorldModule {
 				|| "broad_leafed".equals(typeValue) // both values are common
 				|| "deciduous".equals(typeValue)) {
 			return false;
-		} else if ("coniferous".equals(typeValue)) {
+		} else if ("coniferous".equals(typeValue)
+				|| "conifer".equals(typeValue)) {
 			return true;
 		} else { //mixed or undefined
 			//"random" decision based on x coord
