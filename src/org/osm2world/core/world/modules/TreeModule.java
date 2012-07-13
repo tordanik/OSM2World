@@ -40,11 +40,15 @@ import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
 public class TreeModule extends ConfigurableWorldModule {
 	
 	private boolean useBillboards = false;
+	private double defaultTreeHeight = 10;
+	private double defaultTreeHeightForest = 20;
 	
 	@Override
 	public void setConfiguration(Configuration config) {
 		super.setConfiguration(config);
 		useBillboards = config.getBoolean("useBillboards", false);
+		defaultTreeHeight = config.getDouble("defaultTreeHeight", 10);
+		defaultTreeHeightForest = config.getDouble("defaultTreeHeightForest", 20);
 	}
 	
 	@Override
@@ -79,7 +83,6 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 
-	private static final float DEFAULT_TREE_HEIGHT = 10;
 	private static final float TREE_RADIUS_PER_HEIGHT = 0.2f;
 	
 	private void renderTree(Target<?> target,
@@ -88,7 +91,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		VectorXYZ posXYZ = element.getElevationProfile().getWithEle(pos);
 		boolean fruit = isFruitTree(element, pos);
 		boolean coniferous = isConiferousTree(element, pos);
-		double height = getTreeHeight(element);
+		double height = getTreeHeight(element, coniferous, fruit);
 		
 		if (useBillboards) {
 			
@@ -167,15 +170,21 @@ public class TreeModule extends ConfigurableWorldModule {
 	/**
 	 * parse height (for forests, add some random factor)
 	 */
-	private static double getTreeHeight(MapElement element) {
+	private double getTreeHeight(MapElement element,
+			boolean isConiferousTree, boolean isFruitTree) {
 		
 		float heightFactor = 1;
 		if (element instanceof MapArea) {
-			heightFactor += -0.25f + 0.5f * Math.random();
+			heightFactor = 0.5f + 0.75f * (float)Math.random();
+		}
+		
+		double defaultHeight = defaultTreeHeight;
+		if (element instanceof MapArea && !isFruitTree) {
+			defaultHeight = defaultTreeHeightForest;
 		}
 		
 		return heightFactor *
-				parseHeight(element.getTags(), DEFAULT_TREE_HEIGHT);
+				parseHeight(element.getTags(), (float)defaultHeight);
 		
 	}
 	
@@ -202,13 +211,16 @@ public class TreeModule extends ConfigurableWorldModule {
 	private void renderTree(POVRayTarget target,
 			MapElement element, VectorXZ pos) {
 		
-		double height = getTreeHeight(element);
+		boolean isConiferousTree = isConiferousTree(element, pos);
+		boolean isFruitTree = isFruitTree(element, pos);
+		
+		double height = getTreeHeight(element, isConiferousTree, isFruitTree);
 		
 		//rotate randomly for variation
 		float yRotation = (float) Math.random() * 360;
 		
 		//add union of stem and leaves
-		if (isConiferousTree(element, pos)) {
+		if (isConiferousTree) {
 			target.append("object { coniferous_tree rotate ");
 		} else {
 			target.append("object { broad_leaved_tree rotate ");
@@ -228,9 +240,13 @@ public class TreeModule extends ConfigurableWorldModule {
 		RenderableToAllTargets, RenderableToPOVRay {
 		
 		private final MapNode node;
+		private final boolean isConiferous;
+		private final boolean isFruitTree;
 
 		public Tree(MapNode node) {
 			this.node = node;
+			this.isConiferous = isConiferousTree(node, node.getPos());
+			this.isFruitTree = isFruitTree(node, node.getPos());
 		}
 		
 		@Override
@@ -245,7 +261,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public double getClearingAbove(VectorXZ pos) {
-			return getTreeHeight(node);
+			return getTreeHeight(node, isConiferous, isFruitTree);
 		}
 		
 		@Override
