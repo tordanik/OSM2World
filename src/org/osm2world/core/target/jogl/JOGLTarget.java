@@ -5,6 +5,7 @@ import static javax.media.opengl.GL2.*;
 import static javax.media.opengl.GL2ES1.*;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
+import static org.osm2world.core.target.common.material.Material.multiplyColor;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -27,6 +28,7 @@ import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -279,6 +281,30 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 
+	public static final void setLightingParameters(GL2 gl,
+			GlobalLightingParameters lighting) {
+
+		gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
+				getFloatBuffer(lighting.globalAmbientColor));
+		
+		gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
+				getFloatBuffer(Color.BLACK));
+		gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
+				getFloatBuffer(lighting.lightColorDiffuse));
+		gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
+				getFloatBuffer(lighting.lightColorSpecular));
+		
+		gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
+					(float)lighting.lightFromDirection.x,
+					(float)lighting.lightFromDirection.y,
+					-(float)lighting.lightFromDirection.z,
+					0.0f}, 0);
+		
+		gl.glEnable(GL_LIGHT0);
+		gl.glEnable(GL_LIGHTING);
+		
+	}
+	
 	public static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 		
@@ -298,13 +324,15 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		/* set color */
 		
 		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
-			setFrontMaterialColor(gl, GL_AMBIENT, material.ambientColor());
-			setFrontMaterialColor(gl, GL_DIFFUSE, material.diffuseColor());
+			gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
+					getFloatBuffer(material.ambientColor()));
+			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
+					getFloatBuffer(material.diffuseColor()));
 		} else {
-			setFrontMaterialColor(gl, GL_AMBIENT, Material.multiplyColor(
-					Color.WHITE, material.getAmbientFactor()));
-			setFrontMaterialColor(gl, GL_DIFFUSE, Material.multiplyColor(
-					Color.WHITE, material.getDiffuseFactor()));
+			gl.glMaterialfv(GL_FRONT, GL_AMBIENT, getFloatBuffer(
+					multiplyColor(Color.WHITE, material.getAmbientFactor())));
+			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE, getFloatBuffer(
+					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
 		}
 		
 		/* set textures and associated parameters */
@@ -363,10 +391,10 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 
-	public static final void setFrontMaterialColor(GL2 gl, int pname, Color color) {
+	public static final FloatBuffer getFloatBuffer(Color color) {
 		float colorArray[] = {0, 0, 0, 1};
 		color.getRGBColorComponents(colorArray);
-		gl.glMaterialfv(GL_FRONT, pname, FloatBuffer.wrap(colorArray));
+		return FloatBuffer.wrap(colorArray);
 	}
 
 	public static final int getGLConstant(Type type) {

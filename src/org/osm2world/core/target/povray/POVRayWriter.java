@@ -3,6 +3,7 @@ package org.osm2world.core.target.povray;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Locale;
 
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
@@ -11,6 +12,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
@@ -61,8 +63,7 @@ public final class POVRayWriter {
 
 		target.append("//\n// global scene parameters\n//\n\n");
 
-		target.append("global_settings { ambient_light rgb 1 }\n");
-		target.append("light_source{ <100000,150000,-100000> color White parallel point_at <0,0,0> fade_power 0 }\n\n");
+		addLightingDefinition(target, GlobalLightingParameters.DEFAULT);
 		
 		target.appendDefaultParameterValue("season", "summer");
 		target.appendDefaultParameterValue("time", "day");
@@ -101,6 +102,26 @@ public final class POVRayWriter {
 		target.append("\n\n//\n//Terrain\n//\n\n");
 		
 		terrain.renderTo(target);
+		
+	}
+
+	private static final void addLightingDefinition(POVRayTarget target,
+			GlobalLightingParameters parameters) {
+		
+		target.append(String.format(Locale.ENGLISH,
+				"global_settings { ambient_light rgb <%f,%f,%f> }\n",
+				parameters.globalAmbientColor.getRed() / 255f,
+				parameters.globalAmbientColor.getGreen() / 255f,
+				parameters.globalAmbientColor.getBlue() / 255f));
+		
+		target.append(String.format(Locale.ENGLISH,
+				"light_source{ <%f,%f,%f> color rgb <%f,%f,%f> parallel point_at <0,0,0> fade_power 0 }\n\n",
+				parameters.lightFromDirection.x * 100000,
+				parameters.lightFromDirection.y * 100000,
+				parameters.lightFromDirection.z * 100000,
+				parameters.lightColorDiffuse.getRed() / 255f,
+				parameters.lightColorDiffuse.getGreen() / 255f,
+				parameters.lightColorDiffuse.getBlue() / 255f));
 		
 	}
 	

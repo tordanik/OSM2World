@@ -1,6 +1,5 @@
 package org.osm2world.viewer.view.debug;
 
-import static javax.media.opengl.GL2ES1.GL_LIGHT_MODEL_AMBIENT;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 
 import java.util.ArrayList;
@@ -9,8 +8,10 @@ import java.util.Collection;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
@@ -75,20 +76,7 @@ public class WorldObjectView extends DebugView {
 		
 		// define light source
 		
-		gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
-				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
-				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
-				new float[] {1.0f, 1.0f, 1.0f , 1.0f}, 0);
-		gl.glLightfv(GL_LIGHT0, GL_POSITION,
-				new float[] {1.0f, 1.5f, -(-1.0f), 0.0f}, 0);
-		
-		gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
-				new float[] { 1.0f , 1.0f , 1.0f , 1.0f } , 0);
-		
-		gl.glEnable(GL_LIGHT0);
-		gl.glEnable(GL_LIGHTING);
+		JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
 		
 		// render
 		
