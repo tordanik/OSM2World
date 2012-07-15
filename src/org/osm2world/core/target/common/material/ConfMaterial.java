@@ -13,14 +13,14 @@ public class ConfMaterial extends Material {
 
 	public ConfMaterial(Lighting lighting, Color color,
 			float ambientFactor, float diffuseFactor,
-			boolean useAlpha, List<TextureData> textureDataList) {
+			Transparency transparency, List<TextureData> textureDataList) {
 		super(lighting, color, ambientFactor, diffuseFactor,
-				useAlpha, textureDataList);
+				transparency, textureDataList);
 	}
 	
 	public ConfMaterial(Lighting lighting, Color color,
-			boolean useAlpha, List<TextureData> textureDataList) {
-		super(lighting, color, useAlpha, textureDataList);
+			Transparency transparency, List<TextureData> textureDataList) {
+		super(lighting, color, transparency, textureDataList);
 	}
 	
 	public ConfMaterial(Lighting lighting, Color color) {
@@ -43,8 +43,8 @@ public class ConfMaterial extends Material {
 		this.diffuseFactor = diffuseFactor;
 	}
 	
-	public void setUseAlpha(boolean useAlpha) {
-		this.useAlpha = useAlpha;
+	public void setTransparency(Transparency transparency) {
+		this.transparency = transparency;
 	}
 	
 	public void setTextureDataList(List<TextureData> textureDataList) {

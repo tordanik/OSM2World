@@ -18,6 +18,7 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -119,21 +120,21 @@ public final class Materials {
 	
 	public static final ConfMaterial TUNNEL_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.GRAY, 0.2f, 0.5f,
-				false, Collections.<TextureData>emptyList());
+				Transparency.FALSE, Collections.<TextureData>emptyList());
 	
 	public static final ConfMaterial TREE_TRUNK =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial TREE_CROWN =
 		new ConfMaterial(Lighting.SMOOTH, new Color(0, 0.5f, 0));
 	public static final ConfMaterial TREE_BILLBOARD_BROAD_LEAVED =
-			new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
-					false, Collections.<TextureData>emptyList());
+		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
+				Transparency.FALSE, Collections.<TextureData>emptyList());
 	public static final ConfMaterial TREE_BILLBOARD_BROAD_LEAVED_FRUIT =
 		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
-				false, Collections.<TextureData>emptyList());
+				Transparency.FALSE, Collections.<TextureData>emptyList());
 	public static final ConfMaterial TREE_BILLBOARD_CONIFEROUS =
 		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
-				false, Collections.<TextureData>emptyList());
+				Transparency.FALSE, Collections.<TextureData>emptyList());
 	
 	public static final ConfMaterial ADVERTISING_POSTER =
 		new ConfMaterial(Lighting.FLAT, new Color(1, 1, 0.8f));
@@ -151,7 +152,7 @@ public final class Materials {
 
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Lighting.FLAT, new Color(0, 0, 1),
-				1, 0, false, null);
+				1, 0, Transparency.FALSE, null);
 	
 	private static final Map<String, ConfMaterial> surfaceMaterialMap =
 		new HashMap<String, ConfMaterial>();
@@ -230,7 +231,7 @@ public final class Materials {
 	}
 	
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|use_alpha|texture\\d*_(?:file|width|height|))";
+			"material_(.+)_(color|transparency|texture\\d*_(?:file|width|height|))";
 	
 	/**
 	 * configures the attributes of the materials within this class
@@ -267,10 +268,15 @@ public final class Materials {
 									+ config.getString(key));
 						}
 						
-					} else if ("use_alpha".equals(attribute)) {
-					
-						material.setUseAlpha(config.getBoolean(key));
-												
+					} else if ("transparency".equals(attribute)) {
+						
+						String value = config.getString(key).toUpperCase();
+						Transparency transparency = Transparency.valueOf(value);
+						
+						if (transparency != null) {
+							material.setTransparency(transparency);
+						}
+						
 					} else if (attribute.startsWith("texture")) {
 						
 						List<TextureData> textureDataList =

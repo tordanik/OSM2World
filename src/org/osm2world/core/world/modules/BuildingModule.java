@@ -703,7 +703,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			    	materialWallWithWindows = new ImmutableMaterial(
 			    			materialWall.getLighting(), materialWall.getColor(),
 			    			materialWall.getAmbientFactor(), materialWall.getDiffuseFactor(),
-			    			materialWall.getUseAlpha(), textureDataListWithWindows);
+			    			materialWall.getTransparency(), textureDataListWithWindows);
 			    	
 		    	}
 		    	
@@ -770,7 +770,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 							defaultMaterial.getLighting(), color,
 							defaultMaterial.getAmbientFactor(),
 							defaultMaterial.getDiffuseFactor(),
-							defaultMaterial.getUseAlpha(),
+							defaultMaterial.getTransparency(),
 							defaultMaterial.getTextureDataList());
 				}
 				

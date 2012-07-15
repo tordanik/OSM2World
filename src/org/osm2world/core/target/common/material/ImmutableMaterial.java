@@ -13,14 +13,14 @@ public final class ImmutableMaterial extends Material {
 	
 	public ImmutableMaterial(Lighting lighting, Color color,
 			float ambientFactor, float diffuseFactor,
-			boolean useAlpha, List<TextureData> textureDataList) {
+			Transparency transparency, List<TextureData> textureDataList) {
 		super(lighting, color, ambientFactor, diffuseFactor,
-				useAlpha, textureDataList);
+				transparency, textureDataList);
 	}
 	
 	public ImmutableMaterial(Lighting lighting, Color color,
-			boolean useAlpha, List<TextureData> textureDataList) {
-		super(lighting, color, useAlpha, textureDataList);
+			Transparency transparency, List<TextureData> textureDataList) {
+		super(lighting, color, transparency, textureDataList);
 	}
 	
 	public ImmutableMaterial(Lighting lighting, Color color) {
@@ -37,7 +37,7 @@ public final class ImmutableMaterial extends Material {
 		result = prime * result + Float.floatToIntBits(diffuseFactor);
 		result = prime * result + ((lighting == null) ? 0 : lighting.hashCode());
 		result = prime * result + ((textureDataList == null) ? 0 : textureDataList.hashCode());
-		result = prime * result + (useAlpha ? 1231 : 1237);
+		result = prime * result + ((transparency == null) ? 0 : transparency.hashCode());
 		return result;
 	}
 
@@ -67,7 +67,7 @@ public final class ImmutableMaterial extends Material {
 				return false;
 		} else if (!textureDataList.equals(other.textureDataList))
 			return false;
-		if (useAlpha != other.useAlpha)
+		if (transparency != other.transparency)
 			return false;
 		return true;
 	}

@@ -6,6 +6,7 @@ import static javax.media.opengl.GL2ES1.*;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
+import static org.osm2world.core.target.common.material.Material.Transparency.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -349,11 +350,15 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 				
 				gl.glEnable(GL_TEXTURE_2D);
 				
-				if (material.getUseAlpha()) {
+				if (material.getTransparency() == TRUE) {
 					gl.glEnable(GL.GL_BLEND);
 					gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+				} else if (material.getTransparency() == BINARY) {
+					gl.glAlphaFunc(GL_GREATER, 0.5f);
+					gl.glEnable(GL_ALPHA_TEST);
 				} else {
 					gl.glDisable(GL.GL_BLEND);
+					gl.glDisable(GL_ALPHA_TEST);
 				}
 				
 				TextureData textureData = material.getTextureDataList().get(i);

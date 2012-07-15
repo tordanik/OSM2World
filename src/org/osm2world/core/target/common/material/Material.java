@@ -13,32 +13,42 @@ public abstract class Material {
 	
 	public static enum Lighting {FLAT, SMOOTH};
 	
+	public static enum Transparency {
+		/** arbitrary transparency, including partially transparent pixels */
+		TRUE,
+		/** only allow pixels to be either fully transparent or fully opaque */
+		BINARY,
+		/** all pixels are opaque */
+		FALSE
+	}
+	
 	protected Lighting lighting;
 	protected Color color;
 	protected float ambientFactor;
 	protected float diffuseFactor;
-	protected boolean useAlpha;
+	protected Transparency transparency;
 	
 	protected List<TextureData> textureDataList;
 
 	public Material(Lighting lighting, Color color,
 			float ambientFactor, float diffuseFactor,
-			boolean useAlpha, List<TextureData> textureDataList) {
+			Transparency transparency, List<TextureData> textureDataList) {
 		this.lighting = lighting;
 		this.color = color;
 		this.ambientFactor = ambientFactor;
 		this.diffuseFactor = diffuseFactor;
-		this.useAlpha = useAlpha;
+		this.transparency = transparency;
 		this.textureDataList = textureDataList;
 	}
 	
 	public Material(Lighting lighting, Color color,
-			boolean useAlpha, List<TextureData> textureDataList) {
-		this(lighting, color, 0.5f, 0.5f, useAlpha, textureDataList);
+			Transparency transparency, List<TextureData> textureDataList) {
+		this(lighting, color, 0.5f, 0.5f, transparency, textureDataList);
 	}
 	
 	public Material(Lighting lighting, Color color) {
-		this(lighting, color, false, Collections.<TextureData>emptyList());
+		this(lighting, color, Transparency.FALSE,
+				Collections.<TextureData>emptyList());
 	}
 		
 	public Lighting getLighting() {
@@ -68,13 +78,13 @@ public abstract class Material {
 	public Material brighter() {
 		return new ImmutableMaterial(lighting, getColor().brighter(),
 				getAmbientFactor(), getDiffuseFactor(),
-				getUseAlpha(), getTextureDataList());
+				getTransparency(), getTextureDataList());
 	}
 	
 	public Material darker() {
 		return new ImmutableMaterial(lighting, getColor().darker(),
 				getAmbientFactor(), getDiffuseFactor(),
-				getUseAlpha(), getTextureDataList());
+				getTransparency(), getTextureDataList());
 	}
 	
 	public static final Color multiplyColor(Color c, float factor) {
@@ -90,11 +100,11 @@ public abstract class Material {
 	public Material makeSmooth() {
 		return new ImmutableMaterial(Lighting.SMOOTH, getColor(),
 				getAmbientFactor(), getDiffuseFactor(),
-				getUseAlpha(), getTextureDataList());
+				getTransparency(), getTextureDataList());
 	}
 
-	public boolean getUseAlpha() {
-		return useAlpha;
+	public Transparency getTransparency() {
+		return transparency;
 	}
 		
 	public List<TextureData> getTextureDataList() {
@@ -105,7 +115,7 @@ public abstract class Material {
 		return String.format("{%s, #%06x, a%3f, d%3f, %d tex",
 				lighting, color.getRGB() & 0x00ffffff, ambientFactor,
 				diffuseFactor, textureDataList.size())
-				+ (useAlpha ? ", alpha" : "")
+				+ transparency
 				+ "}";
 	}
 	
