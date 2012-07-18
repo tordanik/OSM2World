@@ -20,6 +20,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -137,6 +138,15 @@ public class WaterModule extends ConfigurableWorldModule {
 				return null;
 			} else {
 				return super.getOutlinePolygon();
+			}
+		}
+		
+		@Override
+		public SimplePolygonXZ getOutlinePolygonXZ() {
+			if (isContainedWithinRiverbank()) {
+				return null;
+			} else {
+				return super.getOutlinePolygonXZ();
 			}
 		}
 		
