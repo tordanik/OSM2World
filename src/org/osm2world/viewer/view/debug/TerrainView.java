@@ -9,6 +9,7 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
+import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 public class TerrainView extends DebugView {
@@ -37,7 +38,7 @@ public class TerrainView extends DebugView {
 	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 		
 		if (renderer == null) {
-			renderer = new JOGLPrimitiveBufferRenderer(gl, terrainPrimitiveBuffer);
+			renderer = new JOGLPrimitiveBufferRendererDisplayList(gl, terrainPrimitiveBuffer);
 		}
 
 		JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);

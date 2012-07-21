@@ -32,6 +32,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
+import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 import com.jogamp.opengl.util.awt.Screenshot;
@@ -177,7 +178,7 @@ public class ImageExporter {
 			TargetUtil.renderWorldObjects(buffer, results.getMapData());
 			TargetUtil.renderObject(buffer, results.getTerrain());
 			
-			bufferRenderer = new JOGLPrimitiveBufferRenderer(gl, buffer);
+			bufferRenderer = new JOGLPrimitiveBufferRendererDisplayList(gl, buffer);
 			
 		}
 		

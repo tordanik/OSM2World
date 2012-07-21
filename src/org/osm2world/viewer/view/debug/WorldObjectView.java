@@ -13,6 +13,7 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
+import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
 import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 public class WorldObjectView extends DebugView {
@@ -71,7 +72,7 @@ public class WorldObjectView extends DebugView {
 		// create new renderer
 		
 		if (renderer == null) {
-			renderer = new JOGLPrimitiveBufferRenderer(gl, mapDataPrimitiveBuffer);
+			renderer = new JOGLPrimitiveBufferRendererDisplayList(gl, mapDataPrimitiveBuffer);
 		}
 		
 		// define light source
