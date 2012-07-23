@@ -217,7 +217,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		textureManager.releaseAll();
 	}
 
-	private static final int NUM_TEXTURE_LAYERS = 4;
+	public static final int MAX_TEXTURE_LAYERS = 4;
 	
 	public static final void setCameraMatrices(GL2 gl, Camera camera) {
 		VectorXYZ pos = camera.getPos();
@@ -338,7 +338,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 		/* set textures and associated parameters */
 		
-		for (int i = 0; i < NUM_TEXTURE_LAYERS; i++) {
+		for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
 			
 			gl.glActiveTexture(getGLTextureConstant(i));
 						

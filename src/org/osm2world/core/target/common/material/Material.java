@@ -111,6 +111,14 @@ public abstract class Material {
 		return textureDataList;
 	}
 	
+	public int getNumTextureLayers() {
+		if (textureDataList == null) {
+			return 0;
+		} else {
+			return textureDataList.size();
+		}
+	}
+	
 	public String toString() {
 		return String.format("{%s, #%06x, a%3f, d%3f, %d tex",
 				lighting, color.getRGB() & 0x00ffffff, ambientFactor,
