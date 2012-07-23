@@ -6,7 +6,7 @@ import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -367,7 +367,8 @@ public class WaterModule extends ConfigurableWorldModule {
 					nCopies(path.size(), VectorXYZ.Y_UNIT));
 			
 			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(Materials.ASPHALT, strip, null);
+				target.drawTriangleStrip(Materials.CONCRETE, strip,
+						wallTexCoordLists(strip, Materials.CONCRETE));
 			}
 							
 		}

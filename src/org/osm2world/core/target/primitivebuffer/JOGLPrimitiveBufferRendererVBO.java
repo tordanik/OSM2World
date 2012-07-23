@@ -193,6 +193,12 @@ JOGLPrimitiveBufferRenderer {
 			
 			for (int i = 0; i < primVertices.size(); i++) {
 				
+				assert (primTexCoordLists == null
+						&& material.getNumTextureLayers() == 0)
+					|| (primTexCoordLists != null
+						&& primTexCoordLists.size() == material.getNumTextureLayers())
+					: "WorldModules need to provide the correct number of tex coords";
+				
 				if (primTexCoordLists == null && material.getNumTextureLayers() > 0) {
 					System.out.println(material);
 				}

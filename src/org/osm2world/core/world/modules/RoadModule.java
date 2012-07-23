@@ -45,7 +45,6 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
-import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkAreaWorldObject;
@@ -550,7 +549,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material, false));
+					globalTexCoordLists(triangles, material, false));
 			
 			/* connect some lanes such as sidewalks between adjacent roads */
 			
@@ -647,7 +646,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material material = getSurfaceForNode(node);
 			
 			target.drawTriangles(material, trianglesXYZ,
-					WorldModuleTexturingUtil.globalTexCoordLists(trianglesXYZ, material, false));
+					globalTexCoordLists(trianglesXYZ, material, false));
 			
 		}
 		
@@ -1060,7 +1059,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vs = createTriangleStripBetween(
 					leftOutline, rightOutline);
 
-			target.drawTriangleStrip(ASPHALT, vs, null);
+			target.drawTriangleStrip(ASPHALT, vs,
+					globalTexCoordLists(vs, ASPHALT, false));
 			
 			/* determine the length of each individual step */
 			
@@ -1152,7 +1152,8 @@ public class RoadModule extends ConfigurableWorldModule {
 					Collections.nCopies(handrailLine.size(), VectorXYZ.Y_UNIT));
 				
 				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(HANDRAIL_DEFAULT, strip, null);
+					target.drawTriangleStrip(HANDRAIL_DEFAULT, strip,
+							wallTexCoordLists(strip, HANDRAIL_DEFAULT));
 				}
 				
 				target.drawColumn(HANDRAIL_DEFAULT, 4,
@@ -1257,7 +1258,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					WorldModuleTexturingUtil.globalTexCoordLists(triangles, material, false));
+					globalTexCoordLists(triangles, material, false));
 			
 		}
 		
