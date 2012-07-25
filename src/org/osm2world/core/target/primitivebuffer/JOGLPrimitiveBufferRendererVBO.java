@@ -7,7 +7,9 @@ import static javax.media.opengl.fixedfunc.GLPointerFunc.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
 
+import java.nio.Buffer;
 import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,12 +41,14 @@ import com.jogamp.common.nio.Buffers;
  * {@link #freeResources()} to delete the VBOs and other resources.
  */
 public class JOGLPrimitiveBufferRendererVBO extends
-JOGLPrimitiveBufferRenderer {
+		JOGLPrimitiveBufferRenderer {
+	
+	private static final boolean DOUBLE_PRECISION_RENDERING = false;
 	
 	private PrimitiveBuffer primitiveBuffer; //keeping this referenced is only necessary because of indexed vertices
 	
 	/** VBOs with static, non-alphablended geometry for each material */
-	private Map<Material, VBOData> vboMap = new HashMap<Material, VBOData>();
+	private Map<Material, VBOData<?>> vboMap = new HashMap<Material, VBOData<?>>();
 	
 	/** alphablended primitives, need to be sorted by distance from camera */
 	private List<PrimitiveWithMaterial> transparentPrimitives =
@@ -59,7 +63,7 @@ JOGLPrimitiveBufferRenderer {
 	/**
 	 * class that keeps a VBO id along with associated information
 	 */
-	private final class VBOData {
+	private abstract class VBOData<BufferT extends Buffer> {
 		
 		/** material associated with this VBO, determines VBO layout */
 		private Material material;
@@ -70,9 +74,27 @@ JOGLPrimitiveBufferRenderer {
 		/** number of vertices in the vbo */
 		private final int vertexCount;
 		
+		/** size of each value in the vbo */
+		protected final int valueTypeSize;
+		
+		/** gl constant for the value type in the vbo */
+		protected final int glValueType;
+
+		
+		protected abstract BufferT createBuffer(int numValues);
+		
+		protected abstract void put(BufferT buffer, VectorXZ texCoord);
+		protected abstract void put(BufferT buffer, VectorXYZ v);
+		
+		protected abstract int valueTypeSize();
+		protected abstract int glValueType();
+		
 		public VBOData(Material material, Collection<Primitive> primitives) {
 			
 			this.material = material;
+			
+			valueTypeSize = valueTypeSize();
+			glValueType = glValueType();
 			
 			vertexCount = countVertices(primitives);
 			
@@ -83,9 +105,9 @@ JOGLPrimitiveBufferRenderer {
 			
 			/* collect the data for the buffer */
 			
-			DoubleBuffer valueBuffer = Buffers.newDirectDoubleBuffer(
+			BufferT valueBuffer = createBuffer(
 					vertexCount * getValuesPerVertex(material));
-			
+						
 			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 				addPrimitiveToValueBuffer(valueBuffer, primitive);
 			}
@@ -98,7 +120,7 @@ JOGLPrimitiveBufferRenderer {
 			
 			gl.glBufferData(
 					GL_ARRAY_BUFFER,
-					valueBuffer.capacity() * Buffers.SIZEOF_DOUBLE,
+					valueBuffer.capacity() * valueTypeSize,
 					valueBuffer,
 					GL_STATIC_DRAW);
 			
@@ -143,7 +165,7 @@ JOGLPrimitiveBufferRenderer {
 		/**
 		 * put the values for a primitive's vertices into the buffer
 		 */
-		private void addPrimitiveToValueBuffer(DoubleBuffer buffer,
+		private void addPrimitiveToValueBuffer(BufferT buffer,
 				Primitive primitive) {
 			
 			List<VectorXYZ> primVertices =
@@ -205,19 +227,11 @@ JOGLPrimitiveBufferRenderer {
 					
 				for (int t = 0; t < material.getNumTextureLayers(); t++) {
 					VectorXZ textureCoord =	primTexCoordLists.get(t).get(i);
-					buffer.put(textureCoord.x);
-					buffer.put(textureCoord.z);
+					put(buffer, textureCoord);
 				}
 				
-				VectorXYZ n = primNormals.get(i);
-				buffer.put(n.x);
-				buffer.put(n.y);
-				buffer.put(-n.z);
-				
-				VectorXYZ v = primVertices.get(i);
-				buffer.put(v.x);
-				buffer.put(v.y);
-				buffer.put(-v.z);
+				put(buffer, primNormals.get(i));
+				put(buffer, primVertices.get(i));
 				
 			}
 			
@@ -255,7 +269,7 @@ JOGLPrimitiveBufferRenderer {
 
 		private void setPointerLayout() {
 			
-			int stride = Buffers.SIZEOF_DOUBLE * getValuesPerVertex(material);
+			int stride = valueTypeSize * getValuesPerVertex(material);
 			
 			int offset = 0;
 			
@@ -265,14 +279,14 @@ JOGLPrimitiveBufferRenderer {
 				gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				
 				gl.glActiveTexture(JOGLTarget.getGLTextureConstant(i));
-				gl.glTexCoordPointer(2, GL_DOUBLE, stride, offset);
+				gl.glTexCoordPointer(2, glValueType, stride, offset);
 				
-				offset += 2 * Buffers.SIZEOF_DOUBLE;
+				offset += 2 * valueTypeSize;
 				
 			}
 			
-			gl.glVertexPointer(3, GL_DOUBLE, stride, offset + Buffers.SIZEOF_DOUBLE * 3);
-			gl.glNormalPointer(GL_DOUBLE, stride, offset);
+			gl.glVertexPointer(3, glValueType, stride, offset + valueTypeSize() * 3);
+			gl.glNormalPointer(glValueType, stride, offset);
 			
 		}
 
@@ -282,6 +296,77 @@ JOGLPrimitiveBufferRenderer {
 		
 	}
 	
+	private final class VBODataDouble extends VBOData<DoubleBuffer> {
+
+		public VBODataDouble(Material material, Collection<Primitive> primitives) {
+			super(material, primitives);
+		}
+		
+		@Override
+		protected DoubleBuffer createBuffer(int numValues) {
+			return Buffers.newDirectDoubleBuffer(numValues);
+		}
+		
+		@Override
+		protected void put(DoubleBuffer buffer, VectorXZ texCoord) {
+			buffer.put(texCoord.x);
+			buffer.put(texCoord.z);
+		}
+		
+		@Override
+		protected void put(DoubleBuffer buffer, VectorXYZ v) {
+			buffer.put(v.x);
+			buffer.put(v.y);
+			buffer.put(-v.z);
+		}
+		
+		@Override
+		protected int valueTypeSize() {
+			return Buffers.SIZEOF_DOUBLE;
+		}
+		
+		@Override
+		protected int glValueType() {
+			return GL_DOUBLE;
+		}
+		
+	}
+	
+	private final class VBODataFloat extends VBOData<FloatBuffer> {
+
+		public VBODataFloat(Material material, Collection<Primitive> primitives) {
+			super(material, primitives);
+		}
+		
+		@Override
+		protected FloatBuffer createBuffer(int numValues) {
+			return Buffers.newDirectFloatBuffer(numValues);
+		}
+		
+		@Override
+		protected void put(FloatBuffer buffer, VectorXZ texCoord) {
+			buffer.put((float)texCoord.x);
+			buffer.put((float)texCoord.z);
+		}
+		
+		@Override
+		protected void put(FloatBuffer buffer, VectorXYZ v) {
+			buffer.put((float)v.x);
+			buffer.put((float)v.y);
+			buffer.put((float)-v.z);
+		}
+		
+		@Override
+		protected int valueTypeSize() {
+			return Buffers.SIZEOF_FLOAT;
+		}
+		
+		@Override
+		protected int glValueType() {
+			return GL_FLOAT;
+		}
+		
+	}
 	
 	private static final class PrimitiveWithMaterial {
 		
@@ -314,8 +399,10 @@ JOGLPrimitiveBufferRenderer {
 				
 			} else {
 				
-				vboMap.put(material, new VBOData(material,
-						primitiveBuffer.getPrimitives(material)));
+				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
+				vboMap.put(material, DOUBLE_PRECISION_RENDERING
+						? new VBODataDouble(material, primitives)
+						: new VBODataFloat(material, primitives));
 				
 			}
 			
@@ -348,7 +435,7 @@ JOGLPrimitiveBufferRenderer {
 		
 		for (Material material : primitiveBuffer.getMaterials()) {
 			
-			VBOData vboData = vboMap.get(material);
+			VBOData<?> vboData = vboMap.get(material);
 			
 			if (vboData != null) {
 				vboData.render();
@@ -494,7 +581,7 @@ JOGLPrimitiveBufferRenderer {
 	public void freeResources() {
 		
 		if (vboMap != null) {
-			for (VBOData vbo : vboMap.values()) {
+			for (VBOData<?> vbo : vboMap.values()) {
 				vbo.delete();
 			}
 			vboMap = null;
