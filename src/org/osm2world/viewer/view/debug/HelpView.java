@@ -17,8 +17,7 @@ public class HelpView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map == null && terrain == null && eleData == null
-			&& terrainPrimitiveBuffer == null && mapDataPrimitiveBuffer == null;
+		return map == null && terrain == null && eleData == null;
 	}
 	
 	@Override

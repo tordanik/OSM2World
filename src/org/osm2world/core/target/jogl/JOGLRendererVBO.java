@@ -1,4 +1,4 @@
-package org.osm2world.core.target.primitivebuffer;
+package org.osm2world.core.target.jogl;
 
 import static java.lang.Math.*;
 import static javax.media.opengl.GL.*;
@@ -6,6 +6,7 @@ import static javax.media.opengl.GL2GL3.GL_DOUBLE;
 import static javax.media.opengl.fixedfunc.GLPointerFunc.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
+import static org.osm2world.core.target.jogl.JOGLTarget.*;
 
 import java.nio.Buffer;
 import java.nio.DoubleBuffer;
@@ -14,9 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.media.opengl.GL2;
 
@@ -29,7 +28,6 @@ import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.jogl.JOGLTarget;
 
 import com.jogamp.common.nio.Buffers;
 
@@ -40,15 +38,12 @@ import com.jogamp.common.nio.Buffers;
  * If you don't need the renderer anymore, it's recommended to manually call
  * {@link #freeResources()} to delete the VBOs and other resources.
  */
-public class JOGLPrimitiveBufferRendererVBO extends
-		JOGLPrimitiveBufferRenderer {
+class JOGLRendererVBO extends JOGLRenderer {
 	
 	private static final boolean DOUBLE_PRECISION_RENDERING = false;
 	
-	private PrimitiveBuffer primitiveBuffer; //keeping this referenced is only necessary because of indexed vertices
-	
 	/** VBOs with static, non-alphablended geometry for each material */
-	private Map<Material, VBOData<?>> vboMap = new HashMap<Material, VBOData<?>>();
+	private List<VBOData<?>> vbos = new ArrayList<VBOData<?>>();
 	
 	/** alphablended primitives, need to be sorted by distance from camera */
 	private List<PrimitiveWithMaterial> transparentPrimitives =
@@ -108,7 +103,7 @@ public class JOGLPrimitiveBufferRendererVBO extends
 			BufferT valueBuffer = createBuffer(
 					vertexCount * getValuesPerVertex(material));
 						
-			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
+			for (Primitive primitive : primitives) {
 				addPrimitiveToValueBuffer(valueBuffer, primitive);
 			}
 			
@@ -136,9 +131,9 @@ public class JOGLPrimitiveBufferRendererVBO extends
 			
 			for (Primitive primitive : primitives) {
 				if (primitive.type == Type.TRIANGLES) {
-					vertexCount += primitive.indices.length;
+					vertexCount += primitive.vertices.size();
 				} else {
-					vertexCount += 3 * (primitive.indices.length - 2);
+					vertexCount += 3 * (primitive.vertices.size() - 2);
 				}
 			}
 			
@@ -167,19 +162,13 @@ public class JOGLPrimitiveBufferRendererVBO extends
 		 */
 		private void addPrimitiveToValueBuffer(BufferT buffer,
 				Primitive primitive) {
-			
-			List<VectorXYZ> primVertices =
-					new ArrayList<VectorXYZ>(primitive.indices.length);
-			
-			for (int index : primitive.indices) {
-				primVertices.add(primitiveBuffer.getVertex(index));
-			}
-			
+						
 			/*
 			 * rearrange the lists of vertices, normals and texture coordinates
 			 * to turn triangle strips and triangle fans into separate triangles
 			 */
-			
+
+			List<VectorXYZ> primVertices = primitive.vertices;
 			List<VectorXYZ> primNormals = primitive.normals;
 			List<List<VectorXZ>> primTexCoordLists = primitive.texCoordLists;
 			
@@ -380,13 +369,9 @@ public class JOGLPrimitiveBufferRendererVBO extends
 		
 	}
 	
-	public JOGLPrimitiveBufferRendererVBO(GL2 gl, PrimitiveBuffer primitiveBuffer) {
+	public JOGLRendererVBO(GL2 gl, PrimitiveBuffer primitiveBuffer) {
 		
 		super(gl);
-		
-		this.primitiveBuffer = primitiveBuffer;
-		
-		primitiveBuffer.optimize();
 		
 		for (Material material : primitiveBuffer.getMaterials()) {
 			
@@ -400,28 +385,13 @@ public class JOGLPrimitiveBufferRendererVBO extends
 			} else {
 				
 				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
-				vboMap.put(material, DOUBLE_PRECISION_RENDERING
+				vbos.add(DOUBLE_PRECISION_RENDERING
 						? new VBODataDouble(material, primitives)
 						: new VBODataFloat(material, primitives));
 				
 			}
 			
 		}
-		
-	}
-	
-	private void renderPrimitive(GL2 gl, PrimitiveBuffer primitiveBuffer,
-			Primitive primitive) {
-		
-		List<VectorXYZ> vertices =
-				new ArrayList<VectorXYZ>(primitive.indices.length);
-		
-		for (int index : primitive.indices) {
-			vertices.add(primitiveBuffer.getVertex(index));
-		}
-		
-		JOGLTarget.drawPrimitive(gl, JOGLTarget.getGLConstant(primitive.type),
-				vertices, primitive.normals, primitive.texCoordLists);
 		
 	}
 	
@@ -433,14 +403,8 @@ public class JOGLPrimitiveBufferRendererVBO extends
 		gl.glEnableClientState(GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL_NORMAL_ARRAY);
 		
-		for (Material material : primitiveBuffer.getMaterials()) {
-			
-			VBOData<?> vboData = vboMap.get(material);
-			
-			if (vboData != null) {
-				vboData.render();
-			}
-			
+		for (VBOData<?> vboData : vbos) {
+			vboData.render();
 		}
 		
 		gl.glDisableClientState(GL_VERTEX_ARRAY);
@@ -467,7 +431,9 @@ public class JOGLPrimitiveBufferRendererVBO extends
 				previousMaterial = p.material;
 			}
 			
-			renderPrimitive(gl, primitiveBuffer, p.primitive);
+			drawPrimitive(gl, getGLConstant(p.primitive.type),
+					p.primitive.vertices, p.primitive.normals,
+					p.primitive.texCoordLists);
 			
 		}
 		
@@ -564,27 +530,26 @@ public class JOGLPrimitiveBufferRendererVBO extends
 		
 		double sumX = 0, sumY = 0, sumZ = 0;
 		
-		for (int index : p.primitive.indices) {
-			VectorXYZ v = primitiveBuffer.getVertex(index);
+		for (VectorXYZ v : p.primitive.vertices) {
 			sumX += v.x;
 			sumY += v.y;
 			sumZ += v.z;
 		}
 		
-		return new VectorXYZ(sumX / p.primitive.indices.length,
-				sumY / p.primitive.indices.length,
-				sumZ / p.primitive.indices.length);
+		return new VectorXYZ(sumX / p.primitive.vertices.size(),
+				sumY / p.primitive.vertices.size(),
+				sumZ / p.primitive.vertices.size());
 		
 	}
 	
 	@Override
 	public void freeResources() {
 		
-		if (vboMap != null) {
-			for (VBOData<?> vbo : vboMap.values()) {
+		if (vbos != null) {
+			for (VBOData<?> vbo : vbos) {
 				vbo.delete();
 			}
-			vboMap = null;
+			vbos = null;
 		}
 		
 		super.freeResources();

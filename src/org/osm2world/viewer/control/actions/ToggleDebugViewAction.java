@@ -40,7 +40,7 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 		this.enabled = enabled;
 		
 		if (enabled) {
-			renderOptions.activeDebugViews.add(debugView);			
+			renderOptions.activeDebugViews.add(debugView);
 		}
 		
 		data.addObserver(this);
@@ -50,10 +50,10 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		if (enabled) {			
-			renderOptions.activeDebugViews.remove(debugView);			
+		if (enabled) {
+			renderOptions.activeDebugViews.remove(debugView);
 		} else {
-			renderOptions.activeDebugViews.add(debugView);			
+			renderOptions.activeDebugViews.add(debugView);
 		}
 			
 		enabled = !enabled;
@@ -66,10 +66,6 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 		
 		debugView.setConversionResults(
 				data.getConversionResults());
-		
-		debugView.setPrimitiveBuffers(
-				data.getGridPrimitiveBuffer(),
-				data.getTerrainPrimitiveBuffer());
 		
 	}
 

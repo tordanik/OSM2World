@@ -1,20 +1,17 @@
 package org.osm2world.viewer.view.debug;
 
 import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
+import org.osm2world.core.world.data.WorldObject;
 
 public class WorldObjectView extends DebugView {
 	
@@ -22,32 +19,6 @@ public class WorldObjectView extends DebugView {
 	public String getDescription() {
 		return "shows the world objects";
 	};
-	
-	JOGLPrimitiveBufferRenderer renderer = null;
-	
-	/**
-	 * old renderers that are no longer needed but may still have OpenGL
-	 * resources associated with them. They cannot be deleted in
-	 * {@link #setPrimitiveBuffers(PrimitiveBuffer, PrimitiveBuffer)}
-	 * because that thread doesn't have the GL context associated with it.
-	 * Instead, they will be stored here until the next call to
-	 * {@link #renderToImpl(GL, Camera, Projection)}.
-	 */
-	Collection<JOGLPrimitiveBufferRenderer> rendererTrashBin =
-			new ArrayList<JOGLPrimitiveBufferRenderer>();
-	
-	@Override
-	public void setPrimitiveBuffers(PrimitiveBuffer gridPrimitiveBuffer,
-			PrimitiveBuffer terrainPrimitiveBuffer) {
-		
-		super.setPrimitiveBuffers(gridPrimitiveBuffer, terrainPrimitiveBuffer);
-		
-		if (renderer != null) {
-			rendererTrashBin.add(renderer);
-			renderer = null;
-		}
-		
-	}
 
 	@Override
 	public boolean canBeUsed() {
@@ -55,26 +26,19 @@ public class WorldObjectView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-
-		// clean up old renderers
+	protected void fillTarget(final JOGLTarget target) {
 		
-		if (!rendererTrashBin.isEmpty()) {
-			
-			for (JOGLPrimitiveBufferRenderer oldRenderer : rendererTrashBin) {
-				oldRenderer.freeResources();
+		iterate(map.getWorldObjects(), new Operation<WorldObject>() {
+			@Override public void perform(WorldObject w) {
+				TargetUtil.renderObject(target, w);
 			}
+		});
 		
-			rendererTrashBin.clear();
-			
-		}
-		
-		// create new renderer
-		
-		if (renderer == null) {
-			renderer = new JOGLPrimitiveBufferRendererDisplayList(gl, mapDataPrimitiveBuffer);
-		}
-		
+	}
+	
+	@Override
+	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+				
 		// define light source
 		
 		JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
@@ -82,7 +46,7 @@ public class WorldObjectView extends DebugView {
 		// render
 		
 		if (camera != null && projection != null) {
-			renderer.render(camera, projection);
+			target.render(camera, projection);
 		}
 		
 		// switch lighting off

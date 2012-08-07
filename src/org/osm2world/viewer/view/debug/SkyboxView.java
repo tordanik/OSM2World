@@ -27,6 +27,10 @@ public class SkyboxView extends DebugView {
 	
 	private JOGLTarget target = null;
 	
+	//TODO: split DebugView into camera dependent and camera independent subclass
+	// the former (e.g. for skybox) should call fillTarget with every camera change,
+	// and include Camera/Projection parameters
+	
 	@Override
 	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 		

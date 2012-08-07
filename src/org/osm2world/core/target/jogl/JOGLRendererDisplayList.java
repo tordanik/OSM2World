@@ -1,8 +1,9 @@
-package org.osm2world.core.target.primitivebuffer;
+package org.osm2world.core.target.jogl;
 
 import static java.lang.Math.*;
 import static javax.media.opengl.GL2.GL_COMPILE;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
+import static org.osm2world.core.target.jogl.JOGLTarget.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +19,6 @@ import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
  * renders the contents of a {@link PrimitiveBuffer} using JOGL.
@@ -28,11 +28,8 @@ import org.osm2world.core.target.jogl.JOGLTarget;
  * {@link #freeResources()} to delete the display lists. Otherwise, this will
  * not be done before a destructor call.
  */
-public class JOGLPrimitiveBufferRendererDisplayList extends
-	JOGLPrimitiveBufferRenderer {
+class JOGLRendererDisplayList extends JOGLRenderer {
 	
-	private PrimitiveBuffer primitiveBuffer; //keeping this referenced is only necessary because of indexed vertices
-		
 	/** pointer to the display list with static, non-transparent geometry */
 	private Integer displayListPointer;
 	
@@ -58,13 +55,9 @@ public class JOGLPrimitiveBufferRendererDisplayList extends
 		
 	}
 	
-	public JOGLPrimitiveBufferRendererDisplayList(GL2 gl, PrimitiveBuffer primitiveBuffer) {
+	public JOGLRendererDisplayList(GL2 gl, PrimitiveBuffer primitiveBuffer) {
 		
 		super(gl);
-		
-		this.primitiveBuffer = primitiveBuffer;
-		
-		primitiveBuffer.optimize();
 		
 		displayListPointer = gl.glGenLists(1);
 		
@@ -84,7 +77,9 @@ public class JOGLPrimitiveBufferRendererDisplayList extends
 				JOGLTarget.setMaterial(gl, material, textureManager);
 	
 				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
-					renderPrimitive(gl, primitiveBuffer, primitive);
+					drawPrimitive(gl, getGLConstant(primitive.type),
+							primitive.vertices, primitive.normals,
+							primitive.texCoordLists);
 				}
 				
 			}
@@ -95,21 +90,6 @@ public class JOGLPrimitiveBufferRendererDisplayList extends
 		
 	}
 
-	private void renderPrimitive(GL2 gl, PrimitiveBuffer primitiveBuffer,
-			Primitive primitive) {
-
-		List<VectorXYZ> vertices =
-			new ArrayList<VectorXYZ>(primitive.indices.length);
-		
-		for (int index : primitive.indices) {
-			vertices.add(primitiveBuffer.getVertex(index));
-		}
-		
-		JOGLTarget.drawPrimitive(gl, JOGLTarget.getGLConstant(primitive.type),
-				vertices, primitive.normals, primitive.texCoordLists);
-		
-	}
-	
 	@Override
 	public void render(final Camera camera, final Projection projection) {
 		
@@ -133,7 +113,9 @@ public class JOGLPrimitiveBufferRendererDisplayList extends
 				previousMaterial = p.material;
 			}
 			
-			renderPrimitive(gl, primitiveBuffer, p.primitive);
+			drawPrimitive(gl, getGLConstant(p.primitive.type),
+					p.primitive.vertices, p.primitive.normals,
+					p.primitive.texCoordLists);
 			
 		}
 		
@@ -225,21 +207,20 @@ public class JOGLPrimitiveBufferRendererDisplayList extends
 	private double distanceToCameraSq(Camera camera, PrimitiveWithMaterial p) {
 		return primitivePos(p).distanceToSquared(camera.getPos());
 	}
-
+	
 	private VectorXYZ primitivePos(PrimitiveWithMaterial p) {
 		
 		double sumX = 0, sumY = 0, sumZ = 0;
 		
-		for (int index : p.primitive.indices) {
-			VectorXYZ v = primitiveBuffer.getVertex(index);
+		for (VectorXYZ v : p.primitive.vertices) {
 			sumX += v.x;
 			sumY += v.y;
 			sumZ += v.z;
 		}
 		
-		return new VectorXYZ(sumX / p.primitive.indices.length,
-				sumY / p.primitive.indices.length,
-				sumZ / p.primitive.indices.length);
+		return new VectorXYZ(sumX / p.primitive.vertices.size(),
+				sumY / p.primitive.vertices.size(),
+				sumZ / p.primitive.vertices.size());
 		
 	}
 	

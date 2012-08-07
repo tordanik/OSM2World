@@ -12,7 +12,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 import org.osm2world.core.terrain.data.Terrain;
 
 /**
@@ -23,20 +22,19 @@ public abstract class DebugView {
 	protected MapData map;
 	protected Terrain terrain;
 	protected CellularTerrainElevation eleData;
-	
-	protected PrimitiveBuffer mapDataPrimitiveBuffer;
-	protected PrimitiveBuffer terrainPrimitiveBuffer;
+
+	protected JOGLTarget target = null;
 	
 	public void setConversionResults(Results conversionResults) {
+	
 		this.map = conversionResults.getMapData();
 		this.terrain = conversionResults.getTerrain();
 		this.eleData = conversionResults.getEleData();
-	}
-	
-	public void setPrimitiveBuffers(PrimitiveBuffer mapDataPrimitiveBuffer,
-			PrimitiveBuffer terrainPrimitiveBuffer) {
-		this.mapDataPrimitiveBuffer = mapDataPrimitiveBuffer;
-		this.terrainPrimitiveBuffer = terrainPrimitiveBuffer;
+		
+		if (target != null) {
+			target.reset();
+		}
+		
 	}
 	
 	/**
@@ -47,9 +45,7 @@ public abstract class DebugView {
 	public boolean canBeUsed() {
 		return map != null
 			&& terrain != null
-			&& eleData != null
-			&& mapDataPrimitiveBuffer != null
-			&& terrainPrimitiveBuffer != null;
+			&& eleData != null;
 	}
 	
 	/**
@@ -61,7 +57,22 @@ public abstract class DebugView {
 	
 	public void renderTo(GL2 gl, Camera camera, Projection projection) {
 		if (canBeUsed()) {
+			
+			if (target == null) {
+				target = new JOGLTarget(gl, camera);
+			}
+			
+			if (!target.isFinished()) {
+				
+				fillTarget(target);
+				
+				target.finish();
+				
+			}
+			
 			renderToImpl(gl, camera, projection);
+			//TODO remove this responsibility from subclasses
+			
 		}
 	}
 	
@@ -71,6 +82,11 @@ public abstract class DebugView {
 	 * @param projection TODO
 	 */
 	protected abstract void renderToImpl(GL2 gl, Camera camera, Projection projection);
+	
+	/**
+	 * lets the subclass add all content for rendering to the JOGLTarget
+	 */
+	protected void fillTarget(JOGLTarget target) {}; //TODO make abstract
 	
 	protected static final void drawBoxAround(JOGLTarget target,
 			VectorXZ center, Color color, float halfWidth) {

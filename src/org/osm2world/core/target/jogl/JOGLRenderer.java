@@ -1,20 +1,19 @@
-package org.osm2world.core.target.primitivebuffer;
+package org.osm2world.core.target.jogl;
 
 import javax.media.opengl.GL2;
 
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.jogl.JOGLTextureManager;
 
 /**
  * renders the contents of a {@link PrimitiveBuffer} using JOGL.
  */
-public abstract class JOGLPrimitiveBufferRenderer {
+abstract class JOGLRenderer {
 	
 	protected GL2 gl;
 	protected JOGLTextureManager textureManager;
 	
-	protected JOGLPrimitiveBufferRenderer(GL2 gl) {
+	protected JOGLRenderer(GL2 gl) {
 		
 		this.gl = gl;
 		

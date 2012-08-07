@@ -31,9 +31,6 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 import com.jogamp.opengl.util.awt.Screenshot;
 
@@ -62,9 +59,9 @@ public class ImageExporter {
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
-	/** renderer with pre-calculated display lists; can be null */
-	private JOGLPrimitiveBufferRenderer bufferRenderer;
-		
+	/** renderer with pre-calculated rendering ressources; can be null */
+	private JOGLTarget bufferTarget;
+	
 	/**
 	 * Creates an {@link ImageExporter} for later use.
 	 * Also performs calculations that only need to be done once for a group
@@ -169,16 +166,16 @@ public class ImageExporter {
 		if (config.getBoolean("forceUnbufferedPNGRendering", false)
 				|| onlyOneRenderPass ) {
 			
-			bufferRenderer = null;
+			bufferTarget = null;
 			
 		} else {
 			
-			PrimitiveBuffer buffer = new PrimitiveBuffer();
+			bufferTarget = new JOGLTarget(gl, null);
 			
-			TargetUtil.renderWorldObjects(buffer, results.getMapData());
-			TargetUtil.renderObject(buffer, results.getTerrain());
+			TargetUtil.renderWorldObjects(bufferTarget, results.getMapData());
+			TargetUtil.renderObject(bufferTarget, results.getTerrain());
 			
-			bufferRenderer = new JOGLPrimitiveBufferRendererDisplayList(gl, buffer);
+			bufferTarget.finish();
 			
 		}
 		
@@ -201,9 +198,9 @@ public class ImageExporter {
 			backgroundTextureManager = null;
 		}
 		
-		if (bufferRenderer != null) {
-			bufferRenderer.freeResources();
-			bufferRenderer = null;
+		if (bufferTarget != null) {
+			bufferTarget.freeResources();
+			bufferTarget = null;
 		}
 		
 		if (pBuffer != null) {
@@ -276,9 +273,9 @@ public class ImageExporter {
 	        
 	        /* render to pBuffer */
 	        
-	        if (bufferRenderer != null) {
+	        if (bufferTarget != null) {
 	        	
-	        	bufferRenderer.render(camera, projection);
+	        	bufferTarget.render(camera, projection);
 
 	        } else {
 	        	
@@ -286,6 +283,10 @@ public class ImageExporter {
 		        
 				TargetUtil.renderWorldObjects(jogl, results.getMapData());
 				TargetUtil.renderObject(jogl, results.getTerrain());
+				
+				jogl.finish();
+				jogl.render(camera, projection);
+				jogl.freeResources();
 				
 			}
 	        

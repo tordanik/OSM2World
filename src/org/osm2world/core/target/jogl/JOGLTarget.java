@@ -41,24 +41,41 @@ import com.jogamp.opengl.util.texture.Texture;
 public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	private final GL2 gl;
-	private final Camera camera;
 
 	private final JOGLTextureManager textureManager;
 	
-	public JOGLTarget(GL2 gl, Camera camera) {
-		this.gl = gl;
-		this.camera = camera;
-		this.textureManager = new JOGLTextureManager(gl);
-	}
+	private PrimitiveBuffer primitiveBuffer;
+	private JOGLRenderer renderer;
 	
+	public JOGLTarget(GL2 gl, Camera camera) {
+		//TODO: remove unnecessary camera parameter
+		this.gl = gl;
+		this.textureManager = new JOGLTextureManager(gl);
+		reset();
+	}
+
 	@Override
 	public Class<RenderableToJOGL> getRenderableType() {
 		return RenderableToJOGL.class;
 	}
 	
+	/**
+	 * discards all accumulated draw calls
+	 */
+	public void reset() {
+		
+		this.primitiveBuffer = new PrimitiveBuffer();
+		
+		if (renderer != null) {
+			renderer.freeResources();
+			renderer = null;
+		}
+		
+	}
+	
 	@Override
 	public void render(RenderableToJOGL renderable) {
-		renderable.renderTo(gl, camera);
+		renderable.renderTo(this);
 	}
 
 	@Override
@@ -66,9 +83,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 		
-		setMaterial(gl, material, textureManager);
-		
-		drawPrimitive(gl, getGLConstant(type), vertices, normals, texCoordLists);
+		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
 		
 	}
 
@@ -214,7 +229,35 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	
 	@Override
 	public void finish() {
+		
+		if (isFinished()) return;
+		
+		renderer = new JOGLRendererVBO(gl, primitiveBuffer);
+		
+		//TODO: allow other renderers
+		
+	}
+	
+	public boolean isFinished() {
+		return renderer != null;
+	}
+	
+	public void render(Camera camera, Projection projection) {
+		
+		if (renderer == null) {
+			throw new IllegalStateException("finish must be called first");
+		}
+		
+		renderer.render(camera, projection);
+		
+	}
+	
+	public void freeResources() {
+		
 		textureManager.releaseAll();
+		
+		reset();
+		
 	}
 
 	public static final int MAX_TEXTURE_LAYERS = 4;

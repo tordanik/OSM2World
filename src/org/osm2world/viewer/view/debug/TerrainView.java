@@ -8,9 +8,6 @@ import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 public class TerrainView extends DebugView {
 	
@@ -19,34 +16,25 @@ public class TerrainView extends DebugView {
 		return "shows the terrain";
 	};
 	
-	JOGLPrimitiveBufferRenderer renderer = null;
-		
 	@Override
-	public void setPrimitiveBuffers(PrimitiveBuffer gridPrimitiveBuffer,
-			PrimitiveBuffer terrainPrimitiveBuffer) {
-		
-		super.setPrimitiveBuffers(gridPrimitiveBuffer, terrainPrimitiveBuffer);
-		
-		if (renderer != null) {
-			renderer.freeResources();
-			renderer = null;
-		}
-		
+	public boolean canBeUsed() {
+		return terrain != null;
 	}
-		
+
+	@Override
+	protected void fillTarget(JOGLTarget target) {
+		terrain.renderTo(target);
+	}
+	
 	@Override
 	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
 		
-		if (renderer == null) {
-			renderer = new JOGLPrimitiveBufferRendererDisplayList(gl, terrainPrimitiveBuffer);
-		}
-
 		JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
 				
 		// render
 		
 		if (camera != null && projection != null) {
-			renderer.render(camera, projection);
+			target.render(camera, projection);
 		}
 
 		// switch lighting off
