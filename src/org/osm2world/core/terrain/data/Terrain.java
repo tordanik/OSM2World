@@ -74,8 +74,7 @@ public class Terrain implements RenderableToAllTargets , RenderableToPOVRay {
 		target.drawTrianglesWithNormals(
 				Materials.TERRAIN_DEFAULT,
 				NormalCalculationUtil.calculateTrianglesWithNormals(triangles),
-				globalTexCoordLists(triangles, Materials.TERRAIN_DEFAULT, false),
-				true);
+				globalTexCoordLists(triangles, Materials.TERRAIN_DEFAULT, false));
 		
 	}
 
