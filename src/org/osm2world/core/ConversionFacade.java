@@ -12,9 +12,9 @@ import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.heightmap.creation.EmptyTerrainElevationGrid;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
-import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
+import org.osm2world.core.map_data.creation.OrthographicAzimuthalMapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
@@ -273,7 +273,7 @@ public class ConversionFacade {
 		/* create map data from OSM data */
 		updatePhase(Phase.MAP_DATA);
 		
-		MapProjection mapProjection = new HackMapProjection(osmData);
+		MapProjection mapProjection = new OrthographicAzimuthalMapProjection(osmData);
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData mapData = converter.createMapData(osmData);
 		

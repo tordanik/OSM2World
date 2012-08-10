@@ -24,7 +24,8 @@ public class OSMToMapDataConverterTest {
 				+File.separator+filename);
 		
 		OSMData osmData = new OsmosisReader(testFile).getData();
-		MapProjection mapProjection = new HackMapProjection(osmData);
+		MapProjection mapProjection =
+				new OrthographicAzimuthalMapProjection(osmData);
 		
 		return new OSMToMapDataConverter(mapProjection).createMapData(osmData);
 				
