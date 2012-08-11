@@ -1,5 +1,7 @@
 package org.osm2world.core.target.common.rendering;
 
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -43,7 +45,7 @@ public class Camera {
 	public void setCamera(double posX, double posY, double posZ,
 			double lookAtX, double lookAtY, double lookAtZ) {
 		setPos(posX, posY, posZ);
-		up = new VectorXYZ(0, 1, 0); // some initial setup value
+		up = Y_UNIT; // some initial setup value
 		setLookAt(lookAtX, lookAtY, lookAtZ);
 	}
 
@@ -140,10 +142,24 @@ public class Camera {
 		pos = pos.add(moveX, moveY, moveZ);
 		lookAt = lookAt.add(moveX, moveY, moveZ);
 	}
-	
+
 	/**
 	 * moves lookAt to represent a rotation counterclockwise
 	 * around the y axis on pos
+	 * 
+	 * @param d  angle in radians
+	 */
+	public void rotateY(double d) {
+		
+		up = up.rotateY(d);
+		VectorXYZ toOldLookAt = lookAt.subtract(pos);
+		VectorXYZ toNewLookAt = toOldLookAt.rotateY(d);
+		
+		lookAt = pos.add(toNewLookAt);
+	}
+	
+	/**
+	 * rotates the camera around the yaw axis
 	 * 
 	 * @param d  angle in radians
 	 */
@@ -156,22 +172,8 @@ public class Camera {
 	}
 
 	/**
-	 * moves lookAt to represent a rotation counterclockwise
-	 * around the y axis on pos
+	 * rolls the camera
 	 * 
-	 * @param d  angle in radians
-	 */
-	public void mapYaw(double d) {
-		
-		up = up.rotateY(d);
-		VectorXYZ toOldLookAt = lookAt.subtract(pos);
-		VectorXYZ toNewLookAt = toOldLookAt.rotateY(d);
-		
-		lookAt = pos.add(toNewLookAt);
-	}
-
-	/**
-	 * roll the camera
 	 * @param d  angle in radians
 	 */
 	public void roll(double d) {
@@ -180,8 +182,7 @@ public class Camera {
 	}
 	
 	/**
-	 * moves lookAt to represent a rotation counterclockwise
-	 * around the x-axis
+	 * rotates the camera around the pitch axis
 	 * 
 	 * @param d  angle in radians
 	 */
@@ -196,15 +197,17 @@ public class Camera {
 	}
 
 	/**
-	 * moves lookAt to represent a rotation counterclockwise
-	 * around the x-axis
+	 * rotates the camera around an axis orthogonal to the y axis
+	 * and {@link #getViewDirection()}.
+	 * The effect is similar to {@link #pitch(double)}, but independent
+	 * from the current roll angle.
 	 * 
 	 * @param d  angle in radians
 	 */
 	public void mapPitch(double d) {
-
-		VectorXYZ right = getViewDirection().crossNormalized(new VectorXYZ(0, 1, 0));
-			
+		
+		VectorXYZ right = getViewDirection().crossNormalized(Y_UNIT);
+		
 		up = up.rotateVec(d, right);
 		
 		VectorXYZ toOldLookAt = lookAt.subtract(pos);

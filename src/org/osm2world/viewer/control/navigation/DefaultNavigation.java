@@ -87,10 +87,10 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 			} else if (rotationDrag) {
 					
 				/* view left/right */
-				camera.mapYaw(movementX/100);
+				camera.rotateY(movementX/100);
 				
 				/* view up/down */
-				camera.mapPitch(movementY/100);
+				camera.mapPitch(movementY/-100);
 			
 			} else if (movementDrag) {
 				
