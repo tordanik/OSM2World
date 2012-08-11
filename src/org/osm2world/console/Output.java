@@ -22,6 +22,7 @@ import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
@@ -104,8 +105,9 @@ public final class Output {
 				LatLonEle lookAt = args.getPviewLookat();
 				
 				camera = new Camera();
-				camera.setPos(proj.calcPos(pos.lat, pos.lon).xyz(pos.ele));
-				camera.setLookAt(proj.calcPos(lookAt.lat, lookAt.lon).xyz(lookAt.ele));
+				VectorXYZ posV = proj.calcPos(pos.lat, pos.lon).xyz(pos.ele);
+				VectorXYZ laV =	proj.calcPos(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
+				camera.setCamera(posV.x, posV.y, posV.z, laV.x, laV.y, laV.z);
 				
 				projection = new Projection(false,
 						args.isPviewAspect() ? args.getPviewAspect() :

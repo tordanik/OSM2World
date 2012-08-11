@@ -222,13 +222,11 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	public static final void setCameraMatrices(GL2 gl, Camera camera) {
 		VectorXYZ pos = camera.getPos();
 		VectorXYZ lookAt = camera.getLookAt();
-//		VectorXYZ dir = lookAt.subtract(pos);
-//		VectorXYZ right = dir.cross(VectorXYZ.Y_UNIT).normalize();
-//		VectorXYZ up = right.cross(dir);
+		VectorXYZ up = camera.getUp();
 		new GLU().gluLookAt(
 				pos.x, pos.y, -pos.z,
 				lookAt.x, lookAt.y, -lookAt.z,
-				0, 1f, 0f);
+				up.x, up.y, -up.z);
 	}
 	
 	public static final void setProjectionMatrices(GL2 gl, Projection projection) {

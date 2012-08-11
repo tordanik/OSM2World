@@ -74,7 +74,6 @@ public final class OrthoTilesUtil {
 				bounds.minX + bounds.sizeX() / 2,
 				0,
 				bounds.minZ + bounds.sizeZ() / 2);
-		result.setLookAt(lookAt);
 		
 		// calculate camera position (start with position for view from south,
 		// then modify it depending on parameters)
@@ -95,10 +94,10 @@ public final class OrthoTilesUtil {
 			cameraOffsetZ = -cameraOffsetZ;
 		}
 		
-		result.setPos(new VectorXYZ(
-				lookAt.x + cameraOffsetX,
-				cameraDistance * Math.sin(Math.toRadians(angleDeg)),
-				lookAt.z + cameraOffsetZ));
+		result.setCamera(lookAt.x + cameraOffsetX,
+						 cameraDistance * Math.sin(Math.toRadians(angleDeg)),
+						 lookAt.z + cameraOffsetZ,
+						 lookAt.x, lookAt.y, lookAt.z);
 		
 		return result;
 	}

@@ -5,8 +5,7 @@ import org.osm2world.core.math.VectorXZ;
 
 public class Camera {
 	
-	private static final VectorXYZ UP = new VectorXYZ(0, 1, 0);
-		
+	VectorXYZ up;
 	VectorXYZ pos;
 	VectorXYZ lookAt;
 		
@@ -22,7 +21,7 @@ public class Camera {
 	 * The result has length 1 and is parallel to the XZ plane.
 	 */
 	public VectorXYZ getRight() {
-		return getViewDirection().crossNormalized(UP);
+		return getViewDirection().crossNormalized(up);
 	}
 	
 	public VectorXYZ getPos() {
@@ -33,19 +32,41 @@ public class Camera {
 		return lookAt;
 	}
 	
+	public VectorXYZ getUp() {
+		return up;
+	}
+	
 	public void setPos(VectorXYZ pos) {
 		this.pos = pos;
 	}
 	
-	public void setPos(double x, double y, double z) {
-		this.setPos(new VectorXYZ(x, y, z));
-	}
-	
-	public void setLookAt(VectorXYZ lookAt) {
-		this.lookAt = lookAt;
+	public void setCamera(double posX, double posY, double posZ,
+			double lookAtX, double lookAtY, double lookAtZ) {
+		setPos(posX, posY, posZ);
+		up = new VectorXYZ(0, 1, 0); // some initial setup value
+		setLookAt(lookAtX, lookAtY, lookAtZ);
 	}
 
-	public void setLookAt(double x, double y, double z) {
+	public void setCamera(double posX, double posY, double posZ,
+			double lookAtX, double lookAtY, double lookAtZ,
+			double upX, double upY, double upZ) {
+		setPos(posX, posY, posZ);
+		up = new VectorXYZ(upX, upY, upZ);
+		setLookAt(lookAtX, lookAtY, lookAtZ);
+	}
+
+	private void setPos(double x, double y, double z) {
+		this.setPos(new VectorXYZ(x, y, z));
+	}
+
+	private void setLookAt(VectorXYZ lookAt) {
+		this.lookAt = lookAt;
+
+		VectorXYZ right = getRight();
+		up = right.crossNormalized(getViewDirection());
+	}
+
+	private void setLookAt(double x, double y, double z) {
 		this.setLookAt(new VectorXYZ(x, y, z));
 	}
 
@@ -54,11 +75,18 @@ public class Camera {
 	 * @param step  units to move forward
 	 */
 	public void moveForward(double step) {
-		
 		VectorXYZ d = getViewDirection();
-		VectorXZ flatD = new VectorXZ(d.x, d.z).normalize();
-		
-		move(flatD.x * step, 0, flatD.z * step);
+		move(d.x * step, d.y * step, d.z * step);
+	}
+
+	/**
+	 * moves pos and lookAt forward in the map plane
+	 * @param step  units to move forward
+	 */
+	public void moveMapForward(double step) {
+		VectorXYZ d = getViewDirection();
+		VectorXZ md = new VectorXZ(d.x, d.z).normalize();
+		move(md.x * step, 0, md.z * step);
 	}
 
 	/**
@@ -67,11 +95,39 @@ public class Camera {
 	 * @param step  units to move right, negative units move to the left
 	 */
 	public void moveRight(double step) {
-		
 		VectorXYZ right = getRight();
-		
-		move(right.x * step, 0, right.z * step);
+		move(right.x * step, right.y * step, right.z * step);
 	}
+
+	/**
+	 * moves pos and lookAt to the right in the map plane
+	 * 
+	 * @param step  units to move right, negative units move to the left
+	 */
+	public void moveMapRight(double step) {
+		VectorXYZ right = getRight();
+		VectorXZ md = new VectorXZ(right.x, right.z).normalize();
+		move(md.x * step, 0, md.z * step);
+	}
+
+	/**
+	 * move pos and lookAt upwards, orthogonally to the view direction
+	 * 
+	 * @param step units to move up, negative units move down
+	 */
+	public void moveUp(double step) {
+		move(up.x * step, up.y * step, up.z * step);
+	}
+
+	/**
+	 * move pos and lookAt upwards in respect to the map plane
+	 * 
+	 * @param step units to move up, negative units move down
+	 */
+	public void moveMapUp(double step) {
+		move(0, step, 0);
+	}
+
 	
 	/** moves both pos and lookAt by the given vector */
 	public void move(VectorXYZ move) {
@@ -81,7 +137,8 @@ public class Camera {
 
 	/** moves both pos and lookAt by the given vector */
 	public void move(double moveX, double moveY, double moveZ) {
-		move(new VectorXYZ(moveX, moveY, moveZ));
+		pos = pos.add(moveX, moveY, moveZ);
+		lookAt = lookAt.add(moveX, moveY, moveZ);
 	}
 	
 	/**
@@ -90,29 +147,73 @@ public class Camera {
 	 * 
 	 * @param d  angle in radians
 	 */
-	public void rotateY(double d) {
+	public void yaw(double d) {
 		
+		VectorXYZ toOldLookAt = lookAt.subtract(pos);
+		VectorXYZ toNewLookAt = toOldLookAt.rotateVec(d, up);
+		
+		lookAt = pos.add(toNewLookAt);
+	}
+
+	/**
+	 * moves lookAt to represent a rotation counterclockwise
+	 * around the y axis on pos
+	 * 
+	 * @param d  angle in radians
+	 */
+	public void mapYaw(double d) {
+		
+		up = up.rotateY(d);
 		VectorXYZ toOldLookAt = lookAt.subtract(pos);
 		VectorXYZ toNewLookAt = toOldLookAt.rotateY(d);
 		
 		lookAt = pos.add(toNewLookAt);
-		
 	}
 
+	/**
+	 * roll the camera
+	 * @param d  angle in radians
+	 */
+	public void roll(double d) {
+		VectorXYZ view = getViewDirection();
+		up = up.rotateVec(d, view);
+	}
 	
 	/**
 	 * moves lookAt to represent a rotation counterclockwise
-	 * around the direction returned by {@link #getRight()}
+	 * around the x-axis
 	 * 
 	 * @param d  angle in radians
 	 */
-	public void rotateAroundRight(double d) {
-		throw new UnsupportedOperationException("not yet implemented");
+	public void pitch(double d) {
+		VectorXYZ right = getRight();
+		
+		up = up.rotateVec(d, right);
+		
+		VectorXYZ toOldLookAt = lookAt.subtract(pos);
+		VectorXYZ toNewLookAt = toOldLookAt.rotateVec(d, right);
+		lookAt = pos.add(toNewLookAt);
 	}
-	
+
+	/**
+	 * moves lookAt to represent a rotation counterclockwise
+	 * around the x-axis
+	 * 
+	 * @param d  angle in radians
+	 */
+	public void mapPitch(double d) {
+
+		VectorXYZ right = getViewDirection().crossNormalized(new VectorXYZ(0, 1, 0));
+			
+		up = up.rotateVec(d, right);
+		
+		VectorXYZ toOldLookAt = lookAt.subtract(pos);
+		VectorXYZ toNewLookAt = toOldLookAt.rotateVec(d, right);
+		lookAt = pos.add(toNewLookAt);
+	}
+
 	@Override
 	public String toString() {
-		return "{pos=" + pos + ", lookAt=" + lookAt + "}";
+		return "{pos=" + pos + ", lookAt=" + lookAt + ", up=" + up + "}";
 	}
-		
 }

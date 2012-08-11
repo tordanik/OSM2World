@@ -1,8 +1,9 @@
 package org.osm2world.viewer.control.navigation;
 
-
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -10,13 +11,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
+import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
@@ -24,21 +23,26 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class DefaultNavigation extends MouseAdapter implements KeyListener, MouseInputListener {
 
+	private final static double ANGLE_INCREMENT = Math.PI/200;
+	private final static double MOVEMENT_INCREMENT = 2.0;
+	
 	private final RenderOptions renderOptions;
 	private final ViewerFrame viewerFrame;
+
+	private final Timer timer;
 	
 	public DefaultNavigation(ViewerFrame viewerFrame, RenderOptions renderOptions) {
 		
 		this.viewerFrame = viewerFrame;
 		this.renderOptions = renderOptions;
 		
-		Timer timer = new Timer("KeyboardNavigation");
-		timer.scheduleAtFixedRate(KEYBOARD_TASK, 0, 20);
-		
+		timer = new Timer(20, KEYBOARD_TASK);
 	}
 	
 	private boolean translationDrag = false;
 	private boolean rotationDrag = false;
+	private boolean movementDrag = false;
+	
 	private Point previousMousePoint;
 
 	private final Set<Integer> pressedKeys = new HashSet<Integer>();
@@ -47,6 +51,7 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 	public void keyPressed(KeyEvent e) {
 		synchronized (pressedKeys) {
 			pressedKeys.add(e.getKeyCode());
+			timer.start();
 		}
 	}
 
@@ -54,6 +59,8 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 	public void keyReleased(KeyEvent e) {
 		synchronized (pressedKeys) {
 			pressedKeys.remove(e.getKeyCode());
+			if (pressedKeys.isEmpty())
+				timer.stop();
 		}
 	}
 	
@@ -74,30 +81,25 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 	
 			if (translationDrag) {
 				
-				camera.moveForward(movementY);
-				camera.moveRight(movementX);
+				camera.moveMapForward(movementY);
+				camera.moveMapRight(movementX);
 				
 			} else if (rotationDrag) {
 					
-				/* left/right */
+				/* view left/right */
+				camera.mapYaw(movementX/100);
 				
-				camera.rotateY(movementX/100);
+				/* view up/down */
+				camera.mapPitch(movementY/100);
+			
+			} else if (movementDrag) {
 				
-				/* up/down */
-								
-				VectorXYZ toLookAt = camera.getLookAt().subtract(camera.getPos());
+				/* roll left/right */
+				camera.roll(movementX/100);
 				
-				if (toLookAt.length() > 0.1f) {
-				
-					VectorXZ moveLookAt = toLookAt.xz().mult(-movementY * 0.02f);
-					VectorXYZ newLookAt = camera.getLookAt().add(moveLookAt);
-					
-					camera.setLookAt(newLookAt);
-					
-				}
-						
+				/* move up/down */
+				camera.moveMapUp(movementY);
 			}
-		
 		}
 			
 		previousMousePoint = currentMousePoint;
@@ -109,6 +111,9 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 		if (e.getButton() == MouseEvent.BUTTON1) {
 			viewerFrame.setCursor(new Cursor(Cursor.MOVE_CURSOR));
 			translationDrag = true;
+		} else if (e.getButton() == MouseEvent.BUTTON2) {
+			viewerFrame.setCursor(new Cursor(Cursor.MOVE_CURSOR));
+			movementDrag = true;
 		} else {
 			viewerFrame.setCursor(new Cursor(Cursor.MOVE_CURSOR));
 			rotationDrag = true;
@@ -121,13 +126,13 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 		viewerFrame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		translationDrag = false;
 		rotationDrag = false;
+		movementDrag = false;
 	}
 	
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 
 		zoom(e.getWheelRotation() < 0, 1);
-
 	}
 
 	private void zoom(boolean zoomIn, double scale) {
@@ -140,14 +145,13 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 			VectorXYZ newPos = c.getPos().add(move);
 
 			c.setPos(newPos);
-
 		}
 	}
 	
-	private final TimerTask KEYBOARD_TASK = new TimerTask() {
-	
+	private final ActionListener KEYBOARD_TASK = new ActionListener() {
+		
 		@Override
-		public void run() {
+		public void actionPerformed(ActionEvent e) {
 
 			Camera c = renderOptions.camera;
 
@@ -158,29 +162,41 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 					for (int key : pressedKeys) {
 
 						switch (key) {
+						case KeyEvent.VK_Q:
+							c.roll(ANGLE_INCREMENT);
+							break;
+						case KeyEvent.VK_E:
+							c.roll(-ANGLE_INCREMENT);
+							break;
 						case KeyEvent.VK_W:
-							c.moveForward(1);
+							c.moveForward(MOVEMENT_INCREMENT);
 							break;
 						case KeyEvent.VK_S:
-							c.moveForward(-1);
+							c.moveForward(-MOVEMENT_INCREMENT);
 							break;
 						case KeyEvent.VK_A:
-							c.moveRight(1);
+							c.moveRight(MOVEMENT_INCREMENT);
 							break;
 						case KeyEvent.VK_D:
-							c.moveRight(-1);
+							c.moveRight(-MOVEMENT_INCREMENT);
+							break;
+						case KeyEvent.VK_PAGE_UP:
+							c.moveUp(MOVEMENT_INCREMENT);
+							break;
+						case KeyEvent.VK_PAGE_DOWN:
+							c.moveUp(-MOVEMENT_INCREMENT);
 							break;
 						case KeyEvent.VK_UP:
-							c.move(0,0.5,0);
+							c.pitch(ANGLE_INCREMENT);
 							break;
 						case KeyEvent.VK_DOWN:
-							c.move(0,-0.5,0);
+							c.pitch(-ANGLE_INCREMENT);
 							break;
 						case KeyEvent.VK_RIGHT:
-							c.rotateY(Math.PI/100);
+							c.yaw(ANGLE_INCREMENT);
 							break;
 						case KeyEvent.VK_LEFT:
-							c.rotateY(-Math.PI/100);
+							c.yaw(-ANGLE_INCREMENT);
 							break;
 						case KeyEvent.VK_PLUS:
 							zoom(true, 0.5);
@@ -189,14 +205,9 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 							zoom(false, 0.5);
 							break;
 						}
-
 					}
-
 				}
 			}
-
 		}
-
 	};
-
 }

@@ -159,7 +159,7 @@ public final class POVRayWriter {
 			target.appendVector(camera.getRight().mult(width).invert()); //invert compensates for left-handed vs. right handed coordinates
 			
 			target.append("\n  up ");
-			VectorXYZ up = camera.getRight().crossNormalized(camera.getViewDirection());
+			VectorXYZ up = camera.getUp();
 			target.appendVector(up.mult(projection.getVolumeHeight()));
 						
 			target.append("\n  look_at ");
@@ -169,6 +169,9 @@ public final class POVRayWriter {
 			
 			target.append("\n  look_at  ");
 			target.appendVector(camera.getLookAt());
+			
+			target.append("\n  sky ");
+			target.appendVector(camera.getUp());
 			
 		}
 		
