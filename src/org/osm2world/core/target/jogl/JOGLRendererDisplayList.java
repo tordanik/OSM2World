@@ -55,9 +55,10 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 		
 	}
 	
-	public JOGLRendererDisplayList(GL2 gl, PrimitiveBuffer primitiveBuffer) {
+	public JOGLRendererDisplayList(GL2 gl, JOGLTextureManager textureManager,
+			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl);
+		super(gl, textureManager);
 		
 		displayListPointer = gl.glGenLists(1);
 		

@@ -227,12 +227,15 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		textRenderer.endRendering();
 	}
 	
+	/**
+	 * prepares a scene, based on the accumulated draw calls, for rendering.
+	 */
 	@Override
 	public void finish() {
 		
 		if (isFinished()) return;
 		
-		renderer = new JOGLRendererVBO(gl, primitiveBuffer);
+		renderer = new JOGLRendererVBO(gl, textureManager, primitiveBuffer);
 		
 		//TODO: allow other renderers
 		

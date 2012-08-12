@@ -13,11 +13,10 @@ abstract class JOGLRenderer {
 	protected GL2 gl;
 	protected JOGLTextureManager textureManager;
 	
-	protected JOGLRenderer(GL2 gl) {
+	protected JOGLRenderer(GL2 gl, JOGLTextureManager textureManager) {
 		
 		this.gl = gl;
-		
-		this.textureManager = new JOGLTextureManager(gl);
+		this.textureManager = textureManager;
 		
 	}
 
@@ -29,8 +28,7 @@ abstract class JOGLRenderer {
 	 */
 	public void freeResources() {
 		
-		textureManager.releaseAll();
-		
+		textureManager = null;
 		gl = null;
 		
 	}

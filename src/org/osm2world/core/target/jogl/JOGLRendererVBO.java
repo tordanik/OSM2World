@@ -369,9 +369,10 @@ class JOGLRendererVBO extends JOGLRenderer {
 		
 	}
 	
-	public JOGLRendererVBO(GL2 gl, PrimitiveBuffer primitiveBuffer) {
+	public JOGLRendererVBO(GL2 gl, JOGLTextureManager textureManager,
+			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl);
+		super(gl, textureManager);
 		
 		for (Material material : primitiveBuffer.getMaterials()) {
 			
