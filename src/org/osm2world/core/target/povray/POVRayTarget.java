@@ -3,8 +3,10 @@ package org.osm2world.core.target.povray;
 import java.awt.Color;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
@@ -23,7 +25,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	private static final double SMALL_OFFSET = 1e-3;
 	
 	private final PrintStream output;
-			
+	
+	private Map<TextureData, String> textureNames = new HashMap<TextureData, String>();
+	
 	public POVRayTarget(PrintStream output) {
 		this.output = output;
 	}
@@ -113,12 +117,24 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	public void appendMaterialDefinitions() {
 		
 		for (Material material : Materials.getMaterials()) {
-			String name = "texture_" + Materials.getUniqueName(material);
-
+			
+			String uniqueName = Materials.getUniqueName(material);
+			String name = "texture_" + uniqueName;
+			
 			append("#ifndef (" + name + ")\n");
 			append("#declare " + name + " = ");
 			appendMaterial(material);
 			append("#end\n\n");
+			
+			if (material.getNumTextureLayers() == 1) {
+				
+				TextureData td = material.getTextureDataList().get(0);
+				
+				if (!td.colorable) {
+					textureNames.put(td, uniqueName);
+				}
+				
+			}
 			
 		}
 		
@@ -579,7 +595,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	public void appendMaterialOrName(Material material) {
 		
 		String materialName = Materials.getUniqueName(material);
-		
+
 		if (materialName != null) {
 			append(" texture { texture_" + materialName + " }");
 		} else {
@@ -613,25 +629,34 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	
 	private void appendMaterial(Material material, TextureData textureData) {
 
-		if (textureData.colorable) {
+		String textureName = textureNames.get(textureData);
+		
+		if (textureName == null) {
+
+			if (textureData.colorable) {
+				append("  texture {\n");
+				append("    pigment { ");
+				appendRGBColor(material.getColor());
+				append(" }\n    finish {\n");
+				append("      ambient " + material.getAmbientFactor() + "\n");
+				append("      diffuse " + material.getDiffuseFactor() + "\n");
+				append("    }\n");
+				append("  }\n");
+			}
+
 			append("  texture {\n");
 			append("    pigment { ");
-			appendRGBColor(material.getColor());
+			appendImageMap(textureData);
 			append(" }\n    finish {\n");
 			append("      ambient " + material.getAmbientFactor() + "\n");
 			append("      diffuse " + material.getDiffuseFactor() + "\n");
 			append("    }\n");
 			append("  }\n");
-		}
+	
+		} else {
 
-		append("  texture {\n");
-		append("    pigment { ");
-		appendImageMap(textureData);
-		append(" }\n    finish {\n");
-		append("      ambient " + material.getAmbientFactor() + "\n");
-		append("      diffuse " + material.getDiffuseFactor() + "\n");
-		append("    }\n");
-		append("  }\n");
+			append("  texture { texture_" + textureName + "}");
+		}
 	}
 
 
