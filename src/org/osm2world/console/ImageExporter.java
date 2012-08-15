@@ -59,8 +59,8 @@ public class ImageExporter {
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
-	/** renderer with pre-calculated rendering ressources; can be null */
-	private JOGLTarget bufferTarget;
+	/** target prepared in the constructor; null for unbuffered rendering */
+	private JOGLTarget bufferTarget = null;
 	
 	
 	/**
@@ -154,22 +154,11 @@ public class ImageExporter {
 				&& expectedMaxSizeX <= canvasLimit
 				&& expectedMaxSizeY <= canvasLimit);
 		
-		if (config.getBoolean("forceUnbufferedPNGRendering", false)
-				|| onlyOneRenderPass ) {
-			
-			bufferTarget = null;
-			
-		} else {
-			
-			bufferTarget = new JOGLTarget(gl,
-					new JOGLRenderingParameters(CCW, false, true),
-					GlobalLightingParameters.DEFAULT);
-			
-			TargetUtil.renderWorldObjects(bufferTarget, results.getMapData());
-			TargetUtil.renderObject(bufferTarget, results.getTerrain());
-			
-			bufferTarget.finish();
-			
+		boolean unbufferedRendering = onlyOneRenderPass
+				|| config.getBoolean("forceUnbufferedPNGRendering", false);
+		
+		if (!unbufferedRendering ) {
+			bufferTarget = createJOGLTarget(gl, results);
 		}
 		
 	}
@@ -258,25 +247,16 @@ public class ImageExporter {
 	        
 	        /* render to pBuffer */
 	        
-	        if (bufferTarget != null) {
-	        	
-	        	bufferTarget.render(camera, projection);
-
-	        } else {
-	        	
-		        JOGLTarget jogl = new JOGLTarget(gl,
-		        		new JOGLRenderingParameters(CCW, false, true),
-		        		GlobalLightingParameters.DEFAULT);
-		        
-				TargetUtil.renderWorldObjects(jogl, results.getMapData());
-				TargetUtil.renderObject(jogl, results.getTerrain());
-				
-				jogl.finish();
-				jogl.renderPart(camera, projection,
-		        		xStart / (double)(x-1), xEnd / (double)(x-1),
-		        		yStart / (double)(y-1), yEnd / (double)(y-1));
-				jogl.freeResources();
-				
+	       	JOGLTarget target = (bufferTarget == null)
+	       			? createJOGLTarget(gl, results)
+	       			: bufferTarget;
+	        
+	        target.renderPart(camera, projection,
+	        		xStart / (double)(x-1), xEnd / (double)(x-1),
+	        		yStart / (double)(y-1), yEnd / (double)(y-1));
+			
+	        if (target != bufferTarget) {
+		        target.freeResources();
 			}
 	        
 	        /* make screenshot and paste into the buffer
@@ -302,6 +282,21 @@ public class ImageExporter {
 					"output mode not supported " + outputMode);
 			
 		}
+		
+	}
+
+	private static JOGLTarget createJOGLTarget(GL2 gl, Results results) {
+		
+		JOGLTarget target = new JOGLTarget(gl,
+				new JOGLRenderingParameters(CCW, false, true),
+				GlobalLightingParameters.DEFAULT);
+		
+		TargetUtil.renderWorldObjects(target, results.getMapData());
+		TargetUtil.renderObject(target, results.getTerrain());
+		
+		target.finish();
+		
+		return target;
 		
 	}
 	
