@@ -62,7 +62,6 @@ import org.osm2world.viewer.view.debug.TerrainElevationGridDebugView;
 import org.osm2world.viewer.view.debug.TerrainNormalsDebugView;
 import org.osm2world.viewer.view.debug.TerrainOutlineDebugView;
 import org.osm2world.viewer.view.debug.TerrainView;
-import org.osm2world.viewer.view.debug.TriangulationDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
@@ -190,9 +189,6 @@ public class ViewerFrame extends JFrame {
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new WorldObjectNormalsDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TriangulationDebugView(), -1, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new MapDataBoundsDebugView(), -1, false,
