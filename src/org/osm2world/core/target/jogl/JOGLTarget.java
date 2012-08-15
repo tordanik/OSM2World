@@ -163,24 +163,6 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
 	}
 	
-	private static final TextRenderer textRenderer = new TextRenderer(
-			new Font("SansSerif", Font.PLAIN, 12), true, false);
-	//needs quite a bit of memory, so it must not be created for each instance!
-	
-	public void drawText(String string, Vector3D pos, Color color) {
-		textRenderer.setColor(color);
-		textRenderer.begin3DRendering();
-		textRenderer.draw3D(string, (float)pos.getX(), (float)pos.getY(), -(float)pos.getZ(), 0.05f);
-	}
-
-	public void drawText(String string, int x, int y,
-			int screenWidth, int screenHeight, Color color) {
-		textRenderer.beginRendering(screenWidth, screenHeight);
-		textRenderer.setColor(color);
-		textRenderer.draw(string, x, y);
-		textRenderer.endRendering();
-	}
-	
 	/**
 	 * set global lighting parameters. Using this method affects all primitives
 	 * (even those from previous draw calls).
@@ -567,6 +549,26 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
+	}
+	
+	private static final TextRenderer textRenderer = new TextRenderer(
+			new Font("SansSerif", Font.PLAIN, 12), true, false);
+	//needs quite a bit of memory, so it must not create an instance for each use!
+	
+	public static final void drawText(String string, Vector3D pos, Color color) {
+		textRenderer.setColor(color);
+		textRenderer.begin3DRendering();
+		textRenderer.draw3D(string, 
+				(float)pos.getX(), (float)pos.getY(), -(float)pos.getZ(),
+				0.05f);
+	}
+
+	public static final void drawText(String string, int x, int y,
+			int screenWidth, int screenHeight, Color color) {
+		textRenderer.beginRendering(screenWidth, screenHeight);
+		textRenderer.setColor(color);
+		textRenderer.draw(string, x, y);
+		textRenderer.endRendering();
 	}
 	
 	public static final void drawBackgoundImage(GL2 gl, File backgroundImage,

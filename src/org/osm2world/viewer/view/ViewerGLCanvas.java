@@ -17,6 +17,7 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.MessageManager.Message;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.DebugView;
+import org.osm2world.viewer.view.debug.HelpView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
 import com.jogamp.opengl.util.FPSAnimator;
@@ -47,6 +48,8 @@ public class ViewerGLCanvas extends GLCanvas {
 		
 		private final GLU glu = new GLU();
 				
+		private final HelpView helpView = new HelpView();
+		
 		public ViewerGLEventListener(Data data, MessageManager messageManager, RenderOptions renderOptions) {
 			this.data = data;
 			this.messageManager = messageManager;
@@ -60,9 +63,11 @@ public class ViewerGLCanvas extends GLCanvas {
 	        
 	        JOGLTarget.clearGL(gl, Color.BLACK);
 	        
-	        /* prepare projection matrix stack */
-	       
+	        helpView.renderTo(gl, null, null);
+	        
 	        if (renderOptions.camera != null) {
+	        	
+	        	/* prepare projection matrix stack */
 	        	
 	        	//TODO: reactivate to allow
 //		        //calculate height for orthographic projection to match
@@ -95,7 +100,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        	
 	        	int messageCount = 0;
 	        	for (Message message : messageManager.getLiveMessages()) {
-	        		new JOGLTarget(gl, null, null).drawText(message.messageString,
+	        		JOGLTarget.drawText(message.messageString,
 	        				10, 10 + messageCount * 20,
 	        				ViewerGLCanvas.this.getWidth(),
 	        				ViewerGLCanvas.this.getHeight(),
