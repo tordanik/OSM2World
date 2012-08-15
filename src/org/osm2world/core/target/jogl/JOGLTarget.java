@@ -22,6 +22,8 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -39,8 +41,11 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 
-public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
-		
+public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
+	
+	/** maximum number of texture layers any material can use */
+	public static final int MAX_TEXTURE_LAYERS = 4;
+	
 	private final GL2 gl;
 
 	private final JOGLTextureManager textureManager;
@@ -51,6 +56,8 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 
 	private JOGLRenderingParameters renderingParameters;
 	private GlobalLightingParameters globalLightingParameters;
+	
+	private Configuration config = new BaseConfiguration();
 	
 	/**
 	 * creates a new JOGLTarget for a given {@link GL2} interface. It is
@@ -187,6 +194,10 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 	
+	public void setConfiguration(Configuration config) {
+		this.config = config;
+	}
+	
 	/**
 	 * prepares a scene, based on the accumulated draw calls, for rendering.
 	 */
@@ -195,9 +206,13 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 		if (isFinished()) return;
 		
-		renderer = new JOGLRendererVBO(gl, textureManager, primitiveBuffer);
-		
-		//TODO: allow other renderers
+		if ("DisplayList".equals(config.getString("joglImplementation"))) {
+			renderer = new JOGLRendererDisplayList(
+					gl, textureManager, primitiveBuffer);
+		} else {
+			renderer = new JOGLRendererVBO(
+					gl, textureManager, primitiveBuffer);
+		}
 		
 	}
 	
@@ -267,8 +282,6 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		reset();
 		
 	}
-
-	public static final int MAX_TEXTURE_LAYERS = 4;
 	
 	static final void applyCameraMatrices(GL2 gl, Camera camera) {
 		
@@ -397,7 +410,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 	
-	public static final void setMaterial(GL2 gl, Material material,
+	static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 		
 		int numTexLayers = 0;
@@ -497,13 +510,13 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 
-	public static final FloatBuffer getFloatBuffer(Color color) {
+	static final FloatBuffer getFloatBuffer(Color color) {
 		float colorArray[] = {0, 0, 0, 1};
 		color.getRGBColorComponents(colorArray);
 		return FloatBuffer.wrap(colorArray);
 	}
 
-	public static final int getGLConstant(Type type) {
+	static final int getGLConstant(Type type) {
 		switch (type) {
 		case TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
 		case TRIANGLE_FAN: return GL_TRIANGLE_FAN;
@@ -513,7 +526,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		}
 	}
 
-	public static final int getGLConstant(NonAreaPrimitive.Type type) {
+	static final int getGLConstant(NonAreaPrimitive.Type type) {
 		switch (type) {
 		case POINTS: return GL_POINTS;
 		case LINES: return GL_LINES;
@@ -523,7 +536,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		}
 	}
 
-	public static final int getGLTextureConstant(int textureNumber) {
+	static final int getGLTextureConstant(int textureNumber) {
 		switch (textureNumber) {
 		case 0: return GL_TEXTURE0;
 		case 1: return GL_TEXTURE1;
@@ -558,7 +571,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	public static final void drawText(String string, Vector3D pos, Color color) {
 		textRenderer.setColor(color);
 		textRenderer.begin3DRendering();
-		textRenderer.draw3D(string, 
+		textRenderer.draw3D(string,
 				(float)pos.getX(), (float)pos.getY(), -(float)pos.getZ(),
 				0.05f);
 	}

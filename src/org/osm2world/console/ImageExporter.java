@@ -50,6 +50,7 @@ public class ImageExporter {
 	private static final String CANVAS_LIMIT_CONFIG_KEY = "canvasLimit";
 	
 	private final Results results;
+	private final Configuration config;
 	
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
@@ -76,6 +77,7 @@ public class ImageExporter {
 			CLIArgumentsGroup expectedGroup) {
 		
 		this.results = results;
+		this.config = config;
 
 		/* parse background color/image and other configuration options */
 		
@@ -158,7 +160,7 @@ public class ImageExporter {
 				|| config.getBoolean("forceUnbufferedPNGRendering", false);
 		
 		if (!unbufferedRendering ) {
-			bufferTarget = createJOGLTarget(gl, results);
+			bufferTarget = createJOGLTarget(gl, results, config);
 		}
 		
 	}
@@ -248,7 +250,7 @@ public class ImageExporter {
 	        /* render to pBuffer */
 	        
 	       	JOGLTarget target = (bufferTarget == null)
-	       			? createJOGLTarget(gl, results)
+	       			? createJOGLTarget(gl, results, config)
 	       			: bufferTarget;
 	        
 	        target.renderPart(camera, projection,
@@ -285,11 +287,14 @@ public class ImageExporter {
 		
 	}
 
-	private static JOGLTarget createJOGLTarget(GL2 gl, Results results) {
+	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
+			Configuration config) {
 		
 		JOGLTarget target = new JOGLTarget(gl,
 				new JOGLRenderingParameters(CCW, false, true),
 				GlobalLightingParameters.DEFAULT);
+		
+		target.setConfiguration(config);
 		
 		TargetUtil.renderWorldObjects(target, results.getMapData());
 		TargetUtil.renderObject(target, results.getTerrain());
