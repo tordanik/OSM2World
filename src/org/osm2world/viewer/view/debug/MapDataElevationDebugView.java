@@ -2,15 +2,11 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -36,9 +32,7 @@ public class MapDataElevationDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	public void fillTarget(JOGLTarget target) {
 		
 		for (MapArea area : map.getMapAreas()) {
 			if (area.getElevationProfile() == null) continue;
@@ -57,7 +51,7 @@ public class MapDataElevationDebugView extends DebugView {
 			
 			/* draw line itself */
 			
-			target.drawArrow(LINE_COLOR, 0.7f,
+			drawArrow(target, LINE_COLOR, 0.7f,
 					line.getElevationProfile().getPointsWithEle().toArray(new VectorXYZ[0]));
 			
 			/* draw points with non-interpolated elevation */

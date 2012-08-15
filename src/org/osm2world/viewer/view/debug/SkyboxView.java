@@ -32,15 +32,13 @@ public class SkyboxView extends DebugView {
 	// and include Camera/Projection parameters
 	
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+	public void renderTo(GL2 gl, Camera camera, Projection projection) {
 		
 		if (camera == null) return;
 		
 		if (target == null) { // keep the target around to avoid reloading textures
-			target = new JOGLTarget(gl, camera);
+			target = new JOGLTarget(gl, camera, GlobalLightingParameters.DEFAULT);
 		}
-		
-		JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
 		
 		// disable face culling
 		
@@ -65,6 +63,11 @@ public class SkyboxView extends DebugView {
 		gl.glDisable(GL_LIGHT0);
 		gl.glDisable(GL_LIGHTING);
 			
+	}
+	
+	@Override
+	protected void fillTarget(JOGLTarget target) {
+		//do nothing, has its own renderTo implementation
 	}
 
 }

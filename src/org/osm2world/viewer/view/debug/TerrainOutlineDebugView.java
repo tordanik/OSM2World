@@ -4,12 +4,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.EarClippingTriangulationUtil;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.terrain.data.GenericTerrainPatch;
 import org.osm2world.core.terrain.data.TerrainPatch;
@@ -28,9 +24,7 @@ public class TerrainOutlineDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	protected void fillTarget(JOGLTarget target) {
 		
 		for (TerrainPatch patch : terrain.getPatches()) {
 			if (patch instanceof GenericTerrainPatch) {
@@ -42,7 +36,7 @@ public class TerrainOutlineDebugView extends DebugView {
 				EarClippingTriangulationUtil.insertHolesInPolygonOutline(
 						outline, p.getPolygon().getHoles());
 				
-				target.drawLineStrip(OUTLINE_COLOR, VectorXZ.listXYZ(outline, 0));
+				target.drawLineStrip(OUTLINE_COLOR, 1, VectorXZ.listXYZ(outline, 0));
 				
 				for (VectorXZ point : p.getPoints()) {
 					drawBoxAround(target, point, POINT_COLOR, 0.5f);

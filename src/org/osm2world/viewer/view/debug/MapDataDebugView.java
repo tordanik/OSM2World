@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -19,8 +17,8 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -47,9 +45,7 @@ public class MapDataDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-				
-		JOGLTarget util = new JOGLTarget(gl, camera);
+	public void fillTarget(JOGLTarget target) {
 		
 		for (MapArea area : map.getMapAreas()) {
 			Vector3D[] vs = new Vector3D[area.getBoundaryNodes().size()];
@@ -61,25 +57,28 @@ public class MapDataDebugView extends DebugView {
 				TriangulationUtil.triangulate(area.getPolygon());
 			
 			for (TriangleXZ t : triangles) {
-				util.drawTriangles(AREA_COLOR, Collections.singleton(t.xyz(-0.1)));
+				target.drawTriangles(
+						new ImmutableMaterial(Lighting.FLAT, AREA_COLOR),
+						Collections.singleton(t.xyz(-0.1)),
+						null);
 			}
 			
 		}
-				
+		
 		for (MapWaySegment line : map.getMapWaySegments()) {
-			util.drawArrow(LINE_COLOR, 0.7f,
+			drawArrow(target, LINE_COLOR, 0.7f,
 					line.getStartNode().getPos().xyz(0),
 					line.getEndNode().getPos().xyz(0));
 		}
 		
 		for (MapNode node : map.getMapNodes()) {
-			drawBoxAround(util, node.getPos(),
+			drawBoxAround(target, node.getPos(),
 					NODE_COLOR, HALF_NODE_WIDTH);
 		}
 		
 		for (MapWaySegment line : map.getMapWaySegments()) {
 			for (MapIntersectionWW intersection : line.getIntersectionsWW()) {
-				drawBoxAround(util, intersection.pos,
+				drawBoxAround(target, intersection.pos,
 						INTERSECTION_COLOR, HALF_NODE_WIDTH);
 			}
 		}
@@ -88,18 +87,18 @@ public class MapDataDebugView extends DebugView {
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				if (overlap instanceof MapOverlapWA) {
 					for (VectorXZ pos : ((MapOverlapWA)overlap).getIntersectionPositions()) {
-						drawBoxAround(util, pos,
+						drawBoxAround(target, pos,
 								INTERSECTION_COLOR, HALF_NODE_WIDTH);
 					}
 					for (LineSegmentXZ seg : ((MapOverlapWA)overlap).getSharedSegments()) {
-						util.drawLineStrip(SHARED_SEGMENT_COLOR, 3, seg.p1.xyz(0), seg.p2.xyz(0));
+						target.drawLineStrip(SHARED_SEGMENT_COLOR, 3, seg.p1.xyz(0), seg.p2.xyz(0));
 					}
 					for (LineSegmentXZ seg : ((MapOverlapWA)overlap).getOverlappedSegments()) {
-						util.drawLineStrip(INTERSECTION_COLOR, 3, seg.p1.xyz(0), seg.p2.xyz(0));
+						target.drawLineStrip(INTERSECTION_COLOR, 3, seg.p1.xyz(0), seg.p2.xyz(0));
 					}
 				} else if (overlap instanceof MapOverlapAA) {
 					for (VectorXZ pos : ((MapOverlapAA)overlap).getIntersectionPositions()) {
-						drawBoxAround(util, pos,
+						drawBoxAround(target, pos,
 								INTERSECTION_COLOR, HALF_NODE_WIDTH);
 					}
 				}

@@ -21,11 +21,11 @@ public class HelpView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+	public void renderTo(GL2 gl, Camera camera, Projection projection) {
 		
 		if (!canBeUsed()) { return; }
 		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+		JOGLTarget target = new JOGLTarget(gl, camera, null);
 
 		//TODO: needs real panel measures; currently guesses 800x600
 
@@ -40,6 +40,11 @@ public class HelpView extends DebugView {
 		target.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
 				50, 50, 800, 600, Color.LIGHT_GRAY);
 				
+	}
+	
+	@Override
+	protected void fillTarget(JOGLTarget target) {
+		//do nothing, has its own renderTo implementation
 	}
 	
 }

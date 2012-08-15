@@ -17,8 +17,8 @@ import javax.media.opengl.glu.GLU;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
-import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.model.MessageManager.Message;
+import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
@@ -126,7 +126,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        
 	        int messageCount = 0;
 	        for (Message message : messageManager.getLiveMessages()) {
-	        	new JOGLTarget(gl, renderOptions.camera).drawText(message.messageString,
+	        	new JOGLTarget(gl, renderOptions.camera, null).drawText(message.messageString,
 	        			10, 10 + messageCount * 20,
 	        			ViewerGLCanvas.this.getWidth(),
 	        			ViewerGLCanvas.this.getHeight(),

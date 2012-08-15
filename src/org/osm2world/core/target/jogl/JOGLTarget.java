@@ -1,5 +1,6 @@
 package org.osm2world.core.target.jogl;
 
+import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.*;
 import static javax.media.opengl.GL2ES1.*;
@@ -7,20 +8,19 @@ import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.common.material.Material.Transparency.*;
+import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.*;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
 
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -44,25 +44,37 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 
 	private final JOGLTextureManager textureManager;
 	
+	private List<NonAreaPrimitive> nonAreaPrimitives;
 	private PrimitiveBuffer primitiveBuffer;
 	private JOGLRenderer renderer;
 	
-	public JOGLTarget(GL2 gl, Camera camera) {
+	private GlobalLightingParameters globalLightingParameters;
+	
+	public JOGLTarget(GL2 gl, Camera camera,
+			GlobalLightingParameters globalLightingParameters) {
+		
 		//TODO: remove unnecessary camera parameter
+		
 		this.gl = gl;
+		this.globalLightingParameters = globalLightingParameters;
+		
 		this.textureManager = new JOGLTextureManager(gl);
+		
 		reset();
+		
 	}
-
+	
 	@Override
 	public Class<RenderableToJOGL> getRenderableType() {
 		return RenderableToJOGL.class;
 	}
-	
+		
 	/**
 	 * discards all accumulated draw calls
 	 */
 	public void reset() {
+		
+		this.nonAreaPrimitives = new ArrayList<NonAreaPrimitive>();
 		
 		this.primitiveBuffer = new PrimitiveBuffer();
 		
@@ -117,96 +129,28 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 	
-	private void drawPrimitive(int primitive, Color color,
-			List<? extends VectorXYZ> vs) {
+	private void drawNonAreaPrimitive(NonAreaPrimitive.Type type,
+			Color color, int width, List<VectorXYZ> vs) {
 		
-		gl.glColor3f(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
-		
-		gl.glBegin(primitive);
-        
-		for (VectorXYZ v : vs) {
-	        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());
-		}
-		
-        gl.glEnd();
+		nonAreaPrimitives.add(new NonAreaPrimitive(
+				type, color, width, vs));
         
 	}
 	
 	public void drawPoints(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL_POINTS, color, Arrays.asList(vs));
-	}
-
-	public void drawLineStrip(Color color, VectorXYZ... vs) {
-		drawLineStrip(color, Arrays.asList(vs));
-	}
-	
-	public void drawLineStrip(Color color, List<VectorXYZ> vs) {
-		drawPrimitive(GL_LINE_STRIP, color, vs);
+		drawNonAreaPrimitive(POINTS, color, 1, asList(vs));
 	}
 	
 	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
-		gl.glLineWidth(width);
-		drawLineStrip(color, vs);
-		gl.glLineWidth(1);
-	}
-
-	public void drawLineLoop(Color color, List<? extends VectorXYZ> vs) {
-		drawPrimitive(GL_LINE_LOOP, color, vs);
-	}
-
-	public void drawArrow(Color color, float headLength, VectorXYZ... vs) {
-		
-		drawLineStrip(color, vs);
-		
-		/* draw head */
-		
-		VectorXYZ lastV = VectorXYZ.xyz(vs[vs.length-1]);
-		VectorXYZ slastV = VectorXYZ.xyz(vs[vs.length-2]);
-		
-		VectorXYZ endDir = lastV.subtract(slastV).normalize();
-		VectorXYZ headStart = lastV.subtract(endDir.mult(headLength));
-		
-		VectorXZ endDirXZ = endDir.xz();
-		if (endDirXZ.lengthSquared() < 0.01) { //(almost) vertical vector
-			endDirXZ = VectorXZ.X_UNIT;
-		} else {
-			endDirXZ = endDirXZ.normalize();
-		}
-		VectorXZ endNormalXZ = endDirXZ.rightNormal();
-				
-		drawTriangleStrip(color,
-				lastV,
-				headStart.add(endDirXZ.mult(headLength/2)),
-				headStart.subtract(endDirXZ.mult(headLength/2)));
-        		
-		drawTriangleStrip(color,
-				lastV,
-				headStart.add(endNormalXZ.mult(headLength/2)),
-				headStart.subtract(endNormalXZ.mult(headLength/2)));
-		
+		drawNonAreaPrimitive(LINE_STRIP, color, width, asList(vs));
 	}
 	
-	public void drawTriangleStrip(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL_TRIANGLE_STRIP, color, Arrays.asList(vs));
+	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
+		drawNonAreaPrimitive(LINE_STRIP, color, width, vs);
 	}
 	
-	public void drawTriangles(Color color, Collection<TriangleXYZ> triangles) {
-		
-		gl.glColor3f(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
-		gl.glBegin(GL_TRIANGLES);
-        
-		for (TriangleXYZ triangle : triangles) {
-	        gl.glVertex3d(triangle.v1.x, triangle.v1.y, -triangle.v1.z);
-	        gl.glVertex3d(triangle.v2.x, triangle.v2.y, -triangle.v2.z);
-	        gl.glVertex3d(triangle.v3.x, triangle.v3.y, -triangle.v3.z);
-		}
-
-        gl.glEnd();
-        
-	}
-
-	public void drawPolygon(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL_POLYGON, color, Arrays.asList(vs));
+	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
+		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
 	}
 	
 	private static final TextRenderer textRenderer = new TextRenderer(
@@ -225,6 +169,19 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		textRenderer.setColor(color);
 		textRenderer.draw(string, x, y);
 		textRenderer.endRendering();
+	}
+	
+	/**
+	 * set global lighting parameters. Using this method affects all primitives
+	 * (even those from previous draw calls).
+	 * 
+	 * @param parameters  parameter object; null disables lighting
+	 */
+	public void setGlobalLightingParameters(
+			GlobalLightingParameters parameters) {
+		
+		this.globalLightingParameters = parameters;
+		
 	}
 	
 	/**
@@ -251,7 +208,26 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			throw new IllegalStateException("finish must be called first");
 		}
 		
+		applyLightingParameters(gl, globalLightingParameters);
+		
 		renderer.render(camera, projection);
+		
+		for (NonAreaPrimitive nonAreaPrimitive : nonAreaPrimitives) {
+			
+			gl.glLineWidth(nonAreaPrimitive.width);
+			
+			Color c = nonAreaPrimitive.color;
+			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f);
+			
+			gl.glBegin(getGLConstant(nonAreaPrimitive.type));
+	        
+			for (VectorXYZ v : nonAreaPrimitive.vs) {
+		        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());
+			}
+			
+	        gl.glEnd();
+			
+		}
 		
 	}
 	
@@ -328,27 +304,36 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 
-	public static final void setLightingParameters(GL2 gl,
+	static final void applyLightingParameters(GL2 gl,
 			GlobalLightingParameters lighting) {
+		
+		if (lighting == null) {
 
-		gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
-				getFloatBuffer(lighting.globalAmbientColor));
-		
-		gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
-				getFloatBuffer(Color.BLACK));
-		gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
-				getFloatBuffer(lighting.lightColorDiffuse));
-		gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
-				getFloatBuffer(lighting.lightColorSpecular));
-		
-		gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
-					(float)lighting.lightFromDirection.x,
-					(float)lighting.lightFromDirection.y,
-					-(float)lighting.lightFromDirection.z,
-					0.0f}, 0);
-		
-		gl.glEnable(GL_LIGHT0);
-		gl.glEnable(GL_LIGHTING);
+			gl.glDisable(GL_LIGHT0);
+			gl.glDisable(GL_LIGHTING);
+			
+		} else {
+			
+			gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
+					getFloatBuffer(lighting.globalAmbientColor));
+			
+			gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
+					getFloatBuffer(Color.BLACK));
+			gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
+					getFloatBuffer(lighting.lightColorDiffuse));
+			gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
+					getFloatBuffer(lighting.lightColorSpecular));
+			
+			gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
+						(float)lighting.lightFromDirection.x,
+						(float)lighting.lightFromDirection.y,
+						-(float)lighting.lightFromDirection.z,
+						0.0f}, 0);
+			
+			gl.glEnable(GL_LIGHT0);
+			gl.glEnable(GL_LIGHTING);
+			
+		}
 		
 	}
 	
@@ -371,15 +356,25 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		/* set color */
 		
 		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
+			
+			//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
+			Color c = material.getColor();
+			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
+			
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
 					getFloatBuffer(material.ambientColor()));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
 					getFloatBuffer(material.diffuseColor()));
+			
 		} else {
+			
+			gl.glColor3f(1, 1, 1);
+			
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getAmbientFactor())));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
+			
 		}
 		
 		/* set textures and associated parameters */
@@ -454,6 +449,16 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		case TRIANGLE_FAN: return GL_TRIANGLE_FAN;
 		case TRIANGLES: return GL_TRIANGLES;
 		case CONVEX_POLYGON: return GL_POLYGON;
+		default: throw new Error("programming error: unhandled primitive type");
+		}
+	}
+
+	public static final int getGLConstant(NonAreaPrimitive.Type type) {
+		switch (type) {
+		case POINTS: return GL_POINTS;
+		case LINES: return GL_LINES;
+		case LINE_STRIP: return GL_LINE_STRIP;
+		case LINE_LOOP: return GL_LINE_LOOP;
 		default: throw new Error("programming error: unhandled primitive type");
 		}
 	}

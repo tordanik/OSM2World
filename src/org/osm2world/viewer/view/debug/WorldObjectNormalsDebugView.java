@@ -2,10 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLTarget;
 
 public class WorldObjectNormalsDebugView extends DebugView {
 
@@ -18,10 +15,8 @@ public class WorldObjectNormalsDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+	protected void fillTarget(JOGLTarget target) {
 		
-//		JOGLTarget target = new JOGLTarget(gl, camera);
-//
 //		for (Material material : mapDataPrimitiveBuffer.getMaterials()) {
 //
 //			Color color = material.getLighting() == Lighting.FLAT ?

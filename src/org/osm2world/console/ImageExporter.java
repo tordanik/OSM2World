@@ -149,11 +149,9 @@ public class ImageExporter {
 		gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
         gl.glEnable (GL_DEPTH_TEST);             // z buffer
 		gl.glCullFace(GL_BACK);
-        gl.glEnable (GL_CULL_FACE);              // backface culling
-       
-        JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
-				
-        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		gl.glEnable (GL_CULL_FACE);              // backface culling
+		
+		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
         backgroundTextureManager = new JOGLTextureManager(gl);
 
@@ -170,7 +168,7 @@ public class ImageExporter {
 			
 		} else {
 			
-			bufferTarget = new JOGLTarget(gl, null);
+			bufferTarget = new JOGLTarget(gl, null, GlobalLightingParameters.DEFAULT);
 			
 			TargetUtil.renderWorldObjects(bufferTarget, results.getMapData());
 			TargetUtil.renderObject(bufferTarget, results.getTerrain());
@@ -279,7 +277,7 @@ public class ImageExporter {
 
 	        } else {
 	        	
-		        JOGLTarget jogl = new JOGLTarget(gl, camera);
+		        JOGLTarget jogl = new JOGLTarget(gl, camera, GlobalLightingParameters.DEFAULT);
 		        
 				TargetUtil.renderWorldObjects(jogl, results.getMapData());
 				TargetUtil.renderObject(jogl, results.getTerrain());

@@ -2,12 +2,8 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 
@@ -24,9 +20,7 @@ public class TerrainBoundaryAABBDebugView extends DebugView {
 	private static final Color BB_COLOR = Color.RED;
 		
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	protected void fillTarget(JOGLTarget target) {
 
 		for (TerrainBoundaryWorldObject tb :
 			map.getWorldObjects(TerrainBoundaryWorldObject.class)) {
@@ -34,7 +28,7 @@ public class TerrainBoundaryAABBDebugView extends DebugView {
 			AxisAlignedBoundingBoxXZ box = tb.getAxisAlignedBoundingBoxXZ();
 			if (box != null) {
 				PolygonXZ polygon = box.polygonXZ();
-				target.drawLineLoop(BB_COLOR, polygon.xyz(0).getVertices());
+				target.drawLineLoop(BB_COLOR, 1, polygon.xyz(0).getVertices());
 			}
 			
 		}
