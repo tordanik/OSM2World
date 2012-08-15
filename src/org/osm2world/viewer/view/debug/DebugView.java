@@ -15,6 +15,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.terrain.data.Terrain;
 
@@ -22,12 +23,15 @@ import org.osm2world.core.terrain.data.Terrain;
  * contains some common methods for debug views
  */
 public abstract class DebugView {
-
+	
 	protected MapData map;
 	protected Terrain terrain;
 	protected CellularTerrainElevation eleData;
-
-	protected JOGLTarget target = null;
+	
+	protected Camera camera;
+	protected Projection projection;
+	
+	private JOGLTarget target = null;
 	
 	public void setConversionResults(Results conversionResults) {
 	
@@ -64,12 +68,20 @@ public abstract class DebugView {
 	 * Only has an effect if {@link #canBeUsed()} is true.
 	 */
 	public void renderTo(GL2 gl, Camera camera, Projection projection) {
-		if (canBeUsed()) {
-			
+		
+		if (canBeUsed() && camera != null && projection != null) {
+					
 			if (target == null) {
-				target = new JOGLTarget(gl, camera, null);
+				target = new JOGLTarget(gl, new JOGLRenderingParameters(
+						null, false, true), null);
 				//TODO: what if gl has changed? Should be set in DebugView constructor.
 			}
+			
+			boolean viewChanged = !camera.equals(this.camera)
+					|| !projection.equals(this.projection);
+			
+			this.camera = camera;
+			this.projection = projection;
 			
 			if (!target.isFinished()) {
 				
@@ -77,11 +89,15 @@ public abstract class DebugView {
 				
 				target.finish();
 				
+			} else {
+				
+				updateTarget(target, viewChanged);
+				
+				target.finish();
+				
 			}
 			
-			if (camera != null && projection != null) {
-				target.render(camera, projection);
-			}
+			target.render(camera, projection);
 			
 		}
 	}
@@ -91,6 +107,14 @@ public abstract class DebugView {
 	 * Will only be called if {@link #canBeUsed()} is true.
 	 */
 	protected abstract void fillTarget(JOGLTarget target);
+	
+	/**
+	 * lets the subclass update the target after the initial
+	 * {@link #fillTarget(JOGLTarget)}.
+	 * 
+	 * @param viewChanged  true if camera or projection have changed
+	 */
+	protected void updateTarget(JOGLTarget target, boolean viewChanged) {};
 	
 	protected static final void drawBoxAround(JOGLTarget target,
 			VectorXZ center, Color color, float halfWidth) {

@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.*;
 import static javax.media.opengl.GL2ES1.*;
+import static javax.media.opengl.GL2GL3.*;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
@@ -47,15 +48,24 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	private List<NonAreaPrimitive> nonAreaPrimitives;
 	private PrimitiveBuffer primitiveBuffer;
 	private JOGLRenderer renderer;
-	
+
+	private JOGLRenderingParameters renderingParameters;
 	private GlobalLightingParameters globalLightingParameters;
 	
-	public JOGLTarget(GL2 gl, Camera camera,
+	/**
+	 * creates a new JOGLTarget for a given {@link GL2} interface. It is
+	 * possible to have multiple targets that render to the same gl object.
+	 * 
+	 * @param renderingParameters  global parameters for rendering;
+	 *   see {@link #setRenderingParameters(JOGLRenderingParameters)}
+	 * @param globalLightingParameters  global parameters for lighting;
+	 *   see {@link #setGlobalLightingParameters(GlobalLightingParameters)}
+	 */
+	public JOGLTarget(GL2 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		
-		//TODO: remove unnecessary camera parameter
-		
 		this.gl = gl;
+		this.renderingParameters = renderingParameters;
 		this.globalLightingParameters = globalLightingParameters;
 		
 		this.textureManager = new JOGLTextureManager(gl);
@@ -185,6 +195,17 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	}
 	
 	/**
+	 * set global rendering parameters. Using this method affects all primitives
+	 * (even those from previous draw calls).
+	 */
+	public void setRenderingParameters(
+			JOGLRenderingParameters renderingParameters) {
+		
+		this.renderingParameters = renderingParameters;
+		
+	}
+	
+	/**
 	 * prepares a scene, based on the accumulated draw calls, for rendering.
 	 */
 	@Override
@@ -203,12 +224,38 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	}
 	
 	public void render(Camera camera, Projection projection) {
+		renderPart(camera, projection, 0, 1, 0, 1);
+	}
+	
+	/**
+	 * similar to {@link #render(Camera, Projection)},
+	 * but allows rendering only a part of the "normal" image.
+	 * For example, with xStart=0, xEnd=0.5, yStart=0 and yEnd=1,
+	 * only the left half of the full image will be rendered,
+	 * but it will be stretched to cover the available space.
+	 * 
+	 * Only supported for orthographic projections!
+	 */
+	public void renderPart(Camera camera, Projection projection,
+			double xStart, double xEnd, double yStart, double yEnd) {
 		
 		if (renderer == null) {
 			throw new IllegalStateException("finish must be called first");
 		}
 		
+		/* apply camera and projection information */
+		
+		applyProjectionMatricesForPart(gl, projection,
+				xStart, xEnd, yStart, yEnd);
+		
+		applyCameraMatrices(gl, camera);
+		
+		/* apply global rendering parameters */
+		
+		applyRenderingParameters(gl, renderingParameters);
 		applyLightingParameters(gl, globalLightingParameters);
+		
+		/* render primitives */
 		
 		renderer.render(camera, projection);
 		
@@ -241,7 +288,10 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 
 	public static final int MAX_TEXTURE_LAYERS = 4;
 	
-	public static final void setCameraMatrices(GL2 gl, Camera camera) {
+	static final void applyCameraMatrices(GL2 gl, Camera camera) {
+		
+    	gl.glLoadIdentity();
+		
 		VectorXYZ pos = camera.getPos();
 		VectorXYZ lookAt = camera.getLookAt();
 //		VectorXYZ dir = lookAt.subtract(pos);
@@ -251,22 +301,19 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 				pos.x, pos.y, -pos.z,
 				lookAt.x, lookAt.y, -lookAt.z,
 				0, 1f, 0f);
+		
 	}
 	
-	public static final void setProjectionMatrices(GL2 gl, Projection projection) {
-		setProjectionMatricesForPart(gl, projection, 0, 1, 0, 1);
+	static final void applyProjectionMatrices(GL2 gl, Projection projection) {
+		applyProjectionMatricesForPart(gl, projection, 0, 1, 0, 1);
 	}
 
 	/**
-	 * similar to {@link #setProjectionMatrices(GL, Projection)},
+	 * similar to {@link #applyProjectionMatrices(GL, Projection)},
 	 * but allows rendering only a part of the "normal" image.
-	 * For example, with xStart=0, xEnd=0.5, yStart=0 and yEnd=1,
-	 * only the left half of the full image will be rendered,
-	 * but it will be stretched to cover the available space.
-	 * 
-	 * Only supported for orthographic projections!
+	 * @see
 	 */
-	public static final void setProjectionMatricesForPart(GL2 gl, Projection projection,
+	static final void applyProjectionMatricesForPart(GL2 gl, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {
 		
 		if ((xStart != 0 || xEnd != 1 || yStart != 0 || yEnd != 1)
@@ -303,7 +350,38 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		gl.glMatrixMode(GL_MODELVIEW);
 		
 	}
-
+	
+	static final void applyRenderingParameters(GL2 gl,
+			JOGLRenderingParameters parameters) {
+		
+		/* backface culling */
+		
+		if (parameters.frontFace == null) {
+			gl.glDisable(GL_CULL_FACE);
+		} else {
+			gl.glFrontFace(GL_CCW);
+			gl.glCullFace(GL_BACK);
+			gl.glEnable (GL_CULL_FACE);
+		}
+		
+		/* wireframe mode */
+		
+		if (parameters.wireframe) {
+    		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    	} else {
+    		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    	}
+		
+		/* z buffer */
+		
+		if (parameters.useZBuffer) {
+			gl.glEnable(GL_DEPTH_TEST);
+		} else {
+			gl.glDisable(GL_DEPTH_TEST);
+		}
+		
+	}
+	
 	static final void applyLightingParameters(GL2 gl,
 			GlobalLightingParameters lighting) {
 		
@@ -472,8 +550,26 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
-
-	public static void drawBackgoundImage(GL2 gl, File backgroundImage,
+	
+	/**
+	 * clears the rendering surface and the z buffer
+	 * 
+	 * @param clearColor  background color before rendering any primitives;
+	 *                     null uses a previously defined clear color
+	 */
+	public static final void clearGL(GL2 gl, Color clearColor) {
+		
+		if (clearColor != null) {
+			float[] c = {0f, 0f, 0f};
+			clearColor.getColorComponents(c);
+			gl.glClearColor(c[0], c[1], c[2], 1.0f);
+		}
+		
+		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+	}
+	
+	public static final void drawBackgoundImage(GL2 gl, File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {

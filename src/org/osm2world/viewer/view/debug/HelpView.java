@@ -25,7 +25,7 @@ public class HelpView extends DebugView {
 		
 		if (!canBeUsed()) { return; }
 		
-		JOGLTarget target = new JOGLTarget(gl, camera, null);
+		JOGLTarget target = new JOGLTarget(gl, null, null);
 
 		//TODO: needs real panel measures; currently guesses 800x600
 

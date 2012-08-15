@@ -143,10 +143,10 @@ public class ViewerFrame extends JFrame {
 			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleBackfaceCullingAction(this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new WorldObjectView(), KeyEvent.VK_W, true,
+					new WorldObjectView(renderOptions), KeyEvent.VK_W, true,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainView(), KeyEvent.VK_T, true,
+					new TerrainView(renderOptions), KeyEvent.VK_T, true,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new SkyboxView(), -1, true,

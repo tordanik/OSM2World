@@ -1,8 +1,7 @@
 package org.osm2world.console;
 
 import static java.lang.Math.*;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2GL3.GL_FILL;
+import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -29,6 +28,7 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
@@ -62,6 +62,7 @@ public class ImageExporter {
 	/** renderer with pre-calculated rendering ressources; can be null */
 	private JOGLTarget bufferTarget;
 	
+	
 	/**
 	 * Creates an {@link ImageExporter} for later use.
 	 * Also performs calculations that only need to be done once for a group
@@ -78,12 +79,11 @@ public class ImageExporter {
 
 		/* parse background color/image and other configuration options */
 		
-		float[] clearColor = {0f, 0f, 0f};
+		Color clearColor = Color.BLACK;
 		
 		if (config.containsKey(BG_COLOR_CONFIG_KEY)) {
 			try {
-				Color.decode(config.getString(BG_COLOR_CONFIG_KEY))
-					.getColorComponents(clearColor);
+				clearColor = Color.decode(config.getString(BG_COLOR_CONFIG_KEY));
 			} catch (NumberFormatException e) {
 				System.err.println("incorrect color value: "
 						+ config.getString(BG_COLOR_CONFIG_KEY));
@@ -144,15 +144,8 @@ public class ImageExporter {
 		pBuffer.getContext().makeCurrent();
 		gl = pBuffer.getGL().getGL2();
 		
-		gl.glFrontFace(GL_CCW);                  // use ccw polygons
-					
-		gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
-        gl.glEnable (GL_DEPTH_TEST);             // z buffer
-		gl.glCullFace(GL_BACK);
-		gl.glEnable (GL_CULL_FACE);              // backface culling
+		JOGLTarget.clearGL(gl, clearColor);
 		
-		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        
         backgroundTextureManager = new JOGLTextureManager(gl);
 
 		/* render map data into buffer if it needs to be rendered multiple times */
@@ -168,7 +161,9 @@ public class ImageExporter {
 			
 		} else {
 			
-			bufferTarget = new JOGLTarget(gl, null, GlobalLightingParameters.DEFAULT);
+			bufferTarget = new JOGLTarget(gl,
+					new JOGLRenderingParameters(CCW, false, true),
+					GlobalLightingParameters.DEFAULT);
 			
 			TargetUtil.renderWorldObjects(bufferTarget, results.getMapData());
 			TargetUtil.renderObject(bufferTarget, results.getTerrain());
@@ -251,8 +246,8 @@ public class ImageExporter {
 			int ySize  = (yEnd - yStart) + 1;
 			
 			/* configure rendering */
-	        
-	        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			JOGLTarget.clearGL(gl, null);
 	        
 	       	if (backgroundImage != null) {
 		       	JOGLTarget.drawBackgoundImage(gl, backgroundImage,
@@ -260,14 +255,6 @@ public class ImageExporter {
 		       			xSize, ySize,
 		       			backgroundTextureManager);
 	       	}
-	        
-	        gl.glLoadIdentity();
-	        
-	        JOGLTarget.setProjectionMatricesForPart(gl, projection,
-	        		xStart / (double)(x-1), xEnd / (double)(x-1),
-	        		yStart / (double)(y-1), yEnd / (double)(y-1));
-	        
-	       	JOGLTarget.setCameraMatrices(gl, camera);
 	        
 	        /* render to pBuffer */
 	        
@@ -277,13 +264,17 @@ public class ImageExporter {
 
 	        } else {
 	        	
-		        JOGLTarget jogl = new JOGLTarget(gl, camera, GlobalLightingParameters.DEFAULT);
+		        JOGLTarget jogl = new JOGLTarget(gl,
+		        		new JOGLRenderingParameters(CCW, false, true),
+		        		GlobalLightingParameters.DEFAULT);
 		        
 				TargetUtil.renderWorldObjects(jogl, results.getMapData());
 				TargetUtil.renderObject(jogl, results.getTerrain());
 				
 				jogl.finish();
-				jogl.render(camera, projection);
+				jogl.renderPart(camera, projection,
+		        		xStart / (double)(x-1), xEnd / (double)(x-1),
+		        		yStart / (double)(y-1), yEnd / (double)(y-1));
 				jogl.freeResources();
 				
 			}

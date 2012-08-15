@@ -1,8 +1,5 @@
 package org.osm2world.viewer.view;
 
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2GL3.*;
-
 import java.awt.Color;
 
 import javax.media.opengl.GL;
@@ -61,7 +58,7 @@ public class ViewerGLCanvas extends GLCanvas {
 			
 	        final GL2 gl = glDrawable.getGL().getGL2();
 	        
-	        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	        JOGLTarget.clearGL(gl, Color.BLACK);
 	        
 	        /* prepare projection matrix stack */
 	       
@@ -76,78 +73,45 @@ public class ViewerGLCanvas extends GLCanvas {
 //		        double tanAngle = Math.tan(renderOptions.projection.getVertAngle());
 //		        double height = tanAngle * dist;
 //		        renderOptions.projection = renderOptions.projection.withVolumeHeight(height);
-//
-	        }
-	        
-	        JOGLTarget.setProjectionMatrices(gl, renderOptions.projection);
-	        
-	        /* prepare modelview matrix stack with camera information */
-	        
-	        gl.glLoadIdentity();
-	        
-	        if (renderOptions.camera != null) {
-	        	JOGLTarget.setCameraMatrices(gl, renderOptions.camera);
-	        }
-
-	        /* choose wireframe or fill mode */
-	        
-	        if (renderOptions.isWireframe()) {
-	        	gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	        } else {
-	        	gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	        }
-	        
-	        /* enable or disable backface culling */
-	        
-	        if (renderOptions.isBackfaceCulling()) {
-	        	gl.glEnable (GL.GL_CULL_FACE);
-	        } else {
-	        	gl.glDisable (GL.GL_CULL_FACE);
-	        }
-
-	        /* draw debug views */
-	        
-	        DebugView activeWorldObjectView = null;
-	        
-	        for (DebugView debugView : renderOptions.activeDebugViews) {
-	        	if (debugView instanceof WorldObjectView) {
-	        		// needs to be rendered last because of transparency
-	        		activeWorldObjectView = debugView;
-	        		continue;
+	        		        	
+	        	/* draw debug views */
+	        	
+	        	DebugView activeWorldObjectView = null;
+	        	
+	        	for (DebugView debugView : renderOptions.activeDebugViews) {
+	        		if (debugView instanceof WorldObjectView) {
+	        			// needs to be rendered last because of transparency
+	        			activeWorldObjectView = debugView;
+	        			continue;
+	        		}
+	        		debugView.renderTo(gl, renderOptions.camera, renderOptions.projection);
 	        	}
-	        	debugView.renderTo(gl, renderOptions.camera, renderOptions.projection);
-	        }
-	        
-	        if (activeWorldObjectView != null) {
-	        	activeWorldObjectView.renderTo(gl, renderOptions.camera, renderOptions.projection);
-	        }
-	        
-	        /* write messages */
-	        
-	        int messageCount = 0;
-	        for (Message message : messageManager.getLiveMessages()) {
-	        	new JOGLTarget(gl, renderOptions.camera, null).drawText(message.messageString,
-	        			10, 10 + messageCount * 20,
-	        			ViewerGLCanvas.this.getWidth(),
-	        			ViewerGLCanvas.this.getHeight(),
-	        			Color.WHITE);
-	        	messageCount++;
-	        }
-	        
-			gl.glFlush();
+	        	
+	        	if (activeWorldObjectView != null) {
+	        		activeWorldObjectView.renderTo(gl, renderOptions.camera, renderOptions.projection);
+	        	}
+	        	
+	        	/* write messages */
+	        	
+	        	int messageCount = 0;
+	        	for (Message message : messageManager.getLiveMessages()) {
+	        		new JOGLTarget(gl, null, null).drawText(message.messageString,
+	        				10, 10 + messageCount * 20,
+	        				ViewerGLCanvas.this.getWidth(),
+	        				ViewerGLCanvas.this.getHeight(),
+	        				Color.WHITE);
+	        		messageCount++;
+	        	}
+	        	
+	        	gl.glFlush();
 
+	        }
+			
 		}
 
 		@Override
 		public void init(GLAutoDrawable glDrawable) {
-			final GL gl = glDrawable.getGL();
-					    		
-			gl.glFrontFace(GL.GL_CCW);                  // use ccw polygons
-			
-	        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);    // Black Background
-	        gl.glEnable (GL.GL_DEPTH_TEST);             // z buffer
-			gl.glCullFace(GL.GL_BACK);
-	        
+			//initialization is performed within JOGLTarget
 		}
 
 		@Override
