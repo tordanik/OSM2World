@@ -8,6 +8,7 @@ import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -309,8 +311,9 @@ public class WaterModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			target.drawTriangles(WATER, getTriangulation(),
-					globalTexCoordLists(getTriangulation(), WATER, false));
+			Collection<TriangleXYZ> triangles = getTriangulation();
+			target.drawTriangles(WATER, triangles,
+					globalTexCoordLists(triangles, WATER, false));
 		}
 		
 	}
@@ -342,8 +345,9 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			/* render water */
 				
-			target.drawTriangles(PURIFIED_WATER, getTriangulation(),
-					globalTexCoordLists(getTriangulation(), PURIFIED_WATER, false));
+			Collection<TriangleXYZ> triangles = getTriangulation();
+			target.drawTriangles(PURIFIED_WATER, triangles,
+					globalTexCoordLists(triangles, PURIFIED_WATER, false));
 			
 			/* render walls */
 			//note: mostly copy-pasted from BarrierModule
