@@ -40,3 +40,34 @@
 // there will often be visible tile borders in reflecting water.
 //#declare sky_sphere_def = sky_sphere { pigment { rgb <0.0, 0.0, 1.0> } }
 
+
+// activating this creates reflective windows
+// However, you need a material map which is a indexed png with 3 colors:
+// Color 1 is for the transparent part, color 2 is for the window glass, color 3 
+// is for the rest of the window, i.e. the window frame 
+//#declare texture_BUILDING_WINDOWS = texture { 
+//  material_map {
+//    png "./textures/transparent.png"
+//    texture { pigment { color rgb<0,0,0> transmit 1 } }
+//    texture {
+//      pigment { image_map {
+//        png "./textures/MarekCompositeWall00001_transparent.png"
+//      } }
+//      finish {
+//        ambient 0.5
+//        diffuse 0.5
+//        phong 1.0
+//        phong_size 150
+//        reflection 0.5
+//      }
+//    }
+//    texture {
+//      pigment { image_map {
+//        png "./textures/MarekCompositeWall00001_transparent.png"
+//      } }
+//      finish {
+//        ambient 0.5
+//        diffuse 0.5
+//      }
+//    }
+//  } }
