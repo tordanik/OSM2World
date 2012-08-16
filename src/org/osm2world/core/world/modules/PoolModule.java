@@ -5,7 +5,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.target.common.material.Materials.WATER;
+import static org.osm2world.core.target.common.material.Materials.PURIFIED_WATER;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
@@ -77,8 +77,8 @@ public class PoolModule extends AbstractModule {
 			
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
-			target.drawTriangles(WATER, triangles, 
-					globalTexCoordLists(triangles, WATER, false));
+			target.drawTriangles(PURIFIED_WATER, triangles, 
+					globalTexCoordLists(triangles, PURIFIED_WATER, false));
 
 			/* draw a small area around the pool */
 

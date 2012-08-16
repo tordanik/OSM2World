@@ -342,8 +342,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			/* render water */
 				
-			target.drawTriangles(WATER, getTriangulation(),
-					globalTexCoordLists(getTriangulation(), WATER, false));
+			target.drawTriangles(PURIFIED_WATER, getTriangulation(),
+					globalTexCoordLists(getTriangulation(), PURIFIED_WATER, false));
 			
 			/* render walls */
 			//note: mostly copy-pasted from BarrierModule

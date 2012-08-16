@@ -35,6 +35,8 @@ public final class Materials {
 	
 	public static final ConfMaterial WATER =
 		new ConfMaterial(Lighting.FLAT, Color.BLUE);
+	public static final ConfMaterial PURIFIED_WATER =
+			new ConfMaterial(Lighting.FLAT, Color.BLUE);
 	
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
