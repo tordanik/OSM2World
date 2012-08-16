@@ -1,59 +1,49 @@
 package org.osm2world.viewer.view.debug;
 
-import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
-
-import javax.media.opengl.GL2;
+import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
+import org.osm2world.viewer.model.RenderOptions;
 
 public class TerrainView extends DebugView {
+	
+	private final RenderOptions renderOptions;
+	
+	public TerrainView(RenderOptions renderOptions) {
+		this.renderOptions = renderOptions;
+	}
 	
 	@Override
 	public String getDescription() {
 		return "shows the terrain";
 	};
 	
-	JOGLPrimitiveBufferRenderer renderer = null;
-		
 	@Override
-	public void setPrimitiveBuffers(PrimitiveBuffer gridPrimitiveBuffer,
-			PrimitiveBuffer terrainPrimitiveBuffer) {
+	public boolean canBeUsed() {
+		return terrain != null;
+	}
+	
+	@Override
+	protected void fillTarget(JOGLTarget target) {
+		setParameters(target);
+		terrain.renderTo(target);
+	}
+	
+	@Override
+	protected void updateTarget(JOGLTarget target, boolean viewChanged) {
+		setParameters(target);
+	}
+	
+	private void setParameters(JOGLTarget target) {
 		
-		super.setPrimitiveBuffers(gridPrimitiveBuffer, terrainPrimitiveBuffer);
+		target.setRenderingParameters(new JOGLRenderingParameters(
+				renderOptions.isBackfaceCulling() ? CCW : null,
+				renderOptions.isWireframe(), true));
 		
-		if (renderer != null) {
-			renderer.freeResources();
-			renderer = null;
-		}
+		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		
 	}
-		
-	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		if (renderer == null) {
-			renderer = new JOGLPrimitiveBufferRendererDisplayList(gl, terrainPrimitiveBuffer);
-		}
-
-		JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
-				
-		// render
-		
-		if (camera != null && projection != null) {
-			renderer.render(camera, projection);
-		}
-
-		// switch lighting off
-		
-		gl.glDisable(GL_LIGHT0);
-		gl.glDisable(GL_LIGHTING);
-		
-	}
-
+	
 }

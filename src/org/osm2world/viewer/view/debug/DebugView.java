@@ -1,5 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
+import static java.util.Arrays.asList;
+
 import java.awt.Color;
 
 import javax.media.opengl.GL2;
@@ -9,34 +11,38 @@ import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 import org.osm2world.core.terrain.data.Terrain;
 
 /**
  * contains some common methods for debug views
  */
 public abstract class DebugView {
-
+	
 	protected MapData map;
 	protected Terrain terrain;
 	protected CellularTerrainElevation eleData;
 	
-	protected PrimitiveBuffer mapDataPrimitiveBuffer;
-	protected PrimitiveBuffer terrainPrimitiveBuffer;
+	protected Camera camera;
+	protected Projection projection;
+	
+	private JOGLTarget target = null;
 	
 	public void setConversionResults(Results conversionResults) {
+	
 		this.map = conversionResults.getMapData();
 		this.terrain = conversionResults.getTerrain();
 		this.eleData = conversionResults.getEleData();
-	}
-	
-	public void setPrimitiveBuffers(PrimitiveBuffer mapDataPrimitiveBuffer,
-			PrimitiveBuffer terrainPrimitiveBuffer) {
-		this.mapDataPrimitiveBuffer = mapDataPrimitiveBuffer;
-		this.terrainPrimitiveBuffer = terrainPrimitiveBuffer;
+		
+		if (target != null) {
+			target.reset();
+		}
+		
 	}
 	
 	/**
@@ -47,9 +53,7 @@ public abstract class DebugView {
 	public boolean canBeUsed() {
 		return map != null
 			&& terrain != null
-			&& eleData != null
-			&& mapDataPrimitiveBuffer != null
-			&& terrainPrimitiveBuffer != null;
+			&& eleData != null;
 	}
 	
 	/**
@@ -59,18 +63,58 @@ public abstract class DebugView {
 		return "";
 	}
 	
+	/**
+	 * renders the content added by {@link #fillTarget(JOGLTarget)}.
+	 * Only has an effect if {@link #canBeUsed()} is true.
+	 */
 	public void renderTo(GL2 gl, Camera camera, Projection projection) {
-		if (canBeUsed()) {
-			renderToImpl(gl, camera, projection);
+		
+		if (canBeUsed() && camera != null && projection != null) {
+					
+			if (target == null) {
+				target = new JOGLTarget(gl, new JOGLRenderingParameters(
+						null, false, true), null);
+				//TODO: what if gl has changed? Should be set in DebugView constructor.
+			}
+			
+			boolean viewChanged = !camera.equals(this.camera)
+					|| !projection.equals(this.projection);
+			
+			this.camera = camera;
+			this.projection = projection;
+			
+			if (!target.isFinished()) {
+				
+				fillTarget(target);
+				
+				target.finish();
+				
+			} else {
+				
+				updateTarget(target, viewChanged);
+				
+				target.finish();
+				
+			}
+			
+			target.render(camera, projection);
+			
 		}
 	}
+		
+	/**
+	 * lets the subclass add all content and settings for rendering.
+	 * Will only be called if {@link #canBeUsed()} is true.
+	 */
+	protected abstract void fillTarget(JOGLTarget target);
 	
 	/**
-	 * implementation for the renderTo method, provided by subclasses.
-	 * Will only be called if the DebugView {@link #canBeUsed()}.
-	 * @param projection TODO
+	 * lets the subclass update the target after the initial
+	 * {@link #fillTarget(JOGLTarget)}.
+	 * 
+	 * @param viewChanged  true if camera or projection have changed
 	 */
-	protected abstract void renderToImpl(GL2 gl, Camera camera, Projection projection);
+	protected void updateTarget(JOGLTarget target, boolean viewChanged) {};
 	
 	protected static final void drawBoxAround(JOGLTarget target,
 			VectorXZ center, Color color, float halfWidth) {
@@ -96,7 +140,46 @@ public abstract class DebugView {
 	
 	protected static final void drawBox(JOGLTarget target, Color color,
 			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {
-		target.drawLineStrip(color, v1, v2, v3, v4, v1);
+		target.drawLineLoop(color, 1, asList(v1, v2, v3, v4));
+	}
+	
+	protected static final void drawArrow(JOGLTarget target, Color color,
+			float headLength, VectorXYZ... vs) {
+		
+		target.drawLineStrip(color, 1, vs);
+		
+		/* draw head */
+		
+		VectorXYZ lastV = VectorXYZ.xyz(vs[vs.length-1]);
+		VectorXYZ slastV = VectorXYZ.xyz(vs[vs.length-2]);
+		
+		VectorXYZ endDir = lastV.subtract(slastV).normalize();
+		VectorXYZ headStart = lastV.subtract(endDir.mult(headLength));
+		
+		VectorXZ endDirXZ = endDir.xz();
+		if (endDirXZ.lengthSquared() < 0.01) { //(almost) vertical vector
+			endDirXZ = VectorXZ.X_UNIT;
+		} else {
+			endDirXZ = endDirXZ.normalize();
+		}
+		VectorXZ endNormalXZ = endDirXZ.rightNormal();
+		
+		
+		ImmutableMaterial colorMaterial =
+				new ImmutableMaterial(Lighting.FLAT, color);
+		
+		target.drawTriangleStrip(colorMaterial, asList(
+				lastV,
+				headStart.subtract(endDirXZ.mult(headLength/2)),
+				headStart.add(endDirXZ.mult(headLength/2))),
+				null);
+		
+		target.drawTriangleStrip(colorMaterial, asList(
+				lastV,
+				headStart.subtract(endNormalXZ.mult(headLength/2)),
+				headStart.add(endNormalXZ.mult(headLength/2))),
+				null);
+		
 	}
 	
 }

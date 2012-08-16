@@ -1,9 +1,9 @@
 package org.osm2world.viewer.view.debug;
 
+import static java.util.Arrays.asList;
+
 import java.awt.Color;
 import java.util.List;
-
-import javax.media.opengl.GL2;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -11,8 +11,8 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -31,10 +31,8 @@ public class ClearingDebugView extends DebugView {
 	private static final Color LINE_ABOVE_COLOR = Color.BLUE;
 
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+	public void fillTarget(JOGLTarget target) {
 		
-		JOGLTarget target = new JOGLTarget(gl, camera);
-
 		for (MapWaySegment line : map.getMapWaySegments()) {
 
 			for (WorldObject rep : line.getRepresentations()) {
@@ -70,13 +68,19 @@ public class ClearingDebugView extends DebugView {
 				Color color = getColorForState(rep.getGroundState());
 
 				target.drawLineStrip(color, LINE_WIDTH, linePoints);
-				target.drawLineStrip(color, upperClearingPoints);
-				target.drawLineStrip(color, lowerClearingPoints);
-
+				target.drawLineStrip(color, 1, upperClearingPoints);
+				target.drawLineStrip(color, 1, lowerClearingPoints);
+				
+				/* TODO replace stipple effect
 				gl.glEnable(GL2.GL_POLYGON_STIPPLE);
 				gl.glPolygonStipple(STIPPLE_PATTERN, 0);
-				target.drawPolygon(color, clearingPolygonPoints);
+				*/
+				target.drawConvexPolygon(
+						new ImmutableMaterial(Lighting.FLAT, color),
+						asList(clearingPolygonPoints), null);
+				/*
 				gl.glDisable(GL2.GL_POLYGON_STIPPLE);
+				*/
 
 			}
 			

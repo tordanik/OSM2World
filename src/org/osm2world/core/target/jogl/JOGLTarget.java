@@ -1,26 +1,29 @@
 package org.osm2world.core.target.jogl;
 
+import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.*;
 import static javax.media.opengl.GL2ES1.*;
+import static javax.media.opengl.GL2GL3.*;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.common.material.Material.Transparency.*;
+import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.*;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
 
-import org.osm2world.core.math.TriangleXYZ;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -38,27 +41,70 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 
-public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
-		
+public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
+	
+	/** maximum number of texture layers any material can use */
+	public static final int MAX_TEXTURE_LAYERS = 4;
+	
 	private final GL2 gl;
-	private final Camera camera;
 
 	private final JOGLTextureManager textureManager;
 	
-	public JOGLTarget(GL2 gl, Camera camera) {
+	private List<NonAreaPrimitive> nonAreaPrimitives;
+	private PrimitiveBuffer primitiveBuffer;
+	private JOGLRenderer renderer;
+
+	private JOGLRenderingParameters renderingParameters;
+	private GlobalLightingParameters globalLightingParameters;
+	
+	private Configuration config = new BaseConfiguration();
+	
+	/**
+	 * creates a new JOGLTarget for a given {@link GL2} interface. It is
+	 * possible to have multiple targets that render to the same gl object.
+	 * 
+	 * @param renderingParameters  global parameters for rendering;
+	 *   see {@link #setRenderingParameters(JOGLRenderingParameters)}
+	 * @param globalLightingParameters  global parameters for lighting;
+	 *   see {@link #setGlobalLightingParameters(GlobalLightingParameters)}
+	 */
+	public JOGLTarget(GL2 gl, JOGLRenderingParameters renderingParameters,
+			GlobalLightingParameters globalLightingParameters) {
+		
 		this.gl = gl;
-		this.camera = camera;
+		this.renderingParameters = renderingParameters;
+		this.globalLightingParameters = globalLightingParameters;
+		
 		this.textureManager = new JOGLTextureManager(gl);
+		
+		reset();
+		
 	}
 	
 	@Override
 	public Class<RenderableToJOGL> getRenderableType() {
 		return RenderableToJOGL.class;
 	}
+		
+	/**
+	 * discards all accumulated draw calls
+	 */
+	public void reset() {
+		
+		this.nonAreaPrimitives = new ArrayList<NonAreaPrimitive>();
+		
+		this.primitiveBuffer = new PrimitiveBuffer();
+		
+		if (renderer != null) {
+			renderer.freeResources();
+			renderer = null;
+		}
+		
+	}
 	
 	@Override
 	public void render(RenderableToJOGL renderable) {
-		renderable.renderTo(gl, camera);
+		renderable.renderTo(this);
 	}
 
 	@Override
@@ -66,9 +112,7 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 		
-		setMaterial(gl, material, textureManager);
-		
-		drawPrimitive(gl, getGLConstant(type), vertices, normals, texCoordLists);
+		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
 		
 	}
 
@@ -102,139 +146,86 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 	
-	private void drawPrimitive(int primitive, Color color,
-			List<? extends VectorXYZ> vs) {
+	private void drawNonAreaPrimitive(NonAreaPrimitive.Type type,
+			Color color, int width, List<VectorXYZ> vs) {
 		
-		gl.glColor3f(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
-		
-		gl.glBegin(primitive);
-        
-		for (VectorXYZ v : vs) {
-	        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());
-		}
-		
-        gl.glEnd();
+		nonAreaPrimitives.add(new NonAreaPrimitive(
+				type, color, width, vs));
         
 	}
 	
 	public void drawPoints(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL_POINTS, color, Arrays.asList(vs));
-	}
-
-	public void drawLineStrip(Color color, VectorXYZ... vs) {
-		drawLineStrip(color, Arrays.asList(vs));
-	}
-	
-	public void drawLineStrip(Color color, List<VectorXYZ> vs) {
-		drawPrimitive(GL_LINE_STRIP, color, vs);
+		drawNonAreaPrimitive(POINTS, color, 1, asList(vs));
 	}
 	
 	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
-		gl.glLineWidth(width);
-		drawLineStrip(color, vs);
-		gl.glLineWidth(1);
+		drawNonAreaPrimitive(LINE_STRIP, color, width, asList(vs));
 	}
-
-	public void drawLineLoop(Color color, List<? extends VectorXYZ> vs) {
-		drawPrimitive(GL_LINE_LOOP, color, vs);
+	
+	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
+		drawNonAreaPrimitive(LINE_STRIP, color, width, vs);
 	}
-
-	public void drawArrow(Color color, float headLength, VectorXYZ... vs) {
+	
+	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
+		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
+	}
+	
+	/**
+	 * set global lighting parameters. Using this method affects all primitives
+	 * (even those from previous draw calls).
+	 * 
+	 * @param parameters  parameter object; null disables lighting
+	 */
+	public void setGlobalLightingParameters(
+			GlobalLightingParameters parameters) {
 		
-		drawLineStrip(color, vs);
-		
-		/* draw head */
-		
-		VectorXYZ lastV = VectorXYZ.xyz(vs[vs.length-1]);
-		VectorXYZ slastV = VectorXYZ.xyz(vs[vs.length-2]);
-		
-		VectorXYZ endDir = lastV.subtract(slastV).normalize();
-		VectorXYZ headStart = lastV.subtract(endDir.mult(headLength));
-		
-		VectorXZ endDirXZ = endDir.xz();
-		if (endDirXZ.lengthSquared() < 0.01) { //(almost) vertical vector
-			endDirXZ = VectorXZ.X_UNIT;
-		} else {
-			endDirXZ = endDirXZ.normalize();
-		}
-		VectorXZ endNormalXZ = endDirXZ.rightNormal();
-				
-		drawTriangleStrip(color,
-				lastV,
-				headStart.add(endDirXZ.mult(headLength/2)),
-				headStart.subtract(endDirXZ.mult(headLength/2)));
-        		
-		drawTriangleStrip(color,
-				lastV,
-				headStart.add(endNormalXZ.mult(headLength/2)),
-				headStart.subtract(endNormalXZ.mult(headLength/2)));
+		this.globalLightingParameters = parameters;
 		
 	}
 	
-	public void drawTriangleStrip(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL_TRIANGLE_STRIP, color, Arrays.asList(vs));
-	}
-	
-	public void drawTriangles(Color color, Collection<TriangleXYZ> triangles) {
+	/**
+	 * set global rendering parameters. Using this method affects all primitives
+	 * (even those from previous draw calls).
+	 */
+	public void setRenderingParameters(
+			JOGLRenderingParameters renderingParameters) {
 		
-		gl.glColor3f(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
-		gl.glBegin(GL_TRIANGLES);
-        
-		for (TriangleXYZ triangle : triangles) {
-	        gl.glVertex3d(triangle.v1.x, triangle.v1.y, -triangle.v1.z);
-	        gl.glVertex3d(triangle.v2.x, triangle.v2.y, -triangle.v2.z);
-	        gl.glVertex3d(triangle.v3.x, triangle.v3.y, -triangle.v3.z);
-		}
-
-        gl.glEnd();
-        
-	}
-
-	public void drawPolygon(Color color, VectorXYZ... vs) {
-		drawPrimitive(GL_POLYGON, color, Arrays.asList(vs));
+		this.renderingParameters = renderingParameters;
+		
 	}
 	
-	private static final TextRenderer textRenderer = new TextRenderer(
-			new Font("SansSerif", Font.PLAIN, 12), true, false);
-	//needs quite a bit of memory, so it must not be created for each instance!
-	
-	public void drawText(String string, Vector3D pos, Color color) {
-		textRenderer.setColor(color);
-		textRenderer.begin3DRendering();
-		textRenderer.draw3D(string, (float)pos.getX(), (float)pos.getY(), -(float)pos.getZ(), 0.05f);
-	}
-
-	public void drawText(String string, int x, int y,
-			int screenWidth, int screenHeight, Color color) {
-		textRenderer.beginRendering(screenWidth, screenHeight);
-		textRenderer.setColor(color);
-		textRenderer.draw(string, x, y);
-		textRenderer.endRendering();
+	public void setConfiguration(Configuration config) {
+		this.config = config;
 	}
 	
+	/**
+	 * prepares a scene, based on the accumulated draw calls, for rendering.
+	 */
 	@Override
 	public void finish() {
-		textureManager.releaseAll();
-	}
-
-	public static final int MAX_TEXTURE_LAYERS = 4;
-	
-	public static final void setCameraMatrices(GL2 gl, Camera camera) {
-		VectorXYZ pos = camera.getPos();
-		VectorXYZ lookAt = camera.getLookAt();
-		VectorXYZ up = camera.getUp();
-		new GLU().gluLookAt(
-				pos.x, pos.y, -pos.z,
-				lookAt.x, lookAt.y, -lookAt.z,
-				up.x, up.y, -up.z);
+		
+		if (isFinished()) return;
+		
+		if ("DisplayList".equals(config.getString("joglImplementation"))) {
+			renderer = new JOGLRendererDisplayList(
+					gl, textureManager, primitiveBuffer);
+		} else {
+			renderer = new JOGLRendererVBO(
+					gl, textureManager, primitiveBuffer);
+		}
+		
 	}
 	
-	public static final void setProjectionMatrices(GL2 gl, Projection projection) {
-		setProjectionMatricesForPart(gl, projection, 0, 1, 0, 1);
+	public boolean isFinished() {
+		return renderer != null;
 	}
-
+	
+	public void render(Camera camera, Projection projection) {
+		renderPart(camera, projection, 0, 1, 0, 1);
+	}
+	
 	/**
-	 * similar to {@link #setProjectionMatrices(GL, Projection)},
+	 * similar to {@link #render(Camera, Projection)},
 	 * but allows rendering only a part of the "normal" image.
 	 * For example, with xStart=0, xEnd=0.5, yStart=0 and yEnd=1,
 	 * only the left half of the full image will be rendered,
@@ -242,7 +233,80 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	 * 
 	 * Only supported for orthographic projections!
 	 */
-	public static final void setProjectionMatricesForPart(GL2 gl, Projection projection,
+	public void renderPart(Camera camera, Projection projection,
+			double xStart, double xEnd, double yStart, double yEnd) {
+		
+		if (renderer == null) {
+			throw new IllegalStateException("finish must be called first");
+		}
+		
+		/* apply camera and projection information */
+		
+		applyProjectionMatricesForPart(gl, projection,
+				xStart, xEnd, yStart, yEnd);
+		
+		applyCameraMatrices(gl, camera);
+		
+		/* apply global rendering parameters */
+		
+		applyRenderingParameters(gl, renderingParameters);
+		applyLightingParameters(gl, globalLightingParameters);
+		
+		/* render primitives */
+		
+		renderer.render(camera, projection);
+		
+		for (NonAreaPrimitive nonAreaPrimitive : nonAreaPrimitives) {
+			
+			gl.glLineWidth(nonAreaPrimitive.width);
+			
+			Color c = nonAreaPrimitive.color;
+			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f);
+			
+			gl.glBegin(getGLConstant(nonAreaPrimitive.type));
+	        
+			for (VectorXYZ v : nonAreaPrimitive.vs) {
+		        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());
+			}
+			
+	        gl.glEnd();
+			
+		}
+		
+	}
+	
+	public void freeResources() {
+		
+		textureManager.releaseAll();
+		
+		reset();
+		
+	}
+	
+	static final void applyCameraMatrices(GL2 gl, Camera camera) {
+		
+    	gl.glLoadIdentity();
+		
+		VectorXYZ pos = camera.getPos();
+		VectorXYZ lookAt = camera.getLookAt();
+		VectorXYZ up = camera.getUp();
+		new GLU().gluLookAt(
+				pos.x, pos.y, -pos.z,
+				lookAt.x, lookAt.y, -lookAt.z,
+				up.x, up.y, -up.z);
+		
+	}
+	
+	static final void applyProjectionMatrices(GL2 gl, Projection projection) {
+		applyProjectionMatricesForPart(gl, projection, 0, 1, 0, 1);
+	}
+
+	/**
+	 * similar to {@link #applyProjectionMatrices(GL, Projection)},
+	 * but allows rendering only a part of the "normal" image.
+	 * @see
+	 */
+	static final void applyProjectionMatricesForPart(GL2 gl, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {
 		
 		if ((xStart != 0 || xEnd != 1 || yStart != 0 || yEnd != 1)
@@ -279,32 +343,72 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		gl.glMatrixMode(GL_MODELVIEW);
 		
 	}
-
-	public static final void setLightingParameters(GL2 gl,
-			GlobalLightingParameters lighting) {
-
-		gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
-				getFloatBuffer(lighting.globalAmbientColor));
+	
+	static final void applyRenderingParameters(GL2 gl,
+			JOGLRenderingParameters parameters) {
 		
-		gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
-				getFloatBuffer(Color.BLACK));
-		gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
-				getFloatBuffer(lighting.lightColorDiffuse));
-		gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
-				getFloatBuffer(lighting.lightColorSpecular));
+		/* backface culling */
 		
-		gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
-					(float)lighting.lightFromDirection.x,
-					(float)lighting.lightFromDirection.y,
-					-(float)lighting.lightFromDirection.z,
-					0.0f}, 0);
+		if (parameters.frontFace == null) {
+			gl.glDisable(GL_CULL_FACE);
+		} else {
+			gl.glFrontFace(GL_CCW);
+			gl.glCullFace(GL_BACK);
+			gl.glEnable (GL_CULL_FACE);
+		}
 		
-		gl.glEnable(GL_LIGHT0);
-		gl.glEnable(GL_LIGHTING);
+		/* wireframe mode */
+		
+		if (parameters.wireframe) {
+    		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    	} else {
+    		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    	}
+		
+		/* z buffer */
+		
+		if (parameters.useZBuffer) {
+			gl.glEnable(GL_DEPTH_TEST);
+		} else {
+			gl.glDisable(GL_DEPTH_TEST);
+		}
 		
 	}
 	
-	public static final void setMaterial(GL2 gl, Material material,
+	static final void applyLightingParameters(GL2 gl,
+			GlobalLightingParameters lighting) {
+		
+		if (lighting == null) {
+
+			gl.glDisable(GL_LIGHT0);
+			gl.glDisable(GL_LIGHTING);
+			
+		} else {
+			
+			gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
+					getFloatBuffer(lighting.globalAmbientColor));
+			
+			gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
+					getFloatBuffer(Color.BLACK));
+			gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
+					getFloatBuffer(lighting.lightColorDiffuse));
+			gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
+					getFloatBuffer(lighting.lightColorSpecular));
+			
+			gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
+						(float)lighting.lightFromDirection.x,
+						(float)lighting.lightFromDirection.y,
+						-(float)lighting.lightFromDirection.z,
+						0.0f}, 0);
+			
+			gl.glEnable(GL_LIGHT0);
+			gl.glEnable(GL_LIGHTING);
+			
+		}
+		
+	}
+	
+	static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
 		
 		int numTexLayers = 0;
@@ -323,15 +427,25 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		/* set color */
 		
 		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
+			
+			//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
+			Color c = material.getColor();
+			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
+			
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
 					getFloatBuffer(material.ambientColor()));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
 					getFloatBuffer(material.diffuseColor()));
+			
 		} else {
+			
+			gl.glColor3f(1, 1, 1);
+			
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getAmbientFactor())));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
+			
 		}
 		
 		/* set textures and associated parameters */
@@ -394,13 +508,13 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		
 	}
 
-	public static final FloatBuffer getFloatBuffer(Color color) {
+	static final FloatBuffer getFloatBuffer(Color color) {
 		float colorArray[] = {0, 0, 0, 1};
 		color.getRGBColorComponents(colorArray);
 		return FloatBuffer.wrap(colorArray);
 	}
 
-	public static final int getGLConstant(Type type) {
+	static final int getGLConstant(Type type) {
 		switch (type) {
 		case TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
 		case TRIANGLE_FAN: return GL_TRIANGLE_FAN;
@@ -410,7 +524,17 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		}
 	}
 
-	public static final int getGLTextureConstant(int textureNumber) {
+	static final int getGLConstant(NonAreaPrimitive.Type type) {
+		switch (type) {
+		case POINTS: return GL_POINTS;
+		case LINES: return GL_LINES;
+		case LINE_STRIP: return GL_LINE_STRIP;
+		case LINE_LOOP: return GL_LINE_LOOP;
+		default: throw new Error("programming error: unhandled primitive type");
+		}
+	}
+
+	static final int getGLTextureConstant(int textureNumber) {
 		switch (textureNumber) {
 		case 0: return GL_TEXTURE0;
 		case 1: return GL_TEXTURE1;
@@ -419,8 +543,46 @@ public class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
+	
+	/**
+	 * clears the rendering surface and the z buffer
+	 * 
+	 * @param clearColor  background color before rendering any primitives;
+	 *                     null uses a previously defined clear color
+	 */
+	public static final void clearGL(GL2 gl, Color clearColor) {
+		
+		if (clearColor != null) {
+			float[] c = {0f, 0f, 0f};
+			clearColor.getColorComponents(c);
+			gl.glClearColor(c[0], c[1], c[2], 1.0f);
+		}
+		
+		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+	}
+	
+	private static final TextRenderer textRenderer = new TextRenderer(
+			new Font("SansSerif", Font.PLAIN, 12), true, false);
+	//needs quite a bit of memory, so it must not create an instance for each use!
+	
+	public static final void drawText(String string, Vector3D pos, Color color) {
+		textRenderer.setColor(color);
+		textRenderer.begin3DRendering();
+		textRenderer.draw3D(string,
+				(float)pos.getX(), (float)pos.getY(), -(float)pos.getZ(),
+				0.05f);
+	}
 
-	public static void drawBackgoundImage(GL2 gl, File backgroundImage,
+	public static final void drawText(String string, int x, int y,
+			int screenWidth, int screenHeight, Color color) {
+		textRenderer.beginRendering(screenWidth, screenHeight);
+		textRenderer.setColor(color);
+		textRenderer.draw(string, x, y);
+		textRenderer.endRendering();
+	}
+	
+	public static final void drawBackgoundImage(GL2 gl, File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {

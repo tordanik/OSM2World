@@ -45,7 +45,6 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
-import org.osm2world.viewer.view.debug.HelpView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
@@ -63,7 +62,6 @@ import org.osm2world.viewer.view.debug.TerrainElevationGridDebugView;
 import org.osm2world.viewer.view.debug.TerrainNormalsDebugView;
 import org.osm2world.viewer.view.debug.TerrainOutlineDebugView;
 import org.osm2world.viewer.view.debug.TerrainView;
-import org.osm2world.viewer.view.debug.TriangulationDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
@@ -107,10 +105,6 @@ public class ViewerFrame extends JFrame {
 		glCanvas.addMouseWheelListener(navigation);
 		glCanvas.addKeyListener(navigation);
 		
-		// also add the help view, but don't include it in the menu
-		new ToggleDebugViewAction(new HelpView(), -1, true,
-				this, data, renderOptions);
-		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		pack();
@@ -143,10 +137,10 @@ public class ViewerFrame extends JFrame {
 			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleBackfaceCullingAction(this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new WorldObjectView(), KeyEvent.VK_W, true,
+					new WorldObjectView(renderOptions), KeyEvent.VK_W, true,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainView(), KeyEvent.VK_T, true,
+					new TerrainView(renderOptions), KeyEvent.VK_T, true,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new SkyboxView(), -1, true,
@@ -195,9 +189,6 @@ public class ViewerFrame extends JFrame {
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new WorldObjectNormalsDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TriangulationDebugView(), -1, false,
 					this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new MapDataBoundsDebugView(), -1, false,

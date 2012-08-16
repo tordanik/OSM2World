@@ -6,13 +6,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.terrain.data.TerrainPatch;
 
@@ -27,7 +23,7 @@ public class EleDebugView extends DebugView {
 	}
 	
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+	protected void fillTarget(JOGLTarget target) {
 		
 		/* collect all points */
 		
@@ -68,7 +64,7 @@ public class EleDebugView extends DebugView {
 			Color color = interpolateGradientColor((float)colorGradientValue,
 					Color.GREEN, Color.YELLOW, Color.RED);
 			
-			drawBoxAround(new JOGLTarget(gl, camera), point, color, 0.4f);
+			drawBoxAround(target, point, color, 0.4f);
 			
 		}
 		

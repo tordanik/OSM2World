@@ -2,14 +2,10 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.network.NetworkWaySegmentWorldObject;
@@ -23,9 +19,7 @@ public class NetworkDebugView extends DebugView {
 	private static final Color CUT_COLOR = Color.ORANGE;
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-				
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	public void fillTarget(JOGLTarget target) {
 						
 		for (MapWaySegment line : map.getMapWaySegments()) {
 			for (WorldObject worldObject : line.getRepresentations()) {
@@ -61,13 +55,13 @@ public class NetworkDebugView extends DebugView {
 				
 	}
 	
-	private static void drawVectorAt(JOGLTarget util,
+	private static void drawVectorAt(JOGLTarget target,
 			Color color, VectorXZ vector, MapNode start) {
 		
 		VectorXYZ startV = start.getPos().xyz(0);
 		VectorXYZ endV = startV.add(vector);
 		
-		util.drawArrow(color, 0.3f * (float)vector.length(), startV, endV);
+		drawArrow(target, color, 0.3f * (float)vector.length(), startV, endV);
 		
 	}
 	

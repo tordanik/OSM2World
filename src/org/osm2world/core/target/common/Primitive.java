@@ -14,23 +14,23 @@ public class Primitive {
 	
 	public final Type type;
 	
-	public final int[] indices;
+	public final List<VectorXYZ> vertices;
 		
-	public final List<VectorXYZ> normals; //TODO: why have indexed vertices, but direct refs to normals?
+	public final List<VectorXYZ> normals;
 	
 	public final List<List<VectorXZ>> texCoordLists;
 	
-	public Primitive(Type type, int[] indices, List<VectorXYZ> normals,
-			List<List<VectorXZ>> texCoordLists) {
+	public Primitive(Type type, List<VectorXYZ> vertices,
+			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 		this.type = type;
-		this.indices = indices;
+		this.vertices = vertices;
 		this.normals = normals;
 		this.texCoordLists = texCoordLists;
 	}
 	
 	@Override
 	public String toString() {
-		return "{" + type + ", " + indices + "}";
+		return "{" + type + ", " + vertices + "}";
 	}
 	
 }

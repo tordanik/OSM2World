@@ -2,14 +2,10 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.index.Map2dTree;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 public class Map2dTreeDebugView extends DebugView {
@@ -28,13 +24,11 @@ public class Map2dTreeDebugView extends DebugView {
 	}
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
+	public void fillTarget(JOGLTarget target) {
 		
 		if (map2dTree == null) {
 			map2dTree = new RenderableMap2dTree(map);
 		}
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
 		
 		map2dTree.renderTo(target);
 		
@@ -71,7 +65,7 @@ public class Map2dTreeDebugView extends DebugView {
 				
 				if (innerNode.splitAlongX) {
 					
-					target.drawLineStrip(lineColor,
+					target.drawLineStrip(lineColor, 1,
 							new VectorXYZ(innerNode.splitValue, 0, minZ),
 							new VectorXYZ(innerNode.splitValue, 0, maxZ));
 					
@@ -87,7 +81,7 @@ public class Map2dTreeDebugView extends DebugView {
 					
 				} else {
 					
-					target.drawLineStrip(lineColor,
+					target.drawLineStrip(lineColor, 1,
 							new VectorXYZ(minX, 0, innerNode.splitValue),
 							new VectorXYZ(maxX, 0, innerNode.splitValue));
 					

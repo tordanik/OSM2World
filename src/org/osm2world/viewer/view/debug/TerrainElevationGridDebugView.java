@@ -2,12 +2,8 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainPoint;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -19,9 +15,7 @@ public class TerrainElevationGridDebugView extends DebugView {
 	private static final Color GRID_COLOR = Color.LIGHT_GRAY;
 		
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	public void fillTarget(JOGLTarget target) {
 
 		TerrainPoint[][] grid = eleData.getTerrainPointGrid();
 		for (int x = 0; x < grid.length; x++) {
