@@ -36,6 +36,7 @@ import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.BuildingModule;
 import org.osm2world.core.world.modules.InvisibleModule;
 import org.osm2world.core.world.modules.ParkingModule;
+import org.osm2world.core.world.modules.PoolModule;
 import org.osm2world.core.world.modules.PowerModule;
 import org.osm2world.core.world.modules.RailwayModule;
 import org.osm2world.core.world.modules.RoadModule;
@@ -141,6 +142,7 @@ public class ConversionFacade {
 				new TreeModule(),
 				new StreetFurnitureModule(),
 				new WaterModule(),
+				new PoolModule(),
 				new BarrierModule(),
 				new PowerModule(),
 				new BridgeModule(),
