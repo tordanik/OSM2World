@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.iterators.EmptyListIterator;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
@@ -137,6 +138,13 @@ public final class Materials {
 	public static final ConfMaterial TREE_BILLBOARD_CONIFEROUS =
 		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
 				Transparency.FALSE, Collections.<TextureData>emptyList());
+	
+	public static final ConfMaterial POWER_TOWER_VERTICAL =
+		new ConfMaterial(Lighting.FLAT, new Color(.7f, .7f, .7f), 1f, 0f,
+				Transparency.BINARY, Collections.<TextureData>emptyList());
+	public static final ConfMaterial POWER_TOWER_HORIZONTAL =
+			new ConfMaterial(Lighting.FLAT, new Color(.7f, .7f, .7f), 1f, 0f,
+					Transparency.BINARY, Collections.<TextureData>emptyList());
 	
 	public static final ConfMaterial ADVERTISING_POSTER =
 		new ConfMaterial(Lighting.FLAT, new Color(1, 1, 0.8f));

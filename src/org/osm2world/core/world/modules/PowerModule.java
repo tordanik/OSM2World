@@ -5,6 +5,8 @@ import static java.util.Collections.nCopies;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapElement;
@@ -28,12 +30,46 @@ public class PowerModule extends AbstractModule {
 	
 	@Override
 	protected void applyToNode(MapNode node) {
+		
 		if (node.getTags().contains("power", "pole")) {
 			node.addRepresentation(new Powerpole(node));
 		}
 		if (node.getTags().contains("power", "generator")
 			&& node.getTags().contains("generator:source", "wind")) {
 			node.addRepresentation(new WindTurbine(node));
+		}
+		
+		if (node.getTags().contains("power", "tower")) {
+
+			List<MapWaySegment> powerLines = new ArrayList<MapWaySegment>();
+			for (MapWaySegment way : node.getConnectedWaySegments()) {
+				if (way.getTags().contains("power", "line")) {
+					powerLines.add(way);
+				}
+			}
+
+			VectorXZ dir = VectorXZ.NULL_VECTOR;
+			int cables = -1;
+			int voltage = -1;
+			for (MapWaySegment powerLine : powerLines) {
+				dir = dir.add(powerLine.getDirection());
+				
+				try {
+					cables = Integer.valueOf(powerLine.getTags().getValue("cables"));
+				} catch (NumberFormatException e) {}
+				try {
+					voltage = Integer.valueOf(powerLine.getTags().getValue("voltage"));
+				} catch (NumberFormatException e) {}
+			}
+			dir = dir.mult(1.0/powerLines.size());
+			
+			if (node.getPrimaryRepresentation() == null) {
+				if (voltage >= 50000 || cables >= 6) {
+					node.addRepresentation(new HighVoltagePowerTower(node, cables, voltage, dir));
+				} else {
+					node.addRepresentation(new PowerTower(node, cables, dir));
+				}
+			}
 		}
 	}
 	
@@ -261,4 +297,284 @@ public class PowerModule extends AbstractModule {
 		
 	}
 	
+
+	private static final class PowerTower extends NoOutlineNodeWorldObject
+		implements RenderableToAllTargets {
+
+		private VectorXZ direction;
+		private int cables;
+	
+		public PowerTower(MapNode node, int cables, VectorXZ direction) {
+			super(node);
+		
+			this.cables = cables;
+			this.direction = direction;
+		}
+	
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return parseHeight(node.getTags(), 14);
+		}
+
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			VectorXYZ base = node.getElevationProfile().getPointWithEle().add(0, -0.5, 0); 
+			double height = parseHeight(node.getTags(), 14);
+
+			Material material = Materials.getSurfaceMaterial(node.getTags().getValue("material"));
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(node.getTags().getValue("surface"), Materials.STEEL);
+			}
+			
+			// draw base column
+			target.drawColumn(material, null, base, height, 0.5, 0.25, true, true);
+			
+			// draw cross "column"
+			target.drawBox(material, base.add(0, height, 0), direction, 0.25, 5, 0.25);
+		
+			// draw pieces holding the power lines
+			base = base.add(0, height + 0.25, 0);
+			target.drawColumn(Materials.CONCRETE, null, base.add(direction.rightNormal().mult(2)), 0.5, 0.1, 0.1, true, true);
+			target.drawColumn(Materials.CONCRETE, null, base.add(direction.rightNormal().mult(-2)), 0.5, 0.1, 0.1, true, true);
+			if (cables >= 3) {
+				target.drawColumn(Materials.CONCRETE, null, base, 0.5, 0.1, 0.1, true, true);
+			}
+			if (cables >= 5) {
+				target.drawColumn(Materials.CONCRETE, null, base.add(direction.rightNormal().mult(1.5)), -0.5, 0.1, 0.1, true, true);
+				target.drawColumn(Materials.CONCRETE, null, base.add(direction.rightNormal().mult(-1.5)), -0.5, 0.1, 0.1, true, true);				
+			}
+		}
+	}
+
+
+	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject
+		implements RenderableToAllTargets {
+
+		private int cables;
+		private int voltage;
+		private VectorXZ direction;
+	
+		public HighVoltagePowerTower(MapNode node, int cables, int voltage, VectorXZ direction) {
+			super(node);
+			this.cables = cables;
+			this.voltage = voltage;
+			this.direction = direction;
+		}
+	
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return getTowerHeight();
+		}
+
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+
+		/**
+		 * parse height tag or provide a reasonable default based on the tower's voltage
+		 */
+		private double getTowerHeight() {
+
+			float default_height = voltage > 150000 ? 40 : 30;
+			double height = parseHeight(node.getTags(), default_height);
+
+			return height;
+		}
+		
+		private VectorXZ[][] getCorners(VectorXZ center, double diameter) {
+			double half = diameter/2;			
+			VectorXZ ortho = direction.rightNormal();
+			
+			VectorXZ right_in = center.add(direction.mult(half));
+			VectorXZ left_in = center.add(direction.mult(-half));
+			VectorXZ right_out = center.add(direction.mult(half));
+			VectorXZ left_out = center.add(direction.mult(-half));
+
+			// TODO: if we can switch off backface culling we'd only need one face here
+			return new VectorXZ[][]{
+					new VectorXZ[]{
+							right_in.add(ortho.mult(-half)),
+							right_in.add(ortho.mult(half)),
+							left_in.add(ortho.mult(half)),
+							left_in.add(ortho.mult(-half))
+					},
+					new VectorXZ[]{
+							right_out.add(ortho.mult(half)),
+							right_out.add(ortho.mult(-half)),
+							left_out.add(ortho.mult(-half)),
+							left_out.add(ortho.mult(half))				
+					}};
+		}
+	
+		private void drawSegment(Target<?> target, 
+				VectorXZ[] low, VectorXZ[] high, double base, double height) {
+			
+			for (int a = 0; a < 4; a++) {
+			
+				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+				List<VectorXZ> tex = new ArrayList<VectorXZ>();
+				List<List<VectorXZ>> texList = 
+					nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
+				
+				for (int i = 0; i < 2; i++) {
+					int idx = (a+i)%4;
+					vs.add(high[idx].xyz(height));
+					vs.add(low[idx].xyz(base));
+					tex.add(new VectorXZ(i, 1));
+					tex.add(new VectorXZ(i, 0));
+				}
+				
+				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
+			}			
+		}
+	
+		private void drawHorizontalSegment(Target<?> target,
+				VectorXZ left, VectorXZ right, double base, 
+				double left_height, double right_height) {
+
+			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+			List<VectorXZ> tex = new ArrayList<VectorXZ>();
+			List<List<VectorXZ>> texList = 
+					nCopies(Materials.POWER_TOWER_HORIZONTAL.getNumTextureLayers(), tex);
+		
+			vs.add(right.xyz(base));
+			vs.add(left.xyz(base));
+			vs.add(right.xyz(base+right_height));
+			vs.add(left.xyz(base+left_height));
+		
+			tex.add(new VectorXZ(1, 1));
+			tex.add(new VectorXZ(0, 1));
+			tex.add(new VectorXZ(1, 0));
+			tex.add(new VectorXZ(0, 0));
+		
+			target.drawTriangleStrip(Materials.POWER_TOWER_HORIZONTAL, vs, texList);
+		}
+
+		private void drawHorizontalTop(Target<?> target, VectorXZ[][] points, 
+				double base, double border, double middle, double center) {
+			
+			double[] height = new double[]{border, middle, center, center, middle, border};
+			
+			int len = height.length;
+			for (int a = 0; a < len-1; a++) {
+			
+				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+				List<VectorXZ> tex = new ArrayList<VectorXZ>();
+				List<List<VectorXZ>> texList = 
+						nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
+
+				for (int i = 0; i < 2; i++) {			
+					vs.add(points[1][a+i].xyz(base + height[a+i]));
+					vs.add(points[2][a+i].xyz(base + height[a+i]));
+					tex.add(new VectorXZ(0, i));
+					tex.add(new VectorXZ(1, i));
+				}
+				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
+			}
+		}
+		
+		
+		private double drawPart(Target<?> target, double elevation,
+				int nr_segments, double segment_height, double ground_size,
+				double top_size) {
+
+			for (int i = 0; i < nr_segments; i++) {
+
+				double bottom = ground_size + i * (top_size - ground_size) / nr_segments;
+				double top = ground_size + (i + 1) * (top_size - ground_size) / nr_segments;
+
+				VectorXZ[][] low = getCorners(node.getPos(), bottom);
+				VectorXZ[][] high = getCorners(node.getPos(), top);
+
+				drawSegment(target, low[0], high[0], elevation, elevation + segment_height);
+				drawSegment(target, low[1], high[1], elevation, elevation + segment_height);
+
+				elevation += segment_height;
+			}
+
+			return elevation;
+		}
+
+		private VectorXZ[] getPoleCoordinates(VectorXZ base,
+				VectorXZ direction, double width, double size) {
+			
+			return new VectorXZ[] { 
+					base.add(direction.mult(-width - size)),
+					base.add(direction.mult(-width / 2 - size)),
+					base.add(direction.mult(-size)),
+					base.add(direction.mult(size)),
+					base.add(direction.mult(width / 2 + size)),
+					base.add(direction.mult(width + size)) 
+			};
+		}
+
+		private void drawHorizontalPole(Target<?> target, double elevation,
+				double diameter, double width) {
+
+			double half = diameter / 2;
+			VectorXZ ortho = direction.rightNormal();
+
+			// TODO: if we can switch off backface culling we'd only need one face here
+			VectorXZ[][] draw = new VectorXZ[][] {
+					getPoleCoordinates(node.getPos().add(direction.mult(-half)), ortho, width, half),
+					getPoleCoordinates(node.getPos().add(direction.mult(-half)), ortho.invert(), width, half),
+					getPoleCoordinates(node.getPos().add(direction.mult(half)), ortho.invert(), width, half),
+					getPoleCoordinates(node.getPos().add(direction.mult(half)), ortho, width, half)
+			};
+
+			for (int i = 0; i < 4; i++) {
+				drawHorizontalSegment(target, draw[i][0], draw[i][1], elevation, 0.1, diameter/2);
+				drawHorizontalSegment(target, draw[i][1], draw[i][2], elevation, diameter/2, diameter);
+				drawHorizontalSegment(target, draw[i][2], draw[i][3], elevation, diameter, diameter);
+				drawHorizontalSegment(target, draw[i][3], draw[i][4], elevation, diameter, diameter/2);
+				drawHorizontalSegment(target, draw[i][4], draw[i][5], elevation, diameter/2, 0.1);
+			}
+			
+			drawHorizontalTop(target, draw, elevation, 0.1, diameter/2, diameter);
+		}
+
+		// TODO we're missing the power lines and the ceramics to hold the lines
+		
+		@Override
+		public void renderTo(Target<?> target) {
+
+			float pole_width = voltage > 150000 ? 16 : 13;
+			float[] tower_width = voltage > 150000 ? new float[]{11,6,4f,0} : new float[]{8,5,3,0};
+			double height = getTowerHeight();
+
+			double segment_height = 2.5;
+			double base = node.getElevationProfile().getEle() - 0.5;
+
+			int parts = (int) (height / segment_height);
+			int low_parts = parts / 5;
+
+			// draw the tower itself
+			double ele = drawPart(target, base, low_parts, segment_height, tower_width[0], tower_width[1]);
+			ele = drawPart(target, ele, 3 * low_parts, segment_height, tower_width[1], tower_width[2]);
+			drawPart(target, ele, low_parts, segment_height, tower_width[2], tower_width[3]);
+
+			// draw the vertical poles
+			drawHorizontalPole(target, base + height/2, 0.7*tower_width[1], pole_width);
+			if (cables > 4) {
+				drawHorizontalPole(target, ele, 0.55*tower_width[2], 0.6*pole_width);
+			}
+		}
+	}
 }
