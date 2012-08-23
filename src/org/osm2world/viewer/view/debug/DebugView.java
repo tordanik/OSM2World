@@ -6,6 +6,7 @@ import java.awt.Color;
 
 import javax.media.opengl.GL2;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
@@ -24,6 +25,8 @@ import org.osm2world.core.terrain.data.Terrain;
  */
 public abstract class DebugView {
 	
+	protected Configuration config;
+	
 	protected MapData map;
 	protected Terrain terrain;
 	protected CellularTerrainElevation eleData;
@@ -32,6 +35,16 @@ public abstract class DebugView {
 	protected Projection projection;
 	
 	private JOGLTarget target = null;
+	
+	public final void setConfiguration(Configuration config) {
+		
+		this.config = config;
+		
+		if (target != null) {
+			target.setConfiguration(config);
+		}
+		
+	}
 	
 	public void setConversionResults(Results conversionResults) {
 	
@@ -66,6 +79,8 @@ public abstract class DebugView {
 	/**
 	 * renders the content added by {@link #fillTarget(JOGLTarget)}.
 	 * Only has an effect if {@link #canBeUsed()} is true.
+	 * 
+	 * @param gl  needs to be the same gl as in previous calls
 	 */
 	public void renderTo(GL2 gl, Camera camera, Projection projection) {
 		
@@ -74,7 +89,7 @@ public abstract class DebugView {
 			if (target == null) {
 				target = new JOGLTarget(gl, new JOGLRenderingParameters(
 						null, false, true), null);
-				//TODO: what if gl has changed? Should be set in DebugView constructor.
+				target.setConfiguration(config);
 			}
 			
 			boolean viewChanged = !camera.equals(this.camera)

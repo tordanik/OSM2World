@@ -1,9 +1,9 @@
 package org.osm2world.viewer.view;
 
+import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
 
 import java.awt.BorderLayout;
-import java.awt.event.KeyEvent;
 import java.io.File;
 
 import javax.swing.ButtonGroup;
@@ -44,6 +44,7 @@ import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
+import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
@@ -71,6 +72,7 @@ public class ViewerFrame extends JFrame {
 	
 	private final Data data;
 	private final RenderOptions renderOptions;
+	private final Configuration config;
 	private final MessageManager messageManager;
 		
 	public ViewerFrame(final Data data, final MessageManager messageManager,
@@ -80,10 +82,11 @@ public class ViewerFrame extends JFrame {
 
 		this.data = data;
 		this.renderOptions = renderOptions;
+		this.config = config;
 		this.messageManager = messageManager;
 		
 		data.setConfig(config);
-		
+				
 		createMenuBar();
 		
 		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions);
@@ -108,7 +111,7 @@ public class ViewerFrame extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		pack();
-
+		
 	}
 
 	private void createMenuBar() {
@@ -118,7 +121,7 @@ public class ViewerFrame extends JFrame {
 		{ //"File"
 
 			JMenu subMenu = new JMenu("File");
-			subMenu.setMnemonic(KeyEvent.VK_F);
+			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
 			subMenu.add(new ReloadOSMAction(this, data, renderOptions));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
@@ -130,85 +133,65 @@ public class ViewerFrame extends JFrame {
 			menu.add(subMenu);
 
 		} { //"View"
-
+			
 			JMenu subMenu = new JMenu("View");
-			subMenu.setMnemonic(KeyEvent.VK_V);
+			subMenu.setMnemonic(VK_V);
 			
 			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleBackfaceCullingAction(this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new WorldObjectView(renderOptions), KeyEvent.VK_W, true,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainView(renderOptions), KeyEvent.VK_T, true,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new SkyboxView(), -1, true,
-					this, data, renderOptions)));
-
+			
+			initAndAddDebugView(subMenu, VK_W, true,
+					new WorldObjectView(renderOptions));
+			initAndAddDebugView(subMenu, VK_T, true,
+					new TerrainView(renderOptions));
+			initAndAddDebugView(subMenu, -1, true,
+					new SkyboxView());
+			
 			subMenu.addSeparator();
 			
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainBoundaryAABBDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainAABBDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new ClearingDebugView(), KeyEvent.VK_L, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new MapDataDebugView(), KeyEvent.VK_G, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new MapDataElevationDebugView(), KeyEvent.VK_E, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new RoofDataDebugView(), KeyEvent.VK_R, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new NetworkDebugView(), KeyEvent.VK_X, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new QuadtreeDebugView(), KeyEvent.VK_Q, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new Map2dTreeDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainCellLabelsView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainBoundaryDebugView(), KeyEvent.VK_B, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainOutlineDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainNormalsDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new WorldObjectNormalsDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new MapDataBoundsDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new OrthoBoundsDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new TerrainElevationGridDebugView(), -1, false,
-					this, data, renderOptions)));
-			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
-					new EleDebugView(), -1, false,
-					this, data, renderOptions)));
-						
+			initAndAddDebugView(subMenu, -1, false,
+					new TerrainBoundaryAABBDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new TerrainAABBDebugView());
+			initAndAddDebugView(subMenu, VK_L, false,
+					new ClearingDebugView());
+			initAndAddDebugView(subMenu, VK_G, false,
+					new MapDataDebugView());
+			initAndAddDebugView(subMenu, VK_E, false,
+					new MapDataElevationDebugView());
+			initAndAddDebugView(subMenu, VK_R, false,
+					new RoofDataDebugView());
+			initAndAddDebugView(subMenu, VK_X, false,
+					new NetworkDebugView());
+			initAndAddDebugView(subMenu, VK_Q, false,
+					new QuadtreeDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new Map2dTreeDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new TerrainCellLabelsView());
+			initAndAddDebugView(subMenu, VK_B, false,
+					new TerrainBoundaryDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new TerrainOutlineDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new TerrainNormalsDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new WorldObjectNormalsDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new MapDataBoundsDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new OrthoBoundsDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new TerrainElevationGridDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new EleDebugView());
+			
 			menu.add(subMenu);
 			
 		} { //"Camera"
 
 			JMenu subMenu = new JMenu("Camera");
-			subMenu.setMnemonic(KeyEvent.VK_C);
+			subMenu.setMnemonic(VK_C);
 			subMenu.add(new ResetCameraAction(this, data, renderOptions));
 			subMenu.add(new SetCameraToCoordinateAction(this, data, renderOptions));
 			subMenu.add(new OrthoTileAction(this, data, renderOptions));
@@ -222,7 +205,7 @@ public class ViewerFrame extends JFrame {
 			JMenu subMenu = new JMenu("Options");
 			JMenu eleCalcMenu = new JMenu("ElevationCalculator");
 			subMenu.add(eleCalcMenu);
-			subMenu.setMnemonic(KeyEvent.VK_O);
+			subMenu.setMnemonic(VK_O);
 			
 			ButtonGroup eleCalcGroup = new ButtonGroup();
 			
@@ -249,13 +232,27 @@ public class ViewerFrame extends JFrame {
 			JMenu subMenu = new JMenu("Help");
 			subMenu.add(new HelpControlsAction());
 			subMenu.add(new AboutAction());
-			subMenu.setMnemonic(KeyEvent.VK_H);
+			subMenu.setMnemonic(VK_H);
 
 			menu.add(subMenu);
 
 		}
 
 		this.setJMenuBar(menu);
+		
+	}
+
+	/**
+	 * initializes a debug view and adds a menu item for it
+	 */
+	private void initAndAddDebugView(JMenu menu, int keyEvent,
+			boolean enabled, DebugView debugView) {
+		
+		debugView.setConfiguration(config);
+		
+		menu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
+				debugView, keyEvent, enabled,
+				this, data, renderOptions)));
 		
 	}
 	
