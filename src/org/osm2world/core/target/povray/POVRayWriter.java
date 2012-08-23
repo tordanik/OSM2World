@@ -84,24 +84,28 @@ public final class POVRayWriter {
 			}
 		}
 		
-		target.append("//\n// empty ground around the scene\n//\n\n");
-		
-		target.append("difference {\n");
-		target.append("  plane { y, -0.001 }\n  ");
-		VectorXZ[] boundary = eleData.getBoundaryPolygon().getXZPolygon()
-			.getVertexLoop().toArray(new VectorXZ[0]);
-		target.appendPrism( -100, 1, boundary);
-		target.append("\n");
-		target.appendMaterialOrName(Materials.TERRAIN_DEFAULT);
-		target.append("\n}\n\n");
-		
-		target.append("\n\n//\n//Map data\n//\n\n");
-		
-		TargetUtil.renderWorldObjects(target, mapData);
-
-		target.append("\n\n//\n//Terrain\n//\n\n");
-		
-		terrain.renderTo(target);
+		if (terrain != null) {
+			
+			target.append("//\n// empty ground around the scene\n//\n\n");
+			
+			target.append("difference {\n");
+			target.append("  plane { y, -0.001 }\n  ");
+			VectorXZ[] boundary = eleData.getBoundaryPolygon().getXZPolygon()
+				.getVertexLoop().toArray(new VectorXZ[0]);
+			target.appendPrism( -100, 1, boundary);
+			target.append("\n");
+			target.appendMaterialOrName(Materials.TERRAIN_DEFAULT);
+			target.append("\n}\n\n");
+			
+			target.append("\n\n//\n//Map data\n//\n\n");
+			
+			TargetUtil.renderWorldObjects(target, mapData);
+	
+			target.append("\n\n//\n//Terrain\n//\n\n");
+			
+			terrain.renderTo(target);
+			
+		}
 		
 	}
 

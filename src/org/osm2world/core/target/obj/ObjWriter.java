@@ -60,8 +60,12 @@ public final class ObjWriter {
 		/* write actual file content */
 		
 		ObjTarget target = new ObjTarget(objStream, mtlStream);
+		
 		TargetUtil.renderWorldObjects(target, mapData);
-		TargetUtil.renderObject(target, terrain);
+		
+		if (terrain != null) {
+			TargetUtil.renderObject(target, terrain);
+		}
 		
 		objStream.close();
 		mtlStream.close();
