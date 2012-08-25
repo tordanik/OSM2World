@@ -93,7 +93,7 @@ public class MapData {
 	
 	/**
 	 * returns a boundary based on the bounds in the input file if available,
-	 * otherwise returns the same as {@link #getBoundary()}
+	 * otherwise returns the same as {@link #getDataBoundary()}
 	 */
 	public AxisAlignedBoundingBoxXZ getBoundary() {
 		if (fileBoundary != null) {

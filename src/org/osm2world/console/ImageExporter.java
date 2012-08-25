@@ -172,7 +172,7 @@ public class ImageExporter {
 	/**
 	 * manually frees resources that would otherwise remain used
 	 * until the finalize call. It is no longer possible to use
-	 * {@link #writeImageFile(File, OutputMode, int, int, Camera, Projection)}
+	 * {@link #writeImageFile(File, CLIArgumentsUtil.OutputMode, int, int, Camera, Projection)}
 	 * afterwards.
 	 */
 	public void freeResources() {
@@ -197,15 +197,11 @@ public class ImageExporter {
 	}
 	
 	/**
+	 * renders this ImageExporter's content to a file
 	 * 
-	 * @param outputFile
 	 * @param outputMode   one of the image output modes
 	 * @param x            horizontal resolution
 	 * @param y            vertical resolution
-	 * @param results
-	 * @param camera
-	 * @param projection
-	 * @throws IOException
 	 */
 	public void writeImageFile(
 			File outputFile, OutputMode outputMode,

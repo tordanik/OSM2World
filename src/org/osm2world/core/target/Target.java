@@ -62,7 +62,7 @@ public interface Target<R extends Renderable> {
 	 * draws a triangle strip.
 	 * 
 	 * @param vs             vertices of the triangle strip
-	 * @param texCoordsList  one texture coordinate list per texture.
+	 * @param texCoordLists  one texture coordinate list per texture.
 	 *          Each must have the same length as the "vs" parameter.
 	 *          Can be null if no texturing information is available.
 	 */

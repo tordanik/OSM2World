@@ -20,7 +20,7 @@ public class Camera {
 	/**
 	 * returns the vector that is orthogonal to the connection
 	 * between pos and lookAt and points to the right of it.
-	 * The result has length 1 and is parallel to the XZ plane.
+	 * The result has length 1.
 	 */
 	public VectorXYZ getRight() {
 		return getViewDirection().crossNormalized(up);

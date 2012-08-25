@@ -302,9 +302,8 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	}
 
 	/**
-	 * similar to {@link #applyProjectionMatrices(GL, Projection)},
+	 * similar to {@link #applyProjectionMatrices(GL2, Projection)},
 	 * but allows rendering only a part of the "normal" image.
-	 * @see
 	 */
 	static final void applyProjectionMatricesForPart(GL2 gl, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {

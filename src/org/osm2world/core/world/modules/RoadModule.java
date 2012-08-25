@@ -425,7 +425,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * but build two separate continuous blocks instead.
 	 * 
 	 * @param inboundOnewayRoadsLTR  inbound roads, left to right
-	 * @param inboundOnewayRoadsLTR  outbound roads, left to right
+	 * @param outboundOnewayRoadsLTR  outbound roads, left to right
 	 */
 	private static List<LaneConnection> buildLaneConnections_allOneway(
 			MapNode node, List<Road> inboundOnewayRoadsLTR,

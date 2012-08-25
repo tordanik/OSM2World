@@ -424,7 +424,7 @@ public class ForceElevationCalculator extends AdvancedAbstractElevationCalculato
 			
 			/**
 			 * Calculates the effect of the next application,
-			 * but doesn't modify the {@link ForceNode}s yet.
+			 * but doesn't modify the {@code ForceNode}s yet.
 			 * Must be called once before each {@link #apply()} call.
 			 * This method has been introduced to remove effects of the
 			 * force order (otherwise, later forces could "react"

@@ -465,8 +465,8 @@ public final class GeometryUtil {
 	}
 	
 	/**
-	 * constant used by
-	 * {@link #reproducablyDistributePointsOn(long, PolygonWithHolesXZ, double, double)}
+	 * constant used by {@link #distributePointsOn(long, PolygonWithHolesXZ,
+	 *  AxisAlignedBoundingBoxXZ, double, double)}
 	 */
 	private static final int POINTS_PER_BOX = 100;
 	

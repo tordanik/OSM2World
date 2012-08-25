@@ -154,7 +154,7 @@ public class MapNode implements MapElement {
 	}
 	
 	/**
-	 * creates the ordering described for {@link #getConnectedLines()}
+	 * creates the ordering described for {@link #getConnectedSegments()}
 	 */
 	private void sortLinesByAngle(List<? extends MapSegment> lines) {
 		Collections.sort(lines, new Comparator<MapSegment>() {

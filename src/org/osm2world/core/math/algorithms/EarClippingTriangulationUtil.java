@@ -31,7 +31,7 @@ public final class EarClippingTriangulationUtil {
 			SimplePolygonXZ polygon,
 			Collection<SimplePolygonXZ> holes) {
 		
-		/* 
+		/*
 		 * store the outline of the polygon;
 		 * additional vertices from holes and terrain will be integrated later.
 		 * Use LinkedList for insertion performance.
@@ -75,7 +75,7 @@ public final class EarClippingTriangulationUtil {
 		//It is possible that some holes block other holes' access to the outline.
 		//However, at least one hole will be inserted during each loop execution.
 		while (!remainingHoles.isEmpty()) {
-			for (Iterator<SimplePolygonXZ> holeIt = remainingHoles.iterator(); holeIt.hasNext(); ) {				
+			for (Iterator<SimplePolygonXZ> holeIt = remainingHoles.iterator(); holeIt.hasNext(); ) {
 				SimplePolygonXZ hole = (SimplePolygonXZ) holeIt.next();
 				boolean success = insertHoleInPolygonOutline(polygonOutline, hole, remainingHoles);
 				if (success) {
@@ -92,7 +92,7 @@ public final class EarClippingTriangulationUtil {
 	 * @return       true if inserting the hole was successful
 	 */
 	static final boolean insertHoleInPolygonOutline(
-			List<VectorXZ> polygonOutline, SimplePolygonXZ hole, List<SimplePolygonXZ> holes) {	
+			List<VectorXZ> polygonOutline, SimplePolygonXZ hole, List<SimplePolygonXZ> holes) {
 		
 		int innerIndex;
 		Integer outerIndex = null;
@@ -101,7 +101,7 @@ public final class EarClippingTriangulationUtil {
 		
 		for (innerIndex = 0; innerIndex < holeVertices.size(); innerIndex++) {
 			outerIndex = findVisibleOutlineVertex(polygonOutline,
-					holeVertices.get(innerIndex), holes);			
+					holeVertices.get(innerIndex), holes);
 			if (outerIndex != null) { break; }
 		}
 		
@@ -113,12 +113,12 @@ public final class EarClippingTriangulationUtil {
 			
 			polygonOutline.add(outerIndex+1, polygonOutline.get(outerIndex));
 			
-			if (hole.isClockwise() ^ outerPolygon.isClockwise()) {				
-				polygonOutline.addAll(outerIndex+1, 
-						rearrangeOutline(hole.getVertexLoop(), innerIndex, false));				
+			if (hole.isClockwise() ^ outerPolygon.isClockwise()) {
+				polygonOutline.addAll(outerIndex+1,
+						rearrangeOutline(hole.getVertexLoop(), innerIndex, false));
 			} else {
-				polygonOutline.addAll(outerIndex+1, 
-						rearrangeOutline(hole.getVertexLoop(), innerIndex, true));			
+				polygonOutline.addAll(outerIndex+1,
+						rearrangeOutline(hole.getVertexLoop(), innerIndex, true));
 			}
 			
 			return true;
@@ -151,10 +151,10 @@ public final class EarClippingTriangulationUtil {
 			
 			/* add vertex to new outline */
 			
-			if (currentIndex == 0 || currentIndex == outline.size() - 1) { 
+			if (currentIndex == 0 || currentIndex == outline.size() - 1) {
 				if (!oldStartAdded) {//remove original duplication of first/last node
 					newOutline.add(outline.get(0));
-					oldStartAdded = true;					
+					oldStartAdded = true;
 				}
 			} else {
 				newOutline.add(outline.get(currentIndex));
@@ -186,7 +186,7 @@ public final class EarClippingTriangulationUtil {
 	}
 
 	static final void insertVertexInPolygonOutline(
-			List<VectorXZ> polygonOutline, VectorXZ point) {	
+			List<VectorXZ> polygonOutline, VectorXZ point) {
 		
 		int index = findVisibleOutlineVertex(polygonOutline, point,
 				Collections.<SimplePolygonXZ>emptyList());
@@ -197,7 +197,7 @@ public final class EarClippingTriangulationUtil {
 	}
 
 	/**
-	 * finds a vertex in the polygon outline that is visible from a given point. 
+	 * finds a vertex in the polygon outline that is visible from a given point.
 	 * Visibility means that the connection between the point and the outline
 	 * vertex does not intersect the outline or any hole polygon.
 	 * 
@@ -219,12 +219,12 @@ public final class EarClippingTriangulationUtil {
 			
 			outerIndex += 1;
 			
-			for (int i=0; i+1 < polygonOutline.size(); i++) {			
+			for (int i=0; i+1 < polygonOutline.size(); i++) {
 				if (null != GeometryUtil.getTrueLineSegmentIntersection(
 						point, outerVertex,
 						polygonOutline.get(i), polygonOutline.get(i+1))) {
 					continue checkOuterVertex;
-				}				
+				}
 			}
 			
 			for (SimplePolygonXZ hole : holes) {
@@ -257,29 +257,29 @@ public final class EarClippingTriangulationUtil {
 		
 		Set<Integer> removeIndizes = new HashSet<Integer>();
 		
-		/* find vertices on straight lines */ 
+		/* find vertices on straight lines */
 		
 		for (int i = 0; i < outline.size(); i++) {
 			if (GeometryUtil.distanceFromLineSegment(
-				outline.get(i), 
+				outline.get(i),
 				new LineSegmentXZ(vertexBefore(outline, i),
 					vertexAfter(outline, i))) < 0.001) {
 				removeIndizes.add(i);
 			}
 		}
 		
-//		these didn't have a noticeable effect yet	
+//		these didn't have a noticeable effect yet
 //
-//		/* remove two vertices if they are very close and 
+//		/* remove two vertices if they are very close and
 //		 * also close to each other's position in the sequence */
-//		
+//
 //		for (int i = 0; i < outline.size(); i++) {
 //			if (VectorXZ.distance(outline.get(i),
 //					vertexAfter(outline, i)) < 0.001) {
 //				removeIndizes.add(i);
 //			}
 //		}
-//		
+//
 //		for (int i = 0; i < outline.size(); i++) {
 //			if (VectorXZ.distance(vertexBefore(outline, i),
 //					vertexAfter(outline, i)) < 0.001) {
@@ -310,12 +310,11 @@ public final class EarClippingTriangulationUtil {
 	 * 
 	 * @param outline  outline of the polygon to triangulate;
 	 *                 can be arbitrarily modified by this method.
-	 * @return
 	 */
 	static final List<TriangleXZ> triangulateSimplePolygon(
 			List<VectorXZ> outline) {
 		
-		if (outline.size() == 3) { 
+		if (outline.size() == 3) {
 			return Collections.singletonList(
 					new TriangleXZ(outline.get(1), outline.get(2), outline.get(3)));
 		}
@@ -335,7 +334,7 @@ public final class EarClippingTriangulationUtil {
 					progress = true;
 					break;
 				}
-			}			
+			}
 		}
 		
 		if (outline.size() >= 3) {
@@ -344,10 +343,10 @@ public final class EarClippingTriangulationUtil {
 					+ "\nTriangles: " + triangles);
 		}
 						
-//		TODO: try to remove the need for progress check		
+//		TODO: try to remove the need for progress check
 //      TODO (performance) use better algorithm instead of the n^3 above
 
-		return triangles;		
+		return triangles;
 		
 	}
 
@@ -383,7 +382,7 @@ public final class EarClippingTriangulationUtil {
 		tempVertices.add(outline.get(0));
 		SimplePolygonXZ tempPolygon = new SimplePolygonXZ(tempVertices);
 
-		//TODO (performance) avoid creating polygon by passing clockwise information 
+		//TODO (performance) avoid creating polygon by passing clockwise information
 		
 		VectorXZ segBefore = outline.get(i).subtract(vertexBefore(outline, i));
 		VectorXZ segAfter = vertexAfter(outline, i).subtract(outline.get(i));
@@ -442,7 +441,7 @@ public final class EarClippingTriangulationUtil {
 				
 				//TODO: implement (but check whether this method is actually needed first)
 				
-			}			
+			}
 				
 			polygons = newPolygons;
 			

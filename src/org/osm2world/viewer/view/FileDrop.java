@@ -116,7 +116,6 @@ class FileDrop
      * the parameter <tt>out</tt> will result in no debugging output.
      *
      * @param out PrintStream to record debugging info or null for no debugging.
-     * @param out
      * @param c Component on which files will be dropped.
      * @param listener Listens for <tt>filesDropped</tt>.
      * @since 1.0
@@ -145,7 +144,6 @@ class FileDrop
      * the parameter <tt>out</tt> will result in no debugging output.
      *
      * @param out PrintStream to record debugging info or null for no debugging.
-     * @param out
      * @param c Component on which files will be dropped.
      * @param recursive Recursively set children as drop targets.
      * @param listener Listens for <tt>filesDropped</tt>.
@@ -641,8 +639,8 @@ class FileDrop
     
     /**
      * This is the event that is passed to the
-     * {@link FileDropListener#filesDropped filesDropped(...)} method in
-     * your {@link FileDropListener} when files are dropped onto
+     * {@link Listener#filesDropped filesDropped(...)} method in
+     * your {@link Listener} when files are dropped onto
      * a registered drop target.
      *
      * <p>I'm releasing this code into the Public Domain. Enjoy.</p>
@@ -832,7 +830,7 @@ class FileDrop
          * the custom data flavor, if one was created in the constructors,
          * second the default {@link #DATA_FLAVOR} associated with
          * {@link TransferableObject}, and third the
-         * {@link java.awt.datatransfer.DataFlavor.stringFlavor}.
+         * {@code java.awt.datatransfer.DataFlavor.stringFlavor}.
          *
          * @return An array of supported data flavors
          * @since 1.1
