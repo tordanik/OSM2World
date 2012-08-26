@@ -31,6 +31,16 @@ public class ClearingDebugView extends DebugView {
 	private static final Color LINE_ABOVE_COLOR = Color.BLUE;
 
 	@Override
+	public String getDescription() {
+		return "shows information from elevation calculation";
+	}
+	
+	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
 	public void fillTarget(JOGLTarget target) {
 		
 		for (MapWaySegment line : map.getMapWaySegments()) {

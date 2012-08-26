@@ -25,6 +25,11 @@ public class WorldObjectNormalsDebugView extends DebugView {
 	}
 	
 	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
 	protected void fillTarget(JOGLTarget target) {
 		
 		final PrimitiveBuffer primitiveBuffer = new PrimitiveBuffer();

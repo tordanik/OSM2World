@@ -17,6 +17,11 @@ public class RoofDataDebugView extends DebugView {
 	private static final Color POLYGON_COLOR = Color.BLUE;
 	
 	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
 	public void fillTarget(JOGLTarget target) {
 		
 		for (Building building : map.getWorldObjects(Building.class)) {

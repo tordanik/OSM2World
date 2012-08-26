@@ -19,6 +19,11 @@ public class NetworkDebugView extends DebugView {
 	private static final Color CUT_COLOR = Color.ORANGE;
 	
 	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
 	public void fillTarget(JOGLTarget target) {
 						
 		for (MapWaySegment line : map.getMapWaySegments()) {

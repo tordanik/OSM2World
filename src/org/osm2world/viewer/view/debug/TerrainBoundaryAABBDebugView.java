@@ -17,6 +17,11 @@ public class TerrainBoundaryAABBDebugView extends DebugView {
 		return "shows the axis-aligned bounding boxes of the terrain boundaries";
 	}
 	
+	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
 	private static final Color BB_COLOR = Color.RED;
 		
 	@Override

@@ -16,6 +16,11 @@ public class MapDataBoundsDebugView extends DebugView {
 		return "shows the bounding boxes of map data";
 	}
 	
+	@Override
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
 	private static final Color DATA_BB_COLOR = Color.YELLOW;
 	private static final Color FILE_BB_COLOR = Color.GREEN;
 		
