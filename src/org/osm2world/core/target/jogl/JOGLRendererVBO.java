@@ -175,7 +175,7 @@ class JOGLRendererVBO extends JOGLRenderer {
 			if (primitive.type == Type.TRIANGLE_STRIP) {
 				
 				primVertices = triangleVertexListFromTriangleStrip(primVertices);
-				primNormals = triangleVertexListFromTriangleStrip(primNormals);
+				primNormals = triangleNormalListFromTriangleStrip(primNormals);
 				
 				if (primTexCoordLists != null) {
 					List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();

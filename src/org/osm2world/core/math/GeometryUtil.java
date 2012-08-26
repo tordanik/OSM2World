@@ -72,6 +72,22 @@ public final class GeometryUtil {
 		return result;
 		
 	}
+	
+	public static final <V> List<V> triangleNormalListFromTriangleStrip(
+			List<? extends V> normals) {
+		
+		List<V> result = new ArrayList<V>((normals.size() - 2) * 3);
+		
+		for (int triangle = 0; triangle + 2 < normals.size(); triangle++) {
+			V normal = normals.get(triangle + 2);
+			result.add(normal);
+			result.add(normal);
+			result.add(normal);
+		}
+		
+		return result;
+		
+	}
 
 	public static final List<TriangleXYZ> trianglesFromTriangleFan(
 			List<? extends VectorXYZ> vs) {
