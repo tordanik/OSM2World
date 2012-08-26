@@ -34,6 +34,11 @@ public abstract class DebugView {
 	protected Camera camera;
 	protected Projection projection;
 	
+	// camera attributes that are used to detect changes
+	private VectorXYZ cameraPos;
+	private VectorXYZ cameraUp;
+	private VectorXYZ cameraLookAt;
+	
 	private JOGLTarget target = null;
 	
 	public final void setConfiguration(Configuration config) {
@@ -92,10 +97,15 @@ public abstract class DebugView {
 				target.setConfiguration(config);
 			}
 			
-			boolean viewChanged = !camera.equals(this.camera)
+			boolean viewChanged = !camera.getPos().equals(this.cameraPos)
+					|| !camera.getUp().equals(this.cameraUp)
+					|| !camera.getLookAt().equals(this.cameraLookAt)
 					|| !projection.equals(this.projection);
 			
 			this.camera = camera;
+			this.cameraPos = camera.getPos();
+			this.cameraUp = camera.getUp();
+			this.cameraLookAt = camera.getLookAt();
 			this.projection = projection;
 			
 			if (!target.isFinished()) {
