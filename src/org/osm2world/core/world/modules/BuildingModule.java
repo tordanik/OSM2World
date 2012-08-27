@@ -65,7 +65,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	public void applyTo(MapData mapData) {
 		
 		boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
-		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", false);
+		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
 		
 		for (MapArea area : mapData.getMapAreas()) {
 			
@@ -586,47 +586,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 			
-			/* determine roof shape */
-						
-			if (hasComplexRoof(area)) {
-				roof = new ComplexRoof();
-			} else {
-				
-				String roofShape = getValue("roof:shape");
-				if (roofShape == null) { roofShape = getValue("building:roof:shape"); }
-				if (roofShape == null) { roofShape = defaultRoofShape; }
-				
-				try {
-					
-					if ("pyramidal".equals(roofShape)) {
-						roof = new PyramidalRoof();
-					} else if ("onion".equals(roofShape)) {
-						roof = new OnionRoof();
-					} else if ("skillion".equals(roofShape)) {
-						roof = new SkillionRoof();
-					} else if ("gabled".equals(roofShape)) {
-						roof = new GabledRoof();
-					} else if ("hipped".equals(roofShape)) {
-						roof = new HippedRoof();
-					} else if ("half-hipped".equals(roofShape)) {
-						roof = new HalfHippedRoof();
-					} else if ("gambrel".equals(roofShape)) {
-						roof = new GambrelRoof();
-					} else if ("mansard".equals(roofShape)) {
-						roof = new MansardRoof();
-					} else if ("dome".equals(roofShape)) {
-						roof = new DomeRoof();
-					} else {
-						roof = new FlatRoof();
-					}
-					
-				} catch (InvalidGeometryException e) {
-					System.err.println("falling back to FlatRoof: " + e);
-					roof = new FlatRoof();
-				}
-				
-			}
-			
 			/* determine levels */
 			
 			buildingLevels = defaultLevels;
@@ -655,6 +614,54 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 			
+			/* determine roof shape */
+			
+			boolean explicitRoofTagging = true;
+			
+			if (hasComplexRoof(area)) {
+				roof = new ComplexRoof();
+			} else {
+				
+				String roofShape = getValue("roof:shape");
+				if (roofShape == null) { roofShape = getValue("building:roof:shape"); }
+				
+				if (roofShape == null) {
+					roofShape = defaultRoofShape;
+					explicitRoofTagging = false;
+				}
+				
+				try {
+					
+					if ("pyramidal".equals(roofShape)) {
+						roof = new PyramidalRoof();
+					} else if ("onion".equals(roofShape)) {
+						roof = new OnionRoof();
+					} else if ("skillion".equals(roofShape)) {
+						roof = new SkillionRoof();
+					} else if ("gabled".equals(roofShape)) {
+						roof = new GabledRoof();
+					} else if ("hipped".equals(roofShape)) {
+						roof = new HippedRoof();
+					} else if ("half-hipped".equals(roofShape)) {
+						roof = new HalfHippedRoof();
+					} else if ("gambrel".equals(roofShape)) {
+						roof = new GambrelRoof();
+					} else if ("mansard".equals(roofShape)) {
+						roof = new MansardRoof();
+					} else if ("dome".equals(roofShape)) {
+						roof = new DomeRoof();
+					} else {
+						roof = new FlatRoof();
+					}
+					
+				} catch (InvalidGeometryException e) {
+					System.err.println("falling back to FlatRoof: " + e);
+					roof = new FlatRoof();
+					explicitRoofTagging = false;
+				}
+				
+			}
+			
 			/* determine height */
 			
 			double fallbackHeight = buildingLevels * defaultHeightPerLevel;
@@ -668,6 +675,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* determine materials */
 		    
+		    if (defaultMaterialRoof == Materials.ROOF_DEFAULT
+		    		&& explicitRoofTagging && roof instanceof FlatRoof) {
+		    	defaultMaterialRoof = Materials.CONCRETE;
+		    }
+		    
 		    if (useBuildingColors) {
 		    	
 		    	materialWall = buildMaterial(
@@ -678,12 +690,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    			getValue("roof:material"),
 		    			getValue("roof:colour"),
 		    			defaultMaterialRoof, true);
-		    		    	
+		    	
 		    } else {
 		    	
 		    	materialWall = defaultMaterialWall;
 		    	materialRoof = defaultMaterialRoof;
 		    	
+		    }
+		    
+		    if (materialWall == Materials.GLASS) {
+		    	defaultMaterialWindows = null;
 		    }
 		    
 		    materialWallWithWindows = materialWall;
@@ -761,6 +777,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 					color = new Color(225, 175, 225);
 				} else if ("orange".equals(colorString)) {
 					color = new Color(255, 225, 150);
+				} else if ("brown".equals(colorString)) {
+					if (roof) {
+						color = new Color(120, 110, 110);
+					} else {
+						color = new Color(170, 130, 80);
+					}
 				} else {
 					color = parseColor(colorString);
 				}
@@ -836,7 +858,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * Can optionally be overwritten by subclasses.
 			 */
 			protected float getDefaultRoofHeight() {
-				return DEFAULT_RIDGE_HEIGHT;
+				if (buildingLevels == 1) {
+					return 1;
+				} else {
+					return DEFAULT_RIDGE_HEIGHT;
+				}
 			}
 			
 			TaggedRoof() {
