@@ -99,7 +99,7 @@ public final class POVRayWriter {
 			
 			target.append("\n\n//\n//Map data\n//\n\n");
 			
-			TargetUtil.renderWorldObjects(target, mapData);
+			TargetUtil.renderWorldObjects(target, mapData, true);
 	
 			target.append("\n\n//\n//Terrain\n//\n\n");
 			

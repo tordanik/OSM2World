@@ -151,7 +151,7 @@ public class TunnelModule extends AbstractModule {
 
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ABOVE;
+			return GroundState.BELOW;
 		}
 		
 		@Override

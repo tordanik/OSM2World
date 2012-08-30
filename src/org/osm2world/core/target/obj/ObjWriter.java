@@ -61,7 +61,7 @@ public final class ObjWriter {
 		
 		ObjTarget target = new ObjTarget(objStream, mtlStream);
 		
-		TargetUtil.renderWorldObjects(target, mapData);
+		TargetUtil.renderWorldObjects(target, mapData, true);
 		
 		if (terrain != null) {
 			TargetUtil.renderObject(target, terrain);

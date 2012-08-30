@@ -316,9 +316,11 @@ public class ConversionFacade {
 		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
 		
+		boolean underground = config.getBoolean("renderUnderground", true);
+		
 		if (targets != null) {
 			for (Target<?> target : targets) {
-				TargetUtil.renderWorldObjects(target, mapData);
+				TargetUtil.renderWorldObjects(target, mapData, underground);
 				if (terrain != null) {
 					TargetUtil.renderObject(target, terrain);
 				}
