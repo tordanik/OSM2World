@@ -202,7 +202,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			/* draw board */
 			
-			VectorXYZ[] vs = {
+			VectorXYZ[] vsPoster = {
 				node.getPos().add(boardVector.mult(width/2))
 					.xyz(ele + height),
 				node.getPos().add(boardVector.mult(width/2))
@@ -213,21 +213,22 @@ public class StreetFurnitureModule extends AbstractModule {
 					.xyz(ele + minHeight)
 			};
 			
-			List<VectorXYZ> vsListView = asList(vs);
+			List<VectorXYZ> vsListPoster = asList(vsPoster);
 			
-			target.drawTriangleStrip(ADVERTISING_POSTER, vsListView,
-					wallTexCoordLists(vsListView, ADVERTISING_POSTER));
+			target.drawTriangleStrip(ADVERTISING_POSTER, vsListPoster,
+					wallTexCoordLists(vsListPoster, ADVERTISING_POSTER));
 			
-			VectorXYZ temp = vs[2];
-			vs[2] = vs[0];
-			vs[0] = temp;
+			VectorXYZ[] vsBoard = {
+					vsPoster[2],
+					vsPoster[3],
+					vsPoster[0],
+					vsPoster[1]
+			};
 			
-			temp = vs[3];
-			vs[3] = vs[1];
-			vs[1] = temp;
-			
-			target.drawTriangleStrip(CONCRETE, vsListView,
-					wallTexCoordLists(vsListView, CONCRETE));
+			List<VectorXYZ> vsListBoard = asList(vsBoard);
+									
+			target.drawTriangleStrip(CONCRETE, vsListBoard,
+					wallTexCoordLists(vsListBoard, CONCRETE));
 			
 			
 			/* draw poles */
