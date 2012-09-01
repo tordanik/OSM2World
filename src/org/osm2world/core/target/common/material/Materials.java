@@ -61,6 +61,8 @@ public final class Materials {
 			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PEBBLESTONE =
 			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial PLASTIC =
+			new ConfMaterial(Lighting.FLAT, new Color(0, 0, 0));	
 	public static final ConfMaterial SAND =
 		new ConfMaterial(Lighting.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial STEEL =
