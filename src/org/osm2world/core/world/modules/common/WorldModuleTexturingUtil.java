@@ -163,8 +163,8 @@ public class WorldModuleTexturingUtil {
 			for (VectorXYZ v : triangle.getVertices()) {
 				VectorXZ baseTexCoord = v.rotateY(-downAngle).xz();
 				texCoords.add(new VectorXZ(
-						baseTexCoord.x / textureData.width,
-						baseTexCoord.z / textureData.height));
+						-baseTexCoord.x / textureData.width,
+						-baseTexCoord.z / textureData.height));
 			}
 			
 		}
