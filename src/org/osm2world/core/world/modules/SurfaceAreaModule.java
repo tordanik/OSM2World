@@ -30,6 +30,7 @@ public class SurfaceAreaModule extends AbstractModule {
 	
 	static {
 		defaultSurfaceMap.put(new Tag("leisure", "pitch"), "ground");
+		defaultSurfaceMap.put(new Tag("landuse", "construction"), "ground");
 	}
 	
 	@Override
