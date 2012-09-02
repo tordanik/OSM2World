@@ -19,9 +19,8 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 /**
  * module for power infrastructure
@@ -86,7 +85,7 @@ public final class PowerModule extends AbstractModule {
 			segment.addRepresentation(new PowerMinorLine(segment));
 		}
 		
-		if (segment.getTags().contains("power", "line")) {			
+		if (segment.getTags().contains("power", "line")) {
 			segment.addRepresentation(new PowerLine(segment));
 		}
 	}
@@ -106,7 +105,7 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		public boolean isHighVoltagePowerTower() {
-			return voltage >= 50000 || cables >= 6;		
+			return voltage >= 50000 || cables >= 6;
 		}
 	}
 	
@@ -269,7 +268,7 @@ public final class PowerModule extends AbstractModule {
 	}
 	
 	private static class PowerMinorLine
-		extends AbstractNetworkWaySegmentWorldObject
+		extends NoOutlineWaySegmentWorldObject
 		implements RenderableToAllTargets {
 		
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
@@ -278,11 +277,6 @@ public final class PowerModule extends AbstractModule {
 		
 		public PowerMinorLine(MapWaySegment segment) {
 			super(segment);
-		}
-		
-		@Override
-		public float getWidth() {
-			return DEFAULT_THICKN;
 		}
 		
 		@Override
@@ -312,7 +306,7 @@ public final class PowerModule extends AbstractModule {
 			);
 			
 			List<VectorXYZ> path =
-				line.getElevationProfile().getPointsWithEle();
+				segment.getElevationProfile().getPointsWithEle();
 			
 			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
 					powerlineShape,
@@ -327,7 +321,9 @@ public final class PowerModule extends AbstractModule {
 		
 	}
 
-	private final static class PowerLine implements WaySegmentWorldObject, RenderableToAllTargets {
+	private final static class PowerLine
+		extends NoOutlineWaySegmentWorldObject
+		implements RenderableToAllTargets {
 
 		private static final float CABLE_THICKNESS = 0.05f;
 		// TODO: we need black plastic for cable material
@@ -341,24 +337,23 @@ public final class PowerModule extends AbstractModule {
 				new VectorXYZ(-CABLE_THICKNESS/2, CABLE_THICKNESS/2, 0),
 				new VectorXYZ(0, diag, 0),
 				new VectorXYZ(CABLE_THICKNESS/2, CABLE_THICKNESS/2, 0),
-				new VectorXYZ(diag, 0, 0),					
+				new VectorXYZ(diag, 0, 0),
 				new VectorXYZ(+CABLE_THICKNESS/2, -CABLE_THICKNESS/2, 0),
-				new VectorXYZ(0, -diag, 0),					
+				new VectorXYZ(0, -diag, 0),
 				new VectorXYZ(-CABLE_THICKNESS/2, -CABLE_THICKNESS/2, 0),
 				new VectorXYZ(-diag, 0, 0)
 			);
-
-		private MapWaySegment line;
+		
 		private int cables = -1;
 		private int voltage = -1;
 		private TowerConfig start;
 		private TowerConfig end;
 		private List<VectorXYZ> startPos = new ArrayList<VectorXYZ>();
 		private List<VectorXYZ> endPos = new ArrayList<VectorXYZ>();
-
+		
 		
 		public PowerLine(MapWaySegment line) {
-			this.line = line;
+			super(line);
 		}
 		
 		private void addPos(VectorXYZ baseStart, VectorXYZ baseEnd, double gotoRight, double up) {
@@ -375,12 +370,12 @@ public final class PowerModule extends AbstractModule {
 			
 			// check number of power lines
 			try {
-				cables = Integer.valueOf(line.getTags().getValue("cables"));
+				cables = Integer.valueOf(segment.getTags().getValue("cables"));
 			} catch (NumberFormatException e) {}
 
 			// check voltage
 			try {
-				voltage = Integer.valueOf(line.getTags().getValue("voltage"));
+				voltage = Integer.valueOf(segment.getTags().getValue("voltage"));
 			} catch (NumberFormatException e) {}
 
 			if (cables <= 0) {
@@ -388,8 +383,8 @@ public final class PowerModule extends AbstractModule {
 			}
 
 			// get the tower configurations for start and end tower
-			start = generateTowerConfig(line.getStartNode());
-			end = generateTowerConfig(line.getEndNode());
+			start = generateTowerConfig(segment.getStartNode());
+			end = generateTowerConfig(segment.getEndNode());
 						
 			if (!start.isHighVoltagePowerTower() && !end.isHighVoltagePowerTower()) {
 
@@ -494,7 +489,7 @@ public final class PowerModule extends AbstractModule {
 				double stepSize = lenToEnd / INTERPOLATION_STEPS;
 				VectorXZ dir = end.xz().subtract(start.xz()).normalize();
 				
-				List<VectorXYZ> path = new ArrayList<VectorXYZ>();				
+				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
 				for (int x = 0; x <= INTERPOLATION_STEPS; x++) {
 					double ratio = x / INTERPOLATION_STEPS;
 					
@@ -504,13 +499,13 @@ public final class PowerModule extends AbstractModule {
 					// use a simple parabola between two towers
 					double height = (1 - Math.pow(2.0*(ratio - 0.5), 2)) * -SLACK_SPAN;
 					// add a linear function to account for different tower/terrain heights
-					height += ratio * heightDiff; 
+					height += ratio * heightDiff;
 					
 					path.add(start.add(dir.mult(dx)).add(0, height, 0));
 				}
 				
 				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-						powerlineShape, path, 
+						powerlineShape, path,
 						nCopies(path.size(), VectorXYZ.Y_UNIT));
 				
 				for (List<VectorXYZ> strip : strips) {
@@ -518,21 +513,7 @@ public final class PowerModule extends AbstractModule {
 				}
 			}
 		}
-
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return line;
-		}
-
-		@Override
-		public VectorXZ getStartPosition() {
-			return line.getStartNode().getPos();
-		}
-
-		@Override
-		public VectorXZ getEndPosition() {
-			return line.getEndNode().getPos();
-		}
+		
 	}
 	
 	
@@ -566,7 +547,7 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			VectorXYZ base = node.getElevationProfile().getPointWithEle().add(0, -0.5, 0); 
+			VectorXYZ base = node.getElevationProfile().getPointWithEle().add(0, -0.5, 0);
 			double height = parseHeight(node.getTags(), 14);
 
 			Material material = Materials.getSurfaceMaterial(node.getTags().getValue("material"));
@@ -589,7 +570,7 @@ public final class PowerModule extends AbstractModule {
 			}
 			if (config.cables >= 5) {
 				target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(1.5)), -0.5, 0.1, 0.1, true, true);
-				target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(-1.5)), -0.5, 0.1, 0.1, true, true);				
+				target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(-1.5)), -0.5, 0.1, 0.1, true, true);
 			}
 		}
 	}
@@ -634,7 +615,7 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		private VectorXZ[][] getCorners(VectorXZ center, double diameter) {
-			double half = diameter/2;			
+			double half = diameter/2;
 			VectorXZ ortho = direction.rightNormal();
 			
 			VectorXZ right_in = center.add(direction.mult(half));
@@ -654,18 +635,18 @@ public final class PowerModule extends AbstractModule {
 							right_out.add(ortho.mult(half)),
 							right_out.add(ortho.mult(-half)),
 							left_out.add(ortho.mult(-half)),
-							left_out.add(ortho.mult(half))				
+							left_out.add(ortho.mult(half))
 					}};
 		}
 	
-		private void drawSegment(Target<?> target, 
+		private void drawSegment(Target<?> target,
 				VectorXZ[] low, VectorXZ[] high, double base, double height) {
 			
 			for (int a = 0; a < 4; a++) {
 			
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
-				List<List<VectorXZ>> texList = 
+				List<List<VectorXZ>> texList =
 					nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
 				
 				for (int i = 0; i < 2; i++) {
@@ -677,16 +658,16 @@ public final class PowerModule extends AbstractModule {
 				}
 				
 				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
-			}			
+			}
 		}
 	
 		private void drawHorizontalSegment(Target<?> target,
-				VectorXZ left, VectorXZ right, double base, 
+				VectorXZ left, VectorXZ right, double base,
 				double left_height, double right_height) {
 
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 			List<VectorXZ> tex = new ArrayList<VectorXZ>();
-			List<List<VectorXZ>> texList = 
+			List<List<VectorXZ>> texList =
 					nCopies(Materials.POWER_TOWER_HORIZONTAL.getNumTextureLayers(), tex);
 		
 			vs.add(right.xyz(base));
@@ -702,7 +683,7 @@ public final class PowerModule extends AbstractModule {
 			target.drawTriangleStrip(Materials.POWER_TOWER_HORIZONTAL, vs, texList);
 		}
 
-		private void drawHorizontalTop(Target<?> target, VectorXZ[][] points, 
+		private void drawHorizontalTop(Target<?> target, VectorXZ[][] points,
 				double base, double border, double middle, double center) {
 			
 			double[] height = new double[]{border, middle, center, center, middle, border};
@@ -712,10 +693,10 @@ public final class PowerModule extends AbstractModule {
 			
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
-				List<List<VectorXZ>> texList = 
+				List<List<VectorXZ>> texList =
 						nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
 
-				for (int i = 0; i < 2; i++) {			
+				for (int i = 0; i < 2; i++) {
 					vs.add(points[1][a+i].xyz(base + height[a+i]));
 					vs.add(points[2][a+i].xyz(base + height[a+i]));
 					tex.add(new VectorXZ(0, i));
@@ -750,13 +731,13 @@ public final class PowerModule extends AbstractModule {
 		private VectorXZ[] getPoleCoordinates(VectorXZ base,
 				VectorXZ direction, double width, double size) {
 			
-			return new VectorXZ[] { 
+			return new VectorXZ[] {
 					base.add(direction.mult(-width - size)),
 					base.add(direction.mult(-width / 2 - size)),
 					base.add(direction.mult(-size)),
 					base.add(direction.mult(size)),
 					base.add(direction.mult(width / 2 + size)),
-					base.add(direction.mult(width + size)) 
+					base.add(direction.mult(width + size))
 			};
 		}
 

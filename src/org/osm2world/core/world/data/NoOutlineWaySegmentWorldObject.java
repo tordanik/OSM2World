@@ -11,12 +11,12 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
 /**
  * superclass for {@link WaySegmentWorldObject}s that don't have an outline,
  * and are not part of a network.
- * Instead, they can be considered an infinitely thin.
+ * Instead, they can be considered infinitely thin.
  */
 public abstract class NoOutlineWaySegmentWorldObject
 		implements WaySegmentWorldObject, IntersectionTestObject {
 	
-	final MapWaySegment segment;
+	protected final MapWaySegment segment;
 	
 	public NoOutlineWaySegmentWorldObject(MapWaySegment segment) {
 		this.segment = segment;
