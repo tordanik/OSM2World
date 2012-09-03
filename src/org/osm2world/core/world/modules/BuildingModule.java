@@ -403,8 +403,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (getValue("min_height") != null) {
 				
-				Float minEle = parseMeasure(
-						area.getTags().getValue("min_height"));
+				Float minEle = parseMeasure(getValue("min_height"));
 				if (minEle != null) {
 					return minEle;
 				}
