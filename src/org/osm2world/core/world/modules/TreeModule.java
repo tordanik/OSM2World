@@ -23,6 +23,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.FaceTarget;
+import org.osm2world.core.target.common.RenderableToFaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.povray.POVRayTarget;
@@ -292,7 +294,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 
-	private class TreeRow implements WaySegmentWorldObject, RenderableToAllTargets, RenderableToPOVRay {
+	private class TreeRow implements WaySegmentWorldObject,
+		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets {
 
 		private final Collection<VectorXZ> treePositions;
 		private final MapWaySegment line;
@@ -359,11 +362,19 @@ public class TreeModule extends ConfigurableWorldModule {
 			}
 		}
 		
+		@Override
+		public void renderTo(FaceTarget<?> target) {
+			for (VectorXZ pos : treePositions) {
+				renderTree(target, line, pos);
+				target.flushReconstructedFaces();
+			}
+		}
+		
 	}
 	
 
 	private class Forest implements AreaWorldObject,
-		RenderableToPOVRay, RenderableToAllTargets {
+		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets {
 
 		private final MapArea area;
 		private final MapData mapData;
@@ -435,6 +446,18 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void addDeclarationsTo(POVRayTarget target) {
 			addTreeDeclarationsTo(target);
+		}
+		
+		@Override
+		public void renderTo(FaceTarget<?> target) {
+			if (treePositions == null) {
+				createTreePositions(config.getDouble("treesPerSquareMeter", 0.001f));
+					//lower default density than POVRay for performance reasons
+			}
+			for (VectorXZ pos : treePositions) {
+				renderTree(target, area, pos);
+				target.flushReconstructedFaces();
+			}
 		}
 		
 		@Override

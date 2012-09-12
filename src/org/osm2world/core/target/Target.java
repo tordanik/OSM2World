@@ -12,6 +12,8 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
+ * A sink for rendering/writing {@link WorldObject}s to.
+ * 
  * @param <R>  subtype of {@link Renderable} designed for visualization
  *             with this target
  */

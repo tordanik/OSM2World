@@ -46,6 +46,7 @@ import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
+import org.osm2world.viewer.view.debug.FaceDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
@@ -161,6 +162,8 @@ public class ViewerFrame extends JFrame {
 					new MapDataElevationDebugView());
 			initAndAddDebugView(subMenu, VK_R, false,
 					new RoofDataDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new FaceDebugView());
 			initAndAddDebugView(subMenu, VK_X, false,
 					new NetworkDebugView());
 			initAndAddDebugView(subMenu, VK_Q, false,
