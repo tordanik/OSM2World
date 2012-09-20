@@ -241,15 +241,23 @@ public abstract class FaceTarget<R extends Renderable>
 		
 		for (TriangleXYZ triangle : triangles) {
 			
-			VectorXYZ n = triangle.getNormal();
-			
-			if (Double.isNaN(n.x) || Double.isNaN(n.y) || Double.isNaN(n.z)) {
-				continue; //TODO log
+			if (reconstructFaces()) {
+				
+				VectorXYZ n = triangle.getNormal();
+				
+				if (Double.isNaN(n.x) || Double.isNaN(n.y) || Double.isNaN(n.z)) {
+					continue; //TODO log
+				}
+				
+				isolatedTriangles.put(material,
+						new IsolatedTriangle(triangle, n, i*3, texCoordLists));
+				
+			} else {
+				
+				drawFace(material, triangle.getVertices(), null, texCoordLists);
+				
 			}
-			
-			isolatedTriangles.put(material,
-					new IsolatedTriangle(triangle, n, i*3, texCoordLists));
-			
+				
 		}
 		
 	}
@@ -262,6 +270,18 @@ public abstract class FaceTarget<R extends Renderable>
 		drawTriangles(material, triangles, texCoordLists);
 		
 		//TODO keep normals information
+		
+	}
+	
+	@Override
+	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
+			List<List<VectorXZ>> texCoordLists) {
+		
+		if (reconstructFaces()) {
+			super.drawConvexPolygon(material, vs, texCoordLists);
+		} else {
+			drawFace(material, vs, null, texCoordLists);
+		}
 		
 	}
 	

@@ -16,13 +16,13 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMElement;
-import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
-public class ObjTarget extends AbstractTarget<RenderableToObj> {
+public class ObjTarget extends FaceTarget<RenderableToObj> {
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
@@ -53,6 +53,11 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	@Override
 	public void render(RenderableToObj renderable) {
 		renderable.renderTo(this);
+	}
+	
+	@Override
+	public boolean reconstructFaces() {
+		return config != null && config.getBoolean("reconstructFaces", false);
 	}
 
 	@Override
@@ -97,6 +102,26 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 			}
 			
 		}
+		
+	}
+	
+	@Override
+	public void drawFace(Material material, List<VectorXYZ> vs,
+			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
+		
+		useMaterial(material);
+
+		int[] normalIndices = null;
+		if (normals != null) {
+			normalIndices = normalsToIndices(normals);
+		}
+		
+		int[] texCoordIndices = null;
+		if (texCoordLists != null && !texCoordLists.isEmpty()) {
+			texCoordIndices = texCoordsToIndices(texCoordLists.get(0));
+		}
+		
+		writeFace(verticesToIndices(vs), normalIndices, texCoordIndices);
 		
 	}
 	
@@ -149,21 +174,6 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 			triangleNumber ++;
 			
 		}
-		
-	}
-	
-	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
-		
-		useMaterial(material);
-		
-		int[] texCoordIndices = null;
-		if (texCoordLists != null && !texCoordLists.isEmpty()) {
-			texCoordIndices = texCoordsToIndices(texCoordLists.get(0));
-		}
-		
-		writeFace(verticesToIndices(vs), null, texCoordIndices);
 		
 	}
 
