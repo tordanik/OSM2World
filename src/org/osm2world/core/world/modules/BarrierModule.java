@@ -122,15 +122,11 @@ public class BarrierModule extends AbstractModule {
 	private static abstract class ColoredWall extends LinearBarrier {
 		
 		private final Material material;
-		private final float height;
-		private final float width;
 		
-		public ColoredWall(Material material,
-				MapWaySegment segment, float height, float width) {
+		public ColoredWall(Material material, MapWaySegment segment,
+				float defaultHeight, float defaultWidth) {
 			super(segment, 1, 0.5f);
 			this.material = material;
-			this.height = height;
-			this.width = width;
 		}
 				
 		@Override
