@@ -23,6 +23,7 @@ public class HardcodedRuleset implements Ruleset {
 		
 		areaKeys.add("building");
 		areaKeys.add("building:part");
+		areaKeys.add("golf");
 		areaKeys.add("landuse");
 	}
 	
