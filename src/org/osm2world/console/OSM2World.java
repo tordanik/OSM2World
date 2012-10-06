@@ -154,8 +154,10 @@ public class OSM2World {
 		
 		if (argumentsGroup.getRepresentative().isConfig()) {
 			try {
-				config = new PropertiesConfiguration(
-						argumentsGroup.getRepresentative().getConfig());
+				PropertiesConfiguration fileConfig = new PropertiesConfiguration();
+				fileConfig.setListDelimiter(';');
+				fileConfig.load(argumentsGroup.getRepresentative().getConfig());
+				config = fileConfig;
 			} catch (ConfigurationException e) {
 				System.err.println("could not read config, ignoring it: ");
 				System.err.println(e);

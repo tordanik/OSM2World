@@ -2,6 +2,7 @@ package org.osm2world.console;
 
 import static java.lang.Math.*;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
+import static org.osm2world.core.util.ConfigUtil.*;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -44,10 +45,6 @@ public class ImageExporter {
 	 * (which would lead to crashes)
 	 */
 	private static final int DEFAULT_CANVAS_LIMIT = 1024;
-
-	private static final String BG_COLOR_CONFIG_KEY = "backgroundColor";
-	private static final String BG_IMAGE_CONFIG_KEY = "backgroundImage";
-	private static final String CANVAS_LIMIT_CONFIG_KEY = "canvasLimit";
 	
 	private final Results results;
 	private final Configuration config;
@@ -83,17 +80,18 @@ public class ImageExporter {
 		
 		Color clearColor = Color.BLACK;
 		
-		if (config.containsKey(BG_COLOR_CONFIG_KEY)) {
-			try {
-				clearColor = Color.decode(config.getString(BG_COLOR_CONFIG_KEY));
-			} catch (NumberFormatException e) {
+		if (config.containsKey(BG_COLOR_KEY)) {
+			Color confClearColor = parseColor(config.getString(BG_COLOR_KEY));
+			if (confClearColor != null) {
+				clearColor = confClearColor;
+			} else {
 				System.err.println("incorrect color value: "
-						+ config.getString(BG_COLOR_CONFIG_KEY));
+						+ config.getString(BG_COLOR_KEY));
 			}
 		}
 		
-		if (config.containsKey(BG_IMAGE_CONFIG_KEY)) {
-			String fileString = config.getString(BG_IMAGE_CONFIG_KEY);
+		if (config.containsKey(BG_IMAGE_KEY)) {
+			String fileString = config.getString(BG_IMAGE_KEY);
 			if (fileString != null) {
 				backgroundImage = new File(fileString);
 				if (!backgroundImage.exists()) {
@@ -104,7 +102,7 @@ public class ImageExporter {
 			}
 		}
 		
-		int canvasLimit = config.getInt(CANVAS_LIMIT_CONFIG_KEY, DEFAULT_CANVAS_LIMIT);
+		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
 		
 		/* find out what number and size of image file requests to expect */
 		

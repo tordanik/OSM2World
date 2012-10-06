@@ -14,12 +14,12 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.iterators.EmptyListIterator;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -62,7 +62,7 @@ public final class Materials {
 	public static final ConfMaterial PEBBLESTONE =
 			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PLASTIC =
-			new ConfMaterial(Lighting.FLAT, new Color(0, 0, 0));	
+			new ConfMaterial(Lighting.FLAT, new Color(0, 0, 0));
 	public static final ConfMaterial SAND =
 		new ConfMaterial(Lighting.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial STEEL =
@@ -271,11 +271,13 @@ public final class Materials {
 					String attribute = matcher.group(2);
 					
 					if ("color".equals(attribute)) {
-					
-						try {
-							material.setColor(
-								Color.decode(config.getString(key)));
-						} catch (NumberFormatException e) {
+						
+						Color color = ConfigUtil.parseColorTuple(
+								config.getString(key));
+						
+						if (color != null) {
+							material.setColor(color);
+						} else {
 							System.err.println("incorrect color value: "
 									+ config.getString(key));
 						}
