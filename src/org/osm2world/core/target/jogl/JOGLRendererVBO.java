@@ -26,8 +26,8 @@ import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 
 import com.jogamp.common.nio.Buffers;
 
@@ -38,7 +38,7 @@ import com.jogamp.common.nio.Buffers;
  * If you don't need the renderer anymore, it's recommended to manually call
  * {@link #freeResources()} to delete the VBOs and other resources.
  */
-class JOGLRendererVBO extends JOGLRenderer {
+public class JOGLRendererVBO extends JOGLRenderer {
 	
 	private static final boolean DOUBLE_PRECISION_RENDERING = false;
 	
@@ -138,22 +138,6 @@ class JOGLRendererVBO extends JOGLRenderer {
 			}
 			
 			return vertexCount;
-			
-		}
-		
-		/**
-		 * returns the number of values for each vertex
-		 * in the vertex buffer layout appropriate for a given material.
-		 */
-		private int getValuesPerVertex(Material material) {
-			
-			int numValues = 6; // vertex coordinates and normals
-			
-			if (material.getTextureDataList() != null) {
-				numValues += 2 * material.getTextureDataList().size();
-			}
-			
-			return numValues;
 			
 		}
 		
@@ -369,7 +353,23 @@ class JOGLRendererVBO extends JOGLRenderer {
 		
 	}
 	
-	public JOGLRendererVBO(GL2 gl, JOGLTextureManager textureManager,
+	/**
+	 * returns the number of values for each vertex
+	 * in the vertex buffer layout appropriate for a given material.
+	 */
+	public static int getValuesPerVertex(Material material) {
+		
+		int numValues = 6; // vertex coordinates and normals
+		
+		if (material.getTextureDataList() != null) {
+			numValues += 2 * material.getTextureDataList().size();
+		}
+		
+		return numValues;
+		
+	}
+	
+	JOGLRendererVBO(GL2 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
 		super(gl, textureManager);
