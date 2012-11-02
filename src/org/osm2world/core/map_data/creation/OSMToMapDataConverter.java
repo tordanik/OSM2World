@@ -62,12 +62,12 @@ public class OSMToMapDataConverter {
 	public MapData createMapData(OSMData osmData) throws IOException {
 		
 		final List<MapNode> mapNodes = new ArrayList<MapNode>();
-		final List<MapWaySegment> gridWaySegs = new ArrayList<MapWaySegment>();
+		final List<MapWaySegment> mapWaySegs = new ArrayList<MapWaySegment>();
 		final List<MapArea> mapAreas = new ArrayList<MapArea>();
 
-		createGridElements(osmData, mapNodes, gridWaySegs, mapAreas);
+		createMapElements(osmData, mapNodes, mapWaySegs, mapAreas);
 		
-		MapData mapData = new MapData(mapNodes, gridWaySegs, mapAreas,
+		MapData mapData = new MapData(mapNodes, mapWaySegs, mapAreas,
 				calculateFileBoundary(osmData.getBounds()));
 		
 		calculateIntersectionsInMapData(mapData);
@@ -81,11 +81,11 @@ public class OSMToMapDataConverter {
 	 * based on OSM data from an {@link OSMFileDataSource}
 	 * and adds them to collections
 	 */
-	private void createGridElements(OSMData osmData,
-			final List<MapNode> mapNodes, final List<MapWaySegment> gridWaySegs,
+	private void createMapElements(OSMData osmData,
+			final List<MapNode> mapNodes, final List<MapWaySegment> mapWaySegs,
 			final List<MapArea> mapAreas) {
 		
-		/* create GridNode for each OSM node */
+		/* create MapNode for each OSM node */
 
 		Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
 
@@ -99,7 +99,7 @@ public class OSMToMapDataConverter {
 		/* create areas */
 
 		Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
-			//keys of this map will not be used to create GridWaySegments;
+			//keys of this map will not be used to create MapWaySegments;
 			//the map is also used for inserting holes into areas (multipolygons)
 
 		for (OSMWay way : osmData.getWays()) {
@@ -112,9 +112,9 @@ public class OSMToMapDataConverter {
 						mapAreas.add(mapArea);
 	
 						for (OSMNode boundaryOSMNode : way.nodes) {
-							MapNode boundaryGridNode = nodeMap.get(boundaryOSMNode);
-							mapArea.addBoundaryNode(boundaryGridNode);
-							boundaryGridNode.addAdjacentArea(mapArea);
+							MapNode boundaryMapNode = nodeMap.get(boundaryOSMNode);
+							mapArea.addBoundaryNode(boundaryMapNode);
+							boundaryMapNode.addAdjacentArea(mapArea);
 						}
 	
 						areaMap.put(way, mapArea);
@@ -163,9 +163,9 @@ public class OSMToMapDataConverter {
 							else {
 								area = new MapArea(relation, outerWay);
 								for (OSMNode boundaryOSMNode : outerWay.nodes) {
-									MapNode boundaryGridNode = nodeMap.get(boundaryOSMNode);
-									area.addBoundaryNode(boundaryGridNode);
-									boundaryGridNode.addAdjacentArea(area);
+									MapNode boundaryMapNode = nodeMap.get(boundaryOSMNode);
+									area.addBoundaryNode(boundaryMapNode);
+									boundaryMapNode.addAdjacentArea(area);
 								}
 								mapAreas.add(area);
 								areaMap.put(outerWay, area);
@@ -237,12 +237,12 @@ public class OSMToMapDataConverter {
 					for (OSMNode node : way.nodes) {
 						if (previousNode != null) {
 	
-							MapWaySegment gridWaySeg = new MapWaySegment(
+							MapWaySegment mapWaySeg = new MapWaySegment(
 									way, nodeMap.get(previousNode), nodeMap.get(node));
 							
-							gridWaySegs.add(gridWaySeg);
-							nodeMap.get(previousNode).addOutboundLine(gridWaySeg);
-							nodeMap.get(node).addInboundLine(gridWaySeg);
+							mapWaySegs.add(mapWaySeg);
+							nodeMap.get(previousNode).addOutboundLine(mapWaySeg);
+							nodeMap.get(node).addInboundLine(mapWaySeg);
 							
 						}
 						previousNode = node;
@@ -255,11 +255,12 @@ public class OSMToMapDataConverter {
 	}
 
 	/**
-	 * calculates intersections and adds the information to the grid's {@link MapElement}s
+	 * calculates intersections and adds the information to the
+	 * {@link MapElement}s
 	 */
-	private static void calculateIntersectionsInMapData(MapData grid) {
+	private static void calculateIntersectionsInMapData(MapData mapData) {
 		
-		MapDataIndex index = new Map2dTree(grid);
+		MapDataIndex index = new Map2dTree(mapData);
 		
 		// find intersections, using an index to reduce the number of checks
 		
