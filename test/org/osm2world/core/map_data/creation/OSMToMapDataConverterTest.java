@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -60,9 +59,8 @@ public class OSMToMapDataConverterTest {
 		genericMultipolygonTest("mp_two_holes_outer_tagged.osm");
 	}
 	
-	@Ignore
 	@Test
-	public void testMultipolygonOuterAdvanced() throws IOException {
+	public void testMultipolygonAdvanced() throws IOException {
 		genericMultipolygonTest("mp_two_holes_advanced.osm");
 	}
 	
