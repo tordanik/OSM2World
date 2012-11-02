@@ -25,6 +25,8 @@ import org.osm2world.core.osm.data.OSMWay;
  * Known Limitations:<ul>
  * <li>This cannot reliably handle touching inner rings consisting
  * of non-closed ways.</li>
+ * <li>Closed touching rings will not break the calculation,
+ * but are represented as multiple touching holes.</li>
  * </ul>
  */
 final class MultipolygonAreaBuilder {

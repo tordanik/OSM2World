@@ -64,6 +64,11 @@ public class OSMToMapDataConverterTest {
 		genericMultipolygonTest("mp_two_holes_advanced.osm");
 	}
 	
+	@Test
+	public void testMultipolygonTouchingInners() throws IOException {
+		genericMultipolygonTest("mp_two_holes_touching_inners.osm");
+	}
+	
 	/**
 	 * reads two nodes with the same coordinates
 	 */
