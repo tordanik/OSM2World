@@ -54,12 +54,15 @@ public class OSMFileDataSource implements
 	private Collection<OwnRelation> ownRelations;
 	
 	private final Sink sinkImplementation = new Sink() {
+		public void initialize(Map<String, Object> arg0) {
+			/* do nothing */
+		}
 		public void release() {
 			/* do nothing */
-		}		
+		}
 		public void complete() {
 			setCompleteTrue();
-		}		
+		}
 		public void process(EntityContainer entityContainer) {
 			Entity entity = entityContainer.getEntity();
 			if (entity instanceof Node) {
@@ -286,7 +289,7 @@ public class OSMFileDataSource implements
 		public OwnWay(TagGroup tags, List<OwnNode> nodes) {
 			this.tags = tags;
 			this.nodes = nodes;
-		}		
+		}
 		
 		@Override
 		public String toString() {
@@ -312,19 +315,19 @@ public class OSMFileDataSource implements
 		
 		public OwnRelation(TagGroup tags, int initialMemberSize) {
 			this.tags = tags;
-			this.relationMembers = 
+			this.relationMembers =
 				new ArrayList<OwnMember>(initialMemberSize);
 		}
 	}
 	
-	public static class OwnMember {		
+	public static class OwnMember {
 		private final String role;
 		private final Object member;
 		
 		public OwnMember(String role, Object member) {
 			this.role = role;
 			this.member = member;
-		}		
+		}
 	}
 	
 }
