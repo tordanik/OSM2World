@@ -26,7 +26,7 @@ public class OSMToMapDataConverterTest {
 		MapProjection mapProjection = new HackMapProjection(osmData);
 		
 		return new OSMToMapDataConverter(mapProjection).createMapData(osmData);
-				
+		
 	}
 	
 	/**
@@ -62,6 +62,11 @@ public class OSMToMapDataConverterTest {
 	@Test
 	public void testMultipolygonAdvanced() throws IOException {
 		genericMultipolygonTest("mp_two_holes_advanced.osm");
+	}
+	
+	@Test
+	public void testMultipolygonAdvanced2() throws IOException {
+		genericMultipolygonTest("mp_two_holes_advanced2.osm");
 	}
 	
 	@Test
