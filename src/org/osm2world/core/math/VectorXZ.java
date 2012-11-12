@@ -112,6 +112,13 @@ public class VectorXZ implements Vector3D {
 		}
 	}
 	
+	/**
+	 * @see #angle()
+	 */
+	public double angleTo(VectorXZ other) {
+		return other.subtract(this).angle();
+	}
+	
 	@Override
 	public String toString() {
 		return "(" + x + "," + z + ")";

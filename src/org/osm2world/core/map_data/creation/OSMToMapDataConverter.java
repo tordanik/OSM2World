@@ -98,7 +98,7 @@ public class OSMToMapDataConverter {
 		/* create areas ... */
 		
 		Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
-		
+				
 		/* ... based on multipolygons */
 		
 		for (OSMRelation relation : osmData.getRelations()) {
@@ -119,6 +119,20 @@ public class OSMToMapDataConverter {
 					
 				}
 				
+			}
+			
+		}
+		
+		/* ... based on coastline ways */
+		
+		for (MapArea area : MultipolygonAreaBuilder.createAreasForCoastlines(
+				osmData, nodeMap, mapNodes,
+				calculateFileBoundary(osmData.getBounds()))) {
+			
+			mapAreas.add(area);
+			
+			for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
+				boundaryMapNode.addAdjacentArea(area);
 			}
 			
 		}

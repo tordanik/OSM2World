@@ -68,7 +68,23 @@ public class AxisAlignedBoundingBoxXZ {
 		return polygonXZ;
 		
 	}
-
+	
+	public VectorXZ bottomLeft() {
+		return polygonXZ().getVertexCollection().get(0);
+	}
+	
+	public VectorXZ bottomRight() {
+		return polygonXZ().getVertexCollection().get(1);
+	}
+	
+	public VectorXZ topRight() {
+		return polygonXZ().getVertexCollection().get(2);
+	}
+	
+	public VectorXZ topLeft() {
+		return polygonXZ().getVertexCollection().get(3);
+	}
+	
 	/**
 	 * returns a bounding box that is a bit larger than this one
 	 */
