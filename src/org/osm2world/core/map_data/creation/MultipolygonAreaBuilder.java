@@ -435,32 +435,38 @@ final class MultipolygonAreaBuilder {
 					double ringAngle = center.angleTo(ringEndNode.getPos());
 					double nextRingAngle = getRingAngle(center, nextRing);
 					
-					if (ringAngle < cornerAngle1 && (nextRingAngle > cornerAngle1
-							|| nextRingAngle < ringAngle)) {
-						
+					if (ringAngle < cornerAngle1 &&
+							isAngleBetween(cornerAngle1, ringAngle, nextRingAngle)) {
 						connection.add(fileBoundary.topRight());
-						
 					}
 					
-					if (ringAngle < cornerAngle2 && (nextRingAngle > cornerAngle2
-							|| nextRingAngle < ringAngle)) {
-						
+					if (ringAngle < cornerAngle2 &&
+							isAngleBetween(cornerAngle2, ringAngle, nextRingAngle)) {
 						connection.add(fileBoundary.bottomRight());
-						
 					}
 					
-					if (ringAngle < cornerAngle3 && (nextRingAngle > cornerAngle3
-							|| nextRingAngle < ringAngle)) {
-						
+					if (ringAngle < cornerAngle3 &&
+							isAngleBetween(cornerAngle3, ringAngle, nextRingAngle)) {
 						connection.add(fileBoundary.bottomLeft());
-						
 					}
 					
-					if (ringAngle < cornerAngle4 && (nextRingAngle > cornerAngle4
-							|| nextRingAngle < ringAngle)) {
-						
+					if (isAngleBetween(cornerAngle4, ringAngle, nextRingAngle)) {
 						connection.add(fileBoundary.topLeft());
-						
+					}
+					
+					if (ringAngle > cornerAngle1 &&
+							isAngleBetween(cornerAngle1, ringAngle, nextRingAngle)) {
+						connection.add(fileBoundary.topRight());
+					}
+					
+					if (ringAngle > cornerAngle2 &&
+							isAngleBetween(cornerAngle2, ringAngle, nextRingAngle)) {
+						connection.add(fileBoundary.bottomRight());
+					}
+					
+					if (ringAngle > cornerAngle3 &&
+							isAngleBetween(cornerAngle3, ringAngle, nextRingAngle)) {
+						connection.add(fileBoundary.bottomLeft());
 					}
 					
 					for (VectorXZ pos : connection) {
@@ -502,6 +508,13 @@ final class MultipolygonAreaBuilder {
 	
 	private static final double getRingAngle(VectorXZ center, MapNodeRing ring) {
 		return center.angleTo(ring.get(0).getPos());
+	}
+	
+	private static boolean isAngleBetween(final double testAngle, double angle1, double angle2) {
+		
+		return angle1 < angle2 && angle1 < testAngle && testAngle < angle2
+				|| angle2 < angle1 && (testAngle < angle2 || testAngle > angle1);
+		
 	}
 	
 	private static final class WayRing {
