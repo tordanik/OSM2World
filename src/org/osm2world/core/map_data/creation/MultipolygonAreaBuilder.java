@@ -384,52 +384,53 @@ final class MultipolygonAreaBuilder {
 			final double cornerAngle2 = center.angleTo(fileBoundary.bottomRight());
 			final double cornerAngle3 = center.angleTo(fileBoundary.bottomLeft());
 			final double cornerAngle4 = center.angleTo(fileBoundary.topLeft());
-			
+						
 			/* build rings */
 			
 			List<WayRing> wayRings = buildRings(coastlineWays, nodeMap, false);
 			
-			List<MapNodeRing> mapNodeRings = new ArrayList<MapNodeRing>();
-			
-			/* turn all unclosed rings into one or more outer polygons */
-
-			List<WayRing> unclosedRings = new ArrayList<WayRing>();
+			List<MapNodeRing> unclosedRings = new ArrayList<MapNodeRing>();
+			List<MapNodeRing> closedRings = new ArrayList<MapNodeRing>();
 			
 			for (WayRing wayRing : wayRings) {
 				if (wayRing.isClosed()) {
-					mapNodeRings.add(wayRing.getMapNodeRing());
+					closedRings.add(wayRing.getMapNodeRing());
 				} else {
-					unclosedRings.add(wayRing);
+					MapNodeRing mapNodeRing = wayRing.getMapNodeRing();
+					mapNodeRing.stripToBoundingBox(fileBoundary);
+					unclosedRings.add(wayRing.getMapNodeRing());
 				}
 			}
 			
-			Collections.sort(unclosedRings, new Comparator<WayRing>() {
-				@Override public int compare(WayRing r1, WayRing r2) {
+			/* create a sort order */
+			
+			Collections.sort(unclosedRings, new Comparator<MapNodeRing>() {
+				@Override public int compare(MapNodeRing r1, MapNodeRing r2) {
 					double a1 = getRingAngle(center, r1);
 					double a2 = getRingAngle(center, r2);
 					return Double.compare(a1, a2);
 				}
 			});
 			
-			//build one closed outer ring from the unclosed ring fragments
+			/* build one closed outer ring from the unclosed ring fragments */
+			
 			MapNodeRing outerNodes = new MapNodeRing();
 			for (int i = 0; i < unclosedRings.size(); i++) {
 				
-				WayRing wayRing = unclosedRings.get(i);
-				WayRing nextRing = unclosedRings.get((i+1) % unclosedRings.size());
+				MapNodeRing ring = unclosedRings.get(i);
+				MapNodeRing nextRing = unclosedRings.get((i+1) % unclosedRings.size());
 				
-				outerNodes.addAll(wayRing.getMapNodeRing());
+				outerNodes.addAll(ring);
+
+				MapNode ringEndNode = ring.get(ring.size()-1);
 				
-				if (wayRing.getLastNode() == nextRing.getFirstNode()) {
+				if (ringEndNode == nextRing.get(0)) {
 					outerNodes.remove(outerNodes.size() - 1);
 				} else {
 					
 					//insert a connection that doesn't cut through the bbox
 					
 					List<VectorXZ> connection = new ArrayList<VectorXZ>();
-					
-					MapNodeRing mapNodeRing = wayRing.getMapNodeRing();
-					MapNode ringEndNode = mapNodeRing.get(mapNodeRing.size()-1);
 					
 					double ringAngle = center.angleTo(ringEndNode.getPos());
 					double nextRingAngle = getRingAngle(center, nextRing);
@@ -463,7 +464,7 @@ final class MultipolygonAreaBuilder {
 					}
 					
 					for (VectorXZ pos : connection) {
-												
+						
 						OSMNode osmNode = new OSMNode(NaN, NaN,
 								COASTLINE_NODE_TAGS, highestNodeId + 1);
 						osmData.getNodes().add(osmNode);
@@ -484,14 +485,14 @@ final class MultipolygonAreaBuilder {
 			outerNodes.add(outerNodes.get(0));
 			
 			/* build the result */
+
+			closedRings.add(outerNodes);
 			
 			OSMRelation relation = new OSMRelation(new MapBasedTagGroup(
 					new Tag("type", "multipolygon"), new Tag("natural", "water")),
 					highestRelationId + 1, coastlineWays.size());
 			
-			mapNodeRings.add(outerNodes);
-			
-			return buildPolygonsFromRings(relation, mapNodeRings);
+			return buildPolygonsFromRings(relation, closedRings);
 			
 		}
 		
@@ -499,8 +500,8 @@ final class MultipolygonAreaBuilder {
 		
 	}
 	
-	private static final double getRingAngle(VectorXZ center, WayRing wayRing) {
-		return center.angleTo(wayRing.getMapNodeRing().get(0).getPos());
+	private static final double getRingAngle(VectorXZ center, MapNodeRing ring) {
+		return center.angleTo(ring.get(0).getPos());
 	}
 	
 	private static final class WayRing {
@@ -657,6 +658,44 @@ final class MultipolygonAreaBuilder {
 		
 		private SimplePolygonXZ polygon = null;
 		
+		/**
+		 * removes segments outside a bounding box from unclosed rings.
+		 * Avoids many causes of creating self-intersecting coastlines.
+		 */
+		public void stripToBoundingBox(AxisAlignedBoundingBoxXZ box) {
+			
+			if (this.get(0) == this.get(this.size() - 1)) return;
+			
+			//remove from start
+			
+			int removeUntil = -1;
+			
+			for (int i = 0; i+1 < this.size(); i++) {
+				if (!box.contains(this.get(i).getPos())
+						&& !box.contains(this.get(i+1).getPos())) {
+					removeUntil = i;
+				} else {
+					break;
+				}
+			}
+			
+			for (int i = 0; i <= removeUntil; i++) {
+				this.remove(0);
+			}
+			
+			//remove from end
+			
+			for (int i = this.size()-1; i-1 > 0; i--) {
+				if (!box.contains(this.get(i).getPos())
+						&& !box.contains(this.get(i-1).getPos())) {
+					this.remove(i);
+				} else {
+					break;
+				}
+			}
+			
+		}
+		
 		public SimplePolygonXZ getPolygon() {
 			
 			if (polygon == null) {
@@ -666,7 +705,7 @@ final class MultipolygonAreaBuilder {
 			return polygon;
 			
 		}
-		
+
 		public boolean contains(MapNodeRing other) {
 			return this.getPolygon().contains(other.getPolygon());
 		}
