@@ -12,7 +12,7 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  * immutable representation of an axis-aligned bounding box
  * with x and z dimensions
  */
-public class AxisAlignedBoundingBoxXZ {
+public class AxisAlignedBoundingBoxXZ implements Cloneable {
 
 	public final double minX, minZ, maxX, maxZ;
 
@@ -128,6 +128,15 @@ public class AxisAlignedBoundingBoxXZ {
 				Math.max(box1.maxX, box2.maxX),
 				Math.max(box1.maxZ, box2.maxZ));
 		
+	}
+	
+	@Override
+	public AxisAlignedBoundingBoxXZ clone() {
+		try {
+			return (AxisAlignedBoundingBoxXZ) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError("unexpected super.clone behavior");
+		}
 	}
 	
 }

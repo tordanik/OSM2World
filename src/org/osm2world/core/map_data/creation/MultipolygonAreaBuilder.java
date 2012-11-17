@@ -3,6 +3,7 @@ package org.osm2world.core.map_data.creation;
 import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 import static java.util.Collections.*;
+import static org.osm2world.core.math.AxisAlignedBoundingBoxXZ.union;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -514,16 +515,19 @@ final class MultipolygonAreaBuilder {
 					
 					// create an outer ring around the entire tile
 					
-					outerNodes.add(createFakeMapNode(fileBoundary.topRight(),
-							++highestNodeId, osmData, nodeMap, mapNodes));
-					outerNodes.add(createFakeMapNode(fileBoundary.bottomRight(),
-							++highestNodeId, osmData, nodeMap, mapNodes));
-					outerNodes.add(createFakeMapNode(fileBoundary.bottomLeft(),
-							++highestNodeId, osmData, nodeMap, mapNodes));
-					outerNodes.add(createFakeMapNode(fileBoundary.topLeft(),
-							++highestNodeId, osmData, nodeMap, mapNodes));
-
-					outerNodes.add(outerNodes.get(0));
+					AxisAlignedBoundingBoxXZ coastBounds = fileBoundary.clone();
+					
+					for (MapNodeRing closedRing : closedRings) {
+						coastBounds = union(coastBounds,
+								closedRing.getAxisAlignedBoundingBoxXZ());
+					}
+					
+					coastBounds = coastBounds.pad(100);
+					
+					for (VectorXZ pos : coastBounds.polygonXZ().getVertexLoop()) {
+						outerNodes.add(createFakeMapNode(pos,
+								++highestNodeId, osmData, nodeMap, mapNodes));
+					}
 					
 					closedRings.add(outerNodes);
 					
