@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.creation;
 
 import static java.lang.Double.NaN;
+import static java.lang.Math.*;
 import static java.util.Collections.*;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.osm.data.OSMMember;
@@ -393,12 +395,24 @@ final class MultipolygonAreaBuilder {
 			List<MapNodeRing> closedRings = new ArrayList<MapNodeRing>();
 			
 			for (WayRing wayRing : wayRings) {
+				
 				if (wayRing.isClosed()) {
-					closedRings.add(wayRing.getMapNodeRing());
+					
+					MapNodeRing mapNodeRing = wayRing.getMapNodeRing();
+					
+					if (fileBoundary.overlaps(mapNodeRing.getAxisAlignedBoundingBoxXZ())) {
+						closedRings.add(mapNodeRing);
+					}
+					
 				} else {
+					
 					MapNodeRing mapNodeRing = wayRing.getMapNodeRing();
 					mapNodeRing.stripToBoundingBox(fileBoundary);
-					unclosedRings.add(wayRing.getMapNodeRing());
+					
+					if (mapNodeRing.size() > 1) {
+						unclosedRings.add(wayRing.getMapNodeRing());
+					}
+					
 				}
 			}
 			
@@ -487,12 +501,16 @@ final class MultipolygonAreaBuilder {
 				
 			}
 			
-			//close the loop
-			outerNodes.add(outerNodes.get(0));
+			if (!outerNodes.isEmpty()) {
+				
+				//close the loop
+				outerNodes.add(outerNodes.get(0));
+				
+				closedRings.add(outerNodes);
+				
+			}
 			
 			/* build the result */
-
-			closedRings.add(outerNodes);
 			
 			OSMRelation relation = new OSMRelation(new MapBasedTagGroup(
 					new Tag("type", "multipolygon"), new Tag("natural", "water")),
@@ -667,9 +685,25 @@ final class MultipolygonAreaBuilder {
 		
 	}
 	
-	private static final class MapNodeRing extends ArrayList<MapNode> {
+	private static final class MapNodeRing extends ArrayList<MapNode>
+		implements IntersectionTestObject {
 		
 		private SimplePolygonXZ polygon = null;
+		
+		@Override
+		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+			
+			double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
+			double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+			
+			for (MapNode n : this) {
+				minX = min(minX, n.getPos().x); minZ = min(minZ, n.getPos().z);
+				maxX = max(maxX, n.getPos().x); maxZ = max(maxZ, n.getPos().z);
+			}
+			
+			return new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
+			
+		}
 		
 		/**
 		 * removes segments outside a bounding box from unclosed rings.
@@ -705,6 +739,12 @@ final class MultipolygonAreaBuilder {
 				} else {
 					break;
 				}
+			}
+			
+			//remove even the last node if necessary
+			
+			if (this.size() == 1 && !box.contains(this.get(0))) {
+				this.clear();
 			}
 			
 		}
