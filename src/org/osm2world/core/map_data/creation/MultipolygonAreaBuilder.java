@@ -484,17 +484,8 @@ final class MultipolygonAreaBuilder {
 					}
 					
 					for (VectorXZ pos : connection) {
-						
-						OSMNode osmNode = new OSMNode(NaN, NaN,
-								COASTLINE_NODE_TAGS, highestNodeId + 1);
-						osmData.getNodes().add(osmNode);
-						highestNodeId += 1;
-						
-						MapNode mapNode = new MapNode(pos, osmNode);
-						outerNodes.add(mapNode);
-						mapNodes.add(mapNode);
-						nodeMap.put(osmNode, mapNode);
-						
+						outerNodes.add(createFakeMapNode(pos, ++highestNodeId,
+								osmData, nodeMap, mapNodes));
 					}
 					
 				}
@@ -507,6 +498,36 @@ final class MultipolygonAreaBuilder {
 				outerNodes.add(outerNodes.get(0));
 				
 				closedRings.add(outerNodes);
+				
+			} else {
+				
+				boolean hasIsland = false;
+				
+				for (MapNodeRing closedRing : closedRings) {
+					if (!closedRing.getPolygon().isClockwise()) {
+						hasIsland = true;
+						break;
+					}
+				}
+				
+				if (hasIsland) {
+					
+					// create an outer ring around the entire tile
+					
+					outerNodes.add(createFakeMapNode(fileBoundary.topRight(),
+							++highestNodeId, osmData, nodeMap, mapNodes));
+					outerNodes.add(createFakeMapNode(fileBoundary.bottomRight(),
+							++highestNodeId, osmData, nodeMap, mapNodes));
+					outerNodes.add(createFakeMapNode(fileBoundary.bottomLeft(),
+							++highestNodeId, osmData, nodeMap, mapNodes));
+					outerNodes.add(createFakeMapNode(fileBoundary.topLeft(),
+							++highestNodeId, osmData, nodeMap, mapNodes));
+
+					outerNodes.add(outerNodes.get(0));
+					
+					closedRings.add(outerNodes);
+					
+				}
 				
 			}
 			
@@ -521,6 +542,22 @@ final class MultipolygonAreaBuilder {
 		}
 		
 		return emptyList();
+		
+	}
+
+	private static MapNode createFakeMapNode(VectorXZ pos, long nodeId,
+			OSMData osmData, Map<OSMNode, MapNode> nodeMap,
+			Collection<MapNode> mapNodes) {
+		
+		OSMNode osmNode = new OSMNode(NaN, NaN,
+				COASTLINE_NODE_TAGS, nodeId + 1);
+		osmData.getNodes().add(osmNode);
+				
+		MapNode mapNode = new MapNode(pos, osmNode);
+		mapNodes.add(mapNode);
+		nodeMap.put(osmNode, mapNode);
+		
+		return mapNode;
 		
 	}
 	
