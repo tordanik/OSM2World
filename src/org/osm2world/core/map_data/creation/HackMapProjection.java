@@ -59,6 +59,11 @@ public class HackMapProjection implements MapProjection {
 	}
 	
 	@Override
+	public VectorXZ calcPos(LatLon latlon) {
+		return calcPos(latlon.lat, latlon.lon);
+	}
+	
+	@Override
 	public double calcLat(VectorXZ pos) {
 		if (pos.equals(VectorXZ.NULL_VECTOR)) {
 			return firstNodeLat;
