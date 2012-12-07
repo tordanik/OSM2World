@@ -1,9 +1,11 @@
 package org.osm2world.core.map_data.creation;
 
+import static java.lang.Boolean.*;
 import static java.lang.Double.NaN;
 import static java.lang.Math.*;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static org.osm2world.core.math.AxisAlignedBoundingBoxXZ.union;
+import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +20,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -148,7 +151,7 @@ final class MultipolygonAreaBuilder {
 	private static final Collection<MapArea> createAreasForAdvancedMultipolygon(
 			OSMRelation relation, Map<OSMNode, MapNode> nodeMap) {
 		
-		ArrayList<OSMWay> unassignedWays = new ArrayList<OSMWay>();
+		List<NodeSequence> innersAndOuters = new ArrayList<NodeSequence>();
 		
 		/* collect ways */
 		
@@ -157,77 +160,75 @@ final class MultipolygonAreaBuilder {
 					&& ("outer".equals(member.role)
 							|| "inner".equals(member.role)) ) {
 				
-				unassignedWays.add((OSMWay)member.member);
+				innersAndOuters.add(new NodeSequence(
+						(OSMWay)member.member, nodeMap));
 				
 			}
 		}
 		
 		/* build rings, then polygons from the ways */
 		
-		List<WayRing> wayRings = buildRings(unassignedWays, nodeMap, true);
+		List<Ring> rings = buildRings(innersAndOuters);
 		
-		if (wayRings != null) {
-			
-			List<MapNodeRing> mapNodeRings =
-					new ArrayList<MapNodeRing>(wayRings.size());
-			
-			for (WayRing wayRing : wayRings) {
-				mapNodeRings.add(wayRing.getMapNodeRing());
-			}
+		if (rings != null) {
 						
-			return buildPolygonsFromRings(relation, mapNodeRings);
+			return buildPolygonsFromRings(relation, rings);
+			
+		} else {
+		
+			return Collections.emptyList();
 			
 		}
 		
-		return Collections.emptyList();
-		
 	}
 
-	private static final List<WayRing> buildRings(List<OSMWay> ways,
-			Map<OSMNode, MapNode> nodeMap, boolean requireClosedRings) {
+	/**
+	 * builds closed rings from any mixture of closed and unclosed segments
+	 * 
+	 * @return  null if building closed rings isn't possible
+	 */
+	private static final List<Ring> buildRings(
+			List<NodeSequence> sequences) {
 		
-		List<WayRing> closedRings = new ArrayList<WayRing>();
-		List<WayRing> unclosedRings = new ArrayList<WayRing>();
+		List<Ring> closedRings = new ArrayList<Ring>();
 		
-		WayRing currentRing = null;
+		NodeSequence currentRing = null;
 		
-		while (ways.size() > 0) {
-		
+		while (sequences.size() > 0) {
+			
 			if (currentRing == null) {
 				
-				// start a new ring with any unassigned way
+				// start a new ring with any remaining node sequence
 				
-				OSMWay unassignedWay = ways.remove(ways.size() - 1);
-				currentRing = new WayRing(unassignedWay, nodeMap);
+				currentRing = sequences.remove(sequences.size() - 1);
 				
 			} else {
 				
-				// try to continue the ring by appending a way
+				// try to continue the ring by appending a node sequence
 				
-				OSMWay assignedWay = null;
+				NodeSequence assignedSequence = null;
 				
-				for (OSMWay way : ways) {
+				for (NodeSequence sequence : sequences) {
 				
-					if (currentRing.tryAddWay(way)) {
-						assignedWay = way;
+					if (currentRing.tryAdd(sequence)) {
+						assignedSequence = sequence;
 						break;
 					}
 					
 				}
 				
-				if (assignedWay != null) {
-					ways.remove(assignedWay);
+				if (assignedSequence != null) {
+					sequences.remove(assignedSequence);
 				} else {
-					unclosedRings.add(currentRing);
-					currentRing = null;
+					return null;
 				}
 				
 			}
 			
-			// check whether the ring is closed
+			// check whether the ring under construction is closed
 			
 			if (currentRing != null && currentRing.isClosed()) {
-				closedRings.add(currentRing);
+				closedRings.add(new Ring(currentRing));
 				currentRing = null;
 			}
 		
@@ -235,18 +236,10 @@ final class MultipolygonAreaBuilder {
 		
 		if (currentRing != null) {
 			// the last ring could not be closed
-			unclosedRings.add(currentRing);
-		}
-		
-		if (unclosedRings.isEmpty()) {
-			return closedRings;
-		} else if (!requireClosedRings) {
-			List<WayRing> wayRings = closedRings;
-			wayRings.addAll(unclosedRings);
-			return wayRings;
-		} else {
 			return null;
 		}
+		
+		return closedRings;
 		
 	}
 
@@ -254,7 +247,7 @@ final class MultipolygonAreaBuilder {
 	 * @param rings  rings to build polygons from; will be empty afterwards
 	 */
 	private static final Collection<MapArea> buildPolygonsFromRings(
-			OSMRelation relation, List<MapNodeRing> rings) {
+			OSMRelation relation, List<Ring> rings) {
 		
 		Collection<MapArea> finishedPolygons =
 				new ArrayList<MapArea>(rings.size() / 2);
@@ -265,15 +258,15 @@ final class MultipolygonAreaBuilder {
 			
 			/* find an outer ring */
 			
-			MapNodeRing outerRing = null;
+			Ring outerRing = null;
 			
-			for (MapNodeRing candidate : rings) {
+			for (Ring candidate : rings) {
 				
 				boolean containedInOtherRings = false;
 				
-				for (MapNodeRing otherRing : rings) {
+				for (Ring otherRing : rings) {
 					if (otherRing != candidate
-							&& otherRing.contains(candidate)) {
+							&& otherRing.containsRing(candidate)) {
 						containedInOtherRings = true;
 						break;
 					}
@@ -288,23 +281,23 @@ final class MultipolygonAreaBuilder {
 			
 			/* find inner rings of that ring */
 			
-			Collection<MapNodeRing> innerRings = new ArrayList<MapNodeRing>();
+			Collection<Ring> innerRings = new ArrayList<Ring>();
 			
-			for (MapNodeRing wayRing : rings) {
-				if (wayRing != outerRing && outerRing.contains(wayRing)) {
+			for (Ring ring : rings) {
+				if (ring != outerRing && outerRing.containsRing(ring)) {
 					
 					boolean containedInOtherRings = false;
 					
-					for (MapNodeRing otherRing : rings) {
-						if (otherRing != wayRing && otherRing != outerRing
-								&& otherRing.contains(wayRing)) {
+					for (Ring otherRing : rings) {
+						if (otherRing != ring && otherRing != outerRing
+								&& otherRing.containsRing(ring)) {
 							containedInOtherRings = true;
 							break;
 						}
 					}
 					
 					if (!containedInOtherRings) {
-						innerRings.add(wayRing);
+						innerRings.add(ring);
 					}
 					
 				}
@@ -315,12 +308,12 @@ final class MultipolygonAreaBuilder {
 			List<List<MapNode>> holes = new ArrayList<List<MapNode>>(innerRings.size());
 			List<SimplePolygonXZ> holesXZ = new ArrayList<SimplePolygonXZ>(innerRings.size());
 			
-			for (MapNodeRing innerRing : innerRings) {
-				holes.add(innerRing);
+			for (Ring innerRing : innerRings) {
+				holes.add(innerRing.closedNodeSequence);
 				holesXZ.add(innerRing.getPolygon());
 			}
 			
-			MapArea area = new MapArea(relation, outerRing, holes,
+			MapArea area = new MapArea(relation, outerRing.getNodeLoop(), holes,
 					new PolygonWithHolesXZ(outerRing.getPolygon(), holesXZ));
 			
 			finishedPolygons.add(area);
@@ -346,11 +339,8 @@ final class MultipolygonAreaBuilder {
 	 * to proper rings. One assumption being used is that they are complete
 	 * within the file's bounds.
 	 * 
-	 * This will not always work: It relies on a counterclockwise order
-	 * of the coastline fragments around the bounding box center.
-	 * If the fragments overlap in this order, results are unreliable.
-	 * (Could be solved by using intersections with the bounding box instead
-	 * of ways' end nodes for sorting, but this is not currently being done.)
+	 * It cannot distinguish between water and land tiles if there is no
+	 * coastline at all, but should be able to handle all other cases.
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, Map<OSMNode, MapNode> nodeMap,
@@ -381,171 +371,249 @@ final class MultipolygonAreaBuilder {
 		
 		if (!coastlineWays.isEmpty() && fileBoundary != null) {
 			
-			final VectorXZ center = fileBoundary.center();
+			/* build node sequences (may be closed or unclosed) */
 			
-			final double cornerAngle1 = center.angleTo(fileBoundary.topRight());
-			final double cornerAngle2 = center.angleTo(fileBoundary.bottomRight());
-			final double cornerAngle3 = center.angleTo(fileBoundary.bottomLeft());
-			final double cornerAngle4 = center.angleTo(fileBoundary.topLeft());
+			List<NodeSequence> origCoastlines = new ArrayList<NodeSequence>();
+			
+			for (OSMWay coastlineWay : coastlineWays) {
+				origCoastlines.add(new NodeSequence(coastlineWay, nodeMap));
+			}
+			
+			/* find coastline intersections with bounding box.
+			 * They will be inserted into the rings that intersect the coastline,
+			 * and into a list (sorted counterclockwise) of intersection nodes.
+			 */
+			
+			List<NodeOnBBox> bBoxNodes = new ArrayList<NodeOnBBox>();
+			
+			for (final LineSegmentXZ side : getSidesClockwise(fileBoundary)) {
+				
+				List<NodeOnBBox> intersectionsSide =
+						new ArrayList<NodeOnBBox>();
+				
+				for (NodeSequence coastline : origCoastlines) {
+				
+					for (int i = 0; i + 1 < coastline.size(); i++) {
 						
-			/* build rings */
-			
-			List<WayRing> wayRings = buildRings(coastlineWays, nodeMap, false);
-			
-			List<MapNodeRing> unclosedRings = new ArrayList<MapNodeRing>();
-			List<MapNodeRing> closedRings = new ArrayList<MapNodeRing>();
-			
-			for (WayRing wayRing : wayRings) {
-				
-				if (wayRing.isClosed()) {
-					
-					MapNodeRing mapNodeRing = wayRing.getMapNodeRing();
-					
-					if (fileBoundary.overlaps(mapNodeRing.getAxisAlignedBoundingBoxXZ())) {
-						closedRings.add(mapNodeRing);
-					}
-					
-				} else {
-					
-					MapNodeRing mapNodeRing = wayRing.getMapNodeRing();
-					mapNodeRing.stripToBoundingBox(fileBoundary);
-					
-					if (mapNodeRing.size() > 1) {
-						unclosedRings.add(wayRing.getMapNodeRing());
+						VectorXZ r1 = coastline.get(i).getPos();
+						VectorXZ r2 = coastline.get(i + 1).getPos();
+						
+						VectorXZ intersection = getLineSegmentIntersection(
+								side.p1, side.p2, r1, r2);
+						
+						if (intersection != null) {
+						
+							MapNode intersectionNode;
+							
+							if (intersection.equals(r1)) {
+								intersectionNode = coastline.get(i);
+							} else if (intersection.equals(r2)) {
+								intersectionNode = coastline.get(i + 1);
+							} else {
+								
+								intersectionNode = createFakeMapNode(intersection,
+										++highestNodeId, osmData, nodeMap, mapNodes);
+								
+								coastline.add(i + 1, intersectionNode);
+								
+								i += 1;
+								
+							}
+							
+							intersectionsSide.add(new NodeOnBBox(intersectionNode,
+									isRightOf(r1, side.p1, side.p2)));
+							
+						}
+						
 					}
 					
 				}
+				
+				/* add intersections for this side of the bbox,
+				 * sorted by distance from corner */
+				
+				Collections.sort(intersectionsSide, new Comparator<NodeOnBBox>() {
+					@Override public int compare(NodeOnBBox n1, NodeOnBBox n2) {
+						return Double.compare(
+								n1.node.getPos().distanceTo(side.p1),
+								n2.node.getPos().distanceTo(side.p1));
+					}
+				});
+				
+				bBoxNodes.addAll(intersectionsSide);
+				
+				MapNode cornerNode = createFakeMapNode(side.p2,
+						++highestNodeId, osmData, nodeMap, mapNodes);
+				bBoxNodes.add(new NodeOnBBox(cornerNode, null));
+				
 			}
 			
-			/* create a sort order */
+			/* rings are possibly shortened or split by removing all nodes
+			 * outside the bbox. */
 			
-			Collections.sort(unclosedRings, new Comparator<MapNodeRing>() {
-				@Override public int compare(MapNodeRing r1, MapNodeRing r2) {
-					double a1 = getRingAngle(center, r1);
-					double a2 = getRingAngle(center, r2);
-					return Double.compare(a1, a2);
+			List<NodeSequence> modifiedCoastlines = new ArrayList<NodeSequence>();
+			
+			for (NodeSequence origCoastline : origCoastlines) {
+				
+				NodeSequence modifiedCoastline = new NodeSequence();
+				
+				for (MapNode node : origCoastline) {
+				
+					boolean isOnBBox = false;
+					
+					for (NodeOnBBox bBoxNode : bBoxNodes) {
+						if (bBoxNode.node.equals(node)) {
+							isOnBBox = true;
+						}
+					}
+					
+					if (fileBoundary.contains(node) || isOnBBox) {
+						
+						modifiedCoastline.add(node);
+						
+					} else {
+						
+						if (!modifiedCoastline.isEmpty()) {
+							modifiedCoastlines.add(modifiedCoastline);
+							modifiedCoastline = new NodeSequence();
+						}
+						
+					}
+					
 				}
-			});
-			
-			/* build one closed outer ring from the unclosed ring fragments */
-			
-			MapNodeRing outerNodes = new MapNodeRing();
-			for (int i = 0; i < unclosedRings.size(); i++) {
 				
-				MapNodeRing ring = unclosedRings.get(i);
-				MapNodeRing nextRing = unclosedRings.get((i+1) % unclosedRings.size());
-				
-				outerNodes.addAll(ring);
-
-				MapNode ringEndNode = ring.get(ring.size()-1);
-				
-				if (ringEndNode == nextRing.get(0)) {
-					outerNodes.remove(outerNodes.size() - 1);
-				} else {
-					
-					//insert a connection that doesn't cut through the bbox
-					
-					List<VectorXZ> connection = new ArrayList<VectorXZ>();
-					
-					double ringAngle = center.angleTo(ringEndNode.getPos());
-					double nextRingAngle = getRingAngle(center, nextRing);
-					
-					if (ringAngle < cornerAngle1 &&
-							isAngleBetween(cornerAngle1, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.topRight());
-					}
-					
-					if (ringAngle < cornerAngle2 &&
-							isAngleBetween(cornerAngle2, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.bottomRight());
-					}
-					
-					if (ringAngle < cornerAngle3 &&
-							isAngleBetween(cornerAngle3, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.bottomLeft());
-					}
-					
-					if (isAngleBetween(cornerAngle4, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.topLeft());
-					}
-					
-					if (ringAngle > cornerAngle1 &&
-							isAngleBetween(cornerAngle1, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.topRight());
-					}
-					
-					if (ringAngle > cornerAngle2 &&
-							isAngleBetween(cornerAngle2, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.bottomRight());
-					}
-					
-					if (ringAngle > cornerAngle3 &&
-							isAngleBetween(cornerAngle3, ringAngle, nextRingAngle)) {
-						connection.add(fileBoundary.bottomLeft());
-					}
-					
-					for (VectorXZ pos : connection) {
-						outerNodes.add(createFakeMapNode(pos, ++highestNodeId,
-								osmData, nodeMap, mapNodes));
-					}
-					
+				if (!modifiedCoastline.isEmpty()) {
+					modifiedCoastlines.add(modifiedCoastline);
 				}
 				
 			}
 			
-			if (!outerNodes.isEmpty()) {
+			
+			/* parts of the bounding box between outgoing and incoming
+			 * intersection nodes are used as additional coastline sections */
+			
+			List<NodeSequence> bboxSections = new ArrayList<NodeSequence>();
+			
+			if (bBoxNodes.size() > 4) { //more than just corners
 				
-				//close the loop
-				outerNodes.add(outerNodes.get(0));
+				int firstIntersectionIndex = -1;
+				int currentIndex = 0;
 				
-				closedRings.add(outerNodes);
+				List<MapNode> currentSequence = null;
+				
+				while (currentIndex != firstIntersectionIndex) {
+				
+					NodeOnBBox currentBBoxNode = bBoxNodes.get(currentIndex);
+					
+					if (currentBBoxNode.outgoingIntersection == TRUE) {
+						
+						currentSequence = new ArrayList<MapNode>();
+						currentSequence.add(currentBBoxNode.node);
+						
+						if (firstIntersectionIndex == -1) {
+							firstIntersectionIndex = currentIndex;
+						}
+						
+					} else if (currentBBoxNode.outgoingIntersection == FALSE) {
+						
+						if (currentSequence != null) {
+							
+							currentSequence.add(currentBBoxNode.node);
+							
+							NodeSequence finishedBboxPart = new NodeSequence();
+							finishedBboxPart.addAll(currentSequence);
+							bboxSections.add(finishedBboxPart);
+							
+							currentSequence = null;
+							
+						}
+						
+					} else {
+						
+						if (currentSequence != null) {
+							currentSequence.add(currentBBoxNode.node);
+						}
+						
+					}
+					
+					currentIndex = (currentIndex + 1) % bBoxNodes.size();
+					
+				}
+				
+			}
+			
+			/* construct closed rings and turn them into polygons with holes
+			 * (as if the coastlines were multipolygon member ways) */
+						
+			List<Ring> closedRings;
+			
+			if (!bboxSections.isEmpty()) {
+				
+				modifiedCoastlines.addAll(bboxSections);
+				
+				closedRings = buildRings(modifiedCoastlines);
 				
 			} else {
+			
+				closedRings = buildRings(modifiedCoastlines);
 				
-				boolean hasIsland = false;
-				
-				for (MapNodeRing closedRing : closedRings) {
-					if (!closedRing.getPolygon().isClockwise()) {
-						hasIsland = true;
-						break;
-					}
-				}
-				
-				if (hasIsland) {
+				if (closedRings != null) {
 					
-					// create an outer ring around the entire tile
+					/* if there is an island, but no coastline intersects the boundary,
+					 * create a boundary around the entire tile */
 					
-					AxisAlignedBoundingBoxXZ coastBounds = fileBoundary.clone();
+					boolean hasIsland = false;
 					
-					for (MapNodeRing closedRing : closedRings) {
-						coastBounds = union(coastBounds,
-								closedRing.getAxisAlignedBoundingBoxXZ());
+					for (Ring closedRing : closedRings) {
+						if (!closedRing.getPolygon().isClockwise()) {
+							hasIsland = true;
+							break;
+						}
 					}
 					
-					coastBounds = coastBounds.pad(100);
-					
-					for (VectorXZ pos : coastBounds.polygonXZ().getVertexLoop()) {
-						outerNodes.add(createFakeMapNode(pos,
-								++highestNodeId, osmData, nodeMap, mapNodes));
+					if (hasIsland) {
+						
+						NodeSequence boundaryRing = new NodeSequence();
+						
+						for (VectorXZ pos : fileBoundary.polygonXZ().getVertices()) {
+							boundaryRing.add(createFakeMapNode(pos,
+									++highestNodeId, osmData, nodeMap, mapNodes));
+						}
+						
+						boundaryRing.add(boundaryRing.get(0));
+						
+						closedRings.add(new Ring(boundaryRing));
+						
 					}
-					
-					closedRings.add(outerNodes);
 					
 				}
 				
 			}
 			
-			/* build the result */
-			
-			OSMRelation relation = new OSMRelation(new MapBasedTagGroup(
-					new Tag("type", "multipolygon"), new Tag("natural", "water")),
-					highestRelationId + 1, coastlineWays.size());
-			
-			return buildPolygonsFromRings(relation, closedRings);
+			if (closedRings != null) {
+				
+				OSMRelation relation = new OSMRelation(new MapBasedTagGroup(
+						new Tag("type", "multipolygon"), new Tag("natural", "water")),
+						highestRelationId + 1, 0);
+				
+				return buildPolygonsFromRings(relation, closedRings);
+				
+			}
 			
 		}
 		
 		return emptyList();
+		
+	}
+	
+	private static final List<LineSegmentXZ> getSidesClockwise(
+			AxisAlignedBoundingBoxXZ fileBoundary) {
+		
+		return asList(
+				new LineSegmentXZ(fileBoundary.topLeft(), fileBoundary.topRight()),
+				new LineSegmentXZ(fileBoundary.topRight(), fileBoundary.bottomRight()),
+				new LineSegmentXZ(fileBoundary.bottomRight(), fileBoundary.bottomLeft()),
+				new LineSegmentXZ(fileBoundary.bottomLeft(), fileBoundary.topLeft()));
 		
 	}
 
@@ -565,171 +633,99 @@ final class MultipolygonAreaBuilder {
 		
 	}
 	
-	private static final double getRingAngle(VectorXZ center, MapNodeRing ring) {
-		return center.angleTo(ring.get(0).getPos());
-	}
-	
-	private static boolean isAngleBetween(final double testAngle, double angle1, double angle2) {
+	private static final class NodeSequence extends ArrayList<MapNode> {
 		
-		return angle1 < angle2 && angle1 < testAngle && testAngle < angle2
-				|| angle2 < angle1 && (testAngle < angle2 || testAngle > angle1);
-		
-	}
-	
-	private static final class WayRing {
-		
-		private Map<OSMNode, MapNode> nodeMap;
-		private List<RingSegment> ringSegments = new ArrayList<RingSegment>();
-		
-		public WayRing(OSMWay firstWay, Map<OSMNode, MapNode> nodeMap) {
-			
-			this.nodeMap = nodeMap;
-			this.ringSegments.add(new RingSegment(firstWay, true));
-			
+		/**
+		 * creates an empty sequence
+		 */
+		public NodeSequence() {
+			super();
 		}
 		
-		private OSMNode getFirstNode() {
+		/**
+		 * creates a node sequence from an {@link OSMWay}
+		 */
+		public NodeSequence(OSMWay way, Map<OSMNode, MapNode> nodeMap) {
 			
-			return ringSegments.get(0).getStartNode();
+			super(way.nodes.size());
 			
-		}
-		
-		private OSMNode getLastNode() {
-			
-			RingSegment lastSegment = ringSegments.get(ringSegments.size() - 1);
-			return lastSegment.getEndNode();
+			for (OSMNode wayNode : way.nodes) {
+				add(nodeMap.get(wayNode));
+			}
 			
 		}
 		
 		/**
-		 * tries to add a way either at the beginning or end of the ring
-		 * @return true iff the way was successfully added
+		 * tries to add another sequence onto the start or end of this one.
+		 * If it succeeds, the other sequence may also be modified and
+		 * should be considered "spent".
 		 */
-		public boolean tryAddWay(OSMWay way) {
-
-			OSMNode firstWayNode = way.nodes.get(0);
-			OSMNode lastWayNode = way.nodes.get(way.nodes.size() - 1);
+		public boolean tryAdd(NodeSequence other) {
 			
-			if (getLastNode() == firstWayNode) {
+			if (getLastNode() == other.getFirstNode()) {
 				
-				//add the way at the end
-				ringSegments.add(new RingSegment(way, true));
+				//add the sequence at the end
+				remove(size() - 1);
+				addAll(other);
 				return true;
 				
-			} else if (getLastNode() == lastWayNode) {
+			} else if (getLastNode() == other.getLastNode()) {
 				
-				//add the way backwards at the end
-				ringSegments.add(new RingSegment(way, false));
+				//add the sequence backwards at the end
+				remove(size() - 1);
+				Collections.reverse(other);
+				addAll(other);
 				return true;
 				
-			} else if (getFirstNode() == lastWayNode) {
-
-				//add the way at the beginning
-				ringSegments.add(0, new RingSegment(way, true));
+			} else if (getFirstNode() == other.getLastNode()) {
+				
+				//add the sequence at the beginning
+				remove(0);
+				addAll(0, other);
 				return true;
 				
-			} else if (getFirstNode() == firstWayNode) {
-
-				//add the way backwards at the beginning
-				ringSegments.add(0, new RingSegment(way, false));
+			} else if (getFirstNode() == other.getFirstNode()) {
+				
+				//add the sequence backwards at the beginning
+				remove(0);
+				Collections.reverse(other);
+				addAll(0, other);
 				return true;
 				
 			} else {
-				
 				return false;
 			}
 			
+		}
+
+		private MapNode getFirstNode() {
+			return get(0);
+		}
+
+		private MapNode getLastNode() {
+			return get(size() - 1);
 		}
 
 		public boolean isClosed() {
 			return getFirstNode() == getLastNode();
 		}
 		
-		MapNodeRing mapNodes = null;
-		
-		public MapNodeRing getMapNodeRing() {
-			
-			if (mapNodes == null) {
-				
-				mapNodes = new MapNodeRing();
-					
-				for (RingSegment ringSegment : ringSegments) {
-					
-					int size = ringSegment.way.nodes.size();
-					
-					for (int i = 0; i < size; i++) {
-						
-						int nodeIndex = ringSegment.forward ? i : (size - 1 - i);
-						OSMNode node = ringSegment.way.nodes.get(nodeIndex);
-						
-						if (i == 0 && !mapNodes.isEmpty()) {
-							//node has already been added
-							assert nodeMap.get(node) ==
-									mapNodes.get(mapNodes.size() - 1);
-						} else {
-							mapNodes.add(nodeMap.get(node));
-						}
-						
-					}
-					
-				}
-				
-			}
-			
-			return mapNodes;
-			
-		}
-		
-		@Override
-		public String toString() {
-			return ringSegments.toString();
-		}
-		
-		/**
-		 * one entry in a list of segments composing a ring.
-		 * 
-		 * This is intended to mask the direction of the underlying
-		 * {@link OSMWay} from other methods.
-		 */
-		private static final class RingSegment {
-			
-			public final OSMWay way;
-			public final boolean forward;
-			
-			private RingSegment(OSMWay way, boolean forward) {
-				this.way = way;
-				this.forward = forward;
-			}
-			
-			public OSMNode getStartNode() {
-				if (forward) {
-					return way.nodes.get(0);
-				} else {
-					return way.nodes.get(way.nodes.size() - 1);
-				}
-			}
-			
-			public OSMNode getEndNode() {
-				if (forward) {
-					return way.nodes.get(way.nodes.size() - 1);
-				} else {
-					return way.nodes.get(0);
-				}
-			}
-			
-			@Override
-			public String toString() {
-				return "(" + way.id + (forward ? "f" : "b") + ")";
-			}
-			
-		}
-		
 	}
 	
-	private static final class MapNodeRing extends ArrayList<MapNode>
-		implements IntersectionTestObject {
+	private static final class Ring implements IntersectionTestObject {
 		
-		private SimplePolygonXZ polygon = null;
+		private final NodeSequence closedNodeSequence;
+		private final SimplePolygonXZ polygon;
+		
+		public Ring(NodeSequence closedNodeSequence) {
+
+			assert closedNodeSequence.isClosed();
+			
+			this.closedNodeSequence = closedNodeSequence;
+			
+			polygon = MapArea.polygonFromMapNodeLoop(closedNodeSequence);
+			
+		}
 		
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
@@ -737,7 +733,7 @@ final class MultipolygonAreaBuilder {
 			double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
 			double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
 			
-			for (MapNode n : this) {
+			for (MapNode n : closedNodeSequence) {
 				minX = min(minX, n.getPos().x); minZ = min(minZ, n.getPos().z);
 				maxX = max(maxX, n.getPos().x); maxZ = max(maxZ, n.getPos().z);
 			}
@@ -746,64 +742,38 @@ final class MultipolygonAreaBuilder {
 			
 		}
 		
-		/**
-		 * removes segments outside a bounding box from unclosed rings.
-		 * Avoids many causes of creating self-intersecting coastlines.
-		 */
-		public void stripToBoundingBox(AxisAlignedBoundingBoxXZ box) {
-			
-			if (this.get(0) == this.get(this.size() - 1)) return;
-			
-			//remove from start
-			
-			int removeUntil = -1;
-			
-			for (int i = 0; i+1 < this.size(); i++) {
-				if (!box.contains(this.get(i).getPos())
-						&& !box.contains(this.get(i+1).getPos())) {
-					removeUntil = i;
-				} else {
-					break;
-				}
-			}
-			
-			for (int i = 0; i <= removeUntil; i++) {
-				this.remove(0);
-			}
-			
-			//remove from end
-			
-			for (int i = this.size()-1; i-1 > 0; i--) {
-				if (!box.contains(this.get(i).getPos())
-						&& !box.contains(this.get(i-1).getPos())) {
-					this.remove(i);
-				} else {
-					break;
-				}
-			}
-			
-			//remove even the last node if necessary
-			
-			if (this.size() == 1 && !box.contains(this.get(0))) {
-				this.clear();
-			}
-			
+		private List<MapNode> getNodeLoop() {
+			return closedNodeSequence;
 		}
 		
 		public SimplePolygonXZ getPolygon() {
-			
-			if (polygon == null) {
-				polygon = MapArea.polygonFromMapNodeLoop(this);
-			}
-			
 			return polygon;
-			
 		}
-
-		public boolean contains(MapNodeRing other) {
+		
+		public boolean containsRing(Ring other) {
 			return this.getPolygon().contains(other.getPolygon());
 		}
 		
 	}
+	
+	private static class NodeOnBBox {
 		
+		/** true for outgoing, false for incoming, null for other bbox nodes */
+		public final Boolean outgoingIntersection;
+		
+		public final MapNode node;
+		
+		private NodeOnBBox(MapNode node, Boolean outgoingIntersection) {
+			this.node = node;
+			this.outgoingIntersection = outgoingIntersection;
+		}
+		
+		@Override
+		public String toString() {
+			return "(" + outgoingIntersection + ", " + node.getOsmNode().id +
+					"@" + node.getPos() + ")";
+		}
+		
+	}
+	
 }
