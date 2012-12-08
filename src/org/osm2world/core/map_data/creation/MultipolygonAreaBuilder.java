@@ -31,6 +31,8 @@ import org.osm2world.core.osm.data.OSMMember;
 import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
+import org.osm2world.core.osm.ruleset.HardcodedRuleset;
+import org.osm2world.core.osm.ruleset.Ruleset;
 
 /**
  * utility class for creating areas from multipolygon relations,
@@ -340,7 +342,8 @@ final class MultipolygonAreaBuilder {
 	 * within the file's bounds.
 	 * 
 	 * It cannot distinguish between water and land tiles if there is no
-	 * coastline at all, but should be able to handle all other cases.
+	 * coastline at all (it will then guess based on the tags being used),
+	 * but should be able to handle all other cases.
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, Map<OSMNode, MapNode> nodeMap,
@@ -369,7 +372,7 @@ final class MultipolygonAreaBuilder {
 			}
 		}
 		
-		if (!coastlineWays.isEmpty() && fileBoundary != null) {
+		if (fileBoundary != null) {
 			
 			/* build node sequences (may be closed or unclosed) */
 			
@@ -559,8 +562,9 @@ final class MultipolygonAreaBuilder {
 				
 				if (closedRings != null) {
 					
-					/* if there is an island, but no coastline intersects the boundary,
-					 * create a boundary around the entire tile */
+					/* if there is an island, but no coastline intersects
+					 * the boundary, create a boundary around the entire tile.
+					 * Do the same for water tiles (tiles without any land). */
 					
 					boolean hasIsland = false;
 					
@@ -571,7 +575,7 @@ final class MultipolygonAreaBuilder {
 						}
 					}
 					
-					if (hasIsland) {
+					if (hasIsland || isProbablySeaTile(osmData)) {
 						
 						NodeSequence boundaryRing = new NodeSequence();
 						
@@ -605,7 +609,7 @@ final class MultipolygonAreaBuilder {
 		return emptyList();
 		
 	}
-	
+
 	private static final List<LineSegmentXZ> getSidesClockwise(
 			AxisAlignedBoundingBoxXZ fileBoundary) {
 		
@@ -630,6 +634,35 @@ final class MultipolygonAreaBuilder {
 		nodeMap.put(osmNode, mapNode);
 		
 		return mapNode;
+		
+	}
+	
+	/**
+	 * guesses whether this is a pure sea tile (no land at all)
+	 */
+	private static boolean isProbablySeaTile(OSMData osmData) {
+		
+		boolean anySeaTag = false;
+		
+		Ruleset ruleset = new HardcodedRuleset();
+		
+		@SuppressWarnings("unchecked")
+		List<Collection<? extends OSMElement>> collections = asList(
+				osmData.getWays(), osmData.getNodes());
+		
+		for (Collection<? extends OSMElement> collection : collections) {
+			for (OSMElement element : collection) {
+				for (Tag tag : element.tags) {
+					
+					if (ruleset.isLandTag(tag)) return false;
+					
+					anySeaTag |= ruleset.isSeaTag(tag);
+					
+				}
+			}
+		}
+		
+		return anySeaTag;
 		
 	}
 	
