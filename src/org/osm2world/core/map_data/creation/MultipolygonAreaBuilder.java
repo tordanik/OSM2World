@@ -79,7 +79,8 @@ final class MultipolygonAreaBuilder {
 		
 		for (OSMMember member : relation.relationMembers) {
 			
-			if ("outer".equals(member.role)) {
+			if ("outer".equals(member.role)
+					&& member.member instanceof OSMWay) {
 				numberOuters += 1;
 			}
 			
