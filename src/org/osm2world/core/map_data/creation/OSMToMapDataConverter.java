@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.creation;
 
 import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -86,7 +88,7 @@ public class OSMToMapDataConverter {
 		
 		/* create MapNode for each OSM node */
 
-		Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
+		final Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
 
 		for (OSMNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.calcPos(node.lat, node.lon);
@@ -97,31 +99,34 @@ public class OSMToMapDataConverter {
 
 		/* create areas ... */
 		
-		Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
+		final Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
 				
 		/* ... based on multipolygons */
 		
-		for (OSMRelation relation : osmData.getRelations()) {
-			if (relation.tags.contains(MULTIPOLYON_TAG)) {
+		iterate(osmData.getRelations(), new Operation<OSMRelation>() {
+			@Override public void perform(OSMRelation relation) {
 				
-				for (MapArea area : MultipolygonAreaBuilder.
-						createAreasForMultipolygon(relation, nodeMap)) {
+				if (relation.tags.contains(MULTIPOLYON_TAG)) {
 					
-					mapAreas.add(area);
-					
-					for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
-						boundaryMapNode.addAdjacentArea(area);
-					}
-					
-					if (area.getOsmObject() instanceof OSMWay) {
-						areaMap.put((OSMWay)area.getOsmObject(), area);
+					for (MapArea area : MultipolygonAreaBuilder.
+							createAreasForMultipolygon(relation, nodeMap)) {
+						
+						mapAreas.add(area);
+						
+						for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
+							boundaryMapNode.addAdjacentArea(area);
+						}
+						
+						if (area.getOsmObject() instanceof OSMWay) {
+							areaMap.put((OSMWay)area.getOsmObject(), area);
+						}
+						
 					}
 					
 				}
 				
 			}
-			
-		}
+		});
 		
 		/* ... based on coastline ways */
 		
