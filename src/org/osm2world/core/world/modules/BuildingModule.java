@@ -575,6 +575,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWall = Materials.CONCRETE;
 				defaultMaterialRoof = Materials.CONCRETE;
 				defaultMaterialWindows = Materials.GARAGE_DOORS;
+			} else if ("hut".equals(buildingValue)
+					|| "shed".equals(buildingValue)) {
+				defaultLevels = 1;
+			} else if ("cabin".equals(buildingValue)) {
+				defaultLevels = 1;
+				defaultMaterialWall = Materials.WOOD_WALL;
+				defaultMaterialRoof = Materials.WOOD;
 			} else if ("church".equals(buildingValue)
 					|| "hangar".equals(buildingValue)
 					|| "industrial".equals(buildingValue)) {
