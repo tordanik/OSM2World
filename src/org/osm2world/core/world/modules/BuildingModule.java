@@ -1067,7 +1067,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				double roofY = getMaxRoofEle() - getRoofHeight();
 				
 				renderSpindle(target, materialRoof,
-						polygon.getOuter(),
+						polygon.getOuter().makeClockwise(),
 						asList(roofY,
 								roofY + 0.15 * roofHeight,
 								roofY + 0.52 * roofHeight,
@@ -1107,7 +1107,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				renderSpindle(target, materialRoof,
-						polygon.getOuter(), heights, scales);
+						polygon.getOuter().makeClockwise(),
+						heights, scales);
 				
 			}
 			
