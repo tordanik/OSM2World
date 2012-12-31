@@ -403,9 +403,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (getValue("min_height") != null) {
 				
-				Float minEle = parseMeasure(getValue("min_height"));
-				if (minEle != null) {
-					return minEle;
+				Float minHeight = parseMeasure(getValue("min_height"));
+				if (minHeight != null) {
+					return minHeight;
 				}
 				
 			}
@@ -414,6 +414,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				double totalHeight = heightWithoutRoof + roof.getRoofHeight();
 				return (totalHeight / buildingLevels) * minLevel;
+				
+			}
+			
+			if (area.getTags().contains("building", "roof")
+					|| area.getTags().contains("building:part", "roof")) {
+				
+				return heightWithoutRoof - 0.3;
 				
 			}
 			
@@ -575,6 +582,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWall = Materials.CONCRETE;
 				defaultMaterialRoof = Materials.CONCRETE;
 				defaultMaterialWindows = Materials.GARAGE_DOORS;
+			} else if ("hut".equals(buildingValue)
+					|| "shed".equals(buildingValue)) {
+				defaultLevels = 1;
+			} else if ("cabin".equals(buildingValue)) {
+				defaultLevels = 1;
+				defaultMaterialWall = Materials.WOOD_WALL;
+				defaultMaterialRoof = Materials.WOOD;
+			} else if ("roof".equals(buildingValue)) {
+				defaultLevels = 1;
+				defaultMaterialWindows = null;
 			} else if ("church".equals(buildingValue)
 					|| "hangar".equals(buildingValue)
 					|| "industrial".equals(buildingValue)) {
@@ -1050,7 +1067,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				double roofY = getMaxRoofEle() - getRoofHeight();
 				
 				renderSpindle(target, materialRoof,
-						polygon.getOuter(),
+						polygon.getOuter().makeClockwise(),
 						asList(roofY,
 								roofY + 0.15 * roofHeight,
 								roofY + 0.52 * roofHeight,
@@ -1090,7 +1107,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				renderSpindle(target, materialRoof,
-						polygon.getOuter(), heights, scales);
+						polygon.getOuter().makeClockwise(),
+						heights, scales);
 				
 			}
 			

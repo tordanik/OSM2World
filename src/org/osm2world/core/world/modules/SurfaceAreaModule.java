@@ -33,6 +33,8 @@ public class SurfaceAreaModule extends AbstractModule {
 		defaultSurfaceMap.put(new Tag("landuse", "construction"), "ground");
 		defaultSurfaceMap.put(new Tag("golf", "bunker"), "sand");
 		defaultSurfaceMap.put(new Tag("golf", "green"), "grass");
+		defaultSurfaceMap.put(new Tag("natural", "sand"), "sand");
+		defaultSurfaceMap.put(new Tag("natural", "beach"), "sand");
 	}
 	
 	@Override

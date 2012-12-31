@@ -1,13 +1,13 @@
 package org.osm2world.core.map_data.creation;
 
 import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,12 +36,13 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMMember;
+import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -62,12 +63,12 @@ public class OSMToMapDataConverter {
 	public MapData createMapData(OSMData osmData) throws IOException {
 		
 		final List<MapNode> mapNodes = new ArrayList<MapNode>();
-		final List<MapWaySegment> gridWaySegs = new ArrayList<MapWaySegment>();
+		final List<MapWaySegment> mapWaySegs = new ArrayList<MapWaySegment>();
 		final List<MapArea> mapAreas = new ArrayList<MapArea>();
-
-		createMapElements(osmData, mapNodes, gridWaySegs, mapAreas);
 		
-		MapData mapData = new MapData(mapNodes, gridWaySegs, mapAreas,
+		createMapElements(osmData, mapNodes, mapWaySegs, mapAreas);
+		
+		MapData mapData = new MapData(mapNodes, mapWaySegs, mapAreas,
 				calculateFileBoundary(osmData.getBounds()));
 		
 		calculateIntersectionsInMapData(mapData);
@@ -82,12 +83,12 @@ public class OSMToMapDataConverter {
 	 * and adds them to collections
 	 */
 	private void createMapElements(OSMData osmData,
-			final List<MapNode> mapNodes, final List<MapWaySegment> gridWaySegs,
+			final List<MapNode> mapNodes, final List<MapWaySegment> mapWaySegs,
 			final List<MapArea> mapAreas) {
 		
 		/* create MapNode for each OSM node */
 
-		Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
+		final Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
 
 		for (OSMNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.calcPos(node.lat, node.lon);
@@ -95,171 +96,121 @@ public class OSMToMapDataConverter {
 			mapNodes.add(mapNode);
 			nodeMap.put(node, mapNode);
 		}
-
-		/* create areas */
-
-		Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
-			//keys of this map will not be used to create MapWaySegments;
-			//the map is also used for inserting holes into areas (multipolygons)
-
+		
+		/* create areas ... */
+		
+		final Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
+				
+		/* ... based on multipolygons */
+		
+		iterate(osmData.getRelations(), new Operation<OSMRelation>() {
+			@Override public void perform(OSMRelation relation) {
+				
+				if (relation.tags.contains(MULTIPOLYON_TAG)) {
+					
+					for (MapArea area : MultipolygonAreaBuilder.
+							createAreasForMultipolygon(relation, nodeMap)) {
+						
+						mapAreas.add(area);
+						
+						for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
+							boundaryMapNode.addAdjacentArea(area);
+						}
+						
+						if (area.getOsmObject() instanceof OSMWay) {
+							areaMap.put((OSMWay)area.getOsmObject(), area);
+						}
+						
+					}
+					
+				}
+				
+			}
+		});
+		
+		/* ... based on coastline ways */
+		
+		for (MapArea area : MultipolygonAreaBuilder.createAreasForCoastlines(
+				osmData, nodeMap, mapNodes,
+				calculateFileBoundary(osmData.getBounds()))) {
+			
+			mapAreas.add(area);
+			
+			for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
+				boundaryMapNode.addAdjacentArea(area);
+			}
+			
+		}
+		
+		/* ... based on closed ways */
+		
 		for (OSMWay way : osmData.getWays()) {
-			if (way.isClosed()) {
+			if (way.isClosed() && !areaMap.containsKey(way)) {
 				//create MapArea only if at least one tag is an area tag
 				for (Tag tag : way.tags) {
 					if (ruleset.isAreaTag(tag)) {
-	
-						MapArea mapArea = new MapArea(way);
-						mapAreas.add(mapArea);
-	
+						//TODO: check whether this is old-style MP outer
+						
+						List<MapNode> nodes = new ArrayList<MapNode>(way.nodes.size());
 						for (OSMNode boundaryOSMNode : way.nodes) {
-							MapNode boundaryGridNode = nodeMap.get(boundaryOSMNode);
-							mapArea.addBoundaryNode(boundaryGridNode);
-							boundaryGridNode.addAdjacentArea(mapArea);
+							nodes.add(nodeMap.get(boundaryOSMNode));
 						}
-	
-						areaMap.put(way, mapArea);
-	
+						
+						try {
+							
+							MapArea mapArea = new MapArea((OSMElement)way, nodes);
+							
+							mapAreas.add(mapArea);
+							areaMap.put(way, mapArea);
+							
+						} catch (InvalidGeometryException e) {
+							System.err.println(e);
+						}
+							
 						break;
 					}
 				}
 			}
 		}
-
-		/* add holes to areas, and add new areas based on multipolygons */
-		
-		for (OSMRelation relation : osmData.getRelations()) {
-			if (relation.tags.contains(MULTIPOLYON_TAG)) {
-				
-				MapArea area = null;
-				List<List<MapNode>> holes = new ArrayList<List<MapNode>>();
-				
-				for (OSMMember member : relation.relationMembers) {
 					
-					if ("inner".equals(member.role)) {
-						
-						if (member.member instanceof OSMWay) {
-							OSMWay way = (OSMWay)member.member;
-							if (way.isClosed()) {
-								List<MapNode> hole =
-									new ArrayList<MapNode>(way.nodes.size());
-								for (OSMNode node : ((OSMWay)member.member).nodes) {
-									hole.add(nodeMap.get(node));
-								}
-								holes.add(hole);
-							}
-						}
-						
-					} else if ("outer".equals(member.role)
-							&& member.member instanceof OSMWay) {
-						
-						OSMWay outerWay = (OSMWay) member.member;
-						
-						if (area == null && outerWay.isClosed()) {
-							/* hole in an existing area */
-							if (areaMap.containsKey(outerWay)) {
-								area = areaMap.get(member.member);
-							}
-							/* multipolygon itself has tags for area */
-							else {
-								area = new MapArea(relation, outerWay);
-								for (OSMNode boundaryOSMNode : outerWay.nodes) {
-									MapNode boundaryGridNode = nodeMap.get(boundaryOSMNode);
-									area.addBoundaryNode(boundaryGridNode);
-									boundaryGridNode.addAdjacentArea(area);
-								}
-								mapAreas.add(area);
-								areaMap.put(outerWay, area);
-							}
-						} else {
-							//currently no support for advanced multipolygons
-						}
-						
-					}
-						
-				}
-				
-				if (area != null) {
-					area.setHoles(holes);
-				}
-				
-			}
-			
-		}
-		
-		/* remove areas with invalid geometry */
-				
-		for (Iterator<MapArea> it = mapAreas.iterator(); it.hasNext(); ) {
-			
-			MapArea area = it.next();
-			
-			try {
-				// try to retrieve the area
-				area.getPolygon();
-			} catch (InvalidGeometryException e) {
-				
-				// remove from mapAreas and its nodes
-				
-				System.err.println("ignoring map area " + area.getOsmObject().id
-						+ ". Reason: " + e);
-				
-				it.remove();
-				
-				for (MapNode node : area.getBoundaryNodes()) {
-					node.getAdjacentAreas().remove(area);
-				}
-				
-				for (List<MapNode> hole : area.getHoles()) {
-					for (MapNode node : hole) {
-						node.getAdjacentAreas().remove(area);
-					}
-				}
-				
-			}
-			
-		}
-			
 		/* finish calculations */
-			
+		
 		for (MapNode node : nodeMap.values()) {
 			node.calculateAdjacentAreaSegments();
 		}
 		
-		/* create lines from remaining ways */
-
+		/* create way segments from remaining ways */
+		
 		for (OSMWay way : osmData.getWays()) {
-			if (!areaMap.containsKey(way) ||
-					//allow secondary meaning for multipoly ways (except untagged ones or
-					// those outer ways that are the tag source for the area)
-					(way.tags.size() > 0 && areaMap.get(way).getOsmObject() != way)) {
-				if (way.tags.size() > 0) { //filters empty ways, e.g. inner ways of multipolys
-	
-					OSMNode previousNode = null;
-					for (OSMNode node : way.nodes) {
-						if (previousNode != null) {
-	
-							MapWaySegment gridWaySeg = new MapWaySegment(
-									way, nodeMap.get(previousNode), nodeMap.get(node));
-							
-							gridWaySegs.add(gridWaySeg);
-							nodeMap.get(previousNode).addOutboundLine(gridWaySeg);
-							nodeMap.get(node).addInboundLine(gridWaySeg);
-							
-						}
-						previousNode = node;
+			if (!way.tags.isEmpty() && !areaMap.containsKey(way)) {
+				
+				OSMNode previousNode = null;
+				for (OSMNode node : way.nodes) {
+					if (previousNode != null) {
+						
+						MapWaySegment mapWaySeg = new MapWaySegment(
+								way, nodeMap.get(previousNode), nodeMap.get(node));
+						
+						mapWaySegs.add(mapWaySeg);
+						nodeMap.get(previousNode).addOutboundLine(mapWaySeg);
+						nodeMap.get(node).addInboundLine(mapWaySeg);
+						
 					}
-					
+					previousNode = node;
 				}
+				
 			}
 		}
-				
-	}
-
-	/**
-	 * calculates intersections and adds the information to the grid's {@link MapElement}s
-	 */
-	private static void calculateIntersectionsInMapData(MapData grid) {
 		
-		MapDataIndex index = new Map2dTree(grid);
+	}
+	
+	/**
+	 * calculates intersections and adds the information to the
+	 * {@link MapElement}s
+	 */
+	private static void calculateIntersectionsInMapData(MapData mapData) {
+		
+		MapDataIndex index = new Map2dTree(mapData);
 		
 		// find intersections, using an index to reduce the number of checks
 		

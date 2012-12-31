@@ -61,6 +61,9 @@ public class OsmosisReader implements OSMDataReader {
 	private Collection<OSMRelation> ownRelations;
 	
 	private final Sink sinkImplementation = new Sink() {
+		public void initialize(Map<String, Object> arg0) {
+			/* do nothing */
+		}
 		public void release() {
 			/* do nothing */
 		}

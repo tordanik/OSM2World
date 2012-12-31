@@ -1,30 +1,13 @@
 package org.openstreetmap.josm.plugins.graphview.core.data;
 
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public final class EmptyTagGroup implements TagGroup {
 
 	public static final EmptyTagGroup EMPTY_TAG_GROUP = new EmptyTagGroup();
 	
 	private EmptyTagGroup() { }
-	
-	private static final class EmptyTagIterator implements Iterator<Tag> {
-		@Override
-		public boolean hasNext() {
-			return false;
-		}
-		@Override
-		public Tag next() {
-			throw new NoSuchElementException();
-		}
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	};
-	
-	private static final EmptyTagIterator EMPTY_TAG_ITERATOR = new EmptyTagIterator();
 	
 	@Override
 	public boolean contains(Tag tag) {
@@ -63,7 +46,7 @@ public final class EmptyTagGroup implements TagGroup {
 
 	@Override
 	public Iterator<Tag> iterator() {
-		return EMPTY_TAG_ITERATOR;
+		return Collections.<Tag>emptyList().iterator();
 	}
 	
 	@Override
