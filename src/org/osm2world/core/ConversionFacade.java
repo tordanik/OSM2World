@@ -297,6 +297,9 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 		
+		//FIXME hardcoded EC
+		//elevationCalculator = new InterpolatingElevationCalculator(mapProjection);
+		
 		CellularTerrainElevation eleData = null;
 		if (config.getBoolean("createTerrain", true)) {
 			eleData = createEleData(mapData);

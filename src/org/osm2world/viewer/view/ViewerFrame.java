@@ -47,6 +47,8 @@ import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
+import org.osm2world.viewer.view.debug.InverseDistanceWeightingStrategyDebugView;
+import org.osm2world.viewer.view.debug.LeastSquaresStrategyDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
@@ -188,6 +190,10 @@ public class ViewerFrame extends JFrame {
 					new TerrainElevationGridDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new EleDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new LeastSquaresStrategyDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new InverseDistanceWeightingStrategyDebugView(renderOptions));
 			
 			menu.add(subMenu);
 			

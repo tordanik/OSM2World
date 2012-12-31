@@ -65,7 +65,7 @@ public class OSMToMapDataConverter {
 		final List<MapWaySegment> gridWaySegs = new ArrayList<MapWaySegment>();
 		final List<MapArea> mapAreas = new ArrayList<MapArea>();
 
-		createGridElements(osmData, mapNodes, gridWaySegs, mapAreas);
+		createMapElements(osmData, mapNodes, gridWaySegs, mapAreas);
 		
 		MapData mapData = new MapData(mapNodes, gridWaySegs, mapAreas,
 				calculateFileBoundary(osmData.getBounds()));
@@ -81,11 +81,11 @@ public class OSMToMapDataConverter {
 	 * based on OSM data from an {@link OSMFileDataSource}
 	 * and adds them to collections
 	 */
-	private void createGridElements(OSMData osmData,
+	private void createMapElements(OSMData osmData,
 			final List<MapNode> mapNodes, final List<MapWaySegment> gridWaySegs,
 			final List<MapArea> mapAreas) {
 		
-		/* create GridNode for each OSM node */
+		/* create MapNode for each OSM node */
 
 		Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
 
@@ -99,7 +99,7 @@ public class OSMToMapDataConverter {
 		/* create areas */
 
 		Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
-			//keys of this map will not be used to create GridWaySegments;
+			//keys of this map will not be used to create MapWaySegments;
 			//the map is also used for inserting holes into areas (multipolygons)
 
 		for (OSMWay way : osmData.getWays()) {
