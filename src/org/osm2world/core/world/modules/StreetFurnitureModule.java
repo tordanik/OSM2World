@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -40,6 +41,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("amenity", "bench")) {
 			node.addRepresentation(new Bench(node));
 		}
+		if (node.getTags().contains("highway", "bus_stop")) {
+			node.addRepresentation(new BusStop(node));
+		}
 		if (node.getTags().contains("amenity", "waste_basket")) {
 			node.addRepresentation(new WasteBasket(node));
 		}
@@ -63,6 +67,19 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("highway", "street_lamp")) {
 			node.addRepresentation(new StreetLamp(node));
 		}
+	}
+
+	private static boolean isInHighway(MapNode node){
+		if (node.getConnectedWaySegments().size() > 0) {
+			for (MapWaySegment way : node.getConnectedWaySegments()) {
+				if (way.getTags().containsKey("highway")
+						&& !way.getTags().containsAny("highway",
+								asList("path", "footway", "platform") ) ){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private static final class Flagpole extends NoOutlineNodeWorldObject
@@ -566,6 +583,67 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 		}
 	
+	}
+	
+	private static final class BusStop extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		public BusStop(MapNode node) {
+			super(node);
+			
+			if(node.getTags().contains("bin", "yes")){
+				node.addRepresentation(new WasteBasket(node));
+			}
+			
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			if(!isInHighway(node)){
+				float height = parseHeight(node.getTags(), 3f);
+				float signHeight = 0.7f;
+				float signWidth = 0.4f;
+				
+				Material poleMaterial = STEEL;
+				
+				double ele = node.getElevationProfile().getEle();
+				
+				double directionAngle = parseDirection(node.getTags(), PI);
+				
+				VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+				
+				target.drawColumn(poleMaterial, null,
+					node.getPos().xyz(ele),
+					height-signHeight, 0.05, 0.05, true, true);
+				/* draw sign */
+				target.drawBox(BUS_STOP_SIGN,
+					node.getPos().xyz(ele + height - signHeight),
+					faceVector, signHeight, signWidth, 0.02);
+				/*  draw timetable */
+				target.drawBox(poleMaterial,
+					node.getPos().add(new VectorXZ(0.055f,0f)).xyz(ele + 1.2f),
+					faceVector, 0.31, 0.01, 0.43);
+				
+				//TODO Add Shelter and bench
+				
+			}
+		}
+		
 	}
 	
 	private static final class ParcelMachine extends NoOutlineNodeWorldObject
