@@ -132,11 +132,6 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			/* determine material */
@@ -183,11 +178,6 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override

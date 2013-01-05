@@ -105,11 +105,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			target.drawColumn(STEEL, null,
@@ -141,11 +136,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override
@@ -195,11 +185,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override
@@ -288,11 +273,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			double ele = node.getElevationProfile().getEle();
@@ -377,11 +357,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			double ele = node.getElevationProfile().getEle();
@@ -435,11 +410,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override
@@ -514,11 +484,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override
@@ -669,11 +634,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			double ele = node.getElevationProfile().getEle();
@@ -763,11 +723,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			double ele = node.getElevationProfile().getEle();
@@ -814,11 +769,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override

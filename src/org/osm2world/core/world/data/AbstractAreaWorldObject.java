@@ -62,7 +62,7 @@ public abstract class AbstractAreaWorldObject
 	}
 	
 	@Override
-	public MapElement getPrimaryMapElement() {
+	public final MapElement getPrimaryMapElement() {
 		return area;
 	}
 	
