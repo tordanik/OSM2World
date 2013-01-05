@@ -18,7 +18,7 @@ public class OSMRelation extends OSMElement {
 	
 	@Override
 	public String toString() {
-		return Long.toString(id);
+		return "r" + id;
 	}
 	
 }

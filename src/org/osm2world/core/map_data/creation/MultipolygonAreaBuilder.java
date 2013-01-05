@@ -20,6 +20,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -231,8 +232,14 @@ final class MultipolygonAreaBuilder {
 			// check whether the ring under construction is closed
 			
 			if (currentRing != null && currentRing.isClosed()) {
-				closedRings.add(new Ring(currentRing));
-				currentRing = null;
+				try {
+					closedRings.add(new Ring(currentRing));
+					currentRing = null;
+				} catch (InvalidGeometryException e) {
+					throw new InvalidGeometryException(String.format(
+							"self-intersecting ring (with %d nodes)",
+							currentRing.size() - 1), e);
+				}
 			}
 		
 		}

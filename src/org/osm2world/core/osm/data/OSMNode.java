@@ -14,11 +14,7 @@ public class OSMNode extends OSMElement {
 	
 	@Override
 	public String toString() {
-		if (OSMMember.useDebugLabels && tags.containsKey("debug:label")) {
-			return tags.getValue("debug:label");
-		} else {
-			return "(" + id + " at " + lat + ", " + lon + ", " + tags + ")";
-		}
+		return "n" + id;
 	}
 	
 }
