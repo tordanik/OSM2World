@@ -57,6 +57,10 @@ public class StreetFurnitureModule extends AbstractModule {
 				|| node.getTags().containsKey("brand"))) {
 			node.addRepresentation(new PostBox(node));
 		}
+		if (node.getTags().contains("amenity", "telephone")
+			&& (node.getTags().containsAnyKey(asList("operator", "brand")))) {
+			node.addRepresentation(new Phone(node));
+		}
 		if (node.getTags().contains("amenity", "vending_machine")
 				&& (node.getTags().containsAny("vending",
 						asList("parcel_pickup;parcel_mail_in", "parcel_mail_in")))) {
@@ -66,6 +70,10 @@ public class StreetFurnitureModule extends AbstractModule {
 				&& (node.getTags().containsAny("vending",
 						asList("bicycle_tube", "cigarettes", "condoms")))) {
 			node.addRepresentation(new VendingMachineVice(node));
+		}
+		if (node.getTags().contains("amenity", "recycling")
+				&& (node.getTags().contains("recycling_type", "container"))) {
+				node.addRepresentation(new RecyclingContainer(node));
 		}
 		if (node.getTags().contains("emergency", "fire_hydrant")
 				&& node.getTags().contains("fire_hydrant:type", "pillar")) {
@@ -347,6 +355,115 @@ public class StreetFurnitureModule extends AbstractModule {
 		
 	}
 	
+	private static final class RecyclingContainer extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		double directionAngle = parseDirection(node.getTags(), PI);
+		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+		
+		public RecyclingContainer(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double ele = node.getElevationProfile().getEle();
+			float distanceX = 3f;
+			float distanceZ = 1.6f;
+			int n = -1;
+			int m = 0;
+			
+			if (node.getTags().containsAny(asList("recycling:glass_bottles", "recycling:glass"), "yes")) {
+				n++;
+			}
+			if (node.getTags().contains("recycling:paper", "yes")) {
+				n++;
+			}
+			if (node.getTags().contains("recycling:clothes", "yes")) {
+				n++;
+			}
+			
+			if (node.getTags().contains("recycling:paper", "yes")) {
+				drawContainer(target, "paper",
+						node.getPos().xyz(ele).add((distanceX * (-n / 2 + m)), 0f, (distanceZ / 2)));
+				drawContainer(target, "paper",
+						node.getPos().xyz(ele).add((distanceX * (-n / 2 + m)), 0f, -(distanceZ / 2)));
+				m++;
+			}
+			if (node.getTags().containsAny(asList("recycling:glass_bottles", "recycling:glass"), "yes")) {
+				drawContainer(target, "white_glass",
+						node.getPos().xyz(ele).add((distanceX * (-n / 2 + m)), 0f, (distanceZ / 2)));
+				drawContainer(target, "coloured_glass",
+						node.getPos().xyz(ele).add((distanceX * (-n / 2 + m)), 0f, -(distanceZ / 2)));
+				m++;
+			}
+			if (node.getTags().contains("recycling:clothes", "yes")) {
+				drawContainer(target, "clothes", node.getPos().xyz(ele).add((distanceX * (-n / 2 + m)), 0f, 0f));
+			}
+			
+		}
+		
+		private void drawContainer(Target<?> target, String trash, VectorXYZ pos){
+			
+			if (trash == "clothes") {
+				target.drawBox(new ConfMaterial(Lighting.FLAT, new Color(0.82f, 0.784f, 0.75f)),
+						pos,
+						faceVector, 2, 1, 1);
+			} else {//if(trash == "paper" || trash == "white_glass" || trash == "coloured_glass"){
+				float width = 1.5f;
+				float height = 1.6f;
+				
+				Material colourFront = null;
+				Material colourBack = null;
+				
+				if (trash == "paper") {
+					colourFront = new ConfMaterial(Lighting.FLAT, Color.BLUE);
+					colourBack = new ConfMaterial(Lighting.FLAT, Color.BLUE);
+				} else if (trash == "white_glass") {
+					colourFront = new ConfMaterial(Lighting.FLAT, Color.WHITE);
+					colourBack = new ConfMaterial(Lighting.FLAT, Color.WHITE);
+				} else { // if trash == "coloured_glass"){
+					colourFront = new ConfMaterial(Lighting.FLAT, new Color(0.18f, 0.32f, 0.14f));
+					colourBack = new ConfMaterial(Lighting.FLAT, new Color(0.39f, 0.15f, 0.11f));
+				}
+				
+				target.drawBox(STEEL,
+						pos,
+						faceVector, height, width, width);
+				target.drawBox(colourFront,
+						pos.add((width / 2 - 0.10), 0.1f, (width / 2 - 0.1)),
+						faceVector, height - 0.2, 0.202, 0.202);
+				target.drawBox(colourBack,
+						pos.add(-(width / 2 - 0.10), 0.1f, (width / 2 - 0.1)),
+						faceVector, height - 0.2, 0.202, 0.202);
+				target.drawBox(colourFront,
+						pos.add((width / 2 - 0.10), 0.1f, -(width / 2 - 0.1)),
+						faceVector, height - 0.2, 0.202, 0.202);
+				target.drawBox(colourBack,
+						pos.add(-(width / 2 - 0.10), 0.1f, -(width / 2 - 0.1)),
+						faceVector, height - 0.2, 0.202, 0.202);
+			}
+			
+		}
+		
+	}
+	
 	private static final class WasteBasket extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
 		
@@ -473,6 +590,98 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 		}
 		
+	}
+	
+	private static final class Phone extends NoOutlineNodeWorldObject
+		implements RenderableToAllTargets {
+	
+		private static enum Type {WALL, PILLAR, CELL, HALFCELL};
+		
+		public Phone(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			double ele = node.getElevationProfile().getEle();
+			
+			double directionAngle = parseDirection(node.getTags(), PI);
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+			
+			Material roofMaterial = null;
+			Material poleMaterial = null;
+			Type type = null;
+			
+			// get Type of Phone
+			if (isInWall(node)) {
+				type = Type.WALL;
+			} else {
+				type = Type.CELL;
+			}
+			
+			// post boxes differ widely in appearance, hence we draw them only for known operators or brands
+			if (node.getTags().containsAny(asList(new String[] {"operator", "brand"}), asList("Deutsche Telekom AG", "Deutsche Telekom", "Telekom") )) {
+				roofMaterial = TELEKOM_MANGENTA;
+				poleMaterial = STEEL;
+			} else if (node.getTags().containsAny(asList(new String[] {"operator", "brand"}), "British Telecom")) {
+				roofMaterial = POSTBOX_ROYALMAIL;
+				poleMaterial = POSTBOX_ROYALMAIL;
+			} else {
+				//no rendering, unknown operator or brand for post box //TODO log info
+				return;
+			}
+		
+			
+			// default dimensions may differ depending on the phone type
+			float height = 0f;
+			float width = 0f;
+			
+			switch(type) {
+				case WALL:
+					
+					break;
+				case CELL:
+					height = parseHeight(node.getTags(), 2.1f);
+					width = parseWidth(node.getTags(), 0.8f);
+					
+					target.drawBox(GLASS,
+							node.getPos().add(faceVector).xyz(ele),
+							faceVector, height-0.2, width-0.06, width-0.06);
+					target.drawBox(roofMaterial,
+							node.getPos().add(faceVector).xyz(ele + height-0.2),
+							faceVector, 0.2, width, width);
+					target.drawBox(poleMaterial,
+							node.getPos().add(faceVector.subtract(new VectorXZ((width/2-0.05), (width/2-0.05) ))).xyz(ele),
+							faceVector, height-0.2, 0.1, 0.1);
+					target.drawBox(poleMaterial,
+							node.getPos().add(faceVector.subtract(new VectorXZ(-(width/2-0.05), (width/2-0.05) ))).xyz(ele),
+							faceVector, height-0.2, 0.1, 0.1);
+					target.drawBox(poleMaterial,
+							node.getPos().add(faceVector.subtract(new VectorXZ(0, -(width/2-0.05) ))).xyz(ele),
+							faceVector, height-0.2, width, 0.1);
+					
+					break;
+				default:
+					assert false : "unknown or unsupported phone type";
+			}
+			
+		}
+	
 	}
 	
 	private static final class VendingMachineVice extends NoOutlineNodeWorldObject

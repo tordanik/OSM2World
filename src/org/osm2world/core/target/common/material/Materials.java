@@ -161,6 +161,8 @@ public final class Materials {
 			new ConfMaterial(Lighting.FLAT, new Color(1f, 0.8f, 0f));
 	public static final ConfMaterial POSTBOX_ROYALMAIL =
 			new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
+	public static final ConfMaterial TELEKOM_MANGENTA =
+			new ConfMaterial(Lighting.FLAT, new Color(0.883f, 0f, 0.453f));
 	
 	public static final ConfMaterial FIREHYDRANT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
