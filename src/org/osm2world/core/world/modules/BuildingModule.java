@@ -574,7 +574,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if ("greenhouse".equals(buildingValue)) {
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
-				defaultMaterialRoof = Materials.GLASS;
+				defaultMaterialRoof = Materials.GLASS_ROOF;
 				defaultMaterialWindows = null;
 			} else if ("garage".equals(buildingValue)
 					|| "garages".equals(buildingValue)) {
@@ -751,7 +751,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if ("brick".equals(materialString)) {
 					return Materials.BRICK;
 				} else if ("glass".equals(materialString)) {
-					return Materials.GLASS;
+					return roof ? Materials.GLASS_ROOF : Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
 					return Materials.WOOD_WALL;
 				} else if (Materials.getSurfaceMaterial(materialString) != null) {
