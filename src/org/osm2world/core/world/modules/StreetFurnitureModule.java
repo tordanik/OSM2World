@@ -418,24 +418,24 @@ public class StreetFurnitureModule extends AbstractModule {
 		
 		private void drawContainer(Target<?> target, String trash, VectorXYZ pos){
 			
-			if (trash == "clothes") {
+			if ("clothes".equals(trash)) {
 				target.drawBox(new ConfMaterial(Lighting.FLAT, new Color(0.82f, 0.784f, 0.75f)),
 						pos,
 						faceVector, 2, 1, 1);
-			} else {//if(trash == "paper" || trash == "white_glass" || trash == "coloured_glass"){
+			} else { // "paper" || "white_glass" || "coloured_glass"
 				float width = 1.5f;
 				float height = 1.6f;
 				
 				Material colourFront = null;
 				Material colourBack = null;
 				
-				if (trash == "paper") {
+				if ("paper".equals(trash)) {
 					colourFront = new ConfMaterial(Lighting.FLAT, Color.BLUE);
 					colourBack = new ConfMaterial(Lighting.FLAT, Color.BLUE);
-				} else if (trash == "white_glass") {
+				} else if ("white_glass".equals(trash)) {
 					colourFront = new ConfMaterial(Lighting.FLAT, Color.WHITE);
 					colourBack = new ConfMaterial(Lighting.FLAT, Color.WHITE);
-				} else { // if trash == "coloured_glass"){
+				} else { // "coloured_glass"
 					colourFront = new ConfMaterial(Lighting.FLAT, new Color(0.18f, 0.32f, 0.14f));
 					colourBack = new ConfMaterial(Lighting.FLAT, new Color(0.39f, 0.15f, 0.11f));
 				}
@@ -592,7 +592,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	private static final class Phone extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
 		
-		private static enum Type {WALL, PILLAR, CELL, HALFCELL};
+		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 		
 		public Phone(MapNode node) {
 			super(node);
@@ -684,7 +684,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	private static final class VendingMachineVice extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
 
-		private static enum Type {WALL, PILLAR};
+		private static enum Type {WALL, PILLAR}
 		
 		public VendingMachineVice(MapNode node) {
 			super(node);
@@ -762,7 +762,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	private static final class PostBox extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
 		
-		private static enum Type {WALL, PILLAR};
+		private static enum Type {WALL, PILLAR}
 	
 		public PostBox(MapNode node) {
 			super(node);
