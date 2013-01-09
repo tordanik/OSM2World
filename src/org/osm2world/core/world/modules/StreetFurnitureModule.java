@@ -17,7 +17,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.ConfMaterial;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.material.Materials;
@@ -419,7 +419,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		private void drawContainer(Target<?> target, String trash, VectorXYZ pos){
 			
 			if ("clothes".equals(trash)) {
-				target.drawBox(new ConfMaterial(Lighting.FLAT, new Color(0.82f, 0.784f, 0.75f)),
+				target.drawBox(new ImmutableMaterial(Lighting.FLAT, new Color(0.82f, 0.784f, 0.75f)),
 						pos,
 						faceVector, 2, 1, 1);
 			} else { // "paper" || "white_glass" || "coloured_glass"
@@ -430,14 +430,14 @@ public class StreetFurnitureModule extends AbstractModule {
 				Material colourBack = null;
 				
 				if ("paper".equals(trash)) {
-					colourFront = new ConfMaterial(Lighting.FLAT, Color.BLUE);
-					colourBack = new ConfMaterial(Lighting.FLAT, Color.BLUE);
+					colourFront = new ImmutableMaterial(Lighting.FLAT, Color.BLUE);
+					colourBack = new ImmutableMaterial(Lighting.FLAT, Color.BLUE);
 				} else if ("white_glass".equals(trash)) {
-					colourFront = new ConfMaterial(Lighting.FLAT, Color.WHITE);
-					colourBack = new ConfMaterial(Lighting.FLAT, Color.WHITE);
+					colourFront = new ImmutableMaterial(Lighting.FLAT, Color.WHITE);
+					colourBack = new ImmutableMaterial(Lighting.FLAT, Color.WHITE);
 				} else { // "coloured_glass"
-					colourFront = new ConfMaterial(Lighting.FLAT, new Color(0.18f, 0.32f, 0.14f));
-					colourBack = new ConfMaterial(Lighting.FLAT, new Color(0.39f, 0.15f, 0.11f));
+					colourFront = new ImmutableMaterial(Lighting.FLAT, new Color(0.18f, 0.32f, 0.14f));
+					colourBack = new ImmutableMaterial(Lighting.FLAT, new Color(0.39f, 0.15f, 0.11f));
 				}
 			
 				target.drawBox(STEEL,
@@ -716,14 +716,14 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material poleMaterial = STEEL;
 			Type type = null;
 			
-			if(node.getTags().contains("vending", "bicycle_tube") && node.getTags().containsAny("operator", asList("Continental", "continental"))){
-				machineMaterial=new ConfMaterial(Lighting.FLAT, Color.ORANGE );
-			}else if(node.getTags().contains("vending", "bicycle_tube")){
-					machineMaterial=new ConfMaterial(Lighting.FLAT, Color.BLUE );
+			if (node.getTags().contains("vending", "bicycle_tube") && node.getTags().containsAny("operator", asList("Continental", "continental"))){
+				machineMaterial = new ImmutableMaterial(Lighting.FLAT, Color.ORANGE );
+			} else if(node.getTags().contains("vending", "bicycle_tube")){
+				machineMaterial = new ImmutableMaterial(Lighting.FLAT, Color.BLUE );
 			} else if(node.getTags().contains("vending", "cigarettes")){
-				machineMaterial=new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0.73f, 0.5f));
+				machineMaterial = new ImmutableMaterial(Lighting.FLAT, new Color(0.8f, 0.73f, 0.5f));
 			} else if(node.getTags().contains("vending", "condoms")){
-				machineMaterial=new ConfMaterial(Lighting.FLAT, new Color(0.39f, 0.15f, 0.11f) );
+				machineMaterial = new ImmutableMaterial(Lighting.FLAT, new Color(0.39f, 0.15f, 0.11f) );
 			}
 			
 			// get Type of vending machine
