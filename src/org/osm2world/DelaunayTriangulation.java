@@ -1,0 +1,355 @@
+package org.osm2world;
+
+import static java.lang.Math.PI;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Stack;
+
+import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+
+/**
+ * 2d Delaunay triangulation class.
+ * Built to be used as a Voronoi Diagram dual for natural neighbor
+ * interpolation of the y elevation values carried by each point.
+ * The triangulation is constructed by incremental insertion.
+ */
+public class DelaunayTriangulation {
+	
+	/**
+	 * a triangle which is the dual of a site in the Voronoi Diagram.
+	 * Must be counter-clockwise.
+	 */
+	public static class DelaunayTriangle {
+		
+		//TODO: use Site class with VectorXZ and other value - avoids all the .xz() calls
+		
+		public final VectorXYZ p0, p1, p2;
+		
+		private DelaunayTriangle neighbor0 = null;
+		private DelaunayTriangle neighbor1 = null;
+		private DelaunayTriangle neighbor2 = null;
+		
+		public DelaunayTriangle(VectorXYZ p0, VectorXYZ p1, VectorXYZ p2) {
+			
+			this.p0 = p0;
+			this.p1 = p1;
+			this.p2 = p2;
+			
+			assert !asTriangleXZ().isClockwise() : "must be counter-clockwise";
+			
+		}
+				
+		public VectorXYZ getPoint(int i) {
+			switch (i) {
+				case 0: return p0;
+				case 1: return p1;
+				case 2: return p2;
+				default: throw new Error("invalid index " + i);
+			}
+		}
+		
+		
+		public DelaunayTriangle getNeighbor(int i) {
+			switch (i) {
+				case 0: return neighbor0;
+				case 1: return neighbor1;
+				case 2: return neighbor2;
+				default: throw new Error("invalid index " + i);
+			}
+		}
+		
+		public void setNeighbor(int i, DelaunayTriangle neighbor) {
+			switch (i) {
+				case 0: neighbor0 = neighbor; break;
+				case 1: neighbor1 = neighbor; break;
+				case 2: neighbor2 = neighbor; break;
+				default: throw new Error("invalid index " + i);
+			}
+		}
+		
+		public int indexOfNeighbor(DelaunayTriangle neighbor) {
+			if (neighbor == neighbor0) {
+				return 0;
+			} else if (neighbor == neighbor1) {
+				return 1;
+			} else if (neighbor == neighbor2) {
+				return 2;
+			} else {
+				throw new IllegalArgumentException("not a neighbor");
+			}
+		}
+		
+		public void replaceNeighbor(DelaunayTriangle oldNeighbor,
+				DelaunayTriangle newNeighbor) {
+			this.setNeighbor(indexOfNeighbor(oldNeighbor), newNeighbor);
+		}
+		
+		public double angleAt(int pointIndex) {
+			
+			VectorXZ vecToPoint = getPoint(pointIndex).xz().subtract(
+					getPoint((pointIndex + 2) % 3).xz());
+			VectorXZ vecFromPoint = getPoint((pointIndex + 1) % 3).xz().subtract(
+					getPoint(pointIndex).xz());
+			
+			return VectorXZ.angleBetween(vecToPoint, vecFromPoint);
+			
+		}
+
+		public double angleOppositeOf(DelaunayTriangle neighbor) {
+			
+			return angleAt(((indexOfNeighbor(neighbor)) + 2) % 3);
+			
+		}
+		
+		public TriangleXZ asTriangleXZ() {
+			return new TriangleXZ(p0.xz(), p1.xz(), p2.xz());
+		}
+		
+	}
+	
+	/**
+	 * operation where the triangulation is modified during an insertion
+	 */
+	public interface Flip {
+		public void perform();
+		public void undo();
+	}
+	
+	public class Flip13 implements Flip {
+		
+		DelaunayTriangle originalTriangle;
+		VectorXYZ point;
+		
+		DelaunayTriangle[] createdTriangles;
+		
+		public Flip13(DelaunayTriangle triangle, VectorXYZ point) {
+			this.originalTriangle = triangle;
+			this.point = point;
+		}
+
+		@Override
+		public void perform() {
+			
+			createdTriangles = new DelaunayTriangle[3];
+			
+			createdTriangles[0] = new DelaunayTriangle(
+					originalTriangle.p0,
+					originalTriangle.p1,
+					point);
+			createdTriangles[1] = new DelaunayTriangle(
+					originalTriangle.p1,
+					originalTriangle.p2,
+					point);
+			createdTriangles[2] = new DelaunayTriangle(
+					originalTriangle.p2,
+					originalTriangle.p0,
+					point);
+						
+			DelaunayTriangle neighbor0 = originalTriangle.getNeighbor(0);
+			DelaunayTriangle neighbor1 = originalTriangle.getNeighbor(1);
+			DelaunayTriangle neighbor2 = originalTriangle.getNeighbor(2);
+			
+			createdTriangles[0].setNeighbor(0, neighbor0);
+			createdTriangles[0].setNeighbor(1, createdTriangles[1]);
+			createdTriangles[0].setNeighbor(2, createdTriangles[2]);
+			if (neighbor0 != null) {
+				neighbor0.replaceNeighbor(originalTriangle, createdTriangles[0]);
+			}
+			
+			createdTriangles[1].setNeighbor(0, neighbor1);
+			createdTriangles[1].setNeighbor(1, createdTriangles[2]);
+			createdTriangles[1].setNeighbor(2, createdTriangles[0]);
+			if (neighbor1 != null) {
+				neighbor1.replaceNeighbor(originalTriangle, createdTriangles[1]);
+			}
+			
+			createdTriangles[2].setNeighbor(0, neighbor2);
+			createdTriangles[2].setNeighbor(1, createdTriangles[0]);
+			createdTriangles[2].setNeighbor(2, createdTriangles[1]);
+			if (neighbor2 != null) {
+				neighbor2.replaceNeighbor(originalTriangle, createdTriangles[2]);
+			}
+			
+			triangles.remove(originalTriangle);
+			triangles.add(createdTriangles[0]);
+			triangles.add(createdTriangles[1]);
+			triangles.add(createdTriangles[2]);
+			
+		}
+		
+		@Override
+		public void undo() {
+			
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
+	public class Flip22 implements Flip {
+		
+		DelaunayTriangle[] originalTriangles;
+		DelaunayTriangle[] createdTriangles;
+		
+		public Flip22(DelaunayTriangle triangle) {
+			originalTriangles = new DelaunayTriangle[]{
+					triangle,
+					triangle.getNeighbor(0)};
+		}
+		
+		@Override
+		public void perform() {
+			
+			/*
+			 * determine the points and neighbors (4 each) of the quadrangle
+			 * formed by the two triangles
+			 */
+			
+			VectorXYZ[] points = new VectorXYZ[4];
+			DelaunayTriangle[] neighbors = new DelaunayTriangle[4];
+
+			points[0] = originalTriangles[0].getPoint(1);
+			neighbors[0] = originalTriangles[0].getNeighbor(1);
+
+			points[1] = originalTriangles[0].getPoint(2);
+			neighbors[1] = originalTriangles[0].getNeighbor(2);
+			
+			int i = originalTriangles[1].indexOfNeighbor(originalTriangles[0]);
+
+			points[2] = originalTriangles[1].getPoint((i + 1) % 3);
+			neighbors[2] = originalTriangles[1].getNeighbor((i + 1) % 3);
+
+			points[3] = originalTriangles[1].getPoint((i + 2) % 3);
+			neighbors[3] = originalTriangles[1].getNeighbor((i + 2) % 3);
+			
+			/* build two new triangles for the quadrangle */
+			
+			createdTriangles = new DelaunayTriangle[2];
+			
+			createdTriangles[0] = new DelaunayTriangle(
+					points[1], points[2], points[3]);
+			createdTriangles[1] = new DelaunayTriangle(
+					points[3], points[0], points[1]);
+			
+			createdTriangles[0].setNeighbor(0, neighbors[1]);
+			createdTriangles[0].setNeighbor(1, neighbors[2]);
+			createdTriangles[0].setNeighbor(2, createdTriangles[1]);
+			
+			createdTriangles[1].setNeighbor(0, neighbors[3]);
+			createdTriangles[1].setNeighbor(1, neighbors[0]);
+			createdTriangles[1].setNeighbor(2, createdTriangles[0]);
+
+			if (neighbors[0] != null)
+				neighbors[0].replaceNeighbor(originalTriangles[0], createdTriangles[1]);
+			if (neighbors[1] != null)
+				neighbors[1].replaceNeighbor(originalTriangles[0], createdTriangles[0]);
+			if (neighbors[2] != null)
+				neighbors[2].replaceNeighbor(originalTriangles[1], createdTriangles[0]);
+			if (neighbors[3] != null)
+				neighbors[3].replaceNeighbor(originalTriangles[1], createdTriangles[1]);
+			
+			triangles.remove(originalTriangles[0]);
+			triangles.remove(originalTriangles[1]);
+			triangles.add(createdTriangles[0]);
+			triangles.add(createdTriangles[1]);
+			
+		}
+		
+		@Override
+		public void undo() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
+	public final List<DelaunayTriangle> triangles; //TODO make private
+	
+	public DelaunayTriangulation(VectorXYZ... bounds) {
+		
+		assert bounds.length == 4;
+		
+		triangles = new ArrayList<DelaunayTriangle>();
+		triangles.add(new DelaunayTriangle(bounds[0], bounds[1], bounds[3]));
+		triangles.add(new DelaunayTriangle(bounds[1], bounds[2], bounds[3]));
+		
+		triangles.get(0).setNeighbor(1, triangles.get(1));
+		triangles.get(1).setNeighbor(2, triangles.get(0));
+		
+	}
+	
+	public void insert(VectorXYZ point) { //TODO: should use <T extends Has(Immutable)Position>
+		
+		DelaunayTriangle triangleEnclosingPoint = getEnlosingTriangle(point);
+		
+		//TODO check for null
+		
+		/* split the enclosing triangle */
+		
+		Stack<Flip> splitStack = new Stack<Flip>();
+		
+		Flip13 initialFlip = new Flip13(triangleEnclosingPoint, point);
+		initialFlip.perform();
+		splitStack.push(initialFlip);
+		
+		Queue<DelaunayTriangle> uncheckedTriangles = new LinkedList<DelaunayTriangle>();
+		
+		uncheckedTriangles.offer(initialFlip.createdTriangles[0]);
+		uncheckedTriangles.offer(initialFlip.createdTriangles[1]);
+		uncheckedTriangles.offer(initialFlip.createdTriangles[2]);
+		
+		/*  */
+		
+		while (!uncheckedTriangles.isEmpty()) {
+			
+			DelaunayTriangle triangle = uncheckedTriangles.poll();
+			
+			//TODO: only checks with first neighbor! Document this!
+			
+			if (!isDelaunay(triangle)) {
+				Flip22 flip = new Flip22(triangle);
+				flip.perform();
+				splitStack.push(flip);
+			}
+			
+		}
+		
+	}
+	
+	private boolean isDelaunay(DelaunayTriangle triangle) {
+
+		DelaunayTriangle neighborTriangle = triangle.getNeighbor(0);
+		
+		if (neighborTriangle != null) {
+			
+			double a1 = triangle.angleAt(2);
+			double a2 = neighborTriangle.angleOppositeOf(triangle);
+			
+			return a1 + a2 <= PI;
+			
+		} else {
+			
+			return true;
+			
+		}
+		
+	}
+
+	private DelaunayTriangle getEnlosingTriangle(VectorXYZ point) {
+		
+		for (DelaunayTriangle triangle : triangles) {
+			if (triangle.asTriangleXZ().contains(point.xz())) {
+				return triangle;
+			}
+		}
+		
+		return null;
+		
+	}
+	
+}
