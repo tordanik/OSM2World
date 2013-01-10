@@ -170,6 +170,22 @@ public class VectorXZ implements Vector3D {
 				cos(directionRad));
 	}
 	
+	/**
+	 * returns the angle between two direction vectors
+	 * @return  angle as radians, in range 0 to PI
+	 */
+	public static double angleBetween(VectorXZ v1, VectorXZ v2) {
+		
+		double rawAngle = v1.angle() - v2.angle();
+		
+		if (rawAngle == PI || rawAngle == -PI) {
+			return PI;
+		} else {
+			return (2 * PI + rawAngle) % PI;
+		}
+		
+	}
+
 	public static final double distance(VectorXZ v1, VectorXZ v2) {
 		//SUGGEST (performance): don't create temporary vector
 		return (v2.subtract(v1)).length();

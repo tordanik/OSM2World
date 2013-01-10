@@ -1,7 +1,7 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.PI;
-import static org.osm2world.core.math.VectorXZ.fromAngle;
+import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
@@ -40,6 +40,19 @@ public class VectorXZTest {
 		assertAlmostEquals(+1,  0, fromAngle(0.5*PI));
 		assertAlmostEquals( 0, -1, fromAngle(PI));
 		assertAlmostEquals(-1,  0, fromAngle(1.5*PI));
+		
+	}
+	
+	@Test
+	public void testAngleBetween() {
+		
+		assertAlmostEquals(       0, angleBetween(X_UNIT, X_UNIT));
+		assertAlmostEquals(       0, angleBetween(Z_UNIT, Z_UNIT));
+		assertAlmostEquals(      PI, angleBetween(X_UNIT, X_UNIT.invert()));
+		assertAlmostEquals(      PI, angleBetween(Z_UNIT, Z_UNIT.invert()));
+		assertAlmostEquals(0.5 * PI, angleBetween(X_UNIT, Z_UNIT));
+		assertAlmostEquals(0.5 * PI, angleBetween(Z_UNIT, X_UNIT));
+		assertAlmostEquals(0.5 * PI, angleBetween(Z_UNIT, X_UNIT.mult(3)));
 		
 	}
 	
