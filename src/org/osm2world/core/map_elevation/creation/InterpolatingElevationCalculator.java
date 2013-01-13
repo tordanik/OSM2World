@@ -22,6 +22,9 @@ import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+
+import com.google.common.base.Function;
 
 /**
  * sets elevations based on an {@link EleInterpolationStrategy}
@@ -66,7 +69,7 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 			e.printStackTrace();
 		}
 		
-		EleInterpolationStrategy strategy = buildStrategy();
+		final EleInterpolationStrategy strategy = buildStrategy();
 		strategy.setKnownSites(sites);
 		
 		System.out.println("time setKnownSites: " + stopWatch);
@@ -108,6 +111,12 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		
 		/* set areas' elevation profiles (based on nodes' elevations) */
 		
+		Function<VectorXZ, VectorXYZ> eleFunction = new Function<VectorXZ, VectorXYZ>() {
+			public VectorXYZ apply(VectorXZ pos) {
+				return strategy.interpolateEle(pos);
+			}
+		};
+		
 		for (MapArea area : mapData.getMapAreas()) {
 			
 			if (area.getPrimaryRepresentation() == null) continue;
@@ -126,6 +135,8 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 						node.getElevationProfile().getPointWithEle());
 				}
 			}
+			
+			profile.setEleFunction(eleFunction);
 			
 			area.setElevationProfile(profile);
 			
