@@ -67,6 +67,10 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("highway", "street_lamp")) {
 			node.addRepresentation(new StreetLamp(node));
 		}
+		if (node.getTags().contains("tourism", "information")
+				&& node.getTags().contains("information", "board")) {
+				node.addRepresentation(new Board(node));
+		}
 	}
 
 	private static boolean isInHighway(MapNode node){
@@ -827,5 +831,43 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 	}
+	
+	private static final class Board extends NoOutlineNodeWorldObject
+	implements RenderableToAllTargets {
+
+public Board(MapNode node) {
+	super(node);
+}
+
+@Override
+public double getClearingAbove(VectorXZ pos) {
+	return 0;
+}
+
+@Override
+public double getClearingBelow(VectorXZ pos) {
+	return 0;
+}
+
+@Override
+public GroundState getGroundState() {
+	return GroundState.ON;
+}
+
+@Override
+public void renderTo(Target<?> target) {
+	
+	double ele = node.getElevationProfile().getEle();
+	double directionAngle = parseDirection(node.getTags(), PI);	
+	VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+	target.drawColumn(WOOD, null,
+			node.getPos().xyz(ele),
+			1.5, 0.05, 0.05, false, true);	
+	target.drawBox(WOOD,
+			node.getPos().xyz(ele+1.2),
+			faceVector, 0.4, 0.4, 0.1);
+}
+
+}
 	
 }
