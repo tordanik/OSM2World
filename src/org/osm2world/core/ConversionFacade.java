@@ -18,6 +18,7 @@ import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.InterpolatingElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
@@ -298,8 +299,8 @@ public class ConversionFacade {
 		updatePhase(Phase.ELEVATION);
 		
 		//FIXME hardcoded EC
-		//elevationCalculator = new InterpolatingElevationCalculator(mapProjection);
-		
+		elevationCalculator = new InterpolatingElevationCalculator(mapProjection);
+				
 		CellularTerrainElevation eleData = null;
 		if (config.getBoolean("createTerrain", true)) {
 			eleData = createEleData(mapData);
@@ -313,7 +314,8 @@ public class ConversionFacade {
 		Terrain terrain = null;
 		
 		if (eleData != null) {
-			terrain = new TerrainCreator().createTerrain(mapData, eleData);
+			terrain = new TerrainCreator().createTerrain(mapData, eleData,
+					((InterpolatingElevationCalculator)elevationCalculator).exposedStrategy);
 		}
 		
 		/* supply results to targets and caller */

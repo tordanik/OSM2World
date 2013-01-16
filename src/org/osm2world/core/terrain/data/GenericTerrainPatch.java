@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.osm2world.EleInterpolationStrategy;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -21,7 +22,6 @@ public class GenericTerrainPatch extends TerrainPatch {
 	
 	private final PolygonWithHolesXZ polygon;
 	private final Collection<VectorXZ> points;
-	private final TemporaryElevationStorage eleStorage;
 	
 	public GenericTerrainPatch(PolygonWithHolesXZ polygon,
 			Collection<VectorXZ> points,
@@ -29,7 +29,6 @@ public class GenericTerrainPatch extends TerrainPatch {
 		
 		this.polygon = polygon;
 		this.points = points;
-		this.eleStorage = eleStorage;
 		
 	}
 	
@@ -42,7 +41,7 @@ public class GenericTerrainPatch extends TerrainPatch {
 	}
 	
 	@Override
-	public void build() {
+	public void build(EleInterpolationStrategy strategy) {
 		
 		if (triangulation != null) {
 			throw new IllegalStateException(
@@ -62,7 +61,10 @@ public class GenericTerrainPatch extends TerrainPatch {
 		
 		for (TriangleXZ triangleXZ : trianglesXZ) {
 			TriangleXZ ccwTriangle = triangleXZ.makeCounterclockwise();
-			triangulation.add(eleStorage.restoreElevationForTriangle(ccwTriangle));
+			triangulation.add(new TriangleXYZ(
+					strategy.interpolateEle(ccwTriangle.v1),
+					strategy.interpolateEle(ccwTriangle.v2),
+					strategy.interpolateEle(ccwTriangle.v3)));
 		}
 		
 	}

@@ -5,6 +5,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.g
 
 import java.util.Collection;
 
+import org.osm2world.EleInterpolationStrategy;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -14,11 +15,11 @@ public abstract class TerrainPatch implements RenderableToAllTargets {
 	/**
 	 * Required preparation for rendering.
 	 * Usually deals with triangulating the patch
-	 * and restoring the polygons' third dimension afterwards.
+	 * and adding the third dimension afterwards.
 	 * 
 	 * Call this method exactly once for each patch!
 	 */
-	abstract public void build();
+	abstract public void build(EleInterpolationStrategy strategy);
 	
 	/**
 	 * counterclockwise triangles

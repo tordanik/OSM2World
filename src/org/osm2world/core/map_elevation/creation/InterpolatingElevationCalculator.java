@@ -147,10 +147,16 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		if (eleData != null) {
 			for (TerrainPoint point : eleData.getTerrainPoints()) {
 				double ele = strategy.interpolateEle(point.getPos()).y;
-				point.setEle((float)(double)ele);
+				point.setEle((float)ele);
 			}
 		}
 		
+		exposedStrategy = strategy;
+		
 	}
+	
+	// FIXME remove this temporary architecture hack
+	public EleInterpolationStrategy exposedStrategy;
+	
 	
 }

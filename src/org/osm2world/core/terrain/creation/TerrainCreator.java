@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.osm2world.EleInterpolationStrategy;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.map_data.data.MapData;
@@ -42,7 +43,9 @@ import com.vividsolutions.jts.geom.TopologyException;
  */
 public class TerrainCreator {
 
-	public Terrain createTerrain(MapData mapData, CellularTerrainElevation eleData) {
+	public Terrain createTerrain(MapData mapData,
+			CellularTerrainElevation eleData, //TODO eleData is no longer needed
+			EleInterpolationStrategy strategy) {
 
 		/* find the terrain boundaries and ele info for each cell and
 		 * those cells that are completely within a terrain boundary
@@ -127,7 +130,7 @@ public class TerrainCreator {
 				eleData.getCells(), terrainBoundaryMap,
 				unconnectedEleMap, ignoredCells);
 				
-		finishTerrainPatches(patches);
+		finishTerrainPatches(strategy, patches);
 				
 		return new Terrain(patches);
 		
@@ -285,11 +288,13 @@ public class TerrainCreator {
 		
 	}
 	
-	private static void finishTerrainPatches(Collection<TerrainPatch> patches) {
+	private static void finishTerrainPatches(
+			final EleInterpolationStrategy strategy,
+			Collection<TerrainPatch> patches) {
 		
 		iterate(patches, new Operation<TerrainPatch>() {
 			@Override public void perform(TerrainPatch patch) {
-				patch.build();
+				patch.build(strategy);
 			}
 		});
 		
