@@ -1,7 +1,10 @@
 package org.osm2world.core.world.modules;
 
+import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
+import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
@@ -57,6 +60,10 @@ public final class PowerModule extends AbstractModule {
 	@Override
 	protected void applyToNode(MapNode node) {
 		
+		if (node.getTags().contains("power", "cable_distribution_cabinet")) {
+			node.addRepresentation(new PowerCabinet(node));
+		}
+		
 		if (node.getTags().contains("power", "pole")) {
 			node.addRepresentation(new Powerpole(node));
 		}
@@ -89,6 +96,42 @@ public final class PowerModule extends AbstractModule {
 			segment.addRepresentation(new PowerLine(segment));
 		}
 	}
+	
+	private static final class PowerCabinet extends NoOutlineNodeWorldObject
+	implements RenderableToAllTargets {
+
+		public PowerCabinet(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double directionAngle = parseDirection(node.getTags(), PI);			
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+						
+			target.drawBox(PLASTIC_GREY,
+					node.getElevationProfile().getWithEle(node.getPos()),
+					faceVector, 1.5, 0.8, 0.3);
+			
+		}
+		
+		}
 	
 	private final static class TowerConfig {
 		MapNode pos;
