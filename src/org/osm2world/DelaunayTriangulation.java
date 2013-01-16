@@ -3,11 +3,14 @@ package org.osm2world;
 import static java.lang.Math.PI;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -103,6 +106,20 @@ public class DelaunayTriangulation {
 		public double angleOppositeOf(DelaunayTriangle neighbor) {
 			
 			return angleAt(((indexOfNeighbor(neighbor)) + 2) % 3);
+			
+		}
+		
+		public VectorXZ getCircumcircleCenter() {
+			
+			VectorXZ b = p1.subtract(p0).xz();
+			VectorXZ c = p2.subtract(p0).xz();
+
+			double d = 2 * (b.x * c.z - b.z * c.x);
+
+			double rX = (c.z * (b.x * b.x + b.z * b.z) - b.z * (c.x * c.x + c.z * c.z)) / d;
+			double rZ = (b.x * (c.x * c.x + c.z * c.z) - c.x * (b.x * b.x + b.z * b.z)) / d;
+			
+			return new VectorXZ(rX, rZ).add(p0.xz());
 			
 		}
 		
@@ -318,6 +335,90 @@ public class DelaunayTriangulation {
 			}
 			
 		}
+		
+	}
+	
+	private static class DelaunayEdge {
+		
+		public final VectorXYZ v1;
+		public final VectorXYZ v2;
+		
+		public DelaunayEdge(VectorXYZ v1, VectorXYZ v2) {
+			this.v1 = v1;
+			this.v2 = v2;
+		}
+		
+		public VectorXYZ getCenter() {
+			return v1.add(v2).mult(0.5);
+		}
+		
+		public double getDirectionAngle() {
+			return v2.xz().subtract(v1.xz()).angle();
+		}
+		
+	}
+	
+	//TODO only really needed for debugging
+	public List<TriangleXYZ> getVoronoiParts(VectorXYZ point) {
+		
+		List<TriangleXYZ> result = new ArrayList<TriangleXYZ>();
+		
+		List<DelaunayEdge> edges = getIncidentEdges(point);
+		
+		for (int i = 0; i < edges.size(); i++) {
+			result.add(new TriangleXYZ(point,
+					edges.get(i).getCenter(),
+					edges.get((i+1) % edges.size()).getCenter()));
+		}
+		
+		return result;
+		
+	}
+	
+	private List<DelaunayEdge> getIncidentEdges(final VectorXYZ point) {
+
+		List<DelaunayEdge> result = new ArrayList<DelaunayEdge>();
+		
+		for (DelaunayTriangle triangle : triangles) {
+			if (triangle.p0.equals(point)) {
+				result.add(new DelaunayEdge(point, triangle.p1));
+			} else if (triangle.p1.equals(point)) {
+				result.add(new DelaunayEdge(point, triangle.p2));
+			} else if (triangle.p2.equals(point)) {
+				result.add(new DelaunayEdge(point, triangle.p0));
+			}
+		}
+		
+		Collections.sort(result, new Comparator<DelaunayEdge>() {
+
+			@Override
+			public int compare(DelaunayEdge e1, DelaunayEdge e2) {
+				return Double.compare(
+						e1.getDirectionAngle(),
+						e2.getDirectionAngle());
+			}
+			
+		});
+		
+		return result;
+		
+	}
+	
+	public List<DelaunayTriangle> getIncidentTriangles(final VectorXYZ point) {
+
+		List<DelaunayTriangle> result = new ArrayList<DelaunayTriangle>();
+		
+		for (DelaunayTriangle triangle : triangles) {
+			if (triangle.p0.equals(point)) {
+				result.add(triangle);
+			} else if (triangle.p1.equals(point)) {
+				result.add(triangle);
+			} else if (triangle.p2.equals(point)) {
+				result.add(triangle);
+			}
+		}
+		
+		return result;
 		
 	}
 	

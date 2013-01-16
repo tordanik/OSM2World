@@ -19,6 +19,7 @@ import javax.swing.KeyStroke;
 import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -93,16 +94,44 @@ public class NNDebugViewer {
 			
 			super.paint(g);
 			
-			g.setColor(Color.BLACK);
+			if (points.size() > 4) {
+
+				VectorXYZ p = points.get(points.size() - 1);
+				
+				/* draw Voronoi cell of most recently added point */
 			
-			for (VectorXYZ p : points) {
-				draw(g, p.xz());
+				g.setColor(Color.YELLOW);
+				
+				for (TriangleXYZ t : triangulation.getVoronoiParts(p)) {
+					fill(g, new TriangleXZ(t.v1.xz(), t.v2.xz(), t.v3.xz()));
+				}
+				
+				/* draw circumcircles */
+				
+				g.setColor(Color.GREEN);
+				
+				for (DelaunayTriangle t : triangulation.getIncidentTriangles(p)) {
+					VectorXZ center = t.getCircumcircleCenter();
+					draw(g, center);
+					drawCircle(g, center, t.p0.distanceToXZ(center));
+				}
+				
 			}
+			
+			/* draw triangles */
 			
 			g.setColor(Color.RED);
 			
 			for (DelaunayTriangle triangle : triangulation.triangles) {
 				draw(g, triangle.asTriangleXZ());
+			}
+						
+			/* draw points */
+			
+			g.setColor(Color.BLACK);
+			
+			for (VectorXYZ p : points) {
+				draw(g, p.xz());
 			}
 			
 		}
@@ -117,6 +146,13 @@ public class NNDebugViewer {
 					new int[] {coordY(t.v1), coordY(t.v2), coordY(t.v3)},
 					3);
 		}
+		
+	private void fill(Graphics g, TriangleXZ t) {
+		g.fillPolygon(
+				new int[] {coordX(t.v1), coordX(t.v2), coordX(t.v3)},
+				new int[] {coordY(t.v1), coordY(t.v2), coordY(t.v3)},
+				3);
+	}
 		
 		private void draw(Graphics g, PolygonXZ p) {
 
@@ -142,6 +178,18 @@ public class NNDebugViewer {
 			g.drawLine(
 					coordX(p1), coordY(p1),
 					coordX(p2), coordY(p2));
+		}
+
+		private void drawCircle(Graphics g, VectorXZ center, double radius) {
+			
+			VectorXZ bottomLeft = center.add(new VectorXZ(-radius, radius));
+			VectorXZ topRight = center.add(new VectorXZ(radius, -radius));
+						
+			g.drawOval(
+					coordX(bottomLeft), coordY(bottomLeft),
+					coordX(topRight) - coordX(bottomLeft),
+					coordY(topRight) - coordY(bottomLeft));
+			
 		}
 		
 		private void drawArrow(Graphics g, VectorXZ p1, VectorXZ p2) {
