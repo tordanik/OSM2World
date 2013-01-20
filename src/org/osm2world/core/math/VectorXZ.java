@@ -176,12 +176,14 @@ public class VectorXZ implements Vector3D {
 	 */
 	public static double angleBetween(VectorXZ v1, VectorXZ v2) {
 		
-		double rawAngle = v1.angle() - v2.angle();
+		double rawAngle = abs(v1.angle() - v2.angle());
 		
-		if (rawAngle == PI || rawAngle == -PI) {
+		if (rawAngle < PI) {
+			return rawAngle;
+		} else if (rawAngle == PI) {
 			return PI;
 		} else {
-			return (2 * PI + rawAngle) % PI;
+			return PI - (rawAngle % PI);
 		}
 		
 	}

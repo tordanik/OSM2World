@@ -54,6 +54,11 @@ public class VectorXZTest {
 		assertAlmostEquals(0.5 * PI, angleBetween(Z_UNIT, X_UNIT));
 		assertAlmostEquals(0.5 * PI, angleBetween(Z_UNIT, X_UNIT.mult(3)));
 		
+		assertAlmostEquals(0.25 * PI, angleBetween(
+				X_UNIT, new VectorXZ(1, 1)));
+		assertAlmostEquals(0.75 * PI, angleBetween(
+				X_UNIT, new VectorXZ(-1, -1)));
+		
 	}
 	
 }
