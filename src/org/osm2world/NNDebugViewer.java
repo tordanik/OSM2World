@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
@@ -19,7 +20,6 @@ import javax.swing.KeyStroke;
 import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -52,9 +52,9 @@ public class NNDebugViewer {
 			triangulation = null;
 			
 			this.add(new VectorXYZ(-SIZE, 0, -SIZE));
-			this.add(new VectorXYZ(-SIZE, 0, +SIZE));
-			this.add(new VectorXYZ(+SIZE, 0, +SIZE));
 			this.add(new VectorXYZ(+SIZE, 0, -SIZE));
+			this.add(new VectorXYZ(+SIZE, 0, +SIZE));
+			this.add(new VectorXYZ(-SIZE, 0, +SIZE));
 			
 			this.repaint(0);
 			
@@ -96,24 +96,45 @@ public class NNDebugViewer {
 			
 			if (points.size() > 4) {
 
+				/* draw Voronoi cells */
+				
+				Random random = new Random(0);
+				
+				for (VectorXYZ p : points) {
+					
+					g.setColor(new Color(
+							0.5f + random.nextFloat() / 2,
+							0.5f + random.nextFloat() / 2,
+							0.5f + random.nextFloat() / 2));
+					
+					for (TriangleXZ t : triangulation.getVoronoiParts(p)) {
+						fill(g, t);
+					}
+					
+				}
+				
 				VectorXYZ p = points.get(points.size() - 1);
 				
 				/* draw Voronoi cell of most recently added point */
-			
-				g.setColor(Color.YELLOW);
 				
-				for (TriangleXYZ t : triangulation.getVoronoiParts(p)) {
-					fill(g, new TriangleXZ(t.v1.xz(), t.v2.xz(), t.v3.xz()));
-				}
+//				g.setColor(Color.YELLOW);
+//
+//				for (TriangleXYZ t : triangulation.getVoronoiParts(p)) {
+//					fill(g, new TriangleXZ(t.v1.xz(), t.v2.xz(), t.v3.xz()));
+//				}
 				
 				/* draw circumcircles */
 				
 				g.setColor(Color.GREEN);
 				
 				for (DelaunayTriangle t : triangulation.getIncidentTriangles(p)) {
+
 					VectorXZ center = t.getCircumcircleCenter();
+					double radius = t.p0.distanceToXZ(center);
+				
 					draw(g, center);
-					drawCircle(g, center, t.p0.distanceToXZ(center));
+					drawCircle(g, center, radius);
+										
 				}
 				
 			}
@@ -269,8 +290,10 @@ public class NNDebugViewer {
 	}
 
 	private static final class AddRandomPointAction extends AbstractAction {
-
+		
 		private final NNDebugPanel panel;
+		
+		private static Random random = new Random();
 		
 		public AddRandomPointAction(NNDebugPanel panel) {
 			super("random point");
@@ -282,8 +305,12 @@ public class NNDebugViewer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
-			double x = (Math.random() * 2 * SIZE) - SIZE;
-			double z = (Math.random() * 2 * SIZE) - SIZE;
+			if (panel.points.size() <= 4) {
+				random = new Random(1);
+			}
+			
+			double x = (random.nextDouble() * 2 * SIZE) - SIZE;
+			double z = (random.nextDouble() * 2 * SIZE) - SIZE;
 			
 			panel.add(new VectorXYZ(x, 0, z));
 			

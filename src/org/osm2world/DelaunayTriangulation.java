@@ -1,6 +1,7 @@
 package org.osm2world;
 
 import static java.lang.Math.PI;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
-import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -94,12 +95,12 @@ public class DelaunayTriangulation {
 		
 		public double angleAt(int pointIndex) {
 			
-			VectorXZ vecToPoint = getPoint(pointIndex).xz().subtract(
+			VectorXZ vecToNext = getPoint(pointIndex).xz().subtract(
 					getPoint((pointIndex + 2) % 3).xz());
-			VectorXZ vecFromPoint = getPoint((pointIndex + 1) % 3).xz().subtract(
-					getPoint(pointIndex).xz());
+			VectorXZ vecToPrev = getPoint((pointIndex + 1) % 3).xz().subtract(
+					getPoint(pointIndex).xz()).invert();
 			
-			return VectorXZ.angleBetween(vecToPoint, vecFromPoint);
+			return VectorXZ.angleBetween(vecToNext, vecToPrev);
 			
 		}
 
@@ -125,6 +126,11 @@ public class DelaunayTriangulation {
 		
 		public TriangleXZ asTriangleXZ() {
 			return new TriangleXZ(p0.xz(), p1.xz(), p2.xz());
+		}
+		
+		@Override
+		public String toString() {
+			return asTriangleXZ().toString();
 		}
 		
 	}
@@ -249,13 +255,13 @@ public class DelaunayTriangulation {
 			createdTriangles = new DelaunayTriangle[2];
 			
 			createdTriangles[0] = new DelaunayTriangle(
-					points[1], points[2], points[3]);
+					points[2], points[3], points[1]);
 			createdTriangles[1] = new DelaunayTriangle(
 					points[3], points[0], points[1]);
 			
-			createdTriangles[0].setNeighbor(0, neighbors[1]);
-			createdTriangles[0].setNeighbor(1, neighbors[2]);
-			createdTriangles[0].setNeighbor(2, createdTriangles[1]);
+			createdTriangles[0].setNeighbor(0, neighbors[2]);
+			createdTriangles[0].setNeighbor(1, createdTriangles[1]);
+			createdTriangles[0].setNeighbor(2, neighbors[1]);
 			
 			createdTriangles[1].setNeighbor(0, neighbors[3]);
 			createdTriangles[1].setNeighbor(1, neighbors[0]);
@@ -290,6 +296,8 @@ public class DelaunayTriangulation {
 	public DelaunayTriangulation(VectorXYZ... bounds) {
 		
 		assert bounds.length == 4;
+		assert !new PolygonXYZ(asList(bounds[0], bounds[1], bounds[2],
+				bounds[3], bounds[0])).getSimpleXZPolygon().isClockwise();
 		
 		triangles = new ArrayList<DelaunayTriangle>();
 		triangles.add(new DelaunayTriangle(bounds[0], bounds[1], bounds[3]));
@@ -329,9 +337,14 @@ public class DelaunayTriangulation {
 			//TODO: only checks with first neighbor! Document this!
 			
 			if (!isDelaunay(triangle)) {
+				
 				Flip22 flip = new Flip22(triangle);
 				flip.perform();
 				splitStack.push(flip);
+				
+				uncheckedTriangles.offer(flip.createdTriangles[0]);
+				uncheckedTriangles.offer(flip.createdTriangles[1]);
+				
 			}
 			
 		}
@@ -359,16 +372,33 @@ public class DelaunayTriangulation {
 	}
 	
 	//TODO only really needed for debugging
-	public List<TriangleXYZ> getVoronoiParts(VectorXYZ point) {
+	public List<TriangleXZ> getVoronoiParts(VectorXYZ point) {
 		
-		List<TriangleXYZ> result = new ArrayList<TriangleXYZ>();
+		List<TriangleXZ> result = new ArrayList<TriangleXZ>();
 		
-		List<DelaunayEdge> edges = getIncidentEdges(point);
+		final VectorXZ pointXZ = point.xz();
 		
-		for (int i = 0; i < edges.size(); i++) {
-			result.add(new TriangleXYZ(point,
-					edges.get(i).getCenter(),
-					edges.get((i+1) % edges.size()).getCenter()));
+		List<VectorXZ> centers = new ArrayList<VectorXZ>();
+		
+		for (DelaunayTriangle t : getIncidentTriangles(point)) {
+			centers.add(t.getCircumcircleCenter());
+		}
+		
+		Collections.sort(centers, new Comparator<VectorXZ>() {
+
+			@Override
+			public int compare(VectorXZ v1, VectorXZ v2) {
+				return Double.compare(
+						v2.subtract(pointXZ).angle(),
+						v1.subtract(pointXZ).angle());
+			}
+			
+		});
+		
+		for (int i = 0; i < centers.size(); i++) {
+			result.add(new TriangleXZ(point.xz(),
+					centers.get(i),
+					centers.get((i+1) % centers.size())));
 		}
 		
 		return result;
