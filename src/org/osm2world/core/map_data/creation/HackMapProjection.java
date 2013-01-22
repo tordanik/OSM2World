@@ -2,6 +2,7 @@ package org.osm2world.core.map_data.creation;
 
 import java.awt.geom.Point2D;
 
+import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.data.OSMNode;
@@ -18,29 +19,45 @@ public class HackMapProjection implements MapProjection {
 	
 	private final Projection projection = new MercatorProjection();
 	
-	/** all coordinates will be modified by subtracting the first node's coords;
-	 *  this is supposed to keep nodes as close as possible to 0.0.
-	 *  (It also means that the first lat/lon values will be at 0.0)
-	 *  //TODO: re-evaluate this solution later */
-	private final Double firstNodeLat, firstNodeLon;
+	/**
+	 * The coordinate origin is placed at the center of the bounds,
+	 * or else at the first node's coordinates.
+	 * All coordinates will be modified by subtracting the origin
+	 * (in lat/lon, which does not really make sense, but is simply
+	 *  supposed to keep nodes as close as possible to 0.0).
+	 * 
+	 * //TODO: replace this solution later
+	 */
+	private final Double originLat, originLon;
 
 	/* magic constant */
 	public static final double SCALE_X = 70000;
 	public static final double SCALE_Y = 110000;
 	
 	public HackMapProjection(OSMData osmData) {
-		if (osmData.getNodes().isEmpty()) {
-			throw new IllegalArgumentException("OSM data must contain nodes");
+		
+		if (osmData.getBounds() != null && !osmData.getBounds().isEmpty()) {
+			
+			Bound firstBound = osmData.getBounds().iterator().next();
+			originLat = (firstBound.getTop() + firstBound.getBottom()) / 2;
+			originLon = (firstBound.getLeft() + firstBound.getRight()) / 2;
+			
+		} else {
+			
+			if (osmData.getNodes().isEmpty()) {
+				throw new IllegalArgumentException("OSM data must contain nodes");
+			}
+			OSMNode firstNode = osmData.getNodes().iterator().next();
+			originLat = firstNode.lat;
+			originLon = firstNode.lon;
+			
 		}
-		OSMNode firstNode = osmData.getNodes().iterator().next();
-		firstNodeLat = firstNode.lat;
-		firstNodeLon = firstNode.lon;
 	}
 
 	public VectorXZ calcPos(double lat, double lon) {
 				
-		lat -= firstNodeLat;
-		lon -= firstNodeLon;
+		lat -= originLat;
+		lon -= originLon;
 		
 //		return new VectorXZ(
 //				(float)conversion.MercatorProjection.lonToX(lon),
@@ -66,7 +83,7 @@ public class HackMapProjection implements MapProjection {
 	@Override
 	public double calcLat(VectorXZ pos) {
 		if (pos.equals(VectorXZ.NULL_VECTOR)) {
-			return firstNodeLat;
+			return originLat;
 		} else {
 			throw new UnsupportedOperationException();
 		}
@@ -75,7 +92,7 @@ public class HackMapProjection implements MapProjection {
 	@Override
 	public double calcLon(VectorXZ pos) {
 		if (pos.equals(VectorXZ.NULL_VECTOR)) {
-			return firstNodeLon;
+			return originLon;
 		} else {
 			throw new UnsupportedOperationException();
 		}
