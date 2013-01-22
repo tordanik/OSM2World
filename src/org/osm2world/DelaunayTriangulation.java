@@ -208,7 +208,26 @@ public class DelaunayTriangulation {
 		@Override
 		public void undo() {
 			
-			// TODO Auto-generated method stub
+			triangles.add(originalTriangle);
+			triangles.remove(createdTriangles[0]);
+			triangles.remove(createdTriangles[1]);
+			triangles.remove(createdTriangles[2]);
+			
+			DelaunayTriangle neighbor0 = originalTriangle.getNeighbor(0);
+			DelaunayTriangle neighbor1 = originalTriangle.getNeighbor(1);
+			DelaunayTriangle neighbor2 = originalTriangle.getNeighbor(2);
+			
+			if (neighbor0 != null) {
+				neighbor0.replaceNeighbor(createdTriangles[0], originalTriangle);
+			}
+			
+			if (neighbor1 != null) {
+				neighbor1.replaceNeighbor(createdTriangles[1], originalTriangle);
+			}
+			
+			if (neighbor2 != null) {
+				neighbor2.replaceNeighbor(createdTriangles[2], originalTriangle);
+			}
 			
 		}
 		
@@ -219,6 +238,12 @@ public class DelaunayTriangulation {
 		DelaunayTriangle[] originalTriangles;
 		DelaunayTriangle[] createdTriangles;
 		
+		/**
+		 * neighbors of the quadrangle formed by both
+		 * {@link #originalTriangles} and {@link #createdTriangles}.
+		 */
+		final DelaunayTriangle[] neighbors = new DelaunayTriangle[4];
+		
 		public Flip22(DelaunayTriangle triangle) {
 			originalTriangles = new DelaunayTriangle[]{
 					triangle,
@@ -228,13 +253,9 @@ public class DelaunayTriangulation {
 		@Override
 		public void perform() {
 			
-			/*
-			 * determine the points and neighbors (4 each) of the quadrangle
-			 * formed by the two triangles
-			 */
+			/* determine points and neighbors (4 each) of the quadrangle */
 			
 			VectorXYZ[] points = new VectorXYZ[4];
-			DelaunayTriangle[] neighbors = new DelaunayTriangle[4];
 
 			points[0] = originalTriangles[0].getPoint(1);
 			neighbors[0] = originalTriangles[0].getNeighbor(1);
@@ -285,7 +306,20 @@ public class DelaunayTriangulation {
 		
 		@Override
 		public void undo() {
-			// TODO Auto-generated method stub
+			
+			triangles.add(originalTriangles[0]);
+			triangles.add(originalTriangles[1]);
+			triangles.remove(createdTriangles[0]);
+			triangles.remove(createdTriangles[1]);
+			
+			if (neighbors[0] != null)
+				neighbors[0].replaceNeighbor(createdTriangles[1], originalTriangles[0]);
+			if (neighbors[1] != null)
+				neighbors[1].replaceNeighbor(createdTriangles[0], originalTriangles[0]);
+			if (neighbors[2] != null)
+				neighbors[2].replaceNeighbor(createdTriangles[0], originalTriangles[1]);
+			if (neighbors[3] != null)
+				neighbors[3].replaceNeighbor(createdTriangles[1], originalTriangles[1]);
 			
 		}
 		
@@ -308,7 +342,7 @@ public class DelaunayTriangulation {
 		
 	}
 	
-	public void insert(VectorXYZ point) { //TODO: should use <T extends Has(Immutable)Position>
+	public Stack<Flip> insert(VectorXYZ point) { //TODO: should use <T extends Has(Immutable)Position>
 		
 		DelaunayTriangle triangleEnclosingPoint = getEnlosingTriangle(point);
 		
@@ -316,11 +350,11 @@ public class DelaunayTriangulation {
 		
 		/* split the enclosing triangle */
 		
-		Stack<Flip> splitStack = new Stack<Flip>();
+		Stack<Flip> flipStack = new Stack<Flip>();
 		
 		Flip13 initialFlip = new Flip13(triangleEnclosingPoint, point);
 		initialFlip.perform();
-		splitStack.push(initialFlip);
+		flipStack.push(initialFlip);
 		
 		Queue<DelaunayTriangle> uncheckedTriangles = new LinkedList<DelaunayTriangle>();
 		
@@ -340,13 +374,25 @@ public class DelaunayTriangulation {
 				
 				Flip22 flip = new Flip22(triangle);
 				flip.perform();
-				splitStack.push(flip);
+				flipStack.push(flip);
 				
 				uncheckedTriangles.offer(flip.createdTriangles[0]);
 				uncheckedTriangles.offer(flip.createdTriangles[1]);
 				
 			}
 			
+		}
+		
+		return flipStack;
+		
+	}
+	
+	public void insertAndUndo(VectorXYZ point) {
+		
+		Stack<Flip> flipStack = insert(point);
+		
+		while (!flipStack.isEmpty()) {
+			flipStack.pop().undo();
 		}
 		
 	}
