@@ -53,6 +53,7 @@ import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
 import org.osm2world.viewer.view.debug.MapDataElevationDebugView;
+import org.osm2world.viewer.view.debug.NaturalNeighborStrategyDebugView;
 import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
@@ -190,6 +191,8 @@ public class ViewerFrame extends JFrame {
 					new TerrainElevationGridDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new EleDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new NaturalNeighborStrategyDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new LeastSquaresStrategyDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
