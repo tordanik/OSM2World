@@ -1,12 +1,17 @@
 package org.osm2world;
 
+import static java.util.Arrays.asList;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import javax.swing.AbstractAction;
@@ -18,11 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
+import org.osm2world.DelaunayTriangulation.NaturalNeighbors;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+
 
 public class NNDebugViewer {
 
@@ -37,13 +44,36 @@ public class NNDebugViewer {
 		private List<VectorXYZ> points;
 		private DelaunayTriangulation triangulation;
 		
+		//TODO change to AxisAlignedBbox
 		private double minX, maxX, minZ, maxZ;
+		
+		private VectorXZ probePos = null;
 		
 		public NNDebugPanel() {
 			clear();
+			
+			this.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+										
+					VectorXZ point = inverseCoord(e.getX(), e.getY());
+					
+					if (e.getButton() == MouseEvent.BUTTON1) {
+						probePos = point;
+					} else {
+						add(point.xyz(0));
+					}
+					
+					NNDebugPanel.this.repaint(0);
+					
+				}
+			});
+			
 		}
 		
 		public void clear() {
+			
+			probePos = null;
 			
 			minX = minZ = Float.MAX_VALUE;
 			maxX = maxZ = -Float.MAX_VALUE;
@@ -62,6 +92,8 @@ public class NNDebugViewer {
 		
 		public void add(VectorXYZ p) {
 			
+			probePos = null;
+			
 			points.add(p);
 			updateMinMax(p);
 			
@@ -73,8 +105,9 @@ public class NNDebugViewer {
 				
 			} else if (points.size() == 4)  {
 				
-				triangulation = new DelaunayTriangulation(
-					points.get(0), points.get(1), points.get(2), points.get(3));
+				triangulation = new DelaunayTriangulation(asList(
+					points.get(0).xz(), points.get(1).xz(),
+					points.get(2).xz(), points.get(3).xz()));
 								
 			}
 			
@@ -155,12 +188,34 @@ public class NNDebugViewer {
 				draw(g, p.xz());
 			}
 			
+			/* draw click data */
+			
+			if (probePos != null) {
+				
+				draw(g, probePos);
+								
+				NaturalNeighbors nn = triangulation.probe(probePos);
+				
+				for (int i = 0; i < nn.neighbors.length; i++) {
+					
+					VectorXZ neighbor = nn.neighbors[i].xz();
+					double relativeWeight = nn.relativeWeights[i];
+					
+					drawLine(g, probePos, neighbor);
+					
+					g.drawString(String.format(Locale.US, "%.3f", relativeWeight),
+							coordX(neighbor), coordY(neighbor));
+					
+				}
+				
+			}
+			
 		}
 			
 		private void draw(Graphics g, VectorXZ p) {
 			drawPoint(g, p);
 		}
-			
+		
 		private void draw(Graphics g, TriangleXZ t) {
 			g.drawPolygon(
 					new int[] {coordX(t.v1), coordX(t.v2), coordX(t.v3)},
@@ -236,6 +291,20 @@ public class NNDebugViewer {
 		
 		private int coordY(VectorXZ v) {
 			return (int)((this.getHeight()*0.95) - (v.z - minZ) / (maxZ - minZ) * (this.getHeight()*0.9));
+		}
+		
+		private VectorXZ inverseCoord(int x, int y) {
+			
+			double relX = ( x - coordX(new VectorXZ(minX, maxZ)) ) / (this.getWidth() * 0.9);
+			double relZ = ( y - coordY(new VectorXZ(minX, maxZ)) ) / (this.getHeight() * 0.9);
+			
+			double totalX = maxX - minX;
+			double totalZ = maxZ - minZ;
+			
+			return new VectorXZ(
+					minX + relX * totalX,
+					maxZ - relZ * totalZ);
+			
 		}
 		
 	}

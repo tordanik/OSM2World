@@ -26,12 +26,11 @@ public class DelaunayTriangulationTest {
 		
 		for (Random random : RANDOMS) {
 			
-			VectorXYZ[] startVectors = new VectorXYZ[]{
-					new VectorXYZ(-SIZE, 0, -SIZE),
-					new VectorXYZ(+SIZE, 0, -SIZE),
-					new VectorXYZ(+SIZE, 0, +SIZE),
-					new VectorXYZ(-SIZE, 0, +SIZE)
-			};
+			List<VectorXZ> startVectors = asList(
+					new VectorXZ(-SIZE, -SIZE),
+					new VectorXZ(+SIZE, -SIZE),
+					new VectorXZ(+SIZE, +SIZE),
+					new VectorXZ(-SIZE, +SIZE));
 			
 			DelaunayTriangulation triangulation =
 					new DelaunayTriangulation(startVectors);
@@ -54,7 +53,7 @@ public class DelaunayTriangulationTest {
 				
 				// check whether undoing works
 				
-				triangulation2.insertAndUndo(point);
+				triangulation2.probe(point.xz());
 				
 				assertTriangulationsEqual(triangulation, triangulation2);
 				
