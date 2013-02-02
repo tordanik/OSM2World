@@ -64,6 +64,23 @@ public class TriangleXZ {
 			return this;
 		}
 	}
+
+	/**
+	 * returns the area of the triangle
+	 */
+	public double getArea() {
+		
+		double sum =
+				+ v1.x * v2.z
+				- v2.x * v1.z
+				+ v2.x * v3.z
+				- v3.x * v2.z
+				+ v3.x * v1.z
+				- v1.x * v3.z;
+		
+		return Math.abs(sum / 2);
+		
+	}
 	
 	/**
 	 * returns an inversed version of this triangle.
