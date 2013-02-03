@@ -2,6 +2,7 @@ package org.osm2world.console;
 
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,19 +152,21 @@ public class OSM2World {
 		/* load configuration file */
 		
 		Configuration config = new BaseConfiguration();
+		File configFile = null;
 		
 		if (argumentsGroup.getRepresentative().isConfig()) {
 			try {
+				configFile = argumentsGroup.getRepresentative().getConfig();
 				PropertiesConfiguration fileConfig = new PropertiesConfiguration();
 				fileConfig.setListDelimiter(';');
-				fileConfig.load(argumentsGroup.getRepresentative().getConfig());
+				fileConfig.load(configFile);
 				config = fileConfig;
 			} catch (ConfigurationException e) {
 				System.err.println("could not read config, ignoring it: ");
 				System.err.println(e);
 			}
 		}
-				
+		
 		/* run selected mode */
 		
 		ProgramMode programMode =
@@ -188,7 +191,7 @@ public class OSM2World {
 				System.out.println("Error setting native look and feel: " + e);
 			}
 			new ViewerFrame(new Data(), new MessageManager(),
-					new RenderOptions(), config).setVisible(true);
+					new RenderOptions(), config, configFile).setVisible(true);
 			break;
 			
 		case CONVERT:

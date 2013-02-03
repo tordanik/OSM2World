@@ -18,8 +18,17 @@ public class Data extends Observable {
 	private File osmFile = null;
 	private Results conversionResults = null;
 	
+	public Configuration getConfig() {
+		return config;
+	}
+
 	public void setConfig(Configuration config) {
+		
 		this.config = config;
+		
+		this.setChanged();
+		this.notifyObservers();
+		
 	}
 	
 	/**

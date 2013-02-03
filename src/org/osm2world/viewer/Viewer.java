@@ -22,7 +22,7 @@ public class Viewer {
 		}
 		
 		new ViewerFrame(new Data(), new MessageManager(), new RenderOptions(),
-				null).setVisible(true);
+				null, null).setVisible(true);
 		
 	}
 	

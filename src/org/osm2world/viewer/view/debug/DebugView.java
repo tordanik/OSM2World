@@ -47,6 +47,7 @@ public abstract class DebugView {
 		
 		if (target != null) {
 			target.setConfiguration(config);
+			target.reset();
 		}
 		
 	}

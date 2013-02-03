@@ -73,17 +73,18 @@ public class ViewerFrame extends JFrame {
 	
 	private final Data data;
 	private final RenderOptions renderOptions;
-	private final Configuration config;
+	private final File configFile;
 	private final MessageManager messageManager;
 		
 	public ViewerFrame(final Data data, final MessageManager messageManager,
-			final RenderOptions renderOptions, final Configuration config) {
+			final RenderOptions renderOptions, final Configuration config,
+			final File configFile) {
 
 		super("OSM2World Viewer");
 
 		this.data = data;
 		this.renderOptions = renderOptions;
-		this.config = config;
+		this.configFile = configFile;
 		this.messageManager = messageManager;
 		
 		data.setConfig(config);
@@ -124,7 +125,7 @@ public class ViewerFrame extends JFrame {
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
-			subMenu.add(new ReloadOSMAction(this, data, renderOptions));
+			subMenu.add(new ReloadOSMAction(this, data, renderOptions, configFile));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
@@ -251,7 +252,7 @@ public class ViewerFrame extends JFrame {
 	private void initAndAddDebugView(JMenu menu, int keyEvent,
 			boolean enabled, DebugView debugView) {
 		
-		debugView.setConfiguration(config);
+		debugView.setConfiguration(data.getConfig());
 		
 		menu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 				debugView, keyEvent, enabled,
