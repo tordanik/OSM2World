@@ -3,24 +3,32 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -97,6 +105,14 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 	
+	@Override
+	protected void applyToArea(MapArea area) {
+		if (area.getTags().contains("power", "generator")
+				&& area.getTags().contains("generator:method", "photovoltaic")) {
+			area.addRepresentation(new PhotovoltaicPlant(area));
+		}
+	}
+	
 	private static final class PowerCabinet extends NoOutlineNodeWorldObject
 	implements RenderableToAllTargets {
 
@@ -122,7 +138,7 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double directionAngle = parseDirection(node.getTags(), PI);			
+			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 						
 			target.drawBox(PLASTIC_GREY,
@@ -826,4 +842,125 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 	}
+	
+	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject
+		implements RenderableToAllTargets {
+
+		protected PhotovoltaicPlant(MapArea area) {
+			super(area);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			AreaElevationProfile eleProfile = area.getElevationProfile();
+			
+			/* construct panel geometry */
+
+			double panelAngle = PI / 4;
+			double panelHeight = 5;
+			
+			VectorXYZ upVector = Z_UNIT.mult(panelHeight).rotateX(-panelAngle);
+			
+			/* draw rows of panels */
+			
+			AxisAlignedBoundingBoxXZ box = this.getAxisAlignedBoundingBoxXZ();
+			
+			double posZ = box.minZ;
+			
+			while (posZ + upVector.z < box.maxZ) {
+				
+				LineSegmentXZ rowLine = new LineSegmentXZ(
+						 new VectorXZ(box.minX - 10, posZ),
+						 new VectorXZ(box.maxX + 10, posZ));
+				
+				// calculate start and end points (maybe more than one each)
+				
+				List<VectorXZ> intersections = new ArrayList<VectorXZ>();
+				
+				intersections.addAll(
+						area.getOuterPolygon().intersectionPositions(rowLine));
+				
+				for (SimplePolygonXZ hole : area.getPolygon().getHoles()) {
+					intersections.addAll(hole.intersectionPositions(rowLine));
+				}
+				
+				assert intersections.size() % 2 == 0;
+				
+				sortByX(intersections);
+				
+				// add more start/end points, but only if completely inside
+				
+				// TODO add from overlapped ground-level features
+				// then do  sortByX(intersections);  again
+				
+				// draw row of panels between each start/end pair
+				
+				for (int i = 0; i + 1 < intersections.size(); i += 2) {
+					
+					// TODO: take elevation into account
+					// Might necessitate individual panels or shorter strips.
+					
+					renderPanelsTo(target,
+							eleProfile.getWithEle(intersections.get(i)),
+							eleProfile.getWithEle(intersections.get(i+1)),
+							upVector);
+					
+				}
+				
+				posZ += upVector.z * 1.5;
+				
+			}
+			
+		}
+
+		private void sortByX(List<VectorXZ> vectorList) {
+			Collections.sort(vectorList, new Comparator<VectorXZ>() {
+				@Override public int compare(VectorXZ v1, VectorXZ v2) {
+					return Double.compare(v1.x, v2.x);
+				}
+			});
+		}
+
+		private void renderPanelsTo(Target<?> target, VectorXYZ bottomLeft,
+				VectorXYZ bottomRight, VectorXYZ upVector) {
+			
+			/* draw front */
+			
+			List<VectorXYZ> vs = asList(
+					bottomLeft.add(upVector),
+					bottomLeft,
+					bottomRight.add(upVector),
+					bottomRight);
+			
+			target.drawTriangleStrip(Materials.SOLAR_PANEL, vs,
+					wallTexCoordLists(vs, Materials.SOLAR_PANEL));
+			
+			/* draw back */
+			
+			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
+			
+			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
+					wallTexCoordLists(vs, Materials.PLASTIC_GREY));
+						
+		}
+		
+		
+	}
+	
 }
