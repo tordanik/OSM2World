@@ -46,7 +46,7 @@ public final class Materials {
 	public static final ConfMaterial COBBLESTONE =
 			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial CONCRETE =
-		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Lighting.FLAT, new Color(0.55f, 0.55f, 0.55f));
 	public static final ConfMaterial EARTH =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0, 0));
 	public static final ConfMaterial GLASS =
