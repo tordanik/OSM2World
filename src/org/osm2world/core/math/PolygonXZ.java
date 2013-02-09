@@ -182,7 +182,7 @@ public class PolygonXZ {
 		
 	}
 
-	public Collection<VectorXZ> intersectionPositions(
+	public List<VectorXZ> intersectionPositions(
 			LineSegmentXZ lineSegment) {
 		
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();

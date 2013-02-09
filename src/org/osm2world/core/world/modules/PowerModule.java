@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
@@ -10,13 +10,13 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -31,6 +31,8 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
+import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -846,6 +848,13 @@ public final class PowerModule extends AbstractModule {
 	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject
 		implements RenderableToAllTargets {
 
+		/** compares vectors by x coordinate */
+		private static final Comparator<VectorXZ> X_COMPARATOR = new Comparator<VectorXZ>() {
+			@Override public int compare(VectorXZ v1, VectorXZ v2) {
+				return Double.compare(v1.x, v2.x);
+			}
+		};
+
 		protected PhotovoltaicPlant(MapArea area) {
 			super(area);
 		}
@@ -876,10 +885,12 @@ public final class PowerModule extends AbstractModule {
 			double panelHeight = 5;
 			
 			VectorXYZ upVector = Z_UNIT.mult(panelHeight).rotateX(-panelAngle);
-			
-			/* draw rows of panels */
+						
+			/* place and draw rows of panels */
 			
 			AxisAlignedBoundingBoxXZ box = this.getAxisAlignedBoundingBoxXZ();
+			
+			List<SimplePolygonXZ> obstacles = getGroundObstacles();
 			
 			double posZ = box.minZ;
 			
@@ -891,25 +902,47 @@ public final class PowerModule extends AbstractModule {
 				
 				// calculate start and end points (maybe more than one each)
 				
-				List<VectorXZ> intersections = new ArrayList<VectorXZ>();
-				
-				intersections.addAll(
-						area.getOuterPolygon().intersectionPositions(rowLine));
-				
-				for (SimplePolygonXZ hole : area.getPolygon().getHoles()) {
-					intersections.addAll(hole.intersectionPositions(rowLine));
-				}
+				List<VectorXZ> intersections =
+						area.getPolygon().intersectionPositions(rowLine);
 				
 				assert intersections.size() % 2 == 0;
 				
-				sortByX(intersections);
+				sort(intersections, X_COMPARATOR);
 				
-				// add more start/end points, but only if completely inside
+				// add more start/end points at ground-level obstacles
 				
-				// TODO add from overlapped ground-level features
-				// then do  sortByX(intersections);  again
+				for (SimplePolygonXZ obstacle : obstacles) {
+					
+					List<VectorXZ> obstacleIntersections =
+							obstacle.intersectionPositions(rowLine);
+					
+					for (int i = 0; i + 1 < obstacleIntersections.size(); i += 2) {
+						
+						int insertionIndexA = -binarySearch(intersections,
+								obstacleIntersections.get(i), X_COMPARATOR) - 1;
+						int insertionIndexB = -binarySearch(intersections,
+								obstacleIntersections.get(i + 1), X_COMPARATOR) - 1;
+						
+						sort(obstacleIntersections, X_COMPARATOR);
+						
+						if (insertionIndexA == insertionIndexB
+								&& insertionIndexA >= 0
+								&& insertionIndexA % 2 == 1) {
+							
+							intersections.add(insertionIndexA,
+									obstacleIntersections.get(i+1));
+							intersections.add(insertionIndexA,
+									obstacleIntersections.get(i));
+							
+						}
+						
+					}
+					
+				}
 				
 				// draw row of panels between each start/end pair
+				
+				assert intersections.size() % 2 == 0;
 				
 				for (int i = 0; i + 1 < intersections.size(); i += 2) {
 					
@@ -929,14 +962,30 @@ public final class PowerModule extends AbstractModule {
 			
 		}
 
-		private void sortByX(List<VectorXZ> vectorList) {
-			Collections.sort(vectorList, new Comparator<VectorXZ>() {
-				@Override public int compare(VectorXZ v1, VectorXZ v2) {
-					return Double.compare(v1.x, v2.x);
+		/**
+		 * returns outlines from ground objects overlapping this area
+		 */
+		private List<SimplePolygonXZ> getGroundObstacles() {
+			
+			List<SimplePolygonXZ> obstacles = new ArrayList<SimplePolygonXZ>();
+			
+			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+					
+					if (otherWO.getGroundState() == GroundState.ON
+							&& otherWO instanceof WorldObjectWithOutline) {
+						
+						obstacles.add(((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ());
+						
+					}
+				
 				}
-			});
+			}
+			
+			return obstacles;
+			
 		}
-
+		
 		private void renderPanelsTo(Target<?> target, VectorXYZ bottomLeft,
 				VectorXYZ bottomRight, VectorXYZ upVector) {
 			
