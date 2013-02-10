@@ -20,12 +20,12 @@ public class NaturalNeighborStrategy implements EleInterpolationStrategy {
 		AxisAlignedBoundingBoxXZ boundingBox = new AxisAlignedBoundingBoxXZ(sites);
 		boundingBox = boundingBox.pad(100);
 		
-		triangulation = new DelaunayTriangulation(boundingBox.polygonXZ().getVertices());
+		triangulation = new DelaunayTriangulation(boundingBox);
 		
 		int i = 0; //TODO remove
 		int total = sites.size();
 		long startTime = System.currentTimeMillis();
-				
+		
 		for (VectorXYZ site : sites) {
 			if (++i % 1000 == 0) System.out.println("KS: " + i + "/" + total
 					+ " after " + ((System.currentTimeMillis() - startTime) / 1e3));

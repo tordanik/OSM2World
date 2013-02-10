@@ -10,6 +10,7 @@ import java.util.Random;
 
 import org.junit.Test;
 import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -26,16 +27,13 @@ public class DelaunayTriangulationTest {
 		
 		for (Random random : RANDOMS) {
 			
-			List<VectorXZ> startVectors = asList(
-					new VectorXZ(-SIZE, -SIZE),
-					new VectorXZ(+SIZE, -SIZE),
-					new VectorXZ(+SIZE, +SIZE),
-					new VectorXZ(-SIZE, +SIZE));
+			AxisAlignedBoundingBoxXZ bounds = new AxisAlignedBoundingBoxXZ(
+					-SIZE, -SIZE, +SIZE, +SIZE);
 			
 			DelaunayTriangulation triangulation =
-					new DelaunayTriangulation(startVectors);
+					new DelaunayTriangulation(bounds);
 			DelaunayTriangulation triangulation2 =
-					new DelaunayTriangulation(startVectors);
+					new DelaunayTriangulation(bounds);
 			
 			List<VectorXYZ> points = new ArrayList<VectorXYZ>();
 			
@@ -77,11 +75,11 @@ public class DelaunayTriangulationTest {
 			DelaunayTriangulation triangulation1,
 			DelaunayTriangulation triangulation2) {
 		
-		for (DelaunayTriangle t1 : triangulation1.triangles) {
+		for (DelaunayTriangle t1 : triangulation1.getTriangles()) {
 			
 			DelaunayTriangle twinTriangle = null;
 			
-			for (DelaunayTriangle t2 : triangulation2.triangles) {
+			for (DelaunayTriangle t2 : triangulation2.getTriangles()) {
 				if (t1.asTriangleXZ().equals(t2.asTriangleXZ())) {
 					twinTriangle = t2;
 				}
@@ -116,7 +114,7 @@ public class DelaunayTriangulationTest {
 	private static void assertTriangulationProperties(
 			DelaunayTriangulation triangulation, List<VectorXYZ> points) {
 		
-		for (DelaunayTriangle triangle : triangulation.triangles) {
+		for (DelaunayTriangle triangle : triangulation.getTriangles()) {
 			
 			/* check that neighborship relations are symmetric */
 			

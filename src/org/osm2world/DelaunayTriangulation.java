@@ -1,14 +1,13 @@
 package org.osm2world;
 
 import static java.lang.Math.*;
-import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -16,16 +15,20 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 //TODO: test performance effects of:
 // * starting point choice of the walk
 // * triangle data structure (ArrayList, LinkedList, ... -> deletions have to be efficient)
 // * maybe it's possible to avoid the "triangles" at all and *only* use the neighborships?
+// * caching circumcircles
+// * only calculating area of triangles that are actually changed
 
 /**
  * 2d Delaunay triangulation class.
@@ -77,6 +80,14 @@ public class DelaunayTriangulation {
 				default: throw new Error("invalid index " + i);
 			}
 		}
+
+		public DelaunayTriangle getLeftNeighbor(VectorXYZ atPoint) {
+			return getNeighbor((indexOfPoint(atPoint) + 2) % 3);
+		}
+
+		public DelaunayTriangle getRightNeighbor(VectorXYZ atPoint) {
+			return getNeighbor(indexOfPoint(atPoint));
+		}
 		
 		public void setNeighbor(int i, DelaunayTriangle neighbor) {
 			switch (i) {
@@ -84,6 +95,18 @@ public class DelaunayTriangulation {
 				case 1: neighbor1 = neighbor; break;
 				case 2: neighbor2 = neighbor; break;
 				default: throw new Error("invalid index " + i);
+			}
+		}
+		
+		public int indexOfPoint(VectorXYZ point) {
+			if (point == p0) {
+				return 0;
+			} else if (point == p1) {
+				return 1;
+			} else if (point == p2) {
+				return 2;
+			} else {
+				throw new IllegalArgumentException("not in this triangle");
 			}
 		}
 		
@@ -169,6 +192,7 @@ public class DelaunayTriangulation {
 		public void undo();
 		
 		public DelaunayTriangle[] getCreatedTriangles();
+		public DelaunayTriangle[] getRemovedTriangles();
 		
 	}
 	
@@ -227,20 +251,10 @@ public class DelaunayTriangulation {
 				neighbor2.replaceNeighbor(originalTriangle, createdTriangles[2]);
 			}
 			
-			triangles.remove(originalTriangle);
-			triangles.add(createdTriangles[0]);
-			triangles.add(createdTriangles[1]);
-			triangles.add(createdTriangles[2]);
-			
 		}
 		
 		@Override
 		public void undo() {
-			
-			triangles.add(originalTriangle);
-			triangles.remove(createdTriangles[0]);
-			triangles.remove(createdTriangles[1]);
-			triangles.remove(createdTriangles[2]);
 			
 			DelaunayTriangle neighbor0 = originalTriangle.getNeighbor(0);
 			DelaunayTriangle neighbor1 = originalTriangle.getNeighbor(1);
@@ -264,6 +278,12 @@ public class DelaunayTriangulation {
 		public DelaunayTriangle[] getCreatedTriangles() {
 			assert createdTriangles != null;
 			return createdTriangles;
+		}
+		
+		@Override
+		public DelaunayTriangle[] getRemovedTriangles() {
+			return new DelaunayTriangle[] {originalTriangle};
+			//TODO array creation overhead :(
 		}
 		
 	}
@@ -331,21 +351,11 @@ public class DelaunayTriangulation {
 				neighbors[2].replaceNeighbor(originalTriangles[1], createdTriangles[0]);
 			if (neighbors[3] != null)
 				neighbors[3].replaceNeighbor(originalTriangles[1], createdTriangles[1]);
-			
-			triangles.remove(originalTriangles[0]);
-			triangles.remove(originalTriangles[1]);
-			triangles.add(createdTriangles[0]);
-			triangles.add(createdTriangles[1]);
-			
+						
 		}
 		
 		@Override
 		public void undo() {
-			
-			triangles.add(originalTriangles[0]);
-			triangles.add(originalTriangles[1]);
-			triangles.remove(createdTriangles[0]);
-			triangles.remove(createdTriangles[1]);
 			
 			if (neighbors[0] != null)
 				neighbors[0].replaceNeighbor(createdTriangles[1], originalTriangles[0]);
@@ -362,6 +372,11 @@ public class DelaunayTriangulation {
 		public DelaunayTriangle[] getCreatedTriangles() {
 			assert createdTriangles != null;
 			return createdTriangles;
+		}
+		
+		@Override
+		public DelaunayTriangle[] getRemovedTriangles() {
+			return originalTriangles;
 		}
 		
 	}
@@ -381,30 +396,121 @@ public class DelaunayTriangulation {
 		}
 				
 	}
-	
 
-	public final List<DelaunayTriangle> triangles; //TODO make private
-	
-	public DelaunayTriangulation(List<VectorXZ> bounds) { //TODO AABB as bounds?
+	/**
+	 * produces iterables for iterating over all the triangles in this
+	 * triangulation via depth-first search
+	 */
+	private final Iterable<DelaunayTriangle> ITERABLE =
+			new Iterable<DelaunayTriangle>() {
 		
-		assert bounds.size() == 4;
-		assert !new SimplePolygonXZ(asList(bounds.get(0), bounds.get(1), bounds.get(2),
-				bounds.get(3), bounds.get(0))).isClockwise();
+		@Override
+		public Iterator<DelaunayTriangle> iterator() {
+			
+			final DelaunayTriangle start = handleTriangle.getNeighbor(0);
+			
+			final Stack<DelaunayTriangle> startStack = new Stack<DelaunayTriangle>();
+			startStack.push(start);
+			
+			final Set<DelaunayTriangle> startSet = new HashSet<DelaunayTriangle>();
+			startSet.add(handleTriangle);
+			startSet.add(start);
+			
+			return new Iterator<DelaunayTriangle>() {
+				
+				private final Set<DelaunayTriangle> visitedTriangles = startSet;
+				private final Stack<DelaunayTriangle> triangleStack = startStack;
+				private DelaunayTriangle nextTriangle = start;
+				private int nextIndex = 0;
+								
+				public boolean hasNext() {
+					return nextTriangle != null;
+				};
+				
+				public DelaunayTriangle next() {
+					
+					DelaunayTriangle currentTriangle = nextTriangle;
+					nextTriangle = null;
+					
+					while (nextTriangle == null && !triangleStack.isEmpty()) {
+												
+						while (nextIndex <= 2 && nextTriangle == null) {
+							
+							nextTriangle =
+									triangleStack.peek().getNeighbor(nextIndex);
+							
+							if (nextTriangle != null &&
+									!visitedTriangles.contains(nextTriangle)) {
+								
+								triangleStack.push(nextTriangle);
+								visitedTriangles.add(nextTriangle);
+								nextIndex = 0;
+								
+							} else {
+								
+								nextTriangle = null;
+								nextIndex ++;
+								
+							}
+							
+						}
+						
+						if (nextTriangle == null) {
+							// go back to previous triangle
+							triangleStack.pop();
+							nextIndex = 0;
+						}
+						
+					}
+										
+					return currentTriangle;
+					
+				};
+			
+				public void remove() {
+					throw new UnsupportedOperationException();
+				};
+				
+			};
+			
+		}
 		
-		VectorXYZ boundV0 = bounds.get(0).xyz(0);
-		VectorXYZ boundV1 = bounds.get(1).xyz(0);
-		VectorXYZ boundV2 = bounds.get(2).xyz(0);
-		VectorXYZ boundV3 = bounds.get(3).xyz(0);
+	};
+
+	/**
+	 * a fake triangle outside of the bounds that is used as a start
+	 * for iterating/walking through the triangulation along neighborships
+	 */
+	public final DelaunayTriangle handleTriangle;
+
+	public DelaunayTriangulation(AxisAlignedBoundingBoxXZ bounds) {
+				
+		VectorXYZ boundV0 = bounds.bottomLeft().xyz(0);
+		VectorXYZ boundV1 = bounds.bottomRight().xyz(0);
+		VectorXYZ boundV2 = bounds.topRight().xyz(0);
+		VectorXYZ boundV3 = bounds.topLeft().xyz(0);
 		
-		triangles = new ArrayList<DelaunayTriangle>();
-		triangles.add(new DelaunayTriangle(boundV0, boundV1, boundV3));
-		triangles.add(new DelaunayTriangle(boundV1, boundV2, boundV3));
+		DelaunayTriangle t1 = new DelaunayTriangle(boundV0, boundV1, boundV3);
+		DelaunayTriangle t2 = new DelaunayTriangle(boundV1, boundV2, boundV3);
+				
+		t1.setNeighbor(1, t2);
+		t2.setNeighbor(2, t1);
 		
-		triangles.get(0).setNeighbor(1, triangles.get(1));
-		triangles.get(1).setNeighbor(2, triangles.get(0));
+		handleTriangle = new DelaunayTriangle(boundV1, boundV0,
+				new VectorXYZ(bounds.center().x, 0, bounds.minZ - bounds.sizeZ()));
+				
+		t1.setNeighbor(0, handleTriangle);
+		handleTriangle.setNeighbor(0, t1);
 		
 	}
 	
+	/**
+	 * returns all triangles
+	 */
+	public Iterable<DelaunayTriangle> getTriangles() {
+		return ITERABLE;
+	}
+
 	public Stack<Flip> insert(VectorXYZ point) { //TODO: should use <T extends Has(Immutable)Position>
 		
 		DelaunayTriangle triangleEnclosingPoint = getEnlosingTriangle(point.xz());
@@ -465,26 +571,56 @@ public class DelaunayTriangulation {
 		
 		Stack<Flip> flipStack = insert(probePoint);
 		
-		/* identify neighbors */
+		/* identify neighbors and modified triangles */
 		
-		Set<VectorXYZ> pointsAffectedByFlip = new HashSet<VectorXYZ>();
+		Set<VectorXYZ> neighbors = new HashSet<VectorXYZ>();
+		Multimap<VectorXYZ, DelaunayTriangle> oldTriangles = HashMultimap.create();
+		Multimap<VectorXYZ, DelaunayTriangle> newTriangles = HashMultimap.create();
 		
+		// first loop, identifies neighbors and newly created triangles
 		for (Flip flip : flipStack) {
 			for (DelaunayTriangle triangle : flip.getCreatedTriangles()) {
-				pointsAffectedByFlip.add(triangle.p0);
-				pointsAffectedByFlip.add(triangle.p1);
-				pointsAffectedByFlip.add(triangle.p2);
+				newTriangles.put(triangle.p0, triangle);
+				newTriangles.put(triangle.p1, triangle);
+				newTriangles.put(triangle.p2, triangle);
+				neighbors.add(triangle.p0);
+				neighbors.add(triangle.p1);
+				neighbors.add(triangle.p2);
 			}
 		}
 		
-		pointsAffectedByFlip.remove(probePoint);
+		// second loop, removes some newTriangles and identifies oldTriangles
+		for (Flip flip : flipStack) {
+			for (DelaunayTriangle triangle : flip.getRemovedTriangles()) {
+				oldTriangles.put(triangle.p0, triangle);
+				oldTriangles.put(triangle.p1, triangle);
+				oldTriangles.put(triangle.p2, triangle);
+				newTriangles.remove(triangle.p0, triangle);
+				newTriangles.remove(triangle.p1, triangle);
+				newTriangles.remove(triangle.p2, triangle);
+			}
+		}
 		
-		NaturalNeighbors result = new NaturalNeighbors(pointsAffectedByFlip);
+		// third loop, removes some oldTriangles
+		for (Flip flip : flipStack) {
+			for (DelaunayTriangle triangle : flip.getCreatedTriangles()) {
+				oldTriangles.remove(triangle.p0, triangle);
+				oldTriangles.remove(triangle.p1, triangle);
+				oldTriangles.remove(triangle.p2, triangle);
+			}
+		}
+		
+		// FIXME: cannot use any oldTriangle as starting point, may have been newly created before
+		
+		neighbors.remove(probePoint);
+		
+		NaturalNeighbors result = new NaturalNeighbors(neighbors);
 		
 		/* calculate size of voronoi cells with the point */
 		
 		for (int i = 0; i < result.neighbors.length; i++) {
-			result.relativeWeights[i] = getVoronoiCellSize(result.neighbors[i]);
+			result.relativeWeights[i] = getVoronoiCellSize(result.neighbors[i],
+					newTriangles.get(result.neighbors[i]));
 		}
 		
 		/* undo insertion */
@@ -492,14 +628,18 @@ public class DelaunayTriangulation {
 		while (!flipStack.isEmpty()) {
 			flipStack.pop().undo();
 		}
-		
-		/* calculate difference of voronoi cell size with and without the point, */
+
+		/* calculate difference of voronoi cell size with and without the point */
 		
 		double areaDifferenceSum = 0;
 		
 		for (int i = 0; i < result.neighbors.length; i++) {
-			result.relativeWeights[i] = getVoronoiCellSize(result.neighbors[i])
-					- result.relativeWeights[i];
+			
+			double area = getVoronoiCellSize(result.neighbors[i],
+					oldTriangles.get(result.neighbors[i]));
+			
+			result.relativeWeights[i] = area - result.relativeWeights[i];
+			
 			areaDifferenceSum += result.relativeWeights[i];
 		}
 		
@@ -507,18 +647,22 @@ public class DelaunayTriangulation {
 		
 		for (int i = 0; i < result.neighbors.length; i++) {
 			result.relativeWeights[i] /= areaDifferenceSum;
+			
+			if (result.relativeWeights[i] > 1) {
+				System.out.println(result.relativeWeights[i]);
+			}
+			
 		}
 		
 		return result;
 		
 	}
 	
-	
 	public List<DelaunayTriangle> getIncidentTriangles(final VectorXYZ point) {
 
 		List<DelaunayTriangle> result = new ArrayList<DelaunayTriangle>();
 		
-		for (DelaunayTriangle triangle : triangles) {
+		for (DelaunayTriangle triangle : getTriangles()) {
 			if (triangle.p0.equals(point)) {
 				result.add(triangle);
 			} else if (triangle.p1.equals(point)) {
@@ -532,47 +676,99 @@ public class DelaunayTriangulation {
 		
 	}
 	
-	//TODO only really needed for debugging
-	public List<TriangleXZ> getVoronoiParts(VectorXYZ point) {
-		
-		List<TriangleXZ> result = new ArrayList<TriangleXZ>();
+	public List<TriangleXZ> getVoronoiCellSectors(VectorXYZ point) {
+		return getVoronoiCellSectors(point, getIncidentTriangles(point));
+	}
+			
+	/**
+	 * TODO describe effect of incident triangles
+	 */
+	public List<TriangleXZ> getVoronoiCellSectors(VectorXYZ point,
+			Collection<DelaunayTriangle> incidentTriangles) {
 		
 		final VectorXZ pointXZ = point.xz();
 		
-		List<VectorXZ> centers = new ArrayList<VectorXZ>();
+		/* build sorted list of triangles
+		 * by starting at any incidentTriangle and going left and right
+		 * around the point, appending neighbors. */
 		
-		for (DelaunayTriangle t : getIncidentTriangles(point)) {
-			centers.add(t.getCircumcircleCenter());
+		List<DelaunayTriangle> triangles =
+				new ArrayList<DelaunayTriangle>(incidentTriangles.size() + 2);
+		
+		DelaunayTriangle startTriangle = incidentTriangles.iterator().next();
+		triangles.add(startTriangle);
+		
+		DelaunayTriangle currentTriangle = startTriangle;
+		
+		while (/* incidentTriangles.contains(currentTriangle)  TODO re-enable
+				&& */ (currentTriangle != startTriangle || triangles.size() == 1)
+				&& currentTriangle.getRightNeighbor(point) != null) {
+			
+			currentTriangle = currentTriangle.getRightNeighbor(point);
+			triangles.add(currentTriangle);
+			
 		}
 		
-		Collections.sort(centers, new Comparator<VectorXZ>() {
+		Collections.reverse(triangles);
+		
+		if (currentTriangle != startTriangle) { //check for full circle
+		
+			List<DelaunayTriangle> leftTriangles =
+					new ArrayList<DelaunayTriangle>();
 			
-			@Override
-			public int compare(VectorXZ v1, VectorXZ v2) {
-				return Double.compare(
-						v2.subtract(pointXZ).angle(),
-						v1.subtract(pointXZ).angle());
+			currentTriangle = startTriangle;
+		
+			while (/* incidentTriangles.contains(currentTriangle) TODO re-enable
+					&& */ (currentTriangle != startTriangle || triangles.isEmpty())
+					&& currentTriangle.getLeftNeighbor(point) != null) { //TODO: avoid infinite loop
+				
+				currentTriangle = currentTriangle.getLeftNeighbor(point);
+				leftTriangles.add(currentTriangle);
+				
 			}
 			
-		});
+			triangles.addAll(leftTriangles);
+			
+		}
+				
+		/* calculate the circumcircle centers */
 		
-		for (int i = 0; i < centers.size(); i++) {
-			result.add(new TriangleXZ(point.xz(),
+		List<VectorXZ> centers = new ArrayList<VectorXZ>();
+		
+		for (DelaunayTriangle t : triangles) {
+			centers.add(t.getCircumcircleCenter());
+		}
+
+		/* calculate the sectors */
+		
+		List<TriangleXZ> result = new ArrayList<TriangleXZ>();
+				
+		for (int i = 0; i+1 < centers.size(); i++) {
+			result.add(new TriangleXZ(pointXZ,
 					centers.get(i),
-					centers.get((i+1) % centers.size())));
+					centers.get(i+1)));
 		}
 		
 		return result;
 		
 	}
 	
-	public double getVoronoiCellSize(VectorXYZ point) {
+	/**
+	 * returns the size of a voronoi cell or a part of the voronoi cell.
+	 * 
+	 * @param point  point corresponding to the voronoi cell
+	 * @param incidentTriangles  if this contains all triangles incident to
+	 *   point, then the size of the entire cell will be calculated.
+	 *   Otherwise, only sides that contain at least one circumcircle center
+	 *   of a triangle in this collection are taken into account.
+	 */
+	public double getVoronoiCellSize(VectorXYZ point,
+			Collection<DelaunayTriangle> incidentTriangles) {
 		
 		double size = 0;
 		
-		for (TriangleXZ t : getVoronoiParts(point)) {
-			//TODO: add getArea method to TriangleXZ
-			size += new SimplePolygonXZ(asList(t.v1, t.v2, t.v3, t.v1)).getArea();
+		for (TriangleXZ t : getVoronoiCellSectors(point, incidentTriangles)) {
+			size += t.getArea();
 		}
 		
 		return size;
@@ -583,7 +779,7 @@ public class DelaunayTriangulation {
 		
 		DelaunayTriangle neighborTriangle = triangle.getNeighbor(0);
 		
-		if (neighborTriangle != null) {
+		if (neighborTriangle != null && neighborTriangle != handleTriangle) {
 			
 			double a1 = triangle.angleAt(2);
 			double a2 = neighborTriangle.angleOppositeOf(triangle);
@@ -601,9 +797,9 @@ public class DelaunayTriangulation {
 	private DelaunayTriangle getEnlosingTriangle(VectorXZ point) {
 		
 		/* use a 'visibility walk' through the triangulation,
-		 * starting at the first triangle in the collection */
+		 * starting at the handleTriangle */
 		
-		DelaunayTriangle currentTriangle = triangles.get(0);
+		DelaunayTriangle currentTriangle = handleTriangle;
 		
 		boolean triangleContainsPoint = false;
 		
@@ -623,11 +819,12 @@ public class DelaunayTriangulation {
 					
 					triangleContainsPoint = false;
 					currentTriangle = currentTriangle.getNeighbor(i);
+					break;
 					
 				}
-								
-			}
 				
+			}
+			
 		}
 		
 		return currentTriangle;

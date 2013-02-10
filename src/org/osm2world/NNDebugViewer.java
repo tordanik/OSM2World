@@ -1,7 +1,5 @@
 package org.osm2world;
 
-import static java.util.Arrays.asList;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -24,6 +22,7 @@ import javax.swing.KeyStroke;
 
 import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.DelaunayTriangulation.NaturalNeighbors;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -75,17 +74,12 @@ public class NNDebugViewer {
 			
 			probePos = null;
 			
-			minX = minZ = Float.MAX_VALUE;
-			maxX = maxZ = -Float.MAX_VALUE;
+			minX = minZ = -SIZE;
+			maxX = maxZ = +SIZE;
 			
 			points = new ArrayList<VectorXYZ>();
 			triangulation = null;
-			
-			this.add(new VectorXYZ(-SIZE, 0, -SIZE));
-			this.add(new VectorXYZ(+SIZE, 0, -SIZE));
-			this.add(new VectorXYZ(+SIZE, 0, +SIZE));
-			this.add(new VectorXYZ(-SIZE, 0, +SIZE));
-			
+						
 			this.repaint(0);
 			
 		}
@@ -99,18 +93,15 @@ public class NNDebugViewer {
 			
 			this.repaint(0);
 			
-			if (points.size() > 4) {
-			
-				triangulation.insert(p);
+			if (triangulation == null) {
 				
-			} else if (points.size() == 4)  {
+				triangulation = new DelaunayTriangulation(
+						new AxisAlignedBoundingBoxXZ(-SIZE, -SIZE, SIZE, SIZE));
 				
-				triangulation = new DelaunayTriangulation(asList(
-					points.get(0).xz(), points.get(1).xz(),
-					points.get(2).xz(), points.get(3).xz()));
-								
 			}
 			
+			triangulation.insert(p);
+						
 			this.repaint(0);
 
 		}
@@ -127,41 +118,35 @@ public class NNDebugViewer {
 			
 			super.paint(g);
 			
-			if (points.size() > 4) {
-
-				/* draw Voronoi cells */
+			if (triangulation == null) return;
+			
+			/* draw Voronoi cells */
+			
+			Random colorRandom = new Random(0);
+			
+			for (VectorXYZ p : points) {
 				
-				Random random = new Random(0);
+				g.setColor(new Color(
+						0.5f + colorRandom.nextFloat() / 2,
+						0.5f + colorRandom.nextFloat() / 2,
+						0.5f + colorRandom.nextFloat() / 2));
 				
-				for (VectorXYZ p : points) {
-					
-					g.setColor(new Color(
-							0.5f + random.nextFloat() / 2,
-							0.5f + random.nextFloat() / 2,
-							0.5f + random.nextFloat() / 2));
-					
-					for (TriangleXZ t : triangulation.getVoronoiParts(p)) {
-						fill(g, t);
-					}
-					
+				for (TriangleXZ t : triangulation.getVoronoiCellSectors(p)) {
+					fill(g, t);
 				}
 				
+			}
+			
+			/* draw circumcircles around most recently added point */
+						
+			if (!points.isEmpty()) {
+			
 				VectorXYZ p = points.get(points.size() - 1);
-				
-				/* draw Voronoi cell of most recently added point */
-				
-//				g.setColor(Color.YELLOW);
-//
-//				for (TriangleXYZ t : triangulation.getVoronoiParts(p)) {
-//					fill(g, new TriangleXZ(t.v1.xz(), t.v2.xz(), t.v3.xz()));
-//				}
-				
-				/* draw circumcircles */
-				
+							
 				g.setColor(Color.GREEN);
 				
 				for (DelaunayTriangle t : triangulation.getIncidentTriangles(p)) {
-
+	
 					VectorXZ center = t.getCircumcircleCenter();
 					double radius = t.p0.distanceToXZ(center);
 				
@@ -171,12 +156,12 @@ public class NNDebugViewer {
 				}
 				
 			}
-			
+							
 			/* draw triangles */
 			
 			g.setColor(Color.RED);
 			
-			for (DelaunayTriangle triangle : triangulation.triangles) {
+			for (DelaunayTriangle triangle : triangulation.getTriangles()) {
 				draw(g, triangle.asTriangleXZ());
 			}
 						
@@ -374,7 +359,7 @@ public class NNDebugViewer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
-			if (panel.points.size() <= 4) {
+			if (panel.points.isEmpty()) {
 				random = new Random(1);
 			}
 			
