@@ -4,6 +4,8 @@ import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.ButtonGroup;
@@ -67,27 +69,32 @@ import org.osm2world.viewer.view.debug.TerrainView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
-public class ViewerFrame extends JFrame {
+import com.google.common.base.Function;
+
+public class ViewerFrame extends JFrame{
 
 	public final ViewerGLCanvas glCanvas;
 	
-	private final Data data;
-	private final RenderOptions renderOptions;
-	private final Configuration config;
-	private final MessageManager messageManager;
+	private final Data data = new Data();
+	private final RenderOptions renderOptions = new RenderOptions();
+	private final MessageManager messageManager = new MessageManager();
+	
+	private final File configFile;
+	
+	/**
+	 * 
+	 * @param config  configuration object, != null
+	 * @param configFile  properties (where config was loaded from), can be null
+	 * @param inputFile  osm data file to be loaded at viewer start, can be null
+	 */
+	public ViewerFrame(final Configuration config,
+			final File configFile, File inputFile) {
 		
-	public ViewerFrame(final Data data, final MessageManager messageManager,
-			final RenderOptions renderOptions, final Configuration config) {
-
 		super("OSM2World Viewer");
-
-		this.data = data;
-		this.renderOptions = renderOptions;
-		this.config = config;
-		this.messageManager = messageManager;
 		
+		this.configFile = configFile;
 		data.setConfig(config);
-				
+		
 		createMenuBar();
 		
 		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions);
@@ -113,7 +120,27 @@ public class ViewerFrame extends JFrame {
 		
 		pack();
 		
+		if (inputFile != null) {
+			new OpenOSMAction(this, data, renderOptions).openOSMFile(inputFile, true);
+		}
+		
 	}
+	
+	private final Function<File, ActionListener> actionForFileFunction =
+			new Function<File, ActionListener>() {
+		
+		public ActionListener apply(final File file) {
+			
+			return new ActionListener() {
+				@Override public void actionPerformed(ActionEvent e) {
+					new OpenOSMAction(ViewerFrame.this, data,
+							renderOptions).openOSMFile(file, true);
+				}
+			};
+			
+		}
+		
+	};
 
 	private void createMenuBar() {
 
@@ -121,10 +148,15 @@ public class ViewerFrame extends JFrame {
 
 		{ //"File"
 
+			JMenu recentFilesMenu = new JMenu("Recent files");
+			
+			new RecentFilesUpdater(recentFilesMenu, actionForFileFunction);
+			
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
-			subMenu.add(new ReloadOSMAction(this, data, renderOptions));
+			subMenu.add(new ReloadOSMAction(this, data, renderOptions, configFile));
+			subMenu.add(recentFilesMenu);
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
@@ -251,14 +283,14 @@ public class ViewerFrame extends JFrame {
 	private void initAndAddDebugView(JMenu menu, int keyEvent,
 			boolean enabled, DebugView debugView) {
 		
-		debugView.setConfiguration(config);
+		debugView.setConfiguration(data.getConfig());
 		
 		menu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 				debugView, keyEvent, enabled,
 				this, data, renderOptions)));
 		
 	}
-	
+
 	public MessageManager getMessageManager() {
 		return messageManager;
 	}

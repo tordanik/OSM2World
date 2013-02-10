@@ -21,6 +21,7 @@ import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
+import org.osm2world.viewer.view.RecentFilesUpdater;
 import org.osm2world.viewer.view.ViewerFrame;
 
 public class OpenOSMAction extends AbstractAction {
@@ -53,16 +54,20 @@ public class OpenOSMAction extends AbstractAction {
 		if (osmFile != null) {
 
 			openOSMFile(osmFile, true);
-
+			
 		}
 
 	}
 
 	public void openOSMFile(File osmFile, boolean resetCamera) {
+		
 		OpenOSMThread thread = new OpenOSMThread(osmFile, resetCamera);
 		thread.setUncaughtExceptionHandler(
 				new ConversionExceptionHandler(viewerFrame));
 		thread.start();
+		
+		RecentFilesUpdater.addRecentFile(osmFile);
+		
 	}
 
 	private File askFile() {
