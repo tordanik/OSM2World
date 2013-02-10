@@ -71,24 +71,26 @@ public class ViewerFrame extends JFrame {
 
 	public final ViewerGLCanvas glCanvas;
 	
-	private final Data data;
-	private final RenderOptions renderOptions;
+	private final Data data = new Data();
+	private final RenderOptions renderOptions = new RenderOptions();
+	private final MessageManager messageManager = new MessageManager();
+	
 	private final File configFile;
-	private final MessageManager messageManager;
+	
+	/**
+	 * 
+	 * @param config  configuration object, != null
+	 * @param configFile  properties (where config was loaded from), can be null
+	 * @param inputFile  osm data file to be loaded at viewer start, can be null
+	 */
+	public ViewerFrame(final Configuration config,
+			final File configFile, File inputFile) {
 		
-	public ViewerFrame(final Data data, final MessageManager messageManager,
-			final RenderOptions renderOptions, final Configuration config,
-			final File configFile) {
-
 		super("OSM2World Viewer");
-
-		this.data = data;
-		this.renderOptions = renderOptions;
-		this.configFile = configFile;
-		this.messageManager = messageManager;
 		
+		this.configFile = configFile;
 		data.setConfig(config);
-				
+		
 		createMenuBar();
 		
 		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions);
@@ -113,6 +115,10 @@ public class ViewerFrame extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		pack();
+		
+		if (inputFile != null) {
+			new OpenOSMAction(this, data, renderOptions).openOSMFile(inputFile, true);
+		}
 		
 	}
 
