@@ -4,6 +4,8 @@ import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.ButtonGroup;
@@ -67,7 +69,9 @@ import org.osm2world.viewer.view.debug.TerrainView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
-public class ViewerFrame extends JFrame {
+import com.google.common.base.Function;
+
+public class ViewerFrame extends JFrame{
 
 	public final ViewerGLCanvas glCanvas;
 	
@@ -121,6 +125,22 @@ public class ViewerFrame extends JFrame {
 		}
 		
 	}
+	
+	private final Function<File, ActionListener> actionForFileFunction =
+			new Function<File, ActionListener>() {
+		
+		public ActionListener apply(final File file) {
+			
+			return new ActionListener() {
+				@Override public void actionPerformed(ActionEvent e) {
+					new OpenOSMAction(ViewerFrame.this, data,
+							renderOptions).openOSMFile(file, true);
+				}
+			};
+			
+		}
+		
+	};
 
 	private void createMenuBar() {
 
@@ -128,10 +148,15 @@ public class ViewerFrame extends JFrame {
 
 		{ //"File"
 
+			JMenu recentFilesMenu = new JMenu("Recent files");
+			
+			new RecentFilesUpdater(recentFilesMenu, actionForFileFunction);
+			
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
 			subMenu.add(new ReloadOSMAction(this, data, renderOptions, configFile));
+			subMenu.add(recentFilesMenu);
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
@@ -265,7 +290,7 @@ public class ViewerFrame extends JFrame {
 				this, data, renderOptions)));
 		
 	}
-	
+
 	public MessageManager getMessageManager() {
 		return messageManager;
 	}
