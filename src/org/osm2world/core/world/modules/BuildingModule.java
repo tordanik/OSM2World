@@ -412,8 +412,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (minLevel > 0) {
 				
-				double totalHeight = heightWithoutRoof + roof.getRoofHeight();
-				return (totalHeight / buildingLevels) * minLevel;
+				return (heightWithoutRoof / buildingLevels) * minLevel;
 				
 			}
 			
