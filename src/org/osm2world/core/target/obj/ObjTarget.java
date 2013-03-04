@@ -36,7 +36,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 	private int anonymousWOCounter = 0;
 	
 	private Material currentMaterial = null;
-	private int anonymousMaterialCounter = 0;
+	private static int anonymousMaterialCounter = 0;
 	
 	public ObjTarget(PrintStream objStream, PrintStream mtlStream) {
 		
