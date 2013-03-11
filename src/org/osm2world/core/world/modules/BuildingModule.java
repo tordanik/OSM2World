@@ -714,7 +714,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    }
 		    
 		    if (materialWall == Materials.GLASS) {
-		    	defaultMaterialWindows = null;
+				// avoid placing windows into a glass front
+				// TODO: the == currently only works if GLASS is not colorable
+				defaultMaterialWindows = null;
 		    }
 		    
 		    materialWallWithWindows = materialWall;
@@ -760,7 +762,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 			
-			if (colorString != null) {
+			boolean colorable = material.getNumTextureLayers() == 0
+					|| material.getTextureDataList().get(0).colorable;
+			
+			if (colorString != null && colorable) {
 				
 				Color color;
 				
