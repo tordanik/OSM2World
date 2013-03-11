@@ -714,7 +714,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    }
 		    
 		    if (materialWall == Materials.GLASS) {
-		    	defaultMaterialWindows = null;
+				// avoid placing windows into a glass front
+				// TODO: the == currently only works if GLASS is not colorable
+				defaultMaterialWindows = null;
 		    }
 		    
 		    materialWallWithWindows = materialWall;
@@ -746,19 +748,24 @@ public class BuildingModule extends ConfigurableWorldModule {
 				String colorString, Material defaultMaterial,
 				boolean roof) {
 			
+			Material material = defaultMaterial;
+			
 			if (materialString != null) {
 				if ("brick".equals(materialString)) {
-					return Materials.BRICK;
+					material = Materials.BRICK;
 				} else if ("glass".equals(materialString)) {
-					return roof ? Materials.GLASS_ROOF : Materials.GLASS;
+					material = roof ? Materials.GLASS_ROOF : Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
-					return Materials.WOOD_WALL;
+					material = Materials.WOOD_WALL;
 				} else if (Materials.getSurfaceMaterial(materialString) != null) {
-					return Materials.getSurfaceMaterial(materialString);
+					material = Materials.getSurfaceMaterial(materialString);
 				}
 			}
 			
-			if (colorString != null) {
+			boolean colorable = material.getNumTextureLayers() == 0
+					|| material.getTextureDataList().get(0).colorable;
+			
+			if (colorString != null && colorable) {
 				
 				Color color;
 				
@@ -803,17 +810,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				if (color != null) {
-					return new ImmutableMaterial(
-							defaultMaterial.getLighting(), color,
-							defaultMaterial.getAmbientFactor(),
-							defaultMaterial.getDiffuseFactor(),
-							defaultMaterial.getTransparency(),
-							defaultMaterial.getTextureDataList());
+					material = new ImmutableMaterial(
+							material.getLighting(), color,
+							material.getAmbientFactor(),
+							material.getDiffuseFactor(),
+							material.getTransparency(),
+							material.getTextureDataList());
 				}
 				
 			}
 			
-			return defaultMaterial;
+			return material;
 			
 		}
 		
