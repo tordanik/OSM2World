@@ -665,6 +665,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 						roof = new MansardRoof();
 					} else if ("dome".equals(roofShape)) {
 						roof = new DomeRoof();
+					} else if ("round".equals(roofShape)) {
+						roof = new RoundRoof();
 					} else {
 						roof = new FlatRoof();
 					}
@@ -1758,6 +1760,88 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 		
+		private class RoundRoof extends RoofWithRidge {
+
+			private final List<LineSegmentXZ> capParts;
+			private final int rings;
+			private final double radius;
+
+			public RoundRoof() {
+
+				super(0);
+
+				double squaredHeight = roofHeight * roofHeight;
+				double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
+				double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
+
+				radius = sqrt(squaredDist + centerY * centerY);
+				rings = (int)Math.max(4, roofHeight/2);
+				capParts = new ArrayList<LineSegmentXZ>(rings*2);
+
+				// TODO: would be good to vary step size with slope
+				float step = 0.5f / (rings + 1);
+				for (int i = 1; i <= rings; i++) {
+					capParts.add(new LineSegmentXZ(
+							interpolateBetween(cap1.p1, cap1.p2, i * step),
+							interpolateBetween(cap1.p1, cap1.p2, 1 - i * step)));
+
+					capParts.add(new LineSegmentXZ(
+							interpolateBetween(cap2.p1, cap2.p2, i * step),
+							interpolateBetween(cap2.p1, cap2.p2, 1 - i * step)));
+				}
+			}
+
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+
+				PolygonXZ newOuter = polygon.getOuter();
+
+				newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+
+				for (LineSegmentXZ capPart : capParts){
+					newOuter = insertIntoPolygon(newOuter, capPart.p1, 0.2);
+					newOuter = insertIntoPolygon(newOuter, capPart.p2, 0.2);
+				}
+
+				//TODO: add intersections of additional edges with outline?
+				return new PolygonWithHolesXZ(
+						newOuter.asSimplePolygon(),
+						polygon.getHoles());
+
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+
+				List<LineSegmentXZ> innerSegments = new ArrayList<LineSegmentXZ>(rings * 2 + 1);
+				innerSegments.add(ridge);
+
+				for (int i = 0; i <= rings; i += 2) {
+					LineSegmentXZ cap1part = capParts.get(i);
+					LineSegmentXZ cap2part = capParts.get(i+1);
+					innerSegments.add(new LineSegmentXZ(cap1part.p1, cap2part.p2));
+					innerSegments.add(new LineSegmentXZ(cap1part.p2, cap2part.p1));
+				}
+
+				return innerSegments;
+			}
+
+			@Override
+			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
+				double distRidge = distanceFromLineSegment(pos, ridge);
+				double relativePlacement = distRidge / radius;
+
+				return Math.max(getMaxRoofEle() - radius
+						+ sqrt(1.0 - relativePlacement * relativePlacement) * radius,
+						getMaxRoofEle() - roofHeight);
+			}
+		}
+
 		private class MansardRoof extends RoofWithRidge {
 
 			private final LineSegmentXZ mansardEdge1, mansardEdge2;
