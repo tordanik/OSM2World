@@ -1820,8 +1820,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				List<LineSegmentXZ> innerSegments = new ArrayList<LineSegmentXZ>(rings * 2 + 1);
 				innerSegments.add(ridge);
-
-				for (int i = 0; i <= rings; i += 2) {
+				for (int i = 0; i < rings * 2; i += 2) {
 					LineSegmentXZ cap1part = capParts.get(i);
 					LineSegmentXZ cap2part = capParts.get(i+1);
 					innerSegments.add(new LineSegmentXZ(cap1part.p1, cap2part.p2));
