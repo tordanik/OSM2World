@@ -1761,23 +1761,27 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 		
 		private class RoundRoof extends RoofWithRidge {
-
+			private final static double ROOF_SUBDIVISION_METER = 2.5;
+			
 			private final List<LineSegmentXZ> capParts;
 			private final int rings;
 			private final double radius;
-
+			
 			public RoundRoof() {
 
 				super(0);
 
-				double squaredHeight = roofHeight * roofHeight;
-				double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
-				double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
-
-				radius = sqrt(squaredDist + centerY * centerY);
-				rings = (int)Math.max(4, roofHeight/2);
+				if (roofHeight < maxDistanceToRidge) {
+					double squaredHeight = roofHeight * roofHeight;
+					double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
+					double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
+					radius = sqrt(squaredDist + centerY * centerY);
+				} else {
+					radius = 0;
+				}
+				
+				rings = (int)Math.max(3, roofHeight/ROOF_SUBDIVISION_METER);
 				capParts = new ArrayList<LineSegmentXZ>(rings*2);
-
 				// TODO: would be good to vary step size with slope
 				float step = 0.5f / (rings + 1);
 				for (int i = 1; i <= rings; i++) {
@@ -1833,11 +1837,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 			@Override
 			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
 				double distRidge = distanceFromLineSegment(pos, ridge);
-				double relativePlacement = distRidge / radius;
-
-				return Math.max(getMaxRoofEle() - radius
-						+ sqrt(1.0 - relativePlacement * relativePlacement) * radius,
-						getMaxRoofEle() - roofHeight);
+				double ele;
+				
+				if (radius > 0) {
+					double relativePlacement = distRidge / radius;
+					ele = getMaxRoofEle() - radius
+						+ sqrt(1.0 - relativePlacement * relativePlacement) * radius;
+				} else {
+					// This could be any interpolator
+					double relativePlacement = distRidge / maxDistanceToRidge;
+					ele = getMaxRoofEle() - roofHeight +
+					(1 - (Math.pow(relativePlacement, 2.5))) * roofHeight;
+				}
+				
+				return Math.max(ele, getMaxRoofEle() - roofHeight);
 			}
 		}
 
