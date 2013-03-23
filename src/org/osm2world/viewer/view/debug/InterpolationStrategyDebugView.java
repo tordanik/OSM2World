@@ -64,8 +64,7 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 			
 			SRTMData srtmData = new SRTMData(Hardcoded.SRTM_DIR, mapProjection);
 			
-			Collection<VectorXYZ> 	sites = srtmData.getSites(Hardcoded.SRTM_minLon, Hardcoded.SRTM_minLat,
-					Hardcoded.SRTM_maxLon, Hardcoded.SRTM_maxLat);
+			Collection<VectorXYZ> sites = srtmData.getSites(map);
 						
 			EleInterpolationStrategy strategy = buildStrategy();
 			strategy.setKnownSites(sites);
@@ -85,17 +84,20 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 
 			long totalSamples = numSamplesX * numSamplesZ;
 			
+			long startTimeMillis = System.currentTimeMillis();
+			
 			for (int x = startX; x < endX; x++) {
 				for (int z = startZ; z < endZ; z++) {
 					
 					VectorXZ pos = new VectorXZ(x * SAMPLE_DIST, z * SAMPLE_DIST);
 					samples[x-startX][z-startZ] = strategy.interpolateEle(pos);
-					
+										
 				}
 				
 				if ((x-startX) % 100 == 0) {
 					long finishedSamples = (x-startX + 1) * numSamplesZ;
-					System.out.println(finishedSamples + "/" + totalSamples);
+					System.out.println(finishedSamples + "/" + totalSamples
+							+ " after " + ((System.currentTimeMillis() - startTimeMillis) / 1000f));
 				}
 			}
 

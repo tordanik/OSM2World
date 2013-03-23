@@ -1,5 +1,6 @@
 package org.osm2world;
 
+import static java.lang.Double.isNaN;
 import static java.lang.Math.*;
 
 import java.io.File;
@@ -8,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -25,9 +28,7 @@ public class SRTMData implements TerrainElevationData {
 		this.projection = projection;
 		this.tiles = new SRTMTile[360][180];
 	}
-	
-	//TODO: make projection reversible and switch to (projected) bounding box
-	
+		
 	@Override
 	public Collection<VectorXYZ> getSites(double minLon, double minLat,
 			double maxLon, double maxLat) throws IOException {
@@ -53,6 +54,39 @@ public class SRTMData implements TerrainElevationData {
 		
 	}
 	
+	/**
+	 * variant of getSites which calculates minimum and maximum lat/lon
+	 * from the bounds of a {@link MapData} instance
+	 * 
+	 * TODO: make projection reversible, then replace both getSites methods
+	 *       with a single getSite(AxisAlignedBoundingBox dataBounds) method
+	 */
+	@Override
+	public Collection<VectorXYZ> getSites(MapData mapData) throws IOException {
+		
+		double minLon = Double.POSITIVE_INFINITY;
+		double minLat = Double.POSITIVE_INFINITY;
+		double maxLon = Double.NEGATIVE_INFINITY;
+		double maxLat = Double.NEGATIVE_INFINITY;
+		
+		for (MapNode mapNode : mapData.getMapNodes()) {
+			
+			double lon = mapNode.getOsmNode().lon;
+			double lat = mapNode.getOsmNode().lat;
+			
+			if (!isNaN(lat) && !isNaN(lon)) {
+				minLon = min(minLon, lon);
+				minLat = min(minLat, lat);
+				maxLon = max(maxLon, lon);
+				maxLat = max(maxLat, lat);
+			}
+			
+		}
+		
+		return getSites(minLon, minLat, maxLon, maxLat);
+		
+	}
+
 	private void loadTileIfNecessary(int lon, int lat) throws IOException {
 		
 		if (getTile(lon, lat) == null) {

@@ -45,6 +45,8 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 	@Override
 	public void calculateElevations(MapData mapData, CellularTerrainElevation eleData) {
 
+		//TODO: replace CellularTerrainElevation with SRTMData/TerrainElevationData
+		
 		Collection<VectorXYZ> sites = emptyList();
 		
 		StopWatch stopWatch = new StopWatch();
@@ -57,9 +59,8 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 			System.out.println("time srtm: " + stopWatch);
 			stopWatch.reset();
 			stopWatch.start();
-			
-			sites = srtmData.getSites(Hardcoded.SRTM_minLon, Hardcoded.SRTM_minLat,
-					Hardcoded.SRTM_maxLon, Hardcoded.SRTM_maxLat);
+						
+			sites = srtmData.getSites(mapData);
 			
 			System.out.println("time getSites: " + stopWatch);
 			stopWatch.reset();
