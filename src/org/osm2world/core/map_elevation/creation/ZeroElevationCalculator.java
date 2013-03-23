@@ -2,8 +2,7 @@ package org.osm2world.core.map_elevation.creation;
 
 import java.util.List;
 
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
-import org.osm2world.core.heightmap.data.TerrainPoint;
+import org.osm2world.TerrainElevationData;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -20,7 +19,7 @@ public class ZeroElevationCalculator implements ElevationCalculator {
 
 	@Override
 	public void calculateElevations(MapData mapData,
-			CellularTerrainElevation eleData) {
+			TerrainElevationData eleData) {
 				
 		for (MapNode node : mapData.getMapNodes()) {
 							
@@ -69,12 +68,6 @@ public class ZeroElevationCalculator implements ElevationCalculator {
 			
 			area.setElevationProfile(profile);
 			
-		}
-		
-		if (eleData != null) {
-			for (TerrainPoint point : eleData.getTerrainPoints()) {
-				point.setEle(0);
-			}
 		}
 		
 	}

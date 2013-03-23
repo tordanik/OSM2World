@@ -2,8 +2,6 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import org.osm2world.core.heightmap.data.TerrainElevationCell;
-import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -21,10 +19,12 @@ public class TerrainAABBDebugView extends DebugView {
 	@Override
 	protected void fillTarget(JOGLTarget target) {
 		
-		for (TerrainElevationCell cell : eleData.getCells()) {
-			PolygonXZ polygon = cell.getAxisAlignedBoundingBoxXZ().polygonXZ();
-			target.drawLineLoop(BB_COLOR, 1, polygon.xyz(0).getVertices());
-		}
+		//TODO this debug view doesn't make sense anymore
+		
+//		for (TerrainElevationCell cell : eleData.getCells()) {
+//			PolygonXZ polygon = cell.getAxisAlignedBoundingBoxXZ().polygonXZ();
+//			target.drawLineLoop(BB_COLOR, 1, polygon.xyz(0).getVertices());
+//		}
 		
 	}
 	

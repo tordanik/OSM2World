@@ -18,7 +18,6 @@ import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -51,8 +50,6 @@ public final class Output {
 			cf.setElevationCalculator(new BridgeTunnelElevationCalculator());
 		} else if ("ZeroElevationCalculator".equals(ecType)) {
 			cf.setElevationCalculator(new ZeroElevationCalculator());
-		} else if ("ForceElevationCalculator".equals(ecType)) {
-			cf.setElevationCalculator(new ForceElevationCalculator());
 		} else if ("EleTagElevationCalculator".equals(ecType)) {
 			cf.setElevationCalculator(new EleTagElevationCalculator());
 		} else if ("LevelTagElevationCalculator".equals(ecType)) {

@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 
+import org.osm2world.TerrainElevationData;
 import org.osm2world.core.GlobalValues;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
@@ -30,7 +30,7 @@ public final class ObjWriter {
 	
 	public static final void writeObjFile(
 			File objFile, MapData mapData,
-			CellularTerrainElevation eleData, Terrain terrain,
+			TerrainElevationData eleData, Terrain terrain,
 			MapProjection mapProjection,
 			Camera camera, Projection projection)
 			throws IOException {
@@ -74,7 +74,7 @@ public final class ObjWriter {
 	
 	public static final void writeObjFiles(
 			final File objDirectory, MapData mapData,
-			CellularTerrainElevation eleData, Terrain terrain,
+			TerrainElevationData eleData, Terrain terrain,
 			final MapProjection mapProjection,
 			Camera camera, Projection projection,
 			int primitiveThresholdPerFile)

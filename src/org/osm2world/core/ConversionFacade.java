@@ -10,8 +10,9 @@ import java.util.List;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.core.heightmap.creation.EmptyTerrainElevationGrid;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
+import org.osm2world.Hardcoded;
+import org.osm2world.SRTMData;
+import org.osm2world.TerrainElevationData;
 import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
@@ -19,7 +20,6 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.map_elevation.creation.InterpolatingElevationCalculator;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
 import org.osm2world.core.osm.data.OSMData;
@@ -27,7 +27,6 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.terrain.creation.TerrainCreator;
 import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
@@ -61,10 +60,10 @@ public class ConversionFacade {
 		private final MapProjection mapProjection;
 		private final MapData map;
 		private final Terrain terrain;
-		private final CellularTerrainElevation eleData;
+		private final TerrainElevationData eleData;
 		
 		public Results(MapProjection mapProjection, MapData grid,
-				Terrain terrain, CellularTerrainElevation eleData) {
+				Terrain terrain, TerrainElevationData eleData) {
 			this.mapProjection = mapProjection;
 			this.map = grid;
 			this.terrain = terrain;
@@ -90,7 +89,7 @@ public class ConversionFacade {
 		 * TODO: remove in the future, because it isn't really a conversion result.
 		 * Once real elevation data is available, this should be a conversion *input*
 		 */
-		public CellularTerrainElevation getEleData() {
+		public TerrainElevationData getEleData() {
 			return eleData;
 		}
 		
@@ -301,9 +300,9 @@ public class ConversionFacade {
 		//FIXME hardcoded EC
 		elevationCalculator = new InterpolatingElevationCalculator(mapProjection);
 				
-		CellularTerrainElevation eleData = null;
+		TerrainElevationData eleData = null;
 		if (config.getBoolean("createTerrain", true)) {
-			eleData = createEleData(mapData);
+			eleData = new SRTMData(Hardcoded.SRTM_DIR, mapProjection);
 		}
 		
 		elevationCalculator.calculateElevations(mapData, eleData);
@@ -314,8 +313,9 @@ public class ConversionFacade {
 		Terrain terrain = null;
 		
 		if (eleData != null) {
-			terrain = new TerrainCreator().createTerrain(mapData, eleData,
-					((InterpolatingElevationCalculator)elevationCalculator).exposedStrategy);
+//			TODO make compatible with TerrainElevationData
+//			terrain = new TerrainCreator().createTerrain(mapData, eleData,
+//					((InterpolatingElevationCalculator)elevationCalculator).exposedStrategy);
 		}
 		
 		/* supply results to targets and caller */
@@ -337,26 +337,6 @@ public class ConversionFacade {
 		
 	}
 	
-	/**
-	 * generates some fake elevation data;
-	 * will no longer be necessary when real data can be used
-	 */
-	private static CellularTerrainElevation createEleData(MapData mapData) {
-		
-		AxisAlignedBoundingBoxXZ terrainBoundary =
-				mapData.getBoundary().pad(30.0);
-		
-		int numPointsX = Math.max(2, (int) (terrainBoundary.sizeX() / 30));
-		int numPointsZ = Math.max(2, (int) (terrainBoundary.sizeZ() / 30));
-				
-		CellularTerrainElevation eleData = new EmptyTerrainElevationGrid(
-				terrainBoundary,
-				numPointsX, numPointsZ); //TODO: change to distance between points
-		
-		return eleData;
-		
-	}
-
 	public static enum Phase {
 		MAP_DATA,
 		REPRESENTATION,

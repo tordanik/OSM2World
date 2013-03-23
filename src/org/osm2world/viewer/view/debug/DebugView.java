@@ -7,8 +7,8 @@ import java.awt.Color;
 import javax.media.opengl.GL2;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.TerrainElevationData;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -29,7 +29,7 @@ public abstract class DebugView {
 	
 	protected MapData map;
 	protected Terrain terrain;
-	protected CellularTerrainElevation eleData;
+	protected TerrainElevationData eleData;
 	
 	protected Camera camera;
 	protected Projection projection;

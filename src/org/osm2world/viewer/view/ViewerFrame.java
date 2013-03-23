@@ -17,7 +17,6 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
 import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
 import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
 import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
 import org.osm2world.viewer.control.actions.AboutAction;
@@ -224,7 +223,6 @@ public class ViewerFrame extends JFrame {
 			for (ElevationCalculator eleCalc : asList(
 					new BridgeTunnelElevationCalculator(),
 					new ZeroElevationCalculator(),
-					new ForceElevationCalculator(),
 					new EleTagElevationCalculator(),
 					new LevelTagElevationCalculator())) {
 				

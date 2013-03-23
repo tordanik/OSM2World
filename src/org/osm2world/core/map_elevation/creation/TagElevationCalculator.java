@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
+import org.osm2world.TerrainElevationData;
 import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
@@ -42,7 +42,7 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 	
 	@Override
 	public void calculateElevations(MapData mapData,
-			CellularTerrainElevation eleData) {
+			TerrainElevationData eleData) {
 		
 		/* set nodes' elevation profiles */
 		
@@ -177,14 +177,6 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 			
 			area.setElevationProfile(profile);
 			
-		}
-		
-		/* set terrain elevation */
-		
-		if (eleData != null) {
-			for (TerrainPoint point : eleData.getTerrainPoints()) {
-				point.setEle((float)(double)terrainElevation);
-			}
 		}
 		
 	}

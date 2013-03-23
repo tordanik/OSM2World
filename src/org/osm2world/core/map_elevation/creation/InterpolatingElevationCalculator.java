@@ -8,11 +8,8 @@ import java.util.List;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.osm2world.EleInterpolationStrategy;
-import org.osm2world.Hardcoded;
 import org.osm2world.LeastSquaresStrategy;
-import org.osm2world.SRTMData;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
-import org.osm2world.core.heightmap.data.TerrainPoint;
+import org.osm2world.TerrainElevationData;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -43,7 +40,7 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 	}
 	
 	@Override
-	public void calculateElevations(MapData mapData, CellularTerrainElevation eleData) {
+	public void calculateElevations(MapData mapData, TerrainElevationData eleData) {
 
 		//TODO: replace CellularTerrainElevation with SRTMData/TerrainElevationData
 		
@@ -53,14 +50,12 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		stopWatch.start();
 		
 		try {
-			
-			SRTMData srtmData = new SRTMData(Hardcoded.SRTM_DIR, mapProjection);
-			
+						
 			System.out.println("time srtm: " + stopWatch);
 			stopWatch.reset();
 			stopWatch.start();
 						
-			sites = srtmData.getSites(mapData);
+			sites = eleData.getSites(mapData);
 			
 			System.out.println("time getSites: " + stopWatch);
 			stopWatch.reset();
@@ -141,15 +136,6 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 			
 			area.setElevationProfile(profile);
 			
-		}
-		
-		/* set terrain elevation */
-		
-		if (eleData != null) {
-			for (TerrainPoint point : eleData.getTerrainPoints()) {
-				double ele = strategy.interpolateEle(point.getPos()).y;
-				point.setEle((float)ele);
-			}
 		}
 		
 		exposedStrategy = strategy;

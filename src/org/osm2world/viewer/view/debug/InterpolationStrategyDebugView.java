@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.osm2world.EleInterpolationStrategy;
-import org.osm2world.Hardcoded;
-import org.osm2world.SRTMData;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -43,7 +41,7 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 
 	@Override
 	public boolean canBeUsed() {
-		return map != null && mapProjection != null;
+		return map != null && mapProjection != null && eleData != null;
 	}
 
 	@Override
@@ -62,10 +60,8 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 		
 		try {
 			
-			SRTMData srtmData = new SRTMData(Hardcoded.SRTM_DIR, mapProjection);
+			Collection<VectorXYZ> sites = eleData.getSites(map);
 			
-			Collection<VectorXYZ> sites = srtmData.getSites(map);
-						
 			EleInterpolationStrategy strategy = buildStrategy();
 			strategy.setKnownSites(sites);
 			

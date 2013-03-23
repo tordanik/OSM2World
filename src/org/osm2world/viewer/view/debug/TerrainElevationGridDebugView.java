@@ -3,7 +3,6 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
-import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -17,23 +16,25 @@ public class TerrainElevationGridDebugView extends DebugView {
 	@Override
 	public void fillTarget(JOGLTarget target) {
 
-		TerrainPoint[][] grid = eleData.getTerrainPointGrid();
-		for (int x = 0; x < grid.length; x++) {
-			for (int z = 0; z < grid[x].length; z++) {
-				if (x + 1 < grid.length) {
-					target.drawLineStrip(GRID_COLOR, 1,
-							grid[x][z].getPosXYZ(), grid[x+1][z].getPosXYZ());
-				}
-				if (z + 1 < grid[x].length) {
-					target.drawLineStrip(GRID_COLOR, 1,
-							grid[x][z].getPosXYZ(), grid[x][z+1].getPosXYZ());
-				}
-			}
-		}
+		//TODO this debug view is now useless
 		
-		for (TerrainPoint point : eleData.getTerrainPoints()) {
-			target.drawPoints(NODE_COLOR, point.getPosXYZ());
-		}
+//		TerrainPoint[][] grid = eleData.getTerrainPointGrid();
+//		for (int x = 0; x < grid.length; x++) {
+//			for (int z = 0; z < grid[x].length; z++) {
+//				if (x + 1 < grid.length) {
+//					target.drawLineStrip(GRID_COLOR, 1,
+//							grid[x][z].getPosXYZ(), grid[x+1][z].getPosXYZ());
+//				}
+//				if (z + 1 < grid[x].length) {
+//					target.drawLineStrip(GRID_COLOR, 1,
+//							grid[x][z].getPosXYZ(), grid[x][z+1].getPosXYZ());
+//				}
+//			}
+//		}
+//
+//		for (TerrainPoint point : eleData.getTerrainPoints()) {
+//			target.drawPoints(NODE_COLOR, point.getPosXYZ());
+//		}
 		
 	}
 	
