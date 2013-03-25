@@ -10,7 +10,7 @@ public enum MapOverlapType {
 	/** two {@link MapElement}s intersect */
 	INTERSECT,
 	
-	/** one {@link MapElement} contains another {@link MapElement} */
+	/** the second {@link MapElement} contains the first {@link MapElement} */
 	CONTAIN,
 	
 	/**

@@ -8,6 +8,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -65,16 +66,18 @@ public abstract class AbstractAreaWorldObject
 	public MapElement getPrimaryMapElement() {
 		return area;
 	}
-	
+
 	/**
-	 * decompose this area into counterclockwise triangles
+	 * decompose a given polygon into counterclockwise triangles,
+	 * using this area's elevation data.
 	 */
-	protected Collection<TriangleXYZ> getTriangulation() {
+	protected Collection<TriangleXYZ> getTriangulation(
+			PolygonWithHolesXZ polygon) {
 		
 		final AreaElevationProfile eleProfile = area.getElevationProfile();
 		
 		Collection<TriangleXZ> trianglesXZ =
-			TriangulationUtil.triangulate(area.getPolygon());
+			TriangulationUtil.triangulate(polygon);
 		
 		Collection<TriangleXYZ> trianglesXYZ =
 			new ArrayList<TriangleXYZ>(trianglesXZ.size());
@@ -92,6 +95,15 @@ public abstract class AbstractAreaWorldObject
 		
 		return trianglesXYZ;
 		
+	}
+	
+	/**
+	 * decompose this area into counterclockwise triangles
+	 */
+	protected Collection<TriangleXYZ> getTriangulation() {
+		
+		return getTriangulation(area.getPolygon());
+				
 	}
 	
 }

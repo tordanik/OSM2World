@@ -311,13 +311,7 @@ public class ConversionFacade {
 		updatePhase(Phase.TERRAIN);
 		
 		Terrain terrain = null;
-		
-		if (eleData != null) {
-//			TODO make compatible with TerrainElevationData
-//			terrain = new TerrainCreator().createTerrain(mapData, eleData,
-//					((InterpolatingElevationCalculator)elevationCalculator).exposedStrategy);
-		}
-		
+				
 		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
 		

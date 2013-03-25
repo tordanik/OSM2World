@@ -172,7 +172,14 @@ public class OSMToMapDataConverter {
 				}
 			}
 		}
-					
+		
+		/* ... for empty terrain */
+		
+		EmptyTerrainBuilder.createAreasForEmptyTerrain(
+				mapNodes, mapAreas, calculateFileBoundary(osmData.getBounds()));
+		
+		//TODO fall back on data boundary if file does not contain bounds
+		
 		/* finish calculations */
 		
 		for (MapNode node : nodeMap.values()) {
@@ -402,8 +409,9 @@ public class OSMToMapDataConverter {
 		/* calculate whether one area contains the other
 		 * or whether their outlines intersect (or neither) */
 		
-		boolean contains;
-		boolean intersects;
+		boolean contains1 = false;
+		boolean contains2 = false;
+		boolean intersects = false;
 		
 		{
 			final PolygonWithHolesXZ polygon1 = area1.getPolygon();
@@ -427,8 +435,6 @@ public class OSMToMapDataConverter {
 			 * else than just at the common node(s).
 			 */
 			
-			intersects = false;
-			
 			intersectionPosCheck:
 			for (VectorXZ pos : polygon1.intersectionPositions(polygon2)) {
 				boolean trueIntersection = true;
@@ -445,19 +451,29 @@ public class OSMToMapDataConverter {
 
 			/* check whether one area contains the other */
 			
-			contains = polygon1.contains(polygon2.getOuter())
-				|| polygon2.contains(polygon2.getOuter());
+			if (polygon1.contains(polygon2.getOuter())) {
+				contains1 = true;
+			} else if (polygon2.contains(polygon1.getOuter())) {
+				contains2 = true;
+			}
 									
 		}
 		
 		/* add an overlap if detected */
 					
-		if (contains || intersects) {
+		if (contains1 || contains2 || intersects) {
 			
 			/* add the overlap */
 			
-			MapOverlapAA newOverlap = new MapOverlapAA(area1, area2,
-				intersects ? MapOverlapType.INTERSECT : MapOverlapType.CONTAIN);
+			MapOverlapAA newOverlap = null;
+			
+			if (contains1) {
+				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.CONTAIN);
+			} else if (contains2) {
+				newOverlap = new MapOverlapAA(area2, area1, MapOverlapType.CONTAIN);
+			} else {
+				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.INTERSECT);
+			}
 			
 			area1.addOverlap(newOverlap);
 			area2.addOverlap(newOverlap);

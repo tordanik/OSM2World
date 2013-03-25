@@ -15,21 +15,13 @@ public class OSMWay extends OSMElement {
 	}
 
 	public boolean isClosed() {
-		return nodes.size() > 0 && 
+		return nodes.size() > 0 &&
 			nodes.get(0).equals(nodes.get(nodes.size()-1));
 	}
 	
 	@Override
 	public String toString() {
-		
-		if (OSMMember.useDebugLabels && tags.containsKey("debug:label")) {
-			return tags.getValue("debug:label");
-		}
-		
-		return id + ":" + nodes.get(0)
-			+ "->[" + (nodes.size() - 2) + "]->"
-			+ nodes.get(nodes.size()-1);
-		
+		return "w" + id;
 	}
 	
 }
