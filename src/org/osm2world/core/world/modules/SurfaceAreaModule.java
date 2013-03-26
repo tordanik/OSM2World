@@ -187,6 +187,26 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
+		public PolygonXYZ getOutlinePolygon() {
+			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+				// avoid interfering with e.g. tree placement
+				return null;
+			} else {
+				return super.getOutlinePolygon();
+			}
+		}
+		
+		@Override
+		public SimplePolygonXZ getOutlinePolygonXZ() {
+			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+				// avoid interfering with e.g. tree placement
+				return null;
+			} else {
+				return super.getOutlinePolygonXZ();
+			}
+		}
+		
+		@Override
 		public GroundState getGroundState() {
 			if (BridgeModule.isBridge(area.getTags())) {
 				return GroundState.ABOVE;
