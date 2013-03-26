@@ -106,7 +106,7 @@ public class PolygonWithHolesXZ {
 		return outerPolygon.intersects(other);
 	}
 
-	public Collection<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
+	public List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
 		for (SimplePolygonXZ hole : holes) {
 			intersectionPositions.addAll(hole.intersectionPositions(lineSegment));

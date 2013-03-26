@@ -23,7 +23,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	}
 	
 	@Override
-	public MapElement getPrimaryMapElement() {
+	public final MapElement getPrimaryMapElement() {
 		return node;
 	}
 	

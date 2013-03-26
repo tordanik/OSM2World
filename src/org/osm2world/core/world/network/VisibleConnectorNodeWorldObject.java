@@ -68,7 +68,7 @@ public abstract class VisibleConnectorNodeWorldObject
 	}
 	
 	@Override
-	public MapElement getPrimaryMapElement() {
+	public final MapElement getPrimaryMapElement() {
 		return node;
 	}
 	

@@ -1,7 +1,9 @@
 package org.osm2world.console;
 
+import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,9 +18,6 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
-import org.osm2world.viewer.model.Data;
-import org.osm2world.viewer.model.MessageManager;
-import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
@@ -151,23 +150,26 @@ public class OSM2World {
 		/* load configuration file */
 		
 		Configuration config = new BaseConfiguration();
+		File configFile = null;
 		
-		if (argumentsGroup.getRepresentative().isConfig()) {
+		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
+		
+		if (representativeArgs.isConfig()) {
 			try {
+				configFile = representativeArgs.getConfig();
 				PropertiesConfiguration fileConfig = new PropertiesConfiguration();
 				fileConfig.setListDelimiter(';');
-				fileConfig.load(argumentsGroup.getRepresentative().getConfig());
+				fileConfig.load(configFile);
 				config = fileConfig;
 			} catch (ConfigurationException e) {
 				System.err.println("could not read config, ignoring it: ");
 				System.err.println(e);
 			}
 		}
-				
+		
 		/* run selected mode */
 		
-		ProgramMode programMode =
-			CLIArgumentsUtil.getProgramMode(argumentsGroup.getRepresentative());
+		ProgramMode programMode = getProgramMode(representativeArgs);
 		
 		switch (programMode) {
 		
@@ -187,8 +189,9 @@ public class OSM2World {
 			} catch(Exception e) {
 				System.out.println("Error setting native look and feel: " + e);
 			}
-			new ViewerFrame(new Data(), new MessageManager(),
-					new RenderOptions(), config).setVisible(true);
+			File input = representativeArgs.isInput() ?
+					representativeArgs.getInput() : null;
+			new ViewerFrame(config, configFile, input).setVisible(true);
 			break;
 			
 		case CONVERT:

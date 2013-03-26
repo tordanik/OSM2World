@@ -254,12 +254,16 @@ public abstract class FaceTarget<R extends Renderable>
 				
 			} else {
 				
-				drawFace(material, triangle.getVertices(), null, texCoordLists);
+				List<List<VectorXZ>> subLists = new ArrayList<List<VectorXZ>>();
+				for (List<VectorXZ> list : texCoordLists) {
+					subLists.add(list.subList(3*i, 3*(i+1)));
+				}
 				
+				drawFace(material, triangle.getVertices(), null, subLists);
 			}
-				
+			
+			i++;
 		}
-		
 	}
 	
 	@Override

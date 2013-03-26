@@ -36,7 +36,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 	private int anonymousWOCounter = 0;
 	
 	private Material currentMaterial = null;
-	private int anonymousMaterialCounter = 0;
+	private static int anonymousMaterialCounter = 0;
 	
 	public ObjTarget(PrintStream objStream, PrintStream mtlStream) {
 		
@@ -122,32 +122,6 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 		}
 		
 		writeFace(verticesToIndices(vs), normalIndices, texCoordIndices);
-		
-	}
-	
-	@Override
-	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-		
-		useMaterial(material);
-		
-		int triangleNumber = 0;
-		for (TriangleXYZ triangle : triangles) {
-			
-			int[] texCoordIndices = null;
-			if (texCoordLists != null && !texCoordLists.isEmpty()) {
-				List<VectorXZ> texCoords = texCoordLists.get(0);
-				texCoordIndices = texCoordsToIndices(
-						texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
-			}
-			
-			writeFace(verticesToIndices(triangle.getVertices()),
-					null, texCoordIndices);
-			
-			triangleNumber ++;
-			
-		}
 		
 	}
 

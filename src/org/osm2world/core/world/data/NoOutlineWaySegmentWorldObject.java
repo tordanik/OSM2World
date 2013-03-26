@@ -23,7 +23,7 @@ public abstract class NoOutlineWaySegmentWorldObject
 	}
 	
 	@Override
-	public MapElement getPrimaryMapElement() {
+	public final MapElement getPrimaryMapElement() {
 		return segment;
 	}
 	

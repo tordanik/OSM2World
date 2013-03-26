@@ -412,8 +412,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (minLevel > 0) {
 				
-				double totalHeight = heightWithoutRoof + roof.getRoofHeight();
-				return (totalHeight / buildingLevels) * minLevel;
+				return (heightWithoutRoof / buildingLevels) * minLevel;
 				
 			}
 			
@@ -574,7 +573,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if ("greenhouse".equals(buildingValue)) {
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
-				defaultMaterialRoof = Materials.GLASS;
+				defaultMaterialRoof = Materials.GLASS_ROOF;
 				defaultMaterialWindows = null;
 			} else if ("garage".equals(buildingValue)
 					|| "garages".equals(buildingValue)) {
@@ -666,6 +665,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 						roof = new MansardRoof();
 					} else if ("dome".equals(roofShape)) {
 						roof = new DomeRoof();
+					} else if ("round".equals(roofShape)) {
+						roof = new RoundRoof();
 					} else {
 						roof = new FlatRoof();
 					}
@@ -715,7 +716,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    }
 		    
 		    if (materialWall == Materials.GLASS) {
-		    	defaultMaterialWindows = null;
+				// avoid placing windows into a glass front
+				// TODO: the == currently only works if GLASS is not colorable
+				defaultMaterialWindows = null;
 		    }
 		    
 		    materialWallWithWindows = materialWall;
@@ -747,19 +750,24 @@ public class BuildingModule extends ConfigurableWorldModule {
 				String colorString, Material defaultMaterial,
 				boolean roof) {
 			
+			Material material = defaultMaterial;
+			
 			if (materialString != null) {
 				if ("brick".equals(materialString)) {
-					return Materials.BRICK;
+					material = Materials.BRICK;
 				} else if ("glass".equals(materialString)) {
-					return Materials.GLASS;
+					material = roof ? Materials.GLASS_ROOF : Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
-					return Materials.WOOD_WALL;
+					material = Materials.WOOD_WALL;
 				} else if (Materials.getSurfaceMaterial(materialString) != null) {
-					return Materials.getSurfaceMaterial(materialString);
+					material = Materials.getSurfaceMaterial(materialString);
 				}
 			}
 			
-			if (colorString != null) {
+			boolean colorable = material.getNumTextureLayers() == 0
+					|| material.getTextureDataList().get(0).colorable;
+			
+			if (colorString != null && colorable) {
 				
 				Color color;
 				
@@ -804,17 +812,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				if (color != null) {
-					return new ImmutableMaterial(
-							defaultMaterial.getLighting(), color,
-							defaultMaterial.getAmbientFactor(),
-							defaultMaterial.getDiffuseFactor(),
-							defaultMaterial.getTransparency(),
-							defaultMaterial.getTextureDataList());
+					material = new ImmutableMaterial(
+							material.getLighting(), color,
+							material.getAmbientFactor(),
+							material.getDiffuseFactor(),
+							material.getTransparency(),
+							material.getTextureDataList());
 				}
 				
 			}
 			
-			return defaultMaterial;
+			return material;
 			
 		}
 		
@@ -1752,6 +1760,100 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 		
+		private class RoundRoof extends RoofWithRidge {
+			private final static double ROOF_SUBDIVISION_METER = 2.5;
+			
+			private final List<LineSegmentXZ> capParts;
+			private final int rings;
+			private final double radius;
+			
+			public RoundRoof() {
+
+				super(0);
+
+				if (roofHeight < maxDistanceToRidge) {
+					double squaredHeight = roofHeight * roofHeight;
+					double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
+					double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
+					radius = sqrt(squaredDist + centerY * centerY);
+				} else {
+					radius = 0;
+				}
+				
+				rings = (int)Math.max(3, roofHeight/ROOF_SUBDIVISION_METER);
+				capParts = new ArrayList<LineSegmentXZ>(rings*2);
+				// TODO: would be good to vary step size with slope
+				float step = 0.5f / (rings + 1);
+				for (int i = 1; i <= rings; i++) {
+					capParts.add(new LineSegmentXZ(
+							interpolateBetween(cap1.p1, cap1.p2, i * step),
+							interpolateBetween(cap1.p1, cap1.p2, 1 - i * step)));
+
+					capParts.add(new LineSegmentXZ(
+							interpolateBetween(cap2.p1, cap2.p2, i * step),
+							interpolateBetween(cap2.p1, cap2.p2, 1 - i * step)));
+				}
+			}
+
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+
+				PolygonXZ newOuter = polygon.getOuter();
+
+				newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+
+				for (LineSegmentXZ capPart : capParts){
+					newOuter = insertIntoPolygon(newOuter, capPart.p1, 0.2);
+					newOuter = insertIntoPolygon(newOuter, capPart.p2, 0.2);
+				}
+
+				//TODO: add intersections of additional edges with outline?
+				return new PolygonWithHolesXZ(
+						newOuter.asSimplePolygon(),
+						polygon.getHoles());
+
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+
+				List<LineSegmentXZ> innerSegments = new ArrayList<LineSegmentXZ>(rings * 2 + 1);
+				innerSegments.add(ridge);
+				for (int i = 0; i < rings * 2; i += 2) {
+					LineSegmentXZ cap1part = capParts.get(i);
+					LineSegmentXZ cap2part = capParts.get(i+1);
+					innerSegments.add(new LineSegmentXZ(cap1part.p1, cap2part.p2));
+					innerSegments.add(new LineSegmentXZ(cap1part.p2, cap2part.p1));
+				}
+
+				return innerSegments;
+			}
+
+			@Override
+			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
+				double distRidge = distanceFromLineSegment(pos, ridge);
+				double ele;
+				
+				if (radius > 0) {
+					double relativePlacement = distRidge / radius;
+					ele = getMaxRoofEle() - radius
+						+ sqrt(1.0 - relativePlacement * relativePlacement) * radius;
+				} else {
+					// This could be any interpolator
+					double relativePlacement = distRidge / maxDistanceToRidge;
+					ele = getMaxRoofEle() - roofHeight +
+					(1 - (Math.pow(relativePlacement, 2.5))) * roofHeight;
+				}
+				
+				return Math.max(ele, getMaxRoofEle() - roofHeight);
+			}
+		}
+
 		private class MansardRoof extends RoofWithRidge {
 
 			private final LineSegmentXZ mansardEdge1, mansardEdge2;

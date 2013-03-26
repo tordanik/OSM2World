@@ -64,9 +64,11 @@ public class ToggleDebugViewAction extends AbstractAction implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		
+		debugView.setConfiguration(data.getConfig());
+		
 		debugView.setConversionResults(
 				data.getConversionResults());
-		
+				
 	}
 
 }

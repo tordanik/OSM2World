@@ -67,7 +67,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	}
 	
 	@Override
-	public MapElement getPrimaryMapElement() {
+	public final MapElement getPrimaryMapElement() {
 		return node;
 	}
 	

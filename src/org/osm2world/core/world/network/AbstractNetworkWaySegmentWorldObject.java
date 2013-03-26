@@ -40,7 +40,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 	
 	@Override
-	public MapElement getPrimaryMapElement() {
+	public final MapElement getPrimaryMapElement() {
 		return line;
 	}
 	

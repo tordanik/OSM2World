@@ -13,7 +13,7 @@ public class OSMWay extends OSMElement {
 		for (OSMNode node : nodes) assert node != null;
 		this.nodes = nodes;
 	}
-
+	
 	public boolean isClosed() {
 		return nodes.size() > 0 &&
 			nodes.get(0).equals(nodes.get(nodes.size()-1));

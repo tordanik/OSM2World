@@ -1,25 +1,38 @@
 package org.osm2world.core.world.modules;
 
+import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
+import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -57,6 +70,10 @@ public final class PowerModule extends AbstractModule {
 	@Override
 	protected void applyToNode(MapNode node) {
 		
+		if (node.getTags().contains("power", "cable_distribution_cabinet")) {
+			node.addRepresentation(new PowerCabinet(node));
+		}
+		
 		if (node.getTags().contains("power", "pole")) {
 			node.addRepresentation(new Powerpole(node));
 		}
@@ -89,6 +106,50 @@ public final class PowerModule extends AbstractModule {
 			segment.addRepresentation(new PowerLine(segment));
 		}
 	}
+	
+	@Override
+	protected void applyToArea(MapArea area) {
+		if (area.getTags().contains("power", "generator")
+				&& area.getTags().contains("generator:method", "photovoltaic")) {
+			area.addRepresentation(new PhotovoltaicPlant(area));
+		}
+	}
+	
+	private static final class PowerCabinet extends NoOutlineNodeWorldObject
+	implements RenderableToAllTargets {
+
+		public PowerCabinet(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double directionAngle = parseDirection(node.getTags(), PI);
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+						
+			target.drawBox(PLASTIC_GREY,
+					node.getElevationProfile().getWithEle(node.getPos()),
+					faceVector, 1.5, 0.8, 0.3);
+			
+		}
+		
+		}
 	
 	private final static class TowerConfig {
 		MapNode pos;
@@ -129,11 +190,6 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override
@@ -183,11 +239,6 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
 		}
 		
 		@Override
@@ -793,4 +844,172 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 	}
+	
+	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject
+		implements RenderableToAllTargets {
+
+		/** compares vectors by x coordinate */
+		private static final Comparator<VectorXZ> X_COMPARATOR = new Comparator<VectorXZ>() {
+			@Override public int compare(VectorXZ v1, VectorXZ v2) {
+				return Double.compare(v1.x, v2.x);
+			}
+		};
+
+		protected PhotovoltaicPlant(MapArea area) {
+			super(area);
+		}
+		
+		@Override
+		public double getClearingAbove(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public double getClearingBelow(VectorXZ pos) {
+			return 0;
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			AreaElevationProfile eleProfile = area.getElevationProfile();
+			
+			/* construct panel geometry */
+
+			double panelAngle = PI / 4;
+			double panelHeight = 5;
+			
+			VectorXYZ upVector = Z_UNIT.mult(panelHeight).rotateX(-panelAngle);
+						
+			/* place and draw rows of panels */
+			
+			AxisAlignedBoundingBoxXZ box = this.getAxisAlignedBoundingBoxXZ();
+			
+			List<SimplePolygonXZ> obstacles = getGroundObstacles();
+			
+			double posZ = box.minZ;
+			
+			while (posZ + upVector.z < box.maxZ) {
+				
+				LineSegmentXZ rowLine = new LineSegmentXZ(
+						 new VectorXZ(box.minX - 10, posZ),
+						 new VectorXZ(box.maxX + 10, posZ));
+				
+				// calculate start and end points (maybe more than one each)
+				
+				List<VectorXZ> intersections =
+						area.getPolygon().intersectionPositions(rowLine);
+				
+				assert intersections.size() % 2 == 0;
+				
+				sort(intersections, X_COMPARATOR);
+				
+				// add more start/end points at ground-level obstacles
+				
+				for (SimplePolygonXZ obstacle : obstacles) {
+					
+					List<VectorXZ> obstacleIntersections =
+							obstacle.intersectionPositions(rowLine);
+					
+					for (int i = 0; i + 1 < obstacleIntersections.size(); i += 2) {
+						
+						int insertionIndexA = -binarySearch(intersections,
+								obstacleIntersections.get(i), X_COMPARATOR) - 1;
+						int insertionIndexB = -binarySearch(intersections,
+								obstacleIntersections.get(i + 1), X_COMPARATOR) - 1;
+						
+						sort(obstacleIntersections, X_COMPARATOR);
+						
+						if (insertionIndexA == insertionIndexB
+								&& insertionIndexA >= 0
+								&& insertionIndexA % 2 == 1) {
+							
+							intersections.add(insertionIndexA,
+									obstacleIntersections.get(i+1));
+							intersections.add(insertionIndexA,
+									obstacleIntersections.get(i));
+							
+						}
+						
+					}
+					
+				}
+				
+				// draw row of panels between each start/end pair
+				
+				assert intersections.size() % 2 == 0;
+				
+				for (int i = 0; i + 1 < intersections.size(); i += 2) {
+					
+					// TODO: take elevation into account
+					// Might necessitate individual panels or shorter strips.
+					
+					renderPanelsTo(target,
+							eleProfile.getWithEle(intersections.get(i)),
+							eleProfile.getWithEle(intersections.get(i+1)),
+							upVector);
+					
+				}
+				
+				posZ += upVector.z * 1.5;
+				
+			}
+			
+		}
+
+		/**
+		 * returns outlines from ground objects overlapping this area
+		 */
+		private List<SimplePolygonXZ> getGroundObstacles() {
+			
+			List<SimplePolygonXZ> obstacles = new ArrayList<SimplePolygonXZ>();
+			
+			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+					
+					if (otherWO.getGroundState() == GroundState.ON
+							&& otherWO instanceof WorldObjectWithOutline) {
+						
+						obstacles.add(((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ());
+						
+					}
+				
+				}
+			}
+			
+			return obstacles;
+			
+		}
+		
+		private void renderPanelsTo(Target<?> target, VectorXYZ bottomLeft,
+				VectorXYZ bottomRight, VectorXYZ upVector) {
+			
+			/* draw front */
+			
+			List<VectorXYZ> vs = asList(
+					bottomLeft.add(upVector),
+					bottomLeft,
+					bottomRight.add(upVector),
+					bottomRight);
+			
+			target.drawTriangleStrip(Materials.SOLAR_PANEL, vs,
+					wallTexCoordLists(vs, Materials.SOLAR_PANEL));
+			
+			/* draw back */
+			
+			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
+			
+			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
+					wallTexCoordLists(vs, Materials.PLASTIC_GREY));
+						
+		}
+		
+		
+	}
+	
 }
