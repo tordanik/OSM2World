@@ -1,12 +1,14 @@
 package org.osm2world.core.world.network;
 
+import static java.util.Collections.singleton;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -30,6 +32,8 @@ public abstract class VisibleConnectorNodeWorldObject
 	protected float startWidth;
 	protected float endWidth;
 
+	protected final EleConnector connector; //TODO make private
+	
 	/**
 	 * returns the length required by this node representation.
 	 * Adjacent lines will be pushed back accordingly.
@@ -65,11 +69,18 @@ public abstract class VisibleConnectorNodeWorldObject
 	
 	public VisibleConnectorNodeWorldObject(MapNode node) {
 		this.node = node;
+		this.connector = new EleConnector(node.getPos());
 	}
 	
 	@Override
-	public final MapElement getPrimaryMapElement() {
+	public final MapNode getPrimaryMapElement() {
 		return node;
+	}
+	
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		// TODO more than one connector
+		return singleton(connector);
 	}
 	
 	/**
@@ -171,7 +182,7 @@ public abstract class VisibleConnectorNodeWorldObject
 	 */
 	public List<VectorXYZ> getOutline(int from, int to) {
 		
-		return node.getElevationProfile().getWithEle(getOutlineXZ(from, to));
+		return VectorXZ.listXYZ(getOutlineXZ(from, to), connector.getPosXYZ().y);
 		
 	}
 	

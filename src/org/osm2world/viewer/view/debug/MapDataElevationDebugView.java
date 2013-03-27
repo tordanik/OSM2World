@@ -2,11 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -34,40 +30,42 @@ public class MapDataElevationDebugView extends DebugView {
 	@Override
 	public void fillTarget(JOGLTarget target) {
 		
-		for (MapArea area : map.getMapAreas()) {
-			if (area.getElevationProfile() == null) continue;
-			
-			/* draw points with non-interpolated elevation */
-			
-			for (VectorXYZ pointWithEle : area.getElevationProfile().getPointsWithEle()) {
-				drawBoxAround(target, pointWithEle,
-						POINT_WITH_ELE_COLOR, HALF_POINT_WITH_ELE_WIDTH);
-			}
-			
-		}
-				
-		for (MapWaySegment line : map.getMapWaySegments()) {
-			if (line.getElevationProfile() == null) continue;
-			
-			/* draw line itself */
-			
-			drawArrow(target, LINE_COLOR, 0.7f,
-					line.getElevationProfile().getPointsWithEle().toArray(new VectorXYZ[0]));
-			
-			/* draw points with non-interpolated elevation */
-			
-			for (VectorXYZ pointWithEle : line.getElevationProfile().getPointsWithEle()) {
-				drawBoxAround(target, pointWithEle,
-						POINT_WITH_ELE_COLOR, HALF_POINT_WITH_ELE_WIDTH);
-			}
-			
-		}
-		
-		for (MapNode node : map.getMapNodes()) {
-			if (node.getElevationProfile() == null) continue;
-			drawBoxAround(target, node.getElevationProfile().getPointWithEle(),
-					NODE_COLOR, HALF_NODE_WIDTH);
-		}
+		//TODO port functionality to new elevation calculation
+
+//		for (MapArea area : map.getMapAreas()) {
+//			if (area.getElevationProfile() == null) continue;
+//
+//			/* draw points with non-interpolated elevation */
+//
+//			for (VectorXYZ pointWithEle : area.getElevationProfile().getPointsWithEle()) {
+//				drawBoxAround(target, pointWithEle,
+//						POINT_WITH_ELE_COLOR, HALF_POINT_WITH_ELE_WIDTH);
+//			}
+//
+//		}
+//
+//		for (MapWaySegment line : map.getMapWaySegments()) {
+//			if (line.getElevationProfile() == null) continue;
+//
+//			/* draw line itself */
+//
+//			drawArrow(target, LINE_COLOR, 0.7f,
+//					line.getElevationProfile().getPointsWithEle().toArray(new VectorXYZ[0]));
+//
+//			/* draw points with non-interpolated elevation */
+//
+//			for (VectorXYZ pointWithEle : line.getElevationProfile().getPointsWithEle()) {
+//				drawBoxAround(target, pointWithEle,
+//						POINT_WITH_ELE_COLOR, HALF_POINT_WITH_ELE_WIDTH);
+//			}
+//
+//		}
+//
+//		for (MapNode node : map.getMapNodes()) {
+//			if (node.getElevationProfile() == null) continue;
+//			drawBoxAround(target, node.getElevationProfile().getPointWithEle(),
+//					NODE_COLOR, HALF_NODE_WIDTH);
+//		}
 		
 	}
 	

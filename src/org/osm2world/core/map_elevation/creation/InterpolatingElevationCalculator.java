@@ -4,24 +4,17 @@ import static java.util.Collections.emptyList;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.osm2world.EleInterpolationStrategy;
 import org.osm2world.LeastSquaresStrategy;
 import org.osm2world.TerrainElevationData;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_elevation.data.AreaElevationProfile;
-import org.osm2world.core.map_elevation.data.NodeElevationProfile;
-import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
+import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-
-import com.google.common.base.Function;
+import org.osm2world.core.world.data.WorldObject;
 
 /**
  * sets elevations based on an {@link EleInterpolationStrategy}
@@ -41,9 +34,7 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 	
 	@Override
 	public void calculateElevations(MapData mapData, TerrainElevationData eleData) {
-
-		//TODO: replace CellularTerrainElevation with SRTMData/TerrainElevationData
-		
+	
 		Collection<VectorXYZ> sites = emptyList();
 		
 		StopWatch stopWatch = new StopWatch();
@@ -72,72 +63,29 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		stopWatch.reset();
 		stopWatch.start();
 		
-		/* set nodes' elevation profiles */
+		// TODO: collect & connect connectors
 		
-		for (MapNode node : mapData.getMapNodes()) {
-			
-			double ele = strategy.interpolateEle(node.getPos()).y;
-			NodeElevationProfile profile = new NodeElevationProfile(node);
-			profile.setEle(ele);
-			node.setElevationProfile(profile);
+		/* set connectors' elevation profiles */
+		
+		for (MapElement element : mapData.getMapElements()) {
+			for (WorldObject worldObject : element.getRepresentations()) {
+				try {
+					for (EleConnector eleConnector : worldObject.getEleConnectors()) {
+						eleConnector.setPosXYZ(
+								strategy.interpolateEle(eleConnector.pos));
+					}
+				} catch (NullPointerException e) {
+					System.out.println(worldObject.getClass());
+				}
+				
+			}
 			
 		}
 
 		System.out.println("time node ele: " + stopWatch);
 		stopWatch.reset();
 		stopWatch.start();
-		
-		/* set way segments' elevation profiles (based on nodes' elevations) */
-		
-		for (MapWaySegment segment : mapData.getMapWaySegments()) {
-
-			if (segment.getPrimaryRepresentation() == null) continue;
-			
-			WaySegmentElevationProfile profile =
-				new WaySegmentElevationProfile(segment);
-			
-			profile.addPointWithEle(
-				segment.getStartNode().getElevationProfile().getPointWithEle());
-			profile.addPointWithEle(
-				segment.getEndNode().getElevationProfile().getPointWithEle());
-			
-			segment.setElevationProfile(profile);
-			
-		}
-		
-		/* set areas' elevation profiles (based on nodes' elevations) */
-		
-		Function<VectorXZ, VectorXYZ> eleFunction = new Function<VectorXZ, VectorXYZ>() {
-			public VectorXYZ apply(VectorXZ pos) {
-				return strategy.interpolateEle(pos);
-			}
-		};
-		
-		for (MapArea area : mapData.getMapAreas()) {
-			
-			if (area.getPrimaryRepresentation() == null) continue;
-			
-			AreaElevationProfile profile =
-				new AreaElevationProfile(area);
-			
-			for (MapNode node : area.getBoundaryNodes()) {
-				profile.addPointWithEle(
-					node.getElevationProfile().getPointWithEle());
-			}
-			
-			for (List<MapNode> holeOutline : area.getHoles()) {
-				for (MapNode node : holeOutline) {
-					profile.addPointWithEle(
-						node.getElevationProfile().getPointWithEle());
-				}
-			}
-			
-			profile.setEleFunction(eleFunction);
-			
-			area.setElevationProfile(profile);
-			
-		}
-		
+						
 		exposedStrategy = strategy;
 		
 	}

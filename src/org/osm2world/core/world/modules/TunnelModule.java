@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.util.Collections.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
@@ -8,10 +9,10 @@ import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -24,7 +25,6 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
@@ -125,7 +125,7 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapWaySegment getPrimaryMapElement() {
 			return segment;
 		}
 
@@ -140,18 +140,14 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return primaryRep.getClearingAbove(pos) + 1;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.BELOW;
+		}
+		
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			// TODO EleConnectors for tunnels
+			return emptyList();
 		}
 		
 		@Override
@@ -168,7 +164,8 @@ public class TunnelModule extends AbstractModule {
 			for (int i=0; i < leftOutline.size(); i++) {
 			
 				VectorXYZ clearingOffset = VectorXYZ.Y_UNIT.mult(
-						primaryRep.getClearingAbove(leftOutline.get(i).xz()));
+						10); //TODO restore clearing
+//						primaryRep.getClearingAbove(leftOutline.get(i).xz()));
 				
 				aboveLeftOutline.add(leftOutline.get(i).add(clearingOffset));
 				aboveRightOutline.add(rightOutline.get(i).add(clearingOffset));
@@ -195,32 +192,31 @@ public class TunnelModule extends AbstractModule {
 		
 		private final MapNode node;
 		private final MapWaySegment tunnelSegment;
+
+		private final EleConnector connector;
 		
 		public TunnelEntrance(MapNode node, MapWaySegment tunnelSegment) {
 			this.node = node;
 			this.tunnelSegment = tunnelSegment;
+			this.connector = new EleConnector(node.getPos());
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapNode getPrimaryMapElement() {
 			return node;
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-
+		
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			// TODO ring of terrain connectors around the entrance
+			return singleton(connector);
+		}
+		
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 			return new AxisAlignedBoundingBoxXZ(getOutlinePolygon().getVertices());
@@ -241,12 +237,13 @@ public class TunnelModule extends AbstractModule {
 			}
 			
 			VectorXYZ toUpperVertices = directionIntoTunnel.mult(0.1).xyz(
-					tunnelPrimaryRep.getClearingAbove(node.getPos()));
+					10); //TODO restore original solution
+//					tunnelPrimaryRep.getClearingAbove(node.getPos()));
 			
 			List<VectorXYZ> vertexLoop = new ArrayList<VectorXYZ>(5);
 			
-			VectorXYZ lowerRight = node.getPos().add(cutVector).xyz(node.getElevationProfile().getMinEle());
-			VectorXYZ lowerLeft = node.getPos().subtract(cutVector).xyz(node.getElevationProfile().getMinEle());
+			VectorXYZ lowerRight = connector.getPosXYZ().add(cutVector);
+			VectorXYZ lowerLeft = connector.getPosXYZ().subtract(cutVector);
 			
 			vertexLoop.add(lowerRight);
 			vertexLoop.add(lowerLeft);
@@ -277,23 +274,19 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapNode getPrimaryMapElement() {
 			return node;
-		}
-	
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return primaryRep.getClearingAbove(pos) + 1;
-		}
-	
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 	
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.BELOW;
+		}
+		
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			// TODO EleConnectors for tunnels
+			return emptyList();
 		}
 		
 		@Override
@@ -315,10 +308,10 @@ public class TunnelModule extends AbstractModule {
 					
 					if (line.indexOf(lineV) == 0) {
 						MapSegment segment = node.getConnectedSegments().get((i+1)%segCount);
-						clearing = clearingAboveMapSegment(lineV, segment);
+						clearing = 10; //TODO clearingAboveMapSegment(lineV, segment);
 					} else {
 						MapSegment segment = node.getConnectedSegments().get(i);
-						clearing = clearingAboveMapSegment(lineV, segment);
+						clearing = 10; //TODO clearingAboveMapSegment(lineV, segment);
 					}
 					
 					lineTop.add(lineV.y(lineV.y + clearing));
@@ -344,24 +337,25 @@ public class TunnelModule extends AbstractModule {
 			
 		}
 
-		private static double clearingAboveMapSegment(VectorXYZ lineV, MapSegment segment) {
-			
-			WorldObject segmentRep;
-			if (segment instanceof MapWaySegment) {
-				segmentRep = ((MapWaySegment)segment)
-					.getPrimaryRepresentation();
-			} else {
-				segmentRep = ((MapAreaSegment)segment)
-					.getArea().getPrimaryRepresentation();
-			}
-			
-			if (segmentRep != null) {
-				return segmentRep.getClearingAbove(lineV.xz());
-			} else {
-				return 0;
-			}
-			
-		}
+		//TODO update or delete
+//		private static double clearingAboveMapSegment(VectorXYZ lineV, MapSegment segment) {
+//
+//			WorldObject segmentRep;
+//			if (segment instanceof MapWaySegment) {
+//				segmentRep = ((MapWaySegment)segment)
+//					.getPrimaryRepresentation();
+//			} else {
+//				segmentRep = ((MapAreaSegment)segment)
+//					.getArea().getPrimaryRepresentation();
+//			}
+//
+//			if (segmentRep != null) {
+//				return segmentRep.getClearingAbove(lineV.xz());
+//			} else {
+//				return 0;
+//			}
+//
+//		}
 		
 	}
 	

@@ -2,9 +2,10 @@ package org.osm2world.core.world.data;
 
 import static java.util.Collections.singleton;
 
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
@@ -18,18 +19,34 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	
 	protected final MapNode node;
 	
+	private final EleConnector connector;
+	
 	public NoOutlineNodeWorldObject(MapNode node) {
 		this.node = node;
+		this.connector = new EleConnector(node.getPos());
 	}
 	
 	@Override
-	public final MapElement getPrimaryMapElement() {
+	public final MapNode getPrimaryMapElement() {
 		return node;
 	}
 	
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		return new AxisAlignedBoundingBoxXZ(singleton(node.getPos()));
+	}
+	
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		return singleton(new EleConnector(node.getPos()));
+	}
+	
+	/**
+	 * provides subclasses with the 3d position of the {@link MapNode}.
+	 * Only works during rendering (i.e. after elevation calculation).
+	 */
+	protected VectorXYZ getBase() {
+		return connector.getPosXYZ();
 	}
 	
 }

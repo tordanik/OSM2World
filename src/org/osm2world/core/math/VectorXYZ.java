@@ -66,6 +66,10 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 				this.z + z);
 	}
 
+	public VectorXYZ addY(double y) {
+		return new VectorXYZ(x, this.y + y, z);
+	}
+
 	public VectorXYZ subtract(VectorXYZ other) {
 		return new VectorXYZ(
 				this.x - other.x,

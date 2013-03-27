@@ -24,12 +24,10 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
@@ -107,21 +105,11 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0.5;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			//TODO: copypaste from road module (same in railway module)
-			if (BridgeModule.isBridge(line.getTags())) {
+			if (BridgeModule.isBridge(segment.getTags())) {
 				return GroundState.ABOVE;
-			} else if (TunnelModule.isTunnel(line.getTags())) {
+			} else if (TunnelModule.isTunnel(segment.getTags())) {
 				return GroundState.BELOW;
 			} else {
 				return GroundState.ON;
@@ -130,8 +118,8 @@ public class WaterModule extends ConfigurableWorldModule {
 		
 		@Override
 		public float getWidth() {
-			return WorldModuleParseUtil.parseWidth(line.getTags(),
-					WATERWAY_WIDTHS.get(line.getTags().getValue("waterway")));
+			return WorldModuleParseUtil.parseWidth(segment.getTags(),
+					WATERWAY_WIDTHS.get(segment.getTags().getValue("waterway")));
 		}
 		
 		@Override
@@ -220,11 +208,11 @@ public class WaterModule extends ConfigurableWorldModule {
 		private boolean isContainedWithinRiverbank() {
 			boolean containedWithinRiverbank = false;
 			
-			for (MapOverlap<?,?> overlap : line.getOverlaps()) {
-				if (overlap.getOther(line) instanceof MapArea) {
-					MapArea area = (MapArea)overlap.getOther(line);
+			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
+				if (overlap.getOther(segment) instanceof MapArea) {
+					MapArea area = (MapArea)overlap.getOther(segment);
 					if (area.getPrimaryRepresentation() instanceof Water &&
-							area.getPolygon().contains(line.getLineSegment())) {
+							area.getPolygon().contains(segment.getLineSegment())) {
 						containedWithinRiverbank = true;
 						break;
 					}
@@ -244,21 +232,10 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	public static class RiverJunction
 		extends JunctionNodeWorldObject
-		implements NodeWorldObject, TerrainBoundaryWorldObject,
-			RenderableToAllTargets {
+		implements TerrainBoundaryWorldObject, RenderableToAllTargets {
 
 		public RiverJunction(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0.5;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 
 		@Override
@@ -295,16 +272,6 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0.5;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -331,16 +298,6 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
 		public void renderTo(Target<?> target) {
 
 			/* render water */
@@ -362,8 +319,7 @@ public class WaterModule extends ConfigurableWorldModule {
 					new VectorXYZ(+width/2, 0, 0)
 			);
 			
-			List<VectorXYZ> path =
-					area.getElevationProfile().getWithEle(area.getOuterPolygon().getVertexLoop());
+			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
 			
 			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
 					wallShape,

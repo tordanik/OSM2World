@@ -26,6 +26,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
@@ -92,10 +93,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final List<BuildingPart> parts =
 				new ArrayList<BuildingModule.BuildingPart>();
 		
+		private final EleConnector groundLevelConnector;
+		
 		public Building(MapArea area, boolean useBuildingColors,
 				boolean drawBuildingWindows) {
 			
 			this.area = area;
+			
+			this.groundLevelConnector = new EleConnector(area.getOuterPolygon().getCenter());
 			
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				MapElement other = overlap.getOther(area);
@@ -143,7 +148,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 
-		public MapArea getArea() {
+		public MapArea getArea() { //TODO: redundant because of getPrimaryMapElement
 			return area;
 		}
 		
@@ -152,7 +157,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapArea getPrimaryMapElement() {
 			return area;
 		}
 
@@ -160,31 +165,35 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-
+		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			double maxClearingAbove = 0;
-			for (BuildingPart part : parts) {
-				double clearing = part.getClearingAbove(pos);
-				maxClearingAbove = max(clearing, maxClearingAbove);
-			}
-			return maxClearingAbove;
+		public Iterable<EleConnector> getEleConnectors() {
+			return singleton(groundLevelConnector);
 		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
+		
+		//TODO
+//		@Override
+//		public double getClearingAbove(VectorXZ pos) {
+//			double maxClearingAbove = 0;
+//			for (BuildingPart part : parts) {
+//				double clearing = part.getClearingAbove(pos);
+//				maxClearingAbove = max(clearing, maxClearingAbove);
+//			}
+//			return maxClearingAbove;
+//		}
 
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
 			return area.getPolygon().getOuter().makeCounterclockwise();
 		}
 
+		public double getGroundLevelEle() {
+			return groundLevelConnector.getPosXYZ().y;
+		}
+
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
-			return getOutlinePolygonXZ().xyz(
-					area.getElevationProfile().getMinEle());
+			return getOutlinePolygonXZ().xyz(getGroundLevelEle());
 		}
 		
 		@Override
@@ -274,7 +283,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private void renderWalls(Target<?> target, Roof roof) {
 			
-			double baseEle = building.getArea().getElevationProfile().getMinEle();
+			double baseEle = building.getGroundLevelEle();
 			
 			double floorHeight = calculateFloorHeight(roof);
 			boolean renderFloor = (floorHeight > 0);
@@ -384,8 +393,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					}
 					
 					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
-						double newFloorHeight = o.getClearingAbove(
-								o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
+						double newFloorHeight = 3;
+							//TODO restore clearing - o.getClearingAbove(o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
 						if (newFloorHeight < floorHeight) {
 							newFloorHeight = floorHeight;
 						}
@@ -914,7 +923,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return building.getArea().getElevationProfile().getMinEle() +
+				return building.getGroundLevelEle() +
 						heightWithoutRoof + roofHeight;
 			}
 			
@@ -1262,8 +1271,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return building.getArea().getElevationProfile().getMinEle()
-						+ heightWithoutRoof;
+				return building.getGroundLevelEle() + heightWithoutRoof;
 			}
 			
 		}
@@ -2045,7 +2053,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			@Override
 			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
 				if (roofHeightMap.containsKey(pos)) {
-					return building.getArea().getElevationProfile().getMinEle()
+					return building.getGroundLevelEle()
 						+ heightWithoutRoof + roofHeightMap.get(pos);
 				} else {
 					return null;
@@ -2054,7 +2062,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return building.getArea().getElevationProfile().getMinEle()
+				return building.getGroundLevelEle()
 					+ heightWithoutRoof + roofHeight;
 			}
 			
@@ -2081,24 +2089,22 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final BuildingPart buildingPart;
 		private final MapNode node;
 		
+		private final EleConnector connector;
+		
 		public BuildingEntrance(BuildingPart buildingPart, MapNode node) {
 			this.buildingPart = buildingPart;
 			this.node = node;
+			this.connector = new EleConnector(node.getPos());
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapNode getPrimaryMapElement() {
 			return node;
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
+		public Iterable<EleConnector> getEleConnectors() {
+			return singleton(connector);
 		}
 		
 		@Override
@@ -2137,7 +2143,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* draw the entrance as a box protruding from the building */
 			
-			VectorXYZ center = node.getElevationProfile().getPointWithEle();
+			VectorXYZ center = connector.getPosXYZ();
 			
 			float height = parseHeight(node.getTags(), 2);
 			float width = parseWidth(node.getTags(), 1);

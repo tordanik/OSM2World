@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 
+import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
@@ -9,9 +10,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -72,7 +73,7 @@ public class BridgeModule extends AbstractModule {
 		}
 
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapWaySegment getPrimaryMapElement() {
 			return segment;
 		}
 
@@ -87,18 +88,14 @@ public class BridgeModule extends AbstractModule {
 		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return BRIDGE_UNDERSIDE_HEIGHT;
-		}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
+		}
+		
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			// TODO EleConnectors for bridges
+			return emptyList();
 		}
 		
 		@Override
@@ -166,14 +163,16 @@ public class BridgeModule extends AbstractModule {
 
 		private void drawBridgePillarAt(Target<?> target, VectorXZ pos) {
 		
-			double eleAtPos = segment.getElevationProfile().getEleAt(pos);
-			
-			// TODO: start pillar at ground instead of just 100 meters below the bridge
-			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
-					pos.xyz(eleAtPos - BRIDGE_UNDERSIDE_HEIGHT/2 - 100),
-					100,
-					0.2, 0.2, false, false);
-			
+			//TODO connect the pillars to the ground independently
+//
+//			double eleAtPos = segment.getElevationProfile().getEleAt(pos);
+//
+//			// TODO: start pillar at ground instead of just 100 meters below the bridge
+//			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
+//					pos.xyz(eleAtPos - BRIDGE_UNDERSIDE_HEIGHT/2 - 100),
+//					100,
+//					0.2, 0.2, false, false);
+//
 		}
 		
 	}

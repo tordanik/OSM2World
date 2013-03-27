@@ -9,6 +9,8 @@ import org.osm2world.core.map_elevation.data.ElevationProfile;
 /**
  * calculates elevations using information from {@link MapData}
  * and terrain elevation data
+ * 
+ * TODO new documentation
  */
 public interface ElevationCalculator {
 

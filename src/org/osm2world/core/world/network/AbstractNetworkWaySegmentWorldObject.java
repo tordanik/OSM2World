@@ -1,15 +1,14 @@
 package org.osm2world.core.world.network;
 
-import static org.osm2world.core.math.GeometryUtil.isBetween;
-import static org.osm2world.core.math.VectorXZ.distanceSquared;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -24,24 +23,27 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	implements NetworkWaySegmentWorldObject, WaySegmentWorldObject,
 	           IntersectionTestObject, WorldObjectWithOutline {
 
-	public final MapWaySegment line;
+	public final MapWaySegment segment;
 	
 	private VectorXZ startCutVector = null;
 	private VectorXZ endCutVector = null;
 	
 	private VectorXZ startOffset = VectorXZ.NULL_VECTOR;
 	private VectorXZ endOffset = VectorXZ.NULL_VECTOR;
+	
+	private EleConnector startConnector = null;
+	private EleConnector endConnector = null;
 
 	private List<VectorXYZ> leftOutline = null;
 	private List<VectorXYZ> rightOutline = null;
 	
-	protected AbstractNetworkWaySegmentWorldObject(MapWaySegment line) {
-		this.line = line;
+	protected AbstractNetworkWaySegmentWorldObject(MapWaySegment segment) {
+		this.segment = segment;
 	}
 	
 	@Override
-	public final MapElement getPrimaryMapElement() {
-		return line;
+	public final MapWaySegment getPrimaryMapElement() {
+		return segment;
 	}
 	
 	@Override
@@ -65,9 +67,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 	
 	public VectorXZ getCutVectorAt(MapNode node) {
-		if (node == line.getStartNode()) {
+		if (node == segment.getStartNode()) {
 			return getStartCutVector();
-		} else if (node == line.getEndNode()) {
+		} else if (node == segment.getEndNode()) {
 			return getEndCutVector();
 		} else {
 			throw new IllegalArgumentException("node is not part of the line");
@@ -85,20 +87,52 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 	
 	protected VectorXZ getStartWithOffset() {
-		return line.getStartNode().getPos().add(startOffset); //SUGGEST (performance): cache? [also getEnd*]
+		return segment.getStartNode().getPos().add(startOffset); //SUGGEST (performance): cache? [also getEnd*]
 	}
 	
 	protected VectorXZ getEndWithOffset() {
-		return line.getEndNode().getPos().add(endOffset);
+		return segment.getEndNode().getPos().add(endOffset);
 	}
-
+	
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		
+		if (startConnector == null) {
+			startConnector = new EleConnector(getStartWithOffset());
+			endConnector = new EleConnector(getEndWithOffset());
+		}
+		
+		return asList(startConnector, endConnector);
+		
+	}
+	
+	/**
+	 * returns the 3d start position.
+	 * Only available after elevation calculation.
+	 */
+	protected VectorXYZ getStartXYZ() {
+		return startConnector.getPosXYZ();
+	}
+	
+	/**
+	 * returns the 3d end position.
+	 * Only available after elevation calculation.
+	 */
+	protected VectorXYZ getEndXYZ() {
+		return endConnector.getPosXYZ();
+	}
+	
 	/**
 	 * returns all points along this way segment between, but not including,
 	 * {@link #getStartWithOffset()} and {@link #getEndWithOffset()}
 	 */
 	private List<VectorXYZ> getPointsBetweenStartAndEnd() {
-				
-		WaySegmentElevationProfile eleProfile = line.getElevationProfile();
+		
+		return asList(getStartXYZ(), getEndXYZ());
+		
+		/* TODO  points ON a segment
+		
+		WaySegmentElevationProfile eleProfile = segment.getElevationProfile();
 		List<VectorXYZ> pointsWithEle = eleProfile.getPointsWithEle();
 		
 		if (pointsWithEle.size() == 2) {
@@ -134,6 +168,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			return result;
 			
 		}
+		
+		*/
 			
 	}
 	
@@ -145,29 +181,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	 */
 	public List<VectorXYZ> getCenterline() {
 		
-		WaySegmentElevationProfile eleProfile = line.getElevationProfile();
-		
-		if (startOffset == VectorXZ.NULL_VECTOR
-				&& endOffset == VectorXZ.NULL_VECTOR) {
-			
-			return eleProfile.getPointsWithEle();
-			
-		} else {
-			
-			List<VectorXYZ> centerline = new ArrayList<VectorXYZ>();
-			
-			VectorXZ startWithOffset = getStartWithOffset();
-			VectorXZ endWithOffset = getEndWithOffset();
-			
-			centerline.add(startWithOffset.xyz(eleProfile.getEleAt(startWithOffset)));
-			
-			centerline.addAll(getPointsBetweenStartAndEnd());
-	
-			centerline.add(endWithOffset.xyz(eleProfile.getEleAt(endWithOffset)));
-			
-			return centerline;
-		
-		}
+		return getPointsBetweenStartAndEnd();
 		
 	}
 	
@@ -273,8 +287,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 		for (int i = 1; i < centerLine.size() - 1; i++) {
 			
-			leftOutline.add(centerLine.get(i).add(line.getRightNormal().mult(-halfWidth)));
-			rightOutline.add(centerLine.get(i).add(line.getRightNormal().mult(halfWidth)));
+			leftOutline.add(centerLine.get(i).add(segment.getRightNormal().mult(-halfWidth)));
+			rightOutline.add(centerLine.get(i).add(segment.getRightNormal().mult(halfWidth)));
 			
 		}
 
@@ -298,13 +312,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 		assert 0 <= relativePosFromLeft && relativePosFromLeft <= 1;
 		
-		VectorXZ position = start ? getStartPosition() : getEndPosition();
+		VectorXYZ position = (start ? startConnector : endConnector).getPosXYZ();
 		VectorXZ cutVector = start ? getStartCutVector() : getEndCutVector();
 		
-		VectorXZ resultXZ = position.add(cutVector.mult(
+		return position.add(cutVector.mult(
 				(-0.5 + relativePosFromLeft) * getWidth()));
-		
-		return line.getElevationProfile().getWithEle(resultXZ);
 		
 	}
 
@@ -320,12 +332,12 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	
 	@Override
 	public VectorXZ getStartPosition() {
-		return line.getStartNode().getPos().add(getStartOffset());
+		return segment.getStartNode().getPos().add(getStartOffset());
 	}
 	
 	@Override
 	public VectorXZ getEndPosition() {
-		return line.getEndNode().getPos().add(getEndOffset());
+		return segment.getEndNode().getPos().add(getEndOffset());
 	}
 	
 	@Override
@@ -335,7 +347,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	
 	@Override
 	public String toString() {
-		return "network way segment for " + line;
+		return "network way segment for " + segment;
 	}
 	
 }

@@ -1,15 +1,15 @@
 package org.osm2world.core.world.network;
 
+import static java.util.Collections.singleton;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_elevation.data.NodeElevationProfile;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonXYZ;
@@ -23,7 +23,6 @@ import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.world.creation.NetworkCalculator;
 import org.osm2world.core.world.data.NodeWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 
 public abstract class JunctionNodeWorldObject implements NodeWorldObject,
@@ -35,6 +34,8 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	protected List<VectorXZ> cutVectors;
 	protected List<VectorXZ> cutCenters;
 	protected List<Float> widths;
+	
+	protected final EleConnector connector; //TODO make private
 
 	/**
 	 * sets the results of {@link NetworkCalculator}'s calculations.
@@ -64,10 +65,11 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	
 	public JunctionNodeWorldObject(MapNode node) {
 		this.node = node;
+		this.connector = new EleConnector(node.getPos());
 	}
 	
 	@Override
-	public final MapElement getPrimaryMapElement() {
+	public final MapNode getPrimaryMapElement() {
 		return node;
 	}
 	
@@ -95,7 +97,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 			   
 			VectorXZ newNodeA = getCutNode(i, false);
 			if (newNodeA != null) {
-				outline.add(node.getElevationProfile().getWithEle(newNodeA));
+				outline.add(newNodeA.xyz(connector.getPosXYZ().y));
 			}
 
 			int nextI = i - 1;
@@ -103,7 +105,7 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 
 			VectorXZ newNodeB = getCutNode(nextI, true);
 			if (newNodeB != null) {
-				outline.add(node.getElevationProfile().getWithEle(newNodeB));
+				outline.add(newNodeB.xyz(connector.getPosXYZ().y));
 			}
 
 			i = nextI;
@@ -183,42 +185,47 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 		}
 	}
 	
-	@Override
-	public double getClearingAbove(VectorXZ pos) {
-		// current solution: maximum of connected segments' clearings.
-		// Could probably find a more intelligent method.
-		
-		double max = 0;
-		for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
-			WaySegmentWorldObject rep = waySegment.getPrimaryRepresentation();
-			if (rep != null) {
-				double clearing = rep.getClearingAbove(node.getPos());
-				if (clearing > max) {
-					max = clearing;
-				}
-			}
-		}
-		return max;
-	}
+	//TODO formerly @Override, currently useless
+//	public double getClearingAbove(VectorXZ pos) {
+//		// current solution: maximum of connected segments' clearings.
+//		// Could probably find a more intelligent method.
+//
+//		double max = 0;
+//		for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
+//			WaySegmentWorldObject rep = waySegment.getPrimaryRepresentation();
+//			if (rep != null) {
+//				double clearing = rep.getClearingAbove(node.getPos());
+//				if (clearing > max) {
+//					max = clearing;
+//				}
+//			}
+//		}
+//		return max;
+//	}
 	
-	@Override
-	public double getClearingBelow(VectorXZ pos) {
-		// current solution: maximum of connected segments' clearings.
-		// Could probably find a more intelligent method.
-		
-		double max = 0;
-		for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
-			WaySegmentWorldObject rep = waySegment.getPrimaryRepresentation();
-			if (rep != null) {
-				double clearing = rep.getClearingBelow(node.getPos());
-				if (clearing > max) {
-					max = clearing;
-				}
-			}
-		}
-		return max;
-	}
+	//TODO formerly @Override, currently useless
+//	public double getClearingBelow(VectorXZ pos) {
+//		// current solution: maximum of connected segments' clearings.
+//		// Could probably find a more intelligent method.
+//
+//		double max = 0;
+//		for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
+//			WaySegmentWorldObject rep = waySegment.getPrimaryRepresentation();
+//			if (rep != null) {
+//				double clearing = rep.getClearingBelow(node.getPos());
+//				if (clearing > max) {
+//					max = clearing;
+//				}
+//			}
+//		}
+//		return max;
+//	}
 
+	public Iterable<EleConnector> getEleConnectors() {
+		//TODO: use multiple connectors!
+		return singleton(connector);
+	};
+	
 	/**
 	 * @return  a triangulation of the area covered by this junction
 	 */
@@ -231,12 +238,12 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 		Collection<TriangleXYZ> trianglesXYZ =
 			new ArrayList<TriangleXYZ>(trianglesXZ.size());
 
-		final NodeElevationProfile eleProfile = node.getElevationProfile();
+		final double ele = connector.getPosXYZ().y;
 		
 		for (TriangleXZ triangleXZ : trianglesXZ) {
-			VectorXYZ v1 = eleProfile.getWithEle(triangleXZ.v1);
-			VectorXYZ v2 = eleProfile.getWithEle(triangleXZ.v2);
-			VectorXYZ v3 = eleProfile.getWithEle(triangleXZ.v3);
+			VectorXYZ v1 = triangleXZ.v1.xyz(connector.getPosXYZ().y);
+			VectorXYZ v2 = triangleXZ.v2.xyz(connector.getPosXYZ().y);
+			VectorXYZ v3 = triangleXZ.v3.xyz(connector.getPosXYZ().y);
 			if (triangleXZ.isClockwise()) {
 				trianglesXYZ.add(new TriangleXYZ(v3, v2, v1));
 			} else  {
@@ -254,14 +261,15 @@ public abstract class JunctionNodeWorldObject implements NodeWorldObject,
 	 * which happens when there is only one connected way segment.
 	 * 
 	 * (Only available if junction information for this representation has been
-	 * provided using {@link #setInformation(List, List, List)}.)
+	 * provided using {@link #setInformation(List, List, List)},
+	 * and after elevation information has been set.)
 	 */
 	protected PolygonXYZ getJunctionArea() {
-				
+		
 		checkInformationProvided();
 
 		List<VectorXZ> vectorsXZ = getJunctionAreaOutlineXZ();
-		List<VectorXYZ> vectors = node.getElevationProfile().getWithEle(vectorsXZ);
+		List<VectorXYZ> vectors = VectorXZ.listXYZ(vectorsXZ, connector.getPosXYZ().y);
 		
 		if (vectors.size() > 2) {
 		

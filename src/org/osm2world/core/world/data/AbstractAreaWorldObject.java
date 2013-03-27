@@ -2,11 +2,10 @@ package org.osm2world.core.world.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_elevation.data.AreaElevationProfile;
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -14,7 +13,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
@@ -30,40 +28,44 @@ public abstract class AbstractAreaWorldObject
 		IntersectionTestObject {
 	
 	protected final MapArea area;
-
+	
+	private final SimplePolygonXZ outlinePolygonXZ;
+	private final EleConnectorGroup connectors;
+	
 	protected AbstractAreaWorldObject(MapArea area) {
+		
 		this.area = area;
+		
+		outlinePolygonXZ = area.getPolygon().getOuter().makeCounterclockwise();
+		
+		connectors = new EleConnectorGroup();
+		connectors.addConnectorsFor(area.getPolygon());
+		
+	}
+	
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		return connectors;
 	}
 	
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
-		return area.getPolygon().getOuter().makeCounterclockwise();
+		return outlinePolygonXZ;
 	}
 
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
-		
-		List<VectorXZ> vertices = getOutlinePolygonXZ().getVertexLoop();
-		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(vertices.size()+1);
-		
-		for (int i = 0; i < vertices.size(); i++) {
-			VectorXZ pos = vertices.get(i);
-			vs.add( pos.xyz(area.getElevationProfile().getEleAt(pos)) );
-		}
-		
-		vs.add(vs.get(0));
-				
-		return new PolygonXYZ(vs);
-				
+		return connectors.getPosXYZ(outlinePolygonXZ);
 	}
 
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(area.getOuterPolygon().getVertices());
+		return new AxisAlignedBoundingBoxXZ(
+				area.getOuterPolygon().getVertexCollection());
 	}
 	
 	@Override
-	public final MapElement getPrimaryMapElement() {
+	public final MapArea getPrimaryMapElement() {
 		return area;
 	}
 
@@ -74,7 +76,7 @@ public abstract class AbstractAreaWorldObject
 	protected Collection<TriangleXYZ> getTriangulation(
 			PolygonWithHolesXZ polygon) {
 		
-		final AreaElevationProfile eleProfile = area.getElevationProfile();
+		//TODO: triangulation before ele calculation would allow creating connectors for all vertices
 		
 		Collection<TriangleXZ> trianglesXZ =
 			TriangulationUtil.triangulate(polygon);
@@ -83,9 +85,9 @@ public abstract class AbstractAreaWorldObject
 			new ArrayList<TriangleXYZ>(trianglesXZ.size());
 		
 		for (TriangleXZ triangleXZ : trianglesXZ) {
-			VectorXYZ v1 = eleProfile.getWithEle(triangleXZ.v1);
-			VectorXYZ v2 = eleProfile.getWithEle(triangleXZ.v2);
-			VectorXYZ v3 = eleProfile.getWithEle(triangleXZ.v3);
+			VectorXYZ v1 = connectors.getPosXYZ(triangleXZ.v1);
+			VectorXYZ v2 = connectors.getPosXYZ(triangleXZ.v2);
+			VectorXYZ v3 = connectors.getPosXYZ(triangleXZ.v3);
 			if (triangleXZ.isClockwise()) {
 				trianglesXYZ.add(new TriangleXYZ(v3, v2, v1));
 			} else  {

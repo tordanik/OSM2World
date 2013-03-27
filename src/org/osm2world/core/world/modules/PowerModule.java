@@ -17,7 +17,6 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.LineSegmentXZ;
@@ -123,16 +122,6 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -143,8 +132,7 @@ public final class PowerModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 						
-			target.drawBox(PLASTIC_GREY,
-					node.getElevationProfile().getWithEle(node.getPos()),
+			target.drawBox(PLASTIC_GREY, getBase(),
 					faceVector, 1.5, 0.8, 0.3);
 			
 		}
@@ -178,16 +166,6 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -211,8 +189,7 @@ public final class PowerModule extends AbstractModule {
 						node.getTags().getValue("surface"), Materials.WOOD);
 			}
 			
-			target.drawColumn(material, null,
-					node.getElevationProfile().getWithEle(node.getPos()),
+			target.drawColumn(material, null, getBase(),
 					parseHeight(node.getTags(), 8f),
 					0.15, 0.15, false, true);
 		}
@@ -227,24 +204,12 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			double ele = node.getElevationProfile().getEle();
 			
 			float poleHeight = parseHeight(node.getTags(), 100f);
 			float poleRadiusBottom = parseWidth(node.getTags(), 5) / 2;
@@ -273,23 +238,23 @@ public final class PowerModule extends AbstractModule {
 			
 			/* draw pole */
 			target.drawColumn(poleMaterial, null,
-					node.getElevationProfile().getWithEle(node.getPos()),
+					getBase(),
 					poleHeight,
 					poleRadiusBottom, poleRadiusTop, false, false);
 			
 			/* draw nacelle */
 			VectorXZ nacelleVector = VectorXZ.X_UNIT;
 			target.drawBox(nacelleMaterial,
-					node.getPos().xyz(ele + poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
+					getBase().addY(poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 			
 			/* draw blades */
 			
 			// define first blade
 			List<VectorXYZ> bladeFront = asList(
-				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, +nacelleHeight/2),
-				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2 - bladeLength, 0f),
-				node.getPos().xyz(ele + poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, -nacelleHeight/2)
+				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, +nacelleHeight/2),
+				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2 - bladeLength, 0f),
+				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, -nacelleHeight/2)
 			);
 			List<VectorXYZ> bladeBack = asList(
 				bladeFront.get(0),
@@ -298,7 +263,7 @@ public final class PowerModule extends AbstractModule {
 			);
 			
 			// rotate and draw blades
-			double rotCenterY = ele + poleHeight + nacelleHeight/2;
+			double rotCenterY = getBase().y + poleHeight + nacelleHeight/2;
 			double rotCenterZ = node.getPos().getZ();
 			
 			bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
@@ -336,17 +301,6 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			//powerlines are currently treated as running on the ground for simplicity
-			return 0;
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 			
 			List<VectorXYZ> powerlineShape = asList(
@@ -356,8 +310,7 @@ public final class PowerModule extends AbstractModule {
 				new VectorXYZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL, 0)
 			);
 			
-			List<VectorXYZ> path =
-				segment.getElevationProfile().getPointsWithEle();
+			List<VectorXYZ> path = getBaseline();
 			
 			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
 					powerlineShape,
@@ -444,8 +397,8 @@ public final class PowerModule extends AbstractModule {
 				double startHeight = parseHeight(start.pos.getTags(), 14) + 0.25;
 				double endHeight = parseHeight(end.pos.getTags(), 14) + 0.25;
 				
-				VectorXYZ baseStart = start.pos.getElevationProfile().getPointWithEle().add(0, startHeight - 0.5, 0);
-				VectorXYZ baseEnd = end.pos.getElevationProfile().getPointWithEle().add(0, endHeight - 0.5, 0);
+				VectorXYZ baseStart = getStartXYZ().addY(startHeight - 0.5);
+				VectorXYZ baseEnd = getEndXYZ().addY(endHeight - 0.5);
 			
 				// power lines at the top left and right
 				addPos(baseStart, baseEnd, 2, 0.5);
@@ -473,8 +426,8 @@ public final class PowerModule extends AbstractModule {
 				double heightS = 2.5 * (((int) (startHeight / 2.5)) / 5);
 				double heightE = 2.5 * (((int) (endHeight / 2.5)) / 5);
 
-				VectorXYZ baseStart = start.pos.getElevationProfile().getPointWithEle().add(0, -0.5, 0);
-				VectorXYZ baseEnd = end.pos.getElevationProfile().getPointWithEle().add(0, -0.5, 0);
+				VectorXYZ baseStart = getStartXYZ().addY(-0.5);
+				VectorXYZ baseEnd = getEndXYZ().addY(-0.5);
 
 				// power line at the tower's top
 				addPos(baseStart, baseEnd, 0, 5*heightS, 5*heightE);
@@ -511,16 +464,6 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 		
 		@Override
@@ -583,22 +526,12 @@ public final class PowerModule extends AbstractModule {
 			return GroundState.ON;
 		}
 
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return parseHeight(node.getTags(), 14);
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
 		// TODO we're missing the ceramics to hold the power lines
 
 		@Override
 		public void renderTo(Target<?> target) {
 
-			VectorXYZ base = node.getElevationProfile().getPointWithEle().add(0, -0.5, 0);
+			VectorXYZ base = getBase().addY(-0.5);
 			double height = parseHeight(node.getTags(), 14);
 
 			Material material = Materials.getSurfaceMaterial(node.getTags().getValue("material"));
@@ -642,16 +575,6 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return getTowerHeight();
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 
 		/**
@@ -827,7 +750,7 @@ public final class PowerModule extends AbstractModule {
 			double height = getTowerHeight();
 
 			double segment_height = 2.5;
-			double base = node.getElevationProfile().getEle() - 0.5;
+			double base = getBase().y - 0.5;
 
 			int parts = (int) (height / segment_height);
 			int low_parts = parts / 5;
@@ -848,6 +771,8 @@ public final class PowerModule extends AbstractModule {
 	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject
 		implements RenderableToAllTargets {
 
+		//TODO create individual EleConnector for panels
+		
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = new Comparator<VectorXZ>() {
 			@Override public int compare(VectorXZ v1, VectorXZ v2) {
@@ -860,24 +785,12 @@ public final class PowerModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			AreaElevationProfile eleProfile = area.getElevationProfile();
 			
 			/* construct panel geometry */
 
@@ -949,10 +862,10 @@ public final class PowerModule extends AbstractModule {
 					// TODO: take elevation into account
 					// Might necessitate individual panels or shorter strips.
 					
-					renderPanelsTo(target,
-							eleProfile.getWithEle(intersections.get(i)),
-							eleProfile.getWithEle(intersections.get(i+1)),
-							upVector);
+//					renderPanelsTo(target,
+//							eleProfile.getWithEle(intersections.get(i)),
+//							eleProfile.getWithEle(intersections.get(i+1)),
+//							upVector);
 					
 				}
 				

@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.CHAIN_LINK_FENCE;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
@@ -82,25 +82,15 @@ public class BarrierModule extends AbstractModule {
 			width = parseWidth(waySegment.getOsmWay().tags, defaultWidth);
 			
 		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return height;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
 		
 		@Override
 		public VectorXZ getStartPosition() {
-			return line.getStartNode().getPos();
+			return segment.getStartNode().getPos();
 		}
 		
 		@Override
 		public VectorXZ getEndPosition() {
-			return line.getEndNode().getPos();
+			return segment.getEndNode().getPos();
 		}
 		
 		@Override
@@ -141,8 +131,7 @@ public class BarrierModule extends AbstractModule {
 				new VectorXYZ(+width/2, 0, 0)
 			);
 			
-			List<VectorXYZ> path =
-				line.getElevationProfile().getPointsWithEle();
+			List<VectorXYZ> path = getCenterline();
 			
 			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(wallShape,
 					path, nCopies(path.size(), VectorXYZ.Y_UNIT));
@@ -156,11 +145,11 @@ public class BarrierModule extends AbstractModule {
 			
 			List<VectorXYZ> startCap = transformShape(wallShape,
 					path.get(0),
-					line.getDirection().xyz(0),
+					segment.getDirection().xyz(0),
 					VectorXYZ.Y_UNIT);
 			List<VectorXYZ> endCap = transformShape(wallShape,
 					path.get(path.size()-1),
-					line.getDirection().invert().xyz(0),
+					segment.getDirection().invert().xyz(0),
 					VectorXYZ.Y_UNIT);
 			
 			List<List<VectorXZ>> texCoordLists =
@@ -216,8 +205,7 @@ public class BarrierModule extends AbstractModule {
 			
 			/* render fence */
 			
-			List<VectorXYZ> pointsWithEle =
-					line.getElevationProfile().getPointsWithEle();
+			List<VectorXYZ> pointsWithEle = getCenterline();
 			
 			List<VectorXYZ> vsFence = createVerticalTriangleStrip(
 					pointsWithEle, 0, height);
@@ -240,15 +228,17 @@ public class BarrierModule extends AbstractModule {
 						
 			/* render poles */
 			
+			//TODO connect the poles to the ground independently
+			
 			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
-					line.getStartNode().getPos(), line.getEndNode().getPos());
+					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
 			for (VectorXZ polePosition : polePositions) {
-			
-				VectorXYZ base = polePosition.xyz(line.getElevationProfile().getEleAt(polePosition));
-				target.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
-						height, width, width, false, true);
-			
+//				TODO draw poles again
+//				VectorXYZ base = polePosition.xyz(segment.getElevationProfile().getEleAt(polePosition));
+//				target.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
+//						height, width, width, false, true);
+//
 			}
 			
 		}
@@ -284,23 +274,25 @@ public class BarrierModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
+			List<VectorXYZ> baseline = getCenterline();
+			
 			/* render bars */
 			
 			List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(
-					line.getElevationProfile().getPointsWithEle(),
+					baseline,
 					0.2f * height, 0.5f * height);
 			List<VectorXYZ> vsLowBack = createVerticalTriangleStrip(
-					line.getElevationProfile().getPointsWithEle(),
+					baseline,
 					0.5f * height, 0.2f * height);
 			
 			target.drawTriangleStrip(material, vsLowFront, null);
 			target.drawTriangleStrip(material, vsLowBack, null);
 
 			List<VectorXYZ> vsHighFront = createVerticalTriangleStrip(
-					line.getElevationProfile().getPointsWithEle(),
+					baseline,
 					0.65f * height, 0.95f * height);
 			List<VectorXYZ> vsHighBack = createVerticalTriangleStrip(
-					line.getElevationProfile().getPointsWithEle(),
+					baseline,
 					0.95f * height, 0.65f * height);
 			
 			target.drawTriangleStrip(material, vsHighFront, null);
@@ -309,12 +301,12 @@ public class BarrierModule extends AbstractModule {
 			/* render poles */
 			
 			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(1f, false,
-					line.getStartNode().getPos(), line.getEndNode().getPos());
+					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
 			for (VectorXZ polePosition : polePositions) {
-			
-				VectorXYZ base = polePosition.xyz(line.getElevationProfile().getEleAt(polePosition));
-				target.drawColumn(material, null , base, height, width, width, false, true);
+//				TODO draw poles again
+//				VectorXYZ base = polePosition.xyz(segment.getElevationProfile().getEleAt(polePosition));
+//				target.drawColumn(material, null , base, height, width, width, false, true);
 			
 			}
 			
@@ -342,25 +334,14 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return height;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON; //TODO: flexible ground states
 		}
 
 		@Override
 		public void renderTo(Target<?> target) {
-			VectorXYZ pos = node.getElevationProfile().getPointWithEle();
 			target.drawColumn(Materials.CONCRETE,
-					null, pos, height, 0.15f, 0.15f, false, true);
+					null, getBase(), height, 0.15f, 0.15f, false, true);
 		}
 		
 	}

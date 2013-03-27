@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.data.AreaElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -32,7 +31,6 @@ public class MapArea implements MapElement {
 	
 	private List<AreaWorldObject> representations =
 		new ArrayList<AreaWorldObject>(1);
-	private AreaElevationProfile elevationProfile;
 	
 	//TODO: contained / intersecting nodes/lines
 	
@@ -198,15 +196,6 @@ public class MapArea implements MapElement {
 	 */
 	public void addRepresentation(AreaWorldObject representation) {
 		this.representations.add(representation);
-	}
-	
-	@Override
-	public AreaElevationProfile getElevationProfile() {
-		return elevationProfile;
-	}
-	
-	public void setElevationProfile(AreaElevationProfile elevationProfile) {
-		this.elevationProfile = elevationProfile;
 	}
 	
 	public void addOverlap(MapOverlap<?, ?> overlap) {

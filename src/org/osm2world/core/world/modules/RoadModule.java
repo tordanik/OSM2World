@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -27,8 +27,6 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.map_elevation.data.NodeElevationProfile;
-import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -40,11 +38,8 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkAreaWorldObject;
@@ -354,7 +349,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					break;
 				}
 				
-				if (firstInboundIndex == -1 && road.line.getEndNode() == node) {
+				if (firstInboundIndex == -1 && road.segment.getEndNode() == node) {
 					firstInboundIndex = i;
 				}
 				
@@ -372,7 +367,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				
 				for (i = firstInboundIndex; i < roads.size(); i++) {
 					
-					if (roads.get(i).line.getEndNode() != node) {
+					if (roads.get(i).segment.getEndNode() != node) {
 						break; //not inbound
 					}
 					
@@ -476,8 +471,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		/* get some basic info about the roads */
 		
-		final boolean isRoad1Inbound = road1.line.getEndNode() == node;
-		final boolean isRoad2Inbound = road2.line.getEndNode() == node;
+		final boolean isRoad1Inbound = road1.segment.getEndNode() == node;
+		final boolean isRoad2Inbound = road2.segment.getEndNode() == node;
 		
 		final List<Lane> lanes1, lanes2;
 		
@@ -535,8 +530,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadJunction
 		extends JunctionNodeWorldObject
-		implements NodeWorldObject, RenderableToAllTargets,
-		TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 						
 		public RoadJunction(MapNode node) {
 			super(node);
@@ -593,8 +587,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadConnector
 		extends VisibleConnectorNodeWorldObject
-		implements NodeWorldObject, RenderableToAllTargets,
-		TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 		
@@ -610,8 +603,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<Road> roads = getConnectedRoads(node, false);
 			
 			return (float)Math.min(Math.min(
-					roads.get(0).line.getLineSegment().getLength() / 3,
-					roads.get(1).line.getLineSegment().getLength() / 3),
+					roads.get(0).segment.getLineSegment().getLength() / 3,
+					roads.get(1).segment.getLineSegment().getLength() / 3),
 					MAX_CONNECTOR_LENGTH);
 			
 		}
@@ -640,9 +633,9 @@ public class RoadModule extends ConfigurableWorldModule {
 			for (TriangleXZ triangle : trianglesXZ) {
 				trianglesXYZ.add(
 						triangle.makeCounterclockwise().xyz(
-								node.getElevationProfile().getEle()));
+								connector.getPosXYZ().y));
 			}
-				
+			
 			Material material = getSurfaceForNode(node);
 			
 			target.drawTriangles(material, trianglesXYZ,
@@ -667,16 +660,6 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 			return currentGroundState;
 		}
-		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
 	
 	}
 	
@@ -685,11 +668,10 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject
-		implements NodeWorldObject, RenderableToAllTargets,
-		TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		private static final float CROSSING_WIDTH = 3f;
-				
+		
 		public RoadCrossingAtConnector(MapNode node) {
 			super(node);
 		}
@@ -701,95 +683,95 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-					
-			NodeElevationProfile eleProfile = node.getElevationProfile();
-			
-			VectorXYZ start = eleProfile.getWithEle(startPos);
-			VectorXYZ end = eleProfile.getWithEle(endPos);
+						
+			VectorXYZ start = startPos.xyz(connector.getPosXYZ().y);
+			VectorXYZ end = endPos.xyz(connector.getPosXYZ().y);
 
 			/* draw crossing markings */
 			
-			VectorXYZ startLines1 = eleProfile.getWithEle(
-					interpolateBetween(startPos, endPos, 0.1f));
-			VectorXYZ endLines1 = eleProfile.getWithEle(
-					interpolateBetween(startPos, endPos, 0.2f));
-			VectorXYZ startLines2 = eleProfile.getWithEle(
-					interpolateBetween(startPos, endPos, 0.8f));
-			VectorXYZ endLines2 = eleProfile.getWithEle(
-					interpolateBetween(startPos, endPos, 0.9f));
-
-			double halfStartWidth = startWidth * 0.5;
-			double halfEndWidth = endWidth * 0.5;
-			double halfStartLines1Width = interpolateValue(startLines1.xz(),
-					startPos, halfStartWidth, endPos, halfEndWidth);
-			double halfEndLines1Width = interpolateValue(endLines1.xz(),
-					startPos, halfStartWidth, endPos, halfEndWidth);
-			double halfStartLines2Width = interpolateValue(startLines2.xz(),
-					startPos, halfStartWidth, endPos, halfEndWidth);
-			double halfEndLines2Width = interpolateValue(endLines2.xz(),
-					startPos, halfStartWidth, endPos, halfEndWidth);
-
-			//TODO: don't always use halfStart/EndWith - you need to interpolate!
+			//TODO port functionality to new elevation calculation
 			
-			// area outside and inside lines
-			
-			Material surface = getSurfaceForNode(node);
-			
-			List<VectorXYZ> vs = asList(
-					start.subtract(cutVector.mult(halfStartWidth)),
-					start.add(cutVector.mult(halfStartWidth)),
-					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
-					startLines1.add(cutVector.mult(halfStartLines1Width)));
-			
-			target.drawTriangleStrip(surface, vs,
-					globalTexCoordLists(vs, surface, false));
-			
-			vs = asList(
-					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
-					endLines1.add(cutVector.mult(halfEndLines1Width)),
-					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
-					startLines2.add(cutVector.mult(halfStartLines2Width)));
-			
-			target.drawTriangleStrip(surface, vs,
-					globalTexCoordLists(vs, surface, false));
-			
-			vs = asList(
-					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
-					endLines2.add(cutVector.mult(halfEndLines2Width)),
-					end.subtract(cutVector.mult(halfEndWidth)),
-					end.add(cutVector.mult(halfEndWidth)));
-			
-			target.drawTriangleStrip(surface, vs,
-					globalTexCoordLists(vs, surface, false));
-
-			// lines across road
-			
-			vs = asList(
-					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
-					startLines1.add(cutVector.mult(halfStartLines1Width)),
-					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
-					endLines1.add(cutVector.mult(halfEndLines1Width)));
-			
-			target.drawTriangleStrip(ROAD_MARKING, vs,
-					globalTexCoordLists(vs, ROAD_MARKING, false));
-			
-			vs = asList(
-					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
-					startLines2.add(cutVector.mult(halfStartLines2Width)),
-					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
-					endLines2.add(cutVector.mult(halfEndLines2Width)));
-			
-			target.drawTriangleStrip(ROAD_MARKING, vs,
-					globalTexCoordLists(vs, ROAD_MARKING, false));
-			
-			/* draw lane connections */
-			
-			List<LaneConnection> connections = buildLaneConnections(
-					node, false, true);
-			
-			for (LaneConnection connection : connections) {
-				connection.renderTo(target);
-			}
+//			VectorXYZ startLines1 = eleProfile.getWithEle(
+//					interpolateBetween(startPos, endPos, 0.1f));
+//			VectorXYZ endLines1 = eleProfile.getWithEle(
+//					interpolateBetween(startPos, endPos, 0.2f));
+//			VectorXYZ startLines2 = eleProfile.getWithEle(
+//					interpolateBetween(startPos, endPos, 0.8f));
+//			VectorXYZ endLines2 = eleProfile.getWithEle(
+//					interpolateBetween(startPos, endPos, 0.9f));
+//
+//			double halfStartWidth = startWidth * 0.5;
+//			double halfEndWidth = endWidth * 0.5;
+//			double halfStartLines1Width = interpolateValue(startLines1.xz(),
+//					startPos, halfStartWidth, endPos, halfEndWidth);
+//			double halfEndLines1Width = interpolateValue(endLines1.xz(),
+//					startPos, halfStartWidth, endPos, halfEndWidth);
+//			double halfStartLines2Width = interpolateValue(startLines2.xz(),
+//					startPos, halfStartWidth, endPos, halfEndWidth);
+//			double halfEndLines2Width = interpolateValue(endLines2.xz(),
+//					startPos, halfStartWidth, endPos, halfEndWidth);
+//
+//			//TODO: don't always use halfStart/EndWith - you need to interpolate!
+//
+//			// area outside and inside lines
+//
+//			Material surface = getSurfaceForNode(node);
+//
+//			List<VectorXYZ> vs = asList(
+//					start.subtract(cutVector.mult(halfStartWidth)),
+//					start.add(cutVector.mult(halfStartWidth)),
+//					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
+//					startLines1.add(cutVector.mult(halfStartLines1Width)));
+//
+//			target.drawTriangleStrip(surface, vs,
+//					globalTexCoordLists(vs, surface, false));
+//
+//			vs = asList(
+//					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
+//					endLines1.add(cutVector.mult(halfEndLines1Width)),
+//					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
+//					startLines2.add(cutVector.mult(halfStartLines2Width)));
+//
+//			target.drawTriangleStrip(surface, vs,
+//					globalTexCoordLists(vs, surface, false));
+//
+//			vs = asList(
+//					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
+//					endLines2.add(cutVector.mult(halfEndLines2Width)),
+//					end.subtract(cutVector.mult(halfEndWidth)),
+//					end.add(cutVector.mult(halfEndWidth)));
+//
+//			target.drawTriangleStrip(surface, vs,
+//					globalTexCoordLists(vs, surface, false));
+//
+//			// lines across road
+//
+//			vs = asList(
+//					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
+//					startLines1.add(cutVector.mult(halfStartLines1Width)),
+//					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
+//					endLines1.add(cutVector.mult(halfEndLines1Width)));
+//
+//			target.drawTriangleStrip(ROAD_MARKING, vs,
+//					globalTexCoordLists(vs, ROAD_MARKING, false));
+//
+//			vs = asList(
+//					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
+//					startLines2.add(cutVector.mult(halfStartLines2Width)),
+//					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
+//					endLines2.add(cutVector.mult(halfEndLines2Width)));
+//
+//			target.drawTriangleStrip(ROAD_MARKING, vs,
+//					globalTexCoordLists(vs, ROAD_MARKING, false));
+//
+//			/* draw lane connections */
+//
+//			List<LaneConnection> connections = buildLaneConnections(
+//					node, false, true);
+//
+//			for (LaneConnection connection : connections) {
+//				connection.renderTo(target);
+//			}
 			
 		}
 		
@@ -810,24 +792,13 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 			return currentGroundState;
 		}
-		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
 
 	}
 		
 	/** representation of a road */
 	public static class Road
 		extends AbstractNetworkWaySegmentWorldObject
-		implements WaySegmentWorldObject, RenderableToAllTargets,
-		TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
 		
@@ -1041,8 +1012,6 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 		
 		private void renderStepsTo(Target<?> target) {
-
-			WaySegmentElevationProfile elevationProfile = line.getElevationProfile();
 			
 			final VectorXZ startWithOffset = getStartPosition();
 			final VectorXZ endWithOffset = getEndPosition();
@@ -1052,7 +1021,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			
 			double lineLength = VectorXZ.distance (
-					line.getStartNode().getPos(), line.getEndNode().getPos());
+					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
 			/* render ground first (so gaps between the steps look better) */
 			
@@ -1083,7 +1052,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			List<VectorXYZ> stepBorderPositions = new ArrayList<VectorXYZ>();
 			for (VectorXZ posXZ : stepBorderPositionsXZ) {
-				VectorXYZ posXYZ = posXZ.xyz(elevationProfile.getEleAt(posXZ));
+				VectorXYZ posXYZ = interpolateElevation(posXZ,
+						getStartXYZ(), getEndXYZ());
 				stepBorderPositions.add(posXYZ);
 			}
 			
@@ -1099,7 +1069,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				VectorXYZ center = (frontCenter.add(backCenter)).mult(0.5);
 				center = center.subtract(Y_UNIT.mult(0.5 * height));
 				
-				VectorXZ faceDirection = line.getDirection();
+				VectorXZ faceDirection = segment.getDirection();
 				if (frontCenter.y < backCenter.y) {
 					//invert if upwards
 					faceDirection = faceDirection.invert();
@@ -1116,20 +1086,20 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<List<VectorXYZ>> handrailFootprints =
 				new ArrayList<List<VectorXYZ>>();
 
-			if (line.getTags().contains("handrail:left","yes")) {
+			if (segment.getTags().contains("handrail:left","yes")) {
 				handrailFootprints.add(leftOutline);
 			}
-			if (line.getTags().contains("handrail:right","yes")) {
+			if (segment.getTags().contains("handrail:right","yes")) {
 				handrailFootprints.add(rightOutline);
 			}
 			
 			int centerHandrails = 0;
-			if (line.getTags().contains("handrail:center","yes")) {
+			if (segment.getTags().contains("handrail:center","yes")) {
 				centerHandrails = 1;
-			} else if (line.getTags().containsKey("handrail:center")) {
+			} else if (segment.getTags().containsKey("handrail:center")) {
 				try {
 					centerHandrails = Integer.parseInt(
-							line.getTags().getValue("handrail:center"));
+							segment.getTags().getValue("handrail:center"));
 				} catch (NumberFormatException e) {}
 			}
 			
@@ -1228,17 +1198,6 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 		}
 		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return WorldModuleParseUtil.parseClearing(tags,
-					isPath(tags) ? DEFAULT_PATH_CLEARING : DEFAULT_ROAD_CLEARING);
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
 	}
 	
 	public static class RoadArea extends NetworkAreaWorldObject
@@ -1271,17 +1230,6 @@ public class RoadModule extends ConfigurableWorldModule {
 			} else {
 				return GroundState.ON;
 			}
-		}
-		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return WorldModuleParseUtil.parseClearing(
-					area.getTags(), DEFAULT_CLEARING);
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 		
 	}

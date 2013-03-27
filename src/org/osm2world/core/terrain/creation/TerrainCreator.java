@@ -13,7 +13,6 @@ import org.osm2world.EleInterpolationStrategy;
 import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_elevation.data.ElevationProfile;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
@@ -111,11 +110,12 @@ public class TerrainCreator {
 					
 					// no boundary, but ele data can be relevant
 					
-					ElevationProfile eleProfile = worldObject
-							.getPrimaryMapElement().getElevationProfile();
-					
-					unconnectedEleMap.putAll(terrainCell,
-							eleProfile.getPointsWithEle());
+					//TODO replace (or delete TerrainCreator entirely)
+//					ElevationProfile eleProfile = worldObject
+//							.getPrimaryMapElement().getElevationProfile();
+//
+//					unconnectedEleMap.putAll(terrainCell,
+//							eleProfile.getPointsWithEle());
 					
 				}
 				

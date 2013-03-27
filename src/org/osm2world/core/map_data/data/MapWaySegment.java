@@ -9,7 +9,6 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -24,7 +23,6 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	private final OSMWay osmWay;
 	
 	private List<WaySegmentWorldObject> representations = new ArrayList<WaySegmentWorldObject>(1);
-	private WaySegmentElevationProfile elevationProfile;
 	
 	@SuppressWarnings("unchecked") //is later checked for EMPTY_LIST using ==
 	private Collection<MapOverlap<?,?>> overlaps = Collections.EMPTY_LIST;
@@ -97,15 +95,6 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	 */
 	public void addRepresentation(WaySegmentWorldObject representation) {
 		this.representations.add(representation);
-	}
-	
-	@Override
-	public WaySegmentElevationProfile getElevationProfile() {
-		return elevationProfile;
-	}
-	
-	public void setElevationProfile(WaySegmentElevationProfile elevationProfile) {
-		this.elevationProfile = elevationProfile;
 	}
 	
 	@Override
