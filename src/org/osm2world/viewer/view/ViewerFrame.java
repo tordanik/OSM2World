@@ -46,6 +46,7 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.DebugView;
+import org.osm2world.viewer.view.debug.EleConnectorDebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
 import org.osm2world.viewer.view.debug.InverseDistanceWeightingStrategyDebugView;
@@ -190,10 +191,12 @@ public class ViewerFrame extends JFrame{
 					new TerrainAABBDebugView());
 			initAndAddDebugView(subMenu, VK_L, false,
 					new ClearingDebugView());
-			initAndAddDebugView(subMenu, VK_G, false,
+			initAndAddDebugView(subMenu, VK_D, false,
 					new MapDataDebugView());
-			initAndAddDebugView(subMenu, VK_E, false,
+			initAndAddDebugView(subMenu, -1, false,
 					new MapDataElevationDebugView());
+			initAndAddDebugView(subMenu, VK_E, false,
+					new EleConnectorDebugView());
 			initAndAddDebugView(subMenu, VK_R, false,
 					new RoofDataDebugView());
 			initAndAddDebugView(subMenu, -1, false,
