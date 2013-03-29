@@ -26,6 +26,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -261,7 +262,18 @@ public class OSMToMapDataConverter {
 						
 						addOverlapBetween((MapArea) e1, (MapArea) e2);
 						
+					} else if (e1 instanceof MapNode
+							&& e2 instanceof MapArea) {
+						
+						addOverlapBetween((MapNode) e1, (MapArea) e2);
+						
+					} else if (e1 instanceof MapArea
+							&& e2 instanceof MapNode) {
+						
+						addOverlapBetween((MapNode) e2, (MapArea) e1);
+						
 					}
+						
 					
 				}
 			}
@@ -481,7 +493,22 @@ public class OSMToMapDataConverter {
 		}
 		
 	}
-
+	
+	private static void addOverlapBetween(MapNode node, MapArea area) {
+		
+		if (area.getPolygon().contains(node.getPos())) {
+			
+			/* add the overlap */
+			
+			MapOverlapNA newOverlap =
+					new MapOverlapNA(node, area, MapOverlapType.CONTAIN);
+			
+			area.addOverlap(newOverlap);
+			
+		}
+		
+	}
+	
 	private AxisAlignedBoundingBoxXZ calculateFileBoundary(
 			Collection<Bound> bounds) {
 		
