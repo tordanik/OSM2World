@@ -1,7 +1,5 @@
 package org.osm2world.core.world.network;
 
-import static java.util.Arrays.asList;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +7,7 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -31,11 +30,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	private VectorXZ startOffset = VectorXZ.NULL_VECTOR;
 	private VectorXZ endOffset = VectorXZ.NULL_VECTOR;
 	
-	private EleConnector startConnector = null;
-	private EleConnector endConnector = null;
+	private EleConnectorGroup connectors;
 
-	private List<VectorXYZ> leftOutline = null;
-	private List<VectorXYZ> rightOutline = null;
+	private List<VectorXZ> leftOutlineXZ = null;
+	private List<VectorXZ> rightOutlineXZ = null;
 	
 	protected AbstractNetworkWaySegmentWorldObject(MapWaySegment segment) {
 		this.segment = segment;
@@ -97,96 +95,21 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
 		
-		if (startConnector == null) {
-			startConnector = new EleConnector(getStartWithOffset());
-			endConnector = new EleConnector(getEndWithOffset());
+		if (connectors == null) {
+			connectors = new EleConnectorGroup();
+			connectors.addConnectorsFor(getOutlinePolygonXZ().getVertices());
+			connectors.addConnectorsFor(getCenterlineXZ());
 		}
 		
-		return asList(startConnector, endConnector);
+		return connectors;
 		
 	}
-	
-	/**
-	 * returns the 3d start position.
-	 * Only available after elevation calculation.
-	 */
-	protected VectorXYZ getStartXYZ() {
-		return startConnector.getPosXYZ();
-	}
-	
-	/**
-	 * returns the 3d end position.
-	 * Only available after elevation calculation.
-	 */
-	protected VectorXYZ getEndXYZ() {
-		return endConnector.getPosXYZ();
-	}
-	
-	/**
-	 * returns all points along this way segment between, but not including,
-	 * {@link #getStartWithOffset()} and {@link #getEndWithOffset()}
-	 */
-	private List<VectorXYZ> getPointsBetweenStartAndEnd() {
-		
-		return asList(getStartXYZ(), getEndXYZ());
-		
-		/* TODO  points ON a segment
-		
-		WaySegmentElevationProfile eleProfile = segment.getElevationProfile();
-		List<VectorXYZ> pointsWithEle = eleProfile.getPointsWithEle();
-		
-		if (pointsWithEle.size() == 2) {
-			
-			return Collections.emptyList();
-			
-		} else {
-			
-			VectorXZ startWithOffset = getStartWithOffset();
-			VectorXZ endWithOffset = getEndWithOffset();
-			
-			List<VectorXYZ> result = new ArrayList<VectorXYZ>();
-			
-			for (int i = 1; i < pointsWithEle.size() - 1; ++i) {
-				
-				VectorXYZ p = pointsWithEle.get(i);
-				
-				//check whether p is between start and end and
-				//is sufficiently far away from them to avoid artifacts due to (almost) zero-length segments
-	
-				VectorXZ pXZ = p.xz();
-				
-				if (isBetween(pXZ, startWithOffset, endWithOffset)
-						&& distanceSquared(pXZ, startWithOffset) > 0.1
-						&& distanceSquared(pXZ, endWithOffset) > 0.1) {
-					
-					result.add(p);
-					
-				}
-				
-			}
-			
-			return result;
-			
-		}
-		
-		*/
-			
-	}
-	
+
 	/**
 	 * returns a sequence of node running along the center of the
 	 * line from start to end (each with offset).
 	 * Uses the {@link WaySegmentElevationProfile} for adding
 	 * elevation information.
-	 */
-	public List<VectorXYZ> getCenterline() {
-		
-		return getPointsBetweenStartAndEnd();
-		
-	}
-	
-	/**
-	 * version of {@link #getCenterline()} in the XZ plane
 	 */
 	public List<VectorXZ> getCenterlineXZ() {
 		
@@ -194,13 +117,43 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 		centerline.add(getStartWithOffset());
 		
-		for (VectorXYZ v : getPointsBetweenStartAndEnd()) {
-			centerline.add(v.xz());
-		}
-		
 		centerline.add(getEndWithOffset());
 		
 		return centerline;
+		
+	}
+	
+	/**
+	 * 3d version of {@link #getCenterlineXZ()}.
+	 * Only available after elevation calculation.
+	 */
+	public List<VectorXYZ> getCenterline() {
+		return connectors.getPosXYZ(getCenterlineXZ());
+	}
+	
+	/**
+	 * Variant of {@link #getOutline(boolean)}.
+	 * This one is already available before elevation calculation.
+	 */
+	public List<VectorXZ> getOutlineXZ(boolean right) {
+		
+		if (right) {
+			
+			if (rightOutlineXZ == null) {
+				calculateOutlines();
+			}
+			
+			return rightOutlineXZ;
+			
+		} else { //left
+			
+			if (leftOutlineXZ == null) {
+				calculateOutlines();
+			}
+			
+			return leftOutlineXZ;
+			
+		}
 		
 	}
 	
@@ -216,28 +169,26 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	 * //TODO: compatible with future offset/clearing influences?
 	 */
 	public List<VectorXYZ> getOutline(boolean right) {
-						
+		return connectors.getPosXYZ(getOutlineXZ(right));
+	}
+	
+	@Override
+	public SimplePolygonXZ getOutlinePolygonXZ() {
 		
-		//FIXME: do something like getCenterline: modify pointsWith ele using normal; then check whether the result is between the outline's start and end
+		List<VectorXZ> outline = new ArrayList<VectorXZ>();
+
+		List<VectorXZ> lOutline = getOutlineXZ(false);
+		List<VectorXZ> rOutline = getOutlineXZ(true);
 		
+		outline.addAll(lOutline);
 		
-		if (right) {
-			
-			if (rightOutline == null) {
-				calculateOutlines();
-			}
-			
-			return rightOutline;
-			
-		} else { //left
-			
-			if (leftOutline == null) {
-				calculateOutlines();
-			}
-			
-			return leftOutline;
-			
-		}
+		rOutline = new ArrayList<VectorXZ>(rOutline);
+		Collections.reverse(rOutline);
+		outline.addAll(rOutline);
+		
+		outline.add(outline.get(0));
+		
+		return new SimplePolygonXZ(outline);
 		
 	}
 	
@@ -261,40 +212,35 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 	}
 	
-	@Override
-	public SimplePolygonXZ getOutlinePolygonXZ() {
-		return getOutlinePolygon().getSimpleXZPolygon();
-	}
-
 	private void calculateOutlines() {
 
 		if (startCutVector == null || endCutVector == null) {
 			throw new IllegalStateException("cannot calculate outlines before cut vectors");
 		}
 		
-		List<VectorXYZ> centerLine = getCenterline();
+		List<VectorXZ> centerLine = getCenterlineXZ();
 
-		leftOutline = new ArrayList<VectorXYZ>(centerLine.size());
-		rightOutline = new ArrayList<VectorXYZ>(centerLine.size());
+		leftOutlineXZ = new ArrayList<VectorXZ>(centerLine.size());
+		rightOutlineXZ = new ArrayList<VectorXZ>(centerLine.size());
 		
 		assert centerLine.size() >= 2;
 		
 		double halfWidth = getWidth() * 0.5f;
 				
-		VectorXYZ centerStart = centerLine.get(0);
-		leftOutline.add(centerStart.add(startCutVector.mult(-halfWidth)));
-		rightOutline.add(centerStart.add(startCutVector.mult(halfWidth)));
+		VectorXZ centerStart = centerLine.get(0);
+		leftOutlineXZ.add(centerStart.add(startCutVector.mult(-halfWidth)));
+		rightOutlineXZ.add(centerStart.add(startCutVector.mult(halfWidth)));
 		
 		for (int i = 1; i < centerLine.size() - 1; i++) {
 			
-			leftOutline.add(centerLine.get(i).add(segment.getRightNormal().mult(-halfWidth)));
-			rightOutline.add(centerLine.get(i).add(segment.getRightNormal().mult(halfWidth)));
+			leftOutlineXZ.add(centerLine.get(i).add(segment.getRightNormal().mult(-halfWidth)));
+			rightOutlineXZ.add(centerLine.get(i).add(segment.getRightNormal().mult(halfWidth)));
 			
 		}
 
-		VectorXYZ centerEnd = centerLine.get(centerLine.size() - 1);
-		leftOutline.add(centerEnd.add(endCutVector.mult(-halfWidth)));
-		rightOutline.add(centerEnd.add(endCutVector.mult(halfWidth)));
+		VectorXZ centerEnd = centerLine.get(centerLine.size() - 1);
+		leftOutlineXZ.add(centerEnd.add(endCutVector.mult(-halfWidth)));
+		rightOutlineXZ.add(centerEnd.add(endCutVector.mult(halfWidth)));
 		
 		//TODO: what if adding the cut vector moves start/end *BEHIND* the
 		//outline node from an intersection-induced node?
@@ -312,11 +258,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 		assert 0 <= relativePosFromLeft && relativePosFromLeft <= 1;
 		
-		VectorXYZ position = (start ? startConnector : endConnector).getPosXYZ();
+		VectorXZ position = start ? getStartWithOffset() : getEndWithOffset();
 		VectorXZ cutVector = start ? getStartCutVector() : getEndCutVector();
 		
-		return position.add(cutVector.mult(
-				(-0.5 + relativePosFromLeft) * getWidth()));
+		return connectors.getPosXYZ(position.add(cutVector.mult(
+				(-0.5 + relativePosFromLeft) * getWidth())));
 		
 	}
 
@@ -342,12 +288,13 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(getOutlinePolygon().getVertices());
+		return new AxisAlignedBoundingBoxXZ(
+				getOutlinePolygonXZ().getVertexCollection());
 	}
 	
 	@Override
 	public String toString() {
-		return "network way segment for " + segment;
+		return this.getClass().getSimpleName() + "(" + segment + ")";
 	}
 	
 }

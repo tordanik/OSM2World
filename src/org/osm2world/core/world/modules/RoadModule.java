@@ -7,7 +7,6 @@ import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.E
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
-import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -29,9 +28,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -625,18 +622,9 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			//TODO: subtract area covered by connections
 			
-			List<TriangleXZ> trianglesXZ = triangulate(getOutlinePolygonXZ(),
-					Collections.<SimplePolygonXZ>emptySet());
-			
-			List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>();
-			
-			for (TriangleXZ triangle : trianglesXZ) {
-				trianglesXYZ.add(
-						triangle.makeCounterclockwise().xyz(
-								connector.getPosXYZ().y));
-			}
-			
 			Material material = getSurfaceForNode(node);
+			
+			Collection<TriangleXYZ> trianglesXYZ = getTriangulation();
 			
 			target.drawTriangles(material, trianglesXYZ,
 					globalTexCoordLists(trianglesXYZ, material, false));
@@ -683,14 +671,14 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-						
-			VectorXYZ start = startPos.xyz(connector.getPosXYZ().y);
-			VectorXYZ end = endPos.xyz(connector.getPosXYZ().y);
 
-			/* draw crossing markings */
-			
 			//TODO port functionality to new elevation calculation
-			
+//
+//			VectorXYZ start = startPos.xyz(connector.getPosXYZ().y);
+//			VectorXYZ end = endPos.xyz(connector.getPosXYZ().y);
+//
+//			/* draw crossing markings */
+//
 //			VectorXYZ startLines1 = eleProfile.getWithEle(
 //					interpolateBetween(startPos, endPos, 0.1f));
 //			VectorXYZ endLines1 = eleProfile.getWithEle(
@@ -1046,6 +1034,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			 * (positions on the line spaced by step length),
 			 * interpolate heights between adjacent points with elevation */
 			
+			List<VectorXYZ> centerline = getCenterline();
+			
 			List<VectorXZ> stepBorderPositionsXZ =
 				GeometryUtil.equallyDistributePointsAlong(
 					stepLength, true, startWithOffset, endWithOffset);
@@ -1053,7 +1043,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<VectorXYZ> stepBorderPositions = new ArrayList<VectorXYZ>();
 			for (VectorXZ posXZ : stepBorderPositionsXZ) {
 				VectorXYZ posXYZ = interpolateElevation(posXZ,
-						getStartXYZ(), getEndXYZ());
+						centerline.get(0),
+						centerline.get(centerline.size() - 1));
 				stepBorderPositions.add(posXYZ);
 			}
 			

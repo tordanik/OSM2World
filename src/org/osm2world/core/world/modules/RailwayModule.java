@@ -206,11 +206,11 @@ public class RailwayModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			if (getJunctionArea() == null) return;
+			if (getOutlinePolygon() == null) return;
 			
 			/* draw ground */
 
-			List<VectorXYZ> vectors = getJunctionArea().getVertexLoop();
+			List<VectorXYZ> vectors = getOutlinePolygon().getVertexLoop();
 
 			Material material = Materials.RAIL_BALLAST_DEFAULT;
 			

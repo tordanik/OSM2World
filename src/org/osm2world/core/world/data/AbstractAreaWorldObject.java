@@ -1,18 +1,15 @@
 package org.osm2world.core.world.data;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
@@ -30,7 +27,8 @@ public abstract class AbstractAreaWorldObject
 	protected final MapArea area;
 	
 	private final SimplePolygonXZ outlinePolygonXZ;
-	private final EleConnectorGroup connectors;
+	
+	private EleConnectorGroup connectors;
 	
 	protected AbstractAreaWorldObject(MapArea area) {
 		
@@ -38,14 +36,25 @@ public abstract class AbstractAreaWorldObject
 		
 		outlinePolygonXZ = area.getPolygon().getOuter().makeCounterclockwise();
 		
-		connectors = new EleConnectorGroup();
-		connectors.addConnectorsFor(area.getPolygon());
-		
 	}
 	
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
+		
+		if (connectors == null) {
+			
+			connectors = new EleConnectorGroup();
+			
+			connectors.addConnectorsFor(area.getPolygon());
+			connectors.addConnectorsForTriangulation(getTriangulationXZ());
+			
+			//TODO do no longer triangulate before elevation calculation
+			//     when constrained triangulation (no new points) works
+			
+		}
+		
 		return connectors;
+		
 	}
 	
 	@Override
@@ -70,42 +79,23 @@ public abstract class AbstractAreaWorldObject
 	}
 
 	/**
-	 * decompose a given polygon into counterclockwise triangles,
-	 * using this area's elevation data.
+	 * decompose this area into counterclockwise triangles.
 	 */
-	protected Collection<TriangleXYZ> getTriangulation(
-			PolygonWithHolesXZ polygon) {
-		
-		//TODO: triangulation before ele calculation would allow creating connectors for all vertices
-		
-		Collection<TriangleXZ> trianglesXZ =
-			TriangulationUtil.triangulate(polygon);
-		
-		Collection<TriangleXYZ> trianglesXYZ =
-			new ArrayList<TriangleXYZ>(trianglesXZ.size());
-		
-		for (TriangleXZ triangleXZ : trianglesXZ) {
-			VectorXYZ v1 = connectors.getPosXYZ(triangleXZ.v1);
-			VectorXYZ v2 = connectors.getPosXYZ(triangleXZ.v2);
-			VectorXYZ v3 = connectors.getPosXYZ(triangleXZ.v3);
-			if (triangleXZ.isClockwise()) {
-				trianglesXYZ.add(new TriangleXYZ(v3, v2, v1));
-			} else  {
-				trianglesXYZ.add(new TriangleXYZ(v1, v2, v3));
-			}
-		}
-		
-		return trianglesXYZ;
-		
+	protected Collection<TriangleXZ> getTriangulationXZ() {
+		return TriangulationUtil.triangulate(area.getPolygon());
 	}
 	
 	/**
-	 * decompose this area into counterclockwise triangles
+	 * decompose this area into counterclockwise 3d triangles.
+	 * Only available after elevation calculation.
 	 */
 	protected Collection<TriangleXYZ> getTriangulation() {
-		
-		return getTriangulation(area.getPolygon());
-				
+		return connectors.getTriangulationXYZ(getTriangulationXZ());
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "(" + area + ")";
 	}
 	
 }

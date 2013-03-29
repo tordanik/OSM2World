@@ -15,12 +15,15 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -95,23 +98,21 @@ public class SurfaceAreaModule extends AbstractModule {
 			
 			if (material != null) {
 				
-				for (PolygonWithHolesXZ polygon : getGroundPolygons()) {
-					
-					Collection<TriangleXYZ> triangles = getTriangulation(polygon);
-					target.drawTriangles(material, triangles,
-							globalTexCoordLists(triangles, material, false));
+				Collection<TriangleXYZ> triangles = getTriangulation();
+				target.drawTriangles(material, triangles,
+						globalTexCoordLists(triangles, material, false));
 				
-				}
-					
 			}
 			
 		}
 		
 		/**
 		 * calculates the true ground footprint of this area by removing
-		 * area covered by other overlapping features.
+		 * area covered by other overlapping features, then triangulates it
+		 * into counterclockwise triangles.
 		 */
-		private Collection<PolygonWithHolesXZ> getGroundPolygons() {
+		@Override
+		protected Collection<TriangleXZ> getTriangulationXZ() {
 			
 			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_TAG.value);
 			
@@ -119,6 +120,9 @@ public class SurfaceAreaModule extends AbstractModule {
 			
 			List<SimplePolygonXZ> subtractPolys = new ArrayList<SimplePolygonXZ>();
 			Collection<VectorXYZ> unconnectedEles = emptyList(); //TODO
+			
+			EleConnectorGroup eleConnectors = new EleConnectorGroup();
+			eleConnectors.addAll(this.getEleConnectors());
 			
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
@@ -146,6 +150,8 @@ public class SurfaceAreaModule extends AbstractModule {
 							&& outlinePolygon.getXZPolygon().isSimple()) { //TODO is simplicity check necessary?
 						
 						subtractPolys.add(outlinePolygon.getSimpleXZPolygon());
+					
+						eleConnectors.addAll(otherWO.getEleConnectors());
 						
 					}
 					
@@ -170,19 +176,31 @@ public class SurfaceAreaModule extends AbstractModule {
 			
 			/* create "leftover" polygons by subtracting the existing ones */
 			
+			Collection<PolygonWithHolesXZ> polygons;
+			
 			if (subtractPolys.isEmpty() /* && unconnectedEles.isEmpty() TODO */) {
 				
 				//TODO handle the common "empty terrain cell" special case more efficiently?
 				
-				return singleton(area.getPolygon());
+				polygons = singleton(area.getPolygon());
 				
 			} else {
 				
-				return CAGUtil.subtractPolygons(
+				polygons = CAGUtil.subtractPolygons(
 						area.getOuterPolygon(), subtractPolys);
 				
 			}
-						
+			
+			/* triangulate, using elevation information from all participants */
+			
+			Collection<TriangleXZ> triangles = new ArrayList<TriangleXZ>();
+			
+			for (PolygonWithHolesXZ polygon : polygons) {
+				triangles.addAll(TriangulationUtil.triangulate(polygon));
+			}
+			
+			return triangles;
+			
 		}
 
 		@Override

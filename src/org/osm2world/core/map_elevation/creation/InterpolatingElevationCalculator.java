@@ -14,6 +14,8 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -68,17 +70,17 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		/* set connectors' elevation profiles */
 		
 		for (MapElement element : mapData.getMapElements()) {
-			for (WorldObject worldObject : element.getRepresentations()) {
-				try {
-					for (EleConnector eleConnector : worldObject.getEleConnectors()) {
-						eleConnector.setPosXYZ(
-								strategy.interpolateEle(eleConnector.pos));
+			
+			FaultTolerantIterationUtil.iterate(element.getRepresentations(),
+					new Operation<WorldObject>() {
+				@Override public void perform(WorldObject worldObject) {
+					
+					for (EleConnector conn : worldObject.getEleConnectors()) {
+						conn.setPosXYZ(strategy.interpolateEle(conn.pos));
 					}
-				} catch (NullPointerException e) {
-					System.out.println(worldObject.getClass());
+					
 				}
-				
-			}
+			});
 			
 		}
 

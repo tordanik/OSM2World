@@ -2,7 +2,6 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Collections.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -292,49 +291,51 @@ public class TunnelModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			List<VectorXYZ> topOutline = new ArrayList<VectorXYZ>();
+			//TODO port to new elevation model
 			
-			int segCount = node.getConnectedSegments().size();
-			for (int i=0; i<segCount; i++) {
-				
-				List<VectorXYZ> line = primaryRep.getOutline((i+1)%segCount, i);
-				
-				List<VectorXYZ> lineTop =
-					new ArrayList<VectorXYZ>(line.size());
-				
-				for (VectorXYZ lineV : line) {
-				
-					double clearing;
-					
-					if (line.indexOf(lineV) == 0) {
-						MapSegment segment = node.getConnectedSegments().get((i+1)%segCount);
-						clearing = 10; //TODO clearingAboveMapSegment(lineV, segment);
-					} else {
-						MapSegment segment = node.getConnectedSegments().get(i);
-						clearing = 10; //TODO clearingAboveMapSegment(lineV, segment);
-					}
-					
-					lineTop.add(lineV.y(lineV.y + clearing));
-					
-				}
-				
-				// draw wall
-				
-				target.drawTriangleStrip(Materials.TUNNEL_DEFAULT,
-						createTriangleStripBetween(line, lineTop), null);
-				
-				//collect nodes for top outline
-				
-				topOutline.addAll(lineTop);
-				
-			}
-			
-			// draw top
-			
-			target.drawConvexPolygon(Materials.TUNNEL_DEFAULT, topOutline,
-					globalTexCoordLists(
-							topOutline, Materials.TUNNEL_DEFAULT, false));
-			
+//			List<VectorXYZ> topOutline = new ArrayList<VectorXYZ>();
+//
+//			int segCount = node.getConnectedSegments().size();
+//			for (int i=0; i<segCount; i++) {
+//
+//				List<VectorXYZ> line = primaryRep.getOutline((i+1)%segCount, i);
+//
+//				List<VectorXYZ> lineTop =
+//					new ArrayList<VectorXYZ>(line.size());
+//
+//				for (VectorXYZ lineV : line) {
+//
+//					double clearing;
+//
+//					if (line.indexOf(lineV) == 0) {
+//						MapSegment segment = node.getConnectedSegments().get((i+1)%segCount);
+//						clearing = 10; //TODO clearingAboveMapSegment(lineV, segment);
+//					} else {
+//						MapSegment segment = node.getConnectedSegments().get(i);
+//						clearing = 10; //TODO clearingAboveMapSegment(lineV, segment);
+//					}
+//
+//					lineTop.add(lineV.y(lineV.y + clearing));
+//
+//				}
+//
+//				// draw wall
+//
+//				target.drawTriangleStrip(Materials.TUNNEL_DEFAULT,
+//						createTriangleStripBetween(line, lineTop), null);
+//
+//				//collect nodes for top outline
+//
+//				topOutline.addAll(lineTop);
+//
+//			}
+//
+//			// draw top
+//
+//			target.drawConvexPolygon(Materials.TUNNEL_DEFAULT, topOutline,
+//					globalTexCoordLists(
+//							topOutline, Materials.TUNNEL_DEFAULT, false));
+//
 		}
 
 		//TODO update or delete
