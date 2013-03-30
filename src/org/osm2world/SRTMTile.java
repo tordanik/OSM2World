@@ -39,7 +39,7 @@ class SRTMTile {
 		
 	}
 
-	private ShortBuffer loadDataFromFile(File file2) throws IOException {
+	private static ShortBuffer loadDataFromFile(File file) throws IOException {
 
 		FileInputStream fis = new FileInputStream(file);
 		FileChannel fc = fis.getChannel();
@@ -58,6 +58,11 @@ class SRTMTile {
 	public final short getData(int x, int y) {
 		//TODO check input
 		return data.get((1200 - y) * 1201 + x);
+	}
+	
+	@Override
+	public String toString() {
+		return file.getName();
 	}
 	
 }
