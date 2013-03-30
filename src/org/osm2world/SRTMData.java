@@ -45,7 +45,8 @@ public class SRTMData implements TerrainElevationData {
 				
 				loadTileIfNecessary(lon, lat);
 				
-				addTileSites(result, lon, lat);
+				addTileSites(result, lon, lat,
+						minLon, minLat, maxLon, maxLat);
 				
 			}
 		}
@@ -69,6 +70,8 @@ public class SRTMData implements TerrainElevationData {
 		double maxLon = Double.NEGATIVE_INFINITY;
 		double maxLat = Double.NEGATIVE_INFINITY;
 		
+		/* find the minimum and maximum lat/lon in the data */
+		
 		for (MapNode mapNode : mapData.getMapNodes()) {
 			
 			double lon = mapNode.getOsmNode().lon;
@@ -82,6 +85,13 @@ public class SRTMData implements TerrainElevationData {
 			}
 			
 		}
+		
+		/* add a small seam for robustness */
+		
+		minLon -= 0.005; minLat -= 0.005;
+		maxLon += 0.005; maxLat += 0.005;
+		
+		/* retrieve the sites for the query */
 		
 		return getSites(minLon, minLat, maxLon, maxLat);
 		
@@ -117,7 +127,9 @@ public class SRTMData implements TerrainElevationData {
 		
 	}
 	
-	private void addTileSites(Collection<VectorXYZ> result, int tileLon, int tileLat) {
+	private void addTileSites(Collection<VectorXYZ> result,
+			int tileLon, int tileLat,
+			double minLon, double minLat, double maxLon, double maxLat) {
 		
 		SRTMTile tile = getTile(tileLon, tileLat);
 		
@@ -126,8 +138,18 @@ public class SRTMData implements TerrainElevationData {
 		/* add a site for each SRTM pixel (except last line and column,
 		 * which is duplicated in adjacent tiles) */
 		
-		for (int x = 0; x < SRTMTile.PIXELS - 1; x++) {
-			for (int y = 0; y < SRTMTile.PIXELS - 1; y++) {
+		int minX = max(0,
+				(int)ceil(SRTMTile.PIXELS * (minLon - tileLon)));
+		int maxX = min(SRTMTile.PIXELS - 1,
+				(int)floor(SRTMTile.PIXELS * (maxLon - tileLon)));
+
+		int minY = max(0,
+				(int)ceil(SRTMTile.PIXELS * (minLat - tileLat)));
+		int maxY = min(SRTMTile.PIXELS - 1,
+				(int)floor(SRTMTile.PIXELS * (maxLat - tileLat)));
+		
+		for (int x = minX; x < maxX; x++) {
+			for (int y = minY; y < maxY; y++) {
 				
 				short value = tile.getData(x, y);
 				
