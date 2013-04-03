@@ -9,7 +9,6 @@ import org.apache.commons.lang.time.StopWatch;
 import org.osm2world.EleInterpolationStrategy;
 import org.osm2world.LeastSquaresStrategy;
 import org.osm2world.TerrainElevationData;
-import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -26,12 +25,6 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 	protected EleInterpolationStrategy buildStrategy() {
 		return new LeastSquaresStrategy();
 		//return new InverseDistanceWeightingStrategy(1.5);
-	}
-	
-	private final MapProjection mapProjection;
-	
-	public InterpolatingElevationCalculator(MapProjection mapProjection) {
-		this.mapProjection = mapProjection;
 	}
 	
 	@Override
@@ -67,7 +60,7 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		
 		// TODO: collect & connect connectors
 		
-		/* set connectors' elevation profiles */
+		/* set connectors' elevations */
 		
 		for (MapElement element : mapData.getMapElements()) {
 			
@@ -87,13 +80,7 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		System.out.println("time node ele: " + stopWatch);
 		stopWatch.reset();
 		stopWatch.start();
-						
-		exposedStrategy = strategy;
 		
 	}
-	
-	// FIXME remove this temporary architecture hack
-	public EleInterpolationStrategy exposedStrategy;
-	
 	
 }
