@@ -1,5 +1,6 @@
 package org.osm2world.core.map_elevation.data;
 
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -13,7 +14,8 @@ import org.osm2world.core.world.data.WorldObject;
  * Because there is no injective mapping from xz coords to elevation (that
  * would not allow for bridges etc.), we need to represent whether points
  * are supposed to be "the same" with regards to elevation in some other manner.
- * This purpose is served by EleConnectors.
+ * Moreover, not all such points correspond to {@link MapNode}s.
+ * Thus, this purpose is served by EleConnectors.
  */
 public class EleConnector {
 	
