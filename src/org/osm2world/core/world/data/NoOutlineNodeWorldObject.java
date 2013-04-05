@@ -40,7 +40,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
-		return singleton(new EleConnector(node.getPos()));
+		return singleton(connector);
 	}
 	
 	@Override
