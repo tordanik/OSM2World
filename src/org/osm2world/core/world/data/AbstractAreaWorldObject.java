@@ -3,6 +3,7 @@ package org.osm2world.core.world.data;
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -56,6 +57,9 @@ public abstract class AbstractAreaWorldObject
 		return connectors;
 		
 	}
+	
+	@Override
+	public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 	
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {

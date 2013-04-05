@@ -1,6 +1,7 @@
 package org.osm2world.core.world.data;
 
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 
@@ -27,5 +28,11 @@ public interface WorldObject {
 	 * returns all {@link EleConnector}s used by this WorldObject
 	 */
 	public Iterable<EleConnector> getEleConnectors();
+	
+	/**
+	 * lets this object add constraints for the relative elevations of its
+	 * {@link EleConnector}s. Called after {@link #getEleConnectors()}.
+	 */
+	public void addEleConstraints(EleConstraintEnforcer enforcer);
 	
 }

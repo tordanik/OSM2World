@@ -11,6 +11,7 @@ import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -150,6 +151,9 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		
+		@Override
 		public void renderTo(Target<?> target) {
 			
 			List<VectorXYZ> leftOutline = primaryRep.getOutline(false);
@@ -215,6 +219,9 @@ public class TunnelModule extends AbstractModule {
 			// TODO ring of terrain connectors around the entrance
 			return singleton(connector);
 		}
+		
+		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
@@ -287,6 +294,9 @@ public class TunnelModule extends AbstractModule {
 			// TODO EleConnectors for tunnels
 			return emptyList();
 		}
+		
+		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public void renderTo(Target<?> target) {

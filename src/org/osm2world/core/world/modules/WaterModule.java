@@ -19,6 +19,7 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -274,6 +275,11 @@ public class WaterModule extends ConfigurableWorldModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+		
+		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {
+			enforcer.addSameEleConstraint(getEleConnectors());
 		}
 		
 		@Override

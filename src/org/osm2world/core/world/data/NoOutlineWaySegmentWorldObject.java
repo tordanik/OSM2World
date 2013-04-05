@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -42,6 +43,9 @@ public abstract class NoOutlineWaySegmentWorldObject
 	public Iterable<EleConnector> getEleConnectors() {
 		return asList(startConnector, endConnector);
 	}
+	
+	@Override
+	public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 	
 	@Override
 	public VectorXZ getStartPosition() {

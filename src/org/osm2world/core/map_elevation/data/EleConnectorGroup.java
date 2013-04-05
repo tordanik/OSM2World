@@ -67,16 +67,34 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 		
 	}
 	
-	public VectorXYZ getPosXYZ(VectorXZ pos) {
+	public EleConnector getConnector(VectorXZ pos) {
+		//TODO review this method (parameters sufficient? necessary at all?)
 		
 		for (EleConnector eleConnector : eleConnectors) {
 			if (eleConnector.pos.equals(pos)) {
-				return eleConnector.getPosXYZ();
+				return eleConnector;
 			}
 		}
 		
-		return pos.xyz(0);
+		return null;
 		//TODO maybe ... throw new IllegalArgumentException();
+		
+	}
+	
+	public VectorXYZ getPosXYZ(VectorXZ pos) {
+		
+		EleConnector c = getConnector(pos);
+		
+		if (c != null) {
+			
+			return c.getPosXYZ();
+			
+		} else {
+			
+			return pos.xyz(0);
+			//TODO maybe ... throw new IllegalArgumentException();
+			
+		}
 		
 	}
 

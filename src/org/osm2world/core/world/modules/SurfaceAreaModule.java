@@ -144,12 +144,11 @@ public class SurfaceAreaModule extends AbstractModule {
 					TerrainBoundaryWorldObject terrainBoundary =
 						(TerrainBoundaryWorldObject)otherWO;
 					
-					PolygonXYZ outlinePolygon = terrainBoundary.getOutlinePolygon();
+					SimplePolygonXZ outlinePolygon = terrainBoundary.getOutlinePolygonXZ();
 					
-					if (outlinePolygon != null
-							&& outlinePolygon.getXZPolygon().isSimple()) { //TODO is simplicity check necessary?
+					if (outlinePolygon != null) {
 						
-						subtractPolys.add(outlinePolygon.getSimpleXZPolygon());
+						subtractPolys.add(outlinePolygon);
 					
 						eleConnectors.addAll(otherWO.getEleConnectors());
 						

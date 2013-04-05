@@ -36,14 +36,12 @@ public class EleConnector {
 	
 	/**
 	 * assigns the elevation that has been calculated for this connector.
-	 * Only for one-time use by an {@link ElevationCalculator}.
+	 * Only for use by an {@link ElevationCalculator}.
+	 * 
+	 * TODO make package-visible
 	 */
 	public void setPosXYZ(VectorXYZ posXYZ) {
-		
-		if (this.posXYZ != null) {
-			throw new IllegalStateException("ele has already been set");
-		}
-		
+				
 		assert this.posXYZ.xz().equals(this.pos);
 		
 		this.posXYZ = posXYZ;
@@ -60,6 +58,15 @@ public class EleConnector {
 	 */
 	public VectorXYZ getPosXYZ() {
 		return posXYZ;
+	}
+	
+	/**
+	 * returns true if this connector is to be joined with the other one.
+	 * This is supposed to be transitive and commutative.
+	 */
+	public boolean connectsTo(EleConnector other) {
+		return pos.equals(other.pos);
+		//TODO improve criteria
 	}
 	
 }

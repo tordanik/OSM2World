@@ -16,6 +16,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -316,6 +317,9 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		
+		@Override
 		public VectorXZ getEndPosition() {
 			return segment.getEndNode().getPos();
 		}
@@ -427,6 +431,9 @@ public class TreeModule extends ConfigurableWorldModule {
 			return treeConnectors;
 			
 		}
+
+		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public GroundState getGroundState() {

@@ -3,6 +3,7 @@ package org.osm2world.core.world.data;
 import static java.util.Collections.singleton;
 
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -42,6 +43,9 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	public Iterable<EleConnector> getEleConnectors() {
 		return singleton(connector);
 	}
+
+	@Override
+	public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 	
 	@Override
 	public String toString() {

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
@@ -104,7 +105,32 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		return connectors;
 		
 	}
-
+	
+	@Override
+	public void addEleConstraints(EleConstraintEnforcer enforcer) {
+		
+		//TODO: maybe save connectors separately right away
+		
+		// left and right connectors have the same ele as their center conn.
+		
+		List<VectorXZ> center = getCenterlineXZ();
+		List<VectorXZ> left = getOutlineXZ(false);
+		List<VectorXZ> right = getOutlineXZ(true);
+		//TODO assure same length
+		
+		for (int i = 0; i < center.size(); i++) {
+			
+			EleConnector connCenter = connectors.getConnector(center.get(i));
+			EleConnector connLeft = connectors.getConnector(left.get(i));
+			EleConnector connRight = connectors.getConnector(right.get(i));
+			
+			enforcer.addSameEleConstraint(connCenter, connLeft);
+			enforcer.addSameEleConstraint(connCenter, connRight);
+			
+		}
+		
+	}
+	
 	/**
 	 * returns a sequence of node running along the center of the
 	 * line from start to end (each with offset).

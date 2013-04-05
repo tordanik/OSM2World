@@ -26,6 +26,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
@@ -170,6 +171,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public Iterable<EleConnector> getEleConnectors() {
 			return singleton(groundLevelConnector);
 		}
+
+		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		//TODO
 //		@Override
@@ -2106,6 +2110,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public Iterable<EleConnector> getEleConnectors() {
 			return singleton(connector);
 		}
+
+		@Override
+		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public GroundState getGroundState() {

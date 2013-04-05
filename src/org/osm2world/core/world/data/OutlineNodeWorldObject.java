@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -54,6 +55,9 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 		return connectors;
 		
 	}
+	
+	@Override
+	public void addEleConstraints(EleConstraintEnforcer enforcer) {}
 	
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
