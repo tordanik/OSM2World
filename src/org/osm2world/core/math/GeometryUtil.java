@@ -231,12 +231,12 @@ public final class GeometryUtil {
 	 */
 	public static final boolean isBetween(VectorXZ p, VectorXZ l1, VectorXZ l2) {
 		
-		double distSqQ1Q2 = distanceSquared(l1, l2);
-		double distSqPQ1 = distanceSquared(p, l1);
-		double distSqPQ2 = distanceSquared(p, l2);
+		double distSqL1L2 = distanceSquared(l1, l2);
+		double distSqPL1 = distanceSquared(p, l1);
+		double distSqPL2 = distanceSquared(p, l2);
 		
-		return distSqQ1Q2 < distSqPQ1
-			&& distSqQ1Q2 < distSqPQ2;
+		return distSqL1L2 > distSqPL1
+			&& distSqL1L2 > distSqPL2;
 		
 	}
 	
