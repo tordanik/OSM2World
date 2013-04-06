@@ -81,10 +81,6 @@ public class EmptyTerrainBuilder {
 		for (int x = 0; x < numPatchesX; x++) {
 			for (int z = 0; z < numPatchesZ; z++) {
 				
-				VectorXZ pos = new VectorXZ(
-						terrainMinX + x * PATCH_SIZE,
-						terrainMinZ + z * PATCH_SIZE);
-				
 				MapArea mapArea = new MapArea(EMPTY_SURFACE_WAY, asList(
 						nodeGrid[x][z],
 						nodeGrid[x+1][z],
