@@ -278,7 +278,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
 			enforcer.addSameEleConstraint(getEleConnectors());
 		}
 		

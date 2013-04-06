@@ -21,6 +21,9 @@ public class EleConnector {
 	
 	public final VectorXZ pos;
 	
+	/** indicates whether this connector should be connected to the terrain */
+	public final boolean terrain;
+	
 	//TODO object reference for determining whether two E.C. with the same xz are "the same"
 	
 	private VectorXYZ posXYZ;
@@ -29,9 +32,10 @@ public class EleConnector {
 	 * creates an EleConnector at the given xz coordinates.
 	 * @param pos  final value for {@link #pos}; != null
 	 */
-	public EleConnector(VectorXZ pos) {
+	public EleConnector(VectorXZ pos, boolean terrain) {
 		assert pos != null;
 		this.pos = pos;
+		this.terrain = terrain;
 	}
 	
 	/**
@@ -65,7 +69,8 @@ public class EleConnector {
 	 * This is supposed to be transitive and commutative.
 	 */
 	public boolean connectsTo(EleConnector other) {
-		return pos.equals(other.pos);
+		return pos.equals(other.pos)
+				&& terrain == other.terrain;
 		//TODO improve criteria
 	}
 	

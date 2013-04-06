@@ -33,6 +33,6 @@ public interface WorldObject {
 	 * lets this object add constraints for the relative elevations of its
 	 * {@link EleConnector}s. Called after {@link #getEleConnectors()}.
 	 */
-	public void addEleConstraints(EleConstraintEnforcer enforcer);
+	public void defineEleConstraints(EleConstraintEnforcer enforcer);
 	
 }

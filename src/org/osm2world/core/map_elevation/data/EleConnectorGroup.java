@@ -2,6 +2,7 @@ package org.osm2world.core.map_elevation.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,27 +25,37 @@ import org.osm2world.core.math.VectorXZ;
  */
 public class EleConnectorGroup implements Iterable<EleConnector> {
 
-	private final List<EleConnector> eleConnectors = new ArrayList<EleConnector>();
+	//TODO make private
+	public final List<EleConnector> eleConnectors;
 	
-	public void addConnectorsFor(Iterable<VectorXZ> positions) {
+	public EleConnectorGroup() {
+		this(new ArrayList<EleConnector>());
+	}
+	
+	private EleConnectorGroup(List<EleConnector> eleConnectors) {
+		this.eleConnectors = eleConnectors;
+	}
+	
+	public void addConnectorsFor(Iterable<VectorXZ> positions, boolean terrain) {
 		
 		for (VectorXZ pos : positions) {
-			eleConnectors.add(new EleConnector(pos));
+			eleConnectors.add(new EleConnector(pos, terrain));
 		}
 		
 	}
 	
-	public void addConnectorsFor(PolygonWithHolesXZ polygon) {
+	public void addConnectorsFor(PolygonWithHolesXZ polygon, boolean terrain) {
 		
-		addConnectorsFor(polygon.getOuter().getVertices());
+		addConnectorsFor(polygon.getOuter().getVertices(), terrain);
 		
 		for (SimplePolygonXZ hole : polygon.getHoles()) {
-			addConnectorsFor(hole.getVertices());
+			addConnectorsFor(hole.getVertices(), terrain);
 		}
 		
 	}
 
-	public void addConnectorsForTriangulation(Iterable<TriangleXZ> triangles) {
+	public void addConnectorsForTriangulation(Iterable<TriangleXZ> triangles,
+			boolean terrain) {
 		//TODO check later whether this method is still necessary
 		
 		Set<VectorXZ> positions = new HashSet<VectorXZ>();
@@ -55,7 +66,7 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 			positions.add(t.v3);
 		}
 		
-		addConnectorsFor(positions);
+		addConnectorsFor(positions, terrain);
 		
 	}
 	
@@ -81,6 +92,22 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 		
 	}
 	
+	public List<EleConnector> getConnectors(Iterable<VectorXZ> positions) {
+		
+		List<EleConnector> connectors = new ArrayList<EleConnector>();
+		
+		for (VectorXZ pos : positions) {
+			EleConnector connector = getConnector(pos);
+			connectors.add(connector);
+			if (connector == null) {
+				throw new IllegalArgumentException();
+			}
+		}
+		
+		return connectors;
+		
+	}
+
 	public VectorXYZ getPosXYZ(VectorXZ pos) {
 		
 		EleConnector c = getConnector(pos);
@@ -142,5 +169,8 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 	public Iterator<EleConnector> iterator() {
 		return eleConnectors.iterator();
 	}
+	
+	public static final EleConnectorGroup EMPTY = new EleConnectorGroup(
+			Collections.<EleConnector>emptyList());
 	
 }

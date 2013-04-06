@@ -1441,6 +1441,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			assert phase > 1;
 			
+			if (road.isBroken()) return;
+			
 			List<VectorXYZ> leftLaneBorder = createLineBetween(
 					road.getOutline(false), road.getOutline(true),
 					(float)relativePositionLeft);

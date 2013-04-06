@@ -6,29 +6,43 @@ import java.util.List;
 import org.osm2world.core.math.VectorXYZ;
 
 /**
- * a set of {@link EleConnector}s which are joined.
+ * a pair of variables for a linear program,
+ * representing the elevation of a set of {@link EleConnector}s.
  */
-public class JoinedEleConnectors {
+public class LPVariablePair {
 	
-	/** all members of the set. */
 	private final List<EleConnector> connectors = new ArrayList<EleConnector>(2);
 	
-	public JoinedEleConnectors(EleConnector firstMember) {
+	/**
+	 * creates a variable pair for a first {@link EleConnector}.
+	 * Others may be added later.
+	 */
+	public LPVariablePair(EleConnector firstMember) {
 		connectors.add(firstMember);
 	}
 	
 	/**
 	 * returns all connectors currently in this set.
-	 * This must return the same object over the lifetime of this
-	 * {@link JoinedEleConnectors} instance.
+	 * Must return the same object over the lifetime of this
+	 * {@link LPVariablePair} instance.
 	 */
 	public List<EleConnector> getConnectors() {
 		return connectors;
 	}
 	
+	/**
+	 * adds a connector to the set of {@link EleConnector}s whose elevation
+	 * is represented by this {@link LPVariablePair}
+	 */
 	public void add(EleConnector c) {
-		assert this.connectsTo(c) && this.getPosXYZ() == c.getPosXYZ();
 		connectors.add(c);
+	}
+	
+	/**
+	 * adds all connectors from another instance to this one
+	 */
+	public void addAll(LPVariablePair other) {
+		connectors.addAll(other.getConnectors());
 	}
 	
 	/**
@@ -52,6 +66,22 @@ public class JoinedEleConnectors {
 	 */
 	public boolean connectsTo(EleConnector other) {
 		return connectors.get(0).connectsTo(other);
+	}
+	
+	/**
+	 * TODO document
+	 * @see #negVar()
+	 */
+	public Object posVar() {
+		return this;
+	}
+	
+	/**
+	 * TODO document
+	 * @see #posVar()
+	 */
+	public Object negVar() {
+		return this.getConnectors();
 	}
 	
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -29,8 +30,10 @@ public abstract class NoOutlineWaySegmentWorldObject
 		
 		this.segment = segment;
 		
-		startConnector = new EleConnector(getStartPosition());
-		endConnector = new EleConnector(getEndPosition());
+		startConnector = new EleConnector(getStartPosition(),
+				getGroundState() == GroundState.ON);
+		endConnector = new EleConnector(getEndPosition(),
+				getGroundState() == GroundState.ON);
 		
 	}
 	
@@ -45,7 +48,7 @@ public abstract class NoOutlineWaySegmentWorldObject
 	}
 	
 	@Override
-	public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 	
 	@Override
 	public VectorXZ getStartPosition() {

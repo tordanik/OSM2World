@@ -151,7 +151,7 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public void renderTo(Target<?> target) {
@@ -201,7 +201,8 @@ public class TunnelModule extends AbstractModule {
 		public TunnelEntrance(MapNode node, MapWaySegment tunnelSegment) {
 			this.node = node;
 			this.tunnelSegment = tunnelSegment;
-			this.connector = new EleConnector(node.getPos());
+			this.connector = new EleConnector(node.getPos(),
+					getGroundState() == GroundState.ON);
 		}
 		
 		@Override
@@ -221,7 +222,7 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
@@ -296,7 +297,7 @@ public class TunnelModule extends AbstractModule {
 		}
 		
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public void renderTo(Target<?> target) {

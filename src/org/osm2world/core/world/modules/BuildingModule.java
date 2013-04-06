@@ -101,7 +101,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			this.area = area;
 			
-			this.groundLevelConnector = new EleConnector(area.getOuterPolygon().getCenter());
+			this.groundLevelConnector = new EleConnector(
+					area.getOuterPolygon().getCenter(), true);
 			
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				MapElement other = overlap.getOther(area);
@@ -173,7 +174,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		//TODO
 //		@Override
@@ -2098,7 +2099,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public BuildingEntrance(BuildingPart buildingPart, MapNode node) {
 			this.buildingPart = buildingPart;
 			this.node = node;
-			this.connector = new EleConnector(node.getPos());
+			this.connector = new EleConnector(node.getPos(), true);
 		}
 		
 		@Override
@@ -2112,7 +2113,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public GroundState getGroundState() {

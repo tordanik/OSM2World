@@ -12,6 +12,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -95,12 +96,46 @@ public class BridgeModule extends AbstractModule {
 		
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
-			// TODO EleConnectors for bridges
+			// TODO EleConnectors for pillars
 			return emptyList();
 		}
 
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			/* ensure a minimum vertical distance to ways below, at intersections */
+			
+			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
+				if (overlap instanceof MapIntersectionWW) {
+					
+					MapIntersectionWW intersection = (MapIntersectionWW) overlap;
+					
+					MapWaySegment otherSegment = intersection.getOther(segment);
+					WorldObject otherWO = otherSegment.getPrimaryRepresentation();
+					
+					if (otherWO instanceof AbstractNetworkWaySegmentWorldObject) {
+					
+						AbstractNetworkWaySegmentWorldObject otherANWSWO =
+								((AbstractNetworkWaySegmentWorldObject)otherWO);
+						
+						boolean otherIsUpper = false; //TODO check layers
+						
+						EleConnector upper = primaryRep.getEleConnectors()
+								.getConnector(intersection.pos);
+						EleConnector lower = otherANWSWO.getEleConnectors()
+								.getConnector(intersection.pos);
+						
+						double distance = 10.0; //TODO base on clearing
+						
+						enforcer.addMinVerticalDistanceConstraint(
+								upper, lower, distance);
+						
+					}
+					
+				}
+			}
+			
+		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
@@ -167,16 +202,28 @@ public class BridgeModule extends AbstractModule {
 
 		private void drawBridgePillarAt(Target<?> target, VectorXZ pos) {
 		
-			//TODO connect the pillars to the ground independently
-//
-//			double eleAtPos = segment.getElevationProfile().getEleAt(pos);
-//
-//			// TODO: start pillar at ground instead of just 100 meters below the bridge
-//			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
-//					pos.xyz(eleAtPos - BRIDGE_UNDERSIDE_HEIGHT/2 - 100),
-//					100,
-//					0.2, 0.2, false, false);
-//
+			/* determine the bridge elevation at that point */
+			
+			VectorXYZ top = null;
+			
+			List<VectorXYZ> vs = primaryRep.getCenterline();
+			
+			for (int i = 0; i + 1 < vs.size(); i++) {
+				
+				if (isBetween(pos, vs.get(i).xz(), vs.get(i+1).xz())) {
+					top = interpolateElevation(pos, vs.get(i), vs.get(i+1));
+				}
+				
+			}
+
+			/* draw the pillar */
+			
+			// TODO: start pillar at ground instead of just 100 meters below the bridge
+			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
+					top.addY(-100),
+					100,
+					0.2, 0.2, false, false);
+
 		}
 		
 	}

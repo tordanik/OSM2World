@@ -300,7 +300,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			treeConnectors = new ArrayList<EleConnector>(treePositions.size());
 			
 			for (VectorXZ treePosition : treePositions) {
-				treeConnectors.add(new EleConnector(treePosition));
+				treeConnectors.add(new EleConnector(treePosition,
+						getGroundState() == GroundState.ON));
 			}
 			
 		}
@@ -317,7 +318,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public VectorXZ getEndPosition() {
@@ -411,7 +412,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			treeConnectors = new ArrayList<EleConnector>(treePositions.size());
 			
 			for (VectorXZ treePosition : treePositions) {
-				treeConnectors.add(new EleConnector(treePosition));
+				treeConnectors.add(new EleConnector(treePosition,
+						getGroundState() == GroundState.ON));
 			}
 			
 		}
@@ -433,7 +435,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void addEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public GroundState getGroundState() {
