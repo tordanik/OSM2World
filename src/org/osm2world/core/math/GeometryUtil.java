@@ -1,6 +1,6 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.awt.geom.Line2D;
@@ -432,6 +432,37 @@ public final class GeometryUtil {
 		//(should be relatively easy, just calculate TOTAL line length first
 		// and then proceed in a way similar to getEleAt)
 				
+	}
+	
+	/**
+	 * returns a regular grid of points.
+	 * The grid is slightly larger than the bounding box parameter,
+	 * covering it entirely.
+	 */
+	public static VectorXZ[][] createPointGrid(AxisAlignedBoundingBoxXZ box,
+			double sampleDistance) {
+		
+		int startX = (int)floor(box.minX / sampleDistance);
+		int endX = (int)ceil(box.maxX / sampleDistance);
+		int startZ = (int)floor(box.minZ / sampleDistance);
+		int endZ = (int)ceil(box.maxZ / sampleDistance);
+		
+		int numSamplesX = endX-startX;
+		int numSamplesZ = endZ-startZ;
+		
+		VectorXZ[][] points = new VectorXZ[numSamplesX][numSamplesZ];
+		
+		for (int x = startX; x < endX; x++) {
+			for (int z = startZ; z < endZ; z++) {
+				
+				points[x-startX][z-startZ] =
+						new VectorXZ(x * sampleDistance, z * sampleDistance);
+				
+			}
+		}
+		
+		return points;
+		
 	}
 	
 	/**

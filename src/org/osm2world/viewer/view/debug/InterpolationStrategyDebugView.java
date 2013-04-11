@@ -1,7 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.lang.Math.*;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.math.GeometryUtil.createPointGrid;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -66,32 +66,24 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 			strategy.setKnownSites(sites);
 			
 			AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
+						
+			VectorXZ[][] sampleGrid = createPointGrid(bound, SAMPLE_DIST);
 			
-			
-			int startX = (int)floor(bound.minX / SAMPLE_DIST);
-			int endX = (int)ceil(bound.maxX / SAMPLE_DIST);
-			int startZ = (int)floor(bound.minZ / SAMPLE_DIST);
-			int endZ = (int)ceil(bound.maxZ / SAMPLE_DIST);
-			
-			int numSamplesX = endX-startX;
-			int numSamplesZ = endZ-startZ;
-			
-			VectorXYZ[][] samples = new VectorXYZ[numSamplesX][numSamplesZ];
+			VectorXYZ[][] samples = new VectorXYZ[sampleGrid.length][sampleGrid[0].length];
 
-			long totalSamples = numSamplesX * numSamplesZ;
+			long totalSamples = sampleGrid.length * sampleGrid[0].length;
 			
 			long startTimeMillis = System.currentTimeMillis();
 			
-			for (int x = startX; x < endX; x++) {
-				for (int z = startZ; z < endZ; z++) {
+			for (int x = 0; x < sampleGrid.length; x++) {
+				for (int z = 0; z < sampleGrid[x].length; z++) {
 					
-					VectorXZ pos = new VectorXZ(x * SAMPLE_DIST, z * SAMPLE_DIST);
-					samples[x-startX][z-startZ] = strategy.interpolateEle(pos);
+					samples[x][z] = strategy.interpolateEle(sampleGrid[x][z]);
 										
 				}
 				
-				if ((x-startX) % 100 == 0) {
-					long finishedSamples = (x-startX + 1) * numSamplesZ;
+				if (x % 100 == 0) {
+					long finishedSamples = x * sampleGrid[x].length;
 					System.out.println(finishedSamples + "/" + totalSamples
 							+ " after " + ((System.currentTimeMillis() - startTimeMillis) / 1000f));
 				}
@@ -99,8 +91,8 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 
 			/* draw surface from samples */
 			
-			for (int x = 0; x+1 < numSamplesX; x++) {
-				for (int z = 0; z+1 < numSamplesZ; z++) {
+			for (int x = 0; x+1 < samples.length; x++) {
+				for (int z = 0; z+1 < samples[x].length; z++) {
 					
 					target.drawTriangleFan(TERRAIN_MAT,
 							asList(samples[x][z], samples[x+1][z],
