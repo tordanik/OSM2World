@@ -83,7 +83,11 @@ public class InterpolatingElevationCalculator implements ElevationCalculator {
 		
 		/* enforce constraints using LP */
 		
-		final LPEleConstraintEnforcer enforcer = new LPEleConstraintEnforcer();
+		final EleConstraintEnforcer enforcer =
+				new EleConstraintValidator(mapData,
+						new LPEleConstraintEnforcer()
+				)
+		;
 		
 		enforcer.addConnectors(connectors);
 		

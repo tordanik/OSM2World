@@ -88,8 +88,13 @@ public class SRTMData implements TerrainElevationData {
 		
 		/* add a small seam for robustness */
 		
+		minLon -= 0.02; minLat -= 0.02;
+		maxLon += 0.02; maxLat += 0.02;
+		
+		/* TODO: the seam could be smaller - such as this - if empty terrain nodes did have lat/lon
 		minLon -= 0.005; minLat -= 0.005;
 		maxLon += 0.005; maxLat += 0.005;
+		*/
 		
 		/* retrieve the sites for the query */
 		

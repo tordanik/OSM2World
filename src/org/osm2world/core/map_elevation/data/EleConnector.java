@@ -20,21 +20,25 @@ import org.osm2world.core.world.data.WorldObject;
 public class EleConnector {
 	
 	public final VectorXZ pos;
+		
+	/** TODO document - MapNode or Intersection object, for example */
+	public final Object reference;
 	
 	/** indicates whether this connector should be connected to the terrain */
 	public final boolean terrain;
-	
-	//TODO object reference for determining whether two E.C. with the same xz are "the same"
 	
 	private VectorXYZ posXYZ;
 	
 	/**
 	 * creates an EleConnector at the given xz coordinates.
-	 * @param pos  final value for {@link #pos}; != null
+	 * @param pos        final value for {@link #pos}; != null
+	 * @param reference  final value for {@link #reference}; may be null
+	 * @param terrain    final value for {@link #terrain}
 	 */
-	public EleConnector(VectorXZ pos, boolean terrain) {
+	public EleConnector(VectorXZ pos, Object reference, boolean terrain) {
 		assert pos != null;
 		this.pos = pos;
+		this.reference = reference;
 		this.terrain = terrain;
 	}
 	
@@ -70,8 +74,13 @@ public class EleConnector {
 	 */
 	public boolean connectsTo(EleConnector other) {
 		return pos.equals(other.pos)
-				&& terrain == other.terrain;
-		//TODO improve criteria
+				&& ((reference != null && reference == other.reference)
+					|| (terrain && other.terrain));
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("(%s, %s, %s)", pos, reference, terrain);
 	}
 	
 }

@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
+import static org.osm2world.core.math.GeometryUtil.createPointGrid;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.ArrayList;
@@ -15,14 +16,15 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
-import org.osm2world.core.map_elevation.data.EleConnectorGroup;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -32,6 +34,7 @@ import org.osm2world.core.terrain.creation.CAGUtil;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -75,8 +78,10 @@ public class SurfaceAreaModule extends AbstractModule {
 		
 	}
 	
-	private class SurfaceArea extends AbstractAreaWorldObject
+	private static class SurfaceArea extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		
+		private static final double POINT_GRID_DISTANCE = 30;
 		
 		private final String surface;
 		
@@ -116,13 +121,13 @@ public class SurfaceAreaModule extends AbstractModule {
 			
 			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_TAG.value);
 			
-			/* collect the outlines of overlapping ground polygons */
+			/* collect the outlines of overlapping ground polygons and other polygons,
+			 * and EleConnectors within the area */
 			
 			List<SimplePolygonXZ> subtractPolys = new ArrayList<SimplePolygonXZ>();
-			Collection<VectorXYZ> unconnectedEles = emptyList(); //TODO
+			List<SimplePolygonXZ> allPolys = new ArrayList<SimplePolygonXZ>();
 			
-			EleConnectorGroup eleConnectors = new EleConnectorGroup();
-			eleConnectors.addAll(this.getEleConnectors());
+			List<VectorXZ> eleConnectorPoints = new ArrayList<VectorXZ>();
 			
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
@@ -149,37 +154,73 @@ public class SurfaceAreaModule extends AbstractModule {
 					if (outlinePolygon != null) {
 						
 						subtractPolys.add(outlinePolygon);
-					
-						eleConnectors.addAll(otherWO.getEleConnectors());
+						allPolys.add(outlinePolygon);
+						
+						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+							eleConnectorPoints.add(eleConnector.pos);
+						}
 						
 					}
 					
 				} else {
 					
-					// no boundary, but ele data can be relevant
+					for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+						eleConnectorPoints.add(eleConnector.pos);
+					}
 					
-					//TODO
-					
-//
-//					ElevationProfile eleProfile = worldObject
-//							.getPrimaryMapElement().getElevationProfile();
-//
-//					unconnectedEleMap.putAll(terrainCell,
-//							eleProfile.getPointsWithEle());
-//
+					if (otherWO instanceof WorldObjectWithOutline) {
+						
+						SimplePolygonXZ outlinePolygon =
+								((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ();
+						
+						if (outlinePolygon != null) {
+							
+							allPolys.add(outlinePolygon);
+							
+						}
+						
+					}
 					
 				}
 				
 			}
 			}
 			
+			/* add a grid of points within the area for smoother surface shapes */
+			
+			VectorXZ[][] pointGrid = createPointGrid(
+					area.getAxisAlignedBoundingBoxXZ(), POINT_GRID_DISTANCE);
+			
+			for (VectorXZ[] pointArray : pointGrid) {
+				for (VectorXZ point : pointArray) {
+					
+					//only insert if it isn't e.g. on top of a tunnel;
+					//otherwise there would be no minimum vertical distance
+					
+					boolean safe = true;
+					
+					for (SimplePolygonXZ polygon : allPolys) {
+						if (polygon.contains(point)) {
+							safe = false;
+							break;
+						}
+					}
+					
+					if (safe) {
+						eleConnectorPoints.add(point);
+					}
+					
+				}
+			}
+			
 			/* create "leftover" polygons by subtracting the existing ones */
 			
 			Collection<PolygonWithHolesXZ> polygons;
 			
-			if (subtractPolys.isEmpty() /* && unconnectedEles.isEmpty() TODO */) {
+			if (subtractPolys.isEmpty()) {
 				
-				//TODO handle the common "empty terrain cell" special case more efficiently?
+				/* SUGGEST (performance) handle the common "empty terrain cell"
+				 * special case more efficiently, also regarding point raster? */
 				
 				polygons = singleton(area.getPolygon());
 				
@@ -189,19 +230,66 @@ public class SurfaceAreaModule extends AbstractModule {
 						area.getOuterPolygon(), subtractPolys);
 				
 			}
-			
+						
 			/* triangulate, using elevation information from all participants */
 			
 			Collection<TriangleXZ> triangles = new ArrayList<TriangleXZ>();
 			
 			for (PolygonWithHolesXZ polygon : polygons) {
-				triangles.addAll(TriangulationUtil.triangulate(polygon));
+				
+				List<VectorXZ> points = new ArrayList<VectorXZ>();
+				
+				for (VectorXZ point : eleConnectorPoints) {
+					if (polygon.contains(point)) {
+						points.add(point);
+					}
+				}
+				
+				triangles.addAll(TriangulationUtil.triangulate(polygon, points));
+				
 			}
 			
 			return triangles;
 			
 		}
-
+		
+		@Override
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			super.defineEleConstraints(enforcer);
+			
+			/** add vertical distance to connectors above and below */
+			
+			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+				
+				for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+					
+					EleConnector ownConnector = getEleConnectors().getConnector(eleConnector.pos);
+					
+					if (ownConnector == null || eleConnector.terrain) continue;
+										
+					if (otherWO.getGroundState() == GroundState.ABOVE) {
+						
+						enforcer.addMinVerticalDistanceConstraint(
+								eleConnector, ownConnector,
+								1); //TODO actual clearing
+						
+					} else if (otherWO.getGroundState() == GroundState.BELOW) {
+						
+						enforcer.addMinVerticalDistanceConstraint(
+								ownConnector, eleConnector,
+								10); //TODO actual clearing
+						
+					}
+				
+				}
+				
+			}
+			}
+			
+		}
+		
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
 			if (surface.equals(EMPTY_SURFACE_TAG.value)) {

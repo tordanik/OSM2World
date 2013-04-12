@@ -2,6 +2,7 @@ package org.osm2world.core.world.network;
 
 import static java.lang.Double.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
 
 import java.util.ArrayList;
@@ -16,7 +17,6 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
@@ -42,11 +42,14 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	private VectorXZ startOffset = VectorXZ.NULL_VECTOR;
 	private VectorXZ endOffset = VectorXZ.NULL_VECTOR;
 	
-	private EleConnectorGroup connectors;
-
+	protected EleConnectorGroup connectors;
+	
+	private List<VectorXZ> centerlineXZ = null;
+	
 	private List<VectorXZ> leftOutlineXZ = null;
 	private List<VectorXZ> rightOutlineXZ = null;
-	private List<VectorXZ> outlineLoopXZ = null;
+	
+	private SimplePolygonXZ outlinePolygonXZ = null;
 	
 	private Boolean broken = null;
 	
@@ -107,17 +110,176 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		return segment.getEndNode().getPos().add(endOffset);
 	}
 	
+	/**
+	 * calculates centerline and outlines, along with their connectors
+	 * TODO: perform before construction, to simplify the object and avoid {@link #broken}
+	 */
+	private void calculateXZGeometry() {
+	
+		if (startCutVector == null || endCutVector == null) {
+			throw new IllegalStateException("cannot calculate outlines before cut vectors");
+		}
+		
+		connectors = new EleConnectorGroup();
+		
+		{ /* calculate centerline */
+						
+			centerlineXZ = new ArrayList<VectorXZ>();
+			
+			final VectorXZ start = getStartWithOffset();
+			final VectorXZ end = getEndWithOffset();
+			
+			centerlineXZ.add(start);
+			
+			connectors.add(new EleConnector(start,
+					segment.getStartNode(), isOnTerrain(segment.getStartNode())));
+			
+			// add intersections along the centerline
+			
+			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
+				if (overlap instanceof MapIntersectionWW) {
+					
+					MapIntersectionWW intersection = (MapIntersectionWW) overlap;
+					
+					if (GeometryUtil.isBetween(intersection.pos, start, end)
+							&& intersection.getOther(segment).getPrimaryRepresentation() != null) {
+					
+						centerlineXZ.add(intersection.pos);
+						
+						connectors.add(new EleConnector(intersection.pos,
+								null, getGroundState() == ON));
+						
+					}
+					
+				}
+			}
+			
+			// finish the centerline
+			
+			centerlineXZ.add(end);
+
+			connectors.add(new EleConnector(end,
+					segment.getEndNode(), isOnTerrain(segment.getEndNode())));
+			
+			if (centerlineXZ.size() > 3) {
+				
+				// sort by distance from start
+				Collections.sort(centerlineXZ, new Comparator<VectorXZ>() {
+					@Override
+					public int compare(VectorXZ v1, VectorXZ v2) {
+						return Double.compare(
+								distanceSquared(v1, start),
+								distanceSquared(v2, start));
+					}
+				});
+				
+			}
+			
+		}
+		
+		{ /* calculate left and right outlines */
+			
+			leftOutlineXZ = new ArrayList<VectorXZ>(centerlineXZ.size());
+			rightOutlineXZ = new ArrayList<VectorXZ>(centerlineXZ.size());
+			
+			assert centerlineXZ.size() >= 2;
+			
+			double halfWidth = getWidth() * 0.5f;
+			
+			VectorXZ centerStart = centerlineXZ.get(0);
+			leftOutlineXZ.add(centerStart.add(startCutVector.mult(-halfWidth)));
+			rightOutlineXZ.add(centerStart.add(startCutVector.mult(halfWidth)));
+			
+			connectors.add(new EleConnector(leftOutlineXZ.get(0),
+					segment.getStartNode(), isOnTerrain(segment.getStartNode())));
+			connectors.add(new EleConnector(rightOutlineXZ.get(0),
+					segment.getStartNode(), isOnTerrain(segment.getStartNode())));
+			
+			for (int i = 1; i < centerlineXZ.size() - 1; i++) {
+				
+				leftOutlineXZ.add(centerlineXZ.get(i).add(segment.getRightNormal().mult(-halfWidth)));
+				rightOutlineXZ.add(centerlineXZ.get(i).add(segment.getRightNormal().mult(halfWidth)));
+				
+				connectors.add(new EleConnector(leftOutlineXZ.get(i),
+						null, getGroundState() == ON));
+				connectors.add(new EleConnector(rightOutlineXZ.get(i),
+						null, getGroundState() == ON));
+				
+			}
+			
+			VectorXZ centerEnd = centerlineXZ.get(centerlineXZ.size() - 1);
+			leftOutlineXZ.add(centerEnd.add(endCutVector.mult(-halfWidth)));
+			rightOutlineXZ.add(centerEnd.add(endCutVector.mult(halfWidth)));
+			
+			connectors.add(new EleConnector(leftOutlineXZ.get(leftOutlineXZ.size() - 1),
+					segment.getEndNode(), isOnTerrain(segment.getEndNode())));
+			connectors.add(new EleConnector(rightOutlineXZ.get(rightOutlineXZ.size() - 1),
+					segment.getEndNode(), isOnTerrain(segment.getEndNode())));
+			
+		}
+		
+		{ /* calculate the outline loop */
+			
+			List<VectorXZ> outlineLoopXZ =
+					new ArrayList<VectorXZ>(centerlineXZ.size() * 2 + 1);
+			
+			outlineLoopXZ.addAll(rightOutlineXZ);
+			
+			List<VectorXZ> left = new ArrayList<VectorXZ>(leftOutlineXZ);
+			Collections.reverse(left);
+			outlineLoopXZ.addAll(left);
+			
+			outlineLoopXZ.add(outlineLoopXZ.get(0));
+			
+			// check for brokenness
+			
+			try {
+				outlinePolygonXZ = new SimplePolygonXZ(outlineLoopXZ);
+				broken = outlinePolygonXZ.isClockwise();
+			} catch (InvalidGeometryException e) {
+				broken = true;
+				connectors = EleConnectorGroup.EMPTY;
+			}
+		
+		}
+		
+	}
+	
+	/**
+	 * returns true if the node is connected to the terrain
+	 * @param node  one of the nodes of {@link #segment}
+	 */
+	private boolean isOnTerrain(MapNode node) {
+		
+		WorldObject primaryWO = node.getPrimaryRepresentation();
+		
+		if (primaryWO != null) {
+			
+			return primaryWO.getGroundState() == ON;
+			
+		} else if (this.getGroundState() == ON) {
+			
+			return true;
+			
+		} else {
+			
+			for (MapWaySegment segment : node.getConnectedWaySegments()) {
+				if (segment.getPrimaryRepresentation().getGroundState() == ON) {
+					return true;
+				}
+			}
+			
+			return false;
+			
+		}
+		 
+	}
+	
 	@Override
 	public EleConnectorGroup getEleConnectors() {
 		
-		if (isBroken()) return EleConnectorGroup.EMPTY;
-		
 		if (connectors == null) {
-			connectors = new EleConnectorGroup();
-			connectors.addConnectorsFor(getOutlinePolygonXZ().getVertices(),
-					getGroundState() == GroundState.ON);
-			connectors.addConnectorsFor(getCenterlineXZ(),
-					getGroundState() == GroundState.ON);
+			calculateXZGeometry();
 		}
 		
 		return connectors;
@@ -192,13 +354,12 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		}
 		
 		//TODO sensible maximum incline for road and rail; and waterway down-incline
+		// ... take incline differences, steps etc. into account => move into Road, Rail separately
 		
 		/* ensure a smooth transition from previous segment */
 		
 		//TODO this might be more elegant with an "Invisible Connector WO"
 		
-		//TODO take incline differences, steps etc. into account => move into Road, Rail separately
-				
 		List<MapWaySegment> connectedSegments =
 				segment.getStartNode().getConnectedWaySegments();
 		
@@ -231,10 +392,25 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 		}
 		
+		/* ensure smooth transitions within the way itself */
+		
+		for (int i = 0; i + 2 < center.size(); i++) {
+			enforcer.addSmoothnessConstraint(
+					center.get(i+1),
+					center.get(i),
+					center.get(i+2));
+		}
+		
 	}
 	
-	List<EleConnector> getCenterlineEleConnectors() {
+	protected List<EleConnector> getCenterlineEleConnectors() {
+		
+		if (connectors == null) {
+			calculateXZGeometry();
+		}
+		
 		return connectors.getConnectors(getCenterlineXZ());
+		
 	}
 	
 	/**
@@ -245,49 +421,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	 */
 	public List<VectorXZ> getCenterlineXZ() {
 		
-		//SUGGEST (performance): calculate only once, and store result
-		
-		List<VectorXZ> centerline = new ArrayList<VectorXZ>();
-		
-		final VectorXZ start = getStartWithOffset();
-		final VectorXZ end = getEndWithOffset();
-		
-		centerline.add(start);
-		
-		// add intersections along the centerline
-		
-		for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
-			if (overlap instanceof MapIntersectionWW) {
-				
-				MapIntersectionWW intersection = (MapIntersectionWW) overlap;
-				
-				if (GeometryUtil.isBetween(intersection.pos, start, end)
-						&& intersection.getOther(segment).getPrimaryRepresentation() != null) {
-					centerline.add(intersection.pos);
-				}
-				
-			}
+		if (centerlineXZ == null) {
+			calculateXZGeometry();
 		}
 		
-		// finish the centerline
-		
-		centerline.add(end);
-		
-		if (centerline.size() > 3) {
-			
-			// sort by distance from start
-			Collections.sort(centerline, new Comparator<VectorXZ>() {
-				@Override
-				public int compare(VectorXZ v1, VectorXZ v2) {
-					return Double.compare(
-							distanceSquared(v1, start),
-							distanceSquared(v2, start));
-				}
-			});
-			
-		}
-		
-		return centerline;
+		return centerlineXZ;
 		
 	}
 	
@@ -308,7 +446,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		if (right) {
 			
 			if (rightOutlineXZ == null) {
-				calculateOutlines();
+				calculateXZGeometry();
 			}
 			
 			return rightOutlineXZ;
@@ -316,7 +454,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		} else { //left
 			
 			if (leftOutlineXZ == null) {
-				calculateOutlines();
+				calculateXZGeometry();
 			}
 			
 			return leftOutlineXZ;
@@ -340,25 +478,17 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		return connectors.getPosXYZ(getOutlineXZ(right));
 	}
 	
-	private List<VectorXZ> getOutlineLoopXZ() {
-		
-		if (outlineLoopXZ == null) {
-			calculateOutlines();
-		}
-		
-		return outlineLoopXZ;
-		
-	}
-	
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
 		
-		//SUGGEST (performance) cache?
+		if (outlinePolygonXZ == null) {
+			calculateXZGeometry();
+		}
 		
 		if (isBroken()) {
 			return null;
 		} else {
-			return new SimplePolygonXZ(getOutlineLoopXZ());
+			return outlinePolygonXZ;
 		}
 		
 	}
@@ -369,64 +499,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		if (isBroken()) {
 			return null;
 		} else {
-			return new PolygonXYZ(connectors.getPosXYZ(getOutlineLoopXZ()));
-		}
-		
-	}
-	
-	private void calculateOutlines() {
-
-		if (startCutVector == null || endCutVector == null) {
-			throw new IllegalStateException("cannot calculate outlines before cut vectors");
-		}
-		
-		// calculate left and right outlines
-		
-		List<VectorXZ> centerLine = getCenterlineXZ();
-
-		leftOutlineXZ = new ArrayList<VectorXZ>(centerLine.size());
-		rightOutlineXZ = new ArrayList<VectorXZ>(centerLine.size());
-		
-		assert centerLine.size() >= 2;
-		
-		double halfWidth = getWidth() * 0.5f;
-				
-		VectorXZ centerStart = centerLine.get(0);
-		leftOutlineXZ.add(centerStart.add(startCutVector.mult(-halfWidth)));
-		rightOutlineXZ.add(centerStart.add(startCutVector.mult(halfWidth)));
-		
-		for (int i = 1; i < centerLine.size() - 1; i++) {
-			
-			leftOutlineXZ.add(centerLine.get(i).add(segment.getRightNormal().mult(-halfWidth)));
-			rightOutlineXZ.add(centerLine.get(i).add(segment.getRightNormal().mult(halfWidth)));
-			
-		}
-
-		VectorXZ centerEnd = centerLine.get(centerLine.size() - 1);
-		leftOutlineXZ.add(centerEnd.add(endCutVector.mult(-halfWidth)));
-		rightOutlineXZ.add(centerEnd.add(endCutVector.mult(halfWidth)));
-		
-		// calculate the outline loop
-		
-		outlineLoopXZ = new ArrayList<VectorXZ>(centerLine.size() * 2 + 1);
-
-		List<VectorXZ> lOutline = getOutlineXZ(false);
-		List<VectorXZ> rOutline = getOutlineXZ(true);
-		
-		outlineLoopXZ.addAll(rOutline);
-		
-		lOutline = new ArrayList<VectorXZ>(lOutline);
-		Collections.reverse(lOutline);
-		outlineLoopXZ.addAll(lOutline);
-		
-		outlineLoopXZ.add(outlineLoopXZ.get(0));
-		
-		// check for brokenness
-		
-		try {
-			broken = new SimplePolygonXZ(outlineLoopXZ).isClockwise();
-		} catch (InvalidGeometryException e) {
-			broken = true;
+			return connectors.getPosXYZ(outlinePolygonXZ);
 		}
 		
 	}
@@ -439,9 +512,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	public boolean isBroken() {
 		
 		if (broken == null) {
-			calculateOutlines();
+			calculateXZGeometry();
 		}
-			
+		
 		//TODO filter out broken objects during creation in the world module
 		return broken;
 		

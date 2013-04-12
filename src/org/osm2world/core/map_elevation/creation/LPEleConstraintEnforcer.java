@@ -172,26 +172,28 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	@Override
 	public void addMinInclineConstraint(List<EleConnector> cs, double minIncline) {
 		
-		EleConnector first = cs.get(0);
-		EleConnector last = cs.get(cs.size() - 1);
+		for (int i = 0; i+1 < cs.size(); i++) {
 		
-		addConstraint(
-				 1, last,
-				-1, first,
-				">=", minIncline * first.pos.distanceTo(last.pos));
+			addConstraint(
+					 1, cs.get(i+1),
+					-1, cs.get(i),
+					">=", minIncline * cs.get(i).pos.distanceTo(cs.get(i+1).pos));
+			
+		}
 		
 	}
 	
 	@Override
 	public void addMaxInclineConstraint(List<EleConnector> cs, double maxIncline) {
+
+		for (int i = 0; i+1 < cs.size(); i++) {
 		
-		EleConnector first = cs.get(0);
-		EleConnector last = cs.get(cs.size() - 1);
-		
-		addConstraint(
-				 1, last,
-				-1, first,
-				"<=", maxIncline * first.pos.distanceTo(last.pos));
+			addConstraint(
+					 1, cs.get(i+1),
+					-1, cs.get(i),
+					"<=", maxIncline * cs.get(i).pos.distanceTo(cs.get(i+1).pos));
+			
+		}
 		
 	}
 	
@@ -199,28 +201,30 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	public void addSmoothnessConstraint(EleConnector c2,
 			EleConnector c1, EleConnector c3) {
 		
-		double smoothFactor = 0.1;
+		double maxInclineDiffPerMeter = 0.5 / 100;
 		
 		double dist12 = c1.pos.distanceTo(c2.pos);
 		double dist23 = c2.pos.distanceTo(c3.pos);
 		
-		//| - dist23 * c1 + (dist12 + dist23) * c2 + dist12 * c3 |
-		//   <= x% * dist12 * dist23
+		double maxInclineDiff = maxInclineDiffPerMeter * (dist12 + dist23);
 		
-		//FIXME rethink this smoothie stuff
+		System.out.println(maxInclineDiff);
 		
-		addConstraint(
-				-dist23, c1,
-				dist12 + dist23, c2,
-				-dist12, c3,
-				"<=", smoothFactor * dist12 * dist23);
+		//| - 1/dist12 * c1 + (1/dist12 + 1/dist23) * c2 - 1/dist23 * c3 |
+		//   <= maxInclineDiff
 		
 		addConstraint(
-				dist23, c1,
-				-(dist12 + dist23), c2,
-				dist12, c3,
-				">=", -smoothFactor * dist12 * dist23);
+				-1/dist12, c1,
+				1/dist12 + 1/dist23, c2,
+				-1/dist23, c3,
+				"<=", maxInclineDiff);
 		
+		addConstraint(
+				-1/dist12, c1,
+				1/dist12 + 1/dist23, c2,
+				-1/dist23, c3,
+				">=", -maxInclineDiff);
+				
 	}
 	
 	public void addDistanceMinimumConstraint(EleConnector upper,
@@ -314,7 +318,7 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 		/* apply elevation values */
 		
 		for (LPVariablePair c : variables) {
-			
+						
 			VectorXYZ posXYZ = c.getPosXYZ().addY(
 					+ result.get(c.posVar()).doubleValue()
 					- result.get(c.negVar()).doubleValue());

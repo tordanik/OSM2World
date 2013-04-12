@@ -50,7 +50,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 			
 			connectors = new EleConnectorGroup();
 			connectors.addConnectorsFor(getOutlinePolygonXZ().getVertices(),
-					getGroundState() == GroundState.ON);
+					node, getGroundState() == GroundState.ON);
 			
 		}
 		

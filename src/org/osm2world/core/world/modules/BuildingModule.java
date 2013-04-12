@@ -102,7 +102,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			this.area = area;
 			
 			this.groundLevelConnector = new EleConnector(
-					area.getOuterPolygon().getCenter(), true);
+					area.getOuterPolygon().getCenter(), null, true);
 			
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				MapElement other = overlap.getOther(area);
@@ -2099,7 +2099,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public BuildingEntrance(BuildingPart buildingPart, MapNode node) {
 			this.buildingPart = buildingPart;
 			this.node = node;
-			this.connector = new EleConnector(node.getPos(), true);
+			this.connector = new EleConnector(node.getPos(), node, true);
 		}
 		
 		@Override

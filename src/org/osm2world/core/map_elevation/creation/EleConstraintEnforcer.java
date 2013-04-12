@@ -47,7 +47,7 @@ public interface EleConstraintEnforcer {
 	/**
 	 * TODO javadoc
 	 */
-	void addSmoothnessConstraint(EleConnector v2, EleConnector v1, EleConnector v3);
+	void addSmoothnessConstraint(EleConnector c2, EleConnector c1, EleConnector c3);
 	
 	/**
 	 * tries to enforce the previously added constraints

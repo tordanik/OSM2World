@@ -27,7 +27,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	
 	public NoOutlineNodeWorldObject(MapNode node) {
 		this.node = node;
-		this.connector = new EleConnector(node.getPos(),
+		this.connector = new EleConnector(node.getPos(), node,
 				getGroundState() == GroundState.ON);
 	}
 	

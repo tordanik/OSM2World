@@ -25,6 +25,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.PolygonXYZ;
@@ -985,7 +986,21 @@ public class RoadModule extends ConfigurableWorldModule {
 			return width;
 			
 		}
-
+		
+		@Override
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			super.defineEleConstraints(enforcer);
+			
+			/* impose sensible maximum incline (35% is "the world's steepest residential street") */
+			
+			if (!isPath(tags) && !isSteps(tags) && !tags.containsKey("incline")) {
+				enforcer.addMaxInclineConstraint(getCenterlineEleConnectors(), 0.35);
+				enforcer.addMinInclineConstraint(getCenterlineEleConnectors(), -0.35);
+			}
+			
+		}
+		
 		@Override
 		public float getWidth() {
 			return width;

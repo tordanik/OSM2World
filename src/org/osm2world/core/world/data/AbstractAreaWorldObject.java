@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -41,19 +40,16 @@ public abstract class AbstractAreaWorldObject
 	}
 	
 	@Override
-	public Iterable<EleConnector> getEleConnectors() {
+	public EleConnectorGroup getEleConnectors() {
 		
 		if (connectors == null) {
 			
 			connectors = new EleConnectorGroup();
 			
-			connectors.addConnectorsFor(area.getPolygon(),
+			connectors.addConnectorsFor(area.getPolygon(), null,
 					getGroundState() == GroundState.ON);
-			connectors.addConnectorsForTriangulation(getTriangulationXZ(),
+			connectors.addConnectorsForTriangulation(getTriangulationXZ(), null,
 					getGroundState() == GroundState.ON);
-			
-			//TODO do no longer triangulate before elevation calculation
-			//     when constrained triangulation (no new points) works
 			
 		}
 		

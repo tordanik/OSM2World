@@ -36,26 +36,28 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 		this.eleConnectors = eleConnectors;
 	}
 	
-	public void addConnectorsFor(Iterable<VectorXZ> positions, boolean terrain) {
+	public void addConnectorsFor(Iterable<VectorXZ> positions,
+			Object reference, boolean terrain) {
 		
 		for (VectorXZ pos : positions) {
-			eleConnectors.add(new EleConnector(pos, terrain));
+			eleConnectors.add(new EleConnector(pos, reference, terrain));
 		}
 		
 	}
 	
-	public void addConnectorsFor(PolygonWithHolesXZ polygon, boolean terrain) {
+	public void addConnectorsFor(PolygonWithHolesXZ polygon,
+			Object reference, boolean terrain) {
 		
-		addConnectorsFor(polygon.getOuter().getVertices(), terrain);
+		addConnectorsFor(polygon.getOuter().getVertices(), reference, terrain);
 		
 		for (SimplePolygonXZ hole : polygon.getHoles()) {
-			addConnectorsFor(hole.getVertices(), terrain);
+			addConnectorsFor(hole.getVertices(), reference, terrain);
 		}
 		
 	}
 
 	public void addConnectorsForTriangulation(Iterable<TriangleXZ> triangles,
-			boolean terrain) {
+			Object reference, boolean terrain) {
 		//TODO check later whether this method is still necessary
 		
 		Set<VectorXZ> positions = new HashSet<VectorXZ>();
@@ -66,8 +68,14 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 			positions.add(t.v3);
 		}
 		
-		addConnectorsFor(positions, terrain);
+		addConnectorsFor(positions, null, terrain);
 		
+	}
+
+	public void add(EleConnector newConnector) {
+		
+		eleConnectors.add(newConnector);
+				
 	}
 	
 	public void addAll(Iterable<EleConnector> newConnectors) {

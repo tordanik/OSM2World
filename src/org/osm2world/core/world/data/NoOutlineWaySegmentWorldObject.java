@@ -30,9 +30,9 @@ public abstract class NoOutlineWaySegmentWorldObject
 		
 		this.segment = segment;
 		
-		startConnector = new EleConnector(getStartPosition(),
+		startConnector = new EleConnector(getStartPosition(), segment.getStartNode(),
 				getGroundState() == GroundState.ON);
-		endConnector = new EleConnector(getEndPosition(),
+		endConnector = new EleConnector(getEndPosition(), segment.getEndNode(),
 				getGroundState() == GroundState.ON);
 		
 	}

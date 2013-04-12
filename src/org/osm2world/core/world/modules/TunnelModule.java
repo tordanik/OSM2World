@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
-import static java.util.Collections.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -77,13 +79,21 @@ public class TunnelModule extends AbstractModule {
 			
 			MapWaySegment segmentA = node.getConnectedWaySegments().get(0);
 			MapWaySegment segmentB = node.getConnectedWaySegments().get(1);
-						
+			
 			if (isTunnel(segmentA) && !isTunnel(segmentB)
 					&& segmentA.getPrimaryRepresentation() instanceof AbstractNetworkWaySegmentWorldObject) {
-				node.addRepresentation(new TunnelEntrance(node, segmentA));
+				
+				node.addRepresentation(new TunnelEntrance(node,
+						(AbstractNetworkWaySegmentWorldObject)
+						segmentA.getPrimaryRepresentation()));
+				
 			} else if (isTunnel(segmentB) && !isTunnel(segmentA)
 					&& segmentB.getPrimaryRepresentation() instanceof AbstractNetworkWaySegmentWorldObject) {
-				node.addRepresentation(new TunnelEntrance(node, segmentB));
+				
+				node.addRepresentation(new TunnelEntrance(node,
+						(AbstractNetworkWaySegmentWorldObject)
+						segmentB.getPrimaryRepresentation()));
+				
 			}
 			
 		}
@@ -194,15 +204,61 @@ public class TunnelModule extends AbstractModule {
 		TerrainBoundaryWorldObject {
 		
 		private final MapNode node;
-		private final MapWaySegment tunnelSegment;
+		private final AbstractNetworkWaySegmentWorldObject tunnelContent;
 
-		private final EleConnector connector;
+		/**
+		 * counterclockwise outline composed of
+		 * {@link #lowerLeft}, {@link #lowerCenter}, {@link #lowerRight},
+		 * {@link #upperRight}, {@link #upperCenter} and {@link #upperLeft}.
+		 */
+		private SimplePolygonXZ outline;
 		
-		public TunnelEntrance(MapNode node, MapWaySegment tunnelSegment) {
+		private VectorXZ lowerLeft;
+		private VectorXZ lowerCenter;
+		private VectorXZ lowerRight;
+		private VectorXZ upperLeft;
+		private VectorXZ upperCenter;
+		private VectorXZ upperRight;
+		
+		private EleConnectorGroup connectors;
+		
+		public TunnelEntrance(MapNode node,
+				AbstractNetworkWaySegmentWorldObject tunnelContent) {
+			
 			this.node = node;
-			this.tunnelSegment = tunnelSegment;
-			this.connector = new EleConnector(node.getPos(),
-					getGroundState() == GroundState.ON);
+			this.tunnelContent = tunnelContent;
+			
+		}
+		
+		/**
+		 * creates outline as "ring" around the entrance
+		 */
+		private void calculateOutlineIfNecessary() {
+			
+			if (outline != null) return;
+
+			lowerCenter = node.getPos();
+			
+			VectorXZ toRight = tunnelContent.getStartCutVector()
+					.mult(tunnelContent.getWidth() * 0.5f);
+			
+			lowerLeft = lowerCenter.subtract(toRight);
+			lowerRight = lowerCenter.add(toRight);
+			
+			VectorXZ toBack = tunnelContent.segment.getDirection().mult(0.1);
+			if (tunnelContent.segment.getEndNode() == node) {
+				toBack = toBack.invert();
+			}
+			
+			upperLeft = lowerLeft.add(toBack);
+			upperCenter = lowerCenter.add(toBack);
+			upperRight = lowerRight.add(toBack);
+			
+			outline = new SimplePolygonXZ(asList(
+					lowerLeft, lowerCenter, lowerRight,
+					upperRight, upperCenter, upperLeft,
+					lowerLeft));
+			
 		}
 		
 		@Override
@@ -217,54 +273,73 @@ public class TunnelModule extends AbstractModule {
 		
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
-			// TODO ring of terrain connectors around the entrance
-			return singleton(connector);
+			
+			calculateOutlineIfNecessary();
+			
+			if (connectors == null) {
+				connectors = new EleConnectorGroup();
+				connectors.add(new EleConnector(lowerLeft, node, true));
+				connectors.add(new EleConnector(lowerCenter, node, true));
+				connectors.add(new EleConnector(lowerRight, node, true));
+				connectors.add(new EleConnector(upperLeft, null, true));
+				connectors.add(new EleConnector(upperCenter, null, true));
+				connectors.add(new EleConnector(upperRight, null, true));
+			}
+			
+			return connectors;
+			
 		}
 		
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			//TODO: not minimum, but exact distance
+			
+			enforcer.addMinVerticalDistanceConstraint(
+					connectors.getConnector(upperLeft),
+					connectors.getConnector(lowerLeft),
+					10);
+			
+			enforcer.addMinVerticalDistanceConstraint(
+					connectors.getConnector(upperCenter),
+					connectors.getConnector(lowerCenter),
+					10);
+
+			enforcer.addMinVerticalDistanceConstraint(
+					connectors.getConnector(upperRight),
+					connectors.getConnector(lowerRight),
+					10);
+			
+			//TODO restore original clearing
+			//tunnelPrimaryRep.getClearingAbove(node.getPos()));
+			
+		}
 		
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+			
+			calculateOutlineIfNecessary();
+			
 			return new AxisAlignedBoundingBoxXZ(getOutlinePolygon().getVertices());
+			
 		}
-
+		
+		@Override
+		public SimplePolygonXZ getOutlinePolygonXZ() {
+			
+			calculateOutlineIfNecessary();
+			
+			return outline;
+			
+		}
+		
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
 			
-			AbstractNetworkWaySegmentWorldObject tunnelPrimaryRep =
-				(AbstractNetworkWaySegmentWorldObject)tunnelSegment.getPrimaryRepresentation();
+			calculateOutlineIfNecessary();
 			
-			VectorXZ cutVector = tunnelPrimaryRep.getCutVectorAt(node)
-				.mult(tunnelPrimaryRep.getWidth() * 0.5f);
+			return connectors.getPosXYZ(getOutlinePolygonXZ());
 			
-			VectorXZ directionIntoTunnel = tunnelSegment.getDirection();
-			if (tunnelSegment.getEndNode() == node) {
-				directionIntoTunnel = directionIntoTunnel.invert();
-			}
-			
-			VectorXYZ toUpperVertices = directionIntoTunnel.mult(0.1).xyz(
-					10); //TODO restore original solution
-//					tunnelPrimaryRep.getClearingAbove(node.getPos()));
-			
-			List<VectorXYZ> vertexLoop = new ArrayList<VectorXYZ>(5);
-			
-			VectorXYZ lowerRight = connector.getPosXYZ().add(cutVector);
-			VectorXYZ lowerLeft = connector.getPosXYZ().subtract(cutVector);
-			
-			vertexLoop.add(lowerRight);
-			vertexLoop.add(lowerLeft);
-			vertexLoop.add(lowerLeft.add(toUpperVertices));
-			vertexLoop.add(lowerRight.add(toUpperVertices));
-			vertexLoop.add(lowerRight);
-			
-			return new PolygonXYZ(vertexLoop);
-			
-		}
-	
-		@Override
-		public SimplePolygonXZ getOutlinePolygonXZ() {
-			return getOutlinePolygon().getSimpleXZPolygon();
 		}
 		
 	}

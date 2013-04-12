@@ -38,7 +38,7 @@ public class EmptyTerrainBuilder {
 			Collections.<OSMNode>emptyList());
 	
 	/** intended length of the sides of a terrain patch */
-	private static final double PATCH_SIZE = 30;
+	private static final double PATCH_SIZE = 300;
 	
 	/**
 	 * creates a grid of square {@link MapArea}s to represent empty terrain.
@@ -72,7 +72,7 @@ public class EmptyTerrainBuilder {
 				
 				nodeGrid[x][z] = mapNode;
 				mapNodes.add(mapNode);
-
+				
 			}
 		}
 		
