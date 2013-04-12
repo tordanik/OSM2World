@@ -1,5 +1,7 @@
 package org.osm2world.core.map_elevation.data;
 
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.math.VectorXYZ;
@@ -24,22 +26,25 @@ public class EleConnector {
 	/** TODO document - MapNode or Intersection object, for example */
 	public final Object reference;
 	
-	/** indicates whether this connector should be connected to the terrain */
-	public final boolean terrain;
+	/**
+	 * indicates whether this connector should be connected to the terrain,
+	 * or is instead above or below the terrain
+	 */
+	public final GroundState groundState;
 	
 	private VectorXYZ posXYZ;
 	
 	/**
 	 * creates an EleConnector at the given xz coordinates.
-	 * @param pos        final value for {@link #pos}; != null
-	 * @param reference  final value for {@link #reference}; may be null
-	 * @param terrain    final value for {@link #terrain}
+	 * @param pos          final value for {@link #pos}; != null
+	 * @param reference    final value for {@link #reference}; may be null
+	 * @param groundState  final value for {@link #groundState}
 	 */
-	public EleConnector(VectorXZ pos, Object reference, boolean terrain) {
+	public EleConnector(VectorXZ pos, Object reference, GroundState groundState) {
 		assert pos != null;
 		this.pos = pos;
 		this.reference = reference;
-		this.terrain = terrain;
+		this.groundState = groundState;
 	}
 	
 	/**
@@ -75,12 +80,12 @@ public class EleConnector {
 	public boolean connectsTo(EleConnector other) {
 		return pos.equals(other.pos)
 				&& ((reference != null && reference == other.reference)
-					|| (terrain && other.terrain));
+					|| (groundState == ON && other.groundState == ON));
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("(%s, %s, %s)", pos, reference, terrain);
+		return String.format("(%s, %s, %s)", pos, reference, groundState);
 	}
 	
 }

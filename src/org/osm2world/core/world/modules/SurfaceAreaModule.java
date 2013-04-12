@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
+import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.createPointGrid;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
@@ -267,15 +268,15 @@ public class SurfaceAreaModule extends AbstractModule {
 					
 					EleConnector ownConnector = getEleConnectors().getConnector(eleConnector.pos);
 					
-					if (ownConnector == null || eleConnector.terrain) continue;
+					if (ownConnector == null) continue;
 										
-					if (otherWO.getGroundState() == GroundState.ABOVE) {
+					if (eleConnector.groundState == ABOVE) {
 						
 						enforcer.addMinVerticalDistanceConstraint(
 								eleConnector, ownConnector,
 								1); //TODO actual clearing
 						
-					} else if (otherWO.getGroundState() == GroundState.BELOW) {
+					} else if (eleConnector.groundState == BELOW) {
 						
 						enforcer.addMinVerticalDistanceConstraint(
 								ownConnector, eleConnector,

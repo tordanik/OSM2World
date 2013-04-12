@@ -8,7 +8,6 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -50,7 +49,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 			
 			connectors = new EleConnectorGroup();
 			connectors.addConnectorsFor(getOutlinePolygonXZ().getVertices(),
-					node, getGroundState() == GroundState.ON);
+					node, getGroundState());
 			
 		}
 		

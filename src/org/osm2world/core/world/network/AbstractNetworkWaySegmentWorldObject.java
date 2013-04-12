@@ -2,7 +2,7 @@ package org.osm2world.core.world.network;
 
 import static java.lang.Double.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
-import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
 
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
+import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
@@ -132,7 +133,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			centerlineXZ.add(start);
 			
 			connectors.add(new EleConnector(start,
-					segment.getStartNode(), isOnTerrain(segment.getStartNode())));
+					segment.getStartNode(), getGroundState(segment.getStartNode())));
 			
 			// add intersections along the centerline
 			
@@ -147,7 +148,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 						centerlineXZ.add(intersection.pos);
 						
 						connectors.add(new EleConnector(intersection.pos,
-								null, getGroundState() == ON));
+								null, getGroundState()));
 						
 					}
 					
@@ -159,7 +160,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			centerlineXZ.add(end);
 
 			connectors.add(new EleConnector(end,
-					segment.getEndNode(), isOnTerrain(segment.getEndNode())));
+					segment.getEndNode(), getGroundState(segment.getEndNode())));
 			
 			if (centerlineXZ.size() > 3) {
 				
@@ -191,9 +192,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			rightOutlineXZ.add(centerStart.add(startCutVector.mult(halfWidth)));
 			
 			connectors.add(new EleConnector(leftOutlineXZ.get(0),
-					segment.getStartNode(), isOnTerrain(segment.getStartNode())));
+					segment.getStartNode(), getGroundState(segment.getStartNode())));
 			connectors.add(new EleConnector(rightOutlineXZ.get(0),
-					segment.getStartNode(), isOnTerrain(segment.getStartNode())));
+					segment.getStartNode(), getGroundState(segment.getStartNode())));
 			
 			for (int i = 1; i < centerlineXZ.size() - 1; i++) {
 				
@@ -201,9 +202,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 				rightOutlineXZ.add(centerlineXZ.get(i).add(segment.getRightNormal().mult(halfWidth)));
 				
 				connectors.add(new EleConnector(leftOutlineXZ.get(i),
-						null, getGroundState() == ON));
+						null, getGroundState()));
 				connectors.add(new EleConnector(rightOutlineXZ.get(i),
-						null, getGroundState() == ON));
+						null, getGroundState()));
 				
 			}
 			
@@ -212,9 +213,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			rightOutlineXZ.add(centerEnd.add(endCutVector.mult(halfWidth)));
 			
 			connectors.add(new EleConnector(leftOutlineXZ.get(leftOutlineXZ.size() - 1),
-					segment.getEndNode(), isOnTerrain(segment.getEndNode())));
+					segment.getEndNode(), getGroundState(segment.getEndNode())));
 			connectors.add(new EleConnector(rightOutlineXZ.get(rightOutlineXZ.size() - 1),
-					segment.getEndNode(), isOnTerrain(segment.getEndNode())));
+					segment.getEndNode(), getGroundState(segment.getEndNode())));
 			
 		}
 		
@@ -246,33 +247,46 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 	
 	/**
-	 * returns true if the node is connected to the terrain
+	 * determines whether the node is connected to the terrain based on the
+	 * segments connected to it
+	 * 
 	 * @param node  one of the nodes of {@link #segment}
 	 */
-	private boolean isOnTerrain(MapNode node) {
+	private GroundState getGroundState(MapNode node) {
 		
 		WorldObject primaryWO = node.getPrimaryRepresentation();
 		
 		if (primaryWO != null) {
 			
-			return primaryWO.getGroundState() == ON;
+			return primaryWO.getGroundState();
 			
 		} else if (this.getGroundState() == ON) {
 			
-			return true;
+			return ON;
 			
 		} else {
 			
+			boolean allAbove = true;
+			boolean allBelow = true;
+			
 			for (MapWaySegment segment : node.getConnectedWaySegments()) {
-				if (segment.getPrimaryRepresentation().getGroundState() == ON) {
-					return true;
+				switch (segment.getPrimaryRepresentation().getGroundState()) {
+				case ABOVE: allBelow = false; break;
+				case BELOW: allAbove = false; break;
+				case ON: return ON;
 				}
 			}
 			
-			return false;
+			if (allAbove) {
+				return ABOVE;
+			} else if (allBelow) {
+				return BELOW;
+			} else {
+				return ON;
+			}
 			
 		}
-		 
+		
 	}
 	
 	@Override

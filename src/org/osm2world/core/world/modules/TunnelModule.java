@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
@@ -278,12 +279,12 @@ public class TunnelModule extends AbstractModule {
 			
 			if (connectors == null) {
 				connectors = new EleConnectorGroup();
-				connectors.add(new EleConnector(lowerLeft, node, true));
-				connectors.add(new EleConnector(lowerCenter, node, true));
-				connectors.add(new EleConnector(lowerRight, node, true));
-				connectors.add(new EleConnector(upperLeft, null, true));
-				connectors.add(new EleConnector(upperCenter, null, true));
-				connectors.add(new EleConnector(upperRight, null, true));
+				connectors.add(new EleConnector(lowerLeft, node, ON));
+				connectors.add(new EleConnector(lowerCenter, node, ON));
+				connectors.add(new EleConnector(lowerRight, node, ON));
+				connectors.add(new EleConnector(upperLeft, null, ON));
+				connectors.add(new EleConnector(upperCenter, null, ON));
+				connectors.add(new EleConnector(upperRight, null, ON));
 			}
 			
 			return connectors;

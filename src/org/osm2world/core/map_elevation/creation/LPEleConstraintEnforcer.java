@@ -1,5 +1,7 @@
 package org.osm2world.core.map_elevation.creation;
 
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -335,8 +337,8 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 		
 		for (LPVariablePair v : variables) {
 			
-			if (v.getConnectors().get(0).terrain) {
-			
+			if (v.getConnectors().get(0).groundState == ON) {
+				
 				objectiveLinear.add(1, v.posVar());
 				objectiveLinear.add(1, v.negVar());
 				

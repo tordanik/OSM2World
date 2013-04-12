@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -46,10 +45,10 @@ public abstract class AbstractAreaWorldObject
 			
 			connectors = new EleConnectorGroup();
 			
-			connectors.addConnectorsFor(area.getPolygon(), null,
-					getGroundState() == GroundState.ON);
-			connectors.addConnectorsForTriangulation(getTriangulationXZ(), null,
-					getGroundState() == GroundState.ON);
+			connectors.addConnectorsFor(
+					area.getPolygon(), null, getGroundState());
+			connectors.addConnectorsForTriangulation(
+					getTriangulationXZ(), null, getGroundState());
 			
 		}
 		

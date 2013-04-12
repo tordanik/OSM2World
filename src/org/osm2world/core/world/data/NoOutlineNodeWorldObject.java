@@ -5,7 +5,6 @@ import static java.util.Collections.singleton;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
@@ -28,7 +27,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	public NoOutlineNodeWorldObject(MapNode node) {
 		this.node = node;
 		this.connector = new EleConnector(node.getPos(), node,
-				getGroundState() == GroundState.ON);
+				getGroundState());
 	}
 	
 	@Override
