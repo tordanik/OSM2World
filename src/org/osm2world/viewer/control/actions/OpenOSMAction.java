@@ -14,10 +14,13 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
@@ -39,11 +42,11 @@ public class OpenOSMAction extends AbstractAction {
 		putValue(MNEMONIC_KEY, KeyEvent.VK_O);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
 				KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-
+		
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
-
+		
 	}
 
 	@Override
@@ -148,8 +151,12 @@ public class OpenOSMAction extends AbstractAction {
 								
 				try {
 					
-					data.loadOSMFile(osmFile, renderOptions.getEleCalculator(),
-							failOnLargeBBox, this);
+					data.loadOSMFile(osmFile, failOnLargeBBox,
+							new DefaultFactory<TerrainInterpolator>(
+									renderOptions.getInterpolatorClass()),
+							new DefaultFactory<EleConstraintEnforcer>(
+									renderOptions.getEnforcerClass()),
+							this);
 	
 					if (resetCamera) {
 						new ResetCameraAction(viewerFrame, data, renderOptions).actionPerformed(null);

@@ -10,16 +10,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.LeastSquaresInterpolator;
+import org.osm2world.NaturalNeighborInterpolator;
+import org.osm2world.TerrainInterpolator;
+import org.osm2world.ZeroInterpolator;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
-import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -29,6 +33,7 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
+import org.osm2world.core.util.functions.DefaultFactory;
 
 public final class Output {
 
@@ -44,16 +49,29 @@ public final class Output {
 		PerformanceListener perfListener =
 			new PerformanceListener(argumentsGroup.getRepresentative());
 		cf.addProgressListener(perfListener);
+				
+		String interpolatorType = config.getString("terrainInterpolator");
+		if ("ZeroInterpolator".equals(interpolatorType)) {
+			cf.setTerrainEleInterpolatorFactory(
+					new DefaultFactory<TerrainInterpolator>(ZeroInterpolator.class));
+		} else if ("LeastSquaresInterpolator".equals(interpolatorType)) {
+			cf.setTerrainEleInterpolatorFactory(
+					new DefaultFactory<TerrainInterpolator>(LeastSquaresInterpolator.class));
+		} else if ("NaturalNeighborInterpolator".equals(interpolatorType)) {
+			cf.setTerrainEleInterpolatorFactory(
+					new DefaultFactory<TerrainInterpolator>(NaturalNeighborInterpolator.class));
+		}
 		
-		String ecType = config.getString("elevationCalculator", "BridgeTunnelElevationCalculator");
-		if ("BridgeTunnelElevationCalculator".equals(ecType)) {
-			cf.setElevationCalculator(new BridgeTunnelElevationCalculator());
-		} else if ("ZeroElevationCalculator".equals(ecType)) {
-			cf.setElevationCalculator(new ZeroElevationCalculator());
-		} else if ("EleTagElevationCalculator".equals(ecType)) {
-			cf.setElevationCalculator(new EleTagElevationCalculator());
-		} else if ("LevelTagElevationCalculator".equals(ecType)) {
-			cf.setElevationCalculator(new LevelTagElevationCalculator());
+		String enforcerType = config.getString("eleConstraintEnforcer");
+		if ("NoneEleConstraintEnforcer".equals(enforcerType)) {
+			cf.setEleConstraintEnforcerFactory(
+					new DefaultFactory<EleConstraintEnforcer>(NoneEleConstraintEnforcer.class));
+		} else if ("SimpleEleConstraintEnforcer".equals(enforcerType)) {
+			cf.setEleConstraintEnforcerFactory(
+					new DefaultFactory<EleConstraintEnforcer>(SimpleEleConstraintEnforcer.class));
+		} else if ("LPEleConstraintEnforcer".equals(enforcerType)) {
+			cf.setEleConstraintEnforcerFactory(
+					new DefaultFactory<EleConstraintEnforcer>(LPEleConstraintEnforcer.class));
 		}
 		
 		Results results = cf.createRepresentations(

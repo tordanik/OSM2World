@@ -2,7 +2,7 @@ package org.osm2world.core.terrain.data;
 
 import java.util.ArrayList;
 
-import org.osm2world.EleInterpolationStrategy;
+import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.heightmap.data.TerrainElevationCell;
 import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.math.TriangleXYZ;
@@ -21,7 +21,7 @@ public class EmptyCellTerrainPatch extends TerrainPatch {
 	}
 	
 	@Override
-	public void build(EleInterpolationStrategy strategy) {
+	public void build(TerrainInterpolator strategy) {
 		
 		triangulation = new ArrayList<TriangleXYZ>(2);
 		

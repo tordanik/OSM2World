@@ -1,7 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
-import org.osm2world.EleInterpolationStrategy;
-import org.osm2world.NaturalNeighborStrategy;
+import org.osm2world.TerrainInterpolator;
+import org.osm2world.NaturalNeighborInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 
@@ -12,8 +12,8 @@ public class NaturalNeighborStrategyDebugView extends InterpolationStrategyDebug
 	}
 	
 	@Override
-	protected EleInterpolationStrategy buildStrategy() {
-		return new NaturalNeighborStrategy();
+	protected TerrainInterpolator buildStrategy() {
+		return new NaturalNeighborInterpolator();
 	}
 	
 }

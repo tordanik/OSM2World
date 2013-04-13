@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.osm2world.EleInterpolationStrategy;
+import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -23,7 +23,7 @@ import org.osm2world.viewer.model.RenderOptions;
 
 public abstract class InterpolationStrategyDebugView extends DebugView {
 
-	protected abstract EleInterpolationStrategy buildStrategy();
+	protected abstract TerrainInterpolator buildStrategy();
 	
 	private static final double SAMPLE_DIST = 6;
 	
@@ -62,7 +62,7 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 			
 			Collection<VectorXYZ> sites = eleData.getSites(map);
 			
-			EleInterpolationStrategy strategy = buildStrategy();
+			TerrainInterpolator strategy = buildStrategy();
 			strategy.setKnownSites(sites);
 			
 			AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();

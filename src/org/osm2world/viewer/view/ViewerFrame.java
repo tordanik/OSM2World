@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -16,11 +17,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
-import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
-import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
+import org.osm2world.LeastSquaresInterpolator;
+import org.osm2world.NaturalNeighborInterpolator;
+import org.osm2world.TerrainInterpolator;
+import org.osm2world.ZeroInterpolator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
@@ -34,7 +38,8 @@ import org.osm2world.viewer.control.actions.OrthoTileAction;
 import org.osm2world.viewer.control.actions.ReloadOSMAction;
 import org.osm2world.viewer.control.actions.ResetCameraAction;
 import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
-import org.osm2world.viewer.control.actions.SetElevationCalculatorAction;
+import org.osm2world.viewer.control.actions.SetEleConstraintEnforcerAction;
+import org.osm2world.viewer.control.actions.SetTerrainInterpolatorAction;
 import org.osm2world.viewer.control.actions.StatisticsAction;
 import org.osm2world.viewer.control.actions.ToggleBackfaceCullingAction;
 import org.osm2world.viewer.control.actions.ToggleDebugViewAction;
@@ -252,24 +257,49 @@ public class ViewerFrame extends JFrame{
 		} { //"Options"
 
 			JMenu subMenu = new JMenu("Options");
-			JMenu eleCalcMenu = new JMenu("ElevationCalculator");
-			subMenu.add(eleCalcMenu);
 			subMenu.setMnemonic(VK_O);
 			
-			ButtonGroup eleCalcGroup = new ButtonGroup();
+			JMenu interpolatorMenu = new JMenu("TerrainInterpolator");
+			subMenu.add(interpolatorMenu);
 			
-			for (ElevationCalculator eleCalc : asList(
-					new BridgeTunnelElevationCalculator(),
-					new ZeroElevationCalculator(),
-					new EleTagElevationCalculator(),
-					new LevelTagElevationCalculator())) {
+			ButtonGroup interpolatorGroup = new ButtonGroup();
+			
+			@SuppressWarnings("unchecked")
+			List<Class<? extends TerrainInterpolator>> interpolatorClasses = asList(
+					ZeroInterpolator.class,
+					LeastSquaresInterpolator.class,
+					NaturalNeighborInterpolator.class);
+			
+			for (Class<? extends TerrainInterpolator> c : interpolatorClasses) {
 				
 				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
-						new SetElevationCalculatorAction(
-								eleCalc, this,  data, renderOptions));
+						new SetTerrainInterpolatorAction(c,
+								this, data, renderOptions));
 				
-				eleCalcGroup.add(item);
-				eleCalcMenu.add(item);
+				interpolatorGroup.add(item);
+				interpolatorMenu.add(item);
+				
+			}
+			
+			JMenu enforcerMenu = new JMenu("EleConstraintEnforcer");
+			subMenu.add(enforcerMenu);
+			
+			ButtonGroup enforcerGroup = new ButtonGroup();
+			
+			@SuppressWarnings("unchecked")
+			List<Class<? extends EleConstraintEnforcer>> enforcerClasses = asList(
+					NoneEleConstraintEnforcer.class,
+					SimpleEleConstraintEnforcer.class,
+					LPEleConstraintEnforcer.class);
+			
+			for (Class<? extends EleConstraintEnforcer> c : enforcerClasses) {
+				
+				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
+						new SetEleConstraintEnforcerAction(c,
+								this, data, renderOptions));
+				
+				enforcerGroup.add(item);
+				enforcerMenu.add(item);
 				
 			}
 			

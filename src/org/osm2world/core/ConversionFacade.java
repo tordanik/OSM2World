@@ -1,5 +1,7 @@
 package org.osm2world.core;
 
+import static java.util.Collections.emptyList;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,17 +11,22 @@ import java.util.List;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang.time.StopWatch;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
+import org.osm2world.TerrainInterpolator;
 import org.osm2world.Hardcoded;
+import org.osm2world.LeastSquaresInterpolator;
 import org.osm2world.SRTMData;
 import org.osm2world.TerrainElevationData;
 import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
-import org.osm2world.core.map_elevation.creation.InterpolatingElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.EleConstraintValidator;
+import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
 import org.osm2world.core.osm.creation.OsmosisReader;
 import org.osm2world.core.osm.data.OSMData;
@@ -28,6 +35,10 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.terrain.data.Terrain;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
+import org.osm2world.core.util.functions.DefaultFactory;
+import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
@@ -155,17 +166,36 @@ public class ConversionFacade {
 		
 	}
 	
-	private ElevationCalculator elevationCalculator =
-		new BridgeTunnelElevationCalculator();
+	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory =
+		new DefaultFactory<LeastSquaresInterpolator>(LeastSquaresInterpolator.class);
+
+	private Factory<? extends EleConstraintEnforcer> eleConstraintEnforcerFactory =
+		new DefaultFactory<NoneEleConstraintEnforcer>(NoneEleConstraintEnforcer.class);
 	
 	/**
-	 * sets the {@link ElevationCalculator} that is used during subsequent calls
-	 * to {@link #createRepresentations(OSMData, List, Configuration, List)}
+	 * sets the factory that will make {@link EleConstraintEnforcer}
+	 * instances during subsequent calls to
+	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * 
+	 * @see DefaultFactory
 	 */
-	public void setElevationCalculator(
-			ElevationCalculator elevationCalculator) {
-		this.elevationCalculator = elevationCalculator;
+	public void setEleConstraintEnforcerFactory(
+			Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
+		this.eleConstraintEnforcerFactory = interpolatorFactory;
 	}
+	
+	/**
+	 * sets the factory that will make {@link TerrainInterpolator}
+	 * instances during subsequent calls to
+	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * 
+	 * @see DefaultFactory
+	 */
+	public void setTerrainEleInterpolatorFactory(
+			Factory<? extends TerrainInterpolator> enforcerFactory) {
+		this.terrainEleInterpolatorFactory = enforcerFactory;
+	}
+	
 	
 	/**
 	 * performs all necessary steps to go from
@@ -299,21 +329,18 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 		
-		//FIXME hardcoded EC
-		elevationCalculator = new InterpolatingElevationCalculator();
-				
 		TerrainElevationData eleData = null;
 		if (config.getBoolean("createTerrain", true)) {
 			eleData = new SRTMData(Hardcoded.SRTM_DIR, mapProjection);
 		}
 		
-		elevationCalculator.calculateElevations(mapData, eleData);
+		calculateElevations(mapData, eleData, config);
 		
 		/* create terrain */
 		updatePhase(Phase.TERRAIN);
 		
 		Terrain terrain = null;
-				
+		
 		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
 		
@@ -330,6 +357,96 @@ public class ConversionFacade {
 		}
 		
 		return new Results(mapProjection, mapData, terrain, eleData);
+		
+	}
+	
+	/**
+	 * uses OSM data and an terrain elevation data (usually from an external
+	 * source) to calculate elevations for all {@link EleConnector}s of the
+	 * {@link WorldObject}s
+	 */
+	private void calculateElevations(MapData mapData,
+			TerrainElevationData eleData, Configuration config) {
+		
+		Collection<VectorXYZ> sites = emptyList();
+		
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		
+		try {
+			
+			System.out.println("time srtm: " + stopWatch);
+			stopWatch.reset();
+			stopWatch.start();
+			
+			sites = eleData.getSites(mapData);
+			
+			System.out.println("time getSites: " + stopWatch);
+			stopWatch.reset();
+			stopWatch.start();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		final TerrainInterpolator strategy =
+				terrainEleInterpolatorFactory.make();
+		
+		strategy.setKnownSites(sites);
+		
+		System.out.println("time setKnownSites: " + stopWatch);
+		stopWatch.reset();
+		stopWatch.start();
+		
+		/* interpolate connectors' elevations */
+		
+		final List<EleConnector> connectors = new ArrayList<EleConnector>();
+		
+		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
+				new Operation<WorldObject>() {
+			@Override public void perform(WorldObject worldObject) {
+				
+				for (EleConnector conn : worldObject.getEleConnectors()) {
+					conn.setPosXYZ(strategy.interpolateEle(conn.pos));
+					connectors.add(conn);
+				}
+				
+			}
+		});
+		
+		System.out.println("time terrain interpolation: " + stopWatch);
+		stopWatch.reset();
+		stopWatch.start();
+		
+		/* enforce constraints defined by WorldObjects */
+		
+		boolean debugConstraints = config.getBoolean("debugConstraints", false);
+		
+		final EleConstraintEnforcer enforcer = debugConstraints
+				? new EleConstraintValidator(mapData,
+						eleConstraintEnforcerFactory.make())
+				: eleConstraintEnforcerFactory.make();
+		
+		enforcer.addConnectors(connectors);
+		
+		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
+				new Operation<WorldObject>() {
+			@Override public void perform(WorldObject worldObject) {
+				
+				worldObject.defineEleConstraints(enforcer);
+				
+			}
+		});
+		
+		System.out.println("time add constraints: " + stopWatch);
+		stopWatch.reset();
+		stopWatch.start();
+		
+		enforcer.enforceConstraints();
+		
+		System.out.println("time enforce constraints: " + stopWatch);
+		stopWatch.reset();
+		stopWatch.start();
 		
 	}
 	

@@ -5,27 +5,28 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 
-public class SetElevationCalculatorAction extends AbstractAction {
+public class SetEleConstraintEnforcerAction extends AbstractAction {
 
-	ElevationCalculator eleCalculator;
+	Class<? extends EleConstraintEnforcer> enforcerClass;
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;
 
-	public SetElevationCalculatorAction(ElevationCalculator eleCalculator,
+	public SetEleConstraintEnforcerAction(
+			Class<? extends EleConstraintEnforcer> enforcerClass,
 			ViewerFrame viewerFrame, Data data, RenderOptions renderOptions) {
-
-		super(eleCalculator.getClass().getSimpleName());
 		
-		putValue(SELECTED_KEY, eleCalculator.getClass().equals(
-				renderOptions.getEleCalculator().getClass()));
+		super(enforcerClass.getSimpleName());
 		
-		this.eleCalculator = eleCalculator;
+		putValue(SELECTED_KEY, enforcerClass.equals(
+				renderOptions.getEnforcerClass()));
+		
+		this.enforcerClass = enforcerClass;
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
@@ -35,9 +36,9 @@ public class SetElevationCalculatorAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		renderOptions.setEleCalculator(eleCalculator);
+		renderOptions.setEnforcerClass(enforcerClass);
 		putValue(SELECTED_KEY,
-				renderOptions.getEleCalculator() == eleCalculator);
+				renderOptions.getEnforcerClass().equals(enforcerClass));
 		
 		if (data.getConversionResults() != null) {
 			JOptionPane.showMessageDialog(viewerFrame, "You need to reload or" +

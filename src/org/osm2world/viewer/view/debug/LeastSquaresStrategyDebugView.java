@@ -1,7 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
-import org.osm2world.EleInterpolationStrategy;
-import org.osm2world.LeastSquaresStrategy;
+import org.osm2world.TerrainInterpolator;
+import org.osm2world.LeastSquaresInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 
@@ -12,8 +12,8 @@ public class LeastSquaresStrategyDebugView extends InterpolationStrategyDebugVie
 	}
 	
 	@Override
-	protected EleInterpolationStrategy buildStrategy() {
-		return new LeastSquaresStrategy();
+	protected TerrainInterpolator buildStrategy() {
+		return new LeastSquaresInterpolator();
 	}
 	
 }

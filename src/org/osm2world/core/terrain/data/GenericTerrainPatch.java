@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.EleInterpolationStrategy;
+import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -41,7 +41,7 @@ public class GenericTerrainPatch extends TerrainPatch {
 	}
 	
 	@Override
-	public void build(EleInterpolationStrategy strategy) {
+	public void build(TerrainInterpolator strategy) {
 		
 		if (triangulation != null) {
 			throw new IllegalStateException(

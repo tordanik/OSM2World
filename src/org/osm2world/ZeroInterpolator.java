@@ -8,7 +8,7 @@ import org.osm2world.core.math.VectorXZ;
 /**
  * sets every point's elevation to 0
  */
-public class ZeroStrategy implements EleInterpolationStrategy {
+public class ZeroInterpolator implements TerrainInterpolator {
 	
 	@Override
 	public void setKnownSites(Collection<VectorXYZ> sites) {

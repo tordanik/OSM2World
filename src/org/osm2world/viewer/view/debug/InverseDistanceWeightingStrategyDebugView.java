@@ -1,7 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
-import org.osm2world.EleInterpolationStrategy;
-import org.osm2world.InverseDistanceWeightingStrategy;
+import org.osm2world.TerrainInterpolator;
+import org.osm2world.InverseDistanceWeightingInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 
@@ -12,8 +12,8 @@ public class InverseDistanceWeightingStrategyDebugView extends InterpolationStra
 	}
 	
 	@Override
-	protected EleInterpolationStrategy buildStrategy() {
-		return new InverseDistanceWeightingStrategy(1);
+	protected TerrainInterpolator buildStrategy() {
+		return new InverseDistanceWeightingInterpolator(1);
 	}
 	
 }

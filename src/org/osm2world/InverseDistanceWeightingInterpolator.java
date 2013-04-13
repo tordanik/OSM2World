@@ -10,7 +10,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 
 
-public class InverseDistanceWeightingStrategy implements EleInterpolationStrategy {
+public class InverseDistanceWeightingInterpolator implements TerrainInterpolator {
 	
 	private static final double CUTOFF = 300;
 	
@@ -18,7 +18,7 @@ public class InverseDistanceWeightingStrategy implements EleInterpolationStrateg
 	private Collection<VectorXYZ> sites;
 	private IntersectionGrid<VectorXYZ> siteGrid; //TODO: rename IntersectionGrid to something more generic
 	
-	public InverseDistanceWeightingStrategy(double exponent) {
+	public InverseDistanceWeightingInterpolator(double exponent) {
 		this.negExp = -exponent;
 	}
 	

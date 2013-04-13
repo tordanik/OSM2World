@@ -8,7 +8,7 @@ import org.osm2world.core.math.VectorXZ;
 /**
  * strategy for elevation interpolation from a set of known points
  */
-public interface EleInterpolationStrategy {
+public interface TerrainInterpolator {
 
 	void setKnownSites(Collection<VectorXYZ> sites);
 	

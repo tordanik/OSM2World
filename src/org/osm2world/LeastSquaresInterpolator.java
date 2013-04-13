@@ -25,9 +25,9 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
  * uses least squares method to approximate a polynomial at each site,
- * and interpolates elevations based on the polynomials at the nearest sites.
+ * and calculates elevations based on the polynomials at the nearest sites.
  */
-public class LeastSquaresStrategy implements EleInterpolationStrategy {
+public class LeastSquaresInterpolator implements TerrainInterpolator {
 	
 	private static final double CELL_SIZE = 30; //should only affect performance
 	private static final int SITES_FOR_APPROX = 9;

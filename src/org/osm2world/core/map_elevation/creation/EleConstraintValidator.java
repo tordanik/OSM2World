@@ -18,7 +18,7 @@ import com.google.common.collect.Multimap;
  * a wrapper for an {@link EleConstraintEnforcer} that passes all calls though,
  * but looks for obvious contradictions in the constraints to help with debugging.
  */
-class EleConstraintValidator implements EleConstraintEnforcer {
+public class EleConstraintValidator implements EleConstraintEnforcer {
 
 	private final MapData mapData;
 	private final EleConstraintEnforcer enforcer;

@@ -10,7 +10,7 @@ import org.osm2world.core.math.VectorXZ;
 /**
  * uses natural neighbor interpolation of heights
  */
-public class NaturalNeighborStrategy implements EleInterpolationStrategy {
+public class NaturalNeighborInterpolator implements TerrainInterpolator {
 
 	private DelaunayTriangulation triangulation;
 	
