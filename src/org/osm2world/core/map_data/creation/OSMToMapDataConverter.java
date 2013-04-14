@@ -480,9 +480,9 @@ public class OSMToMapDataConverter {
 			MapOverlapAA newOverlap = null;
 			
 			if (contains1) {
-				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.CONTAIN);
-			} else if (contains2) {
 				newOverlap = new MapOverlapAA(area2, area1, MapOverlapType.CONTAIN);
+			} else if (contains2) {
+				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.CONTAIN);
 			} else {
 				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.INTERSECT);
 			}
