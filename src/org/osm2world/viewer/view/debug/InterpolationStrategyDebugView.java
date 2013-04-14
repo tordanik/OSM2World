@@ -1,7 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.createPointGrid;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -11,8 +10,8 @@ import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
@@ -66,25 +65,23 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 			strategy.setKnownSites(sites);
 			
 			AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
-						
-			VectorXZ[][] sampleGrid = createPointGrid(bound, SAMPLE_DIST);
 			
-			VectorXYZ[][] samples = new VectorXYZ[sampleGrid.length][sampleGrid[0].length];
-
-			long totalSamples = sampleGrid.length * sampleGrid[0].length;
+			VectorGridXZ sampleGrid = new VectorGridXZ(bound, SAMPLE_DIST);
+			
+			VectorXYZ[][] samples = new VectorXYZ[sampleGrid.sizeX()][sampleGrid.sizeZ()];
 			
 			long startTimeMillis = System.currentTimeMillis();
 			
-			for (int x = 0; x < sampleGrid.length; x++) {
-				for (int z = 0; z < sampleGrid[x].length; z++) {
+			for (int x = 0; x < sampleGrid.sizeX(); x++) {
+				for (int z = 0; z < sampleGrid.sizeZ(); z++) {
 					
-					samples[x][z] = strategy.interpolateEle(sampleGrid[x][z]);
+					samples[x][z] = strategy.interpolateEle(sampleGrid.get(x, z));
 										
 				}
 				
 				if (x % 100 == 0) {
-					long finishedSamples = x * sampleGrid[x].length;
-					System.out.println(finishedSamples + "/" + totalSamples
+					long finishedSamples = x * sampleGrid.sizeZ();
+					System.out.println(finishedSamples + "/" + sampleGrid.size()
 							+ " after " + ((System.currentTimeMillis() - startTimeMillis) / 1000f));
 				}
 			}

@@ -1,8 +1,8 @@
 package org.osm2world.core.map_data.creation;
 
-import static java.lang.Math.ceil;
-import static java.util.Arrays.asList;
+import static java.lang.Math.min;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,6 +12,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMWay;
@@ -37,8 +38,8 @@ public class EmptyTerrainBuilder {
 			new MapBasedTagGroup(EMPTY_SURFACE_TAG), 0,
 			Collections.<OSMNode>emptyList());
 	
-	/** intended length of the sides of a terrain patch */
-	private static final double PATCH_SIZE = 300;
+	public static final double POINT_GRID_DIST = 30;
+	public static final int PATCH_SIZE_POINTS = 10;
 	
 	/**
 	 * creates a grid of square {@link MapArea}s to represent empty terrain.
@@ -51,48 +52,79 @@ public class EmptyTerrainBuilder {
 	static void createAreasForEmptyTerrain(List<MapNode> mapNodes,
 			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ dataBounds) {
 		
-		int numPatchesX = (int) ceil(dataBounds.sizeX() / PATCH_SIZE) + 1;
-		int numPatchesZ = (int) ceil(dataBounds.sizeZ() / PATCH_SIZE) + 1;
+		VectorGridXZ posGrid = new VectorGridXZ(
+				dataBounds.pad(POINT_GRID_DIST), POINT_GRID_DIST);
 		
-		double terrainMinX = dataBounds.minX - PATCH_SIZE / 2;
-		double terrainMinZ = dataBounds.minZ - PATCH_SIZE / 2;
+		/* create a grid of nodes (leaving points within the future patches blank) */
 		
-		/* create a grid of nodes */
+		MapNode[][] nodeGrid = new MapNode[posGrid.sizeX()][posGrid.sizeZ()];
 		
-		MapNode[][] nodeGrid = new MapNode[numPatchesX + 1][numPatchesZ + 1];
-		
-		for (int x = 0; x < numPatchesX + 1; x++) {
-			for (int z = 0; z < numPatchesZ + 1; z++) {
+		for (int x = 0; x < posGrid.sizeX(); x++) {
+			for (int z = 0; z < posGrid.sizeZ(); z++) {
 				
-				VectorXZ pos = new VectorXZ(
-						terrainMinX + x * PATCH_SIZE,
-						terrainMinZ + z * PATCH_SIZE);
-				
-				MapNode mapNode = new MapNode(pos, EMPTY_SURFACE_NODE);
-				
-				nodeGrid[x][z] = mapNode;
-				mapNodes.add(mapNode);
+				if (x % PATCH_SIZE_POINTS == 0 || x == posGrid.sizeX() - 1
+						|| z % PATCH_SIZE_POINTS == 0 || z == posGrid.sizeZ() - 1) {
+					
+					VectorXZ pos = posGrid.get(x, z);
+					
+					MapNode mapNode = new MapNode(pos, EMPTY_SURFACE_NODE);
+					
+					nodeGrid[x][z] = mapNode;
+					mapNodes.add(mapNode);
+					
+				}
 				
 			}
 		}
 		
 		/* create a grid of areas based on the nodes */
-		
-		for (int x = 0; x < numPatchesX; x++) {
+			
+		// calculate the number of patches, but always round up
+		int numPatchesX = (nodeGrid.length + PATCH_SIZE_POINTS - 2) / PATCH_SIZE_POINTS;
+		int numPatchesZ = (nodeGrid[0].length + PATCH_SIZE_POINTS - 2) / PATCH_SIZE_POINTS;
+
+		for (int patchX = 0; patchX < numPatchesX; patchX++) {
 			for (int z = 0; z < numPatchesZ; z++) {
 				
-				MapArea mapArea = new MapArea(EMPTY_SURFACE_WAY, asList(
-						nodeGrid[x][z],
-						nodeGrid[x+1][z],
-						nodeGrid[x+1][z+1],
-						nodeGrid[x][z+1],
-						nodeGrid[x][z]));
+				mapAreas.add(createAreaForPatch(nodeGrid,
+						patchX * PATCH_SIZE_POINTS,
+						z * PATCH_SIZE_POINTS));
 				
-				mapAreas.add(mapArea);
-
 			}
 		}
-				
-	}
 		
+	}
+	
+	private static MapArea createAreaForPatch(MapNode[][] nodeGrid,
+			int startX, int startZ) {
+		
+		int endX = min(startX + PATCH_SIZE_POINTS + 1, nodeGrid.length);
+		int endZ = min(startZ + PATCH_SIZE_POINTS + 1, nodeGrid[0].length);
+		
+		List<MapNode> nodes = new ArrayList<MapNode>();
+		
+		// first row
+		for (int x = startX; x < endX; x++) {
+			nodes.add(nodeGrid[x][startZ]);
+		}
+		
+		// last column
+		for (int z = startZ + 1; z < endZ - 1; z++) {
+			nodes.add(nodeGrid[endX - 1][z]);
+		}
+		
+		// last row
+		for (int x = endX - 1; x >= startX; x--) {
+			nodes.add(nodeGrid[x][endZ - 1]);
+		}
+		
+		// first column
+		for (int z = endZ - 2; z >= startZ /* start will be added again */; z--) {
+			nodes.add(nodeGrid[startX][z]);
+		}
+		
+		return new MapArea(EMPTY_SURFACE_WAY, nodes);
+		
+	}
+	
 }

@@ -3,17 +3,18 @@ package org.osm2world.core.world.modules;
 import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.math.GeometryUtil.createPointGrid;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.creation.EmptyTerrainBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
@@ -25,6 +26,7 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -81,8 +83,6 @@ public class SurfaceAreaModule extends AbstractModule {
 	
 	private static class SurfaceArea extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
-		
-		private static final double POINT_GRID_DISTANCE = 30;
 		
 		private final String surface;
 		
@@ -158,7 +158,11 @@ public class SurfaceAreaModule extends AbstractModule {
 						allPolys.add(outlinePolygon);
 						
 						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
-							eleConnectorPoints.add(eleConnector.pos);
+							
+							if (!outlinePolygon.getVertexCollection().contains(eleConnector.pos)) {
+								eleConnectorPoints.add(eleConnector.pos);
+							}
+							
 						}
 						
 					}
@@ -189,29 +193,28 @@ public class SurfaceAreaModule extends AbstractModule {
 			
 			/* add a grid of points within the area for smoother surface shapes */
 			
-			VectorXZ[][] pointGrid = createPointGrid(
-					area.getAxisAlignedBoundingBoxXZ(), POINT_GRID_DISTANCE);
+			VectorGridXZ pointGrid = new VectorGridXZ(
+					area.getAxisAlignedBoundingBoxXZ(),
+					EmptyTerrainBuilder.POINT_GRID_DIST);
 			
-			for (VectorXZ[] pointArray : pointGrid) {
-				for (VectorXZ point : pointArray) {
-					
-					//only insert if it isn't e.g. on top of a tunnel;
-					//otherwise there would be no minimum vertical distance
-					
-					boolean safe = true;
-					
-					for (SimplePolygonXZ polygon : allPolys) {
-						if (polygon.contains(point)) {
-							safe = false;
-							break;
-						}
+			for (VectorXZ point : pointGrid) {
+				
+				//don't insert if it is e.g. on top of a tunnel;
+				//otherwise there would be no minimum vertical distance
+				
+				boolean safe = true;
+				
+				for (SimplePolygonXZ polygon : allPolys) {
+					if (polygon.contains(point)) {
+						safe = false;
+						break;
 					}
-					
-					if (safe) {
-						eleConnectorPoints.add(point);
-					}
-					
 				}
+				
+				if (safe) {
+					eleConnectorPoints.add(point);
+				}
+				
 			}
 			
 			/* create "leftover" polygons by subtracting the existing ones */
