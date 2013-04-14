@@ -313,8 +313,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
-			// TODO Auto-generated method stub
-			return null;
+			return treeConnectors;
 		}
 		
 		@Override
