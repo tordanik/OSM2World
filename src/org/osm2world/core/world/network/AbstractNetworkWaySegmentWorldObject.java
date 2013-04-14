@@ -1,6 +1,7 @@
 package org.osm2world.core.world.network;
 
 import static java.lang.Double.*;
+import static java.util.Collections.emptyList;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
@@ -394,13 +395,17 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 				AbstractNetworkWaySegmentWorldObject previous =
 						(AbstractNetworkWaySegmentWorldObject)previousWO;
 				
-				List<EleConnector> previousCenter =
-						previous.getCenterlineEleConnectors();
-				
-				enforcer.addSmoothnessConstraint(
-						center.get(0),
-						previousCenter.get(previousCenter.size() - 2),
-						center.get(1));
+				if (!previous.isBroken()) {
+					
+					List<EleConnector> previousCenter =
+							previous.getCenterlineEleConnectors();
+					
+					enforcer.addSmoothnessConstraint(
+							center.get(0),
+							previousCenter.get(previousCenter.size() - 2),
+							center.get(1));
+					
+				}
 				
 			}
 
@@ -418,10 +423,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 	
 	protected List<EleConnector> getCenterlineEleConnectors() {
-		
-		if (connectors == null) {
-			calculateXZGeometry();
-		}
+
+		if (isBroken()) return emptyList();
 		
 		return connectors.getConnectors(getCenterlineXZ());
 		

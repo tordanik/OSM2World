@@ -1,5 +1,7 @@
 package org.osm2world.core.world.data;
 
+import static java.util.Collections.emptyList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,9 +49,19 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 		
 		if (connectors == null) {
 			
-			connectors = new EleConnectorGroup();
-			connectors.addConnectorsFor(getOutlinePolygonXZ().getVertices(),
-					node, getGroundState());
+			SimplePolygonXZ outlinePolygonXZ = getOutlinePolygonXZ();
+			
+			if (outlinePolygonXZ == null) {
+				
+				connectors = EleConnectorGroup.EMPTY;
+				
+			} else {
+				
+				connectors = new EleConnectorGroup();
+				connectors.addConnectorsFor(outlinePolygonXZ.getVertices(),
+						node, getGroundState());
+				
+			}
 			
 		}
 		
@@ -86,6 +98,8 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 	 * @return  a triangulation of the area covered by this junction
 	 */
 	protected Collection<TriangleXYZ> getTriangulation() {
+		
+		if (getOutlinePolygonXZ() == null) return emptyList();
 		
 		Collection<TriangleXZ> trianglesXZ = TriangulationUtil.triangulate(
 				getOutlinePolygonXZ(),

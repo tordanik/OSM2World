@@ -6,6 +6,7 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.NetworkCalculator;
@@ -61,10 +62,21 @@ public abstract class VisibleConnectorNodeWorldObject
 	
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
+		
 		List<VectorXZ> outlineXZ = new ArrayList<VectorXZ>(getOutlineXZ(0, 0));
 		outlineXZ.addAll(getOutlineXZ(1, 1));
-		outlineXZ.add(outlineXZ.get(0));
-		return new SimplePolygonXZ(outlineXZ);
+		
+		if (outlineXZ.size() > 2) {
+		
+			try { //TODO better handling of broken outlines
+				outlineXZ.add(outlineXZ.get(0));
+				return new SimplePolygonXZ(outlineXZ);
+			} catch (InvalidGeometryException e) {}
+			
+			}
+		
+		return null;
+		
 	}
 	
 	/**
