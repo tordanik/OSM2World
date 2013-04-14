@@ -30,13 +30,7 @@ class SRTMTile {
 		this.file = file;
 		
 		data = loadDataFromFile(file);
-		
-		//TODO remove debug output
-		System.out.println("capacity: " + data.capacity());
-		for (int i = 0; i < data.capacity() && i < 100; i++) {
-			System.out.println(data.get(i));
-		}
-		
+				
 	}
 
 	private static ShortBuffer loadDataFromFile(File file) throws IOException {
@@ -56,7 +50,7 @@ class SRTMTile {
 	}
 	
 	public final short getData(int x, int y) {
-		//TODO check input
+		assert 0 <= x && x < PIXELS && 0 <= y && y < PIXELS;
 		return data.get((1200 - y) * 1201 + x);
 	}
 	
