@@ -1,16 +1,19 @@
 package org.osm2world.core.world.data;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
@@ -45,8 +48,6 @@ public abstract class AbstractAreaWorldObject
 			
 			connectors = new EleConnectorGroup();
 			
-			connectors.addConnectorsFor(
-					area.getPolygon(), null, getGroundState());
 			connectors.addConnectorsForTriangulation(
 					getTriangulationXZ(), null, getGroundState());
 			
@@ -84,7 +85,11 @@ public abstract class AbstractAreaWorldObject
 	 * decompose this area into counterclockwise triangles.
 	 */
 	protected Collection<TriangleXZ> getTriangulationXZ() {
-		return TriangulationUtil.triangulate(area.getPolygon());
+		return Poly2TriTriangulationUtil.triangulate(
+				area.getPolygon().getOuter(),
+				area.getPolygon().getHoles(),
+				Collections.<LineSegmentXZ>emptyList(),
+				Collections.<VectorXZ>emptyList());
 	}
 	
 	/**

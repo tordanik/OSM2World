@@ -21,6 +21,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -28,7 +29,7 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -248,8 +249,12 @@ public class SurfaceAreaModule extends AbstractModule {
 						points.add(point);
 					}
 				}
-				
-				triangles.addAll(TriangulationUtil.triangulate(polygon, points));
+												
+				triangles.addAll(Poly2TriTriangulationUtil.triangulate(
+						polygon.getOuter(),
+						polygon.getHoles(),
+						Collections.<LineSegmentXZ>emptyList(),
+						points));
 				
 			}
 			
