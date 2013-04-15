@@ -29,6 +29,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.Poly2TriUtil;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.PolygonXZ;
@@ -1202,12 +1203,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				/* create the triangulation of the roof */
 				
-				Collection<TriangleXZ> triangles =
-						JTSTriangulationUtil.triangulate(
-								getPolygon().getOuter(),
-								getPolygon().getHoles(),
-								getInnerSegments(),
-								getInnerPoints());
+				Collection<TriangleXZ> triangles =	
+						Poly2TriUtil.triangulate(getPolygon().getOuter(),
+						                         getPolygon().getHoles(),
+						                         getInnerSegments(),
+						                         getInnerPoints());
+
+//						JTSTriangulationUtil.triangulate(
+//								getPolygon().getOuter(),
+//								getPolygon().getHoles(),
+//								getInnerSegments(),
+//								getInnerPoints());
 				
 				List<TriangleXYZ> trianglesXYZ =
 						new ArrayList<TriangleXYZ>(triangles.size());
