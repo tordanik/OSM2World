@@ -2061,12 +2061,26 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 				
 		public static boolean hasComplexRoof(MapArea area) {
+			List<MapNode> nodes = area.getBoundaryNodes();
+
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				if (overlap instanceof MapOverlapWA) {
 					TagGroup tags = overlap.e1.getTags();
-					if (tags.contains("roof:ridge", "yes")
-							|| tags.contains("roof:edge", "yes")) {
-						return true;
+					// complex roof must be connected to at least one edge
+					// which start node is connected to the building:part
+
+					if (tags.contains("roof:edge", "yes")) {
+						MapOverlapWA o = (MapOverlapWA)overlap;
+
+						if (nodes.contains(o.e1.getStartNode()))
+							return true;
+						
+					} else if (tags.contains("roof:ridge", "yes")){
+						MapOverlapWA o = (MapOverlapWA)overlap;
+
+						if (nodes.contains(o.e1.getStartNode()) &&
+								nodes.contains(o.e1.getEndNode()))
+							return true;
 					}
 				}
 			}
