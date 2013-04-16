@@ -2099,7 +2099,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 					} else if (tags.contains("roof:ridge", "yes")){
 						MapOverlapWA o = (MapOverlapWA)overlap;
 
-						if (nodes.contains(o.e1.getStartNode()) &&
+						if (nodes.contains(o.e1.getStartNode()) ||
 								nodes.contains(o.e1.getEndNode()))
 							return true;
 					}
