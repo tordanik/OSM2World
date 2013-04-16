@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules;
 import static com.google.common.collect.Iterables.any;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.List;
@@ -17,6 +17,7 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
@@ -35,6 +36,8 @@ public class CliffModule extends ConfigurableWorldModule {
 			
 			if (segment.getTags().contains("natural", "cliff")) {
 				segment.addRepresentation(new Cliff(segment));
+			} else if (segment.getTags().contains("barrier", "retaining_wall")) {
+				segment.addRepresentation(new RetainingWall(segment));
 			}
 			
 		}
@@ -55,20 +58,23 @@ public class CliffModule extends ConfigurableWorldModule {
 		
 	}
 	
-	public static class Cliff extends AbstractNetworkWaySegmentWorldObject
+	private abstract static class AbstractCliff
+			extends AbstractNetworkWaySegmentWorldObject
 			implements TerrainBoundaryWorldObject, RenderableToAllTargets {
-
-		private static final float CLIFF_WIDTH = 1;
 		
-		protected Cliff(MapWaySegment segment) {
+		protected AbstractCliff(MapWaySegment segment) {
 			super(segment);
 		}
 
+		protected abstract float getDefaultWidth();
+		
+		protected abstract Material getMaterial();
+		
 		@Override
 		public float getWidth() {
-			return CLIFF_WIDTH;
+			return parseWidth(segment.getTags(), getDefaultWidth());
 		}
-
+		
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
@@ -97,7 +103,7 @@ public class CliffModule extends ConfigurableWorldModule {
 							left.get(i), right.get(i), height);
 					
 				}
-					
+				
 			}
 			
 		}
@@ -108,9 +114,45 @@ public class CliffModule extends ConfigurableWorldModule {
 			List<VectorXYZ> groundVs = createTriangleStripBetween(
 					getOutline(false), getOutline(true));
 			
-			target.drawTriangleStrip(Materials.EARTH, groundVs,
+			target.drawTriangleStrip(getMaterial(), groundVs,
 					globalTexCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, false));
 			
+		}
+		
+	}
+	
+	public static class Cliff extends AbstractCliff {
+
+		protected Cliff(MapWaySegment segment) {
+			super(segment);
+		}
+
+		@Override
+		protected float getDefaultWidth() {
+			return 1.0f;
+		}
+
+		@Override
+		protected Material getMaterial() {
+			return Materials.EARTH;
+		}
+		
+	}
+	
+	public static class RetainingWall extends AbstractCliff {
+
+		protected RetainingWall(MapWaySegment segment) {
+			super(segment);
+		}
+
+		@Override
+		protected float getDefaultWidth() {
+			return 1.0f;
+		}
+
+		@Override
+		protected Material getMaterial() {
+			return Materials.CONCRETE;
 		}
 		
 	}
