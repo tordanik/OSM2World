@@ -106,6 +106,18 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			super.defineEleConstraints(enforcer);
+			
+			/* enforce downhill flow */
+			
+			if (!segment.getTags().containsKey("incline")) {
+				enforcer.addMaxInclineConstraint(getCenterlineEleConnectors(), 0);
+			}
+			
+		}
+		
 		public float getWidth() {
 			return WorldModuleParseUtil.parseWidth(segment.getTags(),
 					WATERWAY_WIDTHS.get(segment.getTags().getValue("waterway")));
