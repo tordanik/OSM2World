@@ -106,18 +106,6 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public GroundState getGroundState() {
-			//TODO: copypaste from road module (same in railway module)
-			if (BridgeModule.isBridge(segment.getTags())) {
-				return GroundState.ABOVE;
-			} else if (TunnelModule.isTunnel(segment.getTags())) {
-				return GroundState.BELOW;
-			} else {
-				return GroundState.ON;
-			}
-		}
-		
-		@Override
 		public float getWidth() {
 			return WorldModuleParseUtil.parseWidth(segment.getTags(),
 					WATERWAY_WIDTHS.get(segment.getTags().getValue("waterway")));

@@ -100,17 +100,6 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			if (BridgeModule.isBridge(tags)) {
-				return GroundState.ABOVE;
-			} else if (TunnelModule.isTunnel(tags)) {
-				return GroundState.BELOW;
-			} else {
-				return GroundState.ON;
-			}
-		}
-		
-		@Override
 		public void renderTo(Target<?> target) {
 
 			/* draw ground */

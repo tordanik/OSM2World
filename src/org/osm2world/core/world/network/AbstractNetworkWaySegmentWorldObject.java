@@ -31,6 +31,8 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
+import org.osm2world.core.world.modules.BridgeModule;
+import org.osm2world.core.world.modules.TunnelModule;
 
 public abstract class AbstractNetworkWaySegmentWorldObject
 	implements NetworkWaySegmentWorldObject, WaySegmentWorldObject,
@@ -290,6 +292,22 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 	}
 	
+	/**
+	 * implementation of {@link WorldObject#getGroundState()}.
+	 * This version checks for bridge and tunnel tags to make the decision.
+	 * If that is not desired, subclasses may override the method.
+	 */
+	@Override
+	public GroundState getGroundState() {
+		if (BridgeModule.isBridge(segment.getTags())) {
+			return GroundState.ABOVE;
+		} else if (TunnelModule.isTunnel(segment.getTags())) {
+			return GroundState.BELOW;
+		} else {
+			return GroundState.ON;
+		}
+	}
+
 	@Override
 	public EleConnectorGroup getEleConnectors() {
 		
