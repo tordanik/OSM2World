@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
@@ -38,7 +40,6 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -62,6 +63,8 @@ import com.google.common.base.Function;
  */
 public class BuildingModule extends ConfigurableWorldModule {
 	
+	final static boolean debugComplex = false;
+
 	@Override
 	public void applyTo(MapData mapData) {
 		
@@ -1929,10 +1932,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * roof that has been mapped with explicit roof edge/ridge/apex elements
 		 */
 		private class ComplexRoof extends HeightfieldRoof {
-						
+			
 			private double roofHeight = 0;
 			private final Map<VectorXZ, Double> roofHeightMap;
-			
+			private PolygonWithHolesXZ simplePolygon;
 			private final Collection<LineSegmentXZ> ridgeAndEdgeSegments;
 			
 			public ComplexRoof() {
@@ -1942,6 +1945,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				 *  as they should always be part of an edge segment) */
 				
 				roofHeightMap = new HashMap<VectorXZ, Double>();
+				Set<VectorXZ> nodeSet = new HashSet<VectorXZ>();
 				
 				ridgeAndEdgeSegments = new ArrayList<LineSegmentXZ>();
 				
@@ -1951,6 +1955,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 					roofHeight = parseMeasure(area.getTags().getValue("roof:height"));
 				else
 					roofHeight = DEFAULT_RIDGE_HEIGHT;
+				
+				List<MapWaySegment> edges = new ArrayList<MapWaySegment>();
+				List<MapWaySegment> ridges = new ArrayList<MapWaySegment>();
 				
 				for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 					
@@ -1974,51 +1981,117 @@ public class BuildingModule extends ConfigurableWorldModule {
 						if (!inside && !(containsStart && containsEnd))
 							continue;
 
+						if (isEdge)
+							edges.add(waySegment);
+						else
+							ridges.add(waySegment);
+						
 						ridgeAndEdgeSegments.add(waySegment.getLineSegment());
+					}
+				}
+				if (debugComplex){
+				System.out.println("- ridges: " + ridges.size());
+				System.out.println("- edges : " + edges.size());
+				}
+				for (MapWaySegment waySegment : edges){
+					for (MapNode node : waySegment.getStartEndNodes()) {
 
-						for (MapNode node : waySegment.getStartEndNodes()) {
+						// height of node (above roof base)
+						Float nodeHeight = null;
 
-							// height of node (above roof base)
-							Float nodeHeight = null;
+						if (node.getTags().containsKey("roof:height")) {
+							nodeHeight = parseMeasure(node.getTags()
+									.getValue("roof:height"));
+						// hmm, shouldnt edges be interpolated? some seem to think they dont
+						} else if (waySegment.getTags().containsKey("roof:height")) {
+							nodeHeight = parseMeasure(waySegment.getTags()
+							        .getValue("roof:height"));
+						} else if (node.getTags().contains("roof:apex",	"yes")) {
+							nodeHeight = (float)roofHeight;
+						}
 
-							if (node.getTags().containsKey("roof:height")) {
-								nodeHeight = parseMeasure(node.getTags()
-										.getValue("roof:height"));
-							} else if (waySegment.getTags().containsKey(
-									"roof:height")) {
-								nodeHeight = parseMeasure(waySegment.getTags()
-										.getValue("roof:height"));
-							} else if (node.getTags().contains("roof:apex",
-									"yes")) {
-								nodeHeight = (float)roofHeight;
-							} else if (isRidge) {
-								nodeHeight = (float)roofHeight;
-							}
-
-							if (nodeHeight != null) {
-
-								roofHeightMap.put(node.getPos(),
-										(double) nodeHeight);
-
-								roofHeight = max(roofHeight, nodeHeight);
-								
-							}
-							
+						if (nodeHeight == null) {
+							nodeSet.add(node.getPos());
+							continue;
 						}
 						
+						roofHeightMap.put(node.getPos(), (double) nodeHeight);
+						roofHeight = max(roofHeight, nodeHeight);
 					}
-					
+				}
+								
+				for (MapWaySegment waySegment : ridges){
+					// height of node (above roof base)
+					Float nodeHeight = null;
+
+					if (waySegment.getTags().containsKey("roof:height")) {
+						nodeHeight = parseMeasure(waySegment.getTags()
+								.getValue("roof:height"));
+					} else {
+						nodeHeight = (float) roofHeight;
+					}
+
+					roofHeight = max(roofHeight, nodeHeight);
+
+					for (MapNode node : waySegment.getStartEndNodes())
+							roofHeightMap.put(node.getPos(), (double) nodeHeight);
 				}
 				
-				/* add heights for outline nodes that don't have one yet */
+				/* join colinear segments, but not the nodes that are connected to ridge/edges
+				 * often there are nodes that are only added to join one building to another
+				 * but these interfere with proper triangulation.
+				 * TODO: do the same for holes */
+				List<VectorXZ> vertices = polygon.getOuter().getVertexLoop();
+				List<VectorXZ> simplified = new ArrayList<VectorXZ>();
+				VectorXZ vPrev = vertices.get(vertices.size() - 2);
 				
-				for (VectorXZ v : polygon.getOuter().getVertices()) {
+				for (int i = 0, size = vertices.size() - 1; i < size; i++ ){
+					VectorXZ v = vertices.get(i);
+					
+					if (i == 0 || roofHeightMap.containsKey(v) || nodeSet.contains(v)) {
+						simplified.add(v);
+						vPrev = v;
+						continue;
+					}
+					VectorXZ vNext = vertices.get(i + 1);
+					LineSegmentXZ l = new LineSegmentXZ(vPrev, vNext);
+					
+					if (distanceFromLineSegment(v, l) < 0.01){
+						if (debugComplex)
+							System.out.println("drop: " + i);
+						continue;
+					}
+					
+					roofHeightMap.put(v, 0.0);
+					simplified.add(v);
+					vPrev = v;
+				}
+				if (debugComplex)
+					System.out.println("simplified " + simplified.size() 
+							+ "/" + polygon.getOuter().size());
+
+				
+				if (simplified.size() > 2) {
+					try{
+						simplified.add(simplified.get(0));
+						simplePolygon = new PolygonWithHolesXZ(new SimplePolygonXZ(simplified),
+								polygon.getHoles());
+					} catch (InvalidGeometryException e) {
+						System.err.print(e.getMessage());
+						simplePolygon = polygon;
+					}
+				} else
+					simplePolygon = polygon;
+
+				/* add heights for outline nodes that don't have one yet */
+
+				for (VectorXZ v : simplePolygon.getOuter().getVertices()) {
 					if (!roofHeightMap.containsKey(v)) {
 						roofHeightMap.put(v, 0.0);
 					}
 				}
 				
-				for (SimplePolygonXZ hole : polygon.getHoles()) {
+				for (SimplePolygonXZ hole : simplePolygon.getHoles()) {
 					for (VectorXZ v : hole.getVertices()) {
 						if (!roofHeightMap.containsKey(v)) {
 							roofHeightMap.put(v, 0.0);
@@ -2045,7 +2118,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public PolygonWithHolesXZ getPolygon() {
-				return polygon;
+				return simplePolygon;
 			}
 
 			@Override
