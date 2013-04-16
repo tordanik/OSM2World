@@ -1,11 +1,12 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
-import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
@@ -29,6 +30,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
@@ -56,6 +58,7 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
+import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 import com.google.common.base.Function;
 
@@ -95,15 +98,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final List<BuildingPart> parts =
 				new ArrayList<BuildingModule.BuildingPart>();
 		
-		private final EleConnector groundLevelConnector;
+		private final EleConnectorGroup outlineConnectors;
 		
 		public Building(MapArea area, boolean useBuildingColors,
 				boolean drawBuildingWindows) {
 			
 			this.area = area;
-			
-			this.groundLevelConnector = new EleConnector(
-					area.getOuterPolygon().getCenter(), null, ON);
 			
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				MapElement other = overlap.getOther(area);
@@ -148,6 +148,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 			}
+
+			/* create connectors along the outline.
+			 * Because the ground around buildings is not necessarily plane,
+			 * they aren't directly used for ele, but instead their minimum.
+			 */
+			
+			outlineConnectors = new EleConnectorGroup();
+			outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON);
 			
 		}
 
@@ -170,12 +178,67 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 		
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			return singleton(groundLevelConnector);
+		public EleConnectorGroup getEleConnectors() {
+			return outlineConnectors;
 		}
 
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			List<EleConnector> groundLevelEntrances = new ArrayList<EleConnector>();
+			
+			/* add constraints between entrances with different levels */
+			
+			for (BuildingPart part : parts) {
+				
+				// add vertical distances
+				
+				for (int i = 0; i < part.entrances.size(); i++) {
+					
+					BuildingEntrance e1 = part.entrances.get(i);
+					
+					for (int j = i+1; j < part.entrances.size(); j++) {
+						
+						BuildingEntrance e2 = part.entrances.get(j);
+						
+						double heightPerLevel = part.heightWithoutRoof / part.buildingLevels;
+						
+						if (e1.getLevel() > e2.getLevel()) {
+							
+							enforcer.addMinVerticalDistanceConstraint( //TODO exact, not min
+									e1.connector, e2.connector,
+									heightPerLevel * (e1.getLevel() - e2.getLevel()));
+							
+						} else if (e1.getLevel() < e2.getLevel()) {
+
+							enforcer.addMinVerticalDistanceConstraint( //TODO exact, not min
+									e2.connector, e1.connector,
+									heightPerLevel * (e2.getLevel() - e1.getLevel()));
+							
+						}
+																		
+					}
+					
+					// collect entrances for next step
+					
+					if (e1.getLevel() == 0 && e1.getGroundState() == ON) {
+						groundLevelEntrances.add(e1.connector);
+					}
+					
+				}
+			
+			}
+			
+			/* make sure that a level=0 ground entrance is the building's lowest point */
+			
+			for (EleConnector outlineConnector : outlineConnectors) {
+				for (EleConnector entranceConnector : groundLevelEntrances) {
+					enforcer.addMinVerticalDistanceConstraint(
+							outlineConnector, entranceConnector, 0);
+				}
+			}
+			
+		}
 		
 		//TODO
 //		@Override
@@ -194,7 +257,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		public double getGroundLevelEle() {
-			return groundLevelConnector.getPosXYZ().y;
+			
+			double minEle = POSITIVE_INFINITY;
+			
+			for (EleConnector c : outlineConnectors) {
+				if (c.getPosXYZ().y < minEle) {
+					minEle = c.getPosXYZ().y;
+				}
+			}
+			
+			return minEle;
+			
 		}
 
 		@Override
@@ -226,6 +299,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private Material materialWallWithWindows;
 		private Material materialRoof;
 		
+		private List<BuildingEntrance> entrances = new ArrayList<BuildingEntrance>();
+		
 		private Roof roof;
 		
 		public BuildingPart(Building building,
@@ -242,8 +317,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if ((node.getTags().contains("building", "entrance")
 						|| node.getTags().containsKey("entrance"))
 						&& node.getRepresentations().isEmpty()) {
-					node.addRepresentation(
-							new BuildingEntrance(this, node));
+					
+					BuildingEntrance entrance = new BuildingEntrance(this, node);
+					entrances.add(entrance);
+					node.addRepresentation(entrance);
+					
 				}
 			}
 			
@@ -2100,7 +2178,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public BuildingEntrance(BuildingPart buildingPart, MapNode node) {
 			this.buildingPart = buildingPart;
 			this.node = node;
-			this.connector = new EleConnector(node.getPos(), node, ON);
+			this.connector = new EleConnector(node.getPos(), node, getGroundState());
 		}
 		
 		@Override
@@ -2114,11 +2192,54 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			/* TODO for level != null and ABOVE/BELO, add vertical distance to ground */
+						
+		}
 		
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			
+			boolean onlyOn = true;
+			boolean onlyAbove = true;
+			boolean onlyBelow = true;
+			
+			for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
+				
+				if (waySegment.getPrimaryRepresentation() instanceof
+						AbstractNetworkWaySegmentWorldObject) {
+					
+					switch (waySegment.getPrimaryRepresentation().getGroundState()) {
+					case ABOVE: onlyOn = false; onlyBelow = false; break;
+					case BELOW: onlyOn = false; onlyAbove = false; break;
+					case ON: onlyBelow = false; onlyAbove = false; break;
+					}
+					
+				}
+				
+			}
+			
+			if (onlyOn) {
+				return ON;
+			} else if (onlyAbove) {
+				return ABOVE;
+			} else if (onlyBelow) {
+				return BELOW;
+			} else {
+				return ON;
+			}
+			
+		}
+		
+		public int getLevel() {
+
+			try {
+				return Integer.parseInt(node.getTags().getValue("level"));
+			} catch (NumberFormatException e) {
+				return 0;
+			}
+			
 		}
 		
 		@Override
