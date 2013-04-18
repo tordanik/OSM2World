@@ -13,11 +13,11 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.Hardcoded;
 import org.osm2world.LeastSquaresInterpolator;
 import org.osm2world.SRTMData;
 import org.osm2world.TerrainElevationData;
+import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.map_data.creation.HackMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
@@ -374,11 +374,7 @@ public class ConversionFacade {
 		stopWatch.start();
 		
 		try {
-			
-			System.out.println("time srtm: " + stopWatch);
-			stopWatch.reset();
-			stopWatch.start();
-			
+						
 			sites = eleData.getSites(mapData);
 			
 			System.out.println("time getSites: " + stopWatch);
@@ -429,14 +425,18 @@ public class ConversionFacade {
 		
 		enforcer.addConnectors(connectors);
 		
-		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
-				new Operation<WorldObject>() {
-			@Override public void perform(WorldObject worldObject) {
-				
-				worldObject.defineEleConstraints(enforcer);
-				
-			}
-		});
+		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {
+			
+			FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
+					new Operation<WorldObject>() {
+				@Override public void perform(WorldObject worldObject) {
+					
+					worldObject.defineEleConstraints(enforcer);
+					
+				}
+			});
+			
+		}
 		
 		System.out.println("time add constraints: " + stopWatch);
 		stopWatch.reset();
