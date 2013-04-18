@@ -273,10 +273,12 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			boolean allBelow = true;
 			
 			for (MapWaySegment segment : node.getConnectedWaySegments()) {
-				switch (segment.getPrimaryRepresentation().getGroundState()) {
-				case ABOVE: allBelow = false; break;
-				case BELOW: allAbove = false; break;
-				case ON: return ON;
+				if (segment.getPrimaryRepresentation() != null) {
+					switch (segment.getPrimaryRepresentation().getGroundState()) {
+					case ABOVE: allBelow = false; break;
+					case BELOW: allAbove = false; break;
+					case ON: return ON;
+					}
 				}
 			}
 			
