@@ -5,14 +5,14 @@ import org.osm2world.NaturalNeighborInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 
-public class NaturalNeighborStrategyDebugView extends InterpolationStrategyDebugView {
+public class NaturalNeighborInterpolatorDebugView extends TerrainInterpolatorDebugView {
 
-	public NaturalNeighborStrategyDebugView(RenderOptions renderOptions) {
+	public NaturalNeighborInterpolatorDebugView(RenderOptions renderOptions) {
 		super(renderOptions);
 	}
 	
 	@Override
-	protected TerrainInterpolator buildStrategy() {
+	protected TerrainInterpolator buildInterpolator() {
 		return new NaturalNeighborInterpolator();
 	}
 	

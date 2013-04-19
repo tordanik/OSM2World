@@ -20,9 +20,9 @@ import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.RenderOptions;
 
-public abstract class InterpolationStrategyDebugView extends DebugView {
+public abstract class TerrainInterpolatorDebugView extends DebugView {
 
-	protected abstract TerrainInterpolator buildStrategy();
+	protected abstract TerrainInterpolator buildInterpolator();
 	
 	private static final double SAMPLE_DIST = 6;
 	
@@ -34,7 +34,7 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 	
 	private MapProjection mapProjection = null;
 	
-	protected InterpolationStrategyDebugView(RenderOptions renderOptions) {
+	protected TerrainInterpolatorDebugView(RenderOptions renderOptions) {
 		this.renderOptions = renderOptions;
 	}
 
@@ -61,7 +61,7 @@ public abstract class InterpolationStrategyDebugView extends DebugView {
 			
 			Collection<VectorXYZ> sites = eleData.getSites(map);
 			
-			TerrainInterpolator strategy = buildStrategy();
+			TerrainInterpolator strategy = buildInterpolator();
 			strategy.setKnownSites(sites);
 			
 			AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();

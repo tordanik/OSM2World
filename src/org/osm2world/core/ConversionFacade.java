@@ -385,10 +385,10 @@ public class ConversionFacade {
 			e.printStackTrace();
 		}
 		
-		final TerrainInterpolator strategy =
+		final TerrainInterpolator interpolator =
 				terrainEleInterpolatorFactory.make();
 		
-		strategy.setKnownSites(sites);
+		interpolator.setKnownSites(sites);
 		
 		System.out.println("time setKnownSites: " + stopWatch);
 		stopWatch.reset();
@@ -403,7 +403,7 @@ public class ConversionFacade {
 			@Override public void perform(WorldObject worldObject) {
 				
 				for (EleConnector conn : worldObject.getEleConnectors()) {
-					conn.setPosXYZ(strategy.interpolateEle(conn.pos));
+					conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
 					connectors.add(conn);
 				}
 				

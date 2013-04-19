@@ -55,13 +55,13 @@ import org.osm2world.viewer.view.debug.EleConnectorDebugView;
 import org.osm2world.viewer.view.debug.EleConstraintDebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
-import org.osm2world.viewer.view.debug.InverseDistanceWeightingStrategyDebugView;
-import org.osm2world.viewer.view.debug.LeastSquaresStrategyDebugView;
+import org.osm2world.viewer.view.debug.InverseDistanceWeightingInterpolatorDebugView;
+import org.osm2world.viewer.view.debug.LeastSquaresInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
 import org.osm2world.viewer.view.debug.MapDataElevationDebugView;
-import org.osm2world.viewer.view.debug.NaturalNeighborStrategyDebugView;
+import org.osm2world.viewer.view.debug.NaturalNeighborInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
@@ -234,11 +234,11 @@ public class ViewerFrame extends JFrame{
 			initAndAddDebugView(subMenu, -1, false,
 					new EleDebugView());
 			initAndAddDebugView(subMenu, -1, false,
-					new NaturalNeighborStrategyDebugView(renderOptions));
+					new NaturalNeighborInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
-					new LeastSquaresStrategyDebugView(renderOptions));
+					new LeastSquaresInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
-					new InverseDistanceWeightingStrategyDebugView(renderOptions));
+					new InverseDistanceWeightingInterpolatorDebugView(renderOptions));
 			
 			menu.add(subMenu);
 			

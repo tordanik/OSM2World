@@ -5,14 +5,14 @@ import org.osm2world.LeastSquaresInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 
-public class LeastSquaresStrategyDebugView extends InterpolationStrategyDebugView {
+public class LeastSquaresInterpolatorDebugView extends TerrainInterpolatorDebugView {
 
-	public LeastSquaresStrategyDebugView(RenderOptions renderOptions) {
+	public LeastSquaresInterpolatorDebugView(RenderOptions renderOptions) {
 		super(renderOptions);
 	}
 	
 	@Override
-	protected TerrainInterpolator buildStrategy() {
+	protected TerrainInterpolator buildInterpolator() {
 		return new LeastSquaresInterpolator();
 	}
 	
