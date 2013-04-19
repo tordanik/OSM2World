@@ -29,7 +29,7 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  */
 public class LeastSquaresInterpolator implements TerrainInterpolator {
 	
-	private static final double CELL_SIZE = 30; //should only affect performance
+	private static final double CELL_SIZE = 50; //should only affect performance
 	private static final int SITES_FOR_APPROX = 9;
 	private static final int SITES_FOR_INTERPOL = 9;
 	
