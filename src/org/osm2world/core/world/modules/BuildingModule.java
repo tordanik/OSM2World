@@ -2015,7 +2015,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 						}
 						
 						roofHeightMap.put(node.getPos(), (double) nodeHeight);
-						roofHeight = max(roofHeight, nodeHeight);
+						
+						if (usePartRoofHeight)
+							roofHeight = max(roofHeight, nodeHeight);
 					}
 				}
 								
@@ -2030,7 +2032,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 						nodeHeight = (float) roofHeight;
 					}
 
-					roofHeight = max(roofHeight, nodeHeight);
+					if (usePartRoofHeight)
+						roofHeight = max(roofHeight, nodeHeight);
 
 					for (MapNode node : waySegment.getStartEndNodes())
 							roofHeightMap.put(node.getPos(), (double) nodeHeight);
