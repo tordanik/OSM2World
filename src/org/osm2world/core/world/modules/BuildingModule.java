@@ -635,7 +635,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			boolean explicitRoofTagging = true;
 			
-			if (hasComplexRoof(area)) {
+			if (!("no".equals(area.getTags().getValue("roof:lines"))) && hasComplexRoof(area)) {
 				roof = new ComplexRoof();
 			} else {
 				
