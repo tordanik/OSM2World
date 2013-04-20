@@ -118,7 +118,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/* add part(s) for area not covered by building:part polygons */
 			boolean isBuildingPart = false;
 			if (area.getTags().containsKey("building:part"))
-				isBuildingPart = "yes".equals(area.getTags().getValue("building:part"));
+				isBuildingPart = !("no".equals(area.getTags().getValue("building:part")));
 			
 			if (parts.isEmpty() || isBuildingPart) {
 				parts.add(new BuildingPart(this, area,
