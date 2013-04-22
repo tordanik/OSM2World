@@ -158,8 +158,8 @@ public class SRTMData implements TerrainElevationData {
 				
 				short value = tile.getData(x, y);
 				
-				double lat = tileLat + 1.0 / SRTMTile.PIXELS * y;
-				double lon = tileLon + 1.0 / SRTMTile.PIXELS * x;
+				double lat = tileLat + 1.0 / SRTMTile.PIXELS * (y + 0.5);
+				double lon = tileLon + 1.0 / SRTMTile.PIXELS * (x + 0.5);
 				
 				VectorXZ pos = projection.calcPos(lat, lon);
 				
