@@ -25,8 +25,6 @@ import com.google.common.collect.Multimap;
 
 //TODO: test performance effects of:
 // * starting point choice of the walk
-// * triangle data structure (ArrayList, LinkedList, ... -> deletions have to be efficient)
-// * maybe it's possible to avoid the "triangles" at all and *only* use the neighborships?
 // * caching circumcircles
 // * only calculating area of triangles that are actually changed
 
@@ -828,14 +826,6 @@ public class DelaunayTriangulation {
 		}
 		
 		return currentTriangle;
-		
-//		for (DelaunayTriangle triangle : triangles) {
-//			if (triangle.asTriangleXZ().contains(point.xz())) {
-//				return triangle;
-//			}
-//		}
-//
-//		return null;
 		
 	}
 	
