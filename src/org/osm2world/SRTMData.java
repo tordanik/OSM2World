@@ -126,6 +126,8 @@ public class SRTMData implements TerrainElevationData {
 			
 			if (file.exists()) {
 				setTile(lon, lat, new SRTMTile(file));
+			} else {
+				System.err.println("warning: missing SRTM tile " + file.getName());
 			}
 			
 		}
