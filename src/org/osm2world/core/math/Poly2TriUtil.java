@@ -126,31 +126,33 @@ public class Poly2TriUtil {
 		public void prepareTriangulation(TriangulationContext<?> tcx) {
 			triangles.clear();
 
-			// need to make points unique objects, wtf?..
-			HashMap<TriangulationPoint, TriangulationPoint> pointSet
-				= new HashMap<TriangulationPoint, TriangulationPoint>();
+			// it seems poly2tri requires points to be unique objects
+			HashMap<VectorXZ, TriangulationPoint> pointSet
+				= new HashMap<VectorXZ, TriangulationPoint>();
 
 			for (LineSegmentXZ l : segmentSet) {
-				TriangulationPoint p1 = new TPoint(l.p1.x, l.p1.z);
-				TriangulationPoint p2 = new TPoint(l.p2.x, l.p2.z);
+				TriangulationPoint tp1, tp2;
+				
+				if (!pointSet.containsKey(l.p1)){
+					tp1 = new TPoint(l.p1.x, l.p1.z);					
+					pointSet.put(l.p1, tp1);
+					points.add(tp1);
+				} else {
+					tp1 = pointSet.get(l.p1);
+				}
+				if (!pointSet.containsKey(l.p2)){
+					tp2 = new TPoint(l.p2.x, l.p2.z);	
+					pointSet.put(l.p2, tp2);
+					points.add(tp2);
+				} else {
+					tp2 = pointSet.get(l.p2);
+				}
 
-				if (!pointSet.containsKey(p1))
-					pointSet.put(p1, p1);
-				else
-					p1 = pointSet.get(p1);
-
-				if (!pointSet.containsKey(p2))
-					pointSet.put(p2, p2);
-				else
-					p2 = pointSet.get(p2);
-
-				// System.out.println("add edge: " + p1 + " -> " + p2);
-				tcx.newConstraint(p1, p2);
+				tcx.newConstraint(tp1, tp2);
 			}
 
 			segmentSet.clear();
 
-			points.addAll(pointSet.keySet());
 			pointSet.clear();
 
 			tcx.addPoints(points);
