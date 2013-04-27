@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
@@ -29,6 +30,7 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -249,12 +251,28 @@ public class SurfaceAreaModule extends AbstractModule {
 						points.add(point);
 					}
 				}
-												
-				triangles.addAll(Poly2TriTriangulationUtil.triangulate(
-						polygon.getOuter(),
-						polygon.getHoles(),
-						Collections.<LineSegmentXZ>emptyList(),
-						points));
+				
+				try {
+					
+					triangles.addAll(Poly2TriTriangulationUtil.triangulate(
+							polygon.getOuter(),
+							polygon.getHoles(),
+							Collections.<LineSegmentXZ>emptyList(),
+							points));
+					
+				} catch (NullPointerException e) {
+					
+					System.err.println("Poly2Tri exception for " + this + ":");
+					e.printStackTrace();
+					System.err.println("... falling back to JTS triangulation.");
+					
+					triangles.addAll(JTSTriangulationUtil.triangulate(
+							polygon.getOuter(),
+							polygon.getHoles(),
+							Collections.<LineSegmentXZ>emptyList(),
+							points));
+					
+				}
 				
 			}
 			
@@ -280,15 +298,15 @@ public class SurfaceAreaModule extends AbstractModule {
 										
 					if (eleConnector.groundState == ABOVE) {
 						
-						enforcer.addMinVerticalDistanceConstraint(
-								eleConnector, ownConnector,
-								1); //TODO actual clearing
+						enforcer.requireVerticalDistance(
+								MIN, 1,
+								eleConnector, ownConnector); //TODO actual clearing
 						
 					} else if (eleConnector.groundState == BELOW) {
 						
-						enforcer.addMinVerticalDistanceConstraint(
-								ownConnector, eleConnector,
-								10); //TODO actual clearing
+						enforcer.requireVerticalDistance(
+								MIN, 10,
+								ownConnector, eleConnector); //TODO actual clearing
 						
 					}
 				
