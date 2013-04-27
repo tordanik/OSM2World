@@ -7,6 +7,11 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 
 public interface EleConstraintEnforcer {
 	
+	/** whether a constraint requires a minimum, maximum or exact value */
+	public static enum ConstraintType {
+		MIN, MAX, EXACT
+	}
+	
 	/**
 	 * makes connectors known to this enforcer. Only these connectors can be
 	 * used in constraints later on, and only they will be affected by
@@ -20,40 +25,32 @@ public interface EleConstraintEnforcer {
 	/**
 	 * requires two connectors to be at the same elevation
 	 */
-	public void addSameEleConstraint(EleConnector c1,
-			EleConnector c2);
+	public void requireSameEle(EleConnector c1, EleConnector c2);
 	
 	/**
 	 * requires a number of connectors to be at the same elevation
 	 */
-	public void addSameEleConstraint(Iterable<EleConnector> cs);
+	public void requireSameEle(Iterable<EleConnector> cs);
 	
 	/**
-	 * requires two connectors' elevations to differ at least by a given distance
+	 * requires two connectors' elevations to differ by a given distance
 	 */
-	void addMinVerticalDistanceConstraint(
-			EleConnector upper, EleConnector lower, double distance);
+	void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector lower);
 	
 	/**
-	 * requires a minimum incline along a sequence of connectors.
+	 * requires an incline along a sequence of connectors.
 	 * 
-	 * @param minIncline  incline value,
+	 * @param incline  incline value,
 	 *  negative values are inclines in opposite direction
 	 */
-	void addMinInclineConstraint(List<EleConnector> cs, double minIncline);
+	void requireIncline(ConstraintType type, double incline,
+			List<EleConnector> cs);
 	
 	/**
-	 * requires a maximum incline along a sequence of connectors
-	 * 
-	 * @param maxIncline  incline value,
-	 *  negative values are inclines in opposite direction
+	 * requires that there is a "smooth" transition between two line segments
 	 */
-	void addMaxInclineConstraint(List<EleConnector> cs, double maxIncline);
-	
-	/**
-	 * makes sure that there is a "smooth" transition between two line segments
-	 */
-	void addSmoothnessConstraint(EleConnector c2, EleConnector c1, EleConnector c3);
+	void requireSmoothness(EleConnector from, EleConnector via, EleConnector to);
 	
 	/**
 	 * tries to enforce the previously added constraints

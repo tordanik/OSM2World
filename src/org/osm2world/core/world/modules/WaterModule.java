@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules;
 import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
@@ -113,7 +114,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			/* enforce downhill flow */
 			
 			if (!segment.getTags().containsKey("incline")) {
-				enforcer.addMaxInclineConstraint(getCenterlineEleConnectors(), 0);
+				enforcer.requireIncline(MAX, 0, getCenterlineEleConnectors());
 			}
 			
 		}
@@ -279,7 +280,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
-			enforcer.addSameEleConstraint(getEleConnectors());
+			enforcer.requireSameEle(getEleConnectors());
 		}
 		
 		@Override

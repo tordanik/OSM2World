@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.EXACT;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -294,22 +295,20 @@ public class TunnelModule extends AbstractModule {
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
 			
-			//TODO: not minimum, but exact distance
+			enforcer.requireVerticalDistance(
+					EXACT,
+					10,
+					connectors.getConnector(upperLeft), connectors.getConnector(lowerLeft));
 			
-			enforcer.addMinVerticalDistanceConstraint(
-					connectors.getConnector(upperLeft),
-					connectors.getConnector(lowerLeft),
-					10);
-			
-			enforcer.addMinVerticalDistanceConstraint(
-					connectors.getConnector(upperCenter),
-					connectors.getConnector(lowerCenter),
-					10);
+			enforcer.requireVerticalDistance(
+					EXACT,
+					10,
+					connectors.getConnector(upperCenter), connectors.getConnector(lowerCenter));
 
-			enforcer.addMinVerticalDistanceConstraint(
-					connectors.getConnector(upperRight),
-					connectors.getConnector(lowerRight),
-					10);
+			enforcer.requireVerticalDistance(
+					EXACT,
+					10,
+					connectors.getConnector(upperRight), connectors.getConnector(lowerRight));
 			
 			//TODO restore original clearing
 			//tunnelPrimaryRep.getClearingAbove(node.getPos()));

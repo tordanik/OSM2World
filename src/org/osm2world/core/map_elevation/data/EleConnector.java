@@ -75,7 +75,8 @@ public class EleConnector {
 	
 	/**
 	 * returns true if this connector is to be joined with the other one.
-	 * This is supposed to be transitive and commutative.
+	 * It is possible that connectors are joined even if this method returns
+	 * false - that can happen when they are both joined to a third connector.
 	 */
 	public boolean connectsTo(EleConnector other) {
 		return pos.equals(other.pos)

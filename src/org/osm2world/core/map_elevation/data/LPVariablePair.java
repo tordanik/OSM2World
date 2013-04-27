@@ -35,7 +35,9 @@ public class LPVariablePair {
 	 * is represented by this {@link LPVariablePair}
 	 */
 	public void add(EleConnector c) {
-		connectors.add(c);
+		if (!connectors.contains(c)) {
+			connectors.add(c);
+		}
 	}
 	
 	/**
@@ -65,7 +67,13 @@ public class LPVariablePair {
 	 * {@link EleConnector#connectsTo(EleConnector)} for this set
 	 */
 	public boolean connectsTo(EleConnector other) {
-		return connectors.get(0).connectsTo(other);
+		
+		for (EleConnector c : connectors) {
+			if (c.connectsTo(other)) return true;
+		}
+		
+		return false;
+		
 	}
 	
 	/**
@@ -82,6 +90,11 @@ public class LPVariablePair {
 	 */
 	public Object negVar() {
 		return this.getConnectors();
+	}
+	
+	@Override
+	public String toString() {
+		return connectors.toString();
 	}
 	
 }

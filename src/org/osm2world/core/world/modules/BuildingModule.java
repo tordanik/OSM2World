@@ -6,6 +6,7 @@ import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -205,15 +206,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 						
 						if (e1.getLevel() > e2.getLevel()) {
 							
-							enforcer.addMinVerticalDistanceConstraint( //TODO exact, not min
-									e1.connector, e2.connector,
-									heightPerLevel * (e1.getLevel() - e2.getLevel()));
+							enforcer.requireVerticalDistance(EXACT,
+									heightPerLevel * (e1.getLevel() - e2.getLevel()),
+									e1.connector, e2.connector);
 							
 						} else if (e1.getLevel() < e2.getLevel()) {
 
-							enforcer.addMinVerticalDistanceConstraint( //TODO exact, not min
-									e2.connector, e1.connector,
-									heightPerLevel * (e2.getLevel() - e1.getLevel()));
+							enforcer.requireVerticalDistance(EXACT,
+									heightPerLevel * (e2.getLevel() - e1.getLevel()),
+									e2.connector, e1.connector);
 							
 						}
 																		
@@ -233,8 +234,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			for (EleConnector outlineConnector : outlineConnectors) {
 				for (EleConnector entranceConnector : groundLevelEntrances) {
-					enforcer.addMinVerticalDistanceConstraint(
-							outlineConnector, entranceConnector, 0);
+					enforcer.requireVerticalDistance(
+							MIN, 0, outlineConnector, entranceConnector);
 				}
 			}
 			

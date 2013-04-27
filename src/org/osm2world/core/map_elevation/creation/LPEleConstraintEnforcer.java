@@ -21,12 +21,14 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.LPVariablePair;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 /**
- * enforces constraints using a linear programming
+ * enforces constraints using linear programming
  */
 public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 
@@ -48,12 +50,14 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	@Override
 	public void addConnectors(Iterable<EleConnector> connectors) {
 		
-		for (LPVariablePair jc : joinConnectors(connectors)) {
+		//TODO: calling this multiple times does not work yet; connectors from different invocations would not be joined
+		
+		for (LPVariablePair v : createVariables(connectors)) {
 			
-			variables.add(jc);
+			variables.add(v);
 			
-			for (EleConnector c : jc.getConnectors()) {
-				variableMap.put(c, jc);
+			for (EleConnector c : v.getConnectors()) {
+				variableMap.put(c, v);
 			}
 			
 		}
@@ -61,40 +65,65 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	}
 	
 	/**
-	 * join connected connectors by constraining them to the same elevation
+	 * creates variables for connectors. Joins connected connectors by
+	 * representing their elevation with the same {@link LPVariablePair}.
 	 */
-	private Collection<LPVariablePair> joinConnectors(
+	private static Collection<LPVariablePair> createVariables(
 			Iterable<EleConnector> connectors) {
 		
-		Multimap<VectorXZ, LPVariablePair> connectorJoinMap =
+		Multimap<VectorXZ, LPVariablePair> variablePositionMap =
 				HashMultimap.create();
 		
-		connectors:
 		for (EleConnector c : connectors) {
 			
-			Collection<LPVariablePair> existingJoinedConns =
-					connectorJoinMap.get(c.pos);
+			Collection<LPVariablePair> existingVariables =
+					variablePositionMap.get(c.pos);
 			
-			if (existingJoinedConns != null){
-				for (LPVariablePair cs : existingJoinedConns) {
-					if (cs.connectsTo(c)) {
-						cs.add(c);
-						continue connectors;
+			List<LPVariablePair> matchingVariables =
+					new ArrayList<LPVariablePair>();
+			
+			if (existingVariables != null) {
+				for (LPVariablePair v : existingVariables) {
+					if (v.connectsTo(c)) {
+						matchingVariables.add(v);
 					}
 				}
 			}
 			
-			// add new entry if no existing set of joined connectors matched c
-			connectorJoinMap.put(c.pos, new LPVariablePair(c));
+			if (matchingVariables.isEmpty()) {
+				
+				/* create a new variable because no existing one fits */
+				
+				variablePositionMap.put(c.pos, new LPVariablePair(c));
+				
+			} else {
+				
+				/* add connector to one of the matching variables */
+				
+				LPVariablePair vHead = matchingVariables.get(0);
+				vHead.add(c);
+				
+				/* merge other matching variables into that one */
+				
+				for (int i = 1; i < matchingVariables.size(); i++) {
+					
+					LPVariablePair v = matchingVariables.get(i);
+					
+					vHead.addAll(v);
+					variablePositionMap.remove(c.pos, v);
+					
+				}
+				
+			}
 			
 		}
 		
-		return connectorJoinMap.values();
+		return variablePositionMap.values();
 		
 	}
 	
 	@Override
-	public void addSameEleConstraint(EleConnector c1, EleConnector c2) {
+	public void requireSameEle(EleConnector c1, EleConnector c2) {
 		
 		//FIXME: this doesn't work because of the different interpolated elevations
 		// - the pos/neg variables are different!
@@ -144,7 +173,7 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	}
 	
 	@Override
-	public void addSameEleConstraint(Iterable<EleConnector> cs) {
+	public void requireSameEle(Iterable<EleConnector> cs) {
 		
 		Iterator<EleConnector> csIterator = cs.iterator();
 		
@@ -153,7 +182,7 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 			EleConnector c = csIterator.next();
 		
 			while (csIterator.hasNext()) {
-				addSameEleConstraint(c, csIterator.next());
+				requireSameEle(c, csIterator.next());
 			}
 			
 		}
@@ -161,48 +190,38 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	}
 	
 	@Override
-	public void addMinVerticalDistanceConstraint(
-			EleConnector upper, EleConnector lower, double distance) {
+	public void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector lower) {
 		
 		addConstraint(
 				 1, upper,
 				-1, lower,
-				">=", distance);
+				getOperator(type),
+				distance);
 		
 	}
 	
 	@Override
-	public void addMinInclineConstraint(List<EleConnector> cs, double minIncline) {
+	public void requireIncline(ConstraintType type, double incline,
+			List<EleConnector> cs) {
 		
 		for (int i = 0; i+1 < cs.size(); i++) {
-		
+			
 			addConstraint(
 					 1, cs.get(i+1),
 					-1, cs.get(i),
-					">=", minIncline * cs.get(i).pos.distanceTo(cs.get(i+1).pos));
+					getOperator(type),
+					incline * cs.get(i).pos.distanceTo(cs.get(i+1).pos));
 			
 		}
 		
 	}
 	
 	@Override
-	public void addMaxInclineConstraint(List<EleConnector> cs, double maxIncline) {
-
-		for (int i = 0; i+1 < cs.size(); i++) {
+	public void requireSmoothness(EleConnector from,
+			EleConnector via, EleConnector to) {
 		
-			addConstraint(
-					 1, cs.get(i+1),
-					-1, cs.get(i),
-					"<=", maxIncline * cs.get(i).pos.distanceTo(cs.get(i+1).pos));
-			
-		}
-		
-	}
-	
-	@Override
-	public void addSmoothnessConstraint(EleConnector c2,
-			EleConnector c1, EleConnector c3) {
-		
+		/* TODO restore
 		double maxInclineDiffPerMeter = 0.5 / 100;
 		
 		double dist12 = c1.pos.distanceTo(c2.pos);
@@ -226,19 +245,10 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 				1/dist12 + 1/dist23, c2,
 				-1/dist23, c3,
 				">=", -maxInclineDiff);
-				
-	}
-	
-	public void addDistanceMinimumConstraint(EleConnector upper,
-			EleConnector lower, double distance) {
 		
-		addConstraint(
-				 1, upper,
-				-1, lower,
-				">=", distance);
+		*/
 		
 	}
-	
 	
 	private void addConstraint(
 			double factor1, EleConnector var1,
@@ -300,6 +310,17 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 		
 	}
 	
+	private static String getOperator(ConstraintType constraintType) {
+		
+		switch (constraintType) {
+		case MIN: return ">=";
+		case MAX: return "<=";
+		case EXACT: return "=";
+		default: throw new Error("unhandled constraint type");
+		}
+		
+	}
+	
 	@Override
 	public void enforceConstraints() {
 		
@@ -310,23 +331,27 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 		
 		//TODO Relaxations relax = new Relaxations();
 		
-		Solver solver = factory.get();
-		Result result = solver.solve(problem);
+		final Solver solver = factory.get();
+		final Result result = solver.solve(problem);
 		
 		if (result == null) {
-			System.out.println("no result");
-		}
-		
-		/* apply elevation values */
-		
-		for (LPVariablePair c : variables) {
+			System.out.println("[ERROR]: cannot enforce constraints, no result for LP");
+		} else {
+			
+			/* apply elevation values */
+			
+			FaultTolerantIterationUtil.iterate(variables, new Operation<LPVariablePair>() {
+				@Override public void perform(LPVariablePair v) {
+					
+					VectorXYZ posXYZ = v.getPosXYZ().addY(
+							+ result.get(v.posVar()).doubleValue()
+							- result.get(v.negVar()).doubleValue());
+					
+					v.setPosXYZ(posXYZ);
+					
+				}
+			});
 						
-			VectorXYZ posXYZ = c.getPosXYZ().addY(
-					+ result.get(c.posVar()).doubleValue()
-					- result.get(c.negVar()).doubleValue());
-			
-			c.setPosXYZ(posXYZ);
-			
 		}
 		
 	}

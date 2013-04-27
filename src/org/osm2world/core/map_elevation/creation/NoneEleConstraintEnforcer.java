@@ -14,26 +14,22 @@ public class NoneEleConstraintEnforcer implements EleConstraintEnforcer {
 	public void addConnectors(Iterable<EleConnector> connectors) {}
 	
 	@Override
-	public void addSameEleConstraint(EleConnector c1, EleConnector c2) {}
+	public void requireSameEle(EleConnector c1, EleConnector c2) {}
 	
 	@Override
-	public void addSameEleConstraint(Iterable<EleConnector> cs) {}
+	public void requireSameEle(Iterable<EleConnector> cs) {}
 	
 	@Override
-	public void addMinVerticalDistanceConstraint(
-			EleConnector upper, EleConnector lower, double distance) {}
+	public void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector lower) {}
 	
 	@Override
-	public void addMinInclineConstraint(
-			List<EleConnector> cs, double minIncline) {}
+	public void requireIncline(ConstraintType type, double incline,
+			List<EleConnector> cs) {}
 	
 	@Override
-	public void addMaxInclineConstraint(
-			List<EleConnector> cs, double maxIncline) {}
-	
-	@Override
-	public void addSmoothnessConstraint(
-			EleConnector c2, EleConnector c1, EleConnector c3) {}
+	public void requireSmoothness(
+			EleConnector from, EleConnector via, EleConnector to) {}
 	
 	@Override
 	public void enforceConstraints() {}

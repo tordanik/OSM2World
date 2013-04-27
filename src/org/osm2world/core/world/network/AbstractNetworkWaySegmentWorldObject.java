@@ -3,6 +3,7 @@ package org.osm2world.core.world.network;
 import static java.lang.Double.*;
 import static java.util.Collections.emptyList;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
 
@@ -336,8 +337,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		
 		for (int i = 0; i < center.size(); i++) {
 			
-			enforcer.addSameEleConstraint(center.get(i), left.get(i));
-			enforcer.addSameEleConstraint(center.get(i), right.get(i));
+			enforcer.requireSameEle(center.get(i), left.get(i));
+			enforcer.requireSameEle(center.get(i), right.get(i));
 			
 		}
 		
@@ -371,7 +372,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 						minIncline = incline / 100.0 * 1.1;
 					} else {
 						
-						enforcer.addSameEleConstraint(center);
+						enforcer.requireSameEle(center);
 						
 					}
 				}
@@ -379,11 +380,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			}
 			
 			if (!isNaN(minIncline)) {
-				enforcer.addMinInclineConstraint(center, minIncline);
+				enforcer.requireIncline(MIN, minIncline, center);
 			}
 			
 			if (!isNaN(maxIncline)) {
-				enforcer.addMaxInclineConstraint(center, maxIncline);
+				enforcer.requireIncline(MAX, maxIncline, center);
 			}
 			
 		}
@@ -420,9 +421,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 					List<EleConnector> previousCenter =
 							previous.getCenterlineEleConnectors();
 					
-					enforcer.addSmoothnessConstraint(
-							center.get(0),
+					enforcer.requireSmoothness(
 							previousCenter.get(previousCenter.size() - 2),
+							center.get(0),
 							center.get(1));
 					
 				}
@@ -434,9 +435,9 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		/* ensure smooth transitions within the way itself */
 		
 		for (int i = 0; i + 2 < center.size(); i++) {
-			enforcer.addSmoothnessConstraint(
-					center.get(i+1),
+			enforcer.requireSmoothness(
 					center.get(i),
+					center.get(i+1),
 					center.get(i+2));
 		}
 		

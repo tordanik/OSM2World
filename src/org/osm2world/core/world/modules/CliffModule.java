@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -99,8 +100,8 @@ public class CliffModule extends ConfigurableWorldModule {
 				if ((i != 0 || getConnectedCliffs(segment.getStartNode()) > 1)
 						&& (i != center.size() - 1 || getConnectedCliffs(segment.getEndNode()) > 1)) {
 					
-					enforcer.addMinVerticalDistanceConstraint(
-							left.get(i), right.get(i), height);
+					enforcer.requireVerticalDistance(
+							MIN, height, left.get(i), right.get(i));
 					
 				}
 				

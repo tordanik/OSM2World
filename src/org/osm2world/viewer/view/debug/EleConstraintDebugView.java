@@ -55,19 +55,20 @@ public class EleConstraintDebugView extends DebugView {
 		}
 
 		@Override
-		public void addSameEleConstraint(EleConnector c1, EleConnector c2) {
+		public void requireSameEle(EleConnector c1, EleConnector c2) {
 			if (!c1.getPosXYZ().equals(c2.getPosXYZ())) {
 				target.drawLineStrip(SAME_ELE_COLOR, 2, c1.getPosXYZ(), c2.getPosXYZ());
 			}
 		}
 
 		@Override
-		public void addSameEleConstraint(Iterable<EleConnector> cs) {
+		public void requireSameEle(Iterable<EleConnector> cs) {
 			
 		}
 
 		@Override
-		public void addMinVerticalDistanceConstraint(EleConnector upper, EleConnector lower, double distance) {
+		public void requireVerticalDistance(ConstraintType type, double distance,
+				EleConnector upper, EleConnector lower) {
 			
 			target.drawLineStrip(MIN_VDIST_COLOR, 2,
 					lower.getPosXYZ(),
@@ -81,27 +82,24 @@ public class EleConstraintDebugView extends DebugView {
 		}
 
 		@Override
-		public void addMinInclineConstraint(List<EleConnector> cs, double minIncline) {
+		public void requireIncline(ConstraintType type, double incline,
+				List<EleConnector> cs) {
 			
 		}
 
 		@Override
-		public void addMaxInclineConstraint(List<EleConnector> cs, double maxIncline) {
+		public void requireSmoothness(
+				EleConnector from, EleConnector via, EleConnector to) {
 			
-		}
-
-		@Override
-		public void addSmoothnessConstraint(EleConnector c2, EleConnector c1, EleConnector c3) {
+			VectorXYZ v = via.getPosXYZ();
 			
-			VectorXYZ via = c2.getPosXYZ();
-			
-			VectorXYZ to1 = c1.getPosXYZ().subtract(via).normalize();
-			VectorXYZ to3 = c3.getPosXYZ().subtract(via).normalize();
+			VectorXYZ vToFrom = from.getPosXYZ().subtract(v).normalize();
+			VectorXYZ vToTo = to.getPosXYZ().subtract(v).normalize();
 			
 			target.drawLineStrip(SMOOTHNESS, 3,
-					via.add(to1.mult(2)),
-					via,
-					via.add(to3.mult(2)));
+					v.add(vToFrom.mult(2)),
+					v,
+					v.add(vToTo.mult(2)));
 			
 		}
 

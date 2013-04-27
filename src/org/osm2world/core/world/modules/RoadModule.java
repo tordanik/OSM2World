@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -995,8 +996,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			/* impose sensible maximum incline (35% is "the world's steepest residential street") */
 			
 			if (!isPath(tags) && !isSteps(tags) && !tags.containsKey("incline")) {
-				enforcer.addMaxInclineConstraint(getCenterlineEleConnectors(), 0.35);
-				enforcer.addMinInclineConstraint(getCenterlineEleConnectors(), -0.35);
+				enforcer.requireIncline(MAX, +0.35, getCenterlineEleConnectors());
+				enforcer.requireIncline(MIN, -0.35, getCenterlineEleConnectors());
 			}
 			
 		}

@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
@@ -127,8 +128,8 @@ public class BridgeModule extends AbstractModule {
 						
 						double distance = 10.0; //TODO base on clearing
 						
-						enforcer.addMinVerticalDistanceConstraint(
-								upper, lower, distance);
+						enforcer.requireVerticalDistance(
+								MIN, distance, upper, lower);
 						
 					}
 					

@@ -2,6 +2,7 @@ package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class EleConstraintValidator implements EleConstraintEnforcer {
 			sameEleMap.put(c, c);
 		}
 		
+		//TODO this does not join connectors added in different addConnectors calls
 		for (EleConnector c1 : connectors) {
 			for (EleConnector c2 : connectors) {
 				
@@ -59,9 +61,9 @@ public class EleConstraintValidator implements EleConstraintEnforcer {
 	}
 
 	@Override
-	public void addSameEleConstraint(EleConnector c1, EleConnector c2) {
+	public void requireSameEle(EleConnector c1, EleConnector c2) {
 		
-		enforcer.addSameEleConstraint(c1, c2);
+		enforcer.requireSameEle(c1, c2);
 
 		if (verticalDistMap.containsEntry(c1, c2)) {
 			failValidation("vertical distance despite same ele", c1, c2);
@@ -73,9 +75,9 @@ public class EleConstraintValidator implements EleConstraintEnforcer {
 	}
 
 	@Override
-	public void addSameEleConstraint(Iterable<EleConnector> cs) {
+	public void requireSameEle(Iterable<EleConnector> cs) {
 		
-		enforcer.addSameEleConstraint(cs);
+		enforcer.requireSameEle(cs);
 		
 		for (EleConnector c1 : cs) {
 			for (EleConnector c2 : cs) {
@@ -93,33 +95,36 @@ public class EleConstraintValidator implements EleConstraintEnforcer {
 	}
 
 	@Override
-	public void addMinVerticalDistanceConstraint(EleConnector upper, EleConnector lower, double distance) {
+	public void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector lower) {
 		
-		enforcer.addMinVerticalDistanceConstraint(upper, lower, distance);
+		enforcer.requireVerticalDistance(type, distance, upper, lower);
 		
-		if (sameEleMap.containsEntry(upper, lower)) {
-			failValidation("vertical distance despite same ele", upper, lower);
+		if ((type != MAX && distance > 0)
+				|| (type != MIN && distance < 0)) {
+			
+			if (sameEleMap.containsEntry(upper, lower)) {
+				failValidation("vertical distance despite same ele", upper, lower);
+			}
+			
+			verticalDistMap.putAll(upper, sameEleMap.get(lower));
+			verticalDistMap.putAll(lower, sameEleMap.get(upper));
+			
 		}
-
-		verticalDistMap.putAll(upper, sameEleMap.get(lower));
-		verticalDistMap.putAll(lower, sameEleMap.get(upper));
 		
 	}
 
 	@Override
-	public void addMinInclineConstraint(List<EleConnector> cs, double minIncline) {
-		enforcer.addMinInclineConstraint(cs, minIncline);
+	public void requireIncline(ConstraintType type, double incline,
+			List<EleConnector> cs) {
+		enforcer.requireIncline(type, incline, cs);
 	}
 
 	@Override
-	public void addMaxInclineConstraint(List<EleConnector> cs, double maxIncline) {
-		enforcer.addMaxInclineConstraint(cs, maxIncline);
-	}
-
-	@Override
-	public void addSmoothnessConstraint(EleConnector v2, EleConnector v1, EleConnector v3) {
+	public void requireSmoothness(
+			EleConnector v1, EleConnector v2, EleConnector v3) {
 		
-		enforcer.addSmoothnessConstraint(v2, v1, v3);
+		enforcer.requireSmoothness(v1, v2, v3);
 		
 		smoothnessTriples.add(asList(v1, v2, v3));
 		
