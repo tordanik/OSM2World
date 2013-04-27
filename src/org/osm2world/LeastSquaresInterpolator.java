@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -246,6 +247,14 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 			
 		}
 		
+		@Override
+		public String toString() {
+			return String.format(Locale.US,
+					"%.3f + %.3fx + %.3fz + %.3fx^2 + %.3fxz + %.3fz^2",
+					coeffs[0], coeffs[1], coeffs[2],
+					coeffs[3], coeffs[4], coeffs[5]);
+		}
+		
 	}
 	
 	private static class SiteWithPolynomial implements IntersectionTestObject {
@@ -268,6 +277,11 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 			return pos.getAxisAlignedBoundingBoxXZ();
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("{%s, %s}", pos.toString(), polynomial);
 		}
 		
 	}
