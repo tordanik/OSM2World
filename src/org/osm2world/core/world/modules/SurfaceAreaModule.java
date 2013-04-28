@@ -173,6 +173,15 @@ public class SurfaceAreaModule extends AbstractModule {
 				} else {
 					
 					for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+						
+						if (eleConnector.reference == null) {
+							/* workaround to avoid using connectors at intersections,
+							 * which might fall on area segments
+							 * //TODO cleaner solution
+							 */
+							continue;
+						}
+						
 						eleConnectorPoints.add(eleConnector.pos);
 					}
 					

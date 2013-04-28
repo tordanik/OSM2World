@@ -240,7 +240,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 	
-	private class Tree extends NoOutlineNodeWorldObject
+	public class Tree extends NoOutlineNodeWorldObject
 		implements RenderableToAllTargets, RenderableToPOVRay {
 		
 		private final boolean isConiferous;
@@ -279,7 +279,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 
-	private class TreeRow implements WaySegmentWorldObject,
+	public class TreeRow implements WaySegmentWorldObject,
 		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets {
 
 		private final MapWaySegment segment;
@@ -366,7 +366,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 	
 
-	private class Forest implements AreaWorldObject,
+	public class Forest implements AreaWorldObject,
 		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets {
 
 		private final MapArea area;

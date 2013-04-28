@@ -39,6 +39,15 @@ public interface EleConstraintEnforcer {
 			EleConnector upper, EleConnector lower);
 	
 	/**
+	 * requires a connector to be a give distance above a line segment
+	 * defined by two other connectors.
+	 * 
+	 * @param distance  distance, may be negative if 'upper' is actually below
+	 */
+	void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector base1, EleConnector base2);
+	
+	/**
 	 * requires an incline along a sequence of connectors.
 	 * 
 	 * @param incline  incline value,

@@ -191,6 +191,22 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 	
 	@Override
 	public void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector base1, EleConnector base2) {
+		
+		double dist1 = base1.pos.distanceTo(upper.pos);
+		double dist2 = base2.pos.distanceTo(upper.pos);
+		
+		addConstraint(
+				 1, upper,
+				-(dist2 / (dist1 + dist2)), base1,
+				-(dist1 / (dist1 + dist2)), base2,
+				getOperator(type),
+				distance);
+		
+	}
+	
+	@Override
+	public void requireVerticalDistance(ConstraintType type, double distance,
 			EleConnector upper, EleConnector lower) {
 		
 		addConstraint(

@@ -1,6 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.awt.Color.*;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 
 import java.awt.Color;
 import java.util.List;
@@ -70,6 +71,11 @@ public class EleConstraintDebugView extends DebugView {
 		public void requireVerticalDistance(ConstraintType type, double distance,
 				EleConnector upper, EleConnector lower) {
 			
+			if (upper == null || lower == null) {
+				//TODO this should not happen
+				return;
+			}
+			
 			target.drawLineStrip(MIN_VDIST_COLOR, 2,
 					lower.getPosXYZ(),
 					upper.getPosXYZ());
@@ -80,7 +86,39 @@ public class EleConstraintDebugView extends DebugView {
 					lower.getPosXYZ().addY(distance));
 			
 		}
+		
+		@Override
+		public void requireVerticalDistance(ConstraintType type, double distance,
+				EleConnector upper, EleConnector base1, EleConnector base2) {
 
+			if (upper == null || base1 == null || base2 == null) {
+				//TODO this should not happen
+				return;
+			}
+			
+			target.drawLineStrip(MIN_VDIST_COLOR, 2,
+					base1.getPosXYZ(),
+					base2.getPosXYZ());
+			
+			double dist1 = base1.pos.distanceTo(upper.pos);
+			double dist2 = base2.pos.distanceTo(upper.pos);
+			
+			VectorXYZ base = interpolateBetween(
+					base1.getPosXYZ(),
+					base2.getPosXYZ(),
+					dist1 / (dist1 + dist2));
+			
+			target.drawLineStrip(MIN_VDIST_COLOR, 2,
+					base,
+					upper.getPosXYZ());
+			
+			drawArrow(target, MIN_VDIST_COLOR,
+					(float) (distance / 2),
+					base,
+					base.addY(distance));
+			
+		}
+		
 		@Override
 		public void requireIncline(ConstraintType type, double incline,
 				List<EleConnector> cs) {

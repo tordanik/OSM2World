@@ -1,8 +1,6 @@
 package org.osm2world.core.world.modules;
 
 
-import static java.util.Collections.emptyList;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
@@ -13,8 +11,6 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
@@ -26,6 +22,7 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.WaterModule.Water;
 import org.osm2world.core.world.modules.common.AbstractModule;
+import org.osm2world.core.world.modules.common.BridgeOrTunnel;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 /**
@@ -63,31 +60,12 @@ public class BridgeModule extends AbstractModule {
 	
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 		
-	private static class Bridge implements WaySegmentWorldObject,
-		RenderableToAllTargets {
-		
-		private final MapWaySegment segment;
-		private final AbstractNetworkWaySegmentWorldObject primaryRep;
+	private static class Bridge extends BridgeOrTunnel
+			implements RenderableToAllTargets {
 		
 		public Bridge(MapWaySegment segment,
-				AbstractNetworkWaySegmentWorldObject primaryRepresentation) {
-			this.segment = segment;
-			this.primaryRep = primaryRepresentation;
-		}
-
-		@Override
-		public MapWaySegment getPrimaryMapElement() {
-			return segment;
-		}
-
-		@Override
-		public VectorXZ getEndPosition() {
-			return primaryRep.getEndPosition();
-		}
-
-		@Override
-		public VectorXZ getStartPosition() {
-			return primaryRep.getStartPosition();
+				AbstractNetworkWaySegmentWorldObject primaryWO) {
+			super(segment, primaryWO);
 		}
 
 		@Override
@@ -98,44 +76,7 @@ public class BridgeModule extends AbstractModule {
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
 			// TODO EleConnectors for pillars
-			return emptyList();
-		}
-
-		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
-			
-			/* ensure a minimum vertical distance to ways below, at intersections */
-			
-			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
-				if (overlap instanceof MapIntersectionWW) {
-					
-					MapIntersectionWW intersection = (MapIntersectionWW) overlap;
-					
-					MapWaySegment otherSegment = intersection.getOther(segment);
-					WorldObject otherWO = otherSegment.getPrimaryRepresentation();
-					
-					if (otherWO instanceof AbstractNetworkWaySegmentWorldObject) {
-					
-						AbstractNetworkWaySegmentWorldObject otherANWSWO =
-								((AbstractNetworkWaySegmentWorldObject)otherWO);
-						
-						boolean otherIsUpper = false; //TODO check layers
-						
-						EleConnector upper = primaryRep.getEleConnectors()
-								.getConnector(intersection.pos);
-						EleConnector lower = otherANWSWO.getEleConnectors()
-								.getConnector(intersection.pos);
-						
-						double distance = 10.0; //TODO base on clearing
-						
-						enforcer.requireVerticalDistance(
-								MIN, distance, upper, lower);
-						
-					}
-					
-				}
-			}
-			
+			return super.getEleConnectors();
 		}
 		
 		@Override

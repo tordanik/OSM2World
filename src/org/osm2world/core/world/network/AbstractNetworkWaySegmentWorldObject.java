@@ -16,6 +16,8 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
@@ -29,6 +31,7 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
@@ -142,13 +145,16 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			// add intersections along the centerline
 			
 			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
+				
+				if (overlap.getOther(segment).getPrimaryRepresentation() == null)
+					continue;
+				
 				if (overlap instanceof MapIntersectionWW) {
 					
 					MapIntersectionWW intersection = (MapIntersectionWW) overlap;
 					
-					if (GeometryUtil.isBetween(intersection.pos, start, end)
-							&& intersection.getOther(segment).getPrimaryRepresentation() != null) {
-					
+					if (GeometryUtil.isBetween(intersection.pos, start, end)) {
+						
 						centerlineXZ.add(intersection.pos);
 						
 						connectors.add(new EleConnector(intersection.pos,
@@ -156,7 +162,32 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 						
 					}
 					
+				} else if (overlap instanceof MapOverlapWA
+						&& overlap.type == MapOverlapType.INTERSECT) {
+					
+					if (!(overlap.getOther(segment).getPrimaryRepresentation()
+							instanceof AbstractAreaWorldObject)) continue;
+					
+					MapOverlapWA overlapWA = (MapOverlapWA) overlap;
+					
+					for (int i = 0; i < overlapWA.getIntersectionPositions().size(); i++) {
+					
+						VectorXZ pos = overlapWA.getIntersectionPositions().get(i);
+						
+						if (GeometryUtil.isBetween(pos, start, end)) {
+							
+							centerlineXZ.add(pos);
+							
+							connectors.add(new EleConnector(pos,
+									null, getGroundState()));
+							
+						}
+					
+					}
+					
 				}
+				
+				
 			}
 			
 			// finish the centerline

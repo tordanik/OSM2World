@@ -24,6 +24,10 @@ public class NoneEleConstraintEnforcer implements EleConstraintEnforcer {
 			EleConnector upper, EleConnector lower) {}
 	
 	@Override
+	public void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector base1, EleConnector base2) {}
+	
+	@Override
 	public void requireIncline(ConstraintType type, double incline,
 			List<EleConnector> cs) {}
 	

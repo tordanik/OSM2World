@@ -113,6 +113,12 @@ public class EleConstraintValidator implements EleConstraintEnforcer {
 		}
 		
 	}
+	
+	@Override
+	public void requireVerticalDistance(ConstraintType type, double distance,
+			EleConnector upper, EleConnector base1, EleConnector base2) {
+		enforcer.requireVerticalDistance(type, distance, upper, base1, base2);
+	}
 
 	@Override
 	public void requireIncline(ConstraintType type, double incline,

@@ -30,6 +30,7 @@ import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
+import org.osm2world.core.world.modules.common.BridgeOrTunnel;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
@@ -124,46 +125,18 @@ public class TunnelModule extends AbstractModule {
 		
 	}
 	
-	public static class Tunnel implements WaySegmentWorldObject,
-		RenderableToAllTargets {
-		
-		private final MapWaySegment segment;
-		private final AbstractNetworkWaySegmentWorldObject primaryRep;
+	public static class Tunnel extends BridgeOrTunnel
+			implements RenderableToAllTargets {
 		
 		public Tunnel(MapWaySegment segment,
-				AbstractNetworkWaySegmentWorldObject primaryRepresentation) {
-			this.segment = segment;
-			this.primaryRep = primaryRepresentation;
-		}
-		
-		@Override
-		public MapWaySegment getPrimaryMapElement() {
-			return segment;
-		}
-
-		@Override
-		public VectorXZ getEndPosition() {
-			return primaryRep.getEndPosition();
-		}
-
-		@Override
-		public VectorXZ getStartPosition() {
-			return primaryRep.getStartPosition();
+				AbstractNetworkWaySegmentWorldObject primaryWO) {
+			super(segment, primaryWO);
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.BELOW;
 		}
-		
-		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			// TODO EleConnectors for tunnels
-			return emptyList();
-		}
-		
-		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 		
 		@Override
 		public void renderTo(Target<?> target) {
