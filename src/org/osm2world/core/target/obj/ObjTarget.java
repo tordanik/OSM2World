@@ -153,6 +153,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 
 	private void useMaterial(Material material) {
 		if (!material.equals(currentMaterial)) {
+			currentMaterial = material;
 			
 			String name = materialMap.get(material);
 			if (name == null) {
