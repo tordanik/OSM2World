@@ -1,6 +1,5 @@
 package org.osm2world.viewer.view.debug;
 
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.LeastSquaresInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
@@ -12,7 +11,7 @@ public class LeastSquaresInterpolatorDebugView extends TerrainInterpolatorDebugV
 	}
 	
 	@Override
-	protected TerrainInterpolator buildInterpolator() {
+	protected LeastSquaresInterpolator buildInterpolator() {
 		return new LeastSquaresInterpolator();
 	}
 	

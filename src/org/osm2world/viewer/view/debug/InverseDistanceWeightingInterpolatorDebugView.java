@@ -1,7 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
 import org.osm2world.InverseDistanceWeightingInterpolator;
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 
@@ -12,7 +11,7 @@ public class InverseDistanceWeightingInterpolatorDebugView extends TerrainInterp
 	}
 	
 	@Override
-	protected TerrainInterpolator buildInterpolator() {
+	protected InverseDistanceWeightingInterpolator buildInterpolator() {
 		return new InverseDistanceWeightingInterpolator(1);
 	}
 	

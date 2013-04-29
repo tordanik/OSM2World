@@ -28,7 +28,6 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 	
 	private static final Material TERRAIN_MAT =
 			new ImmutableMaterial(Lighting.FLAT, Color.WHITE);
-	private static final Color SITE_COL = Color.RED;
 
 	private final RenderOptions renderOptions;
 	
@@ -99,16 +98,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 				}
 			}
 			
-			/* draw sites */
-			
-			/*
-			for (VectorXYZ site : sites) {
-				target.drawLineStrip(SITE_COL, 1, site, site.y(site.y+10));
-			}
-			*/
-			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 						
