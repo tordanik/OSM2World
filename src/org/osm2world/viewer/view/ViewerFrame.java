@@ -57,6 +57,7 @@ import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
 import org.osm2world.viewer.view.debug.InverseDistanceWeightingInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.LeastSquaresInterpolatorDebugView;
+import org.osm2world.viewer.view.debug.LinearInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
@@ -239,6 +240,8 @@ public class ViewerFrame extends JFrame{
 					new LeastSquaresInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new InverseDistanceWeightingInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new LinearInterpolatorDebugView(renderOptions));
 			
 			menu.add(subMenu);
 			

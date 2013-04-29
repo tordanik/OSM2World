@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -156,13 +157,22 @@ public class DelaunayTriangulation {
 			
 		}
 		
-		TriangleXZ triangleXZ = null;
+		private TriangleXZ triangleXZ = null;
 		
 		public TriangleXZ asTriangleXZ() {
 			if (triangleXZ == null) {
 				triangleXZ = new TriangleXZ(p0.xz(), p1.xz(), p2.xz());
 			}
 			return triangleXZ;
+		}
+		
+		private TriangleXYZ triangleXYZ = null;
+		
+		public TriangleXYZ asTriangleXYZ() {
+			if (triangleXYZ == null) {
+				triangleXYZ = new TriangleXYZ(p0, p1, p2);
+			}
+			return triangleXYZ;
 		}
 		
 		@Override
@@ -792,7 +802,12 @@ public class DelaunayTriangulation {
 		
 	}
 	
-	private DelaunayTriangle getEnlosingTriangle(VectorXZ point) {
+	/**
+	 * returns the triangle containing the given point
+	 * 
+	 * @param point  must lie within the triangulation; != null
+	 */
+	public DelaunayTriangle getEnlosingTriangle(VectorXZ point) {
 		
 		/* use a 'visibility walk' through the triangulation,
 		 * starting at the handleTriangle */
