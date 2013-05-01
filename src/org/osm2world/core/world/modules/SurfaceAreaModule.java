@@ -89,6 +89,8 @@ public class SurfaceAreaModule extends AbstractModule {
 		
 		private final String surface;
 		
+		private Collection<TriangleXZ> triangulationXZ;
+		
 		public SurfaceArea(MapArea area, String surface) {
 			super(area);
 			this.surface = surface;
@@ -122,6 +124,10 @@ public class SurfaceAreaModule extends AbstractModule {
 		 */
 		@Override
 		protected Collection<TriangleXZ> getTriangulationXZ() {
+			
+			if (triangulationXZ != null) {
+				return triangulationXZ;
+			}
 			
 			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_TAG.value);
 			
@@ -249,7 +255,7 @@ public class SurfaceAreaModule extends AbstractModule {
 						
 			/* triangulate, using elevation information from all participants */
 			
-			Collection<TriangleXZ> triangles = new ArrayList<TriangleXZ>();
+			triangulationXZ = new ArrayList<TriangleXZ>();
 			
 			for (PolygonWithHolesXZ polygon : polygons) {
 				
@@ -263,7 +269,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				
 				try {
 					
-					triangles.addAll(Poly2TriTriangulationUtil.triangulate(
+					triangulationXZ.addAll(Poly2TriTriangulationUtil.triangulate(
 							polygon.getOuter(),
 							polygon.getHoles(),
 							Collections.<LineSegmentXZ>emptyList(),
@@ -275,7 +281,7 @@ public class SurfaceAreaModule extends AbstractModule {
 					e.printStackTrace();
 					System.err.println("... falling back to JTS triangulation.");
 					
-					triangles.addAll(JTSTriangulationUtil.triangulate(
+					triangulationXZ.addAll(JTSTriangulationUtil.triangulate(
 							polygon.getOuter(),
 							polygon.getHoles(),
 							Collections.<LineSegmentXZ>emptyList(),
@@ -285,7 +291,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				
 			}
 			
-			return triangles;
+			return triangulationXZ;
 			
 		}
 		
