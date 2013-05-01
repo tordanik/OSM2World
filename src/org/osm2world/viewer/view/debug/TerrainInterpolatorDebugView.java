@@ -24,7 +24,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 	protected abstract TerrainInterpolator buildInterpolator();
 	
-	private static final double SAMPLE_DIST = 6;
+	private static final double SAMPLE_DIST = 3;
 	
 	private static final Material TERRAIN_MAT =
 			new ImmutableMaterial(Lighting.FLAT, Color.WHITE);
