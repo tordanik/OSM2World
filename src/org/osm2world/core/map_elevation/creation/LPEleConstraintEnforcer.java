@@ -238,28 +238,29 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 			EleConnector via, EleConnector to) {
 		
 		/* TODO restore
+		
 		double maxInclineDiffPerMeter = 0.5 / 100;
 		
-		double dist12 = c1.pos.distanceTo(c2.pos);
-		double dist23 = c2.pos.distanceTo(c3.pos);
+		double dist12 = from.pos.distanceTo(via.pos);
+		double dist23 = via.pos.distanceTo(to.pos);
 		
 		double maxInclineDiff = maxInclineDiffPerMeter * (dist12 + dist23);
 		
 		System.out.println(maxInclineDiff);
 		
-		//| - 1/dist12 * c1 + (1/dist12 + 1/dist23) * c2 - 1/dist23 * c3 |
+		//| - 1/dist12 * from + (1/dist12 + 1/dist23) * via - 1/dist23 * to |
 		//   <= maxInclineDiff
 		
 		addConstraint(
-				-1/dist12, c1,
-				1/dist12 + 1/dist23, c2,
-				-1/dist23, c3,
+				-1/dist12, from,
+				1/dist12 + 1/dist23, via,
+				-1/dist23, to,
 				"<=", maxInclineDiff);
 		
 		addConstraint(
-				-1/dist12, c1,
-				1/dist12 + 1/dist23, c2,
-				-1/dist23, c3,
+				-1/dist12, from,
+				1/dist12 + 1/dist23, via,
+				-1/dist23, to,
 				">=", -maxInclineDiff);
 		
 		*/
