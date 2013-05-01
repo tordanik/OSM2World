@@ -40,6 +40,7 @@ public abstract class DebugView {
 	private VectorXYZ cameraLookAt;
 	
 	private JOGLTarget target = null;
+	private boolean targetNeedsReset;
 	
 	public final void setConfiguration(Configuration config) {
 		
@@ -47,7 +48,7 @@ public abstract class DebugView {
 		
 		if (target != null) {
 			target.setConfiguration(config);
-			target.reset();
+			targetNeedsReset = true;
 		}
 		
 	}
@@ -58,10 +59,7 @@ public abstract class DebugView {
 		this.terrain = conversionResults.getTerrain();
 		this.eleData = conversionResults.getEleData();
 		
-		if (target != null) {
-			target.reset();
-		}
-		
+		targetNeedsReset = true;
 	}
 	
 	/**
@@ -96,7 +94,10 @@ public abstract class DebugView {
 				target = new JOGLTarget(gl, new JOGLRenderingParameters(
 						null, false, true), null);
 				target.setConfiguration(config);
+			} else if (targetNeedsReset){
+				target.reset();
 			}
+			targetNeedsReset = false;
 			
 			boolean viewChanged = !camera.getPos().equals(this.cameraPos)
 					|| !camera.getUp().equals(this.cameraUp)

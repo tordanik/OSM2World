@@ -143,7 +143,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				|| "service".equals(highwayValue)
 				|| "track".equals(highwayValue)
 				|| "residential".equals(highwayValue)
-				|| "pedestrian".equals(highwayValue)) {
+				|| "pedestrian".equals(highwayValue)
+				|| "platform".equals(highwayValue)) {
 			return 1;
 		} else if ("motorway".equals(highwayValue)){
 			return 2;

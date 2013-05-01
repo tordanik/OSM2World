@@ -125,12 +125,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 			
 			/* add part(s) for area not covered by building:part polygons */
+			boolean isBuildingPart = false;
+			if (area.getTags().containsKey("building:part"))
+				isBuildingPart = !("no".equals(area.getTags().getValue("building:part")));
 			
-			if (parts.isEmpty()) {
+			if (parts.isEmpty() || isBuildingPart) {
 				parts.add(new BuildingPart(this, area,
 						area.getPolygon(), useBuildingColors, drawBuildingWindows));
 			} else {
-				
 				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
 				
 				for (BuildingPart part : parts) {
@@ -727,7 +729,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			boolean explicitRoofTagging = true;
 			
-			if (hasComplexRoof(area)) {
+			if (!("no".equals(area.getTags().getValue("roof:lines"))) && hasComplexRoof(area)) {
 				roof = new ComplexRoof();
 			} else {
 				
@@ -2032,54 +2034,68 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				ridgeAndEdgeSegments = new ArrayList<LineSegmentXZ>();
 				
+				List<MapNode> nodes = area.getBoundaryNodes();
+				boolean usePartRoofHeight = false;
+				
+				if (area.getTags().containsKey("roof:height")){
+					roofHeight = parseMeasure(area.getTags().getValue("roof:height"));
+					usePartRoofHeight = true;
+				} else
+					roofHeight = DEFAULT_RIDGE_HEIGHT;
+				
 				for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 					
 					if (overlap instanceof MapOverlapWA) {
 						
 						MapWaySegment waySegment = ((MapOverlapWA)overlap).e1;
 						
-						if (!polygon.contains(waySegment.getCenter())) {
-							continue;
-						}
-						
 						boolean isRidge = waySegment.getTags().contains("roof:ridge", "yes");
 						boolean isEdge = waySegment.getTags().contains("roof:edge", "yes");
-												
-						if (isRidge || isEdge) {
-							
-							ridgeAndEdgeSegments.add(waySegment.getLineSegment());
-							
-							for (MapNode node : waySegment.getStartEndNodes()) {
-								
-								// height of node (above roof base)
-								Float nodeHeight = null;
-								
-								if (node.getTags().containsKey("roof:height")) {
-									nodeHeight = parseMeasure(
-											node.getTags().getValue("roof:height"));
-								} else if (waySegment.getTags().containsKey("roof:height")) {
-									nodeHeight = parseMeasure(
-											waySegment.getTags().getValue("roof:height"));
-								} else if (node.getTags().contains("roof:apex", "yes")) {
-									nodeHeight = DEFAULT_RIDGE_HEIGHT;
-								} else if (isRidge) {
-									nodeHeight = DEFAULT_RIDGE_HEIGHT;
-								}
-								
-								if (nodeHeight != null) {
-									
-									roofHeightMap.put(node.getPos(), (double)nodeHeight);
-									
-									roofHeight = max(roofHeight, nodeHeight);
-									
-								}
-								
-							}
-							
-						}
 						
+						if (!(isRidge || isEdge))
+							continue;
+						
+						boolean inside = polygon.contains(waySegment.getCenter());
+
+						// check also endpoints as pnpoly algo is not reliable when
+						// segment lies on the polygon edge
+						boolean containsStart = nodes.contains(waySegment.getStartNode());
+						boolean containsEnd = nodes.contains(waySegment.getEndNode());
+
+						if (!inside && !(containsStart && containsEnd))
+							continue;
+
+						ridgeAndEdgeSegments.add(waySegment.getLineSegment());
+
+						for (MapNode node : waySegment.getStartEndNodes()) {
+
+							// height of node (above roof base)
+							Float nodeHeight = null;
+
+							if (node.getTags().containsKey("roof:height")) {
+								nodeHeight = parseMeasure(node.getTags()
+										.getValue("roof:height"));
+							} else if (waySegment.getTags().containsKey(
+									"roof:height")) {
+								nodeHeight = parseMeasure(waySegment.getTags()
+										.getValue("roof:height"));
+							} else if (node.getTags().contains("roof:apex",
+									"yes")) {
+								nodeHeight = (float)roofHeight;
+							} else if (isRidge) {
+								nodeHeight = (float)roofHeight;
+							}
+
+							if (nodeHeight != null) {
+
+								roofHeightMap.put(node.getPos(),
+										(double) nodeHeight);
+								
+								if (!usePartRoofHeight)
+									roofHeight = max(roofHeight, nodeHeight);
+							}
+						}
 					}
-					
 				}
 				
 				/* add heights for outline nodes that don't have one yet */
