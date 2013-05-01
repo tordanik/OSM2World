@@ -18,7 +18,6 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.terrain.data.Terrain;
 
 /**
  * contains some common methods for debug views
@@ -28,7 +27,6 @@ public abstract class DebugView {
 	protected Configuration config;
 	
 	protected MapData map;
-	protected Terrain terrain;
 	protected TerrainElevationData eleData;
 	
 	protected Camera camera;
@@ -56,7 +54,6 @@ public abstract class DebugView {
 	public void setConversionResults(Results conversionResults) {
 	
 		this.map = conversionResults.getMapData();
-		this.terrain = conversionResults.getTerrain();
 		this.eleData = conversionResults.getEleData();
 		
 		targetNeedsReset = true;
@@ -69,7 +66,6 @@ public abstract class DebugView {
 	 */
 	public boolean canBeUsed() {
 		return map != null
-			&& terrain != null
 			&& eleData != null;
 	}
 	

@@ -63,21 +63,14 @@ import org.osm2world.viewer.view.debug.LinearInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
-import org.osm2world.viewer.view.debug.MapDataElevationDebugView;
 import org.osm2world.viewer.view.debug.NaturalNeighborInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
 import org.osm2world.viewer.view.debug.SkyboxView;
-import org.osm2world.viewer.view.debug.TerrainAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
-import org.osm2world.viewer.view.debug.TerrainCellLabelsView;
-import org.osm2world.viewer.view.debug.TerrainElevationGridDebugView;
-import org.osm2world.viewer.view.debug.TerrainNormalsDebugView;
-import org.osm2world.viewer.view.debug.TerrainOutlineDebugView;
-import org.osm2world.viewer.view.debug.TerrainView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
@@ -187,8 +180,6 @@ public class ViewerFrame extends JFrame{
 			
 			initAndAddDebugView(subMenu, VK_W, true,
 					new WorldObjectView(renderOptions));
-			initAndAddDebugView(subMenu, VK_T, true,
-					new TerrainView(renderOptions));
 			initAndAddDebugView(subMenu, -1, true,
 					new SkyboxView());
 			
@@ -196,14 +187,10 @@ public class ViewerFrame extends JFrame{
 			
 			initAndAddDebugView(subMenu, -1, false,
 					new TerrainBoundaryAABBDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainAABBDebugView());
 			initAndAddDebugView(subMenu, VK_L, false,
 					new ClearingDebugView());
 			initAndAddDebugView(subMenu, VK_D, false,
 					new MapDataDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new MapDataElevationDebugView());
 			initAndAddDebugView(subMenu, VK_E, false,
 					new EleConnectorDebugView());
 			initAndAddDebugView(subMenu, VK_C, false,
@@ -218,22 +205,14 @@ public class ViewerFrame extends JFrame{
 					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new Map2dTreeDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainCellLabelsView());
 			initAndAddDebugView(subMenu, VK_B, false,
 					new TerrainBoundaryDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainOutlineDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainNormalsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new WorldObjectNormalsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new MapDataBoundsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new OrthoBoundsDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainElevationGridDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new EleDebugView());
 			initAndAddDebugView(subMenu, -1, false,

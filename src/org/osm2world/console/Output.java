@@ -145,21 +145,18 @@ public final class Output {
 						config.getInteger("primitiveThresholdOBJ", null);
 					if (primitiveThresholdOBJ == null) {
 						ObjWriter.writeObjFile(outputFile,
-								results.getMapData(), results.getEleData(),
-								results.getTerrain(), results.getMapProjection(),
+								results.getMapData(), results.getMapProjection(),
 								camera, projection);
 					} else {
 						ObjWriter.writeObjFiles(outputFile,
-								results.getMapData(), results.getEleData(),
-								results.getTerrain(), results.getMapProjection(),
+								results.getMapData(), results.getMapProjection(),
 								camera, projection, primitiveThresholdOBJ);
 					}
 					break;
 					
 				case POV:
 					POVRayWriter.writePOVInstructionFile(outputFile,
-							results.getMapData(), results.getEleData(), results.getTerrain(),
-							camera, projection);
+							results.getMapData(), camera, projection);
 					break;
 					
 				case PNG:

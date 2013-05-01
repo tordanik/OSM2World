@@ -61,8 +61,6 @@ public class ExportPOVRayAction extends AbstractExportAction {
 			POVRayWriter.writePOVInstructionFile(
 					file, 
 					data.getConversionResults().getMapData(),
-					data.getConversionResults().getEleData(),
-					data.getConversionResults().getTerrain(),
 					povRayCamera, renderOptions.projection);
 
 			messageManager.addMessage("exported POVRay file " + file);

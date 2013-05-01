@@ -293,7 +293,6 @@ public class ImageExporter {
 		boolean underground = config.getBoolean("renderUnderground", true);
 		
 		TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
-		TargetUtil.renderObject(target, results.getTerrain());
 		
 		target.finish();
 		

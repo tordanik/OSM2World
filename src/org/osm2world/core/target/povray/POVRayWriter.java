@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Locale;
 
-import org.osm2world.TerrainElevationData;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -14,7 +13,6 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -26,7 +24,6 @@ public final class POVRayWriter {
 	private POVRayWriter() { }
 	
 	public static final void writePOVInstructionFile(File file, MapData mapData,
-			TerrainElevationData eleData, Terrain terrain,
 			Camera camera, Projection projection)
 			throws IOException {
 		
@@ -37,7 +34,7 @@ public final class POVRayWriter {
 		PrintStream printStream = new PrintStream(file);
 		
 		writePOVInstructionStringToStream(printStream,
-				mapData, eleData, terrain, camera, projection);
+				mapData, camera, projection);
 		
 		printStream.close();
 		
@@ -45,7 +42,6 @@ public final class POVRayWriter {
 
 	private static final void writePOVInstructionStringToStream(
 			PrintStream stream, MapData mapData,
-			TerrainElevationData eleData, Terrain terrain,
 			Camera camera, Projection projection) {
 				
 		POVRayTarget target = new POVRayTarget(stream);
@@ -82,11 +78,11 @@ public final class POVRayWriter {
 			}
 		}
 		
-		if (terrain != null) {
-			
-			target.append("//\n// empty ground around the scene\n//\n\n");
-			
-			//TODO get terrain boundary elsewhere
+		//TODO get terrain boundary elsewhere
+//		if (terrain != null) {
+//
+//			target.append("//\n// empty ground around the scene\n//\n\n");
+//
 //			target.append("difference {\n");
 //			target.append("  plane { y, -0.001 }\n  ");
 //			VectorXZ[] boundary = eleData.getBoundaryPolygon().getXZPolygon()
@@ -95,17 +91,13 @@ public final class POVRayWriter {
 //			target.append("\n");
 //			target.appendMaterialOrName(Materials.TERRAIN_DEFAULT);
 //			target.append("\n}\n\n");
+//
+//		}
 			
-			target.append("\n\n//\n//Map data\n//\n\n");
+		target.append("\n\n//\n//Map data\n//\n\n");
 			
-			TargetUtil.renderWorldObjects(target, mapData, true);
-	
-			target.append("\n\n//\n//Terrain\n//\n\n");
-			
-			terrain.renderTo(target);
-			
-		}
-		
+		TargetUtil.renderWorldObjects(target, mapData, true);
+				
 	}
 
 	private static final void addLightingDefinition(POVRayTarget target,

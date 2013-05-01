@@ -47,8 +47,6 @@ public class ExportObjDirAction extends AbstractExportAction {
 			ObjWriter.writeObjFiles(
 					file,
 					data.getConversionResults().getMapData(),
-					data.getConversionResults().getEleData(),
-					data.getConversionResults().getTerrain(),
 					data.getConversionResults().getMapProjection(),
 					null, renderOptions.projection,
 					primitiveThresholdPerFile);

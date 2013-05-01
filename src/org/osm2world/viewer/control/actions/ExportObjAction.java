@@ -37,10 +37,8 @@ public class ExportObjAction extends AbstractExportAction {
 			/* write the file */
 
 			ObjWriter.writeObjFile(
-					file, 
+					file,
 					data.getConversionResults().getMapData(),
-					data.getConversionResults().getEleData(),
-					data.getConversionResults().getTerrain(),
 					data.getConversionResults().getMapProjection(),
 					null, renderOptions.projection);
 
@@ -51,7 +49,7 @@ public class ExportObjAction extends AbstractExportAction {
 					e.toString(),
 					"Could not export Wavefront .obj file",
 					JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
 	}
 

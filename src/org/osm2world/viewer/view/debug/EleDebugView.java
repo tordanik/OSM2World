@@ -17,6 +17,11 @@ public class EleDebugView extends DebugView {
 	}
 	
 	@Override
+	public boolean canBeUsed() {
+		return false;
+	}
+	
+	@Override
 	protected void fillTarget(JOGLTarget target) {
 		
 		//TODO port functionality to new elevation calculation

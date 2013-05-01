@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 
-import org.osm2world.TerrainElevationData;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
@@ -18,7 +17,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.terrain.data.Terrain;
 
 /**
  * utility class for creating an Wavefront OBJ file
@@ -30,7 +28,6 @@ public final class ObjWriter {
 	
 	public static final void writeObjFile(
 			File objFile, MapData mapData,
-			TerrainElevationData eleData, Terrain terrain,
 			MapProjection mapProjection,
 			Camera camera, Projection projection)
 			throws IOException {
@@ -63,10 +60,6 @@ public final class ObjWriter {
 		
 		TargetUtil.renderWorldObjects(target, mapData, true);
 		
-		if (terrain != null) {
-			TargetUtil.renderObject(target, terrain);
-		}
-		
 		objStream.close();
 		mtlStream.close();
 		
@@ -74,7 +67,6 @@ public final class ObjWriter {
 	
 	public static final void writeObjFiles(
 			final File objDirectory, MapData mapData,
-			TerrainElevationData eleData, Terrain terrain,
 			final MapProjection mapProjection,
 			Camera camera, Projection projection,
 			int primitiveThresholdPerFile)
@@ -151,7 +143,6 @@ public final class ObjWriter {
 		/* write file content */
 		
 		TargetUtil.renderWorldObjects(objIterator, mapData, primitiveThresholdPerFile);
-		TargetUtil.renderObject(objIterator.next(), terrain);
 		
 		mtlStream.close();
 		

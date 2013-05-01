@@ -34,7 +34,6 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.util.functions.DefaultFactory;
@@ -70,37 +69,23 @@ public class ConversionFacade {
 	public static final class Results {
 		
 		private final MapProjection mapProjection;
-		private final MapData map;
-		private final Terrain terrain;
+		private final MapData mapData;
 		private final TerrainElevationData eleData;
 		
-		public Results(MapProjection mapProjection, MapData grid,
-				Terrain terrain, TerrainElevationData eleData) {
+		private Results(MapProjection mapProjection, MapData mapData, TerrainElevationData eleData) {
 			this.mapProjection = mapProjection;
-			this.map = grid;
-			this.terrain = terrain;
+			this.mapData = mapData;
 			this.eleData = eleData;
 		}
-		
+
 		public MapProjection getMapProjection() {
 			return mapProjection;
 		}
 		
 		public MapData getMapData() {
-			return map;
+			return mapData;
 		}
 		
-		/**
-		 * returns the terrain. Will be null if terrain creation was disabled.
-		 */
-		public Terrain getTerrain() {
-			return terrain;
-		}
-		
-		/*
-		 * TODO: remove in the future, because it isn't really a conversion result.
-		 * Once real elevation data is available, this should be a conversion *input*
-		 */
 		public TerrainElevationData getEleData() {
 			return eleData;
 		}
@@ -120,19 +105,14 @@ public class ConversionFacade {
 		public <R extends Renderable> Collection<R> getRenderables(
 				Class<R> renderableType, boolean includeGrid, boolean includeTerrain) {
 			
+			//TODO make use of or drop includeTerrain
+			
 			Collection<R> representations = new ArrayList<R>();
 			
 			if (includeGrid) {
-				for (R r : map.getWorldObjects(renderableType)) {
+				for (R r : mapData.getWorldObjects(renderableType)) {
 					representations.add(r);
 				}
-			}
-			
-			if (includeTerrain && terrain != null &&
-					renderableType.isAssignableFrom(Terrain.class)) {
-				@SuppressWarnings("unchecked") //checked by isAssignableFromd
-				R renderable = (R) terrain;
-				representations.add(renderable);
 			}
 			
 			return representations;
@@ -337,10 +317,8 @@ public class ConversionFacade {
 		calculateElevations(mapData, eleData, config);
 		
 		/* create terrain */
-		updatePhase(Phase.TERRAIN);
-		
-		Terrain terrain = null;
-		
+		updatePhase(Phase.TERRAIN); //TODO this phase may be obsolete
+				
 		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
 		
@@ -349,14 +327,11 @@ public class ConversionFacade {
 		if (targets != null) {
 			for (Target<?> target : targets) {
 				TargetUtil.renderWorldObjects(target, mapData, underground);
-				if (terrain != null) {
-					TargetUtil.renderObject(target, terrain);
-				}
 				target.finish();
 			}
 		}
 		
-		return new Results(mapProjection, mapData, terrain, eleData);
+		return new Results(mapProjection, mapData, eleData);
 		
 	}
 	
