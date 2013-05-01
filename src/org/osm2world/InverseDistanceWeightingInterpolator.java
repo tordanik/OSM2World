@@ -17,6 +17,10 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 	private final double negExp;
 	private Collection<VectorXYZ> sites;
 	private IntersectionGrid<VectorXYZ> siteGrid; //TODO: rename IntersectionGrid to something more generic
+
+	public InverseDistanceWeightingInterpolator() {
+		this(2);
+	}
 	
 	public InverseDistanceWeightingInterpolator(double exponent) {
 		this.negExp = -exponent;

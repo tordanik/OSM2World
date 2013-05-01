@@ -21,7 +21,7 @@ public class SetTerrainInterpolatorAction extends AbstractAction {
 			Class<? extends TerrainInterpolator> interpolatorClass,
 			ViewerFrame viewerFrame, Data data, RenderOptions renderOptions) {
 		
-		super(interpolatorClass.getSimpleName());
+		super(interpolatorClass.getSimpleName().replaceAll("Interpolator", ""));
 		
 		putValue(SELECTED_KEY, interpolatorClass.equals(
 				renderOptions.getInterpolatorClass()));

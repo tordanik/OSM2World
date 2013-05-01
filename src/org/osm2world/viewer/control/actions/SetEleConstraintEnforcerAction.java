@@ -21,7 +21,7 @@ public class SetEleConstraintEnforcerAction extends AbstractAction {
 			Class<? extends EleConstraintEnforcer> enforcerClass,
 			ViewerFrame viewerFrame, Data data, RenderOptions renderOptions) {
 		
-		super(enforcerClass.getSimpleName());
+		super(enforcerClass.getSimpleName().replace("EleConstraintEnforcer", ""));
 		
 		putValue(SELECTED_KEY, enforcerClass.equals(
 				renderOptions.getEnforcerClass()));

@@ -36,6 +36,12 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 	protected TerrainInterpolatorDebugView(RenderOptions renderOptions) {
 		this.renderOptions = renderOptions;
 	}
+	
+	@Override
+	public String getDescription() {
+		return "shows empty terrain approximated by a " +
+				buildInterpolator().getClass().getSimpleName();
+	}
 
 	@Override
 	public boolean canBeUsed() {

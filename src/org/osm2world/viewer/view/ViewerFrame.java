@@ -17,7 +17,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.InverseDistanceWeightingInterpolator;
 import org.osm2world.LeastSquaresInterpolator;
+import org.osm2world.LinearInterpolator;
 import org.osm2world.NaturalNeighborInterpolator;
 import org.osm2world.TerrainInterpolator;
 import org.osm2world.ZeroInterpolator;
@@ -270,6 +272,8 @@ public class ViewerFrame extends JFrame{
 			@SuppressWarnings("unchecked")
 			List<Class<? extends TerrainInterpolator>> interpolatorClasses = asList(
 					ZeroInterpolator.class,
+					LinearInterpolator.class,
+					InverseDistanceWeightingInterpolator.class,
 					LeastSquaresInterpolator.class,
 					NaturalNeighborInterpolator.class);
 			
