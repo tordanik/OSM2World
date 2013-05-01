@@ -1,4 +1,4 @@
-package org.osm2world.core.terrain.creation;
+package org.osm2world.core.math.algorithms;
 
 import static org.osm2world.core.math.JTSConversionUtil.polygonXZToJTSPolygon;
 import static org.osm2world.core.math.JTSConversionUtil.polygonsXZFromJTSGeometry;

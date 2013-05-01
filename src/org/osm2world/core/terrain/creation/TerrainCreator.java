@@ -21,6 +21,7 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.terrain.data.EmptyCellTerrainPatch;

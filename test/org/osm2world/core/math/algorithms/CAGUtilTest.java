@@ -1,4 +1,4 @@
-package org.osm2world.core.terrain.creation;
+package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertSame;
@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.CAGUtil;
 
 public class CAGUtilTest {
 	
