@@ -32,7 +32,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 	
 	private static final double CELL_SIZE = 50; //should only affect performance
 	private static final int SITES_FOR_APPROX = 9;
-	private static final int SITES_FOR_INTERPOL = 9;
+	private static final int SITES_FOR_INTERPOL = 29;
 	
 	private Collection<SiteWithPolynomial> sites;
 	private IntersectionGrid<SiteWithPolynomial> siteGrid; //TODO: rename IntersectionGrid to something more generic
@@ -67,7 +67,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		for (SiteWithPolynomial site : sites) {
 			
 			List<SiteWithPolynomial> nearestSites =
-					findNearestSites(site.pos.xz(), SITES_FOR_APPROX);
+					findNearestSites(site.pos.xz(), SITES_FOR_APPROX, false);
 
 			nearestSiteMap.put(site, nearestSites);
 			
@@ -77,6 +77,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		stopWatch.reset();
 		stopWatch.start();
 
+		calculatePolynomials:
 		for (SiteWithPolynomial site : sites) {
 			
 			List<SiteWithPolynomial> nearestSites =
@@ -94,8 +95,16 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 			
 			QRDecomposition qr = new QRDecomposition(matrix);
 			RealVector solution = qr.getSolver().solve(vector);
-			
+				
 			double[] coeffs = solution.toArray();
+			
+			for (double coeff : coeffs) {
+				if (coeff > 10e3) { //TODO remove debug code
+					System.out.println(coeff);
+					continue calculatePolynomials;
+				}
+			}
+			
 			site.setPolynomial(new DefaultPolynomial(coeffs));
 			
 		}
@@ -114,7 +123,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 	public VectorXYZ interpolateEle(VectorXZ pos) {
 		
 		List<SiteWithPolynomial> nearestSites =
-				findNearestSites(pos, SITES_FOR_INTERPOL);
+				findNearestSites(pos, SITES_FOR_INTERPOL, true);
 		
 		double eleSum = 0;
 		double weightSum = 0;
@@ -122,7 +131,10 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		for (SiteWithPolynomial site : nearestSites) {
 			
 			double distance = site.pos.distanceToXZ(pos);
-			double weight = pow(distance + 0.0001, -2);
+			//double weight = pow(distance + 0.0001, -2);
+			//TODO use square distance and 1/distsquared?
+			
+			double weight = max(1 - distance / 120, 0);
 			
 			weightSum += weight;
 						
@@ -136,10 +148,16 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		
 	}
 	
-	//FIXME: grid structure might be because the nearest sites aren't actually the nearest, but those in the nearest cells
+	/**
+	 * provides access to the polynomials approximated internally.
+	 * This is usually only interesting for debugging or similar tasks.
+	 */
+	public Collection<SiteWithPolynomial> getSitesWithPolynomials() {
+		return sites;
+	}
 	
 	private List<SiteWithPolynomial> findNearestSites(
-			final VectorXZ pos, int numberSites) {
+			final VectorXZ pos, int numberSites, boolean requirePolynomial) {
 
 		PriorityQueue<SiteWithPolynomial> result =
 				new PriorityQueue<SiteWithPolynomial>(numberSites,
@@ -170,6 +188,8 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 
 						if (sitesInCell != null) {
 							for (SiteWithPolynomial site : sitesInCell) {
+								
+								if (requirePolynomial && site.polynomial == null) continue;
 								
 								if (result.size() < numberSites) {
 									
@@ -208,13 +228,13 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		
 	}
 	
-	private static interface Polynomial {
+	public static interface Polynomial {
 		
 		public double evaluateAt(double x, double z);
 		
 	}
 		
-	private static class DefaultPolynomial implements Polynomial {
+	public static final class DefaultPolynomial implements Polynomial {
 		
 		private static final int NUM_COEFFS = 6;
 		
@@ -257,7 +277,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		
 	}
 	
-	private static class SiteWithPolynomial implements IntersectionTestObject {
+	public static final class SiteWithPolynomial implements IntersectionTestObject {
 		
 		public final VectorXYZ pos;
 		private Polynomial polynomial;
