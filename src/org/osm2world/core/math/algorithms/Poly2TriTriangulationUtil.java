@@ -5,6 +5,7 @@ import static java.util.Collections.disjoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -61,6 +62,17 @@ public final class Poly2TriTriangulationUtil {
 		
 		Set<VectorXZ> filteredPoints = new HashSet<VectorXZ>(points);
 		filteredPoints.removeAll(knownVectors);
+		
+		// remove points that are *almost* the same as a known vector
+		Iterator<VectorXZ> filteredPointsIterator = filteredPoints.iterator();
+		while (filteredPointsIterator.hasNext()) {
+			VectorXZ filteredPoint = filteredPointsIterator.next();
+			for (VectorXZ knownVector : knownVectors) {
+				if (knownVector.distanceTo(filteredPoint) < 0.2) {
+					filteredPointsIterator.remove();
+				}
+			}
+		}
 		
 		/* run the actual triangulation */
 		
