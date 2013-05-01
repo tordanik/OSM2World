@@ -630,8 +630,14 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(
-				getOutlinePolygonXZ().getVertexCollection());
+		
+		if (isBroken() || getOutlinePolygonXZ() == null) {
+			return null;
+		} else {
+			return new AxisAlignedBoundingBoxXZ(
+					getOutlinePolygonXZ().getVertexCollection());
+		}
+		
 	}
 	
 	@Override
