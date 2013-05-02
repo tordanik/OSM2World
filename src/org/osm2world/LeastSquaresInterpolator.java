@@ -99,8 +99,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 			double[] coeffs = solution.toArray();
 			
 			for (double coeff : coeffs) {
-				if (coeff > 10e3) { //TODO remove debug code
-					System.out.println(coeff);
+				if (coeff > 10e3) {
 					continue calculatePolynomials;
 				}
 			}
