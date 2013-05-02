@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
-import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
+import org.osm2world.core.map_elevation.creation.DelaunayTriangulation;
+import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;

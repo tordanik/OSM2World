@@ -1,6 +1,5 @@
 package org.osm2world.core.map_elevation.creation;
 
-import org.osm2world.TerrainElevationData;
 import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;

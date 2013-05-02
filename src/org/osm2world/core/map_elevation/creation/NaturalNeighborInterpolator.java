@@ -1,8 +1,8 @@
-package org.osm2world;
+package org.osm2world.core.map_elevation.creation;
 
 import java.util.Collection;
 
-import org.osm2world.DelaunayTriangulation.NaturalNeighbors;
+import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.NaturalNeighbors;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;

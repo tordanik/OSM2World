@@ -14,11 +14,11 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;

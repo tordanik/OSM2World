@@ -7,9 +7,9 @@ import java.awt.Color;
 import javax.media.opengl.GL2;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.TerrainElevationData;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;

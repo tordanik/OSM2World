@@ -1,4 +1,4 @@
-package org.osm2world;
+package org.osm2world.core.map_elevation.creation;
 
 import java.io.File;
 import java.io.FileInputStream;

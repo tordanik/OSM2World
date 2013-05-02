@@ -6,9 +6,9 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXYZ;

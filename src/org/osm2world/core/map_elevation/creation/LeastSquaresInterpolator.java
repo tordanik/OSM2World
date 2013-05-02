@@ -1,4 +1,4 @@
-package org.osm2world;
+package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Math.*;
 
@@ -112,10 +112,6 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		stopWatch.reset();
 		stopWatch.start();
 		
-		//TODO performance: use grid more efficiently
-		
-		//?: alternatively, use "all nearest neighbors" algorithm
-		
 	}
 	
 	@Override
@@ -130,8 +126,6 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		for (SiteWithPolynomial site : nearestSites) {
 			
 			double distance = site.pos.distanceToXZ(pos);
-			//double weight = pow(distance + 0.0001, -2);
-			//TODO use square distance and 1/distsquared?
 			
 			double weight = max(1 - distance / 120, 0);
 			

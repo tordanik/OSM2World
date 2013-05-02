@@ -1,6 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
-import org.osm2world.InverseDistanceWeightingInterpolator;
+import org.osm2world.core.map_elevation.creation.InverseDistanceWeightingInterpolator;
 import org.osm2world.viewer.model.RenderOptions;
 
 

@@ -6,12 +6,12 @@ import java.util.Observable;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {

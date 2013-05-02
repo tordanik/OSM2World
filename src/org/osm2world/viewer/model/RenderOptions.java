@@ -3,10 +3,10 @@ package org.osm2world.viewer.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.osm2world.LeastSquaresInterpolator;
-import org.osm2world.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;

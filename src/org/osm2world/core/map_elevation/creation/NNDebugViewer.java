@@ -1,4 +1,4 @@
-package org.osm2world;
+package org.osm2world.core.map_elevation.creation;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -20,8 +20,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
-import org.osm2world.DelaunayTriangulation.DelaunayTriangle;
-import org.osm2world.DelaunayTriangulation.NaturalNeighbors;
+import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
+import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.NaturalNeighbors;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
