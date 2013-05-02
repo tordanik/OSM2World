@@ -13,7 +13,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.Hardcoded;
 import org.osm2world.LeastSquaresInterpolator;
 import org.osm2world.SRTMData;
 import org.osm2world.TerrainElevationData;
@@ -311,7 +310,9 @@ public class ConversionFacade {
 		
 		TerrainElevationData eleData = null;
 		if (config.getBoolean("createTerrain", true)) {
-			eleData = new SRTMData(Hardcoded.SRTM_DIR, mapProjection);
+			//TODO make srtmDir configurable
+			File srtmDir = new File(System.getProperty("user.dir") + File.separator + "srtm");
+			eleData = new SRTMData(srtmDir, mapProjection);
 		}
 		
 		calculateElevations(mapData, eleData, config);
