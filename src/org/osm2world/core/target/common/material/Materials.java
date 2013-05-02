@@ -284,7 +284,7 @@ public final class Materials {
 					
 					if ("color".equals(attribute)) {
 						
-						Color color = ConfigUtil.parseColorTuple(
+						Color color = ConfigUtil.parseColor(
 								config.getString(key));
 						
 						if (color != null) {
