@@ -21,17 +21,29 @@ public class Poly2TriUtil {
 	static class CDTSet implements Triangulatable {
 		List<TriangulationPoint> points = new ArrayList<TriangulationPoint>(20);
 		List<DelaunayTriangle> triangles = new ArrayList<DelaunayTriangle>(20);
-
 		ArrayList<LineSegmentXZ> segmentSet = new ArrayList<LineSegmentXZ>();
 
+		// it seems poly2tri requires points to be unique objects
+		HashMap<VectorXZ, TriangulationPoint> pointSet
+			= new HashMap<VectorXZ, TriangulationPoint>();
+		
 		public CDTSet(SimplePolygonXZ polygon,
 				Collection<SimplePolygonXZ> holes,
-				Collection<LineSegmentXZ> segments) {
+				Collection<LineSegmentXZ> cSegments,
+				Collection<VectorXZ> cPoints) {
 
 			List<VectorXZ> vertices = polygon.getVertexLoop();
 
-			segmentSet.addAll(segments);
-
+			segmentSet.addAll(cSegments);
+			
+			for (VectorXZ p : cPoints) {
+				if (!pointSet.containsKey(p)) {
+					TPoint tp = new TPoint(p.x, p.z);
+					pointSet.put(p, tp);
+					points.add(tp);
+				}
+			}
+			
 			for (int i = 0, n = vertices.size() - 1; i < n; i++)
 				segmentSet.add(new LineSegmentXZ(vertices.get(i),
 						vertices.get(i + 1)));
@@ -126,9 +138,6 @@ public class Poly2TriUtil {
 		public void prepareTriangulation(TriangulationContext<?> tcx) {
 			triangles.clear();
 
-			// it seems poly2tri requires points to be unique objects
-			HashMap<VectorXZ, TriangulationPoint> pointSet
-				= new HashMap<VectorXZ, TriangulationPoint>();
 
 			for (LineSegmentXZ l : segmentSet) {
 				TriangulationPoint tp1, tp2;
@@ -152,9 +161,8 @@ public class Poly2TriUtil {
 			}
 
 			segmentSet.clear();
-
 			pointSet.clear();
-
+	
 			tcx.addPoints(points);
 		}
 	}
@@ -163,7 +171,7 @@ public class Poly2TriUtil {
 			Collection<SimplePolygonXZ> holes,
 			Collection<LineSegmentXZ> segments, Collection<VectorXZ> points) {
 
-		CDTSet cdt = new CDTSet(polygon, holes, segments);
+		CDTSet cdt = new CDTSet(polygon, holes, segments, points);
 		TriangulationContext<?> tcx = Poly2Tri
 				.createContext(TriangulationAlgorithm.DTSweep);
 		tcx.prepareTriangulation(cdt);
