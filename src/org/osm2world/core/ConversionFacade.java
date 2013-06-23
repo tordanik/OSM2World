@@ -24,6 +24,7 @@ import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SRTMData;
 import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
@@ -308,11 +309,11 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 		
+		String srtmDir = config.getString("srtmDir", null);
 		TerrainElevationData eleData = null;
-		if (config.getBoolean("createTerrain", true)) {
-			//TODO make srtmDir configurable
-			File srtmDir = new File(System.getProperty("user.dir") + File.separator + "srtm");
-			eleData = new SRTMData(srtmDir, mapProjection);
+				
+		if (srtmDir != null) {
+			eleData = new SRTMData(new File(srtmDir), mapProjection);
 		}
 		
 		calculateElevations(mapData, eleData, config);
@@ -343,32 +344,40 @@ public class ConversionFacade {
 	 */
 	private void calculateElevations(MapData mapData,
 			TerrainElevationData eleData, Configuration config) {
+				
+		final TerrainInterpolator interpolator =
+				(eleData != null)
+				? terrainEleInterpolatorFactory.make()
+				: new ZeroInterpolator();
 		
-		Collection<VectorXYZ> sites = emptyList();
+		/* provide known elevations from eleData to the interpolator */
 		
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+				
+		if (!(interpolator instanceof ZeroInterpolator)) {
 		
-		try {
-						
-			sites = eleData.getSites(mapData);
+			Collection<VectorXYZ> sites = emptyList();
 			
-			System.out.println("time getSites: " + stopWatch);
+			try {
+							
+				sites = eleData.getSites(mapData);
+				
+				System.out.println("time getSites: " + stopWatch);
+				stopWatch.reset();
+				stopWatch.start();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			interpolator.setKnownSites(sites);
+			
+			System.out.println("time setKnownSites: " + stopWatch);
 			stopWatch.reset();
 			stopWatch.start();
 			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		
-		final TerrainInterpolator interpolator =
-				terrainEleInterpolatorFactory.make();
-		
-		interpolator.setKnownSites(sites);
-		
-		System.out.println("time setKnownSites: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
 		
 		/* interpolate connectors' elevations */
 		
