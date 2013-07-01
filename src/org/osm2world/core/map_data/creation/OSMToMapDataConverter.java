@@ -178,11 +178,20 @@ public class OSMToMapDataConverter {
 		
 		/* ... for empty terrain */
 		
-		EmptyTerrainBuilder.createAreasForEmptyTerrain(
-				mapNodes, mapAreas, calculateFileBoundary(osmData.getBounds()));
+		AxisAlignedBoundingBoxXZ terrainBoundary =
+				calculateFileBoundary(osmData.getBounds());
 		
-		//TODO fall back on data boundary if file does not contain bounds
-		
+		if (terrainBoundary != null) {
+			
+			EmptyTerrainBuilder.createAreasForEmptyTerrain(
+					mapNodes, mapAreas, terrainBoundary);
+			
+		} else {
+			
+			//TODO fall back on data boundary if file does not contain bounds
+			
+		}
+				
 		/* finish calculations */
 		
 		for (MapNode node : nodeMap.values()) {
