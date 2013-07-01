@@ -1,20 +1,19 @@
 package org.osm2world.core.world.data;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_elevation.data.AreaElevationProfile;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
@@ -29,69 +28,81 @@ public abstract class AbstractAreaWorldObject
 		IntersectionTestObject {
 	
 	protected final MapArea area;
-
+	
+	private final SimplePolygonXZ outlinePolygonXZ;
+	
+	private EleConnectorGroup connectors;
+	
 	protected AbstractAreaWorldObject(MapArea area) {
+		
 		this.area = area;
+		
+		outlinePolygonXZ = area.getPolygon().getOuter().makeCounterclockwise();
+		
 	}
 	
 	@Override
+	public EleConnectorGroup getEleConnectors() {
+		
+		if (connectors == null) {
+			
+			connectors = new EleConnectorGroup();
+			
+			connectors.addConnectorsForTriangulation(
+					getTriangulationXZ(), null, getGroundState());
+			
+		}
+		
+		return connectors;
+		
+	}
+	
+	@Override
+	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+	
+	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
-		return area.getPolygon().getOuter().makeCounterclockwise();
+		return outlinePolygonXZ;
 	}
 
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
-		
-		List<VectorXZ> vertices = getOutlinePolygonXZ().getVertexLoop();
-		List<VectorXYZ> vs = new ArrayList<VectorXYZ>(vertices.size()+1);
-		
-		for (int i = 0; i < vertices.size(); i++) {
-			VectorXZ pos = vertices.get(i);
-			vs.add( pos.xyz(area.getElevationProfile().getEleAt(pos)) );
-		}
-		
-		vs.add(vs.get(0));
-				
-		return new PolygonXYZ(vs);
-				
+		return connectors.getPosXYZ(outlinePolygonXZ);
 	}
 
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(area.getOuterPolygon().getVertices());
+		return new AxisAlignedBoundingBoxXZ(
+				area.getOuterPolygon().getVertexCollection());
 	}
 	
 	@Override
-	public final MapElement getPrimaryMapElement() {
+	public final MapArea getPrimaryMapElement() {
 		return area;
+	}
+
+	/**
+	 * decompose this area into counterclockwise triangles.
+	 */
+	protected Collection<TriangleXZ> getTriangulationXZ() {
+		return Poly2TriTriangulationUtil.triangulate(
+				area.getPolygon().getOuter(),
+				area.getPolygon().getHoles(),
+				Collections.<LineSegmentXZ>emptyList(),
+				Collections.<VectorXZ>emptyList());
 	}
 	
 	/**
-	 * decompose this area into counterclockwise triangles
+	 * decompose this area into counterclockwise 3d triangles.
+	 * Only available after elevation calculation.
 	 */
 	protected Collection<TriangleXYZ> getTriangulation() {
-		
-		final AreaElevationProfile eleProfile = area.getElevationProfile();
-		
-		Collection<TriangleXZ> trianglesXZ =
-			TriangulationUtil.triangulate(area.getPolygon());
-		
-		Collection<TriangleXYZ> trianglesXYZ =
-			new ArrayList<TriangleXYZ>(trianglesXZ.size());
-		
-		for (TriangleXZ triangleXZ : trianglesXZ) {
-			VectorXYZ v1 = eleProfile.getWithEle(triangleXZ.v1);
-			VectorXYZ v2 = eleProfile.getWithEle(triangleXZ.v2);
-			VectorXYZ v3 = eleProfile.getWithEle(triangleXZ.v3);
-			if (triangleXZ.isClockwise()) {
-				trianglesXYZ.add(new TriangleXYZ(v3, v2, v1));
-			} else  {
-				trianglesXYZ.add(new TriangleXYZ(v1, v2, v3));
-			}
-		}
-		
-		return trianglesXYZ;
-		
+		return connectors.getTriangulationXYZ(getTriangulationXZ());
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "(" + area + ")";
 	}
 	
 }

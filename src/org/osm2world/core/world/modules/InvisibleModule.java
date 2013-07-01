@@ -7,7 +7,6 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -70,16 +69,6 @@ public class InvisibleModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -94,16 +83,6 @@ public class InvisibleModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -115,16 +94,6 @@ public class InvisibleModule extends AbstractModule {
 		
 		protected InvisibleEleArea(MapArea area) {
 			super(area);
-		}
-		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 		
 		@Override

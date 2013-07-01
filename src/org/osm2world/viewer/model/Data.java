@@ -10,7 +10,9 @@ import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
 	
@@ -32,10 +34,14 @@ public class Data extends Observable {
 	}
 	
 	/**
+	 * @param interpolatorFactory
+	 * @param enforcerFactory
 	 * 
 	 */
-	public void loadOSMFile(File osmFile, ElevationCalculator eleCalculator,
-			boolean failOnLargeBBox, ProgressListener listener)
+	public void loadOSMFile(File osmFile, boolean failOnLargeBBox,
+			Factory<? extends TerrainInterpolator> interpolatorFactory,
+			Factory<? extends EleConstraintEnforcer> enforcerFactory,
+			ProgressListener listener)
 					throws IOException, BoundingBoxSizeException {
 		
 		try {
@@ -43,7 +49,8 @@ public class Data extends Observable {
 			this.osmFile = osmFile;
 			
 			ConversionFacade converter = new ConversionFacade();
-			converter.setElevationCalculator(eleCalculator);
+			converter.setTerrainEleInterpolatorFactory(interpolatorFactory);
+			converter.setEleConstraintEnforcerFactory(enforcerFactory);
 			
 			converter.addProgressListener(listener);
 			

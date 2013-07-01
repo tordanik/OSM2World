@@ -20,9 +20,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
@@ -68,7 +66,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 	}
 	
 	private static class Rail extends AbstractNetworkWaySegmentWorldObject
-		implements WaySegmentWorldObject, RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		private static final float GROUND_WIDTH = 2.25f;
 		private static final float RAIL_DIST = 1.5f;
@@ -101,27 +99,6 @@ public class RailwayModule extends ConfigurableWorldModule {
 			this.tags = tags;
 		}
 
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 5; //TODO: real clearing
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			if (BridgeModule.isBridge(tags)) {
-				return GroundState.ABOVE;
-			} else if (TunnelModule.isTunnel(tags)) {
-				return GroundState.BELOW;
-			} else {
-				return GroundState.ON;
-			}
-		}
-		
 		@Override
 		public void renderTo(Target<?> target) {
 
@@ -168,12 +145,14 @@ public class RailwayModule extends ConfigurableWorldModule {
 						
 			for (VectorXZ sleeperPosition : sleeperPositions) {
 			
-				VectorXYZ sleeperPositionXYZ =
-						line.getElevationProfile().getWithEle(sleeperPosition);
+				//TODO interpolate ele, also using additional points inbetween
 				
-				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
-						sleeperPositionXYZ, line.getDirection(),
-						SLEEPER_HEIGHT, SLEEPER_WIDTH, SLEEPER_LENGTH);
+//				VectorXYZ sleeperPositionXYZ =
+//						segment.getElevationProfile().getWithEle(sleeperPosition);
+//
+//				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
+//						sleeperPositionXYZ, segment.getDirection(),
+//						SLEEPER_HEIGHT, SLEEPER_WIDTH, SLEEPER_LENGTH);
 				
 			}
 			
@@ -188,21 +167,10 @@ public class RailwayModule extends ConfigurableWorldModule {
 	
 	public static class RailJunction
 		extends JunctionNodeWorldObject
-		implements NodeWorldObject, RenderableToAllTargets,
-		TerrainBoundaryWorldObject {
+		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		public RailJunction(MapNode node) {
 			super(node);
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 
 		@Override
@@ -227,11 +195,11 @@ public class RailwayModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			if (getJunctionArea() == null) return;
+			if (getOutlinePolygon() == null) return;
 			
 			/* draw ground */
 
-			List<VectorXYZ> vectors = getJunctionArea().getVertexLoop();
+			List<VectorXYZ> vectors = getOutlinePolygon().getVertexLoop();
 
 			Material material = Materials.RAIL_BALLAST_DEFAULT;
 			

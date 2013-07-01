@@ -1,7 +1,7 @@
 package org.osm2world.core.math;
 
 import static junit.framework.Assert.*;
-import static org.osm2world.core.math.GeometryUtil.isRightOf;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.test.TestUtil.*;
 
@@ -39,6 +39,15 @@ public class GeometryUtilTest {
 				
 			}
 		}
+		
+	}
+	
+	@Test
+	public void testIsBetween() {
+		
+		assertTrue(isBetween(NULL_VECTOR, X_UNIT, X_UNIT.invert()));
+		assertTrue(isBetween(NULL_VECTOR, X_UNIT.invert(), X_UNIT));
+		assertTrue(isBetween(Z_UNIT, X_UNIT.invert(), X_UNIT));
 		
 	}
 	

@@ -2,8 +2,6 @@ package org.osm2world.core.map_elevation.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -11,6 +9,8 @@ import org.osm2world.core.map_elevation.creation.ElevationCalculator;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+
+import com.google.common.base.Function;
 
 /**
  * elevation profile for a {@link MapArea}
@@ -21,6 +21,8 @@ public class AreaElevationProfile extends ElevationProfile {
 	
 	private Collection<VectorXYZ> pointsWithEle = null;
 
+	private Function<VectorXZ, VectorXYZ> eleFunction;
+	
 	Collection<TriangleXYZ> triangulation = null;
 	
 	public AreaElevationProfile(MapArea area) {
@@ -62,16 +64,24 @@ public class AreaElevationProfile extends ElevationProfile {
 		
 		//temporary solution: find closest point with ele
 				
-		VectorXYZ closestPoint = Collections.min(pointsWithEle, new Comparator<VectorXYZ>(){
-			public int compare(VectorXYZ p1, VectorXYZ p2) {
-				return Double.compare(
-						p1.xz().distanceTo(pos),
-						p2.xz().distanceTo(pos));
-			};
-		});
+//		VectorXYZ closestPoint = Collections.min(pointsWithEle, new Comparator<VectorXYZ>(){
+//			public int compare(VectorXYZ p1, VectorXYZ p2) {
+//				return Double.compare(
+//						p1.xz().distanceTo(pos),
+//						p2.xz().distanceTo(pos));
+//			};
+//		});
+//
+//		return closestPoint.y;
 		
-		return closestPoint.y;
+		return eleFunction.apply(pos).y;
 		
+	}
+	
+	@Override
+	public VectorXYZ getWithEle(VectorXZ pos) {
+		//TODO keep in sync with getEleAt
+		return eleFunction.apply(pos);
 	}
 			
 	/**
@@ -86,6 +96,10 @@ public class AreaElevationProfile extends ElevationProfile {
 		
 		this.pointsWithEle.add(pointWithEle);
 		
+	}
+	
+	public void setEleFunction(Function<VectorXZ, VectorXYZ> eleFunction) {
+		this.eleFunction = eleFunction;
 	}
 
 	@Override

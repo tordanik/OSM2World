@@ -3,8 +3,10 @@ package org.osm2world.viewer.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
+import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;
@@ -21,7 +23,10 @@ public class RenderOptions {
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
 	
-	ElevationCalculator eleCalculator = new BridgeTunnelElevationCalculator();
+	Class<? extends TerrainInterpolator> interpolatorClass =
+			LeastSquaresInterpolator.class;
+	Class<? extends EleConstraintEnforcer> enforcerClass =
+			NoneEleConstraintEnforcer.class;
 	
 	public boolean isShowGrid() {
 		return showGrid;
@@ -47,11 +52,21 @@ public class RenderOptions {
 	public void setBackfaceCulling(boolean backfaceCulling) {
 		this.backfaceCulling = backfaceCulling;
 	}
-	public ElevationCalculator getEleCalculator() {
-		return eleCalculator;
-	}
-	public void setEleCalculator(ElevationCalculator eleCalculator) {
-		this.eleCalculator = eleCalculator;
+	
+	public Class<? extends TerrainInterpolator> getInterpolatorClass() {
+		return interpolatorClass;
 	}
 	
+	public void setInterpolatorClass(Class<? extends TerrainInterpolator> interpolatorClass) {
+		this.interpolatorClass = interpolatorClass;
+	}
+	
+	public Class<? extends EleConstraintEnforcer> getEnforcerClass() {
+		return enforcerClass;
+	}
+	
+	public void setEnforcerClass(Class<? extends EleConstraintEnforcer> enforcerClass) {
+		this.enforcerClass = enforcerClass;
+	}
+		
 }

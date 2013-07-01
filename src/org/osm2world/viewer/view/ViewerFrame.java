@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -16,12 +17,16 @@ import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_elevation.creation.BridgeTunnelElevationCalculator;
-import org.osm2world.core.map_elevation.creation.EleTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ForceElevationCalculator;
-import org.osm2world.core.map_elevation.creation.LevelTagElevationCalculator;
-import org.osm2world.core.map_elevation.creation.ZeroElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.InverseDistanceWeightingInterpolator;
+import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
+import org.osm2world.core.map_elevation.creation.LinearInterpolator;
+import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
+import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
@@ -35,7 +40,8 @@ import org.osm2world.viewer.control.actions.OrthoTileAction;
 import org.osm2world.viewer.control.actions.ReloadOSMAction;
 import org.osm2world.viewer.control.actions.ResetCameraAction;
 import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
-import org.osm2world.viewer.control.actions.SetElevationCalculatorAction;
+import org.osm2world.viewer.control.actions.SetEleConstraintEnforcerAction;
+import org.osm2world.viewer.control.actions.SetTerrainInterpolatorAction;
 import org.osm2world.viewer.control.actions.StatisticsAction;
 import org.osm2world.viewer.control.actions.ToggleBackfaceCullingAction;
 import org.osm2world.viewer.control.actions.ToggleDebugViewAction;
@@ -47,25 +53,24 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.DebugView;
+import org.osm2world.viewer.view.debug.EleConnectorDebugView;
+import org.osm2world.viewer.view.debug.EleConstraintDebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
+import org.osm2world.viewer.view.debug.InverseDistanceWeightingInterpolatorDebugView;
+import org.osm2world.viewer.view.debug.LeastSquaresInterpolatorDebugView;
+import org.osm2world.viewer.view.debug.LinearInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
-import org.osm2world.viewer.view.debug.MapDataElevationDebugView;
+import org.osm2world.viewer.view.debug.NaturalNeighborInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
 import org.osm2world.viewer.view.debug.SkyboxView;
-import org.osm2world.viewer.view.debug.TerrainAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
-import org.osm2world.viewer.view.debug.TerrainCellLabelsView;
-import org.osm2world.viewer.view.debug.TerrainElevationGridDebugView;
-import org.osm2world.viewer.view.debug.TerrainNormalsDebugView;
-import org.osm2world.viewer.view.debug.TerrainOutlineDebugView;
-import org.osm2world.viewer.view.debug.TerrainView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
@@ -175,8 +180,6 @@ public class ViewerFrame extends JFrame{
 			
 			initAndAddDebugView(subMenu, VK_W, true,
 					new WorldObjectView(renderOptions));
-			initAndAddDebugView(subMenu, VK_T, true,
-					new TerrainView(renderOptions));
 			initAndAddDebugView(subMenu, -1, true,
 					new SkyboxView());
 			
@@ -184,14 +187,14 @@ public class ViewerFrame extends JFrame{
 			
 			initAndAddDebugView(subMenu, -1, false,
 					new TerrainBoundaryAABBDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainAABBDebugView());
 			initAndAddDebugView(subMenu, VK_L, false,
 					new ClearingDebugView());
-			initAndAddDebugView(subMenu, VK_G, false,
+			initAndAddDebugView(subMenu, VK_D, false,
 					new MapDataDebugView());
 			initAndAddDebugView(subMenu, VK_E, false,
-					new MapDataElevationDebugView());
+					new EleConnectorDebugView());
+			initAndAddDebugView(subMenu, VK_C, false,
+					new EleConstraintDebugView());
 			initAndAddDebugView(subMenu, VK_R, false,
 					new RoofDataDebugView());
 			initAndAddDebugView(subMenu, -1, false,
@@ -202,14 +205,8 @@ public class ViewerFrame extends JFrame{
 					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new Map2dTreeDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainCellLabelsView());
 			initAndAddDebugView(subMenu, VK_B, false,
 					new TerrainBoundaryDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainOutlineDebugView());
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainNormalsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new WorldObjectNormalsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
@@ -217,9 +214,15 @@ public class ViewerFrame extends JFrame{
 			initAndAddDebugView(subMenu, -1, false,
 					new OrthoBoundsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
-					new TerrainElevationGridDebugView());
-			initAndAddDebugView(subMenu, -1, false,
 					new EleDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new NaturalNeighborInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new LeastSquaresInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new InverseDistanceWeightingInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new LinearInterpolatorDebugView(renderOptions));
 			
 			menu.add(subMenu);
 			
@@ -238,25 +241,51 @@ public class ViewerFrame extends JFrame{
 		} { //"Options"
 
 			JMenu subMenu = new JMenu("Options");
-			JMenu eleCalcMenu = new JMenu("ElevationCalculator");
-			subMenu.add(eleCalcMenu);
 			subMenu.setMnemonic(VK_O);
 			
-			ButtonGroup eleCalcGroup = new ButtonGroup();
+			JMenu interpolatorMenu = new JMenu("TerrainInterpolator");
+			subMenu.add(interpolatorMenu);
 			
-			for (ElevationCalculator eleCalc : asList(
-					new BridgeTunnelElevationCalculator(),
-					new ZeroElevationCalculator(),
-					new ForceElevationCalculator(),
-					new EleTagElevationCalculator(),
-					new LevelTagElevationCalculator())) {
+			ButtonGroup interpolatorGroup = new ButtonGroup();
+			
+			@SuppressWarnings("unchecked")
+			List<Class<? extends TerrainInterpolator>> interpolatorClasses = asList(
+					ZeroInterpolator.class,
+					LinearInterpolator.class,
+					InverseDistanceWeightingInterpolator.class,
+					LeastSquaresInterpolator.class,
+					NaturalNeighborInterpolator.class);
+			
+			for (Class<? extends TerrainInterpolator> c : interpolatorClasses) {
 				
 				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
-						new SetElevationCalculatorAction(
-								eleCalc, this,  data, renderOptions));
+						new SetTerrainInterpolatorAction(c,
+								this, data, renderOptions));
 				
-				eleCalcGroup.add(item);
-				eleCalcMenu.add(item);
+				interpolatorGroup.add(item);
+				interpolatorMenu.add(item);
+				
+			}
+			
+			JMenu enforcerMenu = new JMenu("EleConstraintEnforcer");
+			subMenu.add(enforcerMenu);
+			
+			ButtonGroup enforcerGroup = new ButtonGroup();
+			
+			@SuppressWarnings("unchecked")
+			List<Class<? extends EleConstraintEnforcer>> enforcerClasses = asList(
+					NoneEleConstraintEnforcer.class,
+					SimpleEleConstraintEnforcer.class,
+					LPEleConstraintEnforcer.class);
+			
+			for (Class<? extends EleConstraintEnforcer> c : enforcerClasses) {
+				
+				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
+						new SetEleConstraintEnforcerAction(c,
+								this, data, renderOptions));
+				
+				enforcerGroup.add(item);
+				enforcerMenu.add(item);
 				
 			}
 			

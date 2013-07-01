@@ -34,6 +34,11 @@ public class HackMapProjection implements MapProjection {
 	public static final double SCALE_X = 70000;
 	public static final double SCALE_Y = 110000;
 	
+	public HackMapProjection(LatLon origin) {
+		this.originLat = origin.lat;
+		this.originLon = origin.lon;
+	}
+	
 	public HackMapProjection(OSMData osmData) {
 		
 		if (osmData.getBounds() != null && !osmData.getBounds().isEmpty()) {

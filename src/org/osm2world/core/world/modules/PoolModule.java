@@ -1,21 +1,19 @@
 package org.osm2world.core.world.modules;
 
-import java.util.Collection;
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.PURIFIED_WATER;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
+
+import java.util.Collection;
+import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
@@ -60,24 +58,13 @@ public class PoolModule extends AbstractModule {
 		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0.2;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			// 1.5m is a good depth for a pool
-			return 1.5;
-		}
-
-		@Override
 		public void renderTo(Target<?> target) {
 
 			/* render water */
 			
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
-			target.drawTriangles(PURIFIED_WATER, triangles, 
+			target.drawTriangles(PURIFIED_WATER, triangles,
 					globalTexCoordLists(triangles, PURIFIED_WATER, false));
 
 			/* draw a small area around the pool */
@@ -92,17 +79,16 @@ public class PoolModule extends AbstractModule {
 					new VectorXYZ(+width/2, 0, 0)
 			);
 
-			List<VectorXZ> outer = area.getOuterPolygon().getVertexLoop();
-			List<VectorXYZ> path = area.getElevationProfile().getWithEle(outer);
+			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
 			
 			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
 					wallShape, path,
-					nCopies(outer.size(), VectorXYZ.Y_UNIT));
+					nCopies(path.size(), VectorXYZ.Y_UNIT));
 			
 			for (List<VectorXYZ> strip : strips) {
 				target.drawTriangleStrip(Materials.CONCRETE, strip,
 						wallTexCoordLists(strip, Materials.CONCRETE));
-			}			
+			}
 		}
 	}
 }

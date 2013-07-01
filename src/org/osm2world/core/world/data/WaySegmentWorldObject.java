@@ -5,7 +5,10 @@ import org.osm2world.core.math.VectorXZ;
 
 public interface WaySegmentWorldObject extends WorldObject {
 
-	/** 
+	@Override
+	public MapWaySegment getPrimaryMapElement();
+	
+	/**
 	 * returns the start position.
 	 * Might be different from {@link MapWaySegment}'s start position;
 	 * as node features such as crossings require space, too.

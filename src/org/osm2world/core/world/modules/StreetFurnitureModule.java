@@ -113,16 +113,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -130,8 +120,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			target.drawColumn(STEEL, null,
-					node.getElevationProfile().getWithEle(node.getPos()),
+			target.drawColumn(STEEL, null, getBase(),
 					parseHeight(node.getTags(), 10f),
 					0.15, 0.15, false, true);
 			
@@ -147,16 +136,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -164,26 +143,25 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double ele = node.getElevationProfile().getEle();
 			float height = parseHeight(node.getTags(), 3f);
 			
 			/* draw socket, poster and cap */
 			
 			target.drawColumn(CONCRETE, null,
-					node.getPos().xyz(ele),
+					getBase(),
 					0.15 * height,
 					0.5, 0.5, false, false);
 			
 			target.drawColumn(ADVERTISING_POSTER, null,
-					node.getPos().xyz(ele),
+					getBase(),
 					0.98 * height,
 					0.48, 0.48, false, false);
-
+			
 			target.drawColumn(CONCRETE, null,
-					node.getPos().xyz(ele + 0.95 * height),
+					getBase().add(0, 0.95 * height, 0),
 					0.05 * height,
 					0.5, 0.5, false, true);
-						
+			
 		}
 		
 	}
@@ -196,24 +174,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			double ele = node.getElevationProfile().getEle();
 			
 			float width = parseWidth(node.getTags(), 4);
 			float height = parseHeight(node.getTags(), 3.5f);
@@ -228,14 +194,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			/* draw board */
 			
 			VectorXYZ[] vsPoster = {
-				node.getPos().add(boardVector.mult(width/2))
-					.xyz(ele + height),
-				node.getPos().add(boardVector.mult(width/2))
-					.xyz(ele + minHeight),
-				node.getPos().add(boardVector.mult(-width/2))
-					.xyz(ele + height),
-				node.getPos().add(boardVector.mult(-width/2))
-					.xyz(ele + minHeight)
+				getBase().add(boardVector.mult(width/2)).addY(height),
+				getBase().add(boardVector.mult(width/2)).addY(minHeight),
+				getBase().add(boardVector.mult(-width/2)).addY(height),
+				getBase().add(boardVector.mult(-width/2)).addY(minHeight)
 			};
 			
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
@@ -264,8 +226,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			};
 			
 			for (VectorXZ pole : poles) {
-				target.drawBox(CONCRETE,
-						node.getElevationProfile().getWithEle(pole),
+				target.drawBox(CONCRETE, pole.xyz(getBase().y),
 						faceVector, minHeight, 0.2, 0.1);
 			}
 			
@@ -281,25 +242,13 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			double ele = node.getElevationProfile().getEle();
-			
+						
 			float width = parseWidth(node.getTags(), 1.5f);
 			
 			/* determine material */
@@ -333,13 +282,13 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			/* draw seat and backrest */
 			
-			target.drawBox(material, node.getPos().xyz(ele + 0.5),
+			target.drawBox(material, getBase().addY(0.5),
 					faceVector, 0.05, width, 0.5);
 			
 			if (!node.getTags().contains("backrest", "no")) {
 				
 				target.drawBox(material,
-						node.getPos().add(faceVector.mult(-0.23)).xyz(ele + 0.5),
+						getBase().add(faceVector.mult(-0.23)).addY(0.5),
 						faceVector, 0.5, width, 0.04);
 				
 			}
@@ -348,8 +297,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						
 			for (VectorXZ cornerOffset : cornerOffsets) {
 				VectorXZ polePos = node.getPos().add(cornerOffset.mult(0.8));
-				target.drawBox(material,
-						node.getElevationProfile().getWithEle(polePos),
+				target.drawBox(material, polePos.xyz(getBase().y),
 						faceVector, 0.5, 0.08, 0.08);
 			}
 			
@@ -368,16 +316,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -385,7 +323,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double ele = node.getElevationProfile().getEle();
 			float distanceX = 3f;
 			float distanceZ = 1.6f;
 			
@@ -403,17 +340,17 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 			
 			if (node.getTags().contains( "recycling:paper", "yes")){
-				drawContainer(target, "paper", node.getPos().xyz(ele).add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  (distanceZ/2)).rotateY(faceVector.angle())));
-				drawContainer(target, "paper", node.getPos().xyz(ele).add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  -(distanceZ/2)).rotateY(faceVector.angle())));
+				drawContainer(target, "paper", getBase().add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  (distanceZ/2)).rotateY(faceVector.angle())));
+				drawContainer(target, "paper", getBase().add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  -(distanceZ/2)).rotateY(faceVector.angle())));
 				m++;
 			}
 			if (node.getTags().containsAny( asList("recycling:glass_bottles","recycling:glass" ), "yes")){
-				drawContainer(target, "white_glass", node.getPos().xyz(ele).add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  (distanceZ/2)).rotateY(faceVector.angle())));
-				drawContainer(target, "coloured_glass", node.getPos().xyz(ele).add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  -(distanceZ/2)).rotateY(faceVector.angle())));
+				drawContainer(target, "white_glass", getBase().add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  (distanceZ/2)).rotateY(faceVector.angle())));
+				drawContainer(target, "coloured_glass", getBase().add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  -(distanceZ/2)).rotateY(faceVector.angle())));
 				m++;
 			}
 			if (node.getTags().contains( "recycling:clothes", "yes")){
-				drawContainer(target, "clothes", node.getPos().xyz(ele).add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  0).rotateY(faceVector.angle())));
+				drawContainer(target, "clothes", getBase().add(new VectorXYZ((distanceX*(-n/2 + m) ), 0f,  0).rotateY(faceVector.angle())));
 			}
 			
 
@@ -473,24 +410,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			double ele = node.getElevationProfile().getEle();
 			
 			/* determine material */
 			
@@ -509,13 +434,12 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 			
 			/* draw pole */
-			target.drawColumn(material, null,
-					node.getElevationProfile().getWithEle(node.getPos()),
+			target.drawColumn(material, null, getBase(),
 					1.2, 0.06, 0.06, false, true);
 			
 			/* draw basket */
 			target.drawColumn(material, null,
-					node.getPos().xyz(ele + 0.5).add(0.25, 0f, 0f),
+					getBase().addY(0.5).add(0.25, 0f, 0f),
 					0.5, 0.2, 0.2, true, true);
 		}
 		
@@ -529,24 +453,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			double ele = node.getElevationProfile().getEle();
 			
 			float height = parseHeight(node.getTags(), 0.5f);
 			float width = parseWidth(node.getTags(), 1);
@@ -574,18 +486,17 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ boardVector = faceVector.rightNormal();
 			
 			/* draw box */
-			target.drawBox(material,
-					node.getElevationProfile().getWithEle(node.getPos()),
+			target.drawBox(material, getBase(),
 					faceVector, height, width, depth);
 			
 			/* draw lid */
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-			vs.add(node.getPos().xyz(ele + height + 0.2));
-			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
-			vs.add(node.getPos().add(boardVector.mult(-width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
-			vs.add(node.getPos().add(boardVector.mult(-width/2)).add(faceVector.mult(-depth/2)).xyz(ele + height));
-			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(-depth/2)).xyz(ele + height));
-			vs.add(node.getPos().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).xyz(ele + height));
+			vs.add(getBase().addY(height + 0.2));
+			vs.add(getBase().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).addY(height));
+			vs.add(getBase().add(boardVector.mult(-width/2)).add(faceVector.mult(depth/2)).addY(height));
+			vs.add(getBase().add(boardVector.mult(-width/2)).add(faceVector.mult(-depth/2)).addY(height));
+			vs.add(getBase().add(boardVector.mult(width/2)).add(faceVector.mult(-depth/2)).addY(height));
+			vs.add(getBase().add(boardVector.mult(width/2)).add(faceVector.mult(depth/2)).addY(height));
 			
 			target.drawTriangleFan(material.brighter(), vs, null);
 			
@@ -603,23 +514,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			double ele = node.getElevationProfile().getEle();
 			
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -661,19 +561,19 @@ public class StreetFurnitureModule extends AbstractModule {
 					width = parseWidth(node.getTags(), 0.8f);
 	
 					target.drawBox(GLASS,
-							node.getPos().xyz(ele),
+							getBase(),
 							faceVector, height-0.2, width-0.06, width-0.06);
 					target.drawBox(roofMaterial,
-							node.getPos().xyz(ele + height-0.2),
+							getBase().addY(height-0.2),
 							faceVector, 0.2, width, width);
 					target.drawBox(poleMaterial,
-							node.getPos().xyz(ele).add(new VectorXYZ((width/2-0.05),0, (width/2-0.05) ).rotateY( directionAngle )),
+							getBase().add(new VectorXYZ((width/2-0.05),0, (width/2-0.05) ).rotateY( directionAngle )),
 							faceVector, height-0.2, 0.1, 0.1);
 					target.drawBox(poleMaterial,
-							node.getPos().xyz(ele).add(new VectorXYZ(-(width/2-0.05),0, (width/2-0.05) ).rotateY( directionAngle )),
+							getBase().add(new VectorXYZ(-(width/2-0.05),0, (width/2-0.05) ).rotateY( directionAngle )),
 							faceVector, height-0.2, 0.1, 0.1);
 					target.drawBox(poleMaterial,
-							node.getPos().xyz(ele).add(new VectorXYZ(0,0, -(width/2-0.05) ).rotateY( directionAngle )),
+							getBase().add(new VectorXYZ(0,0, -(width/2-0.05) ).rotateY( directionAngle )),
 							faceVector, height-0.2, width, 0.1);
 					
 					break;
@@ -695,23 +595,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			double ele = node.getElevationProfile().getEle();
 			
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -748,10 +637,10 @@ public class StreetFurnitureModule extends AbstractModule {
 					height = parseHeight(node.getTags(), 1.8f);
 					
 					target.drawBox(poleMaterial,
-							node.getPos().xyz(ele).add(new VectorXYZ(0,0, -0.05).rotateY(faceVector.angle())),
+							getBase().add(new VectorXYZ(0,0, -0.05).rotateY(faceVector.angle())),
 							faceVector, height-0.3, 0.1, 0.1);
 					target.drawBox(machineMaterial,
-							node.getPos().xyz(ele+height-1).add(new VectorXYZ(0,0, 0.1 ).rotateY(directionAngle)),
+							getBase().addY(height-1).add(new VectorXYZ(0,0, 0.1 ).rotateY(directionAngle)),
 							faceVector, 1, 1, 0.2);
 					
 					break;
@@ -773,23 +662,12 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			double ele = node.getElevationProfile().getEle();
 			
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -824,11 +702,11 @@ public class StreetFurnitureModule extends AbstractModule {
 					width = parseWidth(node.getTags(), 0.3f);
 					
 					target.drawBox(poleMaterial,
-						node.getPos().xyz(ele),
+						getBase(),
 						faceVector, height, 0.08, 0.08);
 					
 					target.drawBox(boxMaterial,
-						node.getPos().add(faceVector.mult(width/2 - 0.08/2)).xyz(ele + height),
+						getBase().add(faceVector.mult(width/2 - 0.08/2)).addY(height),
 						faceVector, width, width, width);
 					break;
 				case PILLAR:
@@ -836,10 +714,10 @@ public class StreetFurnitureModule extends AbstractModule {
 					width = parseWidth(node.getTags(), 0.5f);
 					
 					target.drawColumn(boxMaterial, null,
-						node.getPos().xyz(ele),
+						getBase(),
 						height - 0.1, width, width, false, false);
 					target.drawColumn(boxMaterial, null,
-						node.getPos().xyz(ele + height - 0.1),
+						getBase().addY(height - 0.1),
 						0.1, width + 0.1, 0, true, true);
 					break;
 				default:
@@ -863,16 +741,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -886,24 +754,22 @@ public class StreetFurnitureModule extends AbstractModule {
 				
 				Material poleMaterial = STEEL;
 				
-				double ele = node.getElevationProfile().getEle();
-				
 				double directionAngle = parseDirection(node.getTags(), PI);
 				
 				VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 				
 				target.drawColumn(poleMaterial, null,
-					node.getPos().xyz(ele),
+					getBase(),
 					height-signHeight, 0.05, 0.05, true, true);
 				/* draw sign */
 				target.drawBox(BUS_STOP_SIGN,
-					node.getPos().xyz(ele + height - signHeight),
+					getBase().addY(height - signHeight),
 					faceVector, signHeight, signWidth, 0.02);
 				/*  draw timetable */
 				target.drawBox(poleMaterial,
-					node.getPos().xyz(ele + 1.2f).add(new VectorXYZ(0.055f,0,0f).rotateY(directionAngle)),
+					getBase().addY(1.2f).add(new VectorXYZ(0.055f,0,0f).rotateY(directionAngle)),
 					faceVector, 0.31, 0.01, 0.43);
-								
+				
 				//TODO Add Shelter and bench
 			}
 		}
@@ -919,16 +785,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -936,8 +792,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double ele = node.getElevationProfile().getEle();
-			VectorXYZ posWithEle = node.getElevationProfile().getPointWithEle();
+			double ele = getBase().y;
 			
 			double directionAngle = parseDirection(node.getTags(), PI);
 			
@@ -958,15 +813,15 @@ public class StreetFurnitureModule extends AbstractModule {
 				
 				/* draw rondel */
 				target.drawColumn(boxMaterial, null,
-					node.getPos().add(rightVector.mult(-rondelWidth/2)).xyz(ele),
+					getBase().add(rightVector.mult(-rondelWidth/2)),
 					height,	rondelWidth/2, rondelWidth/2, false, true);
 				/* draw box */
 				target.drawBox(boxMaterial,
-					node.getPos().add(rightVector.mult(boxWidth/2)).add(faceVector.mult(-boxWidth/2)).xyz(ele),
+					getBase().add(rightVector.mult(boxWidth/2)).add(faceVector.mult(-boxWidth/2)),
 					faceVector, height, boxWidth, boxWidth);
 				/* draw roof */
 				target.drawColumn(otherMaterial, null,
-					node.getPos().xyz(ele + height),
+					getBase().addY(height),
 					0.1, rondelWidth/2 + roofOverhang/2, rondelWidth/2 + roofOverhang/2, true, true);
 				
 			} else if (node.getTags().contains("type", "Paketbox")) {
@@ -975,7 +830,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				float width = parseHeight(node.getTags(), 1.0f);
 				float depth = width;
 				
-				target.drawBox(boxMaterial,	posWithEle,
+				target.drawBox(boxMaterial,	getBase(),
 						faceVector, height, width * 2, depth * 2);
 				
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
@@ -987,7 +842,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				
 				/* draw box */
 				target.drawBox(boxMaterial,
-					node.getPos().xyz(ele),
+					getBase(),
 					faceVector, height, width, depth);
 				/*  draw small roof */
 				target.drawBox(otherMaterial,
@@ -1008,16 +863,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -1025,17 +870,16 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double ele = node.getElevationProfile().getEle();
 			float height = parseHeight(node.getTags(), 1f);
 			
 			/* draw main pole */
 			target.drawColumn(FIREHYDRANT, null,
-					node.getElevationProfile().getWithEle(node.getPos()),
+					getBase(),
 					height,
 					0.15, 0.15, false, true);
 			
 			/* draw two small and one large valve */
-			VectorXYZ valveBaseVector = node.getPos().xyz(ele + height - 0.3);
+			VectorXYZ valveBaseVector = getBase().addY(height - 0.3);
 			VectorXZ smallValveVector = VectorXZ.X_UNIT;
 			VectorXZ largeValveVector = VectorXZ.Z_UNIT;
 			
@@ -1057,16 +901,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -1074,7 +908,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double ele = node.getElevationProfile().getEle();
 			float lampHeight = 0.8f;
 			float lampHalfWidth = 0.4f;
 			float poleHeight = parseHeight(node.getTags(), 5f) - lampHeight;
@@ -1095,33 +928,33 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 			/* draw pole */
 			target.drawColumn(material, null,
-					node.getPos().xyz(ele),
+					getBase(),
 					0.5, 0.16, 0.08, false, false);
 			target.drawColumn(material, null,
-					node.getPos().xyz(ele + 0.5),
+					getBase().addY(0.5),
 					poleHeight, 0.08, 0.08, false, false);
 			
 			/* draw lamp */
 					
 			// lower part
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-			vs.add(node.getPos().xyz(ele + poleHeight));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, -lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			vs.add(getBase().addY(poleHeight));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
 			target.drawTriangleFan(material, vs, null);
 			
 			// upper part
 			vs.clear();
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, -lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
-			vs.add(node.getPos().xyz(ele + poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
+			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
 			target.drawTriangleFan(material, vs, null);
 		}
@@ -1136,16 +969,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
@@ -1153,14 +976,13 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			double ele = node.getElevationProfile().getEle();
-			double directionAngle = parseDirection(node.getTags(), PI);	
+			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			target.drawColumn(WOOD, null,
-					node.getPos().xyz(ele),
-					1.5, 0.05, 0.05, false, true);	
+					getBase(),
+					1.5, 0.05, 0.05, false, true);
 			target.drawBox(WOOD,
-					node.getPos().xyz(ele+1.2),
+					getBase().addY(1.2),
 					faceVector, 0.4, 0.4, 0.1);
 		}
 

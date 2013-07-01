@@ -1,11 +1,13 @@
 package org.osm2world.core.map_data.creation;
 
+import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +28,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -65,7 +68,7 @@ public class OSMToMapDataConverter {
 		final List<MapNode> mapNodes = new ArrayList<MapNode>();
 		final List<MapWaySegment> mapWaySegs = new ArrayList<MapWaySegment>();
 		final List<MapArea> mapAreas = new ArrayList<MapArea>();
-
+		
 		createMapElements(osmData, mapNodes, mapWaySegs, mapAreas);
 		
 		MapData mapData = new MapData(mapNodes, mapWaySegs, mapAreas,
@@ -96,7 +99,7 @@ public class OSMToMapDataConverter {
 			mapNodes.add(mapNode);
 			nodeMap.put(node, mapNode);
 		}
-
+		
 		/* create areas ... */
 		
 		final Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
@@ -166,13 +169,20 @@ public class OSMToMapDataConverter {
 						} catch (InvalidGeometryException e) {
 							System.err.println(e);
 						}
-							
+						
 						break;
 					}
 				}
 			}
 		}
-					
+		
+		/* ... for empty terrain */
+		
+		EmptyTerrainBuilder.createAreasForEmptyTerrain(
+				mapNodes, mapAreas, calculateFileBoundary(osmData.getBounds()));
+		
+		//TODO fall back on data boundary if file does not contain bounds
+		
 		/* finish calculations */
 		
 		for (MapNode node : nodeMap.values()) {
@@ -254,7 +264,18 @@ public class OSMToMapDataConverter {
 						
 						addOverlapBetween((MapArea) e1, (MapArea) e2);
 						
+					} else if (e1 instanceof MapNode
+							&& e2 instanceof MapArea) {
+						
+						addOverlapBetween((MapNode) e1, (MapArea) e2);
+						
+					} else if (e1 instanceof MapArea
+							&& e2 instanceof MapNode) {
+						
+						addOverlapBetween((MapNode) e2, (MapArea) e1);
+						
 					}
+						
 					
 				}
 			}
@@ -297,14 +318,19 @@ public class OSMToMapDataConverter {
 	 */
 	private static void addOverlapBetween(
 			MapWaySegment line, MapArea area) {
-
+		
+		final LineSegmentXZ segmentXZ = line.getLineSegment();
+		
 		/* check whether the line corresponds to one of the area segments */
 				
 		for (MapAreaSegment areaSegment : area.getAreaSegments()) {
 			if (areaSegment.sharesBothNodes(line)) {
 				
 				MapOverlapWA newOverlap =
-					new MapOverlapWA(line, area, MapOverlapType.SHARE_SEGMENT);
+					new MapOverlapWA(line, area, MapOverlapType.SHARE_SEGMENT,
+							Collections.<VectorXZ>emptyList(),
+							Collections.<MapAreaSegment>emptyList());
+				
 				line.addOverlap(newOverlap);
 				area.addOverlap(newOverlap);
 				
@@ -319,13 +345,12 @@ public class OSMToMapDataConverter {
 		boolean intersects;
 		
 		{
-			final LineSegmentXZ segment = line.getLineSegment();
 			final PolygonWithHolesXZ polygon = area.getPolygon();
 			
 			if (!line.isConnectedTo(area)) {
 	
-				intersects = polygon.intersects(segment);
-				contains = !intersects && polygon.contains(segment);
+				intersects = polygon.intersects(segmentXZ);
+				contains = !intersects && polygon.contains(segmentXZ);
 				
 			} else {
 			
@@ -335,11 +360,11 @@ public class OSMToMapDataConverter {
 				
 				intersects = false;
 			
-				double segmentLength = distance(segment.p1, segment.p2);
+				double segmentLength = distance(segmentXZ.p1, segmentXZ.p2);
 				
-				for (VectorXZ pos : polygon.intersectionPositions(segment)) {
-					if (distance(pos, segment.p1) > segmentLength / 100
-							&& distance(pos, segment.p2) > segmentLength / 100) {
+				for (VectorXZ pos : polygon.intersectionPositions(segmentXZ)) {
+					if (distance(pos, segmentXZ.p1) > segmentLength / 100
+							&& distance(pos, segmentXZ.p2) > segmentLength / 100) {
 						intersects = true;
 						break;
 					}
@@ -350,7 +375,7 @@ public class OSMToMapDataConverter {
 				 * this means that the area contains the line itself.
 				 */
 							
-				contains = !intersects && polygon.contains(segment.getCenter());
+				contains = !intersects && polygon.contains(segmentXZ.getCenter());
 				
 			}
 			
@@ -360,10 +385,36 @@ public class OSMToMapDataConverter {
 					
 		if (contains || intersects) {
 			
+			/* find out which area segments intersect the way segment */
+
+			List<VectorXZ> intersectionPositions = emptyList();
+			List<MapAreaSegment> intersectingSegments = emptyList();
+			
+			if (intersects) {
+
+				intersectionPositions = new ArrayList<VectorXZ>();
+				intersectingSegments = new ArrayList<MapAreaSegment>();
+				
+				for (MapAreaSegment areaSegment : area.getAreaSegments()) {
+					
+					VectorXZ intersection = segmentXZ.getIntersection(
+							areaSegment.getStartNode().getPos(),
+							areaSegment.getEndNode().getPos());
+					
+					if (intersection != null) {
+						intersectionPositions.add(intersection);
+						intersectingSegments.add(areaSegment);
+					}
+					
+				}
+				
+			}
+			
 			/* add the overlap */
 			
 			MapOverlapWA newOverlap = new MapOverlapWA(line, area,
-						intersects ? MapOverlapType.INTERSECT : MapOverlapType.CONTAIN);
+						intersects ? MapOverlapType.INTERSECT : MapOverlapType.CONTAIN,
+						intersectionPositions, intersectingSegments);
 			
 			line.addOverlap(newOverlap);
 			area.addOverlap(newOverlap);
@@ -402,8 +453,9 @@ public class OSMToMapDataConverter {
 		/* calculate whether one area contains the other
 		 * or whether their outlines intersect (or neither) */
 		
-		boolean contains;
-		boolean intersects;
+		boolean contains1 = false;
+		boolean contains2 = false;
+		boolean intersects = false;
 		
 		{
 			final PolygonWithHolesXZ polygon1 = area1.getPolygon();
@@ -427,8 +479,6 @@ public class OSMToMapDataConverter {
 			 * else than just at the common node(s).
 			 */
 			
-			intersects = false;
-			
 			intersectionPosCheck:
 			for (VectorXZ pos : polygon1.intersectionPositions(polygon2)) {
 				boolean trueIntersection = true;
@@ -445,19 +495,29 @@ public class OSMToMapDataConverter {
 
 			/* check whether one area contains the other */
 			
-			contains = polygon1.contains(polygon2.getOuter())
-				|| polygon2.contains(polygon2.getOuter());
+			if (polygon1.contains(polygon2.getOuter())) {
+				contains1 = true;
+			} else if (polygon2.contains(polygon1.getOuter())) {
+				contains2 = true;
+			}
 									
 		}
 		
 		/* add an overlap if detected */
 					
-		if (contains || intersects) {
+		if (contains1 || contains2 || intersects) {
 			
 			/* add the overlap */
 			
-			MapOverlapAA newOverlap = new MapOverlapAA(area1, area2,
-				intersects ? MapOverlapType.INTERSECT : MapOverlapType.CONTAIN);
+			MapOverlapAA newOverlap = null;
+			
+			if (contains1) {
+				newOverlap = new MapOverlapAA(area2, area1, MapOverlapType.CONTAIN);
+			} else if (contains2) {
+				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.CONTAIN);
+			} else {
+				newOverlap = new MapOverlapAA(area1, area2, MapOverlapType.INTERSECT);
+			}
 			
 			area1.addOverlap(newOverlap);
 			area2.addOverlap(newOverlap);
@@ -465,7 +525,22 @@ public class OSMToMapDataConverter {
 		}
 		
 	}
-
+	
+	private static void addOverlapBetween(MapNode node, MapArea area) {
+		
+		if (area.getPolygon().contains(node.getPos())) {
+			
+			/* add the overlap */
+			
+			MapOverlapNA newOverlap =
+					new MapOverlapNA(node, area, MapOverlapType.CONTAIN);
+			
+			area.addOverlap(newOverlap);
+			
+		}
+		
+	}
+	
 	private AxisAlignedBoundingBoxXZ calculateFileBoundary(
 			Collection<Bound> bounds) {
 		

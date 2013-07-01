@@ -8,8 +8,8 @@ import javax.media.opengl.GL2;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -18,7 +18,6 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.terrain.data.Terrain;
 
 /**
  * contains some common methods for debug views
@@ -28,8 +27,7 @@ public abstract class DebugView {
 	protected Configuration config;
 	
 	protected MapData map;
-	protected Terrain terrain;
-	protected CellularTerrainElevation eleData;
+	protected TerrainElevationData eleData;
 	
 	protected Camera camera;
 	protected Projection projection;
@@ -56,7 +54,6 @@ public abstract class DebugView {
 	public void setConversionResults(Results conversionResults) {
 	
 		this.map = conversionResults.getMapData();
-		this.terrain = conversionResults.getTerrain();
 		this.eleData = conversionResults.getEleData();
 		
 		targetNeedsReset = true;
@@ -69,7 +66,6 @@ public abstract class DebugView {
 	 */
 	public boolean canBeUsed() {
 		return map != null
-			&& terrain != null
 			&& eleData != null;
 	}
 	

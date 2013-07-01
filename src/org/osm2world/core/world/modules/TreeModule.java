@@ -6,6 +6,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
@@ -15,12 +16,14 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
@@ -30,7 +33,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
@@ -88,9 +91,8 @@ public class TreeModule extends ConfigurableWorldModule {
 	private static final float TREE_RADIUS_PER_HEIGHT = 0.2f;
 	
 	private void renderTree(Target<?> target,
-			MapElement element,	VectorXZ pos) {
+			MapElement element,	VectorXYZ pos) {
 		
-		VectorXYZ posXYZ = element.getElevationProfile().getWithEle(pos);
 		boolean fruit = isFruitTree(element, pos);
 		boolean coniferous = isConiferousTree(element, pos);
 		double height = getTreeHeight(element, coniferous, fruit);
@@ -106,12 +108,12 @@ public class TreeModule extends ConfigurableWorldModule {
 					? Materials.TREE_BILLBOARD_CONIFEROUS
 					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
 			
-			WorldModuleBillboardUtil.renderCrosstree(target, material, posXYZ,
+			WorldModuleBillboardUtil.renderCrosstree(target, material, pos,
 					(fruit ? 1.0 : 0.5 ) * height, height, mirrored);
 			
 		} else {
 			
-			renderTreeGeometry(target, posXYZ, coniferous, height);
+			renderTreeGeometry(target, pos, coniferous, height);
 			
 		}
 		
@@ -135,7 +137,7 @@ public class TreeModule extends ConfigurableWorldModule {
 				true, true);
 	}
 		
-	private static boolean isConiferousTree(MapElement element, VectorXZ pos) {
+	private static boolean isConiferousTree(MapElement element, Vector3D pos) {
 		
 		String typeValue = element.getTags().getValue("wood");
 		
@@ -157,7 +159,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 	
-	private static boolean isFruitTree(MapElement element, VectorXZ pos) {
+	private static boolean isFruitTree(MapElement element, Vector3D pos) {
 		
 		if (element.getTags().contains("landuse", "orchard")) {
 			return true;
@@ -212,7 +214,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 
 	private void renderTree(POVRayTarget target,
-			MapElement element, VectorXZ pos) {
+			MapElement element, VectorXYZ pos) {
 		
 		boolean isConiferousTree = isConiferousTree(element, pos);
 		boolean isFruitTree = isFruitTree(element, pos);
@@ -238,38 +240,21 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 	}
 	
-	private class Tree
-		implements NodeWorldObject, IntersectionTestObject,
-		RenderableToAllTargets, RenderableToPOVRay {
+	public class Tree extends NoOutlineNodeWorldObject
+		implements RenderableToAllTargets, RenderableToPOVRay {
 		
-		private final MapNode node;
 		private final boolean isConiferous;
 		private final boolean isFruitTree;
-
+		
 		public Tree(MapNode node) {
-			this.node = node;
+			super(node);
 			this.isConiferous = isConiferousTree(node, node.getPos());
 			this.isFruitTree = isFruitTree(node, node.getPos());
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return node;
-		}
-		
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return getTreeHeight(node, isConiferous, isFruitTree);
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 		
 		@Override
@@ -279,7 +264,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			renderTree(target, node, node.getPos());
+			renderTree(target, node, getBase());
 		}
 		
 		@Override
@@ -289,104 +274,114 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(POVRayTarget target) {
-			renderTree(target, node, node.getPos());
+			renderTree(target, node, getBase());
 		}
 		
 	}
 
-	private class TreeRow implements WaySegmentWorldObject,
+	public class TreeRow implements WaySegmentWorldObject,
 		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets {
 
-		private final Collection<VectorXZ> treePositions;
-		private final MapWaySegment line;
+		private final MapWaySegment segment;
+
+		private final List<EleConnector> treeConnectors;
 		
-		public TreeRow(MapWaySegment line) {
+		public TreeRow(MapWaySegment segment) {
 			
-			this.line = line;
+			this.segment = segment;
 			
 			//TODO: spread along a full way
 			
-			treePositions = GeometryUtil.equallyDistributePointsAlong(
+			List<VectorXZ> treePositions = GeometryUtil.equallyDistributePointsAlong(
 					4 /* TODO: derive from tree count */ ,
 					false /* TODO: should be true once a full way is covered */,
-					line.getStartNode().getPos(), line.getEndNode().getPos());
+					segment.getStartNode().getPos(), segment.getEndNode().getPos());
+			
+			treeConnectors = new ArrayList<EleConnector>(treePositions.size());
+			
+			for (VectorXZ treePosition : treePositions) {
+				treeConnectors.add(
+						new EleConnector(treePosition, null, getGroundState()));
+			}
 			
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
-			return line;
+		public MapWaySegment getPrimaryMapElement() {
+			return segment;
 		}
 		
 		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			return treeConnectors;
+		}
+		
+		@Override
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+		
+		@Override
 		public VectorXZ getEndPosition() {
-			return line.getEndNode().getPos();
+			return segment.getEndNode().getPos();
 		}
 
 		@Override
 		public VectorXZ getStartPosition() {
-			return line.getStartNode().getPos();
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 5;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
+			return segment.getStartNode().getPos();
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-
+		
 		@Override
-		public void renderTo(Target<?> target) {
-			for (VectorXZ pos : treePositions) {
-				renderTree(target, line, pos);
+		public void renderTo(POVRayTarget target) {
+			for (EleConnector treeConnector : treeConnectors) {
+				renderTree(target, segment, treeConnector.getPosXYZ());
 			}
 		}
-
+		
 		@Override
 		public void addDeclarationsTo(POVRayTarget target) {
 			addTreeDeclarationsTo(target);
 		}
 		
 		@Override
-		public void renderTo(POVRayTarget target) {
-			for (VectorXZ pos : treePositions) {
-				renderTree(target, line, pos);
-			}
-		}
-		
-		@Override
 		public void renderTo(FaceTarget<?> target) {
-			for (VectorXZ pos : treePositions) {
-				renderTree(target, line, pos);
+			for (EleConnector treeConnector : treeConnectors) {
+				renderTree(target, segment, treeConnector.getPosXYZ());
 				target.flushReconstructedFaces();
 			}
 		}
 		
+		@Override
+		public void renderTo(Target<?> target) {
+			for (EleConnector treeConnector : treeConnectors) {
+				renderTree(target, segment, treeConnector.getPosXYZ());
+			}
+		}
+		
+		//TODO: there is significant code duplication with Forest...
+		
 	}
 	
 
-	private class Forest implements AreaWorldObject,
+	public class Forest implements AreaWorldObject,
 		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets {
 
 		private final MapArea area;
 		private final MapData mapData;
 		
-		private Collection<VectorXZ> treePositions = null;
+		private Collection<EleConnector> treeConnectors = null;
 		
 		public Forest(MapArea area, MapData mapData) {
+			
 			this.area = area;
 			this.mapData = mapData;
+						
 		}
 
-		private void createTreePositions(double density) {
+		private void createTreeConnectors(double density) {
 			
 			/* collect other objects that the trees should not be placed on */
 			
@@ -404,30 +399,43 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 			/* place the trees */
 			
-			treePositions =
+			List<VectorXZ> treePositions =
 				GeometryUtil.distributePointsOn(area.getOsmObject().id,
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 			
 			filterWorldObjectCollisions(treePositions, avoidedObjects);
-									
+			
+			/* create a terrain connector for each tree */
+			
+			treeConnectors = new ArrayList<EleConnector>(treePositions.size());
+			
+			for (VectorXZ treePosition : treePositions) {
+				treeConnectors.add(new EleConnector(
+						treePosition, null, getGroundState()));
+			}
+			
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapArea getPrimaryMapElement() {
 			return area;
 		}
-
+		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 2;
+		public Iterable<EleConnector> getEleConnectors() {
+			
+			if (treeConnectors == null) {
+				createTreeConnectors(config.getDouble("treesPerSquareMeter", 0.01f));
+			}
+			
+			return treeConnectors;
+			
 		}
 
 		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
-		}
-
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+		
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
@@ -435,11 +443,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(POVRayTarget target) {
-			if (treePositions == null) {
-				createTreePositions(config.getDouble("treesPerSquareMeter", 0.01f));
-			}
-			for (VectorXZ pos : treePositions) {
-				renderTree(target, area, pos);
+			for (EleConnector treeConnector : treeConnectors) {
+				renderTree(target, area, treeConnector.getPosXYZ());
 			}
 		}
 		
@@ -450,24 +455,16 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(FaceTarget<?> target) {
-			if (treePositions == null) {
-				createTreePositions(config.getDouble("treesPerSquareMeter", 0.001f));
-					//lower default density than POVRay for performance reasons
-			}
-			for (VectorXZ pos : treePositions) {
-				renderTree(target, area, pos);
+			for (EleConnector treeConnector : treeConnectors) {
+				renderTree(target, area, treeConnector.getPosXYZ());
 				target.flushReconstructedFaces();
 			}
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			if (treePositions == null) {
-				createTreePositions(config.getDouble("treesPerSquareMeter", 0.001f));
-					//lower default density than POVRay for performance reasons
-			}
-			for (VectorXZ pos : treePositions) {
-				renderTree(target, area, pos);
+			for (EleConnector treeConnector : treeConnectors) {
+				renderTree(target, area, treeConnector.getPosXYZ());
 			}
 		}
 		

@@ -8,14 +8,12 @@ import java.util.Collection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 
 /**
  * adds parking spaces to the world
@@ -37,19 +35,9 @@ public class ParkingModule extends AbstractModule {
 	
 	private static class SurfaceParking extends AbstractAreaWorldObject
 	implements TerrainBoundaryWorldObject, RenderableToAllTargets {
-	
+		
 		public SurfaceParking(MapArea area) {
 			super(area);
-		}
-		
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return WorldModuleParseUtil.parseClearing(area.getTags(), 3);
-		}
-		
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
 		}
 
 		@Override
