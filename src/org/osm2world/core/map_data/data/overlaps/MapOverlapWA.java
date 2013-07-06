@@ -1,15 +1,14 @@
 package org.osm2world.core.map_data.data.overlaps;
 
+import static java.util.Collections.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import static java.util.Collections.*;
-
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -21,24 +20,37 @@ import org.osm2world.core.math.VectorXZ;
  */
 public class MapOverlapWA extends MapOverlap<MapWaySegment, MapArea> {
 	
-	public MapOverlapWA(MapWaySegment waySegment, MapArea area, MapOverlapType type) {
+	//TODO maybe create a MapIntersection object for each of these?
+	private final List<VectorXZ> intersectionPositions;
+	private final List<MapAreaSegment> intersectingAreaSegments;
+	
+	public MapOverlapWA(MapWaySegment waySegment, MapArea area,
+			MapOverlapType type, List<VectorXZ> intersectionPositions,
+			List<MapAreaSegment> intersectingAreaSegments) {
+		
 		super(waySegment, area, type);
+		
+		this.intersectionPositions = intersectionPositions;
+		this.intersectingAreaSegments = intersectingAreaSegments;
+		
 	}
 
 	public MapArea getOther(MapWaySegment waySegment) {
-		return (MapArea) super.getOther((MapElement)waySegment);
+		return (MapArea) super.getOther(waySegment);
 	}
 
 	public MapWaySegment getOther(MapArea area) {
-		return (MapWaySegment) super.getOther((MapElement)area);
+		return (MapWaySegment) super.getOther(area);
 	}
 
-	public Collection<VectorXZ> getIntersectionPositions() {
-		if (type == MapOverlapType.INTERSECT) {
-			return e2.getPolygon().intersectionPositions(e1.getLineSegment());
-		} else {
-			return emptyList();
-		}
+	/** same order as {@link #getIntersectingAreaSegments()} */
+	public List<VectorXZ> getIntersectionPositions() {
+		return intersectionPositions;
+	}
+	
+	/** same order as {@link #getIntersectionPositions()} */
+	public List<MapAreaSegment> getIntersectingAreaSegments() {
+		return intersectingAreaSegments;
 	}
 	
 	public Collection<LineSegmentXZ> getOverlappedSegments() {
@@ -71,7 +83,7 @@ public class MapOverlapWA extends MapOverlap<MapWaySegment, MapArea> {
 			
 			for (int i = 0; i+1 < positions.size(); i++) {
 				
-				LineSegmentXZ segment = 
+				LineSegmentXZ segment =
 					new LineSegmentXZ(positions.get(i), positions.get(i+1));
 				
 				if (e2.getPolygon().contains(segment.getCenter())) {

@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static org.junit.Assert.*;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
 
@@ -22,6 +23,12 @@ public class TriangleXZTest {
 		assertFalse(triangleCW.reverse().isClockwise());
 		assertFalse(triangleCCW.isClockwise());
 		assertTrue(triangleCCW.reverse().isClockwise());
+	}
+	
+	@Test
+	public void testGetArea() {
+		assertAlmostEquals(triangleCW.getArea(), 0.5);
+		assertAlmostEquals(triangleCCW.getArea(), 1);
 	}
 	
 }

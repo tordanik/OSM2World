@@ -3,13 +3,10 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 import java.util.List;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.control.actions.OrthoBoundsAction;
 
@@ -30,24 +27,25 @@ public class OrthoBoundsDebugView extends DebugView {
 	private static final float HALF_POINT_WIDTH = 0.4f;
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		if (map == null) { return; }
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
-		
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
+	public void fillTarget(JOGLTarget target) {
+				
 		Camera orthoCam = OrthoTilesUtil.cameraForBounds(
 				map.getDataBoundary(), 30, CardinalDirection.S);
 		
 		List<VectorXYZ> boundVertices = map.getDataBoundary().polygonXZ().xyz(0).getVertices();
-		target.drawLineLoop(LINE_COLOR, boundVertices);
-		target.drawLineStrip(LINE_COLOR, boundVertices.get(0), boundVertices.get(2));
-		target.drawLineStrip(LINE_COLOR, boundVertices.get(1), boundVertices.get(3));
+		target.drawLineLoop(LINE_COLOR, 1, boundVertices);
+		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(0), boundVertices.get(2));
+		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(1), boundVertices.get(3));
 		
 		drawBoxAround(target, orthoCam.getPos(), POINT_COLOR, HALF_POINT_WIDTH);
 		drawBoxAround(target, orthoCam.getLookAt(), POINT_COLOR, HALF_POINT_WIDTH);
 		
-		target.drawLineStrip(LINE_COLOR, orthoCam.getPos(), orthoCam.getLookAt());
+		target.drawLineStrip(LINE_COLOR, 1, orthoCam.getPos(), orthoCam.getLookAt());
 		
 	}
 	

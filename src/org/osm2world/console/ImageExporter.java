@@ -1,8 +1,8 @@
 package org.osm2world.console;
 
 import static java.lang.Math.*;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2GL3.GL_FILL;
+import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
+import static org.osm2world.core.util.ConfigUtil.*;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -29,11 +29,9 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRenderer;
-import org.osm2world.core.target.primitivebuffer.JOGLPrimitiveBufferRendererDisplayList;
-import org.osm2world.core.target.primitivebuffer.PrimitiveBuffer;
 
 import com.jogamp.opengl.util.awt.Screenshot;
 
@@ -47,12 +45,9 @@ public class ImageExporter {
 	 * (which would lead to crashes)
 	 */
 	private static final int DEFAULT_CANVAS_LIMIT = 1024;
-
-	private static final String BG_COLOR_CONFIG_KEY = "backgroundColor";
-	private static final String BG_IMAGE_CONFIG_KEY = "backgroundImage";
-	private static final String CANVAS_LIMIT_CONFIG_KEY = "canvasLimit";
 	
 	private final Results results;
+	private final Configuration config;
 	
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
@@ -62,9 +57,10 @@ public class ImageExporter {
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
-	/** renderer with pre-calculated display lists; can be null */
-	private JOGLPrimitiveBufferRenderer bufferRenderer;
-		
+	/** target prepared in the constructor; null for unbuffered rendering */
+	private JOGLTarget bufferTarget = null;
+	
+	
 	/**
 	 * Creates an {@link ImageExporter} for later use.
 	 * Also performs calculations that only need to be done once for a group
@@ -78,23 +74,24 @@ public class ImageExporter {
 			CLIArgumentsGroup expectedGroup) {
 		
 		this.results = results;
+		this.config = config;
 
 		/* parse background color/image and other configuration options */
 		
-		float[] clearColor = {0f, 0f, 0f};
+		Color clearColor = Color.BLACK;
 		
-		if (config.containsKey(BG_COLOR_CONFIG_KEY)) {
-			try {
-				Color.decode(config.getString(BG_COLOR_CONFIG_KEY))
-					.getColorComponents(clearColor);
-			} catch (NumberFormatException e) {
+		if (config.containsKey(BG_COLOR_KEY)) {
+			Color confClearColor = parseColor(config.getString(BG_COLOR_KEY));
+			if (confClearColor != null) {
+				clearColor = confClearColor;
+			} else {
 				System.err.println("incorrect color value: "
-						+ config.getString(BG_COLOR_CONFIG_KEY));
+						+ config.getString(BG_COLOR_KEY));
 			}
 		}
 		
-		if (config.containsKey(BG_IMAGE_CONFIG_KEY)) {
-			String fileString = config.getString(BG_IMAGE_CONFIG_KEY);
+		if (config.containsKey(BG_IMAGE_KEY)) {
+			String fileString = config.getString(BG_IMAGE_KEY);
 			if (fileString != null) {
 				backgroundImage = new File(fileString);
 				if (!backgroundImage.exists()) {
@@ -105,7 +102,7 @@ public class ImageExporter {
 			}
 		}
 		
-		int canvasLimit = config.getInt(CANVAS_LIMIT_CONFIG_KEY, DEFAULT_CANVAS_LIMIT);
+		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
 		
 		/* find out what number and size of image file requests to expect */
 		
@@ -147,17 +144,8 @@ public class ImageExporter {
 		pBuffer.getContext().makeCurrent();
 		gl = pBuffer.getGL().getGL2();
 		
-		gl.glFrontFace(GL_CCW);                  // use ccw polygons
-					
-		gl.glClearColor(clearColor[0], clearColor[1], clearColor[2], 1.0f);
-        gl.glEnable (GL_DEPTH_TEST);             // z buffer
-		gl.glCullFace(GL_BACK);
-        gl.glEnable (GL_CULL_FACE);              // backface culling
-       
-        JOGLTarget.setLightingParameters(gl, GlobalLightingParameters.DEFAULT);
-				
-        gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        
+		JOGLTarget.clearGL(gl, clearColor);
+		
         backgroundTextureManager = new JOGLTextureManager(gl);
 
 		/* render map data into buffer if it needs to be rendered multiple times */
@@ -166,20 +154,11 @@ public class ImageExporter {
 				&& expectedMaxSizeX <= canvasLimit
 				&& expectedMaxSizeY <= canvasLimit);
 		
-		if (config.getBoolean("forceUnbufferedPNGRendering", false)
-				|| onlyOneRenderPass ) {
-			
-			bufferRenderer = null;
-			
-		} else {
-			
-			PrimitiveBuffer buffer = new PrimitiveBuffer();
-			
-			TargetUtil.renderWorldObjects(buffer, results.getMapData());
-			TargetUtil.renderObject(buffer, results.getTerrain());
-			
-			bufferRenderer = new JOGLPrimitiveBufferRendererDisplayList(gl, buffer);
-			
+		boolean unbufferedRendering = onlyOneRenderPass
+				|| config.getBoolean("forceUnbufferedPNGRendering", false);
+		
+		if (!unbufferedRendering ) {
+			bufferTarget = createJOGLTarget(gl, results, config);
 		}
 		
 	}
@@ -191,7 +170,7 @@ public class ImageExporter {
 	/**
 	 * manually frees resources that would otherwise remain used
 	 * until the finalize call. It is no longer possible to use
-	 * {@link #writeImageFile(File, OutputMode, int, int, Camera, Projection)}
+	 * {@link #writeImageFile(File, CLIArgumentsUtil.OutputMode, int, int, Camera, Projection)}
 	 * afterwards.
 	 */
 	public void freeResources() {
@@ -201,9 +180,9 @@ public class ImageExporter {
 			backgroundTextureManager = null;
 		}
 		
-		if (bufferRenderer != null) {
-			bufferRenderer.freeResources();
-			bufferRenderer = null;
+		if (bufferTarget != null) {
+			bufferTarget.freeResources();
+			bufferTarget = null;
 		}
 		
 		if (pBuffer != null) {
@@ -216,15 +195,11 @@ public class ImageExporter {
 	}
 	
 	/**
+	 * renders this ImageExporter's content to a file
 	 * 
-	 * @param outputFile
 	 * @param outputMode   one of the image output modes
 	 * @param x            horizontal resolution
 	 * @param y            vertical resolution
-	 * @param results
-	 * @param camera
-	 * @param projection
-	 * @throws IOException
 	 */
 	public void writeImageFile(
 			File outputFile, OutputMode outputMode,
@@ -256,8 +231,8 @@ public class ImageExporter {
 			int ySize  = (yEnd - yStart) + 1;
 			
 			/* configure rendering */
-	        
-	        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			JOGLTarget.clearGL(gl, null);
 	        
 	       	if (backgroundImage != null) {
 		       	JOGLTarget.drawBackgoundImage(gl, backgroundImage,
@@ -266,27 +241,18 @@ public class ImageExporter {
 		       			backgroundTextureManager);
 	       	}
 	        
-	        gl.glLoadIdentity();
-	        
-	        JOGLTarget.setProjectionMatricesForPart(gl, projection,
-	        		xStart / (double)(x-1), xEnd / (double)(x-1),
-	        		yStart / (double)(y-1), yEnd / (double)(y-1));
-	        
-	       	JOGLTarget.setCameraMatrices(gl, camera);
-	        
 	        /* render to pBuffer */
 	        
-	        if (bufferRenderer != null) {
-	        	
-	        	bufferRenderer.render(camera, projection);
-
-	        } else {
-	        	
-		        JOGLTarget jogl = new JOGLTarget(gl, camera);
-		        
-				TargetUtil.renderWorldObjects(jogl, results.getMapData());
-				TargetUtil.renderObject(jogl, results.getTerrain());
-				
+	       	JOGLTarget target = (bufferTarget == null)
+	       			? createJOGLTarget(gl, results, config)
+	       			: bufferTarget;
+	        
+	        target.renderPart(camera, projection,
+	        		xStart / (double)(x-1), xEnd / (double)(x-1),
+	        		yStart / (double)(y-1), yEnd / (double)(y-1));
+			
+	        if (target != bufferTarget) {
+		        target.freeResources();
 			}
 	        
 	        /* make screenshot and paste into the buffer
@@ -312,6 +278,25 @@ public class ImageExporter {
 					"output mode not supported " + outputMode);
 			
 		}
+		
+	}
+
+	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
+			Configuration config) {
+		
+		JOGLTarget target = new JOGLTarget(gl,
+				new JOGLRenderingParameters(CCW, false, true),
+				GlobalLightingParameters.DEFAULT);
+		
+		target.setConfiguration(config);
+		
+		boolean underground = config.getBoolean("renderUnderground", true);
+		
+		TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
+		
+		target.finish();
+		
+		return target;
 		
 	}
 	

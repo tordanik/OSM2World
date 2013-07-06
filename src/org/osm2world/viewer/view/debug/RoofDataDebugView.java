@@ -2,13 +2,9 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.modules.BuildingModule.Building;
 import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
@@ -21,9 +17,12 @@ public class RoofDataDebugView extends DebugView {
 	private static final Color POLYGON_COLOR = Color.BLUE;
 	
 	@Override
-	public void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	public boolean canBeUsed() {
+		return map != null;
+	}
+	
+	@Override
+	public void fillTarget(JOGLTarget target) {
 		
 		for (Building building : map.getWorldObjects(Building.class)) {
 			for (BuildingPart part : building.getParts()) {
@@ -37,7 +36,7 @@ public class RoofDataDebugView extends DebugView {
 						drawBoxAround(target, v, POLYGON_COLOR, 0.3f);
 					}
 					for (LineSegmentXZ s : polygon.getSegments()) {
-						target.drawLineStrip(POLYGON_COLOR, s.p1.xyz(0), s.p2.xyz(0));
+						target.drawLineStrip(POLYGON_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
 					}
 				}
 				
@@ -46,7 +45,7 @@ public class RoofDataDebugView extends DebugView {
 				}
 				
 				for (LineSegmentXZ s : roofData.getInnerSegments()) {
-					target.drawLineStrip(INNER_SEGMENT_COLOR, s.p1.xyz(0), s.p2.xyz(0));
+					target.drawLineStrip(INNER_SEGMENT_COLOR, 1, s.p1.xyz(0), s.p2.xyz(0));
 				}
 				
 			}

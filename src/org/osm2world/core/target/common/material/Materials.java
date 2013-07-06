@@ -19,6 +19,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -35,6 +36,8 @@ public final class Materials {
 	
 	public static final ConfMaterial WATER =
 		new ConfMaterial(Lighting.FLAT, Color.BLUE);
+	public static final ConfMaterial PURIFIED_WATER =
+			new ConfMaterial(Lighting.FLAT, Color.BLUE);
 	
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
@@ -43,7 +46,7 @@ public final class Materials {
 	public static final ConfMaterial COBBLESTONE =
 			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial CONCRETE =
-		new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Lighting.FLAT, new Color(0.55f, 0.55f, 0.55f));
 	public static final ConfMaterial EARTH =
 		new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0, 0));
 	public static final ConfMaterial GLASS =
@@ -58,6 +61,10 @@ public final class Materials {
 			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PEBBLESTONE =
 			new ConfMaterial(Lighting.FLAT, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial PLASTIC =
+			new ConfMaterial(Lighting.FLAT, new Color(0, 0, 0));
+	public static final ConfMaterial PLASTIC_GREY =
+			new ConfMaterial(Lighting.FLAT, new Color(184, 184, 184));
 	public static final ConfMaterial SAND =
 		new ConfMaterial(Lighting.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial STEEL =
@@ -93,6 +100,8 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(1f, 0.9f, 0.55f));
 	public static final ConfMaterial ROOF_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
+	public static final ConfMaterial GLASS_ROOF =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ENTRANCE_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.2f, 0, 0));
 	public static final ConfMaterial GARAGE_DOORS =
@@ -136,8 +145,18 @@ public final class Materials {
 		new ConfMaterial(Lighting.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
 				Transparency.FALSE, Collections.<TextureData>emptyList());
 	
+	public static final ConfMaterial POWER_TOWER_VERTICAL =
+		new ConfMaterial(Lighting.FLAT, new Color(.7f, .7f, .7f), 1f, 0f,
+				Transparency.BINARY, Collections.<TextureData>emptyList());
+	public static final ConfMaterial POWER_TOWER_HORIZONTAL =
+			new ConfMaterial(Lighting.FLAT, new Color(.7f, .7f, .7f), 1f, 0f,
+					Transparency.BINARY, Collections.<TextureData>emptyList());
+	
 	public static final ConfMaterial ADVERTISING_POSTER =
 		new ConfMaterial(Lighting.FLAT, new Color(1, 1, 0.8f));
+	
+	public static final ConfMaterial BUS_STOP_SIGN =
+		new ConfMaterial(Lighting.FLAT, new Color(0.98f, 0.90f, 0.05f));
 	
 	public static final ConfMaterial GRITBIN_DEFAULT =
 			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.5f, 0.4f));
@@ -146,10 +165,15 @@ public final class Materials {
 			new ConfMaterial(Lighting.FLAT, new Color(1f, 0.8f, 0f));
 	public static final ConfMaterial POSTBOX_ROYALMAIL =
 			new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
+	public static final ConfMaterial TELEKOM_MANGENTA =
+			new ConfMaterial(Lighting.FLAT, new Color(0.883f, 0f, 0.453f));
 	
 	public static final ConfMaterial FIREHYDRANT =
 		new ConfMaterial(Lighting.FLAT, new Color(0.8f, 0, 0));
 
+	public static final ConfMaterial SOLAR_PANEL =
+			new ConfMaterial(Lighting.FLAT, Color.BLUE);
+	
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Lighting.FLAT, new Color(0, 0, 1),
 				1, 0, Transparency.FALSE, null);
@@ -259,11 +283,13 @@ public final class Materials {
 					String attribute = matcher.group(2);
 					
 					if ("color".equals(attribute)) {
-					
-						try {
-							material.setColor(
-								Color.decode(config.getString(key)));
-						} catch (NumberFormatException e) {
+						
+						Color color = ConfigUtil.parseColor(
+								config.getString(key));
+						
+						if (color != null) {
+							material.setColor(color);
+						} else {
 							System.err.println("incorrect color value: "
 									+ config.getString(key));
 						}

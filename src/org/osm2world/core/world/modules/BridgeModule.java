@@ -9,9 +9,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -22,6 +22,7 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.WaterModule.Water;
 import org.osm2world.core.world.modules.common.AbstractModule;
+import org.osm2world.core.world.modules.common.BridgeOrTunnel;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 /**
@@ -59,46 +60,23 @@ public class BridgeModule extends AbstractModule {
 	
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 		
-	private static class Bridge implements WaySegmentWorldObject,
-		RenderableToAllTargets {
-		
-		private final MapWaySegment segment;
-		private final AbstractNetworkWaySegmentWorldObject primaryRep;
+	private static class Bridge extends BridgeOrTunnel
+			implements RenderableToAllTargets {
 		
 		public Bridge(MapWaySegment segment,
-				AbstractNetworkWaySegmentWorldObject primaryRepresentation) {
-			this.segment = segment;
-			this.primaryRep = primaryRepresentation;
-		}
-
-		@Override
-		public MapElement getPrimaryMapElement() {
-			return segment;
-		}
-
-		@Override
-		public VectorXZ getEndPosition() {
-			return primaryRep.getEndPosition();
-		}
-
-		@Override
-		public VectorXZ getStartPosition() {
-			return primaryRep.getStartPosition();
-		}
-
-		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
-		}
-
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return BRIDGE_UNDERSIDE_HEIGHT;
+				AbstractNetworkWaySegmentWorldObject primaryWO) {
+			super(segment, primaryWO);
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
+		}
+		
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			// TODO EleConnectors for pillars
+			return super.getEleConnectors();
 		}
 		
 		@Override
@@ -166,14 +144,28 @@ public class BridgeModule extends AbstractModule {
 
 		private void drawBridgePillarAt(Target<?> target, VectorXZ pos) {
 		
-			double eleAtPos = segment.getElevationProfile().getEleAt(pos);
+			/* determine the bridge elevation at that point */
+			
+			VectorXYZ top = null;
+			
+			List<VectorXYZ> vs = primaryRep.getCenterline();
+			
+			for (int i = 0; i + 1 < vs.size(); i++) {
+				
+				if (isBetween(pos, vs.get(i).xz(), vs.get(i+1).xz())) {
+					top = interpolateElevation(pos, vs.get(i), vs.get(i+1));
+				}
+				
+			}
+
+			/* draw the pillar */
 			
 			// TODO: start pillar at ground instead of just 100 meters below the bridge
 			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
-					pos.xyz(eleAtPos - BRIDGE_UNDERSIDE_HEIGHT/2 - 100),
+					top.addY(-100),
 					100,
 					0.2, 0.2, false, false);
-			
+
 		}
 		
 	}

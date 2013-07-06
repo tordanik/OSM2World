@@ -13,7 +13,7 @@ final public class FaultTolerantIterationUtil {
 	}
 	
 	public static final <T> void iterate(
-			Iterable<T> collection, Operation<T> operation) {
+			Iterable<? extends T> collection, Operation<T> operation) {
 		
 		for (T input : collection) {
 			try {

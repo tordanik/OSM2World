@@ -179,7 +179,7 @@ public final class WorldModuleGeometryUtil {
 	 * by rotating them by the given angle around the parallel of the x axis
 	 * defined by the given Y and Z coordinates
 	 * 
-	 * @angle  rotation angle in degrees
+	 * @param angle  rotation angle in degrees
 	 */
 	public static final List<VectorXYZ> rotateShapeX(List<VectorXYZ> shape,
 			double angle, double posY, double posZ) {

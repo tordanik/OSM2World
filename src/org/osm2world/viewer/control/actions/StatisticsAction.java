@@ -44,8 +44,7 @@ public class StatisticsAction extends AbstractAction implements Observer {
 		
 		StatisticsTarget stats = new StatisticsTarget();
 		
-		TargetUtil.renderWorldObjects(stats, conversionResults.getMapData());
-		TargetUtil.renderObject(stats, conversionResults.getTerrain());
+		TargetUtil.renderWorldObjects(stats, conversionResults.getMapData(), true);
 		new StatisticsDialog(viewerFrame, stats).setVisible(true);
 		
 	}

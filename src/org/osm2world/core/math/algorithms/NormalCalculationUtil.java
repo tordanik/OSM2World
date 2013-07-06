@@ -58,7 +58,7 @@ public final class NormalCalculationUtil {
 	public static final List<VectorXYZ> calculateTriangleStripNormals(
 			List<VectorXYZ> vertices, boolean smooth) {
 		
-		assert vertices.size() > 3;
+		assert vertices.size() >= 3;
 		
 		VectorXYZ[] normals = calculatePerTriangleNormals(vertices, false);
 		return asList(normals);
@@ -70,7 +70,7 @@ public final class NormalCalculationUtil {
 	public static final List<VectorXYZ> calculateTriangleFanNormals(
 			List<VectorXYZ> vertices, boolean smooth) {
 		
-		assert vertices.size() > 3;
+		assert vertices.size() >= 3;
 		
 		VectorXYZ[] normals = calculatePerTriangleNormals(vertices, true);
 		return asList(normals);
@@ -109,8 +109,8 @@ public final class NormalCalculationUtil {
 			
 		}
 		
-		normals[0] = VectorXYZ.NULL_VECTOR;
-		normals[1] = VectorXYZ.NULL_VECTOR;
+		normals[0] = normals[2];
+		normals[1] = normals[2];
 		
 		return normals;
 		

@@ -1,6 +1,5 @@
 package org.osm2world.core.map_elevation.creation;
 
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.heightmap.data.TerrainPoint;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -9,6 +8,8 @@ import org.osm2world.core.map_elevation.data.ElevationProfile;
 /**
  * calculates elevations using information from {@link MapData}
  * and terrain elevation data
+ * 
+ * TODO new documentation
  */
 public interface ElevationCalculator {
 
@@ -22,11 +23,10 @@ public interface ElevationCalculator {
 	 * </ul>
 	 * 
 	 * @param mapData  map data without elevation profiles; != null
-	 * @param eleData  terrain elevation data, possibly with points
-	 *                 with unknown information;
+	 * @param eleData  terrain elevation data;
 	 *                 whether null is allowed depends on the implementation
 	 */
 	public void calculateElevations(MapData mapData,
-			CellularTerrainElevation eleData);
+			TerrainElevationData eleData);
 
 }

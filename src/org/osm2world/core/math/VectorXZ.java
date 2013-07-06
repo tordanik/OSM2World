@@ -112,6 +112,13 @@ public class VectorXZ implements Vector3D {
 		}
 	}
 	
+	/**
+	 * @see #angle()
+	 */
+	public double angleTo(VectorXZ other) {
+		return other.subtract(this).angle();
+	}
+	
 	@Override
 	public String toString() {
 		return "(" + x + "," + z + ")";
@@ -163,6 +170,24 @@ public class VectorXZ implements Vector3D {
 				cos(directionRad));
 	}
 	
+	/**
+	 * returns the angle between two direction vectors
+	 * @return  angle as radians, in range 0 to PI
+	 */
+	public static double angleBetween(VectorXZ v1, VectorXZ v2) {
+		
+		double rawAngle = abs(v1.angle() - v2.angle());
+		
+		if (rawAngle < PI) {
+			return rawAngle;
+		} else if (rawAngle == PI) {
+			return PI;
+		} else {
+			return PI - (rawAngle % PI);
+		}
+		
+	}
+
 	public static final double distance(VectorXZ v1, VectorXZ v2) {
 		//SUGGEST (performance): don't create temporary vector
 		return (v2.subtract(v1)).length();

@@ -1,10 +1,13 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
+import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
@@ -14,9 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
@@ -26,9 +31,13 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.Poly2TriUtil;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.PolygonXZ;
@@ -37,7 +46,7 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
+import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -45,7 +54,6 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.terrain.creation.CAGUtil;
 import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
@@ -53,6 +61,7 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
+import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 import com.google.common.base.Function;
 
@@ -65,7 +74,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	public void applyTo(MapData mapData) {
 		
 		boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
-		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", false);
+		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
 		
 		for (MapArea area : mapData.getMapAreas()) {
 			
@@ -92,6 +101,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final List<BuildingPart> parts =
 				new ArrayList<BuildingModule.BuildingPart>();
 		
+		private final EleConnectorGroup outlineConnectors;
+		
 		public Building(MapArea area, boolean useBuildingColors,
 				boolean drawBuildingWindows) {
 			
@@ -116,12 +127,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 			
 			/* add part(s) for area not covered by building:part polygons */
+			boolean isBuildingPart = false;
+			if (area.getTags().containsKey("building:part"))
+				isBuildingPart = !("no".equals(area.getTags().getValue("building:part")));
 			
-			if (parts.isEmpty()) {
+			if (parts.isEmpty() || isBuildingPart) {
 				parts.add(new BuildingPart(this, area,
 						area.getPolygon(), useBuildingColors, drawBuildingWindows));
 			} else {
-				
 				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
 				
 				for (BuildingPart part : parts) {
@@ -140,10 +153,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 			}
+
+			/* create connectors along the outline.
+			 * Because the ground around buildings is not necessarily plane,
+			 * they aren't directly used for ele, but instead their minimum.
+			 */
+			
+			outlineConnectors = new EleConnectorGroup();
+			outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON);
 			
 		}
 
-		public MapArea getArea() {
+		public MapArea getArea() { //TODO: redundant because of getPrimaryMapElement
 			return area;
 		}
 		
@@ -152,7 +173,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapArea getPrimaryMapElement() {
 			return area;
 		}
 
@@ -160,31 +181,103 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
+		
+		@Override
+		public EleConnectorGroup getEleConnectors() {
+			return outlineConnectors;
+		}
 
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			double maxClearingAbove = 0;
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			List<EleConnector> groundLevelEntrances = new ArrayList<EleConnector>();
+			
+			/* add constraints between entrances with different levels */
+			
 			for (BuildingPart part : parts) {
-				double clearing = part.getClearingAbove(pos);
-				maxClearingAbove = max(clearing, maxClearingAbove);
-			}
-			return maxClearingAbove;
-		}
+				
+				// add vertical distances
+				
+				for (int i = 0; i < part.entrances.size(); i++) {
+					
+					BuildingEntrance e1 = part.entrances.get(i);
+					
+					for (int j = i+1; j < part.entrances.size(); j++) {
+						
+						BuildingEntrance e2 = part.entrances.get(j);
+						
+						double heightPerLevel = part.heightWithoutRoof / part.buildingLevels;
+						
+						if (e1.getLevel() > e2.getLevel()) {
+							
+							enforcer.requireVerticalDistance(EXACT,
+									heightPerLevel * (e1.getLevel() - e2.getLevel()),
+									e1.connector, e2.connector);
+							
+						} else if (e1.getLevel() < e2.getLevel()) {
 
-		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
+							enforcer.requireVerticalDistance(EXACT,
+									heightPerLevel * (e2.getLevel() - e1.getLevel()),
+									e2.connector, e1.connector);
+							
+						}
+																		
+					}
+					
+					// collect entrances for next step
+					
+					if (e1.getLevel() == 0 && e1.getGroundState() == ON) {
+						groundLevelEntrances.add(e1.connector);
+					}
+					
+				}
+			
+			}
+			
+			/* make sure that a level=0 ground entrance is the building's lowest point */
+			
+			for (EleConnector outlineConnector : outlineConnectors) {
+				for (EleConnector entranceConnector : groundLevelEntrances) {
+					enforcer.requireVerticalDistance(
+							MIN, 0, outlineConnector, entranceConnector);
+				}
+			}
+			
 		}
+		
+		//TODO
+//		@Override
+//		public double getClearingAbove(VectorXZ pos) {
+//			double maxClearingAbove = 0;
+//			for (BuildingPart part : parts) {
+//				double clearing = part.getClearingAbove(pos);
+//				maxClearingAbove = max(clearing, maxClearingAbove);
+//			}
+//			return maxClearingAbove;
+//		}
 
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
 			return area.getPolygon().getOuter().makeCounterclockwise();
 		}
 
+		public double getGroundLevelEle() {
+			
+			double minEle = POSITIVE_INFINITY;
+			
+			for (EleConnector c : outlineConnectors) {
+				if (c.getPosXYZ().y < minEle) {
+					minEle = c.getPosXYZ().y;
+				}
+			}
+			
+			return minEle;
+			
+		}
+
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
-			return getOutlinePolygonXZ().xyz(
-					area.getElevationProfile().getMinEle());
+			return getOutlinePolygonXZ().xyz(getGroundLevelEle());
 		}
 		
 		@Override
@@ -211,6 +304,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private Material materialWallWithWindows;
 		private Material materialRoof;
 		
+		private List<BuildingEntrance> entrances = new ArrayList<BuildingEntrance>();
+		
 		private Roof roof;
 		
 		public BuildingPart(Building building,
@@ -227,8 +322,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if ((node.getTags().contains("building", "entrance")
 						|| node.getTags().containsKey("entrance"))
 						&& node.getRepresentations().isEmpty()) {
-					node.addRepresentation(
-							new BuildingEntrance(this, node));
+					
+					BuildingEntrance entrance = new BuildingEntrance(this, node);
+					entrances.add(entrance);
+					node.addRepresentation(entrance);
+					
 				}
 			}
 			
@@ -274,7 +372,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private void renderWalls(Target<?> target, Roof roof) {
 			
-			double baseEle = building.getArea().getElevationProfile().getMinEle();
+			double baseEle = building.getGroundLevelEle();
 			
 			double floorHeight = calculateFloorHeight(roof);
 			boolean renderFloor = (floorHeight > 0);
@@ -384,8 +482,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					}
 					
 					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
-						double newFloorHeight = o.getClearingAbove(
-								o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
+						double newFloorHeight = 3;
+							//TODO restore clearing - o.getClearingAbove(o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
 						if (newFloorHeight < floorHeight) {
 							newFloorHeight = floorHeight;
 						}
@@ -403,18 +501,23 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			if (getValue("min_height") != null) {
 				
-				Float minEle = parseMeasure(
-						area.getTags().getValue("min_height"));
-				if (minEle != null) {
-					return minEle;
+				Float minHeight = parseMeasure(getValue("min_height"));
+				if (minHeight != null) {
+					return minHeight;
 				}
 				
 			}
 			
 			if (minLevel > 0) {
 				
-				double totalHeight = heightWithoutRoof + roof.getRoofHeight();
-				return (totalHeight / buildingLevels) * minLevel;
+				return (heightWithoutRoof / buildingLevels) * minLevel;
+				
+			}
+			
+			if (area.getTags().contains("building", "roof")
+					|| area.getTags().contains("building:part", "roof")) {
+				
+				return heightWithoutRoof - 0.3;
 				
 			}
 			
@@ -568,7 +671,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if ("greenhouse".equals(buildingValue)) {
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
-				defaultMaterialRoof = Materials.GLASS;
+				defaultMaterialRoof = Materials.GLASS_ROOF;
 				defaultMaterialWindows = null;
 			} else if ("garage".equals(buildingValue)
 					|| "garages".equals(buildingValue)) {
@@ -576,6 +679,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWall = Materials.CONCRETE;
 				defaultMaterialRoof = Materials.CONCRETE;
 				defaultMaterialWindows = Materials.GARAGE_DOORS;
+			} else if ("hut".equals(buildingValue)
+					|| "shed".equals(buildingValue)) {
+				defaultLevels = 1;
+			} else if ("cabin".equals(buildingValue)) {
+				defaultLevels = 1;
+				defaultMaterialWall = Materials.WOOD_WALL;
+				defaultMaterialRoof = Materials.WOOD;
+			} else if ("roof".equals(buildingValue)) {
+				defaultLevels = 1;
+				defaultMaterialWindows = null;
 			} else if ("church".equals(buildingValue)
 					|| "hangar".equals(buildingValue)
 					|| "industrial".equals(buildingValue)) {
@@ -584,47 +697,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if (getValue("building:levels") == null) {
 					defaultMaterialWindows = null;
 				}
-			}
-			
-			/* determine roof shape */
-						
-			if (hasComplexRoof(area)) {
-				roof = new ComplexRoof();
-			} else {
-				
-				String roofShape = getValue("roof:shape");
-				if (roofShape == null) { roofShape = getValue("building:roof:shape"); }
-				if (roofShape == null) { roofShape = defaultRoofShape; }
-				
-				try {
-					
-					if ("pyramidal".equals(roofShape)) {
-						roof = new PyramidalRoof();
-					} else if ("onion".equals(roofShape)) {
-						roof = new OnionRoof();
-					} else if ("skillion".equals(roofShape)) {
-						roof = new SkillionRoof();
-					} else if ("gabled".equals(roofShape)) {
-						roof = new GabledRoof();
-					} else if ("hipped".equals(roofShape)) {
-						roof = new HippedRoof();
-					} else if ("half-hipped".equals(roofShape)) {
-						roof = new HalfHippedRoof();
-					} else if ("gambrel".equals(roofShape)) {
-						roof = new GambrelRoof();
-					} else if ("mansard".equals(roofShape)) {
-						roof = new MansardRoof();
-					} else if ("dome".equals(roofShape)) {
-						roof = new DomeRoof();
-					} else {
-						roof = new FlatRoof();
-					}
-					
-				} catch (InvalidGeometryException e) {
-					System.err.println("falling back to FlatRoof: " + e);
-					roof = new FlatRoof();
-				}
-				
 			}
 			
 			/* determine levels */
@@ -655,6 +727,56 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 			
+			/* determine roof shape */
+			
+			boolean explicitRoofTagging = true;
+			
+			if (!("no".equals(area.getTags().getValue("roof:lines"))) && hasComplexRoof(area)) {
+				roof = new ComplexRoof();
+			} else {
+				
+				String roofShape = getValue("roof:shape");
+				if (roofShape == null) { roofShape = getValue("building:roof:shape"); }
+				
+				if (roofShape == null) {
+					roofShape = defaultRoofShape;
+					explicitRoofTagging = false;
+				}
+				
+				try {
+					
+					if ("pyramidal".equals(roofShape)) {
+						roof = new PyramidalRoof();
+					} else if ("onion".equals(roofShape)) {
+						roof = new OnionRoof();
+					} else if ("skillion".equals(roofShape)) {
+						roof = new SkillionRoof();
+					} else if ("gabled".equals(roofShape)) {
+						roof = new GabledRoof();
+					} else if ("hipped".equals(roofShape)) {
+						roof = new HippedRoof();
+					} else if ("half-hipped".equals(roofShape)) {
+						roof = new HalfHippedRoof();
+					} else if ("gambrel".equals(roofShape)) {
+						roof = new GambrelRoof();
+					} else if ("mansard".equals(roofShape)) {
+						roof = new MansardRoof();
+					} else if ("dome".equals(roofShape)) {
+						roof = new DomeRoof();
+					} else if ("round".equals(roofShape)) {
+						roof = new RoundRoof();
+					} else {
+						roof = new FlatRoof();
+					}
+					
+				} catch (InvalidGeometryException e) {
+					System.err.println("falling back to FlatRoof: " + e);
+					roof = new FlatRoof();
+					explicitRoofTagging = false;
+				}
+				
+			}
+			
 			/* determine height */
 			
 			double fallbackHeight = buildingLevels * defaultHeightPerLevel;
@@ -668,6 +790,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* determine materials */
 		    
+		    if (defaultMaterialRoof == Materials.ROOF_DEFAULT
+		    		&& explicitRoofTagging && roof instanceof FlatRoof) {
+		    	defaultMaterialRoof = Materials.CONCRETE;
+		    }
+		    
 		    if (useBuildingColors) {
 		    	
 		    	materialWall = buildMaterial(
@@ -678,12 +805,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    			getValue("roof:material"),
 		    			getValue("roof:colour"),
 		    			defaultMaterialRoof, true);
-		    		    	
+		    	
 		    } else {
 		    	
 		    	materialWall = defaultMaterialWall;
 		    	materialRoof = defaultMaterialRoof;
 		    	
+		    }
+		    
+		    if (materialWall == Materials.GLASS) {
+				// avoid placing windows into a glass front
+				// TODO: the == currently only works if GLASS is not colorable
+				defaultMaterialWindows = null;
 		    }
 		    
 		    materialWallWithWindows = materialWall;
@@ -715,19 +848,24 @@ public class BuildingModule extends ConfigurableWorldModule {
 				String colorString, Material defaultMaterial,
 				boolean roof) {
 			
+			Material material = defaultMaterial;
+			
 			if (materialString != null) {
 				if ("brick".equals(materialString)) {
-					return Materials.BRICK;
+					material = Materials.BRICK;
 				} else if ("glass".equals(materialString)) {
-					return Materials.GLASS;
+					material = roof ? Materials.GLASS_ROOF : Materials.GLASS;
 				} else if ("wood".equals(materialString)) {
-					return Materials.WOOD_WALL;
+					material = Materials.WOOD_WALL;
 				} else if (Materials.getSurfaceMaterial(materialString) != null) {
-					return Materials.getSurfaceMaterial(materialString);
+					material = Materials.getSurfaceMaterial(materialString);
 				}
 			}
 			
-			if (colorString != null) {
+			boolean colorable = material.getNumTextureLayers() == 0
+					|| material.getTextureDataList().get(0).colorable;
+			
+			if (colorString != null && colorable) {
 				
 				Color color;
 				
@@ -761,22 +899,28 @@ public class BuildingModule extends ConfigurableWorldModule {
 					color = new Color(225, 175, 225);
 				} else if ("orange".equals(colorString)) {
 					color = new Color(255, 225, 150);
+				} else if ("brown".equals(colorString)) {
+					if (roof) {
+						color = new Color(120, 110, 110);
+					} else {
+						color = new Color(170, 130, 80);
+					}
 				} else {
 					color = parseColor(colorString);
 				}
 				
 				if (color != null) {
-					return new ImmutableMaterial(
-							defaultMaterial.getLighting(), color,
-							defaultMaterial.getAmbientFactor(),
-							defaultMaterial.getDiffuseFactor(),
-							defaultMaterial.getTransparency(),
-							defaultMaterial.getTextureDataList());
+					material = new ImmutableMaterial(
+							material.getLighting(), color,
+							material.getAmbientFactor(),
+							material.getDiffuseFactor(),
+							material.getTransparency(),
+							material.getTextureDataList());
 				}
 				
 			}
 			
-			return defaultMaterial;
+			return material;
 			
 		}
 		
@@ -836,7 +980,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * Can optionally be overwritten by subclasses.
 			 */
 			protected float getDefaultRoofHeight() {
-				return DEFAULT_RIDGE_HEIGHT;
+				if (buildingLevels == 1) {
+					return 1;
+				} else {
+					return DEFAULT_RIDGE_HEIGHT;
+				}
 			}
 			
 			TaggedRoof() {
@@ -864,7 +1012,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return building.getArea().getElevationProfile().getMinEle() +
+				return building.getGroundLevelEle() +
 						heightWithoutRoof + roofHeight;
 			}
 			
@@ -1025,7 +1173,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				double roofY = getMaxRoofEle() - getRoofHeight();
 				
 				renderSpindle(target, materialRoof,
-						polygon.getOuter(),
+						polygon.getOuter().makeClockwise(),
 						asList(roofY,
 								roofY + 0.15 * roofHeight,
 								roofY + 0.52 * roofHeight,
@@ -1065,7 +1213,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				renderSpindle(target, materialRoof,
-						polygon.getOuter(), heights, scales);
+						polygon.getOuter().makeClockwise(),
+						heights, scales);
 				
 			}
 			
@@ -1150,11 +1299,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				/* create the triangulation of the roof */
 				
 				Collection<TriangleXZ> triangles =
-						JTSTriangulationUtil.triangulate(
-								getPolygon().getOuter(),
-								getPolygon().getHoles(),
-								getInnerSegments(),
-								getInnerPoints());
+						Poly2TriUtil.triangulate(getPolygon().getOuter(),
+						                         getPolygon().getHoles(),
+						                         getInnerSegments(),
+						                         getInnerPoints());
+
+//						JTSTriangulationUtil.triangulate(
+//								getPolygon().getOuter(),
+//								getPolygon().getHoles(),
+//								getInnerSegments(),
+//								getInnerPoints());
 				
 				List<TriangleXYZ> trianglesXYZ =
 						new ArrayList<TriangleXYZ>(triangles.size());
@@ -1211,8 +1365,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return building.getArea().getElevationProfile().getMinEle()
-						+ heightWithoutRoof;
+				return building.getGroundLevelEle() + heightWithoutRoof;
 			}
 			
 		}
@@ -1709,6 +1862,100 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 		}
 		
+		private class RoundRoof extends RoofWithRidge {
+			private final static double ROOF_SUBDIVISION_METER = 2.5;
+			
+			private final List<LineSegmentXZ> capParts;
+			private final int rings;
+			private final double radius;
+			
+			public RoundRoof() {
+
+				super(0);
+
+				if (roofHeight < maxDistanceToRidge) {
+					double squaredHeight = roofHeight * roofHeight;
+					double squaredDist = maxDistanceToRidge * maxDistanceToRidge;
+					double centerY =  (squaredDist - squaredHeight) / (2 * roofHeight);
+					radius = sqrt(squaredDist + centerY * centerY);
+				} else {
+					radius = 0;
+				}
+				
+				rings = (int)Math.max(3, roofHeight/ROOF_SUBDIVISION_METER);
+				capParts = new ArrayList<LineSegmentXZ>(rings*2);
+				// TODO: would be good to vary step size with slope
+				float step = 0.5f / (rings + 1);
+				for (int i = 1; i <= rings; i++) {
+					capParts.add(new LineSegmentXZ(
+							interpolateBetween(cap1.p1, cap1.p2, i * step),
+							interpolateBetween(cap1.p1, cap1.p2, 1 - i * step)));
+
+					capParts.add(new LineSegmentXZ(
+							interpolateBetween(cap2.p1, cap2.p2, i * step),
+							interpolateBetween(cap2.p1, cap2.p2, 1 - i * step)));
+				}
+			}
+
+			@Override
+			public PolygonWithHolesXZ getPolygon() {
+
+				PolygonXZ newOuter = polygon.getOuter();
+
+				newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
+				newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+
+				for (LineSegmentXZ capPart : capParts){
+					newOuter = insertIntoPolygon(newOuter, capPart.p1, 0.2);
+					newOuter = insertIntoPolygon(newOuter, capPart.p2, 0.2);
+				}
+
+				//TODO: add intersections of additional edges with outline?
+				return new PolygonWithHolesXZ(
+						newOuter.asSimplePolygon(),
+						polygon.getHoles());
+
+			}
+
+			@Override
+			public Collection<VectorXZ> getInnerPoints() {
+				return emptyList();
+			}
+			@Override
+			public Collection<LineSegmentXZ> getInnerSegments() {
+
+				List<LineSegmentXZ> innerSegments = new ArrayList<LineSegmentXZ>(rings * 2 + 1);
+				innerSegments.add(ridge);
+				for (int i = 0; i < rings * 2; i += 2) {
+					LineSegmentXZ cap1part = capParts.get(i);
+					LineSegmentXZ cap2part = capParts.get(i+1);
+					innerSegments.add(new LineSegmentXZ(cap1part.p1, cap2part.p2));
+					innerSegments.add(new LineSegmentXZ(cap1part.p2, cap2part.p1));
+				}
+
+				return innerSegments;
+			}
+
+			@Override
+			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
+				double distRidge = distanceFromLineSegment(pos, ridge);
+				double ele;
+				
+				if (radius > 0) {
+					double relativePlacement = distRidge / radius;
+					ele = getMaxRoofEle() - radius
+						+ sqrt(1.0 - relativePlacement * relativePlacement) * radius;
+				} else {
+					// This could be any interpolator
+					double relativePlacement = distRidge / maxDistanceToRidge;
+					ele = getMaxRoofEle() - roofHeight +
+					(1 - (Math.pow(relativePlacement, 2.5))) * roofHeight;
+				}
+				
+				return Math.max(ele, getMaxRoofEle() - roofHeight);
+			}
+		}
+
 		private class MansardRoof extends RoofWithRidge {
 
 			private final LineSegmentXZ mansardEdge1, mansardEdge2;
@@ -1778,10 +2025,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * roof that has been mapped with explicit roof edge/ridge/apex elements
 		 */
 		private class ComplexRoof extends HeightfieldRoof {
-						
+			
 			private double roofHeight = 0;
 			private final Map<VectorXZ, Double> roofHeightMap;
-			
+			private PolygonWithHolesXZ simplePolygon;
 			private final Collection<LineSegmentXZ> ridgeAndEdgeSegments;
 			
 			public ComplexRoof() {
@@ -1791,8 +2038,21 @@ public class BuildingModule extends ConfigurableWorldModule {
 				 *  as they should always be part of an edge segment) */
 				
 				roofHeightMap = new HashMap<VectorXZ, Double>();
+				Set<VectorXZ> nodeSet = new HashSet<VectorXZ>();
 				
 				ridgeAndEdgeSegments = new ArrayList<LineSegmentXZ>();
+				
+				List<MapNode> nodes = area.getBoundaryNodes();
+				boolean usePartRoofHeight = false;
+				
+				if (area.getTags().containsKey("roof:height")){
+					roofHeight = parseMeasure(area.getTags().getValue("roof:height"));
+					usePartRoofHeight = true;
+				} else
+					roofHeight = DEFAULT_RIDGE_HEIGHT;
+				
+				List<MapWaySegment> edges = new ArrayList<MapWaySegment>();
+				List<MapWaySegment> ridges = new ArrayList<MapWaySegment>();
 				
 				for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 					
@@ -1800,59 +2060,128 @@ public class BuildingModule extends ConfigurableWorldModule {
 						
 						MapWaySegment waySegment = ((MapOverlapWA)overlap).e1;
 						
-						if (!polygon.contains(waySegment.getCenter())) {
+						boolean isRidge = waySegment.getTags().contains("roof:ridge", "yes");
+						boolean isEdge = waySegment.getTags().contains("roof:edge", "yes");
+						
+						if (!(isRidge || isEdge))
+							continue;
+						
+						boolean inside = polygon.contains(waySegment.getCenter());
+
+						// check also endpoints as pnpoly algo is not reliable when
+						// segment lies on the polygon edge
+						boolean containsStart = nodes.contains(waySegment.getStartNode());
+						boolean containsEnd = nodes.contains(waySegment.getEndNode());
+
+						if (!inside && !(containsStart && containsEnd))
+							continue;
+
+						if (isEdge)
+							edges.add(waySegment);
+						else
+							ridges.add(waySegment);
+						
+						ridgeAndEdgeSegments.add(waySegment.getLineSegment());
+					}
+				}
+
+				for (MapWaySegment waySegment : edges){
+					for (MapNode node : waySegment.getStartEndNodes()) {
+
+						// height of node (above roof base)
+						Float nodeHeight = null;
+
+						if (node.getTags().containsKey("roof:height")) {
+							nodeHeight = parseMeasure(node.getTags()
+									.getValue("roof:height"));
+						// hmm, shouldnt edges be interpolated? some seem to think they dont
+						} else if (waySegment.getTags().containsKey("roof:height")) {
+							nodeHeight = parseMeasure(waySegment.getTags()
+							        .getValue("roof:height"));
+						} else if (node.getTags().contains("roof:apex",	"yes")) {
+							nodeHeight = (float)roofHeight;
+						}
+
+						if (nodeHeight == null) {
+							nodeSet.add(node.getPos());
 							continue;
 						}
 						
-						boolean isRidge = waySegment.getTags().contains("roof:ridge", "yes");
-						boolean isEdge = waySegment.getTags().contains("roof:edge", "yes");
-												
-						if (isRidge || isEdge) {
-							
-							ridgeAndEdgeSegments.add(waySegment.getLineSegment());
-							
-							for (MapNode node : waySegment.getStartEndNodes()) {
-								
-								// height of node (above roof base)
-								Float nodeHeight = null;
-								
-								if (node.getTags().containsKey("roof:height")) {
-									nodeHeight = parseMeasure(
-											node.getTags().getValue("roof:height"));
-								} else if (waySegment.getTags().containsKey("roof:height")) {
-									nodeHeight = parseMeasure(
-											waySegment.getTags().getValue("roof:height"));
-								} else if (node.getTags().contains("roof:apex", "yes")) {
-									nodeHeight = DEFAULT_RIDGE_HEIGHT;
-								} else if (isRidge) {
-									nodeHeight = DEFAULT_RIDGE_HEIGHT;
-								}
-								
-								if (nodeHeight != null) {
-									
-									roofHeightMap.put(node.getPos(), (double)nodeHeight);
-									
-									roofHeight = max(roofHeight, nodeHeight);
-									
-								}
-								
-							}
-							
-						}
+						roofHeightMap.put(node.getPos(), (double) nodeHeight);
 						
+						if (usePartRoofHeight)
+							roofHeight = max(roofHeight, nodeHeight);
 					}
-					
+				}
+								
+				for (MapWaySegment waySegment : ridges){
+					// height of node (above roof base)
+					Float nodeHeight = null;
+
+					if (waySegment.getTags().containsKey("roof:height")) {
+						nodeHeight = parseMeasure(waySegment.getTags()
+								.getValue("roof:height"));
+					} else {
+						nodeHeight = (float) roofHeight;
+					}
+
+					if (usePartRoofHeight)
+						roofHeight = max(roofHeight, nodeHeight);
+
+					for (MapNode node : waySegment.getStartEndNodes())
+							roofHeightMap.put(node.getPos(), (double) nodeHeight);
 				}
 				
-				/* add heights for outline nodes that don't have one yet */
+				/* join colinear segments, but not the nodes that are connected to ridge/edges
+				 * often there are nodes that are only added to join one building to another
+				 * but these interfere with proper triangulation.
+				 * TODO: do the same for holes */
+				List<VectorXZ> vertices = polygon.getOuter().getVertexLoop();
+				List<VectorXZ> simplified = new ArrayList<VectorXZ>();
+				VectorXZ vPrev = vertices.get(vertices.size() - 2);
 				
-				for (VectorXZ v : polygon.getOuter().getVertices()) {
+				for (int i = 0, size = vertices.size() - 1; i < size; i++ ){
+					VectorXZ v = vertices.get(i);
+					
+					if (i == 0 || roofHeightMap.containsKey(v) || nodeSet.contains(v)) {
+						simplified.add(v);
+						vPrev = v;
+						continue;
+					}
+					VectorXZ vNext = vertices.get(i + 1);
+					LineSegmentXZ l = new LineSegmentXZ(vPrev, vNext);
+					
+					// TODO define as static somewhere: 10 cm tolerance
+					if (distanceFromLineSegment(v, l) < 0.01){
+						continue;
+					}
+					
+					roofHeightMap.put(v, 0.0);
+					simplified.add(v);
+					vPrev = v;
+				}
+				
+				if (simplified.size() > 2) {
+					try{
+						simplified.add(simplified.get(0));
+						simplePolygon = new PolygonWithHolesXZ(new SimplePolygonXZ(simplified),
+								polygon.getHoles());
+					} catch (InvalidGeometryException e) {
+						System.err.print(e.getMessage());
+						simplePolygon = polygon;
+					}
+				} else
+					simplePolygon = polygon;
+
+				/* add heights for outline nodes that don't have one yet */
+
+				for (VectorXZ v : simplePolygon.getOuter().getVertices()) {
 					if (!roofHeightMap.containsKey(v)) {
 						roofHeightMap.put(v, 0.0);
 					}
 				}
 				
-				for (SimplePolygonXZ hole : polygon.getHoles()) {
+				for (SimplePolygonXZ hole : simplePolygon.getHoles()) {
 					for (VectorXZ v : hole.getVertices()) {
 						if (!roofHeightMap.containsKey(v)) {
 							roofHeightMap.put(v, 0.0);
@@ -1879,7 +2208,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public PolygonWithHolesXZ getPolygon() {
-				return polygon;
+				return simplePolygon;
 			}
 
 			@Override
@@ -1900,7 +2229,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			@Override
 			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
 				if (roofHeightMap.containsKey(pos)) {
-					return building.getArea().getElevationProfile().getMinEle()
+					return building.getGroundLevelEle()
 						+ heightWithoutRoof + roofHeightMap.get(pos);
 				} else {
 					return null;
@@ -1909,7 +2238,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			@Override
 			public double getMaxRoofEle() {
-				return building.getArea().getElevationProfile().getMinEle()
+				return building.getGroundLevelEle()
 					+ heightWithoutRoof + roofHeight;
 			}
 			
@@ -1936,29 +2265,73 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final BuildingPart buildingPart;
 		private final MapNode node;
 		
+		private final EleConnector connector;
+		
 		public BuildingEntrance(BuildingPart buildingPart, MapNode node) {
 			this.buildingPart = buildingPart;
 			this.node = node;
+			this.connector = new EleConnector(node.getPos(), node, getGroundState());
 		}
 		
 		@Override
-		public MapElement getPrimaryMapElement() {
+		public MapNode getPrimaryMapElement() {
 			return node;
 		}
 		
 		@Override
-		public double getClearingAbove(VectorXZ pos) {
-			return 0;
+		public Iterable<EleConnector> getEleConnectors() {
+			return singleton(connector);
 		}
-		
+
 		@Override
-		public double getClearingBelow(VectorXZ pos) {
-			return 0;
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			
+			/* TODO for level != null and ABOVE/BELO, add vertical distance to ground */
+						
 		}
 		
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			
+			boolean onlyOn = true;
+			boolean onlyAbove = true;
+			boolean onlyBelow = true;
+			
+			for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
+				
+				if (waySegment.getPrimaryRepresentation() instanceof
+						AbstractNetworkWaySegmentWorldObject) {
+					
+					switch (waySegment.getPrimaryRepresentation().getGroundState()) {
+					case ABOVE: onlyOn = false; onlyBelow = false; break;
+					case BELOW: onlyOn = false; onlyAbove = false; break;
+					case ON: onlyBelow = false; onlyAbove = false; break;
+					}
+					
+				}
+				
+			}
+			
+			if (onlyOn) {
+				return ON;
+			} else if (onlyAbove) {
+				return ABOVE;
+			} else if (onlyBelow) {
+				return BELOW;
+			} else {
+				return ON;
+			}
+			
+		}
+		
+		public int getLevel() {
+
+			try {
+				return Integer.parseInt(node.getTags().getValue("level"));
+			} catch (NumberFormatException e) {
+				return 0;
+			}
+			
 		}
 		
 		@Override
@@ -1992,7 +2365,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* draw the entrance as a box protruding from the building */
 			
-			VectorXYZ center = node.getElevationProfile().getPointWithEle();
+			VectorXYZ center = connector.getPosXYZ();
 			
 			float height = parseHeight(node.getTags(), 2);
 			float width = parseWidth(node.getTags(), 1);

@@ -56,7 +56,7 @@ public class PolygonXZ {
 	 * at least once. Can be used if you don't care about whether the first/last
 	 * vector is duplicated.
 	 */
-	public Collection<VectorXZ> getVertexCollection() {
+	public List<VectorXZ> getVertexCollection() {
 		return vertexLoop;
 	}
 	
@@ -182,7 +182,7 @@ public class PolygonXZ {
 		
 	}
 
-	public Collection<VectorXZ> intersectionPositions(
+	public List<VectorXZ> intersectionPositions(
 			LineSegmentXZ lineSegment) {
 		
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();

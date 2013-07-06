@@ -7,10 +7,11 @@ import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
+import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.jogl.JOGLRendererVBO;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -97,6 +98,25 @@ public class StatisticsTarget extends
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.CONVEX_POLYGON ? 1 : 0;
+			}
+		}),
+		
+		VBO_VALUE_COUNT(new StatImpl() {
+			@Override public long countPrimitive(Type type, Material material,
+					List<VectorXYZ> vs, List<VectorXYZ> normals,
+					List<List<VectorXZ>> texCoordLists) {
+				
+				int vertexCount;
+				
+				if (type == Type.TRIANGLES) {
+					vertexCount = vs.size();
+				} else {
+					vertexCount = 3 * (vs.size() - 2);
+				}
+				
+				return vertexCount *
+					JOGLRendererVBO.getValuesPerVertex(material);
+				
 			}
 		});
 		

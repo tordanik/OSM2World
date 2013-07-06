@@ -4,6 +4,7 @@ import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.E
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,9 @@ public class OsmosisReader implements OSMDataReader {
 	private Collection<OSMRelation> ownRelations;
 	
 	private final Sink sinkImplementation = new Sink() {
+		public void initialize(Map<String, Object> arg0) {
+			/* do nothing */
+		}
 		public void release() {
 			/* do nothing */
 		}
@@ -82,6 +86,31 @@ public class OsmosisReader implements OSMDataReader {
 	
 	public OsmosisReader(File file) throws IOException {
 		
+		RunnableSource reader = createReaderForFile(file);
+		
+		reader.setSink(sinkImplementation);
+		
+		Thread readerThread = new Thread(reader);
+		readerThread.start();
+		
+		while (readerThread.isAlive()) {
+			try {
+				readerThread.join();
+			} catch (InterruptedException e) { /* do nothing */
+			}
+		}
+		
+		if (!isComplete()) {
+			throw new IOException("couldn't read from file");
+		}
+		
+		convertToOwnRepresentation();
+		
+	}
+
+	public static final RunnableSource createReaderForFile(File file)
+			throws FileNotFoundException {
+		
 		boolean pbf = false;
 		CompressionMethod compression = CompressionMethod.None;
 		
@@ -102,23 +131,7 @@ public class OsmosisReader implements OSMDataReader {
 			reader = new XmlReader(file, false, compression);
 		}
 		
-		reader.setSink(sinkImplementation);
-		
-		Thread readerThread = new Thread(reader);
-		readerThread.start();
-		
-		while (readerThread.isAlive()) {
-			try {
-				readerThread.join();
-			} catch (InterruptedException e) { /* do nothing */
-			}
-		}
-		
-		if (!isComplete()) {
-			throw new IOException("couldn't read from file");
-		}
-		
-		convertToOwnRepresentation();
+		return reader;
 		
 	}
 	

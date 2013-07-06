@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.data.NodeElevationProfile;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMNode;
@@ -27,7 +26,6 @@ public class MapNode implements MapElement {
 	private final OSMNode osmNode;
 	
 	private List<NodeWorldObject> representations = new ArrayList<NodeWorldObject>(1);
-	private NodeElevationProfile elevationProfile;
 	
 	private List<MapWaySegment> connectedWaySegments = new ArrayList<MapWaySegment>();
 	private List<MapSegment> connectedSegments = new ArrayList<MapSegment>();
@@ -154,7 +152,7 @@ public class MapNode implements MapElement {
 	}
 	
 	/**
-	 * creates the ordering described for {@link #getConnectedLines()}
+	 * creates the ordering described for {@link #getConnectedSegments()}
 	 */
 	private void sortLinesByAngle(List<? extends MapSegment> lines) {
 		Collections.sort(lines, new Comparator<MapSegment>() {
@@ -226,16 +224,7 @@ public class MapNode implements MapElement {
 	public void addRepresentation(NodeWorldObject representation) {
 		this.representations.add(representation);
 	}
-	
-	@Override
-	public NodeElevationProfile getElevationProfile() {
-		return elevationProfile;
-	}
-
-	public void setElevationProfile(NodeElevationProfile elevationProfile) {
-		this.elevationProfile = elevationProfile;
-	}
-	
+		
 	@Override
 	public String toString() {
 		return osmNode.toString();

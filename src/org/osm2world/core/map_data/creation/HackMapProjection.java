@@ -2,6 +2,7 @@ package org.osm2world.core.map_data.creation;
 
 import static org.osm2world.core.map_data.creation.MercatorProjection.*;
 
+import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.data.OSMNode;
@@ -19,36 +20,63 @@ public class HackMapProjection implements MapProjection {
 	private final static double LON_CORRECTION = 1.5;
 	
 	/**
-	 * we remember the first lat/lon values so we can move all other
-	 * lat/lon-values near (0,0)
+	 * The coordinate origin is placed at the center of the bounds,
+	 * or else at the first node's coordinates.
+	 * All coordinates will be modified by subtracting the origin
+	 * (in lat/lon, which does not really make sense, but is simply
+	 *  supposed to keep nodes as close as possible to 0.0).
+	 * 
+	 * //TODO: replace this solution later
 	 */
-	private final double firstLat, firstLon;
+	private final Double originLat, originLon;
+	
+	public HackMapProjection(LatLon origin) {
+		this.originLat = origin.lat;
+		this.originLon = origin.lon;
+	}
 	
 	public HackMapProjection(OSMData osmData) {
-		if (osmData.getNodes().isEmpty()) {
-			throw new IllegalArgumentException("OSM data must contain nodes");
+		
+		if (osmData.getBounds() != null && !osmData.getBounds().isEmpty()) {
+			
+			Bound firstBound = osmData.getBounds().iterator().next();
+			originLat = (firstBound.getTop() + firstBound.getBottom()) / 2;
+			originLon = (firstBound.getLeft() + firstBound.getRight()) / 2;
+			
+		} else {
+			
+			if (osmData.getNodes().isEmpty()) {
+				throw new IllegalArgumentException("OSM data must contain nodes");
+			}
+			OSMNode firstNode = osmData.getNodes().iterator().next();
+			originLat = firstNode.lat;
+			originLon = firstNode.lon;
+			
 		}
-		OSMNode firstNode = osmData.getNodes().iterator().next();
-		firstLat = firstNode.lat;
-		firstLon = firstNode.lon;
+		
 	}
 
 	public VectorXZ calcPos(double lat, double lon) {
 		
-		double x = lonToX(lon - firstLon) / LON_CORRECTION;
-		double y = latToY(lat - firstLat);
+		double x = lonToX(lon - originLon) / LON_CORRECTION;
+		double y = latToY(lat - originLat);
 		
 		return new VectorXZ(x, y); //x and z(!) are 2d here
 	}
 	
 	@Override
+	public VectorXZ calcPos(LatLon latlon) {
+		return calcPos(latlon.lat, latlon.lon);
+	}
+	
+	@Override
 	public double calcLat(VectorXZ pos) {
-		return yToLat(pos.z) + firstLat;
+		return yToLat(pos.z) + originLat;
 	}
 	
 	@Override
 	public double calcLon(VectorXZ pos) {
-		return xToLon(pos.x * LON_CORRECTION) + firstLon;
+		return xToLon(pos.x * LON_CORRECTION) + originLon;
 	}
 	
 	@Override

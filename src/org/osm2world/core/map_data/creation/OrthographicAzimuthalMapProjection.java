@@ -37,6 +37,12 @@ public class OrthographicAzimuthalMapProjection implements MapProjection {
 		
 	}
 	
+	@Override
+	public VectorXZ calcPos(LatLon latlon) {
+		return calcPos(latlon.lat, latlon.lon);
+	}
+	
+	@Override
 	public VectorXZ calcPos(double latDeg, double lonDeg) {
 		
 		double lat = toRadians(latDeg);

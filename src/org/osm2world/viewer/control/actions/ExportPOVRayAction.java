@@ -45,22 +45,22 @@ public class ExportPOVRayAction extends AbstractExportAction {
 			   compensating for left- vs. right-handed coords */
 
 			Camera povRayCamera = new Camera();
-			povRayCamera.setLookAt(
-					renderOptions.camera.getLookAt().x, 
-					renderOptions.camera.getLookAt().y, 
-					renderOptions.camera.getLookAt().z);
-			povRayCamera.setPos(
+			povRayCamera.setCamera(
 					renderOptions.camera.getPos().x, 
 					renderOptions.camera.getPos().y, 
-					renderOptions.camera.getPos().z);
+					renderOptions.camera.getPos().z,
+					renderOptions.camera.getLookAt().x, 
+					renderOptions.camera.getLookAt().y, 
+					renderOptions.camera.getLookAt().z,
+					renderOptions.camera.getUp().x,
+					renderOptions.camera.getUp().y,
+					renderOptions.camera.getUp().z);
 
 			/* write the file */
 
 			POVRayWriter.writePOVInstructionFile(
 					file, 
 					data.getConversionResults().getMapData(),
-					data.getConversionResults().getEleData(),
-					data.getConversionResults().getTerrain(),
 					povRayCamera, renderOptions.projection);
 
 			messageManager.addMessage("exported POVRay file " + file);

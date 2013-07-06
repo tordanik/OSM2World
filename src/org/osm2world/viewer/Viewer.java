@@ -2,9 +2,7 @@ package org.osm2world.viewer;
 
 import javax.swing.UIManager;
 
-import org.osm2world.viewer.model.Data;
-import org.osm2world.viewer.model.MessageManager;
-import org.osm2world.viewer.model.RenderOptions;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.osm2world.viewer.view.ViewerFrame;
 
 public class Viewer {
@@ -21,8 +19,7 @@ public class Viewer {
 			System.out.println("Error setting native look and feel: " + e);
 		}
 		
-		new ViewerFrame(new Data(), new MessageManager(), new RenderOptions(),
-				null).setVisible(true);
+		new ViewerFrame(new BaseConfiguration(), null, null).setVisible(true);
 		
 	}
 	

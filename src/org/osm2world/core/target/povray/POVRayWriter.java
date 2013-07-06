@@ -6,17 +6,13 @@ import java.io.PrintStream;
 import java.util.Locale;
 
 import org.osm2world.core.GlobalValues;
-import org.osm2world.core.heightmap.data.CellularTerrainElevation;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.terrain.data.Terrain;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -28,7 +24,6 @@ public final class POVRayWriter {
 	private POVRayWriter() { }
 	
 	public static final void writePOVInstructionFile(File file, MapData mapData,
-			CellularTerrainElevation eleData, Terrain terrain,
 			Camera camera, Projection projection)
 			throws IOException {
 		
@@ -39,7 +34,7 @@ public final class POVRayWriter {
 		PrintStream printStream = new PrintStream(file);
 		
 		writePOVInstructionStringToStream(printStream,
-				mapData, eleData, terrain, camera, projection);
+				mapData, camera, projection);
 		
 		printStream.close();
 		
@@ -47,7 +42,6 @@ public final class POVRayWriter {
 
 	private static final void writePOVInstructionStringToStream(
 			PrintStream stream, MapData mapData,
-			CellularTerrainElevation eleData, Terrain terrain,
 			Camera camera, Projection projection) {
 				
 		POVRayTarget target = new POVRayTarget(stream);
@@ -84,25 +78,26 @@ public final class POVRayWriter {
 			}
 		}
 		
-		target.append("//\n// empty ground around the scene\n//\n\n");
-		
-		target.append("difference {\n");
-		target.append("  plane { y, -0.001 }\n  ");
-		VectorXZ[] boundary = eleData.getBoundaryPolygon().getXZPolygon()
-			.getVertexLoop().toArray(new VectorXZ[0]);
-		target.appendPrism( -100, 1, boundary);
-		target.append("\n");
-		target.appendMaterialOrName(Materials.TERRAIN_DEFAULT);
-		target.append("\n}\n\n");
-		
+		//TODO get terrain boundary elsewhere
+//		if (terrain != null) {
+//
+//			target.append("//\n// empty ground around the scene\n//\n\n");
+//
+//			target.append("difference {\n");
+//			target.append("  plane { y, -0.001 }\n  ");
+//			VectorXZ[] boundary = eleData.getBoundaryPolygon().getXZPolygon()
+//				.getVertexLoop().toArray(new VectorXZ[0]);
+//			target.appendPrism( -100, 1, boundary);
+//			target.append("\n");
+//			target.appendMaterialOrName(Materials.TERRAIN_DEFAULT);
+//			target.append("\n}\n\n");
+//
+//		}
+			
 		target.append("\n\n//\n//Map data\n//\n\n");
-		
-		TargetUtil.renderWorldObjects(target, mapData);
-
-		target.append("\n\n//\n//Terrain\n//\n\n");
-		
-		terrain.renderTo(target);
-		
+			
+		TargetUtil.renderWorldObjects(target, mapData, true);
+				
 	}
 
 	private static final void addLightingDefinition(POVRayTarget target,
@@ -159,7 +154,7 @@ public final class POVRayWriter {
 			target.appendVector(camera.getRight().mult(width).invert()); //invert compensates for left-handed vs. right handed coordinates
 			
 			target.append("\n  up ");
-			VectorXYZ up = camera.getRight().crossNormalized(camera.getViewDirection());
+			VectorXYZ up = camera.getUp();
 			target.appendVector(up.mult(projection.getVolumeHeight()));
 						
 			target.append("\n  look_at ");
@@ -169,6 +164,9 @@ public final class POVRayWriter {
 			
 			target.append("\n  look_at  ");
 			target.appendVector(camera.getLookAt());
+			
+			target.append("\n  sky ");
+			target.appendVector(camera.getUp());
 			
 		}
 		

@@ -2,7 +2,7 @@ package org.osm2world.core.osm.data;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 
-public class OSMElement {
+public abstract class OSMElement {
 
 	public final TagGroup tags;
 	public final long id;
@@ -33,6 +33,14 @@ public class OSMElement {
 		if (id != other.id)
 			return false;
 		return true;
+	}
+	
+	/**
+	 * returns the id, plus an one-letter prefix for the element type
+	 */
+	@Override
+	public String toString() {
+		return "?" + id;
 	}
 	
 }

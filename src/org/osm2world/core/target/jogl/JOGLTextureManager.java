@@ -1,14 +1,18 @@
 package org.osm2world.core.target.jogl;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.media.opengl.GL2;
 
+import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
 /**
  * loads textures from files to JOGL and keeps them available for future use
@@ -39,7 +43,20 @@ public class JOGLTextureManager {
 				
 				try {
 					
-					result = TextureIO.newTexture(file, true);
+					if (!file.getName().toLowerCase().endsWith("png")) {
+						
+						//flip to ensure consistent tex coords with png images
+						BufferedImage bufferedImage = ImageIO.read(file);
+						ImageUtil.flipImageVertically(bufferedImage);
+						
+						result = AWTTextureIO.newTexture(
+								gl.getGLProfile(), bufferedImage, true);
+						
+					} else {
+					
+						result = TextureIO.newTexture(file, true);
+						
+					}
 					
 					availableTextures.put(file, result);
 					

@@ -16,13 +16,13 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMElement;
-import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
-public class ObjTarget extends AbstractTarget<RenderableToObj> {
+public class ObjTarget extends FaceTarget<RenderableToObj> {
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
@@ -36,7 +36,7 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	private int anonymousWOCounter = 0;
 	
 	private Material currentMaterial = null;
-	private int anonymousMaterialCounter = 0;
+	private static int anonymousMaterialCounter = 0;
 	
 	public ObjTarget(PrintStream objStream, PrintStream mtlStream) {
 		
@@ -53,6 +53,11 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	@Override
 	public void render(RenderableToObj renderable) {
 		renderable.renderTo(this);
+	}
+	
+	@Override
+	public boolean reconstructFaces() {
+		return config != null && config.getBoolean("reconstructFaces", false);
 	}
 
 	@Override
@@ -101,28 +106,22 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 	}
 	
 	@Override
-	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawFace(Material material, List<VectorXYZ> vs,
+			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 		
 		useMaterial(material);
-		
-		int triangleNumber = 0;
-		for (TriangleXYZ triangle : triangles) {
-			
-			int[] texCoordIndices = null;
-			if (texCoordLists != null && !texCoordLists.isEmpty()) {
-				List<VectorXZ> texCoords = texCoordLists.get(0);
-				texCoordIndices = texCoordsToIndices(
-						texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
-			}
-			
-			writeFace(verticesToIndices(triangle.getVertices()),
-					null, texCoordIndices);
-			
-			triangleNumber ++;
-			
+
+		int[] normalIndices = null;
+		if (normals != null) {
+			normalIndices = normalsToIndices(normals);
 		}
+		
+		int[] texCoordIndices = null;
+		if (texCoordLists != null && !texCoordLists.isEmpty()) {
+			texCoordIndices = texCoordsToIndices(texCoordLists.get(0));
+		}
+		
+		writeFace(verticesToIndices(vs), normalIndices, texCoordIndices);
 		
 	}
 
@@ -151,24 +150,10 @@ public class ObjTarget extends AbstractTarget<RenderableToObj> {
 		}
 		
 	}
-	
-	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
-		
-		useMaterial(material);
-		
-		int[] texCoordIndices = null;
-		if (texCoordLists != null && !texCoordLists.isEmpty()) {
-			texCoordIndices = texCoordsToIndices(texCoordLists.get(0));
-		}
-		
-		writeFace(verticesToIndices(vs), null, texCoordIndices);
-		
-	}
 
 	private void useMaterial(Material material) {
 		if (!material.equals(currentMaterial)) {
+			currentMaterial = material;
 			
 			String name = materialMap.get(material);
 			if (name == null) {

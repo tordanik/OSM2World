@@ -3,14 +3,10 @@ package org.osm2world.viewer.view.debug;
 import static java.awt.Color.WHITE;
 import static java.lang.Math.*;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -37,11 +33,9 @@ public class LatLonDebugView extends DebugView {
 	public boolean canBeUsed() {
 		return map != null && mapProjection != null;
 	}
-	
+
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	public void fillTarget(JOGLTarget target) {
 		
 		AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
 		

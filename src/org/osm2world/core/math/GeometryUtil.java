@@ -72,6 +72,22 @@ public final class GeometryUtil {
 		return result;
 		
 	}
+	
+	public static final <V> List<V> triangleNormalListFromTriangleStrip(
+			List<? extends V> normals) {
+		
+		List<V> result = new ArrayList<V>((normals.size() - 2) * 3);
+		
+		for (int triangle = 0; triangle + 2 < normals.size(); triangle++) {
+			V normal = normals.get(triangle + 2);
+			result.add(normal);
+			result.add(normal);
+			result.add(normal);
+		}
+		
+		return result;
+		
+	}
 
 	public static final List<TriangleXYZ> trianglesFromTriangleFan(
 			List<? extends VectorXYZ> vs) {
@@ -215,12 +231,12 @@ public final class GeometryUtil {
 	 */
 	public static final boolean isBetween(VectorXZ p, VectorXZ l1, VectorXZ l2) {
 		
-		double distSqQ1Q2 = distanceSquared(l1, l2);
-		double distSqPQ1 = distanceSquared(p, l1);
-		double distSqPQ2 = distanceSquared(p, l2);
+		double distSqL1L2 = distanceSquared(l1, l2);
+		double distSqPL1 = distanceSquared(p, l1);
+		double distSqPL2 = distanceSquared(p, l2);
 		
-		return distSqQ1Q2 < distSqPQ1
-			&& distSqQ1Q2 < distSqPQ2;
+		return distSqL1L2 > distSqPL1
+			&& distSqL1L2 > distSqPL2;
 		
 	}
 	
@@ -465,8 +481,8 @@ public final class GeometryUtil {
 	}
 	
 	/**
-	 * constant used by
-	 * {@link #reproducablyDistributePointsOn(long, PolygonWithHolesXZ, double, double)}
+	 * constant used by {@link #distributePointsOn(long, PolygonWithHolesXZ,
+	 *  AxisAlignedBoundingBoxXZ, double, double)}
 	 */
 	private static final int POINTS_PER_BOX = 100;
 	

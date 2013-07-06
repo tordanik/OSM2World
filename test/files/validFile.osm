@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<osm version='0.6' generator='JOSM'>
+<osm version='0.6' generator='JOSM' upload='false'>
   <bounds minlat='48.5701329840823' minlon='13.4553337097168' maxlat='48.5781971466379' maxlon='13.4776496887207' />
   <node id='4' timestamp='2009-12-29T17:26:47Z' visible='true' version='1' lat='48.57412203109322' lon='13.465483398374973'>
     <tag k='highway' v='traffic_signals' />

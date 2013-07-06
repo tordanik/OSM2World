@@ -5,12 +5,8 @@ import static java.lang.Math.*;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -29,11 +25,9 @@ public class InternalCoordsDebugView extends DebugView {
 	public boolean canBeUsed() {
 		return map != null;
 	}
-	
+
 	@Override
-	protected void renderToImpl(GL2 gl, Camera camera, Projection projection) {
-		
-		JOGLTarget target = new JOGLTarget(gl, camera);
+	public void fillTarget(JOGLTarget target) {
 		
 		AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
 		

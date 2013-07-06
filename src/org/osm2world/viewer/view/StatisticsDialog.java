@@ -38,6 +38,7 @@ public class StatisticsDialog extends JDialog {
 		statNames.put(TRIANGLE_STRIP_COUNT, "t. strips");
 		statNames.put(TRIANGLE_FAN_COUNT, "t. fans");
 		statNames.put(CONVEX_POLYGON_COUNT, "polygons");
+		statNames.put(VBO_VALUE_COUNT, "vbo values");
 	}
 	
 	public StatisticsDialog(JFrame owner, StatisticsTarget stats) {

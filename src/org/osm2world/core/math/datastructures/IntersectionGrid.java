@@ -167,18 +167,39 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 		}
 		cells[cellX][cellZ].add(object);
 	}
-
+	
+	public void remove(T object) {
+		
+		assert(gridBounds.contains(object));
+		
+		AxisAlignedBoundingBoxXZ objectAABB = object.getAxisAlignedBoundingBoxXZ();
+		
+		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
+		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
+		int maxCellX = cellXForCoord(objectAABB.maxX, objectAABB.maxZ);
+		int maxCellZ = cellZForCoord(objectAABB.maxX, objectAABB.maxZ);
+		
+		for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
+			for (int cellZ = minCellZ; cellZ <= maxCellZ; cellZ ++) {
+				if (cells[cellX][cellZ] != null) {
+					cells[cellX][cellZ].remove(object);
+				}
+			}
+		}
+		
+	}
+	
 	/**
 	 * returns the x index of the cell that contains the coordinate
 	 */
-	private final int cellXForCoord(double x, double z) {
+	public final int cellXForCoord(double x, double z) {
 		return (int) ((x - gridBounds.minX) / cellSizeX);
 	}
 	
 	/**
 	 * returns the z index of the cell that contains the coordinate
 	 */
-	private final int cellZForCoord(double x, double z) {
+	public final int cellZForCoord(double x, double z) {
 		return (int) ((z - gridBounds.minZ) / cellSizeZ);
 	}
 	

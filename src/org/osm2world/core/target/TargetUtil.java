@@ -7,6 +7,7 @@ import java.util.Iterator;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.statistics.StatisticsTarget;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
@@ -21,18 +22,23 @@ public final class TargetUtil {
 	 * that are compatible with that target type
 	 */
 	public static <R extends Renderable> void renderWorldObjects(
-			final Target<R> target, final MapData mapData) {
+			final Target<R> target, final MapData mapData,
+			final boolean renderUnderground) {
 		
 		for (MapElement mapElement : mapData.getMapElements()) {
 			for (WorldObject r : mapElement.getRepresentations()) {
-				try {
-					renderObject(target, r);
-				} catch (Exception e) {
-					System.err.println("ignored exception:");
-					//TODO proper logging
-					e.printStackTrace();
-					System.err.println("this exception occurred for the following input:\n"
-							+ mapElement);
+				if (renderUnderground || r.getGroundState() != GroundState.BELOW) {
+				
+					try {
+						renderObject(target, r);
+					} catch (Exception e) {
+						System.err.println("ignored exception:");
+						//TODO proper logging
+						e.printStackTrace();
+						System.err.println("this exception occurred for the following input:\n"
+								+ mapElement);
+					}
+					
 				}
 			}
 		}

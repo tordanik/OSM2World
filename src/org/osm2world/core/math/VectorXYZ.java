@@ -5,7 +5,9 @@ import static java.lang.Math.sqrt;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VectorXYZ implements Vector3D {
+import org.osm2world.core.math.datastructures.IntersectionTestObject;
+
+public class VectorXYZ implements Vector3D, IntersectionTestObject {
 
 	public final double x, y, z;
 
@@ -62,6 +64,10 @@ public class VectorXYZ implements Vector3D {
 				this.x + x,
 				this.y + y,
 				this.z + z);
+	}
+
+	public VectorXYZ addY(double y) {
+		return new VectorXYZ(x, this.y + y, z);
 	}
 
 	public VectorXYZ subtract(VectorXYZ other) {
@@ -147,6 +153,25 @@ public class VectorXYZ implements Vector3D {
 	}
 
 	/**
+	 * returns the result of rotating this vector around the
+	 * given normalized vector n
+	 * @param angleRad angle in radians
+	 * @param n  normalized vector
+	 */
+	public VectorXYZ rotateVec(double angleRad, VectorXYZ n) {
+		double a11 = n.x*n.x*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
+		double a12 = n.x*n.y*(1 - Math.cos(angleRad)) - n.z*Math.sin(angleRad);
+		double a13 = n.x*n.z*(1 - Math.cos(angleRad)) + n.y*Math.sin(angleRad);
+		double a21 = n.y*n.x*(1 - Math.cos(angleRad)) + n.z*Math.sin(angleRad);
+		double a22 = n.y*n.y*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
+		double a23 = n.y*n.z*(1 - Math.cos(angleRad)) - n.x*Math.sin(angleRad);
+		double a31 = n.z*n.x*(1 - Math.cos(angleRad)) - n.y*Math.sin(angleRad);
+		double a32 = n.z*n.y*(1 - Math.cos(angleRad)) + n.x*Math.sin(angleRad);
+		double a33 = n.z*n.z*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
+		return new VectorXYZ(a11*x+a12*y+a13*z, a21*x+a22*y+a23*z, a31*x+a32*y+a33*z);
+	}
+	
+	/**
 	 * calculates the angle between this vector and other,
 	 * but only if both are normalized!
 	 */
@@ -193,7 +218,12 @@ public class VectorXYZ implements Vector3D {
 	public VectorXYZ invert() {
 		return new VectorXYZ(-x, -y, -z);
 	}
-
+	
+	@Override
+	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		return new AxisAlignedBoundingBoxXZ(x, z, x, z);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof VectorXYZ)) {
