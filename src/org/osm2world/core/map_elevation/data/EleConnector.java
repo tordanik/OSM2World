@@ -55,7 +55,7 @@ public class EleConnector {
 	 */
 	public void setPosXYZ(VectorXYZ posXYZ) {
 				
-		assert this.posXYZ.xz().equals(this.pos);
+		assert posXYZ.xz().equals(this.pos);
 		
 		this.posXYZ = posXYZ;
 		
