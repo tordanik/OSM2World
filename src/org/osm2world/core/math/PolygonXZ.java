@@ -3,9 +3,12 @@ package org.osm2world.core.math;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 public class PolygonXZ {
 
@@ -213,29 +216,123 @@ public class PolygonXZ {
 	
 	/**
 	 * returns true if the polygon defined by the polygonVertexLoop parameter
-	 * is self-intersecting
+	 * is self-intersecting.<br/>
+	 * The Code is based on Shamos-Hoey's algorithm
+	 * 
+	 * TODO: if the end vertex of two line segments are the same the
+	 *       polygon is never considered as self intersecting on purpose.
+	 *       This behavior should probably be reconsidered, but currently
+	 *       left as is due to frequent cases of such polygons.
 	 */
 	public static boolean isSelfIntersecting(List<VectorXZ> polygonVertexLoop) {
-		
-		for (int i=0; i+1 < polygonVertexLoop.size(); i++) {
-			for (int j=i+1; j+1 < polygonVertexLoop.size(); j++) {
 
-				VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
-						polygonVertexLoop.get(i), polygonVertexLoop.get(i+1),
-						polygonVertexLoop.get(j), polygonVertexLoop.get(j+1)
-						);
-				
-				if (intersection != null) {
-					return true;
-				}
-				
+		final class Event {
+			boolean start;
+			LineSegmentXZ line;
+			
+			Event(LineSegmentXZ l, boolean s) {
+				this.line = l;
+				this.start = s;
 			}
 		}
+
+		// we have n-1 vertices as the first and last vertex are the same 
+		final int segments = polygonVertexLoop.size()-1;
+
+		// generate an array of input events associated with their line segments
+		Event[] events = new Event[segments*2];
+		for (int i = 0; i < segments; i++) {
+			VectorXZ v1 = polygonVertexLoop.get(i);
+			VectorXZ v2 = polygonVertexLoop.get(i+1);
+			
+			// Create a line where the first vertex is left (or above) the second vertex
+			LineSegmentXZ line;
+			if ((v1.x < v2.x) || ((v1.x == v2.x) && (v1.z < v2.z))) {
+				line = new LineSegmentXZ(v1, v2);
+			} else {
+				line = new LineSegmentXZ(v2, v1);
+			}
+			
+			events[2*i] = new Event(line, true);
+			events[2*i+1] = new Event(line, false);
+		}
 		
-		return false;
-		
-	}
+		// sort the input events according to the x-coordinate, then z-coordinate
+		Arrays.sort(events, new Comparator<Event>() {
+			public int compare(Event e1, Event e2) {
+				
+				VectorXZ v1 = e1.start? e1.line.p1 : e1.line.p2;
+				VectorXZ v2 = e2.start? e2.line.p1 : e2.line.p2;
+
+				if (v1.x < v2.x) return -1;
+				else if (v1.x == v2.x) {
+					if (v1.z < v2.z) return -1;
+					else if (v1.z == v2.z) return 0;
+				}
+				return 1;
+			}});
 	
+		// A TreeSet, used for the sweepline algorithm
+		TreeSet<LineSegmentXZ> sweepLine = new TreeSet<LineSegmentXZ>(new Comparator<LineSegmentXZ>() {
+			public int compare(LineSegmentXZ l1, LineSegmentXZ l2) { 
+
+				VectorXZ v1 = l1.p1;
+				VectorXZ v2 = l2.p1;
+
+				if (v1.z < v2.z) return -1;
+				else if (v1.z == v2.z) {
+					if (v1.x < v2.x) return -1;
+					else if (v1.x == v2.x) {
+						if (l1.p2.z < l2.p2.z) return -1;
+						else if (l1.p2.z == l2.p2.z) {
+							if (l1.p2.x < l2.p2.x) return -1;
+							else if (l1.p2.x == l2.p2.x) return 0; 
+						}
+					}
+				}
+				return 1;
+			}});
+		
+		// start the algorithm by visiting every event
+		for (Event event : events) {
+			LineSegmentXZ line = event.line;
+			
+			if (event.start) { // if it is a startpoint
+			
+				LineSegmentXZ lower = sweepLine.lower(line);
+				LineSegmentXZ higher = sweepLine.higher(line);
+
+				sweepLine.add(line);
+
+				if (lower != null) {
+					if (lower.intersects(line.p1, line.p2)) {
+						return true;
+					}
+				}
+				
+				if (higher != null) {	
+					if (higher.intersects(line.p1, line.p2)) {
+						return true;
+					}
+				}
+			} else { // if it is an endpoint
+				
+				LineSegmentXZ lower = sweepLine.lower(line);
+				LineSegmentXZ higher = sweepLine.higher(line);
+
+				sweepLine.remove(line);
+
+				if ((lower == null) || (higher == null)) {
+					continue;
+				}
+
+				if (lower.intersects(higher.p1, higher.p2)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 
 	/**
@@ -345,7 +442,7 @@ public class PolygonXZ {
 			}
 			
 		}
-		
+
 		return false;
 		
 	}
