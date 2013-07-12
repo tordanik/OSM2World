@@ -1,9 +1,9 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.*;
-import static java.util.Collections.emptyIterator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -84,7 +84,7 @@ public class VectorGridXZ implements Iterable<VectorXZ> {
 	public Iterator<VectorXZ> iterator() {
 		
 		if (isEmpty()) {
-			return emptyIterator();
+		    return Collections.EMPTY_LIST.iterator();
 		} else {
 			
 			List<Iterator<VectorXZ>> columnIterators =
