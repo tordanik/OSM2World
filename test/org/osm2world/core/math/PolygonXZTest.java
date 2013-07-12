@@ -85,4 +85,97 @@ public class PolygonXZTest {
 		
 	}
 	
+	@Test
+	public void testIsSelfIntersecting1() {
+		VectorXZ v1 = new VectorXZ(0, 0);
+		VectorXZ v2 = new VectorXZ(1, 0);
+		VectorXZ v3 = new VectorXZ(1, 1);
+		VectorXZ v4 = new VectorXZ(0, 1);
+		VectorXZ v5 = new VectorXZ(0, 0);
+		
+		// Simple rectangle should not be self intersecting
+		assertFalse(
+				new PolygonXZ(Arrays.asList(v1, v2, v3, v4, v5)).isSelfIntersecting());
+	}
+
+	@Test
+	public void testIsSelfIntersecting2() {
+		VectorXZ v1 = new VectorXZ(1, 5);
+		VectorXZ v2 = new VectorXZ(5, 2);
+		VectorXZ v3 = new VectorXZ(4, 1);
+		VectorXZ v4a = new VectorXZ(3, 4);
+		VectorXZ v4b = new VectorXZ(3, 5);
+		VectorXZ v4c = new VectorXZ(3, 6);
+		VectorXZ v5 = new VectorXZ(1, 5);
+		
+		/*
+		 * testing a simple self intersecting polygon with 4 vertices
+		 * while the line causing the intersection is above, below or at the
+		 * same height as the beginning node
+		 */
+		
+		assertTrue(
+				new PolygonXZ(Arrays.asList(v1, v2, v3, v4a, v5)).isSelfIntersecting());
+
+		assertTrue(
+				new PolygonXZ(Arrays.asList(v1, v2, v3, v4b, v5)).isSelfIntersecting());
+
+		assertTrue(
+				new PolygonXZ(Arrays.asList(v1, v2, v3, v4c, v5)).isSelfIntersecting());
+	}
+	
+	@Test
+	public void testIsSelfIntersecting3() {
+		VectorXZ v1 = new VectorXZ(0, 0);
+		
+		VectorXZ v2 = new VectorXZ(10, 0);
+		VectorXZ v3 = new VectorXZ(15, 0);
+		VectorXZ v4 = new VectorXZ(20, 0);
+		
+		VectorXZ v5 = new VectorXZ(20, 20);
+		VectorXZ v6 = new VectorXZ(0, 20);
+		VectorXZ v7 = new VectorXZ(0, 0);
+		
+		// Testing simple non self intersecting polygons
+		
+		// ... with one vertex is used two times
+		assertFalse(
+				new PolygonXZ(Arrays.asList(v1, v2, v2, v5, v6, v7)).isSelfIntersecting());
+		
+		// ... with 3 parallel line segments
+		assertFalse(
+				new PolygonXZ(Arrays.asList(v1, v2, v3, v4, v5, v6, v7)).isSelfIntersecting());
+
+		// ... with 3 co-linear line segments 
+		assertFalse(
+				new PolygonXZ(Arrays.asList(v1, v2, v4, v3, v4, v5, v6, v7)).isSelfIntersecting());
+
+	}
+
+	@Test
+	public void testIsSelfIntersecting4() {
+		VectorXZ v1 = new VectorXZ(0, 0);
+		VectorXZ v2 = new VectorXZ(0, 1);
+		
+		VectorXZ v3 = new VectorXZ(0, 3);
+		VectorXZ v4 = new VectorXZ(0, 4);
+		
+		VectorXZ v5 = new VectorXZ(2, 2);
+		VectorXZ v6 = new VectorXZ(4, 2);
+		
+		// Testing simple polygons with two vertical line segments
+		
+		// .. without any intersection
+		assertFalse(
+				new PolygonXZ(Arrays.asList(v1, v2, v5, v3, v4, v6, v1)).isSelfIntersecting());
+
+		// ... with one point being visited twice
+		assertFalse(
+				new PolygonXZ(Arrays.asList(v1, v2, v6, v3, v4, v6, v1)).isSelfIntersecting());
+
+		// .. with a intersection at the right side
+		assertTrue(
+				new PolygonXZ(Arrays.asList(v1, v2, v6, v3, v4, v5, v1)).isSelfIntersecting());
+	}
+
 }
