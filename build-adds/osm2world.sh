@@ -29,4 +29,4 @@ fi
 
 export LD_LIBRARY_PATH=$lpsolvepath
 
-java -Djava.library.path=$lpsolvepath $vmparams -jar OSM2World.jar --config texture_config.properties --gui $@
+java -Djava.library.path=$lpsolvepath $vmparams -jar OSM2World.jar --config texture_config.properties $@
