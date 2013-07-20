@@ -202,18 +202,6 @@ public class VectorXZ implements Vector3D {
 		return Lists.transform(vs, VectorXZ.xyzFunction(y));
 	}
 	
-
-	public static final Function<VectorXZ, Double> distanceFunction(final VectorXZ v1) {
-		
-		return new Function<VectorXZ, Double>() {
-			@Override
-			public Double apply(VectorXZ v2) {
-				return distance(v1, v2);
-			}
-		};
-		
-	}
-	
 	public static final Function<VectorXZ, VectorXYZ> xyzFunction(final double y) {
 		return new Function<VectorXZ, VectorXYZ>() {
 			@Override
