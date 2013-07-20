@@ -84,7 +84,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				node.addRepresentation(new RoadJunction(node));
 				
 			} else if (connectedRoads.size() == 2
-					&& "crossing".equals(tags.getValue("highway"))) {
+					&& tags.contains("highway", "crossing")) {
 				
 				node.addRepresentation(new RoadCrossingAtConnector(node));
 				

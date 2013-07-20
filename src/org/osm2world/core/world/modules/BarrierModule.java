@@ -164,7 +164,7 @@ public class BarrierModule extends AbstractModule {
 	
 	private static class Wall extends ColoredWall {
 		public static boolean fits(TagGroup tags) {
-			return "wall".equals(tags.getValue("barrier"));
+			return tags.contains("barrier", "wall");
 		}
 		public Wall(MapWaySegment segment) {
 			super(Materials.WALL_DEFAULT, segment, 1f, 0.25f);
@@ -173,7 +173,7 @@ public class BarrierModule extends AbstractModule {
 	
 	private static class CityWall extends ColoredWall {
 		public static boolean fits(TagGroup tags) {
-			return "city_wall".equals(tags.getValue("barrier"));
+			return tags.contains("barrier", "city_wall");
 		}
 		public CityWall(MapWaySegment segment) {
 			super(Materials.WALL_DEFAULT, segment, 10, 2);
@@ -182,7 +182,7 @@ public class BarrierModule extends AbstractModule {
 	
 	private static class Hedge extends ColoredWall {
 		public static boolean fits(TagGroup tags) {
-			return "hedge".equals(tags.getValue("barrier"));
+			return tags.contains("barrier", "hedge");
 		}
 		public Hedge(MapWaySegment segment) {
 			super(Materials.HEDGE, segment, 1f, 0.5f);
@@ -248,7 +248,7 @@ public class BarrierModule extends AbstractModule {
 	private static class Fence extends LinearBarrier {
 		
 		public static boolean fits(TagGroup tags) {
-			return "fence".equals(tags.getValue("barrier"));
+			return tags.contains("barrier", "fence");
 		}
 		
 		private static final Map<String, Material> MATERIAL_MAP;
@@ -320,7 +320,7 @@ public class BarrierModule extends AbstractModule {
 		private static final float DEFAULT_HEIGHT = 1;
 
 		public static boolean fits(TagGroup tags) {
-			return "bollard".equals(tags.getValue("barrier"));
+			return tags.contains("barrier", "bollard");
 		}
 		
 		private final float height;

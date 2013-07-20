@@ -8,7 +8,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.g
 import java.util.Collections;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -31,17 +30,17 @@ import org.osm2world.core.world.network.JunctionNodeWorldObject;
  * adds rails to the world
  */
 public class RailwayModule extends ConfigurableWorldModule {
+
+	/** accepted values of the railway key */
+	private static final List<String> RAILWAY_VALUES = asList(
+			"rail", "light_rail", "tram", "disused");
 	
 	@Override
 	public void applyTo(MapData grid) {
 		
-		for (MapWaySegment line : grid.getMapWaySegments()) {
-			TagGroup tags = line.getOsmWay().tags;
-			if ("rail".equals(tags.getValue("railway"))
-					|| "light_rail".equals(tags.getValue("railway"))
-					|| "tram".equals(tags.getValue("railway"))
-					|| "disused".equals(tags.getValue("railway"))) {
-				line.addRepresentation(new Rail(line, tags));
+		for (MapWaySegment segment : grid.getMapWaySegments()) {
+			if (segment.getTags().containsAny("railway", RAILWAY_VALUES)) {
+				segment.addRepresentation(new Rail(segment));
 			}
 		}
 		
@@ -55,7 +54,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 					connectedRails += 1;
 				}
 			}
-						
+			
 			if (connectedRails > 2) {
 				// node.addRepresentation(new RailJunction(node));
 				// TODO: reactivate after implementing proper rendering for rail junctions
@@ -91,12 +90,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 				RAIL_SHAPE.set(i, v);
 			}
 		}
-		
-		private final TagGroup tags;
 				
-		public Rail(MapWaySegment line, TagGroup tags) {
-			super(line);
-			this.tags = tags;
+		public Rail(MapWaySegment segment) {
+			super(segment);
 		}
 
 		@Override
