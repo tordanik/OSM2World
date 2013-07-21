@@ -1,6 +1,6 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.PI;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -46,7 +46,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("highway", "bus_stop")) {
 			node.addRepresentation(new BusStop(node));
 		}
-		
+		if (node.getTags().contains("man_made", "cross")
+				|| node.getTags().contains("summit:cross", "yes")
+				|| node.getTags().contains("historic", "wayside_cross")) {
+			node.addRepresentation(new Cross(node));
+		}
 		if (node.getTags().contains("amenity", "waste_basket")) {
 			node.addRepresentation(new WasteBasket(node));
 		}
@@ -300,6 +304,63 @@ public class StreetFurnitureModule extends AbstractModule {
 				target.drawBox(material, polePos.xyz(getBase().y),
 						faceVector, 0.5, 0.08, 0.08);
 			}
+			
+		}
+		
+	}
+	
+	/**
+	 * a summit cross or wayside cross
+	 */
+	private static final class Cross extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+		
+		public Cross(MapNode node) {
+			super(node);
+		}
+		
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			boolean summit = node.getTags().containsKey("summit:cross")
+					|| node.getTags().contains("natural", "peak");
+			
+			float height = parseHeight(node.getTags(), summit ? 4f : 2f);
+			float width = parseHeight(node.getTags(), height * 2/3);
+			
+			double thickness = min(height, width) / 8;
+			
+			/* determine material and direction */
+			
+			Material material = null;
+			
+			//TODO parse color
+			
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("material"));
+			}
+				
+			if (material == null) {
+				material = Materials.getSurfaceMaterial(
+						node.getTags().getValue("surface"), Materials.WOOD);
+			}
+			
+			double directionAngle = parseDirection(node.getTags(), PI);
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+			
+			/* draw cross */
+			
+			target.drawBox(material, getBase(),
+					faceVector, height, thickness, thickness);
+			
+			target.drawBox(material, getBase().addY(height - width/2 - thickness/2),
+					faceVector, thickness, width, thickness);
 			
 		}
 		
