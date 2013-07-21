@@ -42,6 +42,7 @@ import org.osm2world.viewer.control.actions.ResetCameraAction;
 import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
 import org.osm2world.viewer.control.actions.SetEleConstraintEnforcerAction;
 import org.osm2world.viewer.control.actions.SetTerrainInterpolatorAction;
+import org.osm2world.viewer.control.actions.ShowCameraConfigurationAction;
 import org.osm2world.viewer.control.actions.StatisticsAction;
 import org.osm2world.viewer.control.actions.ToggleBackfaceCullingAction;
 import org.osm2world.viewer.control.actions.ToggleDebugViewAction;
@@ -244,6 +245,7 @@ public class ViewerFrame extends JFrame{
 			subMenu.add(new OrthoBoundsAction(this, data, renderOptions));
 			subMenu.add(new JCheckBoxMenuItem(
 					new ToggleOrthographicProjectionAction(this, data, renderOptions)));
+			subMenu.add(new ShowCameraConfigurationAction(data, renderOptions));
 			menu.add(subMenu);
 
 		} { //"Options"
