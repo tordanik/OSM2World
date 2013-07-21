@@ -57,7 +57,9 @@ import org.osm2world.viewer.view.debug.EleConnectorDebugView;
 import org.osm2world.viewer.view.debug.EleConstraintDebugView;
 import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
+import org.osm2world.viewer.view.debug.InternalCoordsDebugView;
 import org.osm2world.viewer.view.debug.InverseDistanceWeightingInterpolatorDebugView;
+import org.osm2world.viewer.view.debug.LatLonDebugView;
 import org.osm2world.viewer.view.debug.LeastSquaresInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.LinearInterpolatorDebugView;
 import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
@@ -213,6 +215,12 @@ public class ViewerFrame extends JFrame{
 					new MapDataBoundsDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new OrthoBoundsDebugView());
+			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
+					new InternalCoordsDebugView(), -1, false,
+					this, data, renderOptions)));
+			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
+					new LatLonDebugView(), -1, false,
+					this, data, renderOptions)));
 			initAndAddDebugView(subMenu, -1, false,
 					new EleDebugView());
 			initAndAddDebugView(subMenu, -1, false,
