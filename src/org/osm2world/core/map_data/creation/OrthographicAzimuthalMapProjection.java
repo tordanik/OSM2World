@@ -3,40 +3,18 @@ package org.osm2world.core.map_data.creation;
 import static java.lang.Math.*;
 
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMNode;
 
 /**
  * application of an orthographic projection that is intended to use
  * values in meters centered around the coordinate center (0,0).
- * It projects coordinates onto a plane touching the globe at one of the
- * {@link OSMNode}s in the data. This results in sufficient accuracy
+ * It projects coordinates onto a plane touching the globe at the origin.
+ * This results in sufficient accuracy
  * if the data covers only a "small" part of the globe.
  */
-public class OrthographicAzimuthalMapProjection implements MapProjection {
+public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 	
 	private final double GLOBE_RADIUS = 6371000;
-	
-	/** the point where the plane touches the globe */
-	private final double lat0, lon0;
-	
-	public OrthographicAzimuthalMapProjection(double lat0Deg, double lon0Deg) {
-		this.lat0 = toRadians(lat0Deg);
-		this.lon0 = toRadians(lon0Deg);
-	}
-	
-	public OrthographicAzimuthalMapProjection(OSMData osmData) {
-		
-		if (osmData.getNodes().isEmpty()) {
-			throw new IllegalArgumentException("OSM data must contain nodes");
-		}
-		
-		OSMNode firstNode = osmData.getNodes().iterator().next();
-		lon0 = toRadians(firstNode.lon);
-		lat0 = toRadians(firstNode.lat);
-		
-	}
-	
+			
 	@Override
 	public VectorXZ calcPos(LatLon latlon) {
 		return calcPos(latlon.lat, latlon.lon);
@@ -48,8 +26,8 @@ public class OrthographicAzimuthalMapProjection implements MapProjection {
 		double lat = toRadians(latDeg);
 		double lon = toRadians(lonDeg);
 		
-		double x = GLOBE_RADIUS * cos(lat) * sin(lon - lon0);
-		double y = GLOBE_RADIUS * (cos(lat0) * sin(lat) - sin(lat0) * cos(lat) * cos(lon - lon0));
+		double x = GLOBE_RADIUS * cos(lat) * sin(lon - origin.lon);
+		double y = GLOBE_RADIUS * (cos(origin.lat) * sin(lat) - sin(origin.lat) * cos(lat) * cos(lon - origin.lon));
 		
 		return new VectorXZ(x, y);
 		
@@ -62,9 +40,9 @@ public class OrthographicAzimuthalMapProjection implements MapProjection {
 		double c = asin(rho / GLOBE_RADIUS);
 		
 		if (rho > 0) {
-			return asin( cos(c) * sin(lat0) + ( pos.z * sin(c) * cos(lat0) ) / rho );
+			return asin( cos(c) * sin(origin.lat) + ( pos.z * sin(c) * cos(origin.lat) ) / rho );
 		} else {
-			return lat0;
+			return origin.lat;
 		}
 		
 	}
@@ -75,12 +53,12 @@ public class OrthographicAzimuthalMapProjection implements MapProjection {
 		double rho = sqrt(pos.x * pos.x + pos.z * pos.z);
 		double c = asin(rho / GLOBE_RADIUS);
 		
-		double div = rho * cos(lat0) * cos(c) - pos.z * sin(lat0) * sin(c);
+		double div = rho * cos(origin.lat) * cos(c) - pos.z * sin(origin.lat) * sin(c);
 		
 		if (abs(div) > 1e-5) {
-			return lon0 + atan2( pos.x * sin(c), div );
+			return origin.lon + atan2( pos.x * sin(c), div );
 		} else {
-			return lon0;
+			return origin.lon;
 		}
 		
 	}

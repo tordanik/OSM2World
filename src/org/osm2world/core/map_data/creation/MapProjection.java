@@ -28,4 +28,9 @@ public interface MapProjection {
 	 */
 	public VectorXZ getNorthUnit();
 
+	/**
+	 * returns the origin (i.e. the latlon that maps to (0,0)
+	 */
+	public LatLon getOrigin();
+
 }

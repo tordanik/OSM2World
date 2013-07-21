@@ -12,7 +12,8 @@ public class OrthographicAzimuthalMapProjectionTest {
 	public void testCalcPos() {
 		
 		OrthographicAzimuthalMapProjection proj =
-				new OrthographicAzimuthalMapProjection(0, 0);
+				new OrthographicAzimuthalMapProjection();
+		proj.setOrigin(new LatLon(0, 0));
 		
 		VectorXZ posOrigin = proj.calcPos(0, 0);
 		assertAlmostEquals(0, posOrigin.x);

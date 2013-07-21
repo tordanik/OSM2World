@@ -28,8 +28,8 @@ public class OSMToMapDataConverterTest {
 				+File.separator+filename);
 		
 		OSMData osmData = new OsmosisReader(testFile).getData();
-		MapProjection mapProjection =
-				new OrthographicAzimuthalMapProjection(osmData);
+		OriginMapProjection mapProjection = new HackMapProjection();
+		mapProjection.setOrigin(osmData);
 		
 		return new OSMToMapDataConverter(mapProjection).createMapData(osmData);
 		
@@ -90,7 +90,8 @@ public class OSMToMapDataConverterTest {
 				+File.separator+filename);
 		
 		OSMData osmData = new OsmosisReader(testFile).getData();
-		MapProjection mapProjection = new HackMapProjection(osmData);
+		OriginMapProjection mapProjection = new HackMapProjection();
+		mapProjection.setOrigin(osmData);
 		
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
 		MapData mapData = converter.createMapData(osmData);
