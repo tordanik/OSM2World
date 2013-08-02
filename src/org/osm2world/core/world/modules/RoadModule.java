@@ -1690,8 +1690,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
-			return ROAD_MARKING;
-			//TODO: use a dashed texture instead
+			return ROAD_MARKING_DASHED;
 		}
 		
 	};
