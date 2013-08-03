@@ -9,9 +9,10 @@ import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.Co
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -544,7 +545,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					globalTexCoordLists(triangles, material, false));
+					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 			
 			/* connect some lanes such as sidewalks between adjacent roads */
 			
@@ -631,7 +632,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> trianglesXYZ = getTriangulation();
 			
 			target.drawTriangles(material, trianglesXYZ,
-					globalTexCoordLists(trianglesXYZ, material, false));
+					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
 			
 		}
 		
@@ -1035,7 +1036,7 @@ public class RoadModule extends ConfigurableWorldModule {
 					leftOutline, rightOutline);
 
 			target.drawTriangleStrip(ASPHALT, vs,
-					globalTexCoordLists(vs, ASPHALT, false));
+					texCoordLists(vs, ASPHALT, GLOBAL_X_Z));
 			
 			/* determine the length of each individual step */
 			
@@ -1132,7 +1133,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				
 				for (List<VectorXYZ> strip : strips) {
 					target.drawTriangleStrip(HANDRAIL_DEFAULT, strip,
-							wallTexCoordLists(strip, HANDRAIL_DEFAULT));
+							texCoordLists(strip, HANDRAIL_DEFAULT, STRIP_WALL));
 				}
 				
 				target.drawColumn(HANDRAIL_DEFAULT, 4,
@@ -1168,7 +1169,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						addYList(getOutline(false), firstLane.getHeightAboveRoad()));
 				
 				target.drawTriangleStrip(getSurface(), vs,
-						wallTexCoordLists(vs, getSurface()));
+						texCoordLists(vs, getSurface(), STRIP_WALL));
 				
 			}
 			
@@ -1179,7 +1180,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						getOutline(true));
 				
 				target.drawTriangleStrip(getSurface(), vs,
-						wallTexCoordLists(vs, getSurface()));
+						texCoordLists(vs, getSurface(), STRIP_WALL));
 				
 			}
 						
@@ -1215,7 +1216,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
 			target.drawTriangles(material, triangles,
-					globalTexCoordLists(triangles, material, false));
+					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 			
 		}
 		
@@ -1583,7 +1584,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						leftLaneBorder, rightLaneBorder);
 				
 				target.drawTriangleStrip(surface, vs,
-						globalTexCoordLists(vs, surface, false));
+						texCoordLists(vs, surface, GLOBAL_X_Z));
 				
 			} else {
 
@@ -1600,11 +1601,11 @@ public class RoadModule extends ConfigurableWorldModule {
 						rightMiddleBorder, rightLaneBorder);
 				
 				target.drawTriangleStrip(surface, vsLeft,
-						globalTexCoordLists(vsLeft, surface, false));
+						texCoordLists(vsLeft, surface, GLOBAL_X_Z));
 				target.drawTriangleStrip(surfaceMiddle, vsMiddle,
-						globalTexCoordLists(vsMiddle, surfaceMiddle, false));
+						texCoordLists(vsMiddle, surfaceMiddle, GLOBAL_X_Z));
 				target.drawTriangleStrip(surface, vsRight,
-						globalTexCoordLists(vsRight, surface, false));
+						texCoordLists(vsRight, surface, GLOBAL_X_Z));
 				
 			}
 				
@@ -1720,12 +1721,12 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vs1_2 = createTriangleStripBetween(
 					border1, border2);
 			target.drawTriangleStrip(Materials.KERB, vs1_2,
-					wallTexCoordLists(vs1_2, Materials.KERB));
+					texCoordLists(vs1_2, Materials.KERB, STRIP_FIT));
 
 			List<VectorXYZ> vs2_3 = createTriangleStripBetween(
 					border2, border3);
 			target.drawTriangleStrip(Materials.KERB, vs2_3,
-					wallTexCoordLists(vs2_3, Materials.KERB));
+					texCoordLists(vs2_3, Materials.KERB, STRIP_FIT));
 			
 		}
 		

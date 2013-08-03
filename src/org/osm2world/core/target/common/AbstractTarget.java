@@ -3,7 +3,8 @@ package org.osm2world.core.target.common;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -146,13 +147,13 @@ public abstract class AbstractTarget<R extends Renderable>
 		/* draw the 3 primitives */
 
 		if (drawBottom) { drawTriangleFan(material, bottomFan,
-				globalTexCoordLists(bottomFan, material, false)); }
+				texCoordLists(bottomFan, material, GLOBAL_X_Z)); }
 		
 		if (drawTop) { drawTriangleFan(material, topFan,
-				globalTexCoordLists(topFan, material, false)); }
+				texCoordLists(bottomFan, material, GLOBAL_X_Z)); }
 		
 		drawTriangleStrip(material, mantleStrip,
-				wallTexCoordLists(mantleStrip, material));
+				texCoordLists(mantleStrip, material, STRIP_WALL));
 		
 	}
 	

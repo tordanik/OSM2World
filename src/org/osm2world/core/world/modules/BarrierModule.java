@@ -3,9 +3,10 @@ package org.osm2world.core.world.modules;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.target.common.material.Materials.CHAIN_LINK_FENCE;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,7 +139,7 @@ public class BarrierModule extends AbstractModule {
 			
 			for (List<VectorXYZ> strip : strips) {
 				target.drawTriangleStrip(material, strip,
-						wallTexCoordLists(strip, material));
+						texCoordLists(strip, material, STRIP_WALL));
 			}
 			
 			/* draw caps */
@@ -153,7 +154,7 @@ public class BarrierModule extends AbstractModule {
 					VectorXYZ.Y_UNIT);
 			
 			List<List<VectorXZ>> texCoordLists =
-				globalTexCoordLists(wallShape, material, true);
+				texCoordLists(wallShape, material, GLOBAL_X_Y);
 			
 			target.drawConvexPolygon(material, startCap, texCoordLists);
 			target.drawConvexPolygon(material, endCap, texCoordLists);
@@ -209,8 +210,8 @@ public class BarrierModule extends AbstractModule {
 			
 			List<VectorXYZ> vsFence = createVerticalTriangleStrip(
 					pointsWithEle, 0, height);
-			List<List<VectorXZ>> texCoordListsFence = wallTexCoordLists(
-					vsFence, CHAIN_LINK_FENCE);
+			List<List<VectorXZ>> texCoordListsFence = texCoordLists(
+					vsFence, CHAIN_LINK_FENCE, STRIP_WALL);
 			
 			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence, texCoordListsFence);
 
@@ -220,8 +221,8 @@ public class BarrierModule extends AbstractModule {
 			
 			List<VectorXYZ> vsFenceBack = createVerticalTriangleStrip(
 					pointsWithEleBack, 0, height);
-			List<List<VectorXZ>> texCoordListsFenceBack = wallTexCoordLists(
-					vsFenceBack, CHAIN_LINK_FENCE);
+			List<List<VectorXZ>> texCoordListsFenceBack = texCoordLists(
+					vsFenceBack, CHAIN_LINK_FENCE, STRIP_WALL);
 			
 			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
 					texCoordListsFenceBack);

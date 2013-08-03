@@ -2,8 +2,9 @@ package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.Predicates.hasType;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +23,6 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
-import org.osm2world.core.world.modules.common.WorldModuleTexturingUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
 
@@ -104,7 +104,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 					getOutline(false), getOutline(true));
 			
 			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, groundVs,
-					WorldModuleTexturingUtil.globalTexCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, false));
+					texCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, GLOBAL_X_Z));
 			
 			
 			/* draw rails */
@@ -200,7 +200,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			Material material = Materials.RAIL_BALLAST_DEFAULT;
 			
 			target.drawConvexPolygon(material, vectors,
-					globalTexCoordLists(vectors, material, false));
+					texCoordLists(vectors, material, GLOBAL_X_Z));
 
 			/* draw connection between each pair of rails */
 

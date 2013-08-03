@@ -2,10 +2,11 @@ package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
 
 import java.util.List;
 
@@ -116,7 +117,7 @@ public class CliffModule extends ConfigurableWorldModule {
 					getOutline(false), getOutline(true));
 			
 			target.drawTriangleStrip(getMaterial(), groundVs,
-					globalTexCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, false));
+					texCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, GLOBAL_X_Z));
 			
 		}
 		

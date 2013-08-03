@@ -3,8 +3,9 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -207,7 +208,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
 			
 			target.drawTriangleStrip(ADVERTISING_POSTER, vsListPoster,
-					wallTexCoordLists(vsListPoster, ADVERTISING_POSTER));
+					texCoordLists(vsListPoster, ADVERTISING_POSTER, STRIP_FIT));
 			
 			VectorXYZ[] vsBoard = {
 					vsPoster[2],
@@ -219,7 +220,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			List<VectorXYZ> vsListBoard = asList(vsBoard);
 									
 			target.drawTriangleStrip(CONCRETE, vsListBoard,
-					wallTexCoordLists(vsListBoard, CONCRETE));
+					texCoordLists(vsListBoard, CONCRETE, STRIP_WALL));
 			
 			
 			/* draw poles */

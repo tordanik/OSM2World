@@ -2,13 +2,15 @@ package org.osm2world.core.target.common;
 
 import java.io.File;
 
+import org.osm2world.core.target.common.material.TexCoordFunction;
+
 /**
  * a texture with all information necessary for applying it to an object
  * that has texture coordinates
  */
 public class TextureData {
 	
-	public static enum Wrap { REPEAT, CLAMP };
+	public static enum Wrap { REPEAT, CLAMP }
 	
 	/** path to the texture file */
 	public final File file;
@@ -22,6 +24,9 @@ public class TextureData {
 	/** wrap style of the texture */
 	public final Wrap wrap;
 	
+	/** calculation rule for texture coordinates */
+	public final TexCoordFunction coordFunction;
+	
 	/**
 	 * whether the texture is modulated with the material color.
 	 * Otherwise, a plain white base color is used, resulting in the texture's
@@ -30,12 +35,13 @@ public class TextureData {
 	public final boolean colorable;
 
 	public TextureData(File file, double width, double height, Wrap wrap,
-			boolean colorable) {
+			TexCoordFunction texCoordFunction, boolean colorable) {
 		
 		this.file = file;
 		this.width = width;
 		this.height = height;
 		this.wrap = wrap;
+		this.coordFunction = texCoordFunction;
 		this.colorable = colorable;
 		
 	}
@@ -43,11 +49,10 @@ public class TextureData {
 	//auto-generated
 	@Override
 	public String toString() {
-		return "TextureData [file=" + file + ", width=" + width
-				+ ", height=" + height + ", wrap=" + wrap
-				+ ", colorable=" + colorable + "]";
+		return "TextureData [file=" + file + ", width=" + width + ", height=" + height + ", wrap=" + wrap
+				+ ", texCoordFunction=" + coordFunction + ", colorable=" + colorable + "]";
 	}
-
+	
 	//auto-generated
 	@Override
 	public int hashCode() {
@@ -58,13 +63,13 @@ public class TextureData {
 		long temp;
 		temp = Double.doubleToLongBits(height);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((coordFunction == null) ? 0 : coordFunction.hashCode());
 		temp = Double.doubleToLongBits(width);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + ((wrap == null) ? 0 : wrap.hashCode());
 		return result;
 	}
 
-	//auto-generated
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -82,6 +87,11 @@ public class TextureData {
 		} else if (!file.equals(other.file))
 			return false;
 		if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
+			return false;
+		if (coordFunction == null) {
+			if (other.coordFunction != null)
+				return false;
+		} else if (!coordFunction.equals(other.coordFunction))
 			return false;
 		if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
 			return false;

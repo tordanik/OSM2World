@@ -5,9 +5,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -192,7 +193,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				
 				for (List<VectorXYZ> strip : strips) {
 					target.drawTriangleStrip(TERRAIN_DEFAULT, strip,
-						globalTexCoordLists(strip, TERRAIN_DEFAULT, false));
+						texCoordLists(strip, TERRAIN_DEFAULT, GLOBAL_X_Z));
 				}
 				
 				/* render water */
@@ -201,7 +202,7 @@ public class WaterModule extends ConfigurableWorldModule {
 						leftWaterBorder, rightWaterBorder);
 				
 				target.drawTriangleStrip(WATER, vs,
-						globalTexCoordLists(vs, WATER, false));
+						texCoordLists(vs, WATER, GLOBAL_X_Z));
 				
 			}
 			
@@ -253,7 +254,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vertices = getOutlinePolygon().getVertices();
 			
 			target.drawConvexPolygon(WATER, vertices,
-					globalTexCoordLists(vertices, WATER, false));
+					texCoordLists(vertices, WATER, GLOBAL_X_Z));
 			
 			//TODO: only cover with water to 0.95 * distance to center; add land below
 			
@@ -287,7 +288,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		public void renderTo(Target<?> target) {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(WATER, triangles,
-					globalTexCoordLists(triangles, WATER, false));
+					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
 		}
 		
 	}
@@ -311,7 +312,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(PURIFIED_WATER, triangles,
-					globalTexCoordLists(triangles, PURIFIED_WATER, false));
+					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));
 			
 			/* render walls */
 			//note: mostly copy-pasted from BarrierModule
@@ -335,7 +336,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			
 			for (List<VectorXYZ> strip : strips) {
 				target.drawTriangleStrip(Materials.CONCRETE, strip,
-						wallTexCoordLists(strip, Materials.CONCRETE));
+						texCoordLists(strip, Materials.CONCRETE, STRIP_WALL));
 			}
 							
 		}

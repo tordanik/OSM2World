@@ -4,7 +4,8 @@ import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.globalTexCoordLists;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -113,7 +114,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				
 				Collection<TriangleXYZ> triangles = getTriangulation();
 				target.drawTriangles(material, triangles,
-						globalTexCoordLists(triangles, material, false));
+						triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 				
 			}
 			

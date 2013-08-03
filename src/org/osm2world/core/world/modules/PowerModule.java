@@ -5,9 +5,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.wallTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -911,14 +912,14 @@ public final class PowerModule extends AbstractModule {
 					bottomRight);
 			
 			target.drawTriangleStrip(Materials.SOLAR_PANEL, vs,
-					wallTexCoordLists(vs, Materials.SOLAR_PANEL));
+					texCoordLists(vs, Materials.SOLAR_PANEL, STRIP_WALL));
 			
 			/* draw back */
 			
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 			
 			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
-					wallTexCoordLists(vs, Materials.PLASTIC_GREY));
+					texCoordLists(vs, Materials.PLASTIC_GREY, STRIP_WALL));
 						
 		}
 		

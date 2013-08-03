@@ -9,8 +9,9 @@ import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringPars
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleTexturingUtil.*;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -366,7 +367,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 				
 			target.drawTriangles(materialWall, trianglesXYZ,
-					globalTexCoordLists(trianglesXYZ, materialWall, false));
+					triangleTexCoordLists(trianglesXYZ, materialWall, GLOBAL_X_Z));
 			
 		}
 
@@ -638,7 +639,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			target.drawTriangleStrip(materialWallWithWindows, mainWallVectors,
 					mainWallTexCoordLists);
 			target.drawTriangleStrip(materialWall, roofWallVectors,
-					wallTexCoordLists(roofWallVectors, materialWall));
+					texCoordLists(roofWallVectors, materialWall, STRIP_WALL));
 			
 		}
 		
@@ -1325,8 +1326,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				/* draw triangles */
 				
 				target.drawTriangles(materialRoof, trianglesXYZ,
-						slopedFaceTexCoordLists(
-								trianglesXYZ, materialRoof));
+						triangleTexCoordLists(trianglesXYZ,
+								materialRoof, SLOPED_TRIANGLES));
 				
 			}
 			

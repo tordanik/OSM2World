@@ -316,6 +316,7 @@ public final class Materials {
 							String widthKey = "material_" + materialName + "_texture" + i + "_width";
 							String heightKey = "material_" + materialName + "_texture" + i + "_height";
 							String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
+							String coordFunctionKey = "material_" + materialName + "_texture" + i + "_coord_function";
 							String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
 
 							if (config.getString(fileKey) == null) break;
@@ -330,8 +331,15 @@ public final class Materials {
 							Wrap wrap = "clamp".equalsIgnoreCase(wrapString) ?
 									Wrap.CLAMP : Wrap.REPEAT;
 							
+							String coordFunctionString = config.getString(coordFunctionKey);
+							TexCoordFunction coordFunction = null;
+							if (coordFunctionString != null) {
+								coordFunction = NamedTexCoordFunction.valueOf(
+										coordFunctionString.toUpperCase());
+							}
+							
 							TextureData textureData = new TextureData(
-									file, width, height, wrap, colorable);
+									file, width, height, wrap, coordFunction, colorable);
 							textureDataList.add(textureData);
 							
 						}
