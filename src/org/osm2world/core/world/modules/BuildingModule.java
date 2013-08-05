@@ -828,16 +828,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    	
 		    	if (materialWindows != null) {
 		    		
-			    	List<TextureData> textureDataListWithWindows =
-			    		new ArrayList<TextureData>(
-			    				materialWall.getTextureDataList());
-			    	textureDataListWithWindows.addAll(
-			    			materialWindows.getTextureDataList());
-			    	
-			    	materialWallWithWindows = new ImmutableMaterial(
-			    			materialWall.getLighting(), materialWall.getColor(),
-			    			materialWall.getAmbientFactor(), materialWall.getDiffuseFactor(),
-			    			materialWall.getTransparency(), textureDataListWithWindows);
+		    		materialWallWithWindows = materialWallWithWindows.
+		    				withAddedLayers(materialWindows.getTextureDataList());
 			    	
 		    	}
 		    	

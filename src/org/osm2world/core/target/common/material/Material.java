@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -102,7 +103,26 @@ public abstract class Material {
 				getAmbientFactor(), getDiffuseFactor(),
 				getTransparency(), getTextureDataList());
 	}
-
+	
+	/**
+	 * returns a material that is the same as this one,
+	 * except with additional texture data layers stacked on top
+	 */
+	public Material withAddedLayers(List<TextureData> textureLayers) {
+		
+		if (textureLayers.isEmpty()) return this;
+		
+		List<TextureData> textureDataList =
+				new ArrayList<TextureData>(getTextureDataList());
+	    
+		textureDataList.addAll(textureLayers);
+	    
+	    return new ImmutableMaterial(getLighting(), getColor(),
+	    		getAmbientFactor(), getDiffuseFactor(),
+	    		getTransparency(), textureDataList);
+	    
+	}
+	
 	public Transparency getTransparency() {
 		return transparency;
 	}

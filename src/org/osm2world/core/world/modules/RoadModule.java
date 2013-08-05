@@ -85,7 +85,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				node.addRepresentation(new RoadJunction(node));
 				
 			} else if (connectedRoads.size() == 2
-					&& tags.contains("highway", "crossing")) {
+					&& tags.contains("highway", "crossing")
+					&& !tags.contains("crossing", "no")) {
 				
 				node.addRepresentation(new RoadCrossingAtConnector(node));
 				
@@ -676,95 +677,49 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
+			
+			VectorXYZ startLeft = getEleConnectors().getPosXYZ(
+					startPos.subtract(cutVector.mult(0.5 * startWidth)));
+			VectorXYZ startRight = getEleConnectors().getPosXYZ(
+					startPos.add(cutVector.mult(0.5 * startWidth)));
+			
+			VectorXYZ endLeft = getEleConnectors().getPosXYZ(
+					endPos.subtract(cutVector.mult(0.5 * endWidth)));
+			VectorXYZ endRight = getEleConnectors().getPosXYZ(
+					endPos.add(cutVector.mult(0.5 * endWidth)));
+			
+			/* determine surface material */
+			
+			Material surface = getSurfaceForNode(node);
+			
+			if (node.getTags().contains("crossing", "zebra")
+					|| node.getTags().contains("crossing:ref", "zebra")) {
+				
+				surface = surface.withAddedLayers(
+						ROAD_MARKING_ZEBRA.getTextureDataList());
+				
+			} else if (!node.getTags().contains("crossing", "unmarked")) {
 
-			//TODO port functionality to new elevation calculation
-//
-//			VectorXYZ start = startPos.xyz(connector.getPosXYZ().y);
-//			VectorXYZ end = endPos.xyz(connector.getPosXYZ().y);
-//
-//			/* draw crossing markings */
-//
-//			VectorXYZ startLines1 = eleProfile.getWithEle(
-//					interpolateBetween(startPos, endPos, 0.1f));
-//			VectorXYZ endLines1 = eleProfile.getWithEle(
-//					interpolateBetween(startPos, endPos, 0.2f));
-//			VectorXYZ startLines2 = eleProfile.getWithEle(
-//					interpolateBetween(startPos, endPos, 0.8f));
-//			VectorXYZ endLines2 = eleProfile.getWithEle(
-//					interpolateBetween(startPos, endPos, 0.9f));
-//
-//			double halfStartWidth = startWidth * 0.5;
-//			double halfEndWidth = endWidth * 0.5;
-//			double halfStartLines1Width = interpolateValue(startLines1.xz(),
-//					startPos, halfStartWidth, endPos, halfEndWidth);
-//			double halfEndLines1Width = interpolateValue(endLines1.xz(),
-//					startPos, halfStartWidth, endPos, halfEndWidth);
-//			double halfStartLines2Width = interpolateValue(startLines2.xz(),
-//					startPos, halfStartWidth, endPos, halfEndWidth);
-//			double halfEndLines2Width = interpolateValue(endLines2.xz(),
-//					startPos, halfStartWidth, endPos, halfEndWidth);
-//
-//			//TODO: don't always use halfStart/EndWith - you need to interpolate!
-//
-//			// area outside and inside lines
-//
-//			Material surface = getSurfaceForNode(node);
-//
-//			List<VectorXYZ> vs = asList(
-//					start.subtract(cutVector.mult(halfStartWidth)),
-//					start.add(cutVector.mult(halfStartWidth)),
-//					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
-//					startLines1.add(cutVector.mult(halfStartLines1Width)));
-//
-//			target.drawTriangleStrip(surface, vs,
-//					globalTexCoordLists(vs, surface, false));
-//
-//			vs = asList(
-//					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
-//					endLines1.add(cutVector.mult(halfEndLines1Width)),
-//					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
-//					startLines2.add(cutVector.mult(halfStartLines2Width)));
-//
-//			target.drawTriangleStrip(surface, vs,
-//					globalTexCoordLists(vs, surface, false));
-//
-//			vs = asList(
-//					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
-//					endLines2.add(cutVector.mult(halfEndLines2Width)),
-//					end.subtract(cutVector.mult(halfEndWidth)),
-//					end.add(cutVector.mult(halfEndWidth)));
-//
-//			target.drawTriangleStrip(surface, vs,
-//					globalTexCoordLists(vs, surface, false));
-//
-//			// lines across road
-//
-//			vs = asList(
-//					startLines1.subtract(cutVector.mult(halfStartLines1Width)),
-//					startLines1.add(cutVector.mult(halfStartLines1Width)),
-//					endLines1.subtract(cutVector.mult(halfEndLines1Width)),
-//					endLines1.add(cutVector.mult(halfEndLines1Width)));
-//
-//			target.drawTriangleStrip(ROAD_MARKING, vs,
-//					globalTexCoordLists(vs, ROAD_MARKING, false));
-//
-//			vs = asList(
-//					startLines2.subtract(cutVector.mult(halfStartLines2Width)),
-//					startLines2.add(cutVector.mult(halfStartLines2Width)),
-//					endLines2.subtract(cutVector.mult(halfEndLines2Width)),
-//					endLines2.add(cutVector.mult(halfEndLines2Width)));
-//
-//			target.drawTriangleStrip(ROAD_MARKING, vs,
-//					globalTexCoordLists(vs, ROAD_MARKING, false));
-//
-//			/* draw lane connections */
-//
-//			List<LaneConnection> connections = buildLaneConnections(
-//					node, false, true);
-//
-//			for (LaneConnection connection : connections) {
-//				connection.renderTo(target);
-//			}
+				surface = surface.withAddedLayers(
+						ROAD_MARKING_CROSSING.getTextureDataList());
+				
+			}
+			
+			/* draw crossing */
+			
+			List<VectorXYZ> vs = asList(endLeft, startLeft, endRight, startRight);
+			
+			target.drawTriangleStrip(surface, vs,
+					texCoordLists(vs, surface, GLOBAL_X_Z));
+			
+			/* draw lane connections */
+			
+			List<LaneConnection> connections = buildLaneConnections(
+					node, false, true);
+			
+			for (LaneConnection connection : connections) {
+				connection.renderTo(target);
+			}
 			
 		}
 		
@@ -1721,12 +1676,12 @@ public class RoadModule extends ConfigurableWorldModule {
 			List<VectorXYZ> vs1_2 = createTriangleStripBetween(
 					border1, border2);
 			target.drawTriangleStrip(Materials.KERB, vs1_2,
-					texCoordLists(vs1_2, Materials.KERB, STRIP_FIT));
+					texCoordLists(vs1_2, Materials.KERB, STRIP_FIT_HEIGHT));
 
 			List<VectorXYZ> vs2_3 = createTriangleStripBetween(
 					border2, border3);
 			target.drawTriangleStrip(Materials.KERB, vs2_3,
-					texCoordLists(vs2_3, Materials.KERB, STRIP_FIT));
+					texCoordLists(vs2_3, Materials.KERB, STRIP_FIT_HEIGHT));
 			
 		}
 		
