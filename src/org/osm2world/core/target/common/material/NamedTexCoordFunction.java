@@ -150,7 +150,7 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 			
 			double totalLength = 0;
 			
-			if (textureData.width == 0) {
+			if (this != STRIP_FIT) {
 				for (int i = 0; i+1 < vs.size(); i++) {
 					totalLength += vs.get(i).distanceToXZ(vs.get(i+1));
 				}
