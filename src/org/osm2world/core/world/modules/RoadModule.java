@@ -693,7 +693,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material surface = getSurfaceForNode(node);
 			
 			if (node.getTags().contains("crossing", "zebra")
-					|| node.getTags().contains("crossing:ref", "zebra")) {
+					|| node.getTags().contains("crossing_ref", "zebra")) {
 				
 				surface = surface.withAddedLayers(
 						ROAD_MARKING_ZEBRA.getTextureDataList());
