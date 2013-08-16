@@ -84,6 +84,10 @@ public final class Materials {
 			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_CROSSING =
 			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial ROAD_MARKING_ARROW_STRAIGHT =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial ROAD_MARKING_ARROW_RIGHT =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial RED_ROAD_MARKING =
 			new ConfMaterial(Lighting.FLAT, new Color(0.6f, 0.3f, 0.3f));
 	public static final ConfMaterial KERB =
