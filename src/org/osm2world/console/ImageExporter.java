@@ -128,7 +128,7 @@ public class ImageExporter {
 		GLProfile profile = GLProfile.getDefault();
 		GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
 		
-		if (! factory.canCreateGLPbuffer(null)) {
+		if (! factory.canCreateGLPbuffer(null, profile)) {
 			throw new Error("Cannot create GLPbuffer for OpenGL output!");
 		}
 		
