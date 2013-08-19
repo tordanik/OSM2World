@@ -1996,11 +1996,11 @@ public class RoadModule extends ConfigurableWorldModule {
 				
 				s = accumulatedLength / textureData.width;
 												
-				if (width > textureData.width) {
-					double padding = (width - textureData.width) / 2;
-					t = higher ? 1 + padding : 0 - padding;
+				if (width > textureData.height) {
+					double padding = ((width / textureData.height) - 1)  / 2;
+					t = higher ? 0 - padding : 1 + padding;
 				} else {
-					t = higher ? 1 : 0;
+					t = higher ? 0 : 1;
 				}
 				
 				result.add(new VectorXZ(s, t));
