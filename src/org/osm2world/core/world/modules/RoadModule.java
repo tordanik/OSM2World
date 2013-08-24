@@ -1717,9 +1717,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			Material surface = getSurface(roadTags, laneTags);
 			Material surfaceMiddle = getSurfaceMiddle(roadTags, laneTags);
-			
-			surface = addTurnArrows(surface, laneTags);
-			
+						
 			/* draw lane triangle strips */
 			
 			if (surfaceMiddle == null || surfaceMiddle.equals(surface)) {
@@ -1730,12 +1728,17 @@ public class RoadModule extends ConfigurableWorldModule {
 				boolean mirrorLeftRight = laneTags.containsKey("turn")
 						&& laneTags.getValue("turn").contains("left");
 				
+				
+				if (!roadTags.contains("highway", "motorway")) {
+					surface = addTurnArrows(surface, laneTags);
+				}
+				
 				target.drawTriangleStrip(surface, vs,
 						texCoordLists(vs, surface, new ArrowTexCoordFunction(
 								roadPart, mirrorLeftRight)));
 				
 			} else {
-
+				
 				List<VectorXYZ> leftMiddleBorder =
 					createLineBetween(leftLaneBorder, rightLaneBorder, 0.3f);
 				List<VectorXYZ> rightMiddleBorder =
@@ -1895,18 +1898,50 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * 
 	 * @return  a material based on the input, possibly with added turn arrows
 	 */
-	private static Material addTurnArrows(Material material, TagGroup laneTags) {
+	private static Material addTurnArrows(Material material,
+			TagGroup laneTags) {
 		
-		if (laneTags.contains("turn", "straight")) {
-			material = material.withAddedLayers(
-					ROAD_MARKING_ARROW_STRAIGHT.getTextureDataList());
-		} else if (laneTags.containsKey("turn")) {
-			material = material.withAddedLayers(
-					ROAD_MARKING_ARROW_RIGHT.getTextureDataList());
+		Material arrowMaterial = null;
+		
+		/* find the right material  */
+		
+		String turn = laneTags.getValue("turn");
+		
+		if (turn != null) {
+			
+			if (turn.contains("through") && turn.contains("right")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT;
+				
+			} else if (turn.contains("through") && turn.contains("left")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT;
+				
+			} else if (turn.contains("through")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH;
+				
+			} else if (turn.contains("right") && turn.contains("left")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT_LEFT;
+				
+			} else if (turn.contains("right")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT;
+				
+			} else if (turn.contains("left")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT;
+				
+			}
+			
 		}
 		
-		//TODO proper distinction between arrow types (including semicolon-separated cases)
-		//TODO exceptions for motorways
+		/* apply the results */
+		
+		if (arrowMaterial != null) {
+			material = material.withAddedLayers(arrowMaterial.getTextureDataList());
+		}
 		
 		return material;
 		
