@@ -340,8 +340,12 @@ public final class Materials {
 							boolean colorable = config.getBoolean(colorableKey, false);
 							
 							String wrapString = config.getString(wrapKey);
-							Wrap wrap = "clamp".equalsIgnoreCase(wrapString) ?
-									Wrap.CLAMP : Wrap.REPEAT;
+							Wrap wrap = Wrap.REPEAT;
+							if ("clamp_to_border".equalsIgnoreCase(wrapString)) {
+								wrap = Wrap.CLAMP_TO_BORDER;
+							} else if ("clamp".equalsIgnoreCase(wrapString)) {
+								wrap = Wrap.CLAMP;
+							}
 							
 							String coordFunctionString = config.getString(coordFunctionKey);
 							TexCoordFunction coordFunction = null;
