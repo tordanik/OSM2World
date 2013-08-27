@@ -84,6 +84,14 @@ public final class Materials {
 			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_CROSSING =
 			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial ROAD_MARKING_ARROW_THROUGH =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial ROAD_MARKING_ARROW_THROUGH_RIGHT =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial ROAD_MARKING_ARROW_RIGHT =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial ROAD_MARKING_ARROW_RIGHT_LEFT =
+			new ConfMaterial(Lighting.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial RED_ROAD_MARKING =
 			new ConfMaterial(Lighting.FLAT, new Color(0.6f, 0.3f, 0.3f));
 	public static final ConfMaterial KERB =
@@ -332,8 +340,12 @@ public final class Materials {
 							boolean colorable = config.getBoolean(colorableKey, false);
 							
 							String wrapString = config.getString(wrapKey);
-							Wrap wrap = "clamp".equalsIgnoreCase(wrapString) ?
-									Wrap.CLAMP : Wrap.REPEAT;
+							Wrap wrap = Wrap.REPEAT;
+							if ("clamp_to_border".equalsIgnoreCase(wrapString)) {
+								wrap = Wrap.CLAMP_TO_BORDER;
+							} else if ("clamp".equalsIgnoreCase(wrapString)) {
+								wrap = Wrap.CLAMP;
+							}
 							
 							String coordFunctionString = config.getString(coordFunctionKey);
 							TexCoordFunction coordFunction = null;

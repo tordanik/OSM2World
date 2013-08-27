@@ -10,7 +10,7 @@ import org.osm2world.core.target.common.material.TexCoordFunction;
  */
 public class TextureData {
 	
-	public static enum Wrap { REPEAT, CLAMP }
+	public static enum Wrap { REPEAT, CLAMP, CLAMP_TO_BORDER }
 	
 	/** path to the texture file */
 	public final File file;

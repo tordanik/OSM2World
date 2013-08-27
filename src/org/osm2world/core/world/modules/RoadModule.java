@@ -1,6 +1,6 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
@@ -36,8 +37,10 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -49,6 +52,8 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  * adds roads to the world
  */
 public class RoadModule extends ConfigurableWorldModule {
+
+	private static final boolean RIGHT_HAND_TRAFFIC = true;
 	
 	@Override
 	public void applyTo(MapData grid) {
@@ -793,8 +798,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			boolean isOneway = isOneway(tags);
 			
-			/* determine which lanes exist */
-						
+			/* determine which special lanes and attributes exist */
+			
 			String divider = tags.getValue("divider");
 			
 			String sidewalk = tags.containsKey("sidewalk") ?
@@ -804,63 +809,151 @@ public class RoadModule extends ConfigurableWorldModule {
 					|| "both".equals(sidewalk);
 			boolean rightSidewalk = "right".equals(sidewalk)
 					|| "both".equals(sidewalk);
-						
+			
 			boolean leftCycleway = tags.contains("cycleway:left", "lane")
 					|| tags.contains("cycleway", "lane");
 			boolean rightCycleway = tags.contains("cycleway:right", "lane")
 					|| tags.contains("cycleway", "lane");
 			
+			/* get individual values for each lane */
+			
+			TagGroup[] laneTagsRight = getPerLaneTags(RoadPart.RIGHT);
+			TagGroup[] laneTagsLeft = getPerLaneTags(RoadPart.LEFT);
+			
+			/* determine the number of lanes */
+						
 			Float lanes = null;
+			
 			if (tags.containsKey("lanes")) {
 				lanes = parseOsmDecimal(tags.getValue("lanes"), false);
 			}
 			
-			int vehicleLaneCount = (lanes != null)
-					? (int)(float)lanes : getDefaultLanes(tags);
+			Float lanesRight = null;
+			Float lanesLeft = null;
+			
+			//TODO handle oneway case
+			
+			String rightKey = RIGHT_HAND_TRAFFIC ? "lanes:forward" : "lanes:backward";
+			
+			if (laneTagsRight != null) {
+				lanesRight = (float)laneTagsRight.length;
+			} else if (tags.containsKey(rightKey)) {
+				lanesRight = parseOsmDecimal(tags.getValue(rightKey), false);
+			}
+
+			String leftKey = RIGHT_HAND_TRAFFIC ? "lanes:backward" : "lanes:forward";
+			
+			if (laneTagsLeft != null) {
+				lanesLeft = (float)laneTagsLeft.length;
+			} else if (tags.containsKey(leftKey)) {
+				lanesLeft = parseOsmDecimal(tags.getValue(leftKey), false);
+			}
+			
+			int vehicleLaneCount;
+			int vehicleLaneCountRight;
+			int vehicleLaneCountLeft;
+			
+			if (lanesRight != null && lanesLeft != null) {
+				
+				vehicleLaneCountRight = (int)(float)lanesRight;
+				vehicleLaneCountLeft = (int)(float)lanesLeft;
+				
+				vehicleLaneCount = vehicleLaneCountRight + vehicleLaneCountLeft;
+				
+				//TODO incorrect in case of center lanes
+				
+			} else {
+				
+				if (lanes == null) {
+					vehicleLaneCount = getDefaultLanes(tags);
+				} else {
+					vehicleLaneCount = (int)(float) lanes;
+				}
+
+				if (lanesRight != null) {
+					
+					vehicleLaneCountRight = (int)(float)lanesRight;
+					vehicleLaneCount = max(vehicleLaneCount, vehicleLaneCountRight);
+					vehicleLaneCountLeft = vehicleLaneCount - vehicleLaneCountRight;
+					
+				} else if (lanesLeft != null) {
+					
+					vehicleLaneCountLeft = (int)(float)lanesLeft;
+					vehicleLaneCount = max(vehicleLaneCount, vehicleLaneCountLeft);
+					vehicleLaneCountRight = vehicleLaneCount - vehicleLaneCountLeft;
+					
+				} else {
+					
+					vehicleLaneCountLeft = vehicleLaneCount / 2;
+					vehicleLaneCountRight = vehicleLaneCount - vehicleLaneCountLeft;
+					
+				}
+				
+			}
 			
 			/* create the layout */
 			
 			LaneLayout layout = new LaneLayout();
-						
-			for (int i = 0; i < vehicleLaneCount; ++ i) {
+			
+			// central divider
+			
+			if (vehicleLaneCountRight > 0 && vehicleLaneCountLeft > 0) {
+			
+				LaneType dividerType = DASHED_LINE;
 				
-				RoadPart roadPart = (i%2 == 0 || isOneway)
-						? RoadPart.RIGHT : RoadPart.LEFT;
-				
-				if (i == 1 && !isOneway) {
-					
-					//central divider
-					
-					LaneType dividerType = DASHED_LINE;
-					
-					if ("dashed_line".equals(divider)) {
-						dividerType = DASHED_LINE;
-					} else if ("solid_line".equals(divider)) {
-						dividerType = SOLID_LINE;
-					} else if ("no".equals(divider)) {
-						dividerType = null;
-					}
-					
-					if (dividerType != null) {
-						layout.getLanes(roadPart).add(new Lane(this,
-								dividerType, roadPart, EMPTY_TAG_GROUP));
-					}
-					
-				} else if (i >= 1) {
-					
-					//other divider
-					
-					layout.getLanes(roadPart).add(new Lane(this,
-							DASHED_LINE, roadPart, EMPTY_TAG_GROUP));
-					
+				if ("dashed_line".equals(divider)) {
+					dividerType = DASHED_LINE;
+				} else if ("solid_line".equals(divider)) {
+					dividerType = SOLID_LINE;
+				} else if ("no".equals(divider)) {
+					dividerType = null;
 				}
 				
-				//lane itself
-				
-				layout.getLanes(roadPart).add(new Lane(this,
-						VEHICLE_LANE, roadPart, EMPTY_TAG_GROUP));
-				
+				if (dividerType != null) {
+					layout.getLanes(RoadPart.RIGHT).add(new Lane(this,
+							dividerType, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+				}
+			
 			}
+			
+			// left and right road part
+			
+			for (RoadPart roadPart : RoadPart.values()) {
+			
+				int lanesPart = (roadPart == RoadPart.RIGHT)
+						? vehicleLaneCountRight
+						: vehicleLaneCountLeft;
+				
+				TagGroup[] laneTags = (roadPart == RoadPart.RIGHT)
+						? laneTagsRight
+						: laneTagsLeft;
+				
+				for (int i = 0; i < lanesPart; ++ i) {
+					
+					if (i > 0) {
+						
+						// divider between lanes in the same direction
+						
+						layout.getLanes(roadPart).add(new Lane(this,
+								DASHED_LINE, roadPart, EMPTY_TAG_GROUP));
+						
+					}
+					
+
+					//lane itself
+					
+					TagGroup tags = (laneTags != null)
+							? laneTags[i]
+							: EMPTY_TAG_GROUP;
+					
+					layout.getLanes(roadPart).add(new Lane(this,
+							VEHICLE_LANE, roadPart, tags));
+										
+				}
+			
+			}
+			
+			//special lanes
 			
 			if (leftCycleway) {
 				layout.leftLanes.add(new Lane(this,
@@ -885,6 +978,90 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 			
 			return layout;
+			
+		}
+		
+		/**
+		 * evaluates tags using the :lanes key suffix
+		 * 
+		 * @return  array with values; null if the tag isn't used
+		 */
+		@SuppressWarnings("unchecked")
+		private TagGroup[] getPerLaneTags(RoadPart roadPart) {
+			
+			/* determine which of the suffixes :lanes[:forward|:backward] matter */
+			
+			List<String> relevantSuffixes;
+			
+			if (roadPart == RoadPart.RIGHT ^ !RIGHT_HAND_TRAFFIC) {
+				// the forward part
+				
+				if (isOneway(tags)) {
+					relevantSuffixes = asList(":lanes", ":lanes:forward");
+				} else {
+					relevantSuffixes = asList(":lanes:forward");
+				}
+				
+			} else {
+				// the backward part
+				
+				relevantSuffixes = asList(":lanes:backward");
+				
+			}
+			
+			/* evaluate tags with one of the relevant suffixes */
+			
+			Map<String, String>[] resultMaps = null;
+			
+			for (String suffix : relevantSuffixes) {
+				
+				for (Tag tag : tags) {
+					if (tag.key.endsWith(suffix)) {
+						
+						String baseKey = tag.key.substring(0,
+								tag.key.lastIndexOf(suffix));
+						
+						String[] values = tag.value.split("\\|");
+						
+						if (resultMaps == null) {
+							
+							resultMaps = new Map[values.length];
+							
+							for (int i = 0; i < resultMaps.length; i++) {
+								resultMaps[i] = new HashMap<String, String>();
+							}
+							
+						} else if (values.length != resultMaps.length) {
+							
+							// inconsistent number of lanes
+							return null;
+							
+						}
+						
+						for (int i = 0; i < values.length; i++) {
+							resultMaps[i].put(baseKey, values[i].trim());
+						}
+												
+					}
+				}
+				
+			}
+			
+			/* build a TagGroup for each lane from the result */
+			
+			if (resultMaps == null) {
+				return null;
+			} else {
+				
+				TagGroup[] result = new TagGroup[resultMaps.length];
+				
+				for (int i = 0; i < resultMaps.length; i++) {
+					result[i] = new MapBasedTagGroup(resultMaps[i]);
+				}
+				
+				return result;
+				
+			}
 			
 		}
 
@@ -1285,16 +1462,20 @@ public class RoadModule extends ConfigurableWorldModule {
 			double accumulatedWidth = 0;
 			
 			for (Lane lane : getLanesLeftToRight()) {
-							
+				
 				double relativePositionLeft = accumulatedWidth;
-
+				
 				accumulatedWidth += lane.getRelativeWidth();
 				
 				double relativePositionRight = accumulatedWidth;
 				
+				if (relativePositionRight > 1) { //avoids precision problems
+					relativePositionRight = 1;
+				}
+				
 				lane.setCalculatedValues2(relativePositionLeft,
 						relativePositionRight);
-												
+				
 			}
 			
 		}
@@ -1393,6 +1574,10 @@ public class RoadModule extends ConfigurableWorldModule {
 			double relativePosition = right
 					? relativePositionRight
 					: relativePositionLeft;
+			
+			if (relativePosition < 0 || relativePosition > 1) {
+				System.out.println("PROBLEM");
+			}
 			
 			VectorXYZ roadPoint = road.getPointOnCut(start, relativePosition);
 			
@@ -1533,16 +1718,27 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material surface = getSurface(roadTags, laneTags);
 			Material surfaceMiddle = getSurfaceMiddle(roadTags, laneTags);
 						
+			/* draw lane triangle strips */
+			
 			if (surfaceMiddle == null || surfaceMiddle.equals(surface)) {
 				
 				List<VectorXYZ> vs = createTriangleStripBetween(
 						leftLaneBorder, rightLaneBorder);
 				
+				boolean mirrorLeftRight = laneTags.containsKey("turn")
+						&& laneTags.getValue("turn").contains("left");
+				
+				
+				if (!roadTags.contains("highway", "motorway")) {
+					surface = addTurnArrows(surface, laneTags);
+				}
+				
 				target.drawTriangleStrip(surface, vs,
-						texCoordLists(vs, surface, GLOBAL_X_Z));
+						texCoordLists(vs, surface, new ArrowTexCoordFunction(
+								roadPart, mirrorLeftRight)));
 				
 			} else {
-
+				
 				List<VectorXYZ> leftMiddleBorder =
 					createLineBetween(leftLaneBorder, rightLaneBorder, 0.3f);
 				List<VectorXYZ> rightMiddleBorder =
@@ -1563,7 +1759,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						texCoordLists(vsRight, surface, GLOBAL_X_Z));
 				
 			}
-				
+			
 		}
 
 		@Override
@@ -1697,4 +1893,158 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 	
+	/**
+	 * adds a texture layer for turn arrows (if any) to a material
+	 * 
+	 * @return  a material based on the input, possibly with added turn arrows
+	 */
+	private static Material addTurnArrows(Material material,
+			TagGroup laneTags) {
+		
+		Material arrowMaterial = null;
+		
+		/* find the right material  */
+		
+		String turn = laneTags.getValue("turn");
+		
+		if (turn != null) {
+			
+			if (turn.contains("through") && turn.contains("right")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT;
+				
+			} else if (turn.contains("through") && turn.contains("left")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH_RIGHT;
+				
+			} else if (turn.contains("through")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_THROUGH;
+				
+			} else if (turn.contains("right") && turn.contains("left")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT_LEFT;
+				
+			} else if (turn.contains("right")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT;
+				
+			} else if (turn.contains("left")) {
+				
+				arrowMaterial = ROAD_MARKING_ARROW_RIGHT;
+				
+			}
+			
+		}
+		
+		/* apply the results */
+		
+		if (arrowMaterial != null) {
+			material = material.withAddedLayers(arrowMaterial.getTextureDataList());
+		}
+		
+		return material;
+		
+	}
+
+	/**
+	 * a texture coordinate function for arrow road markings on turn lanes.
+	 * Has special features including centering the arrow, placing it at an
+	 * offset from the end of the road, and taking available space into account.
+	 * 
+	 * To reduce the number of necessary textures, it uses mirrored versions of
+	 * the various right-pointing arrows for left-pointing arrows.
+	 */
+	private static class ArrowTexCoordFunction implements TexCoordFunction {
+
+		private final RoadPart roadPart;
+		private final boolean mirrorLeftRight;
+		
+		private ArrowTexCoordFunction(RoadPart roadPart, boolean mirrorLeftRight) {
+			this.roadPart = roadPart;
+			this.mirrorLeftRight = mirrorLeftRight;
+		}
+		
+		@Override
+		public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
+			
+			if (vs.size() % 2 == 1) {
+				throw new IllegalArgumentException("not a triangle strip lane");
+			}
+			
+			List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
+			
+			boolean forward = roadPart == RoadPart.LEFT ^ RIGHT_HAND_TRAFFIC;
+			
+			/* calculate length of the lane */
+			
+			double totalLength = 0;
+			
+			for (int i = 0; i+2 < vs.size(); i += 2) {
+				totalLength += vs.get(i).distanceToXZ(vs.get(i+2));
+			}
+			
+			/* calculate texture coordinate list */
+			
+			double accumulatedLength = forward ? totalLength : 0;
+			
+			for (int i = 0; i < vs.size(); i++) {
+				
+				VectorXYZ v = vs.get(i);
+				
+				// increase accumulated length after every second vector
+				
+				if (i > 0 && i % 2 == 0) {
+					
+					double segmentLength = v.xz().distanceTo(vs.get(i-2).xz());
+					
+					if (forward) {
+						accumulatedLength -= segmentLength;
+					} else {
+						accumulatedLength += segmentLength;
+					}
+					
+				}
+				
+				// determine width of the lane at that point
+				
+				double width = (i % 2 == 0)
+						? v.distanceTo(vs.get(i+1))
+						: v.distanceTo(vs.get(i-1));
+				
+				// determine whether this vertex should get the higher or
+				// lower t coordinate from the vertex pair
+				
+				boolean higher = i % 2 == 0;
+				
+				if (!forward) {
+					higher = !higher;
+				}
+				
+				if (mirrorLeftRight) {
+					higher = !higher;
+				}
+				
+				// calculate texture coords
+				
+				double s, t;
+				
+				s = accumulatedLength / textureData.width;
+												
+				if (width > textureData.height) {
+					double padding = ((width / textureData.height) - 1)  / 2;
+					t = higher ? 0 - padding : 1 + padding;
+				} else {
+					t = higher ? 0 : 1;
+				}
+				
+				result.add(new VectorXZ(s, t));
+				
+			}
+			
+			return result;
+			
+		}
+		
+	}
 }

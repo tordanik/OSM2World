@@ -46,8 +46,11 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	/** maximum number of texture layers any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 4;
 	
+	/** globally controls anisotropic filtering for all textures */
+	private static final boolean ANISOTROPIC_FILTERING = true;
+	
 	private final GL2 gl;
-
+	
 	private final JOGLTextureManager textureManager;
 	
 	private List<NonAreaPrimitive> nonAreaPrimitives;
@@ -371,7 +374,7 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		} else {
 			gl.glDisable(GL_DEPTH_TEST);
 		}
-		
+				
 	}
 	
 	static final void applyLightingParameters(GL2 gl,
@@ -477,12 +480,56 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 				Texture texture = textureManager.getTextureForFile(textureData.file);
 		        texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
-
-				int wrap = (textureData.wrap == Wrap.CLAMP) ?
-						GL_CLAMP : GL_REPEAT;
+		        
+				/* enable anisotropic filtering (note: this could be a
+				 * per-texture setting, but currently isn't) */
+				
+		        if (gl.isExtensionAvailable("GL_EXT_texture_filter_anisotropic")) {
+					
+		        	if (ANISOTROPIC_FILTERING) {
+						
+						float max[] = new float[1];
+						gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, max, 0);
+						
+						gl.glTexParameterf(GL_TEXTURE_2D,
+								GL_TEXTURE_MAX_ANISOTROPY_EXT,
+								max[0]);
+						
+					} else {
+						
+						gl.glTexParameterf(GL_TEXTURE_2D,
+								GL_TEXTURE_MAX_ANISOTROPY_EXT,
+								1.0f);
+						
+					}
+					
+		        }
+				
+				/* wrapping behavior */
+		        
+				int wrap = 0;
+				
+				switch (textureData.wrap) {
+				case CLAMP: wrap = GL_CLAMP; break;
+				case REPEAT: wrap = GL_REPEAT; break;
+				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
+				}
+				
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-
+		        
+		        
+		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+		        	
+		        	/* TODO: make the RGB configurable -  for some reason,
+		        	 * it shows up in lowzoom even if fully transparent */
+		        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
+		        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
+		        	
+		        }
+				
+		        /* combination of texture layers */
+		        
 		        if (i == 0) {
 		        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		        } else {
@@ -508,11 +555,11 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	}
 
 	static final FloatBuffer getFloatBuffer(Color color) {
-		float colorArray[] = {0, 0, 0, 1};
+		float colorArray[] = {0, 0, 0, color.getAlpha() / 255f};
 		color.getRGBColorComponents(colorArray);
 		return FloatBuffer.wrap(colorArray);
 	}
-
+	
 	static final int getGLConstant(Type type) {
 		switch (type) {
 		case TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
