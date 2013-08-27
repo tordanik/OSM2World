@@ -46,8 +46,11 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 	/** maximum number of texture layers any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 4;
 	
+	/** globally controls anisotropic filtering for all textures */
+	private static final boolean ANISOTROPIC_FILTERING = true;
+	
 	private final GL2 gl;
-
+	
 	private final JOGLTextureManager textureManager;
 	
 	private List<NonAreaPrimitive> nonAreaPrimitives;
@@ -371,7 +374,7 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		} else {
 			gl.glDisable(GL_DEPTH_TEST);
 		}
-		
+				
 	}
 	
 	static final void applyLightingParameters(GL2 gl,
@@ -478,6 +481,32 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		        texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
 		        
+				/* enable anisotropic filtering (note: this could be a
+				 * per-texture setting, but currently isn't) */
+				
+		        if (gl.isExtensionAvailable("GL_EXT_texture_filter_anisotropic")) {
+					
+		        	if (ANISOTROPIC_FILTERING) {
+						
+						float max[] = new float[1];
+						gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, max, 0);
+						
+						gl.glTexParameterf(GL_TEXTURE_2D,
+								GL_TEXTURE_MAX_ANISOTROPY_EXT,
+								max[0]);
+						
+					} else {
+						
+						gl.glTexParameterf(GL_TEXTURE_2D,
+								GL_TEXTURE_MAX_ANISOTROPY_EXT,
+								1.0f);
+						
+					}
+					
+		        }
+				
+				/* wrapping behavior */
+		        
 				int wrap = 0;
 				
 				switch (textureData.wrap) {
@@ -499,6 +528,7 @@ public final class JOGLTarget extends PrimitiveTarget<RenderableToJOGL> {
 		        	
 		        }
 				
+		        /* combination of texture layers */
 		        
 		        if (i == 0) {
 		        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
