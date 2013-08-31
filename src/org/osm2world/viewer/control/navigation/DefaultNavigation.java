@@ -199,9 +199,11 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 							c.yaw(-ANGLE_INCREMENT);
 							break;
 						case KeyEvent.VK_PLUS:
+						case KeyEvent.VK_I:
 							zoom(true, 0.5);
 							break;
 						case KeyEvent.VK_MINUS:
+						case KeyEvent.VK_O:
 							zoom(false, 0.5);
 							break;
 						}
