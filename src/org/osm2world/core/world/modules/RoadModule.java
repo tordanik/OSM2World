@@ -52,8 +52,9 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  * adds roads to the world
  */
 public class RoadModule extends ConfigurableWorldModule {
-
-	private static final boolean RIGHT_HAND_TRAFFIC = true;
+	
+	/** determines whether right-hand or left-hand traffic is the default */
+	private static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
 	
 	@Override
 	public void applyTo(MapData grid) {
@@ -529,6 +530,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				atLane2Start, atLane2Start));
 		
 		return new LaneConnection(lane1.type, RoadPart.LEFT,
+				lane1.road.rightHandTraffic,
 				leftLaneBorder, rightLaneBorder);
 		
 	}
@@ -761,7 +763,9 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected static final List<VectorXYZ> HANDRAIL_SHAPE = asList(
 			new VectorXYZ(-0.02f, -0.05f, 0), new VectorXYZ(-0.02f,     0f, 0),
 			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0));
-
+		
+		public final boolean rightHandTraffic;
+		
 		public final LaneLayout laneLayout;
 		public final float width;
 		
@@ -778,8 +782,22 @@ public class RoadModule extends ConfigurableWorldModule {
 			this.startCoord = line.getStartNode().getPos();
 			this.endCoord = line.getEndNode().getPos();
 			
-			this.steps = isSteps(tags);
+			if (RIGHT_HAND_TRAFFIC_BY_DEFAULT) {
+				if (tags.contains("traffic_side", "left")) {
+					rightHandTraffic = false;
+				} else {
+					rightHandTraffic = true;
+				}
+			} else {
+				if (tags.contains("traffic_side", "right")) {
+					rightHandTraffic = true;
+				} else {
+					rightHandTraffic = false;
+				}
+			}
 			
+			this.steps = isSteps(tags);
+						
 			if (steps) {
 				this.laneLayout = null;
 				this.width = parseWidth(tags, 1.0f);
@@ -833,7 +851,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			//TODO handle oneway case
 			
-			String rightKey = RIGHT_HAND_TRAFFIC ? "lanes:forward" : "lanes:backward";
+			String rightKey = rightHandTraffic ? "lanes:forward" : "lanes:backward";
 			
 			if (laneTagsRight != null) {
 				lanesRight = (float)laneTagsRight.length;
@@ -841,7 +859,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				lanesRight = parseOsmDecimal(tags.getValue(rightKey), false);
 			}
 
-			String leftKey = RIGHT_HAND_TRAFFIC ? "lanes:backward" : "lanes:forward";
+			String leftKey = rightHandTraffic ? "lanes:backward" : "lanes:forward";
 			
 			if (laneTagsLeft != null) {
 				lanesLeft = (float)laneTagsLeft.length;
@@ -993,7 +1011,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			List<String> relevantSuffixes;
 			
-			if (roadPart == RoadPart.RIGHT ^ !RIGHT_HAND_TRAFFIC) {
+			if (roadPart == RoadPart.RIGHT ^ !rightHandTraffic) {
 				// the forward part
 				
 				if (isOneway(tags)) {
@@ -1600,9 +1618,9 @@ public class RoadModule extends ConfigurableWorldModule {
 					road.getOutline(false), road.getOutline(true),
 					(float)relativePositionRight);
 			rightLaneBorder = addYList(rightLaneBorder, getHeightAboveRoad());
-						
-			type.render(target, roadPart, road.tags, laneTags,
-					leftLaneBorder, rightLaneBorder);
+			
+			type.render(target, roadPart, road.rightHandTraffic,
+					road.tags, laneTags, leftLaneBorder, rightLaneBorder);
 			
 		}
 		
@@ -1620,14 +1638,17 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		public final LaneType type;
 		public final RoadPart roadPart;
+		public final boolean rightHandTraffic;
 		
 		private final List<VectorXYZ> leftBorder;
 		private final List<VectorXYZ> rightBorder;
 		
 		private LaneConnection(LaneType type, RoadPart roadPart,
+				boolean rightHandTraffic,
 				List<VectorXYZ> leftBorder, List<VectorXYZ> rightBorder) {
 			this.type = type;
 			this.roadPart = roadPart;
+			this.rightHandTraffic = rightHandTraffic;
 			this.leftBorder = leftBorder;
 			this.rightBorder = rightBorder;
 		}
@@ -1654,8 +1675,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		public void renderTo(Target<?> target) {
 			
-			type.render(target, roadPart, EMPTY_TAG_GROUP, EMPTY_TAG_GROUP,
-					leftBorder, rightBorder);
+			type.render(target, roadPart, rightHandTraffic,
+					EMPTY_TAG_GROUP, EMPTY_TAG_GROUP, leftBorder, rightBorder);
 			
 		}
 		
@@ -1682,6 +1703,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		public abstract void render(Target<?> target, RoadPart roadPart,
+				boolean rightHandTraffic,
 				TagGroup roadTags, TagGroup laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder);
@@ -1711,6 +1733,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		@Override
 		public void render(Target<?> target, RoadPart roadPart,
+				boolean rightHandTraffic,
 				TagGroup roadTags, TagGroup laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
@@ -1735,7 +1758,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				
 				target.drawTriangleStrip(surface, vs,
 						texCoordLists(vs, surface, new ArrowTexCoordFunction(
-								roadPart, mirrorLeftRight)));
+								roadPart, rightHandTraffic, mirrorLeftRight)));
 				
 			} else {
 				
@@ -1852,7 +1875,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void render(Target<?> target, RoadPart roadPart,
-				TagGroup roadTags, TagGroup laneTags,
+				boolean rightHandTraffic, TagGroup roadTags, TagGroup laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
 
@@ -1956,13 +1979,18 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * the various right-pointing arrows for left-pointing arrows.
 	 */
 	private static class ArrowTexCoordFunction implements TexCoordFunction {
-
-		private final RoadPart roadPart;
-		private final boolean mirrorLeftRight;
 		
-		private ArrowTexCoordFunction(RoadPart roadPart, boolean mirrorLeftRight) {
+		private final RoadPart roadPart;
+		private final boolean rightHandTraffic;
+		private final boolean mirrorLeftRight;
+				
+		private ArrowTexCoordFunction(RoadPart roadPart,
+				boolean rightHandTraffic, boolean mirrorLeftRight) {
+			
 			this.roadPart = roadPart;
+			this.rightHandTraffic = rightHandTraffic;
 			this.mirrorLeftRight = mirrorLeftRight;
+			
 		}
 		
 		@Override
@@ -1974,7 +2002,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
 			
-			boolean forward = roadPart == RoadPart.LEFT ^ RIGHT_HAND_TRAFFIC;
+			boolean forward = roadPart == RoadPart.LEFT ^ rightHandTraffic;
 			
 			/* calculate length of the lane */
 			
