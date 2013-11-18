@@ -650,10 +650,7 @@ class FileDrop
      */
     public static class Event extends java.util.EventObject {
 
-        /**
-		 * 
-		 */
-		private static final long serialVersionUID = -4180860113403394986L;
+		private static final long serialVersionUID = -4180860113403394986L; //generated serialVersionUID
 		private java.io.File[] files;
 
         /**

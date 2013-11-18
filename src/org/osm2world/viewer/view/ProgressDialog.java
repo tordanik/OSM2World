@@ -9,10 +9,7 @@ import javax.swing.JTextField;
 
 public class ProgressDialog extends JDialog {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1016979607905010257L;
+	private static final long serialVersionUID = -1016979607905010257L; //generated serialVersionUID
 	private final JProgressBar progressBar;
 	private final JTextField statusField;
 	
