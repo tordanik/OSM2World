@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
+import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.viewer.model.Data;
@@ -12,6 +13,7 @@ import org.osm2world.viewer.model.RenderOptions;
 
 public class ShowCameraConfigurationAction extends AbstractAction {
 	
+	private static final long serialVersionUID = -3461617949419339009L;
 	private final Data data;
 	private final RenderOptions renderOptions;
 	
@@ -23,6 +25,12 @@ public class ShowCameraConfigurationAction extends AbstractAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
+		
+		Results r = data.getConversionResults();
+		if (r == null) {
+			JOptionPane.showMessageDialog(null, "no Camera defined");
+			return;
+		}
 		
 		MapProjection mapProjection = data.getConversionResults().getMapProjection();
 		
