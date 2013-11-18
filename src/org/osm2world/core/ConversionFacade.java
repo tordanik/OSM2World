@@ -499,6 +499,10 @@ public class ConversionFacade {
 	 */
 	public static class BoundingBoxSizeException extends RuntimeException {
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2841146365929523046L;
 		public final Bound bound;
 
 		private BoundingBoxSizeException(Bound bound) {

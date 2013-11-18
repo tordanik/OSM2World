@@ -24,6 +24,9 @@ import com.jogamp.opengl.util.FPSAnimator;
 
 public class ViewerGLCanvas extends GLCanvas {
 
+	private static final long serialVersionUID = 817150566654010861L;
+
+
 	public ViewerGLCanvas(Data data, MessageManager messageManager, RenderOptions renderOptions) {
 
 		super(new GLCapabilities(GLProfile.getDefault()));

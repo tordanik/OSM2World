@@ -12,6 +12,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ToggleTerrainAction extends AbstractAction {
 
+	private static final long serialVersionUID = 3659085143967426625L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;

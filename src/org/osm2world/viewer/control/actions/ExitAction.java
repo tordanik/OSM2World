@@ -10,6 +10,11 @@ import javax.swing.KeyStroke;
  * closes the application */
 public class ExitAction extends AbstractAction {
 		
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7239839993534668987L;
+
 	public ExitAction() {
 		super("Exit");
 		putValue(SHORT_DESCRIPTION, "Closes the application");

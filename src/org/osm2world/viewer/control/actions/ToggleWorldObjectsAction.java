@@ -12,6 +12,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ToggleWorldObjectsAction extends AbstractAction {
 
+	private static final long serialVersionUID = -5751259322056033212L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;

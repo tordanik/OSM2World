@@ -16,6 +16,10 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class OrthoBoundsAction extends AbstractAction implements Observer {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3506647787633942591L;
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;

@@ -136,6 +136,7 @@ public final class CLIArgumentsUtil {
 			result.add(argList.toArray(new String[argList.size()]));
 			
 		}
+		in.close();
 		
 		return result;
 		
