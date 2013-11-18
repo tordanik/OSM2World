@@ -12,6 +12,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ToggleWireframeAction extends AbstractAction {
 
+	private static final long serialVersionUID = 6710342251037183143L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;

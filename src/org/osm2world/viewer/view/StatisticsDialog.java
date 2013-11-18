@@ -29,6 +29,7 @@ import org.osm2world.core.target.statistics.StatisticsTarget.Stat;
 
 public class StatisticsDialog extends JDialog {
 	
+	private static final long serialVersionUID = -2724106939639635472L;
 	private static final Map<Stat, String> statNames = new HashMap<Stat, String>();
 	static {
 		statNames.put(OBJECT_COUNT, "objects");

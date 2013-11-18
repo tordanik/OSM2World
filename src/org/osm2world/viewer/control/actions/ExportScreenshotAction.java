@@ -19,6 +19,8 @@ import com.jogamp.opengl.util.awt.Screenshot;
 
 public class ExportScreenshotAction extends AbstractExportAction {
 
+	private static final long serialVersionUID = 8777435425813342813L; //generated serialVersionUID
+
 	public ExportScreenshotAction(ViewerFrame viewerFrame, Data data,
 			MessageManager messageManager, RenderOptions renderOptions) {
 

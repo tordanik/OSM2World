@@ -315,9 +315,8 @@ class FileDrop
                             log( out, "FileDrop: file list accepted." );
 
                             // Get a useful list
-                            java.util.List fileList = (java.util.List)
+                            java.util.List<File> fileList = (java.util.List<File>)
                                 tr.getTransferData(java.awt.datatransfer.DataFlavor.javaFileListFlavor);
-                            java.util.Iterator iterator = fileList.iterator();
 
                             // Convert list to array
                             java.io.File[] filesTemp = new java.io.File[ fileList.size() ];
@@ -427,7 +426,7 @@ class FileDrop
         {
             boolean support = false;
             try
-            {   Class arbitraryDndClass = Class.forName( "java.awt.dnd.DnDConstants" );
+            {   Class<?> arbitraryDndClass = Class.forName( "java.awt.dnd.DnDConstants" );
                 support = true;
             }   // end try
             catch( Exception e )
@@ -444,7 +443,7 @@ class FileDrop
      private static File[] createFileArray(BufferedReader bReader, PrintStream out)
      {
         try {
-            java.util.List list = new java.util.ArrayList();
+            java.util.List<File> list = new java.util.ArrayList<File>();
             java.lang.String line = null;
             while ((line = bReader.readLine()) != null) {
                 try {
@@ -651,7 +650,8 @@ class FileDrop
      */
     public static class Event extends java.util.EventObject {
 
-        private java.io.File[] files;
+		private static final long serialVersionUID = -4180860113403394986L; //generated serialVersionUID
+		private java.io.File[] files;
 
         /**
          * Constructs an {@link Event} with the array

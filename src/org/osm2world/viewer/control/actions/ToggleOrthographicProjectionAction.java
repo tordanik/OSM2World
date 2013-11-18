@@ -13,6 +13,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ToggleOrthographicProjectionAction extends AbstractAction {
 
+	private static final long serialVersionUID = 8546764815038965935L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;

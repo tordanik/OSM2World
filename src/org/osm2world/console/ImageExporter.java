@@ -19,7 +19,7 @@ import javax.imageio.ImageIO;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
-import javax.media.opengl.GLPbuffer;
+import javax.media.opengl.GLOffscreenAutoDrawable;
 import javax.media.opengl.GLProfile;
 
 import org.apache.commons.configuration.Configuration;
@@ -53,7 +53,7 @@ public class ImageExporter {
 	private JOGLTextureManager backgroundTextureManager;
 	
 	private GL2 gl;
-	private GLPbuffer pBuffer;
+	private GLOffscreenAutoDrawable pBuffer;
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
@@ -138,8 +138,7 @@ public class ImageExporter {
 		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
 		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
 				
-		pBuffer = factory.createGLPbuffer(null,
-				cap, null, pBufferSizeX, pBufferSizeY, null);
+		pBuffer = factory.createOffscreenAutoDrawable(null, cap, null, pBufferSizeX, pBufferSizeY, null);
 		
 		pBuffer.getContext().makeCurrent();
 		gl = pBuffer.getGL().getGL2();

@@ -29,6 +29,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class OpenOSMAction extends AbstractAction {
 
+	private static final long serialVersionUID = -71970104383745134L; //generated serialVersionUID
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;

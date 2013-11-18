@@ -676,6 +676,8 @@ final class MultipolygonAreaBuilder {
 	
 	private static final class NodeSequence extends ArrayList<MapNode> {
 		
+		private static final long serialVersionUID = -1189277554247756781L; //generated SerialUID
+
 		/**
 		 * creates an empty sequence
 		 */

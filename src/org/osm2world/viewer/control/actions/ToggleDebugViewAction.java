@@ -15,6 +15,8 @@ import org.osm2world.viewer.view.debug.DebugView;
 
 public class ToggleDebugViewAction extends AbstractAction implements Observer {
 	
+	private static final long serialVersionUID = -7415950981091744016L;
+
 	private final DebugView debugView;
 	
 	private final ViewerFrame viewerFrame;
