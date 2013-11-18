@@ -40,6 +40,10 @@ public class NNDebugViewer {
 	
 	private static class NNDebugPanel extends JPanel {
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6051792569759095487L;
 		private List<VectorXYZ> points;
 		private DelaunayTriangulation triangulation;
 		
@@ -296,6 +300,11 @@ public class NNDebugViewer {
 
 	private static class DebugViewerFrame extends JFrame {
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3058008356994265355L;
+
 		public DebugViewerFrame() {
 			super("Visual Geometry Debugger");
 			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -327,6 +336,10 @@ public class NNDebugViewer {
 	
 	private static final class ClearAction extends AbstractAction {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -355449189633652151L;
 		private final NNDebugPanel panel;
 		
 		public ClearAction(NNDebugPanel panel) {
@@ -345,6 +358,11 @@ public class NNDebugViewer {
 
 	private static final class AddRandomPointAction extends AbstractAction {
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8243198248896477663L;
+
 		private final NNDebugPanel panel;
 		
 		private static Random random = new Random();

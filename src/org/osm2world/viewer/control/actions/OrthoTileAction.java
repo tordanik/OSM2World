@@ -17,6 +17,10 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class OrthoTileAction extends AbstractAction implements Observer {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4494511160535468154L;
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;

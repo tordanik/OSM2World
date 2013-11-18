@@ -16,6 +16,10 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class SetCameraToCoordinateAction extends AbstractAction implements Observer {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8587163475874776786L;
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;

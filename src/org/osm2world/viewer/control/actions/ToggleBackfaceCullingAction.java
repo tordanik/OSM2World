@@ -10,6 +10,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ToggleBackfaceCullingAction extends AbstractAction {
 
+	private static final long serialVersionUID = 3993313015641228064L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;

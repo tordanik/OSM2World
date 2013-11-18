@@ -199,6 +199,7 @@ public final class Output {
 				(perfListener.getPhaseDuration(Phase.TERRAIN) + 500) / 1000,
 				(System.currentTimeMillis() - perfListener.getPhaseEnd(Phase.TERRAIN) + 500) / 1000,
 				(System.currentTimeMillis() - start + 500) / 1000);
+			w.close();
 		}
 
 	}

@@ -12,6 +12,10 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class SetEleConstraintEnforcerAction extends AbstractAction {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5241031810160447221L;
 	Class<? extends EleConstraintEnforcer> enforcerClass;
 	ViewerFrame viewerFrame;
 	Data data;

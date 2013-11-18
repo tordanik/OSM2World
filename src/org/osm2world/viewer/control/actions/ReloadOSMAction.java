@@ -21,6 +21,10 @@ import org.osm2world.viewer.view.ViewerFrame;
  */
 public class ReloadOSMAction extends AbstractAction implements Observer {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1162049141590529184L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;
