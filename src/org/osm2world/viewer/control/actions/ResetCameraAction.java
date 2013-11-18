@@ -17,10 +17,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ResetCameraAction extends AbstractAction implements Observer {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9163911330093863591L;
+	private static final long serialVersionUID = 9163911330093863591L; //generated serialVersionUID
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;

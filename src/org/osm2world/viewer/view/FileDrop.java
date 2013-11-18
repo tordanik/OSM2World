@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 
+import org.osm2world.viewer.view.FileDrop.TransferableObject;
+
 /*
  * this class has been copied from the Public Domain resource
  * http://www.iharder.net/current/java/filedrop/
@@ -651,7 +653,8 @@ class FileDrop
      */
     public static class Event extends java.util.EventObject {
 
-        private java.io.File[] files;
+		private static final long serialVersionUID = -4180860113403394986L; //generated serialVersionUID
+		private java.io.File[] files;
 
         /**
          * Constructs an {@link Event} with the array

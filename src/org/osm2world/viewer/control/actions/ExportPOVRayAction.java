@@ -20,10 +20,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ExportPOVRayAction extends AbstractExportAction {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6019526579344140850L;
+	private static final long serialVersionUID = -6019526579344140850L; //generated serialVersionUID
 
 	public ExportPOVRayAction(ViewerFrame viewerFrame, Data data,
 			MessageManager messageManager, RenderOptions renderOptions) {
