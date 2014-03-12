@@ -11,10 +11,9 @@ import org.osm2world.core.math.VectorXZ;
  */
 public class HackMapProjection extends OriginMapProjection {
 	
-	/**
-	 * This is a correction value to make lonToX-values metric values
-	 */
-	private final static double LON_CORRECTION = 1.5;
+	private double originX;
+	private double originY;
+	private double groundScale;
 	
 	/*
 	 * All coordinates will be modified by subtracting the origin
@@ -25,31 +24,45 @@ public class HackMapProjection extends OriginMapProjection {
 	 */
 	
 	public VectorXZ calcPos(double lat, double lon) {
-		
-		double x = lonToX(lon - origin.lon) / LON_CORRECTION;
-		double y = latToY(lat - origin.lat);
-		
-		return new VectorXZ(x, y); //x and z(!) are 2d here
+		double x = lonToX(lon) * groundScale - originX;
+		double y = latToY(lat) * groundScale - originY;
+
+		/* snap to som cm precision, seems to reduce geometry exceptions */
+		x = Math.round(x * 1000) / 1000.0d;
+		y = Math.round(y * 1000) / 1000.0d;
+
+		return new VectorXZ(x, y); // x and z(!) are 2d here
 	}
-	
+
 	@Override
 	public VectorXZ calcPos(LatLon latlon) {
 		return calcPos(latlon.lat, latlon.lon);
 	}
-	
+
 	@Override
 	public double calcLat(VectorXZ pos) {
-		return yToLat(pos.z) + origin.lat;
+		return yToLat((pos.z + originY) / groundScale);
 	}
-	
+
 	@Override
 	public double calcLon(VectorXZ pos) {
-		return xToLon(pos.x * LON_CORRECTION) + origin.lon;
+		return xToLon((pos.x + originX) / groundScale);
 	}
-	
+
 	@Override
 	public VectorXZ getNorthUnit() {
 		return VectorXZ.Z_UNIT;
 	}
-	
+
+	@Override
+	public void setOrigin(LatLon origin) {
+		super.setOrigin(origin);
+
+		this.groundScale = MercatorProjection.earthCircumference(origin.lat);
+		this.originY = latToY(origin.lat) * groundScale;
+		this.originX = lonToX(origin.lon) * groundScale;
+
+		System.out.println(origin.lat + " " + origin.lon + " / " + originX
+				+ ":" + originY + " scale:" + groundScale);
+	}
 }

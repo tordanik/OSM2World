@@ -41,9 +41,9 @@ public abstract class OriginMapProjection implements MapProjection {
 			
 			Bound firstBound = osmData.getBounds().iterator().next();
 			
-			origin = new LatLon(
+			setOrigin(new LatLon(
 					(firstBound.getTop() + firstBound.getBottom()) / 2,
-					(firstBound.getLeft() + firstBound.getRight()) / 2);
+					(firstBound.getLeft() + firstBound.getRight()) / 2));
 			
 		} else {
 			
@@ -53,7 +53,7 @@ public abstract class OriginMapProjection implements MapProjection {
 			}
 			
 			OSMNode firstNode = osmData.getNodes().iterator().next();
-			origin = new LatLon(firstNode.lat, firstNode.lon);
+			setOrigin(new LatLon(firstNode.lat, firstNode.lon));
 			
 		}
 		
