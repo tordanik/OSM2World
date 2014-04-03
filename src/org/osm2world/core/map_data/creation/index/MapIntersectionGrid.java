@@ -1,7 +1,9 @@
 package org.osm2world.core.map_data.creation.index;
 
-import org.osm2world.core.map_data.data.MapData;
+import java.util.Collection;
+
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 
 
@@ -9,17 +11,26 @@ public class MapIntersectionGrid implements MapDataIndex {
 	
 	private final IntersectionGrid<MapElement> intersectionGrid;
 			
-	public MapIntersectionGrid(MapData mapData) {
+	public MapIntersectionGrid(AxisAlignedBoundingBoxXZ dataBoundary) {
+		
+		AxisAlignedBoundingBoxXZ gridBounds = dataBoundary.pad(10);
 		
 		intersectionGrid = new IntersectionGrid<MapElement>(
-				mapData.getDataBoundary().pad(10),
-				mapData.getDataBoundary().sizeX() / 50,
-				mapData.getDataBoundary().sizeX() / 50);
+				gridBounds,
+				gridBounds.sizeX() / 50,
+				gridBounds.sizeZ() / 50);
 		
-		for (MapElement element : mapData.getMapElements()) {
-			intersectionGrid.insert(element);
-		}
-		
+	}
+	
+	@Override
+	public void insert(MapElement e) {
+		intersectionGrid.insert(e);
+	}
+	
+	@Override
+	public Collection<? extends Iterable<MapElement>> insertAndProbe(MapElement e) {
+		insert(e);
+		return intersectionGrid.cellsFor(e);
 	}
 	
 	@Override

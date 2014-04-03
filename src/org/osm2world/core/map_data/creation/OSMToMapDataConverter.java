@@ -17,8 +17,8 @@ import java.util.Set;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.core.map_data.creation.index.Map2dTree;
 import org.osm2world.core.map_data.creation.index.MapDataIndex;
+import org.osm2world.core.map_data.creation.index.MapIntersectionGrid;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
@@ -26,7 +26,6 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
@@ -229,67 +228,81 @@ public class OSMToMapDataConverter {
 	 */
 	private static void calculateIntersectionsInMapData(MapData mapData) {
 		
-		MapDataIndex index = new Map2dTree(mapData);
+		MapDataIndex index = new MapIntersectionGrid(mapData.getDataBoundary());
 		
-		// find intersections, using an index to reduce the number of checks
-		
-		for (Iterable<MapElement> leaf : index.getLeaves()) {
+		for (MapElement e1 : mapData.getMapElements()) {
 			
-			for (MapElement e1 : leaf) {
-				secondElementLoop :
-				for (MapElement e2 : leaf) {
+			/* collect all nearby elements */
 			
-					//TODO: use for (int ...) loop
-					
-					if (e1 == e2) { continue; }
-					
-					/* filter out existing overlaps/intersections */
-					
-					for (MapOverlap<? extends MapElement, ?> e1Overlap : e1.getOverlaps()) {
-						if (e1Overlap.getOther(e1) == e2) {
-							continue secondElementLoop;
-						}
+			Collection<? extends Iterable<MapElement>> leaves
+					= index.insertAndProbe(e1);
+			
+			Iterable<MapElement> nearbyElements;
+			
+			if (leaves.size() == 1) {
+				nearbyElements = leaves.iterator().next();
+			} else {
+				// collect and de-duplicate elements from all the leaves
+				Set<MapElement> elementSet = new HashSet<MapElement>();
+				for (Iterable<MapElement> leaf : leaves) {
+					for (MapElement e : leaf) {
+						elementSet.add(e);
 					}
-					
-					/* calculate overlaps/intersections depending on element type */
-					
-					if (e1 instanceof MapWaySegment
-							&& e2 instanceof MapWaySegment) {
-						
-						addOverlapBetween((MapWaySegment) e1, (MapWaySegment) e2);
-						
-					} else if (e1 instanceof MapWaySegment
-							&& e2 instanceof MapArea) {
-						
-						addOverlapBetween((MapWaySegment) e1, (MapArea) e2);
-						
-					} else if (e1 instanceof MapArea
-							&& e2 instanceof MapWaySegment) {
-						
-						addOverlapBetween((MapWaySegment) e2, (MapArea) e1);
-						
-					} else if (e1 instanceof MapArea
-							&& e2 instanceof MapArea) {
-						
-						addOverlapBetween((MapArea) e1, (MapArea) e2);
-						
-					} else if (e1 instanceof MapNode
-							&& e2 instanceof MapArea) {
-						
-						addOverlapBetween((MapNode) e1, (MapArea) e2);
-						
-					} else if (e1 instanceof MapArea
-							&& e2 instanceof MapNode) {
-						
-						addOverlapBetween((MapNode) e2, (MapArea) e1);
-						
-					}
-						
-					
 				}
+				nearbyElements = elementSet;
 			}
-		
+			
+			for (MapElement e2 : nearbyElements) {
+			
+				if (e1 == e2) { continue; }
+				
+				addOverlapBetween(e1, e2);
+				
+			}
+			
 		}
+		
+	}
+
+	/**
+	 * adds the overlap between two {@link MapElement}s
+	 * to both, if it exists. It calls the appropriate
+	 * subtype-specific addOverlapBetween method
+	 */
+	private static void addOverlapBetween(MapElement e1, MapElement e2) {
+		
+		if (e1 instanceof MapWaySegment
+				&& e2 instanceof MapWaySegment) {
+			
+			addOverlapBetween((MapWaySegment) e1, (MapWaySegment) e2);
+			
+		} else if (e1 instanceof MapWaySegment
+				&& e2 instanceof MapArea) {
+			
+			addOverlapBetween((MapWaySegment) e1, (MapArea) e2);
+			
+		} else if (e1 instanceof MapArea
+				&& e2 instanceof MapWaySegment) {
+			
+			addOverlapBetween((MapWaySegment) e2, (MapArea) e1);
+			
+		} else if (e1 instanceof MapArea
+				&& e2 instanceof MapArea) {
+			
+			addOverlapBetween((MapArea) e1, (MapArea) e2);
+			
+		} else if (e1 instanceof MapNode
+				&& e2 instanceof MapArea) {
+			
+			addOverlapBetween((MapNode) e1, (MapArea) e2);
+			
+		} else if (e1 instanceof MapArea
+				&& e2 instanceof MapNode) {
+			
+			addOverlapBetween((MapNode) e2, (MapArea) e1);
+			
+		}
+		
 	}
 
 	/**

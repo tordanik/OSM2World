@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.index.Map2dTree;
-import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
@@ -27,7 +27,10 @@ public class Map2dTreeDebugView extends DebugView {
 	public void fillTarget(JOGLTarget target) {
 		
 		if (map2dTree == null) {
-			map2dTree = new RenderableMap2dTree(map);
+			map2dTree = new RenderableMap2dTree();
+			for (MapElement e : map.getMapElements()) {
+				map2dTree.insert(e);
+			}
 		}
 		
 		map2dTree.renderTo(target);
@@ -36,8 +39,8 @@ public class Map2dTreeDebugView extends DebugView {
 	
 	private class RenderableMap2dTree extends Map2dTree {
 
-		public RenderableMap2dTree(MapData mapData) {
-			super(mapData);
+		public RenderableMap2dTree() {
+			super(map.getDataBoundary());
 		}
 
 		public void renderTo(JOGLTarget target) {

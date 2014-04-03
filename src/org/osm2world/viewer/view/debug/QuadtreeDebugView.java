@@ -45,7 +45,10 @@ public class QuadtreeDebugView extends DebugView {
 	public void fillTarget(JOGLTarget target) {
 		
 		if (mapQuadtree == null) {
-			mapQuadtree = new MapQuadtree(map);
+			mapQuadtree = new MapQuadtree(map.getDataBoundary());
+			for (MapElement e : map.getMapElements()) {
+				mapQuadtree.insert(e);
+			}
 		}
 		
 		for (QuadLeaf leaf : mapQuadtree.getLeaves()) {

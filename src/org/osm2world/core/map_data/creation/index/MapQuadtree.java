@@ -6,14 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.util.FaultTolerantIterationUtil;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 
 /**
  * a Quadtree managing {@link MapElement}s of a data set
@@ -240,22 +241,35 @@ public class MapQuadtree implements MapDataIndex {
 		
 	}
 	
-	public MapQuadtree(MapData mapData) {
+	public MapQuadtree(AxisAlignedBoundingBoxXZ dataBoundary) {
 		
 		root = new QuadInnerNode(
-				mapData.getDataBoundary().minX, mapData.getDataBoundary().maxX,
-				mapData.getDataBoundary().minZ, mapData.getDataBoundary().maxZ);
+				dataBoundary.minX, dataBoundary.maxX,
+				dataBoundary.minZ, dataBoundary.maxZ);
 		
-		FaultTolerantIterationUtil.iterate(mapData.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement element) {
-				root.add(element);
+	}
+	
+	@Override
+	public void insert(MapElement e) {
+		root.add(e);
+	}
+	
+	@Override
+	public Collection<? extends Iterable<MapElement>> insertAndProbe(
+			final MapElement e) {
+		
+		insert(e);
+		
+		return Collections2.<QuadLeaf>filter(getLeaves(), new Predicate<QuadLeaf>() {
+			@Override public boolean apply(QuadLeaf leaf) {
+				return leaf.contains(e);
 			}
 		});
 		
 	}
 	
 	@Override
-	public Iterable<QuadLeaf> getLeaves() {
+	public Collection<QuadLeaf> getLeaves() {
 		
 		List<QuadLeaf> leaves = new ArrayList<QuadLeaf>();
 		

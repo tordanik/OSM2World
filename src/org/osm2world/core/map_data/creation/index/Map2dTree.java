@@ -1,20 +1,18 @@
 package org.osm2world.core.map_data.creation.index;
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.util.FaultTolerantIterationUtil;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 /**
  * a 2D tree (two-dimensional k-d tree) managing {@link MapElement}s of a
@@ -33,6 +31,8 @@ public class Map2dTree implements MapDataIndex {
 	protected static interface Node {
 		
 		void add(MapElement element, boolean suppressSplits);
+		
+		List<Leaf> probe(MapElement element);
 
 		/** adds all leaves in the subtree starting at this node to a list */
 		void collectLeaves(List<Leaf> leaves);
@@ -141,7 +141,46 @@ public class Map2dTree implements MapDataIndex {
 			}
 					
 		}
-
+		
+		@Override
+		public List<Leaf> probe(MapElement element) {
+			
+			boolean addToLowerChild = false;
+			boolean addToUpperChild = false;
+			
+			for (MapNode node : getMapNodes(element)) {
+				
+				VectorXZ pos = node.getPos();
+				
+				if (splitAlongX) {
+					
+					addToLowerChild |= pos.x <= splitValue;
+					addToUpperChild |= pos.x >= splitValue;
+					
+				} else {
+					
+					addToLowerChild |= pos.z <= splitValue;
+					addToUpperChild |= pos.z >= splitValue;
+					
+				}
+				
+			}
+			
+			if (addToLowerChild && addToUpperChild) {
+				List<Leaf> leaves = new ArrayList<Leaf>();
+				leaves.addAll(lowerChild.probe(element));
+				leaves.addAll(upperChild.probe(element));
+				return leaves;
+			} else if (addToLowerChild) {
+				return lowerChild.probe(element);
+			} else if (addToUpperChild) {
+				return upperChild.probe(element);
+			} else {
+				throw new AssertionError ("The element is not in this Node");
+			}
+			
+		}
+		
 		public void collectLeaves(List<Leaf> leaves) {
 			lowerChild.collectLeaves(leaves);
 			upperChild.collectLeaves(leaves);
@@ -182,23 +221,32 @@ public class Map2dTree implements MapDataIndex {
 		}
 		
 		@Override
+		public List<Leaf> probe(MapElement element) {
+			return singletonList(this);
+		}
+		
+		@Override
 		public void collectLeaves(List<Leaf> leaves) {
 			leaves.add(this);
 		}
 		
 	}
 	
-	public Map2dTree(MapData mapData) {
+	public Map2dTree(AxisAlignedBoundingBoxXZ dataBoundary) {
 		
-		AxisAlignedBoundingBoxXZ dataBoundary = mapData.getDataBoundary();
 		root = new InnerNode(true, (dataBoundary.minX + dataBoundary.maxX) / 2);
-		
-		FaultTolerantIterationUtil.iterate(mapData.getMapElements(), new Operation<MapElement>() {
-			@Override public void perform(MapElement element) {
-				root.add(element, false);
-			}
-		});
-		
+				
+	}
+	
+	@Override
+	public void insert(MapElement element) {
+		root.add(element, false);
+	}
+	
+	@Override
+	public Collection<Leaf> insertAndProbe(MapElement e) {
+		insert(e);
+		return root.probe(e);
 	}
 	
 	protected static Iterable<MapNode> getMapNodes(MapElement element) {
