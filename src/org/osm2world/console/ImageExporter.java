@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
@@ -32,6 +31,12 @@ import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
+
+import ar.com.hjg.pngj.ImageInfo;
+import ar.com.hjg.pngj.ImageLineByte;
+import ar.com.hjg.pngj.PngWriter;
+import ar.com.hjg.pngj.chunks.PngChunkTextVar;
+import ar.com.hjg.pngj.chunks.PngMetadata;
 
 import com.jogamp.opengl.util.awt.Screenshot;
 
@@ -207,78 +212,83 @@ public class ImageExporter {
 			final Camera camera,
 			final Projection projection) throws IOException {
 		
+		/* FIXME: this would be needed for cases where BufferSizes are so unbeliveable large that the temp images go beyond the memory limit
+		while (((1<<31)/x) <= pBufferSizeY) {
+			pBufferSizeY /= 2;
+		}
+		*/
+		
 		/* determine the number of "parts" to split the rendering in */
 		
 		int xParts = 1 + ((x-1) / pBufferSizeX);
 		int yParts = 1 + ((y-1) / pBufferSizeY);
+
+		/* generate ImageWriter */
+		ImageWriter imageWriter;
 		
+		switch (outputMode) {
+		case PNG: imageWriter = new PNGWriter(outputFile, x, y); break;
+		case PPM: imageWriter = new PPMWriter(outputFile, x, y); break;
+		
+		default: throw new IllegalArgumentException(
+				"output mode not supported " + outputMode);
+		}
+
 		/* create image (maybe in multiple parts) */
 				
-        BufferedImage image = new BufferedImage(x, y, BufferedImage.TYPE_INT_RGB);
-        
-		for (int xPart = 0; xPart < xParts; ++xPart) {
-		for (int yPart = 0; yPart < yParts; ++yPart) {
-			
-			/* calculate start, end and size (in pixels)
-			 * of the image part that will be rendered in this pass */
-			
-			int xStart = xPart * pBufferSizeX;
-			int xEnd   = (xPart+1 < xParts) ? (xStart + (pBufferSizeX-1)) : (x-1);
-			int xSize  = (xEnd - xStart) + 1;
-			
-			int yStart = yPart * pBufferSizeY;
+        BufferedImage image = new BufferedImage(x, pBufferSizeY, BufferedImage.TYPE_INT_RGB);
+                
+        for (int yPart = yParts-1; yPart >=0 ; --yPart) {
+        	
+        	int yStart = yPart * pBufferSizeY;
 			int yEnd   = (yPart+1 < yParts) ? (yStart + (pBufferSizeY-1)) : (y-1);
 			int ySize  = (yEnd - yStart) + 1;
-			
-			/* configure rendering */
-			
-			JOGLTarget.clearGL(gl, null);
-	        
-	       	if (backgroundImage != null) {
-		       	JOGLTarget.drawBackgoundImage(gl, backgroundImage,
-		       			xStart, yStart,
-		       			xSize, ySize,
-		       			backgroundTextureManager);
-	       	}
-	        
-	        /* render to pBuffer */
-	        
-	       	JOGLTarget target = (bufferTarget == null)
-	       			? createJOGLTarget(gl, results, config)
-	       			: bufferTarget;
-	        
-	        target.renderPart(camera, projection,
-	        		xStart / (double)(x-1), xEnd / (double)(x-1),
-	        		yStart / (double)(y-1), yEnd / (double)(y-1));
-			
-	        if (target != bufferTarget) {
-		        target.freeResources();
-			}
-	        
-	        /* make screenshot and paste into the buffer
-	         * that will contain the entire image*/
 
-	        BufferedImage imagePart =
-	        	Screenshot.readToBufferedImage(pBufferSizeX, pBufferSizeY);
+        	for (int xPart = 0; xPart < xParts; ++xPart) {
+        			
+				/* calculate start, end and size (in pixels)
+				 * of the image part that will be rendered in this pass */
+			
+				int xStart = xPart * pBufferSizeX;
+				int xEnd   = (xPart+1 < xParts) ? (xStart + (pBufferSizeX-1)) : (x-1);
+				int xSize  = (xEnd - xStart) + 1;
+							
+				/* configure rendering */
+			
+				JOGLTarget.clearGL(gl, null);
 	        
-	        image.getGraphics().drawImage(imagePart,
-	        		xStart, y-1-yEnd, xSize, ySize, null);
-	        			
-		}
-		}
-				
-		/* write the entire image */
-        
-		switch (outputMode) {
+				if (backgroundImage != null) {
+					JOGLTarget.drawBackgoundImage(gl, backgroundImage,
+							xStart, yStart, xSize, ySize,
+							backgroundTextureManager);
+				}
+	        
+				/* render to pBuffer */
+	        
+				JOGLTarget target = (bufferTarget == null)? 
+						createJOGLTarget(gl, results, config) : bufferTarget;
+	        
+				target.renderPart(camera, projection,
+						xStart / (double)(x-1), xEnd / (double)(x-1),
+						yStart / (double)(y-1), yEnd / (double)(y-1));
 			
-			case PNG: ImageIO.write(image, "png", outputFile); break;
-			case PPM: writePPMFile(image, outputFile); break;
-			
-			default: throw new IllegalArgumentException(
-					"output mode not supported " + outputMode);
-			
+				if (target != bufferTarget) {
+					target.freeResources();
+				}
+	        
+				/* make screenshot and paste into the buffer that will contain 
+				 * pBufferSizeY entire image lines */
+
+				BufferedImage imagePart = Screenshot.readToBufferedImage(xSize, ySize);
+	     
+				image.getGraphics().drawImage(imagePart,
+						xStart, 0, xSize, ySize, null);
+			}
+        	
+        	imageWriter.append(image, ySize);
 		}
-		
+
+        imageWriter.close();
 	}
 
 	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
@@ -300,53 +310,141 @@ public class ImageExporter {
 		
 	}
 	
-	private static void writePPMFile(BufferedImage image, File outputFile)
-			throws IOException {
-				
-		FileOutputStream out = null;
-		FileChannel fc = null;
+	
+	/**
+	 * interface ImageWriter is used to abstract the underlaying image
+	 * format. It can be used for incremental image writes of huge images
+	 */
+	public interface ImageWriter {
+		void append(BufferedImage img) throws IOException;
+		void append(BufferedImage img, int lines) throws IOException;
+		void close() throws IOException;
+	}
+
+	/**
+	 * Implementation of an ImageWriter to write png files
+	 */
+	public class PNGWriter implements ImageWriter {
+
+		private ImageInfo imgInfo;
+		private PngWriter writer;
 		
-		try {
+		public PNGWriter(File outputFile, int cols, int rows) {
+			imgInfo = new ImageInfo(cols, rows, 8, false);
+			writer = new PngWriter(outputFile, imgInfo, true);
+			
+			PngMetadata metaData = writer.getMetadata();
+			metaData.setTimeNow();
+			metaData.setText(PngChunkTextVar.KEY_Software, "OSM2World");
+		}
+		
+		@Override
+		public void append(BufferedImage img) throws IOException {
+			append(img, img.getHeight());
+		}
+
+		@Override
+		public void append(BufferedImage img, int lines) throws IOException {
+
+			/* get raw data of image */
+			DataBuffer imageDataBuffer = img.getRaster().getDataBuffer();
+			int[] data = (((DataBufferInt)imageDataBuffer).getData());
+			
+			/* create one ImageLine that will be refilled and written to png */
+			ImageLineByte bline = new ImageLineByte(imgInfo);
+			byte[] line = bline.getScanline();
+			
+			for (int i = 0; i < lines; i++) {
+				for (int d = 0; d < img.getWidth(); d++) {
+					int val = data[i*img.getWidth()+d];
+					line[3*d+0] = (byte) (val >> 16);
+					line[3*d+1] = (byte) (val >> 8);
+					line[3*d+2] = (byte) val;
+				}
+				writer.writeRow(bline);
+			}		
+		}
+
+		@Override
+		public void close() throws IOException {
+			writer.end();
+			writer.close();
+		}
+	}
+	
+	/**
+	 * Implementation of an ImageWriter to write raw ppm files
+	 */
+	public class PPMWriter implements ImageWriter {
+
+		private FileOutputStream out;
+		private FileChannel fc;
+		private File outputFile;
+		private int cols;
+		private int rows;
+		
+		public PPMWriter(File outputFile, int cols, int rows) {
+			this.cols = cols;
+			this.rows = rows;
+			this.outputFile = outputFile;
+		}
+		
+		private void writeHeader() throws IOException {
 			
 			out = new FileOutputStream(outputFile);
-			
-			// write header
-			
+					
+			// write header	
 			Charset charSet = Charset.forName("US-ASCII");
 			out.write("P6\n".getBytes(charSet));
-			out.write(String.format("%d %d\n", image.getWidth(), image.getHeight())
-					.getBytes(charSet));
+			out.write(String.format("%d %d\n", cols, rows).getBytes(charSet));
 			out.write("255\n".getBytes(charSet));
-						
+
+			fc = out.getChannel();			
+		}
+		
+		
+		@Override
+		public void append(BufferedImage img) throws IOException {
+			append(img, img.getHeight());
+		}
+
+		@Override
+		public void append(BufferedImage img, int lines) throws IOException {
+
+			if (fc == null) {
+				writeHeader();
+			}
+			
 			// collect and write content
 
 			ByteBuffer writeBuffer = ByteBuffer.allocate(
-					3 * image.getWidth() * image.getHeight());
+					3 * img.getWidth() * lines);
 			
-			DataBuffer imageDataBuffer = image.getRaster().getDataBuffer();
+			DataBuffer imageDataBuffer = img.getRaster().getDataBuffer();
 			int[] data = (((DataBufferInt)imageDataBuffer).getData());
 			
-			for (int value : data) {
+			for (int i = 0; i < img.getWidth() * lines; i++) {
+				int value = data[i];
 				writeBuffer.put((byte)(value >>> 16));
 				writeBuffer.put((byte)(value >>> 8));
 				writeBuffer.put((byte)(value));
 			}
 			
 			writeBuffer.position(0);
-			
-			fc = out.getChannel();
 			fc.write(writeBuffer);
-			
-		} finally {
-			
-			if (fc != null) {
-				fc.close();
-			} else if(out != null) {
-				out.close();
-			}
 			
 		}
 
+		@Override
+		public void close() throws IOException {
+
+			if (fc != null) {
+				fc.close();
+			}
+
+			if (out != null) {
+				out.close();
+			}
+		}
 	}
-	
 }
