@@ -783,13 +783,13 @@ public class RoadModule extends ConfigurableWorldModule {
 			this.endCoord = line.getEndNode().getPos();
 			
 			if (RIGHT_HAND_TRAFFIC_BY_DEFAULT) {
-				if (tags.contains("traffic_side", "left")) {
+				if (tags.contains("driving_side", "left")) {
 					rightHandTraffic = false;
 				} else {
 					rightHandTraffic = true;
 				}
 			} else {
-				if (tags.contains("traffic_side", "right")) {
+				if (tags.contains("driving_side", "right")) {
 					rightHandTraffic = true;
 				} else {
 					rightHandTraffic = false;
