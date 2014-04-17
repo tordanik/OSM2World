@@ -276,7 +276,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 		for (int i = 0; i < max(1, material.getNumTextureLayers()); i++) {
 			
 			TextureData textureData = null;
-			if (material.getTextureDataList() != null) {
+			if (material.getNumTextureLayers() > 0) {
 				textureData = material.getTextureDataList().get(i);
 			}
 		
