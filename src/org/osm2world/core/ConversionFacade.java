@@ -13,7 +13,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.core.map_data.creation.HackMapProjection;
+import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.creation.OriginMapProjection;
@@ -148,7 +148,7 @@ public class ConversionFacade {
 	}
 
 	private Factory<? extends OriginMapProjection> mapProjectionFactory =
-		new DefaultFactory<HackMapProjection>(HackMapProjection.class);
+		new DefaultFactory<MetricMapProjection>(MetricMapProjection.class);
 	
 	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory =
 		new DefaultFactory<LeastSquaresInterpolator>(LeastSquaresInterpolator.class);

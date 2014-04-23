@@ -28,7 +28,7 @@ public class OSMToMapDataConverterTest {
 				+File.separator+filename);
 		
 		OSMData osmData = new OsmosisReader(testFile).getData();
-		OriginMapProjection mapProjection = new HackMapProjection();
+		OriginMapProjection mapProjection = new MetricMapProjection();
 		mapProjection.setOrigin(osmData);
 		
 		return new OSMToMapDataConverter(mapProjection).createMapData(osmData);
@@ -90,7 +90,7 @@ public class OSMToMapDataConverterTest {
 				+File.separator+filename);
 		
 		OSMData osmData = new OsmosisReader(testFile).getData();
-		OriginMapProjection mapProjection = new HackMapProjection();
+		OriginMapProjection mapProjection = new MetricMapProjection();
 		mapProjection.setOrigin(osmData);
 		
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
