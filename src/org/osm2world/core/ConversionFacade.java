@@ -13,8 +13,8 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.creation.OriginMapProjection;
 import org.osm2world.core.map_data.data.MapData;
@@ -29,7 +29,7 @@ import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.JOSMFileHack;
-import org.osm2world.core.osm.creation.OsmosisReader;
+import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
@@ -225,7 +225,7 @@ public class ConversionFacade {
 			/* try to read file using Osmosis */
 			
 			try {
-				osmData = new OsmosisReader(osmFile).getData();
+				osmData = new OSMFileReader(osmFile).getData();
 			} catch (IOException e) {
 				
 				System.out.println("could not read file," +
@@ -249,7 +249,7 @@ public class ConversionFacade {
 						" (not even with workaround for JOSM files)", e2);
 			}
 			
-			osmData = new OsmosisReader(tempFile).getData();
+			osmData = new OSMFileReader(tempFile).getData();
 			
 		}
 		

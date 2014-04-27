@@ -2,9 +2,6 @@ package org.osm2world.core.osm.creation;
 
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,8 +22,6 @@ import org.openstreetmap.osmosis.core.domain.v0_6.Way;
 import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
 import org.openstreetmap.osmosis.core.task.v0_6.RunnableSource;
 import org.openstreetmap.osmosis.core.task.v0_6.Sink;
-import org.openstreetmap.osmosis.xml.common.CompressionMethod;
-import org.openstreetmap.osmosis.xml.v0_6.XmlReader;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.osm.data.OSMMember;
@@ -34,13 +29,8 @@ import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 
-/**
- * DataSource providing information from a single .osm file. The file is read
- * during the constructor call, there will be no updates when the file is
- * changed later. This class uses osmosis to read the file.
- */
 public class OsmosisReader implements OSMDataReader {
-	
+		
 	private boolean complete = false;
 	
 	private synchronized boolean isComplete() {
@@ -84,9 +74,11 @@ public class OsmosisReader implements OSMDataReader {
 		}
 	};
 	
-	public OsmosisReader(File file) throws IOException {
-		
-		RunnableSource reader = createReaderForFile(file);
+	/*
+	 * @param source
+	 * 		a source providing the input data for the conversion
+	 */
+	protected OsmosisReader(RunnableSource reader) throws IOException {
 		
 		reader.setSink(sinkImplementation);
 		
@@ -101,40 +93,13 @@ public class OsmosisReader implements OSMDataReader {
 		}
 		
 		if (!isComplete()) {
-			throw new IOException("couldn't read from file");
+			throw new IOException("couldn't read from data source");
 		}
 		
 		convertToOwnRepresentation();
 		
 	}
-
-	public static final RunnableSource createReaderForFile(File file)
-			throws FileNotFoundException {
 		
-		boolean pbf = false;
-		CompressionMethod compression = CompressionMethod.None;
-		
-		if (file.getName().endsWith(".pbf")) {
-			pbf = true;
-		} else if (file.getName().endsWith(".gz")) {
-			compression = CompressionMethod.GZip;
-		} else if (file.getName().endsWith(".bz2")) {
-			compression = CompressionMethod.BZip2;
-		}
-		
-		RunnableSource reader;
-		
-		if (pbf) {
-			reader = new crosby.binary.osmosis.OsmosisReader(
-					new FileInputStream(file));
-		} else {
-			reader = new XmlReader(file, false, compression);
-		}
-		
-		return reader;
-		
-	}
-	
 	private void convertToOwnRepresentation() {
 		
 		ownNodes = new ArrayList<OSMNode>(nodesById.size());

@@ -14,7 +14,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.creation.OsmosisReader;
+import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 
 public class OSMToMapDataConverterTest {
@@ -27,7 +27,7 @@ public class OSMToMapDataConverterTest {
 		File testFile = new File("test"+File.separator+"files"
 				+File.separator+filename);
 		
-		OSMData osmData = new OsmosisReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getData();
 		OriginMapProjection mapProjection = new MetricMapProjection();
 		mapProjection.setOrigin(osmData);
 		
@@ -89,7 +89,7 @@ public class OSMToMapDataConverterTest {
 		File testFile = new File("test"+File.separator+"files"
 				+File.separator+filename);
 		
-		OSMData osmData = new OsmosisReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getData();
 		OriginMapProjection mapProjection = new MetricMapProjection();
 		mapProjection.setOrigin(osmData);
 		
