@@ -70,7 +70,8 @@ public class JTSConversionUtil {
 	}
 	
 	public static final PolygonWithHolesXZ
-		polygonXZFromJTSPolygon(Polygon polygon) {
+		polygonXZFromJTSPolygon(Polygon polygon)
+		throws InvalidGeometryException {
 		
 		/* create outer polygon */
 		
@@ -112,7 +113,13 @@ public class JTSConversionUtil {
 		
 		if (geometry instanceof Polygon) {
 			if (geometry.getNumPoints() > 2) {
-				result.add(polygonXZFromJTSPolygon((Polygon)geometry));
+				
+				try {
+					result.add(polygonXZFromJTSPolygon((Polygon)geometry));
+				} catch (InvalidGeometryException e) {
+					//don't add the broken polygon
+				}
+				
 			}
 		} else if (geometry instanceof GeometryCollection) {
 			GeometryCollection collection = (GeometryCollection)geometry;
