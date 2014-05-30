@@ -13,6 +13,7 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.util.exception.TriangulationException;
 import org.poly2tri.Poly2Tri;
 import org.poly2tri.geometry.polygon.Polygon;
 import org.poly2tri.geometry.polygon.PolygonPoint;
@@ -35,12 +36,13 @@ public final class Poly2TriTriangulationUtil {
 	 * and will create triangle vertices at these points.
 	 * It will also accept line segments as edges that must be integrated
 	 * into the resulting triangulation.
+	 * @throws TriangulationException if triangulation fails
 	 */
 	public static final List<TriangleXZ> triangulate(
 			SimplePolygonXZ outerPolygon,
 			Collection<SimplePolygonXZ> holes,
 			Collection<LineSegmentXZ> segments,
-			Collection<VectorXZ> points) {
+			Collection<VectorXZ> points) throws TriangulationException {
 		
 		/* remove any problematic data (duplicate points) from the input */
 		
@@ -77,19 +79,20 @@ public final class Poly2TriTriangulationUtil {
 		/* run the actual triangulation */
 		
 		return triangulateFast(outerPolygon, filteredHoles, segments, filteredPoints);
-				
+		
 	}
 
 	/**
 	 * variant of {@link #triangulate(SimplePolygonXZ, Collection, Collection, Collection)}
 	 * that does not validate the input. This is obviously faster,
 	 * but the caller needs to make sure that there are no problems.
+	 * @throws TriangulationException if triangulation fails
 	 */
 	public static final List<TriangleXZ> triangulateFast(
 			SimplePolygonXZ outerPolygon,
 			Collection<SimplePolygonXZ> holes,
 			Collection<LineSegmentXZ> segments,
-			Collection<VectorXZ> points) {
+			Collection<VectorXZ> points) throws TriangulationException {
 		
 		/* prepare data for triangulation */
 		
@@ -105,21 +108,29 @@ public final class Poly2TriTriangulationUtil {
 			triangulationPolygon.addSteinerPoint(toTPoint(p));
 		}
 		
-		/* run triangulation */
-		
-		Poly2Tri.triangulate(triangulationPolygon);
-		
-		/* convert the result to the desired format */
-		
-		List<DelaunayTriangle> triangles = triangulationPolygon.getTriangles();
-		
-		List<TriangleXZ> result = new ArrayList<TriangleXZ>(triangles.size());
-		
-		for (DelaunayTriangle triangle : triangles) {
-			result.add(toTriangleXZ(triangle));
-		}
+		try {
 			
-		return result;
+			/* run triangulation */
+			
+			Poly2Tri.triangulate(triangulationPolygon);
+			
+			/* convert the result to the desired format */
+			
+			List<DelaunayTriangle> triangles = triangulationPolygon.getTriangles();
+			
+			List<TriangleXZ> result = new ArrayList<TriangleXZ>(triangles.size());
+			
+			for (DelaunayTriangle triangle : triangles) {
+				result.add(toTriangleXZ(triangle));
+			}
+				
+			return result;
+			
+		} catch (Exception e) {
+			throw new TriangulationException(e);
+		} catch (StackOverflowError e) {
+			throw new TriangulationException(e);
+		}
 		
 	}
 	

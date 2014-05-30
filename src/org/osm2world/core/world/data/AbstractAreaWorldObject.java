@@ -13,8 +13,10 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
+import org.osm2world.core.util.exception.TriangulationException;
 
 /**
  * implementation of {@link AreaWorldObject} that offers some basic features:
@@ -85,11 +87,29 @@ public abstract class AbstractAreaWorldObject
 	 * decompose this area into counterclockwise triangles.
 	 */
 	protected Collection<TriangleXZ> getTriangulationXZ() {
-		return Poly2TriTriangulationUtil.triangulate(
+		
+		try {
+		
+			return Poly2TriTriangulationUtil.triangulate(
 				area.getPolygon().getOuter(),
 				area.getPolygon().getHoles(),
 				Collections.<LineSegmentXZ>emptyList(),
 				Collections.<VectorXZ>emptyList());
+			
+		} catch (TriangulationException e) {
+			
+			System.err.println("Poly2Tri exception for " + this + ":");
+			e.printStackTrace();
+			System.err.println("... falling back to JTS triangulation.");
+			
+			return JTSTriangulationUtil.triangulate(
+					area.getPolygon().getOuter(),
+					area.getPolygon().getHoles(),
+					Collections.<LineSegmentXZ>emptyList(),
+					Collections.<VectorXZ>emptyList());
+			
+		}
+		
 	}
 	
 	/**

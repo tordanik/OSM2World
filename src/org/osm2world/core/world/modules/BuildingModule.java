@@ -48,6 +48,7 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
+import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -56,6 +57,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.MinMaxUtil;
+import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -1291,17 +1293,25 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				/* create the triangulation of the roof */
 				
-				Collection<TriangleXZ> triangles =
-						Poly2TriUtil.triangulate(getPolygon().getOuter(),
-						                         getPolygon().getHoles(),
-						                         getInnerSegments(),
-						                         getInnerPoints());
-
-//						JTSTriangulationUtil.triangulate(
-//								getPolygon().getOuter(),
-//								getPolygon().getHoles(),
-//								getInnerSegments(),
-//								getInnerPoints());
+				Collection<TriangleXZ> triangles;
+				
+				try {
+					
+					triangles = Poly2TriUtil.triangulate(
+							getPolygon().getOuter(),
+						    getPolygon().getHoles(),
+						    getInnerSegments(),
+						    getInnerPoints());
+				
+				} catch (TriangulationException e) {
+				
+						triangles = JTSTriangulationUtil.triangulate(
+								getPolygon().getOuter(),
+								getPolygon().getHoles(),
+								getInnerSegments(),
+								getInnerPoints());
+				
+				}
 				
 				List<TriangleXYZ> trianglesXYZ =
 						new ArrayList<TriangleXYZ>(triangles.size());

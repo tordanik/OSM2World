@@ -11,6 +11,7 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.util.exception.TriangulationException;
 
 
 public class Poly2TriTriangulationUtilTest {
@@ -31,7 +32,7 @@ public class Poly2TriTriangulationUtilTest {
 			new VectorXZ(100, 0));
 	
 	@Test
-	public void triangulateTest() {
+	public void triangulateTest() throws TriangulationException {
 		
 		SimplePolygonXZ polygon = new SimplePolygonXZ(outlineB);
 		

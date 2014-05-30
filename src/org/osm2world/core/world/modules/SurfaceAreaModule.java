@@ -38,6 +38,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -278,7 +279,7 @@ public class SurfaceAreaModule extends AbstractModule {
 							Collections.<LineSegmentXZ>emptyList(),
 							points));
 					
-				} catch (NullPointerException e) {
+				} catch (TriangulationException e) {
 					
 					System.err.println("Poly2Tri exception for " + this + ":");
 					e.printStackTrace();

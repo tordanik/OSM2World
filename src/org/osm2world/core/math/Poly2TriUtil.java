@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.osm2world.core.util.exception.TriangulationException;
 import org.poly2tri.Poly2Tri;
 import org.poly2tri.triangulation.Triangulatable;
 import org.poly2tri.triangulation.TriangulationAlgorithm;
@@ -143,14 +144,14 @@ public class Poly2TriUtil {
 				TriangulationPoint tp1, tp2;
 				
 				if (!pointSet.containsKey(l.p1)){
-					tp1 = new TPoint(l.p1.x, l.p1.z);					
+					tp1 = new TPoint(l.p1.x, l.p1.z);
 					pointSet.put(l.p1, tp1);
 					points.add(tp1);
 				} else {
 					tp1 = pointSet.get(l.p1);
 				}
 				if (!pointSet.containsKey(l.p2)){
-					tp2 = new TPoint(l.p2.x, l.p2.z);	
+					tp2 = new TPoint(l.p2.x, l.p2.z);
 					pointSet.put(l.p2, tp2);
 					points.add(tp2);
 				} else {
@@ -169,14 +170,22 @@ public class Poly2TriUtil {
 
 	public static final List<TriangleXZ> triangulate(SimplePolygonXZ polygon,
 			Collection<SimplePolygonXZ> holes,
-			Collection<LineSegmentXZ> segments, Collection<VectorXZ> points) {
+			Collection<LineSegmentXZ> segments, Collection<VectorXZ> points) throws TriangulationException {
 
 		CDTSet cdt = new CDTSet(polygon, holes, segments, points);
 		TriangulationContext<?> tcx = Poly2Tri
 				.createContext(TriangulationAlgorithm.DTSweep);
 		tcx.prepareTriangulation(cdt);
 
-		Poly2Tri.triangulate(tcx);
+		try {
+		
+			Poly2Tri.triangulate(tcx);
+					
+		} catch (Exception e) {
+			throw new TriangulationException(e);
+		} catch (StackOverflowError e) {
+			throw new TriangulationException(e);
+		}
 
 		List<TriangleXZ> triangles = new ArrayList<TriangleXZ>();
 
