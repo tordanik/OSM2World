@@ -353,8 +353,8 @@ public final class PowerModule extends AbstractModule {
 		private int voltage = -1;
 		private TowerConfig start;
 		private TowerConfig end;
-		private List<VectorXYZ> startPos = new ArrayList<VectorXYZ>();
-		private List<VectorXYZ> endPos = new ArrayList<VectorXYZ>();
+		private List<VectorXYZ> startPos = null;
+		private List<VectorXYZ> endPos = null;
 		
 		
 		public PowerLine(MapWaySegment line) {
@@ -372,6 +372,9 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		private void setup() {
+			
+			startPos = new ArrayList<VectorXYZ>();
+			endPos = new ArrayList<VectorXYZ>();
 			
 			// check number of power lines
 			try {
@@ -469,9 +472,11 @@ public final class PowerModule extends AbstractModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-
-			// do initial setup for height and position calculation
-			setup();
+			
+			// do initial setup for height and position calculation, if necessary
+			if (startPos == null) {
+				setup();
+			}
 			
 			for (int i = 0; i < startPos.size(); i++) {
 
