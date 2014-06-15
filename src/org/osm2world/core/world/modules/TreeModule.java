@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.util.Arrays.asList;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -43,6 +45,94 @@ import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
  * adds trees, tree rows, tree groups and forests to the world
  */
 public class TreeModule extends ConfigurableWorldModule {
+	
+	private static final List<String> LEAF_TYPE_KEYS =
+			asList("leaf_type", "wood", "type");
+	
+	private static enum LeafType {
+		
+		BROADLEAVED("broadleaved", "broad_leaved", "broad_leafed", "deciduous"),
+		NEEDLELEAVED("needleleaved", "coniferous", "conifer");
+		
+		private final List<String> values;
+
+		private LeafType(String... values) {
+			this.values = asList(values);
+		}
+		
+		public static LeafType getValue(TagGroup tags) {
+			for (LeafType type : values()) {
+				if (tags.containsAny(LEAF_TYPE_KEYS, type.values)) {
+					return type;
+				}
+			}
+			return null;
+		}
+		
+	}
+	
+	private static final List<String> LEAF_CYCLE_KEYS =
+			asList("leaf_cycle", "wood", "type");
+	
+	private static enum LeafCycle {
+		
+		EVERGREEN("evergreen"),
+		DECIDUOUS("deciduous", "broad_leaved"),
+		SEMI_EVERGREEN("semi_evergreen"),
+		SEMI_DECIDUOUS("semi_deciduous");
+		
+		private final List<String> values;
+
+		private LeafCycle(String... values) {
+			this.values = asList(values);
+		}
+		
+		public static LeafCycle getValue(TagGroup tags) {
+			for (LeafCycle type : values()) {
+				if (tags.containsAny(LEAF_CYCLE_KEYS, type.values)) {
+					return type;
+				}
+			}
+			return null;
+		}
+		
+	}
+	
+	private static enum TreeSpecies {
+		
+		APPLE_TREE("malus");
+		
+		private final String value;
+		
+		private TreeSpecies(String value) {
+			this.value = value;
+		}
+		
+		public static TreeSpecies getValue(TagGroup tags) {
+			
+			String speciesString = tags.getValue("species");
+			
+			if (speciesString != null) {
+				
+				for (TreeSpecies species : values()) {
+					if (speciesString.contains(species.value)) {
+						return species;
+					}
+				}
+				
+			}
+			
+			// default to apple trees for orchards
+			
+			if (tags.contains("landuse", "orchard")) {
+				return APPLE_TREE;
+			} else {
+				return null;
+			}
+			
+		}
+		
+	}
 	
 	private boolean useBillboards = false;
 	private double defaultTreeHeight = 10;
@@ -93,23 +183,23 @@ public class TreeModule extends ConfigurableWorldModule {
 	private void renderTree(Target<?> target,
 			MapElement element,	VectorXYZ pos) {
 		
-		boolean fruit = isFruitTree(element, pos);
+		TreeSpecies species = TreeSpecies.getValue(element.getTags());
 		boolean coniferous = isConiferousTree(element, pos);
-		double height = getTreeHeight(element, coniferous, fruit);
+		double height = getTreeHeight(element, coniferous, species != null);
 		
 		if (useBillboards) {
 			
 			//"random" decision based on x coord
 			boolean mirrored = (long)(pos.getX()) % 2 == 0;
 			
-			Material material = fruit
+			Material material = species == TreeSpecies.APPLE_TREE
 					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
 					: coniferous
 					? Materials.TREE_BILLBOARD_CONIFEROUS
 					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
 			
 			WorldModuleBillboardUtil.renderCrosstree(target, material, pos,
-					(fruit ? 1.0 : 0.5 ) * height, height, mirrored);
+					(species != null ? 1.0 : 0.5 ) * height, height, mirrored);
 			
 		} else {
 			
@@ -136,7 +226,7 @@ public class TreeModule extends ConfigurableWorldModule {
 				coniferous ? 0 : radius,
 				true, true);
 	}
-		
+	
 	private static boolean isConiferousTree(MapElement element, Vector3D pos) {
 		
 		String typeValue = element.getTags().getValue("wood");
@@ -156,19 +246,6 @@ public class TreeModule extends ConfigurableWorldModule {
 			//"random" decision based on x coord
 			return (long)(pos.getX()) % 2 == 0;
 		}
-		
-	}
-	
-	private static boolean isFruitTree(MapElement element, Vector3D pos) {
-		
-		if (element.getTags().contains("landuse", "orchard")) {
-			return true;
-		}
-		
-		String species = element.getTags().getValue("species");
-		
-		return species != null &&
-				species.contains("malus");
 		
 	}
 	
@@ -217,9 +294,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			MapElement element, VectorXYZ pos) {
 		
 		boolean isConiferousTree = isConiferousTree(element, pos);
-		boolean isFruitTree = isFruitTree(element, pos);
 		
-		double height = getTreeHeight(element, isConiferousTree, isFruitTree);
+		double height = getTreeHeight(element, isConiferousTree, false);
 		
 		//rotate randomly for variation
 		float yRotation = (float) Math.random() * 360;
@@ -242,14 +318,9 @@ public class TreeModule extends ConfigurableWorldModule {
 	
 	public class Tree extends NoOutlineNodeWorldObject
 		implements RenderableToAllTargets, RenderableToPOVRay {
-		
-		private final boolean isConiferous;
-		private final boolean isFruitTree;
-		
+				
 		public Tree(MapNode node) {
 			super(node);
-			this.isConiferous = isConiferousTree(node, node.getPos());
-			this.isFruitTree = isFruitTree(node, node.getPos());
 		}
 		
 		@Override
