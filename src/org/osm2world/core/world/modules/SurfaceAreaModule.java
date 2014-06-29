@@ -88,7 +88,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		
 	}
 	
-	private static class SurfaceArea extends AbstractAreaWorldObject
+	public static class SurfaceArea extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
 		private final String surface;

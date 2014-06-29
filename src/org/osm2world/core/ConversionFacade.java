@@ -13,8 +13,8 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
-import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.creation.OriginMapProjection;
 import org.osm2world.core.map_data.data.MapData;
@@ -46,6 +46,7 @@ import org.osm2world.core.world.modules.BarrierModule;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.BuildingModule;
 import org.osm2world.core.world.modules.CliffModule;
+import org.osm2world.core.world.modules.GolfModule;
 import org.osm2world.core.world.modules.InvisibleModule;
 import org.osm2world.core.world.modules.ParkingModule;
 import org.osm2world.core.world.modules.PoolModule;
@@ -136,6 +137,7 @@ public class ConversionFacade {
 				new StreetFurnitureModule(),
 				new WaterModule(),
 				new PoolModule(),
+				new GolfModule(),
 				new CliffModule(),
 				new BarrierModule(),
 				new PowerModule(),
