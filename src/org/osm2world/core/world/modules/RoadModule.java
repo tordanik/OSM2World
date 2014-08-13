@@ -803,7 +803,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				this.width = parseWidth(tags, 1.0f);
 			} else {
 				this.laneLayout = buildBasicLaneLayout();
-				this.width = parseWidth(tags, (float)calculateFallbackWidth());
+				this.width = calculateWidth();
 				laneLayout.setCalculatedValues(width);
 			}
 			
@@ -1083,19 +1083,87 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 		}
 
-		private double calculateFallbackWidth() {
+		private float calculateWidth() {
+			
+			// if the width of all lanes is known, use the sum as the road's width
+			
+			Float sumWidth = calculateLaneBasedWidth(false, false);
+			
+			if (sumWidth != null) return sumWidth;
+			
+			// if the width of the road is explicitly tagged, use that value
+			// (note that this has lower priority than the sum of lane widths,
+			// to avoid errors when the two values don't match)
+			
+			float explicitWidth = parseWidth(tags, -1);
+			
+			if (explicitWidth != -1) return explicitWidth;
+
+			// if there is some basic info on lanes, use that
+			
+			if (tags.containsKey("lanes") || tags.containsKey("divider")) {
+				
+				return calculateLaneBasedWidth(true, false);
+				
+			}
+			
+			// if all else fails, make a guess
+			
+			return calculateLaneBasedWidth(true, true)
+					+ estimateVehicleLanesWidth();
+			
+		}
+		
+		/**
+		 * calculates the width of the road as the sum of the widths
+		 * of its lanes
+		 * 
+		 * @param useDefaults  whether to use a default for unknown widths
+		 * @param ignoreVehicleLanes  ignoring full-width lanes,
+		 * 	which means that only sidewalks, cycleways etc. will be counted
+		 * 
+		 * @return  the estimated width, or null if a lane has unknown width
+		 * 	and no defaults are permitted
+		 */
+		private Float calculateLaneBasedWidth(boolean useDefaults,
+				boolean ignoreVehicleLanes) {
+			
+			float width = 0;
+			
+			for (Lane lane : laneLayout.getLanesLeftToRight()) {
+				
+				if (lane.type == VEHICLE_LANE && ignoreVehicleLanes) continue;
+				
+				if (lane.getAbsoluteWidth() == null) {
+					if (useDefaults) {
+						width += DEFAULT_LANE_WIDTH;
+					} else {
+						return null;
+					}
+				} else {
+					width += lane.getAbsoluteWidth();
+				}
+				
+			}
+			
+			return width;
+			
+		}
+		
+		/**
+		 * calculates a rough estimate of the road's vehicle lanes' total width
+		 * based on road type and oneway
+		 */
+		private float estimateVehicleLanesWidth() {
 			
 			String highwayValue = tags.getValue("highway");
 			
-			double width = 0;
-			boolean ignoreVehicleLanes = false;
+			float width = 0;
 			
 			/* guess the combined width of all vehicle lanes */
 			
 			if (!tags.containsKey("lanes") && !tags.containsKey("divider")) {
-				
-				ignoreVehicleLanes = true;
-				
+								
 				if (isPath(tags)) {
 					width = 1f;
 				}
@@ -1103,7 +1171,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				else if ("service".equals(highwayValue)
 						|| "track".equals(highwayValue)) {
 					if (tags.contains("service", "parking_aisle")) {
-						width = DEFAULT_LANE_WIDTH * 0.8;
+						width = DEFAULT_LANE_WIDTH * 0.8f;
 					} else {
 						width = DEFAULT_LANE_WIDTH;
 					}
@@ -1119,20 +1187,6 @@ public class RoadModule extends ConfigurableWorldModule {
 				
 				else {
 					width = 4;
-				}
-				
-			}
-			
-			/* calculate sum of lane widths */
-			
-			for (Lane lane : laneLayout.getLanesLeftToRight()) {
-				
-				if (lane.type == VEHICLE_LANE && ignoreVehicleLanes) continue;
-				
-				if (lane.getAbsoluteWidth() == null) {
-					width += DEFAULT_LANE_WIDTH;
-				} else {
-					width += lane.getAbsoluteWidth();
 				}
 				
 			}
@@ -1804,14 +1858,22 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 		}
 		
-	};
+	}
 	
 	private static final LaneType VEHICLE_LANE = new FlatTexturedLane(
 			"VEHICLE_LANE", false, false) {
 		
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
-			return null;
-		};
+			
+			double width = parseWidth(laneTags, -1);
+			
+			if (width == -1) {
+				return null;
+			} else {
+				return width;
+			}
+			
+		}
 		
 	};
 	
@@ -1820,14 +1882,14 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
 			return (double)parseWidth(laneTags, 0.5f);
-		};
+		}
 		
 		@Override
 		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
 			Material material = super.getSurface(roadTags, laneTags);
 			if (material == ASPHALT) return RED_ROAD_MARKING;
 			else return material;
-		};
+		}
 		
 	};
 	
@@ -1836,7 +1898,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
 			return (double)parseWidth(laneTags, 1.0f);
-		};
+		}
 		
 	};
 
