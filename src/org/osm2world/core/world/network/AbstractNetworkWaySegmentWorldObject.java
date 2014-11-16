@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
 
 import java.util.ArrayList;
@@ -603,8 +604,18 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		VectorXZ position = start ? getStartWithOffset() : getEndWithOffset();
 		VectorXZ cutVector = start ? getStartCutVector() : getEndCutVector();
 		
-		return connectors.getPosXYZ(position.add(cutVector.mult(
-				(-0.5 + relativePosFromLeft) * getWidth())));
+		VectorXYZ left = connectors.getPosXYZ(position.add(
+				cutVector.mult(-0.5 * getWidth())));
+		VectorXYZ right = connectors.getPosXYZ(position.add(
+				cutVector.mult(+0.5 * getWidth())));
+		
+		if (relativePosFromLeft == 0) {
+			return left;
+		} else if (relativePosFromLeft == 1) {
+			return right;
+		} else {
+			return interpolateBetween(left, right, relativePosFromLeft);
+		}
 		
 	}
 
