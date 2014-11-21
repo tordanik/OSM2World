@@ -1432,7 +1432,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				VectorXZ slopeDirection = null;
 				
-				if (getValue("roof:slope:direction") != null) {
+				if (getValue("roof:direction") != null) {
+					Float angle = parseAngle(
+							getValue("roof:direction"));
+					if (angle != null) {
+						slopeDirection = VectorXZ.fromAngle(toRadians(angle));
+					}
+				}
+				
+				// fallback from roof:direction to roof:slope:direction
+				if (slopeDirection != null
+						&& getValue("roof:slope:direction") != null) {
 					Float angle = parseAngle(
 							getValue("roof:slope:direction"));
 					if (angle != null) {
@@ -1558,8 +1568,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				 * otherwise choose direction of longest polygon segment */
 				
 				VectorXZ ridgeDirection = null;
+
+				if (getValue("roof:direction") != null) {
+					Float angle = parseAngle(
+							getValue("roof:direction"));
+					if (angle != null) {
+						ridgeDirection = VectorXZ.fromAngle(toRadians(angle)).rightNormal();
+					}
+				}
 				
-				if (getValue("roof:ridge:direction") != null) {
+				if (ridgeDirection == null && getValue("roof:ridge:direction") != null) {
 					Float angle = parseAngle(
 							getValue("roof:ridge:direction"));
 					if (angle != null) {
