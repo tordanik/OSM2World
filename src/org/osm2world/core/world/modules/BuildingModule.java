@@ -1441,7 +1441,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 				
 				// fallback from roof:direction to roof:slope:direction
-				if (slopeDirection != null
+				if (slopeDirection == null
 						&& getValue("roof:slope:direction") != null) {
 					Float angle = parseAngle(
 							getValue("roof:slope:direction"));
