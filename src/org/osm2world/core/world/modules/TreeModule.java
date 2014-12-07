@@ -23,7 +23,6 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -180,12 +179,19 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private static final float TREE_RADIUS_PER_HEIGHT = 0.2f;
 	
-	private void renderTree(Target<?> target,
-			MapElement element,	VectorXYZ pos) {
+	private void renderTree(Target<?> target, MapElement element, VectorXYZ pos,
+			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 		
-		TreeSpecies species = TreeSpecies.getValue(element.getTags());
-		boolean coniferous = isConiferousTree(element, pos);
-		double height = getTreeHeight(element, coniferous, species != null);
+		// if leaf type is unknown, make "random" decision based on x coord
+		if (leafType == null) {
+			if ((long)(pos.getX()) % 2 == 0) {
+				leafType = LeafType.NEEDLELEAVED;
+			} else {
+				leafType = LeafType.BROADLEAVED;
+			}
+		}
+		
+		double height = getTreeHeight(element, leafType == LeafType.NEEDLELEAVED, species != null);
 		
 		if (useBillboards) {
 			
@@ -194,7 +200,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 			Material material = species == TreeSpecies.APPLE_TREE
 					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
-					: coniferous
+					: leafType == LeafType.NEEDLELEAVED
 					? Materials.TREE_BILLBOARD_CONIFEROUS
 					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
 			
@@ -203,14 +209,16 @@ public class TreeModule extends ConfigurableWorldModule {
 			
 		} else {
 			
-			renderTreeGeometry(target, pos, coniferous, height);
+			renderTreeGeometry(target, pos, leafType, height);
 			
 		}
 		
 	}
 	
 	private static void renderTreeGeometry(Target<?> target,
-			VectorXYZ posXYZ, boolean coniferous, double height) {
+			VectorXYZ posXYZ, LeafType leafType, double height) {
+		
+		boolean coniferous = (leafType == LeafType.NEEDLELEAVED);
 		
 		double stemRatio = coniferous?0.3:0.5;
 		double radius = height*TREE_RADIUS_PER_HEIGHT;
@@ -225,28 +233,6 @@ public class TreeModule extends ConfigurableWorldModule {
 				radius,
 				coniferous ? 0 : radius,
 				true, true);
-	}
-	
-	private static boolean isConiferousTree(MapElement element, Vector3D pos) {
-		
-		String typeValue = element.getTags().getValue("wood");
-		
-		if (typeValue == null) {
-			typeValue = element.getTags().getValue("type");
-		}
-		
-		if ("broad_leaved".equals(typeValue)
-				|| "broad_leafed".equals(typeValue) // both values are common
-				|| "deciduous".equals(typeValue)) {
-			return false;
-		} else if ("coniferous".equals(typeValue)
-				|| "conifer".equals(typeValue)) {
-			return true;
-		} else { //mixed or undefined
-			//"random" decision based on x coord
-			return (long)(pos.getX()) % 2 == 0;
-		}
-		
 	}
 	
 	/**
@@ -275,25 +261,27 @@ public class TreeModule extends ConfigurableWorldModule {
 	private void addTreeDeclarationsTo(POVRayTarget target) {
 		if (target != previousDeclarationTarget) {
 		
+			//TODO support any combination of leaf type and leaf cycle
+			
 			previousDeclarationTarget = target;
 			
 			target.append("#ifndef (broad_leaved_tree)\n");
 			target.append("#declare broad_leaved_tree = object { union {\n");
-			renderTreeGeometry(target, VectorXYZ.NULL_VECTOR, false, 1);
+			renderTreeGeometry(target, VectorXYZ.NULL_VECTOR, LeafType.BROADLEAVED, 1);
 			target.append("} }\n#end\n\n");
 			
 			target.append("#ifndef (coniferous_tree)\n");
 			target.append("#declare coniferous_tree = object { union {\n");
-			renderTreeGeometry(target, VectorXYZ.NULL_VECTOR, true, 1);
+			renderTreeGeometry(target, VectorXYZ.NULL_VECTOR, LeafType.NEEDLELEAVED, 1);
 			target.append("} }\n#end\n\n");
 			
 		}
 	}
 
-	private void renderTree(POVRayTarget target,
-			MapElement element, VectorXYZ pos) {
+	private void renderTree(POVRayTarget target, MapElement element, VectorXYZ pos,
+			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 		
-		boolean isConiferousTree = isConiferousTree(element, pos);
+		boolean isConiferousTree = (leafType == LeafType.NEEDLELEAVED);
 		
 		double height = getTreeHeight(element, isConiferousTree, false);
 		
@@ -318,9 +306,19 @@ public class TreeModule extends ConfigurableWorldModule {
 	
 	public class Tree extends NoOutlineNodeWorldObject
 		implements RenderableToAllTargets, RenderableToPOVRay {
-				
+		
+		private final LeafType leafType;
+		private final LeafCycle leafCycle;
+		private final TreeSpecies species;
+		
 		public Tree(MapNode node) {
+			
 			super(node);
+			
+			leafType = LeafType.getValue(node.getTags());
+			leafCycle = LeafCycle.getValue(node.getTags());
+			species = TreeSpecies.getValue(node.getTags());
+			
 		}
 		
 		@Override
@@ -335,7 +333,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			renderTree(target, node, getBase());
+			renderTree(target, node, getBase(), leafType, leafCycle, species);
 		}
 		
 		@Override
@@ -345,7 +343,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(POVRayTarget target) {
-			renderTree(target, node, getBase());
+			renderTree(target, node, getBase(), leafType, leafCycle, species);
 		}
 		
 	}
@@ -356,10 +354,22 @@ public class TreeModule extends ConfigurableWorldModule {
 		private final MapWaySegment segment;
 
 		private final List<EleConnector> treeConnectors;
+
+		private final LeafType leafType;
+		private final LeafCycle leafCycle;
+		private final TreeSpecies species;
 		
 		public TreeRow(MapWaySegment segment) {
 			
 			this.segment = segment;
+			
+			/* determine details about the trees in the row */
+			
+			leafType = LeafType.getValue(segment.getTags());
+			leafCycle = LeafCycle.getValue(segment.getTags());
+			species = TreeSpecies.getValue(segment.getTags());
+			
+			/* add connectors for the trees' positions */
 			
 			//TODO: spread along a full way
 			
@@ -408,7 +418,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(POVRayTarget target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, segment, treeConnector.getPosXYZ());
+				renderTree(target, segment, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 			}
 		}
 		
@@ -420,7 +431,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(FaceTarget<?> target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, segment, treeConnector.getPosXYZ());
+				renderTree(target, segment, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 				target.flushReconstructedFaces();
 			}
 		}
@@ -428,7 +440,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, segment, treeConnector.getPosXYZ());
+				renderTree(target, segment, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 			}
 		}
 		
@@ -444,12 +457,20 @@ public class TreeModule extends ConfigurableWorldModule {
 		private final MapData mapData;
 		
 		private Collection<EleConnector> treeConnectors = null;
+
+		private final LeafType leafType;
+		private final LeafCycle leafCycle;
+		private final TreeSpecies species;
 		
 		public Forest(MapArea area, MapData mapData) {
 			
 			this.area = area;
 			this.mapData = mapData;
-						
+
+			leafType = LeafType.getValue(area.getTags());
+			leafCycle = LeafCycle.getValue(area.getTags());
+			species = TreeSpecies.getValue(area.getTags());
+			
 		}
 
 		private void createTreeConnectors(double density) {
@@ -515,7 +536,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(POVRayTarget target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ());
+				renderTree(target, area, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 			}
 		}
 		
@@ -527,7 +549,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(FaceTarget<?> target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ());
+				renderTree(target, area, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 				target.flushReconstructedFaces();
 			}
 		}
@@ -535,7 +558,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ());
+				renderTree(target, area, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 			}
 		}
 		
