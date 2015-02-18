@@ -172,6 +172,20 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	}
 	
 	/**
+	 * returns the result of rotating this vector around a freely chosen
+	 * axis and origin
+	 * @param angleRad angle in radians
+	 * @param rotOrigin  normalized vector for the rotation origin
+	 * @param rotAxis  normalized vector for the rotation axis
+	 */
+	public VectorXYZ rotateVec(double angleRad, VectorXYZ rotOrigin, VectorXYZ rotAxis) {
+		VectorXYZ v = this.subtract(rotOrigin);
+		v = v.rotateVec(angleRad, rotAxis);
+		v = v.add(rotOrigin);
+		return v;
+	}
+	
+	/**
 	 * calculates the angle between this vector and other,
 	 * but only if both are normalized!
 	 */
@@ -271,5 +285,5 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	public static final VectorXYZ X_UNIT = new VectorXYZ(1, 0, 0);
 	public static final VectorXYZ Y_UNIT = new VectorXYZ(0, 1, 0);
 	public static final VectorXYZ Z_UNIT = new VectorXYZ(0, 0, 1);
-	
+		
 }

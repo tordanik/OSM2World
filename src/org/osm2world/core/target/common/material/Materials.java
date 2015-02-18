@@ -172,6 +172,18 @@ public final class Materials {
 	public static final ConfMaterial BUS_STOP_SIGN =
 		new ConfMaterial(Lighting.FLAT, new Color(0.98f, 0.90f, 0.05f));
 	
+	public static final ConfMaterial SIGN_DE_250 =
+		new ConfMaterial(Lighting.FLAT, Color.RED);
+
+	public static final ConfMaterial SIGN_DE_206 =
+		new ConfMaterial(Lighting.FLAT, Color.RED);
+	
+	public static final ConfMaterial SIGN_DE_625_11 =
+		new ConfMaterial(Lighting.FLAT, Color.WHITE);
+	
+	public static final ConfMaterial SIGN_DE_625_21 =
+			new ConfMaterial(Lighting.FLAT, Color.WHITE);
+	
 	public static final ConfMaterial GRITBIN_DEFAULT =
 			new ConfMaterial(Lighting.FLAT, new Color(0.3f, 0.5f, 0.4f));
 	
