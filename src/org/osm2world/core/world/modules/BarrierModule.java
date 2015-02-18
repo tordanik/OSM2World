@@ -164,12 +164,23 @@ public class BarrierModule extends AbstractModule {
 	}
 	
 	private static class Wall extends ColoredWall {
+		
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "wall");
 		}
-		public Wall(MapWaySegment segment) {
-			super(Materials.WALL_DEFAULT, segment, 1f, 0.25f);
+		
+		private static Material getMaterial(TagGroup tags) {
+			if ("gabion".equals(tags.getValue("wall"))) {
+				return Materials.WALL_GABION;
+			} else {
+				return Materials.WALL_DEFAULT;
+			}
 		}
+		
+		public Wall(MapWaySegment segment) {
+			super(getMaterial(segment.getTags()), segment, 1f, 0.25f);
+		}
+		
 	}
 	
 	private static class CityWall extends ColoredWall {

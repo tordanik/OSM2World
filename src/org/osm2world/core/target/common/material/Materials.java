@@ -123,6 +123,8 @@ public final class Materials {
 	
 	public static final ConfMaterial WALL_DEFAULT =
 		new ConfMaterial(Lighting.FLAT, Color.GRAY);
+	public static final ConfMaterial WALL_GABION =
+		new ConfMaterial(Lighting.FLAT, Color.GRAY);
 	
 	public static final ConfMaterial HEDGE =
 		new ConfMaterial(Lighting.FLAT, new Color(0,0.5f,0));
