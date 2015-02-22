@@ -28,6 +28,7 @@ import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.viewer.control.actions.AboutAction;
+import org.osm2world.viewer.control.actions.DownloadOverpassAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
 import org.osm2world.viewer.control.actions.ExportObjDirAction;
@@ -165,6 +166,7 @@ public class ViewerFrame extends JFrame{
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
 			subMenu.add(new ReloadOSMAction(this, data, renderOptions, configFile));
 			subMenu.add(recentFilesMenu);
+			subMenu.add(new DownloadOverpassAction(this, data, renderOptions));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));

@@ -16,8 +16,15 @@ import org.openstreetmap.osmosis.xml.v0_6.XmlReader;
  */
 public class OSMFileReader extends OsmosisReader {
 	
+	private final File file;
+	
 	public OSMFileReader(File file) throws IOException {
 		super(createSourceForFile(file));
+		this.file = file;
+	}
+	
+	public File getFile() {
+		return file;
 	}
 	
 	private static final RunnableSource createSourceForFile(File file)

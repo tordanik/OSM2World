@@ -29,8 +29,8 @@ import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 
-public class OsmosisReader implements OSMDataReader {
-		
+class OsmosisReader implements OSMDataReader {
+	
 	private boolean complete = false;
 	
 	private synchronized boolean isComplete() {

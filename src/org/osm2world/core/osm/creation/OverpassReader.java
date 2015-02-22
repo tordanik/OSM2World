@@ -18,7 +18,8 @@ public class OverpassReader extends OsmosisReader {
 	/** fetches data within a bounding box from Overpass API */
 	public OverpassReader(LatLon min, LatLon max) throws IOException {
 		// FIXME not just nodes!
-		this("node("+min.lat+","+min.lon+","+max.lat+","+max.lon+");out meta;");
+		//this("node("+min.lat+","+min.lon+","+max.lat+","+max.lon+");out meta;");
+		this("(node("+min.lat+","+min.lon+","+max.lat+","+max.lon+");rel(bn)->.x;way("+min.lat+","+min.lon+","+max.lat+","+max.lon+");node(w)->.x;rel(bw););out meta;");
 	}
 	
 	/** fetches data from Overpass API according to an arbitrary query

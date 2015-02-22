@@ -28,7 +28,7 @@ import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.osm.creation.JOSMFileHack;
+import org.osm2world.core.osm.creation.JOSMFileReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Renderable;
@@ -216,10 +216,10 @@ public class ConversionFacade {
 		}
 		
 		OSMData osmData = null;
-		boolean useJOSMHack = false;
+		boolean useJOSMReader = false;
 		
-		if (JOSMFileHack.isJOSMGenerated(osmFile)) {
-			useJOSMHack = true;
+		if (JOSMFileReader.isJOSMGenerated(osmFile)) {
+			useJOSMReader = true;
 		} else {
 			
 			/* try to read file using Osmosis */
@@ -231,25 +231,22 @@ public class ConversionFacade {
 				System.out.println("could not read file," +
 						" trying workaround for files created by JOSM");
 				
-				useJOSMHack = true;
+				useJOSMReader = true;
 							
 			}
 			
 		}
 		
-		/* create a temporary "cleaned up" file as workaround for JOSM files */
+		/* try reading the file while taking into account JOSM-specific extensions */
 		
-		if (useJOSMHack) {
+		if (useJOSMReader) {
 			
-			File tempFile;
 			try {
-				tempFile = JOSMFileHack.createTempOSMFile(osmFile);
+				osmData = new JOSMFileReader(osmFile).getData();
 			} catch (Exception e2) {
 				throw new IOException("could not read OSM file" +
 						" (not even with workaround for JOSM files)", e2);
 			}
-			
-			osmData = new OSMFileReader(tempFile).getData();
 			
 		}
 		
