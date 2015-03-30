@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.core.map_data.data.MapArea;
@@ -31,7 +32,8 @@ public class OSMToMapDataConverterTest {
 		OriginMapProjection mapProjection = new MetricMapProjection();
 		mapProjection.setOrigin(osmData);
 		
-		return new OSMToMapDataConverter(mapProjection).createMapData(osmData);
+		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
+		return converter.createMapData(osmData);
 		
 	}
 	
@@ -93,7 +95,7 @@ public class OSMToMapDataConverterTest {
 		OriginMapProjection mapProjection = new MetricMapProjection();
 		mapProjection.setOrigin(osmData);
 		
-		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
+		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
 		MapData mapData = converter.createMapData(osmData);
 		
 		/* check coastline properties */

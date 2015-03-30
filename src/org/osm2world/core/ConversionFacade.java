@@ -310,7 +310,7 @@ public class ConversionFacade {
 		OriginMapProjection mapProjection = mapProjectionFactory.make();
 		mapProjection.setOrigin(osmData);
 		
-		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
+		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
 		MapData mapData = converter.createMapData(osmData);
 		
 		/* apply world modules */

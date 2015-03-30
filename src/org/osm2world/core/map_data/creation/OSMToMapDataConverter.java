@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
 import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
@@ -54,12 +55,14 @@ public class OSMToMapDataConverter {
 	private final Ruleset ruleset = new HardcodedRuleset();
 	
 	private final MapProjection mapProjection;
+	private final Configuration config;
 	
 	private static final Tag MULTIPOLYON_TAG = new Tag("type", "multipolygon");
 	
 		
-	public OSMToMapDataConverter(MapProjection mapProjection) {
+	public OSMToMapDataConverter(MapProjection mapProjection, Configuration config) {
 		this.mapProjection = mapProjection;
+		this.config = config;
 	}
 
 	public MapData createMapData(OSMData osmData) throws IOException {
@@ -180,7 +183,8 @@ public class OSMToMapDataConverter {
 		AxisAlignedBoundingBoxXZ terrainBoundary =
 				calculateFileBoundary(osmData.getBounds());
 		
-		if (terrainBoundary != null) {
+		if (terrainBoundary != null
+				&& config.getBoolean("createTerrain", true)) {
 			
 			EmptyTerrainBuilder.createAreasForEmptyTerrain(
 					mapNodes, mapAreas, terrainBoundary);
