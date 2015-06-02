@@ -41,6 +41,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 
+
 public final class JOGLTargetFixedFunction extends PrimitiveTarget<RenderableToJOGL> implements JOGLTarget {
 	
 	/** maximum number of texture layers any material can use */

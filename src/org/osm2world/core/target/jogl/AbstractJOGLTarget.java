@@ -25,6 +25,7 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
@@ -34,7 +35,7 @@ import org.osm2world.core.world.data.WorldObject;
 
 import com.jogamp.opengl.util.awt.TextRenderer;
 
-public abstract class AbstractJOGLTarget implements JOGLTarget {
+public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOGL> implements JOGLTarget {
 
 	@Override
 	public Class<RenderableToJOGL> getRenderableType() {
@@ -45,120 +46,50 @@ public abstract class AbstractJOGLTarget implements JOGLTarget {
 	@Override
 	public void render(RenderableToJOGL renderable) {
 		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void beginObject(WorldObject object) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawTriangleStrip(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawTriangleFan(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawBox(Material material, VectorXYZ bottomCenter,
-			VectorXZ faceDirection, double height, double width, double depth) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void drawColumn(Material material, Integer corners, VectorXYZ base,
-			double height, double radiusBottom, double radiusTop,
-			boolean drawBottom, boolean drawTop) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void finish() {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void reset() {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void drawPoints(Color color, VectorXYZ... vs) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void setGlobalLightingParameters(GlobalLightingParameters parameters) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void setRenderingParameters(
 			JOGLRenderingParameters renderingParameters) {
 		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setConfiguration(Configuration config) {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -170,26 +101,34 @@ public abstract class AbstractJOGLTarget implements JOGLTarget {
 	@Override
 	public void render(Camera camera, Projection projection) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void renderPart(Camera camera, Projection projection, double xStart,
 			double xEnd, double yStart, double yEnd) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void freeResources() {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void drawBackgoundImage(GL2 gl, File backgroundImage,
 			int startPixelX, int startPixelY, int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void drawPrimitive(Type type, Material material,
+			List<VectorXYZ> vs, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 		// TODO Auto-generated method stub
 		
 	}

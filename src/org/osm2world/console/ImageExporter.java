@@ -32,6 +32,7 @@ import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
+import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
 import ar.com.hjg.pngj.ImageInfo;
@@ -296,9 +297,17 @@ public class ImageExporter {
 	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
 			Configuration config) {
 		
-		JOGLTarget target = new JOGLTargetFixedFunction(gl,
-				new JOGLRenderingParameters(CCW, false, true),
-				GlobalLightingParameters.DEFAULT);
+		JOGLTarget target;
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			target = new JOGLTargetShader(gl.getGL3(),
+					new JOGLRenderingParameters(CCW, false, true),
+					GlobalLightingParameters.DEFAULT);
+		} else {
+			target = new JOGLTargetFixedFunction(gl,
+					new JOGLRenderingParameters(CCW, false, true),
+					GlobalLightingParameters.DEFAULT);
+		}
+		
 		
 		target.setConfiguration(config);
 		

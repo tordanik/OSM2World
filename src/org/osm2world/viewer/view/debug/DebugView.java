@@ -19,6 +19,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
+import org.osm2world.core.target.jogl.JOGLTargetShader;
 
 /**
  * contains some common methods for debug views
@@ -88,8 +89,13 @@ public abstract class DebugView {
 		if (canBeUsed() && camera != null && projection != null) {
 					
 			if (target == null) {
-				target = new JOGLTargetFixedFunction(gl, new JOGLRenderingParameters(
-						null, false, true), null);
+				if ("shader".equals(config.getString("joglImplementation"))) {
+					target = new JOGLTargetShader(gl.getGL3(), new JOGLRenderingParameters(
+							null, false, true), null);
+				} else {
+					target = new JOGLTargetFixedFunction(gl, new JOGLRenderingParameters(
+							null, false, true), null);
+				}
 				target.setConfiguration(config);
 			} else if (targetNeedsReset){
 				target.reset();
