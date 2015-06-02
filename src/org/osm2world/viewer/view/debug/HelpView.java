@@ -7,6 +7,7 @@ import javax.media.opengl.GL2;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -27,15 +28,15 @@ public class HelpView extends DebugView {
 		
 		//TODO: needs real panel measures; currently guesses 800x600
 		
-		JOGLTarget.drawText("Use \"File\" > \"Open OSM file\" "
+		AbstractJOGLTarget.drawText("Use \"File\" > \"Open OSM file\" "
 				+ "to load a file containing OpenStreetMap data.",
 				50, 550, 800, 600, Color.LIGHT_GRAY);
 		
-		JOGLTarget.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,
+		AbstractJOGLTarget.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,
 				50, 100, 800, 600, Color.LIGHT_GRAY);
-		JOGLTarget.drawText("Website: " + GlobalValues.OSM2WORLD_URI,
+		AbstractJOGLTarget.drawText("Website: " + GlobalValues.OSM2WORLD_URI,
 				50, 75, 800, 600, Color.LIGHT_GRAY);
-		JOGLTarget.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
+		AbstractJOGLTarget.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
 				50, 50, 800, 600, Color.LIGHT_GRAY);
 		
 	}

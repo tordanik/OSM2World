@@ -30,6 +30,8 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.AbstractJOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
 import ar.com.hjg.pngj.ImageInfo;
@@ -149,7 +151,7 @@ public class ImageExporter {
 		pBuffer.getContext().makeCurrent();
 		gl = pBuffer.getGL().getGL2();
 		
-		JOGLTarget.clearGL(gl, clearColor);
+		AbstractJOGLTarget.clearGL(gl, clearColor);
 		
         backgroundTextureManager = new JOGLTextureManager(gl);
 
@@ -255,18 +257,18 @@ public class ImageExporter {
 							
 				/* configure rendering */
 			
-				JOGLTarget.clearGL(gl, null);
-	        
-				if (backgroundImage != null) {
-					JOGLTarget.drawBackgoundImage(gl, backgroundImage,
-							xStart, yStart, xSize, ySize,
-							backgroundTextureManager);
-				}
+				AbstractJOGLTarget.clearGL(gl, null);
 	        
 				/* render to pBuffer */
 	        
 				JOGLTarget target = (bufferTarget == null)? 
 						createJOGLTarget(gl, results, config) : bufferTarget;
+				
+				if (backgroundImage != null) {
+					target.drawBackgoundImage(gl, backgroundImage,
+							xStart, yStart, xSize, ySize,
+							backgroundTextureManager);
+				}
 	        
 				target.renderPart(camera, projection,
 						xStart / (double)(x-1), xEnd / (double)(x-1),
@@ -294,7 +296,7 @@ public class ImageExporter {
 	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
 			Configuration config) {
 		
-		JOGLTarget target = new JOGLTarget(gl,
+		JOGLTarget target = new JOGLTargetFixedFunction(gl,
 				new JOGLRenderingParameters(CCW, false, true),
 				GlobalLightingParameters.DEFAULT);
 		

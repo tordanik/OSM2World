@@ -6,7 +6,7 @@ import static javax.media.opengl.GL2GL3.GL_DOUBLE;
 import static javax.media.opengl.fixedfunc.GLPointerFunc.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
-import static org.osm2world.core.target.jogl.JOGLTarget.*;
+import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.*;
 
 import java.nio.Buffer;
 import java.nio.DoubleBuffer;
@@ -212,9 +212,9 @@ public class JOGLRendererVBO extends JOGLRenderer {
 		
 		public void render() {
 			
-			for (int i = 0; i < JOGLTarget.MAX_TEXTURE_LAYERS; i++) {
+			for (int i = 0; i < JOGLTargetFixedFunction.MAX_TEXTURE_LAYERS; i++) {
 				
-				gl.glClientActiveTexture(JOGLTarget.getGLTextureConstant(i));
+				gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(i));
 				
 				if (i >= material.getNumTextureLayers()) {
 					
@@ -228,9 +228,9 @@ public class JOGLRendererVBO extends JOGLRenderer {
 				
 			}
 			
-			gl.glClientActiveTexture(JOGLTarget.getGLTextureConstant(0));
+			gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(0));
 			
-			JOGLTarget.setMaterial(gl, material, textureManager);
+			JOGLTargetFixedFunction.setMaterial(gl, material, textureManager);
 			
 			gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
 			
@@ -248,10 +248,10 @@ public class JOGLRendererVBO extends JOGLRenderer {
 			
 			for (int i = 0; i < material.getNumTextureLayers(); i++) {
 				
-				gl.glClientActiveTexture(JOGLTarget.getGLTextureConstant(i));
+				gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(i));
 				gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				
-				gl.glActiveTexture(JOGLTarget.getGLTextureConstant(i));
+				gl.glActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(i));
 				gl.glTexCoordPointer(2, glValueType, stride, offset);
 				
 				offset += 2 * valueTypeSize;
@@ -411,8 +411,8 @@ public class JOGLRendererVBO extends JOGLRenderer {
 		gl.glDisableClientState(GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL_NORMAL_ARRAY);
 		
-		for (int t = 0; t < JOGLTarget.MAX_TEXTURE_LAYERS; t++) {
-			gl.glClientActiveTexture(JOGLTarget.getGLTextureConstant(t));
+		for (int t = 0; t < JOGLTargetFixedFunction.MAX_TEXTURE_LAYERS; t++) {
+			gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(t));
 			gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 		
@@ -428,11 +428,11 @@ public class JOGLRendererVBO extends JOGLRenderer {
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
 			
 			if (!p.material.equals(previousMaterial)) {
-				JOGLTarget.setMaterial(gl, p.material, textureManager);
+				JOGLTargetFixedFunction.setMaterial(gl, p.material, textureManager);
 				previousMaterial = p.material;
 			}
 			
-			drawPrimitive(gl, getGLConstant(p.primitive.type),
+			drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(p.primitive.type),
 					p.primitive.vertices, p.primitive.normals,
 					p.primitive.texCoordLists);
 			

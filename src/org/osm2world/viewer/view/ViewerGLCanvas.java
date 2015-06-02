@@ -11,7 +11,9 @@ import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.glu.GLU;
 
+import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.MessageManager.Message;
@@ -64,7 +66,7 @@ public class ViewerGLCanvas extends GLCanvas {
 			
 	        final GL2 gl = glDrawable.getGL().getGL2();
 	        
-	        JOGLTarget.clearGL(gl, Color.BLACK);
+	        AbstractJOGLTarget.clearGL(gl, Color.BLACK);
 	        
 	        helpView.renderTo(gl, null, null);
 	        
@@ -103,7 +105,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        	
 	        	int messageCount = 0;
 	        	for (Message message : messageManager.getLiveMessages()) {
-	        		JOGLTarget.drawText(message.messageString,
+	        		AbstractJOGLTarget.drawText(message.messageString,
 	        				10, 10 + messageCount * 20,
 	        				ViewerGLCanvas.this.getWidth(),
 	        				ViewerGLCanvas.this.getHeight(),

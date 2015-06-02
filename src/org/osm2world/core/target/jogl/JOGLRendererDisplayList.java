@@ -3,7 +3,7 @@ package org.osm2world.core.target.jogl;
 import static java.lang.Math.*;
 import static javax.media.opengl.GL2.GL_COMPILE;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
-import static org.osm2world.core.target.jogl.JOGLTarget.*;
+import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,10 +75,10 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 				
 			} else {
 				
-				JOGLTarget.setMaterial(gl, material, textureManager);
+				JOGLTargetFixedFunction.setMaterial(gl, material, textureManager);
 	
 				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
-					drawPrimitive(gl, getGLConstant(primitive.type),
+					drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(primitive.type),
 							primitive.vertices, primitive.normals,
 							primitive.texCoordLists);
 				}
@@ -110,11 +110,11 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
 			
 			if (!p.material.equals(previousMaterial)) {
-				JOGLTarget.setMaterial(gl, p.material, textureManager);
+				JOGLTargetFixedFunction.setMaterial(gl, p.material, textureManager);
 				previousMaterial = p.material;
 			}
 			
-			drawPrimitive(gl, getGLConstant(p.primitive.type),
+			drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(p.primitive.type),
 					p.primitive.vertices, p.primitive.normals,
 					p.primitive.texCoordLists);
 			
