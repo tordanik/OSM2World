@@ -2,7 +2,7 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -22,7 +22,7 @@ public class HelpView extends DebugView {
 	}
 	
 	@Override
-	public void renderTo(GL2 gl, Camera camera, Projection projection) {
+	public void renderTo(GL gl, Camera camera, Projection projection) {
 		
 		if (!canBeUsed()) { return; }
 		

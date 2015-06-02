@@ -1,0 +1,29 @@
+/* Very simple vertex shader that applies the model view
+ * and projection matrix to the given vertex and overrides
+ * the color with a constant for all vertices. 
+ */
+#version 130
+ 
+// per vertex input
+in vec3 VertexPosition;
+in vec3 VertexNormal;
+in vec3 VertexColor;
+
+// input for at least primitives
+uniform mat4 ProjectionMatrix;
+uniform mat4 ModelViewMatrix;
+uniform mat4 ModelViewProjectionMatrix;
+
+// output to fragment shader for interpolation
+out vec3 Normal;
+out vec3 VertexEye;
+out vec3 Color;
+ 
+void main()
+{
+    VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition.x,VertexPosition.y,VertexPosition.z, 1.0));
+    Normal = normalize(gl_NormalMatrix * VertexNormal);
+    Color = VertexColor;
+    //gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition.x,VertexPosition.y,VertexPosition.z, 1.0);
+    gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition.x,VertexPosition.y,VertexPosition.z, 1.0);
+} 

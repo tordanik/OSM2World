@@ -9,6 +9,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLProfile;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -107,7 +109,13 @@ public class ViewerFrame extends JFrame {
 		
 		createMenuBar();
 		
-		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions);
+		GLProfile profile;
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			profile = GLProfile.get(GLProfile.GL3);
+		} else {
+			profile = GLProfile.get(GLProfile.GL2);
+		}
+		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, new GLCapabilities(profile));
 		add(glCanvas, BorderLayout.CENTER);
 		
 		new FileDrop(glCanvas, new FileDrop.Listener() {

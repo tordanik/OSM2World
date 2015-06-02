@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
@@ -84,7 +84,7 @@ public abstract class DebugView {
 	 * 
 	 * @param gl  needs to be the same gl as in previous calls
 	 */
-	public void renderTo(GL2 gl, Camera camera, Projection projection) {
+	public void renderTo(GL gl, Camera camera, Projection projection) {
 		
 		if (canBeUsed() && camera != null && projection != null) {
 					
@@ -93,7 +93,7 @@ public abstract class DebugView {
 					target = new JOGLTargetShader(gl.getGL3(), new JOGLRenderingParameters(
 							null, false, true), null);
 				} else {
-					target = new JOGLTargetFixedFunction(gl, new JOGLRenderingParameters(
+					target = new JOGLTargetFixedFunction(gl.getGL2(), new JOGLRenderingParameters(
 							null, false, true), null);
 				}
 				target.setConfiguration(config);

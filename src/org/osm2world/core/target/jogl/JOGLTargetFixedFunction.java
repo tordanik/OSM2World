@@ -42,7 +42,7 @@ import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 
 
-public final class JOGLTargetFixedFunction extends PrimitiveTarget<RenderableToJOGL> implements JOGLTarget {
+public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements JOGLTarget {
 	
 	/** maximum number of texture layers any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 4;
@@ -84,11 +84,6 @@ public final class JOGLTargetFixedFunction extends PrimitiveTarget<RenderableToJ
 		reset();
 		
 	}
-	
-	@Override
-	public Class<RenderableToJOGL> getRenderableType() {
-		return RenderableToJOGL.class;
-	}
 		
 	/**
 	 * discards all accumulated draw calls
@@ -104,11 +99,6 @@ public final class JOGLTargetFixedFunction extends PrimitiveTarget<RenderableToJ
 			renderer = null;
 		}
 		
-	}
-	
-	@Override
-	public void render(RenderableToJOGL renderable) {
-		renderable.renderTo(this);
 	}
 
 	@Override
@@ -222,10 +212,6 @@ public final class JOGLTargetFixedFunction extends PrimitiveTarget<RenderableToJ
 	
 	public boolean isFinished() {
 		return renderer != null;
-	}
-	
-	public void render(Camera camera, Projection projection) {
-		renderPart(camera, projection, 0, 1, 0, 1);
 	}
 	
 	/**

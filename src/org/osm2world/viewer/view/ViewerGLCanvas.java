@@ -3,17 +3,13 @@ package org.osm2world.viewer.view;
 import java.awt.Color;
 
 import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.glu.GLU;
 
 import org.osm2world.core.target.jogl.AbstractJOGLTarget;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.MessageManager.Message;
@@ -28,10 +24,8 @@ public class ViewerGLCanvas extends GLCanvas {
 
 	private static final long serialVersionUID = 817150566654010861L;
 
-
-	public ViewerGLCanvas(Data data, MessageManager messageManager, RenderOptions renderOptions) {
-
-		super(new GLCapabilities(GLProfile.getDefault()));
+	public ViewerGLCanvas(Data data, MessageManager messageManager, RenderOptions renderOptions, GLCapabilities capabilities) {
+		super(capabilities);
 		
 		setSize(800, 600);
 		setIgnoreRepaint(true);
@@ -64,7 +58,7 @@ public class ViewerGLCanvas extends GLCanvas {
 		@Override
 		public void display(GLAutoDrawable glDrawable) {
 			
-	        final GL2 gl = glDrawable.getGL().getGL2();
+	        final GL gl = glDrawable.getGL();
 	        
 	        AbstractJOGLTarget.clearGL(gl, Color.BLACK);
 	        
