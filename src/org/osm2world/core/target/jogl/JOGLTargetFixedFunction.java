@@ -559,8 +559,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 	}
 	
-
-	
 	public final void drawBackgoundImage(GL2 gl, File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,

@@ -44,10 +44,10 @@ public class ViewerGLCanvas extends GLCanvas {
 		private final Data data;
 		private final MessageManager messageManager;
 		private final RenderOptions renderOptions;
-		
-		private final GLU glu = new GLU();
 				
 		private final HelpView helpView = new HelpView();
+		
+		private TextRenderer textRenderer;
 		
 		public ViewerGLEventListener(Data data, MessageManager messageManager, RenderOptions renderOptions) {
 			this.data = data;
@@ -99,7 +99,7 @@ public class ViewerGLCanvas extends GLCanvas {
 	        	
 	        	int messageCount = 0;
 	        	for (Message message : messageManager.getLiveMessages()) {
-	        		AbstractJOGLTarget.drawText(message.messageString,
+	        		textRenderer.drawText(message.messageString,
 	        				10, 10 + messageCount * 20,
 	        				ViewerGLCanvas.this.getWidth(),
 	        				ViewerGLCanvas.this.getHeight(),
@@ -115,6 +115,11 @@ public class ViewerGLCanvas extends GLCanvas {
 
 		@Override
 		public void init(GLAutoDrawable glDrawable) {
+			if (glDrawable.getGL().isGL2ES2()) {
+				textRenderer = new TextRendererShader(glDrawable.getGL().getGL2ES2());
+			} else {
+				textRenderer = new TextRendererFixedFunction();
+			}
 			//initialization is performed within JOGLTarget
 		}
 

@@ -9,12 +9,17 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.viewer.view.TextRenderer;
+import org.osm2world.viewer.view.TextRendererFixedFunction;
+import org.osm2world.viewer.view.TextRendererShader;
 
 /**
  * view that prints an explanation how to open OSM data.
  * Only visible when no data is available.
  */
 public class HelpView extends DebugView {
+	
+	TextRenderer textRenderer;
 
 	@Override
 	public boolean canBeUsed() {
@@ -25,18 +30,24 @@ public class HelpView extends DebugView {
 	public void renderTo(GL gl, Camera camera, Projection projection) {
 		
 		if (!canBeUsed()) { return; }
+		if (textRenderer == null) {
+			if (gl.isGL2ES2()) {
+				textRenderer = new TextRendererShader(gl.getGL2ES2());
+			} else {
+				textRenderer = new TextRendererFixedFunction();
+			}
+		}
 		
 		//TODO: needs real panel measures; currently guesses 800x600
-		
-		AbstractJOGLTarget.drawText("Use \"File\" > \"Open OSM file\" "
+		textRenderer.drawText("Use \"File\" > \"Open OSM file\" "
 				+ "to load a file containing OpenStreetMap data.",
 				50, 550, 800, 600, Color.LIGHT_GRAY);
 		
-		AbstractJOGLTarget.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,
+		textRenderer.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,
 				50, 100, 800, 600, Color.LIGHT_GRAY);
-		AbstractJOGLTarget.drawText("Website: " + GlobalValues.OSM2WORLD_URI,
+		textRenderer.drawText("Website: " + GlobalValues.OSM2WORLD_URI,
 				50, 75, 800, 600, Color.LIGHT_GRAY);
-		AbstractJOGLTarget.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
+		textRenderer.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
 				50, 50, 800, 600, Color.LIGHT_GRAY);
 		
 	}

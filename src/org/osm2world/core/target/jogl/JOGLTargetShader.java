@@ -2,23 +2,37 @@ package org.osm2world.core.target.jogl;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 
+import sun.font.FontFamily;
+
+import com.jogamp.graph.curve.opengl.RenderState;
+import com.jogamp.graph.curve.opengl.TextRenderer;
+import com.jogamp.graph.font.Font;
+import com.jogamp.graph.font.FontFactory;
+import com.jogamp.graph.font.FontSet;
+import com.jogamp.graph.geom.opengl.SVertex;
+import com.jogamp.opengl.util.glsl.ShaderState;
+
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private Shader shader;
+	private GL3 gl;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		shader = new Shader(gl);
+		this.gl = gl;
 	}
 
 	@Override
