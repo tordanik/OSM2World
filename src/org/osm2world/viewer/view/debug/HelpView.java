@@ -7,7 +7,6 @@ import javax.media.opengl.GL;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.view.TextRenderer;
 import org.osm2world.viewer.view.TextRendererFixedFunction;
@@ -31,7 +30,7 @@ public class HelpView extends DebugView {
 		
 		if (!canBeUsed()) { return; }
 		if (textRenderer == null) {
-			if (gl.isGL2ES2()) {
+			if ("shader".equals(config.getString("joglImplementation"))) {
 				textRenderer = new TextRendererShader(gl.getGL2ES2());
 			} else {
 				textRenderer = new TextRendererFixedFunction();

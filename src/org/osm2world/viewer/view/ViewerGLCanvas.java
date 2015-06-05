@@ -115,11 +115,12 @@ public class ViewerGLCanvas extends GLCanvas {
 
 		@Override
 		public void init(GLAutoDrawable glDrawable) {
-			if (glDrawable.getGL().isGL2ES2()) {
+			if ("shader".equals(data.getConfig().getString("joglImplementation"))) {
 				textRenderer = new TextRendererShader(glDrawable.getGL().getGL2ES2());
 			} else {
 				textRenderer = new TextRendererFixedFunction();
 			}
+			helpView.setConfiguration(data.getConfig());
 			//initialization is performed within JOGLTarget
 		}
 
