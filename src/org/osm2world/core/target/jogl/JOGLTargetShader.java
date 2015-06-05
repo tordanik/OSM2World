@@ -227,6 +227,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void finish() {
 		if (isFinished()) return;
 		
-		renderer = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer);
+		renderer = new JOGLRendererVBOShader(gl, shader, textureManager, primitiveBuffer);
 	}
 }

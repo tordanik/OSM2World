@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.media.opengl.GL;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.Primitive;
@@ -65,10 +64,11 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		
 	}
 	
-	JOGLRendererVBO(GL gl, JOGLTextureManager textureManager,
-			PrimitiveBuffer primitiveBuffer) {
-		
+	JOGLRendererVBO(JOGLTextureManager textureManager) {
 		super(textureManager);
+	}
+	
+	protected void init(PrimitiveBuffer primitiveBuffer) {
 		
 		for (Material material : primitiveBuffer.getMaterials()) {
 			
@@ -82,7 +82,7 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 			} else {
 				
 				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
-				vbos.add(this.createVBOData(gl, textureManager, material, primitives));
+				vbos.add(this.createVBOData(textureManager, material, primitives));
 				
 			}
 			
@@ -207,5 +207,5 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		
 	}
 	
-	abstract VBOData<?> createVBOData(GL gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives);
+	abstract VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives);
 }

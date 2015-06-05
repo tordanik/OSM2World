@@ -42,13 +42,14 @@ import com.jogamp.common.nio.Buffers;
 public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	protected GL3 gl;
+	private Shader shader;
 	
 	
 	
 	private final class VBODataDouble extends VBODataShader<DoubleBuffer> {
 
 		public VBODataDouble(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
-			super(gl, textureManager, material, primitives);
+			super(gl, shader, textureManager, material, primitives);
 		}
 		
 		@Override
@@ -84,7 +85,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	private final class VBODataFloat extends VBODataShader<FloatBuffer> {
 
 		public VBODataFloat(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
-			super(gl, textureManager, material, primitives);
+			super(gl, shader, textureManager, material, primitives);
 		}
 		
 		@Override
@@ -117,36 +118,41 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 	}
 	
-	JOGLRendererVBOShader(GL3 gl, JOGLTextureManager textureManager,
+	JOGLRendererVBOShader(GL3 gl, Shader shader, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl, textureManager, primitiveBuffer);
+		super(textureManager);
 		this.gl = gl;
+		this.shader = shader;
+		this.init(primitiveBuffer);
 		
 	}
 	
 	@Override
-	VBOData<?> createVBOData(GL gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+	VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		if (DOUBLE_PRECISION_RENDERING)
-			return new VBODataDouble(gl.getGL3(), textureManager, material, primitives);
+			return new VBODataDouble(gl, textureManager, material, primitives);
 		else
-			return new VBODataFloat(gl.getGL3(), textureManager, material, primitives);
+			return new VBODataFloat(gl, textureManager, material, primitives);
 	}
 	
 	@Override
 	public void render(final Camera camera, final Projection projection) {
 		
 		/* render static geometry */
+
 		
-		gl.glEnableClientState(GL_VERTEX_ARRAY);
-		gl.glEnableClientState(GL_NORMAL_ARRAY);
+		gl.glEnableVertexAttribArray(shader.getVertexPositionID());
+		//gl.glEnableVertexAttribArray(shader.getVertexColorID());
+		gl.glEnableVertexAttribArray(shader.getVertexNormalID());
 		
 		for (VBOData<?> vboData : vbos) {
 			vboData.render();
 		}
 		
-		gl.glDisableClientState(GL_VERTEX_ARRAY);
-		gl.glDisableClientState(GL_NORMAL_ARRAY);
+		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
+		//gl.glDisableVertexAttribArray(shader.getVertexColorID());
+		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
 		
 //		for (int t = 0; t < JOGLTargetFixedFunction.MAX_TEXTURE_LAYERS; t++) {
 //			gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(t));

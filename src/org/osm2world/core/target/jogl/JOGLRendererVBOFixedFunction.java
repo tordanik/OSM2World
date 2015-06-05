@@ -120,17 +120,17 @@ public class JOGLRendererVBOFixedFunction extends JOGLRendererVBO {
 	JOGLRendererVBOFixedFunction(GL2 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl, textureManager, primitiveBuffer);
+		super(textureManager);
 		this.gl = gl;
-		
+		this.init(primitiveBuffer);
 	}
 	
 	@Override
-	VBOData<?> createVBOData(GL gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+	VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		if (DOUBLE_PRECISION_RENDERING)
-			return new VBODataDouble(gl.getGL2(), textureManager, material, primitives);
+			return new VBODataDouble(gl, textureManager, material, primitives);
 		else
-			return new VBODataFloat(gl.getGL2(), textureManager, material, primitives);
+			return new VBODataFloat(gl, textureManager, material, primitives);
 	}
 	
 	@Override
