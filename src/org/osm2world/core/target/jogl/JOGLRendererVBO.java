@@ -40,6 +40,8 @@ import com.jogamp.common.nio.Buffers;
  */
 public class JOGLRendererVBO extends JOGLRenderer {
 	
+	protected GL2 gl;
+	
 	private static final boolean DOUBLE_PRECISION_RENDERING = false;
 	
 	/** VBOs with static, non-alphablended geometry for each material */
@@ -372,7 +374,8 @@ public class JOGLRendererVBO extends JOGLRenderer {
 	JOGLRendererVBO(GL2 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl, textureManager);
+		super(textureManager);
+		this.gl = gl;
 		
 		for (Material material : primitiveBuffer.getMaterials()) {
 			
@@ -552,6 +555,7 @@ public class JOGLRendererVBO extends JOGLRenderer {
 			}
 			vbos = null;
 		}
+		gl = null;
 		
 		super.freeResources();
 		

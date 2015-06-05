@@ -1,7 +1,5 @@
 package org.osm2world.core.target.jogl;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
@@ -10,12 +8,10 @@ import org.osm2world.core.target.common.rendering.Projection;
  */
 abstract class JOGLRenderer {
 	
-	protected GL2 gl;
 	protected JOGLTextureManager textureManager;
 	
-	protected JOGLRenderer(GL2 gl, JOGLTextureManager textureManager) {
+	protected JOGLRenderer(JOGLTextureManager textureManager) {
 		
-		this.gl = gl;
 		this.textureManager = textureManager;
 		
 	}
@@ -29,7 +25,6 @@ abstract class JOGLRenderer {
 	public void freeResources() {
 		
 		textureManager = null;
-		gl = null;
 		
 	}
 	

@@ -7,8 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL2;
-
+import javax.media.opengl.GL;
 import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
@@ -19,11 +18,11 @@ import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
  */
 public class JOGLTextureManager {
 
-	private final GL2 gl;
+	private final GL gl;
 	
 	private final Map<File, Texture> availableTextures = new HashMap<File, Texture>();
 	
-	public JOGLTextureManager(GL2 gl) {
+	public JOGLTextureManager(GL gl) {
 		this.gl = gl;
 	}
 	

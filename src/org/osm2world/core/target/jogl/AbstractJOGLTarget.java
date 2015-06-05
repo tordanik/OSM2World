@@ -12,19 +12,27 @@ import static javax.media.opengl.GL.GL_TRIANGLE_STRIP;
 import static javax.media.opengl.GL2.GL_POLYGON;
 
 import java.awt.Color;
-import java.awt.Font;
+import java.util.List;
 
 import javax.media.opengl.GL;
 
-import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
+import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.PrimitiveTarget;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
-
 public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOGL> implements JOGLTarget {
+	protected PrimitiveBuffer primitiveBuffer;
+	protected JOGLRenderer renderer;
+	protected JOGLTextureManager textureManager;
+	
+	public AbstractJOGLTarget(GL gl) {
+		this.textureManager = new JOGLTextureManager(gl);
+	}
 
 	@Override
 	public Class<RenderableToJOGL> getRenderableType() {
@@ -42,10 +50,36 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 	}
 
 	@Override
-	public void renderPart(Camera camera, Projection projection, double xStart,
-			double xEnd, double yStart, double yEnd) {
-		// TODO Auto-generated method stub
+	protected void drawPrimitive(Primitive.Type type, Material material,
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 		
+		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		
+	}
+	
+	@Override
+	public void reset() {
+		this.primitiveBuffer = new PrimitiveBuffer();
+		
+		if (renderer != null) {
+			renderer.freeResources();
+			renderer = null;
+		}
+	}
+	
+	@Override
+	public void freeResources() {
+		
+		textureManager.releaseAll();
+		
+		reset();
+		
+	}
+
+	@Override
+	public boolean isFinished() {
+		return renderer != null;
 	}
 	
 	static final int getGLConstant(Type type) {
@@ -85,5 +119,4 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 	}
-	
 }

@@ -30,6 +30,8 @@ import org.osm2world.core.target.common.rendering.Projection;
  */
 class JOGLRendererDisplayList extends JOGLRenderer {
 	
+	protected GL2 gl;
+	
 	/** pointer to the display list with static, non-transparent geometry */
 	private Integer displayListPointer;
 	
@@ -58,7 +60,8 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 	public JOGLRendererDisplayList(GL2 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl, textureManager);
+		super(textureManager);
+		this.gl = gl;
 		
 		displayListPointer = gl.glGenLists(1);
 		
@@ -232,6 +235,7 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 			gl.glDeleteLists(displayListPointer, 1);
 			displayListPointer = null;
 		}
+		gl = null;
 
 		super.freeResources();
 		

@@ -3,16 +3,11 @@ package org.osm2world.core.target.jogl;
 import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.*;
-import static javax.media.opengl.GL2ES1.*;
-import static javax.media.opengl.GL2GL3.*;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.common.material.Material.Transparency.*;
 import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.*;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -24,12 +19,8 @@ import javax.media.opengl.glu.GLU;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.Primitive.Type;
-import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -38,7 +29,6 @@ import org.osm2world.core.target.common.material.Material.Lighting;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
-import com.jogamp.opengl.util.awt.TextRenderer;
 import com.jogamp.opengl.util.texture.Texture;
 
 
@@ -52,11 +42,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	
 	private final GL2 gl;
 	
-	private final JOGLTextureManager textureManager;
-	
 	private List<NonAreaPrimitive> nonAreaPrimitives;
-	private PrimitiveBuffer primitiveBuffer;
-	private JOGLRenderer renderer;
 
 	private JOGLRenderingParameters renderingParameters;
 	private GlobalLightingParameters globalLightingParameters;
@@ -75,11 +61,10 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	public JOGLTargetFixedFunction(GL2 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		
+		super(gl);
 		this.gl = gl;
 		this.renderingParameters = renderingParameters;
 		this.globalLightingParameters = globalLightingParameters;
-		
-		this.textureManager = new JOGLTextureManager(gl);
 		
 		reset();
 		
@@ -91,22 +76,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	public void reset() {
 		
 		this.nonAreaPrimitives = new ArrayList<NonAreaPrimitive>();
-		
-		this.primitiveBuffer = new PrimitiveBuffer();
-		
-		if (renderer != null) {
-			renderer.freeResources();
-			renderer = null;
-		}
-		
-	}
-
-	@Override
-	protected void drawPrimitive(Primitive.Type type, Material material,
-			List<VectorXYZ> vertices, List<VectorXYZ> normals,
-			List<List<VectorXZ>> texCoordLists) {
-		
-		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		super.reset();
 		
 	}
 
@@ -210,10 +180,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		
 	}
 	
-	public boolean isFinished() {
-		return renderer != null;
-	}
-	
 	/**
 	 * similar to {@link #render(Camera, Projection)},
 	 * but allows rendering only a part of the "normal" image.
@@ -262,14 +228,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	        gl.glEnd();
 			
 		}
-		
-	}
-	
-	public void freeResources() {
-		
-		textureManager.releaseAll();
-		
-		reset();
 		
 	}
 	
