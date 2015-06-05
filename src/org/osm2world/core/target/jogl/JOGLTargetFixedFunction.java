@@ -43,9 +43,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	private final GL2 gl;
 	
 	private List<NonAreaPrimitive> nonAreaPrimitives;
-
-	private JOGLRenderingParameters renderingParameters;
-	private GlobalLightingParameters globalLightingParameters;
 	
 	private Configuration config = new BaseConfiguration();
 	
@@ -61,10 +58,8 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	public JOGLTargetFixedFunction(GL2 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		
-		super(gl);
+		super(gl, renderingParameters, globalLightingParameters);
 		this.gl = gl;
-		this.renderingParameters = renderingParameters;
-		this.globalLightingParameters = globalLightingParameters;
 		
 		reset();
 		
@@ -134,30 +129,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
 	}
 	
-	/**
-	 * set global lighting parameters. Using this method affects all primitives
-	 * (even those from previous draw calls).
-	 * 
-	 * @param parameters  parameter object; null disables lighting
-	 */
-	public void setGlobalLightingParameters(
-			GlobalLightingParameters parameters) {
-		
-		this.globalLightingParameters = parameters;
-		
-	}
-	
-	/**
-	 * set global rendering parameters. Using this method affects all primitives
-	 * (even those from previous draw calls).
-	 */
-	public void setRenderingParameters(
-			JOGLRenderingParameters renderingParameters) {
-		
-		this.renderingParameters = renderingParameters;
-		
-	}
-	
 	public void setConfiguration(Configuration config) {
 		this.config = config;
 	}
@@ -174,7 +145,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			renderer = new JOGLRendererDisplayList(
 					gl, textureManager, primitiveBuffer);
 		} else {
-			renderer = new JOGLRendererVBO(
+			renderer = new JOGLRendererVBOFixedFunction(
 					gl, textureManager, primitiveBuffer);
 		}
 		
@@ -517,7 +488,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 	}
 	
-	public final void drawBackgoundImage(GL2 gl, File backgroundImage,
+	public final void drawBackgoundImage(File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {

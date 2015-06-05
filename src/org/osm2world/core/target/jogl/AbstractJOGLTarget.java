@@ -21,6 +21,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.PrimitiveTarget;
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
@@ -29,9 +30,14 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 	protected PrimitiveBuffer primitiveBuffer;
 	protected JOGLRenderer renderer;
 	protected JOGLTextureManager textureManager;
+	protected JOGLRenderingParameters renderingParameters;
+	protected GlobalLightingParameters globalLightingParameters;
 	
-	public AbstractJOGLTarget(GL gl) {
+	public AbstractJOGLTarget(GL gl, JOGLRenderingParameters renderingParameters,
+			GlobalLightingParameters globalLightingParameters) {
 		this.textureManager = new JOGLTextureManager(gl);
+		this.renderingParameters = renderingParameters;
+		this.globalLightingParameters = globalLightingParameters;
 	}
 
 	@Override
@@ -55,6 +61,30 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 			List<List<VectorXZ>> texCoordLists) {
 		
 		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		
+	}
+	
+	/**
+	 * set global lighting parameters. Using this method affects all primitives
+	 * (even those from previous draw calls).
+	 * 
+	 * @param parameters  parameter object; null disables lighting
+	 */
+	public void setGlobalLightingParameters(
+			GlobalLightingParameters parameters) {
+		
+		this.globalLightingParameters = parameters;
+		
+	}
+	
+	/**
+	 * set global rendering parameters. Using this method affects all primitives
+	 * (even those from previous draw calls).
+	 */
+	public void setRenderingParameters(
+			JOGLRenderingParameters renderingParameters) {
+		
+		this.renderingParameters = renderingParameters;
 		
 	}
 	

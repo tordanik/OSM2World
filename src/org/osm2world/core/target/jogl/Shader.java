@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
+
+import com.jogamp.opengl.math.FloatUtil;
+import com.jogamp.opengl.util.PMVMatrix;
 
 public class Shader {
 	
@@ -48,7 +51,7 @@ public class Shader {
 		gl.glLinkProgram(shaderProgram);
 		// validate linking
 		IntBuffer linkStatus = IntBuffer.allocate(1);
-		gl.glGetProgramiv(shaderProgram, GL2.GL_LINK_STATUS, linkStatus);
+		gl.glGetProgramiv(shaderProgram, GL3.GL_LINK_STATUS, linkStatus);
 		if (linkStatus.get() == GL.GL_FALSE) {
 			Shader.printProgramInfoLog(gl, shaderProgram);
 			throw new RuntimeException("could not link shader");
@@ -64,12 +67,27 @@ public class Shader {
 		gl.glValidateProgram(shaderProgram);
 		// perform general validation that the program is usable
 		IntBuffer validateStatus = IntBuffer.allocate(1);
-		gl.glGetProgramiv(shaderProgram, GL2.GL_VALIDATE_STATUS, validateStatus);
+		gl.glGetProgramiv(shaderProgram, GL3.GL_VALIDATE_STATUS, validateStatus);
 		if (validateStatus.get() == GL.GL_FALSE) {
 			Shader.printProgramInfoLog(gl, shaderProgram);
 			throw new RuntimeException("could not validate shader");
 		}
 		Shader.printProgramInfoLog(gl, shaderProgram);
+	}
+	
+	/**
+	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
+	 * @param pmvMatrix
+	 */
+	public void setPMVMatrix(PMVMatrix pmvMatrix) {
+		gl.glUniformMatrix4fv(this.getProjectionMatrixID(), 1, false, pmvMatrix.glGetPMatrixf());
+		gl.glUniformMatrix4fv(this.getModelViewMatrixID(), 1, false, pmvMatrix.glGetMvMatrixf());
+		FloatBuffer pmvMat = FloatBuffer.allocate(16);
+		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
+		pmvMatrix.glMatrixMode(PMVMatrix.GL_PROJECTION);
+		pmvMatrix.glPushMatrix();
+		pmvMatrix.glMultMatrixf(pmvMatrix.glGetMvMatrixf());
+		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 	}
 	
 	public int getProgram() {
@@ -123,7 +141,7 @@ public class Shader {
 	public static int createVertShader(GL3 gl, String filename) {
 
 		// get the unique id
-		int vertShader = gl.glCreateShader(GL2.GL_VERTEX_SHADER);
+		int vertShader = gl.glCreateShader(GL3.GL_VERTEX_SHADER);
 		if (vertShader == 0)
 			throw new RuntimeException("Unable to create vertex shader.");
 
@@ -150,7 +168,7 @@ public class Shader {
 
 		// acquire compilation status
 		IntBuffer shaderStatus = IntBuffer.allocate(1);
-		gl.glGetShaderiv(vertShader, GL2.GL_COMPILE_STATUS, shaderStatus);
+		gl.glGetShaderiv(vertShader, GL3.GL_COMPILE_STATUS, shaderStatus);
 
 		// check whether compilation was successful
 		if (shaderStatus.get() == GL.GL_FALSE) {
@@ -170,7 +188,7 @@ public class Shader {
 	 */
 	public static int createFragShader(GL3 gl, String filename) {
 
-		int fragShader = gl.glCreateShader(GL2.GL_FRAGMENT_SHADER);
+		int fragShader = gl.glCreateShader(GL3.GL_FRAGMENT_SHADER);
 		if (fragShader == 0)
 			return 0;
 
@@ -193,7 +211,7 @@ public class Shader {
 		
 		// acquire compilation status
 		IntBuffer shaderStatus = IntBuffer.allocate(1);
-		gl.glGetShaderiv(fragShader, GL2.GL_COMPILE_STATUS, shaderStatus);
+		gl.glGetShaderiv(fragShader, GL3.GL_COMPILE_STATUS, shaderStatus);
 
 		// check whether compilation was successful
 		if (shaderStatus.get() == GL.GL_FALSE) {
@@ -211,7 +229,7 @@ public class Shader {
 	 */
 	public static boolean printShaderInfoLog(GL3 gl, int shader) {
 		IntBuffer ival = IntBuffer.allocate(1);
-		gl.glGetShaderiv(shader, GL2.GL_INFO_LOG_LENGTH,
+		gl.glGetShaderiv(shader, GL3.GL_INFO_LOG_LENGTH,
 				ival);
 
 		int size = ival.get();
@@ -232,7 +250,7 @@ public class Shader {
 	 */
 	public static boolean printProgramInfoLog(GL3 gl, int prog) {
 		IntBuffer ival = IntBuffer.allocate(1);
-		gl.glGetProgramiv(prog, GL2.GL_INFO_LOG_LENGTH,
+		gl.glGetProgramiv(prog, GL3.GL_INFO_LOG_LENGTH,
 				ival);
 
 		int size = ival.get();

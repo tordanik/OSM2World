@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.VectorXYZ;
@@ -64,7 +64,7 @@ public interface JOGLTarget extends Target<RenderableToJOGL> {
 	
 	public void freeResources();
 	
-	public void drawBackgoundImage(GL2 gl, File backgroundImage,
+	public void drawBackgoundImage(File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager);

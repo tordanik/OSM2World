@@ -266,7 +266,7 @@ public class ImageExporter {
 						createJOGLTarget(gl, results, config) : bufferTarget;
 				
 				if (backgroundImage != null) {
-					target.drawBackgoundImage(gl, backgroundImage,
+					target.drawBackgoundImage(backgroundImage,
 							xStart, yStart, xSize, ySize,
 							backgroundTextureManager);
 				}
