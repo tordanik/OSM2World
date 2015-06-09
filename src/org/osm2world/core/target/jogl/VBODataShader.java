@@ -32,6 +32,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	public void render() {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
 		
+		shader.setMaterial(material, textureManager);
 		setPointerLayout();
 		
 		gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);

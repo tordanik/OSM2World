@@ -1,5 +1,14 @@
 package org.osm2world.core.target.jogl;
 
+import static javax.media.opengl.GL.GL_FRONT;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_FLAT;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
+import static org.osm2world.core.target.common.material.Material.multiplyColor;
+import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
+
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,6 +21,8 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Lighting;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
@@ -80,6 +91,15 @@ public class Shader {
 		Shader.printProgramInfoLog(gl, shaderProgram);
 	}
 	
+	public void loadDefaults() {
+		
+		// set default material values
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1,1,1);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1,1,1);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+	}
+	
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
 	 * @param pmvMatrix
@@ -90,41 +110,53 @@ public class Shader {
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
 		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
-		
-		// NormalMatrix = (ModelViewMatrix^-1)^T
-		FloatBuffer normalMat = FloatBuffer.allocate(16);
-		int p = pmvMatrix.glGetMvitMatrixf().position();
-		for (int i=0; i<16; i++) {
-			normalMat.put(pmvMatrix.glGetMvitMatrixf().get(p+i));
-		}
-		
-//		System.out.println(pmvMatrix);
-//		System.out.println(pmvMatrix.glGetMvitMatrixf().position());
-//		System.out.println(Arrays.toString(normalMat.array()));
-//		System.out.println(this.getProjectionMatrixID());
-//		System.out.println(this.getModelViewMatrixID());
-//		System.out.println(this.getModelViewProjectionMatrixID());
-//		System.out.println(this.getNormalMatrixID());
-//		System.out.println(gl.glGetUniformLocation(shaderProgram, "ProjectionMatrix"));
-		gl.glUniformMatrix4fv(this.getNormalMatrixID(), 1, false, normalMat);
+		gl.glUniformMatrix4fv(this.getNormalMatrixID(), 1, false, pmvMatrix.glGetMvitMatrixf());
 	}
 	
 	public void setGlobalLighting(GlobalLightingParameters lighting) {
 		
 		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.Position"), (float)lighting.lightFromDirection.getX(),
 				(float)lighting.lightFromDirection.getY(), -(float)lighting.lightFromDirection.getZ());
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.La"), (float)lighting.globalAmbientColor.getRed(),
-				(float)lighting.globalAmbientColor.getGreen(), (float)lighting.globalAmbientColor.getBlue());
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.Ld"), (float)lighting.lightColorDiffuse.getRed(),
-				(float)lighting.lightColorDiffuse.getGreen(), (float)lighting.lightColorDiffuse.getBlue());
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.Ls"), (float)lighting.lightColorSpecular.getRed(),
-				(float)lighting.lightColorSpecular.getGreen(), (float)lighting.lightColorSpecular.getBlue());
+		gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.La"), 1, getFloatBuffer(lighting.globalAmbientColor));
+		gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.Ld"), 1, getFloatBuffer(lighting.lightColorDiffuse));
+		gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.Ls"), 1, getFloatBuffer(lighting.lightColorSpecular));
+	}
+	
+	public void setMaterial(Material material, JOGLTextureManager textureManager) {
 		
-
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1,1,1);
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1,1,1);
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
-		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+		int numTexLayers = 0;
+		if (material.getTextureDataList() != null) {
+			numTexLayers = material.getTextureDataList().size();
+		}
+		
+		/* set lighting */
+		
+		// TODO:
+//		if (material.getLighting() == Lighting.SMOOTH) {
+//			gl.glShadeModel(GL_SMOOTH);
+//		} else {
+//			gl.glShadeModel(GL_FLAT);
+//		}
+		
+		/* set color */
+		
+		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
+			
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1, getFloatBuffer(material.ambientColor()));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(material.diffuseColor()));
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
+			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+			
+		} else {
+			
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1, getFloatBuffer(
+					multiplyColor(Color.WHITE, material.getAmbientFactor())));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(
+					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
+			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+			
+		}
 	}
 	
 	public void useShader() {

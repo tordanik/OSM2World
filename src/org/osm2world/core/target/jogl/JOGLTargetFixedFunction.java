@@ -469,12 +469,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 		
 	}
-
-	static final FloatBuffer getFloatBuffer(Color color) {
-		float colorArray[] = {0, 0, 0, color.getAlpha() / 255f};
-		color.getRGBColorComponents(colorArray);
-		return FloatBuffer.wrap(colorArray);
-	}
 	
 
 

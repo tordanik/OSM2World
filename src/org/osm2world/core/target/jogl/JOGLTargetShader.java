@@ -87,6 +87,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		/* apply camera and projection information */
 		shader.useShader();
+		shader.loadDefaults();
 		
 		applyProjectionMatricesForPart(pmvMatrix, projection,
 				xStart, xEnd, yStart, yEnd);

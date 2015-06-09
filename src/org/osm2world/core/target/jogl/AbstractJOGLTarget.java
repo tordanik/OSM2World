@@ -12,6 +12,7 @@ import static javax.media.opengl.GL.GL_TRIANGLE_STRIP;
 import static javax.media.opengl.GL2.GL_POLYGON;
 
 import java.awt.Color;
+import java.nio.FloatBuffer;
 import java.util.List;
 
 import javax.media.opengl.GL;
@@ -148,5 +149,11 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
+	}
+	
+	static final FloatBuffer getFloatBuffer(Color color) {
+		float colorArray[] = {0, 0, 0, color.getAlpha() / 255f};
+		color.getRGBColorComponents(colorArray);
+		return FloatBuffer.wrap(colorArray);
 	}
 }
