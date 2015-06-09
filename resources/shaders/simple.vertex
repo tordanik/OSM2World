@@ -1,6 +1,4 @@
-/* Very simple vertex shader that applies the model view
- * and projection matrix to the given vertex and overrides
- * the color with a constant for all vertices. 
+/* Simple vertex shader with vertex position and normal computation
  */
 #version 130
  
@@ -20,8 +18,7 @@ out vec3 VertexEye;
  
 void main()
 {
-    VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition.x,VertexPosition.y,VertexPosition.z, 1.0));
-    Normal = normalize(vec3(NormalMatrix * vec4(VertexNormal.x,VertexNormal.y,VertexNormal.z,1)));
-    //gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition.x,VertexPosition.y,VertexPosition.z, 1.0);
-    gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition.x,VertexPosition.y,VertexPosition.z, 1.0);
+    VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
+    Normal = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));
+    gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition, 1.0);
 } 
