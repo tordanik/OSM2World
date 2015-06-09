@@ -46,6 +46,7 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 	@Override
 	public void drawText(String string, int x, int y, int screenWidth,
 			int screenHeight, Color color) {
+		textRenderer.enable(gl, true);
 		textRenderer.setColorStatic(gl, color.getRed(), color.getGreen(), color.getBlue());
 		textRenderer.resetModelview(gl);
 		textRenderer.reshapeOrtho(gl, screenWidth, screenHeight, -100000, 100000);
@@ -53,6 +54,7 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		float[] posF = {0, 0, 0}; // not used in TextRendererImpl01
 		int[] texSize = {0};
 		textRenderer.drawString3D(gl, textRendererFont, string, posF, 12, texSize);
+		textRenderer.enable(gl, false);
 	}
 
 }

@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 
+import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;
@@ -70,19 +71,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	}
 
 	@Override
-	public void setGlobalLightingParameters(GlobalLightingParameters parameters) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setRenderingParameters(
-			JOGLRenderingParameters renderingParameters) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void drawBackgoundImage(File backgroundImage,
 			int startPixelX, int startPixelY, int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {
@@ -98,6 +86,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		}
 		
 		/* apply camera and projection information */
+		shader.useShader();
 		
 		applyProjectionMatricesForPart(pmvMatrix, projection,
 				xStart, xEnd, yStart, yEnd);
@@ -109,13 +98,14 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		/* apply global rendering parameters */
 		
 		applyRenderingParameters(gl, renderingParameters);
-		applyLightingParameters(gl, globalLightingParameters);
+		applyLightingParameters(shader, globalLightingParameters);
 		
 		/* render primitives */
 		
 		renderer.render(camera, projection);
 		
 		// TODO: render non area primitives
+		shader.disableShader();
 	}
 	
 	static final void applyRenderingParameters(GL3 gl,
@@ -147,12 +137,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			gl.glDisable(GL_DEPTH_TEST);
 		}
 				
-	}
-	
-	static final void applyLightingParameters(GL3 gl,
-			GlobalLightingParameters lighting) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	static final void applyCameraMatrices(PMVMatrix pmvMatrix, Camera camera) {
@@ -213,6 +197,19 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		}
 
 		pmvMatrix.glMatrixMode(GL_MODELVIEW);
+		
+	}
+	
+	static final void applyLightingParameters(Shader shader,
+			GlobalLightingParameters lighting) {
+		
+		if (lighting == null) {
+			// TODO
+			
+		} else {
+			
+			shader.setGlobalLighting(lighting);
+		}
 		
 	}
 	

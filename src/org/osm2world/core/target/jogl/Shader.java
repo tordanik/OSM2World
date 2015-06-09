@@ -6,9 +6,12 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
+
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
@@ -21,6 +24,7 @@ public class Shader {
 	private int projectionMatrixID;
 	private int modelViewMatrixID;
 	private int modelViewProjectionMatrixID;
+	private int normalMatrixID;
 	private GL3 gl;
 	
 	public Shader(GL3 gl) {
@@ -62,6 +66,7 @@ public class Shader {
 		projectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ProjectionMatrix");
 		modelViewMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewMatrix");
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
+		normalMatrixID = gl.glGetUniformLocation(shaderProgram, "NormalMatrix");
 
 		// tell GL to validate the shader program and grab the created log
 		gl.glValidateProgram(shaderProgram);
@@ -84,10 +89,50 @@ public class Shader {
 		gl.glUniformMatrix4fv(this.getModelViewMatrixID(), 1, false, pmvMatrix.glGetMvMatrixf());
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
 		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
-		pmvMatrix.glMatrixMode(PMVMatrix.GL_PROJECTION);
-		pmvMatrix.glPushMatrix();
-		pmvMatrix.glMultMatrixf(pmvMatrix.glGetMvMatrixf());
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
+		
+		// NormalMatrix = (ModelViewMatrix^-1)^T
+		FloatBuffer normalMat = FloatBuffer.allocate(16);
+		int p = pmvMatrix.glGetMvitMatrixf().position();
+		for (int i=0; i<16; i++) {
+			normalMat.put(pmvMatrix.glGetMvitMatrixf().get(p+i));
+		}
+		
+//		System.out.println(pmvMatrix);
+//		System.out.println(pmvMatrix.glGetMvitMatrixf().position());
+//		System.out.println(Arrays.toString(normalMat.array()));
+//		System.out.println(this.getProjectionMatrixID());
+//		System.out.println(this.getModelViewMatrixID());
+//		System.out.println(this.getModelViewProjectionMatrixID());
+//		System.out.println(this.getNormalMatrixID());
+//		System.out.println(gl.glGetUniformLocation(shaderProgram, "ProjectionMatrix"));
+		gl.glUniformMatrix4fv(this.getNormalMatrixID(), 1, false, normalMat);
+	}
+	
+	public void setGlobalLighting(GlobalLightingParameters lighting) {
+		
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.Position"), (float)lighting.lightFromDirection.getX(),
+				(float)lighting.lightFromDirection.getY(), -(float)lighting.lightFromDirection.getZ());
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.La"), (float)lighting.globalAmbientColor.getRed(),
+				(float)lighting.globalAmbientColor.getGreen(), (float)lighting.globalAmbientColor.getBlue());
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.Ld"), (float)lighting.lightColorDiffuse.getRed(),
+				(float)lighting.lightColorDiffuse.getGreen(), (float)lighting.lightColorDiffuse.getBlue());
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Light.Ls"), (float)lighting.lightColorSpecular.getRed(),
+				(float)lighting.lightColorSpecular.getGreen(), (float)lighting.lightColorSpecular.getBlue());
+		
+
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1,1,1);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1,1,1);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+	}
+	
+	public void useShader() {
+		gl.glUseProgram(this.getProgram());
+	}
+	
+	public void disableShader() {
+		gl.glUseProgram(0);
 	}
 	
 	public int getProgram() {
@@ -116,6 +161,10 @@ public class Shader {
 	
 	public int getModelViewProjectionMatrixID() {
 		return modelViewProjectionMatrixID;
+	}
+	
+	public int getNormalMatrixID() {
+		return normalMatrixID;
 	}
 
 	public void freeResources() {
