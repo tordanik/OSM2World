@@ -3,7 +3,7 @@
 #version 130
 	
 struct LightInfo {
-	vec3 Position; // Light position in world coords.
+	vec4 Position; // Light position in world coords.
 	vec3 La; // Ambient light intensity
 	vec3 Ld; // Diffuse light intensity
 	vec3 Ls; // Specular light intensity
@@ -27,12 +27,18 @@ in vec3 VertexEye;
 // output to buffer
 out vec4 FragColor;
 
-vec3 lightPositionEye;
+vec4 lightPositionEye;
 
 // position and normal in eye coordinates
 vec3 phongModel( vec3 position, vec3 norm )
 	{
-	  vec3 s = normalize(lightPositionEye - position);
+	  vec3 s;
+	  
+	  // directional light?
+	  if( lightPositionEye.w == 0.0 )
+	      s = normalize(vec3(lightPositionEye));
+	  else
+	      s = normalize(vec3(lightPositionEye) - position);
 	  vec3 v = normalize(-position);
 	  vec3 r = reflect( -s, norm );
 	  vec3 ambient = Light.La * Material.Ka;
@@ -49,7 +55,7 @@ vec3 phongModel( vec3 position, vec3 norm )
 void main()
 {
    // light position in eye coordinates
-   lightPositionEye = vec3(ModelViewMatrix * vec4(Light.Position, 1.0));
+   lightPositionEye = ModelViewMatrix * Light.Position;
    vec3 LightIntensity = phongModel( VertexEye, Normal );
    FragColor = vec4(LightIntensity, 1.0);
 } 
