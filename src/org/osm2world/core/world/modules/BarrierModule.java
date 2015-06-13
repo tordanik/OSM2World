@@ -172,6 +172,8 @@ public class BarrierModule extends AbstractModule {
 		private static Material getMaterial(TagGroup tags) {
 			if ("gabion".equals(tags.getValue("wall"))) {
 				return Materials.WALL_GABION;
+			else if ( tags.containsKey("material") ) {              
+				return Materials.getMaterial(tags.getValue("material").toUpperCase());
 			} else {
 				return Materials.WALL_DEFAULT;
 			}
