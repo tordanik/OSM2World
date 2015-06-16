@@ -94,10 +94,10 @@ public class Shader {
 	public void loadDefaults() {
 		
 		// set default material values
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1,1,1);
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1,1,1);
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
-		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 0,0,0);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 0,0,0);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 0,0,0);
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
 	}
 	
 	/**
@@ -144,8 +144,8 @@ public class Shader {
 			
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1, getFloatBuffer(material.ambientColor()));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(material.diffuseColor()));
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
-			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1f, 1f, 1f);
+			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 100f);
 			
 		} else {
 			

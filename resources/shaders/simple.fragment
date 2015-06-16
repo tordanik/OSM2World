@@ -35,7 +35,7 @@ vec3 phongModel( vec3 position, vec3 norm )
 	  vec3 s;
 	  
 	  // directional light?
-	  if( lightPositionEye.w == 0.0 )
+	  if( Light.Position.w == 0.0 )
 	      s = normalize(vec3(lightPositionEye));
 	  else
 	      s = normalize(vec3(lightPositionEye) - position);
@@ -56,6 +56,7 @@ void main()
 {
    // light position in eye coordinates
    lightPositionEye = ModelViewMatrix * Light.Position;
-   vec3 LightIntensity = phongModel( VertexEye, Normal );
+   
+   vec3 LightIntensity = phongModel( VertexEye, normalize(Normal) );
    FragColor = vec4(LightIntensity, 1.0);
 } 

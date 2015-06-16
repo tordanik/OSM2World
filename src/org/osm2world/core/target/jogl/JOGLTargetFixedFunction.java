@@ -366,6 +366,13 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			
 		}
 		
+		// specular lighting
+		/*
+		gl.glMaterialfv(GL.GL_FRONT, GL2.GL_SPECULAR, 
+                new float[] { 1f, 1f, 1f },  0);
+		gl.glMateriali(GL.GL_FRONT, GL2.GL_SHININESS, 128);
+		*/
+		
 		/* set textures and associated parameters */
 		
 		for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
