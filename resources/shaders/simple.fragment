@@ -29,28 +29,50 @@ out vec4 FragColor;
 
 vec4 lightPositionEye;
 
-// position and normal in eye coordinates
+/*
+ * shading with phong model (ambient, diffuse, specular)
+ * position and normal in eye coordinates
+ */
 vec3 phongModel( vec3 position, vec3 norm )
-	{
-	  vec3 s;
-	  
-	  // directional light?
-	  if( Light.Position.w == 0.0 )
-	      s = normalize(vec3(lightPositionEye));
-	  else
-	      s = normalize(vec3(lightPositionEye) - position);
-	  vec3 v = normalize(-position);
-	  vec3 r = reflect( -s, norm );
-	  vec3 ambient = Light.La * Material.Ka;
-	  float sDotN = max( dot(s,norm), 0.0 );
-	  vec3 diffuse = Light.Ld * Material.Kd * sDotN;
-	  vec3 spec = vec3(0.0);
-	  if( sDotN > 0.0 )
-		  spec = Light.Ls * Material.Ks *
-				 pow( max( dot(r,v), 0.0 ), Material.Shininess );
-	  return ambient + diffuse + spec;
-	}
+{
+	vec3 s;
+	
+	// directional light?
+	if( Light.Position.w == 0.0 )
+		s = normalize(vec3(lightPositionEye));
+	else
+		s = normalize(vec3(lightPositionEye) - position);
+	vec3 v = normalize(-position);
+	vec3 r = reflect( -s, norm );
+	vec3 ambient = Light.La * Material.Ka;
+	float sDotN = max( dot(s,norm), 0.0 );
+	vec3 diffuse = Light.Ld * Material.Kd * sDotN;
+	vec3 spec = vec3(0.0);
+	if( sDotN > 0.0 )
+		spec = Light.Ls * Material.Ks *
+				pow( max( dot(r,v), 0.0 ), Material.Shininess );
+	return ambient + diffuse + spec;
+}
 
+const int levels = 3;
+const float scaleFactor = 1.0 / levels;
+// toon shading (only ambient and diffuse)
+vec3 toonShade( vec3 position, vec3 norm )
+{
+	vec3 s;
+	  
+	// directional light?
+	if( Light.Position.w == 0.0 )
+		s = normalize(vec3(lightPositionEye));
+	else
+		s = normalize(vec3(lightPositionEye) - position);
+		
+	vec3 ambient = Light.La * Material.Ka;
+	float cosine = max( dot(s,norm) , 0.0 );
+	vec3 diffuse = Light.Ld * Material.Kd * floor( cosine * levels ) * scaleFactor;
+	
+	return ambient + diffuse;
+}
  
 void main()
 {
@@ -58,5 +80,6 @@ void main()
    lightPositionEye = ModelViewMatrix * Light.Position;
    
    vec3 LightIntensity = phongModel( VertexEye, normalize(Normal) );
+   //vec3 LightIntensity = toonShade( VertexEye, normalize(Normal) );
    FragColor = vec4(LightIntensity, 1.0);
 } 
