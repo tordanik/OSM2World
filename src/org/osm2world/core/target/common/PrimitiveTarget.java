@@ -13,7 +13,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 
 /**
  * superclass for targets that are based on OpenGL primitives.
@@ -37,7 +37,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	@Override
 	public void drawTriangleStrip(Material material, List<VectorXYZ> vs,
 			List<List<VectorXZ>> texCoordLists) {
-		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
+		boolean smooth = (material.getInterpolation() == Interpolation.SMOOTH);
 		drawPrimitive(TRIANGLE_STRIP, material, vs,
 				calculateTriangleStripNormals(vs, smooth),
 				texCoordLists);
@@ -46,7 +46,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	@Override
 	public void drawTriangleFan(Material material, List<VectorXYZ> vs,
 			List<List<VectorXZ>> texCoordLists) {
-		boolean smooth = (material.getLighting() == Lighting.SMOOTH);
+		boolean smooth = (material.getInterpolation() == Interpolation.SMOOTH);
 		drawPrimitive(TRIANGLE_FAN, material, vs,
 				calculateTriangleFanNormals(vs, smooth),
 				texCoordLists);
@@ -67,7 +67,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 		
 		drawPrimitive(TRIANGLES, material, vectors,
 				calculateTriangleNormals(vectors,
-						material.getLighting() == Lighting.SMOOTH),
+						material.getInterpolation() == Interpolation.SMOOTH),
 						texCoordLists);
 		
 	}

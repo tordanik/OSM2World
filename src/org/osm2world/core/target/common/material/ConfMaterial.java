@@ -11,24 +11,24 @@ import org.osm2world.core.target.common.TextureData;
  */
 public class ConfMaterial extends Material {
 
-	public ConfMaterial(Lighting lighting, Color color,
+	public ConfMaterial(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(lighting, color, ambientFactor, diffuseFactor,
+		super(interpolation, color, ambientFactor, diffuseFactor,
 				transparency, textureDataList);
 	}
 	
-	public ConfMaterial(Lighting lighting, Color color,
+	public ConfMaterial(Interpolation lighting, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
 		super(lighting, color, transparency, textureDataList);
 	}
 	
-	public ConfMaterial(Lighting lighting, Color color) {
+	public ConfMaterial(Interpolation lighting, Color color) {
 		super(lighting, color);
 	}
 	
-	public void setLighting(Lighting lighting) {
-		this.lighting = lighting;
+	public void setInterpolation(Interpolation interpolation) {
+		this.interpolation = interpolation;
 	}
 	
 	public void setColor(Color color) {

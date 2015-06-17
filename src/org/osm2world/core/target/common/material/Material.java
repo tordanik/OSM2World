@@ -12,7 +12,7 @@ import org.osm2world.core.target.common.TextureData;
  */
 public abstract class Material {
 	
-	public static enum Lighting {FLAT, SMOOTH};
+	public static enum Interpolation {FLAT, SMOOTH};
 	
 	public static enum Transparency {
 		/** arbitrary transparency, including partially transparent pixels */
@@ -23,7 +23,10 @@ public abstract class Material {
 		FALSE
 	}
 	
-	protected Lighting lighting;
+	/**
+	 * Interpolation of normals
+	 */
+	protected Interpolation interpolation;
 	protected Color color;
 	protected float ambientFactor;
 	protected float diffuseFactor;
@@ -31,10 +34,10 @@ public abstract class Material {
 	
 	protected List<TextureData> textureDataList;
 
-	public Material(Lighting lighting, Color color,
+	public Material(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor,
 			Transparency transparency, List<TextureData> textureDataList) {
-		this.lighting = lighting;
+		this.interpolation = interpolation;
 		this.color = color;
 		this.ambientFactor = ambientFactor;
 		this.diffuseFactor = diffuseFactor;
@@ -42,18 +45,18 @@ public abstract class Material {
 		this.textureDataList = textureDataList;
 	}
 	
-	public Material(Lighting lighting, Color color,
+	public Material(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
-		this(lighting, color, 0.5f, 0.5f, transparency, textureDataList);
+		this(interpolation, color, 0.5f, 0.5f, transparency, textureDataList);
 	}
 	
-	public Material(Lighting lighting, Color color) {
-		this(lighting, color, Transparency.FALSE,
+	public Material(Interpolation interpolation, Color color) {
+		this(interpolation, color, Transparency.FALSE,
 				Collections.<TextureData>emptyList());
 	}
 		
-	public Lighting getLighting() {
-		return lighting;
+	public Interpolation getInterpolation() {
+		return interpolation;
 	}
 	
 	public Color getColor() {
@@ -77,13 +80,13 @@ public abstract class Material {
 	}
 	
 	public Material brighter() {
-		return new ImmutableMaterial(lighting, getColor().brighter(),
+		return new ImmutableMaterial(interpolation, getColor().brighter(),
 				getAmbientFactor(), getDiffuseFactor(),
 				getTransparency(), getTextureDataList());
 	}
 	
 	public Material darker() {
-		return new ImmutableMaterial(lighting, getColor().darker(),
+		return new ImmutableMaterial(interpolation, getColor().darker(),
 				getAmbientFactor(), getDiffuseFactor(),
 				getTransparency(), getTextureDataList());
 	}
@@ -99,7 +102,7 @@ public abstract class Material {
 	}
 
 	public Material makeSmooth() {
-		return new ImmutableMaterial(Lighting.SMOOTH, getColor(),
+		return new ImmutableMaterial(Interpolation.SMOOTH, getColor(),
 				getAmbientFactor(), getDiffuseFactor(),
 				getTransparency(), getTextureDataList());
 	}
@@ -117,7 +120,7 @@ public abstract class Material {
 	    
 		textureDataList.addAll(textureLayers);
 	    
-	    return new ImmutableMaterial(getLighting(), getColor(),
+	    return new ImmutableMaterial(getInterpolation(), getColor(),
 	    		getAmbientFactor(), getDiffuseFactor(),
 	    		getTransparency(), textureDataList);
 	    
@@ -141,7 +144,7 @@ public abstract class Material {
 	
 	public String toString() {
 		return String.format("{%s, #%06x, a%3f, d%3f, %d tex",
-				lighting, color.getRGB() & 0x00ffffff, ambientFactor,
+				interpolation, color.getRGB() & 0x00ffffff, ambientFactor,
 				diffuseFactor, textureDataList.size())
 				+ transparency
 				+ "}";

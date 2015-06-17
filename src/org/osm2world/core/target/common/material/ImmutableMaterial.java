@@ -11,20 +11,20 @@ import org.osm2world.core.target.common.TextureData;
  */
 public final class ImmutableMaterial extends Material {
 	
-	public ImmutableMaterial(Lighting lighting, Color color,
+	public ImmutableMaterial(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(lighting, color, ambientFactor, diffuseFactor,
+		super(interpolation, color, ambientFactor, diffuseFactor,
 				transparency, textureDataList);
 	}
 	
-	public ImmutableMaterial(Lighting lighting, Color color,
+	public ImmutableMaterial(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(lighting, color, transparency, textureDataList);
+		super(interpolation, color, transparency, textureDataList);
 	}
 	
-	public ImmutableMaterial(Lighting lighting, Color color) {
-		super(lighting, color);
+	public ImmutableMaterial(Interpolation interpolation, Color color) {
+		super(interpolation, color);
 	}
 		
 	// auto-generated
@@ -35,7 +35,7 @@ public final class ImmutableMaterial extends Material {
 		result = prime * result + Float.floatToIntBits(ambientFactor);
 		result = prime * result + ((color == null) ? 0 : color.hashCode());
 		result = prime * result + Float.floatToIntBits(diffuseFactor);
-		result = prime * result + ((lighting == null) ? 0 : lighting.hashCode());
+		result = prime * result + ((interpolation == null) ? 0 : interpolation.hashCode());
 		result = prime * result + ((textureDataList == null) ? 0 : textureDataList.hashCode());
 		result = prime * result + ((transparency == null) ? 0 : transparency.hashCode());
 		return result;
@@ -60,7 +60,7 @@ public final class ImmutableMaterial extends Material {
 			return false;
 		if (Float.floatToIntBits(diffuseFactor) != Float.floatToIntBits(other.diffuseFactor))
 			return false;
-		if (lighting != other.lighting)
+		if (interpolation != other.interpolation)
 			return false;
 		if (textureDataList == null) {
 			if (other.textureDataList != null)

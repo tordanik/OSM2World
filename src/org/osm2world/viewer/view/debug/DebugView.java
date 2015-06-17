@@ -13,7 +13,7 @@ import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
@@ -196,7 +196,7 @@ public abstract class DebugView {
 		
 		
 		ImmutableMaterial colorMaterial =
-				new ImmutableMaterial(Lighting.FLAT, color);
+				new ImmutableMaterial(Interpolation.FLAT, color);
 		
 		target.drawTriangleStrip(colorMaterial, asList(
 				lastV,

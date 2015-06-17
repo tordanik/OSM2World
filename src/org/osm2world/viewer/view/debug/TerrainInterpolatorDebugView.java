@@ -15,7 +15,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.RenderOptions;
@@ -27,7 +27,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 	private static final double SAMPLE_DIST = 3;
 	
 	private static final Material TERRAIN_MAT =
-			new ImmutableMaterial(Lighting.FLAT, Color.WHITE);
+			new ImmutableMaterial(Interpolation.FLAT, Color.WHITE);
 
 	private final RenderOptions renderOptions;
 	

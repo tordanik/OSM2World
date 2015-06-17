@@ -906,7 +906,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				
 				if (color != null) {
 					material = new ImmutableMaterial(
-							material.getLighting(), color,
+							material.getInterpolation(), color,
 							material.getAmbientFactor(),
 							material.getDiffuseFactor(),
 							material.getTransparency(),

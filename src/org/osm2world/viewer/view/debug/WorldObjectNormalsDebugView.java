@@ -8,7 +8,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.PrimitiveBuffer;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
@@ -42,7 +42,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 		
 		for (Material material : primitiveBuffer .getMaterials()) {
 			
-			Color color = material.getLighting() == Lighting.FLAT ?
+			Color color = material.getInterpolation() == Interpolation.FLAT ?
 					FLAT_NORMALS_COLOR : SMOOTH_NORMALS_COLOR;
 			
 			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {

@@ -25,7 +25,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
@@ -335,12 +335,14 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 		
 		/* set lighting */
-		
-		if (material.getLighting() == Lighting.SMOOTH) {
+		// wrong as interpolation is meant for normals? light shading should always be smooth
+		/*
+		if (material.getInterpolation() == Interpolation.SMOOTH) {
 			gl.glShadeModel(GL_SMOOTH);
 		} else {
 			gl.glShadeModel(GL_FLAT);
 		}
+		*/
 		
 		/* set color */
 		
