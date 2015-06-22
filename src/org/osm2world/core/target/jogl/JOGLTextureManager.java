@@ -26,7 +26,7 @@ public class JOGLTextureManager {
 		this.gl = gl;
 	}
 	
-	public Texture getTextureForFile(File file) {
+	public Texture getTextureForFile(File file, boolean mipmap) {
 		
 		Texture result = availableTextures.get(file);
 		
@@ -49,11 +49,11 @@ public class JOGLTextureManager {
 						ImageUtil.flipImageVertically(bufferedImage);
 						
 						result = AWTTextureIO.newTexture(
-								gl.getGLProfile(), bufferedImage, true);
+								gl.getGLProfile(), bufferedImage, mipmap);
 						
 					} else {
 					
-						result = TextureIO.newTexture(file, true);
+						result = TextureIO.newTexture(file, mipmap);
 						
 					}
 					

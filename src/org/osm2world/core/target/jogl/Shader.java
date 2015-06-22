@@ -1,11 +1,18 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_FRONT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_FLAT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
+import static javax.media.opengl.GL.GL_REPEAT;
+import static javax.media.opengl.GL.GL_TEXTURE0;
+import static javax.media.opengl.GL.GL_TEXTURE1;
+import static javax.media.opengl.GL.GL_TEXTURE2;
+import static javax.media.opengl.GL.GL_TEXTURE3;
+import static javax.media.opengl.GL.GL_TEXTURE_2D;
+import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
+import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
+import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
+import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
+import static org.osm2world.core.target.common.material.Material.Transparency.BINARY;
+import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
@@ -15,19 +22,24 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Arrays;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.Material.Transparency;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
+import com.jogamp.opengl.util.texture.Texture;
 
 public class Shader {
+	
+	/** maximum number of texture layers any material can use */
+	public static final int MAX_TEXTURE_LAYERS = 4;
 	
 	private int vertexShader;
 	private int fragmentShader;
@@ -60,8 +72,9 @@ public class Shader {
 		
 		// bind named attributes in shader to attribute index
 		gl.glBindAttribLocation (shaderProgram, getVertexPositionID(), "VertexPosition");
-		gl.glBindAttribLocation (shaderProgram, getVertexColorID(), "VertexColor");
+		//gl.glBindAttribLocation (shaderProgram, getVertexColorID(), "VertexColor");
 		gl.glBindAttribLocation (shaderProgram, getVertexNormalID(), "VertexNormal");
+		gl.glBindAttribLocation (shaderProgram, getVertexTexCoordID(), "VertexTexCoord");
 
 		gl.glLinkProgram(shaderProgram);
 		// validate linking
@@ -123,7 +136,7 @@ public class Shader {
 	}
 	
 	public void setMaterial(Material material, JOGLTextureManager textureManager) {
-		
+
 		int numTexLayers = 0;
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
@@ -153,9 +166,68 @@ public class Shader {
 					multiplyColor(Color.WHITE, material.getAmbientFactor())));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1,1,1);
-			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 1);
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1f,1f,1f);
+			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 100f);	
+		}
+		
+		/* set textures and associated parameters */
+	    gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture"), numTexLayers > 0 ? 1 : 0);
+		if (numTexLayers > 0) {
 			
+			if (material.getTransparency() == Transparency.FALSE) {
+				gl.glDisable(GL.GL_BLEND);
+			} else {
+				gl.glEnable(GL.GL_BLEND);
+				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			}
+			
+			gl.glActiveTexture(getGLTextureConstant(0));
+			TextureData textureData = material.getTextureDataList().get(0);
+			Texture texture = textureManager.getTextureForFile(textureData.file, false);
+
+			texture.bind(gl);
+	        
+			/* wrapping behavior */
+	        
+			int wrap = 0;
+			
+			switch (textureData.wrap) {
+			case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
+			case REPEAT: wrap = GL_REPEAT; break;
+			case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
+			}
+			
+			gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+	        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+	        
+	        
+	        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+	        	
+	        	/* TODO: make the RGB configurable -  for some reason,
+	        	 * it shows up in lowzoom even if fully transparent */
+	        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
+	        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
+	        	
+	        }
+	        
+
+
+	        int loc = gl.glGetUniformLocation(shaderProgram, "Tex1");
+	        if (loc < 0) {
+	        	throw new RuntimeException("Tex1 not found in shader program.");
+	        }
+	        gl.glUniform1i(loc, 0);
+		}
+	   
+	}
+	
+	static final int getGLTextureConstant(int textureNumber) {
+		switch (textureNumber) {
+		case 0: return GL_TEXTURE0;
+		case 1: return GL_TEXTURE1;
+		case 2: return GL_TEXTURE2;
+		case 3: return GL_TEXTURE3;
+		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
 	
@@ -175,12 +247,16 @@ public class Shader {
 		return 0;
 	}
 	
-	public int getVertexColorID() {
-		return 1;
-	}
+//	public int getVertexColorID() {
+//		return 1;
+//	}
 	
 	public int getVertexNormalID() {
 		return 2;
+	}
+	
+	public int getVertexTexCoordID() {
+		return 3;
 	}
 	
 	public int getProjectionMatrixID() {

@@ -381,7 +381,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			
 			gl.glActiveTexture(getGLTextureConstant(i));
 						
-			if (i >= numTexLayers) {
+			if (i >= numTexLayers || i>0) {
 				
 				gl.glDisable(GL_TEXTURE_2D);
 								
@@ -402,7 +402,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				
 				TextureData textureData = material.getTextureDataList().get(i);
 				
-				Texture texture = textureManager.getTextureForFile(textureData.file);
+				Texture texture = textureManager.getTextureForFile(textureData.file, true);
 		        texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
 		        
@@ -515,7 +515,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		
 		Texture backgroundTexture =
-				textureManager.getTextureForFile(backgroundImage);
+				textureManager.getTextureForFile(backgroundImage, true);
 
 		backgroundTexture.enable(gl);
 		backgroundTexture.bind(gl);

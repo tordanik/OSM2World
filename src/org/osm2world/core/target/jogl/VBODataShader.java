@@ -31,9 +31,9 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	@Override
 	public void render() {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
-		
-		shader.setMaterial(material, textureManager);
+
 		setPointerLayout();
+		shader.setMaterial(material, textureManager);
 		
 		gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	}
@@ -45,7 +45,10 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		int offset = 0;
 		
 		for (int i = 0; i < material.getNumTextureLayers(); i++) {
-			
+
+			if (i == 0) {
+				gl.glVertexAttribPointer(shader.getVertexTexCoordID(), 2, glValueType(), false, stride, offset);
+			}
 			offset += 2 * valueTypeSize;
 			
 		}

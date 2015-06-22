@@ -145,6 +145,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		gl.glEnableVertexAttribArray(shader.getVertexPositionID());
 		//gl.glEnableVertexAttribArray(shader.getVertexColorID());
 		gl.glEnableVertexAttribArray(shader.getVertexNormalID());
+		gl.glEnableVertexAttribArray(shader.getVertexTexCoordID());
 		
 		for (VBOData<?> vboData : vbos) {
 			vboData.render();
@@ -153,6 +154,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
 		//gl.glDisableVertexAttribArray(shader.getVertexColorID());
 		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
+		gl.glDisableVertexAttribArray(shader.getVertexTexCoordID());
 		
 //		for (int t = 0; t < JOGLTargetFixedFunction.MAX_TEXTURE_LAYERS; t++) {
 //			gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(t));
@@ -171,8 +173,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
 			
 			if (!p.material.equals(previousMaterial)) {
-				//JOGLTargetShader.setMaterial(gl, p.material, textureManager);
-				// TODO: implement
+				shader.setMaterial(p.material, textureManager);
 				previousMaterial = p.material;
 			}
 			

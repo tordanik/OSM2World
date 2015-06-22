@@ -380,7 +380,7 @@ public class ShaderTest implements GLEventListener {
 		//gl.glGenVertexArrays(1, vaoHandle, 0);
 		//gl.glBindVertexArray(vaoHandle[0]);
 		gl.glEnableVertexAttribArray(shader.getVertexPositionID());
-		gl.glEnableVertexAttribArray(shader.getVertexColorID());
+		//gl.glEnableVertexAttribArray(shader.getVertexColorID());
  
 		// assign vertex VBO to slot 0 of VAO
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, positionBufferHandle[0]);
@@ -388,7 +388,7 @@ public class ShaderTest implements GLEventListener {
  
 		// assign vertex VBO to slot 1 of VAO
 		//gl.glBindBuffer(GL.GL_ARRAY_BUFFER, positionBufferHandle[0]);
-		gl.glVertexAttribPointer(shader.getVertexColorID(), 3, GL.GL_FLOAT, false, Buffers.SIZEOF_FLOAT*9, Buffers.SIZEOF_FLOAT*6);
+		//gl.glVertexAttribPointer(shader.getVertexColorID(), 3, GL.GL_FLOAT, false, Buffers.SIZEOF_FLOAT*9, Buffers.SIZEOF_FLOAT*6);
 		
 		// unbind VBO
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
@@ -609,7 +609,7 @@ public class ShaderTest implements GLEventListener {
 			setPointerLayout();
 			
 			gl.glEnableVertexAttribArray(shader.getVertexPositionID());
-			gl.glEnableVertexAttribArray(shader.getVertexColorID());
+			//gl.glEnableVertexAttribArray(shader.getVertexColorID());
 			System.out.printf("vertexCount: %d\n",vertexCount);
 			//gl.getGL2().glMatrixMode(GL2.GL_MODELVIEW);
 			//gl.getGL2().glLoadIdentity();
@@ -636,11 +636,11 @@ public class ShaderTest implements GLEventListener {
 			System.out.printf("offset: %d\n",offset);
 
 			gl.glEnableVertexAttribArray(shader.getVertexPositionID());
-			gl.glEnableVertexAttribArray(shader.getVertexColorID());
+			//gl.glEnableVertexAttribArray(shader.getVertexColorID());
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, id[0]);
 
 				gl.glVertexAttribPointer(shader.getVertexPositionID(), 3, glValueType(), false, stride, offset + valueTypeSize() * 3);
-				gl.glVertexAttribPointer(shader.getVertexColorID(), 3, glValueType(), false, stride, offset + valueTypeSize() * 6);
+				//gl.glVertexAttribPointer(shader.getVertexColorID(), 3, glValueType(), false, stride, offset + valueTypeSize() * 6);
 				//gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 			
 		}

@@ -22,7 +22,11 @@ uniform mat4 ModelViewMatrix;
  
 // corresponds with output from vertex shader, gets interpolated
 in vec3 Normal;
-in vec3 VertexEye;    
+in vec3 VertexEye;
+in vec2 TexCoord;
+
+uniform bool useTexture;
+uniform sampler2D Tex1;
  
 // output to buffer
 out vec4 FragColor;
@@ -33,7 +37,7 @@ vec4 lightPositionEye;
  * shading with phong model (ambient, diffuse, specular)
  * position and normal in eye coordinates
  */
-vec3 phongModel( vec3 position, vec3 norm )
+vec3 phongModel( vec3 position, vec3 norm, out vec3 ambientAndDiff, out vec3 spec )
 {
 	vec3 s;
 	
@@ -47,11 +51,12 @@ vec3 phongModel( vec3 position, vec3 norm )
 	vec3 ambient = Light.La * Material.Ka;
 	float sDotN = max( dot(s,norm), 0.0 );
 	vec3 diffuse = Light.Ld * Material.Kd * sDotN;
-	vec3 spec = vec3(0.0);
+	spec = vec3(0.0);
 	if( sDotN > 0.0 )
 		spec = Light.Ls * Material.Ks *
 				pow( max( dot(r,v), 0.0 ), Material.Shininess );
-	return ambient + diffuse + spec;
+	ambientAndDiff = ambient + diffuse;
+	return ambientAndDiff + spec;
 }
 
 const int levels = 3;
@@ -76,10 +81,26 @@ vec3 toonShade( vec3 position, vec3 norm )
  
 void main()
 {
-   // light position in eye coordinates
-   lightPositionEye = ModelViewMatrix * Light.Position;
+	vec3 ambientAndDiff, spec;
+	vec4 texColor;
+	
+	// use texture?
+	if ( useTexture )
+		texColor = texture( Tex1, TexCoord );
+		//texColor = texture( Tex1, vec2( 0.5, 0.5 ) );
+		//texColor = texelFetch( Tex1, ivec2( 5, 5 ), 1 );
+	else
+		texColor = vec4(1.0);
+
+	// light position in eye coordinates
+	lightPositionEye = ModelViewMatrix * Light.Position;
    
-   vec3 LightIntensity = phongModel( VertexEye, normalize(Normal) );
-   //vec3 LightIntensity = toonShade( VertexEye, normalize(Normal) );
-   FragColor = vec4(LightIntensity, 1.0);
+	phongModel( VertexEye, normalize(Normal), ambientAndDiff, spec );
+	//ambientAndDiff = toonShade( VertexEye, normalize(Normal) );
+	FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
+	if( FragColor.a < 0.01 )
+		discard;
+	//FragColor = texColor;
+	//FragColor = vec4(texColor.xyz, 1.0);
+	//FragColor = vec4(TexCoord.x, TexCoord.y, 0.0, 1.0);
 } 
