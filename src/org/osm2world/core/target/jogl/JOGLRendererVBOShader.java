@@ -151,11 +151,6 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 			vboData.render();
 		}
 		
-		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
-		//gl.glDisableVertexAttribArray(shader.getVertexColorID());
-		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
-		gl.glDisableVertexAttribArray(shader.getVertexTexCoordID());
-		
 //		for (int t = 0; t < JOGLTargetFixedFunction.MAX_TEXTURE_LAYERS; t++) {
 //			gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(t));
 //			gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -168,20 +163,26 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 		sortPrimitivesBackToFront(camera, projection);
 		
-		Material previousMaterial = null;
+//		Material previousMaterial = null;
 		
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
 			
-			if (!p.material.equals(previousMaterial)) {
-				shader.setMaterial(p.material, textureManager);
-				previousMaterial = p.material;
-			}
+//			if (!p.material.equals(previousMaterial)) {
+//				shader.setMaterial(p.material, textureManager);
+//				previousMaterial = p.material;
+//			}
 			
-			drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(p.primitive.type),
-					p.primitive.vertices, p.primitive.normals,
-					p.primitive.texCoordLists);
+			p.vbo.render();
+//			drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(p.primitive.type),
+//					p.primitive.vertices, p.primitive.normals,
+//					p.primitive.texCoordLists);
 			
 		}
+		
+		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
+		//gl.glDisableVertexAttribArray(shader.getVertexColorID());
+		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
+		gl.glDisableVertexAttribArray(shader.getVertexTexCoordID());
 		
 	}
 	

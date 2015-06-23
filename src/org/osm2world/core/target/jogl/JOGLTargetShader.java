@@ -214,12 +214,34 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 	}
 	
-	public static void drawPrimitive(GL3 gl, int glPrimitiveType,
-			List<VectorXYZ> vertices, List<VectorXYZ> normals,
-			List<List<VectorXZ>> texCoordLists) {
-		// TODO Auto-generated method stub
-		
-	}
+//	public void drawPrimitive(GL3 gl, int glPrimitiveType,
+//			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+//			List<List<VectorXZ>> texCoordLists) {
+//		assert vertices.size() == normals.size();
+//		
+//		gl.glBegin(glPrimitiveType);
+//		
+//		for (int i = 0; i < vertices.size(); i++) {
+//			
+//			if (texCoordLists != null) {
+//				for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer++) {
+//					VectorXZ textureCoord =	texCoordLists.get(texLayer).get(i);
+//					if (i==0) {
+//						gl.glVertexAttrib2d(shader.getVertexTexCoordID(), textureCoord.x, textureCoord.z);
+//					}
+//				}
+//			}
+//
+//			VectorXYZ n = normals.get(i);
+//			gl.glVertexAttrib3d(shader.getVertexNormalID(), n.x, n.y, -n.z);
+//			
+//			VectorXYZ v = vertices.get(i);
+//			gl.glVertexAttrib3d(shader.getVertexPositionID(), v.x, v.y, -v.z);
+//			
+//		}
+//		
+//		gl.glEnd();
+//	}
 	
 	@Override
 	public void finish() {

@@ -5,11 +5,11 @@ import static java.lang.Math.abs;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.Primitive;
@@ -40,10 +40,12 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		
 		public final Primitive primitive;
 		public final Material material;
+		public final VBOData<?> vbo;
 		
-		private PrimitiveWithMaterial(Primitive primitive, Material material) {
+		private PrimitiveWithMaterial(Primitive primitive, Material material, VBOData<?>vbo) {
 			this.primitive = primitive;
 			this.material = material;
+			this.vbo = vbo;
 		}
 		
 	}
@@ -75,8 +77,10 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 			if (material.getTransparency() == Transparency.TRUE) {
 				
 				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
-					transparentPrimitives.add(
-							new PrimitiveWithMaterial(primitive, material));
+					transparentPrimitives.add(new PrimitiveWithMaterial(
+							primitive, material, this.createVBOData(
+									textureManager, material,
+									Arrays.asList(primitive))));
 				}
 				
 			} else {
