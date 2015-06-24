@@ -65,6 +65,7 @@ public class DefaultShader extends AbstractShader {
 		normalMatrixID = gl.glGetUniformLocation(shaderProgram, "NormalMatrix");
 	}
 	
+	@Override
 	public void loadDefaults() {
 		
 		// set default material values

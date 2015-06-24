@@ -80,4 +80,6 @@ public abstract class AbstractShader {
 	protected void finalize() {
 		freeResources();
 	}
+
+	public void loadDefaults() { }
 }
