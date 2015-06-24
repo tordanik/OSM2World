@@ -2,21 +2,13 @@ package org.osm2world.core.target.jogl;
 
 import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
 import static javax.media.opengl.GL.GL_STATIC_DRAW;
-import static javax.media.opengl.GL.GL_TRIANGLES;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.GL_TEXTURE_COORD_ARRAY;
 
 import java.awt.Color;
 import java.nio.Buffer;
-import java.util.Collection;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.material.Material;
 
 /**
  * class that keeps a VBO id along with associated information
@@ -46,11 +38,13 @@ abstract class VBODataNonAreaShader<BufferT extends Buffer> {
 	protected GL3 gl;
 	private NonAreaShader shader;
 	private int primitiveType;
+	private int width;
 	
 	public VBODataNonAreaShader(GL3 gl, NonAreaShader shader, NonAreaPrimitive nonAreaPrimitive) {
 		this.gl = gl;
 		this.shader = shader;
 		primitiveType= AbstractJOGLTarget.getGLConstant(nonAreaPrimitive.type);
+		width = nonAreaPrimitive.width;
 		
 		valueTypeSize = valueTypeSize();
 		glValueType = glValueType();
@@ -94,6 +88,8 @@ abstract class VBODataNonAreaShader<BufferT extends Buffer> {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
 
 		setPointerLayout();
+
+		gl.glLineWidth(width);
 		
 		gl.glDrawArrays(primitiveType, 0, vertexCount);
 	}
@@ -105,7 +101,7 @@ abstract class VBODataNonAreaShader<BufferT extends Buffer> {
 		int offset = 0;
 		
 		gl.glVertexAttribPointer(shader.getVertexPositionID(), 3, glValueType(), false, stride, offset);
-		gl.glVertexAttribPointer(shader.getVertexColorID(), 3, glValueType(), false, stride, offset + valueTypeSize() * 3);
+		gl.glVertexAttribPointer(shader.getVertexColorID(), 4, glValueType(), false, stride, offset + valueTypeSize() * 3);
 		
 	}
 	

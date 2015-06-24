@@ -42,8 +42,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	
 	private final GL2 gl;
 	
-	private List<NonAreaPrimitive> nonAreaPrimitives;
-	
 	private Configuration config = new BaseConfiguration();
 	
 	/**
@@ -62,16 +60,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		this.gl = gl;
 		
 		reset();
-		
-	}
-		
-	/**
-	 * discards all accumulated draw calls
-	 */
-	public void reset() {
-		
-		this.nonAreaPrimitives = new ArrayList<NonAreaPrimitive>();
-		super.reset();
 		
 	}
 
@@ -103,34 +91,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		
 		gl.glEnd();
 		
-	}
-	
-	private void drawNonAreaPrimitive(NonAreaPrimitive.Type type,
-			Color color, int width, List<VectorXYZ> vs) {
-		
-		nonAreaPrimitives.add(new NonAreaPrimitive(
-				type, color, width, vs));
-        
-	}
-	
-	public void drawPoints(Color color, VectorXYZ... vs) {
-		drawNonAreaPrimitive(POINTS, color, 1, asList(vs));
-	}
-	
-	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
-		drawNonAreaPrimitive(LINE_STRIP, color, width, asList(vs));
-	}
-	
-	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
-		drawNonAreaPrimitive(LINE_STRIP, color, width, vs);
-	}
-	
-	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
-		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
-	}
-	
-	public void setConfiguration(Configuration config) {
-		this.config = config;
 	}
 	
 	/**

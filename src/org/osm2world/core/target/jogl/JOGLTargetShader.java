@@ -33,41 +33,20 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.opengl.util.PMVMatrix;
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
-	private DefaultShader shader;
+	private DefaultShader defaultShader;
+	private NonAreaShader nonAreaShader;
 	private GL3 gl;
 	private PMVMatrix pmvMatrix;
+	private JOGLRendererVBONonAreaShader nonAreaRenderer;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
-		shader = new DefaultShader(gl);
+		defaultShader = new DefaultShader(gl);
+		nonAreaShader = new NonAreaShader(gl);
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
-	}
-
-	@Override
-	public void drawPoints(Color color, VectorXYZ... vs) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -86,27 +65,36 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		}
 		
 		/* apply camera and projection information */
-		shader.useShader();
-		shader.loadDefaults();
+		defaultShader.useShader();
+		defaultShader.loadDefaults();
 		
 		applyProjectionMatricesForPart(pmvMatrix, projection,
 				xStart, xEnd, yStart, yEnd);
 		
 		applyCameraMatrices(pmvMatrix, camera);
 		
-		shader.setPMVMatrix(pmvMatrix);
+		defaultShader.setPMVMatrix(pmvMatrix);
 		
 		/* apply global rendering parameters */
 		
 		applyRenderingParameters(gl, renderingParameters);
-		applyLightingParameters(shader, globalLightingParameters);
+		applyLightingParameters(defaultShader, globalLightingParameters);
 		
 		/* render primitives */
 		
 		renderer.render(camera, projection);
 		
-		// TODO: render non area primitives
-		shader.disableShader();
+		defaultShader.disableShader();
+		
+		/* non area primitives */
+		nonAreaShader.useShader();
+		nonAreaShader.loadDefaults();
+		
+		nonAreaShader.setPMVMatrix(pmvMatrix);
+		
+		nonAreaRenderer.render();
+		
+		nonAreaShader.disableShader();
 	}
 	
 	static final void applyRenderingParameters(GL3 gl,
@@ -247,6 +235,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void finish() {
 		if (isFinished()) return;
 		
-		renderer = new JOGLRendererVBOShader(gl, shader, textureManager, primitiveBuffer);
+		renderer = new JOGLRendererVBOShader(gl, defaultShader, textureManager, primitiveBuffer);
+		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 	}
 }

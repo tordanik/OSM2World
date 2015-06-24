@@ -1,5 +1,6 @@
 package org.osm2world.core.target.jogl;
 
+import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
 import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
 import static javax.media.opengl.GL.GL_LINES;
@@ -10,9 +11,13 @@ import static javax.media.opengl.GL.GL_TRIANGLES;
 import static javax.media.opengl.GL.GL_TRIANGLE_FAN;
 import static javax.media.opengl.GL.GL_TRIANGLE_STRIP;
 import static javax.media.opengl.GL2.GL_POLYGON;
+import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.LINE_LOOP;
+import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.LINE_STRIP;
+import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.POINTS;
 
 import java.awt.Color;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
@@ -29,6 +34,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 
 public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOGL> implements JOGLTarget {
 	protected PrimitiveBuffer primitiveBuffer;
+	protected List<NonAreaPrimitive> nonAreaPrimitives;
 	protected JOGLRenderer renderer;
 	protected JOGLTextureManager textureManager;
 	protected JOGLRenderingParameters renderingParameters;
@@ -65,6 +71,34 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		
 	}
 	
+	private void drawNonAreaPrimitive(NonAreaPrimitive.Type type,
+			Color color, int width, List<VectorXYZ> vs) {
+		
+		nonAreaPrimitives.add(new NonAreaPrimitive(
+				type, color, width, vs));
+        
+	}
+	
+	@Override
+	public void drawPoints(Color color, VectorXYZ... vs) {
+		drawNonAreaPrimitive(POINTS, color, 1, asList(vs));
+	}
+	
+	@Override
+	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
+		drawNonAreaPrimitive(LINE_STRIP, color, width, asList(vs));
+	}
+	
+	@Override
+	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
+		drawNonAreaPrimitive(LINE_STRIP, color, width, vs);
+	}
+	
+	@Override
+	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
+		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
+	}
+	
 	/**
 	 * set global lighting parameters. Using this method affects all primitives
 	 * (even those from previous draw calls).
@@ -92,6 +126,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 	@Override
 	public void reset() {
 		this.primitiveBuffer = new PrimitiveBuffer();
+		this.nonAreaPrimitives = new ArrayList<NonAreaPrimitive>();
 		
 		if (renderer != null) {
 			renderer.freeResources();
