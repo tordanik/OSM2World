@@ -100,7 +100,7 @@ void main()
 		//ambientAndDiff = toonShade( VertexEye, normalize(Normal) );
 		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
 	} else {
-		FragColor = vec4(Material.Ka, 1.0) * texColor;
+		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
 	}
 		
 	if( FragColor.a < 0.01 )

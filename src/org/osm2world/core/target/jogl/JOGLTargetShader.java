@@ -192,13 +192,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	static final void applyLightingParameters(DefaultShader shader,
 			GlobalLightingParameters lighting) {
 		
-		if (lighting == null) {
-			// TODO
-			
-		} else {
-			
-			shader.setGlobalLighting(lighting);
-		}
+		shader.setGlobalLighting(lighting);
 		
 	}
 	
