@@ -20,9 +20,9 @@ import org.osm2world.core.target.common.material.Material;
 abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	
 	protected GL3 gl;
-	private Shader shader;
+	private DefaultShader shader;
 	
-	public VBODataShader(GL3 gl, Shader shader, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+	public VBODataShader(GL3 gl, DefaultShader shader, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		super(gl, textureManager, material, primitives);
 		this.gl = gl;
 		this.shader = shader;

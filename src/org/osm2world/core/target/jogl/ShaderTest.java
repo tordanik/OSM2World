@@ -60,7 +60,7 @@ public class ShaderTest implements GLEventListener {
 	
 	private boolean vao = false;
 	private boolean vbo2 = false;
-	private Shader shader;
+	private DefaultShader shader;
 	private int vaoHandle;
 	private int vboHandle;
 	private VBOData<?> vbodata;
@@ -138,7 +138,7 @@ public class ShaderTest implements GLEventListener {
 
 		}
 		
-		shader = new Shader(gl.getGL3());
+		shader = new DefaultShader(gl.getGL3());
 		
 		if (vao)
 			vaoHandle = constructVertexArrayObject(gl.getGL3());

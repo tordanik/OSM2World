@@ -33,14 +33,14 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.opengl.util.PMVMatrix;
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
-	private Shader shader;
+	private DefaultShader shader;
 	private GL3 gl;
 	private PMVMatrix pmvMatrix;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
-		shader = new Shader(gl);
+		shader = new DefaultShader(gl);
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
@@ -201,7 +201,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 	}
 	
-	static final void applyLightingParameters(Shader shader,
+	static final void applyLightingParameters(DefaultShader shader,
 			GlobalLightingParameters lighting) {
 		
 		if (lighting == null) {

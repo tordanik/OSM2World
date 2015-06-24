@@ -42,7 +42,7 @@ import com.jogamp.common.nio.Buffers;
 public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	protected GL3 gl;
-	private Shader shader;
+	private DefaultShader shader;
 	
 	
 	
@@ -118,7 +118,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 	}
 	
-	JOGLRendererVBOShader(GL3 gl, Shader shader, JOGLTextureManager textureManager,
+	JOGLRendererVBOShader(GL3 gl, DefaultShader shader, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
 		super(textureManager);
