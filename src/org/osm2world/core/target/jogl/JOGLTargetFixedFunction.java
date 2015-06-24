@@ -402,7 +402,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				
 				TextureData textureData = material.getTextureDataList().get(i);
 				
-				Texture texture = textureManager.getTextureForFile(textureData.file, true);
+				Texture texture = textureManager.getTextureForFile(textureData.file);
 		        texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
 		        
@@ -515,7 +515,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		
 		Texture backgroundTexture =
-				textureManager.getTextureForFile(backgroundImage, true);
+				textureManager.getTextureForFile(backgroundImage);
 
 		backgroundTexture.enable(gl);
 		backgroundTexture.bind(gl);

@@ -183,7 +183,7 @@ public class Shader {
 			
 			gl.glActiveTexture(getGLTextureConstant(0));
 			TextureData textureData = material.getTextureDataList().get(0);
-			Texture texture = textureManager.getTextureForFile(textureData.file, false);
+			Texture texture = textureManager.getTextureForFile(textureData.file);
 
 			texture.bind(gl);
 	        
