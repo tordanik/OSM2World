@@ -2,6 +2,7 @@
  */ 
 #version 130
 	
+uniform bool useLighting;
 struct LightInfo {
 	vec4 Position; // Light position in world coords.
 	vec3 La; // Ambient light intensity
@@ -92,12 +93,16 @@ void main()
 	else
 		texColor = vec4(1.0);
 
-	// light position in eye coordinates
-	lightPositionEye = ModelViewMatrix * Light.Position;
-   
-	phongModel( VertexEye, normalize(Normal), ambientAndDiff, spec );
-	//ambientAndDiff = toonShade( VertexEye, normalize(Normal) );
-	FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
+	if ( useLighting ) {
+		// light position in eye coordinates
+		lightPositionEye = ModelViewMatrix * Light.Position;
+		phongModel( VertexEye, normalize(Normal), ambientAndDiff, spec );
+		//ambientAndDiff = toonShade( VertexEye, normalize(Normal) );
+		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
+	} else {
+		FragColor = vec4(Material.Ka, 1.0) * texColor;
+	}
+		
 	if( FragColor.a < 0.01 )
 		discard;
 	//FragColor = texColor;
