@@ -1,6 +1,8 @@
 /* Simple vertex shader with vertex position and normal computation
  */
 #version 130
+// TODO: set from java to match MAX_TEXTURE_LAYERS there
+#define MAX_TEXTURE_LAYERS 4
  
 // per vertex input
 in vec3 VertexPosition;

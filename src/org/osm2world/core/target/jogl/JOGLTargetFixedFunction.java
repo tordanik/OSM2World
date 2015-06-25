@@ -341,7 +341,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			
 			gl.glActiveTexture(getGLTextureConstant(i));
 						
-			if (i >= numTexLayers || i>0) {
+			if (i >= numTexLayers) {
 				
 				gl.glDisable(GL_TEXTURE_2D);
 								

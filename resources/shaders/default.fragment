@@ -1,6 +1,8 @@
 /* Simple fragment shader with a per fragment phong lighting model.
  */ 
 #version 130
+// TODO: set from java to match MAX_TEXTURE_LAYERS there
+#define MAX_TEXTURE_LAYERS 4
 	
 uniform bool useLighting;
 struct LightInfo {
@@ -26,8 +28,8 @@ in vec3 Normal;
 in vec3 VertexEye;
 in vec2 TexCoord;
 
-uniform bool useTexture;
-uniform sampler2D Tex1;
+uniform bool useTexture[MAX_TEXTURE_LAYERS];
+uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
  
 // output to buffer
 out vec4 FragColor;
@@ -83,15 +85,25 @@ vec3 toonShade( vec3 position, vec3 norm )
 void main()
 {
 	vec3 ambientAndDiff, spec;
-	vec4 texColor;
+	vec4 texColor = vec4(1.0);
 	
-	// use texture?
-	if ( useTexture )
-		texColor = texture( Tex1, TexCoord );
-		//texColor = texture( Tex1, vec2( 0.5, 0.5 ) );
-		//texColor = texelFetch( Tex1, ivec2( 5, 5 ), 1 );
-	else
-		texColor = vec4(1.0);
+	// apply textures
+	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
+	if ( useTexture[0] ) {
+		texColor = texture( Tex[0], TexCoord );
+	}
+	if ( useTexture[1] ) {
+		vec4 layerColor = texture( Tex[1], TexCoord );
+		texColor = mix(texColor, layerColor, layerColor.a);
+	}
+	if ( useTexture[2] ) {
+		vec4 layerColor = texture( Tex[2], TexCoord );
+		texColor = mix(texColor, layerColor, layerColor.a);
+	}
+	if ( useTexture[3] ) {
+		vec4 layerColor = texture( Tex[3], TexCoord );
+		texColor = mix(texColor, layerColor, layerColor.a);
+	}
 
 	if ( useLighting ) {
 		// light position in eye coordinates

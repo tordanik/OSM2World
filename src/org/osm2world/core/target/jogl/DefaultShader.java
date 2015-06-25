@@ -136,53 +136,53 @@ public class DefaultShader extends AbstractShader {
 		}
 		
 		/* set textures and associated parameters */
-	    gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture"), numTexLayers > 0 ? 1 : 0);
-		if (numTexLayers > 0) {
-			
-			if (material.getTransparency() == Transparency.FALSE) {
-				gl.glDisable(GL.GL_BLEND);
-			} else {
-				gl.glEnable(GL.GL_BLEND);
-				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-			}
-			
-			gl.glActiveTexture(getGLTextureConstant(0));
-			TextureData textureData = material.getTextureDataList().get(0);
-			Texture texture = textureManager.getTextureForFile(textureData.file);
+	    for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
+    	    gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), i < numTexLayers ? 1 : 0);
+	    	if (i < numTexLayers) {
+	    		if (material.getTransparency() == Transparency.FALSE) {
+					gl.glDisable(GL.GL_BLEND);
+				} else {
+					gl.glEnable(GL.GL_BLEND);
+					gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+				}
+				
+				gl.glActiveTexture(getGLTextureConstant(i));
+				TextureData textureData = material.getTextureDataList().get(i);
+				Texture texture = textureManager.getTextureForFile(textureData.file);
 
-			texture.bind(gl);
-	        
-			/* wrapping behavior */
-	        
-			int wrap = 0;
-			
-			switch (textureData.wrap) {
-			case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
-			case REPEAT: wrap = GL_REPEAT; break;
-			case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
-			}
-			
-			gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
-	        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-	        
-	        
-	        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
-	        	
-	        	/* TODO: make the RGB configurable -  for some reason,
-	        	 * it shows up in lowzoom even if fully transparent */
-	        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
-	        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
-	        	
-	        }
-	        
+				texture.bind(gl);
+		        
+				/* wrapping behavior */
+		        
+				int wrap = 0;
+				
+				switch (textureData.wrap) {
+				case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
+				case REPEAT: wrap = GL_REPEAT; break;
+				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
+				}
+				
+				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+		        
+		        
+		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+		        	
+		        	/* TODO: make the RGB configurable -  for some reason,
+		        	 * it shows up in lowzoom even if fully transparent */
+		        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
+		        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
+		        	
+		        }
 
-
-	        int loc = gl.glGetUniformLocation(shaderProgram, "Tex1");
-	        if (loc < 0) {
-	        	throw new RuntimeException("Tex1 not found in shader program.");
-	        }
-	        gl.glUniform1i(loc, 0);
-		}
+		        int loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
+		        System.out.println(loc);
+		        if (loc < 0) {
+		        	throw new RuntimeException("Tex["+i+"] not found in shader program.");
+		        }
+		        gl.glUniform1i(loc, i);
+	    	}
+	    }
 	   
 	}
 	
