@@ -145,7 +145,6 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		gl.glEnableVertexAttribArray(shader.getVertexPositionID());
 		//gl.glEnableVertexAttribArray(shader.getVertexColorID());
 		gl.glEnableVertexAttribArray(shader.getVertexNormalID());
-		gl.glEnableVertexAttribArray(shader.getVertexTexCoordID());
 		
 		for (VBOData<?> vboData : vbos) {
 			vboData.render();
@@ -182,7 +181,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
 		//gl.glDisableVertexAttribArray(shader.getVertexColorID());
 		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
-		gl.glDisableVertexAttribArray(shader.getVertexTexCoordID());
+		//gl.glDisableVertexAttribArray(shader.getVertexTexCoordID());
 		
 	}
 	

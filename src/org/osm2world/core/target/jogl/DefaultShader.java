@@ -48,7 +48,7 @@ public class DefaultShader extends AbstractShader {
 	private int normalMatrixID;
 	private int vertexPositionID;
 	private int vertexNormalID;
-	private int vertexTexCoordID;
+	private int[] vertexTexCoordID = new int[MAX_TEXTURE_LAYERS];
 	
 	public DefaultShader(GL3 gl) {
 		super(gl, "/shaders/default");
@@ -56,7 +56,8 @@ public class DefaultShader extends AbstractShader {
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");
 		vertexNormalID = gl.glGetAttribLocation(shaderProgram, "VertexNormal");
-		vertexTexCoordID = gl.glGetAttribLocation(shaderProgram, "VertexTexCoord");
+		for (int i=0; i<MAX_TEXTURE_LAYERS; i++)
+			vertexTexCoordID[i] = gl.glGetAttribLocation(shaderProgram, "VertexTexCoord"+i+"");
 		
 		// get indices of uniform variables
 		projectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ProjectionMatrix");
@@ -176,7 +177,6 @@ public class DefaultShader extends AbstractShader {
 		        }
 
 		        int loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
-		        System.out.println(loc);
 		        if (loc < 0) {
 		        	throw new RuntimeException("Tex["+i+"] not found in shader program.");
 		        }
@@ -204,8 +204,8 @@ public class DefaultShader extends AbstractShader {
 		return vertexNormalID;
 	}
 	
-	public int getVertexTexCoordID() {
-		return vertexTexCoordID;
+	public int getVertexTexCoordID(int i) {
+		return vertexTexCoordID[i];
 	}
 	
 	public int getProjectionMatrixID() {

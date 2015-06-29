@@ -7,7 +7,10 @@
 // per vertex input
 in vec3 VertexPosition;
 in vec3 VertexNormal;
-in vec2 VertexTexCoord;
+in vec2 VertexTexCoord0;
+in vec2 VertexTexCoord1;
+in vec2 VertexTexCoord2;
+in vec2 VertexTexCoord3;
 
 // input for at least primitives
 uniform mat4 ProjectionMatrix;
@@ -18,11 +21,17 @@ uniform mat4 NormalMatrix;
 // output to fragment shader for interpolation
 out vec3 Normal;
 out vec3 VertexEye;
-out vec2 TexCoord;
+out vec2 TexCoord0;
+out vec2 TexCoord1;
+out vec2 TexCoord2;
+out vec2 TexCoord3;
  
 void main()
 {
-	TexCoord = VertexTexCoord;
+	TexCoord0 = VertexTexCoord0;
+	TexCoord1 = VertexTexCoord1;
+	TexCoord2 = VertexTexCoord2;
+	TexCoord3 = VertexTexCoord3;
 	VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
 	Normal = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));
 	gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition, 1.0);

@@ -26,7 +26,10 @@ uniform mat4 ModelViewMatrix;
 // corresponds with output from vertex shader, gets interpolated
 in vec3 Normal;
 in vec3 VertexEye;
-in vec2 TexCoord;
+in vec2 TexCoord0;
+in vec2 TexCoord1;
+in vec2 TexCoord2;
+in vec2 TexCoord3;
 
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
@@ -90,18 +93,18 @@ void main()
 	// apply textures
 	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
 	if ( useTexture[0] ) {
-		texColor = texture( Tex[0], TexCoord );
+		texColor = texture( Tex[0], TexCoord0 );
 	}
 	if ( useTexture[1] ) {
-		vec4 layerColor = texture( Tex[1], TexCoord );
+		vec4 layerColor = texture( Tex[1], TexCoord1 );
 		texColor = mix(texColor, layerColor, layerColor.a);
 	}
 	if ( useTexture[2] ) {
-		vec4 layerColor = texture( Tex[2], TexCoord );
+		vec4 layerColor = texture( Tex[2], TexCoord2 );
 		texColor = mix(texColor, layerColor, layerColor.a);
 	}
 	if ( useTexture[3] ) {
-		vec4 layerColor = texture( Tex[3], TexCoord );
+		vec4 layerColor = texture( Tex[3], TexCoord3 );
 		texColor = mix(texColor, layerColor, layerColor.a);
 	}
 
