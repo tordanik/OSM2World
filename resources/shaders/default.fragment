@@ -33,6 +33,9 @@ in vec2 TexCoord3;
 
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
+
+uniform bool useAlphaTreshold;
+uniform float alphaTreshold;
  
 // output to buffer
 out vec4 FragColor;
@@ -116,6 +119,13 @@ void main()
 		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
 	} else {
 		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
+	}
+	
+	if ( useAlphaTreshold ) {
+		if ( FragColor.a < alphaTreshold )
+			FragColor.a = 0.0;
+		else
+			FragColor.a = 1.0;
 	}
 		
 	if( FragColor.a < 0.01 )

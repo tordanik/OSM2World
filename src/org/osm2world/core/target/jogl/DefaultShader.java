@@ -137,15 +137,19 @@ public class DefaultShader extends AbstractShader {
 		}
 		
 		/* set textures and associated parameters */
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);
+		if (material.getTransparency() == Transparency.FALSE) {
+			gl.glDisable(GL.GL_BLEND);
+		} else {
+			gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			if (material.getTransparency() == Transparency.BINARY) {
+				gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "alphaTreshold"), 0.5f );
+			}
+		}
 	    for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
     	    gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), i < numTexLayers ? 1 : 0);
 	    	if (i < numTexLayers) {
-	    		if (material.getTransparency() == Transparency.FALSE) {
-					gl.glDisable(GL.GL_BLEND);
-				} else {
-					gl.glEnable(GL.GL_BLEND);
-					gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-				}
 				
 				gl.glActiveTexture(getGLTextureConstant(i));
 				TextureData textureData = material.getTextureDataList().get(i);
