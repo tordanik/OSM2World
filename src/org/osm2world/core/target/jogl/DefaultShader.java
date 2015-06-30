@@ -1,11 +1,13 @@
 package org.osm2world.core.target.jogl;
 
+import static javax.media.opengl.GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static javax.media.opengl.GL.GL_REPEAT;
 import static javax.media.opengl.GL.GL_TEXTURE0;
 import static javax.media.opengl.GL.GL_TEXTURE1;
 import static javax.media.opengl.GL.GL_TEXTURE2;
 import static javax.media.opengl.GL.GL_TEXTURE3;
 import static javax.media.opengl.GL.GL_TEXTURE_2D;
+import static javax.media.opengl.GL.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
 import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
@@ -40,7 +42,9 @@ public class DefaultShader extends AbstractShader {
 	
 	/** maximum number of texture layers any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 4;
-	
+
+	/** globally controls anisotropic filtering for all textures */
+	private static final boolean ANISOTROPIC_FILTERING = true;
 	
 	private int projectionMatrixID;
 	private int modelViewMatrixID;
@@ -108,16 +112,7 @@ public class DefaultShader extends AbstractShader {
 			numTexLayers = material.getTextureDataList().size();
 		}
 		
-		/* set lighting */
-		
-		// TODO:
-//		if (material.getLighting() == Lighting.SMOOTH) {
-//			gl.glShadeModel(GL_SMOOTH);
-//		} else {
-//			gl.glShadeModel(GL_FLAT);
-//		}
-		
-		/* set color */
+		/* set color / lighting */
 		
 		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
 			
@@ -156,6 +151,30 @@ public class DefaultShader extends AbstractShader {
 				Texture texture = textureManager.getTextureForFile(textureData.file);
 
 				texture.bind(gl);
+				
+				/* enable anisotropic filtering (note: this could be a
+				 * per-texture setting, but currently isn't) */
+				
+		        if (gl.isExtensionAvailable("GL_EXT_texture_filter_anisotropic")) {
+					
+		        	if (ANISOTROPIC_FILTERING) {
+						
+						float max[] = new float[1];
+						gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, max, 0);
+						
+						gl.glTexParameterf(GL_TEXTURE_2D,
+								GL_TEXTURE_MAX_ANISOTROPY_EXT,
+								max[0]);
+						
+					} else {
+						
+						gl.glTexParameterf(GL_TEXTURE_2D,
+								GL_TEXTURE_MAX_ANISOTROPY_EXT,
+								1.0f);
+						
+					}
+					
+		        }
 		        
 				/* wrapping behavior */
 		        

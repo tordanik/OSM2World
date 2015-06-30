@@ -171,28 +171,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		gl.glDisableVertexAttribArray(backgroundShader.getVertexPositionID());
 		gl.glDisableVertexAttribArray(backgroundShader.getVertexTexCoordID());
 		
-//		PrimitiveBuffer buffer = new PrimitiveBuffer();
-//		List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-//		vs.add(new VectorXYZ(0, 0, 0));
-//		buffer.drawTriangleStrip(material, vs, texCoordLists);
-//		JOGLRendererVBOShader r = new JOGLRendererVBOShader(gl, shader, textureManager, primitiveBuffer)
-//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
-//					(float) startPixelX / texWidth,
-//					(float) startPixelY / texHeight );
-//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 0, 0);
-//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
-//				(float) (startPixelX + pixelWidth) / texWidth,
-//				(float) startPixelY / texHeight );
-//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 1f, 0);
-//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
-//				(float) (startPixelX + pixelWidth) / texWidth,
-//				(float) (startPixelY + pixelHeight) / texHeight );
-//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 1f, 1f);
-//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
-//				(float) startPixelX / texWidth,
-//				(float) (startPixelY + pixelHeight) / texHeight );
-//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 0, 1f);
-		
 		/* restore some settings */
 		
 		gl.glDepthMask( true );

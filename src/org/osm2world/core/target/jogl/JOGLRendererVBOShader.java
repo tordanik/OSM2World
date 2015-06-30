@@ -140,48 +140,24 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	public void render(final Camera camera, final Projection projection) {
 		
 		/* render static geometry */
-
 		
 		gl.glEnableVertexAttribArray(shader.getVertexPositionID());
-		//gl.glEnableVertexAttribArray(shader.getVertexColorID());
 		gl.glEnableVertexAttribArray(shader.getVertexNormalID());
 		
 		for (VBOData<?> vboData : vbos) {
 			vboData.render();
 		}
 		
-//		for (int t = 0; t < JOGLTargetFixedFunction.MAX_TEXTURE_LAYERS; t++) {
-//			gl.glClientActiveTexture(JOGLTargetFixedFunction.getGLTextureConstant(t));
-//			gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-//		}
-//		
-//		gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
-		
 		/* render transparent primitives back-to-front */
 		
 		sortPrimitivesBackToFront(camera, projection);
 		
-//		Material previousMaterial = null;
-		
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
-			
-//			if (!p.material.equals(previousMaterial)) {
-//				shader.setMaterial(p.material, textureManager);
-//				previousMaterial = p.material;
-//			}
-			
 			p.vbo.render();
-//			drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(p.primitive.type),
-//					p.primitive.vertices, p.primitive.normals,
-//					p.primitive.texCoordLists);
-			
 		}
 		
 		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
-		//gl.glDisableVertexAttribArray(shader.getVertexColorID());
 		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
-		//gl.glDisableVertexAttribArray(shader.getVertexTexCoordID());
 		
 	}
 	
