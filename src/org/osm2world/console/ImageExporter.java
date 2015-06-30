@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLPbuffer;
@@ -60,7 +60,7 @@ public class ImageExporter {
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
 	
-	private GL2 gl;
+	private GL gl;
 	private GLPbuffer pBuffer;
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
@@ -133,7 +133,13 @@ public class ImageExporter {
 		
 		/* create GL canvas and set rendering parameters */
 
-		GLProfile profile = GLProfile.getDefault();
+		GLProfile profile;
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			profile = GLProfile.get(GLProfile.GL3);
+		} else {
+			profile = GLProfile.get(GLProfile.GL2);
+		}
+		
 		GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
 		
 		if (! factory.canCreateGLPbuffer(null, profile)) {
@@ -150,7 +156,7 @@ public class ImageExporter {
 				cap, null, pBufferSizeX, pBufferSizeY, null);
 		
 		pBuffer.getContext().makeCurrent();
-		gl = pBuffer.getGL().getGL2();
+		gl = pBuffer.getGL();
 		
 		AbstractJOGLTarget.clearGL(gl, clearColor);
 		
@@ -294,7 +300,7 @@ public class ImageExporter {
         imageWriter.close();
 	}
 
-	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
+	private static JOGLTarget createJOGLTarget(GL gl, Results results,
 			Configuration config) {
 		
 		JOGLTarget target;
@@ -303,7 +309,7 @@ public class ImageExporter {
 					new JOGLRenderingParameters(CCW, false, true),
 					GlobalLightingParameters.DEFAULT);
 		} else {
-			target = new JOGLTargetFixedFunction(gl,
+			target = new JOGLTargetFixedFunction(gl.getGL2(),
 					new JOGLRenderingParameters(CCW, false, true),
 					GlobalLightingParameters.DEFAULT);
 		}

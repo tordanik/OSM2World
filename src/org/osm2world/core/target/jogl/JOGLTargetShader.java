@@ -1,13 +1,27 @@
 package org.osm2world.core.target.jogl;
 
+import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
 import static javax.media.opengl.GL.GL_BACK;
 import static javax.media.opengl.GL.GL_CCW;
 import static javax.media.opengl.GL.GL_CULL_FACE;
 import static javax.media.opengl.GL.GL_DEPTH_TEST;
 import static javax.media.opengl.GL.GL_FRONT_AND_BACK;
+import static javax.media.opengl.GL.GL_REPEAT;
+import static javax.media.opengl.GL.GL_REPLACE;
+import static javax.media.opengl.GL.GL_STATIC_DRAW;
+import static javax.media.opengl.GL.GL_TEXTURE0;
+import static javax.media.opengl.GL.GL_TEXTURE_2D;
+import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
+import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
+import static javax.media.opengl.GL.GL_TRIANGLES;
 import static javax.media.opengl.GL2ES1.GL_LIGHT_MODEL_AMBIENT;
+import static javax.media.opengl.GL2ES1.GL_TEXTURE_ENV;
+import static javax.media.opengl.GL2ES1.GL_TEXTURE_ENV_MODE;
+import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
 import static javax.media.opengl.GL2GL3.GL_FILL;
 import static javax.media.opengl.GL2GL3.GL_LINE;
+import static javax.media.opengl.GL2GL3.GL_QUADS;
+import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
@@ -16,25 +30,36 @@ import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
 import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SPECULAR;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
+import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
 import java.io.File;
+import java.nio.Buffer;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.PMVMatrix;
+import com.jogamp.opengl.util.texture.Texture;
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private DefaultShader defaultShader;
 	private NonAreaShader nonAreaShader;
+	private BackgroundShader backgroundShader;
 	private GL3 gl;
 	private PMVMatrix pmvMatrix;
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
@@ -44,6 +69,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		super(gl, renderingParameters, globalLightingParameters);
 		defaultShader = new DefaultShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
+		backgroundShader = new BackgroundShader(gl);
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
@@ -53,8 +79,125 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void drawBackgoundImage(File backgroundImage,
 			int startPixelX, int startPixelY, int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {
-		// TODO Auto-generated method stub
 		
+		backgroundShader.useShader();
+		
+		PMVMatrix backgroundPMVMatrix = new PMVMatrix();
+		backgroundPMVMatrix.glMatrixMode(GL_PROJECTION);
+		backgroundPMVMatrix.glLoadIdentity();
+		backgroundPMVMatrix.glOrthof(0, 1, 0, 1, 0, 1);
+		
+		backgroundPMVMatrix.glMatrixMode(GL_MODELVIEW);
+		backgroundPMVMatrix.glLoadIdentity();
+		
+		backgroundShader.setPMVMatrix(backgroundPMVMatrix);
+		
+		gl.glDepthMask( false );
+		
+		/* texture binding */
+
+		gl.glActiveTexture(GL_TEXTURE0);
+		
+		Texture backgroundTexture =
+				textureManager.getTextureForFile(backgroundImage);
+		
+		backgroundTexture.bind(gl);
+
+		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        gl.glUniform1i(backgroundShader.getTextureID(), 0);
+		
+		int texWidth = backgroundTexture.getImageWidth();
+		int texHeight = backgroundTexture.getImageHeight();
+		
+		/* draw quad */
+		
+		/* create the buffer */
+		
+		int[] id = new int[1];
+		gl.glGenBuffers(1, id, 0);
+		
+		/* collect the data for the buffer */
+		int verticeCount = 4;
+		int valueCount = 2;
+		
+		FloatBuffer valueBuffer = Buffers.newDirectFloatBuffer(verticeCount*(2*valueCount));
+		valueBuffer.put(0);
+		valueBuffer.put(0);
+		
+		valueBuffer.put(1f);
+		valueBuffer.put(0);
+		
+		valueBuffer.put(0);
+		valueBuffer.put(1f);
+		
+		valueBuffer.put(1f);
+		valueBuffer.put(1f);
+		
+		valueBuffer.put((float) startPixelX / texWidth);
+		valueBuffer.put((float) startPixelY / texHeight);
+		
+		valueBuffer.put((float) (startPixelX + pixelWidth) / texWidth);
+		valueBuffer.put((float) startPixelY / texHeight);
+		
+		valueBuffer.put((float) startPixelX / texWidth);
+		valueBuffer.put((float) (startPixelY + pixelHeight) / texHeight);
+		
+		valueBuffer.put((float) (startPixelX + pixelWidth) / texWidth);
+		valueBuffer.put((float) (startPixelY + pixelHeight) / texHeight);
+		
+		valueBuffer.rewind();
+		
+		/* write the data into the buffer */
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
+		
+		gl.glBufferData(
+				GL_ARRAY_BUFFER,
+				valueBuffer.capacity() * Buffers.SIZEOF_FLOAT,
+				valueBuffer,
+				GL_STATIC_DRAW);
+		
+		gl.glEnableVertexAttribArray(backgroundShader.getVertexPositionID());
+		gl.glEnableVertexAttribArray(backgroundShader.getVertexTexCoordID());
+		
+		int stride = 0;
+		gl.glVertexAttribPointer(backgroundShader.getVertexPositionID(), valueCount, GL.GL_FLOAT, false, stride, 0);
+		gl.glVertexAttribPointer(backgroundShader.getVertexTexCoordID(), valueCount, GL.GL_FLOAT, false, stride, Buffers.SIZEOF_FLOAT * valueCount * verticeCount);
+		
+		gl.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4);
+		
+		gl.glDisableVertexAttribArray(backgroundShader.getVertexPositionID());
+		gl.glDisableVertexAttribArray(backgroundShader.getVertexTexCoordID());
+		
+//		PrimitiveBuffer buffer = new PrimitiveBuffer();
+//		List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
+//		vs.add(new VectorXYZ(0, 0, 0));
+//		buffer.drawTriangleStrip(material, vs, texCoordLists);
+//		JOGLRendererVBOShader r = new JOGLRendererVBOShader(gl, shader, textureManager, primitiveBuffer)
+//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
+//					(float) startPixelX / texWidth,
+//					(float) startPixelY / texHeight );
+//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 0, 0);
+//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
+//				(float) (startPixelX + pixelWidth) / texWidth,
+//				(float) startPixelY / texHeight );
+//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 1f, 0);
+//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
+//				(float) (startPixelX + pixelWidth) / texWidth,
+//				(float) (startPixelY + pixelHeight) / texHeight );
+//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 1f, 1f);
+//		gl.glVertexAttrib2f(backgroundShader.getVertexTexCoordID(),
+//				(float) startPixelX / texWidth,
+//				(float) (startPixelY + pixelHeight) / texHeight );
+//		gl.glVertexAttrib2f(backgroundShader.getVertexPositionID(), 0, 1f);
+		
+		/* restore some settings */
+		
+		gl.glDepthMask( true );
+		
+		backgroundShader.disableShader();
 	}
 
 	@Override
