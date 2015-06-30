@@ -2,12 +2,9 @@ package org.osm2world.viewer.view;
 
 import java.awt.Color;
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.media.opengl.GL2ES2;
-import javax.media.opengl.GL3;
 
-import org.osm2world.core.math.Vector3D;
 
 import com.jogamp.graph.curve.opengl.RenderState;
 import com.jogamp.graph.curve.opengl.TextRenderer;
@@ -18,8 +15,8 @@ import com.jogamp.graph.geom.opengl.SVertex;
 import com.jogamp.opengl.util.glsl.ShaderState;
 
 public class TextRendererShader implements org.osm2world.viewer.view.TextRenderer {
-	private RenderState renderState = RenderState.createRenderState(new ShaderState(), SVertex.factory());
-	private TextRenderer textRenderer = TextRenderer.create(renderState, 0);
+	private RenderState renderState;
+	private TextRenderer textRenderer;
 	private Font textRendererFont = null;
 	private GL2ES2 gl;
 	
@@ -28,10 +25,14 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		try {
 			textRendererFont = FontFactory.getDefault().get(FontSet.FAMILY_REGULAR, FontSet.STYLE_SERIF);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
+		renderState = RenderState.createRenderState(new ShaderState(), SVertex.factory());
+		textRenderer = TextRenderer.create(renderState, 0);
 		textRenderer.init(gl);
+		if (!textRenderer.isInitialized()) {
+			throw new IllegalStateException("Text renderer not initlialized.");
+		}
 	}
 
 //	@Override
