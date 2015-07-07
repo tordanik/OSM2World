@@ -31,13 +31,14 @@ uniform LightInfo Light;
 
 // output to fragment shader for interpolation
 out vec3 LightDirection; // in tangent space
-out vec3 ViewDirection; // in tangent space
+out vec3 VertexEye; // in eye space
 out vec2 BumpMapCoord;
 out vec2 TexCoord0;
 out vec2 TexCoord1;
 out vec2 TexCoord2;
 out vec2 TexCoord3;
- 
+out mat3 TangentMatrix; // transformation from eye space to tangent space
+
 void main()
 {
 	TexCoord0 = VertexTexCoord0;
@@ -49,26 +50,24 @@ void main()
 	// Transform to eye coordinates
 	vec3 normal = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));
 	vec3 tangent = normalize(vec3(NormalMatrix * vec4(VertexTangent.xyz, 1.0)));
-	vec3 vertexEye = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
+	VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
 	vec4 lightPositionEye = ModelViewMatrix * Light.Position;
 	
 	// compute bitangent
 	vec3 bitangent = normalize( cross( normal, tangent ) ) * VertexTangent.w;
 	
 	// transformation to tangent space
-	mat3 tangentMatrix = mat3(
+	TangentMatrix = mat3(
 		tangent.x, bitangent.x, normal.x,
 		tangent.y, bitangent.y, normal.y,
 		tangent.z, bitangent.z, normal.z );
 	
-	// transform light and view direction to tangent space
-	ViewDirection = tangentMatrix * normalize(-vertexEye);
-	
+	// transform light to tangent space
 	// directional light?
 	if( Light.Position.w == 0.0 )
-		LightDirection = normalize( tangentMatrix * vec3(lightPositionEye) );
+		LightDirection = normalize( TangentMatrix * vec3(lightPositionEye) );
 	else
-		LightDirection = normalize( tangentMatrix * (vec3(lightPositionEye) - vertexEye) );
+		LightDirection = normalize( TangentMatrix * (vec3(lightPositionEye) - VertexEye) );
 	
 	gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition, 1.0);
 } 

@@ -25,12 +25,13 @@ uniform mat4 ModelViewMatrix;
  
 // corresponds with output from vertex shader, gets interpolated
 in vec3 LightDirection;
-in vec3 ViewDirection;
 in vec2 TexCoord0;
 in vec2 TexCoord1;
 in vec2 TexCoord2;
 in vec2 TexCoord3;
 in vec2 BumpMapCoord;
+in mat3 TangentMatrix;
+in vec3 VertexEye;
 
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
@@ -73,6 +74,8 @@ vec3 toonShade( vec3 lightDir, vec3 norm )
  
 void main()
 {
+	vec3 viewDirection = TangentMatrix * normalize(-VertexEye);
+
 	vec3 normal = texture( BumpMap, BumpMapCoord ).xyz;
 	if ( normal.x == 1.0 && normal.y == 1.0 && normal.z == 1.0 )
 		normal = vec3( 0.0, 0.0, 1.0 );
@@ -101,7 +104,7 @@ void main()
 	}
 
 	if ( useLighting ) {
-		phongModel( normalize(LightDirection), normalize(ViewDirection), normal, ambientAndDiff, spec );
+		phongModel( normalize(LightDirection), viewDirection, normal, ambientAndDiff, spec );
 		//ambientAndDiff = toonShade( LightDirection, normal );
 		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
 	} else {
@@ -121,4 +124,6 @@ void main()
 	//FragColor = texColor;
 	//FragColor = vec4(texColor.xyz, 1.0);
 	//FragColor = vec4(TexCoord.x, TexCoord.y, 0.0, 1.0);
+	
+	//FragColor = vec4(TangentMatrix * normalize(-VertexEye), FragColor.a);
 } 
