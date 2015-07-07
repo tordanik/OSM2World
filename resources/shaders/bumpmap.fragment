@@ -113,7 +113,7 @@ void main()
 			// transform light and view direction to tangent space
 			viewDirection = TangentMatrix * viewDirection;
 			lightDirection = TangentMatrix * lightDirection;
-			normal = texture( BumpMap, BumpMapCoord ).xyz;
+			normal = normalize(texture( BumpMap, BumpMapCoord ).xyz);
 		} else {
 			normal = vec3( TangentMatrix[0][2], TangentMatrix[1][2], TangentMatrix[2][2] );
 		}
