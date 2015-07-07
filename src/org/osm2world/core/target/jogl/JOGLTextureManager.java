@@ -27,6 +27,10 @@ public class JOGLTextureManager {
 	}
 	
 	public Texture getTextureForFile(File file) {
+		return getTextureForFile(file, true);
+	}
+	
+	public Texture getTextureForFile(File file, boolean createMipmaps) {
 		
 		Texture result = availableTextures.get(file);
 		
@@ -49,18 +53,18 @@ public class JOGLTextureManager {
 						ImageUtil.flipImageVertically(bufferedImage);
 						
 						result = AWTTextureIO.newTexture(
-								gl.getGLProfile(), bufferedImage, true);
+								gl.getGLProfile(), bufferedImage, createMipmaps);
 						
 					} else {
 					
-						result = TextureIO.newTexture(file, true);
+						result = TextureIO.newTexture(file, createMipmaps);
 						
 					}
 					
 					/* workaround for OpenGL 3: call to glGenerateMipmap is missing in [AWT]TextureIO.newTexture()
 					 * May be fixed in new versions of JOGL.
 					 */
-					if (gl.isGL3()) {
+					if (createMipmaps && gl.isGL3()) {
 						gl.glGenerateMipmap(result.getTarget());
 					}
 					
