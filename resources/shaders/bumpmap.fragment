@@ -38,6 +38,8 @@ uniform sampler2D BumpMap;
 
 uniform bool useAlphaTreshold;
 uniform float alphaTreshold;
+
+uniform bool useBumpMaps;
  
 // output to buffer
 out vec4 FragColor;
@@ -73,23 +75,6 @@ vec3 toonShade( vec3 lightDir, vec3 norm )
  
 void main()
 {
-	// transform light and view direction to tangent space
-	vec3 viewDirection = TangentMatrix * normalize(-VertexEye);
-	
-	vec4 lightPositionEye = ModelViewMatrix * Light.Position;
-	vec3 lightDirection;
-	// directional light?
-	if( Light.Position.w == 0.0 )
-		lightDirection = normalize( TangentMatrix * vec3(lightPositionEye) );
-	else
-		lightDirection = normalize( TangentMatrix * (vec3(lightPositionEye) - VertexEye) );
-
-	vec3 normal = texture( BumpMap, BumpMapCoord ).xyz;
-	if ( normal.x == 1.0 && normal.y == 1.0 && normal.z == 1.0 )
-		normal = vec3( 0.0, 0.0, 1.0 );
-	//else
-	//	normal = vec3( 0.0, 0.0, 1.0 );
-	
 	vec3 ambientAndDiff, spec;
 	vec4 texColor = vec4(1.0);
 	
@@ -110,8 +95,29 @@ void main()
 		vec4 layerColor = texture( Tex[3], TexCoord3 );
 		texColor = mix(texColor, layerColor, layerColor.a);
 	}
-
+	
 	if ( useLighting ) {
+		vec3 viewDirection, lightDirection, normal;
+		vec4 lightPositionEye = ModelViewMatrix * Light.Position;
+		
+		// transform light and view direction to eye space
+		viewDirection = normalize(-VertexEye);
+		
+		// directional light?
+		if( Light.Position.w == 0.0 )
+			lightDirection = normalize(vec3(lightPositionEye));
+		else
+			lightDirection = normalize(vec3(lightPositionEye) - VertexEye);
+		
+		if ( useBumpMaps ) {
+			// transform light and view direction to tangent space
+			viewDirection = TangentMatrix * viewDirection;
+			lightDirection = TangentMatrix * lightDirection;
+			normal = texture( BumpMap, BumpMapCoord ).xyz;
+		} else {
+			normal = vec3( TangentMatrix[0][2], TangentMatrix[1][2], TangentMatrix[2][2] );
+		}
+		
 		phongModel( lightDirection, viewDirection, normal, ambientAndDiff, spec );
 		//ambientAndDiff = toonShade( LightDirection, normal );
 		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);

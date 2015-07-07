@@ -136,6 +136,7 @@ public class BumpMapShader extends AbstractShader {
 		}
 		
 		/* set textures and associated parameters */
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useBumpMaps"), material.hasBumpMap() ? 1 : 0);
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);
 		if (material.getTransparency() == Transparency.FALSE) {
 			gl.glDisable(GL.GL_BLEND);
