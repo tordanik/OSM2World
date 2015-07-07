@@ -26,18 +26,23 @@ public final class ImmutableMaterial extends Material {
 	public ImmutableMaterial(Interpolation interpolation, Color color) {
 		super(interpolation, color);
 	}
-		
+	
 	// auto-generated
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + Float.floatToIntBits(ambientFactor);
+		result = prime * result + ((bumpMap == null) ? 0 : bumpMap.hashCode());
+		result = prime * result + bumpMapInd;
 		result = prime * result + ((color == null) ? 0 : color.hashCode());
 		result = prime * result + Float.floatToIntBits(diffuseFactor);
-		result = prime * result + ((interpolation == null) ? 0 : interpolation.hashCode());
-		result = prime * result + ((textureDataList == null) ? 0 : textureDataList.hashCode());
-		result = prime * result + ((transparency == null) ? 0 : transparency.hashCode());
+		result = prime * result
+				+ ((interpolation == null) ? 0 : interpolation.hashCode());
+		result = prime * result
+				+ ((textureDataList == null) ? 0 : textureDataList.hashCode());
+		result = prime * result
+				+ ((transparency == null) ? 0 : transparency.hashCode());
 		return result;
 	}
 
@@ -51,14 +56,23 @@ public final class ImmutableMaterial extends Material {
 		if (getClass() != obj.getClass())
 			return false;
 		Material other = (Material) obj;
-		if (Float.floatToIntBits(ambientFactor) != Float.floatToIntBits(other.ambientFactor))
+		if (Float.floatToIntBits(ambientFactor) != Float
+				.floatToIntBits(other.ambientFactor))
+			return false;
+		if (bumpMap == null) {
+			if (other.bumpMap != null)
+				return false;
+		} else if (!bumpMap.equals(other.bumpMap))
+			return false;
+		if (bumpMapInd != other.bumpMapInd)
 			return false;
 		if (color == null) {
 			if (other.color != null)
 				return false;
 		} else if (!color.equals(other.color))
 			return false;
-		if (Float.floatToIntBits(diffuseFactor) != Float.floatToIntBits(other.diffuseFactor))
+		if (Float.floatToIntBits(diffuseFactor) != Float
+				.floatToIntBits(other.diffuseFactor))
 			return false;
 		if (interpolation != other.interpolation)
 			return false;

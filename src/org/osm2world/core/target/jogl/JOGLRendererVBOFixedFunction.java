@@ -43,8 +43,6 @@ public class JOGLRendererVBOFixedFunction extends JOGLRendererVBO {
 	
 	protected GL2 gl;
 	
-	
-	
 	private final class VBODataDouble extends VBODataFixedFunction<DoubleBuffer> {
 
 		public VBODataDouble(GL2 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {

@@ -33,6 +33,8 @@ public abstract class Material {
 	protected Transparency transparency;
 	
 	protected List<TextureData> textureDataList;
+	protected TextureData bumpMap;
+	protected int bumpMapInd;
 
 	public Material(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor,
@@ -43,6 +45,23 @@ public abstract class Material {
 		this.diffuseFactor = diffuseFactor;
 		this.transparency = transparency;
 		this.textureDataList = textureDataList;
+		updateBumpMap();
+	}
+	
+	protected void updateBumpMap() {
+		this.bumpMap = null;
+		this.bumpMapInd = -1;
+		if (textureDataList == null) {
+			return;
+		}
+		int i = 0;
+		for (TextureData t : textureDataList) {
+			if (t.isBumpMap) {
+				this.bumpMap = t;
+				this.bumpMapInd = i;
+			}
+			i++;
+		}
 	}
 	
 	public Material(Interpolation interpolation, Color color,
@@ -140,6 +159,18 @@ public abstract class Material {
 		} else {
 			return textureDataList.size();
 		}
+	}
+
+	public boolean hasBumpMap() {
+		return this.bumpMap != null;
+	}
+	
+	public TextureData getBumpMap() {
+		return this.bumpMap;
+	}
+	
+	public int getBumpMapInd() {
+		return this.bumpMapInd;
 	}
 	
 	public String toString() {

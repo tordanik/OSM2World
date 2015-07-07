@@ -49,6 +49,7 @@ public class ConfMaterial extends Material {
 	
 	public void setTextureDataList(List<TextureData> textureDataList) {
 		this.textureDataList = textureDataList;
+		this.updateBumpMap();
 	}
 	
 	/*

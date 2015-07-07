@@ -283,7 +283,7 @@ public final class Materials {
 	}
 	
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|transparency|texture\\d*_(?:file|width|height|))";
+			"material_(.+)_(color|transparency|texture\\d*_(?:file|width|height|bumpmap))";
 	
 	/**
 	 * configures the attributes of the materials within this class
@@ -344,6 +344,7 @@ public final class Materials {
 							String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
 							String coordFunctionKey = "material_" + materialName + "_texture" + i + "_coord_function";
 							String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
+							String bumpmapKey = "material_" + materialName + "_texture" + i + "_bumpmap";
 
 							if (config.getString(fileKey) == null) break;
 							
@@ -352,6 +353,7 @@ public final class Materials {
 							double width = config.getDouble(widthKey, 1);
 							double height = config.getDouble(heightKey, 1);
 							boolean colorable = config.getBoolean(colorableKey, false);
+							boolean isBumpMap = config.getBoolean(bumpmapKey, false);
 							
 							String wrapString = config.getString(wrapKey);
 							Wrap wrap = Wrap.REPEAT;
@@ -368,9 +370,12 @@ public final class Materials {
 										coordFunctionString.toUpperCase());
 							}
 							
-							TextureData textureData = new TextureData(
-									file, width, height, wrap, coordFunction, colorable);
-							textureDataList.add(textureData);
+							// bumpmaps are only supported in the shader implementation, skip for others
+							if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
+								TextureData textureData = new TextureData(
+										file, width, height, wrap, coordFunction, colorable, isBumpMap);
+								textureDataList.add(textureData);
+							}
 							
 						}
 						

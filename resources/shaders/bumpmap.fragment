@@ -1,0 +1,124 @@
+/* Simple fragment shader with a per fragment phong lighting model.
+ */ 
+#version 130
+// TODO: set from java to match MAX_TEXTURE_LAYERS there
+#define MAX_TEXTURE_LAYERS 4
+	
+uniform bool useLighting;
+struct LightInfo {
+	vec4 Position; // Light position in world coords.
+	vec3 La; // Ambient light intensity
+	vec3 Ld; // Diffuse light intensity
+	vec3 Ls; // Specular light intensity
+};
+uniform LightInfo Light;
+	
+struct MaterialInfo {
+	vec3 Ka; // Ambient reflectivity
+	vec3 Kd; // Diffuse reflectivity
+	vec3 Ks; // Specular reflectivity
+	float Shininess; // Specular shininess factor
+};
+uniform MaterialInfo Material;
+
+uniform mat4 ModelViewMatrix;
+ 
+// corresponds with output from vertex shader, gets interpolated
+in vec3 LightDirection;
+in vec3 ViewDirection;
+in vec2 TexCoord0;
+in vec2 TexCoord1;
+in vec2 TexCoord2;
+in vec2 TexCoord3;
+in vec2 BumpMapCoord;
+
+uniform bool useTexture[MAX_TEXTURE_LAYERS];
+uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
+uniform sampler2D BumpMap;
+
+uniform bool useAlphaTreshold;
+uniform float alphaTreshold;
+ 
+// output to buffer
+out vec4 FragColor;
+
+/*
+ * shading with phong model (ambient, diffuse, specular)
+ */
+vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambientAndDiff, out vec3 spec )
+{	
+	vec3 r = reflect( -lightDir, norm );
+	vec3 ambient = Light.La * Material.Ka;
+	float sDotN = max( dot(lightDir,norm), 0.0 );
+	vec3 diffuse = Light.Ld * Material.Kd * sDotN;
+	spec = vec3(0.0);
+	if( sDotN > 0.0 )
+		spec = Light.Ls * Material.Ks *
+				pow( max( dot(r,viewDir), 0.0 ), Material.Shininess );
+	ambientAndDiff = ambient + diffuse;
+	return ambientAndDiff + spec;
+}
+
+const int levels = 3;
+const float scaleFactor = 1.0 / levels;
+// toon shading (only ambient and diffuse)
+vec3 toonShade( vec3 lightDir, vec3 norm )
+{
+	vec3 ambient = Light.La * Material.Ka;
+	float cosine = max( dot(lightDir,norm) , 0.0 );
+	vec3 diffuse = Light.Ld * Material.Kd * floor( cosine * levels ) * scaleFactor;
+	
+	return ambient + diffuse;
+}
+ 
+void main()
+{
+	vec3 normal = texture( BumpMap, BumpMapCoord ).xyz;
+	if ( normal.x == 1.0 && normal.y == 1.0 && normal.z == 1.0 )
+		normal = vec3( 0.0, 0.0, 1.0 );
+	//else
+	//	normal = vec3( 0.0, 0.0, 1.0 );
+	
+	vec3 ambientAndDiff, spec;
+	vec4 texColor = vec4(1.0);
+	
+	// apply textures
+	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
+	if ( useTexture[0] ) {
+		texColor = texture( Tex[0], TexCoord0 );
+	}
+	if ( useTexture[1] ) {
+		vec4 layerColor = texture( Tex[1], TexCoord1 );
+		texColor = mix(texColor, layerColor, layerColor.a);
+	}
+	if ( useTexture[2] ) {
+		vec4 layerColor = texture( Tex[2], TexCoord2 );
+		texColor = mix(texColor, layerColor, layerColor.a);
+	}
+	if ( useTexture[3] ) {
+		vec4 layerColor = texture( Tex[3], TexCoord3 );
+		texColor = mix(texColor, layerColor, layerColor.a);
+	}
+
+	if ( useLighting ) {
+		phongModel( normalize(LightDirection), normalize(ViewDirection), normal, ambientAndDiff, spec );
+		//ambientAndDiff = toonShade( LightDirection, normal );
+		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
+	} else {
+		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
+	}
+	//FragColor = vec4(normal, FragColor.a);
+	
+	if ( useAlphaTreshold ) {
+		if ( FragColor.a < alphaTreshold )
+			FragColor.a = 0.0;
+		else
+			FragColor.a = 1.0;
+	}
+		
+	if( FragColor.a < 0.01 )
+		discard;
+	//FragColor = texColor;
+	//FragColor = vec4(texColor.xyz, 1.0);
+	//FragColor = vec4(TexCoord.x, TexCoord.y, 0.0, 1.0);
+} 

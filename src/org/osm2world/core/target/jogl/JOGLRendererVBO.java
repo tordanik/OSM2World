@@ -61,6 +61,9 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		if (material.getTextureDataList() != null) {
 			numValues += 2 * material.getTextureDataList().size();
 		}
+		if (material.getNumTextureLayers() > 0) {
+			numValues += 4;
+		}
 		
 		return numValues;
 		

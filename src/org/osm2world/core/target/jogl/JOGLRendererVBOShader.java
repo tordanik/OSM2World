@@ -21,6 +21,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
@@ -42,7 +43,7 @@ import com.jogamp.common.nio.Buffers;
 public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	protected GL3 gl;
-	private DefaultShader shader;
+	private BumpMapShader shader;
 	
 	
 	
@@ -68,6 +69,14 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 			buffer.put(v.x);
 			buffer.put(v.y);
 			buffer.put(-v.z);
+		}
+		
+		@Override
+		protected void put(DoubleBuffer buffer, VectorXYZW t) {
+			buffer.put(t.x);
+			buffer.put(t.y);
+			buffer.put(-t.z);
+			buffer.put(t.w);
 		}
 		
 		@Override
@@ -107,6 +116,14 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		}
 		
 		@Override
+		protected void put(FloatBuffer buffer, VectorXYZW t) {
+			buffer.put((float)t.x);
+			buffer.put((float)t.y);
+			buffer.put((float)-t.z);
+			buffer.put((float)t.w);
+		}
+		
+		@Override
 		protected int valueTypeSize() {
 			return Buffers.SIZEOF_FLOAT;
 		}
@@ -118,7 +135,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 	}
 	
-	JOGLRendererVBOShader(GL3 gl, DefaultShader shader, JOGLTextureManager textureManager,
+	JOGLRendererVBOShader(GL3 gl, BumpMapShader shader, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
 		super(textureManager);

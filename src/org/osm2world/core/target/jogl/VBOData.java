@@ -12,10 +12,9 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GL2ES2;
 
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
@@ -110,7 +109,7 @@ public abstract class VBOData<BufferT extends Buffer> {
 	/**
 	 * put the values for a primitive's vertices into the buffer
 	 */
-	private void addPrimitiveToValueBuffer(BufferT buffer,
+	protected void addPrimitiveToValueBuffer(BufferT buffer,
 			Primitive primitive) {
 					
 		/*

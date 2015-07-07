@@ -568,4 +568,74 @@ public final class GeometryUtil {
 		return f <= EPSILON && f >= -EPSILON;
 	}
 	
+	/**
+	 * Calculate consistent tangent vectors for given vertices and vertex normals and texture coordinates.
+	 * Code inspired by Lengyel, Eric. “Computing Tangent Space Basis Vectors for an Arbitrary Mesh”. Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html
+	 * @param vertices
+	 * @param normals
+	 * @param texCoords
+	 * @return
+	 */
+	public static final List<VectorXYZW> calculateTangentVectorsForTexLayer(List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<VectorXZ> texCoords)
+	{
+		int vertexCount = vertices.size();
+		VectorXYZ[] tan1 = new VectorXYZ[vertexCount];
+		VectorXYZ[] tan2 = new VectorXYZ[vertexCount];
+		List<VectorXYZW> tangents = new ArrayList<VectorXYZW>();
+	    
+	    for (int a = 0; a < vertexCount / 3; a++)
+	    {
+	    	int i = a*3+1;
+	    	VectorXYZ v1 = vertices.get(i-1);
+	    	VectorXYZ v2 = vertices.get(i);
+	    	VectorXYZ v3 = vertices.get(i+1);
+
+	    	VectorXZ w1 = texCoords.get(i-1);
+	    	VectorXZ w2 = texCoords.get(i);
+	    	VectorXZ w3 = texCoords.get(i+1);
+	        
+	        double x1 = v2.x - v1.x;
+	        double x2 = v3.x - v1.x;
+	        double y1 = v2.y - v1.y;
+	        double y2 = v3.y - v1.y;
+	        double z1 = v2.z - v1.z;
+	        double z2 = v3.z - v1.z;
+	        
+	        double s1 = w2.x - w1.x;
+	        double s2 = w3.x - w1.x;
+	        double t1 = w2.z - w1.z;
+	        double t2 = w3.z - w1.z;
+	        
+	        double r = 1.0 / (s1 * t2 - s2 * t1);
+	        VectorXYZ sdir = new VectorXYZ((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+	                (t2 * z1 - t1 * z2) * r);
+	        VectorXYZ tdir = new VectorXYZ((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+	                (s1 * z2 - s2 * z1) * r);
+	        
+	        tan1[i-1] = sdir;
+	        tan1[i] = sdir;
+	        tan1[i+1] = sdir;
+	        
+	        tan2[i-1] = tdir;
+	        tan2[i] = tdir;
+	        tan2[i+1] = tdir;
+	    }
+	    
+	    for (int a = 0; a < vertexCount; a++)
+	    {
+	        VectorXYZ n = normals.get(a);
+	        VectorXYZ t = tan1[a];
+	        // Gram-Schmidt orthogonalize
+	        VectorXYZ res = (t.subtract(n.mult(n.dot(t)))).normalize();
+
+	        // Calculate handedness
+	        double w = (n.cross(t).dot(tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+	        
+	        tangents.add(new VectorXYZW(res.x, res.y, res.z, w));
+	    }
+	    
+	    return tangents;
+	}
+	
 }
