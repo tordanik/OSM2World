@@ -61,8 +61,8 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		if (material.getTextureDataList() != null) {
 			numValues += 2 * material.getTextureDataList().size();
 		}
-		if (material.getNumTextureLayers() > 0) {
-			numValues += 4;
+		if (material.hasBumpMap()) {
+			numValues += 4; // tangent vectors are 4D
 		}
 		
 		return numValues;
