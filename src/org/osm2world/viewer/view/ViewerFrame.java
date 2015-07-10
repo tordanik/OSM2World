@@ -109,13 +109,23 @@ public class ViewerFrame extends JFrame {
 		
 		createMenuBar();
 		
+		// select OpengGL implementation. TODO: autodetection
 		GLProfile profile;
 		if ("shader".equals(config.getString("joglImplementation"))) {
 			profile = GLProfile.get(GLProfile.GL3);
 		} else {
 			profile = GLProfile.get(GLProfile.GL2);
 		}
-		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, new GLCapabilities(profile));
+		GLCapabilities caps = new GLCapabilities(profile);
+		
+		// set MSAA (Multi Sample Anti-Aliasing)
+		int msaa = config.getInt("msaa", 0);
+		if (msaa > 0) {
+			caps.setSampleBuffers(true);
+			caps.setNumSamples(msaa);
+		}
+		
+		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
 		add(glCanvas, BorderLayout.CENTER);
 		
 		new FileDrop(glCanvas, new FileDrop.Listener() {
