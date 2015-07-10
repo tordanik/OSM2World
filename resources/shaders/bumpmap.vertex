@@ -22,8 +22,9 @@ uniform mat4 NormalMatrix;
 
 // output to fragment shader for interpolation
 out vec3 VertexEye; // in eye space
+out vec3 Normal;
+out vec4 Tangent; // last coordinate is the handedness to reconstruct the bitangent
 out vec2 BumpMapCoord;
-out mat3 TangentMatrix; // transformation from eye space to tangent space
 out vec2 TexCoord0;
 out vec2 TexCoord1;
 out vec2 TexCoord2;
@@ -38,18 +39,9 @@ void main()
 	BumpMapCoord = VertexBumpMapCoord;
 	
 	// Transform to eye coordinates
-	vec3 normal = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));
-	vec3 tangent = normalize(vec3(NormalMatrix * vec4(VertexTangent.xyz, 1.0)));
+	Normal = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));
+	Tangent = vec4(normalize(vec3(NormalMatrix * vec4(VertexTangent.xyz, 1.0))), VertexTangent.w);
 	VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
-	
-	// compute bitangent
-	vec3 bitangent = normalize( cross( normal, tangent ) ) * VertexTangent.w;
-	
-	// transformation to tangent space
-	TangentMatrix = mat3(
-		tangent.x, bitangent.x, normal.x,
-		tangent.y, bitangent.y, normal.y,
-		tangent.z, bitangent.z, normal.z );
 	
 	gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition, 1.0);
 } 

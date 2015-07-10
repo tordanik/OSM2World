@@ -25,8 +25,9 @@ uniform mat4 ModelViewMatrix;
  
 // corresponds with output from vertex shader, gets interpolated
 in vec3 VertexEye;
+in vec3 Normal;
+in vec4 Tangent;
 in vec2 BumpMapCoord;
-in mat3 TangentMatrix;
 in vec2 TexCoord0;
 in vec2 TexCoord1;
 in vec2 TexCoord2;
@@ -46,6 +47,7 @@ out vec4 FragColor;
 
 /*
  * shading with phong model (ambient, diffuse, specular)
+ * lightDir, viewDir and norm have to be in the same coordinate system (e.g. eye or tangent space)
  */
 vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambientAndDiff, out vec3 spec )
 {	
@@ -97,7 +99,9 @@ void main()
 	}
 	
 	if ( useLighting ) {
-		vec3 viewDirection, lightDirection, normal;
+		vec3 normal = normalize(Normal);
+		vec3 tangent = normalize(Tangent.xyz);
+		vec3 viewDirection, lightDirection;
 		vec4 lightPositionEye = ModelViewMatrix * Light.Position;
 		
 		// transform light and view direction to eye space
@@ -110,12 +114,19 @@ void main()
 			lightDirection = normalize(vec3(lightPositionEye) - VertexEye);
 		
 		if ( useBumpMaps ) {
+			// compute bitangent
+			vec3 bitangent = normalize( cross( normal, tangent ) ) * Tangent.w;
+	
+			// transformation from eye to tangent space
+			mat3 tangentMatrix = mat3(
+				tangent.x, bitangent.x, normal.x,
+				tangent.y, bitangent.y, normal.y,
+				tangent.z, bitangent.z, normal.z );
+		
 			// transform light and view direction to tangent space
-			viewDirection = TangentMatrix * viewDirection;
-			lightDirection = TangentMatrix * lightDirection;
-			normal = normalize(texture( BumpMap, BumpMapCoord ).xyz);
-		} else {
-			normal = vec3( TangentMatrix[0][2], TangentMatrix[1][2], TangentMatrix[2][2] );
+			viewDirection = tangentMatrix * viewDirection;
+			lightDirection = tangentMatrix * lightDirection;
+			normal = normalize(texture( BumpMap, BumpMapCoord ).xyz * 2.0 - 1.0);
 		}
 		
 		phongModel( lightDirection, viewDirection, normal, ambientAndDiff, spec );
@@ -124,7 +135,6 @@ void main()
 	} else {
 		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
 	}
-	//FragColor = vec4(normal, FragColor.a);
 	
 	if ( useAlphaTreshold ) {
 		if ( FragColor.a < alphaTreshold )
@@ -135,9 +145,4 @@ void main()
 		
 	if( FragColor.a < 0.01 )
 		discard;
-	//FragColor = texColor;
-	//FragColor = vec4(texColor.xyz, 1.0);
-	//FragColor = vec4(TexCoord.x, TexCoord.y, 0.0, 1.0);
-	
-	//FragColor = vec4(TangentMatrix * normalize(-VertexEye), FragColor.a);
 } 
