@@ -15,9 +15,17 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
+import javax.imageio.ImageIO;
+import javax.media.nativewindow.AbstractGraphicsDevice;
 import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLCapabilitiesChooser;
+import javax.media.opengl.GLCapabilitiesImmutable;
+import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawableFactory;
+import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLOffscreenAutoDrawable;
 import javax.media.opengl.GLPbuffer;
 import javax.media.opengl.GLProfile;
 
@@ -34,6 +42,8 @@ import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
+import org.osm2world.viewer.model.RenderOptions;
+import org.osm2world.viewer.view.ViewerGLCanvas.ViewerGLEventListener;
 
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLineByte;
@@ -41,6 +51,7 @@ import ar.com.hjg.pngj.PngWriter;
 import ar.com.hjg.pngj.chunks.PngChunkTextVar;
 import ar.com.hjg.pngj.chunks.PngMetadata;
 
+import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 import com.jogamp.opengl.util.awt.Screenshot;
 
 public class ImageExporter {
@@ -60,8 +71,8 @@ public class ImageExporter {
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
 	
-	private GL gl;
-	private GLPbuffer pBuffer;
+	private GLOffscreenAutoDrawable drawable;
+	private ImageExporterGLEventListener listener;
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
@@ -142,39 +153,43 @@ public class ImageExporter {
 		
 		GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
 		
-		if (! factory.canCreateGLPbuffer(null, profile)) {
-			throw new Error("Cannot create GLPbuffer for OpenGL output!");
+		if (! factory.canCreateGLPbuffer(null, profile) && ! factory.canCreateFBO(null, profile)) {
+			throw new Error("Cannot create GLPbuffer or FBO for OpenGL output!");
 		}
 		
 		GLCapabilities cap = new GLCapabilities(profile);
 		cap.setDoubleBuffered(false);
+		
+		// set MSAA (Multi Sample Anti-Aliasing)
+		int msaa = config.getInt("msaa", 0);
+		if (msaa > 0) {
+			cap.setSampleBuffers(true);
+			cap.setNumSamples(msaa);
+		}
 				
 		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
 		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
 				
-		pBuffer = factory.createGLPbuffer(null,
+		drawable = factory.createOffscreenAutoDrawable(null,
 				cap, null, pBufferSizeX, pBufferSizeY, null);
-		
-		pBuffer.getContext().makeCurrent();
-		gl = pBuffer.getGL();
-		
-		AbstractJOGLTarget.clearGL(gl, clearColor);
-		
-        backgroundTextureManager = new JOGLTextureManager(gl);
+		listener = new ImageExporterGLEventListener();
+		drawable.addGLEventListener(listener);
 
-		/* render map data into buffer if it needs to be rendered multiple times */
+		backgroundTextureManager = new JOGLTextureManager(drawable.getGL());
 		
+		/* render map data into buffer if it needs to be rendered multiple times */
+
 		boolean onlyOneRenderPass = (expectedFileCalls <= 1
 				&& expectedMaxSizeX <= canvasLimit
 				&& expectedMaxSizeY <= canvasLimit);
-		
+
 		boolean unbufferedRendering = onlyOneRenderPass
 				|| config.getBoolean("forceUnbufferedPNGRendering", false);
-		
+
 		if (!unbufferedRendering ) {
-			bufferTarget = createJOGLTarget(gl, results, config);
+			bufferTarget = createJOGLTarget(drawable.getGL(), results, config);
 		}
-		
+
 	}
 	
 	protected void finalize() throws Throwable {
@@ -199,11 +214,9 @@ public class ImageExporter {
 			bufferTarget = null;
 		}
 		
-		if (pBuffer != null) {
-			pBuffer.getContext().release();
-	        pBuffer.destroy();
-	        pBuffer = null;
-	        gl = null;
+		if (drawable != null) {
+			drawable.destroy();
+			drawable = null;
 		}
 		
 	}
@@ -226,6 +239,8 @@ public class ImageExporter {
 			pBufferSizeY /= 2;
 		}
 		*/
+		
+		listener.prepareRendering(camera, projection, x, y);
 		
 		/* determine the number of "parts" to split the rendering in */
 		
@@ -261,34 +276,19 @@ public class ImageExporter {
 				int xStart = xPart * pBufferSizeX;
 				int xEnd   = (xPart+1 < xParts) ? (xStart + (pBufferSizeX-1)) : (x-1);
 				int xSize  = (xEnd - xStart) + 1;
-							
-				/* configure rendering */
-			
-				AbstractJOGLTarget.clearGL(gl, null);
-	        
-				/* render to pBuffer */
-	        
-				JOGLTarget target = (bufferTarget == null)? 
-						createJOGLTarget(gl, results, config) : bufferTarget;
+
+				listener.setPart(xStart, yStart, xEnd, yEnd, xSize, ySize);
 				
-				if (backgroundImage != null) {
-					target.drawBackgoundImage(backgroundImage,
-							xStart, yStart, xSize, ySize,
-							backgroundTextureManager);
-				}
-	        
-				target.renderPart(camera, projection,
-						xStart / (double)(x-1), xEnd / (double)(x-1),
-						yStart / (double)(y-1), yEnd / (double)(y-1));
-			
-				if (target != bufferTarget) {
-					target.freeResources();
-				}
+				// render everything
+        		drawable.display();
 	        
 				/* make screenshot and paste into the buffer that will contain 
 				 * pBufferSizeY entire image lines */
 
-				BufferedImage imagePart = Screenshot.readToBufferedImage(xSize, ySize);
+        		drawable.getContext().makeCurrent();
+				AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(drawable.getGLProfile(), true);
+				BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), 0, 0, xSize, ySize, true);
+        		drawable.getContext().release();
 	     
 				image.getGraphics().drawImage(imagePart,
 						xStart, 0, xSize, ySize, null);
@@ -462,6 +462,76 @@ public class ImageExporter {
 			if (out != null) {
 				out.close();
 			}
+		}
+	}
+	
+	public class ImageExporterGLEventListener implements GLEventListener {
+		private int xStart;
+		private int yStart;
+		private int xEnd;
+		private int yEnd;
+		private int xSize;
+		private int ySize;
+		private int x;
+		private int y;
+		private Camera camera;
+		private Projection projection;
+
+		@Override
+		public void init(GLAutoDrawable drawable) {
+		}
+
+		public void setPart(int xStart, int yStart, int xEnd, int yEnd,
+				int xSize, int ySize) {
+			this.xStart = xStart;
+			this.yStart = yStart;
+			this.xEnd = xEnd;
+			this.yEnd = yEnd;
+			this.xSize = xSize;
+			this.ySize = ySize;
+		}
+
+		public void prepareRendering(Camera camera, Projection projection,
+				int x, int y) {
+			this.camera = camera;
+			this.projection = projection;
+			this.x = x;
+			this.y = y;
+		}
+
+		@Override
+		public void dispose(GLAutoDrawable drawable) {
+		}
+
+		@Override
+		public void display(GLAutoDrawable drawable) {
+			/* configure rendering */
+
+			AbstractJOGLTarget.clearGL(drawable.getGL(), null);
+
+			/* render to pBuffer */
+
+			JOGLTarget target = (bufferTarget == null)? 
+					createJOGLTarget(drawable.getGL(), results, config) : bufferTarget;
+
+					if (backgroundImage != null) {
+						target.drawBackgoundImage(backgroundImage,
+								xStart, yStart, xSize, ySize,
+								backgroundTextureManager);
+					}
+
+					target.renderPart(camera, projection,
+							xStart / (double)(x-1), xEnd / (double)(x-1),
+							yStart / (double)(y-1), yEnd / (double)(y-1));
+
+					if (target != bufferTarget) {
+						target.freeResources();
+					}
+		}
+
+		@Override
+		public void reshape(GLAutoDrawable drawable, int x, int y, int width,
+				int height) {
 		}
 	}
 }
