@@ -28,6 +28,7 @@ in vec3 VertexEye;
 in vec3 Normal;
 in vec4 Tangent;
 in vec2 BumpMapCoord;
+in vec4 ShadowCoord;
 in vec2 TexCoord0;
 in vec2 TexCoord1;
 in vec2 TexCoord2;
@@ -36,6 +37,8 @@ in vec2 TexCoord3;
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
+uniform bool useShadowMap;
+uniform sampler2D ShadowMap;
 
 uniform bool useAlphaTreshold;
 uniform float alphaTreshold;
@@ -49,35 +52,34 @@ out vec4 FragColor;
  * shading with phong model (ambient, diffuse, specular)
  * lightDir, viewDir and norm have to be in the same coordinate system (e.g. eye or tangent space)
  */
-vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambientAndDiff, out vec3 spec )
+vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambient, out vec3 diffuse, out vec3 spec )
 {	
 	vec3 r = reflect( -lightDir, norm );
-	vec3 ambient = Light.La * Material.Ka;
+	ambient = Light.La * Material.Ka;
 	float sDotN = max( dot(lightDir,norm), 0.0 );
-	vec3 diffuse = Light.Ld * Material.Kd * sDotN;
+	diffuse = Light.Ld * Material.Kd * sDotN;
 	spec = vec3(0.0);
 	if( sDotN > 0.0 )
 		spec = Light.Ls * Material.Ks *
 				pow( max( dot(r,viewDir), 0.0 ), Material.Shininess );
-	ambientAndDiff = ambient + diffuse;
-	return ambientAndDiff + spec;
+	return ambient + diffuse + spec;
 }
 
 const int levels = 3;
 const float scaleFactor = 1.0 / levels;
 // toon shading (only ambient and diffuse)
-vec3 toonShade( vec3 lightDir, vec3 norm )
+vec3 toonShade( vec3 lightDir, vec3 norm, out vec3 ambient, out vec3 diffuse )
 {
-	vec3 ambient = Light.La * Material.Ka;
+	ambient = Light.La * Material.Ka;
 	float cosine = max( dot(lightDir,norm) , 0.0 );
-	vec3 diffuse = Light.Ld * Material.Kd * floor( cosine * levels ) * scaleFactor;
+	diffuse = Light.Ld * Material.Kd * floor( cosine * levels ) * scaleFactor;
 	
 	return ambient + diffuse;
 }
  
 void main()
 {
-	vec3 ambientAndDiff, spec;
+	vec3 ambient, diff, spec;
 	vec4 texColor = vec4(1.0);
 	
 	// apply textures
@@ -129,9 +131,23 @@ void main()
 			normal = normalize(texture( BumpMap, BumpMapCoord ).xyz * 2.0 - 1.0);
 		}
 		
-		phongModel( lightDirection, viewDirection, normal, ambientAndDiff, spec );
-		//ambientAndDiff = toonShade( LightDirection, normal );
-		FragColor = vec4(ambientAndDiff, 1.0) * texColor + vec4(spec, 0.0);
+		phongModel( lightDirection, viewDirection, normal, ambient, diff, spec );
+		//toonShade( LightDirection, normal, ambient, diff );
+		
+		// shadow map lookup
+		float shadowFactor = 1.0;
+		if ( useShadowMap ) {
+			vec3 shadowCoordCart = ShadowCoord.xyz / ShadowCoord.w; // from homogene coordiantes to carthesian
+			float shadowDepthValue = texture(ShadowMap, shadowCoordCart.xy).r; // lookup of depth value in shadow map
+			float fragmentDepthValue = shadowCoordCart.z; // fragment depth value to compare
+			if (shadowDepthValue < fragmentDepthValue)
+				shadowFactor = 0.0; // in shadow
+		}
+		
+		diff = diff * shadowFactor;
+		spec = spec * shadowFactor;
+		
+		FragColor = vec4(ambient + diff, 1.0) * texColor + vec4(spec, 0.0);
 	} else {
 		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
 	}

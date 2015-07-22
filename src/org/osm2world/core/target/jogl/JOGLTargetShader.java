@@ -58,22 +58,38 @@ import com.jogamp.opengl.util.texture.Texture;
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private BumpMapShader defaultShader;
+	private ShadowMapShader shadowMapShader;
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
 	private GL3 gl;
 	private PMVMatrix pmvMatrix;
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
+	private JOGLRendererVBOShader rendererShader;
+	
+	private static final boolean USE_SHADOWMAPS = true;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
 		defaultShader = new BumpMapShader(gl);
+		shadowMapShader = new ShadowMapShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
 		backgroundShader = new BackgroundShader(gl);
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
 	}
+	
+	@Override
+	protected void drawPrimitive(org.osm2world.core.target.common.Primitive.Type type, org.osm2world.core.target.common.material.Material material, java.util.List<VectorXYZ> vertices, java.util.List<VectorXYZ> normals, java.util.List<java.util.List<VectorXZ>> texCoordLists) {
+		super.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		
+		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
+		// in some situations even errors were encountered
+		for (TextureData t : material.getTextureDataList()) {
+			textureManager.getTextureForFile(t.file, true);
+		}
+	};
 
 	@Override
 	public void drawBackgoundImage(File backgroundImage,
@@ -93,7 +109,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		backgroundShader.setPMVMatrix(backgroundPMVMatrix);
 		
 		gl.glDepthMask( false );
-		
+
 		/* texture binding */
 
 		gl.glActiveTexture(GL_TEXTURE0);
@@ -102,7 +118,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				textureManager.getTextureForFile(backgroundImage);
 		
 		backgroundTexture.bind(gl);
-
+		
 		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -185,14 +201,29 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			throw new IllegalStateException("finish must be called first");
 		}
 		
-		/* apply camera and projection information */
-		defaultShader.useShader();
-		defaultShader.loadDefaults();
-		
 		applyProjectionMatricesForPart(pmvMatrix, projection,
 				xStart, xEnd, yStart, yEnd);
 		
 		applyCameraMatrices(pmvMatrix, camera);
+		
+		if (USE_SHADOWMAPS) {
+			// TODO: render only part?
+			shadowMapShader.useShader();
+			shadowMapShader.useGlobalLighting(globalLightingParameters);
+			//shadowMapShader.setPMVMatrix(pmvMatrix);
+			
+			/* render primitives to shadow map*/
+			rendererShader.setShader(shadowMapShader);
+			rendererShader.render(camera, projection);
+			//shadowMapShader.saveShadowMap(new File("/home/sebastian/shadowmap.bmp"));
+			//shadowMapShader.saveColorBuffer(new File("/home/sebastian/shadowmap_color.bmp"));
+			
+			shadowMapShader.disableShader();
+		}
+		
+		/* apply camera and projection information */
+		defaultShader.useShader();
+		defaultShader.loadDefaults();
 		
 		defaultShader.setPMVMatrix(pmvMatrix);
 		
@@ -201,9 +232,15 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		applyRenderingParameters(gl, renderingParameters);
 		applyLightingParameters(defaultShader, globalLightingParameters);
 		
-		/* render primitives */
+		if (USE_SHADOWMAPS) {
+			defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
+			defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
+		}
 		
-		renderer.render(camera, projection);
+		/* render primitives */
+
+		rendererShader.setShader(defaultShader);
+		rendererShader.render(camera, projection);
 		
 		defaultShader.disableShader();
 		
@@ -350,7 +387,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void finish() {
 		if (isFinished()) return;
 		
-		renderer = new JOGLRendererVBOShader(gl, defaultShader, textureManager, primitiveBuffer);
+		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer);
+		renderer = rendererShader;
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 	}
 }

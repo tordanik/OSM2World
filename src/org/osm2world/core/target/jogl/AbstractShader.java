@@ -5,6 +5,8 @@ import java.nio.IntBuffer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.target.common.material.Material;
+
 public abstract class AbstractShader {
 	
 	protected GL3 gl;
@@ -48,8 +50,14 @@ public abstract class AbstractShader {
 		IntBuffer validateStatus = IntBuffer.allocate(1);
 		gl.glGetProgramiv(shaderProgram, GL3.GL_VALIDATE_STATUS, validateStatus);
 		if (validateStatus.get() == GL.GL_FALSE) {
-			ShaderManager.printProgramInfoLog(gl, shaderProgram);
-			throw new RuntimeException("could not validate shader");
+			String infoLog = ShaderManager.getProgramInfoLog(gl, shaderProgram);
+			/* Driver issues: ignore problems with type of texture unit 0, as every uniform sampler variable defaults to texture unit 0
+			 * This is only an issue with some driver implementations of the validation. Can be ignored safely.
+			 * TODO: use regex
+			 */
+			if (!infoLog.equals("Texture unit 0 is accessed both as sampler2D and sampler2DShadow\0")) {
+				throw new RuntimeException("could not validate shader. Info Log: '" + infoLog + "'");
+			}
 		}
 		ShaderManager.printProgramInfoLog(gl, shaderProgram);
 	}

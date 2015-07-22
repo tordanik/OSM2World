@@ -43,14 +43,14 @@ import com.jogamp.common.nio.Buffers;
 public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	protected GL3 gl;
-	private BumpMapShader shader;
+	protected AbstractPrimitiveShader shader;
 	
 	
 	
 	private final class VBODataDouble extends VBODataShader<DoubleBuffer> {
 
 		public VBODataDouble(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
-			super(gl, shader, textureManager, material, primitives);
+			super(gl, textureManager, material, primitives);
 		}
 		
 		@Override
@@ -94,7 +94,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	private final class VBODataFloat extends VBODataShader<FloatBuffer> {
 
 		public VBODataFloat(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
-			super(gl, shader, textureManager, material, primitives);
+			super(gl, textureManager, material, primitives);
 		}
 		
 		@Override
@@ -135,12 +135,11 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 	}
 	
-	JOGLRendererVBOShader(GL3 gl, BumpMapShader shader, JOGLTextureManager textureManager,
+	JOGLRendererVBOShader(GL3 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
 		super(textureManager);
 		this.gl = gl;
-		this.shader = shader;
 		this.init(primitiveBuffer);
 		
 	}
@@ -158,10 +157,11 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 		/* render static geometry */
 		
-		gl.glEnableVertexAttribArray(shader.getVertexPositionID());
-		gl.glEnableVertexAttribArray(shader.getVertexNormalID());
+		shader.glEnableVertexAttribArray(shader.getVertexPositionID());
+		shader.glEnableVertexAttribArray(shader.getVertexNormalID());
 		
 		for (VBOData<?> vboData : vbos) {
+			((VBODataShader<?>)vboData).setShader(shader);
 			vboData.render();
 		}
 		
@@ -170,11 +170,12 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		sortPrimitivesBackToFront(camera, projection);
 		
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
+			((VBODataShader<?>)p.vbo).setShader(shader);
 			p.vbo.render();
 		}
 		
-		gl.glDisableVertexAttribArray(shader.getVertexPositionID());
-		gl.glDisableVertexAttribArray(shader.getVertexNormalID());
+		shader.glDisableVertexAttribArray(shader.getVertexPositionID());
+		shader.glDisableVertexAttribArray(shader.getVertexNormalID());
 		
 	}
 	
@@ -184,4 +185,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		super.freeResources();
 	}
 	
+	public void setShader(AbstractPrimitiveShader shader) {
+		this.shader = shader;
+	}
 }

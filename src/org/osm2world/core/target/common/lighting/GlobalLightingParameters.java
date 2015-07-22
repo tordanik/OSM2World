@@ -34,7 +34,7 @@ public class GlobalLightingParameters {
 	public static final GlobalLightingParameters DEFAULT =
 			new GlobalLightingParameters(
 					new Color(1.0f, 1.0f, 1.0f),
-					new VectorXYZ(1.0, 1.5, -1.0),
+					new VectorXYZ(1.0, 1.5, -1.0).mult(100),
 					Color.WHITE,
 					Color.WHITE);
 	

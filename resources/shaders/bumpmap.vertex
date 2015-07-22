@@ -19,12 +19,14 @@ uniform mat4 ProjectionMatrix;
 uniform mat4 ModelViewMatrix;
 uniform mat4 ModelViewProjectionMatrix;
 uniform mat4 NormalMatrix;
+uniform mat4 ShadowMatrix;
 
 // output to fragment shader for interpolation
 out vec3 VertexEye; // in eye space
 out vec3 Normal;
 out vec4 Tangent; // last coordinate is the handedness to reconstruct the bitangent
 out vec2 BumpMapCoord;
+out vec4 ShadowCoord;
 out vec2 TexCoord0;
 out vec2 TexCoord1;
 out vec2 TexCoord2;
@@ -42,6 +44,9 @@ void main()
 	Normal = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));
 	Tangent = vec4(normalize(vec3(NormalMatrix * vec4(VertexTangent.xyz, 1.0))), VertexTangent.w);
 	VertexEye = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
+	
+	// Transform to shadow coordinates
+	ShadowCoord = ShadowMatrix * vec4(VertexPosition, 1.0);
 	
 	gl_Position = ModelViewProjectionMatrix * vec4(VertexPosition, 1.0);
 } 

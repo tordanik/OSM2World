@@ -1,0 +1,13 @@
+/* Simple fragment shader with a per fragment phong lighting model.
+ */ 
+#version 130
+ 
+// output to buffer
+out vec4 FragColor;
+
+ 
+void main()
+{
+	FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+	// nothing to do, only depth buffer needed
+} 

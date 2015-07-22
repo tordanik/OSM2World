@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
@@ -38,7 +39,7 @@ import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
 
-public class BumpMapShader extends AbstractShader {
+public class BumpMapShader extends AbstractPrimitiveShader {
 	
 	/** maximum number of texture layers any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 4;
@@ -50,6 +51,7 @@ public class BumpMapShader extends AbstractShader {
 	private int modelViewMatrixID;
 	private int modelViewProjectionMatrixID;
 	private int normalMatrixID;
+	private int shadowMatrixID;
 	private int vertexPositionID;
 	private int vertexNormalID;
 	private int[] vertexTexCoordID = new int[MAX_TEXTURE_LAYERS];
@@ -72,6 +74,8 @@ public class BumpMapShader extends AbstractShader {
 		modelViewMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewMatrix");
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
 		normalMatrixID = gl.glGetUniformLocation(shaderProgram, "NormalMatrix");
+		shadowMatrixID = gl.glGetUniformLocation(shaderProgram, "ShadowMatrix");
+		
 	}
 	
 	@Override
@@ -82,6 +86,28 @@ public class BumpMapShader extends AbstractShader {
 		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 0,0,0);
 		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 0,0,0);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
+	}
+	
+
+
+	
+	/**
+	 * Pass 2: Render by using the generated shadow map
+	 */
+	public void prepareShadowRendering() {
+		// set viewport, view and projection matrices to camera
+		
+		// bind default frame buffer
+		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+		
+		// reset culling
+		
+	}
+	
+	@Override
+	public void useShader() {
+		super.useShader();
+		prepareShadowRendering();
 	}
 	
 	/**
@@ -109,6 +135,7 @@ public class BumpMapShader extends AbstractShader {
 		}
 	}
 	
+	@Override
 	public void setMaterial(Material material, JOGLTextureManager textureManager) {
 
 		int numTexLayers = 0;
@@ -151,7 +178,7 @@ public class BumpMapShader extends AbstractShader {
 	    	if (i < numTexLayers) {
 				gl.glActiveTexture(getGLTextureConstant(i));
 				TextureData textureData = material.getTextureDataList().get(i);
-				Texture texture = textureManager.getTextureForFile(textureData.file, true);
+				Texture texture = textureManager.getTextureForFile(textureData.file);
 
 				texture.bind(gl);
 				
@@ -212,15 +239,15 @@ public class BumpMapShader extends AbstractShader {
 		        if (textureData.isBumpMap) {
 		        	loc = gl.glGetUniformLocation(shaderProgram, "BumpMap");
 			        if (loc < 0) {
-			        	throw new RuntimeException("BumpMap not found in shader program.");
+			        	//throw new RuntimeException("BumpMap not found in shader program.");
 			        }
 				} else {
 					loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
 					if (loc < 0) {
-						throw new RuntimeException("Tex["+i+"] not found in shader program.");
+						//throw new RuntimeException("Tex["+i+"] not found in shader program.");
 					}
 				}
-		        gl.glUniform1i(loc, i);
+		        gl.glUniform1i(loc, getGLTextureNumber(i));
 	    	} else {
 	    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
 	    	}
@@ -229,48 +256,89 @@ public class BumpMapShader extends AbstractShader {
 	}
 	
 	static final int getGLTextureConstant(int textureNumber) {
-		switch (textureNumber) {
-		case 0: return GL_TEXTURE0;
-		case 1: return GL_TEXTURE1;
-		case 2: return GL_TEXTURE2;
-		case 3: return GL_TEXTURE3;
+		switch (getGLTextureNumber(textureNumber)) {
+		//case 0: return GL.GL_TEXTURE0;
+		case 1: return GL.GL_TEXTURE1;
+		case 2: return GL.GL_TEXTURE2;
+		case 3: return GL.GL_TEXTURE3;
+		case 4: return GL.GL_TEXTURE4;
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
 	
+	static final int getGLTextureNumber(int textureNumber) {
+		return textureNumber + 1;
+	}
+	
+	public void bindShadowMap(int shadowMapHandle) {
+		gl.glActiveTexture(GL.GL_TEXTURE0);
+		gl.glBindTexture(GL.GL_TEXTURE_2D, shadowMapHandle);
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "ShadowMap"), 0);
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useShadowMap"), 1);
+	}
+	
+	@Override
 	public int getVertexPositionID() {
 		return vertexPositionID;
 	}
-	
+
+	@Override
 	public int getVertexNormalID() {
 		return vertexNormalID;
 	}
-	
+
+	@Override
 	public int getVertexTexCoordID(int i) {
 		return vertexTexCoordID[i];
 	}
-	
+
+	@Override
 	public int getVertexBumpMapCoordID() {
 		return vertexBumpMapCoordID;
 	}
-	
+
 	public int getProjectionMatrixID() {
 		return projectionMatrixID;
 	}
-	
+
 	public int getModelViewMatrixID() {
 		return modelViewMatrixID;
 	}
-	
+
 	public int getModelViewProjectionMatrixID() {
 		return modelViewProjectionMatrixID;
 	}
-	
+
 	public int getNormalMatrixID() {
 		return normalMatrixID;
 	}
 	
+	public int getShadowMatrixID() {
+		return shadowMatrixID;
+	}
+
+	@Override
 	public int getVertexTangentID() {
 		return vertexTangentID;
+	}
+
+	public void setShadowMatrix(PMVMatrix pmvMatrix) {
+		// S = B*MPV
+		
+		// bias matrix
+		float[] b = {0.5f, 0,    0,    0,
+					 0,    0.5f, 0,    0,
+					 0,    0,    0.5f, 0f,
+					 0.5f, 0.5f, 0.5f, 1.0f};
+		FloatBuffer bb = FloatBuffer.wrap(b);
+		
+		// PMV of light source
+		FloatBuffer pmvMat = FloatBuffer.allocate(16);
+		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
+		
+		FloatBuffer shadowMat = FloatBuffer.allocate(16);
+		FloatUtil.multMatrixf(bb, pmvMat, shadowMat);
+		
+		gl.glUniformMatrix4fv(this.getShadowMatrixID(), 1, false, shadowMat);
 	}
 }

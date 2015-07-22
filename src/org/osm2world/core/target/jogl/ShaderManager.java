@@ -123,6 +123,23 @@ public class ShaderManager {
 		return false;
 	 }
 	
+	public static String getProgramInfoLog(GL3 gl, int prog) {
+		IntBuffer ival = IntBuffer.allocate(1);
+		gl.glGetProgramiv(prog, GL3.GL_INFO_LOG_LENGTH,
+				ival);
+
+		int size = ival.get();
+		if (size > 1) {
+			ByteBuffer log = ByteBuffer.allocate(size);
+			ival.flip();
+			gl.glGetProgramInfoLog(prog, size, ival, log);
+			byte[] infoBytes = new byte[size];
+			log.get(infoBytes);
+			return new String(infoBytes);
+		}
+		return "";
+	}
+	
 	/*
 	 * Prints the program log to System.out
 	 */

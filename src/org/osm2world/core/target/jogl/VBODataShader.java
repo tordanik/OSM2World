@@ -31,11 +31,14 @@ import org.osm2world.core.target.common.material.Material;
 abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	
 	protected GL3 gl;
-	private BumpMapShader shader;
+	protected AbstractPrimitiveShader shader;
 	
-	public VBODataShader(GL3 gl, BumpMapShader shader, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+	public VBODataShader(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		super(gl, textureManager, material, primitives);
 		this.gl = gl;
+	}
+	
+	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
 	}
 	
@@ -139,10 +142,10 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		
 		gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 		for (int i=1; i<DefaultShader.MAX_TEXTURE_LAYERS; i++) {
-			gl.glDisableVertexAttribArray(shader.getVertexTexCoordID(i));
+			shader.glDisableVertexAttribArray(shader.getVertexTexCoordID(i));
 		}
-		gl.glDisableVertexAttribArray(shader.getVertexBumpMapCoordID());
-		gl.glDisableVertexAttribArray(shader.getVertexTangentID());
+		shader.glDisableVertexAttribArray(shader.getVertexBumpMapCoordID());
+		shader.glDisableVertexAttribArray(shader.getVertexTangentID());
 	}
 	
 	private void setPointerLayout() {
@@ -154,28 +157,28 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		for (int i = 0; i < material.getNumTextureLayers(); i++) {
 
 			if (!material.hasBumpMap() || i != material.getBumpMapInd()) {
-				gl.glEnableVertexAttribArray(shader.getVertexTexCoordID(i));
-				gl.glVertexAttribPointer(shader.getVertexTexCoordID(i), 2, glValueType(), false, stride, offset);
+				shader.glEnableVertexAttribArray(shader.getVertexTexCoordID(i));
+				shader.glVertexAttribPointer(shader.getVertexTexCoordID(i), 2, glValueType(), false, stride, offset);
 				offset += 2 * valueTypeSize;
 			}
 			
 		}
 		
-		gl.glVertexAttribPointer(shader.getVertexNormalID(), 3, glValueType(), false, stride, offset);
+		shader.glVertexAttribPointer(shader.getVertexNormalID(), 3, glValueType(), false, stride, offset);
 		offset += valueTypeSize() * 3;
 		
 		if (material.hasBumpMap()) {
-			gl.glEnableVertexAttribArray(shader.getVertexTangentID());
-			gl.glVertexAttribPointer(shader.getVertexTangentID(), 4, glValueType(), false, stride, offset);
+			shader.glEnableVertexAttribArray(shader.getVertexTangentID());
+			shader.glVertexAttribPointer(shader.getVertexTangentID(), 4, glValueType(), false, stride, offset);
 			offset += valueTypeSize() * 4;
-			gl.glEnableVertexAttribArray(shader.getVertexBumpMapCoordID());
-			gl.glVertexAttribPointer(shader.getVertexBumpMapCoordID(), 2, glValueType(), false, stride, offset);
+			shader.glEnableVertexAttribArray(shader.getVertexBumpMapCoordID());
+			shader.glVertexAttribPointer(shader.getVertexBumpMapCoordID(), 2, glValueType(), false, stride, offset);
 			offset += valueTypeSize() * 2;
 		}
 		if (offset != stride - 3*valueTypeSize()) {
 			throw new RuntimeException("offset: "+offset + " stride:"+stride +" valueTypeSize:"+valueTypeSize());
 		}
-		gl.glVertexAttribPointer(shader.getVertexPositionID(), 3, glValueType(), false, stride, offset);
+		shader.glVertexAttribPointer(shader.getVertexPositionID(), 3, glValueType(), false, stride, offset);
 	}
 	
 	protected abstract void put(BufferT buffer, VectorXYZW t);
