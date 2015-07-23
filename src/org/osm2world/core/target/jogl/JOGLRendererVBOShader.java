@@ -44,7 +44,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	protected GL3 gl;
 	protected AbstractPrimitiveShader shader;
-	
+	protected double[] boundingBox = null;
 	
 	
 	private final class VBODataDouble extends VBODataShader<DoubleBuffer> {
@@ -142,6 +142,22 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		this.gl = gl;
 		this.init(primitiveBuffer);
 		
+		for (Material m : primitiveBuffer.getMaterials()) {
+			for (Primitive p : primitiveBuffer.getPrimitives(m)) {
+				for (VectorXYZ v : p.vertices) {
+					if (boundingBox == null) {
+						boundingBox = new double[]{v.x, v.x, v.y, v.y, v.z, v.z};
+					} else {
+						if (v.x < boundingBox[0]) { boundingBox[0] = v.x; }
+						if (v.x > boundingBox[1]) { boundingBox[1] = v.x; }
+						if (v.y < boundingBox[2]) { boundingBox[2] = v.y; }
+						if (v.y > boundingBox[3]) { boundingBox[3] = v.y; }
+						if (v.z < boundingBox[4]) { boundingBox[4] = v.z; }
+						if (v.z > boundingBox[5]) { boundingBox[5] = v.z; }
+					}
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -187,5 +203,9 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
+	}
+	
+	public double[] getBoundingBox() {
+		return boundingBox;
 	}
 }

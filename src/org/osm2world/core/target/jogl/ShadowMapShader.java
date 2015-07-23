@@ -27,6 +27,10 @@ import javax.media.opengl.GL3;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
+import jogamp.opengl.ProjectFloat;
+
+import org.osm2world.core.math.Vector3D;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 
@@ -37,8 +41,8 @@ import com.jogamp.opengl.util.texture.TextureData;
 
 public class ShadowMapShader extends AbstractPrimitiveShader {
 	
-	public static final int shadowMapWidth = 2048;
-	public static final int shadowMapHeight = 2048;
+	public static final int shadowMapWidth = 4096;
+	public static final int shadowMapHeight = 4096;
 	
 	private int modelViewProjectionMatrixID;
 	private int vertexPositionID;
@@ -291,9 +295,17 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective
 	 * @param lighting
 	 */
-	public void useGlobalLighting(GlobalLightingParameters lighting) {
+	public void preparePMVMatrix(GlobalLightingParameters lighting, PMVMatrix cameraPMV, double[] primitivesBoundingBox) {
 		
-		// set viewport, view and projection matrices to light source
+		// set view and projection matrices to light source
+
+		
+		pmvMat.glMatrixMode(GL_MODELVIEW);
+		pmvMat.glLoadIdentity();
+		pmvMat.gluLookAt((float)lighting.lightFromDirection.x, (float)lighting.lightFromDirection.y, -(float)lighting.lightFromDirection.z,
+				0f, 0f, 0f,
+				0f, 1f, 0f);
+		
 		pmvMat.glMatrixMode(GL_PROJECTION);
 		pmvMat.glLoadIdentity();
 		/*Projection projection = Defaults.PERSPECTIVE_PROJECTION;
@@ -302,15 +314,109 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 				(float)(projection.getAspectRatio()),
 				(float)(projection.getNearClippingDistance()),
 				(float)(projection.getFarClippingDistance()));*/
-		pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
+		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
 		
-		pmvMat.glMatrixMode(GL_MODELVIEW);
-		pmvMat.glLoadIdentity();
-		pmvMat.gluLookAt((float)lighting.lightFromDirection.x, (float)lighting.lightFromDirection.y, -(float)lighting.lightFromDirection.z,
-				0f, 0f, 0f,
-				0f, 1f, 0f);
+		float[] frustum;
+		/*frustum = intersectFrustum(calculateCameraLightFrustum(pmvMat, cameraPMV),
+				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));*/
+		frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
+		pmvMat.glOrthof(frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
 		
 		setPMVMatrix(pmvMat);
+	}
+	
+	private float[] intersectFrustum(float[] frustum1, float[] frustum2) {
+		float[] result = new float[frustum1.length];
+		for (int i=0; i<frustum1.length; i++) {
+			if (i%2 == 0) {
+				result[i] = Math.max(frustum1[i], frustum2[i]);
+			} else {
+				result[i] = Math.min(frustum1[i], frustum2[i]);
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * the frustum for the light projection matrix based on the bounding box of all primitives.
+	 * transforms the bounding box into lightspace and draws an axis aligned bounding box around it.
+	 * @param lightPMV
+	 * @param primitivesBoundingBox
+	 * @return
+	 */
+	private float[] calculatePrimitivesLightFrustum(PMVMatrix lightPMV, double[] primitivesBoundingBox) {
+		float[] frustum = null;
+		for (double x : new double[]{primitivesBoundingBox[0], primitivesBoundingBox[1]}) {
+			for (double y : new double[]{primitivesBoundingBox[2], primitivesBoundingBox[3]}) {
+				for (double z : new double[]{primitivesBoundingBox[4], primitivesBoundingBox[5]}) {
+					float[] corner = {(float)x, (float)y, (float)z, 1};
+					float[] result = new float[4];
+					FloatUtil.multMatrixVecf(lightPMV.glGetMvMatrixf(), corner, result);
+					float frustumCornerX = result[0]/result[3];
+					float frustumCornerY = result[1]/result[3];
+					float frustumCornerZ = result[2]/result[3];
+					if (frustum == null) {
+						frustum = new float[] {frustumCornerX, frustumCornerX, frustumCornerY, frustumCornerY, frustumCornerZ, frustumCornerZ};
+					} else {
+						addToBoundingBox(frustum, frustumCornerX, frustumCornerY, frustumCornerZ);
+					}
+				}
+			}
+		}
+		return frustum;
+	}
+	
+	/**
+	 * Calculate the frustum for the light projection matrix based on the frustum of the camera
+	 * @param lightPMV
+	 * @param cameraPMV
+	 * @param frustum
+	 */
+	private float[] calculateCameraLightFrustum(PMVMatrix lightPMV, PMVMatrix cameraPMV) {
+		/*
+		 * calculate transform from screen space bounding box to light space:
+		 * inverse projection -> inverse modelview -> modelview of light
+		 */
+		FloatBuffer cameraP_inverse = FloatBuffer.allocate(16);
+		FloatBuffer cameraPMV_inverse = FloatBuffer.allocate(16);
+		ProjectFloat p = new ProjectFloat();
+		p.gluInvertMatrixf(cameraPMV.glGetPMatrixf(), cameraP_inverse);
+		FloatUtil.multMatrixf(cameraPMV.glGetMviMatrixf(), cameraP_inverse, cameraPMV_inverse);
+		FloatBuffer NDC2light = FloatBuffer.allocate(16);
+		FloatUtil.multMatrixf(pmvMat.glGetMvMatrixf(), cameraPMV_inverse, NDC2light);
+		
+		/*
+		 * transform screen space bounding box to light space
+		 * and calculate axis aligned bounding box
+		 */
+		float[] frustum = null;
+		for (int x = -1; x<=1; x+=2) {
+			for (int y = -1; y<=1; y+=2) {
+				for (int z = -1; z<=1; z+=2) {
+					float[] NDCcorner = {x, y, z, 1};
+					float[] result = new float[4];
+					FloatUtil.multMatrixVecf(NDC2light, NDCcorner, result);
+					float frustumCornerX = result[0]/result[3];
+					float frustumCornerY = result[1]/result[3];
+					float frustumCornerZ = result[2]/result[3];
+					if (frustum == null) {
+						frustum = new float[] {frustumCornerX, frustumCornerX, frustumCornerY, frustumCornerY, frustumCornerZ, frustumCornerZ};
+					} else {
+						addToBoundingBox(frustum, frustumCornerX, frustumCornerY, frustumCornerZ);
+					}
+				}
+			}
+		}
+		return frustum;
+	}
+	
+	private void addToBoundingBox(float[] boundingBox, float x, float y, float z) {
+		if (x < boundingBox[0]) { boundingBox[0] = x; }
+		if (x > boundingBox[1]) { boundingBox[1] = x; }
+		if (y < boundingBox[2]) { boundingBox[2] = y; }
+		if (y > boundingBox[3]) { boundingBox[3] = y; }
+		if (z < boundingBox[4]) { boundingBox[4] = z; }
+		if (z > boundingBox[5]) { boundingBox[5] = z; }
 	}
 	
 	public int getShadowMapHandle() {

@@ -209,7 +209,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		if (USE_SHADOWMAPS) {
 			// TODO: render only part?
 			shadowMapShader.useShader();
-			shadowMapShader.useGlobalLighting(globalLightingParameters);
+			shadowMapShader.preparePMVMatrix(globalLightingParameters, pmvMatrix, rendererShader.getBoundingBox());
 			//shadowMapShader.setPMVMatrix(pmvMatrix);
 			
 			/* render primitives to shadow map*/
@@ -226,6 +226,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		defaultShader.loadDefaults();
 		
 		defaultShader.setPMVMatrix(pmvMatrix);
+		//defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
 		
 		/* apply global rendering parameters */
 		
