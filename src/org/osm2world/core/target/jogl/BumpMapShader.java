@@ -45,7 +45,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	public static final int MAX_TEXTURE_LAYERS = 4;
 
 	/** globally controls anisotropic filtering for all textures */
-	private static final boolean ANISOTROPIC_FILTERING = true;
+	public static final boolean ANISOTROPIC_FILTERING = true;
 	
 	private int projectionMatrixID;
 	private int modelViewMatrixID;
