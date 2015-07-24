@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
@@ -33,6 +34,8 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.viewer.model.Defaults;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
@@ -292,6 +295,60 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 	}
 	
 	/**
+	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective using "Perspective Shadow Maps"
+	 * (see http://www-sop.inria.fr/reves/Marc.Stamminger/psm/)
+	 * @param lighting
+	 */
+	public void preparePMVMatrixPSM(GlobalLightingParameters lighting, PMVMatrix cameraPMV, double[] primitivesBoundingBox) {
+		
+		// camera PMV Matrix:
+		FloatBuffer camPMvMat = FloatBuffer.allocate(16);
+		FloatUtil.multMatrixf(cameraPMV.glGetPMatrixf(), cameraPMV.glGetMvMatrixf(), camPMvMat);
+		
+		// transform light into camera space (unit cube)
+		float[] lightPos = {(float)lighting.lightFromDirection.x, (float)lighting.lightFromDirection.y, -(float)lighting.lightFromDirection.z, 0};
+		float[] lightPosCam = new float[4];
+		FloatUtil.multMatrixVecf(camPMvMat, lightPos, lightPosCam);
+		
+		// set view and projection matrices to light source
+		PMVMatrix pmvMatL = new PMVMatrix();
+		pmvMatL.glMatrixMode(GL_MODELVIEW);
+		pmvMatL.glLoadIdentity();
+		pmvMatL.gluLookAt(lightPosCam[0], lightPosCam[1], lightPosCam[2],
+				0f, 0f, 0f,
+				0f, 1f, 0f);
+		
+		pmvMatL.glMatrixMode(GL_PROJECTION);
+		pmvMatL.glLoadIdentity();
+		Projection projection = Defaults.PERSPECTIVE_PROJECTION;
+		pmvMatL.gluPerspective(
+				(float)(projection.getVertAngle()),
+				(float)(projection.getAspectRatio()),
+				(float)(projection.getNearClippingDistance()),
+				(float)(projection.getFarClippingDistance()));
+		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
+		
+		//float[] frustum;
+		/*frustum = intersectFrustum(calculateCameraLightFrustum(pmvMat, cameraPMV),
+				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));*/
+		//frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
+		//System.out.println("shadow map frustum: " + Arrays.toString(frustum));
+		//pmvMatL.glOrthof(frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
+		
+		// M = M_cam
+		pmvMat.glMatrixMode(GL_MODELVIEW);
+		pmvMat.glLoadMatrixf(cameraPMV.glGetMvMatrixf());
+		
+		// P = P_light*Mv_light*P_cam
+		pmvMat.glMatrixMode(GL_PROJECTION);
+		pmvMat.glLoadMatrixf(pmvMatL.glGetPMatrixf());
+		pmvMat.glMultMatrixf(pmvMatL.glGetMvMatrixf());
+		pmvMat.glMultMatrixf(cameraPMV.glGetPMatrixf());
+		
+		setPMVMatrix(pmvMat);
+	}
+	
+	/**
 	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective
 	 * @param lighting
 	 */
@@ -317,9 +374,10 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
 		
 		float[] frustum;
-		/*frustum = intersectFrustum(calculateCameraLightFrustum(pmvMat, cameraPMV),
-				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));*/
+		//frustum = intersectFrustum(calculateCameraLightFrustum(pmvMat, cameraPMV),
+		//		calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));
 		frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
+		//System.out.println("shadow map frustum: " + Arrays.toString(frustum));
 		pmvMat.glOrthof(frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
 		
 		setPMVMatrix(pmvMat);
@@ -383,7 +441,7 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 		p.gluInvertMatrixf(cameraPMV.glGetPMatrixf(), cameraP_inverse);
 		FloatUtil.multMatrixf(cameraPMV.glGetMviMatrixf(), cameraP_inverse, cameraPMV_inverse);
 		FloatBuffer NDC2light = FloatBuffer.allocate(16);
-		FloatUtil.multMatrixf(pmvMat.glGetMvMatrixf(), cameraPMV_inverse, NDC2light);
+		FloatUtil.multMatrixf(lightPMV.glGetMvMatrixf(), cameraPMV_inverse, NDC2light);
 		
 		/*
 		 * transform screen space bounding box to light space
