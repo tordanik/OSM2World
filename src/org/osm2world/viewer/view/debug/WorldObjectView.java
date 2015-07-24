@@ -30,6 +30,7 @@ public class WorldObjectView extends DebugView {
 	protected void fillTarget(final JOGLTarget target) {
 		
 		setParameters(target);
+		target.setXZBoundary(map.getBoundary());
 		
 		boolean underground = config.getBoolean("renderUnderground", true);
 		

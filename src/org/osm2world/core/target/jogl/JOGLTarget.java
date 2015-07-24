@@ -7,6 +7,7 @@ import java.util.List;
 import javax.media.opengl.GL;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -68,5 +69,7 @@ public interface JOGLTarget extends Target<RenderableToJOGL> {
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager);
+
+	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary);
 	
 }

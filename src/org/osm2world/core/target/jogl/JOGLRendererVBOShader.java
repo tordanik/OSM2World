@@ -20,6 +20,7 @@ import java.util.List;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
@@ -136,7 +137,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	}
 	
 	JOGLRendererVBOShader(GL3 gl, JOGLTextureManager textureManager,
-			PrimitiveBuffer primitiveBuffer) {
+			PrimitiveBuffer primitiveBuffer, AxisAlignedBoundingBoxXZ xzBoundary) {
 		
 		super(textureManager);
 		this.gl = gl;
@@ -145,15 +146,17 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		for (Material m : primitiveBuffer.getMaterials()) {
 			for (Primitive p : primitiveBuffer.getPrimitives(m)) {
 				for (VectorXYZ v : p.vertices) {
-					if (boundingBox == null) {
-						boundingBox = new double[]{v.x, v.x, v.y, v.y, -v.z, -v.z};
-					} else {
-						if (v.x < boundingBox[0]) { boundingBox[0] = v.x; }
-						if (v.x > boundingBox[1]) { boundingBox[1] = v.x; }
-						if (v.y < boundingBox[2]) { boundingBox[2] = v.y; }
-						if (v.y > boundingBox[3]) { boundingBox[3] = v.y; }
-						if (-v.z < boundingBox[4]) { boundingBox[4] = -v.z; }
-						if (-v.z > boundingBox[5]) { boundingBox[5] = -v.z; }
+					if (xzBoundary == null || xzBoundary.contains(v.xz())) {
+						if (boundingBox == null) {
+							boundingBox = new double[]{v.x, v.x, v.y, v.y, -v.z, -v.z};
+						} else {
+							if (v.x < boundingBox[0]) { boundingBox[0] = v.x; }
+							if (v.x > boundingBox[1]) { boundingBox[1] = v.x; }
+							if (v.y < boundingBox[2]) { boundingBox[2] = v.y; }
+							if (v.y > boundingBox[3]) { boundingBox[3] = v.y; }
+							if (-v.z < boundingBox[4]) { boundingBox[4] = -v.z; }
+							if (-v.z > boundingBox[5]) { boundingBox[5] = -v.z; }
+						}
 					}
 				}
 			}

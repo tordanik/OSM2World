@@ -19,6 +19,7 @@ import javax.media.opengl.glu.GLU;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.TextureData;
@@ -517,5 +518,8 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		gl.glMatrixMode(GL_MODELVIEW);
 		
 	}
+
+	@Override
+	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {}
 	
 }

@@ -43,6 +43,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
@@ -65,6 +66,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private PMVMatrix pmvMatrix;
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
 	private JOGLRendererVBOShader rendererShader;
+	private AxisAlignedBoundingBoxXZ xzBoundary;
 	
 	private static final boolean USE_SHADOWMAPS = true;
 	
@@ -388,8 +390,13 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void finish() {
 		if (isFinished()) return;
 		
-		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer);
+		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer, xzBoundary);
 		renderer = rendererShader;
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
+	}
+
+	@Override
+	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {
+		this.xzBoundary = boundary;
 	}
 }

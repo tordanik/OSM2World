@@ -35,7 +35,6 @@ public class JOGLRenderingParameters {
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
-		
 	}
 	
 }
