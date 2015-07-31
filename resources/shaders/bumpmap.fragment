@@ -38,7 +38,7 @@ uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
 uniform bool useShadowMap;
-uniform sampler2D ShadowMap;
+uniform sampler2DShadow ShadowMap;
 
 uniform bool useAlphaTreshold;
 uniform float alphaTreshold;
@@ -137,11 +137,20 @@ void main()
 		// shadow map lookup
 		float shadowFactor = 1.0;
 		if ( useShadowMap ) {
-			vec3 shadowCoordCart = ShadowCoord.xyz / ShadowCoord.w; // from homogene coordiantes to carthesian
-			float shadowDepthValue = texture(ShadowMap, shadowCoordCart.xy).r; // lookup of depth value in shadow map
-			float fragmentDepthValue = shadowCoordCart.z; // fragment depth value to compare
-			if (shadowDepthValue < fragmentDepthValue)
-				shadowFactor = 0.0; // in shadow
+			//vec3 shadowCoordCart = ShadowCoord.xyz / ShadowCoord.w; // from homogene coordiantes to carthesian
+			//float shadowDepthValue = texture(ShadowMap, shadowCoordCart.xy).r; // lookup of depth value in shadow map
+			//float fragmentDepthValue = shadowCoordCart.z; // fragment depth value to compare
+			//if (shadowDepthValue < fragmentDepthValue)
+			//	shadowFactor = 0.0; // in shadow
+			
+			// PCF (percentage closer filtering): blur with adjacent shadow map comparison results
+			float sum = 0 ;
+			// Sum contributions from texels around ShadowCoord
+			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(-1,-1));
+			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(-1,1));
+			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,1));
+			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,-1));
+			shadowFactor = sum * 0.25;
 		}
 		
 		diff = diff * shadowFactor;

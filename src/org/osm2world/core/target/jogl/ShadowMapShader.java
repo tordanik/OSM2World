@@ -114,8 +114,8 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 
 		// some settings for the shadow map texture
 		// GL_LINEAR might produce better results, but is slower. GL_NEAREST shows aliasing artifacts clearly
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 		
 		/* For texture access outside the shadow map use the highest depth value possible (1.0).
 		 * This means the fragment lies outside of the lights frustum and no shadow should be applied.
@@ -130,8 +130,8 @@ public class ShadowMapShader extends AbstractPrimitiveShader {
 		 * compare the third value (r) of the texture coordinate against the depth value stored at the texture coordinate (s,t)
 		 * result will be 1.0 if r is less than the texture value (which means the fragment is nearer) and 0.0 otherwise
 		 */
-		//gl.glTexParameteri(GL.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_COMPARE_REF_TO_TEXTURE);     
-		//gl.glTexParameteri(GL.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_FUNC, GL.GL_LESS);     
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_COMPARE_REF_TO_TEXTURE);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_FUNC, GL.GL_LESS);
 
 		gl.glActiveTexture(GL.GL_TEXTURE0);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
