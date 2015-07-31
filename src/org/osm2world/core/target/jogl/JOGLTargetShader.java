@@ -37,11 +37,14 @@ import java.io.File;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
+
+import jogamp.opengl.ProjectFloat;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -50,10 +53,12 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
 
@@ -67,6 +72,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
 	private JOGLRendererVBOShader rendererShader;
 	private AxisAlignedBoundingBoxXZ xzBoundary;
+	private boolean showShadowPerspective;
 	
 	private static final boolean USE_SHADOWMAPS = true;
 	
@@ -227,8 +233,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
 		
-		defaultShader.setPMVMatrix(pmvMatrix);
-		//defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
+		if (showShadowPerspective)
+			defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
+		else
+			defaultShader.setPMVMatrix(pmvMatrix);
 		
 		/* apply global rendering parameters */
 		
@@ -390,6 +398,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void finish() {
 		if (isFinished()) return;
 		
+		
+		//this.drawLineLoop(Color.WHITE, 1, Arrays.asList(new VectorXYZ[]{xzBoundary.topLeft().xyz(0.1), xzBoundary.topRight().xyz(0.1), xzBoundary.bottomRight().xyz(0.1), xzBoundary.bottomLeft().xyz(0.1)}));
 		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer, xzBoundary);
 		renderer = rendererShader;
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
@@ -398,5 +408,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	@Override
 	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {
 		this.xzBoundary = boundary;
+	}
+	
+	public void setShowShadowPerspective(boolean s) {
+		this.showShadowPerspective = s;
 	}
 }

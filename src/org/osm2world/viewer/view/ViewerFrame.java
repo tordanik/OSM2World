@@ -73,6 +73,7 @@ import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
+import org.osm2world.viewer.view.debug.ShadowView;
 import org.osm2world.viewer.view.debug.SkyboxView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
@@ -252,6 +253,8 @@ public class ViewerFrame extends JFrame {
 					new InverseDistanceWeightingInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new LinearInterpolatorDebugView(renderOptions));
+			initAndAddDebugView(subMenu, -1, false,
+					new ShadowView(renderOptions));
 			
 			menu.add(subMenu);
 			
