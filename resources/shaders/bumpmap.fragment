@@ -4,6 +4,7 @@
 // TODO: set from java to match MAX_TEXTURE_LAYERS there
 #define MAX_TEXTURE_LAYERS 4
 	
+uniform bool isShadowed;
 uniform bool useLighting;
 struct LightInfo {
 	vec4 Position; // Light position in world coords.
@@ -152,6 +153,8 @@ void main()
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,-1));
 			shadowFactor = sum * 0.25;
 		}
+		if ( isShadowed )
+			shadowFactor = 0.0;
 		
 		diff = diff * shadowFactor;
 		spec = spec * shadowFactor;

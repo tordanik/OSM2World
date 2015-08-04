@@ -78,4 +78,8 @@ abstract class VBODataFixedFunction<BufferT extends Buffer> extends VBOData<Buff
 		
 	}
 	
+	@Override
+	protected int getValuesPerVertex(Material material) {
+		return JOGLRendererVBO.getValuesPerVertex(material);
+	}
 }

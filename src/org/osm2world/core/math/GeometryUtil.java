@@ -4,11 +4,13 @@ import static java.lang.Math.sqrt;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.awt.geom.Line2D;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import com.jogamp.opengl.math.FloatUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -637,5 +639,189 @@ public final class GeometryUtil {
 	    
 	    return tangents;
 	}
+	
+	public static final List<VectorXYZW> calculateShadowVolumesPerTriangle(List<VectorXYZ> vertices, VectorXYZW lightPos) {
+		
+		List<VectorXYZW> shadowVolumes = new ArrayList<VectorXYZW>();
+		for (int triangle = 0; triangle < vertices.size()/3; triangle++) {
+			VectorXYZ v1 = vertices.get(triangle*3);
+			VectorXYZ v2 = vertices.get(triangle*3+1);
+			VectorXYZ v3 = vertices.get(triangle*3+2);
+			
+			VectorXYZ normal = v1.subtract(v2).crossNormalized(v3.subtract(v2));
+			
+			VectorXYZ lightDir;
+			if (lightPos.w == 0)
+				lightDir = lightPos.xyz().mult(-1).normalize();
+			else
+				lightDir = v1.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+			
+			// Handle only light facing triangles
+			if (normal.dot(lightDir) > 0) {
+			
+				// calculate the volume sides
+				shadowVolumes.addAll(emitQuad(v1, v2, lightPos));
+				shadowVolumes.addAll(emitQuad(v2, v3, lightPos));
+				shadowVolumes.addAll(emitQuad(v3, v1, lightPos));
+
+				// calculate the front/back cap
+				VectorXYZW c1 = new VectorXYZW( v1.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW b1 = new VectorXYZW( lightDir, 0);
+
+				if (lightPos.w != 0)
+					lightDir = v2.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+				VectorXYZW c2 = new VectorXYZW( v2.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW b2 = new VectorXYZW( lightDir, 0);
+
+				if (lightPos.w != 0)
+					lightDir = v3.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+				VectorXYZW c3 = new VectorXYZW( v3.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW b3 = new VectorXYZW( lightDir, 0);
+
+				shadowVolumes.add(c1);
+				shadowVolumes.add(c2);
+				shadowVolumes.add(c3);
+
+				// reverse back cap order
+				shadowVolumes.add(b1);
+				shadowVolumes.add(b3);
+				shadowVolumes.add(b2);
+			}
+			
+		}
+		
+		return shadowVolumes;
+	}
+	
+	private static List<VectorXYZW> emitQuad(VectorXYZ start, VectorXYZ end, VectorXYZW lightPos) {
+
+		List<VectorXYZW> result = new ArrayList<VectorXYZW>(10);
+		VectorXYZ lightDir;
+		
+		// Vertex #1: the starting vertex (just a tiny bit below the original edge)
+		if (lightPos.w == 0)
+			lightDir = lightPos.xyz().mult(-1).normalize();
+		else
+			lightDir = start.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+		
+		VectorXYZW v1 = new VectorXYZW(start.add(lightDir.mult(EPSILON)), 1);
+		
+	    // Vertex #2: the starting vertex projected to infinity
+		VectorXYZW v2 = new VectorXYZW(lightDir.mult(EPSILON), 0);
+		
+	    // Vertex #3: the ending vertex (just a tiny bit below the original edge)
+		if (lightPos.w != 0)
+			lightDir = end.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+	    
+		VectorXYZW v3 = new VectorXYZW(end.add(lightDir.mult(EPSILON)), 1);
+
+	    // Vertex #4: the ending vertex projected to infinity
+		VectorXYZW v4 = new VectorXYZW(lightDir.mult(EPSILON), 0); // TODO: correct for directional light?
+	    
+		result.add(v1);
+		result.add(v2);
+		result.add(v3);
+		result.add(v3);
+		result.add(v2);
+		result.add(v4);
+		return result;
+	}
+	
+	/*
+	public static final List<VectorXYZW> calculateShadowVolumesPerTriangle(List<VectorXYZ> vertices, VectorXYZW lightPos, FloatBuffer gWVP) {
+		
+		List<VectorXYZW> shadowVolumes = new ArrayList<VectorXYZW>();
+		for (int triangle = 0; triangle < vertices.size()/3; triangle++) {
+			VectorXYZ v1 = vertices.get(triangle*3);
+			VectorXYZ v2 = vertices.get(triangle*3+1);
+			VectorXYZ v3 = vertices.get(triangle*3+2);
+			
+			VectorXYZ normal = v1.subtract(v2).crossNormalized(v3.subtract(v2));
+			
+			VectorXYZ lightDir;
+			if (lightPos.w == 0)
+				lightDir = lightPos.xyz().mult(-1).normalize();
+			else
+				lightDir = v1.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+			
+			// Handle only light facing triangles
+			if (normal.dot(lightDir) > 0) {
+			
+				// calculate the volume sides
+				shadowVolumes.addAll(emitQuad(v1, v2, lightPos, gWVP));
+				shadowVolumes.addAll(emitQuad(v2, v3, lightPos, gWVP));
+				shadowVolumes.addAll(emitQuad(v3, v1, lightPos, gWVP));
+
+				// calculate the front/back cap
+				VectorXYZW c1 = multMatrixVec(gWVP, v1.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW b1 = multMatrixVec(gWVP, lightDir, 0);
+
+				if (lightPos.w != 0)
+					lightDir = v2.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+				VectorXYZW c2 = multMatrixVec(gWVP, v2.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW b2 = multMatrixVec(gWVP, lightDir, 0);
+
+				if (lightPos.w != 0)
+					lightDir = v3.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+				VectorXYZW c3 = multMatrixVec(gWVP, v3.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW b3 = multMatrixVec(gWVP, lightDir, 0);
+
+				shadowVolumes.add(c1);
+				shadowVolumes.add(c2);
+				shadowVolumes.add(c3);
+
+				// reverse back cap order
+				shadowVolumes.add(b1);
+				shadowVolumes.add(b3);
+				shadowVolumes.add(b2);
+			}
+			
+		}
+		
+		return shadowVolumes;
+	}
+	
+	private static List<VectorXYZW> emitQuad(VectorXYZ start, VectorXYZ end, VectorXYZW lightPos, FloatBuffer gWVP) {
+
+		List<VectorXYZW> result = new ArrayList<VectorXYZW>(10);
+		VectorXYZ lightDir;
+		
+		// Vertex #1: the starting vertex (just a tiny bit below the original edge)
+		if (lightPos.w == 0)
+			lightDir = lightPos.xyz().mult(-1).normalize();
+		else
+			lightDir = start.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+		
+		VectorXYZW v1 = multMatrixVec(gWVP, start.add(lightDir.mult(EPSILON)), 1);
+		
+	    // Vertex #2: the starting vertex projected to infinity
+		VectorXYZW v2 = multMatrixVec(gWVP, lightDir.mult(EPSILON), 0);
+		
+	    // Vertex #3: the ending vertex (just a tiny bit below the original edge)
+		if (lightPos.w == 0)
+			lightDir = lightPos.xyz().mult(-1).normalize();
+		else
+			lightDir = end.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
+	    
+		VectorXYZW v3 = multMatrixVec(gWVP, end.add(lightDir.mult(EPSILON)), 1);
+
+	    // Vertex #4: the ending vertex projected to infinity
+		VectorXYZW v4 = multMatrixVec(gWVP, lightDir.mult(EPSILON), 0); // TODO: correct for directional light?
+	    
+		result.add(v1);
+		result.add(v2);
+		result.add(v3);
+		result.add(v3);
+		result.add(v2);
+		result.add(v4);
+		return result;
+	}
+	
+	private static VectorXYZW multMatrixVec(FloatBuffer mat, VectorXYZ v, float w) {
+		float[] result = new float[4];
+		FloatUtil.multMatrixVecf(mat, new float[]{(float)v.x, (float)v.y, (float)v.z, w}, result);
+		return new VectorXYZW(result[0], result[1], result[2], result[3]);
+	}
+	*/
 	
 }

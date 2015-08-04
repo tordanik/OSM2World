@@ -182,7 +182,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 			gl.glClearColor(c[0], c[1], c[2], 1.0f);
 		}
 		
-		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
         
 	}
 	

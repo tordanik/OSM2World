@@ -86,6 +86,8 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 0,0,0);
 		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 0,0,0);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), 0);
+		
 	}
 	
 
@@ -133,6 +135,10 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.Ld"), 1, getFloatBuffer(lighting.lightColorDiffuse));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.Ls"), 1, getFloatBuffer(lighting.lightColorSpecular));			
 		}
+	}
+	
+	public void setShadowed(boolean isShadowed) {
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), isShadowed ? 1 : 0);
 	}
 	
 	@Override

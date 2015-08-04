@@ -10,6 +10,13 @@ public class VectorXYZW implements Vector4D {
 		this.z = z2;
 		this.w = w2;
 	}
+	
+	public VectorXYZW(VectorXYZ v, double w2) {
+		this.x = v.x;
+		this.y = v.y;
+		this.z = v.z;
+		this.w = w2;
+	}
 
 	@Override
 	public double getX() {
@@ -103,6 +110,10 @@ public class VectorXYZW implements Vector4D {
 		return new VectorXYZW(-x, -y, -z, -w);
 	}
 	
+	public VectorXYZ xyz() {
+		return new VectorXYZ(x, y, z);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof VectorXYZW)) {
@@ -132,7 +143,7 @@ public class VectorXYZW implements Vector4D {
 	 * creates a VectorXYZ for any Vector4D object.
 	 * If the Vector4D is already a VectorXYZ, this can return the original vector.
 	 */
-	public static VectorXYZW xyz(VectorXYZW vector4D) {
+	public static VectorXYZW xyz(Vector4D vector4D) {
 		if (vector4D instanceof VectorXYZW) {
 			return (VectorXYZW)vector4D;
 		} else {

@@ -181,6 +181,11 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		shader.glVertexAttribPointer(shader.getVertexPositionID(), 3, glValueType(), false, stride, offset);
 	}
 	
+	@Override
+	protected int getValuesPerVertex(Material material) {
+		return JOGLRendererVBO.getValuesPerVertex(material);
+	}
+	
 	protected abstract void put(BufferT buffer, VectorXYZW t);
 	
 }

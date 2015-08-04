@@ -45,9 +45,10 @@ public class WorldObjectView extends DebugView {
 	
 	private void setParameters(final JOGLTarget target) {
 		
+		boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"));
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true));
+    			renderOptions.isWireframe(), true, shadowVolumes));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		

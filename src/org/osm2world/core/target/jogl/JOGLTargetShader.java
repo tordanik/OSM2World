@@ -48,6 +48,7 @@ import jogamp.opengl.ProjectFloat;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.TextureData;
@@ -65,22 +66,25 @@ import com.jogamp.opengl.util.texture.Texture;
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private BumpMapShader defaultShader;
 	private ShadowMapShader shadowMapShader;
+	private ShadowVolumeShader shadowVolumeShader;
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
 	private GL3 gl;
 	private PMVMatrix pmvMatrix;
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
 	private JOGLRendererVBOShader rendererShader;
+	private JOGLRendererVBOShadowVolume rendererShadowVolume;
 	private AxisAlignedBoundingBoxXZ xzBoundary;
 	private boolean showShadowPerspective;
 	
-	private static final boolean USE_SHADOWMAPS = true;
+	private static final boolean USE_SHADOWMAPS = false;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
 		defaultShader = new BumpMapShader(gl);
 		shadowMapShader = new ShadowMapShader(gl);
+		shadowVolumeShader = new ShadowVolumeShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
 		backgroundShader = new BackgroundShader(gl);
 		this.gl = gl;
@@ -214,7 +218,76 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		applyCameraMatrices(pmvMatrix, camera);
 		
-		if (USE_SHADOWMAPS) {
+		if (renderingParameters.useShadowVolumes) {
+			
+			/* Render depth buffer only */
+			defaultShader.useShader();
+			defaultShader.loadDefaults();
+			gl.glDrawBuffer(GL.GL_NONE);
+			defaultShader.setPMVMatrix(pmvMatrix);
+			/* apply global rendering parameters */
+			applyRenderingParameters(gl, renderingParameters);
+			applyLightingParameters(defaultShader, globalLightingParameters);
+			/* render primitives */
+			rendererShader.setShader(defaultShader);
+			rendererShader.render(camera, projection);
+			defaultShader.disableShader();
+			
+			gl.glEnable(GL.GL_STENCIL_TEST);
+			
+			/* Render shadow volumes with depth-fail algorithm. Uses the previously filled depth buffer */
+			gl.glDepthMask(false);
+		    gl.glEnable(GL3.GL_DEPTH_CLAMP); // used to clamp the infinity big shadow volumes
+		    gl.glDisable(GL_CULL_FACE);
+
+		    // We need the stencil test to be enabled but we want it
+		    // to succeed always. Only the depth test matters.
+		    gl.glStencilFunc(GL.GL_ALWAYS, 0, 0xff);
+
+		    // Set the stencil test per the depth fail algorithm
+		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_INCR_WRAP, GL.GL_KEEP);
+		    gl.glStencilOpSeparate(GL.GL_FRONT, GL.GL_KEEP, GL.GL_DECR_WRAP, GL.GL_KEEP);
+
+		    // Debug shadow volumes
+		    //gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		    //gl.glDrawBuffer(GL_BACK);
+		    
+		    shadowVolumeShader.useShader();
+		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
+		    rendererShadowVolume.setShader(shadowVolumeShader);
+		    rendererShadowVolume.render(camera, projection);
+		    shadowVolumeShader.disableShader();
+
+		    // Restore local stuff
+		    gl.glDepthMask(true);
+		    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
+		    gl.glDisable(GL3.GL_DEPTH_CLAMP);
+		    gl.glEnable(GL_CULL_FACE);
+		    
+		    /* Render scene in shadow */
+		    gl.glDrawBuffer(GL_BACK);
+		    // Draw only if the corresponding stencil value is zero
+		    gl.glStencilFunc(GL.GL_NOTEQUAL, 0x0, 0xFF);
+		    // prevent update to the stencil buffer
+		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
+		    
+		    applyRenderingParameters(gl, renderingParameters);
+		    defaultShader.useShader();
+			defaultShader.loadDefaults();
+			defaultShader.setPMVMatrix(pmvMatrix);
+			defaultShader.setShadowed(true);
+//			/* render primitives */
+			rendererShader.setShader(defaultShader);
+			rendererShader.render(camera, projection);
+			defaultShader.disableShader();
+
+			gl.glDisable(GL.GL_STENCIL_TEST);
+			
+		    /* Render scene in light */
+		    // Draw only if the corresponding stencil value is NOT zero
+		    gl.glStencilFunc(GL.GL_NOTEQUAL, 0x0, 0xFF);
+		    
+		} else if (USE_SHADOWMAPS) {
 			// TODO: render only part?
 			shadowMapShader.useShader();
 			shadowMapShader.preparePMVMatrix(globalLightingParameters, pmvMatrix, rendererShader.getBoundingBox());
@@ -403,6 +476,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer, xzBoundary);
 		renderer = rendererShader;
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
+		if (renderingParameters.useShadowVolumes)
+			rendererShadowVolume = new JOGLRendererVBOShadowVolume(gl, primitiveBuffer, new VectorXYZW(globalLightingParameters.lightFromDirection, 0));
 	}
 
 	@Override

@@ -66,7 +66,7 @@ public abstract class VBOData<BufferT extends Buffer> {
 		/* collect the data for the buffer */
 		
 		BufferT valueBuffer = createBuffer(
-				vertexCount * JOGLRendererVBO.getValuesPerVertex(material));
+				vertexCount * getValuesPerVertex(material));
 					
 		for (Primitive primitive : primitives) {
 			addPrimitiveToValueBuffer(valueBuffer, primitive);
@@ -90,7 +90,7 @@ public abstract class VBOData<BufferT extends Buffer> {
 	 * returns the number of vertices required to represent a collection
 	 * of primitives with individual triangles
 	 */
-	private int countVertices(Collection<Primitive> primitives) {
+	static int countVertices(Collection<Primitive> primitives) {
 		
 		int vertexCount = 0;
 		
@@ -176,6 +176,8 @@ public abstract class VBOData<BufferT extends Buffer> {
 	}
 	
 	public abstract void render();
+	
+	protected abstract int getValuesPerVertex(Material material);
 
 	public void delete() {
 		gl.glDeleteBuffers(id.length, id, 0);

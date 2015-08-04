@@ -166,6 +166,9 @@ public class ImageExporter {
 			cap.setSampleBuffers(true);
 			cap.setNumSamples(msaa);
 		}
+		if ("shadowVolumes".equals(config.getString("shadowImplementation"))) {
+			cap.setStencilBits(8);
+		}
 				
 		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
 		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
@@ -305,12 +308,13 @@ public class ImageExporter {
 		
 		JOGLTarget target;
 		if ("shader".equals(config.getString("joglImplementation"))) {
+			boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"));
 			target = new JOGLTargetShader(gl.getGL3(),
-					new JOGLRenderingParameters(CCW, false, true),
+					new JOGLRenderingParameters(CCW, false, true, shadowVolumes),
 					GlobalLightingParameters.DEFAULT);
 		} else {
 			target = new JOGLTargetFixedFunction(gl.getGL2(),
-					new JOGLRenderingParameters(CCW, false, true),
+					new JOGLRenderingParameters(CCW, false, true, false),
 					GlobalLightingParameters.DEFAULT);
 		}
 		

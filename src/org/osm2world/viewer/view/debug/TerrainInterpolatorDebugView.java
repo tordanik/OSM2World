@@ -58,7 +58,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 	public void fillTarget(JOGLTarget target) {
 
 		target.setRenderingParameters(new JOGLRenderingParameters(null,
-    			renderOptions.isWireframe(), true));
+    			renderOptions.isWireframe(), true, false));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		
