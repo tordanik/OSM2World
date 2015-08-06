@@ -269,7 +269,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		nonAreaShader.disableShader();
 		
-		/* render shadows with shadow volumes on top of lighting */
+		/* render shadows with shadow volumes on top of world with lighting */
 		if (renderingParameters.useShadowVolumes) {
 			
 			/* Render shadow volumes with depth-fail algorithm. Uses the previously filled depth buffer */
@@ -298,7 +298,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		    // Restore local stuff
 		    gl.glDepthMask(true);
-		    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 		    gl.glDisable(GL3.GL_DEPTH_CLAMP);
 		    gl.glEnable(GL_CULL_FACE);
 		    
@@ -309,6 +308,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		    // prevent update to the stencil buffer
 		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
 		    gl.glStencilOpSeparate(GL.GL_FRONT, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
+		    // Draw on top of the already rendered world with lighting
+		    gl.glDepthFunc(GL.GL_LEQUAL);
 		    
 		    applyRenderingParameters(gl, renderingParameters);
 		    defaultShader.useShader();
@@ -342,6 +343,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			
 			// reset
 		    gl.glDisable(GL.GL_STENCIL_TEST);
+		    gl.glDepthFunc(GL.GL_LESS);
 		}
 	}
 	

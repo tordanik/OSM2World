@@ -74,6 +74,7 @@ public class ShadowMapShader extends DepthBufferShader {
 	public ShadowMapShader(GL3 gl) {
 		super(gl);
 		
+		pmvMat = new PMVMatrix();
 		initializeShadowMap();
 	}
 	
@@ -464,6 +465,10 @@ public class ShadowMapShader extends DepthBufferShader {
 		if (y > boundingBox[3]) { boundingBox[3] = y; }
 		if (z < boundingBox[4]) { boundingBox[4] = z; }
 		if (z > boundingBox[5]) { boundingBox[5] = z; }
+	}
+
+	public PMVMatrix getPMVMatrix() {
+		return pmvMat;
 	}
 	
 	public int getShadowMapHandle() {

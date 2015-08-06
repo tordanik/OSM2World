@@ -63,11 +63,6 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	private int vertexPositionID;
 	private int[] vertexTexCoordID = new int[BumpMapShader.MAX_TEXTURE_LAYERS];
 	
-	/**
-	 *  model view projection matrix of the shadow casting light source
-	 */
-	private PMVMatrix pmvMat;
-	
 	public DepthBufferShader(GL3 gl) {
 		super(gl, "/shaders/shadowmap");
 		
@@ -78,8 +73,6 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		
 		// get indices of uniform variables
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
-		
-		pmvMat = new PMVMatrix();
 	}
 	
 	/**
@@ -90,10 +83,6 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
 		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
-	}
-	
-	public PMVMatrix getPMVMatrix() {
-		return pmvMat;
 	}
 	
 	public int getVertexPositionID() {
