@@ -94,10 +94,10 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	}
 
 	@Override
-	public void setMaterial(Material material, JOGLTextureManager textureManager) {
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		
 		if (!USE_TRANSPARENCY) {
-			return;
+			return true;
 		}
 		
 		/*
@@ -161,6 +161,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	    	}
 	    }
 	   
+	    return true;
 	}
 
 	static final int getGLTextureConstant(int textureNumber) {

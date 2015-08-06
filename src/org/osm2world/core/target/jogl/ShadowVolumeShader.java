@@ -43,8 +43,8 @@ public class ShadowVolumeShader extends AbstractPrimitiveShader {
 	}
 
 	@Override
-	public void setMaterial(Material material, JOGLTextureManager textureManager) {
-		// TODO Auto-generated method stub
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+		return true;
 	}
 	
 	@Override

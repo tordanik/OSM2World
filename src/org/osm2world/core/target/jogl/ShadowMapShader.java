@@ -66,6 +66,8 @@ public class ShadowMapShader extends DepthBufferShader {
 	
 	private int[] viewport = new int[4];
 	
+	private boolean renderOpaque = true;
+	
 	/**
 	 *  model view projection matrix of the shadow casting light source
 	 */
@@ -465,6 +467,18 @@ public class ShadowMapShader extends DepthBufferShader {
 		if (y > boundingBox[3]) { boundingBox[3] = y; }
 		if (z < boundingBox[4]) { boundingBox[4] = z; }
 		if (z > boundingBox[5]) { boundingBox[5] = z; }
+	}
+	
+	@Override
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+		if (!renderOpaque && material.getTransparency() == Transparency.FALSE) {
+			return false;
+		}
+		return super.setMaterial(material, textureManager);
+	}
+	
+	public void setRenderOpaque(boolean renderOpaque) {
+		this.renderOpaque = renderOpaque;
 	}
 
 	public PMVMatrix getPMVMatrix() {

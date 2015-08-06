@@ -222,6 +222,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			// TODO: render only part?
 			shadowMapShader.useShader();
 			shadowMapShader.preparePMVMatrix(globalLightingParameters, pmvMatrix, rendererShader.getBoundingBox());
+			// render opaque shadow casters only when not using shadow volumes simultaneously, as those will be rendered there
+			shadowMapShader.setRenderOpaque(!renderingParameters.useShadowVolumes);
 			//shadowMapShader.setPMVMatrix(pmvMatrix);
 			
 			/* render primitives to shadow map*/

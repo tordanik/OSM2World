@@ -142,7 +142,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	}
 	
 	@Override
-	public void setMaterial(Material material, JOGLTextureManager textureManager) {
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 
 		int numTexLayers = 0;
 		if (material.getTextureDataList() != null) {
@@ -258,7 +258,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
 	    	}
 	    }
-	   
+	   return true;
 	}
 	
 	static final int getGLTextureConstant(int textureNumber) {

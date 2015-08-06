@@ -10,7 +10,7 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 		super(gl, name);
 	}
 
-	public abstract void setMaterial(Material material, JOGLTextureManager textureManager);
+	public abstract boolean setMaterial(Material material, JOGLTextureManager textureManager);
 
 	public abstract int getVertexPositionID();
 

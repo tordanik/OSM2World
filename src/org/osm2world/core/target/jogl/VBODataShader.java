@@ -138,9 +138,9 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
 
 		setPointerLayout();
-		shader.setMaterial(material, textureManager);
+		if (shader.setMaterial(material, textureManager))
+			gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 		
-		gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 		for (int i=1; i<DefaultShader.MAX_TEXTURE_LAYERS; i++) {
 			shader.glDisableVertexAttribArray(shader.getVertexTexCoordID(i));
 		}
