@@ -218,84 +218,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		applyCameraMatrices(pmvMatrix, camera);
 		
-		if (renderingParameters.useShadowVolumes) {
-			
-			/* Render depth buffer only */
-			depthBufferShader.useShader();
-			depthBufferShader.loadDefaults();
-			gl.glDrawBuffer(GL.GL_NONE);
-			depthBufferShader.setPMVMatrix(pmvMatrix);
-			/* apply global rendering parameters */
-			applyRenderingParameters(gl, renderingParameters);
-			/* render primitives */
-			rendererShader.setShader(depthBufferShader);
-			rendererShader.render(camera, projection);
-			depthBufferShader.disableShader();
-			
-			gl.glEnable(GL.GL_STENCIL_TEST);
-			
-			/* Render shadow volumes with depth-fail algorithm. Uses the previously filled depth buffer */
-			gl.glDepthMask(false);
-		    gl.glEnable(GL3.GL_DEPTH_CLAMP); // used to clamp the infinity big shadow volumes
-		    gl.glDisable(GL_CULL_FACE);
-
-		    // We need the stencil test to be enabled but we want it
-		    // to succeed always. Only the depth test matters.
-		    gl.glStencilFunc(GL.GL_ALWAYS, 0, 0xff);
-
-		    // Set the stencil test per the depth fail algorithm
-		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_INCR_WRAP, GL.GL_KEEP);
-		    gl.glStencilOpSeparate(GL.GL_FRONT, GL.GL_KEEP, GL.GL_DECR_WRAP, GL.GL_KEEP);
-		    
-		    // relax depth test to prevent z-fighting with self shadowing
-		    //gl.glDepthFunc(GL.GL_LEQUAL);
-		    
-		    shadowVolumeShader.useShader();
-		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
-		    rendererShadowVolume.setShader(shadowVolumeShader);
-		    rendererShadowVolume.render(camera, projection);
-		    shadowVolumeShader.disableShader();
-
-		    // Restore local stuff
-		    gl.glDepthMask(true);
-		    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
-		    gl.glDisable(GL3.GL_DEPTH_CLAMP);
-		    gl.glEnable(GL_CULL_FACE);
-		    
-		    /* Render scene in shadow */
-		    gl.glDrawBuffer(GL_BACK);
-		    // Draw only if the corresponding stencil value is NOT zero
-		    gl.glStencilFunc(GL.GL_NOTEQUAL, 0x0, 0xFF);
-		    // prevent update to the stencil buffer
-		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
-		    gl.glStencilOpSeparate(GL.GL_FRONT, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
-		    
-		    applyRenderingParameters(gl, renderingParameters);
-		    defaultShader.useShader();
-			defaultShader.loadDefaults();
-			defaultShader.setPMVMatrix(pmvMatrix);
-			defaultShader.setShadowed(true);
-//			/* render primitives */
-			rendererShader.setShader(defaultShader);
-			rendererShader.render(camera, projection);
-			defaultShader.setShadowed(false);
-			defaultShader.disableShader();
-
-			// Render shadow volumes for debug
-			/*gl.glDisable(GL.GL_STENCIL_TEST);
-			//gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		    shadowVolumeShader.useShader();
-		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
-		    rendererShadowVolume.setShader(shadowVolumeShader);
-		    rendererShadowVolume.render(camera, projection);
-		    shadowVolumeShader.disableShader();*/
-			
-		    /* Render scene in light */
-		    // Draw only if the corresponding stencil value is zero
-		    gl.glStencilFunc(GL.GL_EQUAL, 0x0, 0xFF);
-		    //return;
-		    
-		} else if (renderingParameters.useShadowMaps) {
+		if (renderingParameters.useShadowMaps) {
 			// TODO: render only part?
 			shadowMapShader.useShader();
 			shadowMapShader.preparePMVMatrix(globalLightingParameters, pmvMatrix, rendererShader.getBoundingBox());
@@ -345,6 +268,79 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		nonAreaRenderer.render();
 		
 		nonAreaShader.disableShader();
+		
+		/* render shadows with shadow volumes on top of the already rendered scene in light */
+		if (renderingParameters.useShadowVolumes) {
+			
+			/* Render shadow volumes with depth-fail algorithm. Uses the previously filled depth buffer */
+			gl.glDrawBuffer(GL.GL_NONE);
+			gl.glEnable(GL.GL_STENCIL_TEST);
+			gl.glDepthMask(false);
+		    gl.glEnable(GL3.GL_DEPTH_CLAMP); // used to clamp the infinity big shadow volumes
+		    gl.glDisable(GL_CULL_FACE);
+
+		    // We need the stencil test to be enabled but we want it
+		    // to succeed always. Only the depth test matters.
+		    gl.glStencilFunc(GL.GL_ALWAYS, 0, 0xff);
+
+		    // Set the stencil test per the depth fail algorithm
+		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_INCR_WRAP, GL.GL_KEEP);
+		    gl.glStencilOpSeparate(GL.GL_FRONT, GL.GL_KEEP, GL.GL_DECR_WRAP, GL.GL_KEEP);
+		    
+		    // relax depth test to prevent z-fighting with self shadowing
+		    //gl.glDepthFunc(GL.GL_LEQUAL);
+		    
+		    shadowVolumeShader.useShader();
+		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
+		    rendererShadowVolume.setShader(shadowVolumeShader);
+		    rendererShadowVolume.render(camera, projection);
+		    shadowVolumeShader.disableShader();
+
+		    // Restore local stuff
+		    gl.glDepthMask(true);
+		    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
+		    gl.glDisable(GL3.GL_DEPTH_CLAMP);
+		    gl.glEnable(GL_CULL_FACE);
+		    
+		    /* Render scene in shadow */
+		    gl.glDrawBuffer(GL_BACK);
+		    // Draw only if the corresponding stencil value is NOT zero
+		    gl.glStencilFunc(GL.GL_NOTEQUAL, 0x0, 0xFF);
+		    // prevent update to the stencil buffer
+		    gl.glStencilOpSeparate(GL.GL_BACK, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
+		    gl.glStencilOpSeparate(GL.GL_FRONT, GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP);
+		    
+		    applyRenderingParameters(gl, renderingParameters);
+		    defaultShader.useShader();
+			defaultShader.loadDefaults();
+			defaultShader.setPMVMatrix(pmvMatrix);
+			defaultShader.setShadowed(true);
+//			/* render primitives */
+			rendererShader.setShader(defaultShader);
+			rendererShader.render(camera, projection);
+			defaultShader.setShadowed(false);
+			defaultShader.disableShader();
+			
+			/* non area primitives */
+			nonAreaShader.useShader();
+			nonAreaShader.loadDefaults();
+			
+			nonAreaShader.setPMVMatrix(pmvMatrix);
+			
+			nonAreaRenderer.render();
+			
+			nonAreaShader.disableShader();
+
+			// Render shadow volumes for debug
+			/*gl.glDisable(GL.GL_STENCIL_TEST);
+			//gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		    shadowVolumeShader.useShader();
+		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
+		    rendererShadowVolume.setShader(shadowVolumeShader);
+		    rendererShadowVolume.render(camera, projection);
+		    shadowVolumeShader.disableShader();*/
+		    
+		}
 	}
 	
 	static final void applyRenderingParameters(GL3 gl,
