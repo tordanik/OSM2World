@@ -640,7 +640,7 @@ public final class GeometryUtil {
 	    return tangents;
 	}
 	
-	private static final double SHADOWVOLUME_EPSILON = 0f;
+	private static final double SHADOWVOLUME_EPSILON = 0.1f;
 	
 	public static final List<VectorXYZW> calculateShadowVolumesPerTriangle(List<VectorXYZ> vertices, VectorXYZW lightPos) {
 		
