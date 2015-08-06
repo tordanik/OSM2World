@@ -67,6 +67,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private BumpMapShader defaultShader;
 	private ShadowMapShader shadowMapShader;
 	private ShadowVolumeShader shadowVolumeShader;
+	private DepthBufferShader depthBufferShader;
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
 	private GL3 gl;
@@ -82,6 +83,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		super(gl, renderingParameters, globalLightingParameters);
 		defaultShader = new BumpMapShader(gl);
 		shadowMapShader = new ShadowMapShader(gl);
+		depthBufferShader = new DepthBufferShader(gl);
 		shadowVolumeShader = new ShadowVolumeShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
 		backgroundShader = new BackgroundShader(gl);
@@ -219,17 +221,16 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		if (renderingParameters.useShadowVolumes) {
 			
 			/* Render depth buffer only */
-			defaultShader.useShader();
-			defaultShader.loadDefaults();
+			depthBufferShader.useShader();
+			depthBufferShader.loadDefaults();
 			gl.glDrawBuffer(GL.GL_NONE);
-			defaultShader.setPMVMatrix(pmvMatrix);
+			depthBufferShader.setPMVMatrix(pmvMatrix);
 			/* apply global rendering parameters */
 			applyRenderingParameters(gl, renderingParameters);
-			applyLightingParameters(defaultShader, globalLightingParameters);
 			/* render primitives */
-			rendererShader.setShader(defaultShader);
+			rendererShader.setShader(depthBufferShader);
 			rendererShader.render(camera, projection);
-			defaultShader.disableShader();
+			depthBufferShader.disableShader();
 			
 			gl.glEnable(GL.GL_STENCIL_TEST);
 			
@@ -485,6 +486,15 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 		if (renderingParameters.useShadowVolumes)
 			rendererShadowVolume = new JOGLRendererVBOShadowVolume(gl, primitiveBuffer, new VectorXYZW(globalLightingParameters.lightFromDirection, 0));
+	}
+	
+	@Override
+	public void reset() {
+		super.reset();
+		if (rendererShadowVolume != null) {
+			rendererShadowVolume.freeResources();
+			rendererShadowVolume = null;
+		}
 	}
 
 	@Override

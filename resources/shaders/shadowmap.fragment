@@ -48,5 +48,5 @@ void main()
 	if( texColor.a < 0.01 )
 		discard;
 	
-	// nothing to output do, only depth buffer needed
+	// nothing to output, only depth buffer needed
 } 
