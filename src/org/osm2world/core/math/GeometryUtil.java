@@ -640,6 +640,8 @@ public final class GeometryUtil {
 	    return tangents;
 	}
 	
+	private static final double SHADOWVOLUME_EPSILON = 0f;
+	
 	public static final List<VectorXYZW> calculateShadowVolumesPerTriangle(List<VectorXYZ> vertices, VectorXYZW lightPos) {
 		
 		List<VectorXYZW> shadowVolumes = new ArrayList<VectorXYZW>();
@@ -656,8 +658,16 @@ public final class GeometryUtil {
 			else
 				lightDir = v1.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
 			
-			// Handle only light facing triangles
-			if (normal.dot(lightDir) > 0) {
+			// skip parallel triangles
+			if (approxZero(normal.dot(lightDir)))
+				continue;
+			
+			// revert non light facing triangles
+			if (normal.dot(lightDir) < 0) {
+				VectorXYZ tmp = v2;
+				v2 = v3;
+				v3 = tmp;
+			}
 			
 				// calculate the volume sides
 				shadowVolumes.addAll(emitQuad(v1, v2, lightPos));
@@ -665,17 +675,17 @@ public final class GeometryUtil {
 				shadowVolumes.addAll(emitQuad(v3, v1, lightPos));
 
 				// calculate the front/back cap
-				VectorXYZW c1 = new VectorXYZW( v1.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW c1 = new VectorXYZW( v1.add(lightDir.mult(SHADOWVOLUME_EPSILON)), 1);
 				VectorXYZW b1 = new VectorXYZW( lightDir, 0);
 
 				if (lightPos.w != 0)
 					lightDir = v2.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
-				VectorXYZW c2 = new VectorXYZW( v2.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW c2 = new VectorXYZW( v2.add(lightDir.mult(SHADOWVOLUME_EPSILON)), 1);
 				VectorXYZW b2 = new VectorXYZW( lightDir, 0);
 
 				if (lightPos.w != 0)
 					lightDir = v3.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
-				VectorXYZW c3 = new VectorXYZW( v3.add(lightDir.mult(EPSILON)), 1);
+				VectorXYZW c3 = new VectorXYZW( v3.add(lightDir.mult(SHADOWVOLUME_EPSILON)), 1);
 				VectorXYZW b3 = new VectorXYZW( lightDir, 0);
 
 				shadowVolumes.add(c1);
@@ -686,7 +696,7 @@ public final class GeometryUtil {
 				shadowVolumes.add(b1);
 				shadowVolumes.add(b3);
 				shadowVolumes.add(b2);
-			}
+			//}
 			
 		}
 		
@@ -704,19 +714,19 @@ public final class GeometryUtil {
 		else
 			lightDir = start.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
 		
-		VectorXYZW v1 = new VectorXYZW(start.add(lightDir.mult(EPSILON)), 1);
+		VectorXYZW v1 = new VectorXYZW(start.add(lightDir.mult(SHADOWVOLUME_EPSILON)), 1);
 		
 	    // Vertex #2: the starting vertex projected to infinity
-		VectorXYZW v2 = new VectorXYZW(lightDir.mult(EPSILON), 0);
+		VectorXYZW v2 = new VectorXYZW(lightDir, 0);
 		
 	    // Vertex #3: the ending vertex (just a tiny bit below the original edge)
 		if (lightPos.w != 0)
 			lightDir = end.subtract(lightPos.xyz().mult(1/lightPos.w)).normalize();
 	    
-		VectorXYZW v3 = new VectorXYZW(end.add(lightDir.mult(EPSILON)), 1);
+		VectorXYZW v3 = new VectorXYZW(end.add(lightDir.mult(SHADOWVOLUME_EPSILON)), 1);
 
 	    // Vertex #4: the ending vertex projected to infinity
-		VectorXYZW v4 = new VectorXYZW(lightDir.mult(EPSILON), 0); // TODO: correct for directional light?
+		VectorXYZW v4 = new VectorXYZW(lightDir, 0);
 	    
 		result.add(v1);
 		result.add(v2);
@@ -724,6 +734,12 @@ public final class GeometryUtil {
 		result.add(v3);
 		result.add(v2);
 		result.add(v4);
+//		result.add(v1);
+//		result.add(v3);
+//		result.add(v2);
+//		result.add(v3);
+//		result.add(v4);
+//		result.add(v2);
 		return result;
 	}
 	

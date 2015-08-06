@@ -309,12 +309,13 @@ public class ImageExporter {
 		JOGLTarget target;
 		if ("shader".equals(config.getString("joglImplementation"))) {
 			boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"));
+			boolean shadowMaps = "shadowMaps".equals(config.getString("shadowImplementation"));
 			target = new JOGLTargetShader(gl.getGL3(),
-					new JOGLRenderingParameters(CCW, false, true, shadowVolumes),
+					new JOGLRenderingParameters(CCW, false, true, shadowVolumes, shadowMaps),
 					GlobalLightingParameters.DEFAULT);
 		} else {
 			target = new JOGLTargetFixedFunction(gl.getGL2(),
-					new JOGLRenderingParameters(CCW, false, true, false),
+					new JOGLRenderingParameters(CCW, false, true, false, false),
 					GlobalLightingParameters.DEFAULT);
 		}
 		

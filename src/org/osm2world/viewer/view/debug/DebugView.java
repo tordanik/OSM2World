@@ -91,11 +91,12 @@ public abstract class DebugView {
 			if (target == null) {
 				if ("shader".equals(config.getString("joglImplementation"))) {
 					boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"));
+					boolean shadowMaps = "shadowMaps".equals(config.getString("shadowImplementation"));
 					target = new JOGLTargetShader(gl.getGL3(), new JOGLRenderingParameters(
-							null, false, true, shadowVolumes), null);
+							null, false, true, shadowVolumes, shadowMaps), null);
 				} else {
 					target = new JOGLTargetFixedFunction(gl.getGL2(), new JOGLRenderingParameters(
-							null, false, true, false), null);
+							null, false, true, false, false), null);
 				}
 				target.setConfiguration(config);
 			} else if (targetNeedsReset){

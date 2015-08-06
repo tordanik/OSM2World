@@ -23,6 +23,7 @@ public class JOGLRenderingParameters {
 	final boolean wireframe;
 	final boolean useZBuffer;
 	final boolean useShadowVolumes;
+	final boolean useShadowMaps;
 	
 	/**
 	 * @param frontFace   winding of the front face for backface culling;
@@ -31,12 +32,13 @@ public class JOGLRenderingParameters {
 	 * @param useZBuffer  enables the z buffer, should usually be true
 	 */
 	public JOGLRenderingParameters(
-			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean useShadowVolumes) {
+			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean useShadowVolumes, boolean useShadowMaps) {
 		
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
 		this.useShadowVolumes = useShadowVolumes;
+		this.useShadowMaps = useShadowMaps;
 	}
 	
 }

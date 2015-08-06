@@ -8,5 +8,5 @@ out vec4 FragColor;
 void main()
 {	
 	// nothing to output, only depth buffer needed
-	FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	FragColor = vec4(1.0, 1.0, 1.0, 0.5);
 } 
