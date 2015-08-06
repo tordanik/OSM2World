@@ -269,7 +269,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		nonAreaShader.disableShader();
 		
-		/* render shadows with shadow volumes on top of the already rendered scene in light */
+		/* render shadows with shadow volumes on top of lighting */
 		if (renderingParameters.useShadowVolumes) {
 			
 			/* Render shadow volumes with depth-fail algorithm. Uses the previously filled depth buffer */
@@ -339,7 +339,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		    rendererShadowVolume.setShader(shadowVolumeShader);
 		    rendererShadowVolume.render(camera, projection);
 		    shadowVolumeShader.disableShader();*/
-		    
+			
+			// reset
+		    gl.glDisable(GL.GL_STENCIL_TEST);
 		}
 	}
 	
