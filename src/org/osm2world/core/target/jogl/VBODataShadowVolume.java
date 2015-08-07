@@ -121,6 +121,13 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 			
 		}
 		
+		/*
+		 *  NOTE: performance could be improved a lot if shadow volume geometry would be minimized.
+		 *  Suggestions:
+		 *   * calculate volumes only for silhouette
+		 *   * skip back facing triangles (from light perspective). All shadow casting objectes have to be closed then.
+		 *   * use low poly model for shadow volume generation (only useful for high poly objects)
+		 */
 		List<VectorXYZW> shadowVolumeVertices = GeometryUtil.calculateShadowVolumesPerTriangle(primVertices, lightPos);
 					
 		/* put the values into the buffer, in the right order */

@@ -46,6 +46,7 @@ import javax.media.opengl.GL3;
 
 import jogamp.opengl.ProjectFloat;
 
+import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
@@ -77,6 +78,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private JOGLRendererVBOShadowVolume rendererShadowVolume;
 	private AxisAlignedBoundingBoxXZ xzBoundary;
 	private boolean showShadowPerspective;
+	
+	private static boolean OVERWRITE_PROJECTION_CLIPPLING_PLANES = true;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -205,12 +208,53 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		backgroundShader.disableShader();
 	}
+	
+	public static Projection updateClippingPlanesForCamera(Camera camera, Projection projection, AxisAlignedBoundingBoxXYZ boundingBox) {
+		
+		double nearPlane = Double.POSITIVE_INFINITY, farPlane = 0;
+		
+		PMVMatrix camMat = new PMVMatrix();
+		VectorXYZ pos = camera.getPos();
+		VectorXYZ lookAt = camera.getLookAt();
+		VectorXYZ up = camera.getUp();
+		camMat.gluLookAt(
+				(float)pos.x, (float)pos.y, (float)-pos.z,
+				(float)lookAt.x, (float)lookAt.y, (float)-lookAt.z,
+				(float)up.x, (float)up.y, (float)-up.z);
+		
+		
+		for (VectorXYZ corner : boundingBox.corners()) {
+			float[] result = new float[4];
+			FloatUtil.multMatrixVecf(camMat.glGetMvMatrixf(),
+					new float[]{(float)corner.x, (float)corner.y, (float)corner.z, 1}, result);
+			VectorXYZ cornerCam = new VectorXYZ(result[0]/result[3], result[1]/result[3], result[2]/result[3]);
+			double depth = -cornerCam.z;
+			nearPlane = Math.min(depth, nearPlane);
+			farPlane = Math.max(depth, farPlane);
+		}
+		
+		if (nearPlane == Double.POSITIVE_INFINITY)
+			nearPlane = projection.getNearClippingDistance();
+		else
+			nearPlane = Math.max(projection.getNearClippingDistance(), nearPlane);
+		if (farPlane == 0)
+			farPlane = projection.getFarClippingDistance();
+		else
+			farPlane = Math.min(projection.getFarClippingDistance(), farPlane);
+		
+		return new Projection(projection.isOrthographic(), projection.getAspectRatio(),
+				projection.getVertAngle(), projection.getVolumeHeight(), nearPlane, farPlane);
+	}
 
 	@Override
 	public void renderPart(Camera camera, Projection projection, double xStart,
 			double xEnd, double yStart, double yEnd) {
 		if (renderer == null) {
 			throw new IllegalStateException("finish must be called first");
+		}
+		
+		if (OVERWRITE_PROJECTION_CLIPPLING_PLANES) {
+			projection = updateClippingPlanesForCamera(camera, projection, rendererShader.getBoundingBox());
 		}
 		
 		applyProjectionMatricesForPart(pmvMatrix, projection,

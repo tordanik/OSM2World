@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
@@ -41,6 +42,7 @@ import javax.media.opengl.GLException;
 
 import jogamp.opengl.ProjectFloat;
 
+import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.TextureData;
@@ -59,6 +61,13 @@ public class ShadowMapShader extends DepthBufferShader {
 	
 	public static final int shadowMapWidth = 4096;
 	public static final int shadowMapHeight = 4096;
+	
+	/**
+	 * Padding for the calculated bounding box around the camera frustum.
+	 * This is needed to not cut away shadow casters outside but nearby the camera frustum
+	 * that may cast shadows which lay within the camera frustum.
+	 */
+	public static final int CAMERA_FRUSTUM_PADDING = 8;
 	
 	public int depthBufferHandle;
 	public int colorBufferHandle;
@@ -291,7 +300,7 @@ public class ShadowMapShader extends DepthBufferShader {
 	 * (see http://www-sop.inria.fr/reves/Marc.Stamminger/psm/)
 	 * @param lighting
 	 */
-	public void preparePMVMatrixPSM(GlobalLightingParameters lighting, PMVMatrix cameraPMV, double[] primitivesBoundingBox) {
+	public void preparePMVMatrixPSM(GlobalLightingParameters lighting, PMVMatrix cameraPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
 		
 		// camera PMV Matrix:
 		FloatBuffer camPMvMat = FloatBuffer.allocate(16);
@@ -344,7 +353,7 @@ public class ShadowMapShader extends DepthBufferShader {
 	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective
 	 * @param lighting
 	 */
-	public void preparePMVMatrix(GlobalLightingParameters lighting, PMVMatrix cameraPMV, double[] primitivesBoundingBox) {
+	public void preparePMVMatrix(GlobalLightingParameters lighting, PMVMatrix cameraPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
 		
 		// set view and projection matrices to light source
 
@@ -365,26 +374,14 @@ public class ShadowMapShader extends DepthBufferShader {
 				(float)(projection.getFarClippingDistance()));*/
 		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
 		
-		float[] frustum;
-		//frustum = intersectFrustum(calculateCameraLightFrustum(pmvMat, cameraPMV),
-		//		calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));
-		frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
+		AxisAlignedBoundingBoxXYZ frustum;
+		frustum = AxisAlignedBoundingBoxXYZ.intersect(calculateCameraLightFrustum(pmvMat, cameraPMV),
+				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));
+		//frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
 		//System.out.println("shadow map frustum: " + Arrays.toString(frustum));
-		pmvMat.glOrthof(frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
+		pmvMat.glOrthof((float)frustum.minX, (float)frustum.maxX, (float)frustum.minY, (float)frustum.maxY, (float)frustum.minZ, (float)frustum.maxZ);
 		
 		setPMVMatrix(pmvMat);
-	}
-	
-	private float[] intersectFrustum(float[] frustum1, float[] frustum2) {
-		float[] result = new float[frustum1.length];
-		for (int i=0; i<frustum1.length; i++) {
-			if (i%2 == 0) {
-				result[i] = Math.max(frustum1[i], frustum2[i]);
-			} else {
-				result[i] = Math.min(frustum1[i], frustum2[i]);
-			}
-		}
-		return result;
 	}
 	
 	/**
@@ -394,25 +391,16 @@ public class ShadowMapShader extends DepthBufferShader {
 	 * @param primitivesBoundingBox
 	 * @return
 	 */
-	private float[] calculatePrimitivesLightFrustum(PMVMatrix lightPMV, double[] primitivesBoundingBox) {
-		float[] frustum = null;
-		for (double x : new double[]{primitivesBoundingBox[0], primitivesBoundingBox[1]}) {
-			for (double y : new double[]{primitivesBoundingBox[2], primitivesBoundingBox[3]}) {
-				for (double z : new double[]{primitivesBoundingBox[4], primitivesBoundingBox[5]}) {
-					float[] corner = {(float)x, (float)y, (float)z, 1};
-					float[] result = new float[4];
-					FloatUtil.multMatrixVecf(lightPMV.glGetMvMatrixf(), corner, result);
-					float frustumCornerX = result[0]/result[3];
-					float frustumCornerY = result[1]/result[3];
-					float frustumCornerZ = result[2]/result[3];
-					if (frustum == null) {
-						frustum = new float[] {frustumCornerX, frustumCornerX, frustumCornerY, frustumCornerY, frustumCornerZ, frustumCornerZ};
-					} else {
-						addToBoundingBox(frustum, frustumCornerX, frustumCornerY, frustumCornerZ);
-					}
-				}
-			}
+	private AxisAlignedBoundingBoxXYZ calculatePrimitivesLightFrustum(PMVMatrix lightPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
+		
+		ArrayList<VectorXYZ> corners = new ArrayList<VectorXYZ>();
+		for (VectorXYZ corner : primitivesBoundingBox.corners()) {
+			float[] result = new float[4];
+			FloatUtil.multMatrixVecf(lightPMV.glGetMvMatrixf(), new float[]{(float)corner.x, (float)corner.y, (float)corner.z, 1}, result);
+			corners.add(new VectorXYZ(result[0]/result[3], result[1]/result[3], result[2]/result[3]));
 		}
+		AxisAlignedBoundingBoxXYZ frustum = new AxisAlignedBoundingBoxXYZ(corners);
+
 		return frustum;
 	}
 	
@@ -422,7 +410,7 @@ public class ShadowMapShader extends DepthBufferShader {
 	 * @param cameraPMV
 	 * @param frustum
 	 */
-	private float[] calculateCameraLightFrustum(PMVMatrix lightPMV, PMVMatrix cameraPMV) {
+	private AxisAlignedBoundingBoxXYZ calculateCameraLightFrustum(PMVMatrix lightPMV, PMVMatrix cameraPMV) {
 		/*
 		 * calculate transform from screen space bounding box to light space:
 		 * inverse projection -> inverse modelview -> modelview of light
@@ -439,34 +427,19 @@ public class ShadowMapShader extends DepthBufferShader {
 		 * transform screen space bounding box to light space
 		 * and calculate axis aligned bounding box
 		 */
-		float[] frustum = null;
+		ArrayList<VectorXYZ> corners = new ArrayList<VectorXYZ>();
 		for (int x = -1; x<=1; x+=2) {
 			for (int y = -1; y<=1; y+=2) {
 				for (int z = -1; z<=1; z+=2) {
 					float[] NDCcorner = {x, y, z, 1};
 					float[] result = new float[4];
 					FloatUtil.multMatrixVecf(NDC2light, NDCcorner, result);
-					float frustumCornerX = result[0]/result[3];
-					float frustumCornerY = result[1]/result[3];
-					float frustumCornerZ = result[2]/result[3];
-					if (frustum == null) {
-						frustum = new float[] {frustumCornerX, frustumCornerX, frustumCornerY, frustumCornerY, frustumCornerZ, frustumCornerZ};
-					} else {
-						addToBoundingBox(frustum, frustumCornerX, frustumCornerY, frustumCornerZ);
-					}
+					corners.add(new VectorXYZ(result[0]/result[3], result[1]/result[3], -result[2]/result[3]));
 				}
 			}
 		}
+		AxisAlignedBoundingBoxXYZ frustum = new AxisAlignedBoundingBoxXYZ(corners).pad(CAMERA_FRUSTUM_PADDING);
 		return frustum;
-	}
-	
-	private void addToBoundingBox(float[] boundingBox, float x, float y, float z) {
-		if (x < boundingBox[0]) { boundingBox[0] = x; }
-		if (x > boundingBox[1]) { boundingBox[1] = x; }
-		if (y < boundingBox[2]) { boundingBox[2] = y; }
-		if (y > boundingBox[3]) { boundingBox[3] = y; }
-		if (z < boundingBox[4]) { boundingBox[4] = z; }
-		if (z > boundingBox[5]) { boundingBox[5] = z; }
 	}
 	
 	@Override
