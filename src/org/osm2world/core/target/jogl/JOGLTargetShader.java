@@ -69,6 +69,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private ShadowMapShader shadowMapShader;
 	private ShadowVolumeShader shadowVolumeShader;
 	private DepthBufferShader depthBufferShader;
+	private SSAOShader ssaoShader;
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
 	private GL3 gl;
@@ -87,6 +88,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		defaultShader = new BumpMapShader(gl);
 		shadowMapShader = new ShadowMapShader(gl);
 		depthBufferShader = new DepthBufferShader(gl);
+		ssaoShader = new SSAOShader(gl);
 		shadowVolumeShader = new ShadowVolumeShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
 		backgroundShader = new BackgroundShader(gl);
@@ -253,7 +255,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			throw new IllegalStateException("finish must be called first");
 		}
 		
-		if (OVERWRITE_PROJECTION_CLIPPLING_PLANES) {
+		if (renderingParameters.overwriteProjectionClippingPlanes) {
 			projection = updateClippingPlanesForCamera(camera, projection, rendererShader.getBoundingBox());
 		}
 		
@@ -261,6 +263,17 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				xStart, xEnd, yStart, yEnd);
 		
 		applyCameraMatrices(pmvMatrix, camera);
+		
+		if (renderingParameters.useSSAO) {
+			// based on http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html
+			// render depth buffer only
+			ssaoShader.useShader();
+			ssaoShader.setPMVMatrix(pmvMatrix);
+			applyRenderingParameters(gl, renderingParameters);
+			rendererShader.setShader(ssaoShader);
+			rendererShader.render(camera, projection);
+			ssaoShader.disableShader();
+		}
 		
 		if (renderingParameters.useShadowMaps) {
 			// TODO: render only part?
@@ -296,6 +309,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		if (renderingParameters.useShadowMaps) {
 			defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
 			defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
+		}
+		if (!showShadowPerspective && renderingParameters.useSSAO) {
+			defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 		}
 		
 		/* render primitives */

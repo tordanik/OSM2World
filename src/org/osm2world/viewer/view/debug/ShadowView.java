@@ -53,7 +53,7 @@ public class ShadowView extends DebugView {
 				|| "both".equals(config.getString("shadowImplementation"));
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps));
+    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, false, false));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		

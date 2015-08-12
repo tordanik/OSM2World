@@ -23,11 +23,12 @@ struct MaterialInfo {
 uniform MaterialInfo Material;
 
 uniform mat4 ModelViewMatrix;
+uniform mat4 ProjectionMatrix;
  
 // corresponds with output from vertex shader, gets interpolated
 in vec3 VertexEye;
-in vec3 Normal;
-in vec4 Tangent;
+in vec3 NormalEye;
+in vec4 TangentEye;
 in vec2 BumpMapCoord;
 in vec4 ShadowCoord;
 in vec2 TexCoord0;
@@ -40,6 +41,15 @@ uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
 uniform bool useShadowMap;
 uniform sampler2DShadow ShadowMap;
+
+uniform bool useSSAO;
+uniform sampler2D DepthMap;
+//uniform sampler2D NoiseTex;
+const int MAX_KERNEL_SIZE = 128;
+const float SSAO_SAMPLE_THRESHOLD = 0.15;
+uniform int uKernelSize;
+uniform vec3 uKernelOffsets[MAX_KERNEL_SIZE];
+uniform float uRadius = 1;
 
 uniform bool useAlphaTreshold;
 uniform float alphaTreshold;
@@ -77,6 +87,78 @@ vec3 toonShade( vec3 lightDir, vec3 norm, out vec3 ambient, out vec3 diffuse )
 	
 	return ambient + diffuse;
 }
+
+float linearizeDepth(in float depth, in mat4 projMatrix) {
+	return -projMatrix[3][2] / ((depth*2-1.0) + projMatrix[2][2]);
+}
+
+float ssao( vec3 origin, vec3 normal, out vec3 debug )
+{
+	/*
+	vec3 rvec = texture(uTexRandom, vTexcoord * uNoiseScale).xyz * 2.0 - 1.0;
+	vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
+	vec3 bitangent = cross(normal, tangent);
+	mat3 tbn = mat3(tangent, bitangent, normal);
+	*/	
+	//vec3 randomVec = texture(NoiseTex, TexCoords * noiseScale).xyz;  
+	vec3 rvec = vec3(1.0, 0.0, 0.0);
+	vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
+	//vec3 c1 = cross(normal, vec3(0.0, 0.0, 1.0));
+	//vec3 c2 = cross(normal, vec3(0.0, 1.0, 0.0)); 
+	//tangent = normalize(length(c1) > length(c2) ? c1 : c2);
+	vec3 bitangent = cross(normal, tangent);
+	mat3 tbn = mat3(tangent, bitangent, normal);
+	
+	float occlusion = 0.0;
+	int skipped = 0;
+	// performance improvement: loop could be unrolled with constant kernel size
+	for (int i = 0; i < uKernelSize; ++i)
+	{
+		// get sample position:
+		vec3 sample = tbn * (uKernelOffsets[i]+vec3(0,0,0.1));
+		//vec3 sample = uKernelOffsets[i];
+		if ( dot(sample, normal) < SSAO_SAMPLE_THRESHOLD )
+		{
+			skipped += 1;
+			continue;
+		}
+		sample = sample * uRadius + origin;
+		
+		// project sample position:
+		vec4 offset = vec4(sample, 1.0);
+		offset = ProjectionMatrix * offset;
+		offset.xy /= offset.w;
+		offset.xy = offset.xy * 0.5 + 0.5;
+		
+		// get sample depth:
+		float sampleDepth = texture(DepthMap, offset.xy).r;
+		sampleDepth = linearizeDepth(sampleDepth, ProjectionMatrix);
+		  
+		// range check & accumulate:
+		//float rangeCheck= abs(origin.z - sampleDepth) < uRadius ? 1.0 : 0.0;
+		//occlusion += (sampleDepth <= sample.z ? 1.0 : 0.0) * rangeCheck;
+		float rangeCheck = smoothstep(0.0, 1.0, uRadius / abs(origin.z - sampleDepth));
+		occlusion += rangeCheck * step(sample.z, sampleDepth);
+	}
+	
+	//debug = tbn * vec3(0.0, 0.0, 1.0);
+	debug = vec3(skipped/float(255));
+	
+	/*vec4 test = ProjectionMatrix * vec4(origin, 1.0);
+	test.xy /= test.w;
+	test.xy = test.xy * 0.5 + 0.5;
+	float d = texture(DepthMap, test.xy).r;
+	d = linearizeDepth(d, ProjectionMatrix);
+	return abs(origin.z - d);
+	return origin.z - linearizeDepth(((test.z / test.w)*0.5 + 0.5), ProjectionMatrix);
+	//return 1.0 - abs(((test.z / test.w)*0.5 + 0.5) - d);
+	*/
+	
+	// normalize and invert
+	occlusion = 1.0 - (occlusion / float(uKernelSize-skipped));
+	//occlusion = occlusion / float(uKernelSize);
+	return occlusion;
+}
  
 void main()
 {
@@ -102,8 +184,7 @@ void main()
 	}
 	
 	if ( useLighting ) {
-		vec3 normal = normalize(Normal);
-		vec3 tangent = normalize(Tangent.xyz);
+		vec3 normalEye = normalize(NormalEye);
 		vec3 viewDirection, lightDirection;
 		vec4 lightPositionEye = ModelViewMatrix * Light.Position;
 		
@@ -116,15 +197,17 @@ void main()
 		else
 			lightDirection = normalize(vec3(lightPositionEye) - VertexEye);
 		
+		vec3 normal = normalEye;
 		if ( useBumpMaps ) {
+			vec3 tangentEye = normalize(TangentEye.xyz);
 			// compute bitangent
-			vec3 bitangent = normalize( cross( normal, tangent ) ) * Tangent.w;
+			vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
 	
 			// transformation from eye to tangent space
 			mat3 tangentMatrix = mat3(
-				tangent.x, bitangent.x, normal.x,
-				tangent.y, bitangent.y, normal.y,
-				tangent.z, bitangent.z, normal.z );
+				tangentEye.x, bitangentEye.x, normalEye.x,
+				tangentEye.y, bitangentEye.y, normalEye.y,
+				tangentEye.z, bitangentEye.z, normalEye.z );
 		
 			// transform light and view direction to tangent space
 			viewDirection = tangentMatrix * viewDirection;
@@ -155,11 +238,20 @@ void main()
 		}
 		if ( isShadowed )
 			shadowFactor = 0.0;
+			
+		float occlusionFactor = 1.0;
+		vec3 debug = vec3(0.0);
+		if ( useSSAO )
+			occlusionFactor = ssao( VertexEye, normalEye, debug );
 		
-		diff = diff * shadowFactor;
-		spec = spec * shadowFactor;
+		diff = diff * shadowFactor * occlusionFactor;
+		spec = spec * shadowFactor * occlusionFactor;
+		ambient = ambient * occlusionFactor;
 		
 		FragColor = vec4(ambient + diff, 1.0) * texColor + vec4(spec, 0.0);
+		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
+		//FragColor = vec4(normalEye, FragColor.a);
+		//FragColor = vec4(debug, FragColor.a);
 	} else {
 		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
 	}

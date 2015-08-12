@@ -91,10 +91,10 @@ public abstract class DebugView {
 			if (target == null) {
 				if ("shader".equals(config.getString("joglImplementation"))) {
 					target = new JOGLTargetShader(gl.getGL3(), new JOGLRenderingParameters(
-							null, false, true, false, false), null);
+							null, false, true, false, false, false, false), null);
 				} else {
 					target = new JOGLTargetFixedFunction(gl.getGL2(), new JOGLRenderingParameters(
-							null, false, true, false, false), null);
+							null, false, true, false, false, false, false), null);
 				}
 				target.setConfiguration(config);
 			} else if (targetNeedsReset){

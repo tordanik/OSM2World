@@ -1,12 +1,19 @@
 package org.osm2world.core.target.jogl;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
 public class ShaderManager {
@@ -160,4 +167,35 @@ public class ShaderManager {
 		}
 		return false;
 	 }
+	
+	public static void saveDepthBuffer(File file, int depthBufferHandle, int width, int height, GL2GL3 gl) {
+		// create buffer to store image
+		FloatBuffer buffer=FloatBuffer.allocate(width*height);//ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4).asFloatBuffer(); 
+		
+		// load image in buffer
+		gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
+		gl.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT, GL.GL_FLOAT, buffer);
+		buffer.rewind();
+
+		// create buffered image
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+		
+		// copy data to buffered image
+		WritableRaster wr = img.getRaster();
+		for (int col=0; col<img.getWidth(); col++) {
+			for (int row=0; row<img.getHeight(); row++) {
+				float f = buffer.get(row*width+col);
+				int v = (int)(f*255);
+				wr.setPixel(col, height-1-row, new int[] {v});
+			}
+		}
+		
+		// save to file
+		try {
+			ImageIO.write(img, "png", file);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

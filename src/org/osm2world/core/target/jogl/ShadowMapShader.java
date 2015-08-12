@@ -226,37 +226,6 @@ public class ShadowMapShader extends DepthBufferShader {
 		gl.glEnable(GL_DEPTH_TEST);
 	}
 	
-	public void saveShadowMap(File file) {
-		// create buffer to store image
-		FloatBuffer buffer=FloatBuffer.allocate(shadowMapWidth*shadowMapHeight);//ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4).asFloatBuffer(); 
-		
-		// load image in buffer
-		gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
-		gl.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT, GL.GL_FLOAT, buffer);
-		buffer.rewind();
-
-		// create buffered image
-		BufferedImage img = new BufferedImage(shadowMapWidth, shadowMapHeight, BufferedImage.TYPE_BYTE_GRAY);
-		
-		// copy data to buffered image
-		WritableRaster wr = img.getRaster();
-		for (int col=0; col<img.getWidth(); col++) {
-			for (int row=0; row<img.getHeight(); row++) {
-				float f = buffer.get(row*shadowMapHeight+col);
-				int v = (int)(f*255);
-				wr.setPixel(col, shadowMapHeight-1-row, new int[] {v});
-			}
-		}
-		
-		// save to file
-		try {
-			ImageIO.write(img, "png", file);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 	public void saveColorBuffer(File file) {
 		// create buffer to store image
 		ByteBuffer buffer = ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4);

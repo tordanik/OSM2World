@@ -25,10 +25,12 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+import java.util.Random;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -46,6 +48,12 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 
 	/** globally controls anisotropic filtering for all textures */
 	public static final boolean ANISOTROPIC_FILTERING = true;
+	
+	/**
+	 * Parameters for SSAO
+	 */
+	private int kernelSize = 64;
+	private float[] kernel;
 	
 	private int projectionMatrixID;
 	private int modelViewMatrixID;
@@ -76,6 +84,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		normalMatrixID = gl.glGetUniformLocation(shaderProgram, "NormalMatrix");
 		shadowMatrixID = gl.glGetUniformLocation(shaderProgram, "ShadowMatrix");
 		
+		generateSamplingMatrix();
 	}
 	
 	@Override
@@ -264,16 +273,17 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	static final int getGLTextureConstant(int textureNumber) {
 		switch (getGLTextureNumber(textureNumber)) {
 		//case 0: return GL.GL_TEXTURE0;
-		case 1: return GL.GL_TEXTURE1;
+		//case 1: return GL.GL_TEXTURE1;
 		case 2: return GL.GL_TEXTURE2;
 		case 3: return GL.GL_TEXTURE3;
 		case 4: return GL.GL_TEXTURE4;
+		case 5: return GL.GL_TEXTURE5;
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
 	
 	static final int getGLTextureNumber(int textureNumber) {
-		return textureNumber + 1;
+		return textureNumber + 2;
 	}
 	
 	public void bindShadowMap(int shadowMapHandle) {
@@ -281,6 +291,74 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, shadowMapHandle);
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "ShadowMap"), 0);
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useShadowMap"), 1);
+	}
+	
+	private void generateSamplingMatrix() {
+		// generate random sampling matrix
+        kernel = new float[kernelSize*3];
+        for (int i = 0; i < kernelSize; ++i) {
+        	float scale = (float)i / (float)kernelSize;
+        	scale = lerp(0.2f, 1.0f, scale*scale);
+        	System.out.println(scale);
+        	VectorXYZ v = new VectorXYZ(
+        			Math.random()*2-1,
+        			Math.random()*2-1,
+        			//Math.random()*2-1
+        			Math.random()
+        			).normalize().mult(scale); //.mult(Math.random()*scale);
+        	while (v.dot(new VectorXYZ(0, 0, 1)) < 0.15) {
+        		v = new VectorXYZ(
+        				Math.random()*2-1,
+        				Math.random()*2-1,
+        				//Math.random()*2-1
+        				Math.random()
+        				).normalize().mult(scale);
+        		//throw new RuntimeException(v.toString());
+        	}
+        	
+        	kernel[i*3] = (float)v.x;
+        	kernel[i*3+1] = (float)v.y;
+        	kernel[i*3+2] = (float)v.z;
+        	System.out.println(v.dot(new VectorXYZ(0, 0, 1)));
+        	
+        }
+        //System.out.println(Arrays.toString(kernel));
+	}
+	
+	private void generateNoiseTexture() {
+		float[] noise = new float[16*3];
+		for (int i = 0; i < 16; i++)
+		{
+			noise[i*3] = (float)Math.random()*2-1;
+			noise[i*3+1] = (float)Math.random()*2-1;
+			noise[i*3+2] = 0;
+		}  
+		int[] noiseTexture = new int[1]; 
+		gl.glGenTextures(1, noiseTexture, 0);
+		gl.glBindTexture(GL_TEXTURE_2D, noiseTexture[0]);
+		gl.glTexImage2D(GL_TEXTURE_2D, 0, GL.GL_RGB16F, 4, 4, 0, GL.GL_RGB, GL.GL_FLOAT, FloatBuffer.wrap(noise));
+		gl.glTexParameteri(GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+		gl.glTexParameteri(GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
+		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
+	}
+	
+	private float lerp(float a, float b, float f) {
+		return a + f * (b - a);
+	}
+	
+	public void enableSSAOwithDepthMap(int depthMapHandle) {
+		// bind depth map
+		gl.glActiveTexture(GL.GL_TEXTURE1);
+		gl.glBindTexture(GL.GL_TEXTURE_2D, depthMapHandle);
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "DepthMap"), 1);
+        
+        // send SSAO parameters
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useSSAO"), 1);
+        
+        // TODO: may be enough to only send once when initializing?
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "uKernelSize"), kernelSize);
+        gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "uKernelOffsets"), kernelSize, kernel, 0);
 	}
 	
 	@Override

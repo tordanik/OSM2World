@@ -27,7 +27,7 @@ public class SkyboxView extends DebugView {
 		
 		// disable backface culling
 		target.setRenderingParameters(
-				new JOGLRenderingParameters(null, false, true, false, false));
+				new JOGLRenderingParameters(null, false, true, false, false, false, false));
 		
 		// draw the skybox close to the limits of the viewing distance
 		double skyboxSize = 1.95 * projection.getFarClippingDistance() / sqrt(3);
