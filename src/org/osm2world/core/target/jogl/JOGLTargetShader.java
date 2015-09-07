@@ -314,6 +314,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 		}
 		
+		// TODO: if using shadow volumes don't render semi-transparent objects?
+		
 		/* render primitives */
 
 		rendererShader.setShader(defaultShader);
@@ -351,6 +353,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		    
 		    // relax depth test to prevent z-fighting with self shadowing
 		    //gl.glDepthFunc(GL.GL_LEQUAL);
+		    
+		    // TODO: if using shadow volumes don't render semi-transparent objects?
 		    
 		    shadowVolumeShader.useShader();
 		    shadowVolumeShader.setPMVMatrix(pmvMatrix);

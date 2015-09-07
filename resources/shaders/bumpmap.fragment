@@ -3,6 +3,7 @@
 #version 130
 // TODO: set from java to match MAX_TEXTURE_LAYERS there
 #define MAX_TEXTURE_LAYERS 4
+#define SSAO_RANDOM_ROTATION
 	
 uniform bool isShadowed;
 uniform bool useLighting;
@@ -44,7 +45,8 @@ uniform sampler2DShadow ShadowMap;
 
 uniform bool useSSAO;
 uniform sampler2D DepthMap;
-//uniform sampler2D NoiseTex;
+uniform sampler2D NoiseTex;
+uniform vec2 uNoiseScale;
 const int MAX_KERNEL_SIZE = 128;
 const float SSAO_SAMPLE_THRESHOLD = 0.15;
 uniform int uKernelSize;
@@ -99,9 +101,14 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 	vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
 	vec3 bitangent = cross(normal, tangent);
 	mat3 tbn = mat3(tangent, bitangent, normal);
-	*/	
-	//vec3 randomVec = texture(NoiseTex, TexCoords * noiseScale).xyz;  
+	*/
+#ifdef SSAO_RANDOM_ROTATION
+	//vec3 rvec = texture(NoiseTex, gl_FragCoord.xy * uNoiseScale).xyz; 
+	vec3 rvec = texture(NoiseTex, gl_FragCoord.xy/4.0).xyz; 
+	//vec3 rvec = vec3(gl_FragCoord.xy, 0.0);
+#else 
 	vec3 rvec = vec3(1.0, 0.0, 0.0);
+#endif
 	vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
 	//vec3 c1 = cross(normal, vec3(0.0, 0.0, 1.0));
 	//vec3 c2 = cross(normal, vec3(0.0, 1.0, 0.0)); 
@@ -115,13 +122,13 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 	for (int i = 0; i < uKernelSize; ++i)
 	{
 		// get sample position:
-		vec3 sample = tbn * (uKernelOffsets[i]+vec3(0,0,0.1));
+		vec3 sample = tbn * (uKernelOffsets[i]);
 		//vec3 sample = uKernelOffsets[i];
-		if ( dot(sample, normal) < SSAO_SAMPLE_THRESHOLD )
+		/*if ( dot(sample, normal) < SSAO_SAMPLE_THRESHOLD )
 		{
 			skipped += 1;
 			continue;
-		}
+		}*/
 		sample = sample * uRadius + origin;
 		
 		// project sample position:
@@ -142,7 +149,8 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 	}
 	
 	//debug = tbn * vec3(0.0, 0.0, 1.0);
-	debug = vec3(skipped/float(255));
+	//debug = vec3(skipped/float(255));
+	debug = rvec;
 	
 	/*vec4 test = ProjectionMatrix * vec4(origin, 1.0);
 	test.xy /= test.w;
@@ -249,7 +257,7 @@ void main()
 		ambient = ambient * occlusionFactor;
 		
 		FragColor = vec4(ambient + diff, 1.0) * texColor + vec4(spec, 0.0);
-		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
+		FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
 		//FragColor = vec4(normalEye, FragColor.a);
 		//FragColor = vec4(debug, FragColor.a);
 	} else {

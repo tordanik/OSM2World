@@ -52,8 +52,11 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	/**
 	 * Parameters for SSAO
 	 */
-	private int kernelSize = 64;
+	private int kernelSize = 16;
 	private float[] kernel;
+	private int noiseTextureHandle;
+	private static final int NOISE_TEXTURE_WIDTH=4;
+	private static final int NOISE_TEXTURE_HEIGHT=4;
 	
 	private int projectionMatrixID;
 	private int modelViewMatrixID;
@@ -85,6 +88,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		shadowMatrixID = gl.glGetUniformLocation(shaderProgram, "ShadowMatrix");
 		
 		generateSamplingMatrix();
+		generateNoiseTexture();
 	}
 	
 	@Override
@@ -274,16 +278,17 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		switch (getGLTextureNumber(textureNumber)) {
 		//case 0: return GL.GL_TEXTURE0;
 		//case 1: return GL.GL_TEXTURE1;
-		case 2: return GL.GL_TEXTURE2;
+		//case 2: return GL.GL_TEXTURE2;
 		case 3: return GL.GL_TEXTURE3;
 		case 4: return GL.GL_TEXTURE4;
 		case 5: return GL.GL_TEXTURE5;
+		case 6: return GL.GL_TEXTURE6;
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
 	
 	static final int getGLTextureNumber(int textureNumber) {
-		return textureNumber + 2;
+		return textureNumber + 3;
 	}
 	
 	public void bindShadowMap(int shadowMapHandle) {
@@ -326,8 +331,8 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	}
 	
 	private void generateNoiseTexture() {
-		float[] noise = new float[16*3];
-		for (int i = 0; i < 16; i++)
+		float[] noise = new float[NOISE_TEXTURE_WIDTH*NOISE_TEXTURE_HEIGHT*3];
+		for (int i = 0; i < NOISE_TEXTURE_WIDTH*NOISE_TEXTURE_HEIGHT; i++)
 		{
 			noise[i*3] = (float)Math.random()*2-1;
 			noise[i*3+1] = (float)Math.random()*2-1;
@@ -335,8 +340,9 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		}  
 		int[] noiseTexture = new int[1]; 
 		gl.glGenTextures(1, noiseTexture, 0);
-		gl.glBindTexture(GL_TEXTURE_2D, noiseTexture[0]);
-		gl.glTexImage2D(GL_TEXTURE_2D, 0, GL.GL_RGB16F, 4, 4, 0, GL.GL_RGB, GL.GL_FLOAT, FloatBuffer.wrap(noise));
+		noiseTextureHandle = noiseTexture[0];
+		gl.glBindTexture(GL_TEXTURE_2D, noiseTextureHandle);
+		gl.glTexImage2D(GL_TEXTURE_2D, 0, GL.GL_RGB16F, NOISE_TEXTURE_WIDTH, NOISE_TEXTURE_HEIGHT, 0, GL.GL_RGB, GL.GL_FLOAT, FloatBuffer.wrap(noise));
 		gl.glTexParameteri(GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
 		gl.glTexParameteri(GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
 		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -355,10 +361,17 @@ public class BumpMapShader extends AbstractPrimitiveShader {
         
         // send SSAO parameters
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useSSAO"), 1);
+        int[] viewport = new int[4];
+		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+		int width = viewport[2], height = viewport[3];
+        gl.glUniform2f(gl.glGetUniformLocation(shaderProgram, "uNoiseScale"), (float)width/(float)NOISE_TEXTURE_WIDTH, (float)height/(float)NOISE_TEXTURE_HEIGHT);
         
         // TODO: may be enough to only send once when initializing?
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "uKernelSize"), kernelSize);
         gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "uKernelOffsets"), kernelSize, kernel, 0);
+        gl.glActiveTexture(GL.GL_TEXTURE2);
+		gl.glBindTexture(GL.GL_TEXTURE_2D, noiseTextureHandle);
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "NoiseTex"), 2);
 	}
 	
 	@Override
