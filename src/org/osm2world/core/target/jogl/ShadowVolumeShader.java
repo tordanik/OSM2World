@@ -41,11 +41,6 @@ public class ShadowVolumeShader extends AbstractPrimitiveShader {
 	public int getModelViewProjectionMatrixID() {
 		return modelViewProjectionMatrixID;
 	}
-
-	@Override
-	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
-		return true;
-	}
 	
 	@Override
 	public int getVertexNormalID() {

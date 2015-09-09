@@ -93,6 +93,8 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	
 	@Override
 	public void loadDefaults() {
+		renderSemiTransparent = true;
+		renderOnlySemiTransparent = false;
 		
 		// set default material values
 		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 0,0,0);
@@ -102,9 +104,6 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), 0);
 		
 	}
-	
-
-
 	
 	/**
 	 * Pass 2: Render by using the generated shadow map
@@ -156,6 +155,8 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+		if (!super.setMaterial(material, textureManager))
+			return false;
 
 		int numTexLayers = 0;
 		if (material.getTextureDataList() != null) {
@@ -304,7 +305,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
         for (int i = 0; i < kernelSize; ++i) {
         	float scale = (float)i / (float)kernelSize;
         	scale = lerp(0.2f, 1.0f, scale*scale);
-        	System.out.println(scale);
+        	//System.out.println(scale);
         	VectorXYZ v = new VectorXYZ(
         			Math.random()*2-1,
         			Math.random()*2-1,
@@ -324,7 +325,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
         	kernel[i*3] = (float)v.x;
         	kernel[i*3+1] = (float)v.y;
         	kernel[i*3+2] = (float)v.z;
-        	System.out.println(v.dot(new VectorXYZ(0, 0, 1)));
+        	//System.out.println(v.dot(new VectorXYZ(0, 0, 1)));
         	
         }
         //System.out.println(Arrays.toString(kernel));

@@ -314,7 +314,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 		}
 		
-		// TODO: if using shadow volumes don't render semi-transparent objects?
+		// if using shadow volumes render semi-transparent objects later
+		defaultShader.setRenderSemiTransparent(!renderingParameters.useShadowVolumes);
 		
 		/* render primitives */
 
@@ -354,7 +355,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		    // relax depth test to prevent z-fighting with self shadowing
 		    //gl.glDepthFunc(GL.GL_LEQUAL);
 		    
-		    // TODO: if using shadow volumes don't render semi-transparent objects?
+			// if using shadow volumes render semi-transparent objects later
+		    shadowVolumeShader.setRenderSemiTransparent(!renderingParameters.useShadowVolumes);
 		    
 		    shadowVolumeShader.useShader();
 		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
@@ -382,6 +384,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.loadDefaults();
 			defaultShader.setPMVMatrix(pmvMatrix);
 			defaultShader.setShadowed(true);
+
+			// if using shadow volumes render semi-transparent objects later
+			defaultShader.setRenderSemiTransparent(!renderingParameters.useShadowVolumes);
+			
 //			/* render primitives */
 			rendererShader.setShader(defaultShader);
 			rendererShader.render(camera, projection);
@@ -410,6 +416,35 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			// reset
 		    gl.glDisable(GL.GL_STENCIL_TEST);
 		    gl.glDepthFunc(GL.GL_LESS);
+		    
+			/* render semi-transparent objects now */
+		    // NOTE: results could be improved slightly, if the depth-fail algorithm is executed here as well
+		    //       the result would be that the topmost semi-transparent pixel would receive shadow volume shadows
+		    //       (needs to be investigated, if the difference is noticeable in practice)
+		    defaultShader.useShader();
+			defaultShader.loadDefaults();
+			defaultShader.setPMVMatrix(pmvMatrix);
+			
+			/* apply global rendering parameters */
+			
+			applyRenderingParameters(gl, renderingParameters);
+			applyLightingParameters(defaultShader, globalLightingParameters);
+			
+			if (renderingParameters.useShadowMaps) {
+				defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
+				defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
+			}
+			if (!showShadowPerspective && renderingParameters.useSSAO) {
+				defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
+			}
+			defaultShader.setRenderOnlySemiTransparent(true);
+			
+			/* render primitives */
+
+			rendererShader.setShader(defaultShader);
+			rendererShader.render(camera, projection);
+			
+			defaultShader.disableShader();
 		}
 	}
 	

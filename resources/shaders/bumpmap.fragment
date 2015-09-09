@@ -257,7 +257,7 @@ void main()
 		ambient = ambient * occlusionFactor;
 		
 		FragColor = vec4(ambient + diff, 1.0) * texColor + vec4(spec, 0.0);
-		FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
+		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
 		//FragColor = vec4(normalEye, FragColor.a);
 		//FragColor = vec4(debug, FragColor.a);
 	} else {

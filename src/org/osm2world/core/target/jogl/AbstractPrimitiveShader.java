@@ -3,14 +3,35 @@ package org.osm2world.core.target.jogl;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Transparency;
 
 public abstract class AbstractPrimitiveShader extends AbstractShader {
+
+	protected boolean renderSemiTransparent = true;
+	protected boolean renderOnlySemiTransparent = false;
 
 	public AbstractPrimitiveShader(GL3 gl, String name) {
 		super(gl, name);
 	}
 
-	public abstract boolean setMaterial(Material material, JOGLTextureManager textureManager);
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+		
+		if (!renderSemiTransparent && material.getTransparency() == Transparency.TRUE) {
+			return false;
+		} else if (renderOnlySemiTransparent && material.getTransparency() != Transparency.TRUE) {
+			return false;
+		}
+		return true;
+		
+	}
+	
+	public void setRenderSemiTransparent(boolean renderSemiTransparent) {
+		this.renderSemiTransparent  = renderSemiTransparent;
+	}
+	
+	public void setRenderOnlySemiTransparent(boolean renderOnlySemiTransparent) {
+		this.renderOnlySemiTransparent  = renderOnlySemiTransparent;
+	}
 
 	public abstract int getVertexPositionID();
 
