@@ -2,20 +2,16 @@ package org.osm2world.core.target.jogl;
 
 import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
 import static javax.media.opengl.GL.GL_TRIANGLES;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.GL_TEXTURE_COORD_ARRAY;
+import static org.osm2world.core.math.GeometryUtil.calculateTangentVectorsForTexLayer;
 import static org.osm2world.core.math.GeometryUtil.triangleNormalListFromTriangleStrip;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleFan;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
-import static org.osm2world.core.math.GeometryUtil.calculateTangentVectorsForTexLayer;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;

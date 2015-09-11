@@ -1,55 +1,23 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_CCW;
-import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_CULL_FACE;
-import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_DEPTH_TEST;
-import static javax.media.opengl.GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static javax.media.opengl.GL.GL_REPEAT;
-import static javax.media.opengl.GL.GL_TEXTURE0;
-import static javax.media.opengl.GL.GL_TEXTURE1;
-import static javax.media.opengl.GL.GL_TEXTURE2;
-import static javax.media.opengl.GL.GL_TEXTURE3;
 import static javax.media.opengl.GL.GL_TEXTURE_2D;
-import static javax.media.opengl.GL.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
 import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
 import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
-import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
 
-import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLException;
 
-import jogamp.opengl.ProjectFloat;
-
-import org.osm2world.core.math.Vector3D;
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
-import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
-import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.viewer.model.Defaults;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;

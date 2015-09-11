@@ -4,8 +4,6 @@ import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL3;
 
-import org.osm2world.core.target.common.material.Material;
-
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 

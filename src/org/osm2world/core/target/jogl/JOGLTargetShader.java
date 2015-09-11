@@ -7,55 +7,30 @@ import static javax.media.opengl.GL.GL_CULL_FACE;
 import static javax.media.opengl.GL.GL_DEPTH_TEST;
 import static javax.media.opengl.GL.GL_FRONT_AND_BACK;
 import static javax.media.opengl.GL.GL_REPEAT;
-import static javax.media.opengl.GL.GL_REPLACE;
 import static javax.media.opengl.GL.GL_STATIC_DRAW;
 import static javax.media.opengl.GL.GL_TEXTURE0;
 import static javax.media.opengl.GL.GL_TEXTURE_2D;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
-import static javax.media.opengl.GL.GL_TRIANGLES;
-import static javax.media.opengl.GL2ES1.GL_LIGHT_MODEL_AMBIENT;
-import static javax.media.opengl.GL2ES1.GL_TEXTURE_ENV;
-import static javax.media.opengl.GL2ES1.GL_TEXTURE_ENV_MODE;
-import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
 import static javax.media.opengl.GL2GL3.GL_FILL;
 import static javax.media.opengl.GL2GL3.GL_LINE;
-import static javax.media.opengl.GL2GL3.GL_QUADS;
-import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHTING;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SPECULAR;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
-import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
-import java.awt.Color;
 import java.io.File;
-import java.nio.Buffer;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
-
-import jogamp.opengl.ProjectFloat;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
-import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 

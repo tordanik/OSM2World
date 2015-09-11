@@ -1,6 +1,7 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.*;
+import static javax.media.opengl.GL.GL_CCW;
+import static javax.media.opengl.GL.GL_CW;
 
 /**
  * global parameters for rendering a JOGL scene

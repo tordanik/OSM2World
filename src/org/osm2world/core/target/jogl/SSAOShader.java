@@ -3,8 +3,6 @@ package org.osm2world.core.target.jogl;
 import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
 import static javax.media.opengl.GL.GL_DEPTH_TEST;
 
-import java.io.File;
-
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 

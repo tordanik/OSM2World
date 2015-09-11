@@ -2,10 +2,6 @@ package org.osm2world.core.target.jogl;
 
 import static javax.media.opengl.GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static javax.media.opengl.GL.GL_REPEAT;
-import static javax.media.opengl.GL.GL_TEXTURE0;
-import static javax.media.opengl.GL.GL_TEXTURE1;
-import static javax.media.opengl.GL.GL_TEXTURE2;
-import static javax.media.opengl.GL.GL_TEXTURE3;
 import static javax.media.opengl.GL.GL_TEXTURE_2D;
 import static javax.media.opengl.GL.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
@@ -13,19 +9,10 @@ import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
 import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
 import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
-import static org.osm2world.core.target.common.material.Material.Transparency.BINARY;
-import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.Arrays;
-import java.util.Random;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;

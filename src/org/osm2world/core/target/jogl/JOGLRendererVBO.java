@@ -16,8 +16,8 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
+import org.osm2world.core.target.common.rendering.Projection;
 
 public abstract class JOGLRendererVBO extends JOGLRenderer {
 

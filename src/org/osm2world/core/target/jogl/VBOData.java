@@ -14,7 +14,6 @@ import java.util.List;
 import javax.media.opengl.GL;
 
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;

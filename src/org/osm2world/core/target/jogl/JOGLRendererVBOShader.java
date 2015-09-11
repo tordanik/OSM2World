@@ -1,23 +1,13 @@
 package org.osm2world.core.target.jogl;
 
-import static java.lang.Math.*;
-import static javax.media.opengl.GL.*;
+import static javax.media.opengl.GL.GL_FLOAT;
 import static javax.media.opengl.GL2GL3.GL_DOUBLE;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
-import static org.osm2world.core.target.jogl.JOGLTargetShader.*;
 
-import java.nio.Buffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
-import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
@@ -26,12 +16,9 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
-import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 
 import com.jogamp.common.nio.Buffers;
 

@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 
-import javax.media.opengl.GL;
-
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;

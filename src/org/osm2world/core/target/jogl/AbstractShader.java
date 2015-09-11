@@ -5,8 +5,6 @@ import java.nio.IntBuffer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
-import org.osm2world.core.target.common.material.Material;
-
 public abstract class AbstractShader {
 	
 	protected GL3 gl;

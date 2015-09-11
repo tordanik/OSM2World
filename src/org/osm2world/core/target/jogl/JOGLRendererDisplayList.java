@@ -1,9 +1,10 @@
 package org.osm2world.core.target.jogl;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import static javax.media.opengl.GL2.GL_COMPILE;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
-import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.*;
+import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.drawPrimitive;
 
 import java.util.ArrayList;
 import java.util.Collections;
