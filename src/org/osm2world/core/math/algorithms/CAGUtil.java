@@ -1,7 +1,6 @@
 package org.osm2world.core.math.algorithms;
 
-import static org.osm2world.core.math.JTSConversionUtil.polygonXZToJTSPolygon;
-import static org.osm2world.core.math.JTSConversionUtil.polygonsXZFromJTSGeometry;
+import static org.osm2world.core.math.JTSConversionUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +23,7 @@ public final class CAGUtil {
 	private CAGUtil() { }
 	
 	/**
-	 * takes a polygon outline, "subtracts" a collection of other polygon outlines, 
+	 * takes a polygon outline, "subtracts" a collection of other polygon outlines,
 	 * and returns a collection of polygons that covers the difference area.
 	 * 
 	 * The result polygons should cover the area that was
@@ -43,12 +42,15 @@ public final class CAGUtil {
 		
 		for (SimplePolygonXZ subtractPolygon : subtractPolygons) {
 			
+			Polygon jtsSubtractPolygon = polygonXZToJTSPolygon(subtractPolygon);
+			
+			if (!jtsSubtractPolygon.isValid()) continue;
+			
 			List<Geometry> newRemainingGeometry = new ArrayList<Geometry>(1);
 			
 			for (Geometry g : remainingGeometry) {
 				
-				Geometry newG = g.difference(
-						polygonXZToJTSPolygon(subtractPolygon));
+				Geometry newG = g.difference(jtsSubtractPolygon);
 				
 				if (newG instanceof GeometryCollection) {
 					for (int i = 0; i < ((GeometryCollection)newG).getNumGeometries(); i++) {
@@ -56,7 +58,7 @@ public final class CAGUtil {
 					}
 				} else {
 					newRemainingGeometry.add(newG);
-				}			
+				}
 				
 			}
 			
