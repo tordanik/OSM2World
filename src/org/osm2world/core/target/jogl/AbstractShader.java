@@ -26,7 +26,7 @@ public abstract class AbstractShader {
 		 */
 		vertexShader = ShaderManager.createVertShader(gl, name+".vertex");
 		fragmentShader = ShaderManager.createFragShader(gl, name+".fragment");
-		System.out.printf("Vertex: %d, Fragment: %d\n",vertexShader,fragmentShader);
+		//System.out.printf("Vertex: %d, Fragment: %d\n",vertexShader,fragmentShader);
 
 		// attach the shaders to the shader program and link
 		gl.glAttachShader(shaderProgram, vertexShader);
