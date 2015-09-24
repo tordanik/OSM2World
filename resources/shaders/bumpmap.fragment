@@ -90,8 +90,13 @@ vec3 toonShade( vec3 lightDir, vec3 norm, out vec3 ambient, out vec3 diffuse )
 	return ambient + diffuse;
 }
 
+//float linearizeDepthPerspective(in float depth, in mat4 projMatrix) {
+//	return -projMatrix[3][2] / ((depth*2-1.0) + projMatrix[2][2]);
+//}
+
 float linearizeDepth(in float depth, in mat4 projMatrix) {
-	return -projMatrix[3][2] / ((depth*2-1.0) + projMatrix[2][2]);
+	float zNDC = depth*2-1.0;
+	return -(zNDC * projMatrix[3][3] - projMatrix[3][2]) / (zNDC * projMatrix[2][3] - projMatrix[2][2]);
 }
 
 float ssao( vec3 origin, vec3 normal, out vec3 debug )
@@ -180,15 +185,15 @@ void main()
 	}
 	if ( useTexture[1] ) {
 		vec4 layerColor = texture( Tex[1], TexCoord1 );
-		texColor = mix(texColor, layerColor, layerColor.a);
+		texColor.rgb = mix(texColor.rgb, layerColor.rgb, layerColor.a);
 	}
 	if ( useTexture[2] ) {
 		vec4 layerColor = texture( Tex[2], TexCoord2 );
-		texColor = mix(texColor, layerColor, layerColor.a);
+		texColor.rgb = mix(texColor.rgb, layerColor.rgb, layerColor.a);
 	}
 	if ( useTexture[3] ) {
 		vec4 layerColor = texture( Tex[3], TexCoord3 );
-		texColor = mix(texColor, layerColor, layerColor.a);
+		texColor.rgb = mix(texColor.rgb, layerColor.rgb, layerColor.a);
 	}
 	
 	if ( useLighting ) {
@@ -257,6 +262,7 @@ void main()
 		ambient = ambient * occlusionFactor;
 		
 		FragColor = vec4(ambient + diff, 1.0) * texColor + vec4(spec, 0.0);
+		//FragColor = texColor;
 		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
 		//FragColor = vec4(normalEye, FragColor.a);
 		//FragColor = vec4(debug, FragColor.a);
