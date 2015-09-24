@@ -90,6 +90,9 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), 0);
 		
+		// reset optional parts
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useShadowMap"), 0);
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useSSAO"), 0);
 	}
 	
 	/**
