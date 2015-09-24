@@ -166,8 +166,13 @@ public class ImageExporter {
 			cap.setSampleBuffers(true);
 			cap.setNumSamples(msaa);
 		}
-		if ("shadowVolumes".equals(config.getString("shadowImplementation"))) {
-			cap.setStencilBits(8);
+		
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			
+			if ("shadowVolumes".equals(config.getString("shadowImplementation"))
+					|| "both".equals(config.getString("shadowImplementation"))) {
+				cap.setStencilBits(8);
+			}
 		}
 				
 		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);

@@ -126,8 +126,10 @@ public class ViewerFrame extends JFrame {
 			caps.setNumSamples(msaa);
 		}
 		
-		if ("shadowVolumes".equals(config.getString("shadowImplementation")))
-			caps.setStencilBits(8);
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			if ("shadowVolumes".equals(config.getString("shadowImplementation")) || "both".equals(config.getString("shadowImplementation")))
+				caps.setStencilBits(8);
+		}
 		
 		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
 		add(glCanvas, BorderLayout.CENTER);
