@@ -22,6 +22,7 @@ import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
@@ -71,17 +72,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		pmvMatrix = new PMVMatrix();
 		reset();
 	}
-	
-	@Override
-	protected void drawPrimitive(org.osm2world.core.target.common.Primitive.Type type, org.osm2world.core.target.common.material.Material material, java.util.List<VectorXYZ> vertices, java.util.List<VectorXYZ> normals, java.util.List<java.util.List<VectorXZ>> texCoordLists) {
-		super.drawPrimitive(type, material, vertices, normals, texCoordLists);
-		
-		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
-		// in some situations even errors were encountered
-		for (TextureData t : material.getTextureDataList()) {
-			textureManager.getTextureForFile(t.file, true);
-		}
-	};
 
 	@Override
 	public void drawBackgoundImage(File backgroundImage,
@@ -313,6 +303,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		if (renderingParameters.useShadowVolumes) {
 			
 			/* Render shadow volumes with depth-fail algorithm. Uses the previously filled depth buffer */
+			int[] drawbuffer = new int[1];
+			gl.glGetIntegerv(GL2GL3.GL_DRAW_BUFFER, drawbuffer, 0);
 			gl.glDrawBuffer(GL.GL_NONE);
 			gl.glEnable(GL.GL_STENCIL_TEST);
 			gl.glDepthMask(false);
@@ -345,7 +337,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		    gl.glEnable(GL_CULL_FACE);
 		    
 		    /* Render scene in shadow */
-		    gl.glDrawBuffer(GL_BACK);
+		    gl.glDrawBuffer(drawbuffer[0]);
 		    // Draw only if the corresponding stencil value is NOT zero
 		    gl.glStencilFunc(GL.GL_NOTEQUAL, 0x0, 0xFF);
 		    // prevent update to the stencil buffer

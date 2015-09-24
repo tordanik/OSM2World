@@ -27,6 +27,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.PrimitiveTarget;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -68,6 +69,12 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 			List<List<VectorXZ>> texCoordLists) {
 		
 		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		
+		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
+		// in some situations even errors were encountered
+		for (TextureData t : material.getTextureDataList()) {
+			textureManager.getTextureForFile(t.file, true);
+		}
 		
 	}
 	
