@@ -4,10 +4,13 @@ import java.awt.Color;
 
 import javax.media.opengl.GL;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
+import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.viewer.view.TextRenderer;
 import org.osm2world.viewer.view.TextRendererFixedFunction;
 import org.osm2world.viewer.view.TextRendererShader;
@@ -19,6 +22,13 @@ import org.osm2world.viewer.view.TextRendererShader;
 public class HelpView extends DebugView {
 	
 	TextRenderer textRenderer;
+	
+	@Override
+	public void reset() {
+		super.reset();
+		textRenderer.destroy();
+		textRenderer = null;
+	}
 
 	@Override
 	public boolean canBeUsed() {

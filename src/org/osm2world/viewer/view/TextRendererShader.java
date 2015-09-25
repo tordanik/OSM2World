@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import javax.media.opengl.GL2ES2;
 
-
 import com.jogamp.graph.curve.opengl.RenderState;
 import com.jogamp.graph.curve.opengl.TextRenderer;
 import com.jogamp.graph.font.Font;
@@ -15,7 +14,6 @@ import com.jogamp.graph.geom.opengl.SVertex;
 import com.jogamp.opengl.util.glsl.ShaderState;
 
 public class TextRendererShader implements org.osm2world.viewer.view.TextRenderer {
-	private RenderState renderState;
 	private TextRenderer textRenderer;
 	private Font textRendererFont = null;
 	private GL2ES2 gl;
@@ -27,7 +25,7 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		renderState = RenderState.createRenderState(new ShaderState(), SVertex.factory());
+		RenderState renderState = RenderState.createRenderState(new ShaderState(), SVertex.factory());
 		textRenderer = TextRenderer.create(renderState, 0);
 		textRenderer.init(gl);
 		if (!textRenderer.isInitialized()) {
@@ -56,6 +54,14 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		int[] texSize = {0};
 		textRenderer.drawString3D(gl, textRendererFont, string, posF, 12, texSize);
 		textRenderer.enable(gl, false);
+	}
+	
+	@Override
+	public void destroy() {
+		textRenderer.destroy(gl);
+		textRenderer = null;
+		textRendererFont = null;
+		gl = null;
 	}
 
 }

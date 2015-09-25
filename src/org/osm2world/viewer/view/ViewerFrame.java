@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GLCapabilities;
@@ -86,11 +87,17 @@ public class ViewerFrame extends JFrame {
 
 	private static final long serialVersionUID = 5807635150399807163L;
 
-	public final ViewerGLCanvas glCanvas;
+	/**
+	 * Number of bits for stencil buffer
+	 */
+	private static final int STENCIL_BITS = 8;
+
+	public ViewerGLCanvas glCanvas;
 	
 	private final Data data = new Data();
 	private final RenderOptions renderOptions = new RenderOptions();
 	private final MessageManager messageManager = new MessageManager();
+	private final List<DebugView> debugViews = new ArrayList<DebugView>();
 	
 	private final File configFile;
 	
@@ -110,45 +117,7 @@ public class ViewerFrame extends JFrame {
 		
 		createMenuBar();
 		
-		// select OpengGL implementation. TODO: autodetection
-		GLProfile profile;
-		if ("shader".equals(config.getString("joglImplementation"))) {
-			profile = GLProfile.get(GLProfile.GL3);
-		} else {
-			profile = GLProfile.get(GLProfile.GL2);
-		}
-		GLCapabilities caps = new GLCapabilities(profile);
-		
-		// set MSAA (Multi Sample Anti-Aliasing)
-		int msaa = config.getInt("msaa", 0);
-		if (msaa > 0) {
-			caps.setSampleBuffers(true);
-			caps.setNumSamples(msaa);
-		}
-		
-		if ("shader".equals(config.getString("joglImplementation"))) {
-			if ("shadowVolumes".equals(config.getString("shadowImplementation")) || "both".equals(config.getString("shadowImplementation")))
-				caps.setStencilBits(8);
-		}
-		
-		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
-		add(glCanvas, BorderLayout.CENTER);
-		
-		new FileDrop(glCanvas, new FileDrop.Listener() {
-			@Override
-			public void filesDropped(File[] files) {
-				if (files.length >= 1) {
-					new OpenOSMAction(ViewerFrame.this, data, renderOptions)
-						.openOSMFile(files[0], true);
-				}
-			}
-		});
-		
-		DefaultNavigation navigation = new DefaultNavigation(this, renderOptions);
-		glCanvas.addMouseListener(navigation);
-		glCanvas.addMouseMotionListener(navigation);
-		glCanvas.addMouseWheelListener(navigation);
-		glCanvas.addKeyListener(navigation);
+		createCanvas(config);
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
@@ -356,10 +325,109 @@ public class ViewerFrame extends JFrame {
 				debugView, keyEvent, enabled,
 				this, data, renderOptions)));
 		
+		debugViews.add(debugView);
+		
 	}
 
 	public MessageManager getMessageManager() {
 		return messageManager;
+	}
+	
+	/**
+	 * Prepare OpenGL (Profile/Capabilities) and create matching canvas.
+	 * @param config config for OpenGL parameters
+	 */
+	private void createCanvas(Configuration config) {
+		// select OpengGL implementation. TODO: autodetection
+		GLProfile profile;
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			profile = GLProfile.get(GLProfile.GL3);
+		} else {
+			profile = GLProfile.get(GLProfile.GL2);
+		}
+		GLCapabilities caps = new GLCapabilities(profile);
+		
+		// set MSAA (Multi Sample Anti-Aliasing)
+		int msaa = config.getInt("msaa", 0);
+		if (msaa > 0) {
+			caps.setSampleBuffers(true);
+			caps.setNumSamples(msaa);
+		}
+		
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			if ("shadowVolumes".equals(config.getString("shadowImplementation")) || "both".equals(config.getString("shadowImplementation")))
+				caps.setStencilBits(STENCIL_BITS);
+		}
+		
+		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
+		add(glCanvas, BorderLayout.CENTER);
+		
+		new FileDrop(glCanvas, new FileDrop.Listener() {
+			@Override
+			public void filesDropped(File[] files) {
+				if (files.length >= 1) {
+					new OpenOSMAction(ViewerFrame.this, data, renderOptions)
+						.openOSMFile(files[0], true);
+				}
+			}
+		});
+		
+		DefaultNavigation navigation = new DefaultNavigation(this, renderOptions);
+		glCanvas.addMouseListener(navigation);
+		glCanvas.addMouseMotionListener(navigation);
+		glCanvas.addMouseWheelListener(navigation);
+		glCanvas.addKeyListener(navigation);
+	}
+
+	/**
+	 * Update with new configuration. May recreate the canvas when the OpenGL-Parameters changed
+	 */
+	public void setConfiguration(Configuration config) {
+		if (!checkConfiguration(config)) {
+			System.out.println("OpenGL configuration changed. Recreating canvas.");
+			
+			// reset all DebugViews to free resources bound to the old OpenGL context. The context still needs to exist at this point
+			for(DebugView d : debugViews) {
+				d.reset();
+			}
+			
+			// destroy old OpenGL context
+			remove(glCanvas);
+			glCanvas.destroy();
+			
+			// recreate
+			createCanvas(config);
+			pack();
+		}
+	}
+	
+	/**
+	 * Check if the current OpenGL-Parameters match the given configuration.
+	 * @return true if the configuration matches, false otherwise. In the latter case the GLCanvas needs to be recreated
+	 */
+	private boolean checkConfiguration(Configuration config) {
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			if (!glCanvas.getGLProfile().isGL3())
+				return false;
+		} else {
+			if (!glCanvas.getGLProfile().isGL2())
+				return false;
+		}
+		
+		int msaa = config.getInt("msaa", 0);
+		if (glCanvas.getChosenGLCapabilities().getNumSamples() != msaa)
+			return false;
+
+		if (glCanvas.getChosenGLCapabilities().getSampleBuffers() != msaa > 0)
+			return false;
+
+		
+		if ("shader".equals(config.getString("joglImplementation"))
+				&& ("shadowVolumes".equals(config.getString("shadowImplementation")) || "both".equals(config.getString("shadowImplementation")))) {
+			if (glCanvas.getChosenGLCapabilities().getStencilBits() != STENCIL_BITS)
+				return false;
+		}
+		return true;
 	}
 
 }

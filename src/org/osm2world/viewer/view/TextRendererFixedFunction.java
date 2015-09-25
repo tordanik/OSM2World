@@ -9,7 +9,7 @@ import com.jogamp.opengl.util.awt.TextRenderer;
 
 public class TextRendererFixedFunction implements org.osm2world.viewer.view.TextRenderer {
 	
-	private static final TextRenderer textRenderer = new TextRenderer(
+	private TextRenderer textRenderer = new TextRenderer(
 			new Font("SansSerif", Font.PLAIN, 12), true, false);
 	//needs quite a bit of memory, so it must not create an instance for each use!
 	
@@ -29,6 +29,12 @@ public class TextRendererFixedFunction implements org.osm2world.viewer.view.Text
 		textRenderer.setColor(color);
 		textRenderer.draw(string, x, y);
 		textRenderer.endRendering();
+	}
+	
+	@Override
+	public void destroy() {
+		textRenderer.dispose();
+		textRenderer = null;
 	}
 
 }

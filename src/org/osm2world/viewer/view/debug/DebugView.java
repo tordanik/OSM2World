@@ -53,6 +53,13 @@ public abstract class DebugView {
 		
 	}
 	
+	public void reset() {
+		if (target != null) {
+			target.freeResources();
+			target = null;
+		}
+	}
+	
 	public void setConversionResults(Results conversionResults) {
 	
 		this.map = conversionResults.getMapData();

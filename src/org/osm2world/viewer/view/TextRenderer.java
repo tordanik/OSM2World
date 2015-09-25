@@ -10,4 +10,6 @@ public interface TextRenderer {
 
 	public abstract void drawText(String string, int x, int y,
 			int screenWidth, int screenHeight, Color color);
+
+	public abstract void destroy();
 }
