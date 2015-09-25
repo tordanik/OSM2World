@@ -31,6 +31,10 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		if (!textRenderer.isInitialized()) {
 			throw new IllegalStateException("Text renderer not initlialized.");
 		}
+
+		// Workaround to get shader initialized properly (fixes problems at first drawText call in some situations)
+		textRenderer.enable(gl, true);
+		textRenderer.enable(gl, false);
 	}
 
 //	@Override
