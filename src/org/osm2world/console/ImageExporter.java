@@ -76,8 +76,10 @@ public class ImageExporter {
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
-	/** target prepared in the constructor; null for unbuffered rendering */
+	/** target prepared in init; null for unbuffered rendering */
 	private JOGLTarget bufferTarget = null;
+	
+	private boolean unbufferedRendering;
 	
 	
 	/**
@@ -141,6 +143,12 @@ public class ImageExporter {
 			}
 			
 		}
+		boolean onlyOneRenderPass = (expectedFileCalls <= 1
+				&& expectedMaxSizeX <= canvasLimit
+				&& expectedMaxSizeY <= canvasLimit);
+
+		unbufferedRendering = onlyOneRenderPass
+				|| config.getBoolean("forceUnbufferedPNGRendering", false);
 		
 		/* create GL canvas and set rendering parameters */
 
@@ -184,19 +192,6 @@ public class ImageExporter {
 		drawable.addGLEventListener(listener);
 
 		backgroundTextureManager = new JOGLTextureManager(drawable.getGL());
-		
-		/* render map data into buffer if it needs to be rendered multiple times */
-
-		boolean onlyOneRenderPass = (expectedFileCalls <= 1
-				&& expectedMaxSizeX <= canvasLimit
-				&& expectedMaxSizeY <= canvasLimit);
-
-		boolean unbufferedRendering = onlyOneRenderPass
-				|| config.getBoolean("forceUnbufferedPNGRendering", false);
-
-		if (!unbufferedRendering ) {
-			bufferTarget = createJOGLTarget(drawable.getGL(), results, config);
-		}
 
 	}
 	
@@ -493,6 +488,11 @@ public class ImageExporter {
 
 		@Override
 		public void init(GLAutoDrawable drawable) {
+
+			/* render map data into buffer if it needs to be rendered multiple times */
+			if (!unbufferedRendering ) {
+				bufferTarget = createJOGLTarget(drawable.getGL(), results, config);
+			}
 		}
 
 		public void setPart(int xStart, int yStart, int xEnd, int yEnd,
