@@ -29,8 +29,6 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
@@ -55,8 +53,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private JOGLRendererVBOShadowVolume rendererShadowVolume;
 	private AxisAlignedBoundingBoxXZ xzBoundary;
 	private boolean showShadowPerspective;
-	
-	private static boolean OVERWRITE_PROJECTION_CLIPPLING_PLANES = true;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
