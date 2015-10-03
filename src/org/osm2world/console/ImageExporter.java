@@ -4,7 +4,9 @@ import static java.lang.Math.*;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 import static org.osm2world.core.util.ConfigUtil.*;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
@@ -37,6 +39,7 @@ import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
+
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLineByte;
 import ar.com.hjg.pngj.PngWriter;
@@ -262,6 +265,9 @@ public class ImageExporter {
 		/* create image (maybe in multiple parts) */
 				
         BufferedImage image = new BufferedImage(x, pBufferSizeY, exportAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+
+		Graphics2D graphics = image.createGraphics();
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
         
         for (int yPart = yParts-1; yPart >=0 ; --yPart) {
         	
@@ -291,7 +297,7 @@ public class ImageExporter {
 				BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), 0, 0, xSize, ySize, true);
         		drawable.getContext().release();
 	     
-        		image.getGraphics().drawImage(imagePart, xStart, 0, xSize, ySize, null);
+        		graphics.drawImage(imagePart, xStart, 0, xSize, ySize, null);
 			}
         	
         	imageWriter.append(image, ySize);
