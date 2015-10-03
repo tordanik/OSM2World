@@ -497,6 +497,9 @@ public class ImageExporter {
 
 		public void setPart(int xStart, int yStart, int xEnd, int yEnd,
 				int xSize, int ySize) {
+			if (this.xSize != xSize || this.ySize != ySize) {
+				drawable.setSize(xSize, ySize);
+			}
 			this.xStart = xStart;
 			this.yStart = yStart;
 			this.xEnd = xEnd;
