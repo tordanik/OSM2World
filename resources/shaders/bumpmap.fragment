@@ -142,6 +142,13 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 		offset.xy /= offset.w;
 		offset.xy = offset.xy * 0.5 + 0.5;
 		
+		// skip samples outside of depth map texture
+		if ( offset.x < 0 || offset.y < 0 || offset.x > 1 || offset.y > 1 )
+		{
+			skipped += 1;
+			continue;
+		}
+		
 		// get sample depth:
 		float sampleDepth = texture(DepthMap, offset.xy).r;
 		sampleDepth = linearizeDepth(sampleDepth, ProjectionMatrix);
