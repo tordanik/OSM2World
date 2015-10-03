@@ -186,7 +186,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		if (clearColor != null) {
 			float[] c = {0f, 0f, 0f};
 			clearColor.getColorComponents(c);
-			gl.glClearColor(c[0], c[1], c[2], 1.0f);
+			gl.glClearColor(c[0], c[1], c[2], clearColor.getAlpha()/255f);
 		}
 		
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);

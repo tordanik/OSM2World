@@ -16,17 +16,12 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
-import javax.media.nativewindow.AbstractGraphicsDevice;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLCapabilitiesChooser;
-import javax.media.opengl.GLCapabilitiesImmutable;
-import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLOffscreenAutoDrawable;
-import javax.media.opengl.GLPbuffer;
 import javax.media.opengl.GLProfile;
 
 import org.apache.commons.configuration.Configuration;
@@ -42,9 +37,6 @@ import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
-import org.osm2world.viewer.model.RenderOptions;
-import org.osm2world.viewer.view.ViewerGLCanvas.ViewerGLEventListener;
-
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLineByte;
 import ar.com.hjg.pngj.PngWriter;
@@ -52,7 +44,6 @@ import ar.com.hjg.pngj.chunks.PngChunkTextVar;
 import ar.com.hjg.pngj.chunks.PngMetadata;
 
 import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
-import com.jogamp.opengl.util.awt.Screenshot;
 
 public class ImageExporter {
 
@@ -70,6 +61,9 @@ public class ImageExporter {
 	
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
+	private Color clearColor;
+	
+	private boolean exportAlpha = false; 
 	
 	private GLOffscreenAutoDrawable drawable;
 	private ImageExporterGLEventListener listener;
@@ -99,7 +93,7 @@ public class ImageExporter {
 
 		/* parse background color/image and other configuration options */
 		
-		Color clearColor = Color.BLACK;
+		clearColor = new Color(0, 0, 0, 0);
 		
 		if (config.containsKey(BG_COLOR_KEY)) {
 			Color confClearColor = parseColor(config.getString(BG_COLOR_KEY));
@@ -122,6 +116,8 @@ public class ImageExporter {
 				}
 			}
 		}
+		
+		exportAlpha = config.getBoolean("exportAlpha", false);
 		
 		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
 		
@@ -167,6 +163,8 @@ public class ImageExporter {
 		
 		GLCapabilities cap = new GLCapabilities(profile);
 		cap.setDoubleBuffered(false);
+		if (exportAlpha)
+			cap.setAlphaBits(8); 
 		
 		// set MSAA (Multi Sample Anti-Aliasing)
 		int msaa = config.getInt("msaa", 0);
@@ -254,7 +252,7 @@ public class ImageExporter {
 		ImageWriter imageWriter;
 		
 		switch (outputMode) {
-		case PNG: imageWriter = new PNGWriter(outputFile, x, y); break;
+		case PNG: imageWriter = new PNGWriter(outputFile, x, y, exportAlpha); break;
 		case PPM: imageWriter = new PPMWriter(outputFile, x, y); break;
 		
 		default: throw new IllegalArgumentException(
@@ -263,8 +261,8 @@ public class ImageExporter {
 
 		/* create image (maybe in multiple parts) */
 				
-        BufferedImage image = new BufferedImage(x, pBufferSizeY, BufferedImage.TYPE_INT_RGB);
-                
+        BufferedImage image = new BufferedImage(x, pBufferSizeY, exportAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+        
         for (int yPart = yParts-1; yPart >=0 ; --yPart) {
         	
         	int yStart = yPart * pBufferSizeY;
@@ -289,12 +287,14 @@ public class ImageExporter {
 				 * pBufferSizeY entire image lines */
 
         		drawable.getContext().makeCurrent();
-				AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(drawable.getGLProfile(), true);
+        		System.out.println(exportAlpha);
+				AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(drawable.getGLProfile(), exportAlpha);
 				BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), 0, 0, xSize, ySize, true);
+				//BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), true);
         		drawable.getContext().release();
 	     
-				image.getGraphics().drawImage(imagePart,
-						xStart, 0, xSize, ySize, null);
+        		image.getGraphics().drawImage(imagePart, xStart, 0, xSize, ySize, null);
+				ImageIO.write(imagePart, "png", new File("/tmp/test1.png"));
 			}
         	
         	imageWriter.append(image, ySize);
@@ -361,8 +361,8 @@ public class ImageExporter {
 		private ImageInfo imgInfo;
 		private PngWriter writer;
 		
-		public PNGWriter(File outputFile, int cols, int rows) {
-			imgInfo = new ImageInfo(cols, rows, 8, false);
+		public PNGWriter(File outputFile, int cols, int rows, boolean alpha) {
+			imgInfo = new ImageInfo(cols, rows, 8, alpha);
 			writer = new PngWriter(outputFile, imgInfo, true);
 			
 			PngMetadata metaData = writer.getMetadata();
@@ -385,13 +385,16 @@ public class ImageExporter {
 			/* create one ImageLine that will be refilled and written to png */
 			ImageLineByte bline = new ImageLineByte(imgInfo);
 			byte[] line = bline.getScanline();
+			int channels = imgInfo.channels;
 			
 			for (int i = 0; i < lines; i++) {
 				for (int d = 0; d < img.getWidth(); d++) {
 					int val = data[i*img.getWidth()+d];
-					line[3*d+0] = (byte) (val >> 16);
-					line[3*d+1] = (byte) (val >> 8);
-					line[3*d+2] = (byte) val;
+					line[channels*d+0] = (byte) (val >> 16);
+					line[channels*d+1] = (byte) (val >> 8);
+					line[channels*d+2] = (byte) val;
+					if (channels > 3)
+						line[channels*d+3] = (byte) (val >> 24);
 				}
 				writer.writeRow(bline);
 			}		
@@ -540,7 +543,7 @@ public class ImageExporter {
 			
 			/* configure rendering */
 
-			AbstractJOGLTarget.clearGL(drawable.getGL(), null);
+			AbstractJOGLTarget.clearGL(drawable.getGL(), clearColor);
 
 			/* render to pBuffer */
 

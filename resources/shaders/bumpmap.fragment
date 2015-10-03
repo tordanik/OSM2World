@@ -195,15 +195,15 @@ void main()
 	}
 	if ( useTexture[1] ) {
 		vec4 layerColor = texture( Tex[1], TexCoord1 );
-		texColor.rgb = mix(texColor.rgb, layerColor.rgb, layerColor.a);
+		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	if ( useTexture[2] ) {
 		vec4 layerColor = texture( Tex[2], TexCoord2 );
-		texColor.rgb = mix(texColor.rgb, layerColor.rgb, layerColor.a);
+		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	if ( useTexture[3] ) {
 		vec4 layerColor = texture( Tex[3], TexCoord3 );
-		texColor.rgb = mix(texColor.rgb, layerColor.rgb, layerColor.a);
+		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	
 	if ( useLighting ) {

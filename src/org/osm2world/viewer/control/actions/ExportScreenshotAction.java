@@ -45,7 +45,8 @@ public class ExportScreenshotAction extends AbstractExportAction {
 			
 			viewerFrame.glCanvas.getContext().makeCurrent();
 			
-			AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(viewerFrame.glCanvas.getGLProfile(), false);
+			boolean exportAlpha = data.getConfig().getBoolean("exportAlpha", false);
+			AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(viewerFrame.glCanvas.getGLProfile(), exportAlpha);
 			BufferedImage img = reader.readPixelsToBufferedImage(viewerFrame.glCanvas.getGL(), true);
 		    ImageIO.write(img, "png", file);
 

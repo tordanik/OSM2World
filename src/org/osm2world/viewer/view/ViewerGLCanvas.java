@@ -60,7 +60,7 @@ public class ViewerGLCanvas extends GLCanvas {
 			
 	        final GL gl = glDrawable.getGL();
 	        
-	        AbstractJOGLTarget.clearGL(gl, Color.BLACK);
+	        AbstractJOGLTarget.clearGL(gl, new Color(0, 0, 0, 0));
 	        
 	        helpView.renderTo(gl, null, null);
 	        
