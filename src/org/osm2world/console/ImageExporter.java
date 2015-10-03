@@ -287,14 +287,11 @@ public class ImageExporter {
 				 * pBufferSizeY entire image lines */
 
         		drawable.getContext().makeCurrent();
-        		System.out.println(exportAlpha);
 				AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(drawable.getGLProfile(), exportAlpha);
 				BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), 0, 0, xSize, ySize, true);
-				//BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), true);
         		drawable.getContext().release();
 	     
         		image.getGraphics().drawImage(imagePart, xStart, 0, xSize, ySize, null);
-				ImageIO.write(imagePart, "png", new File("/tmp/test1.png"));
 			}
         	
         	imageWriter.append(image, ySize);
