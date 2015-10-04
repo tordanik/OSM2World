@@ -182,7 +182,7 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
  
 void main()
 {
-	vec3 ambient, diff, spec;
+	vec3 ambient, diff, spec=vec3(0.0);
 	vec4 texColor = vec4(1.0);
 	
 	// apply textures
@@ -209,7 +209,11 @@ void main()
 		vec4 lightPositionEye = ModelViewMatrix * Light.Position;
 		
 		// transform light and view direction to eye space
-		viewDirection = normalize(-VertexEye);
+		
+		if( ProjectionMatrix[3][3] == 0.0 )
+			viewDirection = normalize(-VertexEye); // perspective projection
+		else
+			viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
 		
 		// directional light?
 		if( Light.Position.w == 0.0 )
@@ -236,7 +240,7 @@ void main()
 		}
 		
 		phongModel( lightDirection, viewDirection, normal, ambient, diff, spec );
-		//toonShade( LightDirection, normal, ambient, diff );
+		//toonShade( lightDirection, normal, ambient, diff );
 		
 		// shadow map lookup
 		float shadowFactor = 1.0;
