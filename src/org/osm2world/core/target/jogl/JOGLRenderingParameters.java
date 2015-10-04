@@ -25,7 +25,11 @@ public class JOGLRenderingParameters {
 	final boolean useZBuffer;
 	final boolean useShadowVolumes;
 	final boolean useShadowMaps;
+	final int shadowMapWidth;
+	final int shadowMapHeight;
+	final int shadowMapCameraFrustumPadding;
 	final boolean useSSAO;
+	final int SSAOkernelSize;
 	final boolean overwriteProjectionClippingPlanes;
 	
 	/**
@@ -36,15 +40,56 @@ public class JOGLRenderingParameters {
 	 */
 	public JOGLRenderingParameters(
 			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean useShadowVolumes,
-			boolean useShadowMaps, boolean useSSAO, boolean overwriteProjectionClippingPlanes) {
+			boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, int shadowMapCameraFrustumPadding, 
+			boolean useSSAO, int SSAOkernelSize, boolean overwriteProjectionClippingPlanes) {
 		
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
 		this.useShadowVolumes = useShadowVolumes;
 		this.useShadowMaps = useShadowMaps;
+		this.shadowMapWidth = shadowMapWidth;
+		this.shadowMapHeight = shadowMapHeight;
+		this.shadowMapCameraFrustumPadding = shadowMapCameraFrustumPadding;
 		this.useSSAO = useSSAO;
+		this.SSAOkernelSize = SSAOkernelSize;
 		this.overwriteProjectionClippingPlanes = overwriteProjectionClippingPlanes;
+	}
+	
+	/**
+	 * @param frontFace   winding of the front face for backface culling;
+	 *                     null disables backface culling
+	 * @param wireframe   renders just a wireframe instead of filled surfaces
+	 * @param useZBuffer  enables the z buffer, should usually be true
+	 */
+	public JOGLRenderingParameters(
+			Winding frontFace, boolean wireframe, boolean useZBuffer) {
+		
+		this.frontFace = frontFace;
+		this.wireframe = wireframe;
+		this.useZBuffer = useZBuffer;
+		this.useShadowVolumes = false;
+		this.useShadowMaps = false;
+		this.shadowMapWidth = 0;
+		this.shadowMapHeight = 0;
+		this.shadowMapCameraFrustumPadding = 0;
+		this.useSSAO = false;
+		this.SSAOkernelSize = 0;
+		this.overwriteProjectionClippingPlanes = false;
+	}
+	
+	public JOGLRenderingParameters() {
+		this.frontFace = null;
+		this.wireframe = false;
+		this.useZBuffer = false;
+		this.useShadowVolumes = false;
+		this.useShadowMaps = false;
+		this.shadowMapWidth = 0;
+		this.shadowMapHeight = 0;
+		this.shadowMapCameraFrustumPadding = 0;
+		this.useSSAO = false;
+		this.SSAOkernelSize = 0;
+		this.overwriteProjectionClippingPlanes = false;
 	}
 	
 }

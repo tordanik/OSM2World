@@ -34,15 +34,15 @@ import com.jogamp.opengl.util.PMVMatrix;
 
 public class ShadowMapShader extends DepthBufferShader {
 	
-	public static final int shadowMapWidth = 4096;
-	public static final int shadowMapHeight = 4096;
+	private int shadowMapWidth = 4096;
+	private int shadowMapHeight = 4096;
 	
 	/**
 	 * Padding for the calculated bounding box around the camera frustum.
 	 * This is needed to not cut away shadow casters outside but nearby the camera frustum
 	 * that may cast shadows which lay within the camera frustum.
 	 */
-	public static final int CAMERA_FRUSTUM_PADDING = 8;
+	private int cameraFrustumPadding = 8;
 	
 	public int depthBufferHandle;
 	public int colorBufferHandle;
@@ -176,6 +176,33 @@ public class ShadowMapShader extends DepthBufferShader {
 			throw new RuntimeException("Can not use FBO! Status error:" + status);
 		}
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+	}
+	
+	public void setCameraFrustumPadding(int padding) {
+		this.cameraFrustumPadding = padding;
+	}
+	
+	public void setShadowMapSize(int width, int height) {
+		resizeBuffer(width, height);
+	}
+	
+	private void resizeBuffer(int width, int height) {
+		if (width != this.shadowMapWidth || height != this.shadowMapHeight) {
+			this.shadowMapWidth = width;
+			this.shadowMapHeight = height;
+			gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
+	
+			gl.glTexImage2D(GL.GL_TEXTURE_2D,          // target texture type
+			        0,                                  // mipmap LOD level
+			        GL3.GL_DEPTH_COMPONENT,         // internal pixel format
+			                                            //GL_DEPTH_COMPONENT
+			        shadowMapWidth,                     // width of generated image
+			        shadowMapHeight,                    // height of generated image
+			        0,                          // border of image
+			        GL3.GL_DEPTH_COMPONENT,     // external pixel format 
+			        GL.GL_UNSIGNED_BYTE,        // datatype for each value
+			        null);  // buffer to store the texture in memory
+		}
 	}
 	
 	/**
@@ -382,7 +409,7 @@ public class ShadowMapShader extends DepthBufferShader {
 				}
 			}
 		}
-		AxisAlignedBoundingBoxXYZ frustum = new AxisAlignedBoundingBoxXYZ(corners).pad(CAMERA_FRUSTUM_PADDING);
+		AxisAlignedBoundingBoxXYZ frustum = new AxisAlignedBoundingBoxXYZ(corners).pad(cameraFrustumPadding);
 		return frustum;
 	}
 	

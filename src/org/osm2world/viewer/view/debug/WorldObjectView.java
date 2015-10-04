@@ -49,11 +49,16 @@ public class WorldObjectView extends DebugView {
 				|| "both".equals(config.getString("shadowImplementation"));
 		boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
 				|| "both".equals(config.getString("shadowImplementation"));
+		int shadowMapWidth = config.getInt("shadowMapWidth", 4096);
+		int shadowMapHeight = config.getInt("shadowMapHeight", 4096);
+		int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
 		boolean useSSAO = "true".equals(config.getString("useSSAO"));
+		int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
 		boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, useSSAO, overwriteProjectionClippingPlanes));
+    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, overwriteProjectionClippingPlanes));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		

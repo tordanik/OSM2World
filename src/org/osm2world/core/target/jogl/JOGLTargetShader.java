@@ -226,6 +226,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		applyCameraMatrices(pmvMatrix, camera);
 		
 		if (renderingParameters.useSSAO) {
+			defaultShader.setSSAOkernelSize(renderingParameters.SSAOkernelSize);
+			
 			// based on http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html
 			// render depth buffer only
 			ssaoShader.useShader();
@@ -239,6 +241,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		if (renderingParameters.useShadowMaps) {
 			// TODO: render only part?
 			shadowMapShader.useShader();
+			shadowMapShader.setCameraFrustumPadding(renderingParameters.shadowMapCameraFrustumPadding);
+			shadowMapShader.setShadowMapSize(renderingParameters.shadowMapWidth, renderingParameters.shadowMapHeight);
 			shadowMapShader.preparePMVMatrix(globalLightingParameters, pmvMatrix, rendererShader.getBoundingBox());
 			// render opaque shadow casters only when not using shadow volumes simultaneously, as those will be rendered there
 			shadowMapShader.setRenderOpaque(!renderingParameters.useShadowVolumes);

@@ -136,6 +136,7 @@ public abstract class VBOData<BufferT extends Buffer> {
 		} else if (primitive.type == Type.TRIANGLE_FAN) {
 			
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
+			// TODO: fehlerhaft? liefert andere ergebnisse bei flat interpolation als erwartet
 			primNormals = triangleVertexListFromTriangleFan(primNormals);
 			
 			if (primTexCoordLists != null) {

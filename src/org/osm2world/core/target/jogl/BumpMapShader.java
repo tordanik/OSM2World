@@ -365,6 +365,13 @@ public class BumpMapShader extends AbstractPrimitiveShader {
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "NoiseTex"), 2);
 	}
 	
+	public void setSSAOkernelSize(int kernelSize) {
+		if (this.kernelSize != kernelSize) {
+			this.kernelSize = kernelSize;
+			generateSamplingMatrix();
+		}
+	}
+	
 	@Override
 	public int getVertexPositionID() {
 		return vertexPositionID;

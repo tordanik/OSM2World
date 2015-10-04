@@ -51,9 +51,13 @@ public class ShadowView extends DebugView {
 				|| "both".equals(config.getString("shadowImplementation"));
 		boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
 				|| "both".equals(config.getString("shadowImplementation"));
+		int shadowMapWidth = config.getInt("shadowMapWidth", 4096);
+		int shadowMapHeight = config.getInt("shadowMapHeight", 4096);
+		int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, false, false));
+    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+    			shadowMapCameraFrustumPadding, false, 0, false));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		
