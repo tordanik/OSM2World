@@ -175,7 +175,10 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 	*/
 	
 	// normalize and invert
-	occlusion = 1.0 - (occlusion / float(uKernelSize-skipped));
+	if ( uKernelSize > skipped )
+		occlusion = 1.0 - (occlusion / float(uKernelSize-skipped));
+	else
+		occlusion = 1.0;
 	//occlusion = occlusion / float(uKernelSize);
 	return occlusion;
 }
