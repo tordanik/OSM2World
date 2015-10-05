@@ -159,8 +159,8 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 			
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1, getFloatBuffer(material.ambientColor()));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(material.diffuseColor()));
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1f, 1f, 1f);
-			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 100f);
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor());
+			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());
 			
 		} else {
 			
@@ -168,8 +168,8 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 					multiplyColor(Color.WHITE, material.getAmbientFactor())));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 1f,1f,1f);
-			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 100f);	
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor());
+			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());	
 		}
 		
 		/* set textures and associated parameters */

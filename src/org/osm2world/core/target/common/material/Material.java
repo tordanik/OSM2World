@@ -23,6 +23,20 @@ public abstract class Material {
 		FALSE
 	}
 	
+	public static enum Shadow {
+		/** casts shadows */
+		TRUE,
+		/** casts no shadows */
+		FALSE
+	}
+	
+	public static enum AmbientOcclusion {
+		/** casts AO */
+		TRUE,
+		/** casts no AO */
+		FALSE
+	}
+	
 	/**
 	 * Interpolation of normals
 	 */
@@ -30,20 +44,28 @@ public abstract class Material {
 	protected Color color;
 	protected float ambientFactor;
 	protected float diffuseFactor;
+	protected float specularFactor;
+	protected float shininess;
 	protected Transparency transparency;
+	protected Shadow shadow;
+	protected AmbientOcclusion ambientOcclusion;
 	
 	protected List<TextureData> textureDataList;
 	protected TextureData bumpMap;
 	protected int bumpMapInd;
 
 	public Material(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor,
-			Transparency transparency, List<TextureData> textureDataList) {
+			float ambientFactor, float diffuseFactor, float specularFactor, float shininess, 
+			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
 		this.interpolation = interpolation;
 		this.color = color;
 		this.ambientFactor = ambientFactor;
 		this.diffuseFactor = diffuseFactor;
+		this.specularFactor = specularFactor;
+		this.shininess = shininess;
 		this.transparency = transparency;
+		this.shadow = shadow;
+		this.ambientOcclusion = ao;
 		this.textureDataList = textureDataList;
 		updateBumpMap();
 	}
@@ -66,7 +88,8 @@ public abstract class Material {
 	
 	public Material(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
-		this(interpolation, color, 0.5f, 0.5f, transparency, textureDataList);
+		this(interpolation, color, 0.5f, 0.5f, 0.0f, 1.0f, transparency,
+				Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
 	}
 	
 	public Material(Interpolation interpolation, Color color) {
@@ -89,6 +112,14 @@ public abstract class Material {
 	public float getDiffuseFactor() {
 		return diffuseFactor;
 	}
+	
+	public float getSpecularFactor() {
+		return specularFactor;
+	}
+	
+	public float getShininess() {
+		return shininess;
+	}
 		
 	public Color ambientColor() {
 		return multiplyColor(getColor(), getAmbientFactor());
@@ -100,14 +131,14 @@ public abstract class Material {
 	
 	public Material brighter() {
 		return new ImmutableMaterial(interpolation, getColor().brighter(),
-				getAmbientFactor(), getDiffuseFactor(),
-				getTransparency(), getTextureDataList());
+				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
 	}
 	
 	public Material darker() {
 		return new ImmutableMaterial(interpolation, getColor().darker(),
-				getAmbientFactor(), getDiffuseFactor(),
-				getTransparency(), getTextureDataList());
+				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
 	}
 	
 	public static final Color multiplyColor(Color c, float factor) {
@@ -122,8 +153,8 @@ public abstract class Material {
 
 	public Material makeSmooth() {
 		return new ImmutableMaterial(Interpolation.SMOOTH, getColor(),
-				getAmbientFactor(), getDiffuseFactor(),
-				getTransparency(), getTextureDataList());
+				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
 	}
 	
 	/**
@@ -140,13 +171,21 @@ public abstract class Material {
 		textureDataList.addAll(textureLayers);
 	    
 	    return new ImmutableMaterial(getInterpolation(), getColor(),
-	    		getAmbientFactor(), getDiffuseFactor(),
-	    		getTransparency(), textureDataList);
+	    		getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+	    		getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
 	    
 	}
 	
 	public Transparency getTransparency() {
 		return transparency;
+	}
+	
+	public Shadow getShadow() {
+		return shadow;
+	}
+	
+	public AmbientOcclusion getAmbientOcclusion() {
+		return ambientOcclusion;
 	}
 		
 	public List<TextureData> getTextureDataList() {
@@ -174,10 +213,10 @@ public abstract class Material {
 	}
 	
 	public String toString() {
-		return String.format("{%s, #%06x, a%3f, d%3f, %d tex",
+		return String.format("{%s, #%06x, a%3f, d%3f, s%3f, sh%3f, %d tex",
 				interpolation, color.getRGB() & 0x00ffffff, ambientFactor,
-				diffuseFactor, textureDataList.size())
-				+ transparency
+				diffuseFactor, specularFactor, shininess, textureDataList.size())
+				+ transparency + shadow + ambientOcclusion
 				+ "}";
 	}
 	

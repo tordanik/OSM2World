@@ -909,7 +909,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 							material.getInterpolation(), color,
 							material.getAmbientFactor(),
 							material.getDiffuseFactor(),
+							material.getSpecularFactor(),
+							material.getShininess(),
 							material.getTransparency(),
+							material.getShadow(),
+							material.getAmbientOcclusion(),
 							material.getTextureDataList());
 				}
 				

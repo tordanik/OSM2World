@@ -17,7 +17,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
+import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
 import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
@@ -283,7 +285,7 @@ public final class Materials {
 	}
 	
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|transparency|texture\\d*_(?:file|width|height|bumpmap))";
+			"material_(.+)_(color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap))";
 	
 	/**
 	 * configures the attributes of the materials within this class
@@ -320,6 +322,34 @@ public final class Materials {
 						} else {
 							System.err.println("incorrect color value: "
 									+ config.getString(key));
+						}
+						
+					} else if ("specular".equals(attribute)) {
+						
+						int specular = config.getInt(key);
+						material.setSpecularFactor(specular);
+						
+					} else if ("shininess".equals(attribute)) {
+						
+						int shininess = config.getInt(key);
+						material.setShininess(shininess);
+						
+					} else if ("shadow".equals(attribute)) {
+						
+						String value = config.getString(key).toUpperCase();
+						Shadow shadow = Shadow.valueOf(value);
+						
+						if (shadow != null) {
+							material.setShadow(shadow);
+						}
+						
+					} else if ("ssao".equals(attribute)) {
+						
+						String value = config.getString(key).toUpperCase();
+						AmbientOcclusion ao = AmbientOcclusion.valueOf(value);
+						
+						if (ao != null) {
+							material.setAmbientOcclusion(ao);
 						}
 						
 					} else if ("transparency".equals(attribute)) {

@@ -25,6 +25,7 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.viewer.model.Defaults;
@@ -416,6 +417,9 @@ public class ShadowMapShader extends DepthBufferShader {
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		if (!renderOpaque && material.getTransparency() == Transparency.FALSE) {
+			return false;
+		}
+		if (material.getShadow() == Shadow.FALSE) {
 			return false;
 		}
 		return super.setMaterial(material, textureManager);

@@ -6,6 +6,9 @@ import static javax.media.opengl.GL.GL_DEPTH_TEST;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
+
 public class SSAOShader extends DepthBufferShader {
 	
 	private int depthBufferHandle;
@@ -170,6 +173,16 @@ public class SSAOShader extends DepthBufferShader {
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		
 		gl.glEnable(GL_DEPTH_TEST);
+	}
+	
+	@Override
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+		
+		if (material.getAmbientOcclusion() == AmbientOcclusion.FALSE) {
+			return false;
+		}
+		
+		return super.setMaterial(material, textureManager);
 	}
 	
 	public int getDepthBuferHandle() {
