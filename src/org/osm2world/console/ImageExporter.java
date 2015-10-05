@@ -491,6 +491,7 @@ public class ImageExporter {
 		private int y;
 		private Camera camera;
 		private Projection projection;
+		private boolean nodisplay = false;
 
 		@Override
 		public void init(GLAutoDrawable drawable) {
@@ -503,9 +504,14 @@ public class ImageExporter {
 
 		public void setPart(int xStart, int yStart, int xEnd, int yEnd,
 				int xSize, int ySize) {
+			
 			if (this.xSize != xSize || this.ySize != ySize) {
+				// disable display while resizing. all display calls need to be from @writeImageFile
+				nodisplay = true;
 				drawable.setSize(xSize, ySize);
+				nodisplay = false;
 			}
+			
 			this.xStart = xStart;
 			this.yStart = yStart;
 			this.xEnd = xEnd;
@@ -528,6 +534,10 @@ public class ImageExporter {
 
 		@Override
 		public void display(GLAutoDrawable drawable) {
+			
+			if (nodisplay)
+				return;
+			
 			/* configure rendering */
 
 			AbstractJOGLTarget.clearGL(drawable.getGL(), null);
