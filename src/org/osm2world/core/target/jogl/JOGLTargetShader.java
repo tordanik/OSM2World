@@ -227,6 +227,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		if (renderingParameters.useSSAO) {
 			defaultShader.setSSAOkernelSize(renderingParameters.SSAOkernelSize);
+			defaultShader.setSSAOradius(renderingParameters.SSAOradius);
 			
 			// based on http://john-chapman-graphics.blogspot.de/2013/01/ssao-tutorial.html
 			// render depth buffer only

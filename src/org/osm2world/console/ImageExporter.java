@@ -317,10 +317,11 @@ public class ImageExporter {
 			int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
 			boolean useSSAO = "true".equals(config.getString("useSSAO"));
 			int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
+			float SSAOradius = config.getFloat("SSAOradius", 1);
 			boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
 			target = new JOGLTargetShader(gl.getGL3(),
 					new JOGLRenderingParameters(CCW, false, true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
-			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, overwriteProjectionClippingPlanes),
+			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes),
 					GlobalLightingParameters.DEFAULT);
 		} else {
 			target = new JOGLTargetFixedFunction(gl.getGL2(),

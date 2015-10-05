@@ -54,11 +54,12 @@ public class WorldObjectView extends DebugView {
 		int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
 		boolean useSSAO = "true".equals(config.getString("useSSAO"));
 		int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
+		float SSAOradius = config.getFloat("SSAOradius", 1);
 		boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
     			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
-    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, overwriteProjectionClippingPlanes));
+    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		

@@ -30,6 +30,7 @@ public class JOGLRenderingParameters {
 	final int shadowMapCameraFrustumPadding;
 	final boolean useSSAO;
 	final int SSAOkernelSize;
+	final float SSAOradius;
 	final boolean overwriteProjectionClippingPlanes;
 	
 	/**
@@ -41,7 +42,7 @@ public class JOGLRenderingParameters {
 	public JOGLRenderingParameters(
 			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean useShadowVolumes,
 			boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, int shadowMapCameraFrustumPadding, 
-			boolean useSSAO, int SSAOkernelSize, boolean overwriteProjectionClippingPlanes) {
+			boolean useSSAO, int SSAOkernelSize, float SSAOradius, boolean overwriteProjectionClippingPlanes) {
 		
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
@@ -53,6 +54,7 @@ public class JOGLRenderingParameters {
 		this.shadowMapCameraFrustumPadding = shadowMapCameraFrustumPadding;
 		this.useSSAO = useSSAO;
 		this.SSAOkernelSize = SSAOkernelSize;
+		this.SSAOradius = SSAOradius;
 		this.overwriteProjectionClippingPlanes = overwriteProjectionClippingPlanes;
 	}
 	
@@ -75,6 +77,7 @@ public class JOGLRenderingParameters {
 		this.shadowMapCameraFrustumPadding = 0;
 		this.useSSAO = false;
 		this.SSAOkernelSize = 0;
+		this.SSAOradius = 0;
 		this.overwriteProjectionClippingPlanes = false;
 	}
 	
@@ -89,6 +92,7 @@ public class JOGLRenderingParameters {
 		this.shadowMapCameraFrustumPadding = 0;
 		this.useSSAO = false;
 		this.SSAOkernelSize = 0;
+		this.SSAOradius = 0;
 		this.overwriteProjectionClippingPlanes = false;
 	}
 	

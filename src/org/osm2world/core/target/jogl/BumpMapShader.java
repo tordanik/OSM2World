@@ -41,6 +41,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 	 */
 	private int kernelSize = 16;
 	private float[] kernel;
+	private float ssaoRadius = 1;
 	private int noiseTextureHandle;
 	private static final int NOISE_TEXTURE_WIDTH=4;
 	private static final int NOISE_TEXTURE_HEIGHT=4;
@@ -360,6 +361,7 @@ public class BumpMapShader extends AbstractPrimitiveShader {
         // TODO: may be enough to only send once when initializing?
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "uKernelSize"), kernelSize);
         gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "uKernelOffsets"), kernelSize, kernel, 0);
+        gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "uRadius"), ssaoRadius);
         gl.glActiveTexture(GL.GL_TEXTURE2);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, noiseTextureHandle);
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "NoiseTex"), 2);
@@ -370,6 +372,10 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 			this.kernelSize = kernelSize;
 			generateSamplingMatrix();
 		}
+	}
+	
+	public void setSSAOradius(float radius) {
+		this.ssaoRadius = radius;
 	}
 	
 	@Override
