@@ -5,7 +5,7 @@ import static javax.media.opengl.GL.GL_FLOAT;
 import static javax.media.opengl.GL.GL_STATIC_DRAW;
 import static javax.media.opengl.GL.GL_TRIANGLES;
 import static javax.media.opengl.GL2GL3.GL_DOUBLE;
-import static org.osm2world.core.math.GeometryUtil.triangleNormalListFromTriangleStrip;
+import static org.osm2world.core.math.GeometryUtil.triangleNormalListFromTriangleStripOrFan;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleFan;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
@@ -545,7 +545,7 @@ public class ShaderTest implements GLEventListener {
 			if (primitive.type == Type.TRIANGLE_STRIP) {
 				
 				primVertices = triangleVertexListFromTriangleStrip(primVertices);
-				primNormals = triangleNormalListFromTriangleStrip(primNormals);
+				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 				
 				if (primTexCoordLists != null) {
 					List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();

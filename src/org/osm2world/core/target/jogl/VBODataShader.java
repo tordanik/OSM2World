@@ -3,7 +3,7 @@ package org.osm2world.core.target.jogl;
 import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
 import static javax.media.opengl.GL.GL_TRIANGLES;
 import static org.osm2world.core.math.GeometryUtil.calculateTangentVectorsForTexLayer;
-import static org.osm2world.core.math.GeometryUtil.triangleNormalListFromTriangleStrip;
+import static org.osm2world.core.math.GeometryUtil.triangleNormalListFromTriangleStripOrFan;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleFan;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
 
@@ -56,8 +56,9 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		
 		if (primitive.type == Type.TRIANGLE_STRIP) {
 			
+			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleStrip(primVertices);
-			primNormals = triangleNormalListFromTriangleStrip(primNormals);
+			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
@@ -68,9 +69,10 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 			}
 			
 		} else if (primitive.type == Type.TRIANGLE_FAN) {
-			
+
+			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
-			primNormals = triangleVertexListFromTriangleFan(primNormals);
+			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();

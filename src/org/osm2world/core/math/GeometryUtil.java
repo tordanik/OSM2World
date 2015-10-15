@@ -75,7 +75,7 @@ public final class GeometryUtil {
 		
 	}
 	
-	public static final <V> List<V> triangleNormalListFromTriangleStrip(
+	public static final <V> List<V> triangleNormalListFromTriangleStripOrFan(
 			List<? extends V> normals) {
 		
 		List<V> result = new ArrayList<V>((normals.size() - 2) * 3);
