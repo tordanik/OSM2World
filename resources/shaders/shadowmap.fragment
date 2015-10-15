@@ -1,4 +1,4 @@
-/* Simple fragment shader with a per fragment phong lighting model.
+/* Simple fragment shader with texture layers for depth buffer calculation
  */ 
 #version 130
 // TODO: set from java to match MAX_TEXTURE_LAYERS there
@@ -18,34 +18,34 @@ uniform float alphaTreshold;
  
 void main()
 {
-	vec4 texColor = vec4(1.0);
+	float alpha = 1.0;
 	
 	// apply textures
 	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
 	if ( useTexture[0] ) {
-		texColor = texture( Tex[0], TexCoord0 );
+		alpha = texture( Tex[0], TexCoord0 ).a;
 	}
 	if ( useTexture[1] ) {
-		vec4 layerColor = texture( Tex[1], TexCoord1 );
-		texColor = mix(texColor, layerColor, layerColor.a);
+		float layerAlpha = texture( Tex[1], TexCoord1 ).a;
+		alpha = mix(alpha, 1, layerAlpha);
 	}
 	if ( useTexture[2] ) {
-		vec4 layerColor = texture( Tex[2], TexCoord2 );
-		texColor = mix(texColor, layerColor, layerColor.a);
+		float layerAlpha = texture( Tex[2], TexCoord2 ).a;
+		alpha = mix(alpha, 1, layerAlpha);
 	}
 	if ( useTexture[3] ) {
-		vec4 layerColor = texture( Tex[3], TexCoord3 );
-		texColor = mix(texColor, layerColor, layerColor.a);
+		float layerAlpha = texture( Tex[3], TexCoord3 ).a;
+		alpha = mix(alpha, 1, layerAlpha);
 	}
 	
 	if ( useAlphaTreshold ) {
-		if ( texColor.a < alphaTreshold )
-			texColor.a = 0.0;
+		if ( alpha < alphaTreshold )
+			alpha = 0.0;
 		else
-			texColor.a = 1.0;
+			alpha = 1.0;
 	}
 		
-	if( texColor.a < 0.01 )
+	if( alpha < 0.01 )
 		discard;
 	
 	// nothing to output, only depth buffer needed
