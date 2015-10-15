@@ -29,14 +29,14 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	
 	private int modelViewProjectionMatrixID;
 	private int vertexPositionID;
-	private int[] vertexTexCoordID = new int[BumpMapShader.MAX_TEXTURE_LAYERS];
+	private int[] vertexTexCoordID = new int[DefaultShader.MAX_TEXTURE_LAYERS];
 	
 	public DepthBufferShader(GL3 gl) {
 		super(gl, "/shaders/shadowmap");
 		
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");
-		for (int i=0; i<BumpMapShader.MAX_TEXTURE_LAYERS; i++)
+		for (int i=0; i<DefaultShader.MAX_TEXTURE_LAYERS; i++)
 			vertexTexCoordID[i] = gl.glGetAttribLocation(shaderProgram, "VertexTexCoord"+i+"");
 		
 		// get indices of uniform variables
@@ -82,7 +82,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "alphaTreshold"), 0.5f );
 		}
 
-	    for (int i = 0; i < BumpMapShader.MAX_TEXTURE_LAYERS; i++) {
+	    for (int i = 0; i < DefaultShader.MAX_TEXTURE_LAYERS; i++) {
 	    	if (i < numTexLayers) {
 				gl.glActiveTexture(getGLTextureConstant(i));
 				TextureData textureData = material.getTextureDataList().get(i);

@@ -39,7 +39,7 @@ import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
-	private BumpMapShader defaultShader;
+	private DefaultShader defaultShader;
 	private ShadowMapShader shadowMapShader;
 	private ShadowVolumeShader shadowVolumeShader;
 	private DepthBufferShader depthBufferShader;
@@ -57,7 +57,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
-		defaultShader = new BumpMapShader(gl);
+		defaultShader = new DefaultShader(gl);
 		shadowMapShader = new ShadowMapShader(gl);
 		depthBufferShader = new DepthBufferShader(gl);
 		ssaoShader = new SSAOShader(gl);
@@ -508,7 +508,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 	}
 	
-	static final void applyLightingParameters(BumpMapShader shader,
+	static final void applyLightingParameters(DefaultShader shader,
 			GlobalLightingParameters lighting) {
 		
 		shader.setGlobalLighting(lighting);
