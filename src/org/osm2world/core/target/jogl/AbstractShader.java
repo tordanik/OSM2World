@@ -48,16 +48,17 @@ public abstract class AbstractShader {
 		IntBuffer validateStatus = IntBuffer.allocate(1);
 		gl.glGetProgramiv(shaderProgram, GL3.GL_VALIDATE_STATUS, validateStatus);
 		if (validateStatus.get() == GL.GL_FALSE) {
-			String infoLog = ShaderManager.getProgramInfoLog(gl, shaderProgram);
-			/* Driver issues: ignore problems with type of texture unit 0, as every uniform sampler variable defaults to texture unit 0
-			 * This is only an issue with some driver implementations of the validation. Can be ignored safely.
-			 * TODO: use regex
+			
+			/* The validation of shaders may fail due to driver bugs. This does not necessarily mean that the
+			 * shader is invalid. Therefore this will only raise a warning. An example of such a common mistake is
+			 * the access to texture unit 0, raised by some intel graphics drivers:
+			 * "Texture unit 0 is accessed both as sampler2D and sampler2DShadow"
 			 */
-			if (!infoLog.equals("Texture unit 0 is accessed both as sampler2D and sampler2DShadow\0")) {
-				throw new RuntimeException("could not validate shader. Info Log: '" + infoLog + "'");
-			}
+			String infoLog = ShaderManager.getProgramInfoLog(gl, shaderProgram);
+			System.err.println("WARNING: could not validate shader. Info Log: '" + infoLog + "'");
+		} else {
+			ShaderManager.printProgramInfoLog(gl, shaderProgram);
 		}
-		ShaderManager.printProgramInfoLog(gl, shaderProgram);
 	}
 	
 	public void useShader() {
