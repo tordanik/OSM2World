@@ -396,7 +396,6 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				
 				if (material.getTransparency() == TRUE) {
 					gl.glEnable(GL.GL_BLEND);
-					//gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 					/* GL.GL_SRC_ALPHA and GL.GL_ONE_MINUS_SRC_ALPHA for color blending produces correct results for color, while
 					 * GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA produces correct alpha blended results: the blendfunction is in fact equal to 1-(1-SRC_APLHA)*(1-DST_APLHA)
 					 */
@@ -463,83 +462,50 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		        }
 				
 		        /* combination of texture layers */
-		        int mode = 2;
-		        if (mode == 2) {
-		        	if (i == 0) {
-			        	/* Cv = Cp × Cs (Cp = ?)
-			        	 * Av = Ap × As (Ap = 1?)
-			        	 */
-			        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			        } else {
-			        	
-			        	/* Cv = Arg0×Arg2 + Arg1×(1-Arg2)
-			        	 * Cv = Cs × As + Cp × (1-As)
-			        	 * Arg0 = Cs
-			        	 * Arg1 = Cp
-			        	 * Arg2 = As
-			        	 */
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_TEXTURE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_PREVIOUS );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE2_RGB, GL_TEXTURE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_ALPHA );
-	
-			        	/* Av = Arg0×Arg2 + Arg1×(1-Arg2)
-			        	 * Av = 1 × As + Ad × (1-As)
-			        	 * Arg0 = 1
-			        	 * Arg1 = Ad
-			        	 * Arg2 = As
-			        	 */
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL_INTERPOLATE ); 
-			        	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE0_ALPHA, GL2.GL_CONSTANT );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND0_ALPHA, GL_SRC_ALPHA );
-			        	
-			        	float[] mycolor = {0.0f, 0.0f, 0.0f, 1.0f}; //RGB doesn't matter since its not used
-			        	gl.glTexEnvfv(GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, mycolor, 0);
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE1_ALPHA, GL_PREVIOUS );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND1_ALPHA, GL_SRC_ALPHA );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE2_ALPHA, GL_TEXTURE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND2_ALPHA, GL_SRC_ALPHA );
-			        }
-		        }else if (mode == 1) {
-			        if (i == 0) {
-			        	/* Cv = Cp × Cs (Cp = ?)
-			        	 * Av = Ap × As (Ap = 1?)
-			        	 */
-			        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
-			        } else {
-			        	/* Cv = Cp × (1-As) + Cs × As
-			        	 * Av = Ap
-			        	 */
-			        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL2.GL_DECAL);
-			        }
-		        } else if (mode == 0) {
-			        if (i == 0) {
-			        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			        } else {
-			        	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_TEXTURE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_PREVIOUS );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR );
-	
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE2_RGB, GL_TEXTURE );
-			        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_ALPHA );
-	
-			        }
+	        	if (i == 0) {
+		        	/* Cv = Cp × Cs (Cp = ?)
+		        	 * Av = Ap × As (Ap = 1?)
+		        	 */
+		        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		        } else {
+		        	
+		        	/* Cv = Arg0×Arg2 + Arg1×(1-Arg2)
+		        	 * Cv = Cs × As + Cp × (1-As)
+		        	 * Arg0 = Cs
+		        	 * Arg1 = Cp
+		        	 * Arg2 = As
+		        	 */
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_TEXTURE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_PREVIOUS );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_SOURCE2_RGB, GL_TEXTURE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_ALPHA );
+
+		        	/* Av = Arg0×Arg2 + Arg1×(1-Arg2)
+		        	 * Av = 1 × As + Ad × (1-As)
+		        	 * Arg0 = 1
+		        	 * Arg1 = Ad
+		        	 * Arg2 = As
+		        	 */
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL_INTERPOLATE ); 
+		        	
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE0_ALPHA, GL2.GL_CONSTANT );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND0_ALPHA, GL_SRC_ALPHA );
+		        	
+		        	float[] mycolor = {0.0f, 0.0f, 0.0f, 1.0f}; //RGB doesn't matter since its not used
+		        	gl.glTexEnvfv(GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, mycolor, 0);
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE1_ALPHA, GL_PREVIOUS );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND1_ALPHA, GL_SRC_ALPHA );
+
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE2_ALPHA, GL_TEXTURE );
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND2_ALPHA, GL_SRC_ALPHA );
 		        }
 		        
 			}

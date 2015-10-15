@@ -184,7 +184,6 @@ public class BumpMapShader extends AbstractPrimitiveShader {
 			 * GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA produces correct alpha blended results: the blendfunction is in fact equal to 1-(1-SRC_APLHA)*(1-DST_APLHA)
 			 */
 			gl.glBlendFuncSeparate(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA, GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
-			//gl.glBlendEquationSeparate(GL.GL_FUNC_ADD, GL3.GL_MAX); // use default equation for RGB, but use MAX for alpha. This produces correct alpha values for e.g. image export
 			if (material.getTransparency() == Transparency.BINARY) {
 				gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "alphaTreshold"), 0.5f );
 			}
