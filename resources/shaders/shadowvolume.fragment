@@ -1,12 +1,8 @@
-/* Simple fragment shader with a per fragment phong lighting model.
+/* Empty fragment shader. Only depth buffer will be calculated.
  */ 
 #version 130
- 
-// output to buffer
-out vec4 FragColor;
  
 void main()
 {	
 	// nothing to output, only depth buffer needed
-	FragColor = vec4(1.0, 1.0, 1.0, 0.5);
 } 

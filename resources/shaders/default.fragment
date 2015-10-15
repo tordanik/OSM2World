@@ -1,4 +1,4 @@
-/* Simple fragment shader with a per fragment phong lighting model.
+/* Fragment shader with a per fragment phong lighting model, bumpmaps/normalmaps, shadowmaps and SSAO.
  */ 
 #version 130
 // TODO: set from java to match MAX_TEXTURE_LAYERS there

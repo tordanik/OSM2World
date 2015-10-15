@@ -1,4 +1,4 @@
-/* Simple vertex shader with vertex position and normal computation
+/* Vertex shader with support for bumpmaps/normalmaps, shadowmaps and phong lighting model
  */
 #version 130
 // TODO: set from java to match MAX_TEXTURE_LAYERS there

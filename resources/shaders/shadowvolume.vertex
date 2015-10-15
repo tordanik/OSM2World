@@ -1,4 +1,4 @@
-/* Simple vertex shader with vertex position and normal computation
+/* Simple vertex shader with vertex position
  */
 #version 130
 
