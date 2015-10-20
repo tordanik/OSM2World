@@ -310,6 +310,7 @@ public class ImageExporter {
 		
 		JOGLTarget target;
 		if ("shader".equals(config.getString("joglImplementation"))) {
+			boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
 			boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"))
 					|| "both".equals(config.getString("shadowImplementation"));
 			boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
@@ -322,7 +323,7 @@ public class ImageExporter {
 			float SSAOradius = config.getFloat("SSAOradius", 1);
 			boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
 			target = new JOGLTargetShader(gl.getGL3(),
-					new JOGLRenderingParameters(CCW, false, true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+					new JOGLRenderingParameters(CCW, false, true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
 			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes),
 					GlobalLightingParameters.DEFAULT);
 		} else {

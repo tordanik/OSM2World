@@ -45,6 +45,7 @@ public class WorldObjectView extends DebugView {
 	
 	private void setParameters(final JOGLTarget target) {
 		
+		boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
 		boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"))
 				|| "both".equals(config.getString("shadowImplementation"));
 		boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
@@ -58,7 +59,7 @@ public class WorldObjectView extends DebugView {
 		boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+    			renderOptions.isWireframe(), true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
     			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);

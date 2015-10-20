@@ -97,25 +97,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	}
 	
 	/**
-	 * Pass 2: Render by using the generated shadow map
-	 */
-	public void prepareShadowRendering() {
-		// set viewport, view and projection matrices to camera
-		
-		// bind default frame buffer
-		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
-		
-		// reset culling
-		
-	}
-	
-	@Override
-	public void useShader() {
-		super.useShader();
-		prepareShadowRendering();
-	}
-	
-	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
 	 * @param pmvMatrix
 	 */

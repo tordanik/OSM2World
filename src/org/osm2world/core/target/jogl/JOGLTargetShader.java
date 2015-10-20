@@ -1,5 +1,6 @@
 package org.osm2world.core.target.jogl;
 
+import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
 import static javax.media.opengl.GL.GL_BACK;
 import static javax.media.opengl.GL.GL_CCW;
@@ -17,9 +18,9 @@ import static javax.media.opengl.GL2GL3.GL_LINE;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 
+import java.awt.Color;
 import java.io.File;
 import java.nio.FloatBuffer;
-
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL2GL3;
@@ -42,7 +43,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private DefaultShader defaultShader;
 	private ShadowMapShader shadowMapShader;
 	private ShadowVolumeShader shadowVolumeShader;
-	private DepthBufferShader depthBufferShader;
+	//private DepthBufferShader depthBufferShader;
 	private SSAOShader ssaoShader;
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
@@ -59,7 +60,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		super(gl, renderingParameters, globalLightingParameters);
 		defaultShader = new DefaultShader(gl);
 		shadowMapShader = new ShadowMapShader(gl);
-		depthBufferShader = new DepthBufferShader(gl);
+		//depthBufferShader = new DepthBufferShader(gl);
 		ssaoShader = new SSAOShader(gl);
 		shadowVolumeShader = new ShadowVolumeShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
@@ -172,6 +173,13 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		backgroundShader.disableShader();
 	}
 	
+	/**
+	 * Calculate tighter near and far planes for the boundingBox around the visible world objects.
+	 * @param camera the current camera for which the planes are calculated
+	 * @param projection the current projection
+	 * @param boundingBox the bounding box around all visible world objects
+	 * @return a new projection with near and far planes as tight as possible
+	 */
 	public static Projection updateClippingPlanesForCamera(Camera camera, Projection projection, AxisAlignedBoundingBoxXYZ boundingBox) {
 		
 		double nearPlane = Double.POSITIVE_INFINITY, farPlane = 0;
@@ -235,11 +243,12 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			ssaoShader.setPMVMatrix(pmvMatrix);
 			applyRenderingParameters(gl, renderingParameters);
 			rendererShader.setShader(ssaoShader);
-			rendererShader.render(camera, projection);
+			rendererShader.render();
 			ssaoShader.disableShader();
 		}
 		
 		if (renderingParameters.useShadowMaps) {
+			
 			// TODO: render only part?
 			shadowMapShader.setCameraFrustumPadding(renderingParameters.shadowMapCameraFrustumPadding);
 			shadowMapShader.setShadowMapSize(renderingParameters.shadowMapWidth, renderingParameters.shadowMapHeight);
@@ -251,9 +260,11 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			
 			/* render primitives to shadow map*/
 			rendererShader.setShader(shadowMapShader);
-			rendererShader.render(camera, projection);
+			rendererShader.render();
+			
+			//ShaderManager.saveDepthBuffer(new File("/home/sebastian/shadowmap"+xStart+"_"+yStart+".png"), shadowMapShader.getShadowMapHandle(), shadowMapShader.shadowMapWidth, shadowMapShader.shadowMapHeight, gl);
 			//shadowMapShader.saveShadowMap(new File("/home/sebastian/shadowmap.bmp"));
-			//shadowMapShader.saveColorBuffer(new File("/home/sebastian/shadowmap_color.bmp"));
+			//shadowMapShader.saveColorBuffer(new File("/home/sebastian/shadowmap_color"+xStart+"_"+yStart+".png"));
 			
 			shadowMapShader.disableShader();
 		}
@@ -293,8 +304,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		/* non area primitives */
 		nonAreaShader.useShader();
 		nonAreaShader.loadDefaults();
-		
-		nonAreaShader.setPMVMatrix(pmvMatrix);
+		if (showShadowPerspective)
+			nonAreaShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
+		else
+			nonAreaShader.setPMVMatrix(pmvMatrix);
 		
 		nonAreaRenderer.render();
 		
@@ -329,7 +342,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		    shadowVolumeShader.useShader();
 		    shadowVolumeShader.setPMVMatrix(pmvMatrix);
 		    rendererShadowVolume.setShader(shadowVolumeShader);
-		    rendererShadowVolume.render(camera, projection);
+		    rendererShadowVolume.render();
 		    shadowVolumeShader.disableShader();
 
 		    // Restore local stuff
@@ -544,6 +557,36 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 //		gl.glEnd();
 //	}
 	
+	protected final void drawBoundingBox(Color color, AxisAlignedBoundingBoxXYZ bb) {
+		// bottom
+		drawBox(color, new VectorXYZ(bb.minX, bb.minY, bb.minZ), new VectorXYZ(
+				bb.minX, bb.minY, bb.maxZ), new VectorXYZ(bb.maxX, bb.minY,
+				bb.maxZ), new VectorXYZ(bb.maxX, bb.minY, bb.minZ));
+		// top
+		drawBox(color, new VectorXYZ(bb.minX, bb.maxY, bb.minZ), new VectorXYZ(
+				bb.minX, bb.maxY, bb.maxZ), new VectorXYZ(bb.maxX, bb.maxY,
+				bb.maxZ), new VectorXYZ(bb.maxX, bb.maxY, bb.minZ));
+		// bottom/top connections
+		drawLineStrip(color, 1, new VectorXYZ(bb.minX, bb.minY, bb.minZ),
+				new VectorXYZ(bb.minX, bb.maxY, bb.minZ));
+		drawLineStrip(color, 1, new VectorXYZ(bb.minX, bb.minY, bb.maxZ),
+				new VectorXYZ(bb.minX, bb.maxY, bb.maxZ));
+		drawLineStrip(color, 1, new VectorXYZ(bb.maxX, bb.minY, bb.maxZ),
+				new VectorXYZ(bb.maxX, bb.maxY, bb.maxZ));
+		drawLineStrip(color, 1, new VectorXYZ(bb.maxX, bb.minY, bb.minZ),
+				new VectorXYZ(bb.maxX, bb.maxY, bb.minZ));
+	}
+	
+	protected final void drawLine(Color color,
+			VectorXYZ v1, VectorXYZ v2) {
+		drawLineLoop(color, 1, asList(v1, v2));
+	}
+	
+	protected final void drawBox(Color color,
+			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {
+		drawLineLoop(color, 1, asList(v1, v2, v3, v4));
+	}
+	
 	@Override
 	public void finish() {
 		if (isFinished()) return;
@@ -552,6 +595,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		//this.drawLineLoop(Color.WHITE, 1, Arrays.asList(new VectorXYZ[]{xzBoundary.topLeft().xyz(0.1), xzBoundary.topRight().xyz(0.1), xzBoundary.bottomRight().xyz(0.1), xzBoundary.bottomLeft().xyz(0.1)}));
 		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer, xzBoundary);
 		renderer = rendererShader;
+		if (renderingParameters.drawBoundingBox) {
+			this.drawBoundingBox(Color.RED, rendererShader.getBoundingBox());
+		}
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 		if (renderingParameters.useShadowVolumes)
 			rendererShadowVolume = new JOGLRendererVBOShadowVolume(gl, primitiveBuffer, new VectorXYZW(globalLightingParameters.lightFromDirection, 0));

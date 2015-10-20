@@ -79,7 +79,6 @@ public abstract class AbstractShader {
 	    gl.glDeleteProgram(shaderProgram);
 	    gl.glDeleteShader(vertexShader);
 	    gl.glDeleteShader(fragmentShader);
-	    System.out.printf("Deleted Vertex: %d, Fragment: %d\n",vertexShader,fragmentShader);
 	    gl = null;
 	}
 	

@@ -23,6 +23,7 @@ public class JOGLRenderingParameters {
 	final Winding frontFace;
 	final boolean wireframe;
 	final boolean useZBuffer;
+	final boolean drawBoundingBox;
 	final boolean useShadowVolumes;
 	final boolean useShadowMaps;
 	final int shadowMapWidth;
@@ -40,13 +41,14 @@ public class JOGLRenderingParameters {
 	 * @param useZBuffer  enables the z buffer, should usually be true
 	 */
 	public JOGLRenderingParameters(
-			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean useShadowVolumes,
+			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean drawBoundingBox, boolean useShadowVolumes,
 			boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, int shadowMapCameraFrustumPadding, 
 			boolean useSSAO, int SSAOkernelSize, float SSAOradius, boolean overwriteProjectionClippingPlanes) {
 		
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
+		this.drawBoundingBox = drawBoundingBox;
 		this.useShadowVolumes = useShadowVolumes;
 		this.useShadowMaps = useShadowMaps;
 		this.shadowMapWidth = shadowMapWidth;
@@ -70,6 +72,7 @@ public class JOGLRenderingParameters {
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
+		this.drawBoundingBox = false;
 		this.useShadowVolumes = false;
 		this.useShadowMaps = false;
 		this.shadowMapWidth = 0;
@@ -85,6 +88,7 @@ public class JOGLRenderingParameters {
 		this.frontFace = null;
 		this.wireframe = false;
 		this.useZBuffer = false;
+		this.drawBoundingBox = false;
 		this.useShadowVolumes = false;
 		this.useShadowMaps = false;
 		this.shadowMapWidth = 0;

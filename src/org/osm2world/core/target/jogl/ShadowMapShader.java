@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
@@ -35,8 +34,8 @@ import com.jogamp.opengl.util.PMVMatrix;
 
 public class ShadowMapShader extends DepthBufferShader {
 	
-	private int shadowMapWidth = 4096;
-	private int shadowMapHeight = 4096;
+	protected int shadowMapWidth = 1024;
+	protected int shadowMapHeight = 1024;
 	
 	/**
 	 * Padding for the calculated bounding box around the camera frustum.
@@ -129,6 +128,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		        null);  // buffer to store the texture in memory
 		*/
 		
+		
 		// create the frame buffer object (FBO)
 		gl.glGenFramebuffers(1, tmp, 0);
 		frameBufferHandle = tmp[0];
@@ -183,6 +183,12 @@ public class ShadowMapShader extends DepthBufferShader {
 		this.cameraFrustumPadding = padding;
 	}
 	
+	/**
+	 * Change the size of the shadow map texture. This needs to be called before {@link #useShader()},
+	 * as otherwise viewport may be wrong.
+	 * @param width the new texture width
+	 * @param height the new texture height
+	 */
 	public void setShadowMapSize(int width, int height) {
 		resizeBuffer(width, height);
 	}
@@ -203,11 +209,25 @@ public class ShadowMapShader extends DepthBufferShader {
 			        GL3.GL_DEPTH_COMPONENT,     // external pixel format 
 			        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 			        null);  // buffer to store the texture in memory
+
+			/*gl.glBindTexture(GL.GL_TEXTURE_2D, colorBufferHandle);
+	
+			gl.glTexImage2D(GL.GL_TEXTURE_2D,          // target texture type
+			        0,                                  // mipmap LOD level
+			        GL.GL_RGBA,         // internal pixel format
+			                                            //GL_DEPTH_COMPONENT
+			        shadowMapWidth,                     // width of generated image
+			        shadowMapHeight,                    // height of generated image
+			        0,                          // border of image
+			        GL.GL_RGBA,     // external pixel format 
+			        GL.GL_UNSIGNED_BYTE,        // datatype for each value
+			        null);  // buffer to store the texture in memory
+			*/
 		}
 	}
 	
 	/**
-	 * Pass 1: Shadow map generation
+	 * Prepare everything to render the shadow map (bind framebuffer, update viewport, clear buffer, etc.)
 	 */
 	private void prepareShadowMapGeneration() {
 		
@@ -225,6 +245,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		gl.glFrontFace(GL_CCW);
 		gl.glCullFace(GL.GL_FRONT);
 		gl.glEnable (GL_CULL_FACE);
+		//gl.glDisable (GL_CULL_FACE);
 		
 		gl.glEnable(GL_DEPTH_TEST);
 	}
@@ -322,8 +343,10 @@ public class ShadowMapShader extends DepthBufferShader {
 	}
 	
 	/**
-	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective
-	 * @param lighting
+	 * Prepare and use PMVMatrix for rendering shadows from global lighting perspective
+	 * @param lighting contains the lights direction
+	 * @param cameraPMV the current camera PMVMatrix used to tighten the lights view frustum on the visible part of the world
+	 * @param primitivesBoundingBox bounding box around all relevant primitives in world coordinates. Also used to tighten the lights view frustum
 	 */
 	public void preparePMVMatrix(GlobalLightingParameters lighting, PMVMatrix cameraPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
 		
@@ -350,21 +373,22 @@ public class ShadowMapShader extends DepthBufferShader {
 		frustum = AxisAlignedBoundingBoxXYZ.intersect(calculateCameraLightFrustum(pmvMat, cameraPMV),
 				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));
 		//frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
-		//System.out.println("shadow map frustum: " + Arrays.toString(frustum));
+		//frustum = calculateCameraLightFrustum(pmvMat, cameraPMV);
 		pmvMat.glOrthof((float)frustum.minX, (float)frustum.maxX, (float)frustum.minY, (float)frustum.maxY, (float)frustum.minZ, (float)frustum.maxZ);
+		pmvMat.glMatrixMode(GL_MODELVIEW);
 		
 		setPMVMatrix(pmvMat);
 	}
 	
 	/**
-	 * the frustum for the light projection matrix based on the bounding box of all primitives.
-	 * transforms the bounding box into lightspace and draws an axis aligned bounding box around it.
-	 * @param lightPMV
-	 * @param primitivesBoundingBox
-	 * @return
+	 * Calculate the frustum for the light projection matrix based on the bounding box of all primitives.
+	 * Transforms the bounding box into lightspace and draws an axis aligned bounding box around it.
+	 * @param lightPMV contains the lights ModelView matrix
+	 * @param primitivesBoundingBox bounding box around all relevant primitives in world coordinates
+	 * @return the optimal frustum for the light
 	 */
 	private AxisAlignedBoundingBoxXYZ calculatePrimitivesLightFrustum(PMVMatrix lightPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
-		
+
 		ArrayList<VectorXYZ> corners = new ArrayList<VectorXYZ>();
 		for (VectorXYZ corner : primitivesBoundingBox.corners()) {
 			float[] result = new float[4];
@@ -378,9 +402,9 @@ public class ShadowMapShader extends DepthBufferShader {
 	
 	/**
 	 * Calculate the frustum for the light projection matrix based on the frustum of the camera
-	 * @param lightPMV
-	 * @param cameraPMV
-	 * @param frustum
+	 * @param lightPMV contains the lights ModelView matrix
+	 * @param cameraPMV the cameras PMVMatrix that defines the camera view frustum
+	 * @return the optimal frustum for the light
 	 */
 	private AxisAlignedBoundingBoxXYZ calculateCameraLightFrustum(PMVMatrix lightPMV, PMVMatrix cameraPMV) {
 		/*
@@ -446,9 +470,13 @@ public class ShadowMapShader extends DepthBufferShader {
 	@Override
 	public void disableShader() {
 		
+		// bind default framebuffer
+		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+		
 		// reset viewport
 		gl.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 		super.disableShader();
+		
 	}
 	
 }

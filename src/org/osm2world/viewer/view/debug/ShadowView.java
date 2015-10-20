@@ -46,7 +46,8 @@ public class ShadowView extends DebugView {
 	}
 	
 	private void setParameters(final JOGLTarget target) {
-		
+
+		boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
 		boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"))
 				|| "both".equals(config.getString("shadowImplementation"));
 		boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
@@ -56,7 +57,7 @@ public class ShadowView extends DebugView {
 		int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+    			renderOptions.isWireframe(), true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
     			shadowMapCameraFrustumPadding, false, 0, 0, false));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);

@@ -152,6 +152,38 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 			return new VBODataFloat(gl, textureManager, material, primitives);
 	}
 	
+	/**
+	 * Render the stored VBOS. Uses the currently set shader. Transparent primitives are not sorted.
+	 * If they have to be sorted for the set shader then use {@link #render(Camera, Projection)}.
+	 */
+	public void render() {
+
+		/* render static geometry */
+		
+		shader.glEnableVertexAttribArray(shader.getVertexPositionID());
+		shader.glEnableVertexAttribArray(shader.getVertexNormalID());
+		
+		for (VBOData<?> vboData : vbos) {
+			((VBODataShader<?>)vboData).setShader(shader);
+			vboData.render();
+		}
+		
+		/* render transparent primitives unsorted */
+		
+		for (PrimitiveWithMaterial p : transparentPrimitives) {
+			((VBODataShader<?>)p.vbo).setShader(shader);
+			p.vbo.render();
+		}
+		
+		shader.glDisableVertexAttribArray(shader.getVertexPositionID());
+		shader.glDisableVertexAttribArray(shader.getVertexNormalID());
+		
+	}
+	
+	/**
+	 * Render the stored VBOs. Uses the currently set shader. Transparent objects get sorted first back to front
+	 * relative to the given camera and projection.
+	 */
 	@Override
 	public void render(final Camera camera, final Projection projection) {
 		

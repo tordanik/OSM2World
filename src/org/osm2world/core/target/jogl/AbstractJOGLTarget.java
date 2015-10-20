@@ -33,6 +33,9 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
+/**
+ * Common implementation base for the new shader based {@link JOGLTargetShader} and the old {@link JOGLTargetFixedFunction}
+ */
 public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOGL> implements JOGLTarget {
 	protected PrimitiveBuffer primitiveBuffer;
 	protected List<NonAreaPrimitive> nonAreaPrimitives;
