@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
@@ -336,7 +335,8 @@ public class ImageExporter {
 		target.setConfiguration(config);
 		
 		boolean underground = config.getBoolean("renderUnderground", true);
-		
+
+		target.setXZBoundary(results.getMapData().getBoundary());
 		TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
 		
 		target.finish();
