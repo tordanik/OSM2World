@@ -208,42 +208,53 @@ void main()
 	
 	if ( useLighting ) {
 		vec3 normalEye = normalize(NormalEye);
-		vec3 viewDirection, lightDirection;
-		vec4 lightPositionEye = ModelViewMatrix * Light.Position;
 		
-		// transform light and view direction to eye space
+		float occlusionFactor = 1.0;
+		vec3 debug = vec3(0.0);
+		if ( useSSAO )
+			occlusionFactor = ssao( VertexEye, normalEye, debug );
 		
-		if( ProjectionMatrix[3][3] == 0.0 )
-			viewDirection = normalize(-VertexEye); // perspective projection
-		else
-			viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
+		if ( isShadowed ) {
+			ambient = Light.La * Material.Ka;
+			diff = vec3(0.0);
+		} else {
+			vec3 viewDirection, lightDirection;
+			vec4 lightPositionEye = ModelViewMatrix * Light.Position;
+			
+			// transform light and view direction to eye space
+			
+			if( ProjectionMatrix[3][3] == 0.0 )
+				viewDirection = normalize(-VertexEye); // perspective projection
+			else
+				viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
+			
+			// directional light?
+			if( Light.Position.w == 0.0 )
+				lightDirection = normalize(vec3(lightPositionEye));
+			else
+				lightDirection = normalize(vec3(lightPositionEye) - VertexEye);
+			
+			vec3 normal = normalEye;
+			if ( useBumpMaps ) {
+				vec3 tangentEye = normalize(TangentEye.xyz);
+				// compute bitangent
+				vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
 		
-		// directional light?
-		if( Light.Position.w == 0.0 )
-			lightDirection = normalize(vec3(lightPositionEye));
-		else
-			lightDirection = normalize(vec3(lightPositionEye) - VertexEye);
-		
-		vec3 normal = normalEye;
-		if ( useBumpMaps ) {
-			vec3 tangentEye = normalize(TangentEye.xyz);
-			// compute bitangent
-			vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
-	
-			// transformation from eye to tangent space
-			mat3 tangentMatrix = mat3(
-				tangentEye.x, bitangentEye.x, normalEye.x,
-				tangentEye.y, bitangentEye.y, normalEye.y,
-				tangentEye.z, bitangentEye.z, normalEye.z );
-		
-			// transform light and view direction to tangent space
-			viewDirection = tangentMatrix * viewDirection;
-			lightDirection = tangentMatrix * lightDirection;
-			normal = normalize(texture( BumpMap, BumpMapCoord ).xyz * 2.0 - 1.0);
+				// transformation from eye to tangent space
+				mat3 tangentMatrix = mat3(
+					tangentEye.x, bitangentEye.x, normalEye.x,
+					tangentEye.y, bitangentEye.y, normalEye.y,
+					tangentEye.z, bitangentEye.z, normalEye.z );
+			
+				// transform light and view direction to tangent space
+				viewDirection = tangentMatrix * viewDirection;
+				lightDirection = tangentMatrix * lightDirection;
+				normal = normalize(texture( BumpMap, BumpMapCoord ).xyz * 2.0 - 1.0);
+			}
+			
+			phongModel( lightDirection, viewDirection, normal, ambient, diff, spec );
+			//toonShade( lightDirection, normal, ambient, diff );
 		}
-		
-		phongModel( lightDirection, viewDirection, normal, ambient, diff, spec );
-		//toonShade( lightDirection, normal, ambient, diff );
 		
 		// shadow map lookup
 		float shadowFactor = 1.0;
@@ -265,11 +276,6 @@ void main()
 		}
 		if ( isShadowed )
 			shadowFactor = 0.0;
-			
-		float occlusionFactor = 1.0;
-		vec3 debug = vec3(0.0);
-		if ( useSSAO )
-			occlusionFactor = ssao( VertexEye, normalEye, debug );
 		
 		diff = diff * shadowFactor * occlusionFactor;
 		spec = spec * shadowFactor * occlusionFactor;
