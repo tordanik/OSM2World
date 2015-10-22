@@ -138,22 +138,15 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		/* set color / lighting */
 		
 		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
-			
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1, getFloatBuffer(material.ambientColor()));
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(material.diffuseColor()));
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor());
-			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());
-			
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(material.getColor()));
 		} else {
-			
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 1, getFloatBuffer(
-					multiplyColor(Color.WHITE, material.getAmbientFactor())));
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1, getFloatBuffer(
-					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor());
-			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());	
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(Color.WHITE));
 		}
-		
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), material.getAmbientFactor());
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), material.getDiffuseFactor());
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor());
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());
+	
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useBumpMaps"), material.hasBumpMap() ? 1 : 0);
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);

@@ -16,9 +16,10 @@ struct LightInfo {
 uniform LightInfo Light;
 	
 struct MaterialInfo {
-	vec3 Ka; // Ambient reflectivity
-	vec3 Kd; // Diffuse reflectivity
-	vec3 Ks; // Specular reflectivity
+	vec3 Color; // Material color
+	float Ka; // Ambient reflectivity
+	float Kd; // Diffuse reflectivity
+	float Ks; // Specular reflectivity
 	float Shininess; // Specular shininess factor
 };
 uniform MaterialInfo Material;
@@ -68,12 +69,12 @@ out vec4 FragColor;
 vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambient, out vec3 diffuse, out vec3 spec )
 {	
 	vec3 r = reflect( -lightDir, norm );
-	ambient = Light.La * Material.Ka;
+	ambient = Light.La;
 	float sDotN = max( dot(lightDir,norm), 0.0 );
-	diffuse = Light.Ld * Material.Kd * sDotN;
+	diffuse = Light.Ld * sDotN;
 	spec = vec3(0.0);
 	if( sDotN > 0.0 )
-		spec = Light.Ls * Material.Ks *
+		spec = Light.Ls *
 				pow( max( dot(r,viewDir), 0.0 ), Material.Shininess );
 	return ambient + diffuse + spec;
 }
@@ -83,9 +84,9 @@ const float scaleFactor = 1.0 / levels;
 // toon shading (only ambient and diffuse)
 vec3 toonShade( vec3 lightDir, vec3 norm, out vec3 ambient, out vec3 diffuse )
 {
-	ambient = Light.La * Material.Ka;
+	ambient = Light.La;
 	float cosine = max( dot(lightDir,norm) , 0.0 );
-	diffuse = Light.Ld * Material.Kd * floor( cosine * levels ) * scaleFactor;
+	diffuse = Light.Ld * floor( cosine * levels ) * scaleFactor;
 	
 	return ambient + diffuse;
 }
@@ -187,12 +188,13 @@ void main()
 {
 	vec3 ambient, diff, spec=vec3(0.0);
 	vec4 texColor = vec4(1.0);
-	
+
 	// apply textures
 	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
 	if ( useTexture[0] ) {
 		texColor = texture( Tex[0], TexCoord0 );
 	}
+	texColor = texColor * vec4(Material.Color, 1.0); // color first layer only
 	if ( useTexture[1] ) {
 		vec4 layerColor = texture( Tex[1], TexCoord1 );
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
@@ -215,7 +217,7 @@ void main()
 			occlusionFactor = ssao( VertexEye, normalEye, debug );
 		
 		if ( isShadowed ) {
-			ambient = Light.La * Material.Ka;
+			ambient = Light.La;
 			diff = vec3(0.0);
 		} else {
 			vec3 viewDirection, lightDirection;
@@ -281,13 +283,13 @@ void main()
 		spec = spec * shadowFactor * occlusionFactor;
 		ambient = ambient * occlusionFactor;
 		
-		FragColor = vec4(ambient + diff, 1.0) * texColor + vec4(spec, 0.0);
+		FragColor = vec4(ambient*Material.Ka + diff*Material.Kd, 1.0) * texColor + vec4(spec*Material.Ks, 0.0);
 		//FragColor = texColor;
 		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
 		//FragColor = vec4(normalEye, FragColor.a);
 		//FragColor = vec4(debug, FragColor.a);
 	} else {
-		FragColor = vec4(Material.Ka + Material.Kd, 1.0) * texColor;
+		FragColor = texColor;
 	}
 	
 	if ( useAlphaTreshold ) {
