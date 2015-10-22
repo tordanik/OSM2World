@@ -7,6 +7,7 @@ import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangl
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
 
 import java.nio.Buffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -48,7 +49,7 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 	protected abstract void put(BufferT buffer, VectorXYZW sv);
 
 	
-	public VBODataShadowVolume(GL3 gl, Material material, Collection<Primitive> primitives, VectorXYZW lightPos) {
+	public VBODataShadowVolume(GL3 gl, Collection<Primitive> primitives, VectorXYZW lightPos) {
 		
 		this.gl = gl;
 		this.lightPos = lightPos;
@@ -56,7 +57,7 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		valueTypeSize = valueTypeSize();
 		glValueType = glValueType();
 		
-		vertexCount = VBOData.countVertices(primitives)*8;
+		//vertexCount = VBOData.countVertices(primitives)*8;
 		
 		/* create the buffer */
 		
@@ -65,12 +66,16 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		
 		/* collect the data for the buffer */
 		
-		BufferT valueBuffer = createBuffer(
-				vertexCount * getShadowVolumeVerticesPerVertex());
-					
+		List<VectorXYZW> shadowVolumeVertices = new ArrayList<VectorXYZW>();
 		for (Primitive primitive : primitives) {
-			addPrimitiveToValueBuffer(valueBuffer, primitive);
+			shadowVolumeVertices.addAll(getPrimitivesShadowVolumes(primitive));
 		}
+		vertexCount = shadowVolumeVertices.size();
+		
+		BufferT valueBuffer = createBuffer(
+				vertexCount * getValuesPerVertex());
+					
+		addVerticesToValueBuffer(valueBuffer, shadowVolumeVertices);
 		
 		valueBuffer.rewind();
 		
@@ -91,10 +96,22 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 	}
 	
 	/**
-	 * put the values for a primitive's vertices into the buffer
+	 * Put the values of a shadow volume into the buffer.
 	 */
-	protected void addPrimitiveToValueBuffer(BufferT buffer,
-			Primitive primitive) {
+	protected void addVerticesToValueBuffer(BufferT buffer,
+			List<VectorXYZW> shadowVolumeVertices) {
+		
+		/* put the values into the buffer, in the right order */
+		for (VectorXYZW v : shadowVolumeVertices) {
+			put(buffer, v);
+		}
+		
+	}
+
+	/**
+	 * Calculate the shadow volume for a primitive.
+	 */
+	protected List<VectorXYZW> getPrimitivesShadowVolumes(Primitive primitive) {
 					
 		/*
 		 * rearrange the lists of vertices, normals and texture coordinates
@@ -121,14 +138,7 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		 *   * use low poly model for shadow volume generation (only useful for high poly objects)
 		 */
 		List<VectorXYZW> shadowVolumeVertices = GeometryUtil.calculateShadowVolumesPerTriangle(primVertices, lightPos);
-					
-		/* put the values into the buffer, in the right order */
-		
-		for (int i = 0; i < shadowVolumeVertices.size(); i++) {
-			
-			put(buffer, shadowVolumeVertices.get(i));
-
-		}
+		return shadowVolumeVertices;
 		
 	}
 	
@@ -147,10 +157,6 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		int offset = 0;
 		
 		shader.glVertexAttribPointer(shader.getVertexPositionID(), 4, glValueType(), false, stride, offset);
-	}
-	
-	protected int getShadowVolumeVerticesPerVertex() {
-		return 8;
 	}
 	
 	protected int getValuesPerVertex() {

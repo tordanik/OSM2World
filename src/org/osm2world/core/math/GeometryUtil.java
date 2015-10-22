@@ -645,6 +645,7 @@ public final class GeometryUtil {
 	public static final List<VectorXYZW> calculateShadowVolumesPerTriangle(List<VectorXYZ> vertices, VectorXYZW lightPos) {
 		
 		List<VectorXYZW> shadowVolumes = new ArrayList<VectorXYZW>();
+
 		for (int triangle = 0; triangle < vertices.size()/3; triangle++) {
 			VectorXYZ v1 = vertices.get(triangle*3);
 			VectorXYZ v2 = vertices.get(triangle*3+1);
@@ -662,19 +663,21 @@ public final class GeometryUtil {
 			if (approxZero(normal.dot(lightDir)))
 				continue;
 			
-			// revert non light facing triangles
+			// only light facing triangles (not the same direction of the light rays) throw shadows
 			if (normal.dot(lightDir) < 0) {
+				
+				// revert light facing triangles
 				VectorXYZ tmp = v2;
 				v2 = v3;
 				v3 = tmp;
-			}
+			//}
 			
 				// calculate the volume sides
 				shadowVolumes.addAll(emitQuad(v1, v2, lightPos));
 				shadowVolumes.addAll(emitQuad(v2, v3, lightPos));
 				shadowVolumes.addAll(emitQuad(v3, v1, lightPos));
 
-				// calculate the front/back cap
+				// calculate the front/back cap. move front cap a little in light direction to avoid self shadowing
 				VectorXYZW c1 = new VectorXYZW( v1.add(lightDir.mult(SHADOWVOLUME_EPSILON)), 1);
 				VectorXYZW b1 = new VectorXYZW( lightDir, 0);
 
@@ -696,7 +699,7 @@ public final class GeometryUtil {
 				shadowVolumes.add(b1);
 				shadowVolumes.add(b3);
 				shadowVolumes.add(b2);
-			//}
+			}
 			
 		}
 		

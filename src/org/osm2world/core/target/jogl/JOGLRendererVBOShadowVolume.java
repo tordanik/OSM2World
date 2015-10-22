@@ -39,8 +39,8 @@ public class JOGLRendererVBOShadowVolume  {
 	
 	private final class VBODataDouble extends VBODataShadowVolume<DoubleBuffer> {
 
-		public VBODataDouble(GL3 gl, Material material, Collection<Primitive> primitives, VectorXYZW lightPos) {
-			super(gl, material, primitives, lightPos);
+		public VBODataDouble(GL3 gl, Collection<Primitive> primitives, VectorXYZW lightPos) {
+			super(gl, primitives, lightPos);
 		}
 		
 		@Override
@@ -70,8 +70,8 @@ public class JOGLRendererVBOShadowVolume  {
 	
 	private final class VBODataFloat extends VBODataShadowVolume<FloatBuffer> {
 
-		public VBODataFloat(GL3 gl, Material material, Collection<Primitive> primitives, VectorXYZW lightPos) {
-			super(gl, material, primitives, lightPos);
+		public VBODataFloat(GL3 gl, Collection<Primitive> primitives, VectorXYZW lightPos) {
+			super(gl, primitives, lightPos);
 		}
 		
 		@Override
@@ -108,22 +108,24 @@ public class JOGLRendererVBOShadowVolume  {
 	
 	protected void init(PrimitiveBuffer primitiveBuffer) {
 		
+		Collection<Primitive> combinedPrimitives = new ArrayList<Primitive>();
 		for (Material material : primitiveBuffer.getMaterials()) {
 			
 			if (material.getTransparency() == Transparency.FALSE && material.getShadow() == Shadow.TRUE) {
 				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
-				vbos.add(this.createVBOData(material, primitives));
+				combinedPrimitives.addAll(primitives);
 			}
 			
 		}
+		vbos.add(this.createVBOData(combinedPrimitives));
 		
 	}
 	
-	VBODataShadowVolume<?> createVBOData(Material material, Collection<Primitive> primitives) {
+	VBODataShadowVolume<?> createVBOData(Collection<Primitive> primitives) {
 		if (DOUBLE_PRECISION_RENDERING)
-			return new VBODataDouble(gl, material, primitives, lightPos);
+			return new VBODataDouble(gl, primitives, lightPos);
 		else
-			return new VBODataFloat(gl, material, primitives, lightPos);
+			return new VBODataFloat(gl, primitives, lightPos);
 	}
 	
 	public void render() {
