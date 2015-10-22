@@ -365,6 +365,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.loadDefaults();
 			defaultShader.setPMVMatrix(pmvMatrix);
 			defaultShader.setShadowed(true);
+			
+			if (!showShadowPerspective && renderingParameters.useSSAO) {
+				defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
+			}
 
 			// if using shadow volumes render semi-transparent objects later
 			defaultShader.setRenderSemiTransparent(!renderingParameters.useShadowVolumes);
