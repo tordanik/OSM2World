@@ -4,13 +4,11 @@ import static java.lang.Math.sqrt;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.awt.geom.Line2D;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import com.jogamp.opengl.math.FloatUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -573,10 +571,10 @@ public final class GeometryUtil {
 	/**
 	 * Calculate consistent tangent vectors for given vertices and vertex normals and texture coordinates.
 	 * Code inspired by Lengyel, Eric. “Computing Tangent Space Basis Vectors for an Arbitrary Mesh”. Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html
-	 * @param vertices
-	 * @param normals
-	 * @param texCoords
-	 * @return
+	 * @param vertices list of vertices for which the tangent vectors get calculated
+	 * @param normals list of normals belonging to the vertices
+	 * @param texCoords list of texture coordinates belonging to the vertices
+	 * @return list of tangent vectors that are consistent with the vertices, normals and texture coordinates
 	 */
 	public static final List<VectorXYZW> calculateTangentVectorsForTexLayer(List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<VectorXZ> texCoords)
@@ -640,8 +638,17 @@ public final class GeometryUtil {
 	    return tangents;
 	}
 	
+	/**
+	 * Epsilon to move the shadow volumes away in light direction. Avoids self shadowing.
+	 */
 	private static final double SHADOWVOLUME_EPSILON = 0.1f;
 	
+	/**
+	 * Calculate per triangle shadow volumes. Only light facing triangles will create a shadow volume, so objects should probably be closed for correct results.
+	 * @param vertices list of the triangles vertices. Have to be a multiple of three.
+	 * @param lightPos position of the light source. Supports point lights with lightPos.w != 0 and directional lights with lightPos.w == 0
+	 * @return list of the shadow volume vertices in homogeneous coordinates. These will contain points at infinity (w == 0) for the shadow volume back cap
+	 */
 	public static final List<VectorXYZW> calculateShadowVolumesPerTriangle(List<VectorXYZ> vertices, VectorXYZW lightPos) {
 		
 		List<VectorXYZW> shadowVolumes = new ArrayList<VectorXYZW>();
@@ -706,6 +713,13 @@ public final class GeometryUtil {
 		return shadowVolumes;
 	}
 	
+	/**
+	 * Creates the sides of a shadow volume for a edge of the triangle casting the shadow.
+	 * @param start the start of the triangle edge
+	 * @param end the end of the triangle edge
+	 * @param lightPos position of the shadow casting light
+	 * @return the vertices making up the side of the shadow volume for the triangle edge
+	 */
 	private static List<VectorXYZW> emitQuad(VectorXYZ start, VectorXYZ end, VectorXYZW lightPos) {
 
 		List<VectorXYZW> result = new ArrayList<VectorXYZW>(10);

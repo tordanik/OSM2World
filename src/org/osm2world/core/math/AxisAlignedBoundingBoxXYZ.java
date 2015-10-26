@@ -1,17 +1,14 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
  * immutable representation of an axis-aligned bounding box
- * with x and z dimensions
+ * with x, y and z dimensions
  */
 public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 

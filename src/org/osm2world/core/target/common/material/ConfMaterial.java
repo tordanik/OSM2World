@@ -25,13 +25,13 @@ public class ConfMaterial extends Material {
 				transparency, Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
 	}
 	
-	public ConfMaterial(Interpolation lighting, Color color,
+	public ConfMaterial(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(lighting, color, transparency, textureDataList);
+		super(interpolation, color, transparency, textureDataList);
 	}
 	
-	public ConfMaterial(Interpolation lighting, Color color) {
-		super(lighting, color);
+	public ConfMaterial(Interpolation interpolation, Color color) {
+		super(interpolation, color);
 	}
 	
 	public void setInterpolation(Interpolation interpolation) {
