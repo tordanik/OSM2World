@@ -85,9 +85,10 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		renderOnlySemiTransparent = false;
 		
 		// set default material values
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 0,0,0);
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 0,0,0);
-		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 0,0,0);
+		gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 0, 0, 0);
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 0);
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 0);
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 0);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), 0);
 		
