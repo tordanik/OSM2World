@@ -5,6 +5,9 @@ import java.nio.IntBuffer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
+/**
+ * Simple base class for a shader program. Manages vertex and fragment shaders, links and validates them.
+ */
 public abstract class AbstractShader {
 	
 	protected GL3 gl;
@@ -12,6 +15,12 @@ public abstract class AbstractShader {
 	protected int fragmentShader;
 	protected int shaderProgram;
 	
+	/**
+	 * Loads the vertex and fragment shaders with the basename name and ending <i>vertex</i> and <i>fragment</i>
+	 * and creates a shader program for them.
+	 * @param gl
+	 * @param name
+	 */
 	public AbstractShader(GL3 gl, String name) {
 		this.gl = gl;
 		shaderProgram = gl.glCreateProgram();
@@ -61,6 +70,9 @@ public abstract class AbstractShader {
 		}
 	}
 	
+	/**
+	 * Make this shader program active.
+	 */
 	public void useShader() {
 		gl.glUseProgram(this.getProgram());
 	}
@@ -87,5 +99,8 @@ public abstract class AbstractShader {
 		freeResources();
 	}
 
+	/**
+	 * Load default values for the shader. Should be called after every {@link #useShader()} and before any draw calls.
+	 */
 	public void loadDefaults() { }
 }

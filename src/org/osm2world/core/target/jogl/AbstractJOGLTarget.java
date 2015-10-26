@@ -179,7 +179,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 	}
 	
 	/**
-	 * clears the rendering surface and the z buffer
+	 * clears the rendering surface, the z buffer and the stencil buffer
 	 * 
 	 * @param clearColor  background color before rendering any primitives;
 	 *                     null uses a previously defined clear color
