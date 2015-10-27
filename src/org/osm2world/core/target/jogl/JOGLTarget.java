@@ -68,6 +68,10 @@ public interface JOGLTarget extends Target<RenderableToJOGL> {
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager);
 
+	/**
+	 * Set the boundary for the relevant data. All data outside of this boundary may be ignored by the target
+	 * to improve quality and performance.
+	 */
 	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary);
 	
 }

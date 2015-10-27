@@ -7,6 +7,9 @@ import javax.media.opengl.GL3;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 
+/**
+ * Shader to render a single texture on screen.
+ */
 public class BackgroundShader extends AbstractShader {
 
 	private int modelViewProjectionMatrixID;
@@ -28,7 +31,7 @@ public class BackgroundShader extends AbstractShader {
 	
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
-	 * @param pmvMatrix
+	 * @param pmvMatrix the PMVMatrix containing all matrices
 	 */
 	public void setPMVMatrix(PMVMatrix pmvMatrix) {
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
@@ -36,10 +39,16 @@ public class BackgroundShader extends AbstractShader {
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 	}
 	
+	/**
+	 * Returns the id to use to bind the vertex position attribute.
+	 */
 	public int getVertexPositionID() {
 		return vertexPositionID;
 	}
 	
+	/**
+	 * Returns the id to use to bind the vertex texture coordinate attribute.
+	 */
 	public int getVertexTexCoordID() {
 		return vertexTexCoord;
 	}
@@ -48,6 +57,9 @@ public class BackgroundShader extends AbstractShader {
 		return modelViewProjectionMatrixID;
 	}
 	
+	/**
+	 * Returns the id to use to bind the texture attribute.
+	 */
 	public int getTextureID() {
 		return textureID;
 	}

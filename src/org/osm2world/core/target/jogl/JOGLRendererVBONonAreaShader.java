@@ -16,6 +16,13 @@ import org.osm2world.core.math.VectorXYZ;
 
 import com.jogamp.common.nio.Buffers;
 
+/**
+ * Renders the a bunch of {@link NonAreaPrimitive} objects using JOGL and the new shader based OpengGL pipeline.
+ * Uses vertex buffer objects (VBO) to speed up the process.
+ * 
+ * If you don't need the renderer anymore, it's recommended to manually call
+ * {@link #freeResources()} to delete the VBOs and other resources.
+ */
 public class JOGLRendererVBONonAreaShader {
 	
 	protected static final boolean DOUBLE_PRECISION_RENDERING = false;
@@ -100,6 +107,11 @@ public class JOGLRendererVBONonAreaShader {
 		
 	}
 	
+	/**
+	 * Creates vertex buffer objects for all primitives.
+	 * @param shader the shader used for rendering
+	 * @param primitives the primitives to render
+	 */
 	public JOGLRendererVBONonAreaShader(GL3 gl, NonAreaShader shader, Collection<NonAreaPrimitive> primitives) {
 		this.gl = gl;
 		this.shader = shader;
@@ -113,6 +125,9 @@ public class JOGLRendererVBONonAreaShader {
 		}
 	}
 	
+	/**
+	 * Renders all VBOs for the {@link NonAreaPrimitive} objects.
+	 */
 	public void render() {
 		
 		gl.glEnableVertexAttribArray(shader.getVertexPositionID());

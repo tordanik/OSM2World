@@ -19,6 +19,12 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
 
+/**
+ * Base class for renderer that use vertex buffer objects (VBO) to speed up the process.
+ * 
+ * If you don't need the renderer anymore, it's recommended to manually call
+ * {@link #freeResources()} to delete the VBOs and other resources.
+ */
 public abstract class JOGLRendererVBO extends JOGLRenderer {
 
 	protected static final boolean DOUBLE_PRECISION_RENDERING = false;
@@ -73,6 +79,10 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		super(textureManager);
 	}
 	
+	/**
+	 * Create the VBOs from a {@link PrimitiveBuffer}.
+	 * @param primitiveBuffer the source for the VBOs
+	 */
 	protected void init(PrimitiveBuffer primitiveBuffer) {
 		
 		for (Material material : primitiveBuffer.getMaterials()) {
@@ -97,6 +107,10 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		
 	}
 	
+	/**
+	 * Sort all transparent primitives back to front relative to the camera.
+	 * The projection can be used to speed up sorting if it is orthographic.
+	 */
 	protected void sortPrimitivesBackToFront(final Camera camera,
 			final Projection projection) {
 		
@@ -214,5 +228,12 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 		
 	}
 	
+	/**
+	 * Create a new vertex buffer object for a bunch of primitives with the same material.
+	 * @param textureManager the texture manager used if the material contains texture layers.
+	 * @param material the material that applies to all primitives
+	 * @param primitives the primitives to create the VBO for
+	 * @return a vertex buffer object matching the primitives
+	 */
 	abstract VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives);
 }

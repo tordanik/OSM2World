@@ -24,7 +24,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.common.nio.Buffers;
 
 /**
- * renders the contents of a {@link PrimitiveBuffer} using JOGL.
+ * Renders the contents of a {@link PrimitiveBuffer} using JOGL and the old fixed function OpengGL pipeline.
  * Uses vertex buffer objects (VBO) to speed up the process.
  * 
  * If you don't need the renderer anymore, it's recommended to manually call

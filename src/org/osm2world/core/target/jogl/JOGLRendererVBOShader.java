@@ -23,7 +23,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 import com.jogamp.common.nio.Buffers;
 
 /**
- * renders the contents of a {@link PrimitiveBuffer} using JOGL.
+ * Renders the contents of a {@link PrimitiveBuffer} using JOGL and the new shader based OpenGL pipeline.
  * Uses vertex buffer objects (VBO) to speed up the process.
  * 
  * If you don't need the renderer anymore, it's recommended to manually call
@@ -34,7 +34,6 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	protected GL3 gl;
 	protected AbstractPrimitiveShader shader;
 	protected AxisAlignedBoundingBoxXYZ boundingBox = null;
-	
 	
 	private final class VBODataDouble extends VBODataShader<DoubleBuffer> {
 
@@ -124,6 +123,11 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		
 	}
 	
+	/**
+	 * Creates vertex buffer objects for all primitives and computes a bounding box around them.
+	 * @param primitiveBuffer the primitives to create the VBOs for
+	 * @param xzBoundary the boundary of the OSM file. Used to tighten the bounding box to only primitives within these bounds.
+	 */
 	JOGLRendererVBOShader(GL3 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer, AxisAlignedBoundingBoxXZ xzBoundary) {
 		
@@ -217,10 +221,16 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		super.freeResources();
 	}
 	
+	/**
+	 * Change the shader used to render the VBOs
+	 */
 	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
 	}
 	
+	/**
+	 * Get the bounding box around all relevant primitives computed at {@link #JOGLRendererVBOShader(GL3, JOGLTextureManager, PrimitiveBuffer, AxisAlignedBoundingBoxXZ)}
+	 */
 	public AxisAlignedBoundingBoxXYZ getBoundingBox() {
 		return boundingBox;
 	}

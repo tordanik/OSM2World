@@ -20,7 +20,7 @@ import org.osm2world.core.target.common.material.Material.Transparency;
 import com.jogamp.common.nio.Buffers;
 
 /**
- * renders the contents of a {@link PrimitiveBuffer} using JOGL.
+ * Renders the shadow volumes for the contents of a {@link PrimitiveBuffer} using JOGL.
  * Uses vertex buffer objects (VBO) to speed up the process.
  * 
  * If you don't need the renderer anymore, it's recommended to manually call
@@ -99,6 +99,11 @@ public class JOGLRendererVBOShadowVolume  {
 		
 	}
 	
+	/**
+	 * Creates the shadow volumes (and VBOs) for all primitives in a {@link PrimitiveBuffer}.
+	 * @param primitiveBuffer the primitives to create the shadow volumes for
+	 * @param lightPos the position of the light source to create the shadow volumes for. If ligthPose.w == 0, the light is directional.
+	 */
 	JOGLRendererVBOShadowVolume(GL3 gl, PrimitiveBuffer primitiveBuffer, VectorXYZW lightPos) {
 		
 		this.gl = gl;
@@ -128,6 +133,9 @@ public class JOGLRendererVBOShadowVolume  {
 			return new VBODataFloat(gl, primitives, lightPos);
 	}
 	
+	/**
+	 * Render all shadow volume VBOs
+	 */
 	public void render() {
 		
 		/* render static geometry */
@@ -143,6 +151,9 @@ public class JOGLRendererVBOShadowVolume  {
 		
 	}
 	
+	/**
+	 * frees all OpenGL resources associated with this object. Rendering will no longer be possible afterwards!
+	 */
 	public void freeResources() {
 		gl = null;
 		if (vbos != null) {
@@ -153,6 +164,9 @@ public class JOGLRendererVBOShadowVolume  {
 		}
 	}
 	
+	/**
+	 * Set the shader used for rendering.
+	 */
 	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
 	}

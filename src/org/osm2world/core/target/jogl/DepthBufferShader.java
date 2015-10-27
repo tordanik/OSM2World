@@ -23,6 +23,9 @@ import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
 
+/**
+ * Shader that renders the depth buffer only. Supports transparent texture layers with {@link #USE_TRANSPARENCY}.
+ */
 public class DepthBufferShader extends AbstractPrimitiveShader {
 
 	public static final boolean USE_TRANSPARENCY = true;
@@ -53,10 +56,14 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 	}
 	
+	@Override
 	public int getVertexPositionID() {
 		return vertexPositionID;
 	}
 	
+	/**
+	 * Returns the id to use to bind the ModelViewProjectionMatrix attribute.
+	 */
 	public int getModelViewProjectionMatrixID() {
 		return modelViewProjectionMatrixID;
 	}
@@ -149,8 +156,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	
 	@Override
 	public int getVertexNormalID() {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 
 	@Override
@@ -160,13 +166,11 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 
 	@Override
 	public int getVertexBumpMapCoordID() {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 
 	@Override
 	public int getVertexTangentID() {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 }
