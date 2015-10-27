@@ -32,6 +32,9 @@ import org.osm2world.viewer.model.Defaults;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 
+/**
+ * Shader to render the depth buffer into a texture that can be used to implement shadow maps later.
+ */
 public class ShadowMapShader extends DepthBufferShader {
 	
 	protected int shadowMapWidth = 1024;
@@ -64,6 +67,9 @@ public class ShadowMapShader extends DepthBufferShader {
 		initializeShadowMap();
 	}
 	
+	/**
+	 * Setup the framebuffer and texture.
+	 */
 	private void initializeShadowMap() {
 
 		// create the shadow map texture / depth buffer
@@ -179,13 +185,16 @@ public class ShadowMapShader extends DepthBufferShader {
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
 	}
 	
+	/**
+	 * @see #cameraFrustumPadding
+	 */
 	public void setCameraFrustumPadding(int padding) {
 		this.cameraFrustumPadding = padding;
 	}
 	
 	/**
 	 * Change the size of the shadow map texture. This needs to be called before {@link #useShader()},
-	 * as otherwise viewport may be wrong.
+	 * as otherwise the viewport may be wrong.
 	 * @param width the new texture width
 	 * @param height the new texture height
 	 */
@@ -193,6 +202,9 @@ public class ShadowMapShader extends DepthBufferShader {
 		resizeBuffer(width, height);
 	}
 	
+	/**
+	 * Resize the framebuffer backing texture, if size doesn't match.
+	 */
 	private void resizeBuffer(int width, int height) {
 		if (width != this.shadowMapWidth || height != this.shadowMapHeight) {
 			this.shadowMapWidth = width;
@@ -438,6 +450,10 @@ public class ShadowMapShader extends DepthBufferShader {
 		return frustum;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * Only primitives that support shadow will get rendered. For opaque objects see {@link #setRenderOpaque(boolean)}
+	 */
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		if (!renderOpaque && material.getTransparency() == Transparency.FALSE) {
@@ -449,24 +465,42 @@ public class ShadowMapShader extends DepthBufferShader {
 		return super.setMaterial(material, textureManager);
 	}
 	
+	/**
+	 * Sets whether to render opaque objects or not. Useful if the shadow map is only needed for transparent objects.
+	 */
 	public void setRenderOpaque(boolean renderOpaque) {
 		this.renderOpaque = renderOpaque;
 	}
 
+	/**
+	 * Returns the PMVMatrix that was used to render the shadow map.
+	 * Should be called at least after {@link #useShader()}
+	 */
 	public PMVMatrix getPMVMatrix() {
 		return pmvMat;
 	}
 	
+	/**
+	 * Returns the handle of the texture containing the rendered shadow map.
+	 */
 	public int getShadowMapHandle() {
 		return depthBufferHandle;
 	}
 	
+	/**
+	 * Prepares rendering of the shadow map. This changes the current framebuffer and viewport.
+	 * {@link #disableShader()} should be called after the rendering is complete to bind the default framebuffer again
+	 * and restore the original viewport.
+	 */
 	@Override
 	public void useShader() {
 		super.useShader();
 		prepareShadowMapGeneration();
 	}
 	
+	/**
+	 * Completes the rendering of the shadow map. The default framebuffer and viewport get restored.
+	 */
 	@Override
 	public void disableShader() {
 		

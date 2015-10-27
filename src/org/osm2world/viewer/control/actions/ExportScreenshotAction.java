@@ -18,7 +18,6 @@ import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 
 import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
-import com.jogamp.opengl.util.awt.Screenshot;
 
 public class ExportScreenshotAction extends AbstractExportAction {
 

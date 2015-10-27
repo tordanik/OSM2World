@@ -7,6 +7,9 @@ import javax.media.opengl.GL3;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 
+/**
+ * Shader for {@link NonAreaPrimitive}.
+ */
 public class NonAreaShader extends AbstractShader {
 
 	private int modelViewProjectionMatrixID;
@@ -26,7 +29,7 @@ public class NonAreaShader extends AbstractShader {
 	
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
-	 * @param pmvMatrix
+	 * @param pmvMatrix the PMVMatrix containing all matrices
 	 */
 	public void setPMVMatrix(PMVMatrix pmvMatrix) {
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
@@ -34,10 +37,16 @@ public class NonAreaShader extends AbstractShader {
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 	}
 	
+	/**
+	 * Returns the id to use to bind the vertex position attribute.
+	 */
 	public int getVertexPositionID() {
 		return vertexPositionID;
 	}
 	
+	/**
+	 * Returns the id to use to bind the vertex color attribute.
+	 */
 	public int getVertexColorID() {
 		return vertexColorID;
 	}

@@ -9,6 +9,9 @@ import javax.media.opengl.GL3;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
 
+/**
+ * Shader to render the depth buffer into a texture that can be used to implement SSAO later.
+ */
 public class SSAOShader extends DepthBufferShader {
 	
 	private int depthBufferHandle;
@@ -21,6 +24,9 @@ public class SSAOShader extends DepthBufferShader {
 		initialize();
 	}
 	
+	/**
+	 * Setup the framebuffer and texture.
+	 */
 	private void initialize() {
 		int[] viewport = new int[4];
 		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
@@ -139,6 +145,9 @@ public class SSAOShader extends DepthBufferShader {
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
 	}
 	
+	/**
+	 * Resize the framebuffer backing texture, if size doesn't match.
+	 */
 	private void resizeBuffer(int width, int height) {
 		if (width != this.width || height != this.height) {
 			this.width = width;
@@ -159,7 +168,8 @@ public class SSAOShader extends DepthBufferShader {
 	}
 	
 	/**
-	 * Pass 1: Shadow map generation
+	 * Prepares rendering of the depth map. Binds the framebuffer and clears it.
+	 * The size of the framebuffer is automatically adjusted to match the current viewport.
 	 */
 	private void prepareDepthMapGeneration() {
 		int[] viewport = new int[4];
@@ -175,6 +185,10 @@ public class SSAOShader extends DepthBufferShader {
 		gl.glEnable(GL_DEPTH_TEST);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * Only primitives that support ambient occlusion will get rendered.
+	 */
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		
@@ -185,16 +199,26 @@ public class SSAOShader extends DepthBufferShader {
 		return super.setMaterial(material, textureManager);
 	}
 	
+	/**
+	 * Returns the handle of the texture containing the rendered depth map.
+	 */
 	public int getDepthBuferHandle() {
 		return depthBufferHandle;
 	}
-	
+
+	/**
+	 * Prepares rendering of the depth map. This changes the current framebuffer.
+	 * {@link #disableShader()} should be called after the rendering is complete to bind the default framebuffer again.
+	 */
 	@Override
 	public void useShader() {
 		super.useShader();
 		prepareDepthMapGeneration();
 	}
 	
+	/**
+	 * Completes the rendering of the depth map. The default framebuffer gets restored.
+	 */
 	@Override
 	public void disableShader() {
 		

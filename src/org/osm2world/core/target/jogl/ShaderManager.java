@@ -16,14 +16,17 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
+/**
+ * Utility class to manage low level shader creation.
+ */
 public class ShaderManager {
-	
-	/*
-	 * createVertShader is handed a String defining where to find the file
-	 * that contains the shader code. It creates and compiles the shader
-	 * and returns a unique int that GL associates with it
+
+	/**
+	 * Loads the vertex shader from a resource file, compiles it and does error checking.
+	 * @param filename path to the resource containing the shader code
+	 * @return handle of the created vertex shader
 	 */
-	public static int createVertShader(GL3 gl, String filename) {
+	public static int createVertexShader(GL3 gl, String filename) {
 
 		// get the unique id
 		int vertShader = gl.glCreateShader(GL3.GL_VERTEX_SHADER);
@@ -67,11 +70,12 @@ public class ShaderManager {
 		return vertShader;
 	}
 
-	/*
-	 * 
-	 * Essentially the same as the vertex shader
+	/**
+	 * Loads the fragment shader from a resource file, compiles it and does error checking.
+	 * @param filename path to the resource containing the shader code
+	 * @return handle of the created fragment shader
 	 */
-	public static int createFragShader(GL3 gl, String filename) {
+	public static int createFragmentShader(GL3 gl, String filename) {
 
 		int fragShader = gl.glCreateShader(GL3.GL_FRAGMENT_SHADER);
 		if (fragShader == 0)
@@ -109,7 +113,7 @@ public class ShaderManager {
 		return fragShader;
 	}
 	
-	/*
+	/**
 	 * Prints the shader log to System.out
 	 */
 	public static boolean printShaderInfoLog(GL3 gl, int shader) {
@@ -130,6 +134,11 @@ public class ShaderManager {
 		return false;
 	 }
 	
+	/**
+	 * Reads the program log into a String.
+	 * @param prog handle to the shader program
+	 * @return the program log as String
+	 */
 	public static String getProgramInfoLog(GL3 gl, int prog) {
 		IntBuffer ival = IntBuffer.allocate(1);
 		gl.glGetProgramiv(prog, GL3.GL_INFO_LOG_LENGTH,
@@ -147,7 +156,7 @@ public class ShaderManager {
 		return "";
 	}
 	
-	/*
+	/**
 	 * Prints the program log to System.out
 	 */
 	public static boolean printProgramInfoLog(GL3 gl, int prog) {
@@ -168,6 +177,9 @@ public class ShaderManager {
 		return false;
 	 }
 	
+	/**
+	 * Save a depth buffer texture to a file as png.
+	 */
 	public static void saveDepthBuffer(File file, int depthBufferHandle, int width, int height, GL2GL3 gl) {
 		// create buffer to store image
 		FloatBuffer buffer=FloatBuffer.allocate(width*height);//ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4).asFloatBuffer(); 

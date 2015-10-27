@@ -48,6 +48,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
 	private GL3 gl;
+	
+	/**
+	 * PMVMatrix for rendering the world from camera perspective.
+	 */
 	private PMVMatrix pmvMatrix;
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
 	private JOGLRendererVBOShader rendererShader;
@@ -561,6 +565,11 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 //		gl.glEnd();
 //	}
 	
+	/**
+	 * Draw the corners of a bounding box as colored lines.
+	 * @param color the color of the lines
+	 * @param bb the bounding box to draw
+	 */
 	protected final void drawBoundingBox(Color color, AxisAlignedBoundingBoxXYZ bb) {
 		// bottom
 		drawBox(color, new VectorXYZ(bb.minX, bb.minY, bb.minZ), new VectorXYZ(
@@ -581,11 +590,17 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				new VectorXYZ(bb.maxX, bb.maxY, bb.minZ));
 	}
 	
+	/**
+	 * Draw a colored line between two points.
+	 */
 	protected final void drawLine(Color color,
 			VectorXYZ v1, VectorXYZ v2) {
 		drawLineLoop(color, 1, asList(v1, v2));
 	}
 	
+	/**
+	 * Draw a colored 2D box as line loop.
+	 */
 	protected final void drawBox(Color color,
 			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3, VectorXYZ v4) {
 		drawLineLoop(color, 1, asList(v1, v2, v3, v4));
@@ -594,7 +609,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	@Override
 	public void finish() {
 		if (isFinished()) return;
-		
 		
 		//this.drawLineLoop(Color.WHITE, 1, Arrays.asList(new VectorXYZ[]{xzBoundary.topLeft().xyz(0.1), xzBoundary.topRight().xyz(0.1), xzBoundary.bottomRight().xyz(0.1), xzBoundary.bottomLeft().xyz(0.1)}));
 		rendererShader = new JOGLRendererVBOShader(gl, textureManager, primitiveBuffer, xzBoundary);
@@ -621,6 +635,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		this.xzBoundary = boundary;
 	}
 	
+	/**
+	 * Set whether to use the real camera PMVMatrix or the PMVMatrix normally
+	 * used for drawing the shadow map when rendering the world.
+	 */
 	public void setShowShadowPerspective(boolean s) {
 		this.showShadowPerspective = s;
 	}

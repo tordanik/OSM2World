@@ -33,8 +33,8 @@ public abstract class AbstractShader {
 		 * for setting up the shaders. These methods return the unique int
 		 * identifiers GL assigns to each shader
 		 */
-		vertexShader = ShaderManager.createVertShader(gl, name+".vertex");
-		fragmentShader = ShaderManager.createFragShader(gl, name+".fragment");
+		vertexShader = ShaderManager.createVertexShader(gl, name+".vertex");
+		fragmentShader = ShaderManager.createFragmentShader(gl, name+".fragment");
 		//System.out.printf("Vertex: %d, Fragment: %d\n",vertexShader,fragmentShader);
 
 		// attach the shaders to the shader program and link

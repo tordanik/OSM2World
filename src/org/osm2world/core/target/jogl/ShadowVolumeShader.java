@@ -7,6 +7,10 @@ import javax.media.opengl.GL3;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 
+/**
+ * Simple shader to render shadow volumes.
+ * @see JOGLRendererVBOShadowVolume
+ */
 public class ShadowVolumeShader extends AbstractPrimitiveShader {
 	
 	private int modelViewProjectionMatrixID;
@@ -24,7 +28,7 @@ public class ShadowVolumeShader extends AbstractPrimitiveShader {
 	
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
-	 * @param pmvMatrix
+	 * @param pmvMatrix the PMVMatrix containing all matrices
 	 */
 	public void setPMVMatrix(PMVMatrix pmvMatrix) {
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
@@ -32,6 +36,9 @@ public class ShadowVolumeShader extends AbstractPrimitiveShader {
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 	}
 	
+	/**
+	 * Returns the id to use to bind the vertex position attribute.
+	 */
 	public int getVertexPositionID() {
 		return vertexPositionID;
 	}
@@ -42,25 +49,21 @@ public class ShadowVolumeShader extends AbstractPrimitiveShader {
 	
 	@Override
 	public int getVertexNormalID() {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 
 	@Override
 	public int getVertexTexCoordID(int i) {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 
 	@Override
 	public int getVertexBumpMapCoordID() {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 
 	@Override
 	public int getVertexTangentID() {
-		// TODO Auto-generated method stub
-		return -1;
+		return -1; // unused
 	}
 }

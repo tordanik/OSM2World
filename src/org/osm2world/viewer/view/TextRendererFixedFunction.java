@@ -3,8 +3,6 @@ package org.osm2world.viewer.view;
 import java.awt.Color;
 import java.awt.Font;
 
-import org.osm2world.core.math.Vector3D;
-
 import com.jogamp.opengl.util.awt.TextRenderer;
 
 public class TextRendererFixedFunction implements org.osm2world.viewer.view.TextRenderer {
