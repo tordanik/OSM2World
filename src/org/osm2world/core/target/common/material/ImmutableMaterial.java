@@ -12,7 +12,7 @@ import org.osm2world.core.target.common.TextureData;
 public final class ImmutableMaterial extends Material {
 	
 	public ImmutableMaterial(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor, float specularFactor, float shininess,
+			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
 			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
 		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
 				transparency, shadow, ao, textureDataList);

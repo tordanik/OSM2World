@@ -12,7 +12,7 @@ import org.osm2world.core.target.common.TextureData;
 public class ConfMaterial extends Material {
 
 	public ConfMaterial(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor, float specularFactor, float shininess,
+			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
 			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
 		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
 				transparency, shadow, ao, textureDataList);
@@ -21,7 +21,7 @@ public class ConfMaterial extends Material {
 	public ConfMaterial(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(interpolation, color, ambientFactor, diffuseFactor, 0.0f, 1.0f,
+		super(interpolation, color, ambientFactor, diffuseFactor, 0.0f, 1,
 				transparency, Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
 	}
 	
@@ -54,7 +54,7 @@ public class ConfMaterial extends Material {
 		this.specularFactor = specularFactor;
 	}
 	
-	public void setShininess(float shininess) {
+	public void setShininess(int shininess) {
 		this.shininess = shininess;
 	}
 	

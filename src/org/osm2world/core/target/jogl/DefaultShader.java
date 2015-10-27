@@ -89,7 +89,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), 0);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 0);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), 0);
-		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), 0);
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), 0);
 		
 		// reset optional parts
@@ -146,7 +146,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), material.getAmbientFactor());
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), material.getDiffuseFactor());
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor());
-		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());
 	
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useBumpMaps"), material.hasBumpMap() ? 1 : 0);

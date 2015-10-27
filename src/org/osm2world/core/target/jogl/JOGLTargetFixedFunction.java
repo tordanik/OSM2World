@@ -76,7 +76,9 @@ import org.osm2world.core.target.common.rendering.Projection;
 
 import com.jogamp.opengl.util.texture.Texture;
 
-
+/**
+ * JOGL target using the old fixed function OpenGL pipeline.
+ */
 public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements JOGLTarget {
 	
 	/** maximum number of texture layers any material can use */
@@ -374,11 +376,9 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 		
 		// specular lighting
-		/*
-		gl.glMaterialfv(GL.GL_FRONT, GL2.GL_SPECULAR, 
-                new float[] { 1f, 1f, 1f },  0);
-		gl.glMateriali(GL.GL_FRONT, GL2.GL_SHININESS, 128);
-		*/
+		gl.glMaterialfv(GL.GL_FRONT, GL2.GL_SPECULAR, getFloatBuffer(
+				multiplyColor(Color.WHITE, material.getSpecularFactor())));
+		gl.glMateriali(GL.GL_FRONT, GL2.GL_SHININESS, material.getShininess());
 		
 		/* set textures and associated parameters */
 		

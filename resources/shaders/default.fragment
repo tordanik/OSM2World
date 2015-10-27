@@ -20,7 +20,7 @@ struct MaterialInfo {
 	float Ka; // Ambient reflectivity
 	float Kd; // Diffuse reflectivity
 	float Ks; // Specular reflectivity
-	float Shininess; // Specular shininess factor
+	int Shininess; // Specular shininess factor
 };
 uniform MaterialInfo Material;
 

@@ -326,7 +326,7 @@ public final class Materials {
 						
 					} else if ("specular".equals(attribute)) {
 						
-						int specular = config.getInt(key);
+						float specular = config.getFloat(key);
 						material.setSpecularFactor(specular);
 						
 					} else if ("shininess".equals(attribute)) {

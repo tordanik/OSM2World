@@ -45,7 +45,7 @@ public abstract class Material {
 	protected float ambientFactor;
 	protected float diffuseFactor;
 	protected float specularFactor;
-	protected float shininess;
+	protected int shininess;
 	protected Transparency transparency;
 	protected Shadow shadow;
 	protected AmbientOcclusion ambientOcclusion;
@@ -55,7 +55,7 @@ public abstract class Material {
 	protected int bumpMapInd;
 
 	public Material(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor, float specularFactor, float shininess, 
+			float ambientFactor, float diffuseFactor, float specularFactor, int shininess, 
 			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
 		this.interpolation = interpolation;
 		this.color = color;
@@ -88,7 +88,7 @@ public abstract class Material {
 	
 	public Material(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
-		this(interpolation, color, 0.5f, 0.5f, 0.0f, 1.0f, transparency,
+		this(interpolation, color, 0.5f, 0.5f, 0.0f, 1, transparency,
 				Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
 	}
 	
@@ -117,7 +117,7 @@ public abstract class Material {
 		return specularFactor;
 	}
 	
-	public float getShininess() {
+	public int getShininess() {
 		return shininess;
 	}
 		
