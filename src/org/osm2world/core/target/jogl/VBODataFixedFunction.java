@@ -13,12 +13,15 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 
 /**
- * class that keeps a VBO id along with associated information
+ * class that keeps a VBO id along with associated information for the fixed function OpenGL pipeline
  */
 abstract class VBODataFixedFunction<BufferT extends Buffer> extends VBOData<BufferT> {
 	
 	protected GL2 gl;
 	
+	/**
+	 * @see VBOData#VBOData(javax.media.opengl.GL, JOGLTextureManager, Material, Collection)
+	 */
 	public VBODataFixedFunction(GL2 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		super(gl, textureManager, material, primitives);
 		this.gl = gl;

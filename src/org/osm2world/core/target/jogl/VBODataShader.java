@@ -22,25 +22,29 @@ import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
 
 /**
- * class that keeps a VBO id along with associated information
+ * class that keeps a VBO id along with associated information for the shader based OpenGL pipeline
  */
 abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	
 	protected GL3 gl;
 	protected AbstractPrimitiveShader shader;
 	
+	/**
+	 * @see VBOData#VBOData(javax.media.opengl.GL, JOGLTextureManager, Material, Collection)
+	 */
 	public VBODataShader(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		super(gl, textureManager, material, primitives);
 		this.gl = gl;
 	}
 	
+	/**
+	 * Set the shader this VBO uses when rendering (e.g. calls
+	 * {@link AbstractPrimitiveShader#setMaterial(Material, JOGLTextureManager)}.
+	 */
 	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
 	}
 	
-	/**
-	 * put the values for a primitive's vertices into the buffer
-	 */
 	@Override
 	protected void addPrimitiveToValueBuffer(BufferT buffer,
 			Primitive primitive) {
@@ -184,6 +188,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		return JOGLRendererVBO.getValuesPerVertex(material);
 	}
 	
+	/** add 4d vertex data to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXYZW t);
 	
 }

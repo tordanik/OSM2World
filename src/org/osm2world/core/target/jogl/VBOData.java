@@ -19,6 +19,9 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
 
+/**
+ * Base class that keeps a VBO id along with associated information.
+ */
 public abstract class VBOData<BufferT extends Buffer> {
 	
 	/** material associated with this VBO, determines VBO layout */
@@ -36,16 +39,27 @@ public abstract class VBOData<BufferT extends Buffer> {
 	/** gl constant for the value type in the vbo */
 	protected final int glValueType;
 
+	/** create a buffer to store the vbo data for upload to graphics memory */
 	protected abstract BufferT createBuffer(int numValues);
 	
+	/** add a texture coordinate to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXZ texCoord);
+	
+	/** add 3d vertex data to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXYZ v);
 	
+	/** returns the size of each value in the vbo */
 	protected abstract int valueTypeSize();
+	
+	/** returns the gl constant for the value type in the vbo */
 	protected abstract int glValueType();
 
 	private GL gl;
 	protected JOGLTextureManager textureManager;
+	
+	/**
+	 * Creates a new vertex buffer object, adds all primitives to the buffer and uploads it to graphics memory.
+	 */
 	public VBOData(GL gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		
 		this.gl = gl;
@@ -176,10 +190,19 @@ public abstract class VBOData<BufferT extends Buffer> {
 		
 	}
 	
+	/**
+	 * Bind and render this vertex buffer object.
+	 */
 	public abstract void render();
 	
+	/**
+	 * Returns the number of values for each vertex in the vertex buffer layout appropriate for a given material.
+	 */
 	protected abstract int getValuesPerVertex(Material material);
 
+	/**
+	 * Delete the vertex buffer object from graphics memory.
+	 */
 	public void delete() {
 		gl.glDeleteBuffers(id.length, id, 0);
 	}

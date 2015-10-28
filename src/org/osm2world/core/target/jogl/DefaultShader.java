@@ -8,7 +8,6 @@ import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
 import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
 import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
 import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
-import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
@@ -28,6 +27,16 @@ import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
 
+/**
+ * Complex shader with support for complex materials and various graphic effects:
+ * <ul>
+ * <li> Shadow Volumes
+ * <li> Shadow Maps
+ * <li> Screen Space Ambient Occlusion
+ * <li> Phong shading
+ * <li> Bumpmaps / Normalmaps
+ * </ul>
+ */
 public class DefaultShader extends AbstractPrimitiveShader {
 	
 	/** maximum number of texture layers any material can use */
@@ -45,6 +54,13 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	private int noiseTextureHandle;
 	private static final int NOISE_TEXTURE_WIDTH=4;
 	private static final int NOISE_TEXTURE_HEIGHT=4;
+	
+	/**
+	 * Threshold for the dot product of a SSAO kernel sample and the vertex
+	 * normal. this prevents samples from being too near to the vertex plane and
+	 * so prevents self shadowing
+	 */
+	private static final double SSAO_SAMPLE_THRESHOLD = 0.15;
 	
 	private int projectionMatrixID;
 	private int modelViewMatrixID;
@@ -110,6 +126,10 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		gl.glUniformMatrix4fv(this.getNormalMatrixID(), 1, false, pmvMatrix.glGetMvitMatrixf());
 	}
 	
+	/**
+	 * Prepares the shader to do lighting.
+	 * @param lighting the global lighting to apply. Can be <code>null</code> to disable lighting.
+	 */
 	public void setGlobalLighting(GlobalLightingParameters lighting) {
 		
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useLighting"), lighting != null ? 1 : 0);
@@ -122,6 +142,9 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		}
 	}
 	
+	/**
+	 * Sets whether to Render everything as in shadow.
+	 */
 	public void setShadowed(boolean isShadowed) {
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), isShadowed ? 1 : 0);
 	}
@@ -246,9 +269,9 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	
 	static final int getGLTextureConstant(int textureNumber) {
 		switch (getGLTextureNumber(textureNumber)) {
-		//case 0: return GL.GL_TEXTURE0;
-		//case 1: return GL.GL_TEXTURE1;
-		//case 2: return GL.GL_TEXTURE2;
+		//case 0: return GL.GL_TEXTURE0; // reserved for shadow map
+		//case 1: return GL.GL_TEXTURE1; // reserved for ssao depth map
+		//case 2: return GL.GL_TEXTURE2; // reserved for ssao noise texture
 		case 3: return GL.GL_TEXTURE3;
 		case 4: return GL.GL_TEXTURE4;
 		case 5: return GL.GL_TEXTURE5;
@@ -258,9 +281,12 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	}
 	
 	static final int getGLTextureNumber(int textureNumber) {
-		return textureNumber + 3;
+		return textureNumber + 3; // texture id 0-2 are reserved for shadow map, ssao depth map and ssao noise texture
 	}
 	
+	/**
+	 * Binds the specified texture as shadow map and uses it for rendering shadows.
+	 */
 	public void bindShadowMap(int shadowMapHandle) {
 		gl.glActiveTexture(GL.GL_TEXTURE0);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, shadowMapHandle);
@@ -268,38 +294,37 @@ public class DefaultShader extends AbstractPrimitiveShader {
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useShadowMap"), 1);
 	}
 	
+	/**
+	 * Creates random sampling kernel data for SSAO.
+	 */
 	private void generateSamplingMatrix() {
-		// generate random sampling matrix
         kernel = new float[kernelSize*3];
         for (int i = 0; i < kernelSize; ++i) {
         	float scale = (float)i / (float)kernelSize;
         	scale = lerp(0.2f, 1.0f, scale*scale);
-        	//System.out.println(scale);
         	VectorXYZ v = new VectorXYZ(
         			Math.random()*2-1,
         			Math.random()*2-1,
-        			//Math.random()*2-1
         			Math.random()
         			).normalize().mult(scale); //.mult(Math.random()*scale);
-        	while (v.dot(new VectorXYZ(0, 0, 1)) < 0.15) {
+        	while (v.dot(new VectorXYZ(0, 0, 1)) < SSAO_SAMPLE_THRESHOLD) {
         		v = new VectorXYZ(
         				Math.random()*2-1,
         				Math.random()*2-1,
-        				//Math.random()*2-1
         				Math.random()
         				).normalize().mult(scale);
-        		//throw new RuntimeException(v.toString());
         	}
         	
         	kernel[i*3] = (float)v.x;
         	kernel[i*3+1] = (float)v.y;
         	kernel[i*3+2] = (float)v.z;
-        	//System.out.println(v.dot(new VectorXYZ(0, 0, 1)));
         	
         }
-        //System.out.println(Arrays.toString(kernel));
 	}
 	
+	/**
+	 * Generates and binds the noise texture used for SSAO.
+	 */
 	private void generateNoiseTexture() {
 		float[] noise = new float[NOISE_TEXTURE_WIDTH*NOISE_TEXTURE_HEIGHT*3];
 		for (int i = 0; i < NOISE_TEXTURE_WIDTH*NOISE_TEXTURE_HEIGHT; i++)
@@ -323,6 +348,9 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		return a + f * (b - a);
 	}
 	
+	/**
+	 * Binds a texture as depth map and uses it for SSAO. Also sets up the rest of the SSAO settings.
+	 */
 	public void enableSSAOwithDepthMap(int depthMapHandle) {
 		// bind depth map
 		gl.glActiveTexture(GL.GL_TEXTURE1);
@@ -345,6 +373,11 @@ public class DefaultShader extends AbstractPrimitiveShader {
         gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "NoiseTex"), 2);
 	}
 	
+	/**
+	 * Change the size of the SSAO kernel and recomputes it. If the size already
+	 * matches nothing is done. This should be called before
+	 * {@link #enableSSAOwithDepthMap(int)} to have any effect.
+	 */
 	public void setSSAOkernelSize(int kernelSize) {
 		if (this.kernelSize != kernelSize) {
 			this.kernelSize = kernelSize;
@@ -352,6 +385,10 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		}
 	}
 	
+	/**
+	 * Change the radius used for SSAO. This should be called before
+	 * {@link #enableSSAOwithDepthMap(int)} to have any effect.
+	 */
 	public void setSSAOradius(float radius) {
 		this.ssaoRadius = radius;
 	}
@@ -401,6 +438,11 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		return vertexTangentID;
 	}
 
+	/**
+	 * Sets the PMVMatrix that was used to render the shadow map set with {@link #bindShadowMap(int)}.
+	 * This is needed to correctly compare the shadow map depth values with the fragment depth value.
+	 * @param pmvMatrix
+	 */
 	public void setShadowMatrix(PMVMatrix pmvMatrix) {
 		// S = B*MPV
 		

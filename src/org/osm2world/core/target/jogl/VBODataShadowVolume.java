@@ -18,15 +18,16 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
-import org.osm2world.core.target.common.material.Material;
 
 /**
- * class that keeps a VBO id along with associated information
+ * class that keeps a VBO id along with associated information for shadow volumes
  */
 abstract class VBODataShadowVolume<BufferT extends Buffer> {
 	
 	protected GL3 gl;
 	protected AbstractPrimitiveShader shader;
+	
+	/** position of the light source casting the shadow volumes */
 	protected VectorXYZW lightPos;
 	
 	/** array with one element containing the VBO id */
@@ -41,14 +42,22 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 	/** gl constant for the value type in the vbo */
 	protected final int glValueType;
 
+	/** create a buffer to store the vbo data for upload to graphics memory */
 	protected abstract BufferT createBuffer(int numValues);
 	
+	/** returns the size of each value in the vbo */
 	protected abstract int valueTypeSize();
+	
+	/** returns the gl constant for the value type in the vbo */
 	protected abstract int glValueType();
 	
+	/** add 4d shadow volume vertex data to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXYZW sv);
 
-	
+	/**
+	 * Creates a new vertex buffer object, calculates the shadow volumes for all
+	 * primitives and adds them to the buffer and uploads it to graphics memory.
+	 */
 	public VBODataShadowVolume(GL3 gl, Collection<Primitive> primitives, VectorXYZW lightPos) {
 		
 		this.gl = gl;
@@ -91,6 +100,9 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		
 	}
 	
+	/**
+	 * Set the shader this VBO uses when rendering the shadow volumes.
+	 */
 	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
 	}
@@ -142,6 +154,9 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		
 	}
 	
+	/**
+	 * Bind and render this vertex buffer object.
+	 */
 	public void render() {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
 
@@ -159,10 +174,16 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 		shader.glVertexAttribPointer(shader.getVertexPositionID(), 4, glValueType(), false, stride, offset);
 	}
 	
+	/**
+	 * Returns the number of values for each vertex in the vertex buffer layout.
+	 */
 	protected int getValuesPerVertex() {
 		return 4;
 	}
 	
+	/**
+	 * Delete the vertex buffer object from graphics memory.
+	 */
 	public void delete() {
 		gl.glDeleteBuffers(id.length, id, 0);
 	}
