@@ -184,7 +184,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		/* apply global rendering parameters */
 		
 		applyRenderingParameters(gl, renderingParameters);
-		applyLightingParameters(gl, globalLightingParameters);
+		applyLightingParameters(gl, globalLightingParameters, projection.isOrthographic());
 		
 		/* render primitives */
 		
@@ -301,7 +301,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	}
 	
 	static final void applyLightingParameters(GL2 gl,
-			GlobalLightingParameters lighting) {
+			GlobalLightingParameters lighting, boolean orthographicProjection) {
 		
 		if (lighting == null) {
 
@@ -319,6 +319,10 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 					getFloatBuffer(lighting.lightColorDiffuse));
 			gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
 					getFloatBuffer(lighting.lightColorSpecular));
+			
+			// make specular lighting computation more realistic
+			gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, orthographicProjection ? GL.GL_FALSE : GL.GL_TRUE);
+			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR);
 			
 			gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
 						(float)lighting.lightFromDirection.x,
