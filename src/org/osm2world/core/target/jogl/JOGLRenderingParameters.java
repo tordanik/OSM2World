@@ -35,10 +35,41 @@ public class JOGLRenderingParameters {
 	final boolean overwriteProjectionClippingPlanes;
 	
 	/**
-	 * @param frontFace   winding of the front face for backface culling;
-	 *                     null disables backface culling
-	 * @param wireframe   renders just a wireframe instead of filled surfaces
-	 * @param useZBuffer  enables the z buffer, should usually be true
+	 * @param frontFace
+	 *            winding of the front face for backface culling; null disables
+	 *            backface culling
+	 * @param wireframe
+	 *            renders just a wireframe instead of filled surfaces
+	 * @param useZBuffer
+	 *            enables the z buffer, should usually be true
+	 * @param drawBoundingBox
+	 *            draw the bounding box used when rendering to determine all
+	 *            relevant primitives
+	 * @param useShadowVolumes
+	 *            renders only shadows casted by non-transparent objects with
+	 *            shadow volumes
+	 * @param useShadowMaps
+	 *            renders the shadows of all objects with a shadow map, but only
+	 *            the back faces (from light source view) cast a shadow. if
+	 *            shadow volumes are activated too, the shadow map is only used
+	 *            for non opaque objects.
+	 * @param shadowMapWidth
+	 *            resolution of the shadow map
+	 * @param shadowMapHeight
+	 *            resolution of the shadow map
+	 * @param shadowMapCameraFrustumPadding
+	 *            padding in meter for the camera frustum to use for the shadow
+	 *            map camera. Increase here if objects outside the current
+	 *            camera view frustum, that should throw a shadow won't do so.
+	 * @param useSSAO
+	 *            use screen space ambient occlusion
+	 * @param SSAOkernelSize
+	 *            size of the sampling kernel (number of samples)
+	 * @param SSAOradius
+	 *            sampling radius in meter
+	 * @param overwriteProjectionClippingPlanes
+	 *            optimize the clipping planes of the camera: reduce them to
+	 *            match the world bounding box
 	 */
 	public JOGLRenderingParameters(
 			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean drawBoundingBox, boolean useShadowVolumes,
@@ -87,7 +118,7 @@ public class JOGLRenderingParameters {
 	public JOGLRenderingParameters() {
 		this.frontFace = null;
 		this.wireframe = false;
-		this.useZBuffer = false;
+		this.useZBuffer = true;
 		this.drawBoundingBox = false;
 		this.useShadowVolumes = false;
 		this.useShadowMaps = false;
