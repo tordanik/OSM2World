@@ -39,14 +39,17 @@ public class ShaderManager {
 		String line;
 
 		// open the file and read the contents into the String array.
+		InputStream stream = System.class.getResourceAsStream(filename);
+		if (stream == null) {
+			throw new RuntimeException("Vertex shader not found in classpath: \""+ filename +"\"");
+		}
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		try {
-			InputStream stream = System.class.getResourceAsStream(filename);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 			while ((line = reader.readLine()) != null) {
 				vertCode[0] += line + "\n";
 			}
-		} catch (Exception e) {
-			throw new RuntimeException("Fail reading vertex shader",e);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed reading vertex shader \"" + filename + "\".",e);
 		}
 
 		// Associate the code string with the unique id
@@ -85,14 +88,17 @@ public class ShaderManager {
 		fragCode[0] = "";
 		String line;
 
+		InputStream stream = System.class.getResourceAsStream(filename);
+		if (stream == null) {
+			throw new RuntimeException("Fragment shader not found in classpath: \""+ filename +"\"");
+		}
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		try {
-			InputStream stream = System.class.getResourceAsStream(filename);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 			while ((line = reader.readLine()) != null) {
 				fragCode[0] += line + "\n";
 			}
-		} catch (Exception e) {
-			throw new RuntimeException("Fail reading fragment shader",e);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed reading fragment shader \"" + filename + "\".",e);
 		}
 
 		gl.glShaderSource(fragShader, 1, fragCode, null);
