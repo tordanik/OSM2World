@@ -51,6 +51,9 @@
         <delete dir="build/lib"/>
         <mkdir dir="build/lib"/>
         <copy todir="build/lib"><fileset dir="lib"/></copy>
+        <delete dir="build/resources"/>
+        <mkdir dir="build/resources"/>
+        <copy todir="build/resources"><fileset dir="resources"/></copy>
     </target>
 
     <target name="jardbg" depends="compiledbg">
@@ -65,6 +68,9 @@
         <delete dir="build/lib"/>
         <mkdir dir="build/lib"/>
         <copy todir="build/lib"><fileset dir="lib"/></copy>
+        <delete dir="build/resources"/>
+        <mkdir dir="build/resources"/>
+        <copy todir="build/resources"><fileset dir="resources"/></copy>
     </target>
 	
 	<target name="release.bin" depends="jar">
