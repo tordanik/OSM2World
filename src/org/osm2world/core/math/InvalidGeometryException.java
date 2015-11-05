@@ -8,6 +8,8 @@ package org.osm2world.core.math;
  */
 public class InvalidGeometryException extends RuntimeException {
 
+	private static final long serialVersionUID = -7755970537446437611L; //generated serialVersionUID
+
 	public InvalidGeometryException() {
 		super();
 	}

@@ -8,6 +8,8 @@ import static org.osm2world.core.GlobalValues.*;
 
 public class AboutAction extends AbstractAction {
 
+	private static final long serialVersionUID = -6717063896933933005L; //generated serialVersionUID
+
 	public AboutAction() {
 		super("About OSM2World");
 	}

@@ -79,7 +79,9 @@ import org.osm2world.viewer.view.debug.WorldObjectView;
 
 import com.google.common.base.Function;
 
-public class ViewerFrame extends JFrame{
+public class ViewerFrame extends JFrame {
+
+	private static final long serialVersionUID = 5807635150399807163L;
 
 	public final ViewerGLCanvas glCanvas;
 	

@@ -12,6 +12,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class SetTerrainInterpolatorAction extends AbstractAction {
 
+	private static final long serialVersionUID = 6034246138682723498L; //generated serialVersionUID
 	Class<? extends TerrainInterpolator> interpolatorClass;
 	ViewerFrame viewerFrame;
 	Data data;

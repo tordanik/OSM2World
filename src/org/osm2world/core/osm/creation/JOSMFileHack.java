@@ -48,6 +48,7 @@ public final class JOSMFileHack {
 				String line = reader.readLine();
 				if (line != null) {
 					if (line.contains("generator='JOSM'")) {
+						reader.close();
 						return true;
 					}
 				}
