@@ -25,6 +25,8 @@ public class NonAreaShader extends AbstractShader {
 		
 		// get indices of uniform variables
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
+		
+		this.validateShader();
 	}
 	
 	/**

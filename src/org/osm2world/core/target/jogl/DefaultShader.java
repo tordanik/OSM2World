@@ -93,6 +93,27 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		
 		generateSamplingMatrix();
 		generateNoiseTexture();
+
+		this.prepareValidation();
+		this.validateShader();
+	}
+	
+	/**
+	 * Executes necessary preparation steps for shader validation.
+	 * Sets default texture units for samplers. This is needed if there are
+	 * different sampler types, as they need to point to different texture units.
+	 */
+	private void prepareValidation() {
+		
+		this.useShader();
+		// set default texture units
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "ShadowMap"), 0);
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "DepthMap"), 1);
+        gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "NoiseTex"), 2);
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "BumpMap"), getGLTextureNumber(0));
+		for (int i=0; i<MAX_TEXTURE_LAYERS; i++)
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]"), getGLTextureNumber(i));
+		this.disableShader();
 	}
 	
 	@Override

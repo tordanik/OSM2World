@@ -27,6 +27,8 @@ public class BackgroundShader extends AbstractShader {
 		// get indices of uniform variables
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
 		textureID = gl.glGetUniformLocation(shaderProgram, "Tex");
+		
+		this.validateShader();
 	}
 	
 	/**

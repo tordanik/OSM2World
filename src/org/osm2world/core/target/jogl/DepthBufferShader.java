@@ -44,6 +44,8 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		
 		// get indices of uniform variables
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
+		
+		this.validateShader();
 	}
 	
 	/**

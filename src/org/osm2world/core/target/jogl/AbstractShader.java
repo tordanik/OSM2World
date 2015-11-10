@@ -17,9 +17,9 @@ public abstract class AbstractShader {
 	
 	/**
 	 * Loads the vertex and fragment shaders with the basename name and ending <i>vertex</i> and <i>fragment</i>
-	 * and creates a shader program for them.
-	 * @param gl
-	 * @param name
+	 * and creates a shader program for them. The shader is linked but not validated.
+	 * {@link #validateShader()} needs to be called manually.
+	 * @param name basename of the shader to load
 	 */
 	public AbstractShader(GL3 gl, String name) {
 		this.gl = gl;
@@ -50,24 +50,22 @@ public abstract class AbstractShader {
 			throw new RuntimeException("could not link shader");
 		}
 		ShaderManager.printProgramInfoLog(gl, shaderProgram);
-
+	}
+	
+	/**
+	 * Validates the linked shader program. An exception is raised if the validation fails.
+	 */
+	protected void validateShader() {
 		// tell GL to validate the shader program and grab the created log
 		gl.glValidateProgram(shaderProgram);
 		// perform general validation that the program is usable
 		IntBuffer validateStatus = IntBuffer.allocate(1);
 		gl.glGetProgramiv(shaderProgram, GL3.GL_VALIDATE_STATUS, validateStatus);
 		if (validateStatus.get() == GL.GL_FALSE) {
-			
-			/* The validation of shaders may fail due to driver bugs. This does not necessarily mean that the
-			 * shader is invalid. Therefore this will only raise a warning. An example of such a common mistake is
-			 * the access to texture unit 0, raised by some intel graphics drivers:
-			 * "Texture unit 0 is accessed both as sampler2D and sampler2DShadow"
-			 */
-			String infoLog = ShaderManager.getProgramInfoLog(gl, shaderProgram);
-			System.err.println("WARNING: could not validate shader. Info Log: '" + infoLog + "'");
-		} else {
 			ShaderManager.printProgramInfoLog(gl, shaderProgram);
+			throw new RuntimeException("could not validate shader");
 		}
+		ShaderManager.printProgramInfoLog(gl, shaderProgram);
 	}
 	
 	/**
