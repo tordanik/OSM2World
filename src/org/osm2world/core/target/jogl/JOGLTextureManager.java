@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 
 import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;
@@ -19,15 +19,19 @@ import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
  */
 public class JOGLTextureManager {
 
-	private final GL2 gl;
+	private final GL gl;
 	
 	private final Map<File, Texture> availableTextures = new HashMap<File, Texture>();
 	
-	public JOGLTextureManager(GL2 gl) {
+	public JOGLTextureManager(GL gl) {
 		this.gl = gl;
 	}
 	
 	public Texture getTextureForFile(File file) {
+		return getTextureForFile(file, true);
+	}
+	
+	public Texture getTextureForFile(File file, boolean createMipmaps) {
 		
 		Texture result = availableTextures.get(file);
 		
@@ -50,12 +54,19 @@ public class JOGLTextureManager {
 						ImageUtil.flipImageVertically(bufferedImage);
 						
 						result = AWTTextureIO.newTexture(
-								gl.getGLProfile(), bufferedImage, true);
+								gl.getGLProfile(), bufferedImage, createMipmaps);
 						
 					} else {
 					
-						result = TextureIO.newTexture(file, true);
+						result = TextureIO.newTexture(file, createMipmaps);
 						
+					}
+					
+					/* workaround for OpenGL 3: call to glGenerateMipmap is missing in [AWT]TextureIO.newTexture()
+					 * May be fixed in new versions of JOGL.
+					 */
+					if (createMipmaps && gl.isGL3()) {
+						gl.glGenerateMipmap(result.getTarget());
 					}
 					
 					availableTextures.put(file, result);

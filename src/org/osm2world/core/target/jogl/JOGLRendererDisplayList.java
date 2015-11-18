@@ -1,9 +1,10 @@
 package org.osm2world.core.target.jogl;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import static javax.media.opengl.GL2.GL_COMPILE;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
-import static org.osm2world.core.target.jogl.JOGLTarget.*;
+import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.drawPrimitive;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,8 @@ import org.osm2world.core.target.common.rendering.Projection;
  * not be done before a destructor call.
  */
 class JOGLRendererDisplayList extends JOGLRenderer {
+	
+	protected GL2 gl;
 	
 	/** pointer to the display list with static, non-transparent geometry */
 	private Integer displayListPointer;
@@ -58,7 +61,8 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 	public JOGLRendererDisplayList(GL2 gl, JOGLTextureManager textureManager,
 			PrimitiveBuffer primitiveBuffer) {
 		
-		super(gl, textureManager);
+		super(textureManager);
+		this.gl = gl;
 		
 		displayListPointer = gl.glGenLists(1);
 		
@@ -75,10 +79,10 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 				
 			} else {
 				
-				JOGLTarget.setMaterial(gl, material, textureManager);
+				JOGLTargetFixedFunction.setMaterial(gl, material, textureManager);
 	
 				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
-					drawPrimitive(gl, getGLConstant(primitive.type),
+					drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(primitive.type),
 							primitive.vertices, primitive.normals,
 							primitive.texCoordLists);
 				}
@@ -110,11 +114,11 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 		for (PrimitiveWithMaterial p : transparentPrimitives) {
 			
 			if (!p.material.equals(previousMaterial)) {
-				JOGLTarget.setMaterial(gl, p.material, textureManager);
+				JOGLTargetFixedFunction.setMaterial(gl, p.material, textureManager);
 				previousMaterial = p.material;
 			}
 			
-			drawPrimitive(gl, getGLConstant(p.primitive.type),
+			drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(p.primitive.type),
 					p.primitive.vertices, p.primitive.normals,
 					p.primitive.texCoordLists);
 			
@@ -232,6 +236,7 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 			gl.glDeleteLists(displayListPointer, 1);
 			displayListPointer = null;
 		}
+		gl = null;
 
 		super.freeResources();
 		
