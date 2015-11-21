@@ -1,6 +1,6 @@
 package org.osm2world.core.test;
 
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;

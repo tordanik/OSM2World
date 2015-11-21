@@ -1,10 +1,4 @@
 package org.osm2world.core.math.algorithms;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -18,7 +12,6 @@ import org.junit.Test;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.EarClippingTriangulationUtil;
 
 
 public class EarClippingTriangulationTest {
@@ -42,7 +35,7 @@ public class EarClippingTriangulationTest {
 			new VectorXZ(1f, 0f),
 			new VectorXZ(0f, 1f),
 			new VectorXZ(0, 0f)
-	));	
+	));
 	
 	private static final SimplePolygonXZ holeB = new SimplePolygonXZ(Arrays.asList(
 			new VectorXZ(0.6f, 0.6f),
@@ -84,7 +77,7 @@ public class EarClippingTriangulationTest {
 	@Test
 	public void testRearrangeOutline1() {
 		
-		List<VectorXZ> newOutline = 
+		List<VectorXZ> newOutline =
 			EarClippingTriangulationUtil.rearrangeOutline(outlineA, 3, false);
 		
 		assertSame(5, newOutline.size());
@@ -100,7 +93,7 @@ public class EarClippingTriangulationTest {
 	@Test
 	public void testRearrangeOutline2() {
 		
-		List<VectorXZ> newOutline = 
+		List<VectorXZ> newOutline =
 			EarClippingTriangulationUtil.rearrangeOutline(outlineA, 3, true);
 		
 		assertSame(5, newOutline.size());
@@ -116,7 +109,7 @@ public class EarClippingTriangulationTest {
 	@Test
 	public void testRearrangeOutline3() {
 		
-		List<VectorXZ> newOutline = 
+		List<VectorXZ> newOutline =
 			EarClippingTriangulationUtil.rearrangeOutline(outlineA, 0, false);
 		
 		assertSame(5, newOutline.size());
@@ -132,7 +125,7 @@ public class EarClippingTriangulationTest {
 	@Test
 	public void testRearrangeOutline4() {
 		
-		List<VectorXZ> newOutline = 
+		List<VectorXZ> newOutline =
 			EarClippingTriangulationUtil.rearrangeOutline(outlineA, 0, true);
 		
 		assertSame(5, newOutline.size());
@@ -156,7 +149,7 @@ public class EarClippingTriangulationTest {
 		assertSame(7, newOutline.size());
 		assertTrue(newOutline.contains(point));
 				
-		assertEquals(newOutline.get(newOutline.indexOf(point) - 1), 
+		assertEquals(newOutline.get(newOutline.indexOf(point) - 1),
 				newOutline.get(newOutline.indexOf(point) + 1));
 				
 	}
@@ -168,7 +161,7 @@ public class EarClippingTriangulationTest {
 		
 		EarClippingTriangulationUtil.insertHoleInPolygonOutline(newOutline, holeB, Arrays.asList(holeA));
 		
-		assertSame(outlineA.size() + holeB.getVertexLoop().size() + 1, 
+		assertSame(outlineA.size() + holeB.getVertexLoop().size() + 1,
 				newOutline.size());
 		
 		for (VectorXZ innerVertex : holeB.getVertexLoop()) {
@@ -185,9 +178,9 @@ public class EarClippingTriangulationTest {
 		
 		assertSame(triangles.size(), 2);
 		
-		Collection<VectorXZ> vsT0 = 
+		Collection<VectorXZ> vsT0 =
 			Arrays.asList(triangles.get(0).v1,  triangles.get(0).v2,  triangles.get(0).v3);
-		Collection<VectorXZ> vsT1 = 
+		Collection<VectorXZ> vsT1 =
 			Arrays.asList(triangles.get(1).v1,  triangles.get(1).v2,  triangles.get(1).v3);
 		
 		if (vsT0.contains(outlineA0) && vsT0.contains(outlineA1) && vsT0.contains(outlineA2)) {
@@ -232,7 +225,7 @@ public class EarClippingTriangulationTest {
 				assertFalse(EarClippingTriangulationUtil.isConvex(i, outlineNoDup));
 			} else {
 				assertTrue("at " + i, EarClippingTriangulationUtil.isConvex(i, outlineNoDup));
-			} 
+			}
 		}
 				
 	}

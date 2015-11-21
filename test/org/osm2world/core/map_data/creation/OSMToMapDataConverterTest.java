@@ -45,15 +45,15 @@ public class OSMToMapDataConverterTest {
 		
 		MapData mapData = loadMapData(filename);
 		
-		assertSame(13, mapData.getMapNodes().size());
-		assertSame(0, mapData.getMapWaySegments().size());
-		assertSame(1, mapData.getMapAreas().size());
+		assertEquals(13, mapData.getMapNodes().size());
+		assertEquals(0, mapData.getMapWaySegments().size());
+		assertEquals(1, mapData.getMapAreas().size());
 		
 		MapArea area = mapData.getMapAreas().iterator().next();
 
-		assertSame(2, area.getHoles().size());
-		assertSame(6, area.getOuterPolygon().size());
-		assertSame(13, area.getAreaSegments().size());
+		assertEquals(2, area.getHoles().size());
+		assertEquals(6, area.getOuterPolygon().size());
+		assertEquals(13, area.getAreaSegments().size());
 		
 	}
 	
