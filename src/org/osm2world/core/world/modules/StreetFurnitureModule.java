@@ -44,7 +44,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("amenity", "bench")) {
 			node.addRepresentation(new Bench(node));
 		}
-		if (node.getTags().contains("highway", "bus_stop")) {
+		if (node.getTags().contains("highway", "bus_stop")
+				|| node.getTags().contains("public_transport", "platform")
+				&& node.getTags().contains("bus", "yes")) {
 			node.addRepresentation(new BusStop(node));
 		}
 		if (node.getTags().contains("man_made", "cross")
