@@ -33,7 +33,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	/** accepted values of the railway key */
 	private static final List<String> RAILWAY_VALUES = asList(
-			"rail", "light_rail", "tram", "disused");
+			"rail", "light_rail", "tram", "subway", "disused");
 	
 	@Override
 	public void applyTo(MapData grid) {
@@ -95,6 +95,18 @@ public class RailwayModule extends ConfigurableWorldModule {
 			super(segment);
 		}
 
+		@Override
+		public GroundState getGroundState() {
+			
+			if (segment.getTags().contains("railway", "subway")
+					&& !segment.getTags().contains("tunnel", "no")){
+				return GroundState.BELOW;
+			}
+			
+			return super.getGroundState();
+			
+		}
+		
 		@Override
 		public void renderTo(Target<?> target) {
 
