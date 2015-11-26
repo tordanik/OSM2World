@@ -21,6 +21,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.WaterModule.Water;
+import org.osm2world.core.world.modules.WaterModule.Waterway;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.BridgeOrTunnel;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -124,7 +125,7 @@ public class BridgeModule extends AbstractModule {
 				for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
 					
 					if (otherRep.getGroundState() == GroundState.ON
-							&& !(otherRep instanceof Water) //TODO: choose better criterion!
+							&& !(otherRep instanceof Water || otherRep instanceof Waterway) //TODO: choose better criterion!
 					) {
 						avoidedObjects.add(otherRep);
 					}
