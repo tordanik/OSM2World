@@ -4,10 +4,13 @@ import static java.lang.Math.*;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 import static org.osm2world.core.util.ConfigUtil.*;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,10 +18,12 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
-import javax.media.opengl.GLPbuffer;
+import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLOffscreenAutoDrawable;
 import javax.media.opengl.GLProfile;
 
 import org.apache.commons.configuration.Configuration;
@@ -28,8 +33,11 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
+import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
 import ar.com.hjg.pngj.ImageInfo;
@@ -38,7 +46,7 @@ import ar.com.hjg.pngj.PngWriter;
 import ar.com.hjg.pngj.chunks.PngChunkTextVar;
 import ar.com.hjg.pngj.chunks.PngMetadata;
 
-import com.jogamp.opengl.util.awt.Screenshot;
+import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 
 public class ImageExporter {
 
@@ -56,14 +64,19 @@ public class ImageExporter {
 	
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
+	private Color clearColor;
 	
-	private GL2 gl;
-	private GLPbuffer pBuffer;
+	private boolean exportAlpha = false;
+	
+	private GLOffscreenAutoDrawable drawable;
+	private ImageExporterGLEventListener listener;
 	private final int pBufferSizeX;
 	private final int pBufferSizeY;
 	
-	/** target prepared in the constructor; null for unbuffered rendering */
+	/** target prepared in init; null for unbuffered rendering */
 	private JOGLTarget bufferTarget = null;
+	
+	private boolean unbufferedRendering;
 	
 	
 	/**
@@ -83,7 +96,7 @@ public class ImageExporter {
 
 		/* parse background color/image and other configuration options */
 		
-		Color clearColor = Color.BLACK;
+		clearColor = new Color(0, 0, 0, 0);
 		
 		if (config.containsKey(BG_COLOR_KEY)) {
 			Color confClearColor = parseColor(config.getString(BG_COLOR_KEY));
@@ -107,6 +120,8 @@ public class ImageExporter {
 			}
 		}
 		
+		exportAlpha = config.getBoolean("exportAlpha", false);
+		
 		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
 		
 		/* find out what number and size of image file requests to expect */
@@ -119,7 +134,7 @@ public class ImageExporter {
 			
 			for (File outputFile : args.getOutput()) {
 				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
-				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM) {
+				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM || outputMode == OutputMode.GD) {
 					expectedFileCalls = 1;
 					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().x);
 					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().y);
@@ -127,50 +142,63 @@ public class ImageExporter {
 			}
 			
 		}
+		boolean onlyOneRenderPass = (expectedFileCalls <= 1
+				&& expectedMaxSizeX <= canvasLimit
+				&& expectedMaxSizeY <= canvasLimit);
+
+		unbufferedRendering = onlyOneRenderPass
+				|| config.getBoolean("forceUnbufferedPNGRendering", false);
 		
 		/* create GL canvas and set rendering parameters */
 
-		GLProfile profile = GLProfile.getDefault();
+		GLProfile profile;
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			profile = GLProfile.get(GLProfile.GL3);
+		} else {
+			profile = GLProfile.get(GLProfile.GL2);
+		}
+		
 		GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
 		
-		if (! factory.canCreateGLPbuffer(null, profile)) {
-			throw new Error("Cannot create GLPbuffer for OpenGL output!");
+		if (! factory.canCreateGLPbuffer(null, profile) && ! factory.canCreateFBO(null, profile)) {
+			throw new Error("Cannot create GLPbuffer or FBO for OpenGL output!");
 		}
 		
 		GLCapabilities cap = new GLCapabilities(profile);
 		cap.setDoubleBuffered(false);
+		if (exportAlpha)
+			cap.setAlphaBits(8);
+		
+		// set MSAA (Multi Sample Anti-Aliasing)
+		int msaa = config.getInt("msaa", 0);
+		if (msaa > 0) {
+			cap.setSampleBuffers(true);
+			cap.setNumSamples(msaa);
+		}
+		
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			
+			if ("shadowVolumes".equals(config.getString("shadowImplementation"))
+					|| "both".equals(config.getString("shadowImplementation"))) {
+				cap.setStencilBits(8);
+			}
+		}
 				
 		pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
 		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
 				
-		pBuffer = factory.createGLPbuffer(null,
+		drawable = factory.createOffscreenAutoDrawable(null,
 				cap, null, pBufferSizeX, pBufferSizeY, null);
-		
-		pBuffer.getContext().makeCurrent();
-		gl = pBuffer.getGL().getGL2();
-		
-		JOGLTarget.clearGL(gl, clearColor);
-		
-        backgroundTextureManager = new JOGLTextureManager(gl);
+		listener = new ImageExporterGLEventListener();
+		drawable.addGLEventListener(listener);
 
-		/* render map data into buffer if it needs to be rendered multiple times */
-		
-		boolean onlyOneRenderPass = (expectedFileCalls <= 1
-				&& expectedMaxSizeX <= canvasLimit
-				&& expectedMaxSizeY <= canvasLimit);
-		
-		boolean unbufferedRendering = onlyOneRenderPass
-				|| config.getBoolean("forceUnbufferedPNGRendering", false);
-		
-		if (!unbufferedRendering ) {
-			bufferTarget = createJOGLTarget(gl, results, config);
-		}
-		
+		backgroundTextureManager = new JOGLTextureManager(drawable.getGL());
+
 	}
 	
 	protected void finalize() throws Throwable {
 		freeResources();
-	};
+	}
 
 	/**
 	 * manually frees resources that would otherwise remain used
@@ -190,11 +218,9 @@ public class ImageExporter {
 			bufferTarget = null;
 		}
 		
-		if (pBuffer != null) {
-			pBuffer.getContext().release();
-	        pBuffer.destroy();
-	        pBuffer = null;
-	        gl = null;
+		if (drawable != null) {
+			drawable.destroy();
+			drawable = null;
 		}
 		
 	}
@@ -218,6 +244,8 @@ public class ImageExporter {
 		}
 		*/
 		
+		listener.prepareRendering(camera, projection, x, y);
+		
 		/* determine the number of "parts" to split the rendering in */
 		
 		int xParts = 1 + ((x-1) / pBufferSizeX);
@@ -227,8 +255,9 @@ public class ImageExporter {
 		ImageWriter imageWriter;
 		
 		switch (outputMode) {
-		case PNG: imageWriter = new PNGWriter(outputFile, x, y); break;
+		case PNG: imageWriter = new PNGWriter(outputFile, x, y, exportAlpha); break;
 		case PPM: imageWriter = new PPMWriter(outputFile, x, y); break;
+		case GD: imageWriter = new GDWriter(outputFile, x, y); break;
 		
 		default: throw new IllegalArgumentException(
 				"output mode not supported " + outputMode);
@@ -236,8 +265,11 @@ public class ImageExporter {
 
 		/* create image (maybe in multiple parts) */
 				
-        BufferedImage image = new BufferedImage(x, pBufferSizeY, BufferedImage.TYPE_INT_RGB);
-                
+        BufferedImage image = new BufferedImage(x, pBufferSizeY, exportAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+
+		Graphics2D graphics = image.createGraphics();
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+        
         for (int yPart = yParts-1; yPart >=0 ; --yPart) {
         	
         	int yStart = yPart * pBufferSizeY;
@@ -252,37 +284,21 @@ public class ImageExporter {
 				int xStart = xPart * pBufferSizeX;
 				int xEnd   = (xPart+1 < xParts) ? (xStart + (pBufferSizeX-1)) : (x-1);
 				int xSize  = (xEnd - xStart) + 1;
-							
-				/* configure rendering */
-			
-				JOGLTarget.clearGL(gl, null);
+
+				listener.setPart(xStart, yStart, xEnd, yEnd, xSize, ySize);
+				
+				// render everything
+        		drawable.display();
 	        
-				if (backgroundImage != null) {
-					JOGLTarget.drawBackgoundImage(gl, backgroundImage,
-							xStart, yStart, xSize, ySize,
-							backgroundTextureManager);
-				}
-	        
-				/* render to pBuffer */
-	        
-				JOGLTarget target = (bufferTarget == null)? 
-						createJOGLTarget(gl, results, config) : bufferTarget;
-	        
-				target.renderPart(camera, projection,
-						xStart / (double)(x-1), xEnd / (double)(x-1),
-						yStart / (double)(y-1), yEnd / (double)(y-1));
-			
-				if (target != bufferTarget) {
-					target.freeResources();
-				}
-	        
-				/* make screenshot and paste into the buffer that will contain 
+				/* make screenshot and paste into the buffer that will contain
 				 * pBufferSizeY entire image lines */
 
-				BufferedImage imagePart = Screenshot.readToBufferedImage(xSize, ySize);
+        		drawable.getContext().makeCurrent();
+				AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(drawable.getGLProfile(), exportAlpha);
+				BufferedImage imagePart = reader.readPixelsToBufferedImage(drawable.getGL(), 0, 0, xSize, ySize, true);
+        		drawable.getContext().release();
 	     
-				image.getGraphics().drawImage(imagePart,
-						xStart, 0, xSize, ySize, null);
+        		graphics.drawImage(imagePart, xStart, 0, xSize, ySize, null);
 			}
         	
         	imageWriter.append(image, ySize);
@@ -291,17 +307,39 @@ public class ImageExporter {
         imageWriter.close();
 	}
 
-	private static JOGLTarget createJOGLTarget(GL2 gl, Results results,
+	private static JOGLTarget createJOGLTarget(GL gl, Results results,
 			Configuration config) {
 		
-		JOGLTarget target = new JOGLTarget(gl,
-				new JOGLRenderingParameters(CCW, false, true),
-				GlobalLightingParameters.DEFAULT);
+		JOGLTarget target;
+		if ("shader".equals(config.getString("joglImplementation"))) {
+			boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
+			boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"))
+					|| "both".equals(config.getString("shadowImplementation"));
+			boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
+					|| "both".equals(config.getString("shadowImplementation"));
+			int shadowMapWidth = config.getInt("shadowMapWidth", 4096);
+			int shadowMapHeight = config.getInt("shadowMapHeight", 4096);
+			int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
+			boolean useSSAO = "true".equals(config.getString("useSSAO"));
+			int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
+			float SSAOradius = config.getFloat("SSAOradius", 1);
+			boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
+			target = new JOGLTargetShader(gl.getGL3(),
+					new JOGLRenderingParameters(CCW, false, true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight,
+			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes),
+					GlobalLightingParameters.DEFAULT);
+		} else {
+			target = new JOGLTargetFixedFunction(gl.getGL2(),
+					new JOGLRenderingParameters(CCW, false, true),
+					GlobalLightingParameters.DEFAULT);
+		}
+		
 		
 		target.setConfiguration(config);
 		
 		boolean underground = config.getBoolean("renderUnderground", true);
-		
+
+		target.setXZBoundary(results.getMapData().getBoundary());
 		TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
 		
 		target.finish();
@@ -315,7 +353,7 @@ public class ImageExporter {
 	 * interface ImageWriter is used to abstract the underlaying image
 	 * format. It can be used for incremental image writes of huge images
 	 */
-	public interface ImageWriter {
+	public static interface ImageWriter {
 		void append(BufferedImage img) throws IOException;
 		void append(BufferedImage img, int lines) throws IOException;
 		void close() throws IOException;
@@ -324,13 +362,13 @@ public class ImageExporter {
 	/**
 	 * Implementation of an ImageWriter to write png files
 	 */
-	public class PNGWriter implements ImageWriter {
+	public static class PNGWriter implements ImageWriter {
 
 		private ImageInfo imgInfo;
 		private PngWriter writer;
 		
-		public PNGWriter(File outputFile, int cols, int rows) {
-			imgInfo = new ImageInfo(cols, rows, 8, false);
+		public PNGWriter(File outputFile, int cols, int rows, boolean alpha) {
+			imgInfo = new ImageInfo(cols, rows, 8, alpha);
 			writer = new PngWriter(outputFile, imgInfo, true);
 			
 			PngMetadata metaData = writer.getMetadata();
@@ -353,16 +391,19 @@ public class ImageExporter {
 			/* create one ImageLine that will be refilled and written to png */
 			ImageLineByte bline = new ImageLineByte(imgInfo);
 			byte[] line = bline.getScanline();
+			int channels = imgInfo.channels;
 			
 			for (int i = 0; i < lines; i++) {
 				for (int d = 0; d < img.getWidth(); d++) {
 					int val = data[i*img.getWidth()+d];
-					line[3*d+0] = (byte) (val >> 16);
-					line[3*d+1] = (byte) (val >> 8);
-					line[3*d+2] = (byte) val;
+					line[channels*d+0] = (byte) (val >> 16);
+					line[channels*d+1] = (byte) (val >> 8);
+					line[channels*d+2] = (byte) val;
+					if (channels > 3)
+						line[channels*d+3] = (byte) (val >> 24);
 				}
 				writer.writeRow(bline);
-			}		
+			}
 		}
 
 		@Override
@@ -375,7 +416,7 @@ public class ImageExporter {
 	/**
 	 * Implementation of an ImageWriter to write raw ppm files
 	 */
-	public class PPMWriter implements ImageWriter {
+	public static class PPMWriter implements ImageWriter {
 
 		private FileOutputStream out;
 		private FileChannel fc;
@@ -393,13 +434,13 @@ public class ImageExporter {
 			
 			out = new FileOutputStream(outputFile);
 					
-			// write header	
+			// write header
 			Charset charSet = Charset.forName("US-ASCII");
 			out.write("P6\n".getBytes(charSet));
 			out.write(String.format("%d %d\n", cols, rows).getBytes(charSet));
 			out.write("255\n".getBytes(charSet));
 
-			fc = out.getChannel();			
+			fc = out.getChannel();
 		}
 		
 		
@@ -445,6 +486,182 @@ public class ImageExporter {
 			if (out != null) {
 				out.close();
 			}
+		}
+	}
+	
+	/**
+	 * Implementation of an ImageWriter to write the (rare) gd file format
+	 */
+	public static class GDWriter implements ImageWriter {
+
+		//TODO: dimensions are limited to short!
+		
+		private FileOutputStream out;
+		private FileChannel fc;
+		private File outputFile;
+		private int cols;
+		private int rows;
+		
+		public GDWriter(File outputFile, int cols, int rows) {
+			this.cols = cols;
+			this.rows = rows;
+			this.outputFile = outputFile;
+		}
+		
+		private void writeHeader() throws IOException {
+			
+			out = new FileOutputStream(outputFile);
+						
+			out.write(0xff);
+			out.write(0xfe);
+			
+			//write dimensions
+			DataOutputStream dOut = new DataOutputStream(out);
+			dOut.writeShort(cols);
+			dOut.writeShort(rows);
+
+			out.write(0x01);
+			out.write(0xff);
+			out.write(0xff);
+			out.write(0xff);
+			out.write(0xff);
+			out.write(0x00);
+						
+			fc = out.getChannel();
+		}
+		
+		
+		@Override
+		public void append(BufferedImage img) throws IOException {
+			append(img, img.getHeight());
+		}
+
+		@Override
+		public void append(BufferedImage img, int lines) throws IOException {
+
+			if (fc == null) {
+				writeHeader();
+			}
+			
+			// collect and write content
+
+			ByteBuffer writeBuffer = ByteBuffer.allocate(
+					4 * img.getWidth() * lines);
+			
+			DataBuffer imageDataBuffer = img.getRaster().getDataBuffer();
+			int[] data = (((DataBufferInt)imageDataBuffer).getData());
+			
+			for (int i = 0; i < img.getWidth() * lines; i++) {
+				int value = data[i];
+				writeBuffer.put((byte)(value >>> 16));
+				writeBuffer.put((byte)(value >>> 8));
+				writeBuffer.put((byte)(value));
+				writeBuffer.put((byte) 0);
+			}
+			
+			writeBuffer.position(0);
+			fc.write(writeBuffer);
+			
+		}
+
+		@Override
+		public void close() throws IOException {
+
+			if (fc != null) {
+				fc.close();
+			}
+
+			if (out != null) {
+				out.close();
+			}
+		}
+	}
+	
+	public class ImageExporterGLEventListener implements GLEventListener {
+		private int xStart;
+		private int yStart;
+		private int xEnd;
+		private int yEnd;
+		private int xSize;
+		private int ySize;
+		private int x;
+		private int y;
+		private Camera camera;
+		private Projection projection;
+		private boolean nodisplay = false;
+
+		@Override
+		public void init(GLAutoDrawable drawable) {
+
+			/* render map data into buffer if it needs to be rendered multiple times */
+			if (!unbufferedRendering ) {
+				bufferTarget = createJOGLTarget(drawable.getGL(), results, config);
+			}
+		}
+
+		public void setPart(int xStart, int yStart, int xEnd, int yEnd,
+				int xSize, int ySize) {
+			
+			if (this.xSize != xSize || this.ySize != ySize) {
+				// disable display while resizing. all display calls need to be from @writeImageFile
+				nodisplay = true;
+				drawable.setSize(xSize, ySize);
+				nodisplay = false;
+			}
+			
+			this.xStart = xStart;
+			this.yStart = yStart;
+			this.xEnd = xEnd;
+			this.yEnd = yEnd;
+			this.xSize = xSize;
+			this.ySize = ySize;
+		}
+
+		public void prepareRendering(Camera camera, Projection projection,
+				int x, int y) {
+			this.camera = camera;
+			this.projection = projection;
+			this.x = x;
+			this.y = y;
+		}
+
+		@Override
+		public void dispose(GLAutoDrawable drawable) {
+		}
+
+		@Override
+		public void display(GLAutoDrawable drawable) {
+			
+			if (nodisplay)
+				return;
+			
+			/* configure rendering */
+
+			AbstractJOGLTarget.clearGL(drawable.getGL(), clearColor);
+
+			/* render to pBuffer */
+
+			JOGLTarget target = (bufferTarget == null)?
+					createJOGLTarget(drawable.getGL(), results, config) : bufferTarget;
+
+					if (backgroundImage != null) {
+						target.drawBackgoundImage(backgroundImage,
+								xStart, yStart, xSize, ySize,
+								backgroundTextureManager);
+					}
+
+					target.renderPart(camera, projection,
+							xStart / (double)(x-1), xEnd / (double)(x-1),
+							yStart / (double)(y-1), yEnd / (double)(y-1));
+
+					if (target != bufferTarget) {
+						target.freeResources();
+					}
+		}
+
+		@Override
+		public void reshape(GLAutoDrawable drawable, int x, int y, int width,
+				int height) {
 		}
 	}
 }

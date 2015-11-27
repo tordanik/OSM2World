@@ -10,7 +10,7 @@ import uk.co.flamingpenguin.jewel.cli.Option;
 
 public interface CLIArguments {
 	
-	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|pov|png|ppm)";
+	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|pov|png|ppm|gd)";
 	
 	/* input and output */
 	

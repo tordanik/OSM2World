@@ -30,6 +30,7 @@ public class WorldObjectView extends DebugView {
 	protected void fillTarget(final JOGLTarget target) {
 		
 		setParameters(target);
+		target.setXZBoundary(map.getBoundary());
 		
 		boolean underground = config.getBoolean("renderUnderground", true);
 		
@@ -44,9 +45,22 @@ public class WorldObjectView extends DebugView {
 	
 	private void setParameters(final JOGLTarget target) {
 		
+		boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
+		boolean shadowVolumes = "shadowVolumes".equals(config.getString("shadowImplementation"))
+				|| "both".equals(config.getString("shadowImplementation"));
+		boolean shadowMaps = "shadowMap".equals(config.getString("shadowImplementation"))
+				|| "both".equals(config.getString("shadowImplementation"));
+		int shadowMapWidth = config.getInt("shadowMapWidth", 4096);
+		int shadowMapHeight = config.getInt("shadowMapHeight", 4096);
+		int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
+		boolean useSSAO = "true".equals(config.getString("useSSAO"));
+		int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
+		float SSAOradius = config.getFloat("SSAOradius", 1);
+		boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true));
+    			renderOptions.isWireframe(), true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		

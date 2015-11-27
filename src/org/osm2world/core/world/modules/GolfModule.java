@@ -32,7 +32,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
@@ -262,7 +262,7 @@ public class GolfModule extends AbstractModule {
 			target.drawColumn(Materials.PLASTIC_GREY.makeSmooth(), null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 			
-			ImmutableMaterial flagcloth = new ImmutableMaterial(Lighting.SMOOTH, Color.YELLOW);
+			ImmutableMaterial flagcloth = new ImmutableMaterial(Interpolation.SMOOTH, Color.YELLOW);
 			
 			List<VectorXYZ> flagVertices = asList(
 					new VectorXYZ(pos.x, 1.5, pos.z),

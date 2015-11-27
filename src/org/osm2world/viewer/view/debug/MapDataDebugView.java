@@ -18,7 +18,7 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 /**
@@ -58,7 +58,7 @@ public class MapDataDebugView extends DebugView {
 			
 			for (TriangleXZ t : triangles) {
 				target.drawTriangles(
-						new ImmutableMaterial(Lighting.FLAT, AREA_COLOR),
+						new ImmutableMaterial(Interpolation.FLAT, AREA_COLOR),
 						Collections.singleton(t.xyz(-0.1)),
 						null);
 			}

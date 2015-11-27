@@ -11,24 +11,31 @@ import org.osm2world.core.target.common.TextureData;
  */
 public class ConfMaterial extends Material {
 
-	public ConfMaterial(Lighting lighting, Color color,
+	public ConfMaterial(Interpolation interpolation, Color color,
+			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
+			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
+		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
+				transparency, shadow, ao, textureDataList);
+	}
+	
+	public ConfMaterial(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(lighting, color, ambientFactor, diffuseFactor,
-				transparency, textureDataList);
+		super(interpolation, color, ambientFactor, diffuseFactor, 0.0f, 1,
+				transparency, Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
 	}
 	
-	public ConfMaterial(Lighting lighting, Color color,
+	public ConfMaterial(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
-		super(lighting, color, transparency, textureDataList);
+		super(interpolation, color, transparency, textureDataList);
 	}
 	
-	public ConfMaterial(Lighting lighting, Color color) {
-		super(lighting, color);
+	public ConfMaterial(Interpolation interpolation, Color color) {
+		super(interpolation, color);
 	}
 	
-	public void setLighting(Lighting lighting) {
-		this.lighting = lighting;
+	public void setInterpolation(Interpolation interpolation) {
+		this.interpolation = interpolation;
 	}
 	
 	public void setColor(Color color) {
@@ -43,12 +50,29 @@ public class ConfMaterial extends Material {
 		this.diffuseFactor = diffuseFactor;
 	}
 	
+	public void setSpecularFactor(float specularFactor) {
+		this.specularFactor = specularFactor;
+	}
+	
+	public void setShininess(int shininess) {
+		this.shininess = shininess;
+	}
+	
 	public void setTransparency(Transparency transparency) {
 		this.transparency = transparency;
+	}	
+	
+	public void setShadow(Shadow shadow) {
+		this.shadow = shadow;
+	}
+	
+	public void setAmbientOcclusion(AmbientOcclusion ao) {
+		this.ambientOcclusion = ao;
 	}
 	
 	public void setTextureDataList(List<TextureData> textureDataList) {
 		this.textureDataList = textureDataList;
+		this.updateBumpMap();
 	}
 	
 	/*

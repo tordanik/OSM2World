@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
@@ -13,11 +13,13 @@ import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material.Lighting;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
+import org.osm2world.core.target.jogl.JOGLTargetShader;
 
 /**
  * contains some common methods for debug views
@@ -51,6 +53,13 @@ public abstract class DebugView {
 		
 	}
 	
+	public void reset() {
+		if (target != null) {
+			target.freeResources();
+			target = null;
+		}
+	}
+	
 	public void setConversionResults(Results conversionResults) {
 	
 		this.map = conversionResults.getMapData();
@@ -82,13 +91,16 @@ public abstract class DebugView {
 	 * 
 	 * @param gl  needs to be the same gl as in previous calls
 	 */
-	public void renderTo(GL2 gl, Camera camera, Projection projection) {
+	public void renderTo(GL gl, Camera camera, Projection projection) {
 		
 		if (canBeUsed() && camera != null && projection != null) {
 					
 			if (target == null) {
-				target = new JOGLTarget(gl, new JOGLRenderingParameters(
-						null, false, true), null);
+				if ("shader".equals(config.getString("joglImplementation"))) {
+					target = new JOGLTargetShader(gl.getGL3(), new JOGLRenderingParameters(), null);
+				} else {
+					target = new JOGLTargetFixedFunction(gl.getGL2(), new JOGLRenderingParameters(), null);
+				}
 				target.setConfiguration(config);
 			} else if (targetNeedsReset){
 				target.reset();
@@ -189,7 +201,7 @@ public abstract class DebugView {
 		
 		
 		ImmutableMaterial colorMaterial =
-				new ImmutableMaterial(Lighting.FLAT, color);
+				new ImmutableMaterial(Interpolation.FLAT, color);
 		
 		target.drawTriangleStrip(colorMaterial, asList(
 				lastV,

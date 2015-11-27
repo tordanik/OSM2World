@@ -161,6 +161,7 @@ public final class Output {
 					
 				case PNG:
 				case PPM:
+				case GD:
 					if (camera == null || projection == null) {
 						System.err.println("camera or projection missing");
 					}
