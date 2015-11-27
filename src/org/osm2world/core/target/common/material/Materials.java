@@ -56,7 +56,9 @@ public final class Materials {
 	public static final ConfMaterial GRASS =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial GRASS_PAVER =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
+	public static final ConfMaterial SCRUB =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial GRAVEL =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PAVING_STONE =
@@ -230,6 +232,7 @@ public final class Materials {
 		surfaceMaterialMap.put("tartan", TARTAN);
 		surfaceMaterialMap.put("unpaved", EARTH);
 		surfaceMaterialMap.put("wood", WOOD);
+		surfaceMaterialMap.put("scrub", SCRUB);
 
 		try {
 			for (Field field : Materials.class.getFields()) {
