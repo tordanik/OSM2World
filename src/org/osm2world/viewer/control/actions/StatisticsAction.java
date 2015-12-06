@@ -16,6 +16,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class StatisticsAction extends AbstractAction implements Observer {
 
+	private static final long serialVersionUID = -7894095901533692645L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	

@@ -113,8 +113,6 @@ public final class Poly2TriTriangulationUtil {
 			for (VectorXZ knownVector : knownVectors) {
 				if (knownVector.distanceTo(filteredPoint) < 0.2) {
 					filteredPointsIterator.remove();
-					// we also incorprorate here part of github user pinglis pull-request
-					// without this "break" an IllegalStateException is produced on some files
 					break;
 				}
 			}

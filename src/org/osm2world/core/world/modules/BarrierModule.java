@@ -170,11 +170,21 @@ public class BarrierModule extends AbstractModule {
 		}
 		
 		private static Material getMaterial(TagGroup tags) {
+			
+			Material material = null;
+			
 			if ("gabion".equals(tags.getValue("wall"))) {
-				return Materials.WALL_GABION;
+				material = Materials.WALL_GABION;
+			} else if ( tags.containsKey("material") ) {
+				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
+			}
+			
+			if (material != null) {
+				return material;
 			} else {
 				return Materials.WALL_DEFAULT;
 			}
+			
 		}
 		
 		public Wall(MapWaySegment segment) {

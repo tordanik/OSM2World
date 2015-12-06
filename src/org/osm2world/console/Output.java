@@ -161,6 +161,7 @@ public final class Output {
 					
 				case PNG:
 				case PPM:
+				case GD:
 					if (camera == null || projection == null) {
 						System.err.println("camera or projection missing");
 					}
@@ -199,6 +200,7 @@ public final class Output {
 				(perfListener.getPhaseDuration(Phase.TERRAIN) + 500) / 1000,
 				(System.currentTimeMillis() - perfListener.getPhaseEnd(Phase.TERRAIN) + 500) / 1000,
 				(System.currentTimeMillis() - start + 500) / 1000);
+			w.close();
 		}
 
 	}

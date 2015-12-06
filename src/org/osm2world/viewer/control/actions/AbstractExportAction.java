@@ -19,6 +19,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 public abstract class AbstractExportAction
 	extends AbstractAction implements Observer {
 
+	private static final long serialVersionUID = 76411168278378356L; //generated serialVersionUID
 	protected final ViewerFrame viewerFrame;
 	protected final Data data;
 	protected final MessageManager messageManager;

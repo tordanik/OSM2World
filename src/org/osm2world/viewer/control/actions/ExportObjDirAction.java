@@ -15,6 +15,8 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class ExportObjDirAction extends AbstractExportAction {
 
+	private static final long serialVersionUID = 6380889966390760664L; //generated serialVersionUID
+
 	public ExportObjDirAction(ViewerFrame viewerFrame, Data data,
 			MessageManager messageManager, RenderOptions renderOptions) {
 

@@ -7,3 +7,5 @@ build
 .classpath
 .project
 doc/javadoc
+/nbproject/private/
+/dist/

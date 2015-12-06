@@ -7,6 +7,8 @@ import javax.swing.JOptionPane;
 
 public class HelpControlsAction extends AbstractAction {
 	
+	private static final long serialVersionUID = 9195787581575616092L; //generated serialVersionUID
+
 	public HelpControlsAction() {
 		super("Controls");
 	}

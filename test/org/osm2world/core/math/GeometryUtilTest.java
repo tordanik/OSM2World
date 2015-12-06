@@ -1,6 +1,6 @@
 package org.osm2world.core.math;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.test.TestUtil.*;
@@ -57,7 +57,8 @@ public class GeometryUtilTest {
 		assertEquals(9.0, GeometryUtil.interpolateElevation(
 				new VectorXZ(5, 1),
 				new VectorXYZ(3, 7, 1),
-				new VectorXYZ(6, 10, 1)).y);
+				new VectorXYZ(6, 10, 1)).y,
+				1e-5);
 		
 	}
 	

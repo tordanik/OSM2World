@@ -1,7 +1,6 @@
 package org.openstreetmap.josm.plugins.graphview.util;
 
-import static junit.framework.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 
 import java.awt.Color;

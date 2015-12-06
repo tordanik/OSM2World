@@ -3,9 +3,11 @@ package org.osm2world.viewer.control.actions;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -15,9 +17,11 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 
-import com.jogamp.opengl.util.awt.Screenshot;
+import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 
 public class ExportScreenshotAction extends AbstractExportAction {
+
+	private static final long serialVersionUID = 8777435425813342813L; //generated serialVersionUID
 
 	public ExportScreenshotAction(ViewerFrame viewerFrame, Data data,
 			MessageManager messageManager, RenderOptions renderOptions) {
@@ -40,9 +44,10 @@ public class ExportScreenshotAction extends AbstractExportAction {
 			
 			viewerFrame.glCanvas.getContext().makeCurrent();
 			
-			Screenshot.writeToFile(file,
-					viewerFrame.glCanvas.getWidth(),
-					viewerFrame.glCanvas.getHeight());
+			boolean exportAlpha = data.getConfig().getBoolean("exportAlpha", false);
+			AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(viewerFrame.glCanvas.getGLProfile(), exportAlpha);
+			BufferedImage img = reader.readPixelsToBufferedImage(viewerFrame.glCanvas.getGL(), true);
+		    ImageIO.write(img, "png", file);
 
 			viewerFrame.glCanvas.getContext().release();
 			
