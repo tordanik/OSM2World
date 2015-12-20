@@ -135,7 +135,7 @@ public class ImageExporter {
 			for (File outputFile : args.getOutput()) {
 				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
 				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM || outputMode == OutputMode.GD) {
-					expectedFileCalls = 1;
+					expectedFileCalls += 1;
 					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().x);
 					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().y);
 				}
