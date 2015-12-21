@@ -16,6 +16,8 @@ import com.jogamp.opengl.util.glsl.ShaderState;
 public class TextRendererShader implements org.osm2world.viewer.view.TextRenderer {
 	private TextRenderer textRenderer;
 	private Font textRendererFont = null;
+	private int width = 0, height = 0;
+	private float scale = 1;
 	private GL2ES2 gl;
 	
 	public TextRendererShader(GL2ES2 gl) {
@@ -46,17 +48,14 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 //		textRenderer.drawString3D(gl.getGL2ES2(), textRendererFont, string, posF, 12, texSize);
 //	}
 
-	@Override
-	public void drawText(String string, int x, int y, int screenWidth,
-			int screenHeight, Color color) {
+	protected void drawText(String string, float x, float y, Color color) {
 		textRenderer.enable(gl, true);
 		textRenderer.setColorStatic(gl, color.getRed(), color.getGreen(), color.getBlue());
 		textRenderer.resetModelview(gl);
-		textRenderer.reshapeOrtho(gl, screenWidth, screenHeight, -100000, 100000);
 		textRenderer.translate(gl, x, y, 0);
 		float[] posF = {0, 0, 0}; // not used in TextRendererImpl01
 		int[] texSize = {0};
-		textRenderer.drawString3D(gl, textRendererFont, string, posF, 12, texSize);
+		textRenderer.drawString3D(gl, textRendererFont, string, posF, (int) (12 * scale), texSize);
 		textRenderer.enable(gl, false);
 	}
 	
@@ -66,6 +65,28 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		textRenderer = null;
 		textRendererFont = null;
 		gl = null;
+	}
+
+	@Override
+	public void drawTextTop(String string, float x, float y, Color color) {
+		this.drawText(string, x*scale, height - y*scale, color);
+	}
+
+	@Override
+	public void drawTextBottom(String string, float x, float y, Color color) {
+		this.drawText(string, x*scale, y*scale, color);
+	}
+
+	@Override
+	public void reshape(int width, int height) {
+		this.width = width;
+		this.height = height;
+		textRenderer.reshapeOrtho(gl, width, height, -100000, 100000);
+	}
+
+	@Override
+	public void setScale(float scale) {
+		this.scale = scale;
 	}
 
 }

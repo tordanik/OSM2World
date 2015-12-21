@@ -59,10 +59,10 @@ public class ViewerGLCanvas extends GLCanvas {
 	        final GL gl = glDrawable.getGL();
 	        
 	        AbstractJOGLTarget.clearGL(gl, new Color(0, 0, 0, 0));
-	        
-	        helpView.renderTo(gl, null, null);
-	        
-	        if (renderOptions.camera != null) {
+
+	        if (renderOptions.camera == null) {
+	        	helpView.renderTo(gl, null, null);
+	        } else {
 	        	
 	        	/* prepare projection matrix stack */
 	        	
@@ -97,10 +97,8 @@ public class ViewerGLCanvas extends GLCanvas {
 	        	
 	        	int messageCount = 0;
 	        	for (Message message : messageManager.getLiveMessages()) {
-	        		textRenderer.drawText(message.messageString,
+	        		textRenderer.drawTextBottom(message.messageString,
 	        				10, 10 + messageCount * 20,
-	        				ViewerGLCanvas.this.getWidth(),
-	        				ViewerGLCanvas.this.getHeight(),
 	        				Color.WHITE);
 	        		messageCount++;
 	        	}
@@ -137,6 +135,8 @@ public class ViewerGLCanvas extends GLCanvas {
 	        renderOptions.projection =
 	        	renderOptions.projection.withAspectRatio((double)width / height);
 	        
+	        textRenderer.reshape(width, height);
+	        helpView.reshape(width, height);
 		}
 	
 		@Override
