@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,7 +41,7 @@ public class ShaderManager {
 		String line;
 
 		// open the file and read the contents into the String array.
-		InputStream stream = System.class.getResourceAsStream(filename);
+		InputStream stream = loadShaderFile(filename);
 		if (stream == null) {
 			throw new RuntimeException("Vertex shader not found in classpath: \""+ filename +"\"");
 		}
@@ -88,7 +90,7 @@ public class ShaderManager {
 		fragCode[0] = "";
 		String line;
 
-		InputStream stream = System.class.getResourceAsStream(filename);
+		InputStream stream = loadShaderFile(filename);
 		if (stream == null) {
 			throw new RuntimeException("Fragment shader not found in classpath: \""+ filename +"\"");
 		}
@@ -216,4 +218,22 @@ public class ShaderManager {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Tries to load the shader file from classpath. If unsuccessful tries to
+	 * load from resources folder in filesystem. If also unsuccessful return
+	 * <code>null</code>.
+	 */
+	private static InputStream loadShaderFile(String filename) {
+		InputStream stream = System.class.getResourceAsStream(filename);
+		if (stream == null) {
+			File file = new File("resources/" + (filename.charAt(0) == '/' ? filename.substring(1) : filename));
+			try {
+				stream = new FileInputStream(file);
+			} catch (FileNotFoundException e) {
+			}
+		}
+		return stream;
+	}
+
 }
