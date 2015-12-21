@@ -206,7 +206,21 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	        gl.glEnd();
 			
 		}
-		
+
+		finishRendering(gl);
+
+	}
+
+	/**
+	 * Disables lighting and textures.
+	 */
+	static final void finishRendering(GL gl) {
+		gl.glDisable(GL_LIGHT0);
+		gl.glDisable(GL_LIGHTING);
+		for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
+			gl.glActiveTexture(getGLTextureConstant(i));
+			gl.glDisable(GL_TEXTURE_2D);
+		}
 	}
 	
 	static final void applyCameraMatrices(GL2 gl, Camera camera) {
@@ -594,6 +608,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		gl.glMatrixMode(GL_PROJECTION);
 		gl.glPopMatrix();
 		gl.glMatrixMode(GL_MODELVIEW);
+		gl.glDisable(GL_TEXTURE_2D);
 		
 	}
 
