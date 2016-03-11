@@ -755,7 +755,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		extends AbstractNetworkWaySegmentWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
-		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
+		protected static final float DEFAULT_LANE_WIDTH = 3.6576f;
 		
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
 		protected static final float DEFAULT_PATH_CLEARING = 2;
