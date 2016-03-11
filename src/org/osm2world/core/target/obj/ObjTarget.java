@@ -295,8 +295,8 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			}
 		
 			if (textureData != null) {
-				mtlStream.println("map_Ka " + textureData.file);
-				mtlStream.println("map_Kd " + textureData.file);
+				mtlStream.println("map_Ka " + textureData.file.getName());
+				mtlStream.println("map_Kd " + textureData.file.getName());
 			}
 			mtlStream.println();
 		}
