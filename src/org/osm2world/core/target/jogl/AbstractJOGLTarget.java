@@ -1,19 +1,9 @@
 package org.osm2world.core.target.jogl;
 
 import static java.util.Arrays.asList;
-import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_LINES;
-import static javax.media.opengl.GL.GL_LINE_LOOP;
-import static javax.media.opengl.GL.GL_LINE_STRIP;
-import static javax.media.opengl.GL.GL_POINTS;
-import static javax.media.opengl.GL.GL_TRIANGLES;
-import static javax.media.opengl.GL.GL_TRIANGLE_FAN;
-import static javax.media.opengl.GL.GL_TRIANGLE_STRIP;
+import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.GL_POLYGON;
-import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.LINE_LOOP;
-import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.LINE_STRIP;
-import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.POINTS;
+import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.*;
 
 import java.awt.Color;
 import java.nio.FloatBuffer;
@@ -24,8 +14,8 @@ import javax.media.opengl.GL;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -75,8 +65,10 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
-		for (TextureData t : material.getTextureDataList()) {
-			textureManager.getTextureForFile(t.file, true);
+		if (material.getNumTextureLayers() > 0) {
+			for (TextureData t : material.getTextureDataList()) {
+				textureManager.getTextureForFile(t.file, true);
+			}
 		}
 		
 	}
