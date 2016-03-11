@@ -51,9 +51,19 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f));
 	public static final ConfMaterial EARTH =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0, 0));
+	public static final ConfMaterial GROUND =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial MULCH =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial GLASS =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial GRASS =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial GARDEN =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial SHORTGRASS =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial LONGGRASS =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial GRASS_PAVER =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
@@ -233,6 +243,11 @@ public final class Materials {
 		surfaceMaterialMap.put("unpaved", EARTH);
 		surfaceMaterialMap.put("wood", WOOD);
 		surfaceMaterialMap.put("scrub", SCRUB);
+		surfaceMaterialMap.put("shortgrass", SHORTGRASS);
+		surfaceMaterialMap.put("longgrass", LONGGRASS);
+		surfaceMaterialMap.put("ground", GROUND);
+		surfaceMaterialMap.put("mulch", MULCH);
+		surfaceMaterialMap.put("garden", GARDEN);
 
 		try {
 			for (Field field : Materials.class.getFields()) {
