@@ -236,11 +236,27 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 	private String formatVector(Object v) {
 		
 		if (v instanceof VectorXYZ) {
+			                    
 			VectorXYZ vXYZ = (VectorXYZ)v;
-			return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
+			if ( !Double.isNaN(vXYZ.x) && !Double.isNaN(vXYZ.y) && !Double.isNaN(vXYZ.z))
+			{
+				return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
+			}
+			else
+			{
+				return "0 0 0";
+			}
 		} else {
 			VectorXZ vXZ = (VectorXZ)v;
-			return vXZ.x + " " + vXZ.z;
+                        
+			if ( !Double.isNaN(vXZ.x) && !Double.isNaN(vXZ.z))
+			{
+				return vXZ.x + " " + vXZ.z;
+			}
+			else
+			{
+				return "0 0";
+			}
 		}
 		
 	}
