@@ -102,6 +102,10 @@ public class RailwayModule extends ConfigurableWorldModule {
 					&& !segment.getTags().contains("tunnel", "no")){
 				return GroundState.BELOW;
 			}
+			else if ( segment.getTags().contains("tunnel", "yes"))
+			{
+				return GroundState.BELOW;
+			}
 			
 			return super.getGroundState();
 			
