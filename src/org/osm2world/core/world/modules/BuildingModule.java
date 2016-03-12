@@ -796,13 +796,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/* determine height */
 			
 			double fallbackHeight = buildingLevels * defaultHeightPerLevel;
-			
 			fallbackHeight += roof.getRoofHeight();
 			
 			fallbackHeight = parseHeight(buildingTags, (float)fallbackHeight);
 			
 			double height = parseHeight(tags, (float)fallbackHeight);
-		    heightWithoutRoof = height - roof.getRoofHeight();
+
+			// Make sure buildings have at least some height
+			height = Math.max(height, 0.001);
+                        
+			heightWithoutRoof = height - roof.getRoofHeight();
 			
 			/* determine materials */
 		    
