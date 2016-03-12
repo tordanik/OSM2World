@@ -36,13 +36,19 @@ public class ExportObjAction extends AbstractExportAction {
 
 		try {
 			
+			boolean underground = true;
+                        
+			if ( data.getConfig() != null )
+			{
+				underground = data.getConfig().getBoolean("renderUnderground", true);
+			}
+                        
 			/* write the file */
-
 			ObjWriter.writeObjFile(
 					file,
 					data.getConversionResults().getMapData(),
 					data.getConversionResults().getMapProjection(),
-					null, renderOptions.projection);
+					null, renderOptions.projection, underground);
 
 			messageManager.addMessage("exported Wavefront .obj file " + file);
 
