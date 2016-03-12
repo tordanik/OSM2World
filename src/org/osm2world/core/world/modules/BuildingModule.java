@@ -662,15 +662,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* determine defaults for building type */
 			
-			int defaultLevels = 3;
+			int defaultLevels = 2;
 			double defaultHeightPerLevel = 2.5;
 			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
 			Material defaultMaterialWindows = Materials.BUILDING_WINDOWS;
-			String defaultRoofShape = "flat";
-			
+			String defaultRoofShape = "gabled";
+
 			String buildingValue = getValue("building");
-			
+
 			if ("greenhouse".equals(buildingValue)) {
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
@@ -682,6 +682,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWall = Materials.CONCRETE;
 				defaultMaterialRoof = Materials.CONCRETE;
 				defaultMaterialWindows = Materials.GARAGE_DOORS;
+				defaultRoofShape= "flat";
 			} else if ("hut".equals(buildingValue)
 					|| "shed".equals(buildingValue)) {
 				defaultLevels = 1;
@@ -696,10 +697,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 					|| "hangar".equals(buildingValue)
 					|| "industrial".equals(buildingValue)) {
 				defaultMaterialWindows = null;
+				defaultLevels = 3;
 			} else {
 				if (getValue("building:levels") == null) {
 					defaultMaterialWindows = null;
 				}
+			}
+
+			if ( getValue("building:part") != null)
+			{
+				defaultRoofShape = "flat";
 			}
 			
 			/* determine levels */
