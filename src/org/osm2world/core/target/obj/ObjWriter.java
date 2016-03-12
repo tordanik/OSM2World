@@ -29,7 +29,7 @@ public final class ObjWriter {
 	public static final void writeObjFile(
 			File objFile, MapData mapData,
 			MapProjection mapProjection,
-			Camera camera, Projection projection)
+			Camera camera, Projection projection, boolean underground)
 			throws IOException {
 		
 		if (!objFile.exists()) {
@@ -57,8 +57,8 @@ public final class ObjWriter {
 		/* write actual file content */
 		
 		ObjTarget target = new ObjTarget(objStream, mtlStream);
-		
-		TargetUtil.renderWorldObjects(target, mapData, true);
+                
+		TargetUtil.renderWorldObjects(target, mapData, underground);
 		
 		objStream.close();
 		mtlStream.close();

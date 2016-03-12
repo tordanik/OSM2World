@@ -196,9 +196,11 @@ public final class Output {
 					Integer primitiveThresholdOBJ =
 						config.getInteger("primitiveThresholdOBJ", null);
 					if (primitiveThresholdOBJ == null) {
+						boolean underground = config.getBoolean("renderUnderground", true);
+                        
 						ObjWriter.writeObjFile(outputFile,
 								results.getMapData(), results.getMapProjection(),
-								camera, projection);
+								camera, projection, underground);
 					} else {
 						ObjWriter.writeObjFiles(outputFile,
 								results.getMapData(), results.getMapProjection(),
