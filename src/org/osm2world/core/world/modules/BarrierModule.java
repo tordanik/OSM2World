@@ -215,7 +215,7 @@ public class BarrierModule extends AbstractModule {
 		
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "fence")
-					&& tags.contains("fence_type", "chain_link");
+					&& (tags.contains("fence_type", "chain_link") || (tags.contains("fence_type", "metal") || (tags.contains("fence_type", "railing") ) ) );
 		}
 		
 		public ChainLinkFence(MapWaySegment segment, TagGroup tags) {
