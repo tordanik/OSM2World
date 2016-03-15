@@ -155,6 +155,7 @@ public class BridgeModule extends AbstractModule {
 				
 				if (isBetween(pos, vs.get(i).xz(), vs.get(i+1).xz())) {
 					top = interpolateElevation(pos, vs.get(i), vs.get(i+1));
+                                        break;
 				}
 				
 			}

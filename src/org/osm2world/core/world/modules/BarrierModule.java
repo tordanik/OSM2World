@@ -265,6 +265,7 @@ public class BarrierModule extends AbstractModule {
 				
                                     if (isBetween(pos, pointsWithEle.get(i).xz(), pointsWithEle.get(i+1).xz())) {
     					base = interpolateElevation(pos, pointsWithEle.get(i), pointsWithEle.get(i+1));
+                                        break;
                                     }
                                 }
 				target.drawColumn(Materials.CHAIN_LINK_FENCE_POST, null, base,
@@ -341,6 +342,7 @@ public class BarrierModule extends AbstractModule {
 				
                                     if (isBetween(pos, baseline.get(i).xz(), baseline.get(i+1).xz())) {
     					base = interpolateElevation(pos, baseline.get(i), baseline.get(i+1));
+                                        break;
                                     }
                                 }
 				target.drawColumn(material, null, base,
