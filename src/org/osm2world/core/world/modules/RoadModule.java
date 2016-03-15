@@ -205,6 +205,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			} else {
 				result = EARTH;
 			}
+                } else if (tags.contains("highway", "footway")) {
+                    result = PAVED;
 		} else {
 			result = defaultSurface;
 		}

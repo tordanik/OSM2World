@@ -43,6 +43,8 @@ public final class Materials {
 	
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
+	public static final ConfMaterial ASPHALT_LIGHT =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial BRICK =
 			new ConfMaterial(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f));
 	public static final ConfMaterial COBBLESTONE =
@@ -72,13 +74,15 @@ public final class Materials {
 	public static final ConfMaterial GRAVEL =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PAVING_STONE =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial PAVED =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PEBBLESTONE =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PLASTIC =
-			new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 0));
+		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 0));
 	public static final ConfMaterial PLASTIC_GREY =
-			new ConfMaterial(Interpolation.FLAT, new Color(184, 184, 184));
+		new ConfMaterial(Interpolation.FLAT, new Color(184, 184, 184));
 	public static final ConfMaterial SAND =
 		new ConfMaterial(Interpolation.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial STEEL =
@@ -228,6 +232,7 @@ public final class Materials {
 	static {
 		
 		surfaceMaterialMap.put("asphalt", ASPHALT);
+                surfaceMaterialMap.put("asphalt_light", ASPHALT_LIGHT);
 		surfaceMaterialMap.put("cobblestone", COBBLESTONE);
 		surfaceMaterialMap.put("compacted", GRAVEL);
 		surfaceMaterialMap.put("concrete", CONCRETE);
@@ -235,7 +240,7 @@ public final class Materials {
 		surfaceMaterialMap.put("gravel", GRAVEL);
 		surfaceMaterialMap.put("grass_paver", GRASS_PAVER);
 		surfaceMaterialMap.put("ground", EARTH);
-		surfaceMaterialMap.put("paved", ASPHALT);
+		surfaceMaterialMap.put("paved", PAVED);
 		surfaceMaterialMap.put("paving_stones", PAVING_STONE);
 		surfaceMaterialMap.put("pebblestone", PEBBLESTONE);
 		surfaceMaterialMap.put("sand", SAND);
