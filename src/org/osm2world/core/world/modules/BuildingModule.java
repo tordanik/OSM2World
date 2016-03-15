@@ -704,7 +704,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
                         
-			if ( area.getTags().contains("parking", "multi-storey"))
+			// Don't give glass buildings windows
+			if ("glass".equals(getValue("building:material")))
+			{
+				defaultMaterialWindows = null;
+			}
+                        
+			if ("multi-storey".equals(getValue("parking")))
 			{
 				defaultLevels = 5;
 				defaultMaterialWindows = null;
