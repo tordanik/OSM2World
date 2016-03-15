@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.target.common.material.Materials.CHAIN_LINK_FENCE;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
@@ -255,12 +256,19 @@ public class BarrierModule extends AbstractModule {
 			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
 					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
-			for (VectorXZ polePosition : polePositions) {
-//				TODO draw poles again
-//				VectorXYZ base = polePosition.xyz(segment.getElevationProfile().getEleAt(polePosition));
-//				target.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
-//						height, width, width, false, true);
-//
+                        
+			for (VectorXZ pos : polePositions) {
+                                
+                                VectorXYZ base = null;
+                                
+                                for (int i = 0; i + 1 < pointsWithEle.size(); i++) {
+				
+                                    if (isBetween(pos, pointsWithEle.get(i).xz(), pointsWithEle.get(i+1).xz())) {
+    					base = interpolateElevation(pos, pointsWithEle.get(i), pointsWithEle.get(i+1));
+                                    }
+                                }
+				target.drawColumn(Materials.CHAIN_LINK_FENCE_POST, null, base,
+						height, width, width, false, true);
 			}
 			
 		}
@@ -321,15 +329,22 @@ public class BarrierModule extends AbstractModule {
 			target.drawTriangleStrip(material, vsHighBack, null);
 			
 			/* render poles */
-			
-			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(1f, false,
+			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
 					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
-			for (VectorXZ polePosition : polePositions) {
-//				TODO draw poles again
-//				VectorXYZ base = polePosition.xyz(segment.getElevationProfile().getEleAt(polePosition));
-//				target.drawColumn(material, null , base, height, width, width, false, true);
-			
+                        
+			for (VectorXZ pos : polePositions) {
+                                
+                                VectorXYZ base = null;
+                                
+                                for (int i = 0; i + 1 < baseline.size(); i++) {
+				
+                                    if (isBetween(pos, baseline.get(i).xz(), baseline.get(i+1).xz())) {
+    					base = interpolateElevation(pos, baseline.get(i), baseline.get(i+1));
+                                    }
+                                }
+				target.drawColumn(material, null, base,
+						height, width, width, false, true);
 			}
 			
 		}
