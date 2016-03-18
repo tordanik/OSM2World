@@ -1170,13 +1170,14 @@ public class RoadModule extends ConfigurableWorldModule {
 				if (isPath(tags)) {
 					width = DEFAULT_PATH_WIDTH;
 				}
-				else if ("service".equals(highwayValue)
-						|| "track".equals(highwayValue)) {
+				else if ("service".equals(highwayValue) || "track".equals(highwayValue)) {
 					if (tags.contains("service", "parking_aisle")) {
 						width = DEFAULT_LANE_WIDTH * 0.8f;
 					} else {
 						width = DEFAULT_LANE_WIDTH;
 					}
+				} else if ("platform".equals(highwayValue)) {
+					width = DEFAULT_LANE_WIDTH;
 				} else if ("motorway".equals(highwayValue)) {
 					width = 2.5f * DEFAULT_LANE_WIDTH;
 				}
