@@ -86,7 +86,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			List<Road> connectedRoads = getConnectedRoads(node, false);
 			
-			if (connectedRoads.size() > 2) {
+			if (connectedRoads.size() > 2 && connectedRoads.size() < 5) {
 				
 				node.addRepresentation(new RoadJunction(node));
 				
