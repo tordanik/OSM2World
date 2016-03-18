@@ -757,7 +757,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		extends AbstractNetworkWaySegmentWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
-		protected static final float DEFAULT_LANE_WIDTH = 3.6576f; // 12 feet
+		protected static final float DEFAULT_LANE_WIDTH = 3; 
+                protected static final float DEFAULT_PATH_WIDTH = 1f; 
 		
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
 		protected static final float DEFAULT_PATH_CLEARING = 2;
@@ -1167,9 +1168,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (!tags.containsKey("lanes") && !tags.containsKey("divider")) {
 								
 				if (isPath(tags)) {
-					width = 1f;
+					width = DEFAULT_PATH_WIDTH;
 				}
-				
 				else if ("service".equals(highwayValue)
 						|| "track".equals(highwayValue)) {
 					if (tags.contains("service", "parking_aisle")) {
