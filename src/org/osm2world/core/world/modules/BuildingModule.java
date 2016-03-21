@@ -1383,20 +1383,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public double getRoofHeight() {
-				return 0;
-			}
-
-			@Override
 			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
 				return getMaxRoofEle();
 			}
-			
-			@Override
-			public double getMaxRoofEle() {
-				return building.getGroundLevelEle() + heightWithoutRoof;
-			}
-			
 		}
 		
 		private class PyramidalRoof extends HeightfieldRoof {
