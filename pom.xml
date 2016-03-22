@@ -170,11 +170,9 @@
             <version>1.12</version>
         </dependency>
         <dependency>
-            <groupId>lp_solve55j</groupId>
-            <artifactId>lp_solve55j</artifactId>
-            <version>55</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/lp_solve/lpsolve55j.jar</systemPath>
+            <groupId>com.datumbox</groupId>
+            <artifactId>lpsolve</artifactId>
+            <version>5.5.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
