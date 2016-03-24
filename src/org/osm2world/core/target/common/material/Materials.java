@@ -95,6 +95,8 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial TARTAN =
 		new ConfMaterial(Interpolation.FLAT, new Color(206, 109, 90));
+	public static final ConfMaterial LIGHT =
+		new ConfMaterial(Interpolation.FLAT, new Color(211, 188, 53));
 	
 	public static final ConfMaterial ROAD_MARKING =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
@@ -257,6 +259,7 @@ public final class Materials {
 		surfaceMaterialMap.put("ground", GROUND);
 		surfaceMaterialMap.put("mulch", MULCH);
 		surfaceMaterialMap.put("garden", GARDEN);
+		surfaceMaterialMap.put("light", LIGHT);
 
 		try {
 			for (Field field : Materials.class.getFields()) {

@@ -1009,7 +1009,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
-			target.drawTriangleFan(material, vs, null);
+			target.drawTriangleFan(LIGHT, vs, null);
 			
 			// upper part
 			vs = new ArrayList<VectorXYZ>();
@@ -1020,7 +1020,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
-			target.drawTriangleFan(material, vs, null);
+			target.drawTriangleFan(LIGHT, vs, null);
 		}
 		
 	}
