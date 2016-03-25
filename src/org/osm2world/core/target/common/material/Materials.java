@@ -34,65 +34,65 @@ public final class Materials {
 	
 	/** material for "empty" ground */
 	public static final ConfMaterial TERRAIN_DEFAULT =
-		new ConfMaterial(Interpolation.SMOOTH, Color.GREEN);
+		new ConfMaterial(Interpolation.SMOOTH, new Color(255,255,240));
 	
 	public static final ConfMaterial WATER =
-		new ConfMaterial(Interpolation.FLAT, Color.BLUE);
+		new ConfMaterial(Interpolation.FLAT, new Color(235, 244, 250));
 	public static final ConfMaterial PURIFIED_WATER =
-			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
+		new ConfMaterial(Interpolation.FLAT, new Color(235, 244, 250));
 	
 	public static final ConfMaterial ASPHALT =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
+		new ConfMaterial(Interpolation.FLAT, new Color(142,142,142));
 	public static final ConfMaterial ASPHALT_LIGHT =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
+		new ConfMaterial(Interpolation.FLAT, new Color(193,193,193));
 	public static final ConfMaterial BRICK =
-		new ConfMaterial(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f));
+		new ConfMaterial(Interpolation.FLAT, new Color(165,70,70));
 	public static final ConfMaterial COBBLESTONE =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
+		new ConfMaterial(Interpolation.FLAT, new Color(205,205,205));
 	public static final ConfMaterial COLOR_BLUE =
 		new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 	public static final ConfMaterial CONCRETE =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f));
+		new ConfMaterial(Interpolation.FLAT, new Color(160,160,160));
 	public static final ConfMaterial EARTH =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0, 0));
+		new ConfMaterial(Interpolation.FLAT, new Color(210,190,160));
 	public static final ConfMaterial GROUND =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(208,193,157));
 	public static final ConfMaterial MULCH =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(255,165,0));
 	public static final ConfMaterial GLASS =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(201, 219, 220));
 	public static final ConfMaterial GRASS =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(57,93,51));
 	public static final ConfMaterial GARDEN =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(87,142,78));
 	public static final ConfMaterial SHORTGRASS =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(82,111,53));
 	public static final ConfMaterial LONGGRASS =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(61,151,40));
 	public static final ConfMaterial GRASS_PAVER =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
+		new ConfMaterial(Interpolation.FLAT, new Color(128,128,128));
 	public static final ConfMaterial SCRUB =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(175,85,0));
 	public static final ConfMaterial GRAVEL =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(86,82,87));
 	public static final ConfMaterial PAVING_STONE =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(153,151,154));
 	public static final ConfMaterial PAVED =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(153,151,154));
 	public static final ConfMaterial PEBBLESTONE =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(86,82,87));
 	public static final ConfMaterial PLASTIC =
 		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 0));
 	public static final ConfMaterial PLASTIC_GREY =
 		new ConfMaterial(Interpolation.FLAT, new Color(184, 184, 184));
 	public static final ConfMaterial SAND =
-		new ConfMaterial(Interpolation.FLAT, new Color(241, 233, 80));
+		new ConfMaterial(Interpolation.FLAT, new Color(194,178,128));
 	public static final ConfMaterial STEEL =
-		new ConfMaterial(Interpolation.FLAT, new Color(200, 200, 200));
+		new ConfMaterial(Interpolation.FLAT, new Color(72,99,160));
 	public static final ConfMaterial WOOD =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
+		new ConfMaterial(Interpolation.FLAT, new Color(150,111,51));
 	public static final ConfMaterial WOOD_WALL =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
+		new ConfMaterial(Interpolation.FLAT, new Color(150,111,51));
 	public static final ConfMaterial TARTAN =
 		new ConfMaterial(Interpolation.FLAT, new Color(206, 109, 90));
 	public static final ConfMaterial LIGHT =
@@ -101,23 +101,23 @@ public final class Materials {
 	public static final ConfMaterial ROAD_MARKING =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_DASHED =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_ZEBRA =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_CROSSING =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_ARROW_THROUGH =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_ARROW_THROUGH_RIGHT =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_ARROW_RIGHT =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ROAD_MARKING_ARROW_RIGHT_LEFT =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial RED_ROAD_MARKING =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.6f, 0.3f, 0.3f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.6f, 0.3f, 0.3f));
 	public static final ConfMaterial KERB =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(242,242,242));
 	public static final ConfMaterial STEPS_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, Color.DARK_GRAY);
 	public static final ConfMaterial HANDRAIL_DEFAULT =
@@ -128,28 +128,28 @@ public final class Materials {
 	public static final ConfMaterial RAIL_SLEEPER_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial RAIL_BALLAST_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, Color.DARK_GRAY);
+		new ConfMaterial(Interpolation.FLAT, new Color(204,204,204));
 	
 	public static final ConfMaterial BUILDING_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
+		new ConfMaterial(Interpolation.FLAT, new Color(240,235,230));
 	public static final ConfMaterial BUILDING_WINDOWS =
 		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
 	public static final ConfMaterial ROOF_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
+		new ConfMaterial(Interpolation.FLAT, new Color(238,221,221));
 	public static final ConfMaterial GLASS_ROOF =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+		new ConfMaterial(Interpolation.FLAT, new Color(57,93,51));
 	public static final ConfMaterial ENTRANCE_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.2f, 0, 0));
 	public static final ConfMaterial GARAGE_DOORS =
-			new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
+		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
 	
 	public static final ConfMaterial WALL_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, Color.GRAY);
+		new ConfMaterial(Interpolation.FLAT, new Color(167,74,72));
 	public static final ConfMaterial WALL_GABION =
 		new ConfMaterial(Interpolation.FLAT, Color.GRAY);
 	
 	public static final ConfMaterial HEDGE =
-		new ConfMaterial(Interpolation.FLAT, new Color(0,0.5f,0));
+		new ConfMaterial(Interpolation.FLAT, new Color(73,96,34));
 	
 	public static final ConfMaterial FENCE_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
@@ -158,7 +158,7 @@ public final class Materials {
 	public static final ConfMaterial CHAIN_LINK_FENCE =
 		new ConfMaterial(Interpolation.FLAT, new Color(188, 198, 204));
 	public static final ConfMaterial METAL_FENCE =
-		new ConfMaterial(Interpolation.FLAT, new Color(188, 198, 204));
+		new ConfMaterial(Interpolation.FLAT, new Color(188,198,204));
 	public static final ConfMaterial METAL_FENCE_POST =
 		new ConfMaterial(Interpolation.FLAT, new Color(188, 198, 204));
 		
@@ -208,23 +208,23 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
 	
 	public static final ConfMaterial SIGN_DE_625_21 =
-			new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
 	
 	public static final ConfMaterial GRITBIN_DEFAULT =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.4f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.4f));
 	
 	public static final ConfMaterial POSTBOX_DEUTSCHEPOST =
-			new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.8f, 0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.8f, 0f));
 	public static final ConfMaterial POSTBOX_ROYALMAIL =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
 	public static final ConfMaterial TELEKOM_MANGENTA =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.883f, 0f, 0.453f));
+		new ConfMaterial(Interpolation.FLAT, new Color(0.883f, 0f, 0.453f));
 	
 	public static final ConfMaterial FIREHYDRANT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
 
 	public static final ConfMaterial SOLAR_PANEL =
-			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
+		new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 	
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1),
