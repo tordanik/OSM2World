@@ -3,6 +3,7 @@ package org.osm2world.viewer.control.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -64,7 +65,16 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 			
 		}
 		
-		loadOSMFile(new OSMFileReader(osmFile), resetCamera);
+		try {
+			loadOSMData(new OSMFileReader(osmFile), resetCamera);
+		} catch (IOException e) {
+			
+			String msg = "File not found:\n" + osmFile;
+			
+			JOptionPane.showMessageDialog(viewerFrame, msg,
+					"Error", JOptionPane.ERROR_MESSAGE);
+			
+		}
 		
 		RecentFilesUpdater.addRecentFile(osmFile);
 		

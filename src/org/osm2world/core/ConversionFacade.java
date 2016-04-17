@@ -28,7 +28,7 @@ import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.osm.creation.JOSMFileReader;
+import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Renderable;
@@ -215,45 +215,11 @@ public class ConversionFacade {
 			throw new IllegalArgumentException("osmFile must not be null");
 		}
 		
-		OSMData osmData = null;
-		boolean useJOSMReader = false;
-		
-		if (JOSMFileReader.isJOSMGenerated(osmFile)) {
-			useJOSMReader = true;
-		} else {
-			
-			/* try to read file using Osmosis */
-			
-			try {
-				osmData = new OSMFileReader(osmFile).getData();
-			} catch (IOException e) {
-				
-				System.out.println("could not read file," +
-						" trying workaround for files created by JOSM");
-				
-				useJOSMReader = true;
-							
-			}
-			
-		}
-		
-		/* try reading the file while taking into account JOSM-specific extensions */
-		
-		if (useJOSMReader) {
-			
-			try {
-				osmData = new JOSMFileReader(osmFile).getData();
-			} catch (Exception e2) {
-				throw new IOException("could not read OSM file" +
-						" (not even with workaround for JOSM files)", e2);
-			}
-			
-		}
+		OSMData osmData = new OSMFileReader(osmFile).getData();
 		
 		return createRepresentations(osmData, worldModules, config, targets);
 		
 	}
-	
 	
 	/**
 	 * variant of
@@ -261,6 +227,7 @@ public class ConversionFacade {
 	 * that accepts {@link OSMData} instead of a file.
 	 * Use this when all data is already
 	 * in memory, for example with editor applications.
+	 * To obtain the data, you can use an {@link OSMDataReader}.
 	 * 
 	 * @param osmData       input data; != null
 	 * @param worldModules  modules that will create the {@link WorldObject}s

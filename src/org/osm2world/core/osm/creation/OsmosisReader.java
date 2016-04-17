@@ -29,7 +29,13 @@ import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 
-class OsmosisReader implements OSMDataReader {
+/**
+ * reads OSM data from an osmosis {@link RunnableSource}.
+ * Can also be used as a base class for other {@link OSMDataReader} implementations. 
+ */
+public class OsmosisReader implements OSMDataReader {
+	
+	private final RunnableSource source;
 	
 	private boolean complete = false;
 	
@@ -78,28 +84,10 @@ class OsmosisReader implements OSMDataReader {
 	 * @param source
 	 * 		a source providing the input data for the conversion
 	 */
-	protected OsmosisReader(RunnableSource reader) throws IOException {
-		
-		reader.setSink(sinkImplementation);
-		
-		Thread readerThread = new Thread(reader);
-		readerThread.start();
-		
-		while (readerThread.isAlive()) {
-			try {
-				readerThread.join();
-			} catch (InterruptedException e) { /* do nothing */
-			}
-		}
-		
-		if (!isComplete()) {
-			throw new IOException("couldn't read from data source");
-		}
-		
-		convertToOwnRepresentation();
-		
+	protected OsmosisReader(RunnableSource source) {
+		this.source = source;
 	}
-		
+	
 	private void convertToOwnRepresentation() {
 		
 		ownNodes = new ArrayList<OSMNode>(nodesById.size());
@@ -209,7 +197,26 @@ class OsmosisReader implements OSMDataReader {
 	}
 	
 	@Override
-	public OSMData getData() {
+	public OSMData getData() throws IOException {
+
+		source.setSink(sinkImplementation);
+		
+		Thread readerThread = new Thread(source);
+		readerThread.start();
+		
+		while (readerThread.isAlive()) {
+			try {
+				readerThread.join();
+			} catch (InterruptedException e) { /* do nothing */
+			}
+		}
+		
+		if (!isComplete()) {
+			throw new IOException("couldn't read from data source");
+		}
+		
+		convertToOwnRepresentation();
+		
 		return new OSMData(bounds, ownNodes, ownWays, ownRelations);
 	}
 	

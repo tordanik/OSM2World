@@ -15,6 +15,7 @@ public final class CLIArgumentsUtil {
 	
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE};
 	public static enum OutputMode {OBJ, POV, PNG, PPM};
+	public static enum InputMode {FILE, OVERPASS};
 	
 	private CLIArgumentsUtil() { }
 	
@@ -26,9 +27,24 @@ public final class CLIArgumentsUtil {
 		
 		if (getProgramMode(args) == CONVERT) {
 			
-			if (!args.isInput() || !args.isOutput()) {
-				return "input and output are required arguments" +
-						" for a conversion";
+			switch (args.getInputMode()) {
+			
+			case FILE:
+				if (!args.isInput()) {
+					return "input file parameter is required (or choose a different input mode)";
+				}
+				break;
+				
+			case OVERPASS:
+				if (!args.isInputQuery() && !args.isInputBoundingBox()) {
+					return "either a bounding box or a query string is required for Overpass"; 
+				}
+				break;
+				
+			}
+			
+			if (!args.isOutput()) {
+				return "output file parameter is missing";
 			}
 			
 			if (args.isOviewTiles() && args.getOviewTiles().isEmpty()) {

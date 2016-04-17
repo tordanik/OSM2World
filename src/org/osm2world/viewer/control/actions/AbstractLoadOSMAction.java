@@ -16,6 +16,7 @@ import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.util.functions.DefaultFactory;
+import org.osm2world.core.util.functions.Factory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
@@ -38,7 +39,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 		
 	}
 	
-	protected void loadOSMFile(OSMDataReader dataReader, boolean resetCamera) {
+	protected void loadOSMData(OSMDataReader dataReader, boolean resetCamera) {
 		
 		LoadOSMThread thread = new LoadOSMThread(dataReader, resetCamera);
 		thread.setUncaughtExceptionHandler(
@@ -79,7 +80,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 								
 				try {
 					
-					data.loadOSMFile(osmFile, failOnLargeBBox,
+					data.loadOSMData(dataReader, failOnLargeBBox,
 							new DefaultFactory<TerrainInterpolator>(
 									renderOptions.getInterpolatorClass()),
 							new DefaultFactory<EleConstraintEnforcer>(

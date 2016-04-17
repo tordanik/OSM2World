@@ -15,17 +15,28 @@ import org.osm2world.core.map_data.creation.LatLon;
 
 public class OverpassReader extends OsmosisReader {
 	
+	public static final String DEFAULT_API_URL = "http://www.overpass-api.de/api/interpreter";
+	
 	/** fetches data within a bounding box from Overpass API */
-	public OverpassReader(LatLon min, LatLon max) throws IOException {
-		// FIXME not just nodes!
-		//this("node("+min.lat+","+min.lon+","+max.lat+","+max.lon+");out meta;");
-		this("(node("+min.lat+","+min.lon+","+max.lat+","+max.lon+");rel(bn)->.x;way("+min.lat+","+min.lon+","+max.lat+","+max.lon+");node(w)->.x;rel(bw););out meta;");
+	public OverpassReader(LatLon min, LatLon max) {
+		this(DEFAULT_API_URL, min, max);
+	}
+	
+	/** fetches data within a bounding box from any Overpass API instance */
+	public OverpassReader(String apiURL, LatLon min, LatLon max) {
+		this(apiURL, "[bbox:"+min.lat+","+min.lon+","+max.lat+","+max.lon+"];(node;rel(bn)->.x;way;node(w)->.x;rel(bw););out meta;");
 	}
 	
 	/** fetches data from Overpass API according to an arbitrary query
 	 * @throws IOException */
-	public OverpassReader(String queryString) throws IOException {
-		super(new OverpassSource(queryString));
+	public OverpassReader(String queryString) {
+		this(DEFAULT_API_URL, queryString);
+	}
+	
+	/** fetches data from any Overpass API instance according to an arbitrary query.
+	 * @throws IOException */
+	public OverpassReader(String apiURL, String queryString) {
+		super(new OverpassSource(apiURL, queryString));
 	}
 	
 	/**
@@ -33,13 +44,13 @@ public class OverpassReader extends OsmosisReader {
 	 */
 	private static class OverpassSource implements RunnableSource {
 		
-		private static final String API_URL = "http://www.overpass-api.de/api/interpreter";
-		
+		private final String apiURL;		
 		private final String queryString;
 		
 		private Sink sink;
 		
-		public OverpassSource(String queryString) {
+		public OverpassSource(String apiURL, String queryString) {
+			this.apiURL = apiURL;
 			this.queryString = queryString;
 		}
 		
@@ -53,9 +64,9 @@ public class OverpassReader extends OsmosisReader {
 			
 			try {
 				
-				URL apiURL = new URL(API_URL);
+				URL url = new URL(apiURL);
 				
-				HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
+				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
 				connection.setDoOutput(true);
 				connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");

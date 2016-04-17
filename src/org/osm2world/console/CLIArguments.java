@@ -3,6 +3,8 @@ package org.osm2world.console;
 import java.io.File;
 import java.util.List;
 
+import org.osm2world.console.CLIArgumentsUtil.InputMode;
+import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.TileNumber;
 
@@ -12,7 +14,7 @@ public interface CLIArguments {
 	
 	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|pov|png|ppm)";
 	
-	/* input and output */
+	/* input and output files */
 	
 	@Option(description="the .osm input file", shortName="i")
 	File getInput();
@@ -30,6 +32,25 @@ public interface CLIArguments {
 			defaultValue="800,600")
 	Resolution getResolution();
 	boolean isResolution();
+	
+	/* other input options */
+	
+	@Option(description="input mode", longName="input_mode", defaultValue="FILE", pattern="FILE|OVERPASS")
+	InputMode getInputMode();
+	boolean isInputMode();
+	
+	@Option(description="lat,lon pairs defining an input bounding box (does not work with files)",
+			longName="input_bbox", pattern=LatLonEle.PATTERN)
+	List<LatLonEle> getInputBoundingBox();
+	boolean isInputBoundingBox();
+	
+	@Option(description="overpass query string", longName="input_query")
+	String getInputQuery();
+	boolean isInputQuery();
+	
+	@Option(description="overpass instance to use", longName="overpass_url", defaultValue=OverpassReader.DEFAULT_API_URL)
+	String getOverpassURL();
+	boolean isOverpassURL();
 	
 	/* camera */
 	
