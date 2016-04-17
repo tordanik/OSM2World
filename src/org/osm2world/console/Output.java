@@ -9,12 +9,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+
+import static java.lang.Double.*;
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.console.CLIArgumentsUtil.InputMode;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
@@ -27,6 +31,9 @@ import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.osm.creation.OSMDataReader;
+import org.osm2world.core.osm.creation.OSMFileReader;
+import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
@@ -34,6 +41,8 @@ import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 import org.osm2world.core.util.functions.DefaultFactory;
+
+import sun.awt.SunToolkit.InfiniteLoop;
 
 public final class Output {
 
@@ -44,6 +53,50 @@ public final class Output {
 		throws IOException {
 		
 		long start = System.currentTimeMillis();
+		
+		OSMDataReader dataReader = null;
+		
+		switch (argumentsGroup.getRepresentative().getInputMode()) {
+		
+		case FILE:
+			dataReader = new OSMFileReader(argumentsGroup.getRepresentative().getInput());
+			break;
+		
+		case OVERPASS:
+			if (argumentsGroup.getRepresentative().isInputBoundingBox()) {
+				
+				double minLat = POSITIVE_INFINITY;
+				double maxLat = NEGATIVE_INFINITY;
+				double minLon = POSITIVE_INFINITY;
+				double maxLon = NEGATIVE_INFINITY;
+				
+				for (LatLonEle l : argumentsGroup.getRepresentative().getInputBoundingBox()) {
+					if (l.lat < minLat) {
+						minLat = l.lat;
+					}
+					if (l.lat > maxLat) {
+						maxLat = l.lat;
+					}
+					if (l.lon < minLon) {
+						minLon = l.lon;
+					}
+					if (l.lon > maxLon) {
+						maxLon = l.lon;
+					}
+				}
+								
+				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(),
+						new LatLon(minLat, minLon), new LatLon(maxLat, maxLon));
+				
+			} else { //due to input validation, there needs to be either a query or bounding box for Overpass input mode
+				assert argumentsGroup.getRepresentative().isInputQuery();
+				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(),
+						argumentsGroup.getRepresentative().getInputQuery());
+			}
+			break;
+			 
+		}
+		
 		
 		ConversionFacade cf = new ConversionFacade();
 		PerformanceListener perfListener =
@@ -74,8 +127,7 @@ public final class Output {
 					new DefaultFactory<EleConstraintEnforcer>(LPEleConstraintEnforcer.class));
 		}
 		
-		Results results = cf.createRepresentations(
-				argumentsGroup.getRepresentative().getInput(), null, config, null);
+		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
 		
 		ImageExporter exporter = null;
 		
