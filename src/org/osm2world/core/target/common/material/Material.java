@@ -213,7 +213,7 @@ public abstract class Material {
 	}
 	
 	public String toString() {
-		return String.format("{%s, #%06x, a%3f, d%3f, s%3f, sh%3f, %d tex",
+		return String.format("{%s, #%06x, a%3f, d%3f, s%3f, sh%d, %d tex, ",
 				interpolation, color.getRGB() & 0x00ffffff, ambientFactor,
 				diffuseFactor, specularFactor, shininess, textureDataList.size())
 				+ transparency + shadow + ambientOcclusion
