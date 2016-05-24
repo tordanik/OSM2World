@@ -13,4 +13,9 @@ public class LatLon {
 		this.lon = lon;
 	}
 	
+	@Override
+	public String toString() {
+		return "(" + lat + ", " + lon + ")";
+	}
+	
 }

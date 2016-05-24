@@ -12,6 +12,8 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.osm.creation.OSMDataReader;
+import org.osm2world.core.osm.creation.StrictOSMFileReader;
 import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
@@ -38,7 +40,7 @@ public class Data extends Observable {
 	 * @param enforcerFactory
 	 * 
 	 */
-	public void loadOSMFile(File osmFile, boolean failOnLargeBBox,
+	public void loadOSMData(OSMDataReader reader, boolean failOnLargeBBox,
 			Factory<? extends TerrainInterpolator> interpolatorFactory,
 			Factory<? extends EleConstraintEnforcer> enforcerFactory,
 			ProgressListener listener)
@@ -46,7 +48,11 @@ public class Data extends Observable {
 		
 		try {
 			
-			this.osmFile = osmFile;
+			if (reader instanceof StrictOSMFileReader) {
+				this.osmFile = ((StrictOSMFileReader)reader).getFile();
+			} else {
+				this.osmFile = null;
+			}
 			
 			ConversionFacade converter = new ConversionFacade();
 			converter.setTerrainEleInterpolatorFactory(interpolatorFactory);
@@ -59,7 +65,7 @@ public class Data extends Observable {
 			}
 			
 			conversionResults = converter.createRepresentations(
-					osmFile, null, config, null);
+					reader.getData(), null, config, null);
 			
 		} catch (IOException e) {
 			

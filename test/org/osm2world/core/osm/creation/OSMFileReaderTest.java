@@ -12,14 +12,14 @@ import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 
 
-public class OsmosisReaderTest {
+public class OSMFileReaderTest {
 	
 	@Test
 	public void testValidFile() throws IOException {
 		
 		File testFile = new File("test"+File.separator+"files"
 				+File.separator+"validFile.osm");
-		OSMData osmData = new OsmosisReader(testFile).getData();
+		OSMData osmData = new StrictOSMFileReader(testFile).getData();
 		
 		assertSame(4, osmData.getNodes().size());
 		assertSame(1, osmData.getWays().size());

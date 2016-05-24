@@ -62,10 +62,19 @@ public class CLIArgumentsGroup {
 		
 		return CLIArgumentsUtil.getProgramMode(args1) == CONVERT
 			&& CLIArgumentsUtil.getProgramMode(args2) == CONVERT
-			&& args1.getInput().equals(args2.getInput())
+			&& bothNullOrEqual(args1.getInputMode(), args2.getInputMode())
+			&& bothNullOrEqual(args1.getInput(), args2.getInput())
+			&& bothNullOrEqual(args1.getInputQuery(), args2.getInputQuery())
+			&& bothNullOrEqual(args1.getInputBoundingBox(), args2.getInputBoundingBox())
+			&& bothNullOrEqual(args1.getOverpassURL(), args2.getOverpassURL())
 			&& ((args1.isConfig() && args1.getConfig().equals(args2.getConfig()))
 					|| (!args1.isConfig() && !args2.isConfig()));
-				
+		
+	}
+	
+	private static final boolean bothNullOrEqual(Object o1, Object o2) {
+		return (o1 == null && o2 == null)
+				|| (o1 != null && o1.equals(o2));
 	}
 
 }
