@@ -138,6 +138,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	private static boolean isOneway(TagGroup tags) {
 		return tags.contains("oneway", "yes")
+                        || tags.contains("junction", "roundabout")
 				|| (!tags.contains("oneway", "no")
 					&& (tags.contains("highway", "motorway")
 					|| (tags.contains("highway", "motorway_link"))));
@@ -889,6 +890,10 @@ public class RoadModule extends ConfigurableWorldModule {
 					vehicleLaneCount = getDefaultLanes(tags);
 				} else {
 					vehicleLaneCount = (int)(float) lanes;
+				}
+				// default roundabouts to at least 2 lanes
+    				if ( tags.contains("junction", "roundabout")){
+					if ( vehicleLaneCount < 2 ) vehicleLaneCount = 2;
 				}
 
 				if (lanesRight != null) {
