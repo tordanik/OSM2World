@@ -25,6 +25,7 @@ import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -301,18 +302,22 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			if (textureData == null || textureData.colorable) {
 				writeColorLine("Ka", material.ambientColor());
 				writeColorLine("Kd", material.diffuseColor());
-				//Ks
+				writeColorLine("Ks", multiplyColor(material.ambientColor(), material.getSpecularFactor()));
 				//Ns
 			} else {
 				writeColorLine("Ka", multiplyColor(WHITE, material.getAmbientFactor()));
 				writeColorLine("Kd", multiplyColor(WHITE, 1 - material.getAmbientFactor()));
-				//Ks
+                                writeColorLine("Ks", multiplyColor(WHITE, material.getSpecularFactor()));
 				//Ns
 			}
 		
 			if (textureData != null) {
 				mtlStream.println("map_Ka " + textureData.file.getName());
 				mtlStream.println("map_Kd " + textureData.file.getName());
+                                
+				if ( material.getTransparency() == TRUE ){
+                                    mtlStream.println("d 0.5");
+				}
 			}
 			mtlStream.println();
 		}
