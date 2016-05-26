@@ -96,7 +96,7 @@ public final class Materials {
 	public static final ConfMaterial TARTAN =
 		new ConfMaterial(Interpolation.FLAT, new Color(206, 109, 90));
 	public static final ConfMaterial LIGHT =
-		new ConfMaterial(Interpolation.FLAT, new Color(211, 188, 53));
+		new ConfMaterial(Interpolation.FLAT, new Color(211, 188, 53)).setShininess(1000).setDiffuseFactor(0.3f);
 	
 	public static final ConfMaterial ROAD_MARKING =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
