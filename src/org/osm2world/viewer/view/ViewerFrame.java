@@ -31,6 +31,7 @@ import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.viewer.control.actions.AboutAction;
+import org.osm2world.viewer.control.actions.ChangeTimeAction;
 import org.osm2world.viewer.control.actions.ConfigShadersAction;
 import org.osm2world.viewer.control.actions.DownloadOverpassAction;
 import org.osm2world.viewer.control.actions.ExitAction;
@@ -299,6 +300,7 @@ public class ViewerFrame extends JFrame {
 				
 			}
 
+			subMenu.add(new ChangeTimeAction(this));
 			subMenu.add(new ConfigShadersAction(this, data.getConfig()));
 			
 			menu.add(subMenu);
