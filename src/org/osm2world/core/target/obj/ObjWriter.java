@@ -171,7 +171,7 @@ public final class ObjWriter {
 		
 		mtlStream.println("# This file was created by OSM2World "
 				+ GlobalValues.VERSION_STRING + " - "
-				+ GlobalValues.OSM2WORLD_URI + "\n");
+				+ GlobalValues.OSM2WORLD_URI + "\n\n");
 		
 	}
 			

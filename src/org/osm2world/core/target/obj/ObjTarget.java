@@ -282,27 +282,30 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			}
 		
 			mtlStream.println("newmtl " + name + "_" + i);
+                        mtlStream.println("Ns 92.156863");
 			
 			if (textureData == null || textureData.colorable) {
 				writeColorLine("Ka", material.ambientColor());
 				writeColorLine("Kd", material.diffuseColor());
-				writeColorLine("Ks", multiplyColor(material.ambientColor(), material.getSpecularFactor()));
-				//Ns
 			} else {
 				writeColorLine("Ka", multiplyColor(WHITE, material.getAmbientFactor()));
 				writeColorLine("Kd", multiplyColor(WHITE, 1 - material.getAmbientFactor()));
-                                writeColorLine("Ks", multiplyColor(WHITE, material.getSpecularFactor()));
-				//Ns
 			}
+			mtlStream.println(String.format("Ks %f %f %f", material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor()));
+                        mtlStream.println(String.format("Ke %f %f %f", 0f, 0f, 0f));
 		
 			if (textureData != null) {
 				mtlStream.println("map_Ka " + textureData.file.getName());
 				mtlStream.println("map_Kd " + textureData.file.getName());
-                                
-				if ( material.getTransparency() == TRUE ){
-                                    mtlStream.println("d 0.5");
-				}
 			}
+                        mtlStream.println(String.format("Ni %d", material.getShininess()));
+                        float diffuse = 1;
+			if ( material.getTransparency() == TRUE ){
+				diffuse = 0.5f;
+			}
+			mtlStream.println(String.format("d %f", diffuse));
+                        mtlStream.println("illum 2");
+                        
 			mtlStream.println();
 		}
 	}
