@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Calendar;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -105,6 +108,17 @@ public class ImageExporter {
 			} else {
 				System.err.println("incorrect color value: "
 						+ config.getString(BG_COLOR_KEY));
+			}
+		}
+
+		if (config.containsKey("timeAndDate")) {
+			try {
+				SimpleDateFormat format = new SimpleDateFormat("MMM dd HH:mm");
+				Calendar c = Calendar.getInstance();
+				c.setTime(format.parse(config.getString("timeAndDate")));
+				clearColor = GlobalLightingParameters.DEFAULT.setTime(c);
+			} catch (ParseException e) {
+				System.err.println("Invalid date (MMM dd HH:mm): " + config.getString("timeAndDate"));
 			}
 		}
 		
