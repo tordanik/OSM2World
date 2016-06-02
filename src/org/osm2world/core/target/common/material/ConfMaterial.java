@@ -34,45 +34,55 @@ public class ConfMaterial extends Material {
 		super(interpolation, color);
 	}
 	
-	public void setInterpolation(Interpolation interpolation) {
+	public ConfMaterial setInterpolation(Interpolation interpolation) {
 		this.interpolation = interpolation;
+		return this;
 	}
 	
-	public void setColor(Color color) {
+	public ConfMaterial setColor(Color color) {
 		this.color = color;
+		return this;
 	}
 	
-	public void setAmbientFactor(float ambientFactor) {
+	public ConfMaterial setAmbientFactor(float ambientFactor) {
 		this.ambientFactor = ambientFactor;
+		return this;
 	}
 	
-	public void setDiffuseFactor(float diffuseFactor) {
+	public ConfMaterial setDiffuseFactor(float diffuseFactor) {
 		this.diffuseFactor = diffuseFactor;
+		return this;
 	}
 	
-	public void setSpecularFactor(float specularFactor) {
+	public ConfMaterial setSpecularFactor(float specularFactor) {
 		this.specularFactor = specularFactor;
+		return this;
 	}
 	
-	public void setShininess(int shininess) {
+	public ConfMaterial setShininess(int shininess) {
 		this.shininess = shininess;
+		return this;
 	}
 	
-	public void setTransparency(Transparency transparency) {
+	public ConfMaterial setTransparency(Transparency transparency) {
 		this.transparency = transparency;
+		return this;
 	}	
 	
-	public void setShadow(Shadow shadow) {
+	public ConfMaterial setShadow(Shadow shadow) {
 		this.shadow = shadow;
+		return this;
 	}
 	
-	public void setAmbientOcclusion(AmbientOcclusion ao) {
+	public ConfMaterial setAmbientOcclusion(AmbientOcclusion ao) {
 		this.ambientOcclusion = ao;
+		return this;
 	}
 	
-	public void setTextureDataList(List<TextureData> textureDataList) {
+	public ConfMaterial setTextureDataList(List<TextureData> textureDataList) {
 		this.textureDataList = textureDataList;
 		this.updateBumpMap();
+		return this;
 	}
 	
 	/*

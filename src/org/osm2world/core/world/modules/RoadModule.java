@@ -86,7 +86,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			List<Road> connectedRoads = getConnectedRoads(node, false);
 			
-			if (connectedRoads.size() > 2) {
+			if (connectedRoads.size() > 2 && connectedRoads.size() < 5) {
 				
 				node.addRepresentation(new RoadJunction(node));
 				
@@ -138,6 +138,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	private static boolean isOneway(TagGroup tags) {
 		return tags.contains("oneway", "yes")
+                        || tags.contains("junction", "roundabout")
 				|| (!tags.contains("oneway", "no")
 					&& (tags.contains("highway", "motorway")
 					|| (tags.contains("highway", "motorway_link"))));
@@ -205,6 +206,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			} else {
 				result = EARTH;
 			}
+                } else if (tags.contains("highway", "footway")) {
+                    result = PAVED;
 		} else {
 			result = defaultSurface;
 		}
@@ -755,7 +758,8 @@ public class RoadModule extends ConfigurableWorldModule {
 		extends AbstractNetworkWaySegmentWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 		
-		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
+		protected static final float DEFAULT_LANE_WIDTH = 3; 
+                protected static final float DEFAULT_PATH_WIDTH = 1f; 
 		
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
 		protected static final float DEFAULT_PATH_CLEARING = 2;
@@ -886,6 +890,10 @@ public class RoadModule extends ConfigurableWorldModule {
 					vehicleLaneCount = getDefaultLanes(tags);
 				} else {
 					vehicleLaneCount = (int)(float) lanes;
+				}
+				// default roundabouts to at least 2 lanes
+    				if ( tags.contains("junction", "roundabout")){
+					if ( vehicleLaneCount < 2 ) vehicleLaneCount = 2;
 				}
 
 				if (lanesRight != null) {
@@ -1165,28 +1173,25 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (!tags.containsKey("lanes") && !tags.containsKey("divider")) {
 								
 				if (isPath(tags)) {
-					width = 1f;
+					width = DEFAULT_PATH_WIDTH;
 				}
-				
-				else if ("service".equals(highwayValue)
-						|| "track".equals(highwayValue)) {
+				else if ("service".equals(highwayValue) || "track".equals(highwayValue)) {
 					if (tags.contains("service", "parking_aisle")) {
 						width = DEFAULT_LANE_WIDTH * 0.8f;
 					} else {
 						width = DEFAULT_LANE_WIDTH;
 					}
-				} else if ("primary".equals(highwayValue) || "secondary".equals(highwayValue)) {
-					width = 2 * DEFAULT_LANE_WIDTH;
+				} else if ("platform".equals(highwayValue)) {
+					width = DEFAULT_LANE_WIDTH;
 				} else if ("motorway".equals(highwayValue)) {
 					width = 2.5f * DEFAULT_LANE_WIDTH;
 				}
-				
 				else if (tags.containsKey("oneway") && !tags.getValue("oneway").equals("no")) {
 					width = DEFAULT_LANE_WIDTH;
 				}
-				
 				else {
-					width = 4;
+					// default, assume a normal road with 2 lanes
+					width = 2 * DEFAULT_LANE_WIDTH;
 				}
 				
 			}

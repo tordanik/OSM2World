@@ -25,6 +25,7 @@ import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -236,11 +237,27 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 	private String formatVector(Object v) {
 		
 		if (v instanceof VectorXYZ) {
+			                    
 			VectorXYZ vXYZ = (VectorXYZ)v;
-			return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
+			if ( !Double.isNaN(vXYZ.x) && !Double.isNaN(vXYZ.y) && !Double.isNaN(vXYZ.z))
+			{
+				return vXYZ.x + " " + vXYZ.y + " " + (-vXYZ.z);
+			}
+			else
+			{
+				return "0 0 0";
+			}
 		} else {
 			VectorXZ vXZ = (VectorXZ)v;
-			return vXZ.x + " " + vXZ.z;
+                        
+			if ( !Double.isNaN(vXZ.x) && !Double.isNaN(vXZ.z))
+			{
+				return vXZ.x + " " + vXZ.z;
+			}
+			else
+			{
+				return "0 0";
+			}
 		}
 		
 	}
@@ -281,23 +298,30 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			}
 		
 			mtlStream.println("newmtl " + name + "_" + i);
+                        mtlStream.println("Ns 92.156863");
 			
 			if (textureData == null || textureData.colorable) {
 				writeColorLine("Ka", material.ambientColor());
 				writeColorLine("Kd", material.diffuseColor());
-				//Ks
-				//Ns
 			} else {
 				writeColorLine("Ka", multiplyColor(WHITE, material.getAmbientFactor()));
 				writeColorLine("Kd", multiplyColor(WHITE, 1 - material.getAmbientFactor()));
-				//Ks
-				//Ns
 			}
+			mtlStream.println(String.format("Ks %f %f %f", material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor()));
+                        mtlStream.println(String.format("Ke %f %f %f", 0f, 0f, 0f));
 		
 			if (textureData != null) {
-				mtlStream.println("map_Ka " + textureData.file);
-				mtlStream.println("map_Kd " + textureData.file);
+				mtlStream.println("map_Ka " + textureData.file.getName());
+				mtlStream.println("map_Kd " + textureData.file.getName());
 			}
+                        mtlStream.println(String.format("Ni %d", material.getShininess()));
+                        float diffuse = 1;
+			if ( material.getTransparency() == TRUE ){
+				diffuse = 0.5f;
+			}
+			mtlStream.println(String.format("d %f", diffuse));
+                        mtlStream.println("illum 2");
+                        
 			mtlStream.println();
 		}
 	}

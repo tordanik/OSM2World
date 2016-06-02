@@ -662,15 +662,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 			
 			/* determine defaults for building type */
 			
-			int defaultLevels = 3;
+			int defaultLevels = 2;
 			double defaultHeightPerLevel = 2.5;
 			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
 			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
 			Material defaultMaterialWindows = Materials.BUILDING_WINDOWS;
-			String defaultRoofShape = "flat";
-			
+			String defaultRoofShape = "gabled";
+
 			String buildingValue = getValue("building");
-			
+
 			if ("greenhouse".equals(buildingValue)) {
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
@@ -682,6 +682,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWall = Materials.CONCRETE;
 				defaultMaterialRoof = Materials.CONCRETE;
 				defaultMaterialWindows = Materials.GARAGE_DOORS;
+				defaultRoofShape= "flat";
 			} else if ("hut".equals(buildingValue)
 					|| "shed".equals(buildingValue)) {
 				defaultLevels = 1;
@@ -696,10 +697,28 @@ public class BuildingModule extends ConfigurableWorldModule {
 					|| "hangar".equals(buildingValue)
 					|| "industrial".equals(buildingValue)) {
 				defaultMaterialWindows = null;
+				defaultLevels = 3;
 			} else {
 				if (getValue("building:levels") == null) {
 					defaultMaterialWindows = null;
 				}
+			}
+                        
+			// Don't give glass buildings windows
+			if ("glass".equals(getValue("building:material")))
+			{
+				defaultMaterialWindows = null;
+			}
+                        
+			if ("multi-storey".equals(getValue("parking")))
+			{
+				defaultLevels = 5;
+				defaultMaterialWindows = null;
+			}
+
+			if ( getValue("building:part") != null)
+			{
+				defaultRoofShape = "flat";
 			}
 			
 			/* determine levels */
@@ -783,13 +802,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/* determine height */
 			
 			double fallbackHeight = buildingLevels * defaultHeightPerLevel;
-			
 			fallbackHeight += roof.getRoofHeight();
 			
 			fallbackHeight = parseHeight(buildingTags, (float)fallbackHeight);
 			
 			double height = parseHeight(tags, (float)fallbackHeight);
-		    heightWithoutRoof = height - roof.getRoofHeight();
+
+			// Make sure buildings have at least some height
+			height = Math.max(height, 0.001);
+                        
+			heightWithoutRoof = height - roof.getRoofHeight();
 			
 			/* determine materials */
 		    
@@ -1361,20 +1383,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public double getRoofHeight() {
-				return 0;
-			}
-
-			@Override
 			public Double getRoofEleAt_noInterpolation(VectorXZ pos) {
 				return getMaxRoofEle();
 			}
-			
-			@Override
-			public double getMaxRoofEle() {
-				return building.getGroundLevelEle() + heightWithoutRoof;
-			}
-			
 		}
 		
 		private class PyramidalRoof extends HeightfieldRoof {

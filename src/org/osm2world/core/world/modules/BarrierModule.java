@@ -19,6 +19,8 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
+import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+import static org.osm2world.core.math.GeometryUtil.isBetween;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -48,9 +50,13 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new Hedge(line));
 		} else if (ChainLinkFence.fits(tags)) {
 			line.addRepresentation(new ChainLinkFence(line, tags));
-		} else if (Fence.fits(tags)) {
-			line.addRepresentation(new Fence(line, tags));
-		}
+		} else if (CableBarrier.fits(tags)) {
+			line.addRepresentation(new CableBarrier(line, tags));
+                } else if (HandRail.fits(tags)) {
+			line.addRepresentation(new HandRail(line, tags));
+		} else if (PoleFence.fits(tags)) {
+			line.addRepresentation(new PoleFence(line, tags));
+                }
 			
 	}
 	
@@ -215,7 +221,7 @@ public class BarrierModule extends AbstractModule {
 		
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "fence")
-					&& tags.contains("fence_type", "chain_link");
+					&& (tags.contains("fence_type", "chain_link") || (tags.contains("fence_type", "metal") || (tags.contains("fence_type", "railing") ) ) );
 		}
 		
 		public ChainLinkFence(MapWaySegment segment, TagGroup tags) {
@@ -249,92 +255,139 @@ public class BarrierModule extends AbstractModule {
 					texCoordListsFenceBack);
 						
 			/* render poles */
-			
-			//TODO connect the poles to the ground independently
-			
 			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
 					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
-			for (VectorXZ polePosition : polePositions) {
-//				TODO draw poles again
-//				VectorXYZ base = polePosition.xyz(segment.getElevationProfile().getEleAt(polePosition));
-//				target.drawColumn(CHAIN_LINK_FENCE_POST, null, base,
-//						height, width, width, false, true);
-//
+                        
+			for (VectorXZ pos : polePositions) {
+                                
+                                VectorXYZ base = null;
+                                
+                                for (int i = 0; i + 1 < pointsWithEle.size(); i++) {
+				
+                                    if (isBetween(pos, pointsWithEle.get(i).xz(), pointsWithEle.get(i+1).xz())) {
+    					base = interpolateElevation(pos, pointsWithEle.get(i), pointsWithEle.get(i+1));
+                                        break;
+                                    }
+                                }
+				target.drawColumn(Materials.METAL_FENCE_POST, null, base,
+						height, width, width, false, true);
 			}
 			
-		}
-		
+		}	
 	}
-	
-	private static class Fence extends LinearBarrier {
-		
+        
+        private static class PoleFence extends LinearBarrier {
+		private Material material;
+		protected float barWidth;
+		protected float barGap;
+                protected float barOffset;
+		protected int bars;
+                protected Material defaultFenceMaterial = Materials.WOOD;
+                protected Material defaultPoleMaterial = Materials.WOOD;
+                protected Material poleMaterial;
+                
 		public static boolean fits(TagGroup tags) {
-			return tags.contains("barrier", "fence");
+                        return tags.contains("barrier", "fence");
 		}
 		
-		private static final Map<String, Material> MATERIAL_MAP;
-		static {
-			MATERIAL_MAP = new HashMap<String, Material>();
-			MATERIAL_MAP.put("split_rail", Materials.SPLIT_RAIL_FENCE);
-		}
-		
-		private final Material material;
-		
-		public Fence(MapWaySegment segment, TagGroup tags) {
-			super(segment, 0.5f, 0.1f);
-			
-			Material materialFromMap = MATERIAL_MAP.get(tags.getValue("fence_type"));
-			if (materialFromMap != null) {
-				material = materialFromMap;
-			} else {
-				material = Materials.FENCE_DEFAULT;
-			}
-			
+		public PoleFence(MapWaySegment segment, TagGroup tags) {
+			super(segment, 1f, 0.02f);
+			if ( tags.containsKey("material") ){
+                                material = Materials.getMaterial(tags.getValue("material").toUpperCase());
+                                poleMaterial = material;
+                        }
+                        
+			this.barWidth = 0.1f;
+			this.barGap = 0.2f;
+			this.bars = 10;
+                        this.barOffset = barGap/2;
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			
-			List<VectorXYZ> baseline = getCenterline();
-			
-			/* render bars */
-			
-			List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(
-					baseline,
-					0.2f * height, 0.5f * height);
-			List<VectorXYZ> vsLowBack = createVerticalTriangleStrip(
-					baseline,
-					0.5f * height, 0.2f * height);
-			
-			target.drawTriangleStrip(material, vsLowFront, null);
-			target.drawTriangleStrip(material, vsLowBack, null);
 
-			List<VectorXYZ> vsHighFront = createVerticalTriangleStrip(
-					baseline,
-					0.65f * height, 0.95f * height);
-			List<VectorXYZ> vsHighBack = createVerticalTriangleStrip(
-					baseline,
-					0.95f * height, 0.65f * height);
+			if ( material == null ) {
+                                material = defaultFenceMaterial;
+                                poleMaterial = defaultPoleMaterial;
+			}
+                                        
+			List<VectorXYZ> baseline = getCenterline();
+                        
+			/* render fence */
+			for(int i=0; i<bars; i++){
+                                float barEndHeight = height - (i * barGap) - barOffset;
+                                float barStartHeight = barEndHeight - barWidth;
+                    
+                                if ( barStartHeight > 0 ){
+    					List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(baseline, barStartHeight, barEndHeight );
+    					List<VectorXYZ> vsLowBack = createVerticalTriangleStrip(baseline, barEndHeight, barStartHeight);
 			
-			target.drawTriangleStrip(material, vsHighFront, null);
-			target.drawTriangleStrip(material, vsHighBack, null);
-			
+    					target.drawTriangleStrip(material, vsLowFront, null);
+    					target.drawTriangleStrip(material, vsLowBack, null);
+                                }
+			}
+
+                        
 			/* render poles */
-			
-			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(1f, false,
+			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
 					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
-			for (VectorXZ polePosition : polePositions) {
-//				TODO draw poles again
-//				VectorXYZ base = polePosition.xyz(segment.getElevationProfile().getEleAt(polePosition));
-//				target.drawColumn(material, null , base, height, width, width, false, true);
-			
+                        
+			for (VectorXZ pos : polePositions) {
+                                
+                                VectorXYZ base = null;
+                                
+                                for (int i = 0; i + 1 < baseline.size(); i++) {
+				
+                                    if (isBetween(pos, baseline.get(i).xz(), baseline.get(i+1).xz())) {
+    					base = interpolateElevation(pos, baseline.get(i), baseline.get(i+1));
+                                        break;
+                                    }
+                                }
+				target.drawColumn(poleMaterial, null, base,
+						height, width, width, false, true);
 			}
 			
+		}	
+	}
+        
+        private static class CableBarrier extends PoleFence {
+                
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "cable_barrier");
 		}
 		
+		public CableBarrier(MapWaySegment segment, TagGroup tags) {
+			super(segment, tags);
+                        
+			this.barWidth = 0.03f;
+			this.barGap = 0.1f;
+			this.bars = 4;
+			this.barOffset = barGap/2;
+                 
+                        this.defaultFenceMaterial = Materials.METAL_FENCE;
+                        this.defaultPoleMaterial = Materials.METAL_FENCE_POST;
+		}
 	}
+        
+        private static class HandRail extends PoleFence {
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "handrail");
+		}
+		
+		public HandRail(MapWaySegment segment, TagGroup tags) {
+			super(segment, tags);
+                        
+			this.barWidth = 0.05f;
+			this.barGap = 0f;
+			this.bars = 1;
+			this.barOffset = 0;
+                        
+                        this.defaultFenceMaterial = Materials.COLOR_BLUE;
+                        this.defaultPoleMaterial = Materials.COLOR_BLUE;
+		}
+        }
 	
 	private static class Bollard extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {

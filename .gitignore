@@ -2,10 +2,16 @@ bin
 build
 .
 ..
+.*.swp
+*~
 .bzr
 .bzrignore
 .classpath
 .project
+/nbproject
+nbbuild.xml
 doc/javadoc
 /nbproject/private/
 /dist/
+/textures
+/target/

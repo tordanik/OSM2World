@@ -20,12 +20,17 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("amenity", "swimming_pool"));
 		areaTags.add(new Tag("leisure", "pitch"));
 		areaTags.add(new Tag("leisure", "swimming_pool"));
+		areaTags.add(new Tag("landuse", "recreation_ground"));
+		areaTags.add(new Tag("leisure", "playground"));
+		areaTags.add(new Tag("leisure", "park"));
 		areaTags.add(new Tag("natural", "beach"));
 		areaTags.add(new Tag("natural", "sand"));
 		areaTags.add(new Tag("natural", "water"));
 		areaTags.add(new Tag("natural", "wood"));
+		areaTags.add(new Tag("natural", "scrub"));
 		areaTags.add(new Tag("power", "generator"));
 		areaTags.add(new Tag("waterway", "riverbank"));
+		areaTags.add(new Tag("leisure", "garden"));
 		
 		areaKeys.add("building");
 		areaKeys.add("building:part");

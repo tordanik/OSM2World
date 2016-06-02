@@ -50,7 +50,7 @@ public class ParkingModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 			
 			String surface = area.getTags().getValue("surface");
-			Material material = getSurfaceMaterial(surface, ASPHALT);
+			Material material = getSurfaceMaterial(surface, ASPHALT_LIGHT);
 			
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
