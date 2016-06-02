@@ -21,6 +21,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.Material.Transparency;
 
 import com.jogamp.opengl.math.FloatUtil;
@@ -175,6 +176,14 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (!super.setMaterial(material, textureManager))
 			return false;
 
+		if(material == Materials.TERRAIN_DEFAULT || material == Materials.GRASS || material == Materials.EARTH || material == Materials.WATER)
+		{
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProcedural"), 1);
+			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "colorDeviation"), 0.04f, 0.04f, 0.03f);
+		}
+		else
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProcedural"), 0);
+
 		int numTexLayers = 0;
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
@@ -182,7 +191,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		
 		/* set color / lighting */
 		
-		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
+		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable || material == Materials.TERRAIN_DEFAULT || material == Materials.GRASS || material == Materials.EARTH || material == Materials.WATER) {
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(material.getColor()));
 		} else {
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(Color.WHITE));

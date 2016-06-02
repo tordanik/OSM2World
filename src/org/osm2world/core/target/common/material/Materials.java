@@ -34,10 +34,10 @@ public final class Materials {
 	
 	/** material for "empty" ground */
 	public static final ConfMaterial TERRAIN_DEFAULT =
-		new ConfMaterial(Interpolation.SMOOTH, Color.GREEN);
+		new ConfMaterial(Interpolation.SMOOTH, new Color(150,150,100));
 	
 	public static final ConfMaterial WATER =
-		new ConfMaterial(Interpolation.FLAT, Color.BLUE);
+		new ConfMaterial(Interpolation.FLAT, new Color(77, 114, 133));
 	public static final ConfMaterial PURIFIED_WATER =
 			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 	
@@ -50,11 +50,11 @@ public final class Materials {
 	public static final ConfMaterial CONCRETE =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f));
 	public static final ConfMaterial EARTH =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0, 0));
+		new ConfMaterial(Interpolation.FLAT, new Color(79, 67, 34));
 	public static final ConfMaterial GLASS =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial GRASS =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+		new ConfMaterial(Interpolation.FLAT, new Color(69, 107, 63));
 	public static final ConfMaterial GRASS_PAVER =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
 	public static final ConfMaterial GRAVEL =
