@@ -12,6 +12,7 @@ import java.util.Map;
 
 import java.util.function.Supplier;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -45,66 +46,62 @@ public class ShaderDialog extends JDialog {
 		JPanel panel = new JPanel();
 		BorderLayout layout = new BorderLayout();
 		panel.setLayout(layout);
+		panel.setMaximumSize(new Dimension(500,500));
 
-		JPanel optionsPane = new JPanel();
-		optionsPane.setLayout(new GridLayout(0, 3));
-		//optionsPane.setLayout(new BoxLayout(optionsPane, BoxLayout.PAGE_AXIS));
-		optionsPane.setBackground(Color.WHITE);
+		JPanel headerPane = new JPanel();
+
+		headerPane.setBackground(Color.WHITE);
+		headerPane.setLayout(new GridLayout(0,3));
 		
-		JScrollPane scrollPane = new JScrollPane(optionsPane, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setMaximumSize(new Dimension(750,500));
-		scrollPane.setPreferredSize(new Dimension(750,500));
+		JScrollPane scrollPane = new JScrollPane(headerPane
+						, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+						, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+					);
 
-		optionsPane.add(Box.createGlue());
-		optionsPane.add(new JLabel("Viewer"));
-		optionsPane.add(new JLabel("Export"));
+		panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0,0,10,0));
 
-		//viewerSettings = new JCheckBox[changeable.length];
-		//exportSettings = new JCheckBox[changeable.length];
+
+		headerPane.add(Box.createGlue());
+		headerPane.add(new JLabel("Viewer"));
+		headerPane.add(new JLabel("Export"));
 
 		Iterator<String> keyIter = config.getKeys();
+
+		int textBoxWidth = 200;
 
 		while(keyIter.hasNext())
 		{
 			String key = keyIter.next();
-			optionsPane.add(new JLabel(key));
+			headerPane.add(new JLabel(key));
 			try {
 				boolean value = config.getBoolean(key);
 				JCheckBox box = new JCheckBox();
 				box.setSelected(value);
-				optionsPane.add(box);
+				headerPane.add(box);
 				viewerSettings.add(()->box.isSelected()?"true":"false");
 			} catch (ConversionException e) {
 				try {
 					int value = config.getInt(key);
 					JSpinner spinner = new JSpinner();
 					spinner.setValue(value);
-					optionsPane.add(spinner);
+					headerPane.add(spinner);
 					viewerSettings.add(()->((Integer)spinner.getValue()).toString());
 				} catch (ConversionException e1) {
 					JTextField text = new JTextField(config.getString(key));
-					optionsPane.add(text);
+					text.setMaximumSize(new Dimension(200,50));
+					headerPane.add(text);
 					viewerSettings.add(text::getText);
 				}
 			}
 			finally
 			{
-				optionsPane.add(Box.createGlue());
+				headerPane.add(Box.createGlue());
 			}
-		/*for(int i = 0; i < changeable.length; i++)
-		{
-			// Add the option title
-			optionsPane.add(new JLabel(changeable[i]));
-
-			viewerSettings[i] = new JCheckBox();
-			optionsPane.add(viewerSettings[i]);
-
-			exportSettings[i] = new JCheckBox();
-			optionsPane.add(exportSettings[i]);*/
 		}
 
 		// Center
-		panel.add(scrollPane);
+		panel.add(scrollPane, BorderLayout.CENTER);
 
 		// South
 		JButton apply = new JButton("Apply");
@@ -124,7 +121,6 @@ public class ShaderDialog extends JDialog {
 		buttonPane.add(apply);
 
 		panel.add(buttonPane, BorderLayout.SOUTH);
-
 
 		this.add(panel);
 		this.pack();
