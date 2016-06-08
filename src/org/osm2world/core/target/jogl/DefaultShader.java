@@ -19,6 +19,7 @@ import javax.media.opengl.GL3;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
+import org.osm2world.core.target.common.ProceduralTextureData;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -176,14 +177,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (!super.setMaterial(material, textureManager))
 			return false;
 
-		if(material == Materials.TERRAIN_DEFAULT || material == Materials.GRASS || material == Materials.EARTH || material == Materials.WATER)
-		{
-			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProcedural"), 1);
-			gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "colorDeviation"), 0.04f, 0.04f, 0.03f);
-		}
-		else
-			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProcedural"), 0);
-
 		int numTexLayers = 0;
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
@@ -191,7 +184,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		
 		/* set color / lighting */
 		
-		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable || material == Materials.TERRAIN_DEFAULT || material == Materials.GRASS || material == Materials.EARTH || material == Materials.WATER) {
+		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(material.getColor()));
 		} else {
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(Color.WHITE));
@@ -218,78 +211,98 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		}
 	    for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
 	    	if (i < numTexLayers) {
-				gl.glActiveTexture(getGLTextureConstant(i));
-				TextureData textureData = material.getTextureDataList().get(i);
-				Texture texture = textureManager.getTextureForFile(textureData.file);
+				if(material.getTextureDataList().get(i).isProcedural) {
+					// Texture layer is procedural
+	    			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProc["+i+"]"), 1);
+					gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 1);
 
-				texture.bind(gl);
-				
-				if (textureData.isBumpMap) {
-		    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
+					// assert tex instanceof ProceduralTextureData;
+					ProceduralTextureData tex = (ProceduralTextureData)material.getTextureDataList().get(i);
+
+					float baseColor[] = tex.baseColor.getRGBComponents(null);
+					float deviation[] = tex.deviation.getRGBComponents(null);
+
+					gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "procColor["+i+"]"), baseColor[0], baseColor[1], baseColor[2]);
+					gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "procDev["+i+"]"), deviation[0], deviation[1], deviation[2]);
+
+	    			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "procXScale["+i+"]"), tex.xScale);
+	    			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "procYScale["+i+"]"), tex.yScale);
 				} else {
-		    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 1);
-				
-					/* enable anisotropic filtering (note: this could be a
-					 * per-texture setting, but currently isn't) */
+	    			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProc["+i+"]"), 0);
+
+					gl.glActiveTexture(getGLTextureConstant(i));
+					TextureData textureData = material.getTextureDataList().get(i);
+					Texture texture = textureManager.getTextureForFile(textureData.file);
+
+					texture.bind(gl);
 					
-			        if (gl.isExtensionAvailable("GL_EXT_texture_filter_anisotropic")) {
+					if (textureData.isBumpMap) {
+						gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
+					} else {
+						gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 1);
+					
+						/* enable anisotropic filtering (note: this could be a
+						 * per-texture setting, but currently isn't) */
 						
-			        	if (ANISOTROPIC_FILTERING) {
+						if (gl.isExtensionAvailable("GL_EXT_texture_filter_anisotropic")) {
 							
-							float max[] = new float[1];
-							gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, max, 0);
-							
-							gl.glTexParameterf(GL_TEXTURE_2D,
-									GL_TEXTURE_MAX_ANISOTROPY_EXT,
-									max[0]);
-							
-						} else {
-							
-							gl.glTexParameterf(GL_TEXTURE_2D,
-									GL_TEXTURE_MAX_ANISOTROPY_EXT,
-									1.0f);
+							if (ANISOTROPIC_FILTERING) {
+								
+								float max[] = new float[1];
+								gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, max, 0);
+								
+								gl.glTexParameterf(GL_TEXTURE_2D,
+										GL_TEXTURE_MAX_ANISOTROPY_EXT,
+										max[0]);
+								
+							} else {
+								
+								gl.glTexParameterf(GL_TEXTURE_2D,
+										GL_TEXTURE_MAX_ANISOTROPY_EXT,
+										1.0f);
+								
+							}
 							
 						}
-						
-			        }
-				}
-		        
-				/* wrapping behavior */
-		        
-				int wrap = 0;
-				
-				switch (textureData.wrap) {
-				case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
-				case REPEAT: wrap = GL_REPEAT; break;
-				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
-				}
-				
-				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
-		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-		        
-		        
-		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
-		        	
-		        	/* TODO: make the RGB configurable -  for some reason,
-		        	 * it shows up in lowzoom even if fully transparent */
-		        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
-		        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
-		        	
-		        }
-
-		        int loc;
-		        if (textureData.isBumpMap) {
-		        	loc = gl.glGetUniformLocation(shaderProgram, "BumpMap");
-			        if (loc < 0) {
-			        	//throw new RuntimeException("BumpMap not found in shader program.");
-			        }
-				} else {
-					loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
-					if (loc < 0) {
-						//throw new RuntimeException("Tex["+i+"] not found in shader program.");
 					}
+					
+					/* wrapping behavior */
+					
+					int wrap = 0;
+					
+					switch (textureData.wrap) {
+					case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
+					case REPEAT: wrap = GL_REPEAT; break;
+					case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
+					}
+					
+					gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+					gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+					
+					
+					if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+						
+						/* TODO: make the RGB configurable -  for some reason,
+						 * it shows up in lowzoom even if fully transparent */
+						gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
+								getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
+						
+					}
+
+					int loc;
+					if (textureData.isBumpMap) {
+						loc = gl.glGetUniformLocation(shaderProgram, "BumpMap");
+						if (loc < 0) {
+							//throw new RuntimeException("BumpMap not found in shader program.");
+						}
+					} else {
+						loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
+						if (loc < 0) {
+							//throw new RuntimeException("Tex["+i+"] not found in shader program.");
+						}
+					}
+					gl.glUniform1i(loc, getGLTextureNumber(i));
 				}
-		        gl.glUniform1i(loc, getGLTextureNumber(i));
 	    	} else {
 	    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
 	    	}

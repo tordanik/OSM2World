@@ -7,7 +7,6 @@
 	
 uniform bool isShadowed;
 uniform bool useLighting;
-uniform bool useProcedural;
 struct LightInfo {
 	vec4 Position; // Light position in world coords.
 	vec3 La; // Ambient light intensity
@@ -25,9 +24,6 @@ struct MaterialInfo {
 };
 uniform MaterialInfo Material;
 
-uniform vec3 targetColor; // Material color
-uniform vec3 colorDeviation; // Material color
-
 uniform mat4 ModelViewMatrix;
 uniform mat4 ProjectionMatrix;
  
@@ -42,6 +38,13 @@ in vec2 TexCoord1;
 in vec2 TexCoord2;
 in vec2 TexCoord3;
 
+uniform vec3 procColor[MAX_TEXTURE_LAYERS];
+uniform vec3 procDev[MAX_TEXTURE_LAYERS];
+
+uniform float procXScale[MAX_TEXTURE_LAYERS];
+uniform float procYScale[MAX_TEXTURE_LAYERS];
+
+uniform bool useProc[MAX_TEXTURE_LAYERS];
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
@@ -240,27 +243,53 @@ void main()
 	vec4 texColor = vec4(1.0);
 
 	// apply textures
-	if( useProcedural ) {
-		float p = perlin(TexCoord0, 50.0, 50.0) * 2 - 1;
-		texColor = vec4(Material.Color + (colorDeviation * p), 1.0);
-	} else {
-		// TODO: autogenerate based on MAX_TEXTURE_LAYERS
-		if ( useTexture[0] ) {
+	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
+	if ( useTexture[0] ) {
+		if(useProc[0]) {
+			float p = perlin(TexCoord0, procXScale[0], procYScale[0]) * 2 - 1;
+			texColor = vec4(procColor[0] + (procDev[0] * p), 1.0);
+		} else {
 			texColor = texture( Tex[0], TexCoord0 );
 		}
-		texColor = texColor * vec4(Material.Color, 1.0); // color first layer only
-		if ( useTexture[1] ) {
-			vec4 layerColor = texture( Tex[1], TexCoord1 );
-			texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
+	}
+	texColor = texColor * vec4(Material.Color, 1.0); // color first layer only
+
+	if ( useTexture[1] ) {
+		vec4 layerColor;
+		
+		if(useProc[1]) {
+			float p = perlin(TexCoord1, procXScale[1], procYScale[1]) * 2 - 1;
+			layerColor = vec4(procColor[1] + (procDev[1] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[1], TexCoord1 );
 		}
-		if ( useTexture[2] ) {
-			vec4 layerColor = texture( Tex[2], TexCoord2 );
-			texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
+
+		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
+	}
+
+	if ( useTexture[2] ) {
+		vec4 layerColor;
+		
+		if(useProc[2]) {
+			float p = perlin(TexCoord2, procXScale[2], procYScale[2]) * 2 - 1;
+			layerColor = vec4(procColor[2] + (procDev[2] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[2], TexCoord1 );
 		}
-		if ( useTexture[3] ) {
-			vec4 layerColor = texture( Tex[3], TexCoord3 );
-			texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
+
+		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
+	}
+	if ( useTexture[3] ) {
+		vec4 layerColor;
+		
+		if(useProc[3]) {
+			float p = perlin(TexCoord3, procXScale[3], procYScale[3]) * 2 - 1;
+			layerColor = vec4(procColor[3] + (procDev[3] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[3], TexCoord1 );
 		}
+
+		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	
 	if ( useLighting ) {

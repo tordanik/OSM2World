@@ -35,9 +35,15 @@ public class TextureData {
 	public final boolean colorable;
 	
 	public final boolean isBumpMap;
+	public final boolean isProcedural;
 
 	public TextureData(File file, double width, double height, Wrap wrap,
 			TexCoordFunction texCoordFunction, boolean colorable, boolean isBumpMap) {
+		this(file, width, height, wrap, texCoordFunction, colorable, isBumpMap, false);
+	}
+
+	public TextureData(File file, double width, double height, Wrap wrap,
+			TexCoordFunction texCoordFunction, boolean colorable, boolean isBumpMap, boolean isProcedural) {
 		
 		this.file = file;
 		this.width = width;
@@ -46,8 +52,9 @@ public class TextureData {
 		this.coordFunction = texCoordFunction;
 		this.colorable = colorable;
 		this.isBumpMap = isBumpMap;
-		
+		this.isProcedural = isProcedural;
 	}
+
 
 	//auto-generated
 	@Override
