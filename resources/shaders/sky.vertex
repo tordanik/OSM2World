@@ -1,0 +1,17 @@
+/* Simple vertex shader for drawing a 2d geometry with texture to screen
+ */
+#version 130
+ 
+// per vertex input
+in vec2 VertexPosition;
+
+// output to fragment shader for interpolation
+out vec4 FragCoord;
+ 
+void main()
+{
+	FragCoord = vec4(VertexPosition.x, VertexPosition.y, 0.0, 1.0);
+	gl_Position = vec4(VertexPosition.x, VertexPosition.y, 0.0, 1.0);
+} 
+
+

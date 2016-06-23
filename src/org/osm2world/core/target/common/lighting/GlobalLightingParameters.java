@@ -18,7 +18,8 @@ public class GlobalLightingParameters {
 	 * null disables it and leaves only ambient lighting
 	 */
 	public VectorXYZ lightFromDirection;
-	
+	public float intensity = 1.0f;
+
 	public Color lightColorDiffuse;
 	public Color lightColorSpecular;
 	
@@ -39,8 +40,8 @@ public class GlobalLightingParameters {
 
 	public Color setTime(Calendar date)
 	{
-		double lon = 48.57;
-		double lat = 13.46;
+		double lon = 0;//48.75;
+		double lat = 0;//13.46;
 
 		System.out.println("Calculating sun position on: " + date.getTime().toString() + "...");
 		int days = date.get(Calendar.DAY_OF_YEAR);
@@ -85,7 +86,7 @@ public class GlobalLightingParameters {
 		System.out.println("------------------");
 		System.out.println("");
 
-		// OSM to World uses left handed coordinate system, so switch y and z
+		// OSM to World uses y up coordinate system, so switch y and z
 		lightFromDirection = new VectorXYZ(x, z, y);
 
 
@@ -104,8 +105,10 @@ public class GlobalLightingParameters {
 		else
 			globalAmbientColor = night;
 
+		/*
 		if(Math.toDegrees(elevationAngle) < 0)
 			lightFromDirection = new VectorXYZ(-x, -z, y);
+		*/
 
 		if(Math.toDegrees(elevationAngle) > 8)
 			return new Color(64, 156, 255);
@@ -121,8 +124,8 @@ public class GlobalLightingParameters {
 	
 	public static final GlobalLightingParameters DEFAULT =
 			new GlobalLightingParameters(
-					new Color(1.0f, 0.7f, 0.8f),
-					new VectorXYZ(1.0, -1.0, 0.0),
+					new Color(1.0f, 1.0f, 1.0f),
+					new VectorXYZ(0.0, 1.0, 0.0),
 					Color.WHITE,
 					Color.WHITE);
 	
