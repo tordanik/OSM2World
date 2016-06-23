@@ -38,6 +38,13 @@ in vec2 TexCoord1;
 in vec2 TexCoord2;
 in vec2 TexCoord3;
 
+uniform vec3 procColor[MAX_TEXTURE_LAYERS];
+uniform vec3 procDev[MAX_TEXTURE_LAYERS];
+
+uniform float procXScale[MAX_TEXTURE_LAYERS];
+uniform float procYScale[MAX_TEXTURE_LAYERS];
+
+uniform bool useProc[MAX_TEXTURE_LAYERS];
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
@@ -183,6 +190,52 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 	//occlusion = occlusion / float(uKernelSize);
 	return occlusion;
 }
+
+float rand(vec2 seed)
+{
+	return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453 );
+}
+
+float interpolate(float a, float b, float x)
+{
+	return a + x * (b - a);
+}
+
+float fade(float t)
+{
+	return t * t * t * (t * (t * 6 - 15) + 10); 
+}
+
+
+float perlin(vec2 texCoord, float xScale, float yScale)
+{
+	texCoord.x = texCoord.x * xScale;
+	texCoord.y = texCoord.y * yScale;
+
+	// Calculate the adjacent integer corners
+	vec2 corners[4];
+	corners[0] = vec2(floor(texCoord.x), floor(texCoord.y));
+	corners[1] = corners[0] + vec2(1, 0);
+	corners[2] = corners[0] + vec2(1, 1);
+	corners[3] = corners[0] + vec2(0, 1);
+
+	vec2 gradients[4];
+	gradients[0] = vec2( 1, 1);
+	gradients[1] = vec2(-1, 1);
+	gradients[2] = vec2(-1,-1);
+	gradients[3] = vec2( 1,-1);
+
+	// Calculate the influence at each corner
+	float influence[4];
+	for(int i = 0; i < 4; i++)
+		influence[i] = dot(texCoord - corners[i], gradients[int(rand(corners[i]) * 3)]); 
+
+	// Interpolate the influence
+	float tx = interpolate(influence[0], influence[1], fade(fract(texCoord.x)));
+	float bx = interpolate(influence[3], influence[2], fade(fract(texCoord.x)));
+
+	return interpolate(tx, bx, fade(fract(texCoord.y)));
+}
  
 void main()
 {
@@ -192,19 +245,50 @@ void main()
 	// apply textures
 	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
 	if ( useTexture[0] ) {
-		texColor = texture( Tex[0], TexCoord0 );
+		if(useProc[0]) {
+			float p = perlin(TexCoord0, procXScale[0], procYScale[0]) * 2 - 1;
+			texColor = vec4(procColor[0] + (procDev[0] * p), 1.0);
+		} else {
+			texColor = texture( Tex[0], TexCoord0 );
+		}
 	}
 	texColor = texColor * vec4(Material.Color, 1.0); // color first layer only
+
 	if ( useTexture[1] ) {
-		vec4 layerColor = texture( Tex[1], TexCoord1 );
+		vec4 layerColor;
+		
+		if(useProc[1]) {
+			float p = perlin(TexCoord1, procXScale[1], procYScale[1]) * 2 - 1;
+			layerColor = vec4(procColor[1] + (procDev[1] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[1], TexCoord1 );
+		}
+
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
+
 	if ( useTexture[2] ) {
-		vec4 layerColor = texture( Tex[2], TexCoord2 );
+		vec4 layerColor;
+		
+		if(useProc[2]) {
+			float p = perlin(TexCoord2, procXScale[2], procYScale[2]) * 2 - 1;
+			layerColor = vec4(procColor[2] + (procDev[2] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[2], TexCoord1 );
+		}
+
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	if ( useTexture[3] ) {
-		vec4 layerColor = texture( Tex[3], TexCoord3 );
+		vec4 layerColor;
+		
+		if(useProc[3]) {
+			float p = perlin(TexCoord3, procXScale[3], procYScale[3]) * 2 - 1;
+			layerColor = vec4(procColor[3] + (procDev[3] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[3], TexCoord1 );
+		}
+
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	

@@ -84,7 +84,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
 		}
-		
+
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);
 		if (material.getTransparency() == Transparency.BINARY) {
@@ -92,7 +92,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		}
 
 	    for (int i = 0; i < DefaultShader.MAX_TEXTURE_LAYERS; i++) {
-	    	if (i < numTexLayers) {
+	    	if (i < numTexLayers && !material.getTextureDataList().get(i).isProcedural) {
 				gl.glActiveTexture(getGLTextureConstant(i));
 				TextureData textureData = material.getTextureDataList().get(i);
 				if (textureData.isBumpMap) {
@@ -176,3 +176,4 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		return -1; // unused
 	}
 }
+
