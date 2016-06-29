@@ -19,6 +19,8 @@ public class SkyShader extends AbstractShader {
 	private int invProjID;
 	private int invViewID;
 
+	private int scatterColorID;
+
 	public SkyShader(GL3 gl) {
 		super(gl, "/shaders/sky");
 		
@@ -31,6 +33,8 @@ public class SkyShader extends AbstractShader {
 
 		invProjID = gl.glGetUniformLocation(shaderProgram, "inv_proj");
 		invViewID = gl.glGetUniformLocation(shaderProgram, "inv_view");
+
+		scatterColorID = gl.glGetUniformLocation(shaderProgram, "Kr");
 		
 		this.validateShader();
 	}
@@ -88,6 +92,11 @@ public class SkyShader extends AbstractShader {
 				, (float) sun.lightFromDirection.y
 				, (float) sun.lightFromDirection.z);
 		gl.glUniform1f(intensityID, sun.intensity);
+		gl.glUniform3f(scatterColorID
+				, (float) sun.scatterColor.getRed() / 255.0f
+				, (float) sun.scatterColor.getGreen() / 255.0f
+				, (float) sun.scatterColor.getBlue() / 255.0f);
+		System.out.println(sun.scatterColor);
 	}
 	
 	/**

@@ -62,7 +62,7 @@ public class DaylightDialog extends JDialog
 
 		time.setSnapToTicks(true);
 		time.setMajorTickSpacing(15);
-		time.setMinorTickSpacing(15);
+		time.setMinorTickSpacing(1);
 
 		time.addChangeListener(
 				(e) -> {

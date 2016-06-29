@@ -9,12 +9,10 @@ uniform float sunIntensity;
 uniform mat4 inv_proj;
 uniform mat4 inv_view;
 
-uniform float step_count = 10.0;
-
 // How much the atmosphere scatters each channel
-uniform vec3 Kr = vec3(
-			0.3, 0.5, 0.8
-		);
+uniform vec3 Kr;
+
+uniform float step_count = 10.0;
 
 
 // corresponds with output from vertex shader, gets interpolated
@@ -34,16 +32,12 @@ float phase(float alpha, float g){
 	return (a/b)*(c/d);
 }
 
-float atmospheric_depth(vec3 position, vec3 dir){
-	// pitch + pi / 2
-	float pitch = asin(dir.y);
-	float a = pitch + 1.5708;
-	float sina = sin(a);
-
-	// Handle the edge case where sina ~= 0
-	if(abs(pitch-1.5708) < 0.2) return 1 - position.y;
-
-	return sin(3.14159 - a - asin(position.y * sina))/sina;
+// Calculates how far a ray at a certain altitude has to travel a certain
+// direction before it leaves the atmosphere where 0 is the center of the
+// earth and 1 is the edge of the atmosphere
+float atmospheric_depth(float alt, vec3 dir){
+	float d = dir.y;
+	return sqrt(alt*alt * (d*d-1) + 1) - alt*d;
 }
 
 // Calculates how much light is blocked by the horizon
@@ -52,6 +46,7 @@ float horizon_extinction(vec3 position, vec3 dir, float radius){
 	if(u<0.0){
 		return 1.0;
 	}
+
 	vec3 near = position + u*dir;
 	if(length(near) < radius){
 		return 0.0;
@@ -70,33 +65,32 @@ vec3 extinction(float dist, vec3 color, float factor){
 
 void main()
 {
-	float rayleigh_brightness = 1.0;
+	float rayleigh_brightness = 0.7;
 	float mie_brightness = 1.0;
 
 	// Ratio of earth radius to radius + atmosphere
 	float surface_height = 0.9953;
-	float scatter_strength = 1.0;
+	float scatter_strength = 0.1;
 
 	// Size of mie scattering particles
-	float mie_distribution = 0.9999;
+	float mie_distribution = 0.99995;
 
 	// Calculate the vector from the camera to the fragment
 	vec4 device_normal = vec4(FragCoord.xy, 0, 1.0);
-	vec3 eye_normal = normalize((inv_proj * device_normal).xyz);
+	vec3 eye_normal = ((inv_proj * device_normal).xyz);
 	vec3 eyeVector = normalize(mat3(inv_view) * eye_normal);
 
-	// Measure of how parrallel the eye and sun vectors are
-	float alpha = dot(eyeVector, sunVector);
-
 	// Calculates a factor for each type of scattering based on the size
-	// of the particles, and the relative brightness
-	float rayleigh_factor = phase(alpha, 0.0)*rayleigh_brightness;
-	float mie_factor = phase(alpha, mie_distribution)*mie_brightness;
+	// of the particles and the angle between the sun and view directions
+	float alpha = dot(eyeVector, sunVector);
+	float rayleigh_phase = phase(alpha, 0.0);
+	float mie_phase = phase(alpha, mie_distribution);
 
 
-	// How much atmosphere does a ray coming from the eye have to travel through
+	// Calculate how big steps we should take so that there are exactly step_count
+	// steps between the eye and the edge of the atmosphere
 	vec3 eye_position = vec3(0.0, surface_height, 0.0);
-	float eye_depth = atmospheric_depth(eye_position, eyeVector.xyz);
+	float eye_depth = atmospheric_depth(eye_position.y, eyeVector.xyz);
 	float step_length = eye_depth / float(step_count);
 
 	vec3 rayleigh_collected = vec3(0.0, 0.0, 0.0);
@@ -107,44 +101,46 @@ void main()
 		float sample_distance = step_length*float(i);
 		vec3 position = eye_position + eyeVector.xyz*sample_distance;
 
-		float hextinction = horizon_extinction(
-				position, sunVector, surface_height-0.35
+		// How much light from the sun to the sample point is extincted
+		// by the horizon
+		float sun_extinction = horizon_extinction(
+				position, sunVector, surface_height-0.01
 			);
 
 		// How much of the ray cast from the eye to the sun is in the atmosphere
-		float sample_depth = atmospheric_depth(position, sunVector);
+		float sample_depth = atmospheric_depth(position.y, sunVector);
 
 		// Amount of sunlight that makes it through the atmosphere to the sample position
-		vec3 influx = extinction(sample_depth, vec3(sunIntensity), scatter_strength)*hextinction;
+		vec3 influx = extinction(sample_depth, vec3(sunIntensity), scatter_strength) * sun_extinction;
 
 		// Amount of light that is in-scattered due to each type of scattering and makes it through
 		// the atmosphere from the sample point to the viewer
-		rayleigh_collected += extinction(sample_distance, Kr*influx, scatter_strength);
-		mie_collected += extinction(sample_distance, influx, scatter_strength);
+		rayleigh_collected += extinction(sample_distance, Kr * influx * rayleigh_phase, scatter_strength);
+		mie_collected += extinction(sample_distance, influx * mie_phase, scatter_strength);
 	}
 
 	// Calculate the horizon
 	float eye_extinction = horizon_extinction(
-			    eye_position, eyeVector.xyz, surface_height-0.15
+			    eye_position, eyeVector.xyz, surface_height - 0.01
 			);
 
 	// Apply the horizon and scale the result
 	rayleigh_collected = (
 			rayleigh_collected *
 			eye_extinction
-		)/float(step_count);
+		) / step_count;
 
 	mie_collected = (
 			mie_collected *
 			eye_extinction
-		)/float(step_count);
+		) / step_count;
 
 
 	// Calculate the final color by apply the amount of light that is inscattered
 	vec3 color = vec3(
-			mie_factor * mie_collected +
-			rayleigh_collected
+			mie_brightness * mie_collected +
+			rayleigh_brightness * rayleigh_collected
 		);
-	FragColor = vec4(color, 0);
+	FragColor = vec4(color, 1.0);
 } 
 

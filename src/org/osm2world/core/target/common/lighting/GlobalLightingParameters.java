@@ -11,6 +11,8 @@ import org.osm2world.core.math.VectorXYZ;
 public class GlobalLightingParameters {
 	
 	// TODO Make it so these don't have to be public and mutable
+	// Construct one of these from `Configuration` and pass it through
+	// to everything that needs it instead of exposing it publicly
 	public Color globalAmbientColor;
 	
 	/**
@@ -22,6 +24,7 @@ public class GlobalLightingParameters {
 
 	public Color lightColorDiffuse;
 	public Color lightColorSpecular;
+	public Color scatterColor = new Color(0.55f, 0.7f, 0.8f);
 	
 	private GlobalLightingParameters(
 			Color globalAmbientLight, VectorXYZ lightFromDirection,
@@ -105,10 +108,13 @@ public class GlobalLightingParameters {
 		else
 			globalAmbientColor = night;
 
-		/*
-		if(Math.toDegrees(elevationAngle) < 0)
-			lightFromDirection = new VectorXYZ(-x, -z, y);
-		*/
+		// Moonlight
+		// if(Math.toDegrees(elevationAngle) < 0) {
+		//	lightFromDirection = new VectorXYZ(-x, -z, y);
+		//	intensity = 0.3f;
+		// }
+		// else
+		// 	intensity = 1.0f;
 
 		if(Math.toDegrees(elevationAngle) > 8)
 			return new Color(64, 156, 255);

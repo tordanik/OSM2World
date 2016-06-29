@@ -3,6 +3,9 @@ package org.osm2world.viewer.view;
 import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
 
+import static org.osm2world.core.util.ConfigUtil.*;
+
+import java.awt.Color;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +33,7 @@ import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ChangeTimeAction;
 import org.osm2world.viewer.control.actions.ConfigShadersAction;
@@ -117,6 +121,12 @@ public class ViewerFrame extends JFrame {
 		
 		this.configFile = configFile;
 		data.setConfig(config);
+
+		// TODO Move this somewhere better
+		if (config.containsKey("scatterColor")) {
+			Color scatterColor = parseColor(config.getString("scatterColor"));
+			GlobalLightingParameters.DEFAULT.scatterColor = scatterColor;
+		}
 		
 		createMenuBar();
 		

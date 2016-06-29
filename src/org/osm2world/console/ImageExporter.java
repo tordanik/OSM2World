@@ -111,6 +111,11 @@ public class ImageExporter {
 			}
 		}
 
+		if (config.containsKey("scatterColor")) {
+			Color scatterColor = parseColor(config.getString("scatterColor"));
+			GlobalLightingParameters.DEFAULT.scatterColor = scatterColor;
+		}
+		
 		if (config.containsKey("timeAndDate")) {
 			try {
 				SimpleDateFormat format = new SimpleDateFormat("MMM dd HH:mm");
