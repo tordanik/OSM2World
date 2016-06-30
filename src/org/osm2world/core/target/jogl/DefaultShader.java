@@ -12,6 +12,7 @@ import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
 import java.nio.FloatBuffer;
+import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
@@ -21,6 +22,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.ProceduralTextureData;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.common.lighting.LightSource;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.Material.Transparency;
@@ -74,6 +76,9 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	private int[] vertexTexCoordID = new int[MAX_TEXTURE_LAYERS];
 	private int vertexBumpMapCoordID;
 	private int vertexTangentID;
+
+	private int lightListID;
+	private int lightCountID;
 	
 	public DefaultShader(GL3 gl) {
 		super(gl, "/shaders/default");
@@ -92,6 +97,9 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
 		normalMatrixID = gl.glGetUniformLocation(shaderProgram, "NormalMatrix");
 		shadowMatrixID = gl.glGetUniformLocation(shaderProgram, "ShadowMatrix");
+
+		lightListID = gl.glGetUniformLocation(shaderProgram, "lights");
+		lightCountID = gl.glGetUniformLocation(shaderProgram, "numLights");
 		
 		generateSamplingMatrix();
 		generateNoiseTexture();
@@ -157,12 +165,31 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useLighting"), lighting != null ? 1 : 0);
 		if (lighting != null) {
-			gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "Light.Position"), (float)lighting.lightFromDirection.getX(),
+			gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "lightsPos[0]"), (float)lighting.lightFromDirection.getX(),
 					(float)lighting.lightFromDirection.getY(), -(float)lighting.lightFromDirection.getZ(), 0f);
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.La"), 1, getFloatBuffer(lighting.globalAmbientColor));
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.Ld"), 1, getFloatBuffer(lighting.lightColorDiffuse));
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Light.Ls"), 1, getFloatBuffer(lighting.lightColorSpecular));			
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLa[0]"), 1, getFloatBuffer(lighting.globalAmbientColor));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLd[0]"), 1, getFloatBuffer(lighting.lightColorDiffuse));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLs[0]"), 1, getFloatBuffer(lighting.lightColorSpecular));			
 		}
+	}
+
+	public void setLocalLighting(List<LightSource> lights) {
+			for(int i = 1; i < lights.size() + 1; i++) {
+				LightSource light = lights.get(i - 1);
+				gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "lightsPos["+i+"]"), 
+						(float)light.pos.getX(),
+						(float)light.pos.getY(),
+						-(float)light.pos.getZ(), 1f);
+
+				gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLa["+i+"]"), 1, 
+						getFloatBuffer(light.La));
+				gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLd["+i+"]"), 1,
+						getFloatBuffer(light.Ld));
+				gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLs["+i+"]"), 1,
+						getFloatBuffer(light.Ls));			
+			}
+			gl.glUniform1i(lightCountID, lights.size() + 1);
+			System.out.println("Rendered "+ lights.size() +" lights");
 	}
 	
 	/**

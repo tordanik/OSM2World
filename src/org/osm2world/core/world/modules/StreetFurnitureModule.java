@@ -1021,6 +1021,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 			
 			target.drawTriangleFan(material, vs, null);
+			target.drawLight(getBase().addY(poleHeight + lampHeight * 0.5), 1.0f);
 		}
 		
 	}

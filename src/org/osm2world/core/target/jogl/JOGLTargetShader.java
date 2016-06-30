@@ -21,6 +21,9 @@ import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 import java.awt.Color;
 import java.io.File;
 import java.nio.FloatBuffer;
+import java.util.List;
+import java.util.ArrayList;
+
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL2GL3;
@@ -31,6 +34,7 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.common.lighting.LightSource;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
@@ -50,6 +54,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 	private SkyShader skyShader;
 	
+	private List<LightSource> lights;
+
 	private GL3 gl;
 	
 	/**
@@ -76,6 +82,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
+
+		lights = new ArrayList<>();
 	}
 
 	@Override
@@ -278,6 +286,17 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	}
 
 	@Override
+	public void drawLight(VectorXYZ pos, float intensity) {
+		// TODO Hack to remove strange extenous light sources
+		if(pos.length() < 1000) {
+			lights.add(new LightSource(pos, new Color(intensity, intensity, intensity)));
+			System.out.println(lights);
+		} else {
+			System.out.println("Pruned extenous light source");
+		}
+	}
+
+	@Override
 	public void renderPart(Camera camera, Projection projection, double xStart,
 			double xEnd, double yStart, double yEnd) {
 		if (renderer == null) {
@@ -334,6 +353,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
+		defaultShader.setLocalLighting(lights);
 		
 		if (showShadowPerspective)
 			defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
