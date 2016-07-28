@@ -733,6 +733,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		this.showShadowPerspective = s;
 	}
 
+	public void setShowEnvMap(boolean s) {
+		this.showEnvMap = s;
+	}
+
 	public void setEnvMap(Cubemap cubemap) {
 		envMap = cubemap;
 	}
