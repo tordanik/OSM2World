@@ -32,8 +32,14 @@ out vec2 TexCoord1;
 out vec2 TexCoord2;
 out vec2 TexCoord3;
 
+// Neccassary for world reflections
+out vec3 WorldCoord;
+out vec3 WorldNormal;
+
 void main()
 {
+	WorldCoord = VertexPosition;
+	WorldNormal = VertexNormal;
 	TexCoord0 = VertexTexCoord0;
 	TexCoord1 = VertexTexCoord1;
 	TexCoord2 = VertexTexCoord2;

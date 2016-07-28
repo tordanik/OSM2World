@@ -9,6 +9,7 @@
 	
 uniform bool isShadowed;
 uniform bool useLighting;
+uniform samplerCube envMap;
 
 // OpenGL 3 does not support uniform struct arrays
 uniform vec4[MAX_LIGHTS] lightsPos;
@@ -39,6 +40,8 @@ in vec2 TexCoord0;
 in vec2 TexCoord1;
 in vec2 TexCoord2;
 in vec2 TexCoord3;
+in vec3 WorldCoord;
+in vec3 WorldNormal;
 
 uniform vec3 procColor[MAX_TEXTURE_LAYERS];
 uniform vec3 procDev[MAX_TEXTURE_LAYERS];
@@ -418,6 +421,28 @@ void main()
 		}
 		if ( isShadowed )
 			shadowFactor = 0.0;
+
+		// Geometry reflection calculations
+		if(Material.Ks > 0.9) {
+			// Truncate the view matrix to get the rotationMatrix
+			mat3 rotMat = mat3(ModelViewMatrix);
+
+			// Grab translation vector from view matrix
+			vec3 d = vec3(ModelViewMatrix[3]);
+
+			// Calculate vector incoming to reflection point in worldspace
+			vec3 cameraPosition = -d * rotMat;
+			vec3 viewVector = normalize(WorldCoord - cameraPosition);
+
+			vec3 reflectionVector = reflect(viewVector, WorldNormal);// + normal);
+
+			// TODO this line causes error 1282
+			//vec4 reflection = texture(envMap, -reflectionVector);
+			vec4 reflection = vec4(1.0);
+
+			// TODO set the mix factor to the value of the reflectance map
+			texColor = mix(texColor, reflection, Material.Ks);
+		}
 		
 		// Breakout the lighting matrix
 		vec3 ambient = lightMat[0] * occlusionFactor;
