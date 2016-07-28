@@ -238,58 +238,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				projection.getVertAngle(), projection.getVolumeHeight(), nearPlane, farPlane);
 	}
 
-	public void drawSky(Camera camera, Projection proj) {
-		skyShader.useShader();
-
-		// Draw the sky behind everything
-		gl.glDepthMask( false );
-
-		skyShader.setPMVMatrix(pmvMatrix);
-		skyShader.setLighting(GlobalLightingParameters.DEFAULT);
-
-		// Draw a square the size of the screen
-		int[] id = new int[1];
-		gl.glGenBuffers(1, id, 0);
-
-		int verticeCount = 4;
-		FloatBuffer valueBuffer = Buffers.newDirectFloatBuffer(verticeCount*2);
-
-		valueBuffer.put(-1.0f);
-		valueBuffer.put(-1.0f);
-
-		valueBuffer.put(1.0f);
-		valueBuffer.put(-1.0f);
-
-		valueBuffer.put(-1.0f);
-		valueBuffer.put(1.0f);
-		
-		valueBuffer.put(1.0f);
-		valueBuffer.put(1.0f);
-		
-		valueBuffer.rewind();
-		
-		/* write the data into the buffer */
-		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
-		
-		gl.glBufferData(
-				GL_ARRAY_BUFFER,
-				valueBuffer.capacity() * Buffers.SIZEOF_FLOAT,
-				valueBuffer,
-				GL_STATIC_DRAW);
-
-		gl.glEnableVertexAttribArray(skyShader.getVertexPositionID());
-		
-		int stride = 0;
-		gl.glVertexAttribPointer(backgroundShader.getVertexPositionID(), 2, GL.GL_FLOAT, false, stride, 0);
-		
-		gl.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, verticeCount);
-		
-		gl.glDisableVertexAttribArray(skyShader.getVertexPositionID());
-		
-		gl.glDepthMask( true );
-		skyShader.disableShader();
-	}
-
 	@Override
 	public void drawLight(VectorXYZ pos, float intensity) {
 		// TODO Hack to remove strange extenous light sources
@@ -317,7 +265,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		applyCameraMatrices(pmvMatrix, camera);
 
-		drawSky(camera, projection);
 		
 		if (renderingParameters.useSSAO) {
 			defaultShader.setSSAOkernelSize(renderingParameters.SSAOkernelSize);

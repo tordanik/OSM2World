@@ -1,13 +1,10 @@
 /* Simple fragment shader for drawing a 2d geometry with texture to screen
  */ 
 #version 140
-	
+
 
 uniform vec3 sunVector;
 uniform float sunIntensity;
-
-uniform mat4 inv_proj;
-uniform mat4 inv_view;
 
 // How much the atmosphere scatters each channel
 uniform vec3 Kr;
@@ -15,11 +12,10 @@ uniform vec3 Kr;
 uniform float step_count = 10.0;
 
 
-// corresponds with output from vertex shader, gets interpolated
-in vec4 FragCoord;
+in vec3 cubemapCoord;
  
 // output to buffer
-out vec4 FragColor;
+out vec3 color;
 
 // Calculates how much light is scattered in a direction where
 // alpha is the angle between the original direction and the
@@ -76,9 +72,8 @@ void main()
 	float mie_distribution = 0.99995;
 
 	// Calculate the vector from the camera to the fragment
-	vec4 device_normal = vec4(FragCoord.xy, 0, 1.0);
-	vec3 eye_normal = ((inv_proj * device_normal).xyz);
-	vec3 eyeVector = normalize(mat3(inv_view) * eye_normal);
+	// TODO Remember why you flipped this vector
+	vec3 eyeVector = -normalize(cubemapCoord);
 
 	// Calculates a factor for each type of scattering based on the size
 	// of the particles and the angle between the sun and view directions
@@ -137,10 +132,10 @@ void main()
 
 
 	// Calculate the final color by apply the amount of light that is inscattered
-	vec3 color = vec3(
+	color = vec3(
 			mie_brightness * mie_collected +
 			rayleigh_brightness * rayleigh_collected
 		);
-	FragColor = vec4(color, 1.0);
+
 } 
 

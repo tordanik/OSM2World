@@ -16,8 +16,8 @@ public class SkyShader extends AbstractShader {
 	private int vertexPositionID;
 	private int sunVectorID;
 	private int intensityID;
-	private int invProjID;
-	private int invViewID;
+	private int viewMatrixID;
+	private int proMatrixID;
 
 	private int scatterColorID;
 
@@ -31,8 +31,8 @@ public class SkyShader extends AbstractShader {
 		sunVectorID = gl.glGetUniformLocation(shaderProgram, "sunVector");
 		intensityID = gl.glGetUniformLocation(shaderProgram, "sunIntensity");
 
-		invProjID = gl.glGetUniformLocation(shaderProgram, "inv_proj");
-		invViewID = gl.glGetUniformLocation(shaderProgram, "inv_view");
+		viewMatrixID = gl.glGetUniformLocation(shaderProgram, "viewMat");
+		proMatrixID = gl.glGetUniformLocation(shaderProgram, "proMat");
 
 		scatterColorID = gl.glGetUniformLocation(shaderProgram, "Kr");
 		
@@ -40,50 +40,8 @@ public class SkyShader extends AbstractShader {
 	}
 	
 	public void setPMVMatrix(PMVMatrix pmvMatrix) {
-		// Send the inverse view matrix
-		FloatBuffer ivMat = pmvMatrix.glGetMviMatrixf().asReadOnlyBuffer();
-		FloatBuffer ivMatBuf = FloatBuffer.allocate(16);
-
-		for(int i = 0; i < 16; i++)
-			ivMatBuf.put(ivMat.get());
-
-		ivMatBuf.rewind();
-
-		gl.glUniformMatrix4fv(invViewID, 1, false, ivMatBuf);
-
-
-		// Caclulate and Send the inverse projection matrix
-		FloatBuffer pMatBuf = pmvMatrix.glGetPMatrixf().asReadOnlyBuffer();
-		float[] pMat = new float[16];
-
-		for(int i = 0; i < 16; i++)
-			pMat[i] = pMatBuf.get();
-
-		// TODO Cache this
-		FloatBuffer iPMat = FloatBuffer.allocate(16);
-		iPMat.put(1.0f/pMat[0 * 4 + 0]);
-		iPMat.put(0);
-		iPMat.put(0);
-		iPMat.put(0);
-
-		iPMat.put(0);
-		iPMat.put(1.0f/pMat[1 * 4 + 1]);
-		iPMat.put(0);
-		iPMat.put(0);
-
-		iPMat.put(0);
-		iPMat.put(0);
-		iPMat.put(0);
-		iPMat.put(1.0f/pMat[3 * 4 + 2]);
-
-		iPMat.put(0);
-		iPMat.put(0);
-		iPMat.put(1.0f/pMat[2 * 4 + 3]);
-		iPMat.put(-pMat[2 * 4 + 2]/(pMat[2 * 4 + 3] * pMat[3 * 4 + 2]));
-
-		iPMat.rewind();
-
-		gl.glUniformMatrix4fv(invProjID, 1, false, iPMat);
+		gl.glUniformMatrix4fv(proMatrixID, 1, false, pmvMatrix.glGetPMatrixf());
+		gl.glUniformMatrix4fv(viewMatrixID, 1, false, pmvMatrix.glGetMvMatrixf());
 	}
 
 	public void setLighting(GlobalLightingParameters sun) {
@@ -96,7 +54,6 @@ public class SkyShader extends AbstractShader {
 				, (float) sun.scatterColor.getRed() / 255.0f
 				, (float) sun.scatterColor.getGreen() / 255.0f
 				, (float) sun.scatterColor.getBlue() / 255.0f);
-		System.out.println(sun.scatterColor);
 	}
 	
 	/**
