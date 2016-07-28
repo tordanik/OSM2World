@@ -53,7 +53,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private BackgroundShader backgroundShader;
 
 	private SkyShader skyShader;
-	
+	private CubemapShader cubeShader;
+
 	private List<LightSource> lights;
 
 	private GL3 gl;
@@ -67,6 +68,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private JOGLRendererVBOShadowVolume rendererShadowVolume;
 	private AxisAlignedBoundingBoxXZ xzBoundary;
 	private boolean showShadowPerspective;
+
+	private Cubemap envMap;
+	private boolean showEnvMap;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -83,6 +87,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		pmvMatrix = new PMVMatrix();
 		reset();
 
+		cubeShader = new CubemapShader(gl);
 		lights = new ArrayList<>();
 	}
 
@@ -349,12 +354,19 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			
 			shadowMapShader.disableShader();
 		}
+
 		
+		if(showEnvMap)
+			drawCubemap(camera, envMap);
+
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
 		defaultShader.setLocalLighting(lights);
-		
+
+		if(envMap != null)
+			envMap.bind(gl);
+
 		if (showShadowPerspective)
 			defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
 		else
@@ -720,4 +732,39 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void setShowShadowPerspective(boolean s) {
 		this.showShadowPerspective = s;
 	}
+
+	public void setEnvMap(Cubemap cubemap) {
+		envMap = cubemap;
+	}
+
+	private void drawCubemap(Camera camera, Cubemap cubemap) {
+		cubeShader.useShader();
+
+		int[] t = new int[1];
+		gl.glGenBuffers(1, t, 0);
+		int id = t[0];
+
+		FloatBuffer vertBuf = FloatBuffer.wrap(Cubemap.VERTS);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, t[0]);
+		gl.glBufferData(
+				GL_ARRAY_BUFFER,
+				vertBuf.capacity() * Buffers.SIZEOF_FLOAT,
+				vertBuf,
+				GL_STATIC_DRAW);
+
+		gl.glEnableVertexAttribArray(cubeShader.getVertexPositionID());
+		gl.glVertexAttribPointer(cubeShader.getVertexPositionID(), 3, GL.GL_FLOAT, false, 0, 0);
+		
+		cubeShader.setPMVMatrix(pmvMatrix);
+		cubeShader.setCubemap(cubemap);
+
+		gl.glDrawArrays(GL.GL_TRIANGLES, 0, Cubemap.VERTS.length / 3);
+		
+		gl.glDisableVertexAttribArray(cubeShader.getVertexPositionID());
+		gl.glDepthMask( true );
+		cubeShader.disableShader();
+		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, 0);
+	}
+
 }

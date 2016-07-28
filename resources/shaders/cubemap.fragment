@@ -1,0 +1,14 @@
+#version 130
+	
+uniform samplerCube cubemap;
+ 
+in vec3 cubemapCoord;
+ 
+out vec4 FragColor;
+
+
+void main() {
+	// cubemapCoord is flipped because images are upside down when loaded by JOGL
+	FragColor = texture(cubemap, -cubemapCoord);
+} 
+
