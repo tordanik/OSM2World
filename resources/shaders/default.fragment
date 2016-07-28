@@ -4,21 +4,17 @@
 // TODO: set from java to match MAX_TEXTURE_LAYERS there
 #define MAX_TEXTURE_LAYERS 4
 #define SSAO_RANDOM_ROTATION
+
+#define MAX_LIGHTS 128
 	
 uniform bool isShadowed;
 uniform bool useLighting;
-struct LightInfo {
-	vec3 La; // Ambient light intensity
-	vec3 Ld; // Diffuse light intensity
-	vec3 Ls;// Specular light intensity
-};
-LightInfo Light;
 
 // OpenGL 3 does not support uniform struct arrays
-uniform vec4[16] lightsPos;
-uniform vec3[16] lightsLa;
-uniform vec3[16] lightsLd;
-uniform vec3[16] lightsLs;
+uniform vec4[MAX_LIGHTS] lightsPos;
+uniform vec3[MAX_LIGHTS] lightsLa;
+uniform vec3[MAX_LIGHTS] lightsLd;
+uniform vec3[MAX_LIGHTS] lightsLs;
 uniform int numLights;
 	
 struct MaterialInfo {
@@ -78,30 +74,44 @@ out vec4 FragColor;
 /*
  * shading with phong model (ambient, diffuse, specular)
  * lightDir, viewDir and norm have to be in the same coordinate system (e.g. eye or tangent space)
+ * Returns a mat3 where phong[0] is ambient, phong[1] is diffuse, and phong[2] is specular
  */
-vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambient, out vec3 diffuse, out vec3 spec )
-{	
-	vec3 r = reflect( -lightDir, norm );
-	ambient = Light.La;
+mat3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm,
+				 vec3 la, vec3 ld, vec3 ls)
+{
+	mat3 output = mat3(0);
+
+	// Ambient
+	output[0] = la;
+
+	// Diffuse 
 	float sDotN = max( dot(lightDir,norm), 0.0 );
-	diffuse = Light.Ld * sDotN;
-	spec = vec3(0.0);
+	output[1] = ld * sDotN;
+
+	// Specular
+	vec3 r = reflect( -lightDir, norm );
 	if( sDotN > 0.0 )
-		spec = Light.Ls *
+		output[2] = ls *
 				pow( max( dot(r,viewDir), 0.0 ), Material.Shininess );
-	return ambient + diffuse + spec;
+
+	return output;
 }
 
 const int levels = 3;
 const float scaleFactor = 1.0 / levels;
 // toon shading (only ambient and diffuse)
-vec3 toonShade( vec3 lightDir, vec3 norm, out vec3 ambient, out vec3 diffuse )
+mat3 toonShade( vec3 lightDir, vec3 norm, vec3 la, vec3 ld )
 {
-	ambient = Light.La;
+	mat3 output = mat3(0);
+
+	// Ambient
+	output[0] = la;
+
+	// Diffuse
 	float cosine = max( dot(lightDir,norm) , 0.0 );
-	diffuse = Light.Ld * floor( cosine * levels ) * scaleFactor;
+	output[1] = ld * floor( cosine * levels ) * scaleFactor;
 	
-	return ambient + diffuse;
+	return output;
 }
 
 //float linearizeDepthPerspective(in float depth, in mat4 projMatrix) {
@@ -245,12 +255,10 @@ float perlin(vec2 texCoord, float xScale, float yScale)
  
 void main()
 {
-	Light.La = vec3(0.0);
-	Light.Ld = vec3(0.0);
-	Light.Ls = vec3(0.0);
-
-	vec3 ambient, diff, spec=vec3(0.0);
 	vec4 texColor = vec4(1.0);
+
+	// lightMat[0] = ambient, lightMat[1] = diffuse, lightMat[2] = specular
+	mat3 lightMat = mat3(0.0);
 
 	// apply textures
 	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
@@ -310,64 +318,84 @@ void main()
 		if ( useSSAO )
 			occlusionFactor = ssao( VertexEye, normalEye, debug );
 		
-		if ( isShadowed ) {
-			ambient = Light.La;
-			diff = vec3(0.0);
-		} else {
-			vec3 viewDirection, lightDirection;
-			// transform light and view direction to eye space
-			
-			if( ProjectionMatrix[3][3] == 0.0 )
-				viewDirection = normalize(-VertexEye); // perspective projection
-			else
-				viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
-			
-			vec3 normal = normalEye;
-			if ( useBumpMaps ) {
-				vec3 tangentEye = normalize(TangentEye.xyz);
-				// compute bitangent
-				vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
+		vec3 viewDirection, lightDirection;
+		// transform light and view direction to eye space
 		
-				// transformation from eye to tangent space
-				mat3 tangentMatrix = mat3(
-					tangentEye.x, bitangentEye.x, normalEye.x,
-					tangentEye.y, bitangentEye.y, normalEye.y,
-					tangentEye.z, bitangentEye.z, normalEye.z );
-			
-				// transform light and view direction to tangent space
-				viewDirection = tangentMatrix * viewDirection;
-				lightDirection = tangentMatrix * lightDirection;
+		if( ProjectionMatrix[3][3] == 0.0 )
+			viewDirection = normalize(-VertexEye); // perspective projection
+		else
+			viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
+		
+		// Bumpmap calcuations
+		vec3 normal = vec3(1.0);
+		if ( useBumpMaps || useProc[0]) {
+			vec3 tangentEye = normalize(TangentEye.xyz);
+			// compute bitangent
+			vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
+	
+			// transformation from eye to tangent space
+			mat3 tangentMatrix = mat3(
+				tangentEye.x, bitangentEye.x, normalEye.x,
+				tangentEye.y, bitangentEye.y, normalEye.y,
+				tangentEye.z, bitangentEye.z, normalEye.z );
+		
+			// transform light and view direction to tangent space
+			viewDirection = tangentMatrix * viewDirection;
+			lightDirection = tangentMatrix * lightDirection;
+
+			// Procedural normal generation
+			if(useProc[0]) {
+				float maxDeviation = length(procDev[0]);
+
+				// Calculate the procedural height at three points
+				float p0 = maxDeviation * perlin(TexCoord0, procXScale[0], procYScale[0]) * 2 - 1;
+				float pu = maxDeviation * perlin(TexCoord0 + vec2(1, 0) , procXScale[0], procYScale[0]) * 2 - 1;
+				float pv = maxDeviation * perlin(TexCoord0 + vec2(0, 1), procXScale[0], procYScale[0]) * 2 - 1;
+
+				// Calculate the vectors from the fragment to the two test points
+				vec3 p = vec3(TexCoord0, p0);
+				vec3 puv = p - vec3(TexCoord0 + vec2(1, 0), pu);
+				vec3 pvv = p - vec3(TexCoord0 + vec2(0, 1), pv);
+
+				// Convert from z up system to y up system
+				// Calculate the normal vector by cross multiplying the two vectors
+				// normal = normalize(cross(puv, pvv)).xzy;
+			} else {
 				normal = normalize(texture( BumpMap, BumpMapCoord ).xyz * 2.0 - 1.0);
 			}
+		}
 
-			lightDirection = vec3(0);
-			for(int i = 0; i < numLights; i++) {
-				vec4 lightPositionEye = ModelViewMatrix * lightsPos[i];
-			
-				// directional light?
-				if(lightsPos[i].w == 0.0) {
-					lightDirection += normalize(vec3(lightPositionEye));
+		// Actual lighting calculations for each source
+		for(int i = 0; i < numLights; i++) {
+			vec4 lightPositionEye = ModelViewMatrix * lightsPos[i];
+		
+			// directional light?
+			if(lightsPos[i].w == 0.0) {
+				vec3 lightDirection = normalize(vec3(lightPositionEye));
+				vec3 la = lightsLa[i];
+				vec3 ld = lightsLd[i];
+				vec3 ls = lightsLs[i];
 
-					Light.La += lightsLa[i];
-					Light.Ls += lightsLs[i];
-					Light.Ld += lightsLd[i];
-
+				// If this fragment is shadowded from this light source, only
+				// apply it's ambient
+				if ( isShadowed ) {
+					lightMat[0] += la;
 				} else {
-					vec3 r = vec3(lightPositionEye) - VertexEye;
-
-					float dist = length(r);
-					lightDirection += normalize(r);
-
-					// Point light decays with the inverse of the square
-					Light.La += lightsLa[i] * (10 / (dist * dist));
-					Light.Ls += lightsLs[i] * (10 / (dist * dist));
-					Light.Ld += lightsLd[i] * (10 / (dist * dist));
+					lightMat += phongModel(lightDirection, viewDirection, normal,
+										   la, ld, ls);
 				}
+
+			} else {
+				vec3 r = vec3(lightPositionEye) - VertexEye;
+
+				float dist = length(r);
+				vec3 lightDirection = normalize(r);
+
+				lightMat += phongModel(lightDirection, viewDirection, normal,
+									   lightsLa[i] * (10 / (dist * dist)), 
+									   lightsLd[i] * (10 / (dist * dist)), 
+									   lightsLs[i] * (10 / (dist * dist)));
 			}
-			lightDirection = normalize(lightDirection);
-			
-			phongModel( lightDirection, viewDirection, normal, ambient, diff, spec );
-			//toonShade( lightDirection, normal, ambient, diff );
 		}
 		
 		// shadow map lookup
@@ -391,11 +419,14 @@ void main()
 		if ( isShadowed )
 			shadowFactor = 0.0;
 		
-		diff = diff * shadowFactor * occlusionFactor;
-		spec = spec * shadowFactor * occlusionFactor;
-		ambient = ambient * occlusionFactor;
-		
-		FragColor = vec4(ambient*Material.Ka + diff*Material.Kd, 1.0) * texColor + vec4(spec*Material.Ks, 0.0);
+		// Breakout the lighting matrix
+		vec3 ambient = lightMat[0] * occlusionFactor;
+		vec3 diff    = lightMat[1] * shadowFactor * occlusionFactor;
+		vec3 spec    = lightMat[2] * shadowFactor * occlusionFactor;
+
+		FragColor = vec4(ambient*Material.Ka + diff*Material.Kd, 1.0) * texColor 
+				  + vec4(spec*Material.Ks, 0.0);
+
 		//FragColor = texColor;
 		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
 		//FragColor = vec4(normalEye, FragColor.a);
