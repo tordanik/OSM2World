@@ -697,6 +697,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		FloatBuffer vertBuf = FloatBuffer.wrap(Cubemap.VERTS);
 
+		gl.glDepthFunc(GL.GL_LEQUAL);
 		gl.glBindBuffer(GL_ARRAY_BUFFER, t[0]);
 		gl.glBufferData(
 				GL_ARRAY_BUFFER,
@@ -713,7 +714,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		gl.glDrawArrays(GL.GL_TRIANGLES, 0, Cubemap.VERTS.length / 3);
 		
 		gl.glDisableVertexAttribArray(cubeShader.getVertexPositionID());
-		gl.glDepthMask( true );
+		gl.glDepthFunc(GL.GL_LESS);
 		cubeShader.disableShader();
 		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, 0);
 	}
