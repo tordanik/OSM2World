@@ -10,6 +10,8 @@
 uniform bool isShadowed;
 uniform bool useLighting;
 uniform samplerCube envMap;
+uniform samplerCube geomMap;
+uniform bool useGeomMap;
 
 // OpenGL 3 does not support uniform struct arrays
 uniform vec4[MAX_LIGHTS] lightsPos;
@@ -43,6 +45,7 @@ in vec2 TexCoord3;
 in vec3 WorldCoord;
 in vec3 WorldNormal;
 
+// Procedural textures
 uniform vec3 procColor[MAX_TEXTURE_LAYERS];
 uniform vec3 procDev[MAX_TEXTURE_LAYERS];
 
@@ -440,13 +443,12 @@ void main()
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(-1,1));
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,1));
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,-1));
-			shadowFactor = sum * 0.25;
+			//shadowFactor = sum * 0.25;
 		}
 		if ( isShadowed )
 			shadowFactor = 0.0;
 
-		// Geometry reflection calculations
-		if(Material.Ks > 0.9) {
+		if(useGeomMap && Material.Shininess > 50) {
 			// Truncate the view matrix to get the rotationMatrix
 			mat3 rotMat = mat3(ModelViewMatrix);
 
@@ -457,7 +459,13 @@ void main()
 			vec3 cameraPosition = -d * rotMat;
 			vec3 viewVector = normalize(WorldCoord - cameraPosition);
 
-			vec3 reflectionVector = reflect(viewVector, WorldNormal);// + normal);
+			// Calculate the color of the reflected fragment
+			vec3 reflectionVector = reflect(viewVector, WorldNormal);
+			vec4 reflection = texture(geomMap, reflectionVector);
+
+			// TODO set the mix factor to the value of the reflectance map
+			texColor = mix(texColor, reflection, Material.Ks * reflection.a);
+		}
 
 		// Geometry reflection calculations
 		if(showReflections && Material.Shininess > 50) {

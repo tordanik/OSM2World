@@ -216,6 +216,18 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
 		}
+
+		/*
+		// Set geometry reflection env map
+		if(Material.isReflective()) {
+			loc = gl.glGetUniformLocation(shaderProgram, "ReflMap");
+			if (loc < 0) {
+				//throw new RuntimeException("Tex["+i+"] not found in shader program.");
+			}
+			gl.glUniform1i(loc, 1);
+		}
+		*/
+
 		
 		/* set color / lighting */
 		
