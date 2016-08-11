@@ -123,6 +123,10 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "BumpMap"), getGLTextureNumber(0));
 		for (int i=0; i<MAX_TEXTURE_LAYERS; i++)
 			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]"), getGLTextureNumber(i));
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "envMap")
+				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 1));
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "geomMap")
+				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 2));
 		this.disableShader();
 	}
 	
@@ -201,12 +205,8 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 	public void setEnvMap(Cubemap envMap) {
 		int loc = gl.glGetUniformLocation(shaderProgram, "envMap");
-		if (loc >= 0) {
-			gl.glUniform1i(loc, 16);
-
-			if(envMap != null) {
-				envMap.bind(gl, 16);
-			}
+		if(envMap != null) {
+			envMap.bind(gl, getGLTextureNumber(MAX_TEXTURE_LAYERS+1));
 		}
 	}
 
@@ -226,19 +226,12 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 		// Set geometry reflection env map
 		if(material instanceof JOGLMaterial) {
-			int loc = gl.glGetUniformLocation(shaderProgram, "geomMap");
-			if (loc < 0) {
-				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
+			Cubemap reflMap = ((JOGLMaterial) material).getReflectionMap();
+			if(reflMap != null) {
+				reflMap.bind(gl, getGLTextureNumber(MAX_TEXTURE_LAYERS+2));
+				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 1);
 			} else {
-				gl.glUniform1i(loc, 18);
-
-				Cubemap reflMap = ((JOGLMaterial) material).getReflectionMap();
-				if(reflMap != null) {
-					reflMap.bind(gl, 18);
-					gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 1);
-				} else {
-					gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
-				}
+				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
 			}
 		} else {
 			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
