@@ -71,6 +71,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 	private Cubemap envMap;
 	private boolean showEnvMap;
+	private boolean showEnvRefl;
 	
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -303,16 +304,16 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		}
 
 		
-		if(showEnvMap)
+		// TODO Do this last
+		if(showEnvMap && envMap != null)
 			drawCubemap(camera, envMap);
 
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
 		defaultShader.setLocalLighting(lights);
-
-		if(envMap != null)
-			envMap.bind(gl);
+		defaultShader.setEnvMap(envMap);
+		defaultShader.setShowReflections(showEnvRefl);
 
 		if (showShadowPerspective)
 			defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
@@ -682,6 +683,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 	public void setShowEnvMap(boolean s) {
 		this.showEnvMap = s;
+	}
+
+	public void setShowEnvRefl(boolean s) {
+		this.showEnvRefl = s;
 	}
 
 	public void setEnvMap(Cubemap cubemap) {

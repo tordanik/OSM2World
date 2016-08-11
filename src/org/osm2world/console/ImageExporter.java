@@ -42,6 +42,7 @@ import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
+import org.osm2world.core.target.jogl.Sky;
 
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLineByte;
@@ -113,7 +114,7 @@ public class ImageExporter {
 
 		if (config.containsKey("scatterColor")) {
 			Color scatterColor = parseColor(config.getString("scatterColor"));
-			GlobalLightingParameters.DEFAULT.scatterColor = scatterColor;
+			Sky.scatterColor = scatterColor;
 		}
 		
 		if (config.containsKey("timeAndDate")) {

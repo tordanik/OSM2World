@@ -4,11 +4,16 @@ import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW
 
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.jogl.Cubemap;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
+import org.osm2world.core.target.jogl.JOGLTargetShader;
+import org.osm2world.core.target.jogl.Sky;
 import org.osm2world.viewer.model.RenderOptions;
 
 public class WorldObjectView extends DebugView {
+	private Cubemap skybox;
+	private long time;
 	
 	private final RenderOptions renderOptions;
 	
@@ -41,6 +46,21 @@ public class WorldObjectView extends DebugView {
 	@Override
 	protected void updateTarget(JOGLTarget target, boolean viewChanged) {
 		setParameters(target);
+
+		// TODO add showEnvRefl to renderParamaters
+		if(target instanceof JOGLTargetShader) {
+			if(Sky.getTime() != time) {
+				if(true) {
+					skybox = Sky.getSky();
+				}
+				((JOGLTargetShader)target).setEnvMap(skybox);
+				((JOGLTargetShader)target).setShowEnvMap(false);
+				((JOGLTargetShader)target).setShowEnvRefl(true);
+				time = Sky.getTime();
+			}
+		} else {
+			System.err.println("Environment maps only supported with shaders rendering");
+		}
 	}
 	
 	private void setParameters(final JOGLTarget target) {

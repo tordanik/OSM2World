@@ -5,25 +5,39 @@ import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
 import static javax.media.opengl.GL.GL_STATIC_DRAW;
 import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 
-
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
-import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
-
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.PMVMatrix;
 
+import java.awt.Color;
+import org.osm2world.core.math.VectorXYZW;
+import org.osm2world.core.math.VectorXYZ;
 
-// TODO Consider refactoring this
+import java.util.Calendar;
+import org.osm2world.core.target.common.lighting.LightSource;
+
+
+// TODO Absolutly refactor this
 /**
  * Class that handles generation of procedural sky and writing that sky to a cubemap.
  **/
 public class Sky {
 	private static Framebuffer skyBuffer;
 	private static SkyShader skyShader;
+
+	private static LightSource sun;
+	private static long time;
+	public static Color scatterColor = new Color(0.55f, 0.7f, 0.8f);
+
+	static {
+		Calendar c = Calendar.getInstance();
+		c.set(2001,0,1,12,0,0);
+		Sky.setTime(c);
+	}
 	
 	public static Cubemap getSky() {
 		if(skyBuffer == null)
@@ -31,9 +45,14 @@ public class Sky {
 		return skyBuffer.getCubemap();
 	}
 
+	public static long getTime() {
+		return Sky.time;
+	}
+
 	public static void updateSky(GL3 gl) {
+		System.out.println("Update sky");
 		if(Sky.skyBuffer == null) {
-			Sky.skyBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP);
+			Sky.skyBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, 800, 800, false);
 			Sky.skyBuffer.init(gl);
 		}
 
@@ -49,7 +68,7 @@ public class Sky {
 		cubePMV.glLoadIdentity();
 
 		skyShader.useShader();
-		skyShader.setLighting(GlobalLightingParameters.DEFAULT);
+		skyShader.setSun(Sky.sun, scatterColor);
 
 		// Buffer the cube vertices, this buffer will be used six times
 		int[] t = new int[1];
@@ -101,7 +120,7 @@ public class Sky {
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								0.0f, -1.0f, 0.0f,
-								0.0f, 0.0f, 1.0f);
+								0.0f, 0.0f, -1.0f);
 					break;
 
 				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
@@ -129,6 +148,89 @@ public class Sky {
 
 		gl.glDisableVertexAttribArray(skyShader.getVertexPositionID());
 		skyShader.disableShader();
+	}
+
+	public static void setTime(Calendar date)
+	{
+		System.out.println("SkyTime");
+		double lon = 0;//48.75;
+		double lat = 0;//13.46;
+
+		Sky.time = date.getTimeInMillis();
+
+		System.out.println("Calculating sun position on: " + date.getTime().toString() + "...");
+		int days = date.get(Calendar.DAY_OF_YEAR);
+
+		double time = date.get(Calendar.HOUR_OF_DAY) + (date.get(Calendar.MINUTE) / 60.0);
+
+		double solarMeridian = Math.round(lon / 15) * 15;
+
+		// Correction due to earth's position in orbit
+		double b = Math.toRadians(360.0/365.0 * (days - 81));
+		double equationOfTime = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+
+		// Correction due to longitudinal variations
+		double timeCorrection = 4 * (lon - solarMeridian) + equationOfTime;
+
+		double solarTime = time + (timeCorrection / 60.0);
+
+		double hourAngle = Math.toRadians(15) * (solarTime - 12);
+
+		double declinationAngle = Math.asin(Math.sin(Math.toRadians(23.45)) * Math.sin(b));
+
+		double elevationAngle = Math.asin(Math.sin(declinationAngle) * Math.sin(lat)
+						+ Math.cos(declinationAngle) * Math.cos(lat) * Math.cos(hourAngle));
+
+		double zenithAngle = (Math.PI / 2.0) - elevationAngle;
+
+		// From https://en.wikipedia.org/wiki/Solar_azimuth_angle
+		double azimuthAngle = Math.acos((Math.sin(declinationAngle) - Math.cos(zenithAngle) * Math.sin(lat))
+						/ (Math.sin(zenithAngle) * Math.cos(lat)));
+
+		if(hourAngle > 0) azimuthAngle = (Math.PI * 2 - azimuthAngle);
+
+		System.out.println("Elevation Angle: " + Math.toDegrees(elevationAngle));
+		System.out.println("Azimuth Angle: " + Math.toDegrees(azimuthAngle));
+		System.out.println(elevationAngle > 0?"Day":"Night");
+
+		double x = Math.cos(elevationAngle) * Math.sin(azimuthAngle);
+		double y = Math.cos(elevationAngle) * Math.cos(azimuthAngle);
+		double z = Math.sin(elevationAngle);
+
+		System.out.println("Sun Vector: <" + x +", " + y +", " + z + ">");
+		System.out.println("------------------");
+		System.out.println("");
+
+		VectorXYZW sunVector = new VectorXYZW(x, z, y, 0.0);
+
+		Color night = new Color(0.0f, 0f, 0.2f);
+		Color twilight = new Color(0.2f, 0.2f, 0.4f);
+		Color day = new Color(1.0f, 1.0f, 0.95f);
+		Color sunset = new Color(1.0f, 197.0f/255.0f, 143.0f/255.0f);
+
+		Color la;
+		if(Math.toDegrees(elevationAngle) > 8)
+			la = day;
+		else if(Math.toDegrees(elevationAngle) > 0)
+			la = sunset;
+		else if(Math.toDegrees(elevationAngle) > -19)
+			la = twilight;
+		else
+			la = night;
+
+		Sky.sun = new LightSource(sunVector, la);
+
+		// Moonlight
+		// if(Math.toDegrees(elevationAngle) < 0) {
+		//	lightFromDirection = new VectorXYZ(-x, -z, y);
+		//	intensity = 0.3f;
+		// }
+		// else
+		// 	intensity = 1.0f;
+	}
+
+	public static LightSource getSun() {
+		return Sky.sun;
 	}
 }
 

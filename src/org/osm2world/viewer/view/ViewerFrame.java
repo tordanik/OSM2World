@@ -34,6 +34,7 @@ import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.jogl.Sky;
 import org.osm2world.viewer.control.actions.AboutAction;
 import org.osm2world.viewer.control.actions.ChangeTimeAction;
 import org.osm2world.viewer.control.actions.ConfigShadersAction;
@@ -126,7 +127,7 @@ public class ViewerFrame extends JFrame {
 		// TODO Move this somewhere better
 		if (config.containsKey("scatterColor")) {
 			Color scatterColor = parseColor(config.getString("scatterColor"));
-			GlobalLightingParameters.DEFAULT.scatterColor = scatterColor;
+			Sky.scatterColor = scatterColor;
 		}
 		
 		createMenuBar();
@@ -194,7 +195,7 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, VK_W, true,
 					new WorldObjectView(renderOptions));
 			initAndAddDebugView(subMenu, -1, true,
-					new SkyView("cubemap/"));
+					new SkyView(true));
 			initAndAddDebugView(subMenu, -1, false,
 					new SkyboxView());
 			

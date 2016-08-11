@@ -7,6 +7,9 @@ import org.osm2world.core.target.common.rendering.Projection;
 import java.util.Arrays;
 import java.nio.FloatBuffer;
 
+import java.awt.Color;
+import org.osm2world.core.target.common.lighting.LightSource;
+
 import javax.media.opengl.GL3;
 
 import com.jogamp.opengl.math.FloatUtil;
@@ -44,16 +47,16 @@ public class SkyShader extends AbstractShader {
 		gl.glUniformMatrix4fv(viewMatrixID, 1, false, pmvMatrix.glGetMvMatrixf());
 	}
 
-	public void setLighting(GlobalLightingParameters sun) {
+	public void setSun(LightSource sun, Color scatterColor) {
 		gl.glUniform3f(sunVectorID
-				, (float) sun.lightFromDirection.x
-				, (float) sun.lightFromDirection.y
-				, (float) sun.lightFromDirection.z);
-		gl.glUniform1f(intensityID, sun.intensity);
+				, (float) sun.pos.x
+				, (float) sun.pos.y
+				, (float) sun.pos.z);
+		gl.glUniform1f(intensityID, 1.0f);
 		gl.glUniform3f(scatterColorID
-				, (float) sun.scatterColor.getRed() / 255.0f
-				, (float) sun.scatterColor.getGreen() / 255.0f
-				, (float) sun.scatterColor.getBlue() / 255.0f);
+				, (float) scatterColor.getRed() / 255.0f
+				, (float) scatterColor.getGreen() / 255.0f
+				, (float) scatterColor.getBlue() / 255.0f);
 	}
 	
 	/**

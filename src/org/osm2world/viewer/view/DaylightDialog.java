@@ -3,6 +3,8 @@ package org.osm2world.viewer.view;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 
+import org.osm2world.core.target.jogl.Sky;
+
 import java.util.Calendar;
 import java.util.Map;
 import java.util.Locale;
@@ -112,6 +114,7 @@ public class DaylightDialog extends JDialog
 	public void updateRender(Calendar date)
 	{
 		GlobalLightingParameters.DEFAULT.setTime(date);
+		Sky.setTime(date);
 	}
 
 	public void closeDialog()

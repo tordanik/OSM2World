@@ -7,24 +7,33 @@ import javax.media.opengl.GL3;
 
 public class Framebuffer {
 	private final int target;
+	private final boolean depthBuffer;
 
 	private GL3 gl;
 
 	private int framebufferID;
 	private int textureID;
+	private int depthBufferID;
+
+	private int viewWidth;
+	private int viewHeight;
+
+	private int prevWidth;
+	private int prevHeight;
 
 	private Cubemap cubemap;
 
 	private ByteBuffer[] buffers = new ByteBuffer[6];
 	private int[] images;
 
-	public Framebuffer(int target) {
+	public Framebuffer(int target, int width, int height, boolean depthBuffer) {
 		this.target = target;
-	}
+		if(target == GL3.GL_TEXTURE_CUBE_MAP && width != height)
+			System.err.println("Cubemaps must be square");
 
-	public Framebuffer(int target, GL3 gl) {
-		this(target);
-		init(gl);
+		this.viewWidth = width;
+		this.viewHeight = height;
+		this.depthBuffer = depthBuffer;
 	}
 
 	/**
@@ -39,6 +48,7 @@ public class Framebuffer {
 			System.err.println("Framebuffer not bound to a cubemap");
 			return null;
 		}
+		System.out.println(textureID);
 		if(cubemap == null)
 			cubemap = new Cubemap(textureID);
 		return cubemap;
@@ -54,6 +64,17 @@ public class Framebuffer {
 		framebufferID = framebuffer.get();
 		gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, framebufferID);
 
+		if(depthBuffer) {
+			IntBuffer t = IntBuffer.allocate(1);
+			gl.glGenRenderbuffers(1, t);
+			depthBufferID = t.get();
+
+			gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, depthBufferID);
+			gl.glRenderbufferStorage(GL3.GL_RENDERBUFFER, GL3.GL_DEPTH24_STENCIL8, viewWidth, viewHeight);
+			gl.glFramebufferRenderbuffer(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_STENCIL_ATTACHMENT, GL3.GL_RENDERBUFFER, depthBufferID);  
+
+		}
+
 		IntBuffer cubemap = IntBuffer.allocate(1);
 		gl.glGenTextures(1, cubemap);
 		textureID = cubemap.get();
@@ -63,7 +84,7 @@ public class Framebuffer {
 		// Prepare the texture that we will render to
 		if(target == GL3.GL_TEXTURE_CUBE_MAP) {
 			// Cubemap size
-			int s = 800;
+			int s = viewWidth;
 
 			for(int i = 0; i < 6; i++) {
 
@@ -99,7 +120,6 @@ public class Framebuffer {
 		}
 
 		gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, framebufferID);
-		gl.glViewport(0,0,800,800);
 		gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0
 				, GL3.GL_TEXTURE_2D, textureID, 0);
 
@@ -107,12 +127,21 @@ public class Framebuffer {
 			System.err.println("Framebuffer not ready");
 			return;
 		}
+
+		// TODO get these from somewhere
+		prevWidth = 800;
+		prevHeight = 600;
+		gl.glViewport(0, 0, viewWidth, viewHeight);
 	}
 
 	public void bind(int face) {
 		if(target != GL3.GL_TEXTURE_CUBE_MAP) {
 			System.err.println("Can only bind face on cubemap");
 			return;
+		}
+
+		if(depthBuffer) {
+			gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, depthBufferID);
 		}
 
 		switch(face) {
@@ -132,6 +161,11 @@ public class Framebuffer {
 					return;
 				}
 
+				// TODO get these from somewhere
+				prevWidth = 800;
+				prevHeight = 600;
+				gl.glViewport(0, 0, viewWidth, viewHeight);
+
 				break;
 
 			default:
@@ -142,6 +176,9 @@ public class Framebuffer {
 
 	public void unbind() {
 		gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+		gl.glViewport(0, 0, prevWidth, prevHeight);
+		if(depthBuffer)
+			gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, 0);
 	}
 
 }

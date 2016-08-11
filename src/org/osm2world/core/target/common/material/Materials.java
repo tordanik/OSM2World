@@ -375,13 +375,16 @@ public final class Materials {
 								String yScaleKey = "material_" + materialName + "_texture" + i + "_yScale";
 								String baseKey = "material_" + materialName + "_texture" + i + "_baseColor";
 								String colorKey = "material_" + materialName + "_texture" + i + "_deviation";
+								String normalKey = "material_" + materialName + "_normalDeviation";
 
 								float xScale = config.getFloat(xScaleKey, 1.0f);
 								float yScale = config.getFloat(yScaleKey, 1.0f);
 								Color baseColor = ConfigUtil.parseColor(config.getString(baseKey));
 								Color deviation = ConfigUtil.parseColor(config.getString(colorKey));
 
-								TextureData procedural = new ProceduralTextureData(xScale, yScale, baseColor, deviation);
+								float normalDeviation = config.getFloat(normalKey, 0.0f);
+
+								TextureData procedural = new ProceduralTextureData(xScale, yScale, baseColor, deviation, normalDeviation);
 
 								textureDataList.add(procedural);
 							} else {

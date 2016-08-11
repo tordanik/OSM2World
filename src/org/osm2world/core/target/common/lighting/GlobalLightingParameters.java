@@ -20,11 +20,9 @@ public class GlobalLightingParameters {
 	 * null disables it and leaves only ambient lighting
 	 */
 	public VectorXYZ lightFromDirection;
-	public float intensity = 1.0f;
 
 	public Color lightColorDiffuse;
 	public Color lightColorSpecular;
-	public Color scatterColor = new Color(0.55f, 0.7f, 0.8f);
 	
 	private GlobalLightingParameters(
 			Color globalAmbientLight, VectorXYZ lightFromDirection,
@@ -41,6 +39,7 @@ public class GlobalLightingParameters {
 		
 	}
 
+	// TODO Move this method into Sky.java
 	public Color setTime(Calendar date)
 	{
 		double lon = 0;//48.75;

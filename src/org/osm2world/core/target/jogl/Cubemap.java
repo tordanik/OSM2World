@@ -88,10 +88,15 @@ public class Cubemap {
 			gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, addr);
 		} else {
 			// If this texture has not been bound before, generate it first
-			if(cubemap == null)
+			if(cubemap == null) {
 				cubemap = load(gl, filename);
+			}
 			cubemap.bind(gl);
 		}
+	}
+
+	public void unbind(GL3 gl) {
+		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, 0);
 	}
 
 

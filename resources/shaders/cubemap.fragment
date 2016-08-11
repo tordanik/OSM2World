@@ -9,6 +9,6 @@ out vec4 FragColor;
 
 void main() {
 	// cubemapCoord is flipped because images are upside down when loaded by JOGL
-	FragColor = texture(cubemap, -cubemapCoord);
+	FragColor = texture(cubemap, cubemapCoord);
 } 
 

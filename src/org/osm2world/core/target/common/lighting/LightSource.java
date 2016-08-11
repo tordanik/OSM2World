@@ -22,6 +22,17 @@ public class LightSource {
 		this(pos, color, color, color);
 	}
 
+	public LightSource(VectorXYZW pos, Color La, Color Ls, Color Ld) {
+		this.pos = pos;
+		this.La = La;
+		this.Ls = Ls;
+		this.Ld = Ld;
+	}
+
+	public LightSource(VectorXYZW pos, Color color) {
+		this(pos, color, color, color);
+	}
+
 
 	@Override
 	public String toString() {

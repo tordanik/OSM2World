@@ -189,7 +189,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 						getFloatBuffer(light.Ls));			
 			}
 			gl.glUniform1i(lightCountID, lights.size() + 1);
-			System.out.println("Rendered "+ lights.size() +" lights");
 	}
 	
 	/**
@@ -197,6 +196,15 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	 */
 	public void setShadowed(boolean isShadowed) {
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "isShadowed"), isShadowed ? 1 : 0);
+	}
+
+	public void setEnvMap(Cubemap envMap) {
+		if(envMap != null)
+			envMap.bind(gl);
+	}
+
+	public void setShowReflections(boolean showReflections) {
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "showReflections"), showReflections ? 1 : 0);
 	}
 	
 	@Override
@@ -236,8 +244,11 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "alphaTreshold"), 0.5f );
 			}
 		}
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProcNorm"), 0);
 	    for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
 	    	if (i < numTexLayers) {
+
+				// Pass the properties for procedural textures
 				if(material.getTextureDataList().get(i).isProcedural) {
 					// Texture layer is procedural
 	    			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProc["+i+"]"), 1);
@@ -246,14 +257,23 @@ public class DefaultShader extends AbstractPrimitiveShader {
 					// assert tex instanceof ProceduralTextureData;
 					ProceduralTextureData tex = (ProceduralTextureData)material.getTextureDataList().get(i);
 
+					if(tex.normalDeviation > 0.001)
+						gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProcNorm"), 1);
+
+					gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "normDev"), tex.normalDeviation);
+
 					float baseColor[] = tex.baseColor.getRGBComponents(null);
 					float deviation[] = tex.deviation.getRGBComponents(null);
 
-					gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "procColor["+i+"]"), baseColor[0], baseColor[1], baseColor[2]);
-					gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "procDev["+i+"]"), deviation[0], deviation[1], deviation[2]);
+					gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "procColor["+i+"]")
+							, baseColor[0], baseColor[1], baseColor[2]);
+					gl.glUniform3f(gl.glGetUniformLocation(shaderProgram, "procDev["+i+"]")
+							, deviation[0], deviation[1], deviation[2]);
 
 	    			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "procXScale["+i+"]"), tex.xScale);
 	    			gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "procYScale["+i+"]"), tex.yScale);
+
+				// Pass the properties for a texture from file
 				} else {
 	    			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useProc["+i+"]"), 0);
 
