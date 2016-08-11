@@ -170,6 +170,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLa[0]"), 1, getFloatBuffer(lighting.globalAmbientColor));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLd[0]"), 1, getFloatBuffer(lighting.lightColorDiffuse));
 			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLs[0]"), 1, getFloatBuffer(lighting.lightColorSpecular));			
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "envLighting"), lighting.useProc ? 1 : 0);
 		}
 	}
 

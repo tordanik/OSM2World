@@ -23,6 +23,8 @@ public class GlobalLightingParameters {
 
 	public Color lightColorDiffuse;
 	public Color lightColorSpecular;
+
+	public boolean useProc = true;
 	
 	private GlobalLightingParameters(
 			Color globalAmbientLight, VectorXYZ lightFromDirection,

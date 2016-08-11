@@ -9,6 +9,7 @@
 	
 uniform bool isShadowed;
 uniform bool useLighting;
+uniform bool envLighting;
 uniform samplerCube envMap;
 uniform samplerCube geomMap;
 uniform bool useGeomMap;
@@ -403,6 +404,27 @@ void main()
 				vec3 la = lightsLa[i];
 				vec3 ld = lightsLd[i];
 				vec3 ls = lightsLs[i];
+
+				// If use skybox for lighting
+				if( envLighting ) {
+					vec3 ambientVector = vec3(lightsPos[i].x, max(lightsPos[i].y, 0.0), lightsPos[i].z);
+					la = texture(envMap, ambientVector).rgb;
+
+
+					ld = texture(envMap, WorldNormal).rgb;
+
+					mat3 rotMat = mat3(ModelViewMatrix);
+
+					// Grab translation vector from view matrix
+					vec3 d = vec3(ModelViewMatrix[3]);
+
+					// Calculate vector incoming to reflection point in worldspace
+					vec3 cameraPosition = -d * rotMat;
+					vec3 viewVector = normalize(WorldCoord - cameraPosition);
+
+					vec3 reflectionVector = reflect(viewVector, WorldNormal);
+					ls = texture(envMap, reflectionVector).rgb;
+				}
 
 				// If this fragment is shadowded from this light source, only
 				// apply it's ambient
