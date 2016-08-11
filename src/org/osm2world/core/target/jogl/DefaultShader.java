@@ -200,8 +200,14 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	}
 
 	public void setEnvMap(Cubemap envMap) {
-		if(envMap != null)
-			envMap.bind(gl);
+		int loc = gl.glGetUniformLocation(shaderProgram, "envMap");
+		if (loc >= 0) {
+			gl.glUniform1i(loc, 16);
+
+			if(envMap != null) {
+				envMap.bind(gl, 16);
+			}
+		}
 	}
 
 	public void setShowReflections(boolean showReflections) {
@@ -218,16 +224,26 @@ public class DefaultShader extends AbstractPrimitiveShader {
 			numTexLayers = material.getTextureDataList().size();
 		}
 
-		/*
 		// Set geometry reflection env map
-		if(Material.isReflective()) {
-			loc = gl.glGetUniformLocation(shaderProgram, "ReflMap");
+		if(material instanceof JOGLMaterial) {
+			int loc = gl.glGetUniformLocation(shaderProgram, "geomMap");
 			if (loc < 0) {
-				//throw new RuntimeException("Tex["+i+"] not found in shader program.");
+				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
+			} else {
+				gl.glUniform1i(loc, 18);
+
+				Cubemap reflMap = ((JOGLMaterial) material).getReflectionMap();
+				if(reflMap != null) {
+					reflMap.bind(gl, 18);
+					gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 1);
+				} else {
+					gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
+				}
 			}
-			gl.glUniform1i(loc, 1);
+		} else {
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
 		}
-		*/
+
 
 		
 		/* set color / lighting */

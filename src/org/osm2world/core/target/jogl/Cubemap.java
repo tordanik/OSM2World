@@ -82,9 +82,9 @@ public class Cubemap {
 	}
 	
 
-	public void bind(GL3 gl) {
+	public void bind(GL3 gl, int textureNumber) {
 		if(addr != 0) {
-			gl.glActiveTexture(GL3.GL_TEXTURE0);
+			gl.glActiveTexture(GL3.GL_TEXTURE0 + textureNumber);
 			gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, addr);
 		} else {
 			// If this texture has not been bound before, generate it first

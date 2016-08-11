@@ -34,8 +34,7 @@ public class CubemapShader extends AbstractShader {
 	public void setCubemap(Cubemap cube)
 	{
 		if(cube != null) {
-			gl.glActiveTexture(GL3.GL_TEXTURE0);
-			cube.bind(gl);
+			cube.bind(gl, 0);
 		}
 	}
 

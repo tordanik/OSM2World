@@ -69,6 +69,20 @@ public abstract class Material {
 		this.textureDataList = textureDataList;
 		updateBumpMap();
 	}
+
+	public Material(Material that) {
+		this.interpolation = that.interpolation;
+		this.color = that.color;
+		this.ambientFactor = that.ambientFactor;
+		this.diffuseFactor = that.diffuseFactor;
+		this.specularFactor = that.specularFactor;
+		this.shininess = that.shininess;
+		this.transparency = that.transparency;
+		this.shadow = that.shadow;
+		this.ambientOcclusion = that.ambientOcclusion;
+		this.textureDataList = that.textureDataList;
+		updateBumpMap();
+	}
 	
 	protected void updateBumpMap() {
 		this.bumpMap = null;
@@ -157,6 +171,10 @@ public abstract class Material {
 				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
 	}
 	
+	public boolean isReflective() {
+		return specularFactor > 0.5;
+	}
+
 	/**
 	 * returns a material that is the same as this one,
 	 * except with additional texture data layers stacked on top

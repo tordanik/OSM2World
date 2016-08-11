@@ -406,7 +406,7 @@ void main()
 				vec3 ls = lightsLs[i];
 
 				// If use skybox for lighting
-				if( envLighting ) {
+				if( false ) {
 					vec3 ambientVector = vec3(lightsPos[i].x, max(lightsPos[i].y, 0.0), lightsPos[i].z);
 					la = texture(envMap, ambientVector).rgb;
 
@@ -470,7 +470,7 @@ void main()
 		if ( isShadowed )
 			shadowFactor = 0.0;
 
-		if(useGeomMap && Material.Shininess > 50) {
+		if((showReflections || useGeomMap) && Material.Shininess > 50) {
 			// Truncate the view matrix to get the rotationMatrix
 			mat3 rotMat = mat3(ModelViewMatrix);
 
@@ -483,30 +483,22 @@ void main()
 
 			// Calculate the color of the reflected fragment
 			vec3 reflectionVector = reflect(viewVector, WorldNormal);
-			vec4 reflection = texture(geomMap, reflectionVector);
+
+			vec4 geomReflection = texture(geomMap, reflectionVector);
+			vec4 skyReflection = texture(envMap, reflectionVector);
 
 			// TODO set the mix factor to the value of the reflectance map
-			texColor = mix(texColor, reflection, Material.Ks * reflection.a);
-		}
+			if( useGeomMap) {
+				if(length(geomReflection.rgb) < 0.1) {
+					texColor = mix(skyReflection, texColor, 0.5);
+				} else {
+					texColor = mix(geomReflection, texColor, 0.5);
+				}
 
-		// Geometry reflection calculations
-		if(showReflections && Material.Shininess > 50) {
-			// Truncate the view matrix to get the rotationMatrix
-			mat3 rotMat = mat3(ModelViewMatrix);
-
-			// Grab translation vector from view matrix
-			vec3 d = vec3(ModelViewMatrix[3]);
-
-			// Calculate vector incoming to reflection point in worldspace
-			vec3 cameraPosition = -d * rotMat;
-			vec3 viewVector = normalize(WorldCoord - cameraPosition);
-
-			// Calculate the color of the reflected fragment
-			vec3 reflectionVector = reflect(viewVector, WorldNormal + procNormal);
-			vec4 reflection = texture(envMap, reflectionVector);
-
-			// TODO set the mix factor to the value of the reflectance map
-			texColor = mix(texColor, reflection, Material.Ks);
+			} else {
+				texColor = mix(texColor, skyReflection, 0.5);
+				//texColor = mix(texColor, reflection, Material.Ks);
+			}
 		}
 		
 		// Breakout the lighting matrix

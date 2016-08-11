@@ -23,6 +23,9 @@ import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -32,16 +35,24 @@ import javax.media.opengl.GL3;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.lighting.LightSource;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
+import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.modules.BuildingModule;
+
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
+
+import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.material.Material;
+
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private DefaultShader defaultShader;
@@ -56,6 +67,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private CubemapShader cubeShader;
 
 	private List<LightSource> lights;
+
+	// TODO Create a reflectionManager class that maps primitives to Cubemaps
+	private List<VectorXYZ> reflectionTargets;
 
 	private GL3 gl;
 	
@@ -72,7 +86,11 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private Cubemap envMap;
 	private boolean showEnvMap;
 	private boolean showEnvRefl;
-	
+
+	private boolean initializedReflections;
+
+	private Map<VectorXYZ, JOGLMaterial> reflections;
+
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
@@ -90,6 +108,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		cubeShader = new CubemapShader(gl);
 		lights = new ArrayList<>();
+		reflections = new HashMap<>();
+		reflectionTargets = new ArrayList<>();
 	}
 
 	@Override
@@ -259,6 +279,11 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		
 		if (renderingParameters.overwriteProjectionClippingPlanes) {
 			projection = updateClippingPlanesForCamera(camera, projection, rendererShader.getBoundingBox());
+		}
+
+		if(!initializedReflections) 
+		{
+			initializedReflections = true;
 		}
 		
 		applyProjectionMatricesForPart(pmvMatrix, projection,
@@ -657,6 +682,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 		if (renderingParameters.useShadowVolumes)
 			rendererShadowVolume = new JOGLRendererVBOShadowVolume(gl, primitiveBuffer, new VectorXYZW(globalLightingParameters.lightFromDirection, 0));
+		updateReflections();
 	}
 	
 	@Override
@@ -691,6 +717,122 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 	public void setEnvMap(Cubemap cubemap) {
 		envMap = cubemap;
+	}
+
+	public void updateSky() {
+		Sky.updateSky(gl);
+	}
+
+	
+	@Override
+	protected void drawPrimitive(Primitive.Type type, Material material,
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
+
+		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
+		// cubemap
+		if(material.isReflective()) {
+			VectorXYZ mean = new VectorXYZ(0, 0, 0);
+			for(VectorXYZ vertex : vertices) {
+				mean = mean.add(vertex);
+			}
+			mean = mean.mult(1.0 / vertices.size());
+
+			System.out.println("Need cubemap at " + mean);
+
+			JOGLMaterial mat = new JOGLMaterial(material);
+			reflections.put(mean, mat);
+
+			super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
+		} else {
+			super.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		}
+	}
+
+	@Override
+	public void beginObject(WorldObject wo) {
+	}
+
+	private Cubemap captureCubemap(VectorXYZ center) {
+
+		Camera cam = new Camera();
+		Projection proj = new Projection(false, 1, 90, 50, 1.0, 100000.0);
+
+		int s = 100;
+
+		Framebuffer cubeBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
+		cubeBuffer.init(gl);
+
+		for(int i = 0; i < 6; i ++) {
+			cubeBuffer.bind(GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			switch(i + GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
+				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX() + 1.0f, center.getY(), center.getZ(),
+								0.0f, -1.0f, 0.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX() - 1.0f, center.getY(), center.getZ(),
+								0.0f, -1.0f, 0.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+					gl.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY() + 1.0f, center.getZ(),
+								0.0f, 0.0f, -1.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+					gl.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY() - 1.0f, center.getZ(),
+								0.0f, 0.0f, 1.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+					gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY(), center.getZ() - 1.0f,
+								0.0f, -1.0f, 0.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+					gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY(), center.getZ() + 1.0f,
+								0.0f, -1.0f, 0.0f);
+					break;
+			}
+
+			gl.glDepthMask(true);
+			gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+			gl.glEnable(GL_DEPTH_TEST);
+
+			render(cam, proj);
+			
+		}
+
+		cubeBuffer.unbind();
+		return cubeBuffer.getCubemap();
+	}
+
+	public void updateReflections() {
+		for(Entry<VectorXYZ, JOGLMaterial> e : reflections.entrySet()) {
+			Cubemap refl = captureCubemap(e.getKey());
+			e.getValue().setRefl(refl);
+		}
 	}
 
 	private void drawCubemap(Camera camera, Cubemap cubemap) {
