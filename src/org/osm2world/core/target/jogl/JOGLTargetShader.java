@@ -43,7 +43,6 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.BuildingModule;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.math.FloatUtil;
@@ -63,13 +62,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
 
-	private SkyShader skyShader;
 	private CubemapShader cubeShader;
 
 	private List<LightSource> lights;
-
-	// TODO Create a reflectionManager class that maps primitives to Cubemaps
-	private List<VectorXYZ> reflectionTargets;
 
 	private GL3 gl;
 	
@@ -87,8 +82,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private boolean showEnvMap;
 	private boolean showEnvRefl;
 
-	private boolean initializedReflections;
-
 	private Map<VectorXYZ, JOGLMaterial> reflections;
 
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
@@ -101,7 +94,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		shadowVolumeShader = new ShadowVolumeShader(gl);
 		nonAreaShader = new NonAreaShader(gl);
 		backgroundShader = new BackgroundShader(gl);
-		skyShader = new SkyShader(gl);
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
@@ -109,7 +101,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		cubeShader = new CubemapShader(gl);
 		lights = new ArrayList<>();
 		reflections = new HashMap<>();
-		reflectionTargets = new ArrayList<>();
 	}
 
 	@Override
@@ -281,11 +272,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			projection = updateClippingPlanesForCamera(camera, projection, rendererShader.getBoundingBox());
 		}
 
-		if(!initializedReflections) 
-		{
-			initializedReflections = true;
-		}
-		
 		applyProjectionMatricesForPart(pmvMatrix, projection,
 				xStart, xEnd, yStart, yEnd);
 		
