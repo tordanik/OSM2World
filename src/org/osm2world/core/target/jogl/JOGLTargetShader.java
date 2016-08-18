@@ -82,7 +82,15 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private boolean showEnvMap;
 	private boolean showEnvRefl;
 
-	private Map<VectorXYZ, JOGLMaterial> reflections;
+	private ReflectiveObject activeObject;
+
+	private Map<ReflectiveObject, JOGLMaterial> reflectionMaps;
+
+	private VectorXYZ camPos;
+
+
+	// 0 - No reflections   1 - Cubemaps   2 - Plane reflections
+	private int reflectionType = 2;
 
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -100,7 +108,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		cubeShader = new CubemapShader(gl);
 		lights = new ArrayList<>();
-		reflections = new HashMap<>();
+		reflectionMaps = new HashMap<>();
 	}
 
 	@Override
@@ -276,6 +284,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				xStart, xEnd, yStart, yEnd);
 		
 		applyCameraMatrices(pmvMatrix, camera);
+
+		camPos = camera.getPos();
 
 		
 		if (renderingParameters.useSSAO) {
@@ -668,7 +678,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 		if (renderingParameters.useShadowVolumes)
 			rendererShadowVolume = new JOGLRendererVBOShadowVolume(gl, primitiveBuffer, new VectorXYZW(globalLightingParameters.lightFromDirection, 0));
-		updateReflections();
+		
+		if(activeObject != null)
+			activeObject.finish();
 	}
 	
 	@Override
@@ -709,48 +721,118 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		Sky.updateSky(gl);
 	}
 
+
+	private class ReflectiveObject {
+		private List<Primitive> primitives = new ArrayList<>();
+		private VectorXYZ center;
+		private Framebuffer reflectionBuffer;
+
+		public void add(Primitive primitive) {
+			primitives.add(primitive);
+		}
+
+		public Framebuffer getFramebuffer() {
+			if(reflectionBuffer == null) {
+				int s = 100;
+				reflectionBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
+				reflectionBuffer.init(gl);
+			}
+			return reflectionBuffer;
+		}
+
+		public VectorXYZ getCenter() {
+			return center;
+		}
+
+		public boolean finish() {
+			center = new VectorXYZ(0, 0, 0);
+			int verts = 0;
+			for(Primitive p : primitives) {
+				for(VectorXYZ vertex : p.vertices) {
+					center = center.add(vertex);
+					verts++;
+				}
+			}
+			center = center.mult(1.0 / verts);
+
+			if(reflectionMaps.containsKey(this)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
 	
 	@Override
 	protected void drawPrimitive(Primitive.Type type, Material material,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 
+		activeObject.add(new Primitive(type, vertices, normals, texCoordLists));
+
 		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
 		// cubemap
 		if(material.isReflective()) {
-			VectorXYZ mean = new VectorXYZ(0, 0, 0);
-			for(VectorXYZ vertex : vertices) {
-				mean = mean.add(vertex);
+			// If this object already has a reflective material associated with it use that
+			JOGLMaterial mat = null;
+			if(reflectionType == 1) {
+				if(reflectionMaps.containsKey(activeObject)) {
+					mat = reflectionMaps.get(activeObject);
+				} else {
+					mat = new JOGLMaterial(material);
+					reflectionMaps.put(activeObject, mat);
+				}
+			} else if(reflectionType == 2) {
+				// Test if the primitive is coplaner
+				VectorXYZ firstNormal = normals.get(0);
+				boolean coplaner = true;
+
+				for(VectorXYZ normal : normals) {
+					if(!firstNormal.equals(normal)) {
+						coplaner = false;
+						System.out.println("Primitive is not coplaner");
+						break;
+					}
+				}
+				
+				// If this primitive is coplaner, we can reflect the camera across it to calculate
+				// reflections
+				if(coplaner) {
+				}
+
 			}
-			mean = mean.mult(1.0 / vertices.size());
-
-			System.out.println("Need cubemap at " + mean);
-
-			JOGLMaterial mat = new JOGLMaterial(material);
-			reflections.put(mean, mat);
-
+			mat = (mat == null) ? new JOGLMaterial(material) : mat;
 			super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
 		} else {
 			super.drawPrimitive(type, material, vertices, normals, texCoordLists);
 		}
+
 	}
 
 	@Override
 	public void beginObject(WorldObject wo) {
+		if(activeObject != null)
+			activeObject.finish();
+		activeObject = new ReflectiveObject();
 	}
 
 	private Cubemap captureCubemap(VectorXYZ center) {
+		int s = 400;
+
+		Framebuffer cubeBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
+
+		cubeBuffer.init(gl);
+		return captureCubemap(center, cubeBuffer);
+	}
+
+	private Cubemap captureCubemap(VectorXYZ center, Framebuffer target) {
 
 		Camera cam = new Camera();
 		Projection proj = new Projection(false, 1, 90, 50, 1.0, 100000.0);
 
-		int s = 100;
-
-		Framebuffer cubeBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
-		cubeBuffer.init(gl);
-
 		for(int i = 0; i < 6; i ++) {
-			cubeBuffer.bind(GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			target.bind(GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
 			switch(i + GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
 				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X:
 					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -810,14 +892,29 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			
 		}
 
-		cubeBuffer.unbind();
-		return cubeBuffer.getCubemap();
+		target.unbind();
+		return target.getCubemap();
 	}
 
 	public void updateReflections() {
-		for(Entry<VectorXYZ, JOGLMaterial> e : reflections.entrySet()) {
-			Cubemap refl = captureCubemap(e.getKey());
-			e.getValue().setRefl(refl);
+		if(reflectionType == 1) {
+			for(Entry<ReflectiveObject, JOGLMaterial> e : reflectionMaps.entrySet()) {
+				// Test if the object is in front of the camera
+				VectorXYZ c = e.getKey().getCenter();
+				
+				// Hide the object we are capturing a cubemap for
+				e.getValue().disable();
+
+				// Render the reflections
+				Cubemap refl = captureCubemap(new VectorXYZ(c.getX(), camPos.getY(), c.getZ())
+						, e.getKey().getFramebuffer());
+				e.getValue().setRefl(refl);
+
+				// Unhide
+				e.getValue().enable();
+			}
+		} else if (reflectionType == 2) {
+			}
 		}
 	}
 

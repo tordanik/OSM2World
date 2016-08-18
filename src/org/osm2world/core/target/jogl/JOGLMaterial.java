@@ -5,6 +5,7 @@ import org.osm2world.core.target.common.material.Material;
 // Package private because this class is an abomination
 class JOGLMaterial extends Material {
 	private Cubemap reflectionMap;
+	private boolean enabled;
 
 	public JOGLMaterial(Material base) {
 		super(base);
@@ -16,6 +17,18 @@ class JOGLMaterial extends Material {
 
 	public Cubemap getReflectionMap() {
 		return reflectionMap;
+	}
+
+	public void enable() {
+		enabled = true;
+	}
+
+	public void disable() {
+		enabled = false;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 }

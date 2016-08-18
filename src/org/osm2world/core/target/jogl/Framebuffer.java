@@ -48,7 +48,6 @@ public class Framebuffer {
 			System.err.println("Framebuffer not bound to a cubemap");
 			return null;
 		}
-		System.out.println(textureID);
 		if(cubemap == null)
 			cubemap = new Cubemap(textureID);
 		return cubemap;

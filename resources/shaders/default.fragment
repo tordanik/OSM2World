@@ -7,6 +7,8 @@
 
 #define MAX_LIGHTS 128
 	
+uniform bool enabled;
+
 uniform bool isShadowed;
 uniform bool useLighting;
 uniform bool envLighting;
@@ -268,6 +270,8 @@ float perlin(vec2 texCoord, float xScale, float yScale)
  
 void main()
 {
+	if( !enabled ) return;
+
 	vec4 texColor = vec4(1.0);
 
 	// lightMat[0] = ambient, lightMat[1] = diffuse, lightMat[2] = specular

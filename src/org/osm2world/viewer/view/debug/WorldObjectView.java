@@ -12,6 +12,7 @@ import org.osm2world.core.target.jogl.Sky;
 import org.osm2world.viewer.model.RenderOptions;
 
 public class WorldObjectView extends DebugView {
+	private int change = 0;
 	private Cubemap skybox;
 	private long time;
 	
@@ -45,10 +46,18 @@ public class WorldObjectView extends DebugView {
 	
 	@Override
 	protected void updateTarget(JOGLTarget target, boolean viewChanged) {
+		// TODO Refine this so that cubemaps are updated only when the elevation of the camera changes
+		// Only update the cubemaps once the view has remained the same for 25 frames
+		if(viewChanged)
+			change = 25;
+		
 		setParameters(target);
 
 		// TODO add showEnvRefl to renderParamaters
 		if(target instanceof JOGLTargetShader) {
+			if(change == 0)
+				((JOGLTargetShader)target).updateReflections();
+
 			if(Sky.getTime() != time) {
 				if(true) {
 					skybox = Sky.getSky();
@@ -61,6 +70,8 @@ public class WorldObjectView extends DebugView {
 		} else {
 			System.err.println("Environment maps only supported with shaders rendering");
 		}
+		change--;
+		change = Math.max(change, -1);
 	}
 	
 	private void setParameters(final JOGLTarget target) {
