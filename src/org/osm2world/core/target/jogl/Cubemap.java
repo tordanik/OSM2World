@@ -1,5 +1,6 @@
 package org.osm2world.core.target.jogl;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -11,9 +12,11 @@ import javax.media.opengl.GL3;
 import javax.media.opengl.GLContext;
 
 import com.jogamp.common.util.IOUtil;
+import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
 
 public class Cubemap {
@@ -109,10 +112,12 @@ public class Cubemap {
 			String filename = file + NAMES[i] + ".jpg";
 
 			try{
-				TextureData data = TextureIO.newTextureData(
+				BufferedImage face = ImageIO.read(new File(filename));
+				ImageUtil.flipImageVertically(face);
+
+				TextureData data = AWTTextureIO.newTextureData(
 							GLContext.getCurrentGL().getGLProfile(), 
-							new File(filename),
-							false, IOUtil.getFileSuffix(filename));
+							face, false);
 
 
 				if (data == null) {
