@@ -15,7 +15,7 @@ public class ProceduralTextureData extends TextureData {
 	public ProceduralTextureData(float xScale, float yScale
 							   , Color baseColor, Color deviation
 							   , float normalDeviation) {
-		super(null, 1.0, 1.0, null, null, false, false, true);
+		super(null, 1.0, 1.0, null, null, false, false, true, false);
 		this.xScale = xScale;
 		this.yScale = yScale;
 		this.baseColor = baseColor == null ? new Color(1.0f, 1.0f, 1.0f) : baseColor;

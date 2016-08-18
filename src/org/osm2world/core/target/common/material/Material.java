@@ -53,7 +53,9 @@ public abstract class Material {
 	
 	protected List<TextureData> textureDataList;
 	protected TextureData bumpMap;
+	protected TextureData reflMap;
 	protected int bumpMapInd;
+	protected int reflMapInd;
 
 	public Material(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor, float specularFactor, int shininess, 
@@ -69,6 +71,7 @@ public abstract class Material {
 		this.ambientOcclusion = ao;
 		this.textureDataList = textureDataList;
 		updateBumpMap();
+		updateReflMap();
 	}
 
 	public Material(Interpolation interpolation, Color color,
@@ -87,6 +90,7 @@ public abstract class Material {
 		this.textureDataList = textureDataList;
 		this.reflectance = reflectance;
 		updateBumpMap();
+		updateReflMap();
 	}
 
 	public Material(Material that) {
@@ -101,6 +105,7 @@ public abstract class Material {
 		this.ambientOcclusion = that.ambientOcclusion;
 		this.textureDataList = that.textureDataList;
 		updateBumpMap();
+		updateReflMap();
 	}
 	
 	protected void updateBumpMap() {
@@ -118,6 +123,23 @@ public abstract class Material {
 			i++;
 		}
 	}
+
+	protected void updateReflMap() {
+		this.reflMap = null;
+		this.reflMapInd = -1;
+		if (textureDataList == null) {
+			return;
+		}
+		int i = 0;
+		for (TextureData t : textureDataList) {
+			if (t.isReflMap) {
+				this.reflMap = t;
+				this.reflMapInd = i;
+			}
+			i++;
+		}
+	}
+
 	
 	public Material(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
@@ -247,6 +269,18 @@ public abstract class Material {
 	
 	public int getBumpMapInd() {
 		return this.bumpMapInd;
+	}
+
+	public boolean hasReflMap() {
+		return this.reflMap != null;
+	}
+	
+	public TextureData getReflMap() {
+		return this.reflMap;
+	}
+	
+	public int getReflMapInd() {
+		return this.reflMapInd;
 	}
 	
 	public String toString() {

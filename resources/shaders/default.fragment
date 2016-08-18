@@ -41,6 +41,7 @@ in vec3 VertexEye;
 in vec3 NormalEye;
 in vec4 TangentEye;
 in vec2 BumpMapCoord;
+in vec2 ReflMapCoord;
 in vec4 ShadowCoord;
 in vec2 TexCoord0;
 in vec2 TexCoord1;
@@ -66,6 +67,7 @@ uniform bool showReflections;
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
+uniform sampler2D ReflMap;
 uniform bool useShadowMap;
 uniform sampler2DShadow ShadowMap;
 
@@ -83,6 +85,7 @@ uniform bool useAlphaTreshold;
 uniform float alphaTreshold;
 
 uniform bool useBumpMaps;
+uniform bool useReflMaps;
  
 // output to buffer
 out vec4 FragColor;
@@ -492,10 +495,11 @@ void main()
 			vec4 geomReflection = texture(geomMap, reflectionVector);
 			vec4 skyReflection = texture(envMap, reflectionVector);
 
-			// TODO set the mix factor to the value of the reflectance map
 			if( useGeomMap) {
 				// 0 is perfect mirror
 				float r = Material.Reflectance;
+				if(useReflMaps)
+					r = length(texture( ReflMap, ReflMapCoord ));
 
 				if(length(geomReflection.rgb) < 0.1) {
 					texColor = mix(skyReflection, texColor, r);

@@ -75,6 +75,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	private int vertexNormalID;
 	private int[] vertexTexCoordID = new int[MAX_TEXTURE_LAYERS];
 	private int vertexBumpMapCoordID;
+	private int vertexReflMapCoordID;
 	private int vertexTangentID;
 
 	private int lightListID;
@@ -89,6 +90,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		for (int i=0; i<MAX_TEXTURE_LAYERS; i++)
 			vertexTexCoordID[i] = gl.glGetAttribLocation(shaderProgram, "VertexTexCoord"+i+"");
 		vertexBumpMapCoordID = gl.glGetAttribLocation(shaderProgram, "VertexBumpMapCoord");
+		vertexReflMapCoordID = gl.glGetAttribLocation(shaderProgram, "VertexReflMapCoord");
 		vertexTangentID = gl.glGetAttribLocation(shaderProgram, "VertexTangent");
 		
 		// get indices of uniform variables
@@ -127,6 +129,8 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 1));
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "geomMap")
 				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 2));
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "ReflMap")
+				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 4));
 		this.disableShader();
 	}
 	
@@ -261,6 +265,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useBumpMaps"), material.hasBumpMap() ? 1 : 0);
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useReflMaps"), material.hasReflMap() ? 1 : 0);
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);
 		if (material.getTransparency() == Transparency.FALSE) {
 			gl.glDisable(GL.GL_BLEND);
@@ -371,6 +376,11 @@ public class DefaultShader extends AbstractPrimitiveShader {
 						loc = gl.glGetUniformLocation(shaderProgram, "BumpMap");
 						if (loc < 0) {
 							//throw new RuntimeException("BumpMap not found in shader program.");
+						}
+					} else if (textureData.isReflMap) {
+						loc = gl.glGetUniformLocation(shaderProgram, "ReflMap");
+						if (loc < 0) {
+							//throw new RuntimeException("ReflMap not found in shader program.");
 						}
 					} else {
 						loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
