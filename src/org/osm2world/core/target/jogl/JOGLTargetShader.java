@@ -915,7 +915,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				e.getValue().enable();
 			}
 		} else if (reflectionType == 2) {
-			}
 		}
 	}
 
