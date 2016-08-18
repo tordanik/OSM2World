@@ -257,6 +257,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), material.getDiffuseFactor());
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), material.getSpecularFactor());
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "Material.Shininess"), material.getShininess());
+		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Reflectance"), material.getReflectance());
 	
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useBumpMaps"), material.hasBumpMap() ? 1 : 0);

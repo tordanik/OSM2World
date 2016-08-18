@@ -29,6 +29,7 @@ struct MaterialInfo {
 	float Kd; // Diffuse reflectivity
 	float Ks; // Specular reflectivity
 	int Shininess; // Specular shininess factor
+	float Reflectance; // Reflectance constant
 };
 uniform MaterialInfo Material;
 
@@ -493,10 +494,13 @@ void main()
 
 			// TODO set the mix factor to the value of the reflectance map
 			if( useGeomMap) {
+				// 0 is perfect mirror
+				float r = Material.Reflectance;
+
 				if(length(geomReflection.rgb) < 0.1) {
-					texColor = mix(skyReflection, texColor, 0.5);
+					texColor = mix(skyReflection, texColor, r);
 				} else {
-					texColor = mix(geomReflection, texColor, 0.5);
+					texColor = mix(geomReflection, texColor, r);
 				}
 
 			} else {

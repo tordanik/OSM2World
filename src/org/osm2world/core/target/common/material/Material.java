@@ -46,6 +46,7 @@ public abstract class Material {
 	protected float diffuseFactor;
 	protected float specularFactor;
 	protected int shininess;
+	protected float reflectance = 0;
 	protected Transparency transparency;
 	protected Shadow shadow;
 	protected AmbientOcclusion ambientOcclusion;
@@ -67,6 +68,24 @@ public abstract class Material {
 		this.shadow = shadow;
 		this.ambientOcclusion = ao;
 		this.textureDataList = textureDataList;
+		updateBumpMap();
+	}
+
+	public Material(Interpolation interpolation, Color color,
+			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
+			Transparency transparency, Shadow shadow, AmbientOcclusion ao, 
+			List<TextureData> textureDataList, float reflectance) {
+		this.interpolation = interpolation;
+		this.color = color;
+		this.ambientFactor = ambientFactor;
+		this.diffuseFactor = diffuseFactor;
+		this.specularFactor = specularFactor;
+		this.shininess = shininess;
+		this.transparency = transparency;
+		this.shadow = shadow;
+		this.ambientOcclusion = ao;
+		this.textureDataList = textureDataList;
+		this.reflectance = reflectance;
 		updateBumpMap();
 	}
 
@@ -134,6 +153,10 @@ public abstract class Material {
 	public int getShininess() {
 		return shininess;
 	}
+
+	public float getReflectance() {
+		return reflectance;
+	}
 		
 	public Color ambientColor() {
 		return multiplyColor(getColor(), getAmbientFactor());
@@ -169,10 +192,6 @@ public abstract class Material {
 		return new ImmutableMaterial(Interpolation.SMOOTH, getColor(),
 				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
 				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
-	}
-	
-	public boolean isReflective() {
-		return specularFactor > 0.5;
 	}
 
 	/**
