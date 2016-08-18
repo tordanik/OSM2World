@@ -56,13 +56,13 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		renderPart(camera, projection, 0, 1, 0, 1);
 	}
 
-	@Override
-	protected void drawPrimitive(Primitive.Type type, Material material,
+	protected void drawPrimitive(Primitive.Type type, JOGLMaterial joglMaterial,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
+
+		primitiveBuffer.drawPrimitive(type, joglMaterial, vertices, normals, texCoordLists);
 		
-		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
-		
+		Material material = joglMaterial.getBaseMaterial();
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
 		if (material.getNumTextureLayers() > 0) {
@@ -71,6 +71,14 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 			}
 		}
 		
+	}
+
+	@Override
+	protected void drawPrimitive(Primitive.Type type, Material material,
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
+
+		System.err.println("drawPrimitive should be overriden.");
 	}
 	
 	private void drawNonAreaPrimitive(NonAreaPrimitive.Type type,

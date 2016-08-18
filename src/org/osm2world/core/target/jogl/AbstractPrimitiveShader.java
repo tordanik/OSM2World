@@ -29,7 +29,8 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 	 * @param textureManager the texture manager to use if the material has textures
 	 * @return <code>true</code> if this shader wants to render primitives with the given material at all, <code>false</code> otherwise.
 	 */
-	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+	public boolean setMaterial(JOGLMaterial joglMaterial, JOGLTextureManager textureManager) {
+		Material material = joglMaterial.getBaseMaterial();
 		
 		if (!renderSemiTransparent && material.getTransparency() == Transparency.TRUE) {
 			return false;

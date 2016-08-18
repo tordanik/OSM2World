@@ -85,21 +85,22 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	 */
 	protected void init(PrimitiveBuffer primitiveBuffer) {
 		
-		for (Material material : primitiveBuffer.getMaterials()) {
+		for (JOGLMaterial joglMaterial : primitiveBuffer.getMaterials()) {
+			Material material = joglMaterial.getBaseMaterial();
 			
 			if (material.getTransparency() == Transparency.TRUE) {
 				
-				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
+				for (Primitive primitive : primitiveBuffer.getPrimitives(joglMaterial)) {
 					transparentPrimitives.add(new PrimitiveWithMaterial(
 							primitive, material, this.createVBOData(
-									textureManager, material,
+									textureManager, joglMaterial,
 									Arrays.asList(primitive))));
 				}
 				
 			} else {
 				
-				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
-				vbos.add(this.createVBOData(textureManager, material, primitives));
+				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(joglMaterial);
+				vbos.add(this.createVBOData(textureManager, joglMaterial, primitives));
 				
 			}
 			
@@ -235,5 +236,7 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	 * @param primitives the primitives to create the VBO for
 	 * @return a vertex buffer object matching the primitives
 	 */
-	abstract VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives);
+	VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) { System.err.println("This method should be overriden"); return null; }
+
+	VBOData<?> createVBOData(JOGLTextureManager textureManager, JOGLMaterial material, Collection<Primitive> primitives) { System.err.println("This method should be overriden"); return null; }
 }

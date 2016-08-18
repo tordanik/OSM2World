@@ -25,6 +25,7 @@ import org.osm2world.core.target.common.material.Material;
 public abstract class VBOData<BufferT extends Buffer> {
 	
 	/** material associated with this VBO, determines VBO layout */
+	protected JOGLMaterial joglMaterial;
 	protected Material material;
 	
 	/** array with one element containing the VBO id */
@@ -60,11 +61,20 @@ public abstract class VBOData<BufferT extends Buffer> {
 	/**
 	 * Creates a new vertex buffer object, adds all primitives to the buffer and uploads it to graphics memory.
 	 */
-	public VBOData(GL gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
-		
+
+	public VBOData(GL gl, JOGLTextureManager textureManager
+			, JOGLMaterial joglMaterial, Collection<Primitive> primitives) {
+		this(gl, textureManager, joglMaterial.getBaseMaterial(), primitives);
+		this.joglMaterial = joglMaterial;
+	}
+
+
+	public VBOData(GL gl, JOGLTextureManager textureManager
+			, Material baseMaterial, Collection<Primitive> primitives) {
+
 		this.gl = gl;
+		this.material = baseMaterial;
 		this.textureManager = textureManager;
-		this.material = material;
 		
 		valueTypeSize = valueTypeSize();
 		glValueType = glValueType();

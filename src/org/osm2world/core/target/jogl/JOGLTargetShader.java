@@ -805,7 +805,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			mat = (mat == null) ? new JOGLMaterial(material) : mat;
 			super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
 		} else {
-			super.drawPrimitive(type, material, vertices, normals, texCoordLists);
+			JOGLMaterial mat = new JOGLMaterial(material);
+			super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
 		}
 
 	}
