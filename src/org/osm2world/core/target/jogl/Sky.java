@@ -88,7 +88,7 @@ public class Sky {
 			
 		for(int i = 0; i < 6; i ++) {
 			skyBuffer.bind(GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			gl.glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+			gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
 			
 			cubePMV.glLoadIdentity();
