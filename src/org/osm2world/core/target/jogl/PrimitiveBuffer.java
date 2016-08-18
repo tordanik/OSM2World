@@ -46,7 +46,6 @@ public class PrimitiveBuffer extends
 	void drawPrimitive(Type type, JOGLMaterial joglMaterial,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
-		System.out.println("Draw Primitive");
 		primitiveMap.put(joglMaterial,
 				new Primitive(type, vertices, normals, texCoordLists));
 	}
