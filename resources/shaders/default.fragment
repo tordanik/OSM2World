@@ -94,22 +94,22 @@ out vec4 FragColor;
 mat3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm,
 				 vec3 la, vec3 ld, vec3 ls)
 {
-	mat3 output = mat3(0);
+	mat3 lightMat = mat3(0);
 
 	// Ambient
-	output[0] = la;
+	lightMat[0] = la;
 
 	// Diffuse 
 	float sDotN = max( dot(lightDir,norm), 0.0 );
-	output[1] = ld * sDotN;
+	lightMat[1] = ld * sDotN;
 
 	// Specular
 	vec3 r = reflect( -lightDir, norm );
 	if( sDotN > 0.0 )
-		output[2] = ls *
+		lightMat[2] = ls *
 				pow( max( dot(r,viewDir), 0.0 ), Material.Shininess );
 
-	return output;
+	return lightMat;
 }
 
 const int levels = 3;
@@ -117,16 +117,16 @@ const float scaleFactor = 1.0 / levels;
 // toon shading (only ambient and diffuse)
 mat3 toonShade( vec3 lightDir, vec3 norm, vec3 la, vec3 ld )
 {
-	mat3 output = mat3(0);
+	mat3 lightMat = mat3(0);
 
 	// Ambient
-	output[0] = la;
+	lightMat[0] = la;
 
 	// Diffuse
 	float cosine = max( dot(lightDir,norm) , 0.0 );
-	output[1] = ld * floor( cosine * levels ) * scaleFactor;
+	lightMat[1] = ld * floor( cosine * levels ) * scaleFactor;
 	
-	return output;
+	return lightMat;
 }
 
 //float linearizeDepthPerspective(in float depth, in mat4 projMatrix) {
