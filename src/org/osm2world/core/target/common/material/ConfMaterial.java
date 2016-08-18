@@ -57,6 +57,10 @@ public class ConfMaterial extends Material {
 	public void setShininess(int shininess) {
 		this.shininess = shininess;
 	}
+
+	public void setReflectance(float reflectance) {
+		this.reflectance = reflectance;
+	}
 	
 	public void setTransparency(Transparency transparency) {
 		this.transparency = transparency;

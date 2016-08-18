@@ -773,7 +773,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
 		// cubemap
-		if(material.isReflective()) {
+		if(material.getReflectance() > 0.0 || material.hasReflMap()) {
 			// If this object already has a reflective material associated with it use that
 			JOGLMaterial mat = null;
 			if(reflectionType == 1) {

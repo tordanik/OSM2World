@@ -286,7 +286,7 @@ public final class Materials {
 	}
 	
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|procedural|xScale|yScale|baseColor|deviation))";
+			"material_(.+)_(color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|procedural|xScale|yScale|baseColor|deviation|reflectance))";
 	
 	/**
 	 * configures the attributes of the materials within this class
@@ -325,6 +325,11 @@ public final class Materials {
 									+ config.getString(key));
 						}
 						
+					} else if ("reflectance".equals(attribute)) {
+						
+						float reflectance = config.getFloat(key);
+						material.setReflectance(reflectance);
+
 					} else if ("specular".equals(attribute)) {
 						
 						float specular = config.getFloat(key);
