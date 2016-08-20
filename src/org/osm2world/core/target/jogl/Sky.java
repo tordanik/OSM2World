@@ -50,9 +50,10 @@ public class Sky {
 	}
 
 	public static void updateSky(GL3 gl) {
-		System.out.println("Update sky");
+		int res = 200;
+
 		if(Sky.skyBuffer == null) {
-			Sky.skyBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, 800, 800, false);
+			Sky.skyBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, res, res, false);
 			Sky.skyBuffer.init(gl);
 		}
 
@@ -88,14 +89,13 @@ public class Sky {
 			
 		for(int i = 0; i < 6; i ++) {
 			skyBuffer.bind(GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-			gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
 			
 			cubePMV.glLoadIdentity();
 
 			// TODO Verify these camera positions
 			switch(i + GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
 				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								1.0f, 0.0f, 0.0f,
@@ -103,6 +103,7 @@ public class Sky {
 					break;
 
 				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								-1.0f, 0.0f, 0.0f,
@@ -110,6 +111,7 @@ public class Sky {
 					break;
 
 				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+					gl.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								0.0f, 1.0f, 0.0f,
@@ -117,6 +119,7 @@ public class Sky {
 					break;
 
 				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+					gl.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								0.0f, -1.0f, 0.0f,
@@ -124,6 +127,7 @@ public class Sky {
 					break;
 
 				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+					gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								0.0f, 0.0f, 1.0f,
@@ -131,6 +135,7 @@ public class Sky {
 					break;
 
 				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+					gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 					cubePMV.gluLookAt(
 								0.0f, 0.0f, 0.0f,
 								0.0f, 0.0f, -1.0f,
@@ -138,6 +143,7 @@ public class Sky {
 					break;
 
 			}
+			gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
 
 			skyShader.setPMVMatrix(cubePMV);
 
