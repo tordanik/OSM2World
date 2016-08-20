@@ -219,13 +219,19 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	}
 	
 	@Override
-	public boolean setMaterial(JOGLMaterial joglMaterial, JOGLTextureManager textureManager) {
-		if (!super.setMaterial(joglMaterial, textureManager))
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
+		if (!super.setMaterial(material, textureManager))
 			return false;
 
+		int numTexLayers = 0;
+		if (material.getTextureDataList() != null) {
+			numTexLayers = material.getTextureDataList().size();
+		}
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "enabled"), 1);
+
 		// Set geometry reflection env map
-		if(joglMaterial.hasReflection()) {
-			Cubemap reflMap = joglMaterial.getReflectionMap();
+		if(material instanceof JOGLMaterial) {
+			Cubemap reflMap = ((JOGLMaterial) material).getReflectionMap();
 			if(reflMap != null) {
 				reflMap.bind(gl, getGLTextureNumber(MAX_TEXTURE_LAYERS+2));
 				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 1);
@@ -233,7 +239,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
 			}
 
-			if(joglMaterial.isEnabled()) {
+			if(!((JOGLMaterial) material).isEnabled()) {
 				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "enabled"), 0);
 			}
 
@@ -242,13 +248,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		}
 
 
-		Material material = joglMaterial.getBaseMaterial();
-
-		int numTexLayers = 0;
-		if (material.getTextureDataList() != null) {
-			numTexLayers = material.getTextureDataList().size();
-		}
-		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "enabled"), 1);
 		
 		/* set color / lighting */
 		

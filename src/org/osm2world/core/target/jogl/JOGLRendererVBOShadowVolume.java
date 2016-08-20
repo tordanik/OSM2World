@@ -114,11 +114,10 @@ public class JOGLRendererVBOShadowVolume  {
 	protected void init(PrimitiveBuffer primitiveBuffer) {
 		
 		Collection<Primitive> combinedPrimitives = new ArrayList<Primitive>();
-		for (JOGLMaterial joglMaterial : primitiveBuffer.getMaterials()) {
-			Material material = joglMaterial.getBaseMaterial();
+		for (Material material : primitiveBuffer.getMaterials()) {
 			
 			if (material.getTransparency() == Transparency.FALSE && material.getShadow() == Shadow.TRUE) {
-				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(joglMaterial);
+				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
 				combinedPrimitives.addAll(primitives);
 			}
 			

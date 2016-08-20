@@ -34,33 +34,27 @@ public class PrimitiveBuffer extends
 		renderable.renderTo(this);
 	}
 	
-	private Multimap<JOGLMaterial, Primitive> primitiveMap = HashMultimap.create();
+	private Multimap<Material, Primitive> primitiveMap = HashMultimap.create();
 	
 	@Override
 	protected void drawPrimitive(Type type, Material material,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
-		System.err.println("PrimitiveBuffer should be used with JOGLMaterial");
-	}
-
-	void drawPrimitive(Type type, JOGLMaterial joglMaterial,
-			List<VectorXYZ> vertices, List<VectorXYZ> normals,
-			List<List<VectorXZ>> texCoordLists) {
-		primitiveMap.put(joglMaterial,
+		primitiveMap.put(material,
 				new Primitive(type, vertices, normals, texCoordLists));
 	}
 	
 	/**
 	 * returns all materials used in the buffer
 	 */
-	public Set<JOGLMaterial> getMaterials() {
+	public Set<Material> getMaterials() {
 		return primitiveMap.keySet();
 	}
 	
 	/**
 	 * returns all primitives that use a given material
 	 */
-	public Collection<Primitive> getPrimitives(JOGLMaterial material) {
+	public Collection<Primitive> getPrimitives(Material material) {
 		return primitiveMap.get(material);
 	}
 	

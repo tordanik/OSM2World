@@ -37,8 +37,8 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	private final class VBODataDouble extends VBODataShader<DoubleBuffer> {
 
-		public VBODataDouble(GL3 gl, JOGLTextureManager textureManager, JOGLMaterial joglMaterial, Collection<Primitive> primitives) {
-			super(gl, textureManager, joglMaterial, primitives);
+		public VBODataDouble(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+			super(gl, textureManager, material, primitives);
 		}
 		
 		@Override
@@ -81,8 +81,8 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	
 	private final class VBODataFloat extends VBODataShader<FloatBuffer> {
 
-		public VBODataFloat(GL3 gl, JOGLTextureManager textureManager, JOGLMaterial joglMaterial, Collection<Primitive> primitives) {
-			super(gl, textureManager, joglMaterial, primitives);
+		public VBODataFloat(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+			super(gl, textureManager, material, primitives);
 		}
 		
 		@Override
@@ -136,7 +136,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 		this.init(primitiveBuffer);
 		
 		ArrayList<VectorXYZ> boundedVertices = new ArrayList<VectorXYZ>();
-		for (JOGLMaterial m : primitiveBuffer.getMaterials()) {
+		for (Material m : primitiveBuffer.getMaterials()) {
 			for (Primitive p : primitiveBuffer.getPrimitives(m)) {
 				for (VectorXYZ v : p.vertices) {
 					if (xzBoundary == null || xzBoundary.contains(v.xz())) {
@@ -149,11 +149,11 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	}
 	
 	@Override
-	VBOData<?> createVBOData(JOGLTextureManager textureManager, JOGLMaterial joglMaterial, Collection<Primitive> primitives) {
+	VBOData<?> createVBOData(JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		if (DOUBLE_PRECISION_RENDERING)
-			return new VBODataDouble(gl, textureManager, joglMaterial, primitives);
+			return new VBODataDouble(gl, textureManager, material, primitives);
 		else
-			return new VBODataFloat(gl, textureManager, joglMaterial, primitives);
+			return new VBODataFloat(gl, textureManager, material, primitives);
 	}
 	
 	/**

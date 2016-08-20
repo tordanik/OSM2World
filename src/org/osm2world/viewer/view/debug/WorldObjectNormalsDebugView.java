@@ -10,7 +10,6 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.JOGLMaterial;
 import org.osm2world.core.target.jogl.PrimitiveBuffer;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.world.data.WorldObject;
@@ -41,13 +40,12 @@ public class WorldObjectNormalsDebugView extends DebugView {
 			}
 		});
 		
-		for (JOGLMaterial joglMaterial : primitiveBuffer .getMaterials()) {
-			Material material = joglMaterial.getBaseMaterial();
+		for (Material material : primitiveBuffer .getMaterials()) {
 			
 			Color color = material.getInterpolation() == Interpolation.FLAT ?
 					FLAT_NORMALS_COLOR : SMOOTH_NORMALS_COLOR;
 			
-			for (Primitive primitive : primitiveBuffer.getPrimitives(joglMaterial)) {
+			for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 				
 				for (int i = 0; i < primitive.vertices.size(); i++) {
 					VectorXYZ v = primitive.vertices.get(i);

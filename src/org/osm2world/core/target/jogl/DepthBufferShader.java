@@ -71,13 +71,11 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	}
 
 	@Override
-	public boolean setMaterial(JOGLMaterial joglMaterial, JOGLTextureManager textureManager) {
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		
 		if (!USE_TRANSPARENCY) {
 			return true;
 		}
-
-		Material material = joglMaterial.getBaseMaterial();
 		
 		/*
 		 * only set textures (needed for transparency)

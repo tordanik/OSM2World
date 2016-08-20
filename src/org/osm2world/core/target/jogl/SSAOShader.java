@@ -190,14 +190,13 @@ public class SSAOShader extends DepthBufferShader {
 	 * Only primitives that support ambient occlusion will get rendered.
 	 */
 	@Override
-	public boolean setMaterial(JOGLMaterial joglMaterial, JOGLTextureManager textureManager) {
-		Material material = joglMaterial.getBaseMaterial();
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		
 		if (material.getAmbientOcclusion() == AmbientOcclusion.FALSE) {
 			return false;
 		}
 		
-		return super.setMaterial(joglMaterial, textureManager);
+		return super.setMaterial(material, textureManager);
 	}
 	
 	/**

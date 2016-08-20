@@ -32,8 +32,8 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	/**
 	 * @see VBOData#VBOData(javax.media.opengl.GL, JOGLTextureManager, Material, Collection)
 	 */
-	public VBODataShader(GL3 gl, JOGLTextureManager textureManager, JOGLMaterial joglMaterial, Collection<Primitive> primitives) {
-		super(gl, textureManager, joglMaterial, primitives);
+	public VBODataShader(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
+		super(gl, textureManager, material, primitives);
 		this.gl = gl;
 	}
 	
@@ -140,7 +140,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
 
 		setPointerLayout();
-		if (shader.setMaterial(joglMaterial, textureManager))
+		if (shader.setMaterial(material, textureManager))
 			gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 		
 		for (int i=1; i<DefaultShader.MAX_TEXTURE_LAYERS; i++) {

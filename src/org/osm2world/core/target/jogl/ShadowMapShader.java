@@ -455,15 +455,14 @@ public class ShadowMapShader extends DepthBufferShader {
 	 * Only primitives that support shadow will get rendered. For opaque objects see {@link #setRenderOpaque(boolean)}
 	 */
 	@Override
-	public boolean setMaterial(JOGLMaterial joglMaterial, JOGLTextureManager textureManager) {
-		Material material = joglMaterial.getBaseMaterial();
+	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
 		if (!renderOpaque && material.getTransparency() == Transparency.FALSE) {
 			return false;
 		}
 		if (material.getShadow() == Shadow.FALSE) {
 			return false;
 		}
-		return super.setMaterial(joglMaterial, textureManager);
+		return super.setMaterial(material, textureManager);
 	}
 	
 	/**

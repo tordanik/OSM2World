@@ -68,12 +68,11 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 		
 		gl.glNewList(displayListPointer, GL_COMPILE);
 
-		for (JOGLMaterial joglMaterial : primitiveBuffer.getMaterials()) {
-			Material material = joglMaterial.getBaseMaterial();
+		for (Material material : primitiveBuffer.getMaterials()) {
 			
 			if (material.getTransparency() == Transparency.TRUE) {
 				
-				for (Primitive primitive : primitiveBuffer.getPrimitives(joglMaterial)) {
+				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 					transparentPrimitives.add(
 							new PrimitiveWithMaterial(primitive, material));
 				}
@@ -82,7 +81,7 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 				
 				JOGLTargetFixedFunction.setMaterial(gl, material, textureManager);
 	
-				for (Primitive primitive : primitiveBuffer.getPrimitives(joglMaterial)) {
+				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 					drawPrimitive(gl, AbstractJOGLTarget.getGLConstant(primitive.type),
 							primitive.vertices, primitive.normals,
 							primitive.texCoordLists);
