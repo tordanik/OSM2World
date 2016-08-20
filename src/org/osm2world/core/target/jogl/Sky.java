@@ -31,6 +31,7 @@ public class Sky {
 
 	private static LightSource sun;
 	private static long time;
+	private static boolean night;
 	public static Color scatterColor = new Color(0.55f, 0.7f, 0.8f);
 
 	static {
@@ -195,6 +196,8 @@ public class Sky {
 
 		if(hourAngle > 0) azimuthAngle = (Math.PI * 2 - azimuthAngle);
 
+		night = Math.toDegrees(elevationAngle) < 5;
+
 		System.out.println("Elevation Angle: " + Math.toDegrees(elevationAngle));
 		System.out.println("Azimuth Angle: " + Math.toDegrees(azimuthAngle));
 		System.out.println(elevationAngle > 0?"Day":"Night");
@@ -233,6 +236,10 @@ public class Sky {
 		// }
 		// else
 		// 	intensity = 1.0f;
+	}
+
+	public static boolean isNight() {
+		return night;
 	}
 
 	public static LightSource getSun() {

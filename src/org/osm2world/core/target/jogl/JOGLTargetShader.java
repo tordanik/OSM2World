@@ -263,7 +263,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		// TODO Hack to remove strange extenous light sources
 		if(pos.length() < 1000) {
 			lights.add(new LightSource(pos, new Color(intensity, intensity, intensity)));
-			System.out.println(lights);
 		} else {
 			System.out.println("Pruned extenous light source");
 		}
@@ -332,7 +331,11 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
-		defaultShader.setLocalLighting(lights);
+		if(Sky.isNight()) {
+			defaultShader.setLocalLighting(lights);
+		} else {
+			defaultShader.setLocalLighting(new ArrayList<>());
+		}
 		defaultShader.setEnvMap(envMap);
 		defaultShader.setShowReflections(showEnvRefl);
 
