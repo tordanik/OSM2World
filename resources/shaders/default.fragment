@@ -414,8 +414,13 @@ void main()
 				vec3 ls = lightsLs[i];
 
 				// If use skybox for lighting
-				if( false ) {
-					vec3 ambientVector = vec3(lightsPos[i].x, max(lightsPos[i].y, 0.0), lightsPos[i].z);
+				if( envLighting ) {
+					// To do this properly, the ambient light should be the average of every vector
+					//   in the hemisphere centered at and tangent to the fragment. These values could
+					//   be precomputed for every vector in the envMap, and passed as a second lightMap.
+					//
+					// Instead it is approximated by using the color of direct sunlight
+					vec3 ambientVector = vec3(lightsPos[i].x, max(lightsPos[i].y, 0.0), -lightsPos[i].z);
 					la = texture(envMap, ambientVector).rgb;
 
 
@@ -478,7 +483,13 @@ void main()
 		if ( isShadowed )
 			shadowFactor = 0.0;
 
-		if((showReflections || useGeomMap) && Material.Shininess > 50) {
+		if( (showReflections || useGeomMap) && (Material.Reflectance > 0.0 || useReflMaps) ) {
+			// Calculate the reflectance of this fragment
+			float r = Material.Reflectance;
+			if(useReflMaps)
+				// POVRay style reflectance maps
+				r = 1 - length(texture( ReflMap, ReflMapCoord ));
+
 			// Truncate the view matrix to get the rotationMatrix
 			mat3 rotMat = mat3(ModelViewMatrix);
 
@@ -489,28 +500,23 @@ void main()
 			vec3 cameraPosition = -d * rotMat;
 			vec3 viewVector = normalize(WorldCoord - cameraPosition);
 
-			// Calculate the color of the reflected fragment
+			// Calculate the reflected vector
 			vec3 reflectionVector = reflect(viewVector, WorldNormal);
 
+			// Calculate the color of the reflected fragment
 			vec4 geomReflection = texture(geomMap, reflectionVector);
 			vec4 skyReflection = texture(envMap, reflectionVector);
 
-			if( useGeomMap) {
-				// 0 is perfect mirror
-				float r = Material.Reflectance;
-				if(useReflMaps)
-					r = length(texture( ReflMap, ReflMapCoord ));
+			// Mix the reflections for the final color
+			vec4 reflection = vec4(0.0);
 
-				if(length(geomReflection.rgb) < 0.1) {
-					texColor = mix(skyReflection, texColor, r);
-				} else {
-					texColor = mix(geomReflection, texColor, r);
-				}
+			if( showReflections )
+				reflection = skyReflection;
 
-			} else {
-				texColor = mix(texColor, skyReflection, 0.5);
-				//texColor = mix(texColor, reflection, Material.Ks);
-			}
+			if( useGeomMap )
+				reflection = mix(geomReflection, reflection, geomReflection.a);
+
+			texColor = mix(texColor, reflection, r);
 		}
 		
 		// Breakout the lighting matrix

@@ -90,7 +90,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 
 	// 0 - No reflections   1 - Cubemaps   2 - Plane reflections
-	private int reflectionType = 2;
+	private int reflectionType = 0;
 
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -773,7 +773,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
 		// cubemap
-		if(material.getReflectance() > 0.0 || material.hasReflMap()) {
+		if(reflectionType != 0 && material.getReflectance() > 0.0 || material.hasReflMap()) {
 			// If this object already has a reflective material associated with it use that
 			JOGLMaterial mat = null;
 			if(reflectionType == 1) {

@@ -61,11 +61,6 @@ vec3 extinction(float dist, vec3 color, float factor){
 
 void main()
 {
-	// TODO Figure out why the skybox is flipped five times
-
-	// z coord flipped because the skybox needs to be flipped five times
-	vec3 sv = vec3(sunVector.x, sunVector.y, -sunVector.z);
-
 	float rayleigh_brightness = 0.7;
 	float mie_brightness = 1.0;
 
@@ -81,7 +76,7 @@ void main()
 
 	// Calculates a factor for each type of scattering based on the size
 	// of the particles and the angle between the sun and view directions
-	float alpha = dot(eyeVector, sv);
+	float alpha = dot(eyeVector, sunVector);
 	float rayleigh_phase = phase(alpha, 0.0);
 	float mie_phase = phase(alpha, mie_distribution);
 
@@ -103,11 +98,11 @@ void main()
 		// How much light from the sun to the sample point is extincted
 		// by the horizon
 		float sun_extinction = horizon_extinction(
-				position, sv, surface_height-0.01
+				position, sunVector, surface_height-0.01
 			);
 
 		// How much of the ray cast from the eye to the sun is in the atmosphere
-		float sample_depth = atmospheric_depth(position.y, sv);
+		float sample_depth = atmospheric_depth(position.y, sunVector);
 
 		// Amount of sunlight that makes it through the atmosphere to the sample position
 		vec3 influx = extinction(sample_depth, vec3(sunIntensity), scatter_strength) * sun_extinction;
@@ -140,7 +135,6 @@ void main()
 			mie_brightness * mie_collected +
 			rayleigh_brightness * rayleigh_collected
 	);
-//	color = vec3(1.0);
 
 } 
 

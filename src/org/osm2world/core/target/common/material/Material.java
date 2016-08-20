@@ -46,7 +46,7 @@ public abstract class Material {
 	protected float diffuseFactor;
 	protected float specularFactor;
 	protected int shininess;
-	protected float reflectance = 0;
+	protected float reflectance;
 	protected Transparency transparency;
 	protected Shadow shadow;
 	protected AmbientOcclusion ambientOcclusion;
