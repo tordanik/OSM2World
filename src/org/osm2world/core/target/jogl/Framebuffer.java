@@ -18,8 +18,7 @@ public class Framebuffer {
 	private int viewWidth;
 	private int viewHeight;
 
-	private int prevWidth;
-	private int prevHeight;
+	private int[] oldViewport = new int[4];
 
 	private Cubemap cubemap;
 
@@ -142,9 +141,7 @@ public class Framebuffer {
 			return;
 		}
 
-		// TODO get these from somewhere
-		prevWidth = 800;
-		prevHeight = 600;
+		gl.glGetIntegerv(GL3.GL_VIEWPORT, oldViewport, 0);
 		gl.glViewport(0, 0, viewWidth, viewHeight);
 	}
 
@@ -175,9 +172,7 @@ public class Framebuffer {
 					return;
 				}
 
-				// TODO get these from somewhere
-				prevWidth = 800;
-				prevHeight = 600;
+				gl.glGetIntegerv(GL3.GL_VIEWPORT, oldViewport, 0);
 				gl.glViewport(0, 0, viewWidth, viewHeight);
 
 				break;
@@ -190,7 +185,7 @@ public class Framebuffer {
 
 	public void unbind() {
 		gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
-		gl.glViewport(0, 0, prevWidth, prevHeight);
+		gl.glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 		if(depthBuffer)
 			gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, 0);
 	}
