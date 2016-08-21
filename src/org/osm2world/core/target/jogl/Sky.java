@@ -34,6 +34,9 @@ public class Sky {
 	private static boolean night;
 	public static Color scatterColor = new Color(0.55f, 0.7f, 0.8f);
 
+	private static double lat;
+	private static double lon;
+
 	static {
 		Calendar c = Calendar.getInstance();
 		c.set(2001,0,1,12,0,0);
@@ -160,8 +163,6 @@ public class Sky {
 	public static void setTime(Calendar date)
 	{
 		System.out.println("SkyTime");
-		double lon = 0;//48.75;
-		double lat = 0;//13.46;
 
 		Sky.time = date.getTimeInMillis();
 
@@ -244,6 +245,11 @@ public class Sky {
 
 	public static LightSource getSun() {
 		return Sky.sun;
+	}
+
+	public static void setCoord(double lat, double lon) {
+		Sky.lat = lat;
+		Sky.lon = lon;
 	}
 }
 
