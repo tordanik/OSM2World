@@ -15,7 +15,7 @@ uniform float step_count = 10.0;
 in vec3 cubemapCoord;
  
 // output to buffer
-out vec3 color;
+out vec4 color;
 
 // Calculates how much light is scattered in a direction where
 // alpha is the angle between the original direction and the
@@ -25,6 +25,7 @@ float phase(float alpha, float g){
 	float b = 2.0*(2.0+g*g);
 	float c = 1.0+alpha*alpha;
 	float d = pow(1.0+g*g-2.0*g*alpha, 1.5);
+	if(abs(d) < 0.0000001) d = 0.0000001;
 	return (a/b)*(c/d);
 }
 
@@ -56,6 +57,7 @@ float horizon_extinction(vec3 position, vec3 dir, float radius){
 
 // color - color * Kr^(factor/distance)
 vec3 extinction(float dist, vec3 color, float factor){
+	if(dist < 0.0000001) return color;
 	return color-color*pow(Kr, vec3(factor/dist));
 }
 
@@ -131,9 +133,9 @@ void main()
 
 
 	// Calculate the final color by apply the amount of light that is inscattered
-	color = vec3(
+	color = vec4(
 			mie_brightness * mie_collected +
-			rayleigh_brightness * rayleigh_collected
+			rayleigh_brightness * rayleigh_collected, 1.0
 	);
 
 } 
