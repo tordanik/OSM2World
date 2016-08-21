@@ -64,7 +64,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 	private CubemapShader cubeShader;
 
-	private List<LightSource> lights;
+	private Map<LightSource, Integer> lightIndex;
+	private List<LightSource.LightColor> lightInfo;
 
 	private GL3 gl;
 	
@@ -107,7 +108,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		reset();
 
 		cubeShader = new CubemapShader(gl);
-		lights = new ArrayList<>();
+		lightInfo = new ArrayList<>();
+		lightIndex = new HashMap<>();
 		reflectionMaps = new HashMap<>();
 	}
 
@@ -262,7 +264,20 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void drawLight(VectorXYZ pos, float intensity) {
 		// TODO Hack to remove strange extenous light sources
 		if(pos.length() < 1000) {
-			lights.add(new LightSource(pos, new Color(intensity, intensity, intensity)));
+			// Create the new light source
+			LightSource thisLight = new LightSource(pos, new Color(intensity, intensity, intensity));
+
+			// Check if we have a same colored source
+			int index = lightInfo.indexOf(thisLight.color);
+			if(index == -1) {
+				// If not, add this color
+				lightInfo.add(thisLight.color);
+				lightIndex.put(thisLight, lightInfo.size() - 1);
+			} else {
+				// If so, use that color
+				lightIndex.put(thisLight, index);
+			}
+
 		} else {
 			System.out.println("Pruned extenous light source");
 		}
@@ -331,13 +346,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
-		if(Sky.isNight()) {
-			defaultShader.setLocalLighting(lights);
-		} else {
-			defaultShader.setLocalLighting(new ArrayList<>());
-		}
 		defaultShader.setEnvMap(envMap);
 		defaultShader.setShowReflections(showEnvRefl);
+
+		defaultShader.setLocalLighting(lightInfo, lightIndex, Sky.isNight());
 
 		if (showShadowPerspective)
 			defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());

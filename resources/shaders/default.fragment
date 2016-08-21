@@ -5,24 +5,49 @@
 #define MAX_TEXTURE_LAYERS 4
 #define SSAO_RANDOM_ROTATION
 
-#define MAX_LIGHTS 128
+#define MAX_UNIQUE_LIGHTS 32
+#define MAX_LIGHTS 256
 	
+// Should this fragment be rendered
 uniform bool enabled;
 
-uniform bool isShadowed;
+/*** LIGHTING UNIFORMS ***/
+// Enable or disable lighting effects
 uniform bool useLighting;
+uniform bool isShadowed;
+
+// Should the environment map be used to calculate the sunlight information
 uniform bool envLighting;
-uniform samplerCube envMap;
-uniform samplerCube geomMap;
-uniform bool useGeomMap;
+
+// Number of unique light sources
+uniform int numLights;
 
 // OpenGL 3 does not support uniform struct arrays
-uniform vec4[MAX_LIGHTS] lightsPos;
-uniform vec3[MAX_LIGHTS] lightsLa;
-uniform vec3[MAX_LIGHTS] lightsLd;
-uniform vec3[MAX_LIGHTS] lightsLs;
-uniform int numLights;
-	
+// Aggregated lighting info
+uniform vec3[MAX_UNIQUE_LIGHTS] lightLa;
+uniform vec3[MAX_UNIQUE_LIGHTS] lightLd;
+uniform vec3[MAX_UNIQUE_LIGHTS] lightLs;
+
+// Per-source lighting info
+uniform vec4[MAX_LIGHTS] lightPos;
+uniform uint[MAX_LIGHTS] lightIndex;
+
+
+/** REFLECTION UNIFORMS **/
+// Should the environment map be reflected off this fragment
+uniform bool showReflections;
+uniform samplerCube envMap;
+
+// Should world geometry be reflected off this fragment using the geomMap as a local environment map
+uniform bool useGeomMap;
+uniform samplerCube geomMap;
+
+// Should reflectance maps be used be used to determine the reflectance of this fragment
+uniform bool useReflMaps;
+uniform sampler2D ReflMap;
+
+
+/*** MATERIAL UNIFORMS ***/
 struct MaterialInfo {
 	vec3 Color; // Material color
 	float Ka; // Ambient reflectivity
@@ -62,12 +87,9 @@ uniform bool useProc[MAX_TEXTURE_LAYERS];
 uniform bool useProcNorm;
 uniform float normDev;
 
-uniform bool showReflections;
-
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
 uniform sampler2D BumpMap;
-uniform sampler2D ReflMap;
 uniform bool useShadowMap;
 uniform sampler2DShadow ShadowMap;
 
@@ -85,7 +107,6 @@ uniform bool useAlphaTreshold;
 uniform float alphaTreshold;
 
 uniform bool useBumpMaps;
-uniform bool useReflMaps;
  
 // output to buffer
 out vec4 FragColor;
@@ -403,15 +424,18 @@ void main()
 
 		// Actual lighting calculations for each source
 		for(int i = 0; i < numLights; i++) {
-			vec4 lightPositionEye = ModelViewMatrix * lightsPos[i];
+			// If this light is turned off, skip it
+			if( (lightIndex[i] & 1U) == 0U ) continue;
+
+			vec4 lightPositionEye = ModelViewMatrix * lightPos[i];
 		
 			// directional light?
-			if(lightsPos[i].w == 0.0) {
+			if(lightPos[i].w == 0.0) {
 				// tangentMatrix is the identity if normal mapping is not in use
 				vec3 lightDirection = tangentMatrix * normalize(vec3(lightPositionEye));
-				vec3 la = lightsLa[i];
-				vec3 ld = lightsLd[i];
-				vec3 ls = lightsLs[i];
+				vec3 la = lightLa[lightIndex[i] >> 1];
+				vec3 ld = lightLd[lightIndex[i] >> 1];
+				vec3 ls = lightLs[lightIndex[i] >> 1];
 
 				// If use skybox for lighting
 				if( envLighting ) {
@@ -420,7 +444,7 @@ void main()
 					//   be precomputed for every vector in the envMap, and passed as a second lightMap.
 					//
 					// Instead it is approximated by using the color of direct sunlight
-					vec3 ambientVector = vec3(lightsPos[i].x, max(lightsPos[i].y, 0.0), -lightsPos[i].z);
+					vec3 ambientVector = vec3(lightPos[i].x, max(lightPos[i].y, 0.0), -lightPos[i].z);
 					la = texture(envMap, ambientVector).rgb;
 
 
@@ -456,9 +480,9 @@ void main()
 				float dist = length(r);
 
 				lightMat += phongModel(lightDirection, viewDirection, normal,
-									   lightsLa[i] * (10 / (dist * dist)), 
-									   lightsLd[i] * (10 / (dist * dist)), 
-									   lightsLs[i] * (10 / (dist * dist)));
+									   lightLa[(lightIndex[i] >> 1)] * (10 / (dist * dist)), 
+									   lightLd[(lightIndex[i] >> 1)] * (10 / (dist * dist)), 
+									   lightLs[(lightIndex[i] >> 1)] * (10 / (dist * dist)));
 			}
 		}
 		

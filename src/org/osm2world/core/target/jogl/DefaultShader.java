@@ -13,6 +13,7 @@ import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 import java.awt.Color;
 import java.nio.FloatBuffer;
 import java.util.List;
+import java.util.Map;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
@@ -170,34 +171,57 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	 * @param lighting the global lighting to apply. Can be <code>null</code> to disable lighting.
 	 */
 	public void setGlobalLighting(GlobalLightingParameters lighting) {
-		
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useLighting"), lighting != null ? 1 : 0);
+
 		if (lighting != null) {
-			gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "lightsPos[0]"), (float)lighting.lightFromDirection.getX(),
-					(float)lighting.lightFromDirection.getY(), -(float)lighting.lightFromDirection.getZ(), 0f);
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLa[0]"), 1, getFloatBuffer(lighting.globalAmbientColor));
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLd[0]"), 1, getFloatBuffer(lighting.lightColorDiffuse));
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLs[0]"), 1, getFloatBuffer(lighting.lightColorSpecular));			
-			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "envLighting"), lighting.useProc ? 1 : 0);
+			// Set sun color
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightLa[0]")
+					, 1, getFloatBuffer(lighting.globalAmbientColor));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightLd[0]")
+					, 1, getFloatBuffer(lighting.lightColorDiffuse));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightLs[0]")
+					, 1, getFloatBuffer(lighting.lightColorSpecular));			
+
+			// Set sun direction
+			gl.glUniform1ui(gl.glGetUniformLocation(shaderProgram, "lightIndex[0]"),  1);
+			gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "lightPos[0]"),
+					(float)lighting.lightFromDirection.getX(),
+					(float)lighting.lightFromDirection.getY(),
+					-(float)lighting.lightFromDirection.getZ(), 0f);
+
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "envLighting")
+					, lighting.useProc ? 1 : 0);
 		}
 	}
 
-	public void setLocalLighting(List<LightSource> lights) {
-			for(int i = 1; i < lights.size() + 1; i++) {
-				LightSource light = lights.get(i - 1);
-				gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "lightsPos["+i+"]"), 
-						(float)light.pos.getX(),
-						(float)light.pos.getY(),
-						-(float)light.pos.getZ(), 1f);
+	public void setLocalLighting(List<LightSource.LightColor> lightInfo, Map<LightSource, Integer> lightIndex, boolean enabled) {
+		// All indices offset by 1 because the sun is light 0
+		// Write the common info
+		for(int i = 0; i < lightInfo.size(); i++) {
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightLa["+ (i+1) +"]"), 1, 
+					getFloatBuffer(lightInfo.get(i).La));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightLd["+ (i+1) +"]"), 1,
+					getFloatBuffer(lightInfo.get(i).Ld));
+			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightLs["+ (i+1) +"]"), 1,
+					getFloatBuffer(lightInfo.get(i).Ls));			
+		}
 
-				gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLa["+i+"]"), 1, 
-						getFloatBuffer(light.La));
-				gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLd["+i+"]"), 1,
-						getFloatBuffer(light.Ld));
-				gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "lightsLs["+i+"]"), 1,
-						getFloatBuffer(light.Ls));			
-			}
-			gl.glUniform1i(lightCountID, lights.size() + 1);
+
+		// Write the info unique to each light source
+		int i = 0;
+		for(Map.Entry<LightSource, Integer> e : lightIndex.entrySet()) {
+			gl.glUniform4f(gl.glGetUniformLocation(shaderProgram, "lightPos["+ (i+1) +"]"), 
+					(float)e.getKey().pos.getX(),
+					(float)e.getKey().pos.getY(),
+					-(float)e.getKey().pos.getZ(), 1f);
+
+			// LSB of index is enable bit
+			gl.glUniform1ui(gl.glGetUniformLocation(shaderProgram, "lightIndex["+ (i+1) +"]"),
+					((e.getValue().intValue() + 1) << 1) | (enabled ? 1 : 0));
+
+			i++;
+		}
+		gl.glUniform1i(lightCountID, i + 1);
 	}
 	
 	/**
