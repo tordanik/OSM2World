@@ -960,9 +960,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			render(cam, proj);
 			renderingCubemap = false;
 			
+			target.unbind();
 		}
 
-		target.unbind();
 		return target.getCubemap();
 	}
 
