@@ -89,6 +89,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 	private VectorXYZ camPos;
 
+	private boolean renderingCubemap;
 
 	// 0 - No reflections   1 - Cubemaps   2 - Plane reflections
 	private int reflectionType = 1;
@@ -302,7 +303,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		camPos = camera.getPos();
 
 		
-		if (renderingParameters.useSSAO) {
+		if (renderingParameters.useSSAO && !renderingCubemap) {
 			defaultShader.setSSAOkernelSize(renderingParameters.SSAOkernelSize);
 			defaultShader.setSSAOradius(renderingParameters.SSAOradius);
 			
@@ -316,7 +317,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			ssaoShader.disableShader();
 		}
 		
-		if (renderingParameters.useShadowMaps) {
+		if (renderingParameters.useShadowMaps && !renderingCubemap) {
 			
 			// TODO: render only part?
 			shadowMapShader.setCameraFrustumPadding(renderingParameters.shadowMapCameraFrustumPadding);
@@ -365,7 +366,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
 			defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
 		}
-		if (!showShadowPerspective && renderingParameters.useSSAO) {
+		if (!showShadowPerspective && renderingParameters.useSSAO && !renderingCubemap) {
 			defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 		}
 		
@@ -444,7 +445,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.setPMVMatrix(pmvMatrix);
 			defaultShader.setShadowed(true);
 			
-			if (!showShadowPerspective && renderingParameters.useSSAO) {
+			if (!showShadowPerspective && renderingParameters.useSSAO && !renderingCubemap) {
 				defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 			}
 
@@ -497,7 +498,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
 				defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
 			}
-			if (!showShadowPerspective && renderingParameters.useSSAO) {
+			if (!showShadowPerspective && renderingParameters.useSSAO && !renderingCubemap) {
 				defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 			}
 			defaultShader.setRenderOnlySemiTransparent(true);
@@ -741,6 +742,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		private List<Primitive> primitives = new ArrayList<>();
 		private VectorXYZ center;
 		private Framebuffer reflectionBuffer;
+		private boolean needsUpdate;
+		private boolean everUpdated;
+		private double height;
+		private double maxY;
 
 		public void add(Primitive primitive) {
 			primitives.add(primitive);
@@ -759,22 +764,56 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			return center;
 		}
 
+		public double getHeight() {
+			return height;
+		}
+
+		public double maxY() {
+			return maxY;
+		}
+
+		public boolean needsUpdate() {
+			if(!everUpdated) {
+				everUpdated = true;
+				return true;
+			}
+
+			return needsUpdate;
+		}
+
 		public boolean finish() {
 			center = new VectorXYZ(0, 0, 0);
 			int verts = 0;
+			boolean groundPlane = true;
+
+			double minY = 100000;
+			maxY = 0;
+
 			for(Primitive p : primitives) {
 				for(VectorXYZ vertex : p.vertices) {
+					if(Math.abs(vertex.getY()) > 0.0)
+						groundPlane = false;
+
+					minY = Math.min(vertex.getY(), minY);
+					maxY = Math.max(vertex.getY(), maxY);
+
 					center = center.add(vertex);
 					verts++;
 				}
 			}
 			center = center.mult(1.0 / verts);
+			height = maxY - minY;
 
 			if(reflectionMaps.containsKey(this)) {
+				if(groundPlane) 
+					needsUpdate = false;
+				else
+					needsUpdate = true;
 				return true;
 			} else {
 				return false;
 			}
+
 		}
 	}
 
@@ -902,7 +941,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 			gl.glEnable(GL_DEPTH_TEST);
 
+			renderingCubemap = true;
 			render(cam, proj);
+			renderingCubemap = false;
 			
 		}
 
@@ -913,15 +954,23 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void updateReflections() {
 		if(reflectionType == 1) {
 			for(Entry<ReflectiveObject, JOGLMaterial> e : reflectionMaps.entrySet()) {
+				ReflectiveObject o = e.getKey();
+				if(!o.needsUpdate()) continue;
+
 				// Test if the object is in front of the camera
 				VectorXYZ c = e.getKey().getCenter();
 				
 				// Hide the object we are capturing a cubemap for
 				e.getValue().disable();
 
+				VectorXYZ reflCenter;
+				if(o.getHeight() < 1.0)
+					reflCenter = c;
+				else
+					reflCenter = new VectorXYZ(c.getX(), Math.min(camPos.getY(), o.maxY()), c.getZ());
+
 				// Render the reflections
-				Cubemap refl = captureCubemap(new VectorXYZ(c.getX(), camPos.getY(), c.getZ())
-						, e.getKey().getFramebuffer());
+				Cubemap refl = captureCubemap(reflCenter, e.getKey().getFramebuffer());
 				e.getValue().setRefl(refl);
 
 				// Unhide
