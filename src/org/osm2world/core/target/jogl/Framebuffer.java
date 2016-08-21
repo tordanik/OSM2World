@@ -52,6 +52,14 @@ public class Framebuffer {
 			cubemap = new Cubemap(textureID);
 		return cubemap;
 	}
+
+	public int getTexture() {
+		if(this.target != GL3.GL_TEXTURE_2D) {
+			System.err.println("Framebuffer not bound to a texture");
+			return -1;
+		}
+		return textureID;
+	}
 	
 	public void init(GL3 gl, boolean useAlpha) {
 		this.gl = gl;
@@ -74,11 +82,13 @@ public class Framebuffer {
 
 		}
 
-		IntBuffer cubemap = IntBuffer.allocate(1);
-		gl.glGenTextures(1, cubemap);
-		textureID = cubemap.get();
+		IntBuffer texture = IntBuffer.allocate(1);
+		gl.glGenTextures(1, texture);
+		textureID = texture.get();
 
-		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, textureID);
+		gl.glBindTexture(target, textureID);
+
+		int colorspace = useAlpha ? GL3.GL_RGBA : GL3.GL_RGB;
 
 		// Prepare the texture that we will render to
 		if(target == GL3.GL_TEXTURE_CUBE_MAP) {
@@ -86,7 +96,6 @@ public class Framebuffer {
 			int s = viewWidth;
 
 			for(int i = 0; i < 6; i++) {
-				int colorspace = useAlpha ? GL3.GL_RGBA : GL3.GL_RGB;
 
 				// Allocate room for faces
 				gl.glTexImage2D(
@@ -95,17 +104,22 @@ public class Framebuffer {
 				);
 			}
 
-			gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
-			gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-			gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-			gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
 			gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
 
-			gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, 0);
-			gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 		} else {
-			// TODO Allocate room for TEXTURE_2D
+			gl.glTexImage2D(
+				GL3.GL_TEXTURE_2D, 
+				0, colorspace, viewWidth, viewHeight, 0, colorspace, GL3.GL_UNSIGNED_BYTE, null
+			);
 		}
+
+		gl.glTexParameteri(target, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+		gl.glTexParameteri(target, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+		gl.glTexParameteri(target, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+		gl.glTexParameteri(target, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+
+		gl.glBindTexture(target, 0);
+		gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 	}
 
 	@Override
