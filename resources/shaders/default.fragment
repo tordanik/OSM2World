@@ -508,7 +508,7 @@ void main()
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(-1,1));
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,1));
 			sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,-1));
-			//shadowFactor = sum * 0.25;
+			shadowFactor = sum * 0.25;
 		}
 		if ( isShadowed )
 			shadowFactor = 0.0;
