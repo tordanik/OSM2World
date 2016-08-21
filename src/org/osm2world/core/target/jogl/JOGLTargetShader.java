@@ -91,7 +91,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 
 	// 0 - No reflections   1 - Cubemaps   2 - Plane reflections
-	private int reflectionType = 0;
+	private int reflectionType = 1;
 
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -748,9 +748,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		public Framebuffer getFramebuffer() {
 			if(reflectionBuffer == null) {
-				int s = 100;
+				int s = 400;
 				reflectionBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
-				reflectionBuffer.init(gl);
+				reflectionBuffer.init(gl, true);
 			}
 			return reflectionBuffer;
 		}
@@ -788,9 +788,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
 		// cubemap
-		if(reflectionType != 0 && material.getReflectance() > 0.0 || material.hasReflMap()) {
+		if(reflectionType != 0 && (material.getReflectance() > 0.0 || material.hasReflMap())) {
 			// If this object already has a reflective material associated with it use that
-			JOGLMaterial mat = null;
+			JOGLMaterial mat;
 			if(reflectionType == 1) {
 				if(reflectionMaps.containsKey(activeObject)) {
 					mat = reflectionMaps.get(activeObject);
@@ -798,6 +798,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 					mat = new JOGLMaterial(material);
 					reflectionMaps.put(activeObject, mat);
 				}
+				super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
 			} else if(reflectionType == 2) {
 				// Test if the primitive is coplaner
 				VectorXYZ firstNormal = normals.get(0);
@@ -817,8 +818,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				}
 
 			}
-			mat = (mat == null) ? new JOGLMaterial(material) : mat;
-			super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
 		} else {
 			super.drawPrimitive(type, material, vertices, normals, texCoordLists);
 		}
@@ -837,7 +836,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		Framebuffer cubeBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
 
-		cubeBuffer.init(gl);
+		cubeBuffer.init(gl, true);
 		return captureCubemap(center, cubeBuffer);
 	}
 

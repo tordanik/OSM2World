@@ -104,6 +104,7 @@ public abstract class Material {
 		this.shadow = that.shadow;
 		this.ambientOcclusion = that.ambientOcclusion;
 		this.textureDataList = that.textureDataList;
+		this.reflectance = that.reflectance;
 		updateBumpMap();
 		updateReflMap();
 	}

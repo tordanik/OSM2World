@@ -53,7 +53,7 @@ public class Framebuffer {
 		return cubemap;
 	}
 	
-	public void init(GL3 gl) {
+	public void init(GL3 gl, boolean useAlpha) {
 		this.gl = gl;
 
 		// Generate the framebuffer
@@ -86,11 +86,12 @@ public class Framebuffer {
 			int s = viewWidth;
 
 			for(int i = 0; i < 6; i++) {
+				int colorspace = useAlpha ? GL3.GL_RGBA : GL3.GL_RGB;
 
 				// Allocate room for faces
 				gl.glTexImage2D(
 					GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-					0, GL3.GL_RGB, s, s, 0, GL3.GL_RGB, GL3.GL_UNSIGNED_BYTE, null
+					0, colorspace, s, s, 0, colorspace, GL3.GL_UNSIGNED_BYTE, null
 				);
 			}
 

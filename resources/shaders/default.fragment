@@ -538,7 +538,7 @@ void main()
 				reflection = skyReflection;
 
 			if( useGeomMap )
-				reflection = mix(geomReflection, reflection, geomReflection.a);
+				reflection = mix(reflection, geomReflection, geomReflection.a);
 
 			texColor = mix(texColor, reflection, r);
 		}

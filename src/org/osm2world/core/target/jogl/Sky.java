@@ -55,7 +55,7 @@ public class Sky {
 
 		if(Sky.skyBuffer == null) {
 			Sky.skyBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, res, res, false);
-			Sky.skyBuffer.init(gl);
+			Sky.skyBuffer.init(gl, false);
 		}
 
 		if(Sky.skyShader == null) {

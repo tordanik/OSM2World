@@ -32,3 +32,4 @@ class JOGLMaterial extends Material {
 	}
 
 }
+
