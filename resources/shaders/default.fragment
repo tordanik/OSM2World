@@ -7,9 +7,6 @@
 
 #define MAX_UNIQUE_LIGHTS 32
 #define MAX_LIGHTS 256
-	
-// Should this fragment be rendered
-uniform bool enabled;
 
 /*** LIGHTING UNIFORMS ***/
 // Enable or disable lighting effects
@@ -301,8 +298,6 @@ float perlin(vec2 texCoord, float xScale, float yScale)
  
 void main()
 {
-	if( !enabled ) return;
-
 	vec4 texColor = vec4(1.0);
 
 	// lightMat[0] = ambient, lightMat[1] = diffuse, lightMat[2] = specular

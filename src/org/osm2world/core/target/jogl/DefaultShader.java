@@ -262,10 +262,13 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
 		}
-		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "enabled"), 1);
 
 		// Set geometry reflection env map
 		if(material instanceof JOGLMaterial) {
+			if(!((JOGLMaterial) material).isEnabled()) {
+				return false;
+			}
+
 			Cubemap reflMap = ((JOGLMaterial) material).getReflectionMap();
 
 			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGroundPlane")
@@ -276,10 +279,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 1);
 			} else {
 				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 0);
-			}
-
-			if(!((JOGLMaterial) material).isEnabled()) {
-				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "enabled"), 0);
 			}
 
 		} else {
