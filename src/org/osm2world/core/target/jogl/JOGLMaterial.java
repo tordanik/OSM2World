@@ -6,6 +6,7 @@ import org.osm2world.core.target.common.material.Material;
 class JOGLMaterial extends Material {
 	private Cubemap reflectionMap;
 	private boolean enabled;
+	private boolean useGroundRefl;
 
 	public JOGLMaterial(Material base) {
 		super(base);
@@ -29,6 +30,14 @@ class JOGLMaterial extends Material {
 
 	public boolean isEnabled() {
 		return enabled;
+	}
+
+	public void setUseGround(boolean g) {
+		useGroundRefl = g;
+	}
+
+	public boolean useGround() {
+		return useGroundRefl;
 	}
 
 }

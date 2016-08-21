@@ -65,6 +65,7 @@ public class WorldObjectView extends DebugView {
 				((JOGLTargetShader)target).setEnvMap(skybox);
 				((JOGLTargetShader)target).setShowEnvMap(false);
 				((JOGLTargetShader)target).setShowEnvRefl(true);
+				((JOGLTargetShader)target).setShowGroundPlane(true);
 				time = Sky.getTime();
 			}
 		} else {

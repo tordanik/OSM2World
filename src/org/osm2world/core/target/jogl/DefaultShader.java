@@ -130,6 +130,8 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 1));
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "geomMap")
 				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 2));
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "groundPlane")
+				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 3));
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "ReflMap")
 				, getGLTextureNumber(MAX_TEXTURE_LAYERS + 4));
 		this.disableShader();
@@ -223,6 +225,15 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		}
 		gl.glUniform1i(lightCountID, i + 1);
 	}
+
+	public void setGroundReflections(int textureID, PMVMatrix reflectedMV) {
+		useShader();
+		gl.glActiveTexture(GL3.GL_TEXTURE0 + getGLTextureNumber(MAX_TEXTURE_LAYERS+3));
+		gl.glBindTexture(GL3.GL_TEXTURE_2D, textureID);
+
+		int id = gl.glGetUniformLocation(shaderProgram, "reflectedMV");
+		gl.glUniformMatrix4fv(id, 1, false, reflectedMV.glGetMvMatrixf());
+	}
 	
 	/**
 	 * Sets whether to Render everything as in shadow.
@@ -256,7 +267,11 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		// Set geometry reflection env map
 		if(material instanceof JOGLMaterial) {
 			Cubemap reflMap = ((JOGLMaterial) material).getReflectionMap();
-			if(reflMap != null) {
+
+			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGroundPlane")
+					, ((JOGLMaterial) material).useGround() ? 1 : 0);
+
+			if(reflMap != null && !((JOGLMaterial) material).useGround()) {
 				reflMap.bind(gl, getGLTextureNumber(MAX_TEXTURE_LAYERS+2));
 				gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useGeomMap"), 1);
 			} else {

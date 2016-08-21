@@ -46,6 +46,12 @@ uniform samplerCube geomMap;
 uniform bool useReflMaps;
 uniform sampler2D ReflMap;
 
+// View of the world as seen when reflected across the ground plane
+uniform bool useGroundPlane;
+uniform sampler2D groundPlane;
+
+uniform mat4 reflectedMV;
+
 
 /*** MATERIAL UNIFORMS ***/
 struct MaterialInfo {
@@ -507,7 +513,8 @@ void main()
 		if ( isShadowed )
 			shadowFactor = 0.0;
 
-		if( (showReflections || useGeomMap) && (Material.Reflectance > 0.0 || useReflMaps) ) {
+		if( (showReflections || useGeomMap || useGroundPlane) 
+		  && (Material.Reflectance > 0.0 || useReflMaps) ) {
 			// Calculate the reflectance of this fragment
 			float r = Material.Reflectance;
 			if(useReflMaps)
@@ -527,18 +534,27 @@ void main()
 			// Calculate the reflected vector
 			vec3 reflectionVector = reflect(viewVector, WorldNormal);
 
-			// Calculate the color of the reflected fragment
-			vec4 geomReflection = texture(geomMap, reflectionVector);
-			vec4 skyReflection = texture(envMap, reflectionVector);
-
 			// Mix the reflections for the final color
 			vec4 reflection = vec4(0.0);
 
-			if( showReflections )
+			if( showReflections ) {
+				vec4 skyReflection = texture(envMap, reflectionVector);
 				reflection = skyReflection;
+			}
 
-			if( useGeomMap )
+			if( useGeomMap ) {
+				vec4 geomReflection = texture(geomMap, reflectionVector);
 				reflection = mix(reflection, geomReflection, geomReflection.a);
+
+			}
+
+			if( useGroundPlane ) {
+				// Transform world coordinate to reflection texture uv
+				vec4 reflCoord = reflectedMV * vec4(WorldCoord, 1.0);
+				vec2 sampleCoord = vec2(reflCoord.x / 800 + 0.5, reflCoord.y / 600 + 0.5);
+				vec4 groundReflection = texture(groundPlane, sampleCoord);
+				reflection = mix(reflection, groundReflection, groundReflection.a);
+			}
 
 			texColor = mix(texColor, reflection, r);
 		}

@@ -82,12 +82,15 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private Cubemap envMap;
 	private boolean showEnvMap;
 	private boolean showEnvRefl;
+	private boolean showGroundPlaneReflections;
 
 	private ReflectiveObject activeObject;
 
 	private Map<ReflectiveObject, JOGLMaterial> reflectionMaps;
 
 	private VectorXYZ camPos;
+
+	private Framebuffer groundBuffer;
 
 	private boolean renderingCubemap;
 
@@ -112,6 +115,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		lightInfo = new ArrayList<>();
 		lightIndex = new HashMap<>();
 		reflectionMaps = new HashMap<>();
+		groundBuffer = new Framebuffer(GL3.GL_TEXTURE_2D, 800, 600, true);
+		groundBuffer.init(gl, true);
 	}
 
 	@Override
@@ -289,6 +294,11 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			double xEnd, double yStart, double yEnd) {
 		if (renderer == null) {
 			throw new IllegalStateException("finish must be called first");
+		}
+
+		if(showGroundPlaneReflections) {
+			if(!renderingCubemap)
+				drawGroundReflections(camera, projection);
 		}
 		
 		if (renderingParameters.overwriteProjectionClippingPlanes) {
@@ -729,6 +739,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		this.showEnvRefl = s;
 	}
 
+	public void setShowGroundPlane(boolean s) {
+		this.showGroundPlaneReflections = s;
+	}
+
 	public void setEnvMap(Cubemap cubemap) {
 		envMap = cubemap;
 	}
@@ -805,9 +819,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			height = maxY - minY;
 
 			if(reflectionMaps.containsKey(this)) {
-				if(groundPlane) 
+				if(groundPlane) {
+					reflectionMaps.get(this).setUseGround(true);
 					needsUpdate = false;
-				else
+				} else
 					needsUpdate = true;
 				return true;
 			} else {
@@ -978,6 +993,36 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			}
 		} else if (reflectionType == 2) {
 		}
+	}
+
+	private void drawGroundReflections(Camera cam, Projection proj) {
+		// Reflect camera across the ground
+		double x = cam.getPos().getX();
+		double y = - cam.getPos().getY();
+		double z = cam.getPos().getZ();
+
+		double kx = cam.getLookAt().getX();
+		double ky = cam.getLookAt().getY();
+		double kz = cam.getLookAt().getZ();
+
+		Camera reflectedCamera = new Camera();
+		reflectedCamera.setCamera(x, y, z, kx, ky, kz);
+
+		groundBuffer.bind();
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+		renderingCubemap = true;
+
+		// TODO for some reason this projetion is orthographic
+		render(reflectedCamera, proj);
+
+		renderingCubemap = false;
+		groundBuffer.unbind();
+
+		PMVMatrix reflectedMV = new PMVMatrix();
+		applyCameraMatrices(reflectedMV, reflectedCamera);
+
+		defaultShader.setGroundReflections(groundBuffer.getTexture(), reflectedMV);
 	}
 
 	private void drawCubemap(Camera camera, Cubemap cubemap) {
