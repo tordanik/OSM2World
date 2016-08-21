@@ -232,7 +232,7 @@ public abstract class Material {
 	    
 	    return new ImmutableMaterial(getInterpolation(), getColor(),
 	    		getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
-	    		getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
+	    		getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList, getReflectance());
 	    
 	}
 	

@@ -286,7 +286,7 @@ public final class Materials {
 	}
 	
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|specular|shininess|reflectance|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|procedural|xScale|yScale|baseColor|deviation))";
+			"material_(.+)_(color|specular|shininess|reflectance|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|reflmap|procedural|xScale|yScale|baseColor|deviation))";
 	
 	/**
 	 * configures the attributes of the materials within this class
@@ -400,6 +400,7 @@ public final class Materials {
 								String coordFunctionKey = "material_" + materialName + "_texture" + i + "_coord_function";
 								String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
 								String bumpmapKey = "material_" + materialName + "_texture" + i + "_bumpmap";
+								String reflmapKey = "material_" + materialName + "_texture" + i + "_reflmap";
 
 								if (config.getString(fileKey) == null) break;
 								
@@ -409,6 +410,7 @@ public final class Materials {
 								double height = config.getDouble(heightKey, 1);
 								boolean colorable = config.getBoolean(colorableKey, false);
 								boolean isBumpMap = config.getBoolean(bumpmapKey, false);
+								boolean isReflMap = config.getBoolean(reflmapKey, false);
 								
 								String wrapString = config.getString(wrapKey);
 								Wrap wrap = Wrap.REPEAT;
@@ -426,9 +428,11 @@ public final class Materials {
 								}
 								
 								// bumpmaps are only supported in the shader implementation, skip for others
-								if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
+								if ((!isBumpMap && !isReflMap) 
+										|| "shader".equals(config.getString("joglImplementation"))) {
 									TextureData textureData = new TextureData(
-											file, width, height, wrap, coordFunction, colorable, isBumpMap);
+											file, width, height, wrap, coordFunction, colorable, isBumpMap,
+											false, isReflMap);
 									textureDataList.add(textureData);
 								}
 							}

@@ -17,6 +17,14 @@ public final class ImmutableMaterial extends Material {
 		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
 				transparency, shadow, ao, textureDataList);
 	}
+
+	public ImmutableMaterial(Interpolation interpolation, Color color,
+			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
+			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList, 
+			float reflectance) {
+		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
+				transparency, shadow, ao, textureDataList, reflectance);
+	}
 	
 	public ImmutableMaterial(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {

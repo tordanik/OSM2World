@@ -512,7 +512,7 @@ void main()
 			float r = Material.Reflectance;
 			if(useReflMaps)
 				// POVRay style reflectance maps
-				r = 1 - length(texture( ReflMap, ReflMapCoord ));
+				r = 1 - texture(ReflMap, TexCoord1).r;
 
 			// Truncate the view matrix to get the rotationMatrix
 			mat3 rotMat = mat3(ModelViewMatrix);

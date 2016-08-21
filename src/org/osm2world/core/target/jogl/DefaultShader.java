@@ -341,7 +341,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 					texture.bind(gl);
 					
-					if (textureData.isBumpMap) {
+					if (textureData.isBumpMap || textureData.isReflMap) {
 						gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
 					} else {
 						gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 1);
