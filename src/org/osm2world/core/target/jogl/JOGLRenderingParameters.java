@@ -33,6 +33,9 @@ public class JOGLRenderingParameters {
 	final int SSAOkernelSize;
 	final float SSAOradius;
 	final boolean overwriteProjectionClippingPlanes;
+	final boolean showSkyReflections;
+	final boolean showGroundReflections;
+	final int geomReflType;
 	
 	/**
 	 * @param frontFace
@@ -72,9 +75,12 @@ public class JOGLRenderingParameters {
 	 *            match the world bounding box
 	 */
 	public JOGLRenderingParameters(
-			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean drawBoundingBox, boolean useShadowVolumes,
-			boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, int shadowMapCameraFrustumPadding, 
-			boolean useSSAO, int SSAOkernelSize, float SSAOradius, boolean overwriteProjectionClippingPlanes) {
+			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean drawBoundingBox, 
+			boolean useShadowVolumes, boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, 
+			int shadowMapCameraFrustumPadding, boolean useSSAO, int SSAOkernelSize, 
+			float SSAOradius, boolean overwriteProjectionClippingPlanes, boolean showSkyReflections,
+			boolean showGroundReflections, int geomReflType
+			) {
 		
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
@@ -89,6 +95,9 @@ public class JOGLRenderingParameters {
 		this.SSAOkernelSize = SSAOkernelSize;
 		this.SSAOradius = SSAOradius;
 		this.overwriteProjectionClippingPlanes = overwriteProjectionClippingPlanes;
+		this.showSkyReflections = showSkyReflections;
+		this.showGroundReflections = showGroundReflections;
+		this.geomReflType = geomReflType;
 	}
 	
 	/**
@@ -113,6 +122,9 @@ public class JOGLRenderingParameters {
 		this.SSAOkernelSize = 0;
 		this.SSAOradius = 0;
 		this.overwriteProjectionClippingPlanes = false;
+		this.showSkyReflections = false;
+		this.showGroundReflections = false;
+		this.geomReflType = 0;
 	}
 	
 	public JOGLRenderingParameters() {
@@ -129,6 +141,9 @@ public class JOGLRenderingParameters {
 		this.SSAOkernelSize = 0;
 		this.SSAOradius = 0;
 		this.overwriteProjectionClippingPlanes = false;
+		this.showSkyReflections = false;
+		this.showGroundReflections = false;
+		this.geomReflType = 0;
 	}
 	
 }

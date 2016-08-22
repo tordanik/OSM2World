@@ -344,9 +344,29 @@ public class ImageExporter {
 			int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
 			float SSAOradius = config.getFloat("SSAOradius", 1);
 			boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
+			boolean showSkyReflections = config.getBoolean("showSkyReflections", false);
+			boolean showGroundReflections = config.getBoolean("showGroundReflections", false);
+			
+			int geomReflType = 0;
+			switch(config.getString("geomReflectionType", "none")) {
+				case "cubemap":
+					geomReflType = 1;
+					break;
+				case "plane":
+					geomReflType = 0;
+					System.err.println("Planar reflections are not yet supported");
+					break;
+				default:
+					geomReflType = 0;
+					break;
+			}
+
 			target = new JOGLTargetShader(gl.getGL3(),
-					new JOGLRenderingParameters(CCW, false, true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight,
-			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes),
+					new JOGLRenderingParameters(CCW, false, true, drawBoundingBox, 
+							shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight,
+			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, 
+							SSAOradius, overwriteProjectionClippingPlanes, showSkyReflections,
+							showGroundReflections, geomReflType),
 					GlobalLightingParameters.DEFAULT);
 		} else {
 			target = new JOGLTargetFixedFunction(gl.getGL2(),

@@ -13,7 +13,8 @@ import org.osm2world.viewer.model.RenderOptions;
 
 public class WorldObjectView extends DebugView {
 	private int change = 0;
-	private Cubemap skybox;
+	private Cubemap envMap;
+
 	private long time;
 	
 	private final RenderOptions renderOptions;
@@ -60,12 +61,11 @@ public class WorldObjectView extends DebugView {
 
 			if(Sky.getTime() != time) {
 				if(true) {
-					skybox = Sky.getSky();
+					envMap = Sky.getSky();
 				}
-				((JOGLTargetShader)target).setEnvMap(skybox);
+				((JOGLTargetShader)target).setEnvMap(envMap);
+				// World object view never displays environment maps
 				((JOGLTargetShader)target).setShowEnvMap(false);
-				((JOGLTargetShader)target).setShowEnvRefl(true);
-				((JOGLTargetShader)target).setShowGroundPlane(true);
 				time = Sky.getTime();
 			}
 		} else {
@@ -89,10 +89,30 @@ public class WorldObjectView extends DebugView {
 		int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
 		float SSAOradius = config.getFloat("SSAOradius", 1);
 		boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
+		boolean showSkyReflections = config.getBoolean("showSkyReflections", false);
+		boolean showGroundReflections = config.getBoolean("showGroundReflections", false);
+
+		int geomReflType = 0;
+		switch(config.getString("geomReflectionType", "none")) {
+			case "cubemap":
+				geomReflType = 1;
+				break;
+			case "plane":
+				geomReflType = 0;
+				System.err.println("Planar reflections are not yet supported");
+				break;
+			default:
+				geomReflType = 0;
+				break;
+		}
+
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
-    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes));
+    			renderOptions.isWireframe(), true, drawBoundingBox,
+				shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, shadowMapCameraFrustumPadding, 
+				useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes,
+				showSkyReflections, showGroundReflections, geomReflType
+				));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
 		

@@ -80,9 +80,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private boolean showShadowPerspective;
 
 	private Cubemap envMap;
+	// TODO move to render parameters
 	private boolean showEnvMap;
-	private boolean showEnvRefl;
-	private boolean showGroundPlaneReflections;
 
 	private ReflectiveObject activeObject;
 
@@ -93,9 +92,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private Framebuffer groundBuffer;
 
 	private boolean renderingCubemap;
-
-	// 0 - No reflections   1 - Cubemaps   2 - Plane reflections
-	private int reflectionType = 1;
 
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
@@ -296,7 +292,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			throw new IllegalStateException("finish must be called first");
 		}
 
-		if(showGroundPlaneReflections) {
+		if (renderingParameters.showGroundReflections) {
 			if(!renderingCubemap)
 				drawGroundReflections(camera, projection);
 		}
@@ -358,7 +354,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
 		defaultShader.setEnvMap(envMap);
-		defaultShader.setShowReflections(showEnvRefl);
+		defaultShader.setShowReflections(renderingParameters.showSkyReflections);
 
 		defaultShader.setLocalLighting(lightInfo, lightIndex, Sky.isNight());
 
@@ -735,14 +731,6 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		this.showEnvMap = s;
 	}
 
-	public void setShowEnvRefl(boolean s) {
-		this.showEnvRefl = s;
-	}
-
-	public void setShowGroundPlane(boolean s) {
-		this.showGroundPlaneReflections = s;
-	}
-
 	public void setEnvMap(Cubemap cubemap) {
 		envMap = cubemap;
 	}
@@ -842,10 +830,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
 		// cubemap
-		if(reflectionType != 0 && (material.getReflectance() > 0.0)) {
+		if(renderingParameters.geomReflType != 0 && (material.getReflectance() > 0.0)) {
 			// If this object already has a reflective material associated with it use that
 			JOGLMaterial mat;
-			if(reflectionType == 1) {
+			if(renderingParameters.geomReflType == 1) {
 				if(reflectionMaps.containsKey(activeObject)) {
 					mat = reflectionMaps.get(activeObject);
 				} else {
@@ -853,7 +841,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 					reflectionMaps.put(activeObject, mat);
 				}
 				super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
-			} else if(reflectionType == 2) {
+			} else if(renderingParameters.geomReflType == 2) {
 				// Test if the primitive is coplaner
 				VectorXYZ firstNormal = normals.get(0);
 				boolean coplaner = true;
@@ -967,7 +955,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	}
 
 	public void updateReflections() {
-		if(reflectionType == 1) {
+		if(renderingParameters.geomReflType == 1) {
 			for(Entry<ReflectiveObject, JOGLMaterial> e : reflectionMaps.entrySet()) {
 				ReflectiveObject o = e.getKey();
 				if(!o.needsUpdate()) continue;
@@ -991,7 +979,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				// Unhide
 				e.getValue().enable();
 			}
-		} else if (reflectionType == 2) {
+		} else if (renderingParameters.geomReflType == 2) {
 		}
 	}
 
