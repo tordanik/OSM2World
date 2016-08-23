@@ -190,10 +190,11 @@ public class DefaultShader extends AbstractPrimitiveShader {
 					(float)lighting.lightFromDirection.getX(),
 					(float)lighting.lightFromDirection.getY(),
 					-(float)lighting.lightFromDirection.getZ(), 0f);
-
-			gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "envLighting")
-					, lighting.useProc ? 1 : 0);
 		}
+	}
+
+	public void setUseEnvLight(boolean b) {
+		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "envLighting"), b ? 1 : 0);
 	}
 
 	public void setLocalLighting(List<LightSource.LightColor> lightInfo, Map<LightSource, Integer> lightIndex, boolean enabled) {

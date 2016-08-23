@@ -36,6 +36,8 @@ public class JOGLRenderingParameters {
 	final boolean showSkyReflections;
 	final boolean showGroundReflections;
 	final int geomReflType;
+
+	final boolean useEnvLighting;
 	
 	/**
 	 * @param frontFace
@@ -79,7 +81,7 @@ public class JOGLRenderingParameters {
 			boolean useShadowVolumes, boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, 
 			int shadowMapCameraFrustumPadding, boolean useSSAO, int SSAOkernelSize, 
 			float SSAOradius, boolean overwriteProjectionClippingPlanes, boolean showSkyReflections,
-			boolean showGroundReflections, int geomReflType
+			boolean showGroundReflections, int geomReflType, boolean useEnvLighting
 			) {
 		
 		this.frontFace = frontFace;
@@ -98,6 +100,7 @@ public class JOGLRenderingParameters {
 		this.showSkyReflections = showSkyReflections;
 		this.showGroundReflections = showGroundReflections;
 		this.geomReflType = geomReflType;
+		this.useEnvLighting = useEnvLighting;
 	}
 	
 	/**
@@ -125,6 +128,7 @@ public class JOGLRenderingParameters {
 		this.showSkyReflections = false;
 		this.showGroundReflections = false;
 		this.geomReflType = 0;
+		this.useEnvLighting = false;
 	}
 	
 	public JOGLRenderingParameters() {
@@ -144,6 +148,7 @@ public class JOGLRenderingParameters {
 		this.showSkyReflections = false;
 		this.showGroundReflections = false;
 		this.geomReflType = 0;
+		this.useEnvLighting = false;
 	}
 	
 }

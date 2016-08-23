@@ -64,10 +64,10 @@ public class Cubemap {
         -1.0f, -1.0f,  1.0f,
          1.0f, -1.0f,  1.0f
     };
-	private static final String[] NAMES = {"posx", "negx", "negy", "posy", "posz", "negz"};
+	public static final String[] NAMES = {"posx", "negx", "negy", "posy", "posz", "negz"};
 
 	private int addr;
-	private String filename;
+	private String[] filename;
 	private Texture cubemap;
 
 
@@ -75,8 +75,7 @@ public class Cubemap {
 		this.cubemap = cubemap;
 	}
 
-
-	public Cubemap(String filename) {
+	public Cubemap(String[] filename) {
 		this.filename = filename;
 	}
 
@@ -103,13 +102,13 @@ public class Cubemap {
 	}
 
 
-	public static Texture load(GL3 gl, String file) {
-		System.out.println("Cubemap created from: "+ file);
+	public static Texture load(GL3 gl, String[] file) {
+		System.out.println("Cubemap created from: "+ file[0]);
 
 		Texture cubemap = TextureIO.newTexture(GL3.GL_TEXTURE_CUBE_MAP);
 
 		for(int i = 0; i < 6; i ++) {
-			String filename = file + NAMES[i] + ".jpg";
+			String filename = file[i];
 
 			try{
 				BufferedImage face = ImageIO.read(new File(filename));

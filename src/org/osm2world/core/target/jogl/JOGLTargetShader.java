@@ -346,15 +346,12 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		}
 
 		
-		// TODO Do this last
-		if(showEnvMap && envMap != null)
-			drawCubemap(camera, envMap);
-
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
 		defaultShader.setEnvMap(envMap);
 		defaultShader.setShowReflections(renderingParameters.showSkyReflections);
+		defaultShader.setUseEnvLight(renderingParameters.useEnvLighting);
 
 		defaultShader.setLocalLighting(lightInfo, lightIndex, Sky.isNight());
 
@@ -385,6 +382,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		rendererShader.render(camera, projection);
 		
 		defaultShader.disableShader();
+
+		if(showEnvMap && envMap != null)
+			drawCubemap(camera, envMap);
+
 		
 		/* non area primitives */
 		nonAreaShader.useShader();

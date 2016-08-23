@@ -92,6 +92,8 @@ public class WorldObjectView extends DebugView {
 		boolean showSkyReflections = config.getBoolean("showSkyReflections", false);
 		boolean showGroundReflections = config.getBoolean("showGroundReflections", false);
 
+		boolean useEnvLighting = config.getBoolean("useEnvLighting", false);
+
 		int geomReflType = 0;
 		switch(config.getString("geomReflectionType", "none")) {
 			case "cubemap":
@@ -111,7 +113,7 @@ public class WorldObjectView extends DebugView {
     			renderOptions.isWireframe(), true, drawBoundingBox,
 				shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, shadowMapCameraFrustumPadding, 
 				useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes,
-				showSkyReflections, showGroundReflections, geomReflType
+				showSkyReflections, showGroundReflections, geomReflType, useEnvLighting
 				));
 		
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
