@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules.common;
 
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseAngle;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
@@ -37,6 +38,14 @@ public class WorldModuleParseUtil {
 	}
 
 	/**
+	 * retrieves length using (in this priority order)
+	 * length tag, defaultValue parameter
+	 */
+	public static final float parseLength(TagGroup tags, float defaultValue) {
+		return parseMeasure(tags, defaultValue, "length");
+	}
+
+	/**
 	 * retrieves height using (in this priority order)
 	 * height tag, building:height tag, est_height tag, defaultValue parameter
 	 */
@@ -70,6 +79,16 @@ public class WorldModuleParseUtil {
 			return defaultValue;
 		}
 		
+	}
+
+	public static final int parseInt(TagGroup tags, int defaultValue, String key) {
+		if(tags.containsKey(key)) {
+			Float value = parseOsmDecimal(tags.getValue(key), false);
+			if (value != null) {
+				return(int) (float) value;
+			}
+		}
+		return defaultValue;
 	}
 	
 	private static final float parseMeasure(TagGroup tags, float defaultValue,
