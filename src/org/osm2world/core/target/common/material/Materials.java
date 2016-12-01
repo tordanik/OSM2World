@@ -227,6 +227,7 @@ public final class Materials {
 		surfaceMaterialMap.put("paving_stones", PAVING_STONE);
 		surfaceMaterialMap.put("pebblestone", PEBBLESTONE);
 		surfaceMaterialMap.put("sand", SAND);
+		surfaceMaterialMap.put("steel", STEEL);
 		surfaceMaterialMap.put("tartan", TARTAN);
 		surfaceMaterialMap.put("unpaved", EARTH);
 		surfaceMaterialMap.put("wood", WOOD);
