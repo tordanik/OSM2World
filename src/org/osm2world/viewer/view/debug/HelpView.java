@@ -19,6 +19,8 @@ import org.osm2world.viewer.view.TextRendererShader;
 public class HelpView extends DebugView {
 	
 	TextRenderer textRenderer;
+	private int width = 0, height = 0;
+	private float scale = 1;
 	
 	@Override
 	public void reset() {
@@ -42,20 +44,54 @@ public class HelpView extends DebugView {
 			} else {
 				textRenderer = new TextRendererFixedFunction();
 			}
+			textRenderer.reshape(width, height);
+			textRenderer.setScale(scale);
 		}
 		
-		//TODO: needs real panel measures; currently guesses 800x600
-		textRenderer.drawText("Use \"File\" > \"Open OSM file\" "
+		textRenderer.drawTextTop("Use \"File\" > \"Open OSM file\" "
 				+ "to load a file containing OpenStreetMap data.",
-				50, 550, 800, 600, Color.LIGHT_GRAY);
+				50, 50, Color.LIGHT_GRAY);
 		
-		textRenderer.drawText("This is OSM2World " + GlobalValues.VERSION_STRING,
-				50, 100, 800, 600, Color.LIGHT_GRAY);
-		textRenderer.drawText("Website: " + GlobalValues.OSM2WORLD_URI,
-				50, 75, 800, 600, Color.LIGHT_GRAY);
-		textRenderer.drawText("Usage instructions: " + GlobalValues.WIKI_URI,
-				50, 50, 800, 600, Color.LIGHT_GRAY);
+		textRenderer.drawTextBottom("This is OSM2World " + GlobalValues.VERSION_STRING,
+				50, 100, Color.LIGHT_GRAY);
+		textRenderer.drawTextBottom("Website: " + GlobalValues.OSM2WORLD_URI,
+				50, 75, Color.LIGHT_GRAY);
+		textRenderer.drawTextBottom("Usage instructions: " + GlobalValues.WIKI_URI,
+				50, 50, Color.LIGHT_GRAY);
 		
+	}
+	
+	/**
+	 * Calculate the scale factor for text rendering. Ensures that the help text
+	 * is always visible. Has to be adjusted when text size changes.
+	 */
+	private float calculateScale() {
+		float scale;
+		if (width > 800) {
+			scale = width / 800f;
+		} else if (width < 550) {
+			scale = width / 550f;
+		} else {
+			scale = 1;
+		}
+		if (height > 600) {
+			scale = Math.min(scale, height / 600f);
+		} else if (height < 200) {
+			scale = Math.min(scale, height / 200f);
+		} else {
+			scale = Math.min(scale, 1f);
+		}
+		return scale;
+	}
+
+	public void reshape(int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.scale = calculateScale();
+		if (textRenderer != null) {
+			textRenderer.reshape(width, height);
+			textRenderer.setScale(scale);
+		}
 	}
 	
 	@Override
