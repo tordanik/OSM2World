@@ -435,6 +435,16 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			
 			defaultShader.disableShader();
 		}
+		
+		finishRendering(gl);
+	}
+
+	/**
+	 * Disables culling and depth testing
+	 */
+	static final void finishRendering(GL gl) {
+		gl.glDisable(GL_CULL_FACE);
+		gl.glDisable(GL_DEPTH_TEST);
 	}
 	
 	static final void applyRenderingParameters(GL3 gl,
