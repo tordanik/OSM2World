@@ -25,7 +25,6 @@ import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
-import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -280,9 +279,9 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			if (material.getNumTextureLayers() > 0) {
 				textureData = material.getTextureDataList().get(i);
 			}
-		
+			
 			mtlStream.println("newmtl " + name + "_" + i);
-                        mtlStream.println("Ns 92.156863");
+			mtlStream.println("Ns 92.156863");
 			
 			if (textureData == null || textureData.colorable) {
 				writeColorLine("Ka", material.ambientColor());
@@ -291,21 +290,18 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 				writeColorLine("Ka", multiplyColor(WHITE, material.getAmbientFactor()));
 				writeColorLine("Kd", multiplyColor(WHITE, 1 - material.getAmbientFactor()));
 			}
+			
 			mtlStream.println(String.format("Ks %f %f %f", material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor()));
-                        mtlStream.println(String.format("Ke %f %f %f", 0f, 0f, 0f));
-		
+			mtlStream.println(String.format("Ke %f %f %f", 0f, 0f, 0f));
+			
 			if (textureData != null) {
 				mtlStream.println("map_Ka " + textureData.file.getName());
 				mtlStream.println("map_Kd " + textureData.file.getName());
 			}
-                        mtlStream.println(String.format("Ni %d", material.getShininess()));
-                        float diffuse = 1;
-			if ( material.getTransparency() == TRUE ){
-				diffuse = 0.5f;
-			}
-			mtlStream.println(String.format("d %f", diffuse));
-                        mtlStream.println("illum 2");
-                        
+			
+			mtlStream.println(String.format("Ni %d", material.getShininess()));
+			mtlStream.println("illum 2");
+			
 			mtlStream.println();
 		}
 	}
