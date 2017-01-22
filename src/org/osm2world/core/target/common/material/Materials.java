@@ -47,8 +47,6 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f));
 	public static final ConfMaterial COBBLESTONE =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
-	public static final ConfMaterial COLOR_BLUE =
-		new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 	public static final ConfMaterial CONCRETE =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f));
 	public static final ConfMaterial EARTH =

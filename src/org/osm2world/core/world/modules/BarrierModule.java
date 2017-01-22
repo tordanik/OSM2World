@@ -11,9 +11,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
@@ -276,7 +274,7 @@ public class BarrierModule extends AbstractModule {
 						height, width, width, false, true);
 			}
 			
-		}	
+		}
 	}
         
         private static class PoleFence extends LinearBarrier {
@@ -351,7 +349,7 @@ public class BarrierModule extends AbstractModule {
 						height, width, width, false, true);
 			}
 			
-		}	
+		}
 	}
         
         private static class CableBarrier extends PoleFence {
@@ -386,8 +384,8 @@ public class BarrierModule extends AbstractModule {
 			this.bars = 1;
 			this.barOffset = 0;
                         
-                        this.defaultFenceMaterial = Materials.COLOR_BLUE;
-                        this.defaultPoleMaterial = Materials.COLOR_BLUE;
+                        this.defaultFenceMaterial = Materials.HANDRAIL_DEFAULT;
+                        this.defaultPoleMaterial = Materials.HANDRAIL_DEFAULT;
 		}
         }
 	
