@@ -2,8 +2,6 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.fill;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
@@ -12,7 +10,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntToDoubleFunction;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -28,8 +25,6 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-
-import javax.print.attribute.HashPrintServiceAttributeSet;
 
 /**
  * adds various types of street furniture to the world
