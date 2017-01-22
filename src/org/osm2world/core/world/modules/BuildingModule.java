@@ -702,8 +702,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
                         
-			if ( area.getTags().contains("parking", "multi-storey"))
-			{
+			if ("multi-storey".equals(getValue("parking"))) {
 				defaultLevels = 5;
 				defaultMaterialWindows = null;
 			}
