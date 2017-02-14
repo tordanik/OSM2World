@@ -60,6 +60,47 @@ public final class Poly2TriTriangulationUtil {
 			
 		}
 		
+		
+		// Now we remove too close adjacent points from vertex loop.
+		// Without such removement tri2poly library produces 
+		// NullPointerException
+		
+		List<VectorXZ> vertexLoop = outerPolygon.getVertexCollection();
+		Iterator<VectorXZ> vertexIterator = vertexLoop.iterator();
+
+		VectorXZ lastVertex = null;
+		while (vertexIterator.hasNext()) {
+
+			VectorXZ vertex = vertexIterator.next();
+			if (lastVertex == null) {
+				lastVertex = vertex;
+
+				if (vertexIterator.hasNext()) {
+					vertex = vertexIterator.next();
+				}
+				else {
+					break;
+				}
+			}
+
+			if ((lastVertex.distanceTo(vertex) < 0.2)) {
+				vertexIterator.remove();
+			}
+			else {
+				lastVertex = vertex;
+			}
+		 }
+
+		// now we have to restore the loop
+		if (vertexLoop.size() > 0) {
+			VectorXZ first = vertexLoop.get(0);
+			VectorXZ last = vertexLoop.get(vertexLoop.size()-1);
+
+			if (!first.equals(last)) {
+				vertexLoop.add(first);
+			}
+		}
+
 		//TODO filter segments
 		
 		Set<VectorXZ> filteredPoints = new HashSet<VectorXZ>(points);
