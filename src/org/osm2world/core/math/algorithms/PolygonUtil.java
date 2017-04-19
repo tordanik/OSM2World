@@ -1,6 +1,7 @@
 package org.osm2world.core.math.algorithms;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Collections.reverse;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
@@ -20,9 +21,15 @@ public class PolygonUtil {
 	/** prevents instantiation */
 	private PolygonUtil() { }
 	
+	/**
+	 * returns the convex hull of a simple polygon.
+	 * 
+	 * @param polygon  any simple polygon, != null
+	 * @return  the convex hull. Its points are ordered as they were in the original polygon.
+	 */
 	public static final SimplePolygonXZ convexHull(SimplePolygonXZ polygon) {
 		
-		List<VectorXZ> vertices = polygon.getVertices();
+		List<VectorXZ> vertices = polygon.makeClockwise().getVertices();
 		
 		/* determine points with min/max x value (guaranteed to be in convex hull) */
 		
@@ -68,6 +75,10 @@ public class PolygonUtil {
 		
 		upperResult.addAll(lowerResult.subList(1, lowerResult.size()));
 		
+		if (!polygon.isClockwise()) {
+			reverse(upperResult);
+		}
+		
 		return new SimplePolygonXZ(upperResult);
 		
 	}
@@ -80,7 +91,7 @@ public class PolygonUtil {
 		
 		checkArgument(vertices.size() >= 2);
 		
-		if (vertices.size() <= 3) {
+		if (vertices.size() < 3) {
 			return vertices;
 		}
 		
