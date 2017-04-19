@@ -1,5 +1,6 @@
 package org.osm2world.core.test;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -80,36 +81,60 @@ public final class TestUtil {
 		assertAlmostEquals(expectedZ, actual.z);
 	}
 	
-	public static final void assertSameCyclicOrder(
+	/**
+	 * checks whether two sequences contain the same vectors in the same order,
+	 * but allows them to start at different vectors in that sequence.
+	 * This allows cyclic sequences (e.g. area outlines) to be treated as equal
+	 * regardless of the arbitrary choice of start vector.
+	 * When comparing vectors, a small difference is permitted to account for
+	 * floating point arithmetics.
+	 * 
+	 * @param reversible  if true, the order expected sequence can be mirrored
+	 * @param actual  the actual sequence, to be compared with expected, != null
+	 * @param expected  the expected sequence, != null
+	 */
+	public static final void assertSameCyclicOrder(boolean reversible,
 			List<VectorXZ> actual, VectorXZ... expected) {
 		
-		Collections.reverse(actual);
-		
 		if (actual.size() != expected.length) {
-			fail("expected size" + expected.length +
+			fail("expected size " + expected.length +
 					", found list of size " + actual.size());
 		}
 		
-		for (int offset = 0; offset < actual.size(); offset++) {
+		List<VectorXZ> actualModified = new ArrayList<VectorXZ>(actual);
+		
+		for (boolean reverse : asList(false, true)) {
 			
-			boolean matches = true;
-			
-			for (int i = 0; i < actual.size(); i++) {
-				int iWithOffset = (i + offset) % actual.size();
-				if (VectorXZ.distance(expected[i],
-						actual.get(iWithOffset)) > 0.0001) {
-					matches = false;
-					break;
-				}
+			if (reverse) {
+				
+				if (!reversible) break;
+				
+				Collections.reverse(actualModified);
+				
 			}
 			
-			if (matches) {
-				return;
+			for (int offset = 0; offset < actualModified.size(); offset++) {
+				
+				boolean matches = true;
+				
+				for (int i = 0; i < actualModified.size(); i++) {
+					int iWithOffset = (i + offset) % actualModified.size();
+					if (VectorXZ.distance(expected[i],
+							actualModified.get(iWithOffset)) > 0.0001) {
+						matches = false;
+						break;
+					}
+				}
+				
+				if (matches) {
+					return;
+				}
+				
 			}
 			
 		}
-		
-		fail("cannot match list to expected sequence. Found " + actual);
+			
+		fail("cannot match list to expected sequence. Found " + actualModified);
 		
 	}
 	

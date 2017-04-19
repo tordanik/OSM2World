@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.CAGUtil;
 
 public class CAGUtilTest {
 	
@@ -42,7 +41,7 @@ public class CAGUtilTest {
 		
 		assertSame(1, results.size());
 		
-		assertSameCyclicOrder(results.get(0).getOuter().getVertices(),
+		assertSameCyclicOrder(true, results.get(0).getOuter().getVertices(),
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1,-1),
 				new VectorXZ( 0,-1),
@@ -92,7 +91,7 @@ public class CAGUtilTest {
 		
 		List<VectorXZ> res = results.get(0).getOuter().getVertices();
 		
-		assertSameCyclicOrder(res,
+		assertSameCyclicOrder(true, res,
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1,-1),
 				new VectorXZ( 0,-1),
@@ -133,7 +132,7 @@ public class CAGUtilTest {
 		
 		List<VectorXZ> res = results.get(0).getOuter().getVertices();
 		
-		assertSameCyclicOrder(res,
+		assertSameCyclicOrder(true, res,
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1, 2),
 				new VectorXZ(-1/3.0, 0),
