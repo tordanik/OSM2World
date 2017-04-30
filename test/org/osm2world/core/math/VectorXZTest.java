@@ -61,4 +61,18 @@ public class VectorXZTest {
 		
 	}
 	
+	@Test
+	public void testRotate() {
+		
+		assertAlmostEquals(new VectorXZ( 0,  0), new VectorXZ( 0,   0).rotate(42));
+		assertAlmostEquals(new VectorXZ( 2,  5), new VectorXZ( 2,   5).rotate(PI*2));
+		
+		assertAlmostEquals(new VectorXZ( 2, -1), new VectorXZ( 1,   2).rotate(+PI/2));
+		assertAlmostEquals(new VectorXZ(-2,  1), new VectorXZ( 1,   2).rotate(-PI/2));
+
+		assertAlmostEquals(new VectorXZ( 8, 42), new VectorXZ(-8, -42).rotate(-PI));
+		assertAlmostEquals(new VectorXZ( 8, 42), new VectorXZ(-8, -42).rotate(+PI));
+		
+	}
+	
 }

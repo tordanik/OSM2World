@@ -119,6 +119,16 @@ public class VectorXZ implements Vector3D {
 		return other.subtract(this).angle();
 	}
 	
+	/**
+	 * returns the result of rotating this vector clockwise around the origin
+	 * @param angleRad  angle in radians
+	 */
+	public VectorXZ rotate(double angleRad) {
+		double sin = sin(angleRad);
+		double cos = cos(angleRad);
+		return new VectorXZ(sin*z + cos*x, cos*z - sin*x);
+	}
+	
 	@Override
 	public String toString() {
 		return "(" + x + "," + z + ")";
