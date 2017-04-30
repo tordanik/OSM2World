@@ -99,4 +99,64 @@ public class PolygonUtilTest {
 		
 	}
 	
+	/** simple test cases where the bounding box is identical to the polygon */
+	@Test
+	public void testMinimumBoundingBox() {
+		
+		//axis aligned case
+		
+		SimplePolygonXZ p1 = new SimplePolygonXZ(asList(
+				new VectorXZ(0, 0),
+				new VectorXZ(1, 0),
+				new VectorXZ(1, 1),
+				new VectorXZ(0, 1),
+				new VectorXZ(0, 0)));
+		
+		SimplePolygonXZ bbox1 = PolygonUtil.minimumBoundingBox(p1);
+		
+		assertSameCyclicOrder(true, bbox1.getVertices(),
+				new VectorXZ(0, 0),
+				new VectorXZ(1, 0),
+				new VectorXZ(1, 1),
+				new VectorXZ(0, 1));
+		
+		//not aligned to axis
+				
+		SimplePolygonXZ p2 = new SimplePolygonXZ(asList(
+				new VectorXZ(+.5,   0),
+				new VectorXZ(  0, +.5),
+				new VectorXZ(-.5,   0),
+				new VectorXZ(  0, -.5),
+				new VectorXZ(+.5,   0)));
+		
+		SimplePolygonXZ bbox2 = PolygonUtil.minimumBoundingBox(p2);
+		
+		assertSameCyclicOrder(true, bbox2.getVertices(),
+				new VectorXZ(+.5,   0),
+				new VectorXZ(  0, +.5),
+				new VectorXZ(-.5,   0),
+				new VectorXZ(  0, -.5));
+		
+	}
+	
+	@Test
+	public void testMinimumBoundingBox2() {
+		
+		SimplePolygonXZ p = new SimplePolygonXZ(asList(
+				new VectorXZ(1, 1),
+				new VectorXZ(2, 1),
+				new VectorXZ(4, 3),
+				new VectorXZ(3, 3),
+				new VectorXZ(1, 1)));
+		
+		SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(p);
+		
+		assertSameCyclicOrder(true, bbox.getVertices(),
+				new VectorXZ(1, 1),
+				new VectorXZ(3.5, 3.5),
+				new VectorXZ(4, 3),
+				new VectorXZ(1.5, 0.5));
+		
+	}
+	
 }

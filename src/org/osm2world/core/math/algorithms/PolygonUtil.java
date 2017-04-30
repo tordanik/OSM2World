@@ -1,12 +1,15 @@
 package org.osm2world.core.math.algorithms;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Double.NaN;
+import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.util.MinMaxUtil;
@@ -123,6 +126,56 @@ public class PolygonUtil {
 		}
 		
 		return result;
+		
+	}
+	
+	/**
+	 * Calculates the smallest possible bounding box for this polygon.
+	 * The result is not (generally) an axis-aligned bounding box!
+	 * 
+	 * Relies on the fact that one side of the box must be collinear with
+	 * one of the sides of the polygon's convex hull.
+	 * 
+	 * @param polygon  any simple polygon, != null
+	 * @return  a simple polygon with exactly 4 vertices, representing the box
+	 */
+	public static final SimplePolygonXZ minimumBoundingBox(SimplePolygonXZ polygon) {
+		
+		/*
+		 * For each side of the polygon, rotate the polygon to make that side
+		 * parallel to the Z axis, then calculate the axis aligned bounding box.
+		 * These are the candidate boxes for minimum area.
+		 */
+		
+		AxisAlignedBoundingBoxXZ minBox = null;
+		double angleForMinBox = NaN;
+		
+		for (int i = 0; i < polygon.size(); i++) {
+			
+			double angle = polygon.getVertex(i).angleTo(polygon.getVertexAfter(i));
+			
+			List<VectorXZ> rotatedVertices = new ArrayList<VectorXZ>();
+			for (VectorXZ v : polygon.getVertexCollection()) {
+				rotatedVertices.add(v.rotate(-angle));
+			}
+			
+			AxisAlignedBoundingBoxXZ box = new AxisAlignedBoundingBoxXZ(rotatedVertices);
+			
+			if (minBox == null || box.area() < minBox.area()) {
+				minBox = box;
+				angleForMinBox = angle;
+			}
+			
+		}
+		
+		/* construct the result */
+		
+		return new SimplePolygonXZ(asList(
+				minBox.bottomLeft().rotate(angleForMinBox),
+				minBox.bottomRight().rotate(angleForMinBox),
+				minBox.topRight().rotate(angleForMinBox),
+				minBox.topLeft().rotate(angleForMinBox),
+				minBox.bottomLeft().rotate(angleForMinBox)));
 		
 	}
 	

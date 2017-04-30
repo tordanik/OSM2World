@@ -47,6 +47,13 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable {
 	public double sizeX() { return maxX - minX; }
 	public double sizeZ() { return maxZ - minZ; }
 
+	/**
+	 * returns the area covered by this bounding box
+	 */
+	public double area() {
+		return sizeX() * sizeZ();
+	}
+
 	public VectorXZ center() {
 		return new VectorXZ(minX + sizeX()/2, minZ + sizeZ()/2);
 	}
