@@ -208,6 +208,9 @@ public final class Materials {
 	public static final ConfMaterial SOLAR_PANEL =
 			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 	
+	public static final ConfMaterial PITCH_SOCCER =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1),
 				1, 0, Transparency.FALSE, null);
