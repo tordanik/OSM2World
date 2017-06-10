@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.cos;
-import static org.osm2world.core.target.common.material.Materials.PITCH_SOCCER;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -63,19 +64,34 @@ public class SportsModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			Material material = PITCH_SOCCER;
-			
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material,
-					configureTexFunction(area.getOuterPolygon())));
+			TexCoordFunction texFunction = configureTexFunction(area.getOuterPolygon());
+
+			if (texFunction != null) {
+				
+				Material material = PITCH_SOCCER;
+				
+				target.drawTriangles(material, triangles,
+						triangleTexCoordLists(triangles, material, texFunction));
+				
+			} else {
+
+				Material material = GRASS;
+				
+				target.drawTriangles(material, triangles,
+						triangleTexCoordLists(triangles, material, NamedTexCoordFunction.GLOBAL_X_Z));
+				
+			}
 			
 		}
 
 		/**
 		 * calculates the parameters for a {@link TexCoordFunction}
 		 * and calls the constructor
+		 * 
+		 * @return  the texture coordinate function;
+		 * null if it's not possible to construct a valid pitch
 		 */
 		private static TexCoordFunction configureTexFunction(SimplePolygonXZ polygon) {
 			
@@ -101,13 +117,37 @@ public class SportsModule extends AbstractModule {
 			}
 			
 			/* scale the pitch markings based on official regulations (TODO use values from config file) */
+
+			double minLongSide = 90;
+			double maxLongSide = 120;
+			double minShortSide = 45;
+			double maxShortSide = 90;
 			
-			double scaleFactorShortSide = 1;
-			double scaleFactorLongSide = 1;
+			double newLongSideLength = longSide.length() * 0.95;
+			double newShortSideLength = shortSide.length() * 0.95;
+			
+			if (newLongSideLength < minLongSide) {
+				return null;
+			} else if (newLongSideLength > maxLongSide) {
+				newLongSideLength = maxLongSide;
+			}
+			
+			if (newShortSideLength < minShortSide) {
+				return null;
+			} else if (newShortSideLength > maxShortSide) {
+				newShortSideLength = maxShortSide;
+			}
+						
+			origin = origin
+					.add(longSide.mult((longSide.length() - newLongSideLength) / 2 / longSide.length()))
+					.add(shortSide.mult((shortSide.length() - newShortSideLength) / 2 / shortSide.length()));
+			
+			longSide = longSide.mult(newLongSideLength / longSide.length());
+			shortSide = shortSide.mult(newShortSideLength / shortSide.length());
 			
 			/* build the result */
 			
-			return new PitchTexFunction(origin, longSide, shortSide, scaleFactorShortSide, scaleFactorLongSide);
+			return new PitchTexFunction(origin, longSide, shortSide);
 			
 		}
 
@@ -119,24 +159,17 @@ public class SportsModule extends AbstractModule {
 			private final VectorXZ origin;
 			private final VectorXZ longSide;
 			private final VectorXZ shortSide;
-			private final double scaleFactorShortSide;
-			private final double scaleFactorLongSide;
 			
-			PitchTexFunction(VectorXZ origin, VectorXZ longSide, VectorXZ shortSide,
-					double scaleFactorShortSide, double scaleFactorLongSide) {
+			PitchTexFunction(VectorXZ origin, VectorXZ longSide, VectorXZ shortSide) {
 				
 				this.origin = origin;
 				this.longSide = longSide;
 				this.shortSide = shortSide;
-				this.scaleFactorShortSide = scaleFactorShortSide;
-				this.scaleFactorLongSide = scaleFactorLongSide;
 				
 			}
 
 			@Override
 			public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
-				
-				//TODO implement scaling
 				
 				List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
 				
