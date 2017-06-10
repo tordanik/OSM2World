@@ -38,16 +38,17 @@ public class SportsModule extends AbstractModule {
 			String sport = area.getTags().getValue("sport");
 			
 			if ("soccer".equals(sport)) {
-				area.addRepresentation(new Pitch(area));
+				area.addRepresentation(new SoccerPitch(area));
 			}
-			
-			
 			
 		}
 		
 	}
 	
-	static class Pitch extends AbstractAreaWorldObject
+	/**
+	 * a pitch with markings for any sport
+	 */
+	static abstract class Pitch extends AbstractAreaWorldObject
 			implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 	
 		public Pitch(MapArea area) {
@@ -56,6 +57,27 @@ public class SportsModule extends AbstractModule {
 			
 		}
 
+		/** minimum length of the pitch's longer side, in meters */
+		protected abstract double getMinLongSide();
+		
+		/** maximum length of the pitch's longer side, in meters */
+		protected abstract double getMaxLongSide();
+		
+		/** minimum length of the pitch's shorter side, in meters */
+		protected abstract double getMinShortSide();
+		
+		/** maximum length of the pitch's shorter side, in meters */
+		protected abstract double getMaxShortSide();
+		
+		/** the regular material for the pitch */
+		protected abstract Material getPitchMaterial();
+		
+		/**
+		 * the fallback material to be used instead of {@link #getPitchMaterial()}
+		 * if no legal pitch can be constructed
+		 */
+		protected abstract Material getFallbackPitchMaterial();
+		
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
@@ -70,14 +92,14 @@ public class SportsModule extends AbstractModule {
 
 			if (texFunction != null) {
 				
-				Material material = PITCH_SOCCER;
+				Material material = getPitchMaterial();
 				
 				target.drawTriangles(material, triangles,
 						triangleTexCoordLists(triangles, material, texFunction));
 				
 			} else {
 
-				Material material = GRASS;
+				Material material = getFallbackPitchMaterial();
 				
 				target.drawTriangles(material, triangles,
 						triangleTexCoordLists(triangles, material, NamedTexCoordFunction.GLOBAL_X_Z));
@@ -93,7 +115,7 @@ public class SportsModule extends AbstractModule {
 		 * @return  the texture coordinate function;
 		 * null if it's not possible to construct a valid pitch
 		 */
-		private static TexCoordFunction configureTexFunction(SimplePolygonXZ polygon) {
+		private TexCoordFunction configureTexFunction(SimplePolygonXZ polygon) {
 			
 			/* approximate a rectangular shape for the pitch */
 			
@@ -118,24 +140,19 @@ public class SportsModule extends AbstractModule {
 			
 			/* scale the pitch markings based on official regulations (TODO use values from config file) */
 
-			double minLongSide = 90;
-			double maxLongSide = 120;
-			double minShortSide = 45;
-			double maxShortSide = 90;
-			
 			double newLongSideLength = longSide.length() * 0.95;
 			double newShortSideLength = shortSide.length() * 0.95;
 			
-			if (newLongSideLength < minLongSide) {
+			if (newLongSideLength < getMinLongSide()) {
 				return null;
-			} else if (newLongSideLength > maxLongSide) {
-				newLongSideLength = maxLongSide;
+			} else if (newLongSideLength > getMaxLongSide()) {
+				newLongSideLength = getMaxLongSide();
 			}
 			
-			if (newShortSideLength < minShortSide) {
+			if (newShortSideLength < getMinShortSide()) {
 				return null;
-			} else if (newShortSideLength > maxShortSide) {
-				newShortSideLength = maxShortSide;
+			} else if (newShortSideLength > getMaxShortSide()) {
+				newShortSideLength = getMaxShortSide();
 			}
 						
 			origin = origin
@@ -193,6 +210,48 @@ public class SportsModule extends AbstractModule {
 				
 			}
 			
+		}
+		
+	}
+
+	/**
+	 * a pitch with soccer markings
+	 */
+	class SoccerPitch extends Pitch {
+
+		SoccerPitch(MapArea area) {
+			super(area);
+		}
+		
+		@Override
+		protected double getMinLongSide() {
+			return 90;
+			
+		}
+
+		@Override
+		protected double getMaxLongSide() {
+			return 120;
+		}
+
+		@Override
+		protected double getMinShortSide() {
+			return 45;
+		}
+
+		@Override
+		protected double getMaxShortSide() {
+			return 90;
+		}
+
+		@Override
+		protected Material getPitchMaterial() {
+			return PITCH_SOCCER;
+		}
+
+		@Override
+		protected Material getFallbackPitchMaterial() {
+			return GRASS;
 		}
 		
 	}
