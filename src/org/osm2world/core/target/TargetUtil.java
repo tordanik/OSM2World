@@ -82,6 +82,38 @@ public final class TargetUtil {
 	}
 	
 	/**
+	 * render all world objects to a target instances
+	 * that are compatible with that target type.
+	 * World objects are added to a target until the number of primitives
+	 * reaches the primitive threshold, then the next target is retrieved
+	 * from the iterator.
+	 */
+	public static <R extends RenderableToPrimitiveTarget> void renderWorldObjectsTiles(
+			final TargetProvider<R> targetProvider, final MapData mapData) {
+				
+		final StatisticsTarget primitiveCounter = new StatisticsTarget();
+		
+		iterate(mapData.getMapElements(), new Operation<MapElement>() {
+			
+			@Override public void perform(MapElement e) {
+
+				Target<R> currentTarget = targetProvider.getTarget(e);
+				
+				for (WorldObject r : e.getRepresentations()) {
+										
+					renderObject(primitiveCounter, r);
+					
+					renderObject(currentTarget, r);
+					
+				}
+			}
+			
+		});
+		
+		primitiveCounter.clear();
+	}
+	
+	/**
 	 * renders any object to a target instance
 	 * if it is a renderable compatible with that target type.
 	 * Also sends {@link Target#beginObject(WorldObject)} calls.

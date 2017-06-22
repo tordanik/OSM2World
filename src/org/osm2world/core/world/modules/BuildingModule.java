@@ -1477,31 +1477,37 @@ public class BuildingModule extends ConfigurableWorldModule {
 							simplifiedOuter.intersectionSegments(new LineSegmentXZ(
 								center.add(slopeDirection.mult(-1000)), center));
 					
-					LineSegmentXZ outermostIntersection = null;
-					double distanceOutermostIntersection = -1;
-					
-					for (LineSegmentXZ i : intersections) {
-						double distance = distanceFromLineSegment(center, i);
-						if (distance > distanceOutermostIntersection) {
-							outermostIntersection = i;
-							distanceOutermostIntersection = distance;
+					if (!intersections.isEmpty()) {
+						LineSegmentXZ outermostIntersection = null;
+						double distanceOutermostIntersection = -1;
+						
+						for (LineSegmentXZ i : intersections) {
+							double distance = distanceFromLineSegment(center, i);
+							if (distance > distanceOutermostIntersection) {
+								outermostIntersection = i;
+								distanceOutermostIntersection = distance;
+							}
 						}
-					}
-					
-					ridge = outermostIntersection;
-					
-					/* calculate maximum distance from ridge */
-					
-					double maxDistance = 0.1;
-					
-					for (VectorXZ v : polygon.getOuter().getVertexLoop()) {
-						double distance = distanceFromLine(v, ridge.p1, ridge.p2);
-						if (distance > maxDistance) {
-							maxDistance = distance;
+						
+						ridge = outermostIntersection;
+						
+						/* calculate maximum distance from ridge */
+						
+						double maxDistance = 0.1;
+						
+						for (VectorXZ v : polygon.getOuter().getVertexLoop()) {
+							double distance = distanceFromLine(v, ridge.p1, ridge.p2);
+							if (distance > maxDistance) {
+								maxDistance = distance;
+							}
 						}
+						
+						roofLength = maxDistance;
 					}
-					
-					roofLength = maxDistance;
+					else {
+						ridge = null;
+						roofLength = Double.NaN;
+					}
 					
 				} else {
 					
