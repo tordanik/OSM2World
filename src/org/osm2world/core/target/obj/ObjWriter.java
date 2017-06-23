@@ -54,15 +54,20 @@ public final class ObjWriter {
 		}
 
 		private final Map<String, TargetAndStream> tile2Target = new HashMap<String, TargetAndStream>();
+		private String tilesetPath;
+		private boolean generateMeta = false;
 
 		
 		private TiledObjTargetProvider(int zLevel, MapProjection mapProjection, 
-				File tilesFolder, File mtlFile, PrintStream mtlStream) {
+				File tilesFolder, File mtlFile, PrintStream mtlStream, 
+				String tilesetPath) {
 			this.zLevel = zLevel;
 			this.tilesFolder = tilesFolder.getParentFile();
 			this.mtlFile = mtlFile;
 			this.mtlStream = mtlStream;
 			this.mapProjection = mapProjection;
+			this.tilesetPath = tilesetPath;
+			this.generateMeta  = (tilesetPath != null);
 		}
 
 		@Override
@@ -183,52 +188,37 @@ public final class ObjWriter {
 			for (Entry<String, TargetAndStream> entry : this.tile2Target.entrySet()) {
 				TargetAndStream t = entry.getValue();
 				t.pstream.close();
-
-				JSONObject meta = new JSONObject();
 				
-				AxisAlignedBoundingBoxXZ tileBBOX = 
-						tile2boundingBox(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(0));
-				
-				AxisAlignedBoundingBoxXZ union = AxisAlignedBoundingBoxXZ.union(t.boundingVolume, tileBBOX);
-				
-				double[] region = encodeRegion(t.minY, t.maxY, union);
-				
-				if (fullBBOX == null) {
-					fullBBOX = union; 
+				if (generateMeta) {
+					fullBBOX = generateMetaInfoForTile(children, entry.getKey(), t, fullBBOX);
 				}
-				else {
-					fullBBOX = AxisAlignedBoundingBoxXZ.union(union, fullBBOX);
-				}
+				
 				minY = Math.min(t.minY, minY);
 				maxY = Math.max(t.maxY, maxY);
-				
-				meta.put("boundingVolume", new JSONObject());
-				meta.getJSONObject("boundingVolume").put("region", new JSONArray(region));
-				
-				double diag = (t.boundingVolume.sizeX() + t.boundingVolume.sizeZ()) / 2;
-				meta.put("geometricError", diag);
-				
-				JSONObject content = new JSONObject();
-				double[] contentRegion = encodeRegion(t.minY, t.maxY, t.boundingVolume);
-				
-				content.put("url", entry.getKey() + ".b3dm");
-				content.put("boundingVolume", new JSONObject());
-				content.getJSONObject("boundingVolume").put("region", new JSONArray(contentRegion));
-				
-				meta.put("content", content);
-				children.put(meta);
 			}
 			
+			if (generateMeta) {
+				writeTileset(fullBBOX, minY, maxY, tileset, children);
+			}
+		}
+
+		private void writeTileset(AxisAlignedBoundingBoxXZ fullBBOX, double minY, double maxY, 
+				JSONObject tileset, JSONArray children) {
+			File tilesetFile = new File(this.tilesetPath);
+			
 			File metaFile = new File(this.tilesFolder.getPath() + 
-					File.separator +  "tileset.json");
+					File.separator + this.tilesetPath);
+
+			if (tilesetFile.isAbsolute()) {
+				metaFile = tilesetFile;
+			}
 			
 			tileset.put("asset", new JSONObject().put("version", "0.0"));
-			
 			
 			JSONObject rootJson = new JSONObject().put(
 					"boundingVolume", new JSONObject().put(
 							"region", encodeRegion(minY, maxY, fullBBOX)));
-
+			
 			LatLon origin = this.mapProjection.getOrigin();
 			VectorXYZ cartesianOrigin = WGS84Util.cartesianFromLatLon(origin, 0.0);
 			double[] transform = WGS84Util.eastNorthUpToFixedFrame(cartesianOrigin);
@@ -236,7 +226,8 @@ public final class ObjWriter {
 			rootJson.put("transform", new JSONArray(transform));
 			
 			tileset.put("root", rootJson);
-			double extentDiagonal = (fullBBOX.sizeX() + fullBBOX.sizeZ()) / 2;
+			double extentDiagonal = (fullBBOX.sizeX() + fullBBOX.sizeZ()) / 20;
+			
 			tileset.put("geometricError", extentDiagonal);
 			rootJson.put("refine", "add");
 			rootJson.put("children", children);
@@ -251,6 +242,42 @@ public final class ObjWriter {
 			catch (FileNotFoundException e) {
 				throw new RuntimeException(e);
 			}
+		}
+
+		private AxisAlignedBoundingBoxXZ generateMetaInfoForTile(JSONArray children, 
+				String tms, TargetAndStream t, AxisAlignedBoundingBoxXZ fullBBOX) {
+			JSONObject meta = new JSONObject();
+			
+			AxisAlignedBoundingBoxXZ tileBBOX = 
+					tile2boundingBox(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(0));
+			
+			AxisAlignedBoundingBoxXZ union = AxisAlignedBoundingBoxXZ.union(t.boundingVolume, tileBBOX);
+			
+			double[] region = encodeRegion(t.minY, t.maxY, union);
+			
+			if (fullBBOX == null) {
+				fullBBOX = union; 
+			}
+			else {
+				fullBBOX = AxisAlignedBoundingBoxXZ.union(union, fullBBOX);
+			}
+			
+			meta.put("boundingVolume", new JSONObject());
+			meta.getJSONObject("boundingVolume").put("region", new JSONArray(region));
+			
+			meta.put("geometricError", t.maxY);
+			
+			JSONObject content = new JSONObject();
+			double[] contentRegion = encodeRegion(t.minY, t.maxY, t.boundingVolume);
+			
+			content.put("url", tms + ".b3dm");
+			content.put("boundingVolume", new JSONObject());
+			content.getJSONObject("boundingVolume").put("region", new JSONArray(contentRegion));
+			
+			meta.put("content", content);
+			children.put(meta);
+			
+			return fullBBOX;
 		}
 
 		private double[] encodeRegion(double minY, double maxY, AxisAlignedBoundingBoxXZ union) {
@@ -320,7 +347,7 @@ public final class ObjWriter {
 			final File objDirectory, MapData mapData,
 			final MapProjection mapProjection,
 			Camera camera, Projection projection, 
-			int tilesZoomLevel)
+			int tilesZoomLevel, String tilesetPath)
 			throws IOException {
 					
 		if (!objDirectory.getParentFile().exists()) {
@@ -341,7 +368,8 @@ public final class ObjWriter {
 		
 		/* create iterator which creates and wraps .obj files as needed */
 		TargetProvider<RenderableToObj> targetProvider = 
-				new TiledObjTargetProvider(tilesZoomLevel, mapProjection, objDirectory, mtlFile, mtlStream);		
+				new TiledObjTargetProvider(tilesZoomLevel, 
+						mapProjection, objDirectory, mtlFile, mtlStream, tilesetPath);		
 		
 		/* write file content */
 		
