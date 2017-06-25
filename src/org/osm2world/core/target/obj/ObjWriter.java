@@ -9,14 +9,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.apache.commons.lang.ArrayUtils;
+import org.jglue.fluentjson.JsonBuilder;
+import org.jglue.fluentjson.JsonBuilderFactory;
+import org.jglue.fluentjson.JsonObjectBuilder;
+import org.jglue.fluentjson.Mapper;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
@@ -33,6 +37,9 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 /**
  * utility class for creating an Wavefront OBJ file
  */
@@ -44,6 +51,13 @@ public final class ObjWriter {
 		private File mtlFile;
 		private File tilesFolder;
 		private MapProjection mapProjection;
+
+		private static final class DoubleJsonArrayMapper implements Mapper<Double> {
+			@Override
+			public JsonBuilder map(Double arg0) {
+				return JsonBuilderFactory.buildPrimitive(arg0);
+			}
+		}
 
 		private static final class TargetAndStream {
 			ObjTarget target;
@@ -182,8 +196,7 @@ public final class ObjWriter {
 			double minY = 0;
 			double maxY = 0;
 			
-			JSONObject tileset = new JSONObject();
-			JSONArray children = new JSONArray();
+			JsonArray children = new JsonArray();
 			
 			for (Entry<String, TargetAndStream> entry : this.tile2Target.entrySet()) {
 				TargetAndStream t = entry.getValue();
@@ -198,12 +211,13 @@ public final class ObjWriter {
 			}
 			
 			if (generateMeta) {
-				writeTileset(fullBBOX, minY, maxY, tileset, children);
+				writeTileset(fullBBOX, minY, maxY, children);
 			}
 		}
 
-		private void writeTileset(AxisAlignedBoundingBoxXZ fullBBOX, double minY, double maxY, 
-				JSONObject tileset, JSONArray children) {
+		private void writeTileset(AxisAlignedBoundingBoxXZ fullBBOX, 
+				double minY, double maxY, JsonArray children) {
+			
 			File tilesetFile = new File(this.tilesetPath);
 			
 			File metaFile = new File(this.tilesFolder.getPath() + 
@@ -213,29 +227,36 @@ public final class ObjWriter {
 				metaFile = tilesetFile;
 			}
 			
-			tileset.put("asset", new JSONObject().put("version", "0.0"));
-			
-			JSONObject rootJson = new JSONObject().put(
-					"boundingVolume", new JSONObject().put(
-							"region", encodeRegion(minY, maxY, fullBBOX)));
-			
 			LatLon origin = this.mapProjection.getOrigin();
 			VectorXYZ cartesianOrigin = WGS84Util.cartesianFromLatLon(origin, 0.0);
 			double[] transform = WGS84Util.eastNorthUpToFixedFrame(cartesianOrigin);
+
+			List<Double> regionList = Arrays.asList(ArrayUtils.toObject(encodeRegion(minY, maxY, fullBBOX)));
+			List<Double> transformList = Arrays.asList(ArrayUtils.toObject(transform));
+			double extentDiagonal = (fullBBOX.sizeX() + fullBBOX.sizeZ()) / 2;
 			
-			rootJson.put("transform", new JSONArray(transform));
+			JsonObject tileset = JsonBuilderFactory.buildObject()
+				.addObject("asset")
+					.add("version", "0.0")
+				.end()
+				.addObject("root")
+					.addObject("boundingVolume")
+						.addArray("region").addAll(new DoubleJsonArrayMapper(), regionList)
+						.end()
+					.end()
+					.addArray("transform").addAll(new DoubleJsonArrayMapper(), transformList)
+					.end()
+					.add("refine", "ADD")
+					.add("geometricError", extentDiagonal)
+				.end()
+				.add("geometricError", extentDiagonal)
+			.getJson();
 			
-			tileset.put("root", rootJson);
-			double extentDiagonal = (fullBBOX.sizeX() + fullBBOX.sizeZ()) / 20;
-			
-			tileset.put("geometricError", extentDiagonal);
-			rootJson.put("refine", "add");
-			rootJson.put("children", children);
-			rootJson.put("geometricError", extentDiagonal);
+			tileset.getAsJsonObject("root").add("children", children);
 			
 			try {
 				PrintWriter metaWriter = new PrintWriter(new FileOutputStream(metaFile));
-				metaWriter.println(tileset.toString(2));
+				metaWriter.println(tileset.toString());
 				metaWriter.flush();
 				metaWriter.close();
 			}
@@ -244,9 +265,8 @@ public final class ObjWriter {
 			}
 		}
 
-		private AxisAlignedBoundingBoxXZ generateMetaInfoForTile(JSONArray children, 
+		private AxisAlignedBoundingBoxXZ generateMetaInfoForTile(JsonArray children, 
 				String tms, TargetAndStream t, AxisAlignedBoundingBoxXZ fullBBOX) {
-			JSONObject meta = new JSONObject();
 			
 			AxisAlignedBoundingBoxXZ tileBBOX = 
 					tile2boundingBox(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(0));
@@ -262,20 +282,31 @@ public final class ObjWriter {
 				fullBBOX = AxisAlignedBoundingBoxXZ.union(union, fullBBOX);
 			}
 			
-			meta.put("boundingVolume", new JSONObject());
-			meta.getJSONObject("boundingVolume").put("region", new JSONArray(region));
+			if (t.maxY == 0.0) {
+				// Don't write epty tiles
+				return fullBBOX;
+			}
 			
-			meta.put("geometricError", t.maxY);
+			List<Double> regionList = Arrays.asList(ArrayUtils.toObject(region));
 			
-			JSONObject content = new JSONObject();
 			double[] contentRegion = encodeRegion(t.minY, t.maxY, t.boundingVolume);
-			
-			content.put("url", tms + ".b3dm");
-			content.put("boundingVolume", new JSONObject());
-			content.getJSONObject("boundingVolume").put("region", new JSONArray(contentRegion));
-			
-			meta.put("content", content);
-			children.put(meta);
+			List<Double> contentRegionList = Arrays.asList(ArrayUtils.toObject(contentRegion));
+
+			JsonObjectBuilder<?,JsonObject> meta = JsonBuilderFactory.buildObject() 
+					.addObject("boundingVolume")
+						.addArray("region").addAll(new DoubleJsonArrayMapper(), regionList)
+						.end()
+					.end()
+					.add("geometricError", t.maxY * 8)
+					.addObject("content")
+						.add("url", tms + ".b3dm")
+						.addObject("boundingVolume")
+							.addArray("region").addAll(new DoubleJsonArrayMapper(), contentRegionList)
+							.end()
+						.end()
+					.end();
+						
+			children.add(meta.getJson().getAsJsonObject());
 			
 			return fullBBOX;
 		}
