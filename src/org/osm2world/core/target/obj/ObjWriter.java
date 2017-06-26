@@ -385,10 +385,12 @@ public final class ObjWriter {
 			objDirectory.getParentFile().mkdir();
 		}
 		
+		String tilesetName = objDirectory.getName().replace(".obj", "");
+		
 		checkArgument(objDirectory.getParentFile().isDirectory());
 		
 		final File mtlFile = new File(objDirectory.getParentFile().getPath()
-				+ File.separator + "materials.mtl");
+				+ File.separator + tilesetName + "_materials.mtl");
 		if (!mtlFile.exists()) {
 			mtlFile.createNewFile();
 		}
