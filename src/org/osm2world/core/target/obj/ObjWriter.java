@@ -9,7 +9,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +21,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.ArrayUtils;
 import org.jglue.fluentjson.JsonBuilder;
 import org.jglue.fluentjson.JsonBuilderFactory;
-import org.jglue.fluentjson.JsonObjectBuilder;
 import org.jglue.fluentjson.Mapper;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.creation.LatLon;
@@ -36,9 +37,11 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.world.data.WorldObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 /**
  * utility class for creating an Wavefront OBJ file
@@ -52,6 +55,41 @@ public final class ObjWriter {
 		private File tilesFolder;
 		private MapProjection mapProjection;
 
+		private static final class TiledObjTarget extends ObjTarget {
+			private final TargetAndStream result;
+			private int objCounter = 0;
+			
+			public int getObjCounter() {
+				return objCounter;
+			}
+			
+			public void incrementObjCounter() {
+				objCounter++;
+			}
+			
+			private TiledObjTarget(PrintStream objStream, PrintStream mtlStream, TargetAndStream result) {
+				super(objStream, mtlStream);
+				this.result = result;
+			}
+
+			@Override
+			public void drawFace(Material material, List<VectorXYZ> vs, List<VectorXYZ> normals,
+				List<List<VectorXZ>> texCoordLists) {
+				super.drawFace(material, vs, normals, texCoordLists);
+				for (VectorXYZ v : vs) {
+					result.maxY = Math.max(result.maxY, v.y);
+					result.minY = Math.min(result.minY, v.y);
+				}
+			}
+			
+			@Override
+			public void beginObject(WorldObject object) {
+				super.beginObject(object);
+				incrementObjCounter();
+			}
+			
+		}
+
 		private static final class DoubleJsonArrayMapper implements Mapper<Double> {
 			@Override
 			public JsonBuilder map(Double arg0) {
@@ -60,14 +98,17 @@ public final class ObjWriter {
 		}
 
 		private static final class TargetAndStream {
-			ObjTarget target;
+			TiledObjTarget target;
+			int maxObjects = 10;
+			int subLevel = 0;
 			AxisAlignedBoundingBoxXZ boundingVolume;
 			PrintStream pstream;
 			double minY = 0;
 			double maxY = 0;
 		}
 
-		private final Map<String, TargetAndStream> tile2Target = new HashMap<String, TargetAndStream>();
+		private final Map<String, List<TargetAndStream>> tile2Target 
+				= new HashMap<String, List<TargetAndStream>>();
 		private String tilesetPath;
 		private boolean generateMeta = false;
 
@@ -93,6 +134,7 @@ public final class ObjWriter {
 			
 			String tileNumber = getTileNumber(lat, lon, zLevel);
 			TargetAndStream tuple = getOrCreateTarget(tileNumber);
+			
 			if (tuple.boundingVolume == null) {
 				tuple.boundingVolume = bbox;
 			}
@@ -106,15 +148,30 @@ public final class ObjWriter {
 		
 		private TargetAndStream getOrCreateTarget(String tileNumber) {
 			if(this.tile2Target.get(tileNumber) == null) {
-				this.tile2Target.put(tileNumber, createTargetAndWriter(tileNumber));
+				this.tile2Target.put(tileNumber, new ArrayList<TargetAndStream>());
+				this.tile2Target.get(tileNumber).add(createTargetAndWriter(tileNumber, 0));
 			}
-			return this.tile2Target.get(tileNumber);
+			
+			List<TargetAndStream> subtargets = this.tile2Target.get(tileNumber);
+			
+			TargetAndStream activeTarget = subtargets.get(subtargets.size() - 1);
+			
+			if (activeTarget.target.getObjCounter() > activeTarget.maxObjects) {
+				int maxObjects = activeTarget.maxObjects * 4;
+				int nextSubLevel = activeTarget.subLevel + 1;
+				activeTarget = createTargetAndWriter(tileNumber, subtargets.size());
+				activeTarget.maxObjects = maxObjects;
+				activeTarget.subLevel = nextSubLevel;
+				subtargets.add(activeTarget);
+			}
+			
+			return activeTarget;
 		}
 
-		private TargetAndStream createTargetAndWriter(String tileNumber) {
+		private TargetAndStream createTargetAndWriter(String tileNumber, int subLevel) {
 			try {
 				File objFile = new File(tilesFolder.getPath() + File.separator
-						+ tileNumber + ".obj");
+						+ tileNumber + "_" + subLevel + ".obj");
 				
 				objFile.getParentFile().mkdirs();
 				
@@ -130,17 +187,7 @@ public final class ObjWriter {
 				
 				final TargetAndStream result = new TargetAndStream();
 				
-				result.target = new ObjTarget(objStream, mtlStream) {
-					@Override
-					public void drawFace(Material material, List<VectorXYZ> vs, List<VectorXYZ> normals,
-							List<List<VectorXZ>> texCoordLists) {
-						super.drawFace(material, vs, normals, texCoordLists);
-						for (VectorXYZ v : vs) {
-							result.maxY = Math.max(result.maxY, v.y);
-							result.minY = Math.min(result.minY, v.y);
-						}
-					}
-				};
+				result.target = new TiledObjTarget(objStream, mtlStream, result);
 				result.pstream = objStream;
 				
 				return result;
@@ -198,16 +245,18 @@ public final class ObjWriter {
 			
 			JsonArray children = new JsonArray();
 			
-			for (Entry<String, TargetAndStream> entry : this.tile2Target.entrySet()) {
-				TargetAndStream t = entry.getValue();
-				t.pstream.close();
-				
-				if (generateMeta) {
-					fullBBOX = generateMetaInfoForTile(children, entry.getKey(), t, fullBBOX);
+			for (Entry<String, List<TargetAndStream>> entry : this.tile2Target.entrySet()) {
+				for (TargetAndStream t : entry.getValue()) {
+					
+					t.pstream.close();
+					
+					minY = Math.min(t.minY, minY);
+					maxY = Math.max(t.maxY, maxY);
 				}
 				
-				minY = Math.min(t.minY, minY);
-				maxY = Math.max(t.maxY, maxY);
+				if (generateMeta) {
+					fullBBOX = generateMetaInfoForTile(children, entry.getKey(), entry.getValue(), fullBBOX);
+				}
 			}
 			
 			if (generateMeta) {
@@ -233,7 +282,7 @@ public final class ObjWriter {
 
 			List<Double> regionList = Arrays.asList(ArrayUtils.toObject(encodeRegion(minY, maxY, fullBBOX)));
 			List<Double> transformList = Arrays.asList(ArrayUtils.toObject(transform));
-			double extentDiagonal = (fullBBOX.sizeX() + fullBBOX.sizeZ()) / 2;
+			double extentDiagonal = maxY * 4;
 			
 			JsonObject tileset = JsonBuilderFactory.buildObject()
 				.addObject("asset")
@@ -266,49 +315,81 @@ public final class ObjWriter {
 		}
 
 		private AxisAlignedBoundingBoxXZ generateMetaInfoForTile(JsonArray children, 
-				String tms, TargetAndStream t, AxisAlignedBoundingBoxXZ fullBBOX) {
+				String tms, List<TargetAndStream> sublevels, AxisAlignedBoundingBoxXZ fullBBOX) {
 			
-			AxisAlignedBoundingBoxXZ tileBBOX = 
-					tile2boundingBox(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(0));
-			
-			AxisAlignedBoundingBoxXZ union = AxisAlignedBoundingBoxXZ.union(t.boundingVolume, tileBBOX);
-			
-			double[] region = encodeRegion(t.minY, t.maxY, union);
-			
-			if (fullBBOX == null) {
-				fullBBOX = union; 
-			}
-			else {
-				fullBBOX = AxisAlignedBoundingBoxXZ.union(union, fullBBOX);
-			}
-			
-			if (t.maxY == 0.0) {
+			if (sublevels.size() == 1 && sublevels.get(0).maxY == 0.0) {
 				// Don't write epty tiles
 				return fullBBOX;
 			}
-			
-			List<Double> regionList = Arrays.asList(ArrayUtils.toObject(region));
-			
-			double[] contentRegion = encodeRegion(t.minY, t.maxY, t.boundingVolume);
-			List<Double> contentRegionList = Arrays.asList(ArrayUtils.toObject(contentRegion));
 
-			JsonObjectBuilder<?,JsonObject> meta = JsonBuilderFactory.buildObject() 
-					.addObject("boundingVolume")
-						.addArray("region").addAll(new DoubleJsonArrayMapper(), regionList)
-						.end()
-					.end()
-					.add("geometricError", t.maxY * 8)
-					.addObject("content")
-						.add("url", tms + ".b3dm")
-						.addObject("boundingVolume")
-							.addArray("region").addAll(new DoubleJsonArrayMapper(), contentRegionList)
-							.end()
-						.end()
-					.end();
-						
-			children.add(meta.getJson().getAsJsonObject());
+			String[] tmsSplit = tms.split("/");
+			
+			Integer tileX = Integer.valueOf(tmsSplit[1]);
+			Integer tileY = Integer.valueOf(tmsSplit[2]);
+			Integer tileZ = Integer.valueOf(tmsSplit[0]);
+			
+			AxisAlignedBoundingBoxXZ tileBBOX = 
+					tile2boundingBox(tileX, tileY, tileZ);
+			
+			// We'll write from the bigest to smallest sublevels
+			// because upper levels includes down levels as children 
+			Collections.reverse(sublevels);
+			
+			JsonObject prevSubtile = null;
+			int sublevel = 0;
+			for (TargetAndStream t : sublevels) {
+				
+				// Union content bbox with tile bbox, to ensure that content is fully within
+				AxisAlignedBoundingBoxXZ union = AxisAlignedBoundingBoxXZ.union(t.boundingVolume, tileBBOX);
+				double[] region = encodeRegion(t.minY, t.maxY, union);
+				
+				// Ensure that whole tileset bbox covers all the children bboxes and content
+				fullBBOX = fullBBOX == null ? union : AxisAlignedBoundingBoxXZ.union(union, fullBBOX);
+				
+				// Tight bbox contains only content
+				double[] contentRegion = encodeRegion(t.minY, t.maxY, t.boundingVolume);
+				
+				JsonObject tileBoundingVolume = getRegionAsBVJsonObject(region);
+				JsonObject contentBoundingVolume = getRegionAsBVJsonObject(contentRegion);
+				
+				double geometricError = t.maxY * Double.valueOf(sublevel);
+				
+				JsonObject meta = new JsonObject();
+				meta.add("boundingVolume", tileBoundingVolume);
+				meta.add("geometricError", new JsonPrimitive(geometricError));
+				
+				JsonObject content = new JsonObject();
+				content.add("url", new JsonPrimitive(tms + "_" + t.subLevel + ".b3dm"));
+				content.add("objects", new JsonPrimitive(t.target.getObjCounter()));
+				content.add("boundingVolume", contentBoundingVolume);
+				
+				meta.add("content", content);
+
+				if (prevSubtile != null) {
+					JsonArray ca = new JsonArray();
+					ca.add(prevSubtile);
+					meta.add("children", ca);
+				}
+				
+				prevSubtile = meta;
+				sublevel ++;
+			}
+			
+			if (prevSubtile != null) {
+				children.add(prevSubtile);
+			}
 			
 			return fullBBOX;
+		}
+
+		private JsonObject getRegionAsBVJsonObject(double[] region) {
+			List<Double> asList = Arrays.asList(ArrayUtils.toObject(region));
+			
+			return JsonBuilderFactory.buildObject()
+				.addArray("region")
+					.addAll(new DoubleJsonArrayMapper(), asList)
+				.end()
+				.getJson();
 		}
 
 		private double[] encodeRegion(double minY, double maxY, AxisAlignedBoundingBoxXZ union) {
@@ -319,7 +400,6 @@ public final class ObjWriter {
 			double east = this.mapProjection.calcLon(bottomRight);
 			double north = this.mapProjection.calcLat(topLeft);
 			double south = this.mapProjection.calcLat(bottomRight);
-			
 			
 			double[] region = new double[]{
 				Math.toRadians(west), 

@@ -93,6 +93,8 @@ public final class TargetUtil {
 				
 		final StatisticsTarget primitiveCounter = new StatisticsTarget();
 		
+		mapData.sortMapAreas(new BuildingsByHeightComparator());
+		
 		iterate(mapData.getMapElements(), new Operation<MapElement>() {
 			
 			@Override public void perform(MapElement e) {

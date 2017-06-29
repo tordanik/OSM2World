@@ -1,6 +1,8 @@
 package org.osm2world.core.map_data.data;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -37,6 +39,18 @@ public class MapData {
 
 		calculateDataBoundary();
 		
+	}
+	
+	public void sortMapNodes(Comparator<MapNode> comparator) {
+		Collections.sort(mapNodes, comparator);
+	}
+	
+	public void sortMapWaySegments(Comparator<MapWaySegment> comparator) {
+		Collections.sort(mapWaySegments, comparator);
+	}
+	
+	public void sortMapAreas(Comparator<MapArea> comparator) {
+		Collections.sort(mapAreas, comparator);
 	}
 	
 	private void calculateDataBoundary() {
