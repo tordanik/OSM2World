@@ -14,6 +14,7 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.external_models.ExternalModel;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -106,10 +108,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 		
 		private final EleConnectorGroup outlineConnectors;
 		
+		private ExternalModel model;
+		
 		public Building(MapArea area, boolean useBuildingColors,
 				boolean drawBuildingWindows) {
 			
 			this.area = area;
+			
+			if (area.getOsmObject().id == 3696235) {
+				model = new ExternalModel(this, 
+							new File("/opt/ep/data/house-model/haus06.obj"));
+			}
 			
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				MapElement other = overlap.getOther(area);
@@ -285,9 +294,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			for (BuildingPart part : parts) {
-				part.renderTo(target);
+			if (this.model != null) {
+				this.model.renderTo(target);
 			}
+//			else {
+//				for (BuildingPart part : parts) {
+//					part.renderTo(target);
+//				}
+//			}
 		}
 		
 	}
