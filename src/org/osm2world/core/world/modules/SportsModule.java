@@ -39,6 +39,10 @@ public class SportsModule extends AbstractModule {
 			
 			if ("soccer".equals(sport)) {
 				area.addRepresentation(new SoccerPitch(area));
+			} else if ("tennis".equals(sport)) {
+				area.addRepresentation(new TennisPitch(area));
+			} else if ("beachvolleyball".equals(sport)) {
+				area.addRepresentation(new BeachVolleyballPitch(area));
 			}
 			
 		}
@@ -74,7 +78,8 @@ public class SportsModule extends AbstractModule {
 		
 		/**
 		 * the fallback material to be used instead of {@link #getPitchMaterial()}
-		 * if no legal pitch can be constructed
+		 * if no legal pitch can be constructed.
+		 * This is usually just the base material (such as grass) without the markings.
 		 */
 		protected abstract Material getFallbackPitchMaterial();
 		
@@ -252,6 +257,112 @@ public class SportsModule extends AbstractModule {
 		@Override
 		protected Material getFallbackPitchMaterial() {
 			return GRASS;
+		}
+		
+	}
+
+	/**
+	 * a pitch with tennis markings
+	 */
+	class TennisPitch extends Pitch {
+
+		TennisPitch(MapArea area) {
+			super(area);
+		}
+		
+		@Override
+		protected double getMinLongSide() {
+			return 17;
+			
+		}
+
+		@Override
+		protected double getMaxLongSide() {
+			return 23.77; //regulation size
+		}
+
+		@Override
+		protected double getMinShortSide() {
+			boolean singles = area.getTags().contains("tennis", "single");
+			return singles ? 6 : 8;
+		}
+
+		@Override
+		protected double getMaxShortSide() {
+			boolean singles = area.getTags().contains("tennis", "single");
+			return singles ? 8.23 : 10.97; //regulation size
+		}
+
+		@Override
+		protected Material getPitchMaterial() {
+			
+			boolean singles = area.getTags().contains("tennis", "single");
+			String surface = area.getTags().getValue("surface");
+			
+			if ("grass".equals(surface)) {
+				return singles ? PITCH_TENNIS_SINGLES_GRASS : PITCH_TENNIS_GRASS;
+			} else if ("asphalt".equals(surface)) {
+				return singles ? PITCH_TENNIS_SINGLES_ASPHALT : PITCH_TENNIS_ASPHALT;
+			} else {
+				return singles ? PITCH_TENNIS_SINGLES_CLAY : PITCH_TENNIS_CLAY;
+			}
+			
+		}
+
+		@Override
+		protected Material getFallbackPitchMaterial() {
+
+			String surface = area.getTags().getValue("surface");
+			
+			if ("grass".equals(surface)) {
+				return GRASS;
+			} else if ("asphalt".equals(surface)) {
+				return ASPHALT;
+			} else {
+				return EARTH;
+			}
+			
+		}
+			
+	}
+
+	/**
+	 * a pitch with beach volleyball markings
+	 */
+	class BeachVolleyballPitch extends Pitch {
+
+		BeachVolleyballPitch(MapArea area) {
+			super(area);
+		}
+		
+		@Override
+		protected double getMinLongSide() {
+			return 12;
+		}
+
+		@Override
+		protected double getMaxLongSide() {
+			return 16; //regulation size
+		}
+
+		@Override
+		protected double getMinShortSide() {
+			return 6;
+		}
+
+		@Override
+		protected double getMaxShortSide() {
+			return 8; //regulation size
+		}
+
+		@Override
+		protected Material getPitchMaterial() {
+			return PITCH_BEACHVOLLEYBALL;
+		}
+
+		@Override
+		protected Material getFallbackPitchMaterial() {
+			return SAND;
 		}
 		
 	}

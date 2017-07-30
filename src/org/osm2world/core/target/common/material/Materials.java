@@ -207,9 +207,23 @@ public final class Materials {
 
 	public static final ConfMaterial SOLAR_PANEL =
 			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
-	
+
+	public static final ConfMaterial PITCH_BEACHVOLLEYBALL =
+			new ConfMaterial(Interpolation.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial PITCH_SOCCER =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+			new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial PITCH_TENNIS_ASPHALT =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
+	public static final ConfMaterial PITCH_TENNIS_CLAY =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0.0f, 0.0f));
+	public static final ConfMaterial PITCH_TENNIS_GRASS =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial PITCH_TENNIS_SINGLES_ASPHALT =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
+	public static final ConfMaterial PITCH_TENNIS_SINGLES_CLAY =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0.0f, 0.0f));
+	public static final ConfMaterial PITCH_TENNIS_SINGLES_GRASS =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1),
