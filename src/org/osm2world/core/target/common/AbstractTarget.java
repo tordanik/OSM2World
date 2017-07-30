@@ -16,6 +16,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -194,6 +195,14 @@ public abstract class AbstractTarget<R extends Renderable>
 	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
 			List<List<VectorXZ>> texCoordLists) {
 		drawTriangleFan(material, vs, texCoordLists);
+	}
+	
+	@Override
+	public void drawModel(Model model, VectorXYZ position,
+			double direction, Double height, Double width, Double length) {
+		
+		model.render(this, position, direction, height, width, length);
+
 	}
 	
 	@Override
