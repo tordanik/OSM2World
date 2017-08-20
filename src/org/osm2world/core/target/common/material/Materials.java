@@ -225,6 +225,9 @@ public final class Materials {
 	public static final ConfMaterial PITCH_TENNIS_SINGLES_GRASS =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
 	
+	public static final ConfMaterial TENNIS_NET =
+			new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1),
 				1, 0, Transparency.FALSE, null);

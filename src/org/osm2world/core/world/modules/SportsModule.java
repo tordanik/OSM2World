@@ -1,14 +1,18 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.cos;
+import static java.lang.Math.*;
+import static java.util.Arrays.asList;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -114,13 +118,13 @@ public class SportsModule extends AbstractModule {
 		}
 
 		/**
-		 * calculates the parameters for a {@link TexCoordFunction}
+		 * calculates the parameters for a {@link PitchTexFunction}
 		 * and calls the constructor
 		 * 
 		 * @return  the texture coordinate function;
 		 * null if it's not possible to construct a valid pitch
 		 */
-		private TexCoordFunction configureTexFunction(SimplePolygonXZ polygon) {
+		protected PitchTexFunction configureTexFunction(SimplePolygonXZ polygon) {
 			
 			/* approximate a rectangular shape for the pitch */
 			
@@ -189,7 +193,19 @@ public class SportsModule extends AbstractModule {
 				this.shortSide = shortSide;
 				
 			}
-
+			
+			public VectorXZ getLongSide() {
+				return longSide;
+			}
+			
+			public VectorXZ getShortSide() {
+				return shortSide;
+			}
+			
+			public VectorXZ getOrigin() {
+				return origin;
+			}
+			
 			@Override
 			public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
 				
@@ -320,6 +336,95 @@ public class SportsModule extends AbstractModule {
 				return ASPHALT;
 			} else {
 				return EARTH;
+			}
+			
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			/* let the supertype draw the pitch surface */
+			
+			super.renderTo(target);
+			
+			/* add a net with posts */
+			
+			PitchTexFunction texFunction = configureTexFunction(area.getOuterPolygon());
+			
+			//TODO: support this feature when elevation is enabled
+			
+			boolean eleZero = true;
+			
+			for (EleConnector connector : getEleConnectors()) {
+				if (abs(connector.getPosXYZ().y) > 0.01) {
+					eleZero = false;
+					break;
+				}
+			}
+			
+			if (texFunction != null && eleZero) {
+
+				final double netHeightAtPosts = 1.07;
+				final double netHeightCenter = 0.91;
+				final double postRadius = 0.04;
+				
+				VectorXYZ postPositionA = texFunction.getOrigin()
+						.add(texFunction.getLongSide().mult(0.5)).xyz(0);
+
+				VectorXYZ postPositionB = postPositionA.add(texFunction.getShortSide());
+
+				VectorXZ shortSideNormalized = texFunction.getShortSide().normalize();
+				
+				postPositionA = postPositionA.add(shortSideNormalized.invert());
+				postPositionB = postPositionB.add(shortSideNormalized);
+				
+				/* add two posts */
+				
+				for (VectorXYZ postPosition : asList(postPositionA, postPositionB)) {
+					
+					target.drawColumn(PLASTIC_GREY, null, postPosition, netHeightAtPosts, postRadius, postRadius, false, true);
+					
+				}
+				
+				/* draw the net (with an approximated droop in the center) */
+				
+				final int numInterpolatedPoints = 20;
+				
+				List<VectorXYZ> netBottom = new ArrayList<VectorXYZ>();
+				List<VectorXYZ> netTop = new ArrayList<VectorXYZ>();
+								
+				for (int i = 0; i < numInterpolatedPoints; i++) {
+					
+					double ratio = (double)i / (numInterpolatedPoints - 1);
+					VectorXYZ v = interpolateBetween(postPositionA, postPositionB, ratio);
+
+					double heightFactor = (2 * ratio - 1) * (2 * ratio - 1);
+					double height = netHeightCenter + heightFactor * (netHeightAtPosts - netHeightCenter);
+					
+					netBottom.add(v);
+					netTop.add(v.addY(height));
+					
+				}
+				
+				List<VectorXYZ> verticesNet = new ArrayList<VectorXYZ>();
+				List<VectorXYZ> verticesNetBack = new ArrayList<VectorXYZ>();
+				
+				for (int i = 0; i < numInterpolatedPoints; i++) {
+					
+					verticesNet.add(netTop.get(i));
+					verticesNet.add(netBottom.get(i));
+					
+					verticesNetBack.add(0, netBottom.get(i));
+					verticesNetBack.add(0, netTop.get(i));
+										
+				}
+				
+				target.drawTriangleStrip(TENNIS_NET, verticesNet,
+						texCoordLists(verticesNet, TENNIS_NET, STRIP_FIT_HEIGHT));
+
+				target.drawTriangleStrip(TENNIS_NET, verticesNetBack,
+						texCoordLists(verticesNetBack, TENNIS_NET, STRIP_FIT_HEIGHT));
+				
 			}
 			
 		}
