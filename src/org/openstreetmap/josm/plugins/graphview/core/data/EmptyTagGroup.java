@@ -76,7 +76,7 @@ public final class EmptyTagGroup implements TagGroup {
 	
 	@Override
 	public Iterator<Tag> iterator() {
-		return Collections.<Tag>emptyList().iterator();
+		return Collections.emptyIterator();
 	}
 	
 	@Override
