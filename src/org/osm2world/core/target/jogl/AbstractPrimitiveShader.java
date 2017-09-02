@@ -1,6 +1,7 @@
 package org.osm2world.core.target.jogl;
 
 import javax.media.opengl.GL3;
+
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 
@@ -10,12 +11,12 @@ import org.osm2world.core.target.common.material.Material.Transparency;
 public abstract class AbstractPrimitiveShader extends AbstractShader {
 
 	/**
-	 * Render objects that are semi transparent (see {@link Transparency.TRUE})
+	 * Render objects that are semi transparent (see {@link Transparency#TRUE})
 	 */
 	protected boolean renderSemiTransparent = true;
 	
 	/**
-	 * Render only objects that are semi transparent (see {@link Transparency.TRUE})
+	 * Render only objects that are semi transparent (see {@link Transparency#TRUE})
 	 */
 	protected boolean renderOnlySemiTransparent = false;
 

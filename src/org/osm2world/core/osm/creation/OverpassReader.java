@@ -27,14 +27,12 @@ public class OverpassReader extends OsmosisReader {
 		this(apiURL, "[bbox:"+min.lat+","+min.lon+","+max.lat+","+max.lon+"];(node;rel(bn)->.x;way;node(w)->.x;rel(bw););out meta;");
 	}
 	
-	/** fetches data from Overpass API according to an arbitrary query
-	 * @throws IOException */
+	/** fetches data from Overpass API according to an arbitrary query */
 	public OverpassReader(String queryString) {
 		this(DEFAULT_API_URL, queryString);
 	}
 	
-	/** fetches data from any Overpass API instance according to an arbitrary query.
-	 * @throws IOException */
+	/** fetches data from any Overpass API instance according to an arbitrary query. */
 	public OverpassReader(String apiURL, String queryString) {
 		super(new OverpassSource(apiURL, queryString));
 	}
@@ -44,7 +42,7 @@ public class OverpassReader extends OsmosisReader {
 	 */
 	private static class OverpassSource implements RunnableSource {
 		
-		private final String apiURL;		
+		private final String apiURL;
 		private final String queryString;
 		
 		private Sink sink;
