@@ -640,7 +640,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			target.drawTriangleStrip(materialWallWithWindows, mainWallVectors,
 					mainWallTexCoordLists);
-			target.drawTriangleStrip(materialWall, roofWallVectors,
+			
+			drawStripWithoutDegenerates(target, materialWall, roofWallVectors,
 					texCoordLists(roofWallVectors, materialWall, STRIP_WALL));
 			
 		}
@@ -941,6 +942,51 @@ public class BuildingModule extends ConfigurableWorldModule {
 				return area.getTags().getValue(key);
 			} else {
 				return building.area.getTags().getValue(key);
+			}
+			
+		}
+
+		/**
+		 * draws a triangle strip, but omits degenerate triangles
+		 */
+		private static final void drawStripWithoutDegenerates(
+				Target<?> target, Material material, List<VectorXYZ> vectors,
+				List<List<VectorXZ>> texCoordLists) {
+			
+			List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>();
+			List<List<VectorXZ>> triangleTexCoordLists = new ArrayList<List<VectorXZ>>(texCoordLists.size());
+			
+			for (int i = 0; i < texCoordLists.size(); i ++) {
+				triangleTexCoordLists.add(new ArrayList<VectorXZ>());
+			}
+			
+			for (int triangle = 0; triangle < vectors.size() - 2; triangle++) {
+				
+				int indexA = triangle % 2 == 0 ? triangle : triangle + 1;
+				int indexB = triangle % 2 == 0 ? triangle + 1 : triangle;
+				int indexC = triangle + 2;
+				
+				TriangleXYZ t = new TriangleXYZ(
+						vectors.get(indexA),
+						vectors.get(indexB),
+						vectors.get(indexC));
+				
+				if (!t.isDegenerate()) {
+					
+					triangles.add(t);
+					
+					for (int i = 0; i < texCoordLists.size(); i ++) {
+						
+						triangleTexCoordLists.get(i).add(texCoordLists.get(i).get(indexA));
+						triangleTexCoordLists.get(i).add(texCoordLists.get(i).get(indexB));
+						triangleTexCoordLists.get(i).add(texCoordLists.get(i).get(indexC));
+						
+					}
+				}
+			}
+			
+			if (triangles.size() > 0) {
+				target.drawTriangles(material, triangles, triangleTexCoordLists);
 			}
 			
 		}
