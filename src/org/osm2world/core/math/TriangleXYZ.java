@@ -50,6 +50,26 @@ public class TriangleXYZ {
 		
 	}
 	
+	/**
+	 * returns the area of the triangle
+	 */
+	public double getArea() {
+		
+		VectorXYZ w1 = v2.subtract(v1);
+		VectorXYZ w2 = v3.subtract(v1);
+		
+		return 0.5 * (w1.cross(w2)).length();
+		
+	}
+	
+	/**
+	 * checks if the triangle is degenerate. That is, all three points are
+	 * (almost, to account for floating point arithmetic) in a line.
+	 */
+	public boolean isDegenerate() {
+		return getArea() < 0.0001;
+	}
+	
 	@Override
 	public String toString() {
 		return "[" + v1 + ", " + v2 + ", " + v3 + "]";
