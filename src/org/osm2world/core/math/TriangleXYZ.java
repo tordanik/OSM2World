@@ -52,7 +52,7 @@ public class TriangleXYZ {
 	
 	@Override
 	public String toString() {
-		return "[" + v1.toString() + ", " + v2.toString() + ", " + v3.toString() + "]";
+		return "[" + v1 + ", " + v2 + ", " + v3 + "]";
 	}
 	
 }
