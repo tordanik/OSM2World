@@ -62,19 +62,31 @@ public class CLIArgumentsGroup {
 		
 		return CLIArgumentsUtil.getProgramMode(args1) == CONVERT
 			&& CLIArgumentsUtil.getProgramMode(args2) == CONVERT
-			&& bothNullOrEqual(args1.getInputMode(), args2.getInputMode())
-			&& bothNullOrEqual(args1.getInput(), args2.getInput())
-			&& bothNullOrEqual(args1.getInputQuery(), args2.getInputQuery())
-			&& bothNullOrEqual(args1.getInputBoundingBox(), args2.getInputBoundingBox())
-			&& bothNullOrEqual(args1.getOverpassURL(), args2.getOverpassURL())
-			&& ((args1.isConfig() && args1.getConfig().equals(args2.getConfig()))
-					|| (!args1.isConfig() && !args2.isConfig()));
+			
+			&& (args1.isInputMode()
+				? args2.isInputMode() && args1.getInputMode().equals(args2.getInputMode())
+				: !args2.isInputMode())
+			
+			&& (args1.isInput()
+				? args2.isInput() && args1.getInput().equals(args2.getInput())
+				: !args2.isInput())
+			
+			&& (args1.isInputQuery()
+				? args2.isInputQuery() && args1.getInputQuery().equals(args2.getInputQuery())
+				: !args2.isInputQuery())
+			
+			&& (args1.isInputBoundingBox()
+				? args2.isInputBoundingBox() && args1.getInputBoundingBox().equals(args2.getInputBoundingBox())
+				: !args2.isInputBoundingBox())
+			
+			&& (args1.isOverpassURL()
+				? args2.isOverpassURL() && args1.getOverpassURL().equals(args2.getOverpassURL())
+				: !args2.isOverpassURL())
+			
+			&& (args1.isConfig()
+				? args2.isConfig() && args1.getConfig().equals(args2.getConfig())
+				: !args2.isConfig());
 		
-	}
-	
-	private static final boolean bothNullOrEqual(Object o1, Object o2) {
-		return (o1 == null && o2 == null)
-				|| (o1 != null && o1.equals(o2));
 	}
 
 }
