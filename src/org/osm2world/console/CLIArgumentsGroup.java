@@ -57,7 +57,7 @@ public class CLIArgumentsGroup {
 	/**
 	 * checks whether two CLIArguments instances can be put into the same group
 	 */
-	private static final boolean isCompatible(
+	static final boolean isCompatible(
 			CLIArguments args1, CLIArguments args2) {
 		
 		return CLIArgumentsUtil.getProgramMode(args1) == CONVERT
