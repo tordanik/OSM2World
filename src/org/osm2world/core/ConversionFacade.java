@@ -46,6 +46,7 @@ import org.osm2world.core.world.modules.BarrierModule;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.BuildingModule;
 import org.osm2world.core.world.modules.CliffModule;
+import org.osm2world.core.world.modules.ExternalModelModule;
 import org.osm2world.core.world.modules.GolfModule;
 import org.osm2world.core.world.modules.InvisibleModule;
 import org.osm2world.core.world.modules.ParkingModule;
@@ -130,6 +131,7 @@ public class ConversionFacade {
 	private static final List<WorldModule> createDefaultModuleList() {
 		
 		return Arrays.asList((WorldModule)
+				new ExternalModelModule(),
 				new RoadModule(),
 				new RailwayModule(),
 				new BuildingModule(),

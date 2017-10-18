@@ -1,4 +1,4 @@
-package org.osm2world.core.external_models.objparser;
+package org.osm2world.core.target.common.model.obj.parser;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,18 +15,20 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang.StringUtils;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 
-public class ObjParser {
+public class ObjModel {
 	
 	private File objFile;
 	private Map<String, Material> materials = new HashMap<>();
@@ -36,9 +39,12 @@ public class ObjParser {
 	private List<VectorXZ> textureVertexes = new ArrayList<>();
 	private Material faceMtl;
 	private List<ObjFace> faces = new ArrayList<>();
+	private AxisAlignedBoundingBoxXYZ bbox;
+	private ModelLinksProxy proxy;
+	private String base;
 	
 	private static final class ObjMaterial {
-		File materialFile;
+		String materialFileLink;
 		public String name;
 		
 		float ni;
@@ -52,8 +58,41 @@ public class ObjParser {
 		
 	}
 	
-	public ObjParser(File objFile) {
-		this.objFile = objFile;
+	private static String strip(String str) {
+		return StringUtils.strip(str, " \t");
+	}
+
+	private static String parseStringParam(String line, String key) {
+		return strip(StringUtils.removeStartIgnoreCase(line, key));
+	}
+	
+	private float parseFloatParam(String line, String key) {
+		return Float.valueOf(strip(StringUtils.removeStartIgnoreCase(line, key)));
+	}
+	
+	private float[] parseFloatTriplet(String key, String line) {
+		String numbers = strip(StringUtils.removeStartIgnoreCase(line, key));
+		String[] split = StringUtils.split(numbers, " \t");
+		return new float[]{
+				Float.valueOf(split[0]),
+				Float.valueOf(split[1]),
+				Float.valueOf(split[2])
+		};
+	}
+	
+	private float[] parseFloatDuplet(String key, String line) {
+		String numbers = strip(StringUtils.removeStartIgnoreCase(line, key));
+		String[] split = StringUtils.split(numbers, " \t");
+		return new float[]{
+				Float.valueOf(split[0]),
+				Float.valueOf(split[1])
+		};
+	}
+
+	public ObjModel(String link, ModelLinksProxy resolver) {
+		this.proxy = resolver;
+		this.base = link;
+		this.objFile = this.proxy.getFile(link);
 		
 		try {
 			this.iterateOverObjFile();
@@ -69,13 +108,13 @@ public class ObjParser {
 		while (line != null)  
 		{  
 			line = StringUtils.strip(line);
-			if (line.startsWith("#")) {
+			if (StringUtils.startsWithIgnoreCase(line, "#")) {
 				handleObjComment(line);
 			}
-			else if (line.startsWith("call")){
+			else if (StringUtils.startsWithIgnoreCase(line, "call")){
 				handleCall(line);
 			}
-			else if (line.startsWith("mtllib")){
+			else if (StringUtils.startsWithIgnoreCase(line, "mtllib")){
 				handleMtlLib(line);
 			}
 			else {
@@ -93,16 +132,14 @@ public class ObjParser {
 	}
 
 	private void handleMtlLib(String line) throws IOException {
-		String mtlPath = StringUtils.strip(line.replace("mtllib", ""));
-		File mtlFile = new File(mtlPath);
-		if(!mtlFile.isAbsolute()) {
-			mtlFile = new File(this.objFile.getParent(), mtlPath);
-		}
+		String mtlPath = parseStringParam(line, "mtllib");
+		String mtlLink = ModelLinksProxy.resolveLink(new URL(this.base), mtlPath);
+		File mtlFile = this.proxy.getLinkedFile(mtlLink, this.base);
 		
-		parseMtlFile(mtlFile);
+		parseMtlFile(mtlFile, mtlLink);
 	}
 
-	private void parseMtlFile(File mtlFile) throws IOException {
+	private void parseMtlFile(File mtlFile, String mtlLink) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(mtlFile));  
 		String line = StringUtils.strip(br.readLine());
 		while (line != null)  
@@ -110,25 +147,25 @@ public class ObjParser {
 			if (line.startsWith("#")) {
 				handleMtlComment(line);
 			}
-			else if(line.startsWith("newmtl")) {
-				handleMtlNewMtl(line, mtlFile);
+			else if(StringUtils.startsWithIgnoreCase(line, "newmtl")) {
+				handleMtlNewMtl(line, mtlLink);
 			}
-			else if(line.startsWith("Ka")) {
+			else if(StringUtils.startsWithIgnoreCase(line, "ka")) {
 				handleMtlKa(line);
 			}
-			else if(line.startsWith("Kd")) {
+			else if(StringUtils.startsWithIgnoreCase(line, "kd")) {
 				handleMtlKd(line);
 			}
-			else if(line.startsWith("Ks")) {
+			else if(StringUtils.startsWithIgnoreCase(line, "ks")) {
 				handleMtlKs(line);
 			}
-			else if(line.startsWith("Ni")) {
+			else if(StringUtils.startsWithIgnoreCase(line, "ni")) {
 				handleMtlNi(line);
 			}
-			else if(line.startsWith("map_Ka")) {
+			else if(StringUtils.startsWithIgnoreCase(line, "map_Ka")) {
 				handleMtlMapKa(line);
 			}
-			else if(line.startsWith("map_Kd")) {
+			else if(StringUtils.startsWithIgnoreCase(line, "map_Kd")) {
 				handleMtlMapKd(line);
 			}
 			
@@ -140,60 +177,55 @@ public class ObjParser {
 	}
 
 	private void handleMtlMapKd(String line) {
-		this.curentMtl.map_Kd = line.replace("map_Kd ", "").trim();
+		this.curentMtl.map_Kd = parseStringParam(line, "map_kd");
 	}
 
 	private void handleMtlMapKa(String line) {
-		this.curentMtl.map_Ka = line.replace("map_Ka ", "").trim();
+		this.curentMtl.map_Ka = parseStringParam(line, "map_ka");
 	}
 
 	private void handleMtlNi(String line) {
-		this.curentMtl.ni = 
-				Float.valueOf(line.replace("Ni ", ""));
+		this.curentMtl.ni = parseFloatParam(line, "ni");
 	}
 
 	private void handleMtlKs(String line) {
-		String[] split = line.replace("Ks ", "").split(" ");
-		this.curentMtl.ks = new float[]{
-				Float.valueOf(split[0]),
-				Float.valueOf(split[1]),
-				Float.valueOf(split[2])
-		};
+		this.curentMtl.ks = parseFloatTriplet("Ks", line); 
 	}
 
 	private void handleMtlKd(String line) {
-		String[] split = line.replace("Kd ", "").split(" ");
-		this.curentMtl.kd = new float[]{
-				Float.valueOf(split[0]),
-				Float.valueOf(split[1]),
-				Float.valueOf(split[2])
-		};
+		this.curentMtl.kd = parseFloatTriplet("Kd", line);
 	}
 
 	private void handleMtlKa(String line) {
-		String[] split = line.replace("Ka ", "").split(" ");
-		this.curentMtl.ka = new float[]{
-				Float.valueOf(split[0]),
-				Float.valueOf(split[1]),
-				Float.valueOf(split[2])
-		};
+		this.curentMtl.ka = parseFloatTriplet("Ka", line);
 	}
 
-	private void handleMtlNewMtl(String line, File mtlFile) throws IOException {
+	private void handleMtlNewMtl(String line, String mtlLink) throws IOException {
 		parseCurentMtl();
-		
-		String name = StringUtils.strip(line.replace("newmtl", ""));
+		String name = parseStringParam(line, "newmtl");
 		this.curentMtl = new ObjMaterial();
 		this.curentMtl.name = name;
-		this.curentMtl.materialFile = mtlFile;
+		this.curentMtl.materialFileLink = mtlLink;
 	}
 
 	private void parseCurentMtl() throws IOException {
 		if (this.curentMtl != null && this.curentMtl.name != null) {
 			
 			boolean mapsEmpty = this.curentMtl.map_Ka == null && this.curentMtl.map_Kd == null;
+			
+			if (this.curentMtl.ka == null) {
+				this.curentMtl.ka = new float[]{0.7f, 0.7f, 0.7f};
+			}
+			if (this.curentMtl.kd == null) {
+				this.curentMtl.kd = new float[]{0.3f, 0.3f, 0.3f};
+			}
+			if (this.curentMtl.ks == null) {
+				this.curentMtl.ks = new float[]{0.0f, 0.0f, 0.0f};
+			}
+			
 			float ambientAverage = (this.curentMtl.ka[0] + this.curentMtl.ka[1] + this.curentMtl.ka[2]) / 3.0f;
 			float diffuseAverage = (this.curentMtl.kd[0] + this.curentMtl.kd[1] + this.curentMtl.kd[2]) / 3.0f;
+			
 			boolean kaComponentsEqual = 
 					this.curentMtl.ka[0] == this.curentMtl.ka[1] && this.curentMtl.ka[1] == this.curentMtl.ka[2];
 			boolean kdComponentsEqual = 
@@ -222,7 +254,7 @@ public class ObjParser {
 			Color meanColor = new Color(rm, gm, bm); 
 			
 			ConfMaterial m = new ConfMaterial(Interpolation.FLAT, meanColor);
-
+			
 			m.setAmbientFactor(ambientAverage);
 			m.setDiffuseFactor(diffuseAverage);
 			
@@ -234,9 +266,12 @@ public class ObjParser {
 			m.setTransparency(Transparency.FALSE);
 			
 			if (!mapsEmpty) {
+				String textureLink = this.curentMtl.map_Ka == null 
+						? this.curentMtl.map_Kd : this.curentMtl.map_Ka;
+				
 				File texture = resolveTexture(
-						this.curentMtl.map_Ka, 
-						this.curentMtl.materialFile);
+						textureLink, 
+						this.curentMtl.materialFileLink);
 				
 				BufferedImage bimg = ImageIO.read(texture);
 				
@@ -252,8 +287,8 @@ public class ObjParser {
 		}
 	}
 
-	private File resolveTexture(String texture, File materialFile) {
-		return new File(materialFile.getParentFile(), texture);
+	private File resolveTexture(String texture, String materialFileLink) {
+		return this.proxy.getLinkedFile(texture, materialFileLink);
 	}
 
 	private void handleMtlComment(String line) {
@@ -261,28 +296,21 @@ public class ObjParser {
 	}
 
 	private void handleObjLine(String line) {
-		if (line.startsWith("v ")) {
-			String[] split = line.replace("v ", "").trim().split(" ");
-			handleVertex(new VectorXYZ(
-					Double.valueOf(split[0]),
-					Double.valueOf(split[1]),
-					Double.valueOf(split[2])));
+		if (StringUtils.startsWithIgnoreCase(line, "v ")) {
+			float[] xyz = parseFloatTriplet("v", line);
+			handleVertex(new VectorXYZ(-xyz[0], xyz[1], xyz[2])
+					.rotateY(Math.toRadians(180.0)));
 		}
-		else if (line.startsWith("vt ")) {
-			String[] split = line.replace("vt ", "").trim().split(" ");
-			handleTextureVertex(new VectorXZ(
-					Double.valueOf(split[0]),
-					Double.valueOf(split[1])));
+		else if (StringUtils.startsWithIgnoreCase(line, "vt")) {
+			float[] uv = parseFloatDuplet("vt ", line);
+			handleTextureVertex(new VectorXZ(uv[0], uv[1]));
 		}
-		else if (line.startsWith("vn ")) {
-			String[] split = line.replace("vn ", "").trim().split(" ");
-			handleVertexNormal(new VectorXYZ(
-					Double.valueOf(split[0]),
-					Double.valueOf(split[1]),
-					Double.valueOf(split[2])));
+		else if (StringUtils.startsWithIgnoreCase(line, "vn")) {
+			float[] xyz = parseFloatTriplet("vn ", line);
+			handleVertexNormal(new VectorXYZ(xyz[0], xyz[1], xyz[2]));
 		}
-		else if (line.startsWith("g ")) {
-			String groupName = line.replace("g ", "").trim();
+		else if (StringUtils.startsWithIgnoreCase(line, "g ")) {
+			String groupName = parseStringParam(line, "g");
 			handleGroup(groupName);
 		}
 		else if (line.startsWith("usemtl ")) {
@@ -322,12 +350,14 @@ public class ObjParser {
 			}
 			
 			if (vi >= 0) {
-				f.vs.add(this.vertexes.get(vi));
+				f.vs.add(this.vertexes.get(vi - 1));
 			}
 			else {
 				// it's negative so use minus
 				f.vs.add(this.vertexes.get(this.vertexes.size() + vi));
 			}
+			
+			updateBbox(f.vs);
 			
 			if (components.length > 1) {
 				if(StringUtils.stripToNull(components[1]) != null) {
@@ -339,7 +369,7 @@ public class ObjParser {
 					
 					int tvi = Integer.valueOf(components[1]);
 					if (tvi >= 0) {
-						f.texCoordLists.get(0).add(textureVertexes.get(tvi));
+						f.texCoordLists.get(0).add(textureVertexes.get(tvi - 1));
 					}
 					else {
 						f.texCoordLists.get(0).add(textureVertexes.get(
@@ -355,7 +385,7 @@ public class ObjParser {
 				int vni = Integer.valueOf(components[2]);
 				
 				if (vni >= 0) {
-					f.normals.add(this.vertexNorms.get(vni));
+					f.normals.add(this.vertexNorms.get(vni - 1));
 				}
 				else {
 					f.normals.add(this.vertexNorms.get(
@@ -366,6 +396,16 @@ public class ObjParser {
 		this.faces.add(f);
 	}
 	
+	private void updateBbox(List<VectorXYZ> vs) {
+		if (this.bbox == null) {
+			this.bbox = new AxisAlignedBoundingBoxXYZ(vs);
+		}
+		else {
+			this.bbox = AxisAlignedBoundingBoxXYZ.union(
+					this.bbox, new AxisAlignedBoundingBoxXYZ(vs));
+		}
+	}
+
 	public List<ObjFace> listFaces() {
 		return faces;
 	}
@@ -400,6 +440,10 @@ public class ObjParser {
 	private void clear() {
 		this.textureVertexes = null;
 		this.vertexes = null;
+	}
+	
+	public AxisAlignedBoundingBoxXYZ getBBOX() {
+		return this.bbox;
 	}
 
 }

@@ -9,6 +9,7 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -110,6 +111,18 @@ public interface Target<R extends Renderable> {
 			VectorXYZ base, double height, double radiusBottom,
 			double radiusTop, boolean drawBottom, boolean drawTop);
 
+	/**
+	 * draws an instance of a 3D model
+	 * 
+	 * @param model      the model to be drawn
+	 * @param direction  rotation of the model in the XZ plane, as an angle in radians
+	 * @param height     height of the model; null for default (unspecified) height
+	 * @param width      width of the model; null for default (unspecified) width
+	 * @param length     length of the model; null for default (unspecified) length
+	 */
+	public void drawModel(Model model, VectorXYZ position,
+			double direction, Double height, Double width, Double length);
+	
 	/**
 	 * gives the target the chance to perform finish/cleanup operations
 	 * after all objects have been drawn.
