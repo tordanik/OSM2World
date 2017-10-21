@@ -12,7 +12,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -2010,28 +2010,34 @@ public class RoadModule extends ConfigurableWorldModule {
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
 
-			List<VectorXYZ> border1, border2, border3;
+			List<VectorXYZ> borderFront0, borderFront1;
+			List<VectorXYZ> borderTop0, borderTop1;
+			
 			double height = getHeightOffset(roadTags, laneTags);
 			
 			if (roadPart == RoadPart.LEFT) {
-				border1 = addYList(leftLaneBorder, height);
-				border2 = addYList(rightLaneBorder, height);
-				border3 = rightLaneBorder;
+				borderTop0 = addYList(leftLaneBorder, height);
+				borderTop1 = addYList(rightLaneBorder, height);
+				borderFront0 = borderTop1;
+				borderFront1 = rightLaneBorder;
 			} else {
-				border1 = leftLaneBorder;
-				border2 = addYList(leftLaneBorder, height);
-				border3 = addYList(rightLaneBorder, height);
+				borderFront0 = leftLaneBorder;
+				borderFront1 = addYList(leftLaneBorder, height);
+				borderTop0 = borderFront1;
+				borderTop1 = addYList(rightLaneBorder, height);
 			}
 
-			List<VectorXYZ> vs1_2 = createTriangleStripBetween(
-					border1, border2);
-			target.drawTriangleStrip(Materials.KERB, vs1_2,
-					texCoordLists(vs1_2, Materials.KERB, STRIP_FIT_HEIGHT));
+			List<VectorXYZ> vsTop = createTriangleStripBetween(
+					borderTop0, borderTop1);
+			target.drawTriangleStrip(Materials.KERB, vsTop,
+					texCoordLists(vsTop, Materials.KERB, STRIP_FIT_HEIGHT));
 
-			List<VectorXYZ> vs2_3 = createTriangleStripBetween(
-					border2, border3);
-			target.drawTriangleStrip(Materials.KERB, vs2_3,
-					texCoordLists(vs2_3, Materials.KERB, STRIP_FIT_HEIGHT));
+			if (height > 0) {
+				List<VectorXYZ> vsFront = createTriangleStripBetween(
+						borderFront0, borderFront1);
+				target.drawTriangleStrip(Materials.KERB, vsFront,
+						texCoordLists(vsFront, Materials.KERB, STRIP_FIT_HEIGHT));
+			}
 			
 		}
 		
@@ -2042,7 +2048,18 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		@Override
 		public double getHeightOffset(TagGroup roadTags, TagGroup laneTags) {
-			return (double)parseHeight(laneTags, 0.12f);
+			//TODO split dividerTags and laneTags
+			
+			String kerb = laneTags.getValue("kerb");
+			
+			if ("lowered".equals(kerb) || "rolled".equals(kerb)) {
+				return 0.03;
+			} else if ("flush".equals(kerb)) {
+				return 0;
+			} else {
+				return 0.12;
+			}
+			
 		}
 
 	};
