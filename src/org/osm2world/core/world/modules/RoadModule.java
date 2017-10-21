@@ -832,6 +832,11 @@ public class RoadModule extends ConfigurableWorldModule {
 					|| tags.contains("cycleway", "lane");
 			boolean rightCycleway = tags.contains("cycleway:right", "lane")
 					|| tags.contains("cycleway", "lane");
+
+			boolean leftBusBay = tags.contains("bus_bay", "left")
+					|| tags.contains("bus_bay", "both");
+			boolean rightBusBay = tags.contains("bus_bay", "right")
+					|| tags.contains("bus_bay", "both");
 			
 			/* get individual values for each lane */
 			
@@ -980,6 +985,19 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (rightCycleway) {
 				layout.rightLanes.add(new Lane(this,
 						CYCLEWAY, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+			}
+
+			if (leftBusBay) {
+				layout.leftLanes.add(new Lane(this,
+						DASHED_LINE, RoadPart.LEFT, EMPTY_TAG_GROUP));
+				layout.leftLanes.add(new Lane(this,
+						BUS_BAY, RoadPart.LEFT, EMPTY_TAG_GROUP));
+			}
+			if (rightBusBay) {
+				layout.rightLanes.add(new Lane(this,
+						DASHED_LINE, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+				layout.rightLanes.add(new Lane(this,
+						BUS_BAY, RoadPart.RIGHT, EMPTY_TAG_GROUP));
 			}
 			
 			if (leftSidewalk) {
@@ -1877,6 +1895,23 @@ public class RoadModule extends ConfigurableWorldModule {
 		
 	};
 	
+	private static final LaneType BUS_BAY = new FlatTexturedLane(
+			"BUS_BAY", false, false) {
+		
+		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+			
+			double width = parseWidth(laneTags, -1);
+			
+			if (width == -1) {
+				return null;
+			} else {
+				return width;
+			}
+			
+		}
+		
+	};
+
 	private static final LaneType CYCLEWAY = new FlatTexturedLane(
 			"CYCLEWAY", false, false) {
 		
