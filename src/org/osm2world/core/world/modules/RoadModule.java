@@ -765,7 +765,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0));
 		
 		public final boolean rightHandTraffic;
-		
+
 		public final LaneLayout laneLayout;
 		public final float width;
 		
@@ -980,37 +980,37 @@ public class RoadModule extends ConfigurableWorldModule {
 			
 			if (leftCycleway) {
 				layout.leftLanes.add(new Lane(this,
-						CYCLEWAY, RoadPart.LEFT, EMPTY_TAG_GROUP));
+						CYCLEWAY, RoadPart.LEFT, getTagsWithPrefix(tags, "cycleway:left:", null)));
 			}
 			if (rightCycleway) {
 				layout.rightLanes.add(new Lane(this,
-						CYCLEWAY, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+						CYCLEWAY, RoadPart.RIGHT, getTagsWithPrefix(tags, "cycleway:right:", null)));
 			}
 
 			if (leftBusBay) {
 				layout.leftLanes.add(new Lane(this,
 						DASHED_LINE, RoadPart.LEFT, EMPTY_TAG_GROUP));
 				layout.leftLanes.add(new Lane(this,
-						BUS_BAY, RoadPart.LEFT, EMPTY_TAG_GROUP));
+						BUS_BAY, RoadPart.LEFT, getTagsWithPrefix(tags, "bus_bay:left:", null)));
 			}
 			if (rightBusBay) {
 				layout.rightLanes.add(new Lane(this,
 						DASHED_LINE, RoadPart.RIGHT, EMPTY_TAG_GROUP));
 				layout.rightLanes.add(new Lane(this,
-						BUS_BAY, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+						BUS_BAY, RoadPart.RIGHT, getTagsWithPrefix(tags, "bus_bay:right:", null)));
 			}
 			
 			if (leftSidewalk) {
 				layout.leftLanes.add(new Lane(this,
-						KERB, RoadPart.LEFT, EMPTY_TAG_GROUP));
+						KERB, RoadPart.LEFT, getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb")));
 				layout.leftLanes.add(new Lane(this,
-						SIDEWALK, RoadPart.LEFT, EMPTY_TAG_GROUP));
+						SIDEWALK, RoadPart.LEFT, getTagsWithPrefix(tags, "sidewalk:left:", null)));
 			}
 			if (rightSidewalk) {
 				layout.rightLanes.add(new Lane(this,
-						KERB, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+						KERB, RoadPart.RIGHT, getTagsWithPrefix(tags, "sidewalk:right:kerb", "kerb")));
 				layout.rightLanes.add(new Lane(this,
-						SIDEWALK, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+						SIDEWALK, RoadPart.RIGHT, getTagsWithPrefix(tags, "sidewalk:right:", null)));
 			}
 			
 			return layout;
@@ -1098,6 +1098,40 @@ public class RoadModule extends ConfigurableWorldModule {
 				return result;
 				
 			}
+			
+		}
+
+		/**
+		 * returns all tags from a TagGroup that have a given prefix for their key.
+		 * Can be used to identify tags for special lanes. Using the prefix "sidewalk:left",
+		 * for example, the tag sidewalk:left:width = 2 m will be part of the result as width = 2 m.
+		 * 
+		 * @param prefix  prefix that tags need to have in order to be part of the result.
+		 *   Stripped from the resulting tags.
+		 * @param newPrefix  prefix that is added to the resulting tags, after lanePrefix has been removed.
+		 *   Can be (and often is) null.
+		 */
+		static TagGroup getTagsWithPrefix(TagGroup tags, String prefix, String newPrefix) {
+			
+			List<Tag> result = new ArrayList<Tag>();
+			
+			for (Tag tag : tags) {
+				
+				if (tag.key.startsWith(prefix)) {
+					
+					String newKey = tag.key.substring(prefix.length());
+					
+					if (newPrefix != null) {
+						newKey = newPrefix + newKey;
+					}
+					
+					result.add(new Tag(newKey, tag.value));
+					
+				}
+				
+			}
+			
+			return new MapBasedTagGroup(result);
 			
 		}
 
