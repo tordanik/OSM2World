@@ -63,6 +63,7 @@ public class ExternalModelModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 			
 			VectorXYZ position = eleConnector.getPosXYZ();
+			
 			double direction = parseDirection(element.getTags(), 0);
 			Double height = (double)parseHeight(element.getTags(), 0);
 			Double width = (double)parseWidth(element.getTags(), 0);
@@ -97,12 +98,27 @@ public class ExternalModelModule extends AbstractModule {
 		public Iterable<EleConnector> getEleConnectors() {
 		
 			if (eleConnector == null) {
-				VectorXZ pos = element.getPos();
+				VectorXZ pos = getPosition(element);
 				eleConnector = new EleConnector(pos, element, GroundState.ON);
 			}
 			
 			return singletonList(eleConnector);
 			
+		}
+
+		private VectorXZ getPosition(MapNode element) {
+			if (element.getTags().containsKey("model:lon") &&
+					element.getTags().containsKey("model:lat")) {
+				// I need an access to mapProjection here, or at the moment
+				// of MapNode creation
+				
+				// Better to have it here because here I have full access to 
+				// model itself nad model metadata
+				return element.getPos();
+			}
+			else {
+				return element.getPos();
+			}
 		}
 		
 	}
