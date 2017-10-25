@@ -30,12 +30,16 @@ public class ExternalModel implements Model {
 	public ExternalModel(String link) {
 		this.proxy = new ModelLinksProxy("/opt/osm/3dlib");
 		this.model = new ObjModel(link, proxy);
+		
+		originT = this.model.getBBOX().center().xz().invert();
 	}
 
 	@Override
 	public void render(Target<?> target, VectorXYZ position, 
 			double direction, Double height, Double width,
 			Double length) {
+		
+		VectorXYZ translate = position.add(originT);
 		
 		for(ObjFace f : this.model.listFaces()) {
 			List<VectorXYZ> vs = new ArrayList<>(f.vs.size());
@@ -48,13 +52,10 @@ public class ExternalModel implements Model {
 				}
 				
 				src = src.rotateY(direction);
-				src = src.add(originT);
+				src = src.add(translate);
 
 				vs.add(src);
 			}
-			
-//			Collections.reverse(vs);
-//			Collections.reverse(f.texCoordLists.get(0));
 			
 			if (f.material != null) {
 				f.material = f.material.withAmbientFactor(0.9f);
