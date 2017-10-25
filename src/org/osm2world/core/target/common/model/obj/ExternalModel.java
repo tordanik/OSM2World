@@ -3,10 +3,6 @@ package org.osm2world.core.target.common.model.obj;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
@@ -14,7 +10,6 @@ import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.obj.parser.ModelLinksProxy;
 import org.osm2world.core.target.common.model.obj.parser.ObjModel;
 import org.osm2world.core.target.common.model.obj.parser.ObjModel.ObjFace;
-import org.osm2world.core.world.data.WorldObject;
 
 
 public class ExternalModel implements Model {

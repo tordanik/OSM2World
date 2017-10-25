@@ -140,8 +140,7 @@ public class ExternalModelModule extends AbstractModule {
 		if (element.getTags().containsKey("model:url")) {
 			
 			// only use external models if enabled via config options
-			//if (!config.getBoolean("useExternalModels", false)) return;
-			if (!config.getBoolean("useExternalModels", true)) return;
+			if (!config.getBoolean("useExternalModels", false)) return;
 			
 			try {
 				
