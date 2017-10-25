@@ -20,10 +20,8 @@ public class ExternalModel implements Model {
 	private double scale = 1.0;
 	private boolean zAxisUp = false;
 
-	private ModelLinksProxy proxy;
 	
-	public ExternalModel(String link) {
-		this.proxy = new ModelLinksProxy("/opt/osm/3dlib");
+	public ExternalModel(String link, ModelLinksProxy proxy) {
 		this.model = new ObjModel(link, proxy);
 		
 		originT = this.model.getBBOX().center().xz().invert();

@@ -6,6 +6,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
@@ -19,6 +20,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.obj.ExternalModel;
+import org.osm2world.core.target.common.model.obj.parser.ModelLinksProxy;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -30,6 +32,8 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * and placed in the scene based on special OSM tags.
  */
 public class ExternalModelModule extends AbstractModule {
+	
+	private ModelLinksProxy modelLinksProxy;
 	
 	private abstract static class ExternalModelWorldObject<E extends MapElement>
 			implements WorldObject, RenderableToAllTargets {
@@ -130,6 +134,13 @@ public class ExternalModelModule extends AbstractModule {
 	}
 	
 	@Override
+	public void setConfiguration(Configuration config) {
+		super.setConfiguration(config);
+		String modelsCachePath = this.config.getString("externalModelsCachePath", "models");
+		modelLinksProxy = new ModelLinksProxy(modelsCachePath);
+	}
+	
+	@Override
 	protected void applyToElement(MapElement element) {
 		
 		if (element.getPrimaryRepresentation() != null) return;
@@ -146,7 +157,7 @@ public class ExternalModelModule extends AbstractModule {
 				
 				URL modelURL = new URL(element.getTags().getValue("model:url"));
 				
-				Model model = new ExternalModel(modelURL.toString());
+				Model model = new ExternalModel(modelURL.toString(), modelLinksProxy);
 				
 				/* place the model in the scene, wrapped in a world object */
 				
