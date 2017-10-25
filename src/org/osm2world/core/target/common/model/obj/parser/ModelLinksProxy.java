@@ -77,6 +77,7 @@ public class ModelLinksProxy {
 	}
 	
 	private void saveFile(FileOutputStream fileOutputStream, URL url) throws IOException {
+		System.err.println("Download " + url);
 		ReadableByteChannel rbc = Channels.newChannel(url.openStream());
 		fileOutputStream.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 	}
