@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.Predicates.hasType;
@@ -13,9 +14,7 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -151,20 +150,15 @@ public class RailwayModule extends ConfigurableWorldModule {
 			
 			
 			/* draw railway ties/sleepers */
-			
-			List<VectorXZ> sleeperPositions = GeometryUtil.equallyDistributePointsAlong(3, false,
-					getStartWithOffset(), getEndWithOffset());
 						
-			for (VectorXZ sleeperPosition : sleeperPositions) {
+			List<VectorXYZ> sleeperPositions = equallyDistributePointsAlong(
+					3, false, getCenterline());
 			
-				//TODO interpolate ele, also using additional points inbetween
+			for (VectorXYZ sleeperPosition : sleeperPositions) {
 				
-//				VectorXYZ sleeperPositionXYZ =
-//						segment.getElevationProfile().getWithEle(sleeperPosition);
-//
-//				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
-//						sleeperPositionXYZ, segment.getDirection(),
-//						SLEEPER_HEIGHT, SLEEPER_WIDTH, SLEEPER_LENGTH);
+				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
+						sleeperPosition, segment.getDirection(),
+						SLEEPER_HEIGHT, SLEEPER_WIDTH, SLEEPER_LENGTH);
 				
 			}
 			
