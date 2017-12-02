@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.target.common.material.Materials.CHAIN_LINK_FENCE;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
@@ -17,7 +17,6 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -255,23 +254,14 @@ public class BarrierModule extends AbstractModule {
 			
 			//TODO connect the poles to the ground independently
 			
-			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(2f, false,
-					segment.getStartNode().getPos(), segment.getEndNode().getPos());
+			List<VectorXYZ> polePositions = equallyDistributePointsAlong(
+					2f, true, getCenterline());
 			
-			
-			for (VectorXZ pos : polePositions) {
+			for (VectorXYZ base : polePositions) {
 				
-				VectorXYZ base = null;
-				
-				for (int i = 0; i + 1 < pointsWithEle.size(); i++) {
-					
-					if (isBetween(pos, pointsWithEle.get(i).xz(), pointsWithEle.get(i+1).xz())) {
-						base = interpolateElevation(pos, pointsWithEle.get(i), pointsWithEle.get(i+1));
-						break;
-					}
-				}
 				target.drawColumn(Materials.METAL_FENCE_POST, null, base,
 						height, width, width, false, true);
+				
 			}
 			
 		}
@@ -331,23 +321,15 @@ public class BarrierModule extends AbstractModule {
 			
 			
 			/* render poles */
-			List<VectorXZ> polePositions = GeometryUtil.equallyDistributePointsAlong(
-					2f, false, segment.getStartNode().getPos(), segment.getEndNode().getPos());
 			
+			List<VectorXYZ> polePositions = equallyDistributePointsAlong(
+					2f, false, getCenterline());
 			
-			for (VectorXZ pos : polePositions) {
+			for (VectorXYZ base : polePositions) {
 				
-				VectorXYZ base = null;
-				
-				for (int i = 0; i + 1 < baseline.size(); i++) {
-					
-					if (isBetween(pos, baseline.get(i).xz(), baseline.get(i+1).xz())) {
-						base = interpolateElevation(pos, baseline.get(i), baseline.get(i+1));
-						break;
-					}
-				}
 				target.drawColumn(poleMaterial, null, base,
 						height, width, width, false, true);
+				
 			}
 			
 		}
