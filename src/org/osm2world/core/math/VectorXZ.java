@@ -34,6 +34,11 @@ public class VectorXZ implements Vector3D {
 		this.x = x;
 		this.z = z;
 	}
+	
+	@Override
+	public VectorXZ xz() {
+		return this;
+	}
 
 	public double length() {
 		return Math.sqrt(x*x + z*z);

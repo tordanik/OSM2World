@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.*;
@@ -65,33 +66,69 @@ public class GeometryUtilTest {
 	@Test
 	public void testEquallyDistributePointsAlong1StartEnd() {
 		
-		List<VectorXZ> result = GeometryUtil.equallyDistributePointsAlong(
+		List<VectorXZ> result1 = equallyDistributePointsAlong(
 				1f, true, new VectorXZ(-2, 5), new VectorXZ(+4, 5));
+		List<VectorXYZ> result2 = equallyDistributePointsAlong(
+				1f, true, asList(new VectorXYZ(-2, 0, 5), new VectorXYZ(+4, 2, 5)));
 		
-		assertSame(7, result.size());
-		assertAlmostEquals(-2, 5, result.get(0));
-		assertAlmostEquals(-1, 5, result.get(1));
-		assertAlmostEquals( 0, 5, result.get(2));
-		assertAlmostEquals(+1, 5, result.get(3));
-		assertAlmostEquals(+2, 5, result.get(4));
-		assertAlmostEquals(+3, 5, result.get(5));
-		assertAlmostEquals(+4, 5, result.get(6));
+		for (List<? extends Vector3D> result : asList(result1, result2)) {
+			
+			assertSame(7, result.size());
+			assertAlmostEquals(-2, 5, result.get(0).xz());
+			assertAlmostEquals(-1, 5, result.get(1).xz());
+			assertAlmostEquals( 0, 5, result.get(2).xz());
+			assertAlmostEquals(+1, 5, result.get(3).xz());
+			assertAlmostEquals(+2, 5, result.get(4).xz());
+			assertAlmostEquals(+3, 5, result.get(5).xz());
+			assertAlmostEquals(+4, 5, result.get(6).xz());
+			
+		}
+		
+	}
+	
+	@Test
+	public void testEquallyDistributePointsAlong1NoStartEnd() {
+		
+		List<VectorXZ> result1 = equallyDistributePointsAlong(
+				1f, false, new VectorXZ(-2, 5), new VectorXZ(+4, 5));
+		List<VectorXYZ> result2 = equallyDistributePointsAlong(
+				1f, false, asList(new VectorXYZ(-2, 0, 5), new VectorXYZ(+4, 2, 5)));
+		
+		for (List<? extends Vector3D> result : asList(result1, result2)) {
+			
+			assertSame(6, result.size());
+			assertAlmostEquals(-1.5f, 5, result.get(0).xz());
+			assertAlmostEquals(-0.5f, 5, result.get(1).xz());
+			assertAlmostEquals(+0.5f, 5, result.get(2).xz());
+			assertAlmostEquals(+1.5f, 5, result.get(3).xz());
+			assertAlmostEquals(+2.5f, 5, result.get(4).xz());
+			assertAlmostEquals(+3.5f, 5, result.get(5).xz());
+			
+		}
 		
 	}
 
 	@Test
-	public void testEquallyDistributePointsAlong1NoStartEnd() {
+	public void testEquallyDistributePointsAlong2SelfIntersect() {
 		
-		List<VectorXZ> result = GeometryUtil.equallyDistributePointsAlong(
-				1f, false, new VectorXZ(-2, 5), new VectorXZ(+4, 5));
+		List<VectorXYZ> input = asList(
+				new VectorXYZ( 0, 0, -1),
+				new VectorXYZ( 0, 0, +1),
+				new VectorXYZ(+1, 2, +1),
+				new VectorXYZ(+1, 7,  0),
+				new VectorXYZ(-1, 9,  0));
 		
-		assertSame(6, result.size());
-		assertAlmostEquals(-1.5f, 5, result.get(0));
-		assertAlmostEquals(-0.5f, 5, result.get(1));
-		assertAlmostEquals(+0.5f, 5, result.get(2));
-		assertAlmostEquals(+1.5f, 5, result.get(3));
-		assertAlmostEquals(+2.5f, 5, result.get(4));
-		assertAlmostEquals(+3.5f, 5, result.get(5));
+		List<VectorXYZ> result = equallyDistributePointsAlong(1f, true, input);
+		
+		assertSame(7, result.size());
+		assertAlmostEquals( 0, 0, -1, result.get(0));
+		assertAlmostEquals( 0, 0,  0, result.get(1));
+		assertAlmostEquals( 0, 0, +1, result.get(2));
+		assertAlmostEquals(+1, 2, +1, result.get(3));
+		assertAlmostEquals(+1, 7,  0, result.get(4));
+		assertAlmostEquals( 0, 8,  0, result.get(5));
+		assertAlmostEquals(-1, 9,  0, result.get(6));
 		
 	}
+	
 }

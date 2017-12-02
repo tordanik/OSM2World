@@ -1,11 +1,11 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.sqrt;
+import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -379,9 +379,9 @@ public final class GeometryUtil {
 		return result;
 		
 	}
-
+	
 	/**
-	 * distributes points along a line segment sequence.
+	 * distributes points along a 3D line segment sequence.
 	 * 
 	 * This can be used for many different features, such as
 	 * steps along a way, street lights along a road or posts along a fence.
@@ -393,33 +393,57 @@ public final class GeometryUtil {
 	 * and lineEnd each; if false, the closest points will be half the usual
 	 * distance away from these
 	 */
-	public static List<VectorXZ> equallyDistributePointsAlong(
+	public static List<VectorXYZ> equallyDistributePointsAlong(
 			double preferredDistance, boolean pointsAtStartAndEnd,
-			List<VectorXZ> points) {
+			List<VectorXYZ> points) {
 		
 		double length = 0;
 		for (int i=0; i+1 < points.size(); i++) {
-			length += points.get(i+1).subtract(points.get(i)).length();
+			length += points.get(i).distanceToXZ(points.get(i+1));
 		}
 		
 		int numSegments = (int) Math.round(length / preferredDistance);
 		
 		if (numSegments == 0) {
-			return Collections.<VectorXZ>emptyList();
+			return emptyList();
 		}
 		
 		double pointDistance = length / numSegments;
 				
 		int numPoints = pointsAtStartAndEnd ? numSegments + 1 : numSegments;
-		List<VectorXZ> result = new ArrayList<VectorXZ>(numPoints);
+		List<VectorXYZ> result = new ArrayList<VectorXYZ>(numPoints);
 		
 		/* create the points */
 		
 		double currentDistanceFromStart = pointsAtStartAndEnd ? 0 : pointDistance / 2;
 
-		for (int point = 1; point < numPoints; point ++) {
+		int currentInputPoint = 0;
+		double offsetCurrentInputPoint = 0;
+		double offsetNextInputPoint = points.get(0).distanceToXZ(points.get(1));
+		
+		for (int i = 0; i < numPoints; i ++) {
 			
-			//TODO: create and add point (to result) based on currentDistanceFromStart
+			while (currentDistanceFromStart > offsetNextInputPoint) {
+				
+				//proceed to the next segment of the input point sequence
+				//(note: there will always be a next segment if this code is reached due to the condition)
+				
+				currentInputPoint += 1;
+				offsetCurrentInputPoint = offsetNextInputPoint;
+				
+				offsetNextInputPoint = offsetCurrentInputPoint
+						+ points.get(currentInputPoint).distanceToXZ(points.get(currentInputPoint + 1));
+				
+			}
+			
+			//create the point
+			
+			VectorXYZ p = interpolateBetween(points.get(currentInputPoint), points.get(currentInputPoint + 1),
+					(currentDistanceFromStart - offsetCurrentInputPoint) / (offsetNextInputPoint - offsetCurrentInputPoint));
+			
+			result.add(p);
+			
+			//increase the distance from start by one step to prepare for the next point
 			
 			currentDistanceFromStart += pointDistance;
 			
@@ -427,11 +451,6 @@ public final class GeometryUtil {
 		
 		return result;
 		
-		//TODO: support distributing along a line with corners etc,
-		//to avoid "restart" at each node
-		//(should be relatively easy, just calculate TOTAL line length first
-		// and then proceed in a way similar to getEleAt)
-				
 	}
 	
 	/**
