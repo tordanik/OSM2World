@@ -3,6 +3,9 @@ package org.osm2world.core.util;
 import java.awt.Color;
 import java.util.HashMap;
 
+/**
+ * utility class for converting CSS colour names to Java Color objects
+ */
 public final class CSSColors {
 	
 	public static final HashMap<String, Color> colorMap = new HashMap<String, Color>();
