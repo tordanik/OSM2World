@@ -11,7 +11,22 @@ public final class CSSColors {
 	public static final HashMap<String, Color> colorMap = new HashMap<String, Color>();
 	
 	static {
-		colorMap.put("aliceblue", new Color(240,248,255));
+		colorMap.put("black", new Color(0,0,0));
+		colorMap.put("silver", new Color(192,192,192));
+		colorMap.put("gray", new Color(128,128,128));
+		colorMap.put("white", new Color(255,255,255));
+		colorMap.put("maroon", new Color(128,0,0));
+		colorMap.put("red", new Color(255,0,0));
+		colorMap.put("purple", new Color(128,0,128));
+		colorMap.put("fuchsia", new Color(255,0,255));
+		colorMap.put("green", new Color(0,128,0));
+		colorMap.put("lime", new Color(0,255,0));
+		colorMap.put("olive", new Color(128,128,0));
+		colorMap.put("yellow", new Color(255,255,0));
+		colorMap.put("navy", new Color(0,0,128));
+		colorMap.put("blue", new Color(0,0,255));
+		colorMap.put("teal", new Color(0,128,128));
+		colorMap.put("aqua", new Color(0,255,255));
 		colorMap.put("aliceblue", new Color(240,248,255));
 		colorMap.put("antiquewhite", new Color(250,235,215));
 		colorMap.put("aqua", new Color(0,255,255));
