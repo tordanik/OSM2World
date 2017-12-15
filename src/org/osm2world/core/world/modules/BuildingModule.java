@@ -58,6 +58,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
+import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -909,6 +910,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					} else {
 						color = new Color(170, 130, 80);
 					}
+				} else if (CSSColors.colorMap.containsKey(colorString)){
+					color = CSSColors.colorMap.get(colorString);
 				} else {
 					color = parseColor(colorString);
 				}
