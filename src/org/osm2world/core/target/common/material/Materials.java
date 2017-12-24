@@ -40,7 +40,7 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 	public static final ConfMaterial PURIFIED_WATER =
 			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
-	
+
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial BRICK =
@@ -205,6 +205,9 @@ public final class Materials {
 	public static final ConfMaterial FIREHYDRANT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
 
+	public static final ConfMaterial FLAGCLOTH =
+		new ConfMaterial(Interpolation.SMOOTH, new Color(1f, 1f, 1f));
+	
 	public static final ConfMaterial SOLAR_PANEL =
 			new ConfMaterial(Interpolation.FLAT, Color.BLUE);
 

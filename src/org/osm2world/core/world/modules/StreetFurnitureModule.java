@@ -1,7 +1,10 @@
 package org.osm2world.core.world.modules;
 
+import static java.awt.Color.*;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
@@ -9,7 +12,9 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -132,12 +137,144 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			target.drawColumn(STEEL, null, getBase(),
-					parseHeight(node.getTags(), 10f),
-					0.15, 0.15, false, true);
+			/* draw the pole */
+			
+			float poleHeight = parseHeight(node.getTags(), 10f);
+			double poleRadius = 0.15;
+			
+			VectorXYZ poleBase = getBase();
+			
+			target.drawColumn(STEEL, null, poleBase,
+					poleHeight, poleRadius, poleRadius, false, true);
 
+			/* draw the flag (if any) */
+			
+			if (node.getTags().contains("flag:type", "national")
+					&& node.getTags().containsKey("country")) {
+				
+				Flag flag = NATIONAL_FLAGS.get(node.getTags().getValue("country"));
+				
+				if (flag != null) {
+					
+					double flagHeight = min(2.0, poleHeight / 4);
+					
+					VectorXYZ flagTop = poleBase.add(Y_UNIT.mult(poleHeight * 0.97));
+					
+					VectorXYZ flagBottom = flagTop.add(poleBase.subtract(flagTop).normalize().mult(flagHeight));
+					VectorXYZ flagFrontNormal = Z_UNIT.invert();
+					
+					double width = flagHeight / flag.getHeightWidthRatio();
+					
+					VectorXYZ toOuterEnd = flagTop.subtract(flagBottom).crossNormalized(flagFrontNormal).invert();
+					VectorXYZ outerBottom = flagBottom.add(toOuterEnd.mult(width));
+					VectorXYZ outerTop = outerBottom.add(flagTop.subtract(flagBottom));
+					
+					flagTop = flagTop.add(toOuterEnd.mult(poleRadius));
+					flagBottom = flagBottom.add(toOuterEnd.mult(poleRadius));
+					outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
+					outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
+					
+					flag.renderFlag(target, flagBottom, flagTop, outerTop, outerBottom);
+					
+				}
+				
+			}
+			
 		}
 
+		private static interface Flag {
+			
+			public void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
+					VectorXYZ outerTop, VectorXYZ outerBottom);
+			
+			public double getHeightWidthRatio();
+			
+		}
+		
+		private static class StripedFlag implements Flag {
+
+			private final double heightWidthRatio;
+			private final List<Color> colors;
+			private final boolean verticalStripes;
+			
+			private StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
+				this.heightWidthRatio = heightWidthRatio;
+				this.colors = colors;
+				this.verticalStripes = verticalStripes;
+			}
+
+			@Override
+			public double getHeightWidthRatio() {
+				return heightWidthRatio;
+			}
+			
+			@Override
+			public void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
+					VectorXYZ outerTop, VectorXYZ outerBottom) {
+				
+				int numStripes = colors.size();
+				
+				for (int stripe = 0; stripe < numStripes; stripe ++) {
+					
+					VectorXYZ top0 = top;
+					VectorXYZ bottom0 = bottom;
+					VectorXYZ top1 = outerTop;
+					VectorXYZ bottom1 = outerBottom;
+					
+					if (verticalStripes) {
+						top0 = bottom;
+						bottom0 = outerBottom;
+						top1 = top;
+						bottom1 = outerTop;
+					}
+					
+					List<VectorXYZ> vsFront = asList(
+							interpolateBetween(top0, bottom0, stripe / (double)numStripes),
+							interpolateBetween(top0, bottom0, (stripe + 1) / (double)numStripes),
+							interpolateBetween(top1, bottom1, stripe / (double)numStripes),
+							interpolateBetween(top1, bottom1, (stripe + 1) / (double)numStripes));
+					
+					List<VectorXYZ> vsBack = asList(
+							vsFront.get(1),
+							vsFront.get(0),
+							vsFront.get(3),
+							vsFront.get(2)
+							);
+					
+					Material material = new ImmutableMaterial(
+							FLAGCLOTH.getInterpolation(),
+							colors.get(stripe),
+							FLAGCLOTH.getAmbientFactor(),
+							FLAGCLOTH.getDiffuseFactor(),
+							FLAGCLOTH.getSpecularFactor(),
+							FLAGCLOTH.getShininess(),
+							FLAGCLOTH.getTransparency(),
+							FLAGCLOTH.getShadow(),
+							FLAGCLOTH.getAmbientOcclusion(),
+							FLAGCLOTH.getTextureDataList());
+					
+					target.drawTriangleStrip(material, vsFront,
+							texCoordLists(vsFront, material, STRIP_WALL));
+					target.drawTriangleStrip(material, vsBack,
+							texCoordLists(vsBack, material, STRIP_WALL));
+					
+				}
+				
+			}
+			
+		}
+		
+		private static final Map<String, Flag> NATIONAL_FLAGS = new HashMap<String, Flag>();
+		
+		static {
+
+			NATIONAL_FLAGS.put("AT", new StripedFlag(2 / 3.0, asList(RED, WHITE, RED), false));
+			NATIONAL_FLAGS.put("BE", new StripedFlag(13 / 15.0, asList(BLACK, YELLOW, RED), true));
+			NATIONAL_FLAGS.put("DE", new StripedFlag(3 / 5.0, asList(BLACK, RED, YELLOW), false));
+			NATIONAL_FLAGS.put("FR", new StripedFlag(2 / 3.0, asList(BLUE, WHITE, RED), true));
+
+		}
+		
 	}
 
 	private static final class AdvertisingColumn extends NoOutlineNodeWorldObject
@@ -1186,5 +1323,5 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 	}
-
+	
 }
