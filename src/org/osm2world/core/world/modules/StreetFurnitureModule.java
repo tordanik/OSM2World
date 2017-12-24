@@ -182,30 +182,32 @@ public class StreetFurnitureModule extends AbstractModule {
 			
 		}
 
-		private static interface Flag {
+		private static abstract class Flag {
+
+			private final double heightWidthRatio;
 			
-			public void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
+			private Flag(double heightWidthRatio) {
+				this.heightWidthRatio = heightWidthRatio;
+			}
+
+			public double getHeightWidthRatio() {
+				return heightWidthRatio;
+			}
+			
+			public abstract void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
 					VectorXYZ outerTop, VectorXYZ outerBottom);
-			
-			public double getHeightWidthRatio();
 			
 		}
 		
-		private static class StripedFlag implements Flag {
+		private static class StripedFlag extends Flag {
 
-			private final double heightWidthRatio;
 			private final List<Color> colors;
 			private final boolean verticalStripes;
 			
-			private StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
-				this.heightWidthRatio = heightWidthRatio;
+			public StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
+				super(heightWidthRatio);
 				this.colors = colors;
 				this.verticalStripes = verticalStripes;
-			}
-
-			@Override
-			public double getHeightWidthRatio() {
-				return heightWidthRatio;
 			}
 			
 			@Override
@@ -259,6 +261,50 @@ public class StreetFurnitureModule extends AbstractModule {
 							texCoordLists(vsBack, material, STRIP_WALL));
 					
 				}
+				
+			}
+			
+		}
+		
+		/**
+		 * flag entirely made of a single, usually textured, {@link Material}.
+		 * Allows for untextured materials in addition to textured ones.
+		 */
+		public static class TexturedFlag extends Flag {
+			
+			private final Material material;
+			
+			public TexturedFlag(double heightWidthRatio, Material material) {
+				super(heightWidthRatio);
+				this.material = material;
+			}
+			
+			/**
+			 * alternative constructor that uses the aspect ratio of the first texture layer
+			 * instead of an explicit hiehgtWidthRatio parameter. Only works for textured materials.
+			 */
+			public TexturedFlag(Material material) {
+				this(material.getTextureDataList().get(0).height
+						/ material.getTextureDataList().get(0).width, material);
+			}
+			
+			@Override
+			public void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
+					VectorXYZ outerTop, VectorXYZ outerBottom) {
+
+				List<VectorXYZ> vsFront = asList(top, bottom, outerTop, outerBottom);
+				
+				List<VectorXYZ> vsBack = asList(
+						vsFront.get(1),
+						vsFront.get(0),
+						vsFront.get(3),
+						vsFront.get(2)
+						);
+				
+				target.drawTriangleStrip(material, vsFront,
+						texCoordLists(vsFront, material, STRIP_FIT));
+				target.drawTriangleStrip(material, vsBack,
+						texCoordLists(vsBack, material, STRIP_FIT));
 				
 			}
 			
