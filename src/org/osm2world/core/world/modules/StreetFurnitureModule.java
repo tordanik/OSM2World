@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules;
 import static java.awt.Color.*;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -11,10 +11,12 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLis
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -23,11 +25,13 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -163,10 +167,10 @@ public class StreetFurnitureModule extends AbstractModule {
 					VectorXYZ flagBottom = flagTop.add(poleBase.subtract(flagTop).normalize().mult(flagHeight));
 					VectorXYZ flagFrontNormal = Z_UNIT.invert();
 					
-					double width = flagHeight / flag.getHeightWidthRatio();
+					double flagWidth = flagHeight / flag.getHeightWidthRatio();
 					
 					VectorXYZ toOuterEnd = flagTop.subtract(flagBottom).crossNormalized(flagFrontNormal).invert();
-					VectorXYZ outerBottom = flagBottom.add(toOuterEnd.mult(width));
+					VectorXYZ outerBottom = flagBottom.add(toOuterEnd.mult(flagWidth));
 					VectorXYZ outerTop = outerBottom.add(flagTop.subtract(flagBottom));
 					
 					flagTop = flagTop.add(toOuterEnd.mult(poleRadius));
@@ -174,78 +178,189 @@ public class StreetFurnitureModule extends AbstractModule {
 					outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
 					outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
 					
-					flag.renderFlag(target, flagBottom, flagTop, outerTop, outerBottom);
+					flag.renderFlag(target, createFlagMesh(flagTop, flagHeight, flagWidth));
 					
 				}
 				
 			}
 			
 		}
+		
+		/**
+		 * creates a grid of vertices as the geometry of the flag.
+		 * The grid is deformed to give the appearance of cloth.
+		 * 
+		 * @param height  height of the flag in meters
+		 * @param width  width of the flag in meters
+		 * 
+		 * @return a pair consisting of the grid of vertices and the matching texture coordinates
+		 */
+		private static final Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> createFlagMesh(
+				VectorXYZ origin, double height, double width) {
+			
+			int numCols = 120;
+			int numRows = max(2, (int)round(numCols * height/width));
+			
+			VectorXYZ[][] result = new VectorXYZ[numCols][numRows];
+			Map<VectorXYZ, VectorXZ> texCoordMap = new HashMap<VectorXYZ, VectorXZ>(numCols * numRows);
+			
+			for (int x = 0; x < numCols; x++) {
+				for (int y = 0; y < numRows; y++) {
+					
+					double xRatio = x / (double)(numCols - 1);
+					double yRatio = y / (double)(numRows - 1);
+					
+					result[x][y] = new VectorXYZ(
+							xRatio * width,
+							yRatio * -height,
+							0).add(origin);
+					
+					// use a sinus function for basic wavyness
+					result[x][y] = result[x][y].add(0, 0,
+							sin(6 * xRatio) * 0.1);
 
+					// have the flag drop down the further it gets from the pole
+					result[x][y] = result[x][y].add(0, height * -0.2 * xRatio * sqrt(xRatio), 0);
+					
+					// have the top of the flag drop backwards and down a bit
+					double factor = sqrt(xRatio) * max(0.7 - yRatio, 0);
+					result[x][y] = result[x][y].add(0,
+							factor * factor * -0.25 * height,
+							factor * factor * 0.35 * height);
+					
+					texCoordMap.put(result[x][y], new VectorXZ(
+							xRatio,
+							yRatio));
+					
+				}
+			}
+			
+			return new AbstractMap.SimpleEntry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>>(result, texCoordMap);
+			
+		}
+		
 		private static abstract class Flag {
 
 			private final double heightWidthRatio;
+			private final List<Material> stripeMaterials;
+			private final boolean verticalStripes;
 			
-			private Flag(double heightWidthRatio) {
+			/**
+			 * 
+			 * @param heightWidthRatio  height / width
+			 * @param verticalStripes   whether the material stripes provided by
+			 *                          stripeMaterials are vertical.
+			 * @param stripeMaterials   returns one or more materials for the flag.
+			 *                          If there's more than one, the flag will be striped.
+			 */
+			protected Flag(double heightWidthRatio, List<Material> stripeMaterials, boolean verticalStripes) {
 				this.heightWidthRatio = heightWidthRatio;
+				this.stripeMaterials = stripeMaterials;
+				this.verticalStripes = verticalStripes;
 			}
 
 			public double getHeightWidthRatio() {
 				return heightWidthRatio;
 			}
 			
-			public abstract void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
-					VectorXYZ outerTop, VectorXYZ outerBottom);
+			/**
+			 * renders the flag to any {@link Target}.
+			 * 
+			 * @param flagMesh  flag geometry and tex coords, e.g. created by {@link Flagpole#createFlagMesh}
+			 */
+			public void renderFlag(Target<?> target,
+					Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> flagMesh) {
+				
+				VectorXYZ[][] mesh = flagMesh.getKey();
+				final Map<VectorXYZ, VectorXZ> texCoordMap = flagMesh.getValue();
+				
+				/* define a function that looks the texture coordinate up in the map  */
+				
+				TexCoordFunction texCoordFunction = new TexCoordFunction() {
+					@Override public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
+				
+						List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
+						
+						for (VectorXYZ v : vs) {
+							result.add(texCoordMap.get(v));
+						}
+						
+						return result;
+						
+					}
+				};
+				
+				/* flip the mesh array in case of vertically striped flags */
+				
+				if (verticalStripes) {
+					
+					VectorXYZ[][] flippedMesh = new VectorXYZ[mesh[0].length][mesh.length];
+			        
+					for (int i = 0; i < mesh.length; i++) {
+			            for (int j = 0; j < mesh[0].length; j++) {
+			                flippedMesh[j][i] = mesh[i][j];
+			            }
+					}
+			        
+			        mesh = flippedMesh;
+					
+				}
+				
+				/* draw the mesh */
+				
+				for (int row = 0; row < mesh[0].length - 1; row ++) {
+					
+					List<VectorXYZ> vsFront = new ArrayList<VectorXYZ>(mesh.length * 2);
+					List<VectorXYZ> vsBack = new ArrayList<VectorXYZ>(mesh.length * 2);
+					
+					for (int col = 0; col < mesh.length; col++) {
+						
+						VectorXYZ vA = mesh[col][row];
+						VectorXYZ vB = mesh[col][row + 1];
+
+						vsFront.add(vA);
+						vsFront.add(vB);
+						
+						vsBack.add(vB);
+						vsBack.add(vA);
+						
+					}
+					
+					// determine which stripe we're in and pick the right material
+					int materialIndex = (int) floor(stripeMaterials.size() * (double)row / mesh[0].length);
+					Material material = stripeMaterials.get(materialIndex);
+					
+					target.drawTriangleStrip(material, vsFront, texCoordLists(
+							vsFront, material, texCoordFunction));
+					target.drawTriangleStrip(material, vsBack, texCoordLists(
+							vsBack, material, texCoordFunction));
+					
+				}
+				
+			}
 			
 		}
 		
 		private static class StripedFlag extends Flag {
-
-			private final List<Color> colors;
-			private final boolean verticalStripes;
 			
 			public StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
-				super(heightWidthRatio);
-				this.colors = colors;
-				this.verticalStripes = verticalStripes;
+				
+				super(heightWidthRatio, createStripeMaterials(colors), verticalStripes);
+				
 			}
-			
-			@Override
-			public void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
-					VectorXYZ outerTop, VectorXYZ outerBottom) {
+
+			/**
+			 * creates a material for each colored stripe
+			 */
+			private static List<Material> createStripeMaterials(List<Color> colors) {
+
+				List<Material> stripeMaterials = new ArrayList<Material>(colors.size());
 				
-				int numStripes = colors.size();
-				
-				for (int stripe = 0; stripe < numStripes; stripe ++) {
+				for (Color color : colors) {
 					
-					VectorXYZ top0 = top;
-					VectorXYZ bottom0 = bottom;
-					VectorXYZ top1 = outerTop;
-					VectorXYZ bottom1 = outerBottom;
-					
-					if (verticalStripes) {
-						top0 = bottom;
-						bottom0 = outerBottom;
-						top1 = top;
-						bottom1 = outerTop;
-					}
-					
-					List<VectorXYZ> vsFront = asList(
-							interpolateBetween(top0, bottom0, stripe / (double)numStripes),
-							interpolateBetween(top0, bottom0, (stripe + 1) / (double)numStripes),
-							interpolateBetween(top1, bottom1, stripe / (double)numStripes),
-							interpolateBetween(top1, bottom1, (stripe + 1) / (double)numStripes));
-					
-					List<VectorXYZ> vsBack = asList(
-							vsFront.get(1),
-							vsFront.get(0),
-							vsFront.get(3),
-							vsFront.get(2)
-							);
-					
-					Material material = new ImmutableMaterial(
+					stripeMaterials.add(new ImmutableMaterial(
 							FLAGCLOTH.getInterpolation(),
-							colors.get(stripe),
+							color,
 							FLAGCLOTH.getAmbientFactor(),
 							FLAGCLOTH.getDiffuseFactor(),
 							FLAGCLOTH.getSpecularFactor(),
@@ -253,14 +368,11 @@ public class StreetFurnitureModule extends AbstractModule {
 							FLAGCLOTH.getTransparency(),
 							FLAGCLOTH.getShadow(),
 							FLAGCLOTH.getAmbientOcclusion(),
-							FLAGCLOTH.getTextureDataList());
-					
-					target.drawTriangleStrip(material, vsFront,
-							texCoordLists(vsFront, material, STRIP_WALL));
-					target.drawTriangleStrip(material, vsBack,
-							texCoordLists(vsBack, material, STRIP_WALL));
+							FLAGCLOTH.getTextureDataList()));
 					
 				}
+				
+				return stripeMaterials;
 				
 			}
 			
@@ -272,40 +384,17 @@ public class StreetFurnitureModule extends AbstractModule {
 		 */
 		public static class TexturedFlag extends Flag {
 			
-			private final Material material;
-			
 			public TexturedFlag(double heightWidthRatio, Material material) {
-				super(heightWidthRatio);
-				this.material = material;
+				super(heightWidthRatio, singletonList(material), false);
 			}
 			
 			/**
 			 * alternative constructor that uses the aspect ratio of the first texture layer
-			 * instead of an explicit hiehgtWidthRatio parameter. Only works for textured materials.
+			 * instead of an explicit heightWidthRatio parameter. Only works for textured materials.
 			 */
 			public TexturedFlag(Material material) {
 				this(material.getTextureDataList().get(0).height
 						/ material.getTextureDataList().get(0).width, material);
-			}
-			
-			@Override
-			public void renderFlag(Target<?> target, VectorXYZ bottom, VectorXYZ top,
-					VectorXYZ outerTop, VectorXYZ outerBottom) {
-
-				List<VectorXYZ> vsFront = asList(top, bottom, outerTop, outerBottom);
-				
-				List<VectorXYZ> vsBack = asList(
-						vsFront.get(1),
-						vsFront.get(0),
-						vsFront.get(3),
-						vsFront.get(2)
-						);
-				
-				target.drawTriangleStrip(material, vsFront,
-						texCoordLists(vsFront, material, STRIP_FIT));
-				target.drawTriangleStrip(material, vsBack,
-						texCoordLists(vsBack, material, STRIP_FIT));
-				
 			}
 			
 		}
