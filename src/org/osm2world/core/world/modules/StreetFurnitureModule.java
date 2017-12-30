@@ -403,11 +403,38 @@ public class StreetFurnitureModule extends AbstractModule {
 		
 		static {
 
-			NATIONAL_FLAGS.put("AT", new StripedFlag(2 / 3.0, asList(RED, WHITE, RED), false));
-			NATIONAL_FLAGS.put("BE", new StripedFlag(13 / 15.0, asList(BLACK, YELLOW, RED), true));
-			NATIONAL_FLAGS.put("DE", new StripedFlag(3 / 5.0, asList(BLACK, RED, YELLOW), false));
-			NATIONAL_FLAGS.put("FR", new StripedFlag(2 / 3.0, asList(BLUE, WHITE, RED), true));
-
+			NATIONAL_FLAGS.put("AT", new StripedFlag(2 / 3.0, asList(new Color(240, 79, 93), WHITE, new Color(240, 79, 93)), false));
+			NATIONAL_FLAGS.put("AM", new StripedFlag(1 / 2.0, asList(new Color(218, 0, 10), new Color(0, 48, 160), new Color(242, 170, 0)), false));
+			NATIONAL_FLAGS.put("BE", new StripedFlag(13 / 15.0, asList(BLACK, new Color(245, 221, 63), new Color(231, 35, 53)), true));
+			NATIONAL_FLAGS.put("BG", new StripedFlag(3 / 5.0, asList(WHITE, new Color(0, 151, 110), new Color(215, 33, 10)), false));
+			NATIONAL_FLAGS.put("BO", new StripedFlag(2 / 3.0, asList(new Color(207, 38, 23), new Color(249, 228, 0), new Color(0, 122, 49)), false));
+			NATIONAL_FLAGS.put("CI", new StripedFlag(2 / 3.0, asList(decode("#F77F00"), WHITE, decode("#009E60")), true));
+			NATIONAL_FLAGS.put("CO", new StripedFlag(2 / 3.0, asList(decode("#FCD20E"), decode("#FCD20E"), decode("#003594"), decode("#CF0821")), false));
+			NATIONAL_FLAGS.put("DE", new StripedFlag(3 / 5.0, asList(BLACK, new Color(222, 0, 0), new Color(255, 207, 0)), false));
+			NATIONAL_FLAGS.put("EE", new StripedFlag(7 / 11.0, asList(decode("#0073CF"), BLACK, WHITE), false));
+			NATIONAL_FLAGS.put("FR", new StripedFlag(2 / 3.0, asList(decode("#001E96"), WHITE, decode("#EE2436")), true));
+			NATIONAL_FLAGS.put("GA", new StripedFlag(3 / 4.0, asList(decode("#009F60"), decode("#FCD20E"), decode("#3776C5")), false));
+			NATIONAL_FLAGS.put("GN", new StripedFlag(2 / 3.0, asList(decode("#CF0821"), decode("#FCD20E"), decode("#009560")), true));
+			NATIONAL_FLAGS.put("ID", new StripedFlag(2 / 3.0, asList(RED, WHITE), false));
+			NATIONAL_FLAGS.put("IE", new StripedFlag(1 / 2.0, asList(decode("#0E9C62"), WHITE, decode("#FF893C")), true));
+			NATIONAL_FLAGS.put("IT", new StripedFlag(2 / 3.0, asList(decode("#009344"), WHITE, decode("#CF2734")), true));
+			NATIONAL_FLAGS.put("LT", new StripedFlag(3 / 5.0, asList(decode("#FDBA0B"), decode("#006A42"), decode("#C22229")), false));
+			NATIONAL_FLAGS.put("LU", new StripedFlag(3 / 5.0, asList(decode("#EE2436"), WHITE, decode("#00A3DF")), false));
+			NATIONAL_FLAGS.put("MC", new StripedFlag(4 / 5.0, asList(decode("#CF0821"), WHITE), false));
+			NATIONAL_FLAGS.put("ML", new StripedFlag(2 / 3.0, asList(decode("#0CB637"), decode("#FCD20E"), decode("#CF0821")), true));
+			NATIONAL_FLAGS.put("MU", new StripedFlag(2 / 3.0, asList(decode("#EA2205"), decode("#282F58"), decode("#F6B711"), decode("#008757")), false));
+			NATIONAL_FLAGS.put("NG", new StripedFlag(1 / 2.0, asList(decode("#008850"), WHITE, decode("#008850")), true));
+			NATIONAL_FLAGS.put("NL", new StripedFlag(2 / 3.0, asList(decode("#AD1622"), decode("#F9F9F9"), decode("#183B7A")), false));
+			NATIONAL_FLAGS.put("PE", new StripedFlag(2 / 3.0, asList(decode("#DA081E"), WHITE, decode("#DA081E")), true));
+			NATIONAL_FLAGS.put("PL", new StripedFlag(5 / 8.0, asList(WHITE, decode("#DD0C39")), false));
+			NATIONAL_FLAGS.put("RO", new StripedFlag(2 / 3.0, asList(decode("#002780"), decode("#FAD00E"), decode("#C1071F")), true));
+			NATIONAL_FLAGS.put("RU", new StripedFlag(2 / 3.0, asList(WHITE, decode("#0036A8"), decode("#D62718")), false));
+			NATIONAL_FLAGS.put("SL", new StripedFlag(2 / 3.0, asList(decode("#17B637"), WHITE, decode("#0073C7")), false));
+			NATIONAL_FLAGS.put("TD", new StripedFlag(2 / 3.0, asList(decode("#002664"), decode("#FECB00"), decode("#C60C30")), true));
+			NATIONAL_FLAGS.put("UA", new StripedFlag(2 / 3.0, asList(decode("#005BBC"), decode("#FED500")), false));
+			NATIONAL_FLAGS.put("HU", new StripedFlag(1 / 2.0, asList(decode("#CE253C"), WHITE, decode("#41704C")), false));
+			NATIONAL_FLAGS.put("YE", new StripedFlag(2 / 3.0, asList(decode("#CF0821"), WHITE, BLACK), false));
+			
 		}
 		
 	}
