@@ -34,5 +34,32 @@ public class OrthographicAzimuthalMapProjectionTest {
 		assertAlmostEquals(0, proj.calcLon(posN));
 		
 	}
+
+	@Test(expected=IllegalStateException.class)
+	public void testCalcPos_missingOrigin() {
+		
+		OriginMapProjection projection = new OrthographicAzimuthalMapProjection();
+		
+		projection.calcPos(new LatLon(1, 2));
+		
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void testCalcLat_missingOrigin() {
+		
+		OriginMapProjection projection = new OrthographicAzimuthalMapProjection();
+		
+		projection.calcLat(new VectorXZ(1, 2));
+		
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void testCalcLon_missingOrigin() {
+		
+		OriginMapProjection projection = new OrthographicAzimuthalMapProjection();
+		
+		projection.calcLon(new VectorXZ(1, 2));
+		
+	}
 	
 }

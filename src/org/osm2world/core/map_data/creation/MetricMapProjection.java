@@ -16,6 +16,9 @@ public class MetricMapProjection extends OriginMapProjection {
 	private double scaleFactor;
 		
 	public VectorXZ calcPos(double lat, double lon) {
+		
+		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
+		
 		double x = lonToX(lon) * scaleFactor - originX;
 		double y = latToY(lat) * scaleFactor - originY;
 
@@ -33,12 +36,20 @@ public class MetricMapProjection extends OriginMapProjection {
 
 	@Override
 	public double calcLat(VectorXZ pos) {
+		
+		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
+		
 		return yToLat((pos.z + originY) / scaleFactor);
+		
 	}
 
 	@Override
 	public double calcLon(VectorXZ pos) {
+		
+		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
+		
 		return xToLon((pos.x + originX) / scaleFactor);
+		
 	}
 
 	@Override

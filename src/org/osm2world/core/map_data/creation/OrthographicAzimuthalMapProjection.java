@@ -48,6 +48,8 @@ public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 	@Override
 	public VectorXZ calcPos(double latDeg, double lonDeg) {
 		
+		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
+		
 		double lat = toRadians(latDeg);
 		double lon = toRadians(lonDeg);
 		
@@ -60,6 +62,8 @@ public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 	
 	@Override
 	public double calcLat(VectorXZ pos) {
+		
+		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 		
 		double rho = sqrt(pos.x * pos.x + pos.z * pos.z);
 		double c = asin(rho / GLOBE_RADIUS);
@@ -74,6 +78,8 @@ public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 	
 	@Override
 	public double calcLon(VectorXZ pos) {
+		
+		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 		
 		double rho = sqrt(pos.x * pos.x + pos.z * pos.z);
 		double c = asin(rho / GLOBE_RADIUS);

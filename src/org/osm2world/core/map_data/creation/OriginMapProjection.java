@@ -26,6 +26,11 @@ public abstract class OriginMapProjection implements MapProjection {
 	
 	/**
 	 * sets a new origin.
+	 * 
+	 * Calling {@link #calcLat(org.osm2world.core.math.VectorXZ)},
+	 * {@link #calcLon(org.osm2world.core.math.VectorXZ)} or
+	 * {@link #calcPos(LatLon)} before the origin has been set
+	 * will result in an {@link IllegalStateException}.
 	 */
 	public void setOrigin(LatLon origin) {
 		this.origin = origin;
@@ -34,6 +39,8 @@ public abstract class OriginMapProjection implements MapProjection {
 	/**
 	 * sets a new origin. It is placed at the center of the bounds,
 	 * or else at the first node's coordinates.
+	 * 
+	 * @see #setOrigin(LatLon)
 	 */
 	public void setOrigin(OSMData osmData) {
 		
