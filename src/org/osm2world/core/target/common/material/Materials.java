@@ -192,6 +192,101 @@ public final class Materials {
 	public static final ConfMaterial SIGN_DE_625_21 =
 			new ConfMaterial(Interpolation.FLAT, Color.WHITE);
 	
+	public static final ConfMaterial SIGN_DE_101 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_11 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_12 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_13 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_14 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_15 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_21 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_22 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_23 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_24 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_25 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_51 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_52 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_53 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_54 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_101_55 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_102 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_103_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_103_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_105_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_105_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_108_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_110_12 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_112 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_114 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_117_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_117_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_120 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_121_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_121_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_123 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_124 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_125 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_131 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_133_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_133_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_136_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_136_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_138_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_138_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_142_10 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_142_20 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_145 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_151 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	public static final ConfMaterial SIGN_DE_301 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+	
 	public static final ConfMaterial GRITBIN_DEFAULT =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.4f));
 	
