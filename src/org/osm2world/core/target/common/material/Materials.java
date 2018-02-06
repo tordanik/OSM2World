@@ -59,6 +59,8 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
 	public static final ConfMaterial SCRUB =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.0f, 0.8f, 0.0f));
+	public static final ConfMaterial SETT =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial GRAVEL =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PAVING_STONE =
@@ -73,6 +75,8 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(241, 233, 80));
 	public static final ConfMaterial STEEL =
 		new ConfMaterial(Interpolation.FLAT, new Color(200, 200, 200));
+	public static final ConfMaterial UNHEWN_COBBLESTONE =
+		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial WOOD =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial WOOD_WALL =
@@ -349,9 +353,11 @@ public final class Materials {
 		surfaceMaterialMap.put("paving_stones", PAVING_STONE);
 		surfaceMaterialMap.put("pebblestone", PEBBLESTONE);
 		surfaceMaterialMap.put("sand", SAND);
+		surfaceMaterialMap.put("sett", SETT);
 		surfaceMaterialMap.put("steel", STEEL);
 		surfaceMaterialMap.put("tartan", TARTAN);
 		surfaceMaterialMap.put("unpaved", EARTH);
+		surfaceMaterialMap.put("unhewn_cobblestone", UNHEWN_COBBLESTONE);
 		surfaceMaterialMap.put("wood", WOOD);
 		surfaceMaterialMap.put("scrub", SCRUB);
 
