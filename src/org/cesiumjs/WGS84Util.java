@@ -1,7 +1,12 @@
-package org.osm2world.core.math;
+package org.cesiumjs;
 
 import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.math.VectorXYZ;
 
+/**
+ * This code is adoptation of Cesiumjs code.
+ * See LICENSE.md
+ * */
 public class WGS84Util {
 
 	private static final double WGS84_A = 6378137.0;

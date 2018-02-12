@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.cesiumjs.WGS84Util;
 import org.jglue.fluentjson.JsonBuilder;
 import org.jglue.fluentjson.JsonBuilderFactory;
 import org.jglue.fluentjson.Mapper;
@@ -30,7 +31,6 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.WGS84Util;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetProvider;
 import org.osm2world.core.target.TargetUtil;
@@ -49,6 +49,8 @@ import com.google.gson.JsonPrimitive;
 public final class ObjWriter {
 
 	private static final class TiledObjTargetProvider implements TargetProvider<RenderableToObj> {
+		private static final double MIN_ERROR = 70.0;
+		
 		private int zLevel;
 		private PrintStream mtlStream;
 		private File mtlFile;
@@ -282,7 +284,16 @@ public final class ObjWriter {
 
 			List<Double> regionList = Arrays.asList(ArrayUtils.toObject(encodeRegion(minY, maxY, fullBBOX)));
 			List<Double> transformList = Arrays.asList(ArrayUtils.toObject(transform));
-			double extentDiagonal = maxY * 4;
+			
+			double combinedChildError = 0.0;
+			for (int i = 0; i < children.size(); i++) {
+				JsonObject child = children.get(i).getAsJsonObject();
+				double chldErr = child.get("geometricError").getAsDouble();
+				double chldGeometricErr = Math.max(chldErr, MIN_ERROR);
+				combinedChildError += chldGeometricErr;
+			}
+			
+			double geometricError = Math.max(combinedChildError, maxY);
 			
 			JsonObject tileset = JsonBuilderFactory.buildObject()
 				.addObject("asset")
@@ -296,9 +307,9 @@ public final class ObjWriter {
 					.addArray("transform").addAll(new DoubleJsonArrayMapper(), transformList)
 					.end()
 					.add("refine", "ADD")
-					.add("geometricError", extentDiagonal)
+					.add("geometricError", geometricError)
 				.end()
-				.add("geometricError", extentDiagonal)
+				.add("geometricError", geometricError)
 			.getJson();
 			
 			tileset.getAsJsonObject("root").add("children", children);
@@ -353,6 +364,8 @@ public final class ObjWriter {
 				JsonObject contentBoundingVolume = getRegionAsBVJsonObject(contentRegion);
 				
 				double geometricError = t.maxY * Double.valueOf(sublevel);
+				geometricError = Math.max(geometricError, MIN_ERROR);
+				geometricError *= Math.pow(2.0, sublevel);
 				
 				JsonObject meta = new JsonObject();
 				meta.add("boundingVolume", tileBoundingVolume);
