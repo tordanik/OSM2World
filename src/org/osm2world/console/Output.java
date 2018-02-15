@@ -42,8 +42,6 @@ import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 import org.osm2world.core.util.functions.DefaultFactory;
 
-import sun.awt.SunToolkit.InfiniteLoop;
-
 public final class Output {
 
 	private Output() {}
