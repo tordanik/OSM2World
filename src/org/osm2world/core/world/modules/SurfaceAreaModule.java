@@ -106,7 +106,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			
 			Material material = null;
 			
-			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+			if (surface.equals(EMPTY_SURFACE_TAG.getValue())) {
 				material = Materials.TERRAIN_DEFAULT;
 			} else {
 				material = Materials.getSurfaceMaterial(surface);
@@ -134,7 +134,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				return triangulationXZ;
 			}
 			
-			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_TAG.value);
+			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_TAG.getValue());
 			
 			/* collect the outlines of overlapping ground polygons and other polygons,
 			 * and EleConnectors within the area */
@@ -339,7 +339,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
-			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+			if (surface.equals(EMPTY_SURFACE_TAG.getValue())) {
 				// avoid interfering with e.g. tree placement
 				return null;
 			} else {
@@ -349,7 +349,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
-			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+			if (surface.equals(EMPTY_SURFACE_TAG.getValue())) {
 				// avoid interfering with e.g. tree placement
 				return null;
 			} else {
