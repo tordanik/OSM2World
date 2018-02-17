@@ -27,6 +27,10 @@ public class OSMFileReader implements OSMDataReader {
 			throw new FileNotFoundException(file.toString());
 		}
 	}
+
+	public File getFile() {
+		return file;
+	}
 	
 	@Override
 	public OSMData getData() throws IOException {
