@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration.Configuration;
-import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
 import org.osm2world.core.map_data.creation.index.MapDataIndex;
 import org.osm2world.core.map_data.creation.index.MapIntersectionGrid;
 import org.osm2world.core.map_data.data.MapArea;
@@ -91,7 +90,7 @@ public class OSMToMapDataConverter {
 
 	/**
 	 * creates {@link MapElement}s
-	 * based on OSM data from an {@link OSMFileDataSource}
+	 * based on OSM data from an {@link OSMData} dataset.
 	 * and adds them to collections
 	 * @throws EntityNotFoundException 
 	 */

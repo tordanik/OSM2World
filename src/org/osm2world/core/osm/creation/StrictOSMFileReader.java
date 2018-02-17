@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.openstreetmap.osmosis.xml.common.CompressionMethod;
 import org.osm2world.core.osm.data.OSMData;
 
 import de.topobyte.osm4j.core.access.OsmIterator;
@@ -17,7 +16,7 @@ import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 /**
  * DataSource providing information from a single .osm file. The file is read
  * during the {@link #getData()} call, there will be no updates when the file is
- * changed later. This class internally uses osmosis to read the file.
+ * changed later. This class internally uses osm4j to read the file.
  * 
  * Use the regular {@link OSMDataReader} if you also want to read files which
  * don't exactly conform to the standard, such as files produced by JOSM. 
@@ -34,6 +33,13 @@ public class StrictOSMFileReader implements OSMDataReader  {
 		return file;
 	}
 	
+	private static enum CompressionMethod
+	{
+		None,
+		GZip,
+		BZip2;
+	}
+
 	@Override
 	public OSMData getData() throws IOException
 	{
