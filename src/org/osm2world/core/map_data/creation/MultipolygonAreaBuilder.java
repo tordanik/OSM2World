@@ -358,7 +358,7 @@ final class MultipolygonAreaBuilder {
 		
 	}
 	
-	private static final List<OsmTag> COASTLINE_NODE_TAGS = new ArrayList<>();
+	private static final List<OsmTag> COASTLINE_NODE_TAGS = new ArrayList<OsmTag>();
 	static {
 		COASTLINE_NODE_TAGS.add(new Tag("osm2world:note", "fake node from coastline processing"));
 	}
@@ -628,12 +628,12 @@ final class MultipolygonAreaBuilder {
 			
 			if (closedRings != null) {
 				
-				List<OsmTag> tags = new ArrayList<>();
+				List<OsmTag> tags = new ArrayList<OsmTag>();
 
 				tags.add(new Tag("type", "multipolygon"));
 				tags.add(new Tag("natural", "water"));
 
-				List<? extends OsmRelationMember> members = new ArrayList<>();
+				List<? extends OsmRelationMember> members = new ArrayList<OsmRelationMember>();
 				OsmRelation relation = new Relation(highestRelationId + 1, members, tags);
 				
 				return buildPolygonsFromRings(relation, closedRings);

@@ -21,7 +21,7 @@ public class OSMData
 
 	public OSMData(InMemoryMapDataSet data)
 	{
-		bounds = new ArrayList<>();
+		bounds = new ArrayList<OsmBounds>();
 		if (data.hasBounds()) {
 			bounds.add(data.getBounds());
 		}
