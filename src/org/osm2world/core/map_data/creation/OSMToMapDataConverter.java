@@ -1,5 +1,9 @@
 package org.osm2world.core.map_data.creation;
 
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsList;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.isClosed;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
@@ -15,9 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration.Configuration;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.osmosis.OSMFileDataSource;
-import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.map_data.creation.index.MapDataIndex;
 import org.osm2world.core.map_data.creation.index.MapIntersectionGrid;
 import org.osm2world.core.map_data.data.MapArea;
@@ -39,13 +41,18 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMElement;
-import org.osm2world.core.osm.data.OSMNode;
-import org.osm2world.core.osm.data.OSMRelation;
-import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
+
+import de.topobyte.osm4j.core.model.iface.OsmBounds;
+import de.topobyte.osm4j.core.model.iface.OsmNode;
+import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmTag;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.model.impl.Tag;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -65,7 +72,7 @@ public class OSMToMapDataConverter {
 		this.config = config;
 	}
 
-	public MapData createMapData(OSMData osmData) throws IOException {
+	public MapData createMapData(OSMData osmData) throws IOException, EntityNotFoundException {
 		
 		final List<MapNode> mapNodes = new ArrayList<MapNode>();
 		final List<MapWaySegment> mapWaySegs = new ArrayList<MapWaySegment>();
@@ -86,17 +93,18 @@ public class OSMToMapDataConverter {
 	 * creates {@link MapElement}s
 	 * based on OSM data from an {@link OSMFileDataSource}
 	 * and adds them to collections
+	 * @throws EntityNotFoundException 
 	 */
-	private void createMapElements(OSMData osmData,
+	private void createMapElements(final OSMData osmData,
 			final List<MapNode> mapNodes, final List<MapWaySegment> mapWaySegs,
-			final List<MapArea> mapAreas) {
+			final List<MapArea> mapAreas) throws EntityNotFoundException {
 		
 		/* create MapNode for each OSM node */
 
-		final Map<OSMNode, MapNode> nodeMap = new HashMap<OSMNode, MapNode>();
+		final Map<OsmNode, MapNode> nodeMap = new HashMap<OsmNode, MapNode>();
 
-		for (OSMNode node : osmData.getNodes()) {
-			VectorXZ nodePos = mapProjection.calcPos(node.lat, node.lon);
+		for (OsmNode node : osmData.getData().getNodes().valueCollection()) {
+			VectorXZ nodePos = mapProjection.calcPos(node.getLatitude(), node.getLongitude());
 			MapNode mapNode = new MapNode(nodePos, node);
 			mapNodes.add(mapNode);
 			nodeMap.put(node, mapNode);
@@ -104,30 +112,37 @@ public class OSMToMapDataConverter {
 		
 		/* create areas ... */
 		
-		final Map<OSMWay, MapArea> areaMap = new HashMap<OSMWay, MapArea>();
+		final Map<OsmWay, MapArea> areaMap = new HashMap<OsmWay, MapArea>();
 				
 		/* ... based on multipolygons */
 		
-		iterate(osmData.getRelations(), new Operation<OSMRelation>() {
-			@Override public void perform(OSMRelation relation) {
+		iterate(osmData.getData().getRelations().valueCollection(), new Operation<OsmRelation>() {
+			@Override public void perform(OsmRelation relation) {
 				
-				if (relation.tags.contains(MULTIPOLYON_TAG)) {
+				Map<String, String> tags = getTagsAsMap(relation);
+				
+				String value = tags.get(MULTIPOLYON_TAG.getKey());
+				if (!MULTIPOLYON_TAG.getValue().equals(value)) {
+					return;
+				}
 					
-					for (MapArea area : MultipolygonAreaBuilder.
-							createAreasForMultipolygon(relation, nodeMap)) {
-						
+				try {
+					for (MapArea area : MultipolygonAreaBuilder
+							.createAreasForMultipolygon(relation, nodeMap, osmData.getEntityProvider())) {
+
 						mapAreas.add(area);
-						
+
 						for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
 							boundaryMapNode.addAdjacentArea(area);
 						}
-						
-						if (area.getOsmObject() instanceof OSMWay) {
-							areaMap.put((OSMWay)area.getOsmObject(), area);
+
+						if (area.getOsmObject() instanceof OsmWay) {
+							areaMap.put((OsmWay) area.getOsmObject(), area);
 						}
-						
+
 					}
-					
+				} catch (EntityNotFoundException e) {
+					// TODO: what to do here?
 				}
 				
 			}
@@ -137,7 +152,7 @@ public class OSMToMapDataConverter {
 		
 		for (MapArea area : MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeMap, mapNodes,
-				calculateFileBoundary(osmData.getBounds()))) {
+				calculateFileBoundary(osmData.getBounds()), osmData.getEntityProvider())) {
 			
 			mapAreas.add(area);
 			
@@ -149,21 +164,29 @@ public class OSMToMapDataConverter {
 		
 		/* ... based on closed ways */
 		
-		for (OSMWay way : osmData.getWays()) {
-			if (way.isClosed() && !areaMap.containsKey(way)) {
+		OsmEntityProvider ep = osmData.getEntityProvider();
+		
+		for (OsmWay way : osmData.getData().getWays().valueCollection()) {
+			if (isClosed(way) && !areaMap.containsKey(way)) {
 				//create MapArea only if at least one tag is an area tag
-				for (Tag tag : way.tags) {
+				for (OsmTag tag : getTagsAsList(way)) {
 					if (ruleset.isAreaTag(tag)) {
 						//TODO: check whether this is old-style MP outer
 						
-						List<MapNode> nodes = new ArrayList<MapNode>(way.nodes.size());
-						for (OSMNode boundaryOSMNode : way.nodes) {
-							nodes.add(nodeMap.get(boundaryOSMNode));
+						List<MapNode> nodes = new ArrayList<MapNode>(way.getNumberOfNodes());
+						for (long id : nodesAsList(way).toArray()) {
+							OsmNode boundaryOSMNode;
+							try {
+								boundaryOSMNode = ep.getNode(id);
+								nodes.add(nodeMap.get(boundaryOSMNode));
+							} catch (EntityNotFoundException e) {
+								// TODO handle better sometime...
+							}
 						}
 						
 						try {
 							
-							MapArea mapArea = new MapArea((OSMElement)way, nodes);
+							MapArea mapArea = new MapArea(way, nodes);
 							
 							mapAreas.add(mapArea);
 							areaMap.put(way, mapArea);
@@ -203,11 +226,19 @@ public class OSMToMapDataConverter {
 		
 		/* create way segments from remaining ways */
 		
-		for (OSMWay way : osmData.getWays()) {
-			if (!way.tags.isEmpty() && !areaMap.containsKey(way)) {
+		for (OsmWay way : osmData.getData().getWays().valueCollection()) {
+			boolean hasTags = way.getNumberOfTags() != 0;
+			if (hasTags && !areaMap.containsKey(way)) {
 				
-				OSMNode previousNode = null;
-				for (OSMNode node : way.nodes) {
+				OsmNode previousNode = null;
+				for (long id : nodesAsList(way).toArray()) {
+					OsmNode node = null;
+					try {
+						node = ep.getNode(id);
+					} catch (EntityNotFoundException e) {
+						// TODO handle better sometime
+						continue;
+					}
 					if (previousNode != null) {
 						
 						MapWaySegment mapWaySeg = new MapWaySegment(
@@ -568,11 +599,11 @@ public class OSMToMapDataConverter {
 	}
 	
 	private AxisAlignedBoundingBoxXZ calculateFileBoundary(
-			Collection<Bound> bounds) {
+			Collection<OsmBounds> bounds) {
 		
 		Collection<VectorXZ> boundedPoints = new ArrayList<VectorXZ>();
 		
-		for (Bound bound : bounds) {
+		for (OsmBounds bound : bounds) {
 			
 			boundedPoints.add(mapProjection.calcPos(bound.getBottom(), bound.getLeft()));
 			boundedPoints.add(mapProjection.calcPos(bound.getBottom(), bound.getRight()));

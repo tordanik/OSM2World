@@ -13,15 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osm2world.core.map_data.data.MapArea;
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -92,21 +89,12 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			 * and the underlying OSM element's name/ref tags */
 			
 			MapElement element = object.getPrimaryMapElement();
-			OSMElement osmElement;
-			if (element instanceof MapNode) {
-				osmElement = ((MapNode) element).getOsmNode();
-			} else if (element instanceof MapWaySegment) {
-				osmElement = ((MapWaySegment) element).getOsmWay();
-			} else if (element instanceof MapArea) {
-				osmElement = ((MapArea) element).getOsmObject();
-			} else {
-				osmElement = null;
-			}
+			TagGroup tags = element.getTags();
 			
-			if (osmElement != null && osmElement.tags.containsKey("name")) {
-				objStream.println("o " + object.getClass().getSimpleName() + " " + osmElement.tags.getValue("name"));
-			} else if (osmElement != null && osmElement.tags.containsKey("ref")) {
-				objStream.println("o " + object.getClass().getSimpleName() + " " + osmElement.tags.getValue("ref"));
+			if (tags.containsKey("name")) {
+				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("name"));
+			} else if (tags.containsKey("ref")) {
+				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("ref"));
 			} else {
 				objStream.println("o " + object.getClass().getSimpleName() + anonymousWOCounter ++);
 			}

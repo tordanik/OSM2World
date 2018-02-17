@@ -1,11 +1,20 @@
 package org.osm2world.core.map_data.creation;
 
-import static java.lang.Boolean.*;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsList;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.isClosed;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.membersAsList;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.Double.NaN;
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static org.osm2world.core.math.GeometryUtil.getLineSegmentIntersection;
+import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,9 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -27,13 +33,24 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMElement;
-import org.osm2world.core.osm.data.OSMMember;
 import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
+
+import de.topobyte.osm4j.core.model.iface.EntityType;
+import de.topobyte.osm4j.core.model.iface.OsmEntity;
+import de.topobyte.osm4j.core.model.iface.OsmNode;
+import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
+import de.topobyte.osm4j.core.model.iface.OsmTag;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.model.impl.Node;
+import de.topobyte.osm4j.core.model.impl.Relation;
+import de.topobyte.osm4j.core.model.impl.Tag;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
 
 /**
  * utility class for creating areas from multipolygon relations,
@@ -61,34 +78,36 @@ final class MultipolygonAreaBuilder {
 	 * 
 	 * @return  constructed area(s), multiple areas will be created if there
 	 *          is more than one outer ring. Empty for invalid multipolygons.
+	 * @throws EntityNotFoundException 
 	 */
 	public static final Collection<MapArea> createAreasForMultipolygon(
-			OSMRelation relation, Map<OSMNode, MapNode> nodeMap) {
+			OsmRelation relation, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
 		
-		if (isSimpleMultipolygon(relation)) {
-			return createAreasForSimpleMultipolygon(relation, nodeMap);
+		if (isSimpleMultipolygon(relation, db)) {
+			return createAreasForSimpleMultipolygon(relation, nodeMap, db);
 		} else {
-			return createAreasForAdvancedMultipolygon(relation, nodeMap);
+			return createAreasForAdvancedMultipolygon(relation, nodeMap, db);
 		}
 		
 	}
 
-	private static final boolean isSimpleMultipolygon(OSMRelation relation) {
+	private static final boolean isSimpleMultipolygon(OsmRelation relation, OsmEntityProvider db) throws EntityNotFoundException {
 		
 		int numberOuters = 0;
 		boolean closedWays = true;
 		
-		for (OSMMember member : relation.relationMembers) {
+		for (OsmRelationMember member :membersAsList(relation)) {
 			
-			if ("outer".equals(member.role)
-					&& member.member instanceof OSMWay) {
+			if ("outer".equals(member.getRole())
+					&& member.getType() == EntityType.Way) {
 				numberOuters += 1;
 			}
 			
-			if (("outer".equals(member.role) || "inner".equals(member.role))
-					&& member.member instanceof OSMWay) {
+			if (("outer".equals(member.getRole()) || "inner".equals(member.getRole()))
+					&& member.getType() == EntityType.Way) {
 				
-				if (!((OSMWay)member.member).isClosed()) {
+				OsmWay way = db.getWay(member.getId());
+				if (!isClosed(way)) {
 					closedWays = false;
 					break;
 				}
@@ -108,39 +127,40 @@ final class MultipolygonAreaBuilder {
 	 * 
 	 * @param relation  has to be a simple multipolygon relation
 	 * @param nodeMap
+	 * @throws EntityNotFoundException 
 	 */
 	private static final Collection<MapArea> createAreasForSimpleMultipolygon(
-			OSMRelation relation, Map<OSMNode, MapNode> nodeMap) {
+			OsmRelation relation, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
 		
-		assert isSimpleMultipolygon(relation);
+		assert isSimpleMultipolygon(relation, db);
 		
-		OSMElement tagSource = null;
+		OsmEntity tagSource = null;
 		List<MapNode> outerNodes = null;
 		List<List<MapNode>> holes = new ArrayList<List<MapNode>>();
 		
-		for (OSMMember member : relation.relationMembers) {
-			if (member.member instanceof OSMWay) {
+		for (OsmRelationMember member : membersAsList(relation)) {
+			if (member.getType() == EntityType.Way) {
 				
-				OSMWay way = (OSMWay)member.member;
+				OsmWay way = db.getWay(member.getId());
 				
-				if ("inner".equals(member.role)) {
+				if ("inner".equals(member.getRole())) {
 					
-					List<MapNode> hole = new ArrayList<MapNode>(way.nodes.size());
+					List<MapNode> hole = new ArrayList<MapNode>(way.getNumberOfNodes());
 					
-					for (OSMNode node : ((OSMWay)member.member).nodes) {
-						hole.add(nodeMap.get(node));
+					for (long nodeId : nodesAsList(way).toArray()) {
+						hole.add(nodeMap.get(db.getNode(nodeId)));
 						//TODO: add area as adjacent to node for inners' nodes, too?
 					}
 					
 					holes.add(hole);
 					
-				} else if ("outer".equals(member.role)) {
+				} else if ("outer".equals(member.getRole())) {
 					
-					tagSource = relation.tags.size() > 1 ? relation : way;
+					tagSource = relation.getNumberOfTags() > 1 ? relation : way;
 					
-					outerNodes = new ArrayList<MapNode>(way.nodes.size());
-					for (OSMNode node : way.nodes) {
-						outerNodes.add(nodeMap.get(node));
+					outerNodes = new ArrayList<MapNode>(way.getNumberOfNodes());
+					for (long nodeId : nodesAsList(way).toArray()) {
+						outerNodes.add(nodeMap.get(db.getNode(nodeId)));
 					}
 					
 				}
@@ -153,19 +173,20 @@ final class MultipolygonAreaBuilder {
 	}
 
 	private static final Collection<MapArea> createAreasForAdvancedMultipolygon(
-			OSMRelation relation, Map<OSMNode, MapNode> nodeMap) {
+			OsmRelation relation, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
 		
 		List<NodeSequence> innersAndOuters = new ArrayList<NodeSequence>();
 		
 		/* collect ways */
 		
-		for (OSMMember member : relation.relationMembers) {
-			if (member.member instanceof OSMWay
-					&& ("outer".equals(member.role)
-							|| "inner".equals(member.role)) ) {
+		for (OsmRelationMember member : membersAsList(relation)) {
+			if (member.getType() == EntityType.Way
+					&& ("outer".equals(member.getRole())
+							|| "inner".equals(member.getRole())) ) {
 				
+				OsmWay way = db.getWay(member.getId());
 				innersAndOuters.add(new NodeSequence(
-						(OSMWay)member.member, nodeMap));
+						way, nodeMap, db));
 				
 			}
 		}
@@ -257,7 +278,7 @@ final class MultipolygonAreaBuilder {
 	 * @param rings  rings to build polygons from; will be empty afterwards
 	 */
 	private static final Collection<MapArea> buildPolygonsFromRings(
-			OSMRelation relation, List<Ring> rings) {
+			OsmRelation relation, List<Ring> rings) {
 		
 		Collection<MapArea> finishedPolygons =
 				new ArrayList<MapArea>(rings.size() / 2);
@@ -337,8 +358,10 @@ final class MultipolygonAreaBuilder {
 		
 	}
 	
-	private static final TagGroup COASTLINE_NODE_TAGS = new MapBasedTagGroup(
-			new Tag("osm2world:note", "fake node from coastline processing"));
+	private static final List<OsmTag> COASTLINE_NODE_TAGS = new ArrayList<>();
+	static {
+		COASTLINE_NODE_TAGS.add(new Tag("osm2world:note", "fake node from coastline processing"));
+	}
 	
 	/**
 	 * turns all coastline ways into {@link MapArea}s
@@ -352,31 +375,32 @@ final class MultipolygonAreaBuilder {
 	 * It cannot distinguish between water and land tiles if there is no
 	 * coastline at all (it will then guess based on the tags being used),
 	 * but should be able to handle all other cases.
+	 * @throws EntityNotFoundException 
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
-			OSMData osmData, Map<OSMNode, MapNode> nodeMap,
-			Collection<MapNode> mapNodes, AxisAlignedBoundingBoxXZ fileBoundary) {
+			OSMData osmData, Map<OsmNode, MapNode> nodeMap,
+			Collection<MapNode> mapNodes, AxisAlignedBoundingBoxXZ fileBoundary, OsmEntityProvider db) throws EntityNotFoundException {
 		
 		long highestRelationId = 0;
 		long highestNodeId = 0;
 		
-		List<OSMWay> coastlineWays = new ArrayList<OSMWay>();
+		List<OsmWay> coastlineWays = new ArrayList<OsmWay>();
 		
-		for (OSMWay way : osmData.getWays()) {
-			if (way.tags.contains("natural", "coastline")) {
+		for (OsmWay way : osmData.getData().getWays().valueCollection()) {
+			if ("coastline".equals(getTagsAsMap(way).get("natural"))) {
 				coastlineWays.add(way);
 			}
 		}
 		
-		for (OSMRelation relation : osmData.getRelations()) {
-			if (relation.id > highestRelationId) {
-				highestRelationId = relation.id;
+		for (OsmRelation relation : osmData.getData().getRelations().valueCollection()) {
+			if (relation.getId() > highestRelationId) {
+				highestRelationId = relation.getId();
 			}
 		}
 		
-		for (OSMNode node : osmData.getNodes()) {
-			if (node.id > highestNodeId) {
-				highestNodeId = node.id;
+		for (OsmNode node : osmData.getData().getNodes().valueCollection()) {
+			if (node.getId() > highestNodeId) {
+				highestNodeId = node.getId();
 			}
 		}
 		
@@ -386,8 +410,8 @@ final class MultipolygonAreaBuilder {
 			
 			List<NodeSequence> origCoastlines = new ArrayList<NodeSequence>();
 			
-			for (OSMWay coastlineWay : coastlineWays) {
-				origCoastlines.add(new NodeSequence(coastlineWay, nodeMap));
+			for (OsmWay coastlineWay : coastlineWays) {
+				origCoastlines.add(new NodeSequence(coastlineWay, nodeMap, db));
 			}
 			
 			/* find coastline intersections with bounding box.
@@ -604,9 +628,13 @@ final class MultipolygonAreaBuilder {
 			
 			if (closedRings != null) {
 				
-				OSMRelation relation = new OSMRelation(new MapBasedTagGroup(
-						new Tag("type", "multipolygon"), new Tag("natural", "water")),
-						highestRelationId + 1, 0);
+				List<OsmTag> tags = new ArrayList<>();
+
+				tags.add(new Tag("type", "multipolygon"));
+				tags.add(new Tag("natural", "water"));
+
+				List<? extends OsmRelationMember> members = new ArrayList<>();
+				OsmRelation relation = new Relation(highestRelationId + 1, members, tags);
 				
 				return buildPolygonsFromRings(relation, closedRings);
 				
@@ -630,12 +658,13 @@ final class MultipolygonAreaBuilder {
 	}
 
 	private static MapNode createFakeMapNode(VectorXZ pos, long nodeId,
-			OSMData osmData, Map<OSMNode, MapNode> nodeMap,
+			OSMData osmData, Map<OsmNode, MapNode> nodeMap,
 			Collection<MapNode> mapNodes) {
 		
-		OSMNode osmNode = new OSMNode(NaN, NaN,
-				COASTLINE_NODE_TAGS, nodeId + 1);
-		osmData.getNodes().add(osmNode);
+		Node osmNode = new Node(nodeId + 1, NaN, NaN);
+		osmNode.setTags(COASTLINE_NODE_TAGS);
+				
+		osmData.getData().getNodes().put(osmNode.getId(), osmNode);
 				
 		MapNode mapNode = new MapNode(pos, osmNode);
 		mapNodes.add(mapNode);
@@ -654,13 +683,13 @@ final class MultipolygonAreaBuilder {
 		
 		Ruleset ruleset = new HardcodedRuleset();
 		
-		@SuppressWarnings("unchecked")
-		List<Collection<? extends OSMElement>> collections = asList(
-				osmData.getWays(), osmData.getNodes());
+		List<Collection<? extends OsmEntity>> collections = asList(
+				osmData.getData().getWays().valueCollection(),
+				osmData.getData().getNodes().valueCollection());
 		
-		for (Collection<? extends OSMElement> collection : collections) {
-			for (OSMElement element : collection) {
-				for (Tag tag : element.tags) {
+		for (Collection<? extends OsmEntity> collection : collections) {
+			for (OsmEntity element : collection) {
+				for (OsmTag tag : getTagsAsList(element)) {
 					
 					if (ruleset.isLandTag(tag)) return false;
 					
@@ -687,13 +716,14 @@ final class MultipolygonAreaBuilder {
 		
 		/**
 		 * creates a node sequence from an {@link OSMWay}
+		 * @throws EntityNotFoundException 
 		 */
-		public NodeSequence(OSMWay way, Map<OSMNode, MapNode> nodeMap) {
+		public NodeSequence(OsmWay way, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
 			
-			super(way.nodes.size());
+			super(way.getNumberOfNodes());
 			
-			for (OSMNode wayNode : way.nodes) {
-				add(nodeMap.get(wayNode));
+			for (long nodeId : nodesAsList(way).toArray()) {
+				add(nodeMap.get(db.getNode(nodeId)));
 			}
 			
 		}
@@ -813,7 +843,7 @@ final class MultipolygonAreaBuilder {
 		
 		@Override
 		public String toString() {
-			return "(" + outgoingIntersection + ", " + node.getOsmNode().id +
+			return "(" + outgoingIntersection + ", " + node.getOsmNode().getId() +
 					"@" + node.getPos() + ")";
 		}
 		

@@ -4,10 +4,14 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.target.common.material.Materials.CHAIN_LINK_FENCE;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Y;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,8 +85,8 @@ public class BarrierModule extends AbstractModule {
 			
 			super(waySegment);
 			
-			height = parseHeight(waySegment.getOsmWay().tags, defaultHeight);
-			width = parseWidth(waySegment.getOsmWay().tags, defaultWidth);
+			height = parseHeight(waySegment.getTags(), defaultHeight);
+			width = parseWidth(waySegment.getTags(), defaultWidth);
 			
 		}
 		

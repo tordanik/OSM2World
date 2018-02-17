@@ -1,17 +1,40 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
-import static org.osm2world.core.math.VectorXYZ.*;
-import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.addYList;
+import static org.osm2world.core.target.common.material.Materials.ASPHALT;
+import static org.osm2world.core.target.common.material.Materials.EARTH;
+import static org.osm2world.core.target.common.material.Materials.GRASS;
+import static org.osm2world.core.target.common.material.Materials.GRAVEL;
+import static org.osm2world.core.target.common.material.Materials.HANDRAIL_DEFAULT;
+import static org.osm2world.core.target.common.material.Materials.RED_ROAD_MARKING;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_ARROW_RIGHT;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_ARROW_RIGHT_LEFT;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_ARROW_THROUGH;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_ARROW_THROUGH_RIGHT;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_CROSSING;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_DASHED;
+import static org.osm2world.core.target.common.material.Materials.ROAD_MARKING_ZEBRA;
+import static org.osm2world.core.target.common.material.Materials.TERRAIN_DEFAULT;
+import static org.osm2world.core.target.common.material.Materials.getSurfaceMaterial;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
 import java.util.ArrayList;
@@ -82,7 +105,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		for (MapNode node : grid.getMapNodes()) {
 
-			TagGroup tags = node.getOsmNode().tags;
+			TagGroup tags = node.getTags();
 			
 			List<Road> connectedRoads = getConnectedRoads(node, false);
 			

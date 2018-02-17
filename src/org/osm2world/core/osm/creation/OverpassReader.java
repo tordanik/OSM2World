@@ -7,15 +7,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import org.openstreetmap.osmosis.core.misc.v0_6.EmptyReader;
-import org.openstreetmap.osmosis.core.task.v0_6.RunnableSource;
-import org.openstreetmap.osmosis.core.task.v0_6.Sink;
-import org.openstreetmap.osmosis.xml.common.CompressionMethod;
 import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.osm.data.OSMData;
 
-public class OverpassReader extends OsmosisReader {
+import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
+import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
+import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
+
+public class OverpassReader implements OSMDataReader {
 	
 	public static final String DEFAULT_API_URL = "http://www.overpass-api.de/api/interpreter";
+	private String apiURL;
+	private String queryString;
 	
 	/** fetches data within a bounding box from Overpass API */
 	public OverpassReader(LatLon min, LatLon max) {
@@ -34,32 +37,12 @@ public class OverpassReader extends OsmosisReader {
 	
 	/** fetches data from any Overpass API instance according to an arbitrary query. */
 	public OverpassReader(String apiURL, String queryString) {
-		super(new OverpassSource(apiURL, queryString));
+		this.apiURL = apiURL;
+		this.queryString = queryString;
 	}
 	
-	/**
-	 * source component for an Osmosis pipeline that reads data from Overpass API
-	 */
-	private static class OverpassSource implements RunnableSource {
-		
-		private final String apiURL;
-		private final String queryString;
-		
-		private Sink sink;
-		
-		public OverpassSource(String apiURL, String queryString) {
-			this.apiURL = apiURL;
-			this.queryString = queryString;
-		}
-		
-		@Override
-		public void setSink(Sink sink) {
-			this.sink = sink;
-		}
-		
-		@Override
-		public void run() {
-			
+	public OSMData getData() throws IOException {
+	
 			try {
 				
 				URL url = new URL(apiURL);
@@ -76,12 +59,14 @@ public class OverpassReader extends OsmosisReader {
 				
 				InputStream inputStream = connection.getInputStream();
 				
-				XmlStreamReader xmlReader = new XmlStreamReader(inputStream, true, CompressionMethod.None);
-				xmlReader.setSink(sink);
-				xmlReader.run();
+				OsmXmlIterator iterator = new OsmXmlIterator(inputStream, false);
+				
+				InMemoryMapDataSet data = MapDataSetLoader.read(iterator, true, true, true);
+				OSMData osmData = new OSMData(data);
 				
 				inputStream.close();
 								
+				return osmData;
 			} catch (IOException e) {
 				
 				System.err.println("could not get input data from Overpass API."
@@ -90,14 +75,12 @@ public class OverpassReader extends OsmosisReader {
 				
 				e.printStackTrace();
 				
-				EmptyReader emptyReader = new EmptyReader();
-				emptyReader.setSink(sink);
-				emptyReader.run();
+				InMemoryMapDataSet dataSet = new InMemoryMapDataSet();
+				return new OSMData(dataSet);
 				
 			}
-			
-		}
 		
 	}
+
 	
 }

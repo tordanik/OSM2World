@@ -3,19 +3,21 @@ package org.osm2world.core.map_data.creation;
 import static java.lang.Math.min;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMNode;
-import org.osm2world.core.osm.data.OSMWay;
+
+import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
+
+import de.topobyte.osm4j.core.model.iface.OsmNode;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.model.impl.Node;
+import de.topobyte.osm4j.core.model.impl.Way;
 
 /**
  * utility class for building geometry representing empty terrain.
@@ -30,13 +32,12 @@ public class EmptyTerrainBuilder {
 			new Tag("surface", "osm2world:empty_terrain");
 
 	/** faked outline node for the terrain areas */
-	private static final OSMNode EMPTY_SURFACE_NODE = new OSMNode(
-			Double.NaN, Double.NaN, EmptyTagGroup.EMPTY_TAG_GROUP, 0);
+	private static final OsmNode EMPTY_SURFACE_NODE = new Node(
+			0, Double.NaN, Double.NaN);
 	
 	/** faked outline way for the terrain areas */
-	private static final OSMWay EMPTY_SURFACE_WAY = new OSMWay(
-			new MapBasedTagGroup(EMPTY_SURFACE_TAG), 0,
-			Collections.<OSMNode>emptyList());
+	private static final OsmWay EMPTY_SURFACE_WAY = new Way(
+			0, new TLongArrayList());
 	
 	public static final double POINT_GRID_DIST = 30;
 	public static final int PATCH_SIZE_POINTS = 10;

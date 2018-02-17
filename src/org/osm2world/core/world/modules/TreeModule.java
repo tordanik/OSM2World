@@ -492,7 +492,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			/* place the trees */
 			
 			List<VectorXZ> treePositions =
-				GeometryUtil.distributePointsOn(area.getOsmObject().id,
+				GeometryUtil.distributePointsOn(area.getOsmObject().getId(),
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 			

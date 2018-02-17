@@ -5,6 +5,8 @@ import java.util.HashSet;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 
+import de.topobyte.osm4j.core.model.iface.OsmTag;
+
 public class HardcodedRuleset implements Ruleset {
 
 	private static Collection<Tag> areaTags = new HashSet<Tag>();
@@ -53,18 +55,18 @@ public class HardcodedRuleset implements Ruleset {
 	}
 	
 	@Override
-	public boolean isAreaTag(Tag tag) {
-		return areaKeys.contains(tag.key)
+	public boolean isAreaTag(OsmTag tag) {
+		return areaKeys.contains(tag.getKey())
 			|| areaTags.contains(tag);
 	}
 	
 	@Override
-	public boolean isLandTag(Tag tag) {
+	public boolean isLandTag(OsmTag tag) {
 		return landTags.contains(tag);
 	}
 	
 	@Override
-	public boolean isSeaTag(Tag tag) {
+	public boolean isSeaTag(OsmTag tag) {
 		return seaTags.contains(tag);
 	}
 		

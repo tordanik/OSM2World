@@ -1,7 +1,10 @@
 package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Double.isNaN;
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,8 +77,8 @@ public class SRTMData implements TerrainElevationData {
 		
 		for (MapNode mapNode : mapData.getMapNodes()) {
 			
-			double lon = mapNode.getOsmNode().lon;
-			double lat = mapNode.getOsmNode().lat;
+			double lon = mapNode.getOsmNode().getLongitude();
+			double lat = mapNode.getOsmNode().getLatitude();
 			
 			if (!isNaN(lat) && !isNaN(lon)) {
 				minLon = min(minLon, lon);

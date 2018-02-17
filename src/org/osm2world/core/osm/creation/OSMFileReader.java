@@ -77,9 +77,10 @@ public class OSMFileReader implements OSMDataReader {
 	 */
 	public static final boolean isJOSMGenerated(File file) {
 		
+		BufferedReader reader = null;
 		try {
 			
-			BufferedReader reader = new BufferedReader(new FileReader(file));
+			reader = new BufferedReader(new FileReader(file));
 			
 			for (int i=0; i<100; i++) {
 				String line = reader.readLine();
@@ -90,9 +91,14 @@ public class OSMFileReader implements OSMDataReader {
 				}
 			}
 			
-			reader.close();
 			
-		} catch (IOException e) { }
+		} catch (IOException e) { } finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				// ignore
+			}
+		}
 		
 		return false;
 		

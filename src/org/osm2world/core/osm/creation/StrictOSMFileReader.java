@@ -3,10 +3,16 @@ package org.osm2world.core.osm.creation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import org.openstreetmap.osmosis.core.task.v0_6.RunnableSource;
 import org.openstreetmap.osmosis.xml.common.CompressionMethod;
-import org.openstreetmap.osmosis.xml.v0_6.XmlReader;
+import org.osm2world.core.osm.data.OSMData;
+
+import de.topobyte.osm4j.core.access.OsmIterator;
+import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
+import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
+import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 
 /**
  * DataSource providing information from a single .osm file. The file is read
@@ -16,12 +22,11 @@ import org.openstreetmap.osmosis.xml.v0_6.XmlReader;
  * Use the regular {@link OSMDataReader} if you also want to read files which
  * don't exactly conform to the standard, such as files produced by JOSM. 
  */
-public class StrictOSMFileReader extends OsmosisReader  {
+public class StrictOSMFileReader implements OSMDataReader  {
 	
 	private final File file;
 	
 	public StrictOSMFileReader(File file) throws FileNotFoundException {
-		super(createSourceForFile(file));
 		this.file = file;
 	}
 	
@@ -29,9 +34,9 @@ public class StrictOSMFileReader extends OsmosisReader  {
 		return file;
 	}
 	
-	private static final RunnableSource createSourceForFile(File file)
-			throws FileNotFoundException {
-		
+	@Override
+	public OSMData getData() throws IOException
+	{
 		boolean pbf = false;
 		CompressionMethod compression = CompressionMethod.None;
 		
@@ -43,17 +48,17 @@ public class StrictOSMFileReader extends OsmosisReader  {
 			compression = CompressionMethod.BZip2;
 		}
 		
-		RunnableSource reader;
-		
+		OsmIterator iterator = null;
 		if (pbf) {
-			reader = new crosby.binary.osmosis.OsmosisReader(
-					new FileInputStream(file));
+			FileInputStream is = new FileInputStream(file);
+			iterator = new PbfIterator(is, true);
 		} else {
-			reader = new XmlReader(file, false, compression);
+			// TODO: handle compression!
+			iterator = new OsmXmlIterator(file, true);
 		}
 		
-		return reader;
-		
+		InMemoryMapDataSet data = MapDataSetLoader.read(iterator, true, true, true);
+		return new OSMData(data);
 	}
 	
 }
