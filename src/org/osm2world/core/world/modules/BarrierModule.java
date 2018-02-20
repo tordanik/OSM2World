@@ -3,7 +3,8 @@ package org.osm2world.core.world.modules;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.target.common.material.Materials.CHAIN_LINK_FENCE;
+import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
@@ -26,6 +27,8 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
+
+import com.google.common.collect.Lists;
 
 /**
  * adds barriers to the world
@@ -50,6 +53,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new CableBarrier(line, tags));
 		} else if (HandRail.fits(tags)) {
 			line.addRepresentation(new HandRail(line, tags));
+		} else if (Guardrail.fits(tags)) {
+			line.addRepresentation(new Guardrail(line));
 		} else if (PoleFence.fits(tags)) {
 			line.addRepresentation(new PoleFence(line, tags));
 		}
@@ -370,6 +375,101 @@ public class BarrierModule extends AbstractModule {
 			
 			this.defaultFenceMaterial = Materials.HANDRAIL_DEFAULT;
 			this.defaultPoleMaterial = Materials.HANDRAIL_DEFAULT;
+		}
+		
+	}
+			
+	private static class Guardrail extends LinearBarrier
+			implements RenderableToAllTargets {
+				
+		private static final float DEFAULT_HEIGHT = 0.75f;
+		
+		private static final float METERS_BETWEEN_POLES = 4;
+		
+		private static final float SHAPE_GERMAN_B_HEIGHT = 0.303f;
+		private static List<VectorXYZ> SHAPE_GERMAN_B = asList(
+				new VectorXYZ(-0.055,0,0),
+				new VectorXYZ(-0.075, 0.007, 0),
+				new VectorXYZ(-0.075, 0.1095, 0),
+				new VectorXYZ(     0, 0.127, 0),
+				new VectorXYZ(     0, 0.183, 0),
+				new VectorXYZ(-0.075, 0.2005, 0),
+				new VectorXYZ(-0.075, 0.303, 0),
+				new VectorXYZ(-0.055, 0.310, 0)
+				);
+		
+		private static List<VectorXYZ> SHAPE_POST_DOUBLE_T = asList(
+				new VectorXYZ(0, 0, 0),
+				new VectorXYZ(-0.075, 0, 0),
+				new VectorXYZ(0, 0, 0),
+				new VectorXYZ(+0.075, 0, 0),
+				new VectorXYZ(0, 0, 0),
+				new VectorXYZ(0, -0.28, 0),
+				new VectorXYZ(-0.075, -0.28, 0),
+				new VectorXYZ(0, -0.28, 0),
+				new VectorXYZ(+0.075, -0.28, 0),
+				new VectorXYZ(0, -0.28, 0),
+				new VectorXYZ(0, 0, 0)
+				);
+		
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "guard_rail");
+		}
+		
+		public Guardrail(MapWaySegment line) {
+			super(line, DEFAULT_HEIGHT, 0.0001f);
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			List<VectorXYZ> centerline = getCenterline();
+
+			Material material = STEEL.makeSmooth();
+			
+			/* draw the rail itself */
+			
+			List<VectorXYZ> path = addYList(centerline, this.height - SHAPE_GERMAN_B_HEIGHT);
+			
+			List<List<VectorXYZ>> strips = new ArrayList<List<VectorXYZ>>();
+			
+			//forward
+			strips.addAll(createShapeExtrusionAlong(
+					SHAPE_GERMAN_B, path, nCopies(path.size(), Y_UNIT)));
+			
+			//backward
+			strips.addAll(createShapeExtrusionAlong(
+					Lists.reverse(SHAPE_GERMAN_B), path, nCopies(path.size(), Y_UNIT)));
+			
+			for (List<VectorXYZ> strip : strips) {
+				target.drawTriangleStrip(material, strip,
+						texCoordLists(strip, material, STRIP_WALL));
+			}
+			
+			/* add posts */
+			
+			List<VectorXYZ> polePositions = equallyDistributePointsAlong(
+					METERS_BETWEEN_POLES, false, centerline);
+			
+			for (VectorXYZ base : polePositions) {
+				
+				VectorXZ railNormal = segment.getRightNormal();
+
+				// extrude the pole
+				
+				List<VectorXYZ> polePath = asList(base,
+						base.addY(this.height - SHAPE_GERMAN_B_HEIGHT*0.33));
+				
+				List<List<VectorXYZ>> poleStrips = createShapeExtrusionAlong(
+						SHAPE_POST_DOUBLE_T, polePath, nCopies(polePath.size(), railNormal.xyz(0)));
+				
+				for (List<VectorXYZ> strip : poleStrips) {
+					target.drawTriangleStrip(material, strip,
+							texCoordLists(strip, material, STRIP_WALL));
+				}
+								
+			}
+			
 		}
 		
 	}
