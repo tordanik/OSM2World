@@ -10,7 +10,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-public class PolygonXZ {
+import org.osm2world.core.math.shapes.ShapeXZ;
+
+public class PolygonXZ implements ShapeXZ {
 
 	/** polygon vertices; first and last vertex are equal */
 	protected final List<VectorXZ> vertexLoop;
@@ -43,6 +45,8 @@ public class PolygonXZ {
 	 * Unlike {@link #getVertexLoop()}, there is no duplication
 	 * of the first/last vertex.
 	 */
+	
+	@Override
 	public List<VectorXZ> getVertices() {
 		return vertexLoop.subList(0, vertexLoop.size()-1);
 	}
