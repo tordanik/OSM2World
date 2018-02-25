@@ -10,9 +10,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 
-public class PolygonXZ implements ShapeXZ {
+public class PolygonXZ implements PolygonShapeXZ {
 
 	/** polygon vertices; first and last vertex are equal */
 	protected final List<VectorXZ> vertexLoop;
@@ -42,17 +42,25 @@ public class PolygonXZ implements ShapeXZ {
 
 	/**
 	 * returns the polygon's vertices.
-	 * Unlike {@link #getVertexLoop()}, there is no duplication
+	 * Unlike {@link #getVertexList()}, there is no duplication
 	 * of the first/last vertex.
 	 */
-	
-	@Override
 	public List<VectorXZ> getVertices() {
 		return vertexLoop.subList(0, vertexLoop.size()-1);
 	}
-	
+
 	/**
 	 * returns the polygon's vertices. First and last vertex are equal.
+	 * 
+	 * @return list of vertices, not empty, not null
+	 */
+	@Override
+	public List<VectorXZ> getVertexList() {
+		return vertexLoop;
+	}
+	
+	/**
+	 * @deprecated Use the equivalent {@link #getVertexList()} instead.
 	 */
 	public List<VectorXZ> getVertexLoop() {
 		return vertexLoop;
@@ -240,7 +248,7 @@ public class PolygonXZ implements ShapeXZ {
 			}
 		}
 
-		// we have n-1 vertices as the first and last vertex are the same 
+		// we have n-1 vertices as the first and last vertex are the same
 		final int segments = polygonVertexLoop.size()-1;
 
 		// generate an array of input events associated with their line segments
@@ -278,7 +286,7 @@ public class PolygonXZ implements ShapeXZ {
 	
 		// A TreeSet, used for the sweepline algorithm
 		TreeSet<LineSegmentXZ> sweepLine = new TreeSet<LineSegmentXZ>(new Comparator<LineSegmentXZ>() {
-			public int compare(LineSegmentXZ l1, LineSegmentXZ l2) { 
+			public int compare(LineSegmentXZ l1, LineSegmentXZ l2) {
 
 				VectorXZ v1 = l1.p1;
 				VectorXZ v2 = l2.p1;
@@ -290,7 +298,7 @@ public class PolygonXZ implements ShapeXZ {
 						if (l1.p2.z < l2.p2.z) return -1;
 						else if (l1.p2.z == l2.p2.z) {
 							if (l1.p2.x < l2.p2.x) return -1;
-							else if (l1.p2.x == l2.p2.x) return 0; 
+							else if (l1.p2.x == l2.p2.x) return 0;
 						}
 					}
 				}
@@ -314,7 +322,7 @@ public class PolygonXZ implements ShapeXZ {
 					}
 				}
 				
-				if (higher != null) {	
+				if (higher != null) {
 					if (higher.intersects(line.p1, line.p2)) {
 						return true;
 					}

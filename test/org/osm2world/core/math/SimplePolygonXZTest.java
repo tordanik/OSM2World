@@ -80,12 +80,12 @@ public class SimplePolygonXZTest {
 		SimplePolygonXZ shiftP = p1.shift(VectorXZ.X_UNIT);
 		
 		assertSame(p1.size(), shiftP.size());
-		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexLoop().get(0));
-		assertAlmostEquals(new VectorXZ( 0,  0), shiftP.getVertexLoop().get(1));
-		assertAlmostEquals(new VectorXZ( 0, +1), shiftP.getVertexLoop().get(2));
-		assertAlmostEquals(new VectorXZ( 2, +1), shiftP.getVertexLoop().get(3));
-		assertAlmostEquals(new VectorXZ( 2, -1), shiftP.getVertexLoop().get(4));
-		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexLoop().get(5));
+		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexList().get(0));
+		assertAlmostEquals(new VectorXZ( 0,  0), shiftP.getVertexList().get(1));
+		assertAlmostEquals(new VectorXZ( 0, +1), shiftP.getVertexList().get(2));
+		assertAlmostEquals(new VectorXZ( 2, +1), shiftP.getVertexList().get(3));
+		assertAlmostEquals(new VectorXZ( 2, -1), shiftP.getVertexList().get(4));
+		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexList().get(5));
 		
 	}
 	

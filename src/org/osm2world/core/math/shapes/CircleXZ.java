@@ -19,7 +19,7 @@ public class CircleXZ implements ShapeXZ {
 		this.radius = radius;
 	}
 
-	public List<VectorXZ> getVertices() {
+	public List<VectorXZ> getVertexList() {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>(NUM_POINTS + 1);
 		

@@ -3,9 +3,11 @@ package org.osm2world.core.math;
 import java.util.Arrays;
 import java.util.List;
 
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+
 import com.google.common.collect.ImmutableList;
 
-public class TriangleXZ {
+public class TriangleXZ implements PolygonShapeXZ {
 
 	public final VectorXZ v1, v2, v3;
 
@@ -19,8 +21,9 @@ public class TriangleXZ {
 		
 	}
 	
-	public List<VectorXZ> getVertices() {
-		return ImmutableList.of(v1, v2, v3);
+	@Override
+	public List<VectorXZ> getVertexList() {
+		return ImmutableList.of(v1, v2, v3, v1);
 	}
 
 	public VectorXZ getCenter() {

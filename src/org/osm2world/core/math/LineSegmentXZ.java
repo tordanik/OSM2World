@@ -1,6 +1,12 @@
 package org.osm2world.core.math;
 
-public class LineSegmentXZ {
+import static java.util.Arrays.asList;
+
+import java.util.List;
+
+import org.osm2world.core.math.shapes.ShapeXZ;
+
+public class LineSegmentXZ implements ShapeXZ {
 
 	public final VectorXZ p1, p2;
 
@@ -9,6 +15,14 @@ public class LineSegmentXZ {
 		this.p2 = p2;
 	}
 
+	/**
+	 * returns a list containing the two vertices {@link #p1} and {@link #p2}
+	 */
+	@Override
+	public List<VectorXZ> getVertexList() {
+		return asList(p1, p2);
+	}
+	
 	public VectorXZ getCenter() {
 		return GeometryUtil.interpolateBetween(p1, p2, 0.5);
 	}

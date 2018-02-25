@@ -20,7 +20,7 @@ import org.osm2world.core.math.VectorXZ;
  * --- Rectangle
  * ---- Square
  * --- Triangle
- * 
+ * --- AxisAlignedBoundingBoxXZ
  */
 public interface ShapeXZ {
 	
@@ -32,6 +32,6 @@ public interface ShapeXZ {
 	 * 
 	 * @return list of vertices, not empty, not null
 	 */
-	public List<VectorXZ> getVertices();
+	public List<VectorXZ> getVertexList();
 	
 }
