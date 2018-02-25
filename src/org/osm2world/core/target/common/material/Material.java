@@ -135,6 +135,18 @@ public abstract class Material {
 				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
 	}
 	
+	public Material withAmbientFactor(float newAmbientFactor) {
+		return new ImmutableMaterial(interpolation, getColor(),
+				newAmbientFactor, getDiffuseFactor(), getSpecularFactor(), getShininess(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+	}
+	
+	public Material withDefuseFactor(float newDefuseFactor) {
+		return new ImmutableMaterial(interpolation, getColor(),
+				getAmbientFactor(), newDefuseFactor, getSpecularFactor(), getShininess(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+	}
+	
 	public Material darker() {
 		return new ImmutableMaterial(interpolation, getColor().darker(),
 				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),

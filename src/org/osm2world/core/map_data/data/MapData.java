@@ -3,6 +3,7 @@ package org.osm2world.core.map_data.data;
 import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
@@ -23,13 +24,14 @@ public class MapData {
 	final List<MapNode> mapNodes;
 	final List<MapWaySegment> mapWaySegments;
 	final List<MapArea> mapAreas;
+	final MapProjection mapProjection;
 
 	AxisAlignedBoundingBoxXZ fileBoundary;
 	AxisAlignedBoundingBoxXZ dataBoundary;
 	
-	public MapData(List<MapNode> mapNodes, List<MapWaySegment> mapWaySegments,
+	public MapData(MapProjection mapProjection, List<MapNode> mapNodes, List<MapWaySegment> mapWaySegments,
 			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ fileBoundary) {
-
+		this.mapProjection = mapProjection;
 		this.mapNodes = mapNodes;
 		this.mapWaySegments = mapWaySegments;
 		this.mapAreas = mapAreas;
@@ -144,6 +146,10 @@ public class MapData {
 	 */
 	public <T> Iterable<T> getWorldObjects(Class<T> type) {
 		return Iterables.filter(getWorldObjects(), type);
+	}
+
+	public MapProjection getMapProjection() {
+		return this.mapProjection;
 	}
 		
 }

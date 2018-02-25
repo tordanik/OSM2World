@@ -11,6 +11,7 @@ if [[ $1 == --vm-params=* ]]
 fi
 
 # choose path for the native JOGL libs depending on system and java version
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 MACHINE_TYPE=`uname -m`
 KERNEL_NAME=`uname -s`
@@ -27,6 +28,6 @@ fi
 
 # run OSM2World
 
-export LD_LIBRARY_PATH=$lpsolvepath
+export LD_LIBRARY_PATH=$script_dir/$lpsolvepath
 
-java -Djava.library.path=$lpsolvepath $vmparams -jar OSM2World.jar --config texture_config.properties $@
+java -Djava.library.path=$lpsolvepath $vmparams -jar $script_dir/OSM2World.jar --config texture_config.properties $@

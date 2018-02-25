@@ -2,16 +2,37 @@ package org.osm2world.core.world.modules;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.round;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.toRadians;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseAngle;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseMeasure;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.EXACT;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.core.map_elevation.data.GroundState.ABOVE;
+import static org.osm2world.core.map_elevation.data.GroundState.BELOW;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLine;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.GeometryUtil.insertIntoPolygon;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.GeometryUtil.interpolateValue;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.SLOPED_TRIANGLES;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -25,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -111,7 +133,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				boolean drawBuildingWindows) {
 			
 			this.area = area;
-			
+
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				MapElement other = overlap.getOther(area);
 				if (other instanceof MapArea

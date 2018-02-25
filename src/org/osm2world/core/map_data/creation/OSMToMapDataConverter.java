@@ -58,7 +58,6 @@ public class OSMToMapDataConverter {
 	private final Configuration config;
 	
 	private static final Tag MULTIPOLYON_TAG = new Tag("type", "multipolygon");
-	
 		
 	public OSMToMapDataConverter(MapProjection mapProjection, Configuration config) {
 		this.mapProjection = mapProjection;
@@ -73,7 +72,7 @@ public class OSMToMapDataConverter {
 		
 		createMapElements(osmData, mapNodes, mapWaySegs, mapAreas);
 		
-		MapData mapData = new MapData(mapNodes, mapWaySegs, mapAreas,
+		MapData mapData = new MapData(mapProjection, mapNodes, mapWaySegs, mapAreas,
 				calculateFileBoundary(osmData.getBounds()));
 		
 		calculateIntersectionsInMapData(mapData);
