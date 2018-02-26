@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -55,6 +55,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new HandRail(line, tags));
 		} else if (Guardrail.fits(tags)) {
 			line.addRepresentation(new Guardrail(line));
+		} else if (JerseyBarrier.fits(tags)) {
+			line.addRepresentation(new JerseyBarrier(line));
 		} else if (PoleFence.fits(tags)) {
 			line.addRepresentation(new PoleFence(line, tags));
 		}
@@ -470,6 +472,68 @@ public class BarrierModule extends AbstractModule {
 								
 			}
 			
+		}
+		
+	}
+	
+	private static class JerseyBarrier extends LinearBarrier
+			implements RenderableToAllTargets {
+		
+		private static final float DEFAULT_HEIGHT = 1.145f;
+		private static final float DEFAULT_WIDTH = 0.82f;
+		private static final double ELEMENT_LENGTH = 3.0;
+		private static final double GAP_LENGTH = 0.3;
+		
+		private static List<VectorXYZ> DEFAULT_SHAPE = asList(
+				new VectorXYZ(-0.41, 0    , 0),
+				new VectorXYZ(-0.41, 0.075, 0),
+				new VectorXYZ(-0.20, 0.330, 0),
+				new VectorXYZ(-0.15, 1.145, 0),
+				new VectorXYZ(+0.15, 1.145, 0),
+				new VectorXYZ(+0.20, 0.330, 0),
+				new VectorXYZ(+0.41, 0.075, 0),
+				new VectorXYZ(+0.41, 0    , 0)
+				);
+		
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "jersey_barrier");
+		}
+		
+		public JerseyBarrier(MapWaySegment line) {
+			super(line, DEFAULT_HEIGHT, DEFAULT_WIDTH);
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			/* subdivide the centerline;
+			 * there'll be a jersey barrier element between each pair of successive points */
+			
+			List<VectorXYZ> points = equallyDistributePointsAlong(
+					ELEMENT_LENGTH + GAP_LENGTH, true, getCenterline());
+			
+			/* draw jersey barrier elements with small gaps in between */
+			
+			for (int i = 0; i + 1 < points.size(); i++) {
+			
+				double relativeOffset = 0.5 * GAP_LENGTH / (ELEMENT_LENGTH + GAP_LENGTH);
+				
+				List<VectorXYZ> path = asList(
+						interpolateBetween(points.get(i), points.get(i+1), relativeOffset),
+						interpolateBetween(points.get(i), points.get(i+1), 1.0 - relativeOffset));
+				
+				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
+						DEFAULT_SHAPE, path, nCopies(2, Y_UNIT));
+				
+				for (List<VectorXYZ> strip : strips) {
+					target.drawTriangleStrip(CONCRETE, strip,
+							texCoordLists(strip, CONCRETE, STRIP_WALL));
+				}
+				
+				//TODO draw caps on both sides
+				
+			}
+				
 		}
 		
 	}
