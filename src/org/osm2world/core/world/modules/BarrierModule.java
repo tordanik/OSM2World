@@ -54,17 +54,17 @@ public class BarrierModule extends AbstractModule {
 		} else if (Hedge.fits(tags)) {
 			line.addRepresentation(new Hedge(line));
 		} else if (ChainLinkFence.fits(tags)) {
-			line.addRepresentation(new ChainLinkFence(line, tags));
+			line.addRepresentation(new ChainLinkFence(line));
 		} else if (CableBarrier.fits(tags)) {
-			line.addRepresentation(new CableBarrier(line, tags));
+			line.addRepresentation(new CableBarrier(line));
 		} else if (HandRail.fits(tags)) {
-			line.addRepresentation(new HandRail(line, tags));
+			line.addRepresentation(new HandRail(line));
 		} else if (Guardrail.fits(tags)) {
 			line.addRepresentation(new Guardrail(line));
 		} else if (JerseyBarrier.fits(tags)) {
 			line.addRepresentation(new JerseyBarrier(line));
 		} else if (PoleFence.fits(tags)) {
-			line.addRepresentation(new PoleFence(line, tags));
+			line.addRepresentation(new PoleFence(line));
 		}
 		
 	}
@@ -210,7 +210,7 @@ public class BarrierModule extends AbstractModule {
 					&& (tags.contains("fence_type", "chain_link") || (tags.contains("fence_type", "metal") || (tags.contains("fence_type", "railing") ) ) );
 		}
 		
-		public ChainLinkFence(MapWaySegment segment, TagGroup tags) {
+		public ChainLinkFence(MapWaySegment segment) {
 			super(segment, 1f, 0.02f);
 		}
 		
@@ -272,10 +272,10 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "fence");
 		}
 		
-		public PoleFence(MapWaySegment segment, TagGroup tags) {
+		public PoleFence(MapWaySegment segment) {
 			super(segment, 1f, 0.02f);
-			if (tags.containsKey("material")){
-				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
+			if (segment.getTags().containsKey("material")){
+				material = getMaterial(segment.getTags().getValue("material").toUpperCase());
 				poleMaterial = material;
 			}
 			
@@ -331,8 +331,8 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "cable_barrier");
 		}
 		
-		public CableBarrier(MapWaySegment segment, TagGroup tags) {
-			super(segment, tags);
+		public CableBarrier(MapWaySegment segment) {
+			super(segment);
 			
 			this.barWidth = 0.03f;
 			this.barGap = 0.1f;
@@ -350,8 +350,8 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "handrail");
 		}
 		
-		public HandRail(MapWaySegment segment, TagGroup tags) {
-			super(segment, tags);
+		public HandRail(MapWaySegment segment) {
+			super(segment);
 			
 			this.barWidth = 0.05f;
 			this.barGap = 0f;
