@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -38,10 +37,10 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -49,14 +48,7 @@ import com.google.common.collect.Multimap;
 /**
  * adds swimming pools and water parks to the world
  */
-public class PoolModule implements WorldModule {
-
-	private Configuration config;
-	
-	@Override
-	public void setConfiguration(Configuration config) {
-		this.config = config;
-	}
+public class PoolModule extends ConfigurableWorldModule {
 
 	private final boolean isPool(TagGroup tags) {
 		boolean pool = tags.contains("amenity", "swimming_pool");
