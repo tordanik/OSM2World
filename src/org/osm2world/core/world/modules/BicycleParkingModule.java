@@ -1,12 +1,9 @@
 package org.osm2world.core.world.modules;
 
-import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.util.ArrayList;
@@ -17,6 +14,8 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -43,9 +42,7 @@ public class BicycleParkingModule extends AbstractModule {
 	private static final class BicycleStands extends NoOutlineWaySegmentWorldObject
 			implements RenderableToAllTargets {
 		
-		private static final List<VectorXYZ> STAND_SHAPE = asList(
-				new VectorXYZ(-0.02f, -0.05f, 0), new VectorXYZ(-0.02f,     0f, 0),
-				new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0));
+		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 		
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
 		private static final float STAND_DEFAULT_HEIGHT = 0.7f;
@@ -121,13 +118,7 @@ public class BicycleParkingModule extends AbstractModule {
 				upVectors.add(toFront.invert().normalize());
 				upVectors.add(upVectors.get(4));
 				
-				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-						STAND_SHAPE, path, upVectors);
-				
-				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(STEEL, strip,
-							texCoordLists(strip, STEEL, STRIP_WALL));
-				}
+				target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors,null, null);
 				
 			}
 			

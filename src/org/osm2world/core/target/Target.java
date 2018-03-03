@@ -1,6 +1,8 @@
 package org.osm2world.core.target;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
@@ -8,6 +10,9 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -86,6 +91,47 @@ public interface Target<R extends Renderable> {
 	 */
 	void drawConvexPolygon(Material material, List<VectorXYZ> vs,
 			List<List<VectorXZ>> texCoordLists);
+	
+	/**
+	 * draws a flat shape in 3D space, at an arbitrary rotation.
+	 * 
+	 * @param material     the material used for the extruded shape; != null
+	 * @param shape        the shape to be drawn; != null
+	 * @param point        position where the shape is drawn; != null
+	 * @param frontVector  direction the shape is facing.
+	 *                     Defines the shape's rotation along with upVector; != null
+	 * @param upVector     up direction of the shape.
+	 *                     Defines the shape's rotation along with frontVector; != null
+	 */
+	void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,
+			VectorXYZ frontVector, VectorXYZ upVector);
+	
+	/**
+	 * extrudes a 2d shape along a path.
+	 * 
+	 * <p>For problematic input parameters, the resulting geometry might end up
+	 * self-intersecting or contain zero-area triangles.
+	 * 
+	 * @param  material      the material used for the extruded shape; != null
+	 * @param  shape         the shape to be extruded; != null
+	 * @param  path          the path along which the shape is extruded. Implicitly,
+	 *                       this also defines a rotation for the shape at each point.
+	 *                       Must have at least two points; != null.
+	 * @param  upVectors     defines the rotation (along with the path) at each point.
+	 *                       Must have the same number of elements as path; != null.
+	 *                       You can use {@link Collections#nCopies(int, Object)}
+	 *                       if you want the same up vector for all points of the path.
+	 * @param  scaleFactors  optionally allows the shape to be scaled at each point.
+	 *                       Must have the same number of elements as path.
+	 *                       Can be set to null for a constant scale factor of 1.
+	 * @param  options       flags setting additional options; can be null for no options.
+	 * 
+	 * @throws IllegalArgumentException  if upVectors are null and cannot be inferred
+	 *                                   from the path. This happens for completely vertical
+	 *                                   or otherwise ambiguous paths.
+	 */
+	void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
+			List<VectorXYZ> upVectors, List<Double> scaleFactors, EnumSet<ExtrudeOption> options);
 	
 	/**
 	 * draws a box with outward-facing polygons.

@@ -2,13 +2,15 @@ package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.target.common.material.Materials.RAIL_DEFAULT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapData;
@@ -16,6 +18,9 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -81,21 +86,26 @@ public class RailwayModule extends ConfigurableWorldModule {
 		private static final float SLEEPER_DISTANCE = 0.6f + SLEEPER_LENGTH;
 		
 		private static final float RAIL_HEAD_WIDTH = 0.067f; //must match RAIL_SHAPE
-		private static final List<VectorXYZ> RAIL_SHAPE = asList(
-			new VectorXYZ(-0.45f, 0, 0), new VectorXYZ(-0.1f, 0.1f, 0),
-			new VectorXYZ(-0.1f, 0.5f, 0), new VectorXYZ(-0.25f, 0.55f, 0),
-			new VectorXYZ(-0.25f, 0.75f, 0), new VectorXYZ(+0.25f, 0.75f, 0),
-			new VectorXYZ(+0.25f, 0.55f, 0), new VectorXYZ(+0.1f, 0.5f, 0),
-			new VectorXYZ(+0.1f, 0.1f, 0), new VectorXYZ(+0.45f, 0, 0)
-		);
+		private static final ShapeXZ RAIL_SHAPE;
 		
 		static {
-			for (int i=0; i < RAIL_SHAPE.size(); i++) {
-				VectorXYZ v = RAIL_SHAPE.get(i);
+			
+			List<VectorXZ> railShape = asList(
+					new VectorXZ(-0.45, 0), new VectorXZ(-0.1, 0.1),
+					new VectorXZ(-0.1, 0.5), new VectorXZ(-0.25, 0.55),
+					new VectorXZ(-0.25, 0.75), new VectorXZ(+0.25, 0.75),
+					new VectorXZ(+0.25, 0.55), new VectorXZ(+0.1, 0.5),
+					new VectorXZ(+0.1, 0.1), new VectorXZ(+0.45, 0));
+			
+			for (int i=0; i < railShape.size(); i++) {
+				VectorXZ v = railShape.get(i);
 				v = v.mult(0.1117f);
-				v = v.y(v.y + SLEEPER_HEIGHT);
-				RAIL_SHAPE.set(i, v);
+				v = new VectorXZ(-v.x, v.z + SLEEPER_HEIGHT);
+				railShape.set(i, v);
 			}
+			
+			RAIL_SHAPE = new PolylineXZ(railShape);
+			
 		}
 		
 		final float gaugeMeters;
@@ -159,15 +169,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			for (List<VectorXYZ> railLine : railLines) {
 				
-				List<List<VectorXYZ>> stripVectors =
-					WorldModuleGeometryUtil.createShapeExtrusionAlong(
-					RAIL_SHAPE, railLine,
-					Collections.nCopies(railLine.size(), VectorXYZ.Y_UNIT));
-					
-				for (List<VectorXYZ> stripVector : stripVectors) {
-					target.drawTriangleStrip(Materials.RAIL_DEFAULT, stripVector, null);
-				}
-			
+				target.drawExtrudedShape(RAIL_DEFAULT, RAIL_SHAPE, railLine,
+						nCopies(railLine.size(), Y_UNIT), null, null);
+				
 			}
 			
 			

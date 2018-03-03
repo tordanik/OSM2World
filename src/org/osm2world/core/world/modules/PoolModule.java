@@ -1,15 +1,13 @@
 package org.osm2world.core.world.modules;
 
 import static java.awt.Color.ORANGE;
-import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createShapeExtrusionAlong;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.awt.Color;
@@ -27,17 +25,19 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -153,23 +153,18 @@ public class PoolModule implements WorldModule {
 			double width=1;
 			double height=0.1;
 			
-			List<VectorXYZ> wallShape = asList(
-					new VectorXYZ(-width/2, 0, 0),
-					new VectorXYZ(-width/2, height, 0),
-					new VectorXYZ(+width/2, height, 0),
-					new VectorXYZ(+width/2, 0, 0)
+			ShapeXZ wallShape = new PolylineXZ(
+					new VectorXZ(+width/2, 0),
+					new VectorXZ(+width/2, height),
+					new VectorXZ(-width/2, height),
+					new VectorXZ(-width/2, 0)
 			);
 
 			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
 			
-			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-					wallShape, path,
-					nCopies(path.size(), VectorXYZ.Y_UNIT));
+			target.drawExtrudedShape(CONCRETE, wallShape, path,
+					nCopies(path.size(), Y_UNIT), null, null);
 			
-			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(Materials.CONCRETE, strip,
-						texCoordLists(strip, Materials.CONCRETE, GLOBAL_X_Z));
-			}
 		}
 	}
 	
@@ -179,10 +174,10 @@ public class PoolModule implements WorldModule {
 		private static final Color DEFAULT_COLOR = ORANGE;
 		
 		/** cross-section of the pipe */
-		private static final List<VectorXYZ> CROSS_SECTION_PIPE;
+		private static final ShapeXZ CROSS_SECTION_PIPE;
 		
 		/** cross-section of the water running down the pipe */
-		private static final List<VectorXYZ> CROSS_SECTION_WATER;
+		private static final ShapeXZ CROSS_SECTION_WATER;
 		
 		/** preferred distance between supporting pillars in meters */
 		private static final double PILLAR_DISTANCE = 5.5;
@@ -194,27 +189,28 @@ public class PoolModule implements WorldModule {
 			
 			CircleXZ pipeCircle = new CircleXZ(new VectorXZ(0, height), height);
 			
-			CROSS_SECTION_PIPE = new ArrayList<VectorXYZ>();
+			List<VectorXZ> crossSection = new ArrayList<VectorXZ>();
 			
 			for (VectorXZ v : pipeCircle.getVertexList()) {
-				CROSS_SECTION_PIPE.add(new VectorXYZ(-v.x, v.z <= height ? v.z : height - (v.z - height), 0.0));
+				crossSection.add(new VectorXZ(v.x, v.z <= height ? v.z : height - (v.z - height)));
 			}
+			
+			CROSS_SECTION_PIPE = new PolylineXZ(crossSection);
 			
 			//find the lowest pipe vertices above the intended water line
 			
-			VectorXZ lowestLeftVertexAboveWater = null;
+			VectorXZ lowestRightVertexAboveWater = null;
 			
 			for (VectorXZ v : pipeCircle.getVertexList()) {
-				if (v.x < 0 && v.z >= waterHeight) {
-					if (lowestLeftVertexAboveWater == null || v.z < lowestLeftVertexAboveWater.z) {
-						lowestLeftVertexAboveWater = v;
+				if (v.x > 0 && v.z >= waterHeight) {
+					if (lowestRightVertexAboveWater == null || v.z < lowestRightVertexAboveWater.z) {
+						lowestRightVertexAboveWater = v;
 					}
 				}
 			}
 			
-			CROSS_SECTION_WATER = asList(
-					new VectorXYZ(+lowestLeftVertexAboveWater.x, lowestLeftVertexAboveWater.z, 0),
-					new VectorXYZ(-lowestLeftVertexAboveWater.x, lowestLeftVertexAboveWater.z, 0));
+			CROSS_SECTION_WATER = new LineSegmentXZ(lowestRightVertexAboveWater,
+					new VectorXZ(-lowestRightVertexAboveWater.x, lowestRightVertexAboveWater.z));
 			
 		}
 		
@@ -306,21 +302,10 @@ public class PoolModule implements WorldModule {
 			
 			/* draw the pipe and water using extrusion */
 			
-			List<List<VectorXYZ>> pipeStrips = createShapeExtrusionAlong(
-					CROSS_SECTION_PIPE, path, nCopies(path.size(), Y_UNIT));
+			List<VectorXYZ> up = nCopies(path.size(), Y_UNIT);
 			
-			for (List<VectorXYZ> strip : pipeStrips) {
-				target.drawTriangleStrip(material, strip,
-						texCoordLists(strip, material, STRIP_WALL));
-			}
-
-			List<List<VectorXYZ>> waterStrips = createShapeExtrusionAlong(
-					CROSS_SECTION_WATER, path, nCopies(path.size(), Y_UNIT));
-			
-			for (List<VectorXYZ> strip : waterStrips) {
-				target.drawTriangleStrip(WATER, strip,
-						texCoordLists(strip, WATER, STRIP_WALL));
-			}
+			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null);
+			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null);
 			
 			/* draw supporting pillars */
 			

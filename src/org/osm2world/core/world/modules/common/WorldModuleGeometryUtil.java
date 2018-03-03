@@ -5,7 +5,6 @@ import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -94,86 +93,6 @@ public final class WorldModuleGeometryUtil {
 		
 	}
 	
-
-	//TODO: many uses of VisualizationUtil#drawColumn are a special case of this
-	/**
-	 * creates triangle strip vectors for a shape extruded along a line of coordinates
-	 * 
-	 * @param shape          shape relative to origin
-	 * @param extrusionPath  nodes to extrude the shape along; needs at least 2 nodes
-	 * @param upVectors      vector for "up" direction at each extrusion path node.
-	 *                       You can use {@link Collections#nCopies(int, Object)}
-	 *                       if you want the same up vector for all nodes.
-	 * @return               list of triangle strip vertex lists
-	 */
-	public static final List<List<VectorXYZ>> createShapeExtrusionAlong(
-			List<VectorXYZ> shape,
-			List<VectorXYZ> extrusionPath,
-			List<VectorXYZ> upVectors) {
-		
-		if (extrusionPath.size() < 2) {
-			throw new IllegalArgumentException("extrusion path needs at least 2 nodes");
-		} else if (extrusionPath.size() != upVectors.size()) {
-			throw new IllegalArgumentException("extrusionPath and upVectors must have same size");
-		}
-		
-		@SuppressWarnings("unchecked")
-		List<VectorXYZ>[] shapeVectors = new List[extrusionPath.size()];
-
-		/*
-		 * create shape at each node of the extrusion path.
-		 * Special handling for first and last node,
-		 * where calculation of "forward" vector is different.
-		 */
-		
-		shapeVectors[0] = transformShape(shape,
-				extrusionPath.get(0),
-				extrusionPath.get(1).subtract(extrusionPath.get(0)).normalize(),
-				upVectors.get(0));
-		
-		for (int pathI = 1; pathI < extrusionPath.size()-1; pathI ++) {
-						
-			VectorXYZ forwardVector =
-				extrusionPath.get(pathI+1).subtract(extrusionPath.get(pathI-1));
-			forwardVector = forwardVector.normalize();
-			
-			shapeVectors[pathI] = transformShape(shape,
-					extrusionPath.get(pathI),
-					forwardVector,
-					upVectors.get(pathI));
-			
-		}
-
-		int last = extrusionPath.size()-1;
-		shapeVectors[last] = transformShape(shape,
-				extrusionPath.get(last),
-				extrusionPath.get(last).subtract(extrusionPath.get(last-1)).normalize(),
-				upVectors.get(last));
-		
-		/* draw triangle strips */
-		
-		List<List<VectorXYZ>> triangleStripList =
-				new ArrayList<List<VectorXYZ>>(shape.size()-1);
-		
-		for (int i = 0; i+1 < shape.size(); i++) {
-			
-			VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
-			
-			for (int j=0; j < shapeVectors.length; j++) {
-				
-				triangleStripVectors[j*2+1] = shapeVectors[j].get(i);
-				triangleStripVectors[j*2+0] = shapeVectors[j].get(i+1);
-				
-			}
-			
-			triangleStripList.add(asList(triangleStripVectors));
-			
-		}
-				
-		return triangleStripList;
-		
-	}
-	
 	/**
 	 * creates an rotated version of a list of vectors
 	 * by rotating them by the given angle around the parallel of the x axis
@@ -198,19 +117,22 @@ public final class WorldModuleGeometryUtil {
 	
 	/**
 	 * moves a shape that was defined at the origin to a new position.
-	 * This is used by {@link #createShapeExtrusionAlong(List, List, List)}
+	 * 
+	 * For reference: The identity transformation is obtained by setting center
+	 * to {@link VectorXYZ#NULL_VECTOR}, forward to {@link VectorXYZ#Z_UNIT},
+	 * and up to {@link VectorXYZ#Y_UNIT}.
 	 * 
 	 * @param center   new center coordinate
 	 * @param forward  new forward direction (unit vector)
 	 * @param up       new up direction (unit vector)
 	 * @return         list of 3d vectors; same length as shape
 	 */
-	public static final List<VectorXYZ> transformShape (List<VectorXYZ> shape,
+	public static final List<VectorXYZ> transformShape(List<VectorXYZ> shape,
 			VectorXYZ center, VectorXYZ forward, VectorXYZ up) {
 
 		VectorXYZ[] result = new VectorXYZ[shape.size()];
 		
-		VectorXYZ right = forward.cross(up);
+		VectorXYZ right = up.cross(forward).normalize();
 		
 		final double[][] m = { //rotation matrix
 				{right.x,   right.y,   right.z},

@@ -1,18 +1,27 @@
 package org.osm2world.core.target.common;
 
+import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -35,7 +44,170 @@ public abstract class AbstractTarget<R extends Renderable>
 	
 	@Override
 	public void beginObject(WorldObject object) {}
+	
+	@Override
+	public void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,
+			VectorXYZ frontVector, VectorXYZ upVector) {
 		
+		for (TriangleXZ triangle : shape.getTriangulation()) {
+			
+			List<VectorXYZ> triangleVertices = new ArrayList<VectorXYZ>();
+			
+			for (VectorXZ v : triangle.getVertexList()) {
+				triangleVertices.add(new VectorXYZ(-v.x, v.z, 0));
+			}
+			
+			triangleVertices = transformShape(
+					triangleVertices, point, frontVector, upVector);
+			
+			//TODO better default texture coordinate function
+			drawTriangleStrip(material, triangleVertices.subList(0, 3),
+					texCoordLists(triangleVertices.subList(0, 3), material, GLOBAL_X_Y));
+			
+		}
+		
+	}
+	
+	/**
+	 * draws an extruded shape using {@link #drawTriangleStrip(Material, List, List)} calls.
+	 * See {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, EnumSet)} for
+	 * documentation of the implemented interface method.
+	 */
+	@Override
+	public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
+			List<VectorXYZ> upVectors, List<Double> scaleFactors, EnumSet<ExtrudeOption> options) {
+		
+		/* validate arguments */
+		
+		if (path.size() < 2) {
+			throw new IllegalArgumentException("path needs at least 2 nodes");
+		} else if (upVectors != null && path.size() != upVectors.size()) {
+			throw new IllegalArgumentException("path and upVectors must have same size");
+		} else if (scaleFactors != null && path.size() != scaleFactors.size()) {
+			throw new IllegalArgumentException("path and scaleFactors must have same size");
+		}
+		
+		if (upVectors == null) {
+			throw new NullPointerException("upVectors must not be null");
+		}
+
+		/* provide defaults for optional parameters */
+		
+		if (scaleFactors == null) {
+			scaleFactors = nCopies(path.size(), DEFAULT_SCALE_FACTOR);
+		}
+		
+		if (options == null) {
+			options = DEFAULT_EXTRUDE_OPTIONS;
+		}
+		
+		/* obtain the shape's vertices */
+		
+		List<VectorXYZ> shapeVertices = new ArrayList<VectorXYZ>();
+		
+		for (VectorXZ v : shape.getVertexList()) {
+			shapeVertices.add(new VectorXYZ(-v.x, v.z, 0));
+		}
+		
+		/* calculate the forward direction of the shape from the path.
+		 * Special handling for the first and last point,
+		 * where the calculation of the "forward" vector is different. */
+		
+		List<VectorXYZ> forwardVectors = new ArrayList<VectorXYZ>(path.size());
+		
+		forwardVectors.add(path.get(1).subtract(path.get(0)).normalize());
+		
+		for (int pathI = 1; pathI < path.size() - 1; pathI ++) {
+			
+			VectorXYZ forwardVector = path.get(pathI+1).subtract(path.get(pathI-1));
+			forwardVectors.add(forwardVector.normalize());
+			
+		}
+		
+		int last = path.size() - 1;
+		forwardVectors.add(path.get(last).subtract(path.get(last-1)).normalize());
+		
+		/* create an instance of the shape at each point of the path. */
+		
+		@SuppressWarnings("unchecked")
+		List<VectorXYZ>[] shapeVectors = new List[path.size()];
+		
+		for (int pathI = 0; pathI < path.size(); pathI ++) {
+			
+			shapeVectors[pathI] = transformShape(
+					scaleShapeVectors(shapeVertices, scaleFactors.get(pathI)),
+					path.get(pathI),
+					forwardVectors.get(pathI),
+					upVectors.get(pathI));
+			
+		}
+		
+		/* draw triangle strips */
+		
+		for (int i = 0; i+1 < shapeVertices.size(); i++) {
+			
+			VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
+			
+			for (int j=0; j < shapeVectors.length; j++) {
+				
+				triangleStripVectors[j*2+0] = shapeVectors[j].get(i);
+				triangleStripVectors[j*2+1] = shapeVectors[j].get(i+1);
+				
+			}
+			
+			List<VectorXYZ> strip = asList(triangleStripVectors);
+			
+			drawTriangleStrip(material, strip,
+					texCoordLists(strip, material, STRIP_WALL));
+			
+		}
+		
+		/* draw caps (if requested in the options and possible for this shape) */
+		
+		if (shape instanceof SimpleClosedShapeXZ) {
+			
+			if (options.contains(START_CAP)) {
+				drawShape(material, new SimplePolygonXZ(reverse(shape.getVertexList())), // invert winding
+						path.get(0), forwardVectors.get(0), upVectors.get(0));
+			}
+			
+			if (options.contains(END_CAP)) {
+				drawShape(material, (SimpleClosedShapeXZ)shape,
+						path.get(last), forwardVectors.get(last), upVectors.get(last));
+			}
+			
+		}
+		
+	}
+	
+	private static final Double DEFAULT_SCALE_FACTOR = Double.valueOf(1.0);
+
+	private static final EnumSet<ExtrudeOption> DEFAULT_EXTRUDE_OPTIONS = EnumSet.noneOf(ExtrudeOption.class);
+
+	private static final List<VectorXYZ> scaleShapeVectors(List<VectorXYZ> vs, double scale) {
+		
+		if (scale == 1) {
+			
+			return vs;
+			
+		} else if (scale == 0) {
+			
+			return nCopies(vs.size(), NULL_VECTOR);
+			
+		} else {
+			
+			List<VectorXYZ> result = new ArrayList<VectorXYZ>(vs.size());
+			
+			for (VectorXYZ v : vs) {
+				result.add(v.mult(scale));
+			}
+			
+			return result;
+			
+		}
+		
+	}
+	
 	@Override
 	public void drawBox(Material material,
 			VectorXYZ bottomCenter, VectorXZ faceDirection,

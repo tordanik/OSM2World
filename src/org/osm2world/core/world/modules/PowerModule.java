@@ -3,11 +3,12 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
@@ -24,6 +25,9 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -304,23 +308,17 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 			
-			List<VectorXYZ> powerlineShape = asList(
-				new VectorXYZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL, 0),
-				new VectorXYZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN, 0),
-				new VectorXYZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN, 0),
-				new VectorXYZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL, 0)
+			ShapeXZ powerlineShape = new PolylineXZ(
+				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL),
+				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN),
+				new VectorXZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN),
+				new VectorXZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL)
 			);
 			
 			List<VectorXYZ> path = getBaseline();
 			
-			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-					powerlineShape,
-					path,
-					nCopies(path.size(), VectorXYZ.Y_UNIT));
-			
-			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(material, strip, null);
-			}
+			target.drawExtrudedShape(material, powerlineShape, getBaseline(),
+					nCopies(path.size(), Y_UNIT), null, null);
 			
 		}
 		
@@ -335,19 +333,7 @@ public final class PowerModule extends AbstractModule {
 		private final static Material CABLE_MATERIAL = Materials.PLASTIC;
 		private static final double SLACK_SPAN = 6;
 		private static final double INTERPOLATION_STEPS = 10;
-		// TODO: Once createShapeExtrusionAlong supports arbitrary shapes, we want to switch to a circle instead of a polygon
-		private static final double diag = Math.sqrt(2)*CABLE_THICKNESS/2;
-		private static final List<VectorXYZ> powerlineShape = asList(
-				new VectorXYZ(-diag, 0, 0),
-				new VectorXYZ(-CABLE_THICKNESS/2, CABLE_THICKNESS/2, 0),
-				new VectorXYZ(0, diag, 0),
-				new VectorXYZ(CABLE_THICKNESS/2, CABLE_THICKNESS/2, 0),
-				new VectorXYZ(diag, 0, 0),
-				new VectorXYZ(+CABLE_THICKNESS/2, -CABLE_THICKNESS/2, 0),
-				new VectorXYZ(0, -diag, 0),
-				new VectorXYZ(-CABLE_THICKNESS/2, -CABLE_THICKNESS/2, 0),
-				new VectorXYZ(-diag, 0, 0)
-			);
+		private static final ShapeXZ powerlineShape = new CircleXZ(NULL_VECTOR, CABLE_THICKNESS/2);
 		
 		private int cables = -1;
 		private int voltage = -1;
@@ -504,13 +490,9 @@ public final class PowerModule extends AbstractModule {
 					path.add(start.add(dir.mult(dx)).add(0, height, 0));
 				}
 				
-				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-						powerlineShape, path,
-						nCopies(path.size(), VectorXYZ.Y_UNIT));
+				target.drawExtrudedShape(CABLE_MATERIAL, powerlineShape, path,
+						nCopies(path.size(), Y_UNIT), null, null);
 				
-				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(CABLE_MATERIAL, strip, null);
-				}
 			}
 		}
 		

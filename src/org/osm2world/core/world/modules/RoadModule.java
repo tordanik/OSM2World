@@ -1,8 +1,9 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
-import static java.util.Collections.reverse;
+import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
@@ -35,6 +36,8 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
@@ -760,9 +763,9 @@ public class RoadModule extends ConfigurableWorldModule {
 		protected static final float DEFAULT_ROAD_CLEARING = 5;
 		protected static final float DEFAULT_PATH_CLEARING = 2;
 		
-		protected static final List<VectorXYZ> HANDRAIL_SHAPE = asList(
-			new VectorXYZ(-0.02f, -0.05f, 0), new VectorXYZ(-0.02f,     0f, 0),
-			new VectorXYZ(+0.02f,     0f, 0), new VectorXYZ(+0.02f, -0.05f, 0));
+		protected static final ShapeXZ HANDRAIL_SHAPE = new PolylineXZ(
+			new VectorXZ(+0.02, -0.05), new VectorXZ(+0.02,     0),
+			new VectorXZ(-0.02,     0), new VectorXZ(-0.02, -0.05));
 		
 		public final boolean rightHandTraffic;
 
@@ -1383,14 +1386,8 @@ public class RoadModule extends ConfigurableWorldModule {
 					handrailLine.add(v.y(v.y + 1));
 				}
 				
-				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-					HANDRAIL_SHAPE, handrailLine,
-					Collections.nCopies(handrailLine.size(), VectorXYZ.Y_UNIT));
-				
-				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(HANDRAIL_DEFAULT, strip,
-							texCoordLists(strip, HANDRAIL_DEFAULT, STRIP_WALL));
-				}
+				target.drawExtrudedShape(HANDRAIL_DEFAULT, HANDRAIL_SHAPE, handrailLine,
+						nCopies(handrailLine.size(), Y_UNIT), null, null);
 				
 				target.drawColumn(HANDRAIL_DEFAULT, 4,
 						handrailFootprint.get(0),

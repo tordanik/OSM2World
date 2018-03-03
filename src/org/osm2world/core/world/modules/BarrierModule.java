@@ -1,25 +1,33 @@
 package org.osm2world.core.world.modules;
 
+import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -27,8 +35,6 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
-
-import com.google.common.collect.Lists;
 
 /**
  * adds barriers to the world
@@ -134,39 +140,16 @@ public class BarrierModule extends AbstractModule {
 			
 			//TODO: join ways back together to reduce the number of caps
 			
-			List<VectorXYZ> wallShape = asList(
-					new VectorXYZ(-width/2, 0, 0),
-					new VectorXYZ(-width/2, height, 0),
-					new VectorXYZ(+width/2, height, 0),
-					new VectorXYZ(+width/2, 0, 0)
-					);
+			ShapeXZ wallShape = new SimplePolygonXZ(asList(
+					new VectorXZ(+width/2, 0),
+					new VectorXZ(+width/2, height),
+					new VectorXZ(-width/2, height),
+					new VectorXZ(-width/2, 0),
+					new VectorXZ(+width/2, 0)
+					));
 			
-			List<VectorXYZ> path = getCenterline();
-			
-			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(wallShape,
-					path, nCopies(path.size(), VectorXYZ.Y_UNIT));
-			
-			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(material, strip,
-						texCoordLists(strip, material, STRIP_WALL));
-			}
-			
-			/* draw caps */
-			
-			List<VectorXYZ> startCap = transformShape(wallShape,
-					path.get(0),
-					segment.getDirection().xyz(0),
-					VectorXYZ.Y_UNIT);
-			List<VectorXYZ> endCap = transformShape(wallShape,
-					path.get(path.size()-1),
-					segment.getDirection().invert().xyz(0),
-					VectorXYZ.Y_UNIT);
-			
-			List<List<VectorXZ>> texCoordLists =
-					texCoordLists(wallShape, material, GLOBAL_X_Y);
-			
-			target.drawConvexPolygon(material, startCap, texCoordLists);
-			target.drawConvexPolygon(material, endCap, texCoordLists);
+			target.drawExtrudedShape(material, wallShape, getCenterline(),
+					nCopies(getCenterline().size(), Y_UNIT),null, EnumSet.of(START_CAP, END_CAP));
 			
 		}
 		
@@ -389,30 +372,36 @@ public class BarrierModule extends AbstractModule {
 		private static final float METERS_BETWEEN_POLES = 4;
 		
 		private static final float SHAPE_GERMAN_B_HEIGHT = 0.303f;
-		private static List<VectorXYZ> SHAPE_GERMAN_B = asList(
-				new VectorXYZ(-0.055,0,0),
-				new VectorXYZ(-0.075, 0.007, 0),
-				new VectorXYZ(-0.075, 0.1095, 0),
-				new VectorXYZ(     0, 0.127, 0),
-				new VectorXYZ(     0, 0.183, 0),
-				new VectorXYZ(-0.075, 0.2005, 0),
-				new VectorXYZ(-0.075, 0.303, 0),
-				new VectorXYZ(-0.055, 0.310, 0)
+		private static ShapeXZ SHAPE_GERMAN_B = new PolylineXZ(
+				new VectorXZ(-0.055, 0),
+				new VectorXZ(-0.075, 0.007),
+				new VectorXZ(-0.075, 0.1095),
+				new VectorXZ(     0, 0.127),
+				new VectorXZ(     0, 0.183),
+				new VectorXZ(-0.075, 0.2005),
+				new VectorXZ(-0.075, 0.303),
+				new VectorXZ(-0.055, 0.310)
 				);
 		
-		private static List<VectorXYZ> SHAPE_POST_DOUBLE_T = asList(
-				new VectorXYZ(0, 0, 0),
-				new VectorXYZ(-0.075, 0, 0),
-				new VectorXYZ(0, 0, 0),
-				new VectorXYZ(+0.075, 0, 0),
-				new VectorXYZ(0, 0, 0),
-				new VectorXYZ(0, -0.28, 0),
-				new VectorXYZ(-0.075, -0.28, 0),
-				new VectorXYZ(0, -0.28, 0),
-				new VectorXYZ(+0.075, -0.28, 0),
-				new VectorXYZ(0, -0.28, 0),
-				new VectorXYZ(0, 0, 0)
+		private static ShapeXZ SHAPE_POST_DOUBLE_T = new PolylineXZ(
+				new VectorXZ(0, 0),
+				new VectorXZ(-0.075, 0),
+				new VectorXZ(0, 0),
+				new VectorXZ(+0.075, 0),
+				new VectorXZ(0, 0),
+				new VectorXZ(0, -0.28),
+				new VectorXZ(-0.075, -0.28),
+				new VectorXZ(0, -0.28),
+				new VectorXZ(+0.075, -0.28),
+				new VectorXZ(0, -0.28),
+				new VectorXZ(0, 0)
 				);
+		
+		/** half the distance between the centres of a pair of bolts */
+		private static final double BOLT_OFFSET = 0.1;
+		
+		private static final double BOLT_RADIUS = 0.015;
+		private static final double BOLT_DEPTH = 0.02;
 		
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "guard_rail");
@@ -433,20 +422,13 @@ public class BarrierModule extends AbstractModule {
 			
 			List<VectorXYZ> path = addYList(centerline, this.height - SHAPE_GERMAN_B_HEIGHT);
 			
-			List<List<VectorXYZ>> strips = new ArrayList<List<VectorXYZ>>();
+			//front
+			target.drawExtrudedShape(material, SHAPE_GERMAN_B,
+					path, nCopies(path.size(), Y_UNIT), null, null);
 			
-			//forward
-			strips.addAll(createShapeExtrusionAlong(
-					SHAPE_GERMAN_B, path, nCopies(path.size(), Y_UNIT)));
-			
-			//backward
-			strips.addAll(createShapeExtrusionAlong(
-					Lists.reverse(SHAPE_GERMAN_B), path, nCopies(path.size(), Y_UNIT)));
-			
-			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(material, strip,
-						texCoordLists(strip, material, STRIP_WALL));
-			}
+			//back
+			target.drawExtrudedShape(material, new PolylineXZ(reverse(SHAPE_GERMAN_B.getVertexList())),
+					path, nCopies(path.size(), Y_UNIT), null, null);
 			
 			/* add posts */
 			
@@ -460,16 +442,31 @@ public class BarrierModule extends AbstractModule {
 				// extrude the pole
 				
 				List<VectorXYZ> polePath = asList(base,
-						base.addY(this.height - SHAPE_GERMAN_B_HEIGHT*0.33));
+						base.addY(height - SHAPE_GERMAN_B_HEIGHT*0.33));
 				
-				List<List<VectorXYZ>> poleStrips = createShapeExtrusionAlong(
-						SHAPE_POST_DOUBLE_T, polePath, nCopies(polePath.size(), railNormal.xyz(0)));
+				target.drawExtrudedShape(material, SHAPE_POST_DOUBLE_T, polePath,
+						nCopies(polePath.size(), railNormal.xyz(0)), null, null);
 				
-				for (List<VectorXYZ> strip : poleStrips) {
-					target.drawTriangleStrip(material, strip,
-							texCoordLists(strip, material, STRIP_WALL));
+				// extrude the bolts connecting the pole to the rail
+				
+				ShapeXZ boltShape = new CircleXZ(NULL_VECTOR, BOLT_RADIUS);
+				
+				VectorXYZ centerBetweenBolts = base.addY(height - SHAPE_GERMAN_B_HEIGHT*0.5);
+				
+				List<VectorXYZ> boltPositions = asList(
+						centerBetweenBolts.add(segment.getDirection().mult(BOLT_OFFSET)),
+						centerBetweenBolts.add(segment.getDirection().mult(-BOLT_OFFSET)));
+				
+				for (VectorXYZ boltPosition : boltPositions) {
+					
+					List<VectorXYZ> boltPath = asList(boltPosition,
+							boltPosition.add(railNormal.mult(BOLT_DEPTH)));
+					
+					target.drawExtrudedShape(material, boltShape, boltPath,
+							nCopies(boltPath.size(), Y_UNIT), null, EnumSet.of(END_CAP));
+					
 				}
-								
+				
 			}
 			
 		}
@@ -484,16 +481,17 @@ public class BarrierModule extends AbstractModule {
 		private static final double ELEMENT_LENGTH = 3.0;
 		private static final double GAP_LENGTH = 0.3;
 		
-		private static List<VectorXYZ> DEFAULT_SHAPE = asList(
-				new VectorXYZ(-0.41, 0    , 0),
-				new VectorXYZ(-0.41, 0.075, 0),
-				new VectorXYZ(-0.20, 0.330, 0),
-				new VectorXYZ(-0.15, 1.145, 0),
-				new VectorXYZ(+0.15, 1.145, 0),
-				new VectorXYZ(+0.20, 0.330, 0),
-				new VectorXYZ(+0.41, 0.075, 0),
-				new VectorXYZ(+0.41, 0    , 0)
-				);
+		private static ShapeXZ DEFAULT_SHAPE = new SimplePolygonXZ(asList(
+				new VectorXZ(+0.41, 0    ),
+				new VectorXZ(+0.41, 0.075),
+				new VectorXZ(+0.20, 0.330),
+				new VectorXZ(+0.15, 1.145),
+				new VectorXZ(-0.15, 1.145),
+				new VectorXZ(-0.20, 0.330),
+				new VectorXZ(-0.41, 0.075),
+				new VectorXZ(-0.41, 0    ),
+				new VectorXZ(+0.41, 0    )
+				));
 		
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "jersey_barrier");
@@ -522,15 +520,8 @@ public class BarrierModule extends AbstractModule {
 						interpolateBetween(points.get(i), points.get(i+1), relativeOffset),
 						interpolateBetween(points.get(i), points.get(i+1), 1.0 - relativeOffset));
 				
-				List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-						DEFAULT_SHAPE, path, nCopies(2, Y_UNIT));
-				
-				for (List<VectorXYZ> strip : strips) {
-					target.drawTriangleStrip(CONCRETE, strip,
-							texCoordLists(strip, CONCRETE, STRIP_WALL));
-				}
-				
-				//TODO draw caps on both sides
+				target.drawExtrudedShape(CONCRETE, DEFAULT_SHAPE, path,
+						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
 				
 			}
 				

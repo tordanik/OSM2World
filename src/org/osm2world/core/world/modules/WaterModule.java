@@ -4,8 +4,9 @@ import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
@@ -27,9 +28,11 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
@@ -315,29 +318,21 @@ public class WaterModule extends ConfigurableWorldModule {
 					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));
 			
 			/* render walls */
-			//note: mostly copy-pasted from BarrierModule
 			
 			double width=0.1;
 			double height=0.5;
 			
-			List<VectorXYZ> wallShape = asList(
-					new VectorXYZ(-width/2, 0, 0),
-					new VectorXYZ(-width/2, height, 0),
-					new VectorXYZ(+width/2, height, 0),
-					new VectorXYZ(+width/2, 0, 0)
+			ShapeXZ wallShape = new PolylineXZ(
+					new VectorXZ(+width/2, 0),
+					new VectorXZ(+width/2, height),
+					new VectorXZ(-width/2, height),
+					new VectorXZ(-width/2, 0)
 			);
 			
 			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
 			
-			List<List<VectorXYZ>> strips = createShapeExtrusionAlong(
-					wallShape,
-					path,
-					nCopies(path.size(), VectorXYZ.Y_UNIT));
-			
-			for (List<VectorXYZ> strip : strips) {
-				target.drawTriangleStrip(Materials.CONCRETE, strip,
-						texCoordLists(strip, Materials.CONCRETE, STRIP_WALL));
-			}
+			target.drawExtrudedShape(CONCRETE, wallShape, path,
+					nCopies(path.size(), Y_UNIT), null, null);
 							
 		}
 

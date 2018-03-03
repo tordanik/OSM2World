@@ -29,7 +29,7 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		
 		for (int i = 0; i < NUM_POINTS; i++) {
 			
-			double angle = i * angleInterval; //TODO * -1? Winding might be important to consider for shapes!
+			double angle = -i * angleInterval;
 			double sin = Math.sin(angle);
 			double cos = Math.cos(angle);
 			
