@@ -131,7 +131,7 @@ public class BarrierModule extends AbstractModule {
 		
 		public ColoredWall(Material material, MapWaySegment segment,
 				float defaultHeight, float defaultWidth) {
-			super(segment, 1, 0.5f);
+			super(segment, defaultHeight, defaultWidth);
 			this.material = material;
 		}
 		
