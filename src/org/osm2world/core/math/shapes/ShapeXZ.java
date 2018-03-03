@@ -7,20 +7,6 @@ import org.osm2world.core.math.VectorXZ;
 /**
  * two-dimensional, immutable shape. The shape is not required to be closed.
  * This has a variety of uses, including creating geometries by extrusion.
- * 
- * TODO create the hierarchy of interfaces and classes, for example:
- * 
- * Shape
- * - LineSegment
- * - SimpleShape (or "closed shape"?)
- * -- Ellipsis
- * --- Circle
- * -- PolygonShape
- * --- SimplePolygonXZ
- * --- Rectangle
- * ---- Square
- * --- Triangle
- * --- AxisAlignedBoundingBoxXZ
  */
 public interface ShapeXZ {
 	

@@ -4,13 +4,17 @@ import static java.lang.Math.min;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 
 /**
  * a non-self-intersecting polygon in the XZ plane
  */
-public class SimplePolygonXZ extends PolygonXZ {
+public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 	
 	/** stores the signed area */
 	private Double signedArea;
@@ -270,6 +274,11 @@ public class SimplePolygonXZ extends PolygonXZ {
 			
 		}
 		
+	}
+	
+	@Override
+	public Collection<TriangleXZ> getTriangulation() {
+		return TriangulationUtil.triangulate(this, Collections.<SimplePolygonXZ>emptyList());
 	}
 	
 	/**

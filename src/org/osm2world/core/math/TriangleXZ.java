@@ -1,13 +1,17 @@
 package org.osm2world.core.math;
 
+import static java.util.Collections.singleton;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 
 import com.google.common.collect.ImmutableList;
 
-public class TriangleXZ implements PolygonShapeXZ {
+public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 
 	public final VectorXZ v1, v2, v3;
 
@@ -91,6 +95,11 @@ public class TriangleXZ implements PolygonShapeXZ {
 	 */
 	public TriangleXZ reverse() {
 		return new TriangleXZ(v3, v2, v1);
+	}
+	
+	@Override
+	public Collection<TriangleXZ> getTriangulation() {
+		return singleton(this);
 	}
 
 	@Override

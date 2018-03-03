@@ -3,11 +3,13 @@ package org.osm2world.core.math.shapes;
 import static java.lang.Math.PI;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
-public class CircleXZ implements ShapeXZ {
+public class CircleXZ implements SimpleClosedShapeXZ {
 	
 	private static final int NUM_POINTS = 36;
 	
@@ -36,6 +38,21 @@ public class CircleXZ implements ShapeXZ {
 		}
 		
 		result.add(result.get(0));
+		
+		return result;
+		
+	}
+
+	@Override
+	public Collection<TriangleXZ> getTriangulation() {
+		
+		List<VectorXZ> vertices = getVertexList();
+
+		List<TriangleXZ> result = new ArrayList<TriangleXZ>(vertices.size() - 1);
+		
+		for (int i = 0; i + 1 < vertices.size(); i++) {
+			result.add(new TriangleXZ(center, vertices.get(i), vertices.get(i+1)));
+		}
 		
 		return result;
 		
