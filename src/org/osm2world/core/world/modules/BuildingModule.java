@@ -3,12 +3,15 @@ package org.osm2world.core.world.modules;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -50,15 +53,16 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
-import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -1085,7 +1089,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			public double getRoofEleAt(VectorXZ pos) {
 				return getMaxRoofEle() - getRoofHeight();
 			}
-			
 			protected void renderSpindle(
 					Target<?> target, Material material,
 					SimplePolygonXZ polygon,
@@ -1094,120 +1097,107 @@ public class BuildingModule extends ConfigurableWorldModule {
 				checkArgument(heights.size() == scaleFactors.size(),
 						"heights and scaleFactors must have same size");
 				
-				int numRings = heights.size();
 				VectorXZ center = polygon.getCenter();
 				
-				/* calculate the vertex rings */
+				/* calculate the polygon relative to the center */
 				
-				@SuppressWarnings("unchecked")
-				List<VectorXYZ>[] rings = new List[numRings];
-
-				for (int i = 0; i < numRings; i++) {
-					
-					double y = heights.get(i);
-					double scale = scaleFactors.get(i);
-					
-					if (scale == 0) {
-						
-						rings[i] = nCopies(polygon.size() + 1, center.xyz(y));
-						
-					} else {
-						
-						rings[i] = new ArrayList<VectorXYZ>();
-						for (VectorXZ v : polygon.getVertexLoop()) {
-							rings[i].add(interpolateBetween(center, v, scale).xyz(y));
-						}
-											
-					}
-					
+				List<VectorXZ> vertexLoop = new ArrayList<VectorXZ>();
+				
+				for (VectorXZ v : polygon.makeCounterclockwise().getVertexList()) {
+					vertexLoop.add(v.subtract(center));
 				}
-					
-				/* draw the triangle strips (or fans) between the rings */
 				
-				List<List<VectorXZ>> texCoordData[] = spindleTexCoordLists(
-						rings, polygon.getOutlineLength(), material);
+				ShapeXZ spindleShape = new SimplePolygonXZ(vertexLoop);
 				
-				for (int i = 0; i+1 < numRings; i++) {
+				/* construct a path from the heights */
+				
+				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
+				
+				for (double height : heights) {
+					path.add(center.xyz(height));
+				}
+				
+				/* render the roof using shape extrusion */
+				
+				target.drawExtrudedShape(materialRoof, spindleShape, path,
+						nCopies(path.size(), Z_UNIT), scaleFactors,
+						spindleTexCoordLists(path, spindleShape.getVertexList().size(),
+								polygon.getOutlineLength(), material),
+						null);
+				
+			}
+			
+			protected List<List<VectorXZ>> spindleTexCoordLists(
+					List<VectorXYZ> path, int shapeVertexCount,
+					double polygonLength, Material material) {
+				
+				List<TextureData> textureDataList =
+					material.getTextureDataList();
+				
+				switch (textureDataList.size()) {
+				
+				case 0: return emptyList();
+				
+				case 1: return singletonList(spindleTexCoordList(path,
+						shapeVertexCount, polygonLength, textureDataList.get(0)));
+				
+				default:
 					
-					List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-										
-					for (int v = 0; v < rings[i].size(); v ++) {
-						vs.add(rings[i].get(v));
-						vs.add(rings[i+1].get(v));
+					List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
+					
+					for (TextureData textureData : textureDataList) {
+						result.add(spindleTexCoordList(path,
+								shapeVertexCount, polygonLength, textureData));
 					}
-												
-					target.drawTriangleStrip(material, vs, texCoordData[i]);
+					
+					return result;
 					
 				}
 				
 			}
 			
-			protected List<List<VectorXZ>>[] spindleTexCoordLists(
-					List<VectorXYZ>[] rings, double polygonLength,
-					Material material) {
+			protected List<VectorXZ> spindleTexCoordList(
+					List<VectorXYZ> path, int shapeVertexCount,
+					double polygonLength, TextureData textureData) {
 				
-				@SuppressWarnings("unchecked")
-				List<List<VectorXZ>>[] result = new List[rings.length - 1];
+				List<VectorXZ> result = new ArrayList<VectorXZ>();
 				
 				double accumulatedTexHeight = 0;
 				
-				for (int i = 0; i+1 < rings.length; i++) {
+				for (int i = 0; i < path.size(); i++) {
 					
-					double texHeight =
-						rings[i].get(0).distanceTo(rings[i+1].get(0));
-					
-					List<TextureData> textureDataList =
-						material.getTextureDataList();
-					
-					if (textureDataList.size() == 0) {
+					if (i > 0) {
 						
-						result[i] = emptyList();
+						accumulatedTexHeight += path.get(i - 1).distanceTo(path.get(i));
 						
-					} else if (textureDataList.size() == 1) {
-						
-						result[i] = singletonList(spindleTexCoordList(
-								rings[i], rings[i+1], polygonLength,
-								accumulatedTexHeight, textureDataList.get(0)));
-						
-					} else {
-						
-						result[i] = new ArrayList<List<VectorXZ>>();
-						
-						for (TextureData textureData : textureDataList) {
-							result[i].add(spindleTexCoordList(
-									rings[i], rings[i+1], polygonLength,
-									accumulatedTexHeight, textureData));
-						}
-						
+						//TODO use the distance on the extruded surface instead of on the path,
+						//e.g. += rings[i-1].get(0).distanceTo(rings[i].get(0));
 					}
 					
-					accumulatedTexHeight += texHeight;
+					result.addAll(spindleTexCoordListForRing(shapeVertexCount,
+							polygonLength, accumulatedTexHeight, textureData));
 					
 				}
 				
 				return result;
 				
 			}
-
-			private List<VectorXZ> spindleTexCoordList(
-					List<VectorXYZ> lowerRing, List<VectorXYZ> upperRing,
-					double polygonLength, double accumulatedTexHeight,
-					TextureData textureData) {
+			
+			private List<VectorXZ> spindleTexCoordListForRing(
+					int shapeVertexCount, double polygonLength,
+					double accumulatedTexHeight, TextureData textureData) {
 				
 				double textureRepeats = max(1,
 						round(polygonLength / textureData.width));
 				
-				double texWidthSteps = textureRepeats / (lowerRing.size() - 1);
-				double texHeight = lowerRing.get(0).distanceTo(upperRing.get(0));
+				double texWidthSteps = textureRepeats / (shapeVertexCount - 1);
 				
-				double texZ1 = accumulatedTexHeight / textureData.height;
-				double texZ2 = (accumulatedTexHeight + texHeight) / textureData.height;
+				double texZ = accumulatedTexHeight / textureData.height;
 				
-				VectorXZ[] texCoords = new VectorXZ[2 * lowerRing.size()];
+				VectorXZ[] texCoords = new VectorXZ[shapeVertexCount];
 				
-				for (int i = 0; i < lowerRing.size(); i++) {
-					texCoords[2*i] = new VectorXZ(i*texWidthSteps, -texZ1);
-					texCoords[2*i+1] = new VectorXZ(i*texWidthSteps, -texZ2);
+				for (int i = 0; i < shapeVertexCount; i++) {
+					texCoords[i] = new VectorXZ(i*texWidthSteps, texZ);
 				}
 				
 				return asList(texCoords);
