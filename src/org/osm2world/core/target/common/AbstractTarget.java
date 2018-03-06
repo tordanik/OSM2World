@@ -70,12 +70,13 @@ public abstract class AbstractTarget<R extends Renderable>
 	
 	/**
 	 * draws an extruded shape using {@link #drawTriangleStrip(Material, List, List)} calls.
-	 * See {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, EnumSet)} for
-	 * documentation of the implemented interface method.
+	 * See {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, EnumSet)}
+	 * for documentation of the implemented interface method.
 	 */
 	@Override
 	public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
-			List<VectorXYZ> upVectors, List<Double> scaleFactors, EnumSet<ExtrudeOption> options) {
+			List<VectorXYZ> upVectors, List<Double> scaleFactors,
+			List<List<VectorXZ>> texCoordLists, EnumSet<ExtrudeOption> options) {
 		
 		/* validate arguments */
 		
@@ -89,6 +90,14 @@ public abstract class AbstractTarget<R extends Renderable>
 		
 		if (upVectors == null) {
 			throw new NullPointerException("upVectors must not be null");
+		}
+		
+		if (texCoordLists != null) {
+			for (List<VectorXZ> texCoordList : texCoordLists) {
+				if (texCoordList.size() != path.size() * shape.getVertexList().size()) {
+					throw new IllegalArgumentException("incorrect number of texture coordinates");
+				}
+			}
 		}
 
 		/* provide defaults for optional parameters */
@@ -148,17 +157,42 @@ public abstract class AbstractTarget<R extends Renderable>
 			
 			VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
 			
-			for (int j=0; j < shapeVectors.length; j++) {
+			List<List<VectorXZ>> stripTexCoords = null;
+			
+			if (texCoordLists != null) {
+				
+				stripTexCoords = new ArrayList<List<VectorXZ>>();
+				
+				for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer ++) {
+					stripTexCoords.add(new ArrayList<VectorXZ>());
+				}
+				
+			}
+			
+			for (int j = 0; j < shapeVectors.length; j++) {
 				
 				triangleStripVectors[j*2+0] = shapeVectors[j].get(i);
 				triangleStripVectors[j*2+1] = shapeVectors[j].get(i+1);
+				
+				if (texCoordLists != null) {
+					
+					int index = j * shapeVectors[0].size() + i;
+					
+					for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer ++) {
+						stripTexCoords.get(texLayer).add(texCoordLists.get(texLayer).get(index));
+						stripTexCoords.get(texLayer).add(texCoordLists.get(texLayer).get(index + 1));
+					}
+				}
 				
 			}
 			
 			List<VectorXYZ> strip = asList(triangleStripVectors);
 			
-			drawTriangleStrip(material, strip,
-					texCoordLists(strip, material, STRIP_WALL));
+			if (stripTexCoords == null) {
+				stripTexCoords = texCoordLists(strip, material, STRIP_WALL);
+			}
+			
+			drawTriangleStrip(material, strip, stripTexCoords);
 			
 		}
 		

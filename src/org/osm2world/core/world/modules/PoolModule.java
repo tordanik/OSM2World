@@ -155,7 +155,7 @@ public class PoolModule extends ConfigurableWorldModule {
 			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
 			
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
-					nCopies(path.size(), Y_UNIT), null, null);
+					nCopies(path.size(), Y_UNIT), null, null, null);
 			
 		}
 	}
@@ -296,8 +296,8 @@ public class PoolModule extends ConfigurableWorldModule {
 			
 			List<VectorXYZ> up = nCopies(path.size(), Y_UNIT);
 			
-			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null);
-			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null);
+			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null, null);
+			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null, null);
 			
 			/* draw supporting pillars */
 			

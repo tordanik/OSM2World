@@ -118,7 +118,7 @@ public class BicycleParkingModule extends AbstractModule {
 				upVectors.add(toFront.invert().normalize());
 				upVectors.add(upVectors.get(4));
 				
-				target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors,null, null);
+				target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors, null, null, null);
 				
 			}
 			

@@ -170,7 +170,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			for (List<VectorXYZ> railLine : railLines) {
 				
 				target.drawExtrudedShape(RAIL_DEFAULT, RAIL_SHAPE, railLine,
-						nCopies(railLine.size(), Y_UNIT), null, null);
+						nCopies(railLine.size(), Y_UNIT), null, null, null);
 				
 			}
 			

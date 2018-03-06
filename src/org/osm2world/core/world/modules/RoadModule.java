@@ -1387,7 +1387,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				}
 				
 				target.drawExtrudedShape(HANDRAIL_DEFAULT, HANDRAIL_SHAPE, handrailLine,
-						nCopies(handrailLine.size(), Y_UNIT), null, null);
+						nCopies(handrailLine.size(), Y_UNIT), null, null, null);
 				
 				target.drawColumn(HANDRAIL_DEFAULT, 4,
 						handrailFootprint.get(0),

@@ -101,7 +101,7 @@ public class AbstractTargetTest {
 		
 		TestTarget target = new TestTarget();
 		
-		target.drawExtrudedShape(PLASTIC, shape, path, asList(Z_UNIT.invert(), Y_UNIT, Y_UNIT), null, null);
+		target.drawExtrudedShape(PLASTIC, shape, path, asList(Z_UNIT.invert(), Y_UNIT, Y_UNIT), null, null, null);
 		
 		List<TriangleXYZ> result = target.getDrawnTriangles();
 		
@@ -133,7 +133,7 @@ public class AbstractTargetTest {
 			TestTarget target = new TestTarget();
 			
 			target.drawExtrudedShape(PLASTIC, shape, path, nCopies(2, Z_UNIT),
-					asList(1.0, 0.0), EnumSet.of(ExtrudeOption.START_CAP));
+					asList(1.0, 0.0), null, EnumSet.of(ExtrudeOption.START_CAP));
 			
 			results.add(target.getDrawnTriangles());
 			
@@ -142,7 +142,7 @@ public class AbstractTargetTest {
 			TestTarget target = new TestTarget();
 			
 			target.drawExtrudedShape(PLASTIC, shape, reverse(path), nCopies(2, Z_UNIT),
-					asList(0.0, 1.0), EnumSet.of(ExtrudeOption.END_CAP));
+					asList(0.0, 1.0), null, EnumSet.of(ExtrudeOption.END_CAP));
 			
 			results.add(target.getDrawnTriangles());
 			
@@ -193,7 +193,7 @@ public class AbstractTargetTest {
 		TestTarget target = new TestTarget();
 			
 		target.drawExtrudedShape(BRICK, shape, path, nCopies(2, Y_UNIT),
-				null, EnumSet.of(ExtrudeOption.START_CAP, ExtrudeOption.END_CAP));
+				null, null, EnumSet.of(ExtrudeOption.START_CAP, ExtrudeOption.END_CAP));
 		
 		List<TriangleXYZ> result = target.getDrawnTriangles();
 		

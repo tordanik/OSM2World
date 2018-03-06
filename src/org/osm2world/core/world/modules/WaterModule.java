@@ -332,7 +332,7 @@ public class WaterModule extends ConfigurableWorldModule {
 			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
 			
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
-					nCopies(path.size(), Y_UNIT), null, null);
+					nCopies(path.size(), Y_UNIT), null, null, null);
 							
 		}
 

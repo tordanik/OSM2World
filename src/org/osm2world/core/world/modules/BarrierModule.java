@@ -149,7 +149,7 @@ public class BarrierModule extends AbstractModule {
 					));
 			
 			target.drawExtrudedShape(material, wallShape, getCenterline(),
-					nCopies(getCenterline().size(), Y_UNIT),null, EnumSet.of(START_CAP, END_CAP));
+					nCopies(getCenterline().size(), Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
 			
 		}
 		
@@ -424,11 +424,11 @@ public class BarrierModule extends AbstractModule {
 			
 			//front
 			target.drawExtrudedShape(material, SHAPE_GERMAN_B,
-					path, nCopies(path.size(), Y_UNIT), null, null);
+					path, nCopies(path.size(), Y_UNIT), null, null, null);
 			
 			//back
 			target.drawExtrudedShape(material, new PolylineXZ(reverse(SHAPE_GERMAN_B.getVertexList())),
-					path, nCopies(path.size(), Y_UNIT), null, null);
+					path, nCopies(path.size(), Y_UNIT), null, null, null);
 			
 			/* add posts */
 			
@@ -445,7 +445,7 @@ public class BarrierModule extends AbstractModule {
 						base.addY(height - SHAPE_GERMAN_B_HEIGHT*0.33));
 				
 				target.drawExtrudedShape(material, SHAPE_POST_DOUBLE_T, polePath,
-						nCopies(polePath.size(), railNormal.xyz(0)), null, null);
+						nCopies(polePath.size(), railNormal.xyz(0)), null, null, null);
 				
 				// extrude the bolts connecting the pole to the rail
 				
@@ -463,7 +463,7 @@ public class BarrierModule extends AbstractModule {
 							boltPosition.add(railNormal.mult(BOLT_DEPTH)));
 					
 					target.drawExtrudedShape(material, boltShape, boltPath,
-							nCopies(boltPath.size(), Y_UNIT), null, EnumSet.of(END_CAP));
+							nCopies(boltPath.size(), Y_UNIT), null, null, EnumSet.of(END_CAP));
 					
 				}
 				
@@ -521,7 +521,7 @@ public class BarrierModule extends AbstractModule {
 						interpolateBetween(points.get(i), points.get(i+1), 1.0 - relativeOffset));
 				
 				target.drawExtrudedShape(CONCRETE, DEFAULT_SHAPE, path,
-						nCopies(2, Y_UNIT), null, EnumSet.of(START_CAP, END_CAP));
+						nCopies(2, Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
 				
 			}
 				

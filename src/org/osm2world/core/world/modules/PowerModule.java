@@ -318,7 +318,7 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> path = getBaseline();
 			
 			target.drawExtrudedShape(material, powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, null);
+					nCopies(path.size(), Y_UNIT), null, null, null);
 			
 		}
 		
@@ -491,7 +491,7 @@ public final class PowerModule extends AbstractModule {
 				}
 				
 				target.drawExtrudedShape(CABLE_MATERIAL, powerlineShape, path,
-						nCopies(path.size(), Y_UNIT), null, null);
+						nCopies(path.size(), Y_UNIT), null, null, null);
 				
 			}
 		}
