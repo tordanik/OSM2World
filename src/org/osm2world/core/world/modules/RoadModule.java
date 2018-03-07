@@ -71,13 +71,6 @@ public class RoadModule extends ConfigurableWorldModule {
 		for (MapArea area : grid.getMapAreas()) {
 				
 			if (isRoad(area.getTags())) {
-				
-				List<VectorXZ> coords = new ArrayList<VectorXZ>();
-				for (MapNode node : area.getBoundaryNodes()) {
-					coords.add(node.getPos());
-				}
-				coords.remove(coords.size()-1);
-				
 				area.addRepresentation(new RoadArea(area));
 			}
 			
