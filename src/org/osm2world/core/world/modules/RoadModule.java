@@ -926,6 +926,23 @@ public class RoadModule extends ConfigurableWorldModule {
 					dividerType = SOLID_LINE;
 				} else if ("no".equals(divider)) {
 					dividerType = null;
+				} else {
+					
+					//no explicit divider tagging, try to infer from overtaking rules
+					
+					boolean overtakingForward = tags.contains("overtaking:forward", "yes")
+							|| !tags.contains("overtaking:forward", "no")
+							&& !tags.contains("overtaking", "backward")
+							&& !tags.contains("overtaking", "no");
+					boolean overtakingBackward = tags.contains("overtaking:backward", "yes")
+							|| !tags.contains("overtaking:backward", "no")
+							&& !tags.contains("overtaking", "forward")
+							&& !tags.contains("overtaking", "no");
+					
+					if (!overtakingForward && !overtakingBackward) {
+						dividerType = SOLID_LINE;
+					} //TODO else if ... for combined solid and dashed lines
+					
 				}
 				
 				if (dividerType != null) {
