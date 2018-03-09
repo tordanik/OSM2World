@@ -39,7 +39,6 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
@@ -163,10 +162,14 @@ public class OSMToMapDataConverter {
 						
 						try {
 							
-							MapArea mapArea = new MapArea((OSMElement)way, nodes);
+							MapArea mapArea = new MapArea(way, nodes);
 							
 							mapAreas.add(mapArea);
 							areaMap.put(way, mapArea);
+							
+							for (MapNode boundaryMapNode : mapArea.getBoundaryNodes()) {
+								boundaryMapNode.addAdjacentArea(mapArea);
+							}
 							
 						} catch (InvalidGeometryException e) {
 							System.err.println(e);
