@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.collect.Lists.reverse;
+import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.*;
@@ -67,6 +68,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new Guardrail(line));
 		} else if (JerseyBarrier.fits(tags)) {
 			line.addRepresentation(new JerseyBarrier(line));
+		} else if (TrellisWorkFence.fits(tags)) {
+			line.addRepresentation(new TrellisWorkFence(line));
 		} else if (PoleFence.fits(tags)) {
 			line.addRepresentation(new PoleFence(line));
 		}
@@ -400,6 +403,72 @@ public class BarrierModule extends AbstractModule {
 			}
 			
 		}
+	}
+
+	private static class TrellisWorkFence extends LinearBarrier {
+		
+		private static final SimpleClosedShapeXZ PLANK_SHAPE;
+		
+		static {
+			
+			// create a semicircle shape
+			
+			List<VectorXZ> vertexLoop = new ArrayList<VectorXZ>();
+			
+			for (VectorXZ v : new CircleXZ(NULL_VECTOR, 0.05).getVertexList()) {
+				if (v.x <= 0) {
+					vertexLoop.add(v);
+				}
+			}
+			
+			if (!vertexLoop.get(0).equals(vertexLoop.get(vertexLoop.size() - 1))) {
+				vertexLoop.add(vertexLoop.get(0));
+			}
+			
+			PLANK_SHAPE = new SimplePolygonXZ(vertexLoop);
+			
+		}
+		
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "fence")
+					&& tags.contains("fence_type", "trellis_work");
+		}
+		
+		public TrellisWorkFence(MapWaySegment segment) {
+			super(segment, 0.7f, 0.1f);
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			double distanceBetweenRepetitions = 0.3;
+			
+			List<VectorXYZ> positions = equallyDistributePointsAlong(
+					distanceBetweenRepetitions / 2, true, getCenterline());
+			
+			int numIntersections = (int)ceil(height / distanceBetweenRepetitions);
+			
+			VectorXZ offsetBackPlank = segment.getRightNormal().mult(-0.05);
+			
+			for (int i = 0; i + 2 * numIntersections - 1 < positions.size(); i += 2) {
+				
+				int leftIndex = i;
+				int rightIndex = i + 2 * numIntersections - 1;
+				
+				target.drawExtrudedShape(WOOD, PLANK_SHAPE,
+						asList(positions.get(leftIndex).add(offsetBackPlank),
+								positions.get(rightIndex).addY(height).add(offsetBackPlank)),
+						nCopies(2, Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+
+				target.drawExtrudedShape(WOOD, PLANK_SHAPE,
+						asList(positions.get(leftIndex).addY(height),
+								positions.get(rightIndex)),
+						nCopies(2, Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+				
+			}
+			
+		}
+		
 	}
 	
 	private static class CableBarrier extends PoleFence {
