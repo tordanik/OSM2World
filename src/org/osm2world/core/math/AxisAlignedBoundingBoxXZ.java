@@ -1,18 +1,22 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.*;
+import static java.util.Arrays.asList;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 
 /**
  * immutable representation of an axis-aligned bounding box
  * with x and z dimensions
+ * 
+ * TODO: rename to AxisAlignedRectangleXZ?
  */
-public class AxisAlignedBoundingBoxXZ implements Cloneable {
+public class AxisAlignedBoundingBoxXZ implements Cloneable, PolygonShapeXZ, SimpleClosedShapeXZ {
 
 	public final double minX, minZ, maxX, maxZ;
 
@@ -54,6 +58,18 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable {
 		return sizeX() * sizeZ();
 	}
 
+	@Override
+	public List<VectorXZ> getVertexList() {
+		
+		VectorXZ v0 = new VectorXZ(minX, minZ);
+		VectorXZ v1 = new VectorXZ(maxX, minZ);
+		VectorXZ v2 = new VectorXZ(maxX, maxZ);
+		VectorXZ v3 = new VectorXZ(minX, maxZ);
+		
+		return asList(v0, v1, v2, v3, v0);
+		
+	}
+	
 	public VectorXZ center() {
 		return new VectorXZ(minX + sizeX()/2, minZ + sizeZ()/2);
 	}
@@ -63,13 +79,7 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable {
 	public SimplePolygonXZ polygonXZ() {
 		
 		if (polygonXZ == null) {
-			List<VectorXZ> vertexLoop = new ArrayList<VectorXZ>(5);
-			vertexLoop.add(new VectorXZ(minX, minZ));
-			vertexLoop.add(new VectorXZ(maxX, minZ));
-			vertexLoop.add(new VectorXZ(maxX, maxZ));
-			vertexLoop.add(new VectorXZ(minX, maxZ));
-			vertexLoop.add(vertexLoop.get(0));
-			polygonXZ = new SimplePolygonXZ(vertexLoop);
+			polygonXZ = new SimplePolygonXZ(getVertexList());
 		}
 		
 		return polygonXZ;
@@ -90,6 +100,13 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable {
 	
 	public VectorXZ topLeft() {
 		return polygonXZ().getVertexCollection().get(3);
+	}
+	
+	@Override
+	public Collection<TriangleXZ> getTriangulation() {
+		return asList(
+				new TriangleXZ(topLeft(), bottomRight(), topRight()),
+				new TriangleXZ(topLeft(), bottomLeft(), bottomRight()));
 	}
 	
 	/**

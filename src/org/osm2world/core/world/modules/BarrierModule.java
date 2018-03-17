@@ -22,12 +22,14 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -53,6 +55,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new CityWall(line));
 		} else if (Hedge.fits(tags)) {
 			line.addRepresentation(new Hedge(line));
+		} else if (Railing.fits(tags)) {
+			line.addRepresentation(new Railing(line));
 		} else if (ChainLinkFence.fits(tags)) {
 			line.addRepresentation(new ChainLinkFence(line));
 		} else if (CableBarrier.fits(tags)) {
@@ -203,11 +207,82 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 	
+	private static class Railing extends LinearBarrier {
+		
+		private static final SimpleClosedShapeXZ BAR_SHAPE =
+				new AxisAlignedBoundingBoxXZ(-0.5, -0.3, 0.5, 0);
+
+		private static final SimpleClosedShapeXZ SQUARE =
+				new AxisAlignedBoundingBoxXZ(-0.5, -0.5, 0.5, 0.5);
+		
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "fence")
+					&& tags.contains("fence_type", "railing");
+		}
+		
+		public Railing(MapWaySegment segment) {
+			super(segment, 1f, 0.1f);
+		}
+		
+		@Override
+		public void renderTo(Target<?> target) {
+			
+			Material material = METAL_FENCE;
+			
+			List<VectorXYZ> polePositions = equallyDistributePointsAlong(2.4, true, getCenterline());
+
+			/* draw top and bottom bars */
+			
+			target.drawExtrudedShape(material, BAR_SHAPE, addYList(polePositions, height),
+					nCopies(polePositions.size(), Y_UNIT),
+					nCopies(polePositions.size(), (double)width), null, null);
+
+			target.drawExtrudedShape(material, BAR_SHAPE, addYList(polePositions, 0.15 * height),
+					nCopies(polePositions.size(), Y_UNIT),
+					nCopies(polePositions.size(), (double)width), null, null);
+			
+			/* draw poles and the smaller vertical bars */
+
+			List<VectorXYZ> poleFacingDirections = nCopies(2, segment.getDirection().xyz(0));
+			List<Double> poleScale = nCopies(2, (double)width);
+			List<Double> smallPoleScale = nCopies(2, width * 0.2);
+			
+			for (VectorXYZ v : polePositions) {
+				
+				//draw pole
+				target.drawExtrudedShape(material, SQUARE,
+						asList(v, v.addY(0.99 * height)),
+						poleFacingDirections, poleScale, null, null);
+				
+			}
+	
+			for (int i = 0; i + 1 < polePositions.size(); i++) {
+				
+				List<VectorXYZ> smallPolePositions = equallyDistributePointsAlong(
+						0.12, true, polePositions.subList(i, i+2));
+				
+				for (int j = 1; j < smallPolePositions.size() - 1; j++) {
+				
+					VectorXYZ v = smallPolePositions.get(j);
+					
+					//draw small vertical bar
+					target.drawExtrudedShape(material, SQUARE,
+							asList(v.addY(0.14 * height), v.addY(0.99 * height)),
+							poleFacingDirections, smallPoleScale, null, null);
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+
 	private static class ChainLinkFence extends LinearBarrier {
 		
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "fence")
-					&& (tags.contains("fence_type", "chain_link") || (tags.contains("fence_type", "metal") || (tags.contains("fence_type", "railing") ) ) );
+					&& (tags.contains("fence_type", "chain_link") || (tags.contains("fence_type", "metal")));
 		}
 		
 		public ChainLinkFence(MapWaySegment segment) {
