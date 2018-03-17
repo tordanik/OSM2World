@@ -171,6 +171,8 @@ public class BarrierModule extends AbstractModule {
 			
 			if ("gabion".equals(tags.getValue("wall"))) {
 				material = Materials.WALL_GABION;
+			} else if ("brick".equals(tags.getValue("wall"))) {
+				material = BRICK;
 			} else if ( tags.containsKey("material") ) {
 				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
 			}
