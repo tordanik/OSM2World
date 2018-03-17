@@ -423,6 +423,15 @@ public final class GeometryUtil {
 		
 		for (int i = 0; i < numPoints; i ++) {
 			
+			if (pointsAtStartAndEnd && i == numPoints - 1) {
+
+				// special handling avoids accumulating floating point errors in currentDistanceFromStart
+
+				result.add(points.get(points.size() - 1));
+				break;
+
+			}
+			
 			while (currentDistanceFromStart > offsetNextInputPoint) {
 				
 				//proceed to the next segment of the input point sequence

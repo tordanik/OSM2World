@@ -64,6 +64,7 @@ public class GeometryUtilTest {
 	}
 	
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testEquallyDistributePointsAlong1StartEnd() {
 		
 		List<VectorXZ> result1 = equallyDistributePointsAlong(
@@ -87,6 +88,7 @@ public class GeometryUtilTest {
 	}
 	
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testEquallyDistributePointsAlong1NoStartEnd() {
 		
 		List<VectorXZ> result1 = equallyDistributePointsAlong(
@@ -128,6 +130,18 @@ public class GeometryUtilTest {
 		assertAlmostEquals(+1, 7,  0, result.get(4));
 		assertAlmostEquals( 0, 8,  0, result.get(5));
 		assertAlmostEquals(-1, 9,  0, result.get(6));
+		
+	}
+	
+	/**
+	 * regression test, merely checks for absence of exceptions
+	 * triggered by floating point inaccuracies
+	 */
+	@Test
+	public void testEquallyDistributePointsAlong3FloatingPoint() {
+		
+		equallyDistributePointsAlong(
+				0.12f, true, asList(new VectorXYZ(0, 0, 0), new VectorXYZ(100, 0, 0)));
 		
 	}
 	
