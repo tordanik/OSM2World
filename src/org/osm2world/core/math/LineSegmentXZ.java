@@ -1,12 +1,13 @@
 package org.osm2world.core.math;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 import java.util.List;
 
-import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.PolylineShapeXZ;
 
-public class LineSegmentXZ implements ShapeXZ {
+public class LineSegmentXZ implements PolylineShapeXZ {
 
 	public final VectorXZ p1, p2;
 
@@ -21,6 +22,11 @@ public class LineSegmentXZ implements ShapeXZ {
 	@Override
 	public List<VectorXZ> getVertexList() {
 		return asList(p1, p2);
+	}
+	
+	@Override
+	public List<LineSegmentXZ> getSegments() {
+		return singletonList(this);
 	}
 	
 	public VectorXZ getCenter() {
@@ -59,9 +65,37 @@ public class LineSegmentXZ implements ShapeXZ {
 		return VectorXZ.distance(p1, p2);
 	}
 	
+	/**
+	 * produces the flipped version of this segment
+	 */
+	public LineSegmentXZ reverse() {
+		return new LineSegmentXZ(p2, p1);
+	}
+	
 	@Override
 	public String toString() {
 		return "[" + p1 + ", " + p2 + "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((p1 == null) ? 0 : p1.hashCode());
+		result = prime * result + ((p2 == null) ? 0 : p2.hashCode());
+		return result;
+	}
+
+	@Override
+	public final boolean equals(Object obj) {
+		
+		if (obj instanceof LineSegmentXZ) {
+			LineSegmentXZ other = (LineSegmentXZ) obj;
+			return p1.equals(other.p1) && p2.equals(other.p2);
+		} else {
+			return false;
+		}
+		
+	}
+	
 }
