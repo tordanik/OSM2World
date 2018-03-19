@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.material.Materials.PLASTIC_GREY;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
@@ -294,7 +294,7 @@ public final class PowerModule extends AbstractModule {
 		
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
-		private static final Material material = Materials.PLASTIC;
+		private static final Material material = PLASTIC_BLACK;
 		
 		public PowerMinorLine(MapWaySegment segment) {
 			super(segment);
@@ -330,7 +330,7 @@ public final class PowerModule extends AbstractModule {
 
 		private static final float CABLE_THICKNESS = 0.05f;
 		// TODO: we need black plastic for cable material
-		private final static Material CABLE_MATERIAL = Materials.PLASTIC;
+		private final static Material CABLE_MATERIAL = PLASTIC_BLACK;
 		private static final double SLACK_SPAN = 6;
 		private static final double INTERPOLATION_STEPS = 10;
 		private static final ShapeXZ powerlineShape = new CircleXZ(NULL_VECTOR, CABLE_THICKNESS/2);

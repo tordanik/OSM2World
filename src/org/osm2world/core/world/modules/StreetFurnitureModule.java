@@ -4,6 +4,7 @@ import static java.awt.Color.*;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -560,22 +561,41 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			float width = parseWidth(node.getTags(), 1.5f);
+			/* determine the width of the bench */
 			
-			/* determine material */
+			float defaultWidth = 0.5f * parseInt(node.getTags(), 4, "seats");
+			
+			float width = parseWidth(node.getTags(), defaultWidth);
+			
+			/* determine material and color */
 
 			Material material = null;
+			Color color = null;
 
-			//TODO parse color
-
-			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("material"));
+			if (node.getTags().containsKey("material")) {
+				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
 			}
-
+			
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.WOOD);
+				material = WOOD;
+			}
+			
+			if (node.getTags().containsKey("colour")) {
+				color = parseColor(node.getTags().getValue("colour"));
+			}
+			
+			if (color != null) {
+				material = new ImmutableMaterial(
+						material.getInterpolation(),
+						color,
+						material.getAmbientFactor(),
+						material.getDiffuseFactor(),
+						material.getSpecularFactor(),
+						material.getShininess(),
+						material.getTransparency(),
+						material.getShadow(),
+						material.getAmbientOcclusion(),
+						material.getTextureDataList());
 			}
 			
 			/* calculate vectors and corners */
@@ -585,11 +605,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
 
-			List<VectorXZ> cornerOffsets = new ArrayList<VectorXZ>(4);
-			cornerOffsets.add(faceVector.mult(+0.25).add(boardVector.mult(+width / 2)));
-			cornerOffsets.add(faceVector.mult(+0.25).add(boardVector.mult(-width / 2)));
-			cornerOffsets.add(faceVector.mult(-0.25).add(boardVector.mult(+width / 2)));
-			cornerOffsets.add(faceVector.mult(-0.25).add(boardVector.mult(-width / 2)));
+			List<VectorXZ> cornerOffsets = asList(
+					faceVector.mult(+0.25).add(boardVector.mult(+width / 2)),
+					faceVector.mult(+0.25).add(boardVector.mult(-width / 2)),
+					faceVector.mult(-0.25).add(boardVector.mult(+width / 2)),
+					faceVector.mult(-0.25).add(boardVector.mult(-width / 2)));
 			
 			/* draw seat and backrest */
 
