@@ -526,9 +526,24 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			List<VectorXYZ> vsListBoard = asList(vsBoard);
 
-			target.drawTriangleStrip(CONCRETE, vsListBoard,
-					texCoordLists(vsListBoard, CONCRETE, STRIP_WALL));
+			Material backMaterial = node.getTags().contains("two_sided", "yes") ? ADVERTISING_POSTER : CONCRETE;
 			
+			target.drawTriangleStrip(backMaterial, vsListBoard,
+					texCoordLists(vsListBoard, backMaterial, STRIP_WALL));
+			
+			/* draw frame */
+			
+			target.drawBox(CONCRETE, getBase().addY(height - 0.1),
+					faceVector, 0.1, width, 0.1);
+			
+			target.drawBox(CONCRETE, getBase().addY(minHeight),
+					faceVector, 0.1, width, 0.1);
+			
+			target.drawBox(CONCRETE, getBase().addY(minHeight).add(boardVector.mult(width / 2)),
+					faceVector, height - minHeight, 0.1, 0.1);
+			
+			target.drawBox(CONCRETE, getBase().addY(minHeight).add(boardVector.mult(-width / 2)),
+					faceVector, height - minHeight, 0.1, 0.1);
 			
 			/* draw poles */
 
