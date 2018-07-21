@@ -7,9 +7,11 @@ import static org.osm2world.core.target.common.material.Material.multiplyColor;
 
 import java.awt.Color;
 import java.io.PrintStream;
+import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -250,6 +252,16 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 
 		assert normalIndices == null
 				|| vertexIndices.length == normalIndices.length;
+
+		//Don't add faces with duplicate vertices.
+		HashSet<Integer> set = new HashSet<Integer>();
+		for(int element : vertexIndices)
+		{
+			if(!set.add(element))
+			{
+				return;
+			}
+		}
 
 		objStream.print("f");
 
