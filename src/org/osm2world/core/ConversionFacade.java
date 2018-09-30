@@ -215,8 +215,8 @@ public class ConversionFacade {
 	 *                      you want to handle the returned results yourself
 	 */
 	public Results createRepresentations(File osmFile,
-			List<WorldModule> worldModules, Configuration config,
-			List<Target<?>> targets)
+			List<? extends WorldModule> worldModules, Configuration config,
+			List<? extends Target<?>> targets)
 			throws IOException {
 		
 		if (osmFile == null) {
@@ -248,8 +248,8 @@ public class ConversionFacade {
 	 * @throws BoundingBoxSizeException  for oversized bounding boxes
 	 */
 	public Results createRepresentations(OSMData osmData,
-			List<WorldModule> worldModules, Configuration config,
-			List<Target<?>> targets)
+			List<? extends WorldModule> worldModules, Configuration config,
+			List<? extends Target<?>> targets)
 			throws IOException, BoundingBoxSizeException {
 		
 		/* check the inputs */
