@@ -954,11 +954,13 @@ public class RoadModule extends ConfigurableWorldModule {
 			//TODO: reduce code duplication by iterating over special lane types
 
 			if (leftCycleway) {
+				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, TagSet.of()));
 				layout.leftLanes.add(new Lane(this, CYCLEWAY, RoadPart.LEFT, inheritTags(
 						getTagsWithPrefix(tags, "cycleway:left:", null),
 						getTagsWithPrefix(tags, "cycleway:both:", null))));
 			}
 			if (rightCycleway) {
+				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, TagSet.of()));
 				layout.rightLanes.add(new Lane(this, CYCLEWAY, RoadPart.RIGHT, inheritTags(
 						getTagsWithPrefix(tags, "cycleway:right:", null),
 						getTagsWithPrefix(tags, "cycleway:both:", null))));
@@ -2011,7 +2013,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		@Override
 		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
-			return (double)parseWidth(laneTags, 0.5f);
+			return (double)parseWidth(laneTags, 1.5f);
 		}
 
 		@Override
