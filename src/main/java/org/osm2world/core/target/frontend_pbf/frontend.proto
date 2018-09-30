@@ -1,0 +1,60 @@
+syntax = "proto2";
+
+package frontend_pbf;
+
+option java_package = "org.osm2world.core.target.frontend_pbf";
+option java_outer_classname = "FrontendPbf";
+
+/* a block containing all three-dimensional vectors used in the tile.
+ * Vectors are referenced via their position in this block.
+ * Values are in millimeters relative to the center of the tile.
+ * The first 3 values are x, y, and z coordinates of the first vector, etc.
+ * Therefore, the number of coordinates must be divisible by 3. */
+message Vector3dBlock {
+
+	repeated sint64 coord = 1 [packed=true];
+
+}
+
+/* a set of material properties, using RGB colors.
+ * Color components are in the range [0, 255]. */
+message Material {
+
+	required uint32 ambientR = 1;
+	required uint32 ambientG = 2;
+	required uint32 ambientB = 3;
+	required uint32 diffuseR = 4;
+	required uint32 diffuseG = 5;
+	required uint32 diffuseB = 6;
+
+}
+
+/* a three-dimensional triangle, referencing vertices from the Vector3d block */
+message Triangle3d {
+
+	required uint64 v1 = 1;
+	required uint64 v2 = 2;
+	required uint64 v3 = 3;
+
+	required Material material = 4;
+
+}
+
+/* a three-dimensional object */
+message WorldObject {
+
+	/* the OSM id of the primary element this object is created from, if any */
+	optional string osmId = 1;
+
+	/* the triangles this object is composed of; at least 1 triangle required */
+	repeated Triangle3d triangles = 2;
+
+}
+
+/* a tile with 3d data */
+message Tile {
+
+	required Vector3dBlock vector3dBlock = 1;
+	repeated WorldObject objects = 2;
+
+}
