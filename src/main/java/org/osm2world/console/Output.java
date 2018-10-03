@@ -35,6 +35,7 @@ import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
@@ -199,6 +200,11 @@ public final class Output {
 				case POV:
 					POVRayWriter.writePOVInstructionFile(outputFile,
 							results.getMapData(), camera, projection);
+					break;
+
+				case WEB_PBF:
+					FrontendPbfTarget.writePbfFile(
+							outputFile, results.getMapData());
 					break;
 
 				case PNG:

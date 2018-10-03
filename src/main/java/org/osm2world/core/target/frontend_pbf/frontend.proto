@@ -12,7 +12,23 @@ option java_outer_classname = "FrontendPbf";
  * Therefore, the number of coordinates must be divisible by 3. */
 message Vector3dBlock {
 
-	repeated sint64 coord = 1 [packed=true];
+	repeated sint64 coords = 1 [packed=true];
+
+}
+
+/* a block containing all two-dimensional vectors used in the tile.
+ * See Vector3dBlock for more details.
+ * All values are multiplied with 1000. */
+message Vector2dBlock {
+
+	repeated sint64 coords = 1 [packed=true];
+
+}
+
+/* a block containing all materials used in the tile. */
+message MaterialBlock {
+
+	repeated Material materials = 1;
 
 }
 
@@ -20,23 +36,78 @@ message Vector3dBlock {
  * Color components are in the range [0, 255]. */
 message Material {
 
+	enum Transparency {
+
+		/* arbitrary transparency, including partially transparent pixels */
+		TRUE = 1;
+
+		/* only allow pixels to be either fully transparent or fully opaque */
+		BINARY = 2;
+
+		/* all pixels are opaque */
+		FALSE = 3;
+
+	}
+
+	message TextureLayer {
+
+		enum Wrap {
+			REPEAT = 1;
+			CLAMP = 2;
+		}
+
+		/* url of the texture image, can be relative */
+		required string textureURL = 1;
+
+		/* how the texture behaves for texture coordinates
+                 * less than 0 or greater than 1 */
+		optional Wrap wrap = 2 [default = REPEAT];
+
+		/* whether the texture should be multiplied with the material's base color */
+		required bool colorable = 3;
+
+	}
+
 	required uint32 ambientR = 1;
 	required uint32 ambientG = 2;
 	required uint32 ambientB = 3;
 	required uint32 diffuseR = 4;
 	required uint32 diffuseG = 5;
 	required uint32 diffuseB = 6;
+	required uint32 specularR = 7;
+	required uint32 specularG = 8;
+	required uint32 specularB = 9;
+
+	required uint32 shininess = 10;
+
+	/* texture layers, ordered from bottom to top */
+	repeated TextureLayer textureLayer = 11;
+
+	/* the type of transparency */
+	optional Transparency transparency = 16 [default = FALSE];
+
+	/* whether this material casts shadows */
+	optional bool castShadow = 17 [default = true];
 
 }
 
-/* a three-dimensional triangle, referencing vertices from the Vector3d block */
-message Triangle3d {
+/* geometry consisting of a set of triangles */
+message TriangleGeometry {
 
-	required uint64 v1 = 1;
-	required uint64 v2 = 2;
-	required uint64 v3 = 3;
+	/* the geometry's material, referencing materialBlock */
+	required uint32 material = 1;
 
-	required Material material = 4;
+	/* vertices of the triangles, represented as
+	 * 3 references to the Vector3d block each.
+	 * At least 1 triangle (i.e. 3 vertex references) required. */
+	repeated uint64 vertices = 2 [packed = true];
+
+	/* texture coordinates for each vertex of the triangles,
+	 * referencing the Vector2d block.
+	 * The length of this list is that of
+         * vertices, times the number of texture layers.
+	 * Starts with all vertices' tex coords for layer 0, then 1 etc. */
+	repeated uint64 texCoords = 3 [packed = true];
 
 }
 
@@ -46,8 +117,8 @@ message WorldObject {
 	/* the OSM id of the primary element this object is created from, if any */
 	optional string osmId = 1;
 
-	/* the triangles this object is composed of; at least 1 triangle required */
-	repeated Triangle3d triangles = 2;
+	/* the geometry this object is composed of; at least 1 required */
+	repeated TriangleGeometry triangleGeometries = 2;
 
 }
 
@@ -55,6 +126,9 @@ message WorldObject {
 message Tile {
 
 	required Vector3dBlock vector3dBlock = 1;
-	repeated WorldObject objects = 2;
+	required Vector2dBlock vector2dBlock = 2;
+	required MaterialBlock materialBlock = 3;
+
+	repeated WorldObject objects = 4;
 
 }

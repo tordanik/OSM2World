@@ -19,17 +19,17 @@ public final class FrontendPbf {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated sint64 coord = 1 [packed = true];</code>
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
      */
-    java.util.List<java.lang.Long> getCoordList();
+    java.util.List<java.lang.Long> getCoordsList();
     /**
-     * <code>repeated sint64 coord = 1 [packed = true];</code>
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
      */
-    int getCoordCount();
+    int getCoordsCount();
     /**
-     * <code>repeated sint64 coord = 1 [packed = true];</code>
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
      */
-    long getCoord(int index);
+    long getCoords(int index);
   }
   /**
    * <pre>
@@ -52,7 +52,7 @@ public final class FrontendPbf {
       super(builder);
     }
     private Vector3dBlock() {
-      coord_ = java.util.Collections.emptyList();
+      coords_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -81,21 +81,21 @@ public final class FrontendPbf {
               break;
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                coord_ = new java.util.ArrayList<java.lang.Long>();
+                coords_ = new java.util.ArrayList<java.lang.Long>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              coord_.add(input.readSInt64());
+              coords_.add(input.readSInt64());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                coord_ = new java.util.ArrayList<java.lang.Long>();
+                coords_ = new java.util.ArrayList<java.lang.Long>();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                coord_.add(input.readSInt64());
+                coords_.add(input.readSInt64());
               }
               input.popLimit(limit);
               break;
@@ -116,7 +116,7 @@ public final class FrontendPbf {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          coord_ = java.util.Collections.unmodifiableList(coord_);
+          coords_ = java.util.Collections.unmodifiableList(coords_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -135,28 +135,28 @@ public final class FrontendPbf {
               org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock.Builder.class);
     }
 
-    public static final int COORD_FIELD_NUMBER = 1;
-    private java.util.List<java.lang.Long> coord_;
+    public static final int COORDS_FIELD_NUMBER = 1;
+    private java.util.List<java.lang.Long> coords_;
     /**
-     * <code>repeated sint64 coord = 1 [packed = true];</code>
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
      */
     public java.util.List<java.lang.Long>
-        getCoordList() {
-      return coord_;
+        getCoordsList() {
+      return coords_;
     }
     /**
-     * <code>repeated sint64 coord = 1 [packed = true];</code>
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
      */
-    public int getCoordCount() {
-      return coord_.size();
+    public int getCoordsCount() {
+      return coords_.size();
     }
     /**
-     * <code>repeated sint64 coord = 1 [packed = true];</code>
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
      */
-    public long getCoord(int index) {
-      return coord_.get(index);
+    public long getCoords(int index) {
+      return coords_.get(index);
     }
-    private int coordMemoizedSerializedSize = -1;
+    private int coordsMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -173,12 +173,12 @@ public final class FrontendPbf {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (getCoordList().size() > 0) {
+      if (getCoordsList().size() > 0) {
         output.writeUInt32NoTag(10);
-        output.writeUInt32NoTag(coordMemoizedSerializedSize);
+        output.writeUInt32NoTag(coordsMemoizedSerializedSize);
       }
-      for (int i = 0; i < coord_.size(); i++) {
-        output.writeSInt64NoTag(coord_.get(i));
+      for (int i = 0; i < coords_.size(); i++) {
+        output.writeSInt64NoTag(coords_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -191,17 +191,17 @@ public final class FrontendPbf {
       size = 0;
       {
         int dataSize = 0;
-        for (int i = 0; i < coord_.size(); i++) {
+        for (int i = 0; i < coords_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeSInt64SizeNoTag(coord_.get(i));
+            .computeSInt64SizeNoTag(coords_.get(i));
         }
         size += dataSize;
-        if (!getCoordList().isEmpty()) {
+        if (!getCoordsList().isEmpty()) {
           size += 1;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        coordMemoizedSerializedSize = dataSize;
+        coordsMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -219,8 +219,8 @@ public final class FrontendPbf {
       org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock) obj;
 
       boolean result = true;
-      result = result && getCoordList()
-          .equals(other.getCoordList());
+      result = result && getCoordsList()
+          .equals(other.getCoordsList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -232,9 +232,9 @@ public final class FrontendPbf {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (getCoordCount() > 0) {
-        hash = (37 * hash) + COORD_FIELD_NUMBER;
-        hash = (53 * hash) + getCoordList().hashCode();
+      if (getCoordsCount() > 0) {
+        hash = (37 * hash) + COORDS_FIELD_NUMBER;
+        hash = (53 * hash) + getCoordsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -377,7 +377,7 @@ public final class FrontendPbf {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        coord_ = java.util.Collections.emptyList();
+        coords_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -407,10 +407,10 @@ public final class FrontendPbf {
         org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          coord_ = java.util.Collections.unmodifiableList(coord_);
+          coords_ = java.util.Collections.unmodifiableList(coords_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.coord_ = coord_;
+        result.coords_ = coords_;
         onBuilt();
         return result;
       }
@@ -459,13 +459,13 @@ public final class FrontendPbf {
 
       public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock other) {
         if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock.getDefaultInstance()) return this;
-        if (!other.coord_.isEmpty()) {
-          if (coord_.isEmpty()) {
-            coord_ = other.coord_;
+        if (!other.coords_.isEmpty()) {
+          if (coords_.isEmpty()) {
+            coords_ = other.coords_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureCoordIsMutable();
-            coord_.addAll(other.coord_);
+            ensureCoordsIsMutable();
+            coords_.addAll(other.coords_);
           }
           onChanged();
         }
@@ -499,67 +499,67 @@ public final class FrontendPbf {
       }
       private int bitField0_;
 
-      private java.util.List<java.lang.Long> coord_ = java.util.Collections.emptyList();
-      private void ensureCoordIsMutable() {
+      private java.util.List<java.lang.Long> coords_ = java.util.Collections.emptyList();
+      private void ensureCoordsIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          coord_ = new java.util.ArrayList<java.lang.Long>(coord_);
+          coords_ = new java.util.ArrayList<java.lang.Long>(coords_);
           bitField0_ |= 0x00000001;
          }
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
       public java.util.List<java.lang.Long>
-          getCoordList() {
-        return java.util.Collections.unmodifiableList(coord_);
+          getCoordsList() {
+        return java.util.Collections.unmodifiableList(coords_);
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
-      public int getCoordCount() {
-        return coord_.size();
+      public int getCoordsCount() {
+        return coords_.size();
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
-      public long getCoord(int index) {
-        return coord_.get(index);
+      public long getCoords(int index) {
+        return coords_.get(index);
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
-      public Builder setCoord(
+      public Builder setCoords(
           int index, long value) {
-        ensureCoordIsMutable();
-        coord_.set(index, value);
+        ensureCoordsIsMutable();
+        coords_.set(index, value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
-      public Builder addCoord(long value) {
-        ensureCoordIsMutable();
-        coord_.add(value);
+      public Builder addCoords(long value) {
+        ensureCoordsIsMutable();
+        coords_.add(value);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
-      public Builder addAllCoord(
+      public Builder addAllCoords(
           java.lang.Iterable<? extends java.lang.Long> values) {
-        ensureCoordIsMutable();
+        ensureCoordsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, coord_);
+            values, coords_);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated sint64 coord = 1 [packed = true];</code>
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
        */
-      public Builder clearCoord() {
-        coord_ = java.util.Collections.emptyList();
+      public Builder clearCoords() {
+        coords_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
@@ -612,6 +612,1406 @@ public final class FrontendPbf {
 
     @java.lang.Override
     public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface Vector2dBlockOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:frontend_pbf.Vector2dBlock)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
+     */
+    java.util.List<java.lang.Long> getCoordsList();
+    /**
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
+     */
+    int getCoordsCount();
+    /**
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
+     */
+    long getCoords(int index);
+  }
+  /**
+   * <pre>
+   * a block containing all two-dimensional vectors used in the tile.
+   * See Vector3dBlock for more details.
+   * All values are multiplied with 1000.
+   * </pre>
+   *
+   * Protobuf type {@code frontend_pbf.Vector2dBlock}
+   */
+  public  static final class Vector2dBlock extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:frontend_pbf.Vector2dBlock)
+      Vector2dBlockOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use Vector2dBlock.newBuilder() to construct.
+    private Vector2dBlock(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private Vector2dBlock() {
+      coords_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Vector2dBlock(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                coords_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              coords_.add(input.readSInt64());
+              break;
+            }
+            case 10: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
+                coords_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                coords_.add(input.readSInt64());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          coords_ = java.util.Collections.unmodifiableList(coords_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Vector2dBlock_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Vector2dBlock_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder.class);
+    }
+
+    public static final int COORDS_FIELD_NUMBER = 1;
+    private java.util.List<java.lang.Long> coords_;
+    /**
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
+     */
+    public java.util.List<java.lang.Long>
+        getCoordsList() {
+      return coords_;
+    }
+    /**
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
+     */
+    public int getCoordsCount() {
+      return coords_.size();
+    }
+    /**
+     * <code>repeated sint64 coords = 1 [packed = true];</code>
+     */
+    public long getCoords(int index) {
+      return coords_.get(index);
+    }
+    private int coordsMemoizedSerializedSize = -1;
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (getCoordsList().size() > 0) {
+        output.writeUInt32NoTag(10);
+        output.writeUInt32NoTag(coordsMemoizedSerializedSize);
+      }
+      for (int i = 0; i < coords_.size(); i++) {
+        output.writeSInt64NoTag(coords_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < coords_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeSInt64SizeNoTag(coords_.get(i));
+        }
+        size += dataSize;
+        if (!getCoordsList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        coordsMemoizedSerializedSize = dataSize;
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock)) {
+        return super.equals(obj);
+      }
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock) obj;
+
+      boolean result = true;
+      result = result && getCoordsList()
+          .equals(other.getCoordsList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getCoordsCount() > 0) {
+        hash = (37 * hash) + COORDS_FIELD_NUMBER;
+        hash = (53 * hash) + getCoordsList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * a block containing all two-dimensional vectors used in the tile.
+     * See Vector3dBlock for more details.
+     * All values are multiplied with 1000.
+     * </pre>
+     *
+     * Protobuf type {@code frontend_pbf.Vector2dBlock}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:frontend_pbf.Vector2dBlock)
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Vector2dBlock_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Vector2dBlock_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder.class);
+      }
+
+      // Construct using org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        coords_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Vector2dBlock_descriptor;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock getDefaultInstanceForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock build() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock buildPartial() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          coords_ = java.util.Collections.unmodifiableList(coords_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.coords_ = coords_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock) {
+          return mergeFrom((org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock other) {
+        if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance()) return this;
+        if (!other.coords_.isEmpty()) {
+          if (coords_.isEmpty()) {
+            coords_ = other.coords_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureCoordsIsMutable();
+            coords_.addAll(other.coords_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<java.lang.Long> coords_ = java.util.Collections.emptyList();
+      private void ensureCoordsIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          coords_ = new java.util.ArrayList<java.lang.Long>(coords_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public java.util.List<java.lang.Long>
+          getCoordsList() {
+        return java.util.Collections.unmodifiableList(coords_);
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public int getCoordsCount() {
+        return coords_.size();
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public long getCoords(int index) {
+        return coords_.get(index);
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public Builder setCoords(
+          int index, long value) {
+        ensureCoordsIsMutable();
+        coords_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public Builder addCoords(long value) {
+        ensureCoordsIsMutable();
+        coords_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public Builder addAllCoords(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureCoordsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, coords_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated sint64 coords = 1 [packed = true];</code>
+       */
+      public Builder clearCoords() {
+        coords_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:frontend_pbf.Vector2dBlock)
+    }
+
+    // @@protoc_insertion_point(class_scope:frontend_pbf.Vector2dBlock)
+    private static final org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock();
+    }
+
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<Vector2dBlock>
+        PARSER = new com.google.protobuf.AbstractParser<Vector2dBlock>() {
+      @java.lang.Override
+      public Vector2dBlock parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Vector2dBlock(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<Vector2dBlock> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Vector2dBlock> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface MaterialBlockOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:frontend_pbf.MaterialBlock)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material>
+        getMaterialsList();
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Material getMaterials(int index);
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    int getMaterialsCount();
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+        getMaterialsOrBuilderList();
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder getMaterialsOrBuilder(
+        int index);
+  }
+  /**
+   * <pre>
+   * a block containing all materials used in the tile.
+   * </pre>
+   *
+   * Protobuf type {@code frontend_pbf.MaterialBlock}
+   */
+  public  static final class MaterialBlock extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:frontend_pbf.MaterialBlock)
+      MaterialBlockOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use MaterialBlock.newBuilder() to construct.
+    private MaterialBlock(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private MaterialBlock() {
+      materials_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private MaterialBlock(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                materials_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              materials_.add(
+                  input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.PARSER, extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          materials_ = java.util.Collections.unmodifiableList(materials_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_MaterialBlock_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_MaterialBlock_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder.class);
+    }
+
+    public static final int MATERIALS_FIELD_NUMBER = 1;
+    private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material> materials_;
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material> getMaterialsList() {
+      return materials_;
+    }
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+        getMaterialsOrBuilderList() {
+      return materials_;
+    }
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    public int getMaterialsCount() {
+      return materials_.size();
+    }
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material getMaterials(int index) {
+      return materials_.get(index);
+    }
+    /**
+     * <code>repeated .frontend_pbf.Material materials = 1;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder getMaterialsOrBuilder(
+        int index) {
+      return materials_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getMaterialsCount(); i++) {
+        if (!getMaterials(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < materials_.size(); i++) {
+        output.writeMessage(1, materials_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < materials_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, materials_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock)) {
+        return super.equals(obj);
+      }
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock) obj;
+
+      boolean result = true;
+      result = result && getMaterialsList()
+          .equals(other.getMaterialsList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getMaterialsCount() > 0) {
+        hash = (37 * hash) + MATERIALS_FIELD_NUMBER;
+        hash = (53 * hash) + getMaterialsList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * a block containing all materials used in the tile.
+     * </pre>
+     *
+     * Protobuf type {@code frontend_pbf.MaterialBlock}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:frontend_pbf.MaterialBlock)
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_MaterialBlock_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_MaterialBlock_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder.class);
+      }
+
+      // Construct using org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getMaterialsFieldBuilder();
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        if (materialsBuilder_ == null) {
+          materials_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          materialsBuilder_.clear();
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_MaterialBlock_descriptor;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock getDefaultInstanceForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock build() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock buildPartial() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock(this);
+        int from_bitField0_ = bitField0_;
+        if (materialsBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            materials_ = java.util.Collections.unmodifiableList(materials_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.materials_ = materials_;
+        } else {
+          result.materials_ = materialsBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock) {
+          return mergeFrom((org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock other) {
+        if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance()) return this;
+        if (materialsBuilder_ == null) {
+          if (!other.materials_.isEmpty()) {
+            if (materials_.isEmpty()) {
+              materials_ = other.materials_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureMaterialsIsMutable();
+              materials_.addAll(other.materials_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.materials_.isEmpty()) {
+            if (materialsBuilder_.isEmpty()) {
+              materialsBuilder_.dispose();
+              materialsBuilder_ = null;
+              materials_ = other.materials_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              materialsBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getMaterialsFieldBuilder() : null;
+            } else {
+              materialsBuilder_.addAllMessages(other.materials_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        for (int i = 0; i < getMaterialsCount(); i++) {
+          if (!getMaterials(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material> materials_ =
+        java.util.Collections.emptyList();
+      private void ensureMaterialsIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          materials_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material>(materials_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder> materialsBuilder_;
+
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material> getMaterialsList() {
+        if (materialsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(materials_);
+        } else {
+          return materialsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public int getMaterialsCount() {
+        if (materialsBuilder_ == null) {
+          return materials_.size();
+        } else {
+          return materialsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material getMaterials(int index) {
+        if (materialsBuilder_ == null) {
+          return materials_.get(index);
+        } else {
+          return materialsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder setMaterials(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material value) {
+        if (materialsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMaterialsIsMutable();
+          materials_.set(index, value);
+          onChanged();
+        } else {
+          materialsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder setMaterials(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder builderForValue) {
+        if (materialsBuilder_ == null) {
+          ensureMaterialsIsMutable();
+          materials_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          materialsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder addMaterials(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material value) {
+        if (materialsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMaterialsIsMutable();
+          materials_.add(value);
+          onChanged();
+        } else {
+          materialsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder addMaterials(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material value) {
+        if (materialsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMaterialsIsMutable();
+          materials_.add(index, value);
+          onChanged();
+        } else {
+          materialsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder addMaterials(
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder builderForValue) {
+        if (materialsBuilder_ == null) {
+          ensureMaterialsIsMutable();
+          materials_.add(builderForValue.build());
+          onChanged();
+        } else {
+          materialsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder addMaterials(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder builderForValue) {
+        if (materialsBuilder_ == null) {
+          ensureMaterialsIsMutable();
+          materials_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          materialsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder addAllMaterials(
+          java.lang.Iterable<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material> values) {
+        if (materialsBuilder_ == null) {
+          ensureMaterialsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, materials_);
+          onChanged();
+        } else {
+          materialsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder clearMaterials() {
+        if (materialsBuilder_ == null) {
+          materials_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          materialsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public Builder removeMaterials(int index) {
+        if (materialsBuilder_ == null) {
+          ensureMaterialsIsMutable();
+          materials_.remove(index);
+          onChanged();
+        } else {
+          materialsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder getMaterialsBuilder(
+          int index) {
+        return getMaterialsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder getMaterialsOrBuilder(
+          int index) {
+        if (materialsBuilder_ == null) {
+          return materials_.get(index);  } else {
+          return materialsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+           getMaterialsOrBuilderList() {
+        if (materialsBuilder_ != null) {
+          return materialsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(materials_);
+        }
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder addMaterialsBuilder() {
+        return getMaterialsFieldBuilder().addBuilder(
+            org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder addMaterialsBuilder(
+          int index) {
+        return getMaterialsFieldBuilder().addBuilder(
+            index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .frontend_pbf.Material materials = 1;</code>
+       */
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder>
+           getMaterialsBuilderList() {
+        return getMaterialsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+          getMaterialsFieldBuilder() {
+        if (materialsBuilder_ == null) {
+          materialsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>(
+                  materials_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          materials_ = null;
+        }
+        return materialsBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:frontend_pbf.MaterialBlock)
+    }
+
+    // @@protoc_insertion_point(class_scope:frontend_pbf.MaterialBlock)
+    private static final org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock();
+    }
+
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<MaterialBlock>
+        PARSER = new com.google.protobuf.AbstractParser<MaterialBlock>() {
+      @java.lang.Override
+      public MaterialBlock parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new MaterialBlock(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<MaterialBlock> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MaterialBlock> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -674,6 +2074,120 @@ public final class FrontendPbf {
      * <code>required uint32 diffuseB = 6;</code>
      */
     int getDiffuseB();
+
+    /**
+     * <code>required uint32 specularR = 7;</code>
+     */
+    boolean hasSpecularR();
+    /**
+     * <code>required uint32 specularR = 7;</code>
+     */
+    int getSpecularR();
+
+    /**
+     * <code>required uint32 specularG = 8;</code>
+     */
+    boolean hasSpecularG();
+    /**
+     * <code>required uint32 specularG = 8;</code>
+     */
+    int getSpecularG();
+
+    /**
+     * <code>required uint32 specularB = 9;</code>
+     */
+    boolean hasSpecularB();
+    /**
+     * <code>required uint32 specularB = 9;</code>
+     */
+    int getSpecularB();
+
+    /**
+     * <code>required uint32 shininess = 10;</code>
+     */
+    boolean hasShininess();
+    /**
+     * <code>required uint32 shininess = 10;</code>
+     */
+    int getShininess();
+
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer>
+        getTextureLayerList();
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getTextureLayer(int index);
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    int getTextureLayerCount();
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+        getTextureLayerOrBuilderList();
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder getTextureLayerOrBuilder(
+        int index);
+
+    /**
+     * <pre>
+     * the type of transparency
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+     */
+    boolean hasTransparency();
+    /**
+     * <pre>
+     * the type of transparency
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency getTransparency();
+
+    /**
+     * <pre>
+     * whether this material casts shadows
+     * </pre>
+     *
+     * <code>optional bool castShadow = 17 [default = true];</code>
+     */
+    boolean hasCastShadow();
+    /**
+     * <pre>
+     * whether this material casts shadows
+     * </pre>
+     *
+     * <code>optional bool castShadow = 17 [default = true];</code>
+     */
+    boolean getCastShadow();
   }
   /**
    * <pre>
@@ -699,6 +2213,13 @@ public final class FrontendPbf {
       diffuseR_ = 0;
       diffuseG_ = 0;
       diffuseB_ = 0;
+      specularR_ = 0;
+      specularG_ = 0;
+      specularB_ = 0;
+      shininess_ = 0;
+      textureLayer_ = java.util.Collections.emptyList();
+      transparency_ = 3;
+      castShadow_ = true;
     }
 
     @java.lang.Override
@@ -755,6 +2276,52 @@ public final class FrontendPbf {
               diffuseB_ = input.readUInt32();
               break;
             }
+            case 56: {
+              bitField0_ |= 0x00000040;
+              specularR_ = input.readUInt32();
+              break;
+            }
+            case 64: {
+              bitField0_ |= 0x00000080;
+              specularG_ = input.readUInt32();
+              break;
+            }
+            case 72: {
+              bitField0_ |= 0x00000100;
+              specularB_ = input.readUInt32();
+              break;
+            }
+            case 80: {
+              bitField0_ |= 0x00000200;
+              shininess_ = input.readUInt32();
+              break;
+            }
+            case 90: {
+              if (!((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+                textureLayer_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer>();
+                mutable_bitField0_ |= 0x00000400;
+              }
+              textureLayer_.add(
+                  input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.PARSER, extensionRegistry));
+              break;
+            }
+            case 128: {
+              int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency value = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(16, rawValue);
+              } else {
+                bitField0_ |= 0x00000400;
+                transparency_ = rawValue;
+              }
+              break;
+            }
+            case 136: {
+              bitField0_ |= 0x00000800;
+              castShadow_ = input.readBool();
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -770,6 +2337,9 @@ public final class FrontendPbf {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+          textureLayer_ = java.util.Collections.unmodifiableList(textureLayer_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -785,6 +2355,1124 @@ public final class FrontendPbf {
       return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Material_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code frontend_pbf.Material.Transparency}
+     */
+    public enum Transparency
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       * arbitrary transparency, including partially transparent pixels
+       * </pre>
+       *
+       * <code>TRUE = 1;</code>
+       */
+      TRUE(1),
+      /**
+       * <pre>
+       * only allow pixels to be either fully transparent or fully opaque
+       * </pre>
+       *
+       * <code>BINARY = 2;</code>
+       */
+      BINARY(2),
+      /**
+       * <pre>
+       * all pixels are opaque
+       * </pre>
+       *
+       * <code>FALSE = 3;</code>
+       */
+      FALSE(3),
+      ;
+
+      /**
+       * <pre>
+       * arbitrary transparency, including partially transparent pixels
+       * </pre>
+       *
+       * <code>TRUE = 1;</code>
+       */
+      public static final int TRUE_VALUE = 1;
+      /**
+       * <pre>
+       * only allow pixels to be either fully transparent or fully opaque
+       * </pre>
+       *
+       * <code>BINARY = 2;</code>
+       */
+      public static final int BINARY_VALUE = 2;
+      /**
+       * <pre>
+       * all pixels are opaque
+       * </pre>
+       *
+       * <code>FALSE = 3;</code>
+       */
+      public static final int FALSE_VALUE = 3;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Transparency valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static Transparency forNumber(int value) {
+        switch (value) {
+          case 1: return TRUE;
+          case 2: return BINARY;
+          case 3: return FALSE;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Transparency>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Transparency> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Transparency>() {
+              public Transparency findValueByNumber(int number) {
+                return Transparency.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Transparency[] VALUES = values();
+
+      public static Transparency valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Transparency(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:frontend_pbf.Material.Transparency)
+    }
+
+    public interface TextureLayerOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:frontend_pbf.Material.TextureLayer)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <pre>
+       * url of the texture image, can be relative
+       * </pre>
+       *
+       * <code>required string textureURL = 1;</code>
+       */
+      boolean hasTextureURL();
+      /**
+       * <pre>
+       * url of the texture image, can be relative
+       * </pre>
+       *
+       * <code>required string textureURL = 1;</code>
+       */
+      java.lang.String getTextureURL();
+      /**
+       * <pre>
+       * url of the texture image, can be relative
+       * </pre>
+       *
+       * <code>required string textureURL = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getTextureURLBytes();
+
+      /**
+       * <pre>
+       * how the texture behaves for texture coordinates
+       * less than 0 or greater than 1
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+       */
+      boolean hasWrap();
+      /**
+       * <pre>
+       * how the texture behaves for texture coordinates
+       * less than 0 or greater than 1
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+       */
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap getWrap();
+
+      /**
+       * <pre>
+       * whether the texture should be multiplied with the material's base color
+       * </pre>
+       *
+       * <code>required bool colorable = 3;</code>
+       */
+      boolean hasColorable();
+      /**
+       * <pre>
+       * whether the texture should be multiplied with the material's base color
+       * </pre>
+       *
+       * <code>required bool colorable = 3;</code>
+       */
+      boolean getColorable();
+    }
+    /**
+     * Protobuf type {@code frontend_pbf.Material.TextureLayer}
+     */
+    public  static final class TextureLayer extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:frontend_pbf.Material.TextureLayer)
+        TextureLayerOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use TextureLayer.newBuilder() to construct.
+      private TextureLayer(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private TextureLayer() {
+        textureURL_ = "";
+        wrap_ = 1;
+        colorable_ = false;
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private TextureLayer(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                textureURL_ = bs;
+                break;
+              }
+              case 16: {
+                int rawValue = input.readEnum();
+                  @SuppressWarnings("deprecation")
+                org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap value = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(2, rawValue);
+                } else {
+                  bitField0_ |= 0x00000002;
+                  wrap_ = rawValue;
+                }
+                break;
+              }
+              case 24: {
+                bitField0_ |= 0x00000004;
+                colorable_ = input.readBool();
+                break;
+              }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Material_TextureLayer_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Material_TextureLayer_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder.class);
+      }
+
+      /**
+       * Protobuf enum {@code frontend_pbf.Material.TextureLayer.Wrap}
+       */
+      public enum Wrap
+          implements com.google.protobuf.ProtocolMessageEnum {
+        /**
+         * <code>REPEAT = 1;</code>
+         */
+        REPEAT(1),
+        /**
+         * <code>CLAMP = 2;</code>
+         */
+        CLAMP(2),
+        ;
+
+        /**
+         * <code>REPEAT = 1;</code>
+         */
+        public static final int REPEAT_VALUE = 1;
+        /**
+         * <code>CLAMP = 2;</code>
+         */
+        public static final int CLAMP_VALUE = 2;
+
+
+        public final int getNumber() {
+          return value;
+        }
+
+        /**
+         * @deprecated Use {@link #forNumber(int)} instead.
+         */
+        @java.lang.Deprecated
+        public static Wrap valueOf(int value) {
+          return forNumber(value);
+        }
+
+        public static Wrap forNumber(int value) {
+          switch (value) {
+            case 1: return REPEAT;
+            case 2: return CLAMP;
+            default: return null;
+          }
+        }
+
+        public static com.google.protobuf.Internal.EnumLiteMap<Wrap>
+            internalGetValueMap() {
+          return internalValueMap;
+        }
+        private static final com.google.protobuf.Internal.EnumLiteMap<
+            Wrap> internalValueMap =
+              new com.google.protobuf.Internal.EnumLiteMap<Wrap>() {
+                public Wrap findValueByNumber(int number) {
+                  return Wrap.forNumber(number);
+                }
+              };
+
+        public final com.google.protobuf.Descriptors.EnumValueDescriptor
+            getValueDescriptor() {
+          return getDescriptor().getValues().get(ordinal());
+        }
+        public final com.google.protobuf.Descriptors.EnumDescriptor
+            getDescriptorForType() {
+          return getDescriptor();
+        }
+        public static final com.google.protobuf.Descriptors.EnumDescriptor
+            getDescriptor() {
+          return org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.getDescriptor().getEnumTypes().get(0);
+        }
+
+        private static final Wrap[] VALUES = values();
+
+        public static Wrap valueOf(
+            com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+          if (desc.getType() != getDescriptor()) {
+            throw new java.lang.IllegalArgumentException(
+              "EnumValueDescriptor is not for this type.");
+          }
+          return VALUES[desc.getIndex()];
+        }
+
+        private final int value;
+
+        private Wrap(int value) {
+          this.value = value;
+        }
+
+        // @@protoc_insertion_point(enum_scope:frontend_pbf.Material.TextureLayer.Wrap)
+      }
+
+      private int bitField0_;
+      public static final int TEXTUREURL_FIELD_NUMBER = 1;
+      private volatile java.lang.Object textureURL_;
+      /**
+       * <pre>
+       * url of the texture image, can be relative
+       * </pre>
+       *
+       * <code>required string textureURL = 1;</code>
+       */
+      public boolean hasTextureURL() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <pre>
+       * url of the texture image, can be relative
+       * </pre>
+       *
+       * <code>required string textureURL = 1;</code>
+       */
+      public java.lang.String getTextureURL() {
+        java.lang.Object ref = textureURL_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            textureURL_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       * url of the texture image, can be relative
+       * </pre>
+       *
+       * <code>required string textureURL = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTextureURLBytes() {
+        java.lang.Object ref = textureURL_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          textureURL_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int WRAP_FIELD_NUMBER = 2;
+      private int wrap_;
+      /**
+       * <pre>
+       * how the texture behaves for texture coordinates
+       * less than 0 or greater than 1
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+       */
+      public boolean hasWrap() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <pre>
+       * how the texture behaves for texture coordinates
+       * less than 0 or greater than 1
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap getWrap() {
+        @SuppressWarnings("deprecation")
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.valueOf(wrap_);
+        return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.REPEAT : result;
+      }
+
+      public static final int COLORABLE_FIELD_NUMBER = 3;
+      private boolean colorable_;
+      /**
+       * <pre>
+       * whether the texture should be multiplied with the material's base color
+       * </pre>
+       *
+       * <code>required bool colorable = 3;</code>
+       */
+      public boolean hasColorable() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <pre>
+       * whether the texture should be multiplied with the material's base color
+       * </pre>
+       *
+       * <code>required bool colorable = 3;</code>
+       */
+      public boolean getColorable() {
+        return colorable_;
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        if (!hasTextureURL()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasColorable()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, textureURL_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeEnum(2, wrap_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBool(3, colorable_);
+        }
+        unknownFields.writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, textureURL_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeEnumSize(2, wrap_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(3, colorable_);
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer)) {
+          return super.equals(obj);
+        }
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer) obj;
+
+        boolean result = true;
+        result = result && (hasTextureURL() == other.hasTextureURL());
+        if (hasTextureURL()) {
+          result = result && getTextureURL()
+              .equals(other.getTextureURL());
+        }
+        result = result && (hasWrap() == other.hasWrap());
+        if (hasWrap()) {
+          result = result && wrap_ == other.wrap_;
+        }
+        result = result && (hasColorable() == other.hasColorable());
+        if (hasColorable()) {
+          result = result && (getColorable()
+              == other.getColorable());
+        }
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasTextureURL()) {
+          hash = (37 * hash) + TEXTUREURL_FIELD_NUMBER;
+          hash = (53 * hash) + getTextureURL().hashCode();
+        }
+        if (hasWrap()) {
+          hash = (37 * hash) + WRAP_FIELD_NUMBER;
+          hash = (53 * hash) + wrap_;
+        }
+        if (hasColorable()) {
+          hash = (37 * hash) + COLORABLE_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+              getColorable());
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code frontend_pbf.Material.TextureLayer}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:frontend_pbf.Material.TextureLayer)
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Material_TextureLayer_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Material_TextureLayer_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder.class);
+        }
+
+        // Construct using org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+          }
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          textureURL_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          wrap_ = 1;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          colorable_ = false;
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Material_TextureLayer_descriptor;
+        }
+
+        @java.lang.Override
+        public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getDefaultInstanceForType() {
+          return org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer build() {
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer buildPartial() {
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.textureURL_ = textureURL_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.wrap_ = wrap_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.colorable_ = colorable_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer) {
+            return mergeFrom((org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer other) {
+          if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.getDefaultInstance()) return this;
+          if (other.hasTextureURL()) {
+            bitField0_ |= 0x00000001;
+            textureURL_ = other.textureURL_;
+            onChanged();
+          }
+          if (other.hasWrap()) {
+            setWrap(other.getWrap());
+          }
+          if (other.hasColorable()) {
+            setColorable(other.getColorable());
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          if (!hasTextureURL()) {
+            return false;
+          }
+          if (!hasColorable()) {
+            return false;
+          }
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private java.lang.Object textureURL_ = "";
+        /**
+         * <pre>
+         * url of the texture image, can be relative
+         * </pre>
+         *
+         * <code>required string textureURL = 1;</code>
+         */
+        public boolean hasTextureURL() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <pre>
+         * url of the texture image, can be relative
+         * </pre>
+         *
+         * <code>required string textureURL = 1;</code>
+         */
+        public java.lang.String getTextureURL() {
+          java.lang.Object ref = textureURL_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              textureURL_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         * url of the texture image, can be relative
+         * </pre>
+         *
+         * <code>required string textureURL = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getTextureURLBytes() {
+          java.lang.Object ref = textureURL_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b =
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            textureURL_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         * url of the texture image, can be relative
+         * </pre>
+         *
+         * <code>required string textureURL = 1;</code>
+         */
+        public Builder setTextureURL(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          textureURL_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * url of the texture image, can be relative
+         * </pre>
+         *
+         * <code>required string textureURL = 1;</code>
+         */
+        public Builder clearTextureURL() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          textureURL_ = getDefaultInstance().getTextureURL();
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * url of the texture image, can be relative
+         * </pre>
+         *
+         * <code>required string textureURL = 1;</code>
+         */
+        public Builder setTextureURLBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          textureURL_ = value;
+          onChanged();
+          return this;
+        }
+
+        private int wrap_ = 1;
+        /**
+         * <pre>
+         * how the texture behaves for texture coordinates
+         * less than 0 or greater than 1
+         * </pre>
+         *
+         * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+         */
+        public boolean hasWrap() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <pre>
+         * how the texture behaves for texture coordinates
+         * less than 0 or greater than 1
+         * </pre>
+         *
+         * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+         */
+        public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap getWrap() {
+          @SuppressWarnings("deprecation")
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.valueOf(wrap_);
+          return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.REPEAT : result;
+        }
+        /**
+         * <pre>
+         * how the texture behaves for texture coordinates
+         * less than 0 or greater than 1
+         * </pre>
+         *
+         * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+         */
+        public Builder setWrap(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bitField0_ |= 0x00000002;
+          wrap_ = value.getNumber();
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * how the texture behaves for texture coordinates
+         * less than 0 or greater than 1
+         * </pre>
+         *
+         * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
+         */
+        public Builder clearWrap() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          wrap_ = 1;
+          onChanged();
+          return this;
+        }
+
+        private boolean colorable_ ;
+        /**
+         * <pre>
+         * whether the texture should be multiplied with the material's base color
+         * </pre>
+         *
+         * <code>required bool colorable = 3;</code>
+         */
+        public boolean hasColorable() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <pre>
+         * whether the texture should be multiplied with the material's base color
+         * </pre>
+         *
+         * <code>required bool colorable = 3;</code>
+         */
+        public boolean getColorable() {
+          return colorable_;
+        }
+        /**
+         * <pre>
+         * whether the texture should be multiplied with the material's base color
+         * </pre>
+         *
+         * <code>required bool colorable = 3;</code>
+         */
+        public Builder setColorable(boolean value) {
+          bitField0_ |= 0x00000004;
+          colorable_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * whether the texture should be multiplied with the material's base color
+         * </pre>
+         *
+         * <code>required bool colorable = 3;</code>
+         */
+        public Builder clearColorable() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          colorable_ = false;
+          onChanged();
+          return this;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:frontend_pbf.Material.TextureLayer)
+      }
+
+      // @@protoc_insertion_point(class_scope:frontend_pbf.Material.TextureLayer)
+      private static final org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer();
+      }
+
+      public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<TextureLayer>
+          PARSER = new com.google.protobuf.AbstractParser<TextureLayer>() {
+        @java.lang.Override
+        public TextureLayer parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new TextureLayer(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<TextureLayer> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<TextureLayer> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
     }
 
     private int bitField0_;
@@ -878,6 +3566,169 @@ public final class FrontendPbf {
       return diffuseB_;
     }
 
+    public static final int SPECULARR_FIELD_NUMBER = 7;
+    private int specularR_;
+    /**
+     * <code>required uint32 specularR = 7;</code>
+     */
+    public boolean hasSpecularR() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>required uint32 specularR = 7;</code>
+     */
+    public int getSpecularR() {
+      return specularR_;
+    }
+
+    public static final int SPECULARG_FIELD_NUMBER = 8;
+    private int specularG_;
+    /**
+     * <code>required uint32 specularG = 8;</code>
+     */
+    public boolean hasSpecularG() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>required uint32 specularG = 8;</code>
+     */
+    public int getSpecularG() {
+      return specularG_;
+    }
+
+    public static final int SPECULARB_FIELD_NUMBER = 9;
+    private int specularB_;
+    /**
+     * <code>required uint32 specularB = 9;</code>
+     */
+    public boolean hasSpecularB() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>required uint32 specularB = 9;</code>
+     */
+    public int getSpecularB() {
+      return specularB_;
+    }
+
+    public static final int SHININESS_FIELD_NUMBER = 10;
+    private int shininess_;
+    /**
+     * <code>required uint32 shininess = 10;</code>
+     */
+    public boolean hasShininess() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>required uint32 shininess = 10;</code>
+     */
+    public int getShininess() {
+      return shininess_;
+    }
+
+    public static final int TEXTURELAYER_FIELD_NUMBER = 11;
+    private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> textureLayer_;
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> getTextureLayerList() {
+      return textureLayer_;
+    }
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+        getTextureLayerOrBuilderList() {
+      return textureLayer_;
+    }
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    public int getTextureLayerCount() {
+      return textureLayer_.size();
+    }
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getTextureLayer(int index) {
+      return textureLayer_.get(index);
+    }
+    /**
+     * <pre>
+     * texture layers, ordered from bottom to top
+     * </pre>
+     *
+     * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder getTextureLayerOrBuilder(
+        int index) {
+      return textureLayer_.get(index);
+    }
+
+    public static final int TRANSPARENCY_FIELD_NUMBER = 16;
+    private int transparency_;
+    /**
+     * <pre>
+     * the type of transparency
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+     */
+    public boolean hasTransparency() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <pre>
+     * the type of transparency
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency getTransparency() {
+      @SuppressWarnings("deprecation")
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.valueOf(transparency_);
+      return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.FALSE : result;
+    }
+
+    public static final int CASTSHADOW_FIELD_NUMBER = 17;
+    private boolean castShadow_;
+    /**
+     * <pre>
+     * whether this material casts shadows
+     * </pre>
+     *
+     * <code>optional bool castShadow = 17 [default = true];</code>
+     */
+    public boolean hasCastShadow() {
+      return ((bitField0_ & 0x00000800) == 0x00000800);
+    }
+    /**
+     * <pre>
+     * whether this material casts shadows
+     * </pre>
+     *
+     * <code>optional bool castShadow = 17 [default = true];</code>
+     */
+    public boolean getCastShadow() {
+      return castShadow_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -909,6 +3760,28 @@ public final class FrontendPbf {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (!hasSpecularR()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSpecularG()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSpecularB()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasShininess()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getTextureLayerCount(); i++) {
+        if (!getTextureLayer(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -933,6 +3806,27 @@ public final class FrontendPbf {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeUInt32(6, diffuseB_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeUInt32(7, specularR_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeUInt32(8, specularG_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeUInt32(9, specularB_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeUInt32(10, shininess_);
+      }
+      for (int i = 0; i < textureLayer_.size(); i++) {
+        output.writeMessage(11, textureLayer_.get(i));
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeEnum(16, transparency_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        output.writeBool(17, castShadow_);
       }
       unknownFields.writeTo(output);
     }
@@ -966,6 +3860,34 @@ public final class FrontendPbf {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(6, diffuseB_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(7, specularR_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(8, specularG_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(9, specularB_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(10, shininess_);
+      }
+      for (int i = 0; i < textureLayer_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(11, textureLayer_.get(i));
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(16, transparency_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(17, castShadow_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1013,6 +3935,37 @@ public final class FrontendPbf {
         result = result && (getDiffuseB()
             == other.getDiffuseB());
       }
+      result = result && (hasSpecularR() == other.hasSpecularR());
+      if (hasSpecularR()) {
+        result = result && (getSpecularR()
+            == other.getSpecularR());
+      }
+      result = result && (hasSpecularG() == other.hasSpecularG());
+      if (hasSpecularG()) {
+        result = result && (getSpecularG()
+            == other.getSpecularG());
+      }
+      result = result && (hasSpecularB() == other.hasSpecularB());
+      if (hasSpecularB()) {
+        result = result && (getSpecularB()
+            == other.getSpecularB());
+      }
+      result = result && (hasShininess() == other.hasShininess());
+      if (hasShininess()) {
+        result = result && (getShininess()
+            == other.getShininess());
+      }
+      result = result && getTextureLayerList()
+          .equals(other.getTextureLayerList());
+      result = result && (hasTransparency() == other.hasTransparency());
+      if (hasTransparency()) {
+        result = result && transparency_ == other.transparency_;
+      }
+      result = result && (hasCastShadow() == other.hasCastShadow());
+      if (hasCastShadow()) {
+        result = result && (getCastShadow()
+            == other.getCastShadow());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -1047,6 +4000,35 @@ public final class FrontendPbf {
       if (hasDiffuseB()) {
         hash = (37 * hash) + DIFFUSEB_FIELD_NUMBER;
         hash = (53 * hash) + getDiffuseB();
+      }
+      if (hasSpecularR()) {
+        hash = (37 * hash) + SPECULARR_FIELD_NUMBER;
+        hash = (53 * hash) + getSpecularR();
+      }
+      if (hasSpecularG()) {
+        hash = (37 * hash) + SPECULARG_FIELD_NUMBER;
+        hash = (53 * hash) + getSpecularG();
+      }
+      if (hasSpecularB()) {
+        hash = (37 * hash) + SPECULARB_FIELD_NUMBER;
+        hash = (53 * hash) + getSpecularB();
+      }
+      if (hasShininess()) {
+        hash = (37 * hash) + SHININESS_FIELD_NUMBER;
+        hash = (53 * hash) + getShininess();
+      }
+      if (getTextureLayerCount() > 0) {
+        hash = (37 * hash) + TEXTURELAYER_FIELD_NUMBER;
+        hash = (53 * hash) + getTextureLayerList().hashCode();
+      }
+      if (hasTransparency()) {
+        hash = (37 * hash) + TRANSPARENCY_FIELD_NUMBER;
+        hash = (53 * hash) + transparency_;
+      }
+      if (hasCastShadow()) {
+        hash = (37 * hash) + CASTSHADOW_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getCastShadow());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -1181,6 +4163,7 @@ public final class FrontendPbf {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getTextureLayerFieldBuilder();
         }
       }
       @java.lang.Override
@@ -1198,6 +4181,24 @@ public final class FrontendPbf {
         bitField0_ = (bitField0_ & ~0x00000010);
         diffuseB_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
+        specularR_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        specularG_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000080);
+        specularB_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        shininess_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        if (textureLayerBuilder_ == null) {
+          textureLayer_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000400);
+        } else {
+          textureLayerBuilder_.clear();
+        }
+        transparency_ = 3;
+        bitField0_ = (bitField0_ & ~0x00000800);
+        castShadow_ = true;
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 
@@ -1250,6 +4251,39 @@ public final class FrontendPbf {
           to_bitField0_ |= 0x00000020;
         }
         result.diffuseB_ = diffuseB_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.specularR_ = specularR_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.specularG_ = specularG_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.specularB_ = specularB_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.shininess_ = shininess_;
+        if (textureLayerBuilder_ == null) {
+          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+            textureLayer_ = java.util.Collections.unmodifiableList(textureLayer_);
+            bitField0_ = (bitField0_ & ~0x00000400);
+          }
+          result.textureLayer_ = textureLayer_;
+        } else {
+          result.textureLayer_ = textureLayerBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.transparency_ = transparency_;
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00000800;
+        }
+        result.castShadow_ = castShadow_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1317,6 +4351,50 @@ public final class FrontendPbf {
         if (other.hasDiffuseB()) {
           setDiffuseB(other.getDiffuseB());
         }
+        if (other.hasSpecularR()) {
+          setSpecularR(other.getSpecularR());
+        }
+        if (other.hasSpecularG()) {
+          setSpecularG(other.getSpecularG());
+        }
+        if (other.hasSpecularB()) {
+          setSpecularB(other.getSpecularB());
+        }
+        if (other.hasShininess()) {
+          setShininess(other.getShininess());
+        }
+        if (textureLayerBuilder_ == null) {
+          if (!other.textureLayer_.isEmpty()) {
+            if (textureLayer_.isEmpty()) {
+              textureLayer_ = other.textureLayer_;
+              bitField0_ = (bitField0_ & ~0x00000400);
+            } else {
+              ensureTextureLayerIsMutable();
+              textureLayer_.addAll(other.textureLayer_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.textureLayer_.isEmpty()) {
+            if (textureLayerBuilder_.isEmpty()) {
+              textureLayerBuilder_.dispose();
+              textureLayerBuilder_ = null;
+              textureLayer_ = other.textureLayer_;
+              bitField0_ = (bitField0_ & ~0x00000400);
+              textureLayerBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getTextureLayerFieldBuilder() : null;
+            } else {
+              textureLayerBuilder_.addAllMessages(other.textureLayer_);
+            }
+          }
+        }
+        if (other.hasTransparency()) {
+          setTransparency(other.getTransparency());
+        }
+        if (other.hasCastShadow()) {
+          setCastShadow(other.getCastShadow());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -1341,6 +4419,23 @@ public final class FrontendPbf {
         }
         if (!hasDiffuseB()) {
           return false;
+        }
+        if (!hasSpecularR()) {
+          return false;
+        }
+        if (!hasSpecularG()) {
+          return false;
+        }
+        if (!hasSpecularB()) {
+          return false;
+        }
+        if (!hasShininess()) {
+          return false;
+        }
+        for (int i = 0; i < getTextureLayerCount(); i++) {
+          if (!getTextureLayer(i).isInitialized()) {
+            return false;
+          }
         }
         return true;
       }
@@ -1556,6 +4651,547 @@ public final class FrontendPbf {
         onChanged();
         return this;
       }
+
+      private int specularR_ ;
+      /**
+       * <code>required uint32 specularR = 7;</code>
+       */
+      public boolean hasSpecularR() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>required uint32 specularR = 7;</code>
+       */
+      public int getSpecularR() {
+        return specularR_;
+      }
+      /**
+       * <code>required uint32 specularR = 7;</code>
+       */
+      public Builder setSpecularR(int value) {
+        bitField0_ |= 0x00000040;
+        specularR_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 specularR = 7;</code>
+       */
+      public Builder clearSpecularR() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        specularR_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int specularG_ ;
+      /**
+       * <code>required uint32 specularG = 8;</code>
+       */
+      public boolean hasSpecularG() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>required uint32 specularG = 8;</code>
+       */
+      public int getSpecularG() {
+        return specularG_;
+      }
+      /**
+       * <code>required uint32 specularG = 8;</code>
+       */
+      public Builder setSpecularG(int value) {
+        bitField0_ |= 0x00000080;
+        specularG_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 specularG = 8;</code>
+       */
+      public Builder clearSpecularG() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        specularG_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int specularB_ ;
+      /**
+       * <code>required uint32 specularB = 9;</code>
+       */
+      public boolean hasSpecularB() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>required uint32 specularB = 9;</code>
+       */
+      public int getSpecularB() {
+        return specularB_;
+      }
+      /**
+       * <code>required uint32 specularB = 9;</code>
+       */
+      public Builder setSpecularB(int value) {
+        bitField0_ |= 0x00000100;
+        specularB_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 specularB = 9;</code>
+       */
+      public Builder clearSpecularB() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        specularB_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int shininess_ ;
+      /**
+       * <code>required uint32 shininess = 10;</code>
+       */
+      public boolean hasShininess() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>required uint32 shininess = 10;</code>
+       */
+      public int getShininess() {
+        return shininess_;
+      }
+      /**
+       * <code>required uint32 shininess = 10;</code>
+       */
+      public Builder setShininess(int value) {
+        bitField0_ |= 0x00000200;
+        shininess_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 shininess = 10;</code>
+       */
+      public Builder clearShininess() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        shininess_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> textureLayer_ =
+        java.util.Collections.emptyList();
+      private void ensureTextureLayerIsMutable() {
+        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+          textureLayer_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer>(textureLayer_);
+          bitField0_ |= 0x00000400;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder> textureLayerBuilder_;
+
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> getTextureLayerList() {
+        if (textureLayerBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(textureLayer_);
+        } else {
+          return textureLayerBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public int getTextureLayerCount() {
+        if (textureLayerBuilder_ == null) {
+          return textureLayer_.size();
+        } else {
+          return textureLayerBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getTextureLayer(int index) {
+        if (textureLayerBuilder_ == null) {
+          return textureLayer_.get(index);
+        } else {
+          return textureLayerBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder setTextureLayer(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer value) {
+        if (textureLayerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTextureLayerIsMutable();
+          textureLayer_.set(index, value);
+          onChanged();
+        } else {
+          textureLayerBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder setTextureLayer(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder builderForValue) {
+        if (textureLayerBuilder_ == null) {
+          ensureTextureLayerIsMutable();
+          textureLayer_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          textureLayerBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder addTextureLayer(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer value) {
+        if (textureLayerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTextureLayerIsMutable();
+          textureLayer_.add(value);
+          onChanged();
+        } else {
+          textureLayerBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder addTextureLayer(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer value) {
+        if (textureLayerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTextureLayerIsMutable();
+          textureLayer_.add(index, value);
+          onChanged();
+        } else {
+          textureLayerBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder addTextureLayer(
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder builderForValue) {
+        if (textureLayerBuilder_ == null) {
+          ensureTextureLayerIsMutable();
+          textureLayer_.add(builderForValue.build());
+          onChanged();
+        } else {
+          textureLayerBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder addTextureLayer(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder builderForValue) {
+        if (textureLayerBuilder_ == null) {
+          ensureTextureLayerIsMutable();
+          textureLayer_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          textureLayerBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder addAllTextureLayer(
+          java.lang.Iterable<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> values) {
+        if (textureLayerBuilder_ == null) {
+          ensureTextureLayerIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, textureLayer_);
+          onChanged();
+        } else {
+          textureLayerBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder clearTextureLayer() {
+        if (textureLayerBuilder_ == null) {
+          textureLayer_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000400);
+          onChanged();
+        } else {
+          textureLayerBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public Builder removeTextureLayer(int index) {
+        if (textureLayerBuilder_ == null) {
+          ensureTextureLayerIsMutable();
+          textureLayer_.remove(index);
+          onChanged();
+        } else {
+          textureLayerBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder getTextureLayerBuilder(
+          int index) {
+        return getTextureLayerFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder getTextureLayerOrBuilder(
+          int index) {
+        if (textureLayerBuilder_ == null) {
+          return textureLayer_.get(index);  } else {
+          return textureLayerBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+           getTextureLayerOrBuilderList() {
+        if (textureLayerBuilder_ != null) {
+          return textureLayerBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(textureLayer_);
+        }
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder addTextureLayerBuilder() {
+        return getTextureLayerFieldBuilder().addBuilder(
+            org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder addTextureLayerBuilder(
+          int index) {
+        return getTextureLayerFieldBuilder().addBuilder(
+            index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * texture layers, ordered from bottom to top
+       * </pre>
+       *
+       * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
+       */
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder>
+           getTextureLayerBuilderList() {
+        return getTextureLayerFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+          getTextureLayerFieldBuilder() {
+        if (textureLayerBuilder_ == null) {
+          textureLayerBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>(
+                  textureLayer_,
+                  ((bitField0_ & 0x00000400) == 0x00000400),
+                  getParentForChildren(),
+                  isClean());
+          textureLayer_ = null;
+        }
+        return textureLayerBuilder_;
+      }
+
+      private int transparency_ = 3;
+      /**
+       * <pre>
+       * the type of transparency
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+       */
+      public boolean hasTransparency() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      /**
+       * <pre>
+       * the type of transparency
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency getTransparency() {
+        @SuppressWarnings("deprecation")
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.valueOf(transparency_);
+        return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.FALSE : result;
+      }
+      /**
+       * <pre>
+       * the type of transparency
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+       */
+      public Builder setTransparency(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000800;
+        transparency_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * the type of transparency
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
+       */
+      public Builder clearTransparency() {
+        bitField0_ = (bitField0_ & ~0x00000800);
+        transparency_ = 3;
+        onChanged();
+        return this;
+      }
+
+      private boolean castShadow_ = true;
+      /**
+       * <pre>
+       * whether this material casts shadows
+       * </pre>
+       *
+       * <code>optional bool castShadow = 17 [default = true];</code>
+       */
+      public boolean hasCastShadow() {
+        return ((bitField0_ & 0x00001000) == 0x00001000);
+      }
+      /**
+       * <pre>
+       * whether this material casts shadows
+       * </pre>
+       *
+       * <code>optional bool castShadow = 17 [default = true];</code>
+       */
+      public boolean getCastShadow() {
+        return castShadow_;
+      }
+      /**
+       * <pre>
+       * whether this material casts shadows
+       * </pre>
+       *
+       * <code>optional bool castShadow = 17 [default = true];</code>
+       */
+      public Builder setCastShadow(boolean value) {
+        bitField0_ |= 0x00001000;
+        castShadow_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * whether this material casts shadows
+       * </pre>
+       *
+       * <code>optional bool castShadow = 17 [default = true];</code>
+       */
+      public Builder clearCastShadow() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        castShadow_ = true;
+        onChanged();
+        return this;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -1609,70 +5245,115 @@ public final class FrontendPbf {
 
   }
 
-  public interface Triangle3dOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:frontend_pbf.Triangle3d)
+  public interface TriangleGeometryOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:frontend_pbf.TriangleGeometry)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required uint64 v1 = 1;</code>
-     */
-    boolean hasV1();
-    /**
-     * <code>required uint64 v1 = 1;</code>
-     */
-    long getV1();
-
-    /**
-     * <code>required uint64 v2 = 2;</code>
-     */
-    boolean hasV2();
-    /**
-     * <code>required uint64 v2 = 2;</code>
-     */
-    long getV2();
-
-    /**
-     * <code>required uint64 v3 = 3;</code>
-     */
-    boolean hasV3();
-    /**
-     * <code>required uint64 v3 = 3;</code>
-     */
-    long getV3();
-
-    /**
-     * <code>required .frontend_pbf.Material material = 4;</code>
+     * <pre>
+     * the geometry's material, referencing materialBlock
+     * </pre>
+     *
+     * <code>required uint32 material = 1;</code>
      */
     boolean hasMaterial();
     /**
-     * <code>required .frontend_pbf.Material material = 4;</code>
+     * <pre>
+     * the geometry's material, referencing materialBlock
+     * </pre>
+     *
+     * <code>required uint32 material = 1;</code>
      */
-    org.osm2world.core.target.frontend_pbf.FrontendPbf.Material getMaterial();
+    int getMaterial();
+
     /**
-     * <code>required .frontend_pbf.Material material = 4;</code>
+     * <pre>
+     * vertices of the triangles, represented as
+     * 3 references to the Vector3d block each.
+     * At least 1 triangle (i.e. 3 vertex references) required.
+     * </pre>
+     *
+     * <code>repeated uint64 vertices = 2 [packed = true];</code>
      */
-    org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder getMaterialOrBuilder();
+    java.util.List<java.lang.Long> getVerticesList();
+    /**
+     * <pre>
+     * vertices of the triangles, represented as
+     * 3 references to the Vector3d block each.
+     * At least 1 triangle (i.e. 3 vertex references) required.
+     * </pre>
+     *
+     * <code>repeated uint64 vertices = 2 [packed = true];</code>
+     */
+    int getVerticesCount();
+    /**
+     * <pre>
+     * vertices of the triangles, represented as
+     * 3 references to the Vector3d block each.
+     * At least 1 triangle (i.e. 3 vertex references) required.
+     * </pre>
+     *
+     * <code>repeated uint64 vertices = 2 [packed = true];</code>
+     */
+    long getVertices(int index);
+
+    /**
+     * <pre>
+     * texture coordinates for each vertex of the triangles,
+     * referencing the Vector2d block.
+     * The length of this list is that of
+     * vertices, times the number of texture layers.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * </pre>
+     *
+     * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+     */
+    java.util.List<java.lang.Long> getTexCoordsList();
+    /**
+     * <pre>
+     * texture coordinates for each vertex of the triangles,
+     * referencing the Vector2d block.
+     * The length of this list is that of
+     * vertices, times the number of texture layers.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * </pre>
+     *
+     * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+     */
+    int getTexCoordsCount();
+    /**
+     * <pre>
+     * texture coordinates for each vertex of the triangles,
+     * referencing the Vector2d block.
+     * The length of this list is that of
+     * vertices, times the number of texture layers.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * </pre>
+     *
+     * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+     */
+    long getTexCoords(int index);
   }
   /**
    * <pre>
-   * a three-dimensional triangle, referencing vertices from the Vector3d block
+   * geometry consisting of a set of triangles
    * </pre>
    *
-   * Protobuf type {@code frontend_pbf.Triangle3d}
+   * Protobuf type {@code frontend_pbf.TriangleGeometry}
    */
-  public  static final class Triangle3d extends
+  public  static final class TriangleGeometry extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:frontend_pbf.Triangle3d)
-      Triangle3dOrBuilder {
+      // @@protoc_insertion_point(message_implements:frontend_pbf.TriangleGeometry)
+      TriangleGeometryOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use Triangle3d.newBuilder() to construct.
-    private Triangle3d(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use TriangleGeometry.newBuilder() to construct.
+    private TriangleGeometry(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private Triangle3d() {
-      v1_ = 0L;
-      v2_ = 0L;
-      v3_ = 0L;
+    private TriangleGeometry() {
+      material_ = 0;
+      vertices_ = java.util.Collections.emptyList();
+      texCoords_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -1680,7 +5361,7 @@ public final class FrontendPbf {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private Triangle3d(
+    private TriangleGeometry(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1701,30 +5382,49 @@ public final class FrontendPbf {
               break;
             case 8: {
               bitField0_ |= 0x00000001;
-              v1_ = input.readUInt64();
+              material_ = input.readUInt32();
               break;
             }
             case 16: {
-              bitField0_ |= 0x00000002;
-              v2_ = input.readUInt64();
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                vertices_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              vertices_.add(input.readUInt64());
+              break;
+            }
+            case 18: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+                vertices_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                vertices_.add(input.readUInt64());
+              }
+              input.popLimit(limit);
               break;
             }
             case 24: {
-              bitField0_ |= 0x00000004;
-              v3_ = input.readUInt64();
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                texCoords_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              texCoords_.add(input.readUInt64());
               break;
             }
-            case 34: {
-              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000008) == 0x00000008)) {
-                subBuilder = material_.toBuilder();
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+                texCoords_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000004;
               }
-              material_ = input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(material_);
-                material_ = subBuilder.buildPartial();
+              while (input.getBytesUntilLimit() > 0) {
+                texCoords_.add(input.readUInt64());
               }
-              bitField0_ |= 0x00000008;
+              input.popLimit(limit);
               break;
             }
             default: {
@@ -1742,89 +5442,140 @@ public final class FrontendPbf {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          vertices_ = java.util.Collections.unmodifiableList(vertices_);
+        }
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          texCoords_ = java.util.Collections.unmodifiableList(texCoords_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Triangle3d_descriptor;
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_TriangleGeometry_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Triangle3d_fieldAccessorTable
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_TriangleGeometry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder.class);
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder.class);
     }
 
     private int bitField0_;
-    public static final int V1_FIELD_NUMBER = 1;
-    private long v1_;
+    public static final int MATERIAL_FIELD_NUMBER = 1;
+    private int material_;
     /**
-     * <code>required uint64 v1 = 1;</code>
+     * <pre>
+     * the geometry's material, referencing materialBlock
+     * </pre>
+     *
+     * <code>required uint32 material = 1;</code>
      */
-    public boolean hasV1() {
+    public boolean hasMaterial() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required uint64 v1 = 1;</code>
+     * <pre>
+     * the geometry's material, referencing materialBlock
+     * </pre>
+     *
+     * <code>required uint32 material = 1;</code>
      */
-    public long getV1() {
-      return v1_;
+    public int getMaterial() {
+      return material_;
     }
 
-    public static final int V2_FIELD_NUMBER = 2;
-    private long v2_;
+    public static final int VERTICES_FIELD_NUMBER = 2;
+    private java.util.List<java.lang.Long> vertices_;
     /**
-     * <code>required uint64 v2 = 2;</code>
+     * <pre>
+     * vertices of the triangles, represented as
+     * 3 references to the Vector3d block each.
+     * At least 1 triangle (i.e. 3 vertex references) required.
+     * </pre>
+     *
+     * <code>repeated uint64 vertices = 2 [packed = true];</code>
      */
-    public boolean hasV2() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+    public java.util.List<java.lang.Long>
+        getVerticesList() {
+      return vertices_;
     }
     /**
-     * <code>required uint64 v2 = 2;</code>
+     * <pre>
+     * vertices of the triangles, represented as
+     * 3 references to the Vector3d block each.
+     * At least 1 triangle (i.e. 3 vertex references) required.
+     * </pre>
+     *
+     * <code>repeated uint64 vertices = 2 [packed = true];</code>
      */
-    public long getV2() {
-      return v2_;
+    public int getVerticesCount() {
+      return vertices_.size();
     }
+    /**
+     * <pre>
+     * vertices of the triangles, represented as
+     * 3 references to the Vector3d block each.
+     * At least 1 triangle (i.e. 3 vertex references) required.
+     * </pre>
+     *
+     * <code>repeated uint64 vertices = 2 [packed = true];</code>
+     */
+    public long getVertices(int index) {
+      return vertices_.get(index);
+    }
+    private int verticesMemoizedSerializedSize = -1;
 
-    public static final int V3_FIELD_NUMBER = 3;
-    private long v3_;
+    public static final int TEXCOORDS_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Long> texCoords_;
     /**
-     * <code>required uint64 v3 = 3;</code>
+     * <pre>
+     * texture coordinates for each vertex of the triangles,
+     * referencing the Vector2d block.
+     * The length of this list is that of
+     * vertices, times the number of texture layers.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * </pre>
+     *
+     * <code>repeated uint64 texCoords = 3 [packed = true];</code>
      */
-    public boolean hasV3() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+    public java.util.List<java.lang.Long>
+        getTexCoordsList() {
+      return texCoords_;
     }
     /**
-     * <code>required uint64 v3 = 3;</code>
+     * <pre>
+     * texture coordinates for each vertex of the triangles,
+     * referencing the Vector2d block.
+     * The length of this list is that of
+     * vertices, times the number of texture layers.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * </pre>
+     *
+     * <code>repeated uint64 texCoords = 3 [packed = true];</code>
      */
-    public long getV3() {
-      return v3_;
-    }
-
-    public static final int MATERIAL_FIELD_NUMBER = 4;
-    private org.osm2world.core.target.frontend_pbf.FrontendPbf.Material material_;
-    /**
-     * <code>required .frontend_pbf.Material material = 4;</code>
-     */
-    public boolean hasMaterial() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>required .frontend_pbf.Material material = 4;</code>
-     */
-    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material getMaterial() {
-      return material_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance() : material_;
+    public int getTexCoordsCount() {
+      return texCoords_.size();
     }
     /**
-     * <code>required .frontend_pbf.Material material = 4;</code>
+     * <pre>
+     * texture coordinates for each vertex of the triangles,
+     * referencing the Vector2d block.
+     * The length of this list is that of
+     * vertices, times the number of texture layers.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * </pre>
+     *
+     * <code>repeated uint64 texCoords = 3 [packed = true];</code>
      */
-    public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder getMaterialOrBuilder() {
-      return material_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance() : material_;
+    public long getTexCoords(int index) {
+      return texCoords_.get(index);
     }
+    private int texCoordsMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
@@ -1833,23 +5584,7 @@ public final class FrontendPbf {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasV1()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasV2()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasV3()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       if (!hasMaterial()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!getMaterial().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1860,17 +5595,23 @@ public final class FrontendPbf {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeUInt64(1, v1_);
+        output.writeUInt32(1, material_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeUInt64(2, v2_);
+      if (getVerticesList().size() > 0) {
+        output.writeUInt32NoTag(18);
+        output.writeUInt32NoTag(verticesMemoizedSerializedSize);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeUInt64(3, v3_);
+      for (int i = 0; i < vertices_.size(); i++) {
+        output.writeUInt64NoTag(vertices_.get(i));
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, getMaterial());
+      if (getTexCoordsList().size() > 0) {
+        output.writeUInt32NoTag(26);
+        output.writeUInt32NoTag(texCoordsMemoizedSerializedSize);
+      }
+      for (int i = 0; i < texCoords_.size(); i++) {
+        output.writeUInt64NoTag(texCoords_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -1883,19 +5624,35 @@ public final class FrontendPbf {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(1, v1_);
+          .computeUInt32Size(1, material_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(2, v2_);
+      {
+        int dataSize = 0;
+        for (int i = 0; i < vertices_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt64SizeNoTag(vertices_.get(i));
+        }
+        size += dataSize;
+        if (!getVerticesList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        verticesMemoizedSerializedSize = dataSize;
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(3, v3_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, getMaterial());
+      {
+        int dataSize = 0;
+        for (int i = 0; i < texCoords_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt64SizeNoTag(texCoords_.get(i));
+        }
+        size += dataSize;
+        if (!getTexCoordsList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        texCoordsMemoizedSerializedSize = dataSize;
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1907,32 +5664,21 @@ public final class FrontendPbf {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d)) {
+      if (!(obj instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry)) {
         return super.equals(obj);
       }
-      org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d) obj;
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry) obj;
 
       boolean result = true;
-      result = result && (hasV1() == other.hasV1());
-      if (hasV1()) {
-        result = result && (getV1()
-            == other.getV1());
-      }
-      result = result && (hasV2() == other.hasV2());
-      if (hasV2()) {
-        result = result && (getV2()
-            == other.getV2());
-      }
-      result = result && (hasV3() == other.hasV3());
-      if (hasV3()) {
-        result = result && (getV3()
-            == other.getV3());
-      }
       result = result && (hasMaterial() == other.hasMaterial());
       if (hasMaterial()) {
-        result = result && getMaterial()
-            .equals(other.getMaterial());
+        result = result && (getMaterial()
+            == other.getMaterial());
       }
+      result = result && getVerticesList()
+          .equals(other.getVerticesList());
+      result = result && getTexCoordsList()
+          .equals(other.getTexCoordsList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -1944,93 +5690,86 @@ public final class FrontendPbf {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasV1()) {
-        hash = (37 * hash) + V1_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getV1());
-      }
-      if (hasV2()) {
-        hash = (37 * hash) + V2_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getV2());
-      }
-      if (hasV3()) {
-        hash = (37 * hash) + V3_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getV3());
-      }
       if (hasMaterial()) {
         hash = (37 * hash) + MATERIAL_FIELD_NUMBER;
-        hash = (53 * hash) + getMaterial().hashCode();
+        hash = (53 * hash) + getMaterial();
+      }
+      if (getVerticesCount() > 0) {
+        hash = (37 * hash) + VERTICES_FIELD_NUMBER;
+        hash = (53 * hash) + getVerticesList().hashCode();
+      }
+      if (getTexCoordsCount() > 0) {
+        hash = (37 * hash) + TEXCOORDS_FIELD_NUMBER;
+        hash = (53 * hash) + getTexCoordsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(byte[] data)
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(java.io.InputStream input)
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseDelimitedFrom(java.io.InputStream input)
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseDelimitedFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parseFrom(
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2043,7 +5782,7 @@ public final class FrontendPbf {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d prototype) {
+    public static Builder newBuilder(org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -2060,29 +5799,29 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a three-dimensional triangle, referencing vertices from the Vector3d block
+     * geometry consisting of a set of triangles
      * </pre>
      *
-     * Protobuf type {@code frontend_pbf.Triangle3d}
+     * Protobuf type {@code frontend_pbf.TriangleGeometry}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:frontend_pbf.Triangle3d)
-        org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder {
+        // @@protoc_insertion_point(builder_implements:frontend_pbf.TriangleGeometry)
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Triangle3d_descriptor;
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_TriangleGeometry_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Triangle3d_fieldAccessorTable
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_TriangleGeometry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder.class);
+                org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder.class);
       }
 
-      // Construct using org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.newBuilder()
+      // Construct using org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2095,41 +5834,34 @@ public final class FrontendPbf {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getMaterialFieldBuilder();
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        v1_ = 0L;
+        material_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        v2_ = 0L;
+        vertices_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
-        v3_ = 0L;
+        texCoords_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000004);
-        if (materialBuilder_ == null) {
-          material_ = null;
-        } else {
-          materialBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Triangle3d_descriptor;
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_TriangleGeometry_descriptor;
       }
 
       @java.lang.Override
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d getDefaultInstanceForType() {
-        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.getDefaultInstance();
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getDefaultInstanceForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d build() {
-        org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d result = buildPartial();
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry build() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -2137,30 +5869,24 @@ public final class FrontendPbf {
       }
 
       @java.lang.Override
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d buildPartial() {
-        org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d(this);
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry buildPartial() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.v1_ = v1_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
+        result.material_ = material_;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          vertices_ = java.util.Collections.unmodifiableList(vertices_);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
-        result.v2_ = v2_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
+        result.vertices_ = vertices_;
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          texCoords_ = java.util.Collections.unmodifiableList(texCoords_);
+          bitField0_ = (bitField0_ & ~0x00000004);
         }
-        result.v3_ = v3_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        if (materialBuilder_ == null) {
-          result.material_ = material_;
-        } else {
-          result.material_ = materialBuilder_.build();
-        }
+        result.texCoords_ = texCoords_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2200,27 +5926,38 @@ public final class FrontendPbf {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d) {
-          return mergeFrom((org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d)other);
+        if (other instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry) {
+          return mergeFrom((org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d other) {
-        if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.getDefaultInstance()) return this;
-        if (other.hasV1()) {
-          setV1(other.getV1());
-        }
-        if (other.hasV2()) {
-          setV2(other.getV2());
-        }
-        if (other.hasV3()) {
-          setV3(other.getV3());
-        }
+      public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry other) {
+        if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.getDefaultInstance()) return this;
         if (other.hasMaterial()) {
-          mergeMaterial(other.getMaterial());
+          setMaterial(other.getMaterial());
+        }
+        if (!other.vertices_.isEmpty()) {
+          if (vertices_.isEmpty()) {
+            vertices_ = other.vertices_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureVerticesIsMutable();
+            vertices_.addAll(other.vertices_);
+          }
+          onChanged();
+        }
+        if (!other.texCoords_.isEmpty()) {
+          if (texCoords_.isEmpty()) {
+            texCoords_ = other.texCoords_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureTexCoordsIsMutable();
+            texCoords_.addAll(other.texCoords_);
+          }
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -2229,19 +5966,7 @@ public final class FrontendPbf {
 
       @java.lang.Override
       public final boolean isInitialized() {
-        if (!hasV1()) {
-          return false;
-        }
-        if (!hasV2()) {
-          return false;
-        }
-        if (!hasV3()) {
-          return false;
-        }
         if (!hasMaterial()) {
-          return false;
-        }
-        if (!getMaterial().isInitialized()) {
           return false;
         }
         return true;
@@ -2252,11 +5977,11 @@ public final class FrontendPbf {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d parsedMessage = null;
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d) e.getUnfinishedMessage();
+          parsedMessage = (org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2267,218 +5992,282 @@ public final class FrontendPbf {
       }
       private int bitField0_;
 
-      private long v1_ ;
+      private int material_ ;
       /**
-       * <code>required uint64 v1 = 1;</code>
+       * <pre>
+       * the geometry's material, referencing materialBlock
+       * </pre>
+       *
+       * <code>required uint32 material = 1;</code>
        */
-      public boolean hasV1() {
+      public boolean hasMaterial() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required uint64 v1 = 1;</code>
+       * <pre>
+       * the geometry's material, referencing materialBlock
+       * </pre>
+       *
+       * <code>required uint32 material = 1;</code>
        */
-      public long getV1() {
-        return v1_;
+      public int getMaterial() {
+        return material_;
       }
       /**
-       * <code>required uint64 v1 = 1;</code>
+       * <pre>
+       * the geometry's material, referencing materialBlock
+       * </pre>
+       *
+       * <code>required uint32 material = 1;</code>
        */
-      public Builder setV1(long value) {
+      public Builder setMaterial(int value) {
         bitField0_ |= 0x00000001;
-        v1_ = value;
+        material_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint64 v1 = 1;</code>
-       */
-      public Builder clearV1() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        v1_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      private long v2_ ;
-      /**
-       * <code>required uint64 v2 = 2;</code>
-       */
-      public boolean hasV2() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>required uint64 v2 = 2;</code>
-       */
-      public long getV2() {
-        return v2_;
-      }
-      /**
-       * <code>required uint64 v2 = 2;</code>
-       */
-      public Builder setV2(long value) {
-        bitField0_ |= 0x00000002;
-        v2_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint64 v2 = 2;</code>
-       */
-      public Builder clearV2() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        v2_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      private long v3_ ;
-      /**
-       * <code>required uint64 v3 = 3;</code>
-       */
-      public boolean hasV3() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>required uint64 v3 = 3;</code>
-       */
-      public long getV3() {
-        return v3_;
-      }
-      /**
-       * <code>required uint64 v3 = 3;</code>
-       */
-      public Builder setV3(long value) {
-        bitField0_ |= 0x00000004;
-        v3_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint64 v3 = 3;</code>
-       */
-      public Builder clearV3() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        v3_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      private org.osm2world.core.target.frontend_pbf.FrontendPbf.Material material_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder> materialBuilder_;
-      /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
-       */
-      public boolean hasMaterial() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
-       */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material getMaterial() {
-        if (materialBuilder_ == null) {
-          return material_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance() : material_;
-        } else {
-          return materialBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
-       */
-      public Builder setMaterial(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material value) {
-        if (materialBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          material_ = value;
-          onChanged();
-        } else {
-          materialBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000008;
-        return this;
-      }
-      /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
-       */
-      public Builder setMaterial(
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder builderForValue) {
-        if (materialBuilder_ == null) {
-          material_ = builderForValue.build();
-          onChanged();
-        } else {
-          materialBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000008;
-        return this;
-      }
-      /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
-       */
-      public Builder mergeMaterial(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material value) {
-        if (materialBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008) &&
-              material_ != null &&
-              material_ != org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance()) {
-            material_ =
-              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.newBuilder(material_).mergeFrom(value).buildPartial();
-          } else {
-            material_ = value;
-          }
-          onChanged();
-        } else {
-          materialBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000008;
-        return this;
-      }
-      /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
+       * <pre>
+       * the geometry's material, referencing materialBlock
+       * </pre>
+       *
+       * <code>required uint32 material = 1;</code>
        */
       public Builder clearMaterial() {
-        if (materialBuilder_ == null) {
-          material_ = null;
-          onChanged();
-        } else {
-          materialBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000001);
+        material_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Long> vertices_ = java.util.Collections.emptyList();
+      private void ensureVerticesIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          vertices_ = new java.util.ArrayList<java.lang.Long>(vertices_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
+       */
+      public java.util.List<java.lang.Long>
+          getVerticesList() {
+        return java.util.Collections.unmodifiableList(vertices_);
+      }
+      /**
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
+       */
+      public int getVerticesCount() {
+        return vertices_.size();
+      }
+      /**
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
+       */
+      public long getVertices(int index) {
+        return vertices_.get(index);
+      }
+      /**
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
+       */
+      public Builder setVertices(
+          int index, long value) {
+        ensureVerticesIsMutable();
+        vertices_.set(index, value);
+        onChanged();
         return this;
       }
       /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder getMaterialBuilder() {
-        bitField0_ |= 0x00000008;
+      public Builder addVertices(long value) {
+        ensureVerticesIsMutable();
+        vertices_.add(value);
         onChanged();
-        return getMaterialFieldBuilder().getBuilder();
+        return this;
       }
       /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder getMaterialOrBuilder() {
-        if (materialBuilder_ != null) {
-          return materialBuilder_.getMessageOrBuilder();
-        } else {
-          return material_ == null ?
-              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance() : material_;
-        }
+      public Builder addAllVertices(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureVerticesIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, vertices_);
+        onChanged();
+        return this;
       }
       /**
-       * <code>required .frontend_pbf.Material material = 4;</code>
+       * <pre>
+       * vertices of the triangles, represented as
+       * 3 references to the Vector3d block each.
+       * At least 1 triangle (i.e. 3 vertex references) required.
+       * </pre>
+       *
+       * <code>repeated uint64 vertices = 2 [packed = true];</code>
        */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
-          getMaterialFieldBuilder() {
-        if (materialBuilder_ == null) {
-          materialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>(
-                  getMaterial(),
-                  getParentForChildren(),
-                  isClean());
-          material_ = null;
-        }
-        return materialBuilder_;
+      public Builder clearVertices() {
+        vertices_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Long> texCoords_ = java.util.Collections.emptyList();
+      private void ensureTexCoordsIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          texCoords_ = new java.util.ArrayList<java.lang.Long>(texCoords_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public java.util.List<java.lang.Long>
+          getTexCoordsList() {
+        return java.util.Collections.unmodifiableList(texCoords_);
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public int getTexCoordsCount() {
+        return texCoords_.size();
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public long getTexCoords(int index) {
+        return texCoords_.get(index);
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public Builder setTexCoords(
+          int index, long value) {
+        ensureTexCoordsIsMutable();
+        texCoords_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public Builder addTexCoords(long value) {
+        ensureTexCoordsIsMutable();
+        texCoords_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public Builder addAllTexCoords(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureTexCoordsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, texCoords_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * texture coordinates for each vertex of the triangles,
+       * referencing the Vector2d block.
+       * The length of this list is that of
+       * vertices, times the number of texture layers.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * </pre>
+       *
+       * <code>repeated uint64 texCoords = 3 [packed = true];</code>
+       */
+      public Builder clearTexCoords() {
+        texCoords_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -2493,41 +6282,41 @@ public final class FrontendPbf {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:frontend_pbf.Triangle3d)
+      // @@protoc_insertion_point(builder_scope:frontend_pbf.TriangleGeometry)
     }
 
-    // @@protoc_insertion_point(class_scope:frontend_pbf.Triangle3d)
-    private static final org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:frontend_pbf.TriangleGeometry)
+    private static final org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d();
+      DEFAULT_INSTANCE = new org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry();
     }
 
-    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d getDefaultInstance() {
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<Triangle3d>
-        PARSER = new com.google.protobuf.AbstractParser<Triangle3d>() {
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TriangleGeometry>
+        PARSER = new com.google.protobuf.AbstractParser<TriangleGeometry>() {
       @java.lang.Override
-      public Triangle3d parsePartialFrom(
+      public TriangleGeometry parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Triangle3d(input, extensionRegistry);
+        return new TriangleGeometry(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<Triangle3d> parser() {
+    public static com.google.protobuf.Parser<TriangleGeometry> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<Triangle3d> getParserForType() {
+    public com.google.protobuf.Parser<TriangleGeometry> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d getDefaultInstanceForType() {
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2565,46 +6354,46 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d>
-        getTrianglesList();
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry>
+        getTriangleGeometriesList();
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d getTriangles(int index);
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getTriangleGeometries(int index);
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    int getTrianglesCount();
+    int getTriangleGeometriesCount();
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder>
-        getTrianglesOrBuilderList();
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+        getTriangleGeometriesOrBuilderList();
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder getTrianglesOrBuilder(
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder getTriangleGeometriesOrBuilder(
         int index);
   }
   /**
@@ -2625,7 +6414,7 @@ public final class FrontendPbf {
     }
     private WorldObject() {
       osmId_ = "";
-      triangles_ = java.util.Collections.emptyList();
+      triangleGeometries_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -2660,11 +6449,11 @@ public final class FrontendPbf {
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                triangles_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d>();
+                triangleGeometries_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry>();
                 mutable_bitField0_ |= 0x00000002;
               }
-              triangles_.add(
-                  input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.PARSER, extensionRegistry));
+              triangleGeometries_.add(
+                  input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.PARSER, extensionRegistry));
               break;
             }
             default: {
@@ -2683,7 +6472,7 @@ public final class FrontendPbf {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          triangles_ = java.util.Collections.unmodifiableList(triangles_);
+          triangleGeometries_ = java.util.Collections.unmodifiableList(triangleGeometries_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -2757,59 +6546,59 @@ public final class FrontendPbf {
       }
     }
 
-    public static final int TRIANGLES_FIELD_NUMBER = 2;
-    private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d> triangles_;
+    public static final int TRIANGLEGEOMETRIES_FIELD_NUMBER = 2;
+    private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> triangleGeometries_;
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d> getTrianglesList() {
-      return triangles_;
+    public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> getTriangleGeometriesList() {
+      return triangleGeometries_;
     }
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder>
-        getTrianglesOrBuilderList() {
-      return triangles_;
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+        getTriangleGeometriesOrBuilderList() {
+      return triangleGeometries_;
     }
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    public int getTrianglesCount() {
-      return triangles_.size();
+    public int getTriangleGeometriesCount() {
+      return triangleGeometries_.size();
     }
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d getTriangles(int index) {
-      return triangles_.get(index);
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getTriangleGeometries(int index) {
+      return triangleGeometries_.get(index);
     }
     /**
      * <pre>
-     * the triangles this object is composed of; at least 1 triangle required
+     * the geometry this object is composed of; at least 1 required
      * </pre>
      *
-     * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+     * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
      */
-    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder getTrianglesOrBuilder(
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder getTriangleGeometriesOrBuilder(
         int index) {
-      return triangles_.get(index);
+      return triangleGeometries_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2819,8 +6608,8 @@ public final class FrontendPbf {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      for (int i = 0; i < getTrianglesCount(); i++) {
-        if (!getTriangles(i).isInitialized()) {
+      for (int i = 0; i < getTriangleGeometriesCount(); i++) {
+        if (!getTriangleGeometries(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -2835,8 +6624,8 @@ public final class FrontendPbf {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, osmId_);
       }
-      for (int i = 0; i < triangles_.size(); i++) {
-        output.writeMessage(2, triangles_.get(i));
+      for (int i = 0; i < triangleGeometries_.size(); i++) {
+        output.writeMessage(2, triangleGeometries_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -2850,9 +6639,9 @@ public final class FrontendPbf {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, osmId_);
       }
-      for (int i = 0; i < triangles_.size(); i++) {
+      for (int i = 0; i < triangleGeometries_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, triangles_.get(i));
+          .computeMessageSize(2, triangleGeometries_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2875,8 +6664,8 @@ public final class FrontendPbf {
         result = result && getOsmId()
             .equals(other.getOsmId());
       }
-      result = result && getTrianglesList()
-          .equals(other.getTrianglesList());
+      result = result && getTriangleGeometriesList()
+          .equals(other.getTriangleGeometriesList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -2892,9 +6681,9 @@ public final class FrontendPbf {
         hash = (37 * hash) + OSMID_FIELD_NUMBER;
         hash = (53 * hash) + getOsmId().hashCode();
       }
-      if (getTrianglesCount() > 0) {
-        hash = (37 * hash) + TRIANGLES_FIELD_NUMBER;
-        hash = (53 * hash) + getTrianglesList().hashCode();
+      if (getTriangleGeometriesCount() > 0) {
+        hash = (37 * hash) + TRIANGLEGEOMETRIES_FIELD_NUMBER;
+        hash = (53 * hash) + getTriangleGeometriesList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -3028,7 +6817,7 @@ public final class FrontendPbf {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getTrianglesFieldBuilder();
+          getTriangleGeometriesFieldBuilder();
         }
       }
       @java.lang.Override
@@ -3036,11 +6825,11 @@ public final class FrontendPbf {
         super.clear();
         osmId_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (trianglesBuilder_ == null) {
-          triangles_ = java.util.Collections.emptyList();
+        if (triangleGeometriesBuilder_ == null) {
+          triangleGeometries_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
         } else {
-          trianglesBuilder_.clear();
+          triangleGeometriesBuilder_.clear();
         }
         return this;
       }
@@ -3074,14 +6863,14 @@ public final class FrontendPbf {
           to_bitField0_ |= 0x00000001;
         }
         result.osmId_ = osmId_;
-        if (trianglesBuilder_ == null) {
+        if (triangleGeometriesBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            triangles_ = java.util.Collections.unmodifiableList(triangles_);
+            triangleGeometries_ = java.util.Collections.unmodifiableList(triangleGeometries_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
-          result.triangles_ = triangles_;
+          result.triangleGeometries_ = triangleGeometries_;
         } else {
-          result.triangles_ = trianglesBuilder_.build();
+          result.triangleGeometries_ = triangleGeometriesBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -3137,29 +6926,29 @@ public final class FrontendPbf {
           osmId_ = other.osmId_;
           onChanged();
         }
-        if (trianglesBuilder_ == null) {
-          if (!other.triangles_.isEmpty()) {
-            if (triangles_.isEmpty()) {
-              triangles_ = other.triangles_;
+        if (triangleGeometriesBuilder_ == null) {
+          if (!other.triangleGeometries_.isEmpty()) {
+            if (triangleGeometries_.isEmpty()) {
+              triangleGeometries_ = other.triangleGeometries_;
               bitField0_ = (bitField0_ & ~0x00000002);
             } else {
-              ensureTrianglesIsMutable();
-              triangles_.addAll(other.triangles_);
+              ensureTriangleGeometriesIsMutable();
+              triangleGeometries_.addAll(other.triangleGeometries_);
             }
             onChanged();
           }
         } else {
-          if (!other.triangles_.isEmpty()) {
-            if (trianglesBuilder_.isEmpty()) {
-              trianglesBuilder_.dispose();
-              trianglesBuilder_ = null;
-              triangles_ = other.triangles_;
+          if (!other.triangleGeometries_.isEmpty()) {
+            if (triangleGeometriesBuilder_.isEmpty()) {
+              triangleGeometriesBuilder_.dispose();
+              triangleGeometriesBuilder_ = null;
+              triangleGeometries_ = other.triangleGeometries_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              trianglesBuilder_ =
+              triangleGeometriesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getTrianglesFieldBuilder() : null;
+                   getTriangleGeometriesFieldBuilder() : null;
             } else {
-              trianglesBuilder_.addAllMessages(other.triangles_);
+              triangleGeometriesBuilder_.addAllMessages(other.triangleGeometries_);
             }
           }
         }
@@ -3170,8 +6959,8 @@ public final class FrontendPbf {
 
       @java.lang.Override
       public final boolean isInitialized() {
-        for (int i = 0; i < getTrianglesCount(); i++) {
-          if (!getTriangles(i).isInitialized()) {
+        for (int i = 0; i < getTriangleGeometriesCount(); i++) {
+          if (!getTriangleGeometries(i).isInitialized()) {
             return false;
           }
         }
@@ -3298,316 +7087,316 @@ public final class FrontendPbf {
         return this;
       }
 
-      private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d> triangles_ =
+      private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> triangleGeometries_ =
         java.util.Collections.emptyList();
-      private void ensureTrianglesIsMutable() {
+      private void ensureTriangleGeometriesIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          triangles_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d>(triangles_);
+          triangleGeometries_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry>(triangleGeometries_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder> trianglesBuilder_;
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder> triangleGeometriesBuilder_;
 
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d> getTrianglesList() {
-        if (trianglesBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(triangles_);
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> getTriangleGeometriesList() {
+        if (triangleGeometriesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(triangleGeometries_);
         } else {
-          return trianglesBuilder_.getMessageList();
+          return triangleGeometriesBuilder_.getMessageList();
         }
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public int getTrianglesCount() {
-        if (trianglesBuilder_ == null) {
-          return triangles_.size();
+      public int getTriangleGeometriesCount() {
+        if (triangleGeometriesBuilder_ == null) {
+          return triangleGeometries_.size();
         } else {
-          return trianglesBuilder_.getCount();
+          return triangleGeometriesBuilder_.getCount();
         }
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d getTriangles(int index) {
-        if (trianglesBuilder_ == null) {
-          return triangles_.get(index);
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getTriangleGeometries(int index) {
+        if (triangleGeometriesBuilder_ == null) {
+          return triangleGeometries_.get(index);
         } else {
-          return trianglesBuilder_.getMessage(index);
+          return triangleGeometriesBuilder_.getMessage(index);
         }
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder setTriangles(
-          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d value) {
-        if (trianglesBuilder_ == null) {
+      public Builder setTriangleGeometries(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry value) {
+        if (triangleGeometriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureTrianglesIsMutable();
-          triangles_.set(index, value);
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.set(index, value);
           onChanged();
         } else {
-          trianglesBuilder_.setMessage(index, value);
+          triangleGeometriesBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder setTriangles(
-          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder builderForValue) {
-        if (trianglesBuilder_ == null) {
-          ensureTrianglesIsMutable();
-          triangles_.set(index, builderForValue.build());
+      public Builder setTriangleGeometries(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder builderForValue) {
+        if (triangleGeometriesBuilder_ == null) {
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.set(index, builderForValue.build());
           onChanged();
         } else {
-          trianglesBuilder_.setMessage(index, builderForValue.build());
+          triangleGeometriesBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder addTriangles(org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d value) {
-        if (trianglesBuilder_ == null) {
+      public Builder addTriangleGeometries(org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry value) {
+        if (triangleGeometriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureTrianglesIsMutable();
-          triangles_.add(value);
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.add(value);
           onChanged();
         } else {
-          trianglesBuilder_.addMessage(value);
+          triangleGeometriesBuilder_.addMessage(value);
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder addTriangles(
-          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d value) {
-        if (trianglesBuilder_ == null) {
+      public Builder addTriangleGeometries(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry value) {
+        if (triangleGeometriesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureTrianglesIsMutable();
-          triangles_.add(index, value);
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.add(index, value);
           onChanged();
         } else {
-          trianglesBuilder_.addMessage(index, value);
+          triangleGeometriesBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder addTriangles(
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder builderForValue) {
-        if (trianglesBuilder_ == null) {
-          ensureTrianglesIsMutable();
-          triangles_.add(builderForValue.build());
+      public Builder addTriangleGeometries(
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder builderForValue) {
+        if (triangleGeometriesBuilder_ == null) {
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.add(builderForValue.build());
           onChanged();
         } else {
-          trianglesBuilder_.addMessage(builderForValue.build());
+          triangleGeometriesBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder addTriangles(
-          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder builderForValue) {
-        if (trianglesBuilder_ == null) {
-          ensureTrianglesIsMutable();
-          triangles_.add(index, builderForValue.build());
+      public Builder addTriangleGeometries(
+          int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder builderForValue) {
+        if (triangleGeometriesBuilder_ == null) {
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.add(index, builderForValue.build());
           onChanged();
         } else {
-          trianglesBuilder_.addMessage(index, builderForValue.build());
+          triangleGeometriesBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder addAllTriangles(
-          java.lang.Iterable<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d> values) {
-        if (trianglesBuilder_ == null) {
-          ensureTrianglesIsMutable();
+      public Builder addAllTriangleGeometries(
+          java.lang.Iterable<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> values) {
+        if (triangleGeometriesBuilder_ == null) {
+          ensureTriangleGeometriesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, triangles_);
+              values, triangleGeometries_);
           onChanged();
         } else {
-          trianglesBuilder_.addAllMessages(values);
+          triangleGeometriesBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder clearTriangles() {
-        if (trianglesBuilder_ == null) {
-          triangles_ = java.util.Collections.emptyList();
+      public Builder clearTriangleGeometries() {
+        if (triangleGeometriesBuilder_ == null) {
+          triangleGeometries_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
-          trianglesBuilder_.clear();
+          triangleGeometriesBuilder_.clear();
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public Builder removeTriangles(int index) {
-        if (trianglesBuilder_ == null) {
-          ensureTrianglesIsMutable();
-          triangles_.remove(index);
+      public Builder removeTriangleGeometries(int index) {
+        if (triangleGeometriesBuilder_ == null) {
+          ensureTriangleGeometriesIsMutable();
+          triangleGeometries_.remove(index);
           onChanged();
         } else {
-          trianglesBuilder_.remove(index);
+          triangleGeometriesBuilder_.remove(index);
         }
         return this;
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder getTrianglesBuilder(
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder getTriangleGeometriesBuilder(
           int index) {
-        return getTrianglesFieldBuilder().getBuilder(index);
+        return getTriangleGeometriesFieldBuilder().getBuilder(index);
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder getTrianglesOrBuilder(
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder getTriangleGeometriesOrBuilder(
           int index) {
-        if (trianglesBuilder_ == null) {
-          return triangles_.get(index);  } else {
-          return trianglesBuilder_.getMessageOrBuilder(index);
+        if (triangleGeometriesBuilder_ == null) {
+          return triangleGeometries_.get(index);  } else {
+          return triangleGeometriesBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder>
-           getTrianglesOrBuilderList() {
-        if (trianglesBuilder_ != null) {
-          return trianglesBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+           getTriangleGeometriesOrBuilderList() {
+        if (triangleGeometriesBuilder_ != null) {
+          return triangleGeometriesBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(triangles_);
+          return java.util.Collections.unmodifiableList(triangleGeometries_);
         }
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder addTrianglesBuilder() {
-        return getTrianglesFieldBuilder().addBuilder(
-            org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.getDefaultInstance());
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder addTriangleGeometriesBuilder() {
+        return getTriangleGeometriesFieldBuilder().addBuilder(
+            org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.getDefaultInstance());
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder addTrianglesBuilder(
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder addTriangleGeometriesBuilder(
           int index) {
-        return getTrianglesFieldBuilder().addBuilder(
-            index, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.getDefaultInstance());
+        return getTriangleGeometriesFieldBuilder().addBuilder(
+            index, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.getDefaultInstance());
       }
       /**
        * <pre>
-       * the triangles this object is composed of; at least 1 triangle required
+       * the geometry this object is composed of; at least 1 required
        * </pre>
        *
-       * <code>repeated .frontend_pbf.Triangle3d triangles = 2;</code>
+       * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 2;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder>
-           getTrianglesBuilderList() {
-        return getTrianglesFieldBuilder().getBuilderList();
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder>
+           getTriangleGeometriesBuilderList() {
+        return getTriangleGeometriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder>
-          getTrianglesFieldBuilder() {
-        if (trianglesBuilder_ == null) {
-          trianglesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3dOrBuilder>(
-                  triangles_,
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+          getTriangleGeometriesFieldBuilder() {
+        if (triangleGeometriesBuilder_ == null) {
+          triangleGeometriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>(
+                  triangleGeometries_,
                   ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
-          triangles_ = null;
+          triangleGeometries_ = null;
         }
-        return trianglesBuilder_;
+        return triangleGeometriesBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -3680,25 +7469,51 @@ public final class FrontendPbf {
     org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlockOrBuilder getVector3DBlockOrBuilder();
 
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+     */
+    boolean hasVector2DBlock();
+    /**
+     * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock getVector2DBlock();
+    /**
+     * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder getVector2DBlockOrBuilder();
+
+    /**
+     * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+     */
+    boolean hasMaterialBlock();
+    /**
+     * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock getMaterialBlock();
+    /**
+     * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder getMaterialBlockOrBuilder();
+
+    /**
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject>
         getObjectsList();
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject getObjects(int index);
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     int getObjectsCount();
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
         getObjectsOrBuilderList();
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder getObjectsOrBuilder(
         int index);
@@ -3761,9 +7576,35 @@ public final class FrontendPbf {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = vector2DBlock_.toBuilder();
+              }
+              vector2DBlock_ = input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(vector2DBlock_);
+                vector2DBlock_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            case 26: {
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = materialBlock_.toBuilder();
+              }
+              materialBlock_ = input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(materialBlock_);
+                materialBlock_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 objects_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000008;
               }
               objects_.add(
                   input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.PARSER, extensionRegistry));
@@ -3784,7 +7625,7 @@ public final class FrontendPbf {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           objects_ = java.util.Collections.unmodifiableList(objects_);
         }
         this.unknownFields = unknownFields.build();
@@ -3826,35 +7667,77 @@ public final class FrontendPbf {
       return vector3DBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock.getDefaultInstance() : vector3DBlock_;
     }
 
-    public static final int OBJECTS_FIELD_NUMBER = 2;
+    public static final int VECTOR2DBLOCK_FIELD_NUMBER = 2;
+    private org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock vector2DBlock_;
+    /**
+     * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+     */
+    public boolean hasVector2DBlock() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock getVector2DBlock() {
+      return vector2DBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance() : vector2DBlock_;
+    }
+    /**
+     * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder getVector2DBlockOrBuilder() {
+      return vector2DBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance() : vector2DBlock_;
+    }
+
+    public static final int MATERIALBLOCK_FIELD_NUMBER = 3;
+    private org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock materialBlock_;
+    /**
+     * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+     */
+    public boolean hasMaterialBlock() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock getMaterialBlock() {
+      return materialBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance() : materialBlock_;
+    }
+    /**
+     * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder getMaterialBlockOrBuilder() {
+      return materialBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance() : materialBlock_;
+    }
+
+    public static final int OBJECTS_FIELD_NUMBER = 4;
     private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> objects_;
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> getObjectsList() {
       return objects_;
     }
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
         getObjectsOrBuilderList() {
       return objects_;
     }
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     public int getObjectsCount() {
       return objects_.size();
     }
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject getObjects(int index) {
       return objects_.get(index);
     }
     /**
-     * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+     * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
      */
     public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder getObjectsOrBuilder(
         int index) {
@@ -3869,6 +7752,18 @@ public final class FrontendPbf {
       if (isInitialized == 0) return false;
 
       if (!hasVector3DBlock()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasVector2DBlock()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasMaterialBlock()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!getMaterialBlock().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -3888,8 +7783,14 @@ public final class FrontendPbf {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeMessage(1, getVector3DBlock());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, getVector2DBlock());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(3, getMaterialBlock());
+      }
       for (int i = 0; i < objects_.size(); i++) {
-        output.writeMessage(2, objects_.get(i));
+        output.writeMessage(4, objects_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -3904,9 +7805,17 @@ public final class FrontendPbf {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getVector3DBlock());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getVector2DBlock());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, getMaterialBlock());
+      }
       for (int i = 0; i < objects_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, objects_.get(i));
+          .computeMessageSize(4, objects_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -3929,6 +7838,16 @@ public final class FrontendPbf {
         result = result && getVector3DBlock()
             .equals(other.getVector3DBlock());
       }
+      result = result && (hasVector2DBlock() == other.hasVector2DBlock());
+      if (hasVector2DBlock()) {
+        result = result && getVector2DBlock()
+            .equals(other.getVector2DBlock());
+      }
+      result = result && (hasMaterialBlock() == other.hasMaterialBlock());
+      if (hasMaterialBlock()) {
+        result = result && getMaterialBlock()
+            .equals(other.getMaterialBlock());
+      }
       result = result && getObjectsList()
           .equals(other.getObjectsList());
       result = result && unknownFields.equals(other.unknownFields);
@@ -3945,6 +7864,14 @@ public final class FrontendPbf {
       if (hasVector3DBlock()) {
         hash = (37 * hash) + VECTOR3DBLOCK_FIELD_NUMBER;
         hash = (53 * hash) + getVector3DBlock().hashCode();
+      }
+      if (hasVector2DBlock()) {
+        hash = (37 * hash) + VECTOR2DBLOCK_FIELD_NUMBER;
+        hash = (53 * hash) + getVector2DBlock().hashCode();
+      }
+      if (hasMaterialBlock()) {
+        hash = (37 * hash) + MATERIALBLOCK_FIELD_NUMBER;
+        hash = (53 * hash) + getMaterialBlock().hashCode();
       }
       if (getObjectsCount() > 0) {
         hash = (37 * hash) + OBJECTS_FIELD_NUMBER;
@@ -4083,6 +8010,8 @@ public final class FrontendPbf {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getVector3DBlockFieldBuilder();
+          getVector2DBlockFieldBuilder();
+          getMaterialBlockFieldBuilder();
           getObjectsFieldBuilder();
         }
       }
@@ -4095,9 +8024,21 @@ public final class FrontendPbf {
           vector3DBlockBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
+        if (vector2DBlockBuilder_ == null) {
+          vector2DBlock_ = null;
+        } else {
+          vector2DBlockBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        if (materialBlockBuilder_ == null) {
+          materialBlock_ = null;
+        } else {
+          materialBlockBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (objectsBuilder_ == null) {
           objects_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           objectsBuilder_.clear();
         }
@@ -4137,10 +8078,26 @@ public final class FrontendPbf {
         } else {
           result.vector3DBlock_ = vector3DBlockBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (vector2DBlockBuilder_ == null) {
+          result.vector2DBlock_ = vector2DBlock_;
+        } else {
+          result.vector2DBlock_ = vector2DBlockBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (materialBlockBuilder_ == null) {
+          result.materialBlock_ = materialBlock_;
+        } else {
+          result.materialBlock_ = materialBlockBuilder_.build();
+        }
         if (objectsBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
             objects_ = java.util.Collections.unmodifiableList(objects_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.objects_ = objects_;
         } else {
@@ -4198,11 +8155,17 @@ public final class FrontendPbf {
         if (other.hasVector3DBlock()) {
           mergeVector3DBlock(other.getVector3DBlock());
         }
+        if (other.hasVector2DBlock()) {
+          mergeVector2DBlock(other.getVector2DBlock());
+        }
+        if (other.hasMaterialBlock()) {
+          mergeMaterialBlock(other.getMaterialBlock());
+        }
         if (objectsBuilder_ == null) {
           if (!other.objects_.isEmpty()) {
             if (objects_.isEmpty()) {
               objects_ = other.objects_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureObjectsIsMutable();
               objects_.addAll(other.objects_);
@@ -4215,7 +8178,7 @@ public final class FrontendPbf {
               objectsBuilder_.dispose();
               objectsBuilder_ = null;
               objects_ = other.objects_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000008);
               objectsBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getObjectsFieldBuilder() : null;
@@ -4232,6 +8195,15 @@ public final class FrontendPbf {
       @java.lang.Override
       public final boolean isInitialized() {
         if (!hasVector3DBlock()) {
+          return false;
+        }
+        if (!hasVector2DBlock()) {
+          return false;
+        }
+        if (!hasMaterialBlock()) {
+          return false;
+        }
+        if (!getMaterialBlock().isInitialized()) {
           return false;
         }
         for (int i = 0; i < getObjectsCount(); i++) {
@@ -4380,12 +8352,248 @@ public final class FrontendPbf {
         return vector3DBlockBuilder_;
       }
 
+      private org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock vector2DBlock_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder> vector2DBlockBuilder_;
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public boolean hasVector2DBlock() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock getVector2DBlock() {
+        if (vector2DBlockBuilder_ == null) {
+          return vector2DBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance() : vector2DBlock_;
+        } else {
+          return vector2DBlockBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public Builder setVector2DBlock(org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock value) {
+        if (vector2DBlockBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          vector2DBlock_ = value;
+          onChanged();
+        } else {
+          vector2DBlockBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public Builder setVector2DBlock(
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder builderForValue) {
+        if (vector2DBlockBuilder_ == null) {
+          vector2DBlock_ = builderForValue.build();
+          onChanged();
+        } else {
+          vector2DBlockBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public Builder mergeVector2DBlock(org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock value) {
+        if (vector2DBlockBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              vector2DBlock_ != null &&
+              vector2DBlock_ != org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance()) {
+            vector2DBlock_ =
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.newBuilder(vector2DBlock_).mergeFrom(value).buildPartial();
+          } else {
+            vector2DBlock_ = value;
+          }
+          onChanged();
+        } else {
+          vector2DBlockBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public Builder clearVector2DBlock() {
+        if (vector2DBlockBuilder_ == null) {
+          vector2DBlock_ = null;
+          onChanged();
+        } else {
+          vector2DBlockBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder getVector2DBlockBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getVector2DBlockFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder getVector2DBlockOrBuilder() {
+        if (vector2DBlockBuilder_ != null) {
+          return vector2DBlockBuilder_.getMessageOrBuilder();
+        } else {
+          return vector2DBlock_ == null ?
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.getDefaultInstance() : vector2DBlock_;
+        }
+      }
+      /**
+       * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder>
+          getVector2DBlockFieldBuilder() {
+        if (vector2DBlockBuilder_ == null) {
+          vector2DBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder>(
+                  getVector2DBlock(),
+                  getParentForChildren(),
+                  isClean());
+          vector2DBlock_ = null;
+        }
+        return vector2DBlockBuilder_;
+      }
+
+      private org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock materialBlock_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder> materialBlockBuilder_;
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public boolean hasMaterialBlock() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock getMaterialBlock() {
+        if (materialBlockBuilder_ == null) {
+          return materialBlock_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance() : materialBlock_;
+        } else {
+          return materialBlockBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public Builder setMaterialBlock(org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock value) {
+        if (materialBlockBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          materialBlock_ = value;
+          onChanged();
+        } else {
+          materialBlockBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public Builder setMaterialBlock(
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder builderForValue) {
+        if (materialBlockBuilder_ == null) {
+          materialBlock_ = builderForValue.build();
+          onChanged();
+        } else {
+          materialBlockBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public Builder mergeMaterialBlock(org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock value) {
+        if (materialBlockBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              materialBlock_ != null &&
+              materialBlock_ != org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance()) {
+            materialBlock_ =
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.newBuilder(materialBlock_).mergeFrom(value).buildPartial();
+          } else {
+            materialBlock_ = value;
+          }
+          onChanged();
+        } else {
+          materialBlockBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public Builder clearMaterialBlock() {
+        if (materialBlockBuilder_ == null) {
+          materialBlock_ = null;
+          onChanged();
+        } else {
+          materialBlockBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder getMaterialBlockBuilder() {
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return getMaterialBlockFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder getMaterialBlockOrBuilder() {
+        if (materialBlockBuilder_ != null) {
+          return materialBlockBuilder_.getMessageOrBuilder();
+        } else {
+          return materialBlock_ == null ?
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.getDefaultInstance() : materialBlock_;
+        }
+      }
+      /**
+       * <code>required .frontend_pbf.MaterialBlock materialBlock = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder>
+          getMaterialBlockFieldBuilder() {
+        if (materialBlockBuilder_ == null) {
+          materialBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder>(
+                  getMaterialBlock(),
+                  getParentForChildren(),
+                  isClean());
+          materialBlock_ = null;
+        }
+        return materialBlockBuilder_;
+      }
+
       private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> objects_ =
         java.util.Collections.emptyList();
       private void ensureObjectsIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           objects_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject>(objects_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -4393,7 +8601,7 @@ public final class FrontendPbf {
           org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> objectsBuilder_;
 
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> getObjectsList() {
         if (objectsBuilder_ == null) {
@@ -4403,7 +8611,7 @@ public final class FrontendPbf {
         }
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public int getObjectsCount() {
         if (objectsBuilder_ == null) {
@@ -4413,7 +8621,7 @@ public final class FrontendPbf {
         }
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject getObjects(int index) {
         if (objectsBuilder_ == null) {
@@ -4423,7 +8631,7 @@ public final class FrontendPbf {
         }
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder setObjects(
           int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject value) {
@@ -4440,7 +8648,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder setObjects(
           int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder builderForValue) {
@@ -4454,7 +8662,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder addObjects(org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject value) {
         if (objectsBuilder_ == null) {
@@ -4470,7 +8678,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder addObjects(
           int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject value) {
@@ -4487,7 +8695,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder addObjects(
           org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder builderForValue) {
@@ -4501,7 +8709,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder addObjects(
           int index, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder builderForValue) {
@@ -4515,7 +8723,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder addAllObjects(
           java.lang.Iterable<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> values) {
@@ -4530,12 +8738,12 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder clearObjects() {
         if (objectsBuilder_ == null) {
           objects_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           objectsBuilder_.clear();
@@ -4543,7 +8751,7 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public Builder removeObjects(int index) {
         if (objectsBuilder_ == null) {
@@ -4556,14 +8764,14 @@ public final class FrontendPbf {
         return this;
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder getObjectsBuilder(
           int index) {
         return getObjectsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder getObjectsOrBuilder(
           int index) {
@@ -4573,7 +8781,7 @@ public final class FrontendPbf {
         }
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
            getObjectsOrBuilderList() {
@@ -4584,14 +8792,14 @@ public final class FrontendPbf {
         }
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder addObjectsBuilder() {
         return getObjectsFieldBuilder().addBuilder(
             org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.getDefaultInstance());
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder addObjectsBuilder(
           int index) {
@@ -4599,7 +8807,7 @@ public final class FrontendPbf {
             index, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.getDefaultInstance());
       }
       /**
-       * <code>repeated .frontend_pbf.WorldObject objects = 2;</code>
+       * <code>repeated .frontend_pbf.WorldObject objects = 4;</code>
        */
       public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder>
            getObjectsBuilderList() {
@@ -4612,7 +8820,7 @@ public final class FrontendPbf {
           objectsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>(
                   objects_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
                   isClean());
           objects_ = null;
@@ -4678,15 +8886,30 @@ public final class FrontendPbf {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Vector3dBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_frontend_pbf_Vector2dBlock_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_frontend_pbf_Vector2dBlock_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_frontend_pbf_MaterialBlock_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_frontend_pbf_MaterialBlock_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Material_descriptor;
   private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Material_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_frontend_pbf_Triangle3d_descriptor;
+    internal_static_frontend_pbf_Material_TextureLayer_descriptor;
   private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_frontend_pbf_Triangle3d_fieldAccessorTable;
+      internal_static_frontend_pbf_Material_TextureLayer_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_frontend_pbf_TriangleGeometry_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_frontend_pbf_TriangleGeometry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_WorldObject_descriptor;
   private static final
@@ -4706,19 +8929,35 @@ public final class FrontendPbf {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\016frontend.proto\022\014frontend_pbf\"\"\n\rVector" +
-      "3dBlock\022\021\n\005coord\030\001 \003(\022B\002\020\001\"v\n\010Material\022\020" +
-      "\n\010ambientR\030\001 \002(\r\022\020\n\010ambientG\030\002 \002(\r\022\020\n\010am" +
-      "bientB\030\003 \002(\r\022\020\n\010diffuseR\030\004 \002(\r\022\020\n\010diffus" +
-      "eG\030\005 \002(\r\022\020\n\010diffuseB\030\006 \002(\r\"Z\n\nTriangle3d" +
-      "\022\n\n\002v1\030\001 \002(\004\022\n\n\002v2\030\002 \002(\004\022\n\n\002v3\030\003 \002(\004\022(\n\010" +
-      "material\030\004 \002(\0132\026.frontend_pbf.Material\"I" +
-      "\n\013WorldObject\022\r\n\005osmId\030\001 \001(\t\022+\n\ttriangle" +
-      "s\030\002 \003(\0132\030.frontend_pbf.Triangle3d\"f\n\004Til" +
-      "e\0222\n\rvector3dBlock\030\001 \002(\0132\033.frontend_pbf." +
-      "Vector3dBlock\022*\n\007objects\030\002 \003(\0132\031.fronten" +
-      "d_pbf.WorldObjectB5\n&org.osm2world.core." +
-      "target.frontend_pbfB\013FrontendPbf"
+      "\n\016frontend.proto\022\014frontend_pbf\"#\n\rVector" +
+      "3dBlock\022\022\n\006coords\030\001 \003(\022B\002\020\001\"#\n\rVector2dB" +
+      "lock\022\022\n\006coords\030\001 \003(\022B\002\020\001\":\n\rMaterialBloc" +
+      "k\022)\n\tmaterials\030\001 \003(\0132\026.frontend_pbf.Mate" +
+      "rial\"\241\004\n\010Material\022\020\n\010ambientR\030\001 \002(\r\022\020\n\010a" +
+      "mbientG\030\002 \002(\r\022\020\n\010ambientB\030\003 \002(\r\022\020\n\010diffu" +
+      "seR\030\004 \002(\r\022\020\n\010diffuseG\030\005 \002(\r\022\020\n\010diffuseB\030" +
+      "\006 \002(\r\022\021\n\tspecularR\030\007 \002(\r\022\021\n\tspecularG\030\010 " +
+      "\002(\r\022\021\n\tspecularB\030\t \002(\r\022\021\n\tshininess\030\n \002(" +
+      "\r\0229\n\014textureLayer\030\013 \003(\0132#.frontend_pbf.M" +
+      "aterial.TextureLayer\022@\n\014transparency\030\020 \001" +
+      "(\0162#.frontend_pbf.Material.Transparency:" +
+      "\005FALSE\022\030\n\ncastShadow\030\021 \001(\010:\004true\032\224\001\n\014Tex" +
+      "tureLayer\022\022\n\ntextureURL\030\001 \002(\t\022>\n\004wrap\030\002 " +
+      "\001(\0162(.frontend_pbf.Material.TextureLayer" +
+      ".Wrap:\006REPEAT\022\021\n\tcolorable\030\003 \002(\010\"\035\n\004Wrap" +
+      "\022\n\n\006REPEAT\020\001\022\t\n\005CLAMP\020\002\"/\n\014Transparency\022" +
+      "\010\n\004TRUE\020\001\022\n\n\006BINARY\020\002\022\t\n\005FALSE\020\003\"Q\n\020Tria" +
+      "ngleGeometry\022\020\n\010material\030\001 \002(\r\022\024\n\010vertic" +
+      "es\030\002 \003(\004B\002\020\001\022\025\n\ttexCoords\030\003 \003(\004B\002\020\001\"X\n\013W" +
+      "orldObject\022\r\n\005osmId\030\001 \001(\t\022:\n\022triangleGeo" +
+      "metries\030\002 \003(\0132\036.frontend_pbf.TriangleGeo" +
+      "metry\"\316\001\n\004Tile\0222\n\rvector3dBlock\030\001 \002(\0132\033." +
+      "frontend_pbf.Vector3dBlock\0222\n\rvector2dBl" +
+      "ock\030\002 \002(\0132\033.frontend_pbf.Vector2dBlock\0222" +
+      "\n\rmaterialBlock\030\003 \002(\0132\033.frontend_pbf.Mat" +
+      "erialBlock\022*\n\007objects\030\004 \003(\0132\031.frontend_p" +
+      "bf.WorldObjectB5\n&org.osm2world.core.tar" +
+      "get.frontend_pbfB\013FrontendPbf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4737,31 +8976,49 @@ public final class FrontendPbf {
     internal_static_frontend_pbf_Vector3dBlock_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_Vector3dBlock_descriptor,
-        new java.lang.String[] { "Coord", });
-    internal_static_frontend_pbf_Material_descriptor =
+        new java.lang.String[] { "Coords", });
+    internal_static_frontend_pbf_Vector2dBlock_descriptor =
       getDescriptor().getMessageTypes().get(1);
+    internal_static_frontend_pbf_Vector2dBlock_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_frontend_pbf_Vector2dBlock_descriptor,
+        new java.lang.String[] { "Coords", });
+    internal_static_frontend_pbf_MaterialBlock_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_frontend_pbf_MaterialBlock_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_frontend_pbf_MaterialBlock_descriptor,
+        new java.lang.String[] { "Materials", });
+    internal_static_frontend_pbf_Material_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_frontend_pbf_Material_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_Material_descriptor,
-        new java.lang.String[] { "AmbientR", "AmbientG", "AmbientB", "DiffuseR", "DiffuseG", "DiffuseB", });
-    internal_static_frontend_pbf_Triangle3d_descriptor =
-      getDescriptor().getMessageTypes().get(2);
-    internal_static_frontend_pbf_Triangle3d_fieldAccessorTable = new
+        new java.lang.String[] { "AmbientR", "AmbientG", "AmbientB", "DiffuseR", "DiffuseG", "DiffuseB", "SpecularR", "SpecularG", "SpecularB", "Shininess", "TextureLayer", "Transparency", "CastShadow", });
+    internal_static_frontend_pbf_Material_TextureLayer_descriptor =
+      internal_static_frontend_pbf_Material_descriptor.getNestedTypes().get(0);
+    internal_static_frontend_pbf_Material_TextureLayer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_frontend_pbf_Triangle3d_descriptor,
-        new java.lang.String[] { "V1", "V2", "V3", "Material", });
+        internal_static_frontend_pbf_Material_TextureLayer_descriptor,
+        new java.lang.String[] { "TextureURL", "Wrap", "Colorable", });
+    internal_static_frontend_pbf_TriangleGeometry_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_frontend_pbf_TriangleGeometry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_frontend_pbf_TriangleGeometry_descriptor,
+        new java.lang.String[] { "Material", "Vertices", "TexCoords", });
     internal_static_frontend_pbf_WorldObject_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_frontend_pbf_WorldObject_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_WorldObject_descriptor,
-        new java.lang.String[] { "OsmId", "Triangles", });
+        new java.lang.String[] { "OsmId", "TriangleGeometries", });
     internal_static_frontend_pbf_Tile_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_frontend_pbf_Tile_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_Tile_descriptor,
-        new java.lang.String[] { "Vector3DBlock", "Objects", });
+        new java.lang.String[] { "Vector3DBlock", "Vector2DBlock", "MaterialBlock", "Objects", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

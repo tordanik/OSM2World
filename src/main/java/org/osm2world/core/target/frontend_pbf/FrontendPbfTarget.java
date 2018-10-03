@@ -1,18 +1,22 @@
 package org.osm2world.core.target.frontend_pbf;
 
 import static java.lang.Math.round;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -21,24 +25,132 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Shadow;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Triangle3d;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
+import org.osm2world.core.world.data.WorldObject;
 
 public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
+	/**
+	 * a block containing all elements of a particular type.
+	 * Elements are then referenced by their index (i.e. position) in the block.
+	 * This saves space in the resulting protobuf file
+	 * because identical elements only need to be transmitted once.
+	 */
+	static class Block<T> {
+
+		List<T> elements = new ArrayList<T>();
+
+		public List<T> getElements() {
+			return elements;
+		}
+
+		/** adds the element to the block if necessary, and returns its index */
+		int toIndex(T element) {
+
+			int index = elements.indexOf(element);
+
+			if (index < 0) {
+				elements.add(element);
+				index = elements.size() - 1;
+			}
+
+			return index;
+
+		}
+
+	}
+
+	private static class TriangleData {
+
+		private final List<VectorXYZ> vertices;
+		private final List<VectorXYZ> normals;
+		private final List<List<VectorXZ>> texCoordLists;
+
+		public TriangleData(int numTextureLayers) {
+
+			vertices = new ArrayList<VectorXYZ>();
+			normals = new ArrayList<VectorXYZ>();
+
+			texCoordLists = new ArrayList<List<VectorXZ>>(numTextureLayers);
+
+			for (int i = 0; i < numTextureLayers; i++) {
+				texCoordLists.add(new ArrayList<VectorXZ>());
+			}
+
+		}
+
+		public void add(List<VectorXYZ> vs,
+				List<VectorXYZ> normals,
+				List<List<VectorXZ>> texCoordLists) {
+
+			assert (vs.size() == normals.size());
+			assert (texCoordLists.size() == this.texCoordLists.size());
+
+			this.vertices.addAll(vs);
+			this.normals.addAll(normals);
+
+			for (int i = 0; i < texCoordLists.size(); i++) {
+
+				assert (vs.size() == texCoordLists.get(i).size());
+
+				this.texCoordLists.get(i).addAll(texCoordLists.get(i));
+
+			}
+
+		}
+
+		public List<VectorXYZ> getVertices() {
+			return unmodifiableList(vertices);
+		}
+
+		public List<VectorXYZ> getNormals() {
+			return unmodifiableList(normals);
+		}
+
+		public List<List<VectorXZ>> getTexCoordLists() {
+			return unmodifiableList(texCoordLists);
+		}
+
+	}
+
+	/** prefix for the URL of texture files */
+	private static final String TEXTURE_BASE_URL = "textures/";
+
+	/** factor applied to coordinate values before rounding to integers */
+	private final int COORD_PRECISION_FACTOR = 1000;
+
 	private final OutputStream outputStream;
 
-	private final List<VectorXYZ> vector3dBlock = new ArrayList<VectorXYZ>();
-	private final List<WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
+	private final Block<VectorXYZ> vector3dBlock = new Block<VectorXYZ>();
+	private final Block<VectorXZ> vector2dBlock = new Block<VectorXZ>();
+	private final Block<Material> materialBlock = new Block<Material>();
 
-	private WorldObject.Builder currentObjectBuilder = WorldObject.newBuilder();
+	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
+
+	private String currentOsmId = null;
+	private Map<Material, TriangleData> currentTriangles = new HashMap<Material, TriangleData>();
 
 	public FrontendPbfTarget(OutputStream outputStream) {
+
 		this.outputStream = outputStream;
+
+		/* initialize the vector blocks with frequently used values,
+		 * to make sure these have low indices (= more compact varints) */
+
+		//TODO implement, then check size differences
+
 	}
 
 	@Override
@@ -52,17 +164,18 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	}
 
 	@Override
-	public void beginObject(org.osm2world.core.world.data.WorldObject object) {
+	public void beginObject(WorldObject object) {
 
 		/* build the previous object */
 
-		if (currentObjectBuilder.getTrianglesCount() > 0) {
-			objects.add(currentObjectBuilder.build());
+		if (!currentTriangles.isEmpty()) {
+			objects.add(buildCurrentObject());
 		}
 
 		/* start a new object */
 
-		currentObjectBuilder = WorldObject.newBuilder();
+		currentOsmId = null;
+		currentTriangles = new HashMap<Material, FrontendPbfTarget.TriangleData>();
 
 		/* find and use the actual OSM id of the new object, if possible */
 
@@ -71,11 +184,11 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		if (element != null) {
 
 			if (element instanceof MapArea) {
-				currentObjectBuilder.setOsmId(((MapArea)element).getOsmObject().toString());
+				currentOsmId = ((MapArea)element).getOsmObject().toString();
 			} else if (element instanceof MapWaySegment) {
-				currentObjectBuilder.setOsmId(((MapWaySegment)element).getOsmWay().toString());
+				currentOsmId = ((MapWaySegment)element).getOsmWay().toString();
 			} else if (element instanceof MapNode) {
-				currentObjectBuilder.setOsmId(((MapNode)element).getOsmNode().toString());
+				currentOsmId = ((MapNode)element).getOsmNode().toString();
 			}
 
 		}
@@ -86,25 +199,24 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
-		for (TriangleXYZ triangle : triangles) {
+		TriangleData triangleData;
 
-			Triangle3d.Builder triangleBuilder = Triangle3d.newBuilder();
-
-			/* set the vertices */
-
-			triangleBuilder.setV1(toIndex(triangle.v1));
-			triangleBuilder.setV2(toIndex(triangle.v2));
-			triangleBuilder.setV3(toIndex(triangle.v3));
-
-			/* set material properties */
-
-			triangleBuilder.setMaterial(convertMaterial(material));
-
-			/* build the triangle */
-
-			currentObjectBuilder.addTriangles(triangleBuilder.build());
-
+		if (currentTriangles.containsKey(material)) {
+			triangleData = currentTriangles.get(material);
+		} else {
+			triangleData = new TriangleData(material.getTextureDataList().size());
+			currentTriangles.put(material, triangleData);
 		}
+
+		List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangles.size() * 3);
+
+		for (TriangleXYZ t : triangles) {
+			vertices.addAll(t.getVertices());
+		}
+
+		triangleData.add(vertices ,
+				nCopies(vertices.size(), Y_UNIT), //TODO replace with actual normals by extending PrimitiveTarget
+				texCoordLists);
 
 	}
 
@@ -112,19 +224,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	public void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 		drawTriangles(material, triangles, texCoordLists);
-	}
-
-	private long toIndex(VectorXYZ v) {
-
-		long index = vector3dBlock.indexOf(v);
-
-		if (index < 0) {
-			vector3dBlock.add(v);
-			index = vector3dBlock.size() - 1;
-		}
-
-		return index;
-
 	}
 
 	private FrontendPbf.Material convertMaterial(Material material) {
@@ -139,7 +238,109 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		materialBuilder.setDiffuseG(material.diffuseColor().getGreen());
 		materialBuilder.setDiffuseB(material.diffuseColor().getBlue());
 
+		Color specularColor = Material.multiplyColor(
+				material.getColor(), material.getSpecularFactor());
+
+		materialBuilder.setSpecularR(specularColor.getRed());
+		materialBuilder.setSpecularG(specularColor.getGreen());
+		materialBuilder.setSpecularB(specularColor.getBlue());
+
+		materialBuilder.setShininess(material.getShininess());
+
+		switch (material.getTransparency()) {
+			case TRUE: materialBuilder.setTransparency(Transparency.TRUE); break;
+			case BINARY: materialBuilder.setTransparency(Transparency.BINARY); break;
+			case FALSE: break; //default value – not setting it saves bandwidth in proto2
+			default: throw new Error("unsupported transparency: " + material.getTransparency());
+		}
+
+		if (material.getShadow() == Shadow.FALSE) {
+			materialBuilder.setCastShadow(false);
+		}
+
+		for (TextureData textureData : material.getTextureDataList()) {
+			materialBuilder.addTextureLayer(convertTextureLayer(textureData));
+		}
+
 		return materialBuilder.build();
+
+	}
+
+	private TextureLayer convertTextureLayer(TextureData textureData) {
+
+		TextureLayer.Builder layerBuilder = TextureLayer.newBuilder();
+
+		layerBuilder.setTextureURL(TEXTURE_BASE_URL + textureData.file.getName());
+
+		switch (textureData.wrap) {
+			case CLAMP:
+			case CLAMP_TO_BORDER: layerBuilder.setWrap(Wrap.CLAMP); break;
+			case REPEAT: break; //default value – not setting it saves bandwidth in proto2
+			default: throw new Error("unsupported transparency: " + textureData.wrap);
+		}
+
+		layerBuilder.setColorable(textureData.colorable);
+
+		return layerBuilder.build();
+
+	}
+
+	/**
+	 * builds the current {@link FrontendPbf.WorldObject},
+	 * based e.g. on {@link #currentTriangles} and {@link #currentOsmId}.
+	 */
+	private FrontendPbf.WorldObject buildCurrentObject() {
+
+		List<TriangleGeometry> triangleGeometries = new ArrayList<TriangleGeometry>();
+
+		for (Material material : currentTriangles.keySet()) {
+
+			TriangleGeometry.Builder geometryBuilder = TriangleGeometry.newBuilder();
+
+			geometryBuilder.setMaterial(materialBlock.toIndex(material));
+
+			TriangleData triangleData = currentTriangles.get(material);
+
+			/* write the vertices */
+
+			for (VectorXYZ v : triangleData.getVertices()) {
+				geometryBuilder.addVertices(vector3dBlock.toIndex(v));
+			}
+
+			/* write the texture coordinates */
+
+			List<VectorXZ> texCoords = new ArrayList<VectorXZ>();
+
+			for (List<VectorXZ> list : triangleData.getTexCoordLists()) {
+				texCoords.addAll(list);
+			}
+
+			for (VectorXZ v : texCoords) {
+				geometryBuilder.addTexCoords(vector2dBlock.toIndex(v));
+			}
+
+			/* build the geometry */
+
+			triangleGeometries.add(geometryBuilder.build());
+
+		}
+
+		/* build the actual object */
+
+		FrontendPbf.WorldObject.Builder objectBuilder = FrontendPbf.WorldObject.newBuilder();
+
+		if (currentOsmId != null) {
+			objectBuilder.setOsmId(currentOsmId);
+		}
+
+		if (triangleGeometries.isEmpty()) {
+			//TODO proper error handling
+			throw new Error("a WorldObject needs geometry");
+		}
+
+		objectBuilder.addAllTriangleGeometries(triangleGeometries);
+
+		return objectBuilder.build();
 
 	}
 
@@ -148,22 +349,39 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 		/* build the last object */
 
-		if (currentObjectBuilder.getTrianglesCount() > 0) {
-			objects.add(currentObjectBuilder.build());
+		objects.add(buildCurrentObject());
+
+		/* build the blocks */
+
+		Vector3dBlock.Builder vector3dBlockBuilder = Vector3dBlock.newBuilder();
+
+		for (VectorXYZ v : vector3dBlock.getElements()) {
+			vector3dBlockBuilder.addCoords(round(v.x*COORD_PRECISION_FACTOR));
+			vector3dBlockBuilder.addCoords(round(v.y*COORD_PRECISION_FACTOR));
+			vector3dBlockBuilder.addCoords(round(v.z*COORD_PRECISION_FACTOR));
+		}
+
+		Vector2dBlock.Builder vector2dBlockBuilder = Vector2dBlock.newBuilder();
+
+		for (VectorXZ v : vector2dBlock.getElements()) {
+			vector2dBlockBuilder.addCoords(round(v.x*COORD_PRECISION_FACTOR));
+			vector2dBlockBuilder.addCoords(round(v.z*COORD_PRECISION_FACTOR));
+		}
+
+		MaterialBlock.Builder materialBlockBuilder = MaterialBlock.newBuilder();
+
+		for (Material m : materialBlock.getElements()) {
+			materialBlockBuilder.addMaterials(convertMaterial(m));
 		}
 
 		/* build the tile */
 
-		Vector3dBlock.Builder vector3dBlockBuilder = Vector3dBlock.newBuilder();
-
-		for (VectorXYZ v : vector3dBlock) {
-			vector3dBlockBuilder.addCoord(round(v.x*1000));
-			vector3dBlockBuilder.addCoord(round(v.y*1000));
-			vector3dBlockBuilder.addCoord(round(v.z*1000));
-		}
-
 		Tile.Builder tileBuilder = Tile.newBuilder();
+
 		tileBuilder.setVector3DBlock(vector3dBlockBuilder);
+		tileBuilder.setVector2DBlock(vector2dBlockBuilder);
+		tileBuilder.setMaterialBlock(materialBlockBuilder);
+
 		tileBuilder.addAllObjects(objects);
 
 		/* write the protobuf */
@@ -177,15 +395,31 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void writePbfFile(File outputFile, MapData mapData) throws IOException {
 
-		ConversionFacade facade = new ConversionFacade();
+		FileOutputStream output = null;
 
-		File osmFile = new File("/home/tk/pbfTest.osm");
-		FrontendPbfTarget target = new FrontendPbfTarget(new FileOutputStream("/home/tk/pbfTest.o2w.pbf"));
+		try {
 
-		List<FrontendPbfTarget> targets = singletonList(target);
-		facade.createRepresentations(osmFile, null, null, targets);
+			output = new FileOutputStream(outputFile);
+
+			writePbfStream(output, mapData);
+
+		} finally {
+			if (output != null) {
+				output.close();
+			}
+		}
+
+	}
+
+	public static void writePbfStream(OutputStream output, MapData mapData) throws IOException {
+
+		FrontendPbfTarget target = new FrontendPbfTarget(output);
+
+		TargetUtil.renderWorldObjects(target, mapData, true);
+
+		target.finish();
 
 	}
 
