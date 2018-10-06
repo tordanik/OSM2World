@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -303,8 +304,8 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 				writeColorLine("Kd", multiplyColor(WHITE, 1 - material.getAmbientFactor()));
 			}
 			
-			mtlStream.println(String.format("Ks %f %f %f", material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor()));
-			mtlStream.println(String.format("Ke %f %f %f", 0f, 0f, 0f));
+			mtlStream.println(String.format(Locale.US ,"Ks %f %f %f", material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor()));
+			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 			
 			if (textureData != null) {
 				mtlStream.println("map_Ka " + textureData.file.getName());
