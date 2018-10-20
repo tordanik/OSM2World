@@ -22,6 +22,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
+import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -40,6 +41,8 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.world.data.WorldObject;
 
+import com.google.common.collect.ComparisonChain;
+
 public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	/**
@@ -48,7 +51,20 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	 * This saves space in the resulting protobuf file
 	 * because identical elements only need to be transmitted once.
 	 */
-	static class Block<T> {
+	static interface Block<T> {
+
+		public List<T> getElements();
+
+		/** adds the element to the block if necessary, and returns its index */
+		public int toIndex(T element);
+
+	}
+
+	/**
+	 * simple implementation of {@link Block}.
+	 * Works for any content type, but slow for large numbers of elements.
+	 */
+	static class SimpleBlock<T> implements Block<T> {
 
 		List<T> elements = new ArrayList<T>();
 
@@ -57,7 +73,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		}
 
 		/** adds the element to the block if necessary, and returns its index */
-		int toIndex(T element) {
+		public int toIndex(T element) {
 
 			int index = elements.indexOf(element);
 
@@ -67,6 +83,61 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 			}
 
 			return index;
+
+		}
+
+	}
+
+	/**
+	 * implementation of {@link Block} that's optimized for {@link Vector3D} instances.
+	 */
+	static class VectorBlock<T extends Vector3D> implements Block<T> {
+
+		private static class Entry<T extends Vector3D> implements Comparable<Entry<T>> {
+
+			private final T element;
+			private final int index;
+
+			public Entry(T element, int index) {
+				this.element = element;
+				this.index = index;
+			}
+
+			@Override
+			public int compareTo(Entry<T> o) {
+				return ComparisonChain.start()
+						.compare(this.element.getX(), o.element.getX())
+						.compare(this.element.getY(), o.element.getY())
+						.compare(this.element.getZ(), o.element.getZ())
+						.result();
+			}
+
+		}
+
+		List<T> elements = new ArrayList<T>();
+		List<Entry<T>> sortedEntrys = new ArrayList<Entry<T>>();
+
+		public List<T> getElements() {
+			return elements;
+		}
+
+		/** adds the element to the block if necessary, and returns its index */
+		public int toIndex(T element) {
+
+			int index = binarySearch(sortedEntrys, new Entry<T>(element, -1));
+
+			if (index >= 0) {
+				return sortedEntrys.get(index).index;
+			} else {
+
+				elements.add(element);
+
+				Entry<T> entry = new Entry<T>(element, elements.size() - 1);
+				sortedEntrys.add(-(index + 1), entry);
+
+				return entry.index;
+
+			}
 
 		}
 
@@ -133,9 +204,9 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	private final OutputStream outputStream;
 
-	private final Block<VectorXYZ> vector3dBlock = new Block<VectorXYZ>();
-	private final Block<VectorXZ> vector2dBlock = new Block<VectorXZ>();
-	private final Block<Material> materialBlock = new Block<Material>();
+	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
+	private final Block<VectorXZ> vector2dBlock = new VectorBlock<VectorXZ>();
+	private final Block<Material> materialBlock = new SimpleBlock<Material>();
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
 

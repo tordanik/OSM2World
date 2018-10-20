@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
+import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.SimpleBlock;
 
 public class FrontendPbfTargetTest {
 
@@ -19,7 +20,7 @@ public class FrontendPbfTargetTest {
 		List<VectorXZ> testVectors = asList(
 				new VectorXZ(5, 22.2), NULL_VECTOR, X_UNIT, Z_UNIT);
 
-		Block<VectorXZ> block = new Block<VectorXZ>();
+		Block<VectorXZ> block = new SimpleBlock<VectorXZ>();
 
 		assertEquals(0, block.toIndex(testVectors.get(0)));
 
