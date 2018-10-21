@@ -11,16 +11,14 @@ import org.junit.Test;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.SimpleBlock;
+import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.VectorBlock;
 
 public class FrontendPbfTargetTest {
 
-	@Test
-	public void testBlock() {
+	public void testBlock(Block<VectorXZ> block) {
 
 		List<VectorXZ> testVectors = asList(
 				new VectorXZ(5, 22.2), NULL_VECTOR, X_UNIT, Z_UNIT);
-
-		Block<VectorXZ> block = new SimpleBlock<VectorXZ>();
 
 		assertEquals(0, block.toIndex(testVectors.get(0)));
 
@@ -35,6 +33,16 @@ public class FrontendPbfTargetTest {
 
 		assertTrue(CollectionUtils.isEqualCollection(testVectors, block.getElements()));
 
+	}
+
+	@Test
+	public void testSimpleBlock() {
+		testBlock(new SimpleBlock<VectorXZ>());
+	}
+
+	@Test
+	public void testVectorBlock() {
+		testBlock(new VectorBlock<VectorXZ>());
 	}
 
 }
