@@ -36,6 +36,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.AbstractTarget;
@@ -46,6 +47,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
@@ -235,6 +237,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
 	private final Block<VectorXZ> vector2dBlock = new VectorBlock<VectorXZ>();
 	private final Block<String> stringBlock = new SimpleBlock<String>();
+	private final Block<ShapeXZ> shapeBlock = new SimpleBlock<ShapeXZ>();
 	private final Block<Material> materialBlock = new SimpleBlock<Material>();
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
@@ -398,6 +401,9 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		}
 
 		layerBuilder.setColorable(textureData.colorable);
+
+		layerBuilder.setTextureHeight((int)round(textureData.height * 1000));
+		layerBuilder.setTextureWidth((int)round(textureData.width * 1000));
 
 		return layerBuilder.build();
 
@@ -620,6 +626,12 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		StringBlock.Builder stringBlockBuilder = StringBlock.newBuilder();
 		stringBlockBuilder.addAllStrings(stringBlock.getElements());
 
+		ShapeBlock.Builder shapeBlockBuilder = ShapeBlock.newBuilder();
+
+		for (ShapeXZ shape : shapeBlock.getElements()) {
+			//TODO implement shape conversion
+		}
+
 		MaterialBlock.Builder materialBlockBuilder = MaterialBlock.newBuilder();
 
 		for (Material m : materialBlock.getElements()) {
@@ -633,6 +645,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		tileBuilder.setVector3DBlock(vector3dBlockBuilder);
 		tileBuilder.setVector2DBlock(vector2dBlockBuilder);
 		tileBuilder.setStringBlock(stringBlockBuilder);
+		tileBuilder.setShapeBlock(shapeBlockBuilder);
 		tileBuilder.setMaterialBlock(materialBlockBuilder);
 
 		tileBuilder.addAllObjects(objects);

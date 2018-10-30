@@ -32,6 +32,37 @@ message StringBlock {
 
 }
 
+/* a block containing all 2d shapes used in the tile. */
+message ShapeBlock {
+
+	repeated Shape shapes = 1;
+
+}
+
+/* a 2d shape */
+message Shape {
+
+	enum ShapeType {
+
+		/* a circle. The single parameter represents the radius, in millimeters. */
+		CIRCLE = 1;
+
+		/* a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. */
+		POLYGON = 2;
+
+		/* a polyline. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. */
+		POLYLINE = 3;
+
+	}
+
+	required ShapeType type = 1;
+
+	/* parameters for the shape, such as the radius of a circle.
+	   The precise meaning depends on the shape type! */
+	repeated sint64 parameters = 2 [packed = true];
+
+}
+
 /* a block containing all materials used in the tile. */
 message MaterialBlock {
 
@@ -63,6 +94,16 @@ message Material {
 			CLAMP = 2;
 		}
 
+		enum TexCoordFunction {
+
+			/* No standard function is used. Texture coordinates for this layer will be provided alongside the geometry. */
+			CUSTOM = 1;
+
+			/* uses x and z vertex coords together with the texture's width and height to place a texture */
+			GLOBAL_X_Z = 2;
+
+		}
+
 		/* url of the texture image, can be relative */
 		required string textureURL = 1;
 
@@ -72,6 +113,14 @@ message Material {
 
 		/* whether the texture should be multiplied with the material's base color */
 		required bool colorable = 3;
+
+		/* width of the texture in millimeters. */
+		required uint32 textureWidth = 4;
+
+		/* height of the texture in millimeters. */
+		required uint32 textureHeight = 5;
+
+		optional TexCoordFunction texCoordFunction = 6 [default = CUSTOM];
 
 	}
 
@@ -111,10 +160,38 @@ message TriangleGeometry {
 
 	/* texture coordinates for each vertex of the triangles,
 	 * referencing the Vector2d block.
+	 * Texture coordinates are only provided for those layers
+	 * which are using the CUSTOM texture coordinate function (see Material).
 	 * The length of this list is that of
-         * vertices, times the number of texture layers.
+         * vertices, times the number of CUSTOM-coordinated texture layers.
 	 * Starts with all vertices' tex coords for layer 0, then 1 etc. */
 	repeated uint64 texCoords = 3 [packed = true];
+
+}
+
+/* geometry produced by extruding a 2d shape.
+   See OSM2World's Target.drawExtrudedShape method for documentation of the parameters. */
+message ExtrusionGeometry {
+
+	/* the geometry's material, referencing materialBlock */
+	required uint32 material = 1;
+
+	/* the shape to be extruded, referencing shapeBlock */
+	required uint32 shape = 2;
+
+	/* referencing vector3dBlock */
+	repeated uint64 path = 3;
+
+	/* referencing vector3dBlock */
+	repeated uint64 upVectors = 4;
+
+	/* in millimeters */
+	repeated uint64 scaleFactors = 5;
+
+	//TODO: List<List<VectorXZ>> texCoordLists,
+
+	optional bool startCap = 7 [default = false];
+	optional bool endCap = 8 [default = false];
 
 }
 
@@ -124,11 +201,31 @@ message WorldObject {
 	/* the OSM id of the primary element this object is created from, if any */
 	optional string osmId = 1;
 
-	/* the geometry this object is composed of; at least 1 required */
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
 	repeated TriangleGeometry triangleGeometries = 2;
+
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated ExtrusionGeometry extrusionGeometries = 3;
 
 	/* the type of this WorldObject, in broad terms. References stringBlock. */
 	optional uint32 typeName = 4;
+
+}
+
+/* a copy of some prototype model, possibly rotated and scaled */
+message InstanceGeometry {
+
+	/* the prototype model, referencing the modelBlock */
+	required uint32 model = 1;
+
+	/* position of the instance */
+	required uint32 pos = 2;
+
+	/* angle in milliradians, clockwise */
+	optional int32 rotateY = 3;
+
+	/* scale factor in 1/1000 */
+	optional sint32 scale = 4;
 
 }
 
@@ -138,9 +235,10 @@ message Tile {
 	required Vector3dBlock vector3dBlock = 1;
 	required Vector2dBlock vector2dBlock = 2;
 	required StringBlock stringBlock = 3;
-	required MaterialBlock materialBlock = 4;
+	required ShapeBlock shapeBlock = 4;
+	required MaterialBlock materialBlock = 5;
 
-	repeated WorldObject objects = 5;
+	repeated WorldObject objects = 6;
 
 }
 
