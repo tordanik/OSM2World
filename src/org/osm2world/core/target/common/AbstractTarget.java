@@ -4,14 +4,13 @@ import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -20,6 +19,7 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Renderable;
@@ -304,63 +304,37 @@ public abstract class AbstractTarget<R extends Renderable>
 		new VectorXZ(1.00, 2.0/3), new VectorXZ(1.00, 1.0/3)
 	);
 
-	private static final int EDGES_FOR_CYLINDER = 16;
-	
+	/**
+	 * See {@link Target#drawColumn(Material, Integer, VectorXYZ, double, double, double, boolean, boolean)}.
+	 * Implemented using {@link #drawExtrudedShape(Material, ShapeXZ, List, List, List, List, EnumSet)}.
+	 */
 	@Override
 	public void drawColumn(Material material, Integer corners, VectorXYZ base,
 			double height, double radiusBottom, double radiusTop,
 			boolean drawBottom, boolean drawTop) {
-		
+
+		CircleXZ bottomCircle = new CircleXZ(VectorXZ.NULL_VECTOR, radiusBottom);
+		ShapeXZ bottomShape;
+
 		if (corners == null) {
-			corners = EDGES_FOR_CYLINDER;
+
 			material = material.makeSmooth();
+			bottomShape = bottomCircle;
+
+		} else {
+
+			bottomShape = new SimplePolygonXZ(bottomCircle.getVertexList(corners));
+
 		}
 
-		float angleInterval = (float) (2 * Math.PI / corners);
+		EnumSet<ExtrudeOption> options = EnumSet.noneOf(ExtrudeOption.class);
 
-		/* prepare vector lists for the 3 primitives */
-		
-		List<VectorXYZ> bottomFan = new ArrayList<VectorXYZ>(corners + 2);
-		List<VectorXYZ> topFan = new ArrayList<VectorXYZ>(corners + 2);
-		List<VectorXYZ> mantleStrip = new ArrayList<VectorXYZ>(corners + 2);
-		
-		/* fill vectors into lists */
-		
-		bottomFan.add(base);
-		topFan.add(base.add(0, height, 0));
-		
-		for (int i = 0; i <= corners; i++) {
-			
-			double angle = - i * angleInterval;
-			double sin = Math.sin(angle);
-			double cos = Math.cos(angle);
-			
-			VectorXYZ topV = base.add(
-					radiusTop * sin, height, radiusTop * cos);
-			VectorXYZ bottomV = base.add(
-					radiusBottom * sin, 0, radiusBottom * cos);
+		if (drawBottom) { options.add(START_CAP); }
+		if (drawTop) { options.add(END_CAP); }
 
-			bottomFan.add(bottomV);
-			topFan.add(topV);
+		drawExtrudedShape(material, bottomShape, asList(base, base.addY(height)),
+				nCopies(2, Z_UNIT), asList(1.0, radiusTop/radiusBottom), null, options);
 
-			mantleStrip.add(topV);
-			mantleStrip.add(bottomV);
-			
-		}
-		
-		Collections.reverse(bottomFan);
-		
-		/* draw the 3 primitives */
-
-		if (drawBottom) { drawTriangleFan(material, bottomFan,
-				texCoordLists(bottomFan, material, GLOBAL_X_Z)); }
-		
-		if (drawTop) { drawTriangleFan(material, topFan,
-				texCoordLists(bottomFan, material, GLOBAL_X_Z)); }
-		
-		drawTriangleStrip(material, mantleStrip,
-				texCoordLists(mantleStrip, material, STRIP_WALL));
-		
 	}
 	
 	@Override

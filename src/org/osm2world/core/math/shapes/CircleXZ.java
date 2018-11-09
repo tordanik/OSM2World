@@ -11,6 +11,7 @@ import org.osm2world.core.math.VectorXZ;
 
 public class CircleXZ implements SimpleClosedShapeXZ {
 	
+	/** default number of points used to approximate the circle with a polygon */
 	private static final int NUM_POINTS = 36;
 	
 	private final VectorXZ center;
@@ -21,13 +22,13 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		this.radius = radius;
 	}
 
-	public List<VectorXZ> getVertexList() {
+	public List<VectorXZ> getVertexList(int numPoints) {
 
-		List<VectorXZ> result = new ArrayList<VectorXZ>(NUM_POINTS + 1);
+		List<VectorXZ> result = new ArrayList<VectorXZ>(numPoints + 1);
 		
-		double angleInterval = 2 * PI / NUM_POINTS;
+		double angleInterval = 2 * PI / numPoints;
 		
-		for (int i = 0; i < NUM_POINTS; i++) {
+		for (int i = 0; i < numPoints; i++) {
 			
 			double angle = -i * angleInterval;
 			double sin = Math.sin(angle);
@@ -40,6 +41,13 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		result.add(result.get(0));
 		
 		return result;
+		
+	}
+
+	@Override
+	public List<VectorXZ> getVertexList() {
+
+		return getVertexList(NUM_POINTS);
 		
 	}
 
