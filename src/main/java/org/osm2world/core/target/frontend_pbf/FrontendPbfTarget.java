@@ -20,6 +20,7 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.Vector3D;
@@ -203,6 +204,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	private final int COORD_PRECISION_FACTOR = 1000;
 
 	private final OutputStream outputStream;
+	private final AxisAlignedBoundingBoxXZ bbox;
 
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
 	private final Block<VectorXZ> vector2dBlock = new VectorBlock<VectorXZ>();
@@ -210,12 +212,19 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
 
-	private String currentOsmId = null;
+	private WorldObject currentObject = null;
 	private Map<Material, TriangleData> currentTriangles = new HashMap<Material, TriangleData>();
 
-	public FrontendPbfTarget(OutputStream outputStream) {
+	/**
+	 *
+	 * @param outputStream
+	 * @param bbox  the desired bounding box for the output.
+	 *              Objects are part of the output if their center is inside this box.
+	 */
+	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedBoundingBoxXZ bbox) {
 
 		this.outputStream = outputStream;
+		this.bbox = bbox;
 
 		/* initialize the vector blocks with frequently used values,
 		 * to make sure these have low indices (= more compact varints) */
@@ -237,32 +246,36 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	@Override
 	public void beginObject(WorldObject object) {
 
-		/* build the previous object */
+		/* build the previous object (if it's inside the bounding box) */
 
-		if (!currentTriangles.isEmpty()) {
+		boolean isInsideBbox = true;
+
+		if (currentObject != null && currentObject.getPrimaryMapElement() != null) {
+
+			MapElement mapElement = currentObject.getPrimaryMapElement();
+
+			VectorXZ center = null;
+
+			if (mapElement instanceof MapNode) {
+				center = ((MapNode) mapElement).getPos();
+			} else if (mapElement instanceof MapWaySegment) {
+				center = ((MapWaySegment) mapElement).getCenter();
+			} else if (mapElement instanceof MapArea) {
+				center = ((MapArea) mapElement).getOuterPolygon().getCenter();
+			}
+
+			isInsideBbox = bbox.contains(center);
+
+		}
+
+		if (!currentTriangles.isEmpty() && isInsideBbox) {
 			objects.add(buildCurrentObject());
 		}
 
 		/* start a new object */
 
-		currentOsmId = null;
+		currentObject = object;
 		currentTriangles = new HashMap<Material, FrontendPbfTarget.TriangleData>();
-
-		/* find and use the actual OSM id of the new object, if possible */
-
-		MapElement element = object.getPrimaryMapElement();
-
-		if (element != null) {
-
-			if (element instanceof MapArea) {
-				currentOsmId = ((MapArea)element).getOsmObject().toString();
-			} else if (element instanceof MapWaySegment) {
-				currentOsmId = ((MapWaySegment)element).getOsmWay().toString();
-			} else if (element instanceof MapNode) {
-				currentOsmId = ((MapNode)element).getOsmNode().toString();
-			}
-
-		}
 
 	}
 
@@ -358,9 +371,11 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	/**
 	 * builds the current {@link FrontendPbf.WorldObject},
-	 * based e.g. on {@link #currentTriangles} and {@link #currentOsmId}.
+	 * based e.g. on {@link #currentTriangles}.
 	 */
 	private FrontendPbf.WorldObject buildCurrentObject() {
+
+		/* build the object's geometries */
 
 		List<TriangleGeometry> triangleGeometries = new ArrayList<TriangleGeometry>();
 
@@ -400,8 +415,22 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 		FrontendPbf.WorldObject.Builder objectBuilder = FrontendPbf.WorldObject.newBuilder();
 
-		if (currentOsmId != null) {
-			objectBuilder.setOsmId(currentOsmId);
+		if (currentObject != null) {
+
+			MapElement element = currentObject.getPrimaryMapElement();
+
+			if (element != null) {
+
+				if (element instanceof MapArea) {
+					objectBuilder.setOsmId(((MapArea)element).getOsmObject().toString());
+				} else if (element instanceof MapWaySegment) {
+					objectBuilder.setOsmId(((MapWaySegment)element).getOsmWay().toString());
+				} else if (element instanceof MapNode) {
+					objectBuilder.setOsmId(((MapNode)element).getOsmNode().toString());
+				}
+
+			}
+
 		}
 
 		if (triangleGeometries.isEmpty()) {
@@ -486,7 +515,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	public static void writePbfStream(OutputStream output, MapData mapData) throws IOException {
 
-		FrontendPbfTarget target = new FrontendPbfTarget(output);
+		FrontendPbfTarget target = new FrontendPbfTarget(output, mapData.getBoundary());
 
 		TargetUtil.renderWorldObjects(target, mapData, true);
 
