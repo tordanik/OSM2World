@@ -292,13 +292,42 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 			currentTriangles.put(material, triangleData);
 		}
 
-		List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangles.size() * 3);
+		/* ensure an index-addressable order for the triangles */
 
-		for (TriangleXYZ t : triangles) {
-			vertices.addAll(t.getVertices());
+		List<? extends TriangleXYZ> triangleList =
+				triangles instanceof List
+				? (List<? extends TriangleXYZ>) triangles
+				: new ArrayList<TriangleXYZ>(triangles);
+
+		/* create a vertex list from the triangles */
+
+		List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangleList.size() * 3);
+
+		for (TriangleXYZ triangle : triangleList) {
+			vertices.addAll(triangle.getVertices());
 		}
 
-		triangleData.add(vertices ,
+		/* remove degenerate triangles */
+
+		for (int i = triangleList.size() - 1; i >= 0; i--) { //go backwards because we're doing index-based deletion
+
+			if (triangleList.get(i).isDegenerate()) { // filter degenerate triangles
+
+				vertices.remove(3 * i + 2);
+				vertices.remove(3 * i + 1);
+				vertices.remove(3 * i);
+
+				for (int layer = 0; layer < texCoordLists.size(); layer++) {
+					texCoordLists.get(layer).remove(3 * i + 2);
+					texCoordLists.get(layer).remove(3 * i + 1);
+					texCoordLists.get(layer).remove(3 * i);
+				}
+
+			}
+
+		}
+
+		triangleData.add(vertices,
 				nCopies(vertices.size(), Y_UNIT), //TODO replace with actual normals by extending PrimitiveTarget
 				texCoordLists);
 
