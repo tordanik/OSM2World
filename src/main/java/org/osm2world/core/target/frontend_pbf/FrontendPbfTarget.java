@@ -2,7 +2,11 @@ package org.osm2world.core.target.frontend_pbf;
 
 import static java.lang.Math.round;
 import static java.util.Collections.*;
+import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.target.common.material.Materials.TERRAIN_DEFAULT;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 import java.awt.Color;
 import java.io.File;
@@ -21,11 +25,16 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.CAGUtil;
+import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.AbstractTarget;
@@ -40,11 +49,26 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
+import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.modules.PoolModule.Pool;
+import org.osm2world.core.world.modules.WaterModule.AreaFountain;
+import org.osm2world.core.world.modules.WaterModule.RiverJunction;
+import org.osm2world.core.world.modules.WaterModule.Water;
+import org.osm2world.core.world.modules.WaterModule.Waterway;
 
 import com.google.common.collect.ComparisonChain;
 
 public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
+
+	/**
+	 * whether empty terrain should be faked as a big rectangle slightly below
+	 * other ground-level geometries. This reduces the number of triangles used
+	 * for empty terrain. Waterbodies are still subtracted from this rectangle.
+	 */
+	private final boolean USE_FLOOR_PLATE = true;
+
+	private final double FLOOR_PLATE_Y = -0.03;
 
 	/**
 	 * a block containing all elements of a particular type.
@@ -212,6 +236,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
 
+	private final List<SimplePolygonXZ> waterAreas = new ArrayList<SimplePolygonXZ>();
+
 	private WorldObject currentObject = null;
 	private Map<Material, TriangleData> currentTriangles = new HashMap<Material, TriangleData>();
 
@@ -246,31 +272,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	@Override
 	public void beginObject(WorldObject object) {
 
-		/* build the previous object (if it's inside the bounding box) */
-
-		boolean isInsideBbox = true;
-
-		if (currentObject != null && currentObject.getPrimaryMapElement() != null) {
-
-			MapElement mapElement = currentObject.getPrimaryMapElement();
-
-			VectorXZ center = null;
-
-			if (mapElement instanceof MapNode) {
-				center = ((MapNode) mapElement).getPos();
-			} else if (mapElement instanceof MapWaySegment) {
-				center = ((MapWaySegment) mapElement).getCenter();
-			} else if (mapElement instanceof MapArea) {
-				center = ((MapArea) mapElement).getOuterPolygon().getCenter();
-			}
-
-			isInsideBbox = bbox.contains(center);
-
-		}
-
-		if (!currentTriangles.isEmpty() && isInsideBbox) {
-			objects.add(buildCurrentObject());
-		}
+		finishCurrentObject();
 
 		/* start a new object */
 
@@ -399,22 +401,80 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 	}
 
 	/**
-	 * builds the current {@link FrontendPbf.WorldObject},
-	 * based e.g. on {@link #currentTriangles}.
+	 * completes the {@link FrontendPbf.WorldObject} for which information is currently
+	 * being collected in {@link #currentObject} and {@link #currentTriangles}.
 	 */
-	private FrontendPbf.WorldObject buildCurrentObject() {
+	private void finishCurrentObject() {
+
+		/* special handling for water areas */
+
+		if (USE_FLOOR_PLATE) {
+			if (isWater(currentObject)) {
+
+				SimplePolygonXZ outline = ((TerrainBoundaryWorldObject) currentObject).getOutlinePolygonXZ();
+
+				if (outline != null) {
+					waterAreas.add(outline);
+				}
+
+				return;
+
+			}
+		}
+
+		/* check for reasons not to build the object */
+
+		boolean ignoreCurrentObject = currentTriangles.isEmpty();
+
+		if (currentObject != null && currentObject.getPrimaryMapElement() != null) {
+
+			MapElement mapElement = currentObject.getPrimaryMapElement();
+
+			VectorXZ center = null;
+
+			if (mapElement instanceof MapNode) {
+				center = ((MapNode) mapElement).getPos();
+			} else if (mapElement instanceof MapWaySegment) {
+				center = ((MapWaySegment) mapElement).getCenter();
+			} else if (mapElement instanceof MapArea) {
+				center = ((MapArea) mapElement).getOuterPolygon().getCenter();
+			}
+
+			ignoreCurrentObject |= !bbox.contains(center);
+
+			ignoreCurrentObject |= USE_FLOOR_PLATE
+					&& mapElement.getTags().contains(EMPTY_SURFACE_TAG);
+
+			ignoreCurrentObject |= USE_FLOOR_PLATE && isWater(currentObject);
+
+		}
+
+		/* build the current object */
+
+		if (!ignoreCurrentObject) {
+			objects.add(buildObject(currentObject, currentTriangles));
+		}
+
+	}
+
+	/**
+	 *
+	 * @param object  can be null if this geometry doesn't belong to a specific object
+	 */
+	private FrontendPbf.WorldObject buildObject(WorldObject object,
+			Map<? extends Material, ? extends TriangleData> triangles) {
 
 		/* build the object's geometries */
 
 		List<TriangleGeometry> triangleGeometries = new ArrayList<TriangleGeometry>();
 
-		for (Material material : currentTriangles.keySet()) {
+		for (Material material : triangles.keySet()) {
 
 			TriangleGeometry.Builder geometryBuilder = TriangleGeometry.newBuilder();
 
 			geometryBuilder.setMaterial(materialBlock.toIndex(material));
 
-			TriangleData triangleData = currentTriangles.get(material);
+			TriangleData triangleData = triangles.get(material);
 
 			/* write the vertices */
 
@@ -444,9 +504,9 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 		FrontendPbf.WorldObject.Builder objectBuilder = FrontendPbf.WorldObject.newBuilder();
 
-		if (currentObject != null) {
+		if (object != null) {
 
-			MapElement element = currentObject.getPrimaryMapElement();
+			MapElement element = object.getPrimaryMapElement();
 
 			if (element != null) {
 
@@ -473,12 +533,61 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	}
 
+	/**
+	 * implements the #USE_FLOOR_PLATE option
+	 */
+	private FrontendPbf.WorldObject buildFloorPlate() {
+
+		TriangleData triangleData = new TriangleData(TERRAIN_DEFAULT.getNumTextureLayers());
+
+		for (PolygonWithHolesXZ poly : CAGUtil.subtractPolygons(bbox.polygonXZ(), waterAreas)) {
+
+			List<TriangleXZ> triangles = TriangulationUtil.triangulate(poly);
+
+			List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>(triangles.size());
+			List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangles.size() * 3);
+
+			for (TriangleXZ triangle : triangles) {
+
+				TriangleXYZ triangleXYZ = triangle.xyz(FLOOR_PLATE_Y);
+
+				trianglesXYZ.add(triangleXYZ);
+				vertices.addAll(triangleXYZ.getVertices());
+
+			}
+
+			triangleData.add(vertices,
+					nCopies(vertices.size(), Y_UNIT),
+					triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
+
+		}
+
+		return buildObject(null, singletonMap(TERRAIN_DEFAULT, triangleData));
+
+	}
+
+	private static final boolean isWater(WorldObject object) {
+
+		return object instanceof Water
+			|| object instanceof AreaFountain
+			|| object instanceof RiverJunction
+			|| object instanceof Waterway
+			|| object instanceof Pool;
+
+	}
+
 	@Override
 	public void finish() {
 
 		/* build the last object */
 
-		objects.add(buildCurrentObject());
+		finishCurrentObject();
+
+		/* create a floor plate (if that option is active */
+
+		if (USE_FLOOR_PLATE) {
+			objects.add(buildFloorPlate());
+		}
 
 		/* build the blocks */
 

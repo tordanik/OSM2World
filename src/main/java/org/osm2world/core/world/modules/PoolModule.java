@@ -107,7 +107,7 @@ public class PoolModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class Pool extends AbstractAreaWorldObject
+	public static class Pool extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public Pool(MapArea area) {

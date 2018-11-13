@@ -293,7 +293,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class AreaFountain extends AbstractAreaWorldObject
+	public static class AreaFountain extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public AreaFountain(MapArea area) {
