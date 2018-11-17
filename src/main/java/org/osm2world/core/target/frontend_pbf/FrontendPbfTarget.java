@@ -45,6 +45,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
@@ -232,6 +233,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
 	private final Block<VectorXZ> vector2dBlock = new VectorBlock<VectorXZ>();
+	private final Block<String> stringBlock = new SimpleBlock<String>();
 	private final Block<Material> materialBlock = new SimpleBlock<Material>();
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
@@ -520,6 +522,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 			}
 
+			objectBuilder.setTypeName(stringBlock.toIndex(object.getClass().getSimpleName()));
+
 		}
 
 		if (triangleGeometries.isEmpty()) {
@@ -606,6 +610,9 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 			vector2dBlockBuilder.addCoords(round(v.z*COORD_PRECISION_FACTOR));
 		}
 
+		StringBlock.Builder stringBlockBuilder = StringBlock.newBuilder();
+		stringBlockBuilder.addAllStrings(stringBlock.getElements());
+
 		MaterialBlock.Builder materialBlockBuilder = MaterialBlock.newBuilder();
 
 		for (Material m : materialBlock.getElements()) {
@@ -618,6 +625,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 		tileBuilder.setVector3DBlock(vector3dBlockBuilder);
 		tileBuilder.setVector2DBlock(vector2dBlockBuilder);
+		tileBuilder.setStringBlock(stringBlockBuilder);
 		tileBuilder.setMaterialBlock(materialBlockBuilder);
 
 		tileBuilder.addAllObjects(objects);

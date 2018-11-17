@@ -25,6 +25,13 @@ message Vector2dBlock {
 
 }
 
+/* a block containing strings referenced elsewhere in the tile. */
+message StringBlock {
+
+	repeated string strings = 1;
+
+}
+
 /* a block containing all materials used in the tile. */
 message MaterialBlock {
 
@@ -120,6 +127,9 @@ message WorldObject {
 	/* the geometry this object is composed of; at least 1 required */
 	repeated TriangleGeometry triangleGeometries = 2;
 
+	/* the type of this WorldObject, in broad terms. References stringBlock. */
+	optional uint32 typeName = 4;
+
 }
 
 /* a tile with 3d data */
@@ -127,8 +137,10 @@ message Tile {
 
 	required Vector3dBlock vector3dBlock = 1;
 	required Vector2dBlock vector2dBlock = 2;
-	required MaterialBlock materialBlock = 3;
+	required StringBlock stringBlock = 3;
+	required MaterialBlock materialBlock = 4;
 
-	repeated WorldObject objects = 4;
+	repeated WorldObject objects = 5;
 
 }
+
