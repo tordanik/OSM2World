@@ -44,6 +44,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCoordFunction;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock;
@@ -405,6 +406,11 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		layerBuilder.setTextureHeight((int)round(textureData.height * 1000));
 		layerBuilder.setTextureWidth((int)round(textureData.width * 1000));
 
+		if (textureData.coordFunction == GLOBAL_X_Z) {
+			//TODO: GLOBAL_X_Z could also be the module's default rather than a config setting
+			layerBuilder.setTexCoordFunction(TexCoordFunction.GLOBAL_X_Z);
+		}
+
 		return layerBuilder.build();
 
 	}
@@ -495,8 +501,16 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 			List<VectorXZ> texCoords = new ArrayList<VectorXZ>();
 
-			for (List<VectorXZ> list : triangleData.getTexCoordLists()) {
-				texCoords.addAll(list);
+			for (int layer = 0; layer < triangleData.getTexCoordLists().size(); layer++) {
+
+				// check if the tex coords can be calculated in the client
+				if (material.getTextureDataList().get(layer).coordFunction != GLOBAL_X_Z) {
+
+					// append the texture coordinates for this layer
+					texCoords.addAll(triangleData.getTexCoordLists().get(layer));
+
+				}
+
 			}
 
 			for (VectorXZ v : texCoords) {
