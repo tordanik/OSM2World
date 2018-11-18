@@ -683,7 +683,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 		FrontendPbfTarget target = new FrontendPbfTarget(output, mapData.getBoundary());
 
-		TargetUtil.renderWorldObjects(target, mapData, true);
+		TargetUtil.renderWorldObjects(target, mapData, false);
 
 		target.finish();
 
