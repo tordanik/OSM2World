@@ -25,6 +25,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -544,26 +545,32 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 
 		TriangleData triangleData = new TriangleData(TERRAIN_DEFAULT.getNumTextureLayers());
 
-		for (PolygonWithHolesXZ poly : CAGUtil.subtractPolygons(bbox.polygonXZ(), waterAreas)) {
+		try {
 
-			List<TriangleXZ> triangles = TriangulationUtil.triangulate(poly);
+			for (PolygonWithHolesXZ poly : CAGUtil.subtractPolygons(bbox.polygonXZ(), waterAreas)) {
 
-			List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>(triangles.size());
-			List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangles.size() * 3);
+				List<TriangleXZ> triangles = TriangulationUtil.triangulate(poly);
 
-			for (TriangleXZ triangle : triangles) {
+				List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>(triangles.size());
+				List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangles.size() * 3);
 
-				TriangleXYZ triangleXYZ = triangle.xyz(FLOOR_PLATE_Y);
+				for (TriangleXZ triangle : triangles) {
 
-				trianglesXYZ.add(triangleXYZ);
-				vertices.addAll(triangleXYZ.getVertices());
+					TriangleXYZ triangleXYZ = triangle.xyz(FLOOR_PLATE_Y);
+
+					trianglesXYZ.add(triangleXYZ);
+					vertices.addAll(triangleXYZ.getVertices());
+
+				}
+
+				triangleData.add(vertices,
+						nCopies(vertices.size(), Y_UNIT),
+						triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
 
 			}
 
-			triangleData.add(vertices,
-					nCopies(vertices.size(), Y_UNIT),
-					triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
-
+		} catch (InvalidGeometryException e) {
+			System.err.println("Error while producing the floor plate: " + e);
 		}
 
 		return buildObject(null, singletonMap(TERRAIN_DEFAULT, triangleData));
