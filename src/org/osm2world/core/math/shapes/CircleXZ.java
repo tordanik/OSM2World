@@ -21,7 +21,15 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		this.center = center;
 		this.radius = radius;
 	}
-
+	
+	public VectorXZ getCenter() {
+		return center;
+	}
+	
+	public double getRadius() {
+		return radius;
+	}
+	
 	public List<VectorXZ> getVertexList(int numPoints) {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>(numPoints + 1);
@@ -64,6 +72,34 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		
 		return result;
 		
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		
+		if (other instanceof CircleXZ) {
+			return center.equals(((CircleXZ)other).center)
+				&& radius == ((CircleXZ)other).radius;
+		} else {
+			return false;
+		}
+		
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((center == null) ? 0 : center.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(radius);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "CircleXZ{center=" + center + ", radius=" + radius + "}";
 	}
 	
 }

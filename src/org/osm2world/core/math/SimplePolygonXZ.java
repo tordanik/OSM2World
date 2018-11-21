@@ -64,6 +64,22 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		return area;
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (obj instanceof SimplePolygonXZ) {
+			return vertexLoop.equals(((SimplePolygonXZ)obj).vertexLoop);
+		} else {
+			return false;
+		}
+		
+	}
+	
+	@Override
+	public int hashCode() {
+		return vertexLoop.hashCode();
+	}
+	
 	/** returns the centroid (or "barycenter") of the polygon */
 	public VectorXZ getCentroid() {
 		

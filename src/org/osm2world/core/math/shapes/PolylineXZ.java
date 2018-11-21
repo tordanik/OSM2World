@@ -141,6 +141,20 @@ public class PolylineXZ implements PolylineShapeXZ {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof PolylineXZ) {
+			return vertices.equals(((PolylineXZ)obj).vertices);
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return vertices.hashCode();
+	}
+	
+	@Override
 	public String toString() {
 		return vertices.toString();
 	}
