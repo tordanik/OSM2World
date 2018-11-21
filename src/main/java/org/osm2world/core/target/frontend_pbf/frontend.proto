@@ -44,7 +44,11 @@ message Shape {
 
 	enum ShapeType {
 
-		/* a circle. The single parameter represents the radius, in millimeters. */
+		/*
+		 * a circle. There are only two parameters:
+		 * - the center, as a reference to the vector2dBlock
+		 * - the radius, in millimeters.
+		 */
 		CIRCLE = 1;
 
 		/* a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. */
@@ -182,10 +186,10 @@ message ExtrusionGeometry {
 	/* referencing vector3dBlock */
 	repeated uint64 path = 3;
 
-	/* referencing vector3dBlock */
+	/* referencing vector3dBlock. Same length as path. */
 	repeated uint64 upVectors = 4;
 
-	/* in millimeters */
+	/* multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. */
 	repeated uint64 scaleFactors = 5;
 
 	//TODO: List<List<VectorXZ>> texCoordLists,

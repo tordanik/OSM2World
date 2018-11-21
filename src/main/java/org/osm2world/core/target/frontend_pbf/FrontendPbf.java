@@ -2789,7 +2789,9 @@ public final class FrontendPbf {
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
        * <pre>
-       * a circle. The single parameter represents the radius, in millimeters.
+       * a circle. There are only two parameters:
+       * - the center, as a reference to the vector2dBlock
+       * - the radius, in millimeters.
        * </pre>
        *
        * <code>CIRCLE = 1;</code>
@@ -2815,7 +2817,9 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * a circle. The single parameter represents the radius, in millimeters.
+       * a circle. There are only two parameters:
+       * - the center, as a reference to the vector2dBlock
+       * - the radius, in millimeters.
        * </pre>
        *
        * <code>CIRCLE = 1;</code>
@@ -9176,7 +9180,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock. Same length as path.
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -9184,7 +9188,7 @@ public final class FrontendPbf {
     java.util.List<java.lang.Long> getUpVectorsList();
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock. Same length as path.
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -9192,7 +9196,7 @@ public final class FrontendPbf {
     int getUpVectorsCount();
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock. Same length as path.
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -9201,7 +9205,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * in millimeters
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -9209,7 +9213,7 @@ public final class FrontendPbf {
     java.util.List<java.lang.Long> getScaleFactorsList();
     /**
      * <pre>
-     * in millimeters
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -9217,7 +9221,7 @@ public final class FrontendPbf {
     int getScaleFactorsCount();
     /**
      * <pre>
-     * in millimeters
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -9502,7 +9506,7 @@ public final class FrontendPbf {
     private java.util.List<java.lang.Long> upVectors_;
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock. Same length as path.
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -9513,7 +9517,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock. Same length as path.
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -9523,7 +9527,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock. Same length as path.
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -9536,7 +9540,7 @@ public final class FrontendPbf {
     private java.util.List<java.lang.Long> scaleFactors_;
     /**
      * <pre>
-     * in millimeters
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -9547,7 +9551,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * in millimeters
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -9557,7 +9561,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * in millimeters
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10311,7 +10315,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10322,7 +10326,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10332,7 +10336,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10342,7 +10346,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10356,7 +10360,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10369,7 +10373,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10384,7 +10388,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock. Same length as path.
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -10405,7 +10409,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10416,7 +10420,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10426,7 +10430,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10436,7 +10440,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10450,7 +10454,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10463,7 +10467,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10478,7 +10482,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * in millimeters
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
