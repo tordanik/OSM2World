@@ -269,6 +269,10 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToAllTargets> {
 		this.outputStream = outputStream;
 		this.bbox = bbox;
 
+		/* reserve index 0 for optional strings */
+
+		stringBlock.toIndex("");
+
 		/* initialize the vector blocks with frequently used values,
 		 * to make sure these have low indices (= more compact varints) */
 
