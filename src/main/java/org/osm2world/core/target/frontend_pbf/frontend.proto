@@ -151,6 +151,16 @@ message Material {
 
 }
 
+/* a block containing all template models used in this file.
+ * Each model is represented as a WorldObject with no id or type.
+ * A template model must not use InstanceGeometry itself. */
+message ModelBlock {
+
+	/* the template models that can be copied (with slight variations) in multiple locations */
+	repeated WorldObject models = 1;
+
+}
+
 /* geometry consisting of a set of triangles */
 message TriangleGeometry {
 
@@ -199,37 +209,42 @@ message ExtrusionGeometry {
 
 }
 
+/* copies of some prototype model, possibly rotated and scaled */
+message InstanceGeometry {
+
+	/* the prototype model, referencing the modelBlock */
+	required uint32 model = 1;
+
+	/* position of each instance, referencing the vector3dBlock */
+	repeated uint32 position = 2 [packed=true];
+
+	/* rotation angle around the y axis for each instance in milliradians, clockwise.
+	   Either the same length as pos or empty (for a default of 0). */
+	repeated int32 direction = 3 [packed=true];
+
+	/* scale factor for each instance in 1/1000.
+	   Either the same length as pos or empty (for a default of 1). */
+	repeated uint32 scale = 4 [packed=true];
+
+}
+
 /* a three-dimensional object */
 message WorldObject {
 
 	/* the OSM id of the primary element this object is created from, if any */
 	optional string osmId = 1;
 
-	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
-	repeated TriangleGeometry triangleGeometries = 2;
-
-	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
-	repeated ExtrusionGeometry extrusionGeometries = 3;
-
 	/* the type of this WorldObject, in broad terms. References stringBlock. */
-	optional uint32 typeName = 4;
+	optional uint32 typeName = 2;
 
-}
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated TriangleGeometry triangleGeometries = 3;
 
-/* a copy of some prototype model, possibly rotated and scaled */
-message InstanceGeometry {
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated ExtrusionGeometry extrusionGeometries = 4;
 
-	/* the prototype model, referencing the modelBlock */
-	required uint32 model = 1;
-
-	/* position of the instance */
-	required uint32 pos = 2;
-
-	/* angle in milliradians, clockwise */
-	optional int32 rotateY = 3;
-
-	/* scale factor in 1/1000 */
-	optional sint32 scale = 4;
+	/* geometry this object is composed of; at least 1 of this or one of the other geometry types is required */
+	repeated InstanceGeometry instanceGeometries = 5;
 
 }
 
@@ -241,8 +256,9 @@ message Tile {
 	required StringBlock stringBlock = 3;
 	required ShapeBlock shapeBlock = 4;
 	required MaterialBlock materialBlock = 5;
+	required ModelBlock modelBlock = 6;
 
-	repeated WorldObject objects = 6;
+	repeated WorldObject objects = 7;
 
 }
 
