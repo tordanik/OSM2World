@@ -9,7 +9,9 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GL
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -23,6 +25,8 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.frontend_pbf.ModelTarget;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
@@ -37,6 +41,67 @@ public class RailwayModule extends ConfigurableWorldModule {
 	/** accepted values of the railway key */
 	private static final List<String> RAILWAY_VALUES = asList(
 			"rail", "light_rail", "tram", "subway", "disused");
+
+	private static final int DEFAULT_GAUGE_MM = 1435;
+
+	/** by how much the ballast goes beyond the ends of the sleeper (on each side) */
+	private static final double GROUND_EXTRA_WIDTH = 0.2f;
+
+	/** by how much the sleeper goes beyond the rail (on each side) */
+	private static final double SLEEPER_EXTRA_WIDTH = 0.5f;
+
+	private static final double SLEEPER_LENGTH = 0.26f;
+	private static final double SLEEPER_HEIGHT = 0.16f * 0.4f; //extra factor to model sinking into the ballast
+
+	private static final double SLEEPER_DISTANCE = 0.6f + SLEEPER_LENGTH;
+
+	private static final float RAIL_HEAD_WIDTH = 0.067f; //must match RAIL_SHAPE
+	private static final ShapeXZ RAIL_SHAPE;
+
+	static {
+
+		List<VectorXZ> railShape = asList(
+				new VectorXZ(-0.45, 0), new VectorXZ(-0.1, 0.1),
+				new VectorXZ(-0.1, 0.5), new VectorXZ(-0.25, 0.55),
+				new VectorXZ(-0.25, 0.75), new VectorXZ(+0.25, 0.75),
+				new VectorXZ(+0.25, 0.55), new VectorXZ(+0.1, 0.5),
+				new VectorXZ(+0.1, 0.1), new VectorXZ(+0.45, 0));
+
+		for (int i=0; i < railShape.size(); i++) {
+			VectorXZ v = railShape.get(i);
+			v = v.mult(0.1117f);
+			v = new VectorXZ(-v.x, v.z + SLEEPER_HEIGHT);
+			railShape.set(i, v);
+		}
+
+		RAIL_SHAPE = new PolylineXZ(railShape);
+
+	}
+
+	private static class SleeperModel implements Model {
+
+		private final double sleeperWidth;
+
+		public SleeperModel(double sleeperWidth) {
+			this.sleeperWidth = sleeperWidth;
+		}
+
+		@Override
+		public void render(Target<?> target, VectorXYZ position, double direction,
+				Double height, Double width, Double length) {
+
+			if (height == null) { height = SLEEPER_HEIGHT; }
+			if (length == null) { length = SLEEPER_LENGTH; }
+			if (width == null) {width = sleeperWidth; }
+
+			target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
+					position, VectorXZ.fromAngle(direction),
+					height, width, length);
+
+		}
+	}
+
+	private final Map<Double, SleeperModel> sleeperModelByWidth = new HashMap<Double, SleeperModel>();
 
 	@Override
 	public void applyTo(MapData grid) {
@@ -67,50 +132,14 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class Rail extends AbstractNetworkWaySegmentWorldObject
+	private class Rail extends AbstractNetworkWaySegmentWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
-		private static final int DEFAULT_GAUGE_MM = 1435;
+		final double gaugeMeters;
+		final double railDist;
 
-		/** by how much the ballast goes beyond the ends of the sleeper (on each side) */
-		private static final float GROUND_EXTRA_WIDTH = 0.2f;
-
-		/** by how much the sleeper goes beyond the rail (on each side) */
-		private static final float SLEEPER_EXTRA_WIDTH = 0.5f;
-
-		private static final float SLEEPER_LENGTH = 0.26f;
-		private static final float SLEEPER_HEIGHT = 0.16f * 0.4f; //extra factor to model sinking into the ballast
-
-		private static final float SLEEPER_DISTANCE = 0.6f + SLEEPER_LENGTH;
-
-		private static final float RAIL_HEAD_WIDTH = 0.067f; //must match RAIL_SHAPE
-		private static final ShapeXZ RAIL_SHAPE;
-
-		static {
-
-			List<VectorXZ> railShape = asList(
-					new VectorXZ(-0.45, 0), new VectorXZ(-0.1, 0.1),
-					new VectorXZ(-0.1, 0.5), new VectorXZ(-0.25, 0.55),
-					new VectorXZ(-0.25, 0.75), new VectorXZ(+0.25, 0.75),
-					new VectorXZ(+0.25, 0.55), new VectorXZ(+0.1, 0.5),
-					new VectorXZ(+0.1, 0.1), new VectorXZ(+0.45, 0));
-
-			for (int i=0; i < railShape.size(); i++) {
-				VectorXZ v = railShape.get(i);
-				v = v.mult(0.1117f);
-				v = new VectorXZ(-v.x, v.z + SLEEPER_HEIGHT);
-				railShape.set(i, v);
-			}
-
-			RAIL_SHAPE = new PolylineXZ(railShape);
-
-		}
-
-		final float gaugeMeters;
-		final float railDist;
-
-		final float sleeperWidth;
-		final float groundWidth;
+		final double sleeperWidth;
+		final double groundWidth;
 
 		public Rail(MapWaySegment segment) {
 
@@ -121,6 +150,10 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			sleeperWidth = gaugeMeters + 2 * RAIL_HEAD_WIDTH + 2 * SLEEPER_EXTRA_WIDTH;
 			groundWidth = sleeperWidth + 2 * GROUND_EXTRA_WIDTH;
+
+			if (!sleeperModelByWidth.containsKey(sleeperWidth)) {
+				sleeperModelByWidth.put(sleeperWidth, new SleeperModel(sleeperWidth));
+			}
 
 		}
 
@@ -159,11 +192,11 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			railLines[0] = WorldModuleGeometryUtil.createLineBetween(
 					getOutline(false), getOutline(true),
-					((groundWidth - railDist) / groundWidth) / 2);
+					(float) ((groundWidth - railDist) / groundWidth) / 2);
 
 			railLines[1] = WorldModuleGeometryUtil.createLineBetween(
 					getOutline(false), getOutline(true),
-					1 - ((groundWidth - railDist) / groundWidth) / 2);
+					(float) (1 - ((groundWidth - railDist) / groundWidth) / 2));
 
 			for (List<VectorXYZ> railLine : railLines) {
 
@@ -180,9 +213,21 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			for (VectorXYZ sleeperPosition : sleeperPositions) {
 
-				target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
-						sleeperPosition, segment.getDirection(),
-						SLEEPER_HEIGHT, sleeperWidth, SLEEPER_LENGTH);
+				SleeperModel sleeperModel = sleeperModelByWidth.get(sleeperWidth);
+
+				if (target instanceof ModelTarget<?>) {
+
+					((ModelTarget<?>)target).drawModel(sleeperModel,
+							sleeperPosition, segment.getDirection().angle(),
+							null, sleeperWidth, null);
+
+				} else {
+
+					sleeperModel.render(target,
+							sleeperPosition, segment.getDirection().angle(),
+							null, sleeperWidth, null);
+
+				}
 
 			}
 
@@ -190,7 +235,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 		@Override
 		public float getWidth() {
-			return groundWidth;
+			return (float)groundWidth;
 		}
 
 	}
