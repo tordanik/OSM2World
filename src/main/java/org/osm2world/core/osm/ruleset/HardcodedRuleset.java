@@ -17,6 +17,7 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("area", "yes"));
 		areaTags.add(new Tag("amenity", "fountain"));
 		areaTags.add(new Tag("amenity", "parking"));
+		areaTags.add(new Tag("amenity", "parking_space"));
 		areaTags.add(new Tag("amenity", "swimming_pool"));
 		areaTags.add(new Tag("leisure", "pitch"));
 		areaTags.add(new Tag("leisure", "swimming_pool"));

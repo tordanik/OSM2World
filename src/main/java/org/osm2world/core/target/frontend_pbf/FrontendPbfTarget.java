@@ -48,6 +48,7 @@ import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
+import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry;
@@ -435,7 +436,11 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 				InstanceGeometry.Builder geometryBuilder = InstanceGeometry.newBuilder();
 
-				geometryBuilder.setModel(modelBlock.toIndex(model));
+				if (model instanceof ExternalResourceModel) {
+					geometryBuilder.setResourceIdentifier(((ExternalResourceModel)model).getResourceIdentifier());
+				} else {
+					geometryBuilder.setModel(modelBlock.toIndex(model));
+				}
 
 				boolean allUnrotated = true;
 				boolean allUnscaled = true;

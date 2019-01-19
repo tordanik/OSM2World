@@ -212,8 +212,13 @@ message ExtrusionGeometry {
 /* copies of some prototype model, possibly rotated and scaled */
 message InstanceGeometry {
 
-	/* the prototype model, referencing the modelBlock */
-	required uint32 model = 1;
+	/* the prototype model, referencing the modelBlock.
+	   Alternatively, an external resource can be referenced using resourceIdentifier. */
+	optional uint32 model = 1;
+
+	/* string identifying an external model in some way, e.g. as an URI or a string constant.
+	   Alternatively, a prototype model included in this file can be referenced using the model field. */
+	optional string resourceIdentifier = 5;
 
 	/* position of each instance, referencing the vector3dBlock */
 	repeated uint32 position = 2 [packed=true];

@@ -11533,20 +11533,51 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the prototype model, referencing the modelBlock
+     * the prototype model, referencing the modelBlock.
+     *Alternatively, an external resource can be referenced using resourceIdentifier.
      * </pre>
      *
-     * <code>required uint32 model = 1;</code>
+     * <code>optional uint32 model = 1;</code>
      */
     boolean hasModel();
     /**
      * <pre>
-     * the prototype model, referencing the modelBlock
+     * the prototype model, referencing the modelBlock.
+     *Alternatively, an external resource can be referenced using resourceIdentifier.
      * </pre>
      *
-     * <code>required uint32 model = 1;</code>
+     * <code>optional uint32 model = 1;</code>
      */
     int getModel();
+
+    /**
+     * <pre>
+     * string identifying an external model in some way, e.g. as an URI or a string constant.
+     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     * </pre>
+     *
+     * <code>optional string resourceIdentifier = 5;</code>
+     */
+    boolean hasResourceIdentifier();
+    /**
+     * <pre>
+     * string identifying an external model in some way, e.g. as an URI or a string constant.
+     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     * </pre>
+     *
+     * <code>optional string resourceIdentifier = 5;</code>
+     */
+    java.lang.String getResourceIdentifier();
+    /**
+     * <pre>
+     * string identifying an external model in some way, e.g. as an URI or a string constant.
+     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     * </pre>
+     *
+     * <code>optional string resourceIdentifier = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getResourceIdentifierBytes();
 
     /**
      * <pre>
@@ -11647,6 +11678,7 @@ public final class FrontendPbf {
     }
     private InstanceGeometry() {
       model_ = 0;
+      resourceIdentifier_ = "";
       position_ = java.util.Collections.emptyList();
       direction_ = java.util.Collections.emptyList();
       scale_ = java.util.Collections.emptyList();
@@ -11682,9 +11714,9 @@ public final class FrontendPbf {
               break;
             }
             case 16: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
                 position_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000004;
               }
               position_.add(input.readUInt32());
               break;
@@ -11692,9 +11724,9 @@ public final class FrontendPbf {
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
                 position_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000004;
               }
               while (input.getBytesUntilLimit() > 0) {
                 position_.add(input.readUInt32());
@@ -11703,9 +11735,9 @@ public final class FrontendPbf {
               break;
             }
             case 24: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 direction_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               direction_.add(input.readInt32());
               break;
@@ -11713,9 +11745,9 @@ public final class FrontendPbf {
             case 26: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008) && input.getBytesUntilLimit() > 0) {
                 direction_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               while (input.getBytesUntilLimit() > 0) {
                 direction_.add(input.readInt32());
@@ -11724,9 +11756,9 @@ public final class FrontendPbf {
               break;
             }
             case 32: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
                 scale_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000008;
+                mutable_bitField0_ |= 0x00000010;
               }
               scale_.add(input.readUInt32());
               break;
@@ -11734,14 +11766,20 @@ public final class FrontendPbf {
             case 34: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010) && input.getBytesUntilLimit() > 0) {
                 scale_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000008;
+                mutable_bitField0_ |= 0x00000010;
               }
               while (input.getBytesUntilLimit() > 0) {
                 scale_.add(input.readUInt32());
               }
               input.popLimit(limit);
+              break;
+            }
+            case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              resourceIdentifier_ = bs;
               break;
             }
             default: {
@@ -11759,13 +11797,13 @@ public final class FrontendPbf {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           position_ = java.util.Collections.unmodifiableList(position_);
         }
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           direction_ = java.util.Collections.unmodifiableList(direction_);
         }
-        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
           scale_ = java.util.Collections.unmodifiableList(scale_);
         }
         this.unknownFields = unknownFields.build();
@@ -11790,23 +11828,82 @@ public final class FrontendPbf {
     private int model_;
     /**
      * <pre>
-     * the prototype model, referencing the modelBlock
+     * the prototype model, referencing the modelBlock.
+     *Alternatively, an external resource can be referenced using resourceIdentifier.
      * </pre>
      *
-     * <code>required uint32 model = 1;</code>
+     * <code>optional uint32 model = 1;</code>
      */
     public boolean hasModel() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
      * <pre>
-     * the prototype model, referencing the modelBlock
+     * the prototype model, referencing the modelBlock.
+     *Alternatively, an external resource can be referenced using resourceIdentifier.
      * </pre>
      *
-     * <code>required uint32 model = 1;</code>
+     * <code>optional uint32 model = 1;</code>
      */
     public int getModel() {
       return model_;
+    }
+
+    public static final int RESOURCEIDENTIFIER_FIELD_NUMBER = 5;
+    private volatile java.lang.Object resourceIdentifier_;
+    /**
+     * <pre>
+     * string identifying an external model in some way, e.g. as an URI or a string constant.
+     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     * </pre>
+     *
+     * <code>optional string resourceIdentifier = 5;</code>
+     */
+    public boolean hasResourceIdentifier() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <pre>
+     * string identifying an external model in some way, e.g. as an URI or a string constant.
+     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     * </pre>
+     *
+     * <code>optional string resourceIdentifier = 5;</code>
+     */
+    public java.lang.String getResourceIdentifier() {
+      java.lang.Object ref = resourceIdentifier_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          resourceIdentifier_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * string identifying an external model in some way, e.g. as an URI or a string constant.
+     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     * </pre>
+     *
+     * <code>optional string resourceIdentifier = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getResourceIdentifierBytes() {
+      java.lang.Object ref = resourceIdentifier_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        resourceIdentifier_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     public static final int POSITION_FIELD_NUMBER = 2;
@@ -11927,10 +12024,6 @@ public final class FrontendPbf {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasModel()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -11962,6 +12055,9 @@ public final class FrontendPbf {
       }
       for (int i = 0; i < scale_.size(); i++) {
         output.writeUInt32NoTag(scale_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, resourceIdentifier_);
       }
       unknownFields.writeTo(output);
     }
@@ -12018,6 +12114,9 @@ public final class FrontendPbf {
         }
         scaleMemoizedSerializedSize = dataSize;
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, resourceIdentifier_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -12039,6 +12138,11 @@ public final class FrontendPbf {
         result = result && (getModel()
             == other.getModel());
       }
+      result = result && (hasResourceIdentifier() == other.hasResourceIdentifier());
+      if (hasResourceIdentifier()) {
+        result = result && getResourceIdentifier()
+            .equals(other.getResourceIdentifier());
+      }
       result = result && getPositionList()
           .equals(other.getPositionList());
       result = result && getDirectionList()
@@ -12059,6 +12163,10 @@ public final class FrontendPbf {
       if (hasModel()) {
         hash = (37 * hash) + MODEL_FIELD_NUMBER;
         hash = (53 * hash) + getModel();
+      }
+      if (hasResourceIdentifier()) {
+        hash = (37 * hash) + RESOURCEIDENTIFIER_FIELD_NUMBER;
+        hash = (53 * hash) + getResourceIdentifier().hashCode();
       }
       if (getPositionCount() > 0) {
         hash = (37 * hash) + POSITION_FIELD_NUMBER;
@@ -12211,12 +12319,14 @@ public final class FrontendPbf {
         super.clear();
         model_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        position_ = java.util.Collections.emptyList();
+        resourceIdentifier_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        direction_ = java.util.Collections.emptyList();
+        position_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000004);
-        scale_ = java.util.Collections.emptyList();
+        direction_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
+        scale_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -12249,19 +12359,23 @@ public final class FrontendPbf {
           to_bitField0_ |= 0x00000001;
         }
         result.model_ = model_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          position_ = java.util.Collections.unmodifiableList(position_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
         }
-        result.position_ = position_;
+        result.resourceIdentifier_ = resourceIdentifier_;
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          direction_ = java.util.Collections.unmodifiableList(direction_);
+          position_ = java.util.Collections.unmodifiableList(position_);
           bitField0_ = (bitField0_ & ~0x00000004);
         }
-        result.direction_ = direction_;
+        result.position_ = position_;
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          scale_ = java.util.Collections.unmodifiableList(scale_);
+          direction_ = java.util.Collections.unmodifiableList(direction_);
           bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.direction_ = direction_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          scale_ = java.util.Collections.unmodifiableList(scale_);
+          bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.scale_ = scale_;
         result.bitField0_ = to_bitField0_;
@@ -12316,10 +12430,15 @@ public final class FrontendPbf {
         if (other.hasModel()) {
           setModel(other.getModel());
         }
+        if (other.hasResourceIdentifier()) {
+          bitField0_ |= 0x00000002;
+          resourceIdentifier_ = other.resourceIdentifier_;
+          onChanged();
+        }
         if (!other.position_.isEmpty()) {
           if (position_.isEmpty()) {
             position_ = other.position_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensurePositionIsMutable();
             position_.addAll(other.position_);
@@ -12329,7 +12448,7 @@ public final class FrontendPbf {
         if (!other.direction_.isEmpty()) {
           if (direction_.isEmpty()) {
             direction_ = other.direction_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           } else {
             ensureDirectionIsMutable();
             direction_.addAll(other.direction_);
@@ -12339,7 +12458,7 @@ public final class FrontendPbf {
         if (!other.scale_.isEmpty()) {
           if (scale_.isEmpty()) {
             scale_ = other.scale_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
           } else {
             ensureScaleIsMutable();
             scale_.addAll(other.scale_);
@@ -12353,9 +12472,6 @@ public final class FrontendPbf {
 
       @java.lang.Override
       public final boolean isInitialized() {
-        if (!hasModel()) {
-          return false;
-        }
         return true;
       }
 
@@ -12382,30 +12498,33 @@ public final class FrontendPbf {
       private int model_ ;
       /**
        * <pre>
-       * the prototype model, referencing the modelBlock
+       * the prototype model, referencing the modelBlock.
+       *Alternatively, an external resource can be referenced using resourceIdentifier.
        * </pre>
        *
-       * <code>required uint32 model = 1;</code>
+       * <code>optional uint32 model = 1;</code>
        */
       public boolean hasModel() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
        * <pre>
-       * the prototype model, referencing the modelBlock
+       * the prototype model, referencing the modelBlock.
+       *Alternatively, an external resource can be referenced using resourceIdentifier.
        * </pre>
        *
-       * <code>required uint32 model = 1;</code>
+       * <code>optional uint32 model = 1;</code>
        */
       public int getModel() {
         return model_;
       }
       /**
        * <pre>
-       * the prototype model, referencing the modelBlock
+       * the prototype model, referencing the modelBlock.
+       *Alternatively, an external resource can be referenced using resourceIdentifier.
        * </pre>
        *
-       * <code>required uint32 model = 1;</code>
+       * <code>optional uint32 model = 1;</code>
        */
       public Builder setModel(int value) {
         bitField0_ |= 0x00000001;
@@ -12415,10 +12534,11 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the prototype model, referencing the modelBlock
+       * the prototype model, referencing the modelBlock.
+       *Alternatively, an external resource can be referenced using resourceIdentifier.
        * </pre>
        *
-       * <code>required uint32 model = 1;</code>
+       * <code>optional uint32 model = 1;</code>
        */
       public Builder clearModel() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -12427,11 +12547,117 @@ public final class FrontendPbf {
         return this;
       }
 
+      private java.lang.Object resourceIdentifier_ = "";
+      /**
+       * <pre>
+       * string identifying an external model in some way, e.g. as an URI or a string constant.
+       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       * </pre>
+       *
+       * <code>optional string resourceIdentifier = 5;</code>
+       */
+      public boolean hasResourceIdentifier() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <pre>
+       * string identifying an external model in some way, e.g. as an URI or a string constant.
+       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       * </pre>
+       *
+       * <code>optional string resourceIdentifier = 5;</code>
+       */
+      public java.lang.String getResourceIdentifier() {
+        java.lang.Object ref = resourceIdentifier_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            resourceIdentifier_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * string identifying an external model in some way, e.g. as an URI or a string constant.
+       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       * </pre>
+       *
+       * <code>optional string resourceIdentifier = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getResourceIdentifierBytes() {
+        java.lang.Object ref = resourceIdentifier_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          resourceIdentifier_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * string identifying an external model in some way, e.g. as an URI or a string constant.
+       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       * </pre>
+       *
+       * <code>optional string resourceIdentifier = 5;</code>
+       */
+      public Builder setResourceIdentifier(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        resourceIdentifier_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * string identifying an external model in some way, e.g. as an URI or a string constant.
+       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       * </pre>
+       *
+       * <code>optional string resourceIdentifier = 5;</code>
+       */
+      public Builder clearResourceIdentifier() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        resourceIdentifier_ = getDefaultInstance().getResourceIdentifier();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * string identifying an external model in some way, e.g. as an URI or a string constant.
+       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       * </pre>
+       *
+       * <code>optional string resourceIdentifier = 5;</code>
+       */
+      public Builder setResourceIdentifierBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        resourceIdentifier_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<java.lang.Integer> position_ = java.util.Collections.emptyList();
       private void ensurePositionIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
           position_ = new java.util.ArrayList<java.lang.Integer>(position_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
          }
       }
       /**
@@ -12516,16 +12742,16 @@ public final class FrontendPbf {
        */
       public Builder clearPosition() {
         position_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
 
       private java.util.List<java.lang.Integer> direction_ = java.util.Collections.emptyList();
       private void ensureDirectionIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           direction_ = new java.util.ArrayList<java.lang.Integer>(direction_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
          }
       }
       /**
@@ -12617,16 +12843,16 @@ public final class FrontendPbf {
        */
       public Builder clearDirection() {
         direction_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
 
       private java.util.List<java.lang.Integer> scale_ = java.util.Collections.emptyList();
       private void ensureScaleIsMutable() {
-        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
           scale_ = new java.util.ArrayList<java.lang.Integer>(scale_);
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000010;
          }
       }
       /**
@@ -12718,7 +12944,7 @@ public final class FrontendPbf {
        */
       public Builder clearScale() {
         scale_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
         return this;
       }
@@ -13343,12 +13569,6 @@ public final class FrontendPbf {
           return false;
         }
       }
-      for (int i = 0; i < getInstanceGeometriesCount(); i++) {
-        if (!getInstanceGeometries(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -13836,11 +14056,6 @@ public final class FrontendPbf {
         }
         for (int i = 0; i < getExtrusionGeometriesCount(); i++) {
           if (!getExtrusionGeometries(i).isInitialized()) {
-            return false;
-          }
-        }
-        for (int i = 0; i < getInstanceGeometriesCount(); i++) {
-          if (!getInstanceGeometries(i).isInitialized()) {
             return false;
           }
         }
@@ -17178,25 +17393,26 @@ public final class FrontendPbf {
       "l\030\001 \002(\r\022\r\n\005shape\030\002 \002(\r\022\014\n\004path\030\003 \003(\004\022\021\n\t" +
       "upVectors\030\004 \003(\004\022\024\n\014scaleFactors\030\005 \003(\004\022\027\n" +
       "\010startCap\030\007 \001(\010:\005false\022\025\n\006endCap\030\010 \001(\010:\005" +
-      "false\"a\n\020InstanceGeometry\022\r\n\005model\030\001 \002(\r" +
-      "\022\024\n\010position\030\002 \003(\rB\002\020\001\022\025\n\tdirection\030\003 \003(" +
-      "\005B\002\020\001\022\021\n\005scale\030\004 \003(\rB\002\020\001\"\344\001\n\013WorldObject" +
-      "\022\r\n\005osmId\030\001 \001(\t\022\020\n\010typeName\030\002 \001(\r\022:\n\022tri" +
-      "angleGeometries\030\003 \003(\0132\036.frontend_pbf.Tri" +
-      "angleGeometry\022<\n\023extrusionGeometries\030\004 \003" +
-      "(\0132\037.frontend_pbf.ExtrusionGeometry\022:\n\022i" +
-      "nstanceGeometries\030\005 \003(\0132\036.frontend_pbf.I" +
-      "nstanceGeometry\"\332\002\n\004Tile\0222\n\rvector3dBloc" +
-      "k\030\001 \002(\0132\033.frontend_pbf.Vector3dBlock\0222\n\r" +
-      "vector2dBlock\030\002 \002(\0132\033.frontend_pbf.Vecto" +
-      "r2dBlock\022.\n\013stringBlock\030\003 \002(\0132\031.frontend" +
-      "_pbf.StringBlock\022,\n\nshapeBlock\030\004 \002(\0132\030.f" +
-      "rontend_pbf.ShapeBlock\0222\n\rmaterialBlock\030" +
-      "\005 \002(\0132\033.frontend_pbf.MaterialBlock\022,\n\nmo" +
-      "delBlock\030\006 \002(\0132\030.frontend_pbf.ModelBlock" +
-      "\022*\n\007objects\030\007 \003(\0132\031.frontend_pbf.WorldOb" +
-      "jectB5\n&org.osm2world.core.target.fronte" +
-      "nd_pbfB\013FrontendPbf"
+      "false\"}\n\020InstanceGeometry\022\r\n\005model\030\001 \001(\r" +
+      "\022\032\n\022resourceIdentifier\030\005 \001(\t\022\024\n\010position" +
+      "\030\002 \003(\rB\002\020\001\022\025\n\tdirection\030\003 \003(\005B\002\020\001\022\021\n\005sca" +
+      "le\030\004 \003(\rB\002\020\001\"\344\001\n\013WorldObject\022\r\n\005osmId\030\001 " +
+      "\001(\t\022\020\n\010typeName\030\002 \001(\r\022:\n\022triangleGeometr" +
+      "ies\030\003 \003(\0132\036.frontend_pbf.TriangleGeometr" +
+      "y\022<\n\023extrusionGeometries\030\004 \003(\0132\037.fronten" +
+      "d_pbf.ExtrusionGeometry\022:\n\022instanceGeome" +
+      "tries\030\005 \003(\0132\036.frontend_pbf.InstanceGeome" +
+      "try\"\332\002\n\004Tile\0222\n\rvector3dBlock\030\001 \002(\0132\033.fr" +
+      "ontend_pbf.Vector3dBlock\0222\n\rvector2dBloc" +
+      "k\030\002 \002(\0132\033.frontend_pbf.Vector2dBlock\022.\n\013" +
+      "stringBlock\030\003 \002(\0132\031.frontend_pbf.StringB" +
+      "lock\022,\n\nshapeBlock\030\004 \002(\0132\030.frontend_pbf." +
+      "ShapeBlock\0222\n\rmaterialBlock\030\005 \002(\0132\033.fron" +
+      "tend_pbf.MaterialBlock\022,\n\nmodelBlock\030\006 \002" +
+      "(\0132\030.frontend_pbf.ModelBlock\022*\n\007objects\030" +
+      "\007 \003(\0132\031.frontend_pbf.WorldObjectB5\n&org." +
+      "osm2world.core.target.frontend_pbfB\013Fron" +
+      "tendPbf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -17281,7 +17497,7 @@ public final class FrontendPbf {
     internal_static_frontend_pbf_InstanceGeometry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_InstanceGeometry_descriptor,
-        new java.lang.String[] { "Model", "Position", "Direction", "Scale", });
+        new java.lang.String[] { "Model", "ResourceIdentifier", "Position", "Direction", "Scale", });
     internal_static_frontend_pbf_WorldObject_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_frontend_pbf_WorldObject_fieldAccessorTable = new
