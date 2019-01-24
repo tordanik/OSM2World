@@ -620,7 +620,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 			shapeBuilder.setType(ShapeType.POLYGON);
 
 			for (int i = 0; i < s.getVertexList().size() - 1; i++) { //omit the duplicated vector
-				shapeBuilder.addParameters(vector2dBlock.toIndex(s.getVertexList().get(i)));
+				shapeBuilder.addParameters(round(s.getVertexList().get(i).x * COORD_PRECISION_FACTOR));
+				shapeBuilder.addParameters(round(s.getVertexList().get(i).z * COORD_PRECISION_FACTOR));
 			}
 
 		} else {
@@ -628,7 +629,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 			shapeBuilder.setType(ShapeType.POLYLINE);
 
 			for (VectorXZ v : s.getVertexList()) {
-				shapeBuilder.addParameters(vector2dBlock.toIndex(v));
+				shapeBuilder.addParameters(round(v.x * COORD_PRECISION_FACTOR));
+				shapeBuilder.addParameters(round(v.z * COORD_PRECISION_FACTOR));
 			}
 
 		}
