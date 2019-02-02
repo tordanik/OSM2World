@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -824,7 +826,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 		if (USE_FLOOR_PLATE) {
 			try {
 				objects.add(buildFloorPlate());
-			} catch (InvalidGeometryException e) {
+			} catch (InvalidGeometryException | IllegalStateException | TopologyException | ConstraintEnforcementException e) {
 				System.err.println("Error while producing the floor plate: " + e);
 			}
 		}
