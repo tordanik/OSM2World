@@ -729,14 +729,20 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 		if (USE_FLOOR_PLATE) {
 			if (isWater(currentObjectBuilder.worldObject)) {
 
-				SimplePolygonXZ outline = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject)
-						.getOutlinePolygonXZ();
+				try {
 
-				if (outline != null) {
-					waterAreas.add(outline);
+					SimplePolygonXZ outline = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject)
+							.getOutlinePolygonXZ();
+
+					if (outline != null) {
+						waterAreas.add(outline);
+					}
+
+					return;
+
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
 				}
-
-				return;
 
 			}
 		}
