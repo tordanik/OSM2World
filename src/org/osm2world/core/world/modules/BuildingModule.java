@@ -14,6 +14,7 @@ import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -61,6 +62,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.CSSColors;
+import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -84,21 +86,23 @@ public class BuildingModule extends ConfigurableWorldModule {
 		boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
 		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
 		
-		for (MapArea area : mapData.getMapAreas()) {
-			
-			if (!area.getRepresentations().isEmpty()) continue;
-			
-			String buildingValue = area.getTags().getValue("building");
-			
-			if (buildingValue != null && !buildingValue.equals("no")) {
+		iterate(mapData.getMapAreas(), new Operation<MapArea>() {
+			@Override public void perform(MapArea area) {
+
+				if (!area.getRepresentations().isEmpty()) return;
 				
-				Building building = new Building(area,
-						useBuildingColors, drawBuildingWindows);
-				area.addRepresentation(building);
-								
+				String buildingValue = area.getTags().getValue("building");
+				
+				if (buildingValue != null && !buildingValue.equals("no")) {
+					
+					Building building = new Building(area,
+							useBuildingColors, drawBuildingWindows);
+					area.addRepresentation(building);
+									
+				}
+				
 			}
-			
-		}
+		});
 		
 	}
 	
