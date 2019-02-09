@@ -25,6 +25,7 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
@@ -159,7 +160,18 @@ public class TreeModule extends ConfigurableWorldModule {
 		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 			
 			if (segment.getTags().contains(new Tag("natural", "tree_row"))) {
-				segment.addRepresentation(new TreeRow(segment));
+				
+				// if the row's trees are already represented as nodes, skip it
+				boolean hasTreesAsNodes = false;
+				
+				for (OSMNode n : segment.getOsmWay().nodes) {
+					hasTreesAsNodes |= n.tags.contains("natural", "tree");
+				}
+				
+				if (!hasTreesAsNodes) {
+					segment.addRepresentation(new TreeRow(segment));
+				}
+				
 			}
 			
 		}
