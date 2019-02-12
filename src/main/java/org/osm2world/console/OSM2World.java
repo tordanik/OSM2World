@@ -53,6 +53,12 @@ public class OSM2World {
 			System.exit(1);
 		}
 
+		/* check for parameter file directory mode */
+
+		if (args.isParameterFileDir()) {
+			ParamFileDirMode.run(args.getParameterFileDir());
+		}
+
 		/* parse lines from parameter file (if one exists) */
 
 		List<CLIArguments> argumentsList = Collections.singletonList(args);

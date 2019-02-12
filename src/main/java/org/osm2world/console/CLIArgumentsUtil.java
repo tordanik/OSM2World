@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public final class CLIArgumentsUtil {
 
-	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE}
+	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
 	public static enum OutputMode {OBJ, POV, WEB_PBF, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
 
@@ -96,11 +96,12 @@ public final class CLIArgumentsUtil {
 	}
 
 	public static final ProgramMode getProgramMode(CLIArguments args) {
-		return args.isParameterFile() ? PARAMFILE
-				: args.getHelp() ? HELP
-					: args.getVersion() ? VERSION
-						: args.getGui() ? GUI
-							: CONVERT;
+		return args.isParameterFileDir() ? PARAMFILEDIR
+				: args.isParameterFile() ? PARAMFILE
+					: args.getHelp() ? HELP
+						: args.getVersion() ? VERSION
+							: args.getGui() ? GUI
+								: CONVERT;
 	}
 
 	public static final OutputMode getOutputMode(File outputFile) {

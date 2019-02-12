@@ -120,4 +120,8 @@ public interface CLIArguments {
 	File getParameterFile();
 	boolean isParameterFile();
 
+	@Option(description="a directory containing parameter files; new files may be added while OSM2World is running")
+	File getParameterFileDir();
+	boolean isParameterFileDir();
+
 }
