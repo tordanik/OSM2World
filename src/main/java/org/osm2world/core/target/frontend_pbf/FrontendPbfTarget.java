@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
+import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -523,6 +524,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 	private final OutputStream outputStream;
 	private final AxisAlignedBoundingBoxXZ bbox;
+	private final MapProjection projection;
 
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
 	private final Block<VectorXZ> vector2dBlock = new VectorBlock<VectorXZ>();
@@ -542,11 +544,13 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	 * @param outputStream
 	 * @param bbox  the desired bounding box for the output.
 	 *              Objects are part of the output if their center is inside this box.
+	 * @param projection
 	 */
-	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedBoundingBoxXZ bbox) {
+	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedBoundingBoxXZ bbox, MapProjection projection) {
 
 		this.outputStream = outputStream;
 		this.bbox = bbox;
+		this.projection = projection;
 
 		/* reserve index 0 for optional strings */
 
@@ -900,7 +904,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 	}
 
-	public static void writePbfFile(File outputFile, MapData mapData) throws IOException {
+	public static void writePbfFile(File outputFile, MapData mapData,
+			AxisAlignedBoundingBoxXZ bbox, MapProjection projection) throws IOException {
 
 		FileOutputStream output = null;
 
@@ -908,7 +913,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 			output = new FileOutputStream(outputFile);
 
-			writePbfStream(output, mapData);
+			writePbfStream(output, mapData, bbox, projection);
 
 		} finally {
 			if (output != null) {
@@ -918,9 +923,14 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 	}
 
-	public static void writePbfStream(OutputStream output, MapData mapData) throws IOException {
+	public static void writePbfStream(OutputStream output, MapData mapData,
+			AxisAlignedBoundingBoxXZ bbox, MapProjection projection) throws IOException {
 
-		FrontendPbfTarget target = new FrontendPbfTarget(output, mapData.getBoundary());
+		if (bbox == null) {
+			bbox = mapData.getBoundary();
+		}
+
+		FrontendPbfTarget target = new FrontendPbfTarget(output, bbox, projection);
 
 		TargetUtil.renderWorldObjects(target, mapData, false);
 

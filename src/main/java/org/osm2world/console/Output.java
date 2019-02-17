@@ -203,8 +203,13 @@ public final class Output {
 					break;
 
 				case WEB_PBF:
+					AxisAlignedBoundingBoxXZ bbox = null;
+					if (args.isOviewTiles()) {
+						// TODO define a more generic --tiles parameter (as well as --bbox)
+						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
+					}
 					FrontendPbfTarget.writePbfFile(
-							outputFile, results.getMapData());
+							outputFile, results.getMapData(), bbox, results.getMapProjection());
 					break;
 
 				case PNG:

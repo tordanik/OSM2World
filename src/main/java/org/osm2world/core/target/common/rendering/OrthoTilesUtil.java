@@ -155,7 +155,7 @@ public final class OrthoTilesUtil {
 
 	}
 
-	private static final AxisAlignedBoundingBoxXZ boundsForTiles(
+	public static final AxisAlignedBoundingBoxXZ boundsForTiles(
 			MapProjection mapProjection, List<TileNumber> tiles) {
 
 		AxisAlignedBoundingBoxXZ result = boundsForTile(mapProjection, tiles.get(0));
