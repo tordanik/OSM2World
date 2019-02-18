@@ -5,7 +5,7 @@ import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -1288,7 +1288,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 		
 		private void renderStepsTo(Target<?> target) {
-			
+						
 			final VectorXZ startWithOffset = getStartPosition();
 			final VectorXZ endWithOffset = getEndPosition();
 		
@@ -1343,25 +1343,51 @@ public class RoadModule extends ConfigurableWorldModule {
 				VectorXYZ frontCenter = stepBorderPositions.get(step);
 				VectorXYZ backCenter = stepBorderPositions.get(step+1);
 				
-				double height = abs(frontCenter.y - backCenter.y);
-								
-				VectorXYZ center = (frontCenter.add(backCenter)).mult(0.5);
-				center = center.subtract(Y_UNIT.mult(0.5 * height));
+				VectorXYZ frontLeft = frontCenter.subtract(segment.getRightNormal().mult(0.5 * width));
+				VectorXYZ frontRight = frontCenter.add(segment.getRightNormal().mult(0.5 * width));
 				
-				VectorXZ faceDirection = segment.getDirection();
-				if (frontCenter.y < backCenter.y) {
-					//invert if upwards
-					faceDirection = faceDirection.invert();
+				VectorXYZ backLeft = backCenter.subtract(segment.getRightNormal().mult(0.5 * width));
+				VectorXYZ backRight = backCenter.add(segment.getRightNormal().mult(0.5 * width));
+				
+				boolean frontIsLower = frontCenter.y < backCenter.y;
+				
+				if (abs(frontCenter.y - backCenter.y) < 0.01 && tags.containsKey("incline")) {
+					if (tags.contains("incline", "up")
+							|| parseIncline(tags.getValue("incline")) != null && parseIncline(tags.getValue("incline")) > 0) {
+						frontIsLower = true;
+					} else if (tags.contains("incline", "down")
+							|| parseIncline(tags.getValue("incline")) != null && parseIncline(tags.getValue("incline")) < 0) {
+						frontIsLower = false;
+					}
+				}
+
+				VectorXYZ edgeLeft, edgeRight;
+				
+				if (frontIsLower) {
+					double edgeY = Double.max(backCenter.y, frontCenter.y + 0.1);
+					edgeLeft = frontLeft.y(edgeY);
+					edgeRight = frontRight.y(edgeY);
+				} else {
+					double edgeY = Double.max(frontCenter.y, backCenter.y + 0.1);
+					edgeLeft = backLeft.y(edgeY);
+					edgeRight = backRight.y(edgeY);
 				}
 				
-				target.drawBox(Materials.STEPS_DEFAULT,
-						center, faceDirection,
-						height, width, backCenter.distanceToXZ(frontCenter));
+				List<VectorXYZ> topStrip = asList(frontLeft, frontRight, edgeLeft, edgeRight, backLeft, backRight);
+				target.drawTriangleStrip(Materials.STEPS_DEFAULT, topStrip,
+						texCoordLists(topStrip, STEPS_DEFAULT, STRIP_WALL));
+				
+				List<TriangleXYZ> sideTriangles = asList(
+						new TriangleXYZ(frontLeft, edgeLeft, backLeft),
+						new TriangleXYZ(backRight, edgeRight, frontRight));
+				
+				target.drawTriangles(STEPS_DEFAULT, sideTriangles,
+						triangleTexCoordLists(sideTriangles, STEPS_DEFAULT, SLOPED_TRIANGLES));
 				
 			}
 			
 			/* draw handrails */
-			
+
 			List<List<VectorXYZ>> handrailFootprints =
 				new ArrayList<List<VectorXYZ>>();
 
