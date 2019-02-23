@@ -73,6 +73,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.PoolModule.Pool;
+import org.osm2world.core.world.modules.TreeModule.Forest;
 import org.osm2world.core.world.modules.WaterModule.AreaFountain;
 import org.osm2world.core.world.modules.WaterModule.RiverJunction;
 import org.osm2world.core.world.modules.WaterModule.Water;
@@ -770,7 +771,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 				center = ((MapArea) mapElement).getOuterPolygon().getCenter();
 			}
 
-			ignoreCurrentObject |= !bbox.contains(center);
+			// ignore objects (mostly) outside the bbox, except forests (which are filtered on a per-tree level)
+			ignoreCurrentObject |= !bbox.contains(center) && !(currentObjectBuilder.worldObject instanceof Forest);
 
 			ignoreCurrentObject |= USE_FLOOR_PLATE
 					&& mapElement.getTags().contains(EMPTY_SURFACE_TAG);
