@@ -21,22 +21,19 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
-import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
+import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
@@ -202,27 +199,10 @@ public class GolfModule extends AbstractModule {
 
 			holes.add(pinHoleLoop);
 
-			try {
-
-				return Poly2TriTriangulationUtil.triangulate(
-					area.getPolygon().getOuter(),
-					holes,
-					Collections.<LineSegmentXZ>emptyList(),
-					Collections.<VectorXZ>emptyList());
-
-			} catch (TriangulationException e) {
-
-				System.err.println("Poly2Tri exception for " + this + ":");
-				e.printStackTrace();
-				System.err.println("... falling back to JTS triangulation.");
-
-				return JTSTriangulationUtil.triangulate(
-						area.getPolygon().getOuter(),
-						holes,
-						Collections.<LineSegmentXZ>emptyList(),
-						Collections.<VectorXZ>emptyList());
-
-			}
+			return TriangulationUtil.triangulate(
+				area.getPolygon().getOuter(),
+				holes,
+				Collections.<VectorXZ>emptyList());
 
 		}
 

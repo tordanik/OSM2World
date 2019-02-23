@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
-import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -13,8 +12,8 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /**
- * triangulation utility class that uses {@link EarClippingTriangulationUtil},
- * and, as a fallback, {@link JTSTriangulationUtil}
+ * triangulation utility class that picks a suitable implementation, such as
+ * {@link Earcut4JTriangulationUtil} or {@link JTSTriangulationUtil}
  */
 public class TriangulationUtil {
 
@@ -26,26 +25,11 @@ public class TriangulationUtil {
 			Collection<SimplePolygonXZ> holes,
 			Collection<VectorXZ> points) {
 
-		if (points.isEmpty() && outerPolygon.size() <= 100) {
-
-			try {
-
-				return EarClippingTriangulationUtil.triangulate(outerPolygon, holes);
-
-			} catch (InvalidGeometryException e) {
-
-				//TODO (error handling): log failed triangulations properly (as info)
-
-				// e.printStackTrace();
-				// System.err.println("outer: " + outerPolygon);
-				// System.err.println("holes: " + holes);
-				// System.err.println("using JTS triangulation instead");
-
-			}
-
+		if (points.isEmpty()) {
+			return triangulate(outerPolygon, holes);
 		}
 
-		/* use JTS if there are unconnected points, or as a fallback */
+		/* use JTS if there are unconnected points */
 
 		try {
 
@@ -54,12 +38,11 @@ public class TriangulationUtil {
 
 		} catch (ConstraintEnforcementException e2) {
 
-			e2.printStackTrace();
-			System.err.println("outer: " + outerPolygon);
-			System.err.println("holes: " + holes);
-			System.err.println("JTS triangulation failed, returning empty list");
+			/* JTS triangulation failed, falling back to earcut */
 
-			return Collections.emptyList();
+			// TODO: log warning
+
+			return Earcut4JTriangulationUtil.triangulate(outerPolygon, holes, points);
 
 		}
 
@@ -72,8 +55,7 @@ public class TriangulationUtil {
 			SimplePolygonXZ outerPolygon,
 			Collection<SimplePolygonXZ> holes) {
 
-		return triangulate(outerPolygon, holes,
-				Collections.<VectorXZ>emptyList());
+		return Earcut4JTriangulationUtil.triangulate(outerPolygon, holes);
 
 	}
 

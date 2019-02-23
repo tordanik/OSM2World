@@ -9,7 +9,6 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTex
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -32,13 +30,11 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
-import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
-import org.osm2world.core.math.algorithms.Poly2TriTriangulationUtil;
+import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -272,27 +268,8 @@ public class SurfaceAreaModule extends AbstractModule {
 					}
 				}
 
-				try {
-
-					triangulationXZ.addAll(Poly2TriTriangulationUtil.triangulate(
-							polygon.getOuter(),
-							polygon.getHoles(),
-							Collections.<LineSegmentXZ>emptyList(),
-							points));
-
-				} catch (TriangulationException e) {
-
-					System.err.println("Poly2Tri exception for " + this + ":");
-					e.printStackTrace();
-					System.err.println("... falling back to JTS triangulation.");
-
-					triangulationXZ.addAll(JTSTriangulationUtil.triangulate(
-							polygon.getOuter(),
-							polygon.getHoles(),
-							Collections.<LineSegmentXZ>emptyList(),
-							points));
-
-				}
+				triangulationXZ.addAll(TriangulationUtil.triangulate(
+						polygon, points));
 
 			}
 

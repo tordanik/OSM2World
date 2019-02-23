@@ -5,6 +5,8 @@ package org.osm2world.core.util.exception;
  */
 public class TriangulationException extends Exception {
 
+	private static final long serialVersionUID = 1L;
+
 	public TriangulationException(String message, Throwable cause) {
 		super(message, cause);
 	}
@@ -16,7 +18,5 @@ public class TriangulationException extends Exception {
 	public TriangulationException(Throwable cause) {
 		super(cause);
 	}
-
-
 
 }

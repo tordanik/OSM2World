@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.min;
+import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 
 import java.util.ArrayList;
@@ -294,7 +295,20 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 
 	@Override
 	public Collection<TriangleXZ> getTriangulation() {
-		return TriangulationUtil.triangulate(this, Collections.<SimplePolygonXZ>emptyList());
+
+		List<TriangleXZ> result = TriangulationUtil.triangulate(this, emptyList());
+
+		//ensure that the triangles have the same winding as this shape
+		for (int i = 0; i < result.size(); i++) {
+			if (this.isClockwise()) {
+				result.set(i, result.get(i).makeClockwise());
+			} else {
+				result.set(i, result.get(i).makeCounterclockwise());
+			}
+		}
+
+		return result;
+
 	}
 
 	/**

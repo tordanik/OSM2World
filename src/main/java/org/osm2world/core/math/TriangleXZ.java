@@ -30,6 +30,10 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 		return ImmutableList.of(v1, v2, v3, v1);
 	}
 
+	public List<VectorXZ> getVertices() {
+		return ImmutableList.of(v1, v2, v3);
+	}
+
 	public VectorXZ getCenter() {
 		return new VectorXZ(
 				(v1.x + v2.x + v3.x) / 3,
