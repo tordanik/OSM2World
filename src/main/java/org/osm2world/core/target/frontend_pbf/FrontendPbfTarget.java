@@ -740,7 +740,12 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 							.getOutlinePolygonXZ();
 
 					if (outline != null) {
-						waterAreas.add(outline);
+						if (outline.getVertexCollection().stream().anyMatch(v -> bbox.contains(v))
+								|| outline.intersects(bbox.polygonXZ())) {
+
+							waterAreas.add(outline);
+
+						}
 					}
 
 					return;
