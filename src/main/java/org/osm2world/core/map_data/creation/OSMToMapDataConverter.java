@@ -236,6 +236,8 @@ public class OSMToMapDataConverter {
 
 		for (MapElement e1 : mapData.getMapElements()) {
 
+			if (e1.getTags().isEmpty() && e1 instanceof MapNode) continue;
+
 			/* collect all nearby elements */
 
 			Collection<? extends Iterable<MapElement>> leaves

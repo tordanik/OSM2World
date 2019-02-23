@@ -17,8 +17,8 @@ public class MapIntersectionGrid implements MapDataIndex {
 
 		intersectionGrid = new IntersectionGrid<MapElement>(
 				gridBounds,
-				gridBounds.sizeX() / 50,
-				gridBounds.sizeZ() / 50);
+				gridBounds.sizeX() / 1000,
+				gridBounds.sizeZ() / 1000);
 
 	}
 
