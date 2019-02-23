@@ -17,9 +17,11 @@ import java.util.Map;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonXYZ;
@@ -68,7 +70,23 @@ public class WaterModule extends ConfigurableWorldModule {
 		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			for (String value : WATERWAY_WIDTHS.keySet()) {
 				if (line.getTags().contains("waterway", value)) {
-					line.addRepresentation(new Waterway(line));
+
+					boolean lineInsideWaterArea = false;
+					boolean lineStartInsideWaterArea = false;
+					boolean lineEndInsideWaterArea = false;
+
+					for (MapOverlap<?, ?> overlap : line.getOverlaps()) {
+						MapElement other = overlap.getOther(line);
+						if (other instanceof MapArea) {
+							lineInsideWaterArea |= overlap.type == MapOverlapType.CONTAIN;
+							lineStartInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getStartNode().getPos());
+							lineEndInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getEndNode().getPos());
+						}
+					}
+
+					if (!lineInsideWaterArea && (!lineStartInsideWaterArea || !lineEndInsideWaterArea)) {
+						line.addRepresentation(new Waterway(line));
+					}
 				}
 			}
 		}
