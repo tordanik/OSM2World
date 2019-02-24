@@ -323,7 +323,16 @@ public class TreeModule extends ConfigurableWorldModule {
 	private void renderTreeModel(ModelTarget<?> target, MapElement element, VectorXYZ base,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
-		double height = getTreeHeight(element, leafType == LeafType.NEEDLELEAVED, false);
+		// if leaf type is unknown, make "random" decision based on x coord
+		if (leafType == null) {
+			if ((long)(base.getX()) % 2 == 0) {
+				leafType = LeafType.NEEDLELEAVED;
+			} else {
+				leafType = LeafType.BROADLEAVED;
+			}
+		}
+
+		double height = getTreeHeight(element, leafType == LeafType.NEEDLELEAVED, species != null);
 
 		TreeModel model = null;
 
