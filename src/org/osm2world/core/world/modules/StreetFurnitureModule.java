@@ -2,15 +2,15 @@ package org.osm2world.core.world.modules;
 
 import static java.awt.Color.*;
 import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
@@ -32,8 +32,12 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.material.*;
+import org.osm2world.core.target.common.material.ConfMaterial;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -521,19 +525,26 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.drawTriangleStrip(ADVERTISING_POSTER, vsListPoster,
 					texCoordLists(vsListPoster, ADVERTISING_POSTER, STRIP_FIT));
 
-			VectorXYZ[] vsBoard = {
+			List<VectorXYZ> vsBoard = asList(
 					vsPoster[2],
 					vsPoster[3],
 					vsPoster[0],
 					vsPoster[1]
-			};
+			);
 
-			List<VectorXYZ> vsListBoard = asList(vsBoard);
+			if (node.getTags().contains("two_sided", "yes")) {
 
-			Material backMaterial = node.getTags().contains("two_sided", "yes") ? ADVERTISING_POSTER : CONCRETE;
+				Material backMaterial = ADVERTISING_POSTER;
+				target.drawTriangleStrip(backMaterial, vsBoard,
+						texCoordLists(vsBoard, backMaterial, STRIP_FIT));
 
-			target.drawTriangleStrip(backMaterial, vsListBoard,
-					texCoordLists(vsListBoard, backMaterial, STRIP_WALL));
+			} else {
+
+				Material backMaterial = CONCRETE;
+				target.drawTriangleStrip(backMaterial, vsBoard,
+						texCoordLists(vsBoard, backMaterial, STRIP_WALL));
+
+			}
 
 			/* draw frame */
 
