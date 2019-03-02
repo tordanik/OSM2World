@@ -9,11 +9,15 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.VectorXZ.listXYZ;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.target.common.material.Materials.SINGLE_WINDOW;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
@@ -63,6 +67,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -102,6 +107,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 	}
 
+	/**
+	 * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
+	 */
 	public static class Building implements AreaWorldObject,
 		WorldObjectWithOutline, RenderableToAllTargets {
 
@@ -314,6 +322,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private List<BuildingEntrance> entrances = new ArrayList<BuildingEntrance>();
 
+		private final List<Wall> walls;
 		private Roof roof;
 
 		public BuildingPart(Building building,
@@ -338,6 +347,29 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 
+			/* create walls */
+
+			//TODO use building:wall, use angles at nodes
+
+			walls = new ArrayList<>();
+
+			List<List<MapNode>> nodeRings = new ArrayList<>(area.getHoles());
+			nodeRings.add(area.getBoundaryNodes());
+
+			for (List<MapNode> nodeRing : nodeRings) {
+
+				List<MapNode> nodes = new ArrayList<>(nodeRing);
+
+				if (MapArea.polygonFromMapNodeLoop(nodes).isClockwise() ^ area.getHoles().contains(nodeRing)) {
+					reverse(nodes);
+				}
+
+				for (int i = 0; i + 1 < nodes.size(); i++) {
+					walls.add(new Wall(asList(nodes.get(i), nodes.get(i+1))));
+				}
+
+			}
+
 		}
 
 		public PolygonWithHolesXZ getPolygon() {
@@ -355,7 +387,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			renderWalls(target, roof);
+			//TODO
+			//renderWalls(target, roof);
+
+			walls.forEach(w -> w.renderTo(target));
 
 			roof.renderTo(target);
 
@@ -387,7 +422,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			if (area.getOverlaps().isEmpty()) {
 
-				renderWalls(target, roof.getPolygon(), false,
+				renderWalls(target, roof.getPolygon(),
 						baseEle, floorHeight, roof);
 
 			} else {
@@ -459,7 +494,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 							subtractPolygons);
 
 				for (PolygonWithHolesXZ p : buildingPartPolys) {
-					renderWalls(target, p, false, baseEle, floorHeight, roof);
+					renderWalls(target, p, baseEle, floorHeight, roof);
 					if (renderFloor) {
 						renderFloor(target, baseEle + floorHeight);
 					}
@@ -495,7 +530,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						if (newFloorHeight < floorHeight) {
 							newFloorHeight = floorHeight;
 						}
-						renderWalls(target, p, false, baseEle, newFloorHeight, roof);
+						renderWalls(target, p, baseEle, newFloorHeight, roof);
 						renderFloor(target, baseEle);
 					}
 
@@ -534,26 +569,25 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		private void renderWalls(Target<?> target, PolygonWithHolesXZ p,
-				boolean renderFloor, double baseEle, double floorHeight,
+				double baseEle, double floorHeight,
 				Roof roof) {
 
-			drawWallOnPolygon(target, baseEle, floorHeight,
-					roof, p.getOuter().makeCounterclockwise());
+			drawSimpleWall(target, baseEle, floorHeight,
+					roof, p.getOuter().makeCounterclockwise().getVertexLoop());
 
 			for (SimplePolygonXZ polygon : p.getHoles()) {
-				drawWallOnPolygon(target, baseEle, floorHeight,
-						roof, polygon.makeClockwise());
+				drawSimpleWall(target, baseEle, floorHeight,
+						roof, polygon.makeClockwise().getVertexLoop());
 			}
 
 		}
 
-		private void drawWallOnPolygon(Target<?> target, double baseEle,
-				double floorHeight, Roof roof, SimplePolygonXZ polygon) {
+		private void drawSimpleWall(Target<?> target, double baseEle,
+				double floorHeight, Roof roof, List<VectorXZ> vertices) {
 
 			double floorEle = baseEle + floorHeight;
 
 			List<TextureData> textureDataList = materialWallWithWindows.getTextureDataList();
-			List<VectorXZ> vertices = polygon.getVertexLoop();
 
 			List<VectorXYZ> mainWallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
 			List<VectorXYZ> roofWallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
@@ -2333,6 +2367,354 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 			return false;
 		}
+
+		private class Wall implements RenderableToAllTargets {
+
+			/** nodes, ordered such that the building's outside is to the right */
+			List<MapNode> nodes;
+
+			public Wall(List<MapNode> nodes) {
+				this.nodes = nodes;
+			}
+
+			@Override
+			public void renderTo(Target<?> target) {
+
+				double baseEle = building.getGroundLevelEle();
+				double floorHeight = calculateFloorHeight(roof);
+				double floorEle = baseEle + floorHeight;
+
+				/* TODO document: calculate bottomPoints and topPoints */
+
+				List<VectorXZ> bottomPoints = nodes.stream().map(MapNode::getPos).collect(toList());
+
+				List<VectorXZ> topPoints = null;
+
+				for (SimplePolygonXZ rawPolygon : roof.getPolygon().getPolygons()) {
+
+					//FIXME: Punkte wie Eingänge in einem ansonsten geraden Wall sind im Dachumriss offensichtlich nicht enthalten! => dürfen nicht Endpunkte von Mauern sein
+
+					SimplePolygonXZ polygon = roof.getPolygon().getHoles().contains(rawPolygon)
+							? rawPolygon.makeClockwise()
+							: rawPolygon.makeCounterclockwise();
+
+					int firstIndex = polygon.getVertices().indexOf(bottomPoints.get(0));
+					int lastIndex = polygon.getVertices().indexOf(bottomPoints.get(bottomPoints.size() - 1));
+
+					if (firstIndex != -1 && lastIndex != -1) {
+
+						topPoints = new ArrayList<>();
+
+						if (lastIndex < firstIndex) {
+							lastIndex += polygon.size();
+						}
+
+						for (int i = firstIndex; i <= lastIndex; i ++) {
+							topPoints.add(polygon.getVertex(i % polygon.size()));
+						}
+
+						break;
+
+					}
+
+				}
+
+				if (topPoints == null) {
+					throw new IllegalArgumentException("cannot construct top boundary of wall");
+				}
+
+				/* convert to points on the wall surface */
+				//TODO extract into method
+
+				List<VectorXZ> lowerBoundary = new ArrayList<>(bottomPoints.size());
+
+				{
+					double accumulatedLength = 0;
+					VectorXZ previousPoint = bottomPoints.get(0);
+
+					for (VectorXZ point : bottomPoints) {
+						accumulatedLength += previousPoint.distanceTo(point);
+						lowerBoundary.add(new VectorXZ(accumulatedLength, 0));
+						previousPoint = point;
+					}
+				}
+
+				List<VectorXZ> upperBoundary = new ArrayList<>(topPoints.size());
+
+				{
+					double accumulatedLength = 0;
+					VectorXZ previousPoint = topPoints.get(0);
+
+					for (VectorXZ point : topPoints) {
+						accumulatedLength += previousPoint.distanceTo(point);
+						upperBoundary.add(new VectorXZ(accumulatedLength, roof.getRoofEleAt(point) - floorEle));
+						previousPoint = point;
+					}
+				}
+
+				/* construct the surface */
+
+				WallSurface surface = new WallSurface(lowerBoundary, upperBoundary);
+
+				/* add windows */
+
+				//TODO remove - surface.addElementIfSpaceFree(new Window(new VectorXZ(surface.getLength() / 2, 3), 2.6, 1.5));
+
+				//TODO: no windows for glass walls, churches etc.
+
+				placeDefaultWindows(surface);
+
+				/* draw the wall */
+
+				List<VectorXYZ> bottomPointsXYZ = listXYZ(bottomPoints, floorEle);
+				surface.renderTo(target, bottomPointsXYZ);
+
+				//TODO: der fehlende Bereich "unter dem Dach" (z.B. bei Runddach) liegt an fehlenden Punkten aus Roof-Umriss
+				// drawSimpleWall(target, baseEle, 0, roof, bottomPoints);
+
+				//FIXME draw floor of the building part
+
+			}
+
+			/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
+			private void placeDefaultWindows(WallSurface surface) {
+
+				for (int level = 0; level < buildingLevels; level++) {
+
+					//TODO: in the future, allow levels of different height (but calculate level heights in BuildingPart)
+					double levelHeight = heightWithoutRoof / buildingLevels;
+					double levelMinHeight = levelHeight * level;
+
+					double windowHeight = 0.5 * levelHeight;
+					double breastHeight = 0.3 * levelHeight;
+
+					double windowWidth = 1;
+					//double windowWidth = 0.81 * windowHeight; //TODO remove
+
+					int numColums = (int) round(surface.getLength() / (2 * windowWidth));
+
+					for (int i = 0; i < numColums; i++) {
+
+						VectorXZ pos = new VectorXZ(i * surface.getLength() / numColums,
+								levelMinHeight + breastHeight + windowHeight/2);
+
+						Window window = new Window(pos, windowWidth, windowHeight);
+						surface.addElementIfSpaceFree(window);
+
+					}
+
+				}
+
+			}
+
+			/**
+			 * a simplified representation of the wall as a 2D plane, with its origin in the bottom left corner.
+			 * This streamlines the placement of objects (windows, doors, and similar features) onto the wall.
+			 * Afterwards, positions are converted back into 3D space.
+			 */
+			private class WallSurface {
+
+				private final List<VectorXZ> lowerBoundary;
+				private final List<VectorXZ> upperBoundary;
+
+				private final SimplePolygonXZ wallOutline;
+
+				private final List<WallElement> elements = new ArrayList<>();
+
+				/**
+				 * Constructs a wall surface from a lower and upper wall boundary.
+				 * The boundaries' x coordinates is the position along the wall (starting with 0 for the first point),
+				 * the z coordinates refer to height.
+				 */
+				public WallSurface(List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary) {
+
+					this.lowerBoundary = lowerBoundary;
+					this.upperBoundary = upperBoundary;
+
+					if (lowerBoundary.size() < 2)
+						throw new IllegalArgumentException("need at least two bottom points");
+					if (upperBoundary.size() < 2)
+						throw new IllegalArgumentException("need at least two top points");
+					if (lowerBoundary.get(0).x != 0)
+						throw new IllegalArgumentException("origin is in the bottom left corner");
+					if (upperBoundary.get(0).x != 0)
+						throw new IllegalArgumentException("origin is in the bottom left corner");
+
+					/* TODO: check for other problems, e.g. intersecting lower and upper boundary,
+					   last points of the boundaries having different x values, ... */
+
+					/* construct an outline polygon from the lower and upper boundary */
+
+					List<VectorXZ> outerLoop = new ArrayList<>(upperBoundary);
+					reverse(outerLoop);
+					outerLoop.addAll(0, lowerBoundary);
+					outerLoop.add(lowerBoundary.get(0));
+
+					wallOutline = new SimplePolygonXZ(outerLoop);
+
+				}
+
+				public double getLength() {
+					return lowerBoundary.get(lowerBoundary.size() - 1).x;
+				}
+
+				/** adds an element to the wall, unless the necessary space on the wall is already occupied */
+				public void addElementIfSpaceFree(WallElement element) {
+
+					if (!wallOutline.contains(element.outline())) {
+						return;
+					}
+
+					boolean spaceOccupied = elements.stream().anyMatch(e -> e.outline().intersects(element.outline()));
+
+					if (!spaceOccupied) {
+						elements.add(element);
+					}
+
+				}
+
+				/** renders the wall; requires it to be anchored back into 3D space */
+				public void renderTo(Target<?> target, List<VectorXYZ> bottomPointsXYZ) {
+
+					/* triangulate the empty wall surface */
+
+					List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
+
+					List<TriangleXZ> triangles = triangulate(wallOutline, holes);
+					List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t, bottomPointsXYZ)).collect(toList());
+
+					List<VectorXZ> texCoords = new ArrayList<>();
+
+					for (TriangleXZ triangle : triangles) {
+						texCoords.add(triangle.v1);
+						texCoords.add(triangle.v2);
+						texCoords.add(triangle.v3);
+					}
+
+					target.drawTriangles(materialWall, trianglesXYZ, nCopies(materialWall.getNumTextureLayers(), texCoords));
+
+					/* render the elements on the wall */
+
+					for (WallElement e : elements) {
+						e.renderTo(target, this, bottomPointsXYZ);
+					}
+
+				}
+
+				private VectorXYZ convertTo3D(VectorXZ v, List<VectorXYZ> bottomPointsXYZ) {
+
+					double ratio = v.x / getLength();
+
+					VectorXYZ point = interpolateOn(bottomPointsXYZ, ratio);
+
+					return point.addY(v.z);
+
+				}
+
+				private TriangleXYZ convertTo3D(TriangleXZ t, List<VectorXYZ> bottomPointsXYZ) {
+					return new TriangleXYZ(
+							convertTo3D(t.v1, bottomPointsXYZ),
+							convertTo3D(t.v2, bottomPointsXYZ),
+							convertTo3D(t.v3, bottomPointsXYZ));
+				}
+
+			}
+
+		}
+
+		/**
+		 * something that can be placed into a wall, such as a window or door
+		 */
+		private static interface WallElement {
+
+			/**
+			 * returns the space on the 2D wall surface occupied by this element.
+			 * The element is responsible for handling rendering inside this area.
+			 */
+			public SimplePolygonXZ outline(); //TODO allow any ShapeXZ; requires an intersect method though
+
+			public void renderTo(Target<?> target, BuildingPart.Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ);
+
+		}
+
+		private class Window implements WallElement {
+
+			/** position on a wall surface */
+			private final VectorXZ position;
+
+			private final double width;
+			private final double height;
+
+			public Window(VectorXZ position, double width, double height) {
+				this.position = position;
+				this.width = width;
+				this.height = height;
+			}
+
+			@Override
+			public SimplePolygonXZ outline() {
+
+				return new SimplePolygonXZ(asList(
+						position.add(new VectorXZ(-width/2, -height/2)),
+						position.add(new VectorXZ(+width/2, -height/2)),
+						position.add(new VectorXZ(+width/2, +height/2)),
+						position.add(new VectorXZ(-width/2, +height/2)),
+						position.add(new VectorXZ(-width/2, -height/2))));
+
+			}
+
+			@Override
+			public void renderTo(Target<?> target, BuildingPart.Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+
+				double depth = 0.15;
+
+				VectorXYZ bottomLeft = surface.convertTo3D(outline().getVertex(0), bottomPointsXYZ);
+				VectorXYZ bottomRight = surface.convertTo3D(outline().getVertex(1), bottomPointsXYZ);
+				VectorXYZ topLeft = surface.convertTo3D(outline().getVertex(3), bottomPointsXYZ);
+				VectorXYZ topRight = surface.convertTo3D(outline().getVertex(2), bottomPointsXYZ);
+
+				VectorXYZ toBack = new TriangleXYZ(bottomLeft, topLeft, bottomRight).getNormal().mult(depth);
+
+				VectorXYZ bottomLeftBack = bottomLeft.add(toBack);
+				VectorXYZ bottomRightBack = bottomRight.add(toBack);
+				VectorXYZ topLeftBack = topLeft.add(toBack);
+				VectorXYZ topRightBack = topRight.add(toBack);
+
+				/* draw the window itself */
+
+				List<VectorXYZ> vsWindow = asList(topLeftBack, bottomLeftBack, topRightBack, bottomRightBack);
+
+				target.drawTriangleStrip(SINGLE_WINDOW, vsWindow,
+						texCoordLists(vsWindow, SINGLE_WINDOW, STRIP_FIT));
+
+				/* draw the wall around the window */
+
+				List<VectorXYZ> vsWall = asList(
+						bottomLeftBack, bottomLeft,
+						bottomRightBack, bottomRight,
+						topRightBack, topRight,
+						topLeftBack, topLeft,
+						bottomLeftBack, bottomLeft);
+
+				Material material = new ImmutableMaterial(
+						materialWall.getInterpolation(),
+						materialWall.getColor(),
+						0.2f * materialWall.getAmbientFactor(), //coarsely approximate ambient occlusion
+						materialWall.getDiffuseFactor(),
+						materialWall.getSpecularFactor(),
+						materialWall.getShininess(),
+						materialWall.getTransparency(),
+						materialWall.getShadow(),
+						materialWall.getAmbientOcclusion(),
+						materialWall.getTextureDataList());
+
+				target.drawTriangleStrip(materialWall, vsWall,
+						texCoordLists(vsWall, materialWall, NamedTexCoordFunction.STRIP_WALL));
+
+			}
+
+		}
+
 
 	}
 

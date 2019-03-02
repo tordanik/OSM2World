@@ -126,6 +126,8 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
 	public static final ConfMaterial BUILDING_WINDOWS =
 		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
+	public static final ConfMaterial SINGLE_WINDOW =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0.8f, 0.85f));
 	public static final ConfMaterial ROOF_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
 	public static final ConfMaterial GLASS_ROOF =
