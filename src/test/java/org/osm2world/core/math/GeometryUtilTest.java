@@ -64,6 +64,26 @@ public class GeometryUtilTest {
 	}
 
 	@Test
+	public void testInterpolateOn() {
+
+		List<VectorXYZ> linestring = asList(
+				new VectorXYZ(-5, 0, 0),
+				new VectorXYZ(0, 0, 0),
+				new VectorXYZ(0, 3, 0),
+				new VectorXYZ(0, 3, 2)
+				);
+
+		assertAlmostEquals(-5, 0, 0, interpolateOn(linestring, 0.0));
+		assertAlmostEquals(-2, 0, 0, interpolateOn(linestring, 0.3));
+		assertAlmostEquals( 0, 0, 0, interpolateOn(linestring, 0.5));
+		assertAlmostEquals( 0, 1, 0, interpolateOn(linestring, 0.6));
+		assertAlmostEquals( 0, 3, 0, interpolateOn(linestring, 0.8));
+		assertAlmostEquals( 0, 3, 1, interpolateOn(linestring, 0.9));
+		assertAlmostEquals( 0, 3, 2, interpolateOn(linestring, 1.0));
+
+	}
+
+	@Test
 	public void testEquallyDistributePointsAlong1StartEnd() {
 
 		List<VectorXZ> result1 = equallyDistributePointsAlong(

@@ -331,6 +331,41 @@ public final class GeometryUtil {
 	}
 
 	/**
+	 * performs generalized interpolation along a polyline (rather than just between two points).
+	 *
+	 * @param ratio  the relative position between start (0.0) and end (1.0) of the polyline
+	 */
+	public static VectorXYZ interpolateOn(List<VectorXYZ> linestring, double ratio) {
+		//TODO: use this method to make equallyDistribute... easier to understand?
+
+		assert 0.0 <= ratio && ratio <= 1.0;
+
+		double totalLength = 0;
+
+		for (int i = 0; i + 1 < linestring.size(); i++) {
+			totalLength += linestring.get(i).distanceTo(linestring.get(i + 1));
+		}
+
+		double remainingDistanceToPoint = ratio * totalLength;
+
+		for (int i = 0; i + 1 < linestring.size(); i++) {
+
+			double distance = linestring.get(i).distanceTo(linestring.get(i + 1));
+
+			if (remainingDistanceToPoint <= distance) {
+				return interpolateBetween(linestring.get(i), linestring.get(i + 1), remainingDistanceToPoint / distance);
+			} else {
+				remainingDistanceToPoint -= distance;
+			}
+
+		}
+
+		//nothing returned yet; return the end point (to handle possible accumulated floating point errors)
+		return linestring.get(linestring.size() - 1);
+
+	}
+
+	/**
 	 * distributes points along a line segment.
 	 *
 	 * This can be used for many different features, such as
