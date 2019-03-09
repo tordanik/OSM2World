@@ -8,6 +8,7 @@ import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.TERRAIN_DEFAULT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 import java.awt.Color;
 import java.io.File;
@@ -388,6 +389,36 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 				throw new IllegalStateException("a WorldObject needs geometry");
 			}
 
+			MapElement element = worldObject == null ? null : worldObject.getPrimaryMapElement();
+
+			/* check for 3DMR ids */
+
+			String id3DMR = element == null ? null : element.getTags().getValue("3dmr");
+
+			if (id3DMR != null) {
+
+				currentTriangles.clear();
+				currentExtrusionGeometries.clear();
+				currentModelInstances.clear();
+
+				Model model3DMR = new ExternalResourceModel("3dmr:" + id3DMR);
+
+				VectorXZ center = null;
+
+				if (element instanceof MapNode) {
+					center = ((MapNode) element).getPos();
+				} else if (element instanceof MapWaySegment) {
+					center = ((MapWaySegment) element).getCenter();
+				} else if (element instanceof MapArea) {
+					center = ((MapArea) element).getOuterPolygon().getCenter();
+				}
+
+				double direction = parseDirection(element.getTags(), 0);
+
+				currentModelInstances.put(model3DMR, new InstanceParameters(center.xyz(0), direction, null, null, null));
+
+			}
+
 			/* build the object's triangle geometries */
 
 			List<TriangleGeometry> triangleGeometries = new ArrayList<TriangleGeometry>();
@@ -482,8 +513,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 			FrontendPbf.WorldObject.Builder objectBuilder = FrontendPbf.WorldObject.newBuilder();
 
 			if (worldObject != null) {
-
-				MapElement element = worldObject.getPrimaryMapElement();
 
 				if (element != null) {
 
