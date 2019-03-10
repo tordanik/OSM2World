@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 
+import static java.lang.Math.max;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
@@ -162,10 +163,11 @@ public class BridgeModule extends AbstractModule {
 
 			/* draw the pillar */
 
-			// TODO: start pillar at ground instead of just 100 meters below the bridge
+			// TODO: start pillar at ground instead of just x meters below the bridge
+			VectorXYZ base = top.y(max(top.y-20, -3));
 			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
-					top.addY(-100),
-					100,
+					base,
+					top.y - base.y,
 					0.2, 0.2, false, false);
 
 		}
