@@ -12,7 +12,8 @@ public class LatLonEle {
 	public final double lon;
 	public final double ele;
 
-	private static final String DOUBLE_P = "[+-]?\\d+(?:\\.\\d+)?";
+	// typographical minus '−' works around the CLI parser's special handling of '-'
+	private static final String DOUBLE_P = "[+-−]?\\d+(?:\\.\\d+)?";
 
 	/**
 	 * pattern for parseable arguments
@@ -43,6 +44,9 @@ public class LatLonEle {
 	 *             formats see {@link #PATTERN} and {@link #PATTERN_WITH_ELE}
 	 */
 	public LatLonEle(String arg) {
+
+		arg = arg.replace('−', '-');
+
 		Matcher mEle = Pattern.compile(PATTERN_WITH_ELE).matcher(arg);
 		Matcher m = Pattern.compile(PATTERN).matcher(arg);
 		if (mEle.matches()) {
