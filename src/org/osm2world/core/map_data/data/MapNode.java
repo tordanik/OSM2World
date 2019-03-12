@@ -1,7 +1,5 @@
 package org.osm2world.core.map_data.data;
 
-import static org.osm2world.core.math.VectorXZ.X_UNIT;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -169,36 +167,7 @@ public class MapNode implements MapElement {
 					d2 = d2.invert();
 				}
 				
-				//check whether the lines are in the first or second 180°
-				//(the dot product formula will not be useful to distinguish
-				//these cases - it only provides cos 0° to cos 180° - ,
-				//so they need to be handled first)
-				
-				if (d1.z < 0 && d2.z > 0) {
-					return -1;
-				} else if (d1.z > 0 && d2.z < 0) {
-					return +1;
-				}
-				
-				//check the actual angles using the dot product with (1,0,0).
-				//Two simplifications apply:
-				//- we don't need to divide by the vector lengths' product,
-				//  as getDirection returns vectors whose length is 1
-				//- we don't need to actually calculate the angle itself,
-				//  because if angle a > angle b, then cos a < cos b
-				//  (in [0°, 180°])
-				
-				double comparison = d1.dot(X_UNIT) - d2.dot(X_UNIT);
-				
-				if (comparison == 0) {
-					return 0;
-				}
-				
-				if (d1.z < 0) { //and d2.z < 0
-					return (comparison > 0) ? -1 : +1;
-				} else { //d1.z > 0 and d2.z > 0
-					return (comparison > 0) ? +1 : -1;
-				}
+				return Double.compare(d1.angle(), d2.angle());
 				
 			}
 		});
