@@ -1,6 +1,8 @@
 package org.osm2world.core.math;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -176,6 +178,17 @@ public class PolygonXZTest {
 		// .. with a intersection at the right side
 		assertTrue(
 				new PolygonXZ(Arrays.asList(v1, v2, v6, v3, v4, v5, v1)).isSelfIntersecting());
+	}
+
+	@Test
+	public void testGetVertices() {
+
+		SimplePolygonXZ testee = new SimplePolygonXZ(outlineA);
+
+		assertAlmostEquals(asList(outlineA0), testee.getVertices(0, 0));
+		assertAlmostEquals(asList(outlineA1, outlineA2, outlineA3), testee.getVertices(1, 3));
+		assertAlmostEquals(asList(outlineA3, outlineA0, outlineA1), testee.getVertices(3, 1));
+
 	}
 
 }

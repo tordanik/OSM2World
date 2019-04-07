@@ -103,6 +103,29 @@ public class PolygonXZ implements PolygonShapeXZ {
 		return getVertex((index + size() - 1) % size());
 	}
 
+	/**
+	 * returns a subsection of the polygon's outline.
+	 * This treats the outline as a loop, so endIndex is allowed to be less than startIndex.
+	 */
+	public List<VectorXZ> getVertices(int startIndex, int endIndex) {
+
+		assert 0 <= startIndex && startIndex < size();
+		assert 0 <= endIndex && endIndex < size();
+
+		List<VectorXZ> result = new ArrayList<>();
+
+		if (startIndex != endIndex) {
+			for (int i = startIndex; i != endIndex; i = (i+1) % size()) {
+				result.add(getVertex(i));
+			}
+		}
+
+		result.add(getVertex(endIndex));
+
+		return result;
+
+	}
+
 	public List<LineSegmentXZ> getSegments() {
 		List<LineSegmentXZ> segments = new ArrayList<LineSegmentXZ>(vertexLoop.size());
 		for (int i=0; i+1 < vertexLoop.size(); i++) {

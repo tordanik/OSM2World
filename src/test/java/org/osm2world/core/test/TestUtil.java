@@ -1,7 +1,7 @@
 package org.osm2world.core.test;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +79,16 @@ public final class TestUtil {
 		assertAlmostEquals(expectedX, actual.x);
 		assertAlmostEquals(expectedY, actual.y);
 		assertAlmostEquals(expectedZ, actual.z);
+	}
+
+	public static final void assertAlmostEquals(List<VectorXZ> expected, List<VectorXZ> actual) {
+
+		assertSame(expected.size(), actual.size());
+
+		for (int i = 0; i < expected.size(); i++) {
+			assertAlmostEquals(expected.get(i), actual.get(i));
+		}
+
 	}
 
 	/**
