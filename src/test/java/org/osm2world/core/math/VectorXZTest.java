@@ -62,6 +62,25 @@ public class VectorXZTest {
 	}
 
 	@Test
+	public void testClockwiseAngleBetween() {
+
+		assertAlmostEquals(       0, clockwiseAngleBetween(X_UNIT, X_UNIT));
+		assertAlmostEquals(       0, clockwiseAngleBetween(Z_UNIT, Z_UNIT));
+		assertAlmostEquals(      PI, clockwiseAngleBetween(X_UNIT, X_UNIT.invert()));
+		assertAlmostEquals(      PI, clockwiseAngleBetween(Z_UNIT, Z_UNIT.invert()));
+		assertAlmostEquals(1.5 * PI, clockwiseAngleBetween(X_UNIT, Z_UNIT));
+		assertAlmostEquals(0.5 * PI, clockwiseAngleBetween(Z_UNIT, X_UNIT));
+		assertAlmostEquals(0.5 * PI, clockwiseAngleBetween(Z_UNIT, X_UNIT.mult(3)));
+
+		assertAlmostEquals(1.75 * PI, clockwiseAngleBetween(X_UNIT, new VectorXZ(1, 1)));
+		assertAlmostEquals(0.25 * PI, clockwiseAngleBetween(new VectorXZ(1, 1), X_UNIT));
+
+		assertAlmostEquals(0.75 * PI, clockwiseAngleBetween(X_UNIT, new VectorXZ(-1, -1)));
+		assertAlmostEquals(1.25 * PI, clockwiseAngleBetween(new VectorXZ(-1, -1), X_UNIT));
+
+	}
+
+	@Test
 	public void testRotate() {
 
 		assertAlmostEquals(new VectorXZ( 0,  0), new VectorXZ( 0,   0).rotate(42));

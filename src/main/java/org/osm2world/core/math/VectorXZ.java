@@ -203,6 +203,23 @@ public class VectorXZ implements Vector3D {
 
 	}
 
+	/**
+	 * returns the clockwise angle between two direction vectors
+	 * @return  angle as radians, in range 0 (inclusive) to 2*PI (exclusive)
+	 */
+	public static final double clockwiseAngleBetween(VectorXZ v1, VectorXZ v2) {
+
+		double a1 = v1.angle();
+		double a2 = v2.angle();
+
+		if (a2 < a1) {
+			a2 += 2 * PI;
+		}
+
+		return a2 - a1;
+
+	}
+
 	public static final double distance(VectorXZ v1, VectorXZ v2) {
 		//SUGGEST (performance): don't create temporary vector
 		return (v2.subtract(v1)).length();
