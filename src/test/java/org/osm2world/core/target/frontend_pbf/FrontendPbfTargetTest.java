@@ -1,17 +1,29 @@
 package org.osm2world.core.target.frontend_pbf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.VectorXZ.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
+import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
+import org.osm2world.core.ConversionFacade;
+import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
+import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.osm.data.OSMData;
+import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.SimpleBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.VectorBlock;
+import org.osm2world.core.test.TestWorldModule;
 
 public class FrontendPbfTargetTest {
 
@@ -43,6 +55,22 @@ public class FrontendPbfTargetTest {
 	@Test
 	public void testVectorBlock() {
 		testBlock(new VectorBlock<VectorXZ>());
+	}
+
+	@Test
+	public void testWritePbfFile() throws BoundingBoxSizeException, IOException {
+
+		AxisAlignedBoundingBoxXZ bbox = new AxisAlignedBoundingBoxXZ(-1, -1, +1, +1);
+
+		OSMNode node = new OSMNode(0, 0, new MapBasedTagGroup(), 0);
+		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());
+
+		ConversionFacade cf = new ConversionFacade();
+		Results results = cf.createRepresentations(osmData, asList(new TestWorldModule()), null, null);
+
+		File outputFile = Files.createTempFile("unittest", ".o2w.pbf").toFile();
+		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null);
+
 	}
 
 }
