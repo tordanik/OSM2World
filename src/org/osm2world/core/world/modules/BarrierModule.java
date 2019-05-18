@@ -384,8 +384,13 @@ public class BarrierModule extends AbstractModule {
 					List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(baseline, barStartHeight, barEndHeight);
 					List<VectorXYZ> vsLowBack = createVerticalTriangleStrip(baseline, barEndHeight, barStartHeight);
 					
-					target.drawTriangleStrip(material, vsLowFront, null);
-					target.drawTriangleStrip(material, vsLowBack, null);
+					List<List<VectorXZ>> texCoordListsFenceFront = texCoordLists(
+							vsLowFront, material, STRIP_WALL);
+					List<List<VectorXZ>> texCoordListsFenceBack = texCoordLists(
+							vsLowBack, material, STRIP_WALL);
+					
+					target.drawTriangleStrip(material, vsLowFront, texCoordListsFenceFront);
+					target.drawTriangleStrip(material, vsLowBack, texCoordListsFenceBack);
 				}
 			}
 			
