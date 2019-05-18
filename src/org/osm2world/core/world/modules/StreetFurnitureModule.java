@@ -3,11 +3,14 @@ package org.osm2world.core.world.modules;
 import static java.awt.Color.*;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
 import static java.util.Collections.singletonList;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
@@ -22,17 +25,15 @@ import java.util.Map.Entry;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.material.ConfMaterial;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -43,6 +44,9 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	@Override
 	protected void applyToNode(MapNode node) {
+		if (node.getTags().contains("playground", "swing")) {
+			node.addRepresentation(new Swing(node));
+		}
 		if (node.getTags().contains("man_made", "flagpole")) {
 			node.addRepresentation(new Flagpole(node));
 		}
@@ -143,111 +147,111 @@ public class StreetFurnitureModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 
 			/* draw the pole */
-			
+
 			float poleHeight = parseHeight(node.getTags(), 10f);
 			double poleRadius = 0.15;
-			
+
 			VectorXYZ poleBase = getBase();
-			
+
 			target.drawColumn(STEEL, null, poleBase,
 					poleHeight, poleRadius, poleRadius, false, true);
 
 			/* draw the flag (if any) */
-			
+
 			if (node.getTags().contains("flag:type", "national")
 					&& node.getTags().containsKey("country")) {
-				
+
 				Flag flag = NATIONAL_FLAGS.get(node.getTags().getValue("country"));
-				
+
 				if (flag != null) {
-					
+
 					double flagHeight = min(2.0, poleHeight / 4);
-					
+
 					VectorXYZ flagTop = poleBase.add(Y_UNIT.mult(poleHeight * 0.97));
-					
+
 					VectorXYZ flagBottom = flagTop.add(poleBase.subtract(flagTop).normalize().mult(flagHeight));
 					VectorXYZ flagFrontNormal = Z_UNIT.invert();
-					
+
 					double flagWidth = flagHeight / flag.getHeightWidthRatio();
-					
+
 					VectorXYZ toOuterEnd = flagTop.subtract(flagBottom).crossNormalized(flagFrontNormal).invert();
 					VectorXYZ outerBottom = flagBottom.add(toOuterEnd.mult(flagWidth));
 					VectorXYZ outerTop = outerBottom.add(flagTop.subtract(flagBottom));
-					
+
 					flagTop = flagTop.add(toOuterEnd.mult(poleRadius));
 					flagBottom = flagBottom.add(toOuterEnd.mult(poleRadius));
 					outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
 					outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
-					
+
 					flag.renderFlag(target, createFlagMesh(flagTop, flagHeight, flagWidth));
-					
+
 				}
-				
+
 			}
-			
+
 		}
-		
+
 		/**
 		 * creates a grid of vertices as the geometry of the flag.
 		 * The grid is deformed to give the appearance of cloth.
-		 * 
+		 *
 		 * @param height  height of the flag in meters
 		 * @param width  width of the flag in meters
-		 * 
+		 *
 		 * @return a pair consisting of the grid of vertices and the matching texture coordinates
 		 */
 		private static final Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> createFlagMesh(
 				VectorXYZ origin, double height, double width) {
-			
+
 			int numCols = 120;
 			int numRows = max(2, (int)round(numCols * height/width));
-			
+
 			VectorXYZ[][] result = new VectorXYZ[numCols][numRows];
 			Map<VectorXYZ, VectorXZ> texCoordMap = new HashMap<VectorXYZ, VectorXZ>(numCols * numRows);
-			
+
 			for (int x = 0; x < numCols; x++) {
 				for (int y = 0; y < numRows; y++) {
-					
+
 					double xRatio = x / (double)(numCols - 1);
 					double yRatio = y / (double)(numRows - 1);
-					
+
 					result[x][y] = new VectorXYZ(
 							xRatio * width,
 							yRatio * -height,
 							0).add(origin);
-					
+
 					// use a sinus function for basic wavyness
 					result[x][y] = result[x][y].add(0, 0,
 							sin(6 * xRatio) * 0.1);
 
 					// have the flag drop down the further it gets from the pole
 					result[x][y] = result[x][y].add(0, height * -0.2 * xRatio * sqrt(xRatio), 0);
-					
+
 					// have the top of the flag drop backwards and down a bit
 					double factor = sqrt(xRatio) * max(0.7 - yRatio, 0);
 					result[x][y] = result[x][y].add(0,
 							factor * factor * -0.25 * height,
 							factor * factor * 0.35 * height);
-					
+
 					texCoordMap.put(result[x][y], new VectorXZ(
 							xRatio,
 							yRatio));
-					
+
 				}
 			}
-			
+
 			return new AbstractMap.SimpleEntry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>>(result, texCoordMap);
-			
+
 		}
-		
+
 		private static abstract class Flag {
 
 			private final double heightWidthRatio;
 			private final List<Material> stripeMaterials;
 			private final boolean verticalStripes;
-			
+
 			/**
-			 * 
+			 *
 			 * @param heightWidthRatio  height / width
 			 * @param verticalStripes   whether the material stripes provided by
 			 *                          stripeMaterials are vertical.
@@ -263,91 +267,91 @@ public class StreetFurnitureModule extends AbstractModule {
 			public double getHeightWidthRatio() {
 				return heightWidthRatio;
 			}
-			
+
 			/**
 			 * renders the flag to any {@link Target}.
-			 * 
+			 *
 			 * @param flagMesh  flag geometry and tex coords, e.g. created by {@link Flagpole#createFlagMesh}
 			 */
 			public void renderFlag(Target<?> target,
 					Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> flagMesh) {
-				
+
 				VectorXYZ[][] mesh = flagMesh.getKey();
 				final Map<VectorXYZ, VectorXZ> texCoordMap = flagMesh.getValue();
-				
+
 				/* define a function that looks the texture coordinate up in the map  */
-				
+
 				TexCoordFunction texCoordFunction = new TexCoordFunction() {
 					@Override public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
-				
+
 						List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
-						
+
 						for (VectorXYZ v : vs) {
 							result.add(texCoordMap.get(v));
 						}
-						
+
 						return result;
-						
+
 					}
 				};
-				
+
 				/* flip the mesh array in case of vertically striped flags */
-				
+
 				if (verticalStripes) {
-					
+
 					VectorXYZ[][] flippedMesh = new VectorXYZ[mesh[0].length][mesh.length];
-			        
+
 					for (int i = 0; i < mesh.length; i++) {
 			            for (int j = 0; j < mesh[0].length; j++) {
 			                flippedMesh[j][i] = mesh[i][j];
 			            }
 					}
-			        
+
 			        mesh = flippedMesh;
-					
+
 				}
-				
+
 				/* draw the mesh */
-				
+
 				for (int row = 0; row < mesh[0].length - 1; row ++) {
-					
+
 					List<VectorXYZ> vsFront = new ArrayList<VectorXYZ>(mesh.length * 2);
 					List<VectorXYZ> vsBack = new ArrayList<VectorXYZ>(mesh.length * 2);
-					
+
 					for (int col = 0; col < mesh.length; col++) {
-						
+
 						VectorXYZ vA = mesh[col][row];
 						VectorXYZ vB = mesh[col][row + 1];
 
 						vsFront.add(vA);
 						vsFront.add(vB);
-						
+
 						vsBack.add(vB);
 						vsBack.add(vA);
-						
+
 					}
-					
+
 					// determine which stripe we're in and pick the right material
 					int materialIndex = (int) floor(stripeMaterials.size() * (double)row / mesh[0].length);
 					Material material = stripeMaterials.get(materialIndex);
-					
+
 					target.drawTriangleStrip(material, vsFront, texCoordLists(
 							vsFront, material, texCoordFunction));
 					target.drawTriangleStrip(material, vsBack, texCoordLists(
 							vsBack, material, texCoordFunction));
-					
+
 				}
-				
+
 			}
-			
+
 		}
-		
+
 		private static class StripedFlag extends Flag {
-			
+
 			public StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
-				
+
 				super(heightWidthRatio, createStripeMaterials(colors), verticalStripes);
-				
+
 			}
 
 			/**
@@ -356,9 +360,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			private static List<Material> createStripeMaterials(List<Color> colors) {
 
 				List<Material> stripeMaterials = new ArrayList<Material>(colors.size());
-				
+
 				for (Color color : colors) {
-					
+
 					stripeMaterials.add(new ImmutableMaterial(
 							FLAGCLOTH.getInterpolation(),
 							color,
@@ -370,25 +374,25 @@ public class StreetFurnitureModule extends AbstractModule {
 							FLAGCLOTH.getShadow(),
 							FLAGCLOTH.getAmbientOcclusion(),
 							FLAGCLOTH.getTextureDataList()));
-					
+
 				}
-				
+
 				return stripeMaterials;
-				
+
 			}
-			
+
 		}
-		
+
 		/**
 		 * flag entirely made of a single, usually textured, {@link Material}.
 		 * Allows for untextured materials in addition to textured ones.
 		 */
 		public static class TexturedFlag extends Flag {
-			
+
 			public TexturedFlag(double heightWidthRatio, Material material) {
 				super(heightWidthRatio, singletonList(material), false);
 			}
-			
+
 			/**
 			 * alternative constructor that uses the aspect ratio of the first texture layer
 			 * instead of an explicit heightWidthRatio parameter. Only works for textured materials.
@@ -397,11 +401,11 @@ public class StreetFurnitureModule extends AbstractModule {
 				this(material.getTextureDataList().get(0).height
 						/ material.getTextureDataList().get(0).width, material);
 			}
-			
+
 		}
-		
+
 		private static final Map<String, Flag> NATIONAL_FLAGS = new HashMap<String, Flag>();
-		
+
 		static {
 
 			NATIONAL_FLAGS.put("AT", new StripedFlag(2 / 3.0, asList(new Color(240, 79, 93), WHITE, new Color(240, 79, 93)), false));
@@ -435,9 +439,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			NATIONAL_FLAGS.put("UA", new StripedFlag(2 / 3.0, asList(decode("#005BBC"), decode("#FED500")), false));
 			NATIONAL_FLAGS.put("HU", new StripedFlag(1 / 2.0, asList(decode("#CE253C"), WHITE, decode("#41704C")), false));
 			NATIONAL_FLAGS.put("YE", new StripedFlag(2 / 3.0, asList(decode("#CF0821"), WHITE, BLACK), false));
-			
+
 		}
-		
+
 	}
 
 	private static final class AdvertisingColumn extends NoOutlineNodeWorldObject
@@ -501,8 +505,8 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
-			
-			
+
+
 			/* draw board */
 
 			VectorXYZ[] vsPoster = {
@@ -527,24 +531,24 @@ public class StreetFurnitureModule extends AbstractModule {
 			List<VectorXYZ> vsListBoard = asList(vsBoard);
 
 			Material backMaterial = node.getTags().contains("two_sided", "yes") ? ADVERTISING_POSTER : CONCRETE;
-			
+
 			target.drawTriangleStrip(backMaterial, vsListBoard,
 					texCoordLists(vsListBoard, backMaterial, STRIP_WALL));
-			
+
 			/* draw frame */
-			
+
 			target.drawBox(CONCRETE, getBase().addY(height - 0.1),
 					faceVector, 0.1, width, 0.1);
-			
+
 			target.drawBox(CONCRETE, getBase().addY(minHeight),
 					faceVector, 0.1, width, 0.1);
-			
+
 			target.drawBox(CONCRETE, getBase().addY(minHeight).add(boardVector.mult(width / 2)),
 					faceVector, height - minHeight, 0.1, 0.1);
-			
+
 			target.drawBox(CONCRETE, getBase().addY(minHeight).add(boardVector.mult(-width / 2)),
 					faceVector, height - minHeight, 0.1, 0.1);
-			
+
 			/* draw poles */
 
 			VectorXZ[] poles = {
@@ -559,6 +563,136 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
+	}
+
+	private static final class Swing extends NoOutlineNodeWorldObject
+	implements RenderableToAllTargets {
+
+		public Swing(MapNode node) {
+			super(node);
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			// determine width and height of the swing structure
+			final float swingHeight = parseHeight(node.getTags(),1.5f);
+			final double boxHeight = 0.05;
+
+			final float defaultWidth = 0.5f * parseInt(node.getTags(), 4, "capacity");
+			final float width = parseWidth(node.getTags(), defaultWidth);
+
+			final int capacity = parseInt(node.getTags(), 4, "capacity");
+
+			final double CENTRAL_BOX_WIDTH = width*0.8; //C_B_W
+
+			final double placeForRopes = CENTRAL_BOX_WIDTH*0.8/2; /* use 80% of C_B_W's width and "normalize" it
+			 														   to keep ropes (and seats) within C_B_W's limits */
+			final double seatWidth = 0.18;
+
+			final double ropesOffset = 0.07;
+
+			// determine material and color
+			Material material = null;
+			Color color = null;
+
+			if (node.getTags().containsKey("material")) {
+				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
+			}
+
+			if (material == null) {
+				material = WOOD;
+			}
+
+			if (node.getTags().containsKey("colour")) {
+				color = parseColor(node.getTags().getValue("colour"));
+			}
+
+			if (color != null) {
+				material = new ImmutableMaterial(
+						material.getInterpolation(),
+						color,
+						material.getAmbientFactor(),
+						material.getDiffuseFactor(),
+						material.getSpecularFactor(),
+						material.getShininess(),
+						material.getTransparency(),
+						material.getShadow(),
+						material.getAmbientOcclusion(),
+						material.getTextureDataList());
+			}
+
+			// calculate vectors and corners
+
+			double directionAngle = parseDirection(node.getTags(), PI);
+
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+			VectorXZ boardVector = faceVector.rightNormal();
+
+			List<VectorXZ> cornerOffsets = asList(
+					faceVector.mult(+0.25).add(boardVector.mult(+width / 2)),
+					faceVector.mult(+0.25).add(boardVector.mult(-width / 2)),
+					faceVector.mult(-0.25).add(boardVector.mult(+width / 2)),
+					faceVector.mult(-0.25).add(boardVector.mult(-width / 2)));
+
+			// boxes on top of poles
+			target.drawBox(material, getBase().add(boardVector.mult(CENTRAL_BOX_WIDTH/2)).addY(swingHeight-boxHeight),
+					boardVector, boxHeight, 0.48, boxHeight);
+			target.drawBox(material, getBase().add(boardVector.mult(-CENTRAL_BOX_WIDTH/2)).addY(swingHeight-boxHeight),
+					boardVector, boxHeight, 0.48, boxHeight);
+			target.drawBox(material, getBase().addY(swingHeight-boxHeight),
+					faceVector, boxHeight, CENTRAL_BOX_WIDTH, boxHeight);
+
+
+			// draw poles
+			for (VectorXZ cornerOffset : cornerOffsets) {
+
+				VectorXZ polePos = node.getPos().add(cornerOffset.mult(0.8));
+
+				target.drawBox(material, polePos.xyz(getBase().y),
+						faceVector, swingHeight, 0.08, 0.08);
+			}
+
+			ShapeXZ shape = new LineSegmentXZ(new VectorXZ(0.01, 0), new VectorXZ(0, 0));
+
+			List<List<VectorXYZ>> paths = new ArrayList<List<VectorXYZ>>();
+			
+			VectorXZ leftMost = getBase().add(boardVector.mult(placeForRopes)).xz();
+			VectorXZ rightMost = getBase().add(boardVector.mult(-placeForRopes)).xz();
+
+			double distance = leftMost.distanceTo(rightMost);
+
+			//if capacity=1 "distribute" only 1 point
+			List<VectorXZ> seatPositions = equallyDistributePointsAlong(
+					distance/(capacity>1 ? capacity-1 : capacity),
+					(capacity>1 ? true : false), leftMost, rightMost);
+
+			for(VectorXZ vec : seatPositions) {
+
+				//place ropes slightly off the center of the seat
+				paths.add(asList(
+						vec.xyz(swingHeight/3).add(boardVector.mult(-ropesOffset)),
+						vec.xyz(swingHeight).add(boardVector.mult(-ropesOffset)) ));
+				paths.add(asList(
+						vec.xyz(swingHeight/3).add(boardVector.mult(ropesOffset)),
+						vec.xyz(swingHeight).add(boardVector.mult(ropesOffset)) ));
+
+				//draw seat
+				target.drawBox(material, vec.xyz(swingHeight/3),
+						faceVector, 0.02, seatWidth, 0.1);
+			}
+
+			//Draw 2 triangleStrips for each rope, to be visible from both front and back side
+			for(List<VectorXYZ> path : paths) {
+				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT.invert()), null, null, null);
+				target.drawExtrudedShape(STEEL, shape, path, nCopies(2,Z_UNIT), null, null, null);
+			}
+		}
 	}
 
 	private static final class Bench extends NoOutlineNodeWorldObject
@@ -577,11 +711,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 
 			/* determine the width of the bench */
-			
+
 			float defaultWidth = 0.5f * parseInt(node.getTags(), 4, "seats");
-			
+
 			float width = parseWidth(node.getTags(), defaultWidth);
-			
+
 			/* determine material and color */
 
 			Material material = null;
@@ -590,15 +724,15 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (node.getTags().containsKey("material")) {
 				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
 			}
-			
+
 			if (material == null) {
 				material = WOOD;
 			}
-			
+
 			if (node.getTags().containsKey("colour")) {
 				color = parseColor(node.getTags().getValue("colour"));
 			}
-			
+
 			if (color != null) {
 				material = new ImmutableMaterial(
 						material.getInterpolation(),
@@ -612,7 +746,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						material.getAmbientOcclusion(),
 						material.getTextureDataList());
 			}
-			
+
 			/* calculate vectors and corners */
 
 			double directionAngle = parseDirection(node.getTags(), PI);
@@ -625,7 +759,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					faceVector.mult(+0.25).add(boardVector.mult(-width / 2)),
 					faceVector.mult(-0.25).add(boardVector.mult(+width / 2)),
 					faceVector.mult(-0.25).add(boardVector.mult(-width / 2)));
-			
+
 			/* draw seat and backrest */
 
 			target.drawBox(material, getBase().addY(0.5),
@@ -638,7 +772,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						faceVector, 0.5, width, 0.04);
 
 			}
-						
+
 			/* draw poles */
 
 			for (VectorXZ cornerOffset : cornerOffsets) {
@@ -807,7 +941,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			float width = parseHeight(node.getTags(), height * 2 / 3);
 
 			double thickness = min(height, width) / 8;
-			
+
 			/* determine material and direction */
 
 			Material material = null;
@@ -826,7 +960,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
-			
+
 			/* draw cross */
 
 			target.drawBox(material, getBase(),
@@ -949,7 +1083,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			/* determine material */
 
 			Material material = null;
@@ -965,11 +1099,11 @@ public class StreetFurnitureModule extends AbstractModule {
 				material = Materials.getSurfaceMaterial(
 						node.getTags().getValue("surface"), STEEL);
 			}
-			
+
 			/* draw pole */
 			target.drawColumn(material, null, getBase(),
 					1.2, 0.06, 0.06, false, true);
-			
+
 			/* draw basket */
 			target.drawColumn(material, null,
 					getBase().addY(0.5).add(0.25, 0f, 0f),
@@ -996,7 +1130,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			float height = parseHeight(node.getTags(), 0.5f);
 			float width = parseWidth(node.getTags(), 1);
 			float depth = width / 2f;
-			
+
 			/* determine material */
 
 			Material material = null;
@@ -1017,11 +1151,11 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
-			
+
 			/* draw box */
 			target.drawBox(material, getBase(),
 					faceVector, height, width, depth);
-			
+
 			/* draw lid */
 			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 			vs.add(getBase().addY(height + 0.2));
@@ -1343,7 +1477,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				float rondelWidth = width * 2 / 3;
 				float boxWidth = width * 1 / 3;
 				float roofOverhang = 0.3f;
-				
+
 				/* draw rondel */
 				target.drawColumn(boxMaterial, null,
 						getBase().add(rightVector.mult(-rondelWidth / 2)),
@@ -1372,7 +1506,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				float width = parseWidth(node.getTags(), 3.5f);
 				float depth = width / 3;
 				float roofOverhang = 0.3f;
-				
+
 				/* draw box */
 				target.drawBox(boxMaterial,
 						getBase(),
@@ -1404,13 +1538,13 @@ public class StreetFurnitureModule extends AbstractModule {
 		public void renderTo(Target<?> target) {
 
 			float height = parseHeight(node.getTags(), 1f);
-			
+
 			/* draw main pole */
 			target.drawColumn(FIREHYDRANT, null,
 					getBase(),
 					height,
 					0.15, 0.15, false, true);
-			
+
 			/* draw two small and one large valve */
 			VectorXYZ valveBaseVector = getBase().addY(height - 0.3);
 			VectorXZ smallValveVector = VectorXZ.X_UNIT;
@@ -1444,7 +1578,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			float lampHeight = 0.8f;
 			float lampHalfWidth = 0.4f;
 			float poleHeight = parseHeight(node.getTags(), 5f) - lampHeight;
-			
+
 			/* determine material */
 
 			Material material = null;
@@ -1458,7 +1592,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				material = Materials.getSurfaceMaterial(
 						node.getTags().getValue("surface"), STEEL);
 			}
-			
+
 			/* draw pole */
 			target.drawColumn(material, null,
 					getBase(),
@@ -1466,7 +1600,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			target.drawColumn(material, null,
 					getBase().addY(0.5),
 					poleHeight, 0.08, 0.08, false, false);
-			
+
 			/* draw lamp */
 
 			// lower part
@@ -1520,5 +1654,5 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 	}
-	
+
 }
