@@ -428,8 +428,8 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				
 				TextureData textureData = material.getTextureDataList().get(i);
 				
-				Texture texture = textureManager.getTextureForFile(textureData.file);
-		        texture.enable(gl); //TODO: should this be called every time?
+				Texture texture = textureManager.getTextureForTextureData(textureData);
+				texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
 		        
 				/* enable anisotropic filtering (note: this could be a
@@ -616,3 +616,4 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {}
 	
 }
+

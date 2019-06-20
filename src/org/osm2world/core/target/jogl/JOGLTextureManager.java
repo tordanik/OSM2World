@@ -9,6 +9,8 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 
+import org.osm2world.core.target.common.TextureData;
+
 import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
@@ -29,6 +31,10 @@ public class JOGLTextureManager {
 	
 	public Texture getTextureForFile(File file) {
 		return getTextureForFile(file, true);
+	}
+	
+	public Texture getTextureForTextureData(TextureData textureData) {
+		return getTextureForFile(textureData.getFile());
 	}
 	
 	public Texture getTextureForFile(File file, boolean createMipmaps) {
@@ -98,3 +104,4 @@ public class JOGLTextureManager {
 	}
 		
 }
+
