@@ -1,14 +1,17 @@
 --------------------------------------------------------------------------------
- OSM2World 0.2.0                                                     2012-??-?? 
+ OSM2World 0.2.0                                                     2019-06-23 
 --------------------------------------------------------------------------------
  
- * texture support
- * introduce BridgeTunnelElevationCalculator as the new default
- * implement basic lane rendering
- * support for tags from "Simple 3D Buildings" proposal
+ * shaders and textures
+ * support for tags from "Simple 3D Buildings"
+ * lanes and road markings
+ * numerous new object types and attributes
+ * Overpass API as a data source
  * ppm output format
- * improved performance in some use cases by using display lists
- 
+ * full multipolygon and coastline support
+ * highly experimental elevation support based on SRTM
+
+
 --------------------------------------------------------------------------------
  OSM2World 0.1.9                                                     2012-01-11 
 --------------------------------------------------------------------------------
