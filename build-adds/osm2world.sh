@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd `dirname $0`
+
 # retrieve VM parameters
 
 vmparams="-Xmx2G"
