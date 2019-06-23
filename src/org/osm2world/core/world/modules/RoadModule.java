@@ -1364,11 +1364,11 @@ public class RoadModule extends ConfigurableWorldModule {
 				VectorXYZ edgeLeft, edgeRight;
 				
 				if (frontIsLower) {
-					double edgeY = Double.max(backCenter.y, frontCenter.y + 0.1);
+					double edgeY = max(backCenter.y, frontCenter.y + 0.1);
 					edgeLeft = frontLeft.y(edgeY);
 					edgeRight = frontRight.y(edgeY);
 				} else {
-					double edgeY = Double.max(frontCenter.y, backCenter.y + 0.1);
+					double edgeY = max(frontCenter.y, backCenter.y + 0.1);
 					edgeLeft = backLeft.y(edgeY);
 					edgeRight = backRight.y(edgeY);
 				}

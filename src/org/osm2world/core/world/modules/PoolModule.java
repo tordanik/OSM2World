@@ -112,7 +112,7 @@ public class PoolModule extends ConfigurableWorldModule {
 				int i1 = way.nodes.indexOf(s1.getStartNode().getOsmNode());
 				int i2 = way.nodes.indexOf(s2.getStartNode().getOsmNode());
 				
-				return Integer.compare(i1, i2);
+				return Integer.valueOf(i1).compareTo(i2);
 				
 			}});
 		

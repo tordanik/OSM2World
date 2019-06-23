@@ -83,8 +83,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 		
-		boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
-		boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
+		final boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
+		final boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
 		
 		iterate(mapData.getMapAreas(), new Operation<MapArea>() {
 			@Override public void perform(MapArea area) {
