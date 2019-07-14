@@ -31,12 +31,12 @@
 
     <target name="compile">
 	<mkdir dir="bin"/>
-        <javac target="1.6" optimize="true" encoding="UTF-8" srcdir="src" destdir="bin" classpath="${classpath}" includeantruntime="false"/>
+        <javac target="1.8" optimize="true" encoding="UTF-8" srcdir="src" destdir="bin" classpath="${classpath}" includeantruntime="false"/>
     </target>
 
     <target name="compiledbg">
 	<mkdir dir="bin"/>
-        <javac target="1.6" debug="true" encoding="UTF-8" srcdir="src" destdir="bin" classpath="${classpath}" includeantruntime="false"/>
+        <javac target="1.8" debug="true" encoding="UTF-8" srcdir="src" destdir="bin" classpath="${classpath}" includeantruntime="false"/>
     </target>
 	
     <target name="jar" depends="compile">
@@ -104,7 +104,7 @@
     <target name="release" depends="release.src,release.bin"/>
 
     <target name="javadoc">
-        <javadoc access="protected" additionalparam=" -windowtitle &quot;OSM2World Javadoc&quot; -group &quot;OSM2World Core&quot; &quot;org.osm2world.core*&quot; -group &quot;OSM2World GUI&quot; &quot;org.osm2world.viewer*&quot; -group &quot;OSM2World Command Line&quot; &quot;org.osm2world.console*&quot; -noqualifier all " author="false" classpath="${classpath}" destdir="doc/javadoc" doctitle="OSM2World Documentation" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" source="1.6" sourcepath="src" splitindex="true" use="true" version="false"/>
+        <javadoc access="protected" additionalparam=" -windowtitle &quot;OSM2World Javadoc&quot; -group &quot;OSM2World Core&quot; &quot;org.osm2world.core*&quot; -group &quot;OSM2World GUI&quot; &quot;org.osm2world.viewer*&quot; -group &quot;OSM2World Command Line&quot; &quot;org.osm2world.console*&quot; -noqualifier all " author="false" classpath="${classpath}" destdir="doc/javadoc" doctitle="OSM2World Documentation" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" source="1.8" sourcepath="src" splitindex="true" use="true" version="false"/>
     </target>
 
 </project>
