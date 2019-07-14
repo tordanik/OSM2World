@@ -2,6 +2,4 @@ OSM2World is an Open Source converter that creates three-dimensional models of t
 
 # Compiling
 
-run `ant jar` in the project root
-
-run `ant dist` if you want zip files as the ones provided on the download page
+Run `mvn package` in the project root.

@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<osm version='0.6' generator='JOSM' upload='false'>
-  <!-- this test file for OSM2World contains two nodes with the same coords  -->
-  <node id='4' version='1' lat='48.57412203109322' lon='13.465483398374973'/>
-  <node id='5' version='1' lat='48.57412203109322' lon='13.465483398374973'/>
-</osm>

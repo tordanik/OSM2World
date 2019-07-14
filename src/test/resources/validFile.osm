@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM' upload='false'>
+  <bounds minlat='48.5701329840823' minlon='13.4553337097168' maxlat='48.5781971466379' maxlon='13.4776496887207' />
+  <node id='4' timestamp='2009-12-29T17:26:47Z' visible='true' version='1' lat='48.57412203109322' lon='13.465483398374973'>
+    <tag k='highway' v='traffic_signals' />
+  </node>
+  <node id='2' action='modify' timestamp='2009-12-29T17:26:47Z' visible='true' version='1' lat='48.575670016109235' lon='13.470591956160817'>
+  </node>
+  <node id='3' timestamp='2009-12-29T17:26:47Z' visible='true' version='1' lat='48.57437491613598' lon='13.46721488748648'>
+    <tag k='addr:housenumber' v='15b' />
+  </node>
+  <node id='1' timestamp='2009-12-29T17:26:47Z' visible='true' version='1' lat='48.57250738140529' lon='13.461750678155019' />
+  <way id='5' timestamp='2009-12-29T17:26:47Z' visible='true' version='1'>
+    <nd ref='1' />
+    <nd ref='4' />
+    <nd ref='2' />
+    <tag k='highway' v='residential' />
+  </way>
+  <relation id='6' timestamp='2009-12-29T17:26:47Z' visible='true' version='1'>
+    <member type='way' ref='5' role='street' />
+    <member type='node' ref='3' role='house' />
+    <tag k='type' v='associatedStreet' />
+  </relation>
+</osm>

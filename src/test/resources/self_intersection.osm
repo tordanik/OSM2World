@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<osm generator="JOSM" upload="false" version="0.6">
+  <node action="modify" id="-170094" lat="48.565430757018504" lon="13.448474189895762" version="424242" visible="true"/>
+  <node action="modify" id="-170092" lat="48.5655316398253" lon="13.448417728647366" version="424242" visible="true"/>
+  <node action="modify" id="-170090" lat="48.56554782458393" lon="13.448504892974023" version="424242" visible="true"/>
+  <node action="modify" id="-170088" lat="48.56508987056163" lon="13.44786610686816" version="424242" visible="true"/>
+  <node action="modify" id="-170086" lat="48.56534350714786" lon="13.447429603029152" version="424242" visible="true"/>
+  <node action="modify" id="-170085" lat="48.56577327734857" lon="13.448015156959528" version="424242" visible="true"/>
+  <way action="modify" id="-170087" version="424242" visible="true">
+    <nd ref="-170085"/>
+    <nd ref="-170086"/>
+    <nd ref="-170088"/>
+    <nd ref="-170090"/>
+    <nd ref="-170092"/>
+    <nd ref="-170094"/>
+    <nd ref="-170085"/>
+    <tag k="building" v="yes"/>
+  </way>
+</osm>
