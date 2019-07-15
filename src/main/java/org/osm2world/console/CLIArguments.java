@@ -8,7 +8,7 @@ import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.TileNumber;
 
-import uk.co.flamingpenguin.jewel.cli.Option;
+import com.lexicalscope.jewel.cli.Option;
 
 public interface CLIArguments {
 	

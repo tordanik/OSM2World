@@ -4,14 +4,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
-
-import com.vividsolutions.jts.triangulate.ConstraintEnforcementException;
 
 /**
  * triangulation utility class that uses {@link EarClippingTriangulationUtil},

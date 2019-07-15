@@ -54,16 +54,16 @@ public class OSMFileDataSource implements
 	private Collection<OwnRelation> ownRelations;
 	
 	private final Sink sinkImplementation = new Sink() {
-		public void initialize(Map<String, Object> arg0) {
+		@Override public void initialize(Map<String, Object> arg0) {
 			/* do nothing */
 		}
-		public void release() {
+		@Override public void close() {
 			/* do nothing */
 		}
-		public void complete() {
+		@Override public void complete() {
 			setCompleteTrue();
 		}
-		public void process(EntityContainer entityContainer) {
+		@Override public void process(EntityContainer entityContainer) {
 			Entity entity = entityContainer.getEntity();
 			if (entity instanceof Node) {
 				nodesById.put(entity.getId(), ((Node) entity));

@@ -4,8 +4,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
-import uk.co.flamingpenguin.jewel.cli.CliFactory;
+import com.lexicalscope.jewel.cli.ArgumentValidationException;
+import com.lexicalscope.jewel.cli.CliFactory;
 
 
 public class CLIArgumentsGroupTest {

@@ -7,12 +7,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.Polygon;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * utility class for Constructive Area Geometry (CAG),

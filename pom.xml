@@ -62,31 +62,26 @@
 		</dependency>
 
 		<dependency>
-			<groupId>uk.co.flamingpenguin.jewelcli</groupId>
+			<groupId>com.lexicalscope.jewelcli</groupId>
 			<artifactId>jewelcli</artifactId>
-			<version>0.6</version>
+			<version>0.8.9</version>
 		</dependency>
 
 		<dependency>
-			<groupId>com.vividsolutions</groupId>
-			<artifactId>jts</artifactId>
-			<version>1.11</version>
+			<groupId>org.locationtech.jts</groupId>
+			<artifactId>jts-core</artifactId>
+			<version>1.16.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>osmosis-pbf</artifactId>
-			<version>0.43.1</version>
+			<version>0.47</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>osmosis-xml</artifactId>
-			<version>0.43.1</version>
-		</dependency>
-		<dependency>
-			<groupId>xerces</groupId>
-			<artifactId>xercesImpl</artifactId>
-			<version>2.9.1</version>
+			<version>0.47</version>
 		</dependency>
 
 		<dependency>
@@ -98,7 +93,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>r08</version>
+			<version>28.0-jre</version>
 		</dependency>
 
 		<dependency>

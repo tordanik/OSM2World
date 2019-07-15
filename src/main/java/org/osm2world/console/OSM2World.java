@@ -20,8 +20,8 @@ import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.viewer.view.ViewerFrame;
 
-import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
-import uk.co.flamingpenguin.jewel.cli.CliFactory;
+import com.lexicalscope.jewel.cli.ArgumentValidationException;
+import com.lexicalscope.jewel.cli.CliFactory;
 
 /**
  * main class of the OSM2World console application
