@@ -7,6 +7,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Collections.max;
+import static java.util.Comparator.comparingDouble;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
@@ -62,7 +64,6 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.CSSColors;
-import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
@@ -71,8 +72,6 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
-
-import com.google.common.base.Function;
 
 /**
  * adds buildings to the world
@@ -1639,13 +1638,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				if (ridgeDirection == null) {
 
-					LineSegmentXZ longestSeg = MinMaxUtil.max(
-							simplifiedPolygon.getSegments(),
-							new Function<LineSegmentXZ, Double>() {
-								public Double apply(LineSegmentXZ s) {
-									return s.getLength();
-								};
-							});
+					LineSegmentXZ longestSeg = max(simplifiedPolygon.getSegments(),
+							comparingDouble(LineSegmentXZ::getLength));
 
 					ridgeDirection =
 						longestSeg.p2.subtract(longestSeg.p1).normalize();

@@ -2,6 +2,8 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
+import static java.util.Collections.min;
+import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.VectorXZ.fromAngle;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
@@ -34,14 +36,11 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.core.world.modules.common.AbstractModule;
-
-import com.google.common.base.Function;
 
 /**
  * adds golf courses to the map
@@ -230,12 +229,7 @@ public class GolfModule extends AbstractModule {
 		private static void drawPin(Target<?> target,
 				VectorXZ pos, List<VectorXYZ> upperHoleRing) {
 
-			double minHoleEle = MinMaxUtil.<VectorXYZ>min(upperHoleRing,
-					new Function<VectorXYZ, Double>() {
-				@Override public Double apply(VectorXYZ v) {
-					return v.y;
-				}
-			}).y;
+			double minHoleEle = min(upperHoleRing, comparingDouble(v -> v.y)).y;
 
 			double holeBottomEle = minHoleEle - HOLE_DEPTH;
 

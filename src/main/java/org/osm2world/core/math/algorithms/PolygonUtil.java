@@ -3,7 +3,8 @@ package org.osm2world.core.math.algorithms;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Double.NaN;
 import static java.util.Arrays.asList;
-import static java.util.Collections.reverse;
+import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
@@ -12,9 +13,6 @@ import java.util.List;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.util.MinMaxUtil;
-
-import com.google.common.base.Function;
 
 /**
  * utility class for basic polygon-related algorithms
@@ -36,14 +34,8 @@ public class PolygonUtil {
 
 		/* determine points with min/max x value (guaranteed to be in convex hull) */
 
-		Function<VectorXZ, Double> getX = new Function<VectorXZ, Double>() {
-			public Double apply(VectorXZ v) {
-				return v.x;
-			}
-		};
-
-		VectorXZ minV = MinMaxUtil.min(vertices, getX);
-		VectorXZ maxV = MinMaxUtil.max(vertices, getX);
+		VectorXZ minV = min(vertices, comparingDouble(v -> v.x));
+		VectorXZ maxV = max(vertices, comparingDouble(v -> v.x));
 
 		int minI = vertices.indexOf(minV);
 		int maxI = vertices.indexOf(maxV);
