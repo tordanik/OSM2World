@@ -1,8 +1,7 @@
 package org.osm2world.core.osm.creation;
 
 import static java.lang.Double.parseDouble;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,14 +114,18 @@ public class JOSMFileReader extends StrictOSMFileReader {
 		File tempFile = File.createTempFile("workaround", ".osm", null);
 		tempFile.deleteOnExit();
 
-		TransformerFactory tFactory = TransformerFactory.newInstance();
-		Transformer transformer = tFactory.newTransformer();
+		try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
 
-		DOMSource source = new DOMSource(doc);
-		StreamResult result = new StreamResult(new FileOutputStream(tempFile));
-		transformer.transform(source, result);
+			TransformerFactory tFactory = TransformerFactory.newInstance();
+			Transformer transformer = tFactory.newTransformer();
 
-		return tempFile;
+			StreamResult result = new StreamResult(outputStream);
+			DOMSource source = new DOMSource(doc);
+			transformer.transform(source, result);
+
+			return tempFile;
+
+		}
 
 	}
 

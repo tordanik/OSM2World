@@ -35,17 +35,20 @@ class SRTMTile {
 
 	private static ShortBuffer loadDataFromFile(File file) throws IOException {
 
-		FileInputStream fis = new FileInputStream(file);
-		FileChannel fc = fis.getChannel();
-		ByteBuffer bb = ByteBuffer.allocateDirect((int) fc.size());
-		while (bb.remaining() > 0) fc.read(bb);
-		fc.close();
-		fis.close();
+		try (
+			FileInputStream fis = new FileInputStream(file);
+			FileChannel fc = fis.getChannel();
+		) {
 
-		bb.flip();
+			ByteBuffer bb = ByteBuffer.allocateDirect((int) fc.size());
+			while (bb.remaining() > 0) fc.read(bb);
 
-		// choose the right endianness
-		return bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+			bb.flip();
+
+			// choose the right endianness
+			return bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+
+		}
 
 	}
 

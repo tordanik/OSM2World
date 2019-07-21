@@ -122,41 +122,42 @@ public final class CLIArgumentsUtil {
 	public static final List<String[]> getUnparsedParameterGroups(
 			File parameterFile) throws IOException {
 
-		List<String[]> result = new ArrayList<String[]>();
+		try (BufferedReader in = new BufferedReader(new FileReader(parameterFile))) {
 
-		BufferedReader in = new BufferedReader(new FileReader(parameterFile));
+			List<String[]> result = new ArrayList<>();
 
-		String line;
+			String line;
 
-		while ((line = in.readLine()) != null) {
+			while ((line = in.readLine()) != null) {
 
-			if (line.startsWith("#")) continue;
-			if (line.trim().isEmpty()) continue;
+				if (line.startsWith("#")) continue;
+				if (line.trim().isEmpty()) continue;
 
-			List<String> argList = new ArrayList<String>();
+				List<String> argList = new ArrayList<>();
 
-			Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
-			Matcher matcher = regex.matcher(line);
+				Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+				Matcher matcher = regex.matcher(line);
 
-			while (matcher.find()) {
-			    if (matcher.group(1) != null) {
-			        // Add double-quoted string without the quotes
-			    	argList.add(matcher.group(1));
-			    } else if (matcher.group(2) != null) {
-			        // Add single-quoted string without the quotes
-			    	argList.add(matcher.group(2));
-			    } else {
-			        // Add unquoted word
-			    	argList.add(matcher.group());
-			    }
+				while (matcher.find()) {
+				    if (matcher.group(1) != null) {
+				        // Add double-quoted string without the quotes
+				    	argList.add(matcher.group(1));
+				    } else if (matcher.group(2) != null) {
+				        // Add single-quoted string without the quotes
+				    	argList.add(matcher.group(2));
+				    } else {
+				        // Add unquoted word
+				    	argList.add(matcher.group());
+				    }
+				}
+
+				result.add(argList.toArray(new String[argList.size()]));
+
 			}
 
-			result.add(argList.toArray(new String[argList.size()]));
+			return result;
 
 		}
-		in.close();
-
-		return result;
 
 	}
 

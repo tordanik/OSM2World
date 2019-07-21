@@ -41,27 +41,28 @@ public final class ObjWriter {
 			mtlFile.createNewFile();
 		}
 
-		PrintStream objStream = new PrintStream(objFile);
-		PrintStream mtlStream = new PrintStream(mtlFile);
+		try (
+			PrintStream objStream = new PrintStream(objFile);
+			PrintStream mtlStream = new PrintStream(mtlFile);
+		) {
 
-		/* write comments at the beginning of both files */
+			/* write comments at the beginning of both files */
 
-		writeObjHeader(objStream, mapProjection);
+			writeObjHeader(objStream, mapProjection);
 
-		writeMtlHeader(mtlStream);
+			writeMtlHeader(mtlStream);
 
-		/* write path of mtl file to obj file */
+			/* write path of mtl file to obj file */
 
-		objStream.println("mtllib " + mtlFile.getName() + "\n");
+			objStream.println("mtllib " + mtlFile.getName() + "\n");
 
-		/* write actual file content */
+			/* write actual file content */
 
-		ObjTarget target = new ObjTarget(objStream, mtlStream);
+			ObjTarget target = new ObjTarget(objStream, mtlStream);
 
-		TargetUtil.renderWorldObjects(target, mapData, underground);
+			TargetUtil.renderWorldObjects(target, mapData, underground);
 
-		objStream.close();
-		mtlStream.close();
+		}
 
 	}
 

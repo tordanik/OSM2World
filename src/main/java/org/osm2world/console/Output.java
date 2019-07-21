@@ -233,16 +233,16 @@ public final class Output {
 		}
 
 		if (argumentsGroup.getRepresentative().isPerformanceTable()) {
-			PrintWriter w = new PrintWriter(new FileWriter(
-					argumentsGroup.getRepresentative().getPerformanceTable(), true), true);
-			w.printf("|%6d |%6d |%6d |%6d |%6d |%6d |\n",
-				(perfListener.getPhaseDuration(Phase.MAP_DATA) + 500) / 1000,
-				(perfListener.getPhaseDuration(Phase.REPRESENTATION) + 500) / 1000,
-				(perfListener.getPhaseDuration(Phase.ELEVATION) + 500) / 1000,
-				(perfListener.getPhaseDuration(Phase.TERRAIN) + 500) / 1000,
-				(System.currentTimeMillis() - perfListener.getPhaseEnd(Phase.TERRAIN) + 500) / 1000,
-				(System.currentTimeMillis() - start + 500) / 1000);
-			w.close();
+			try (PrintWriter w = new PrintWriter(new FileWriter(
+					argumentsGroup.getRepresentative().getPerformanceTable(), true), true)) {
+				w.printf("|%6d |%6d |%6d |%6d |%6d |%6d |\n",
+					(perfListener.getPhaseDuration(Phase.MAP_DATA) + 500) / 1000,
+					(perfListener.getPhaseDuration(Phase.REPRESENTATION) + 500) / 1000,
+					(perfListener.getPhaseDuration(Phase.ELEVATION) + 500) / 1000,
+					(perfListener.getPhaseDuration(Phase.TERRAIN) + 500) / 1000,
+					(System.currentTimeMillis() - perfListener.getPhaseEnd(Phase.TERRAIN) + 500) / 1000,
+					(System.currentTimeMillis() - start + 500) / 1000);
+			}
 		}
 
 	}

@@ -69,18 +69,18 @@ public class OverpassReader extends OsmosisReader {
 				connection.setDoOutput(true);
 				connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-				DataOutputStream printout = new DataOutputStream(connection.getOutputStream());
-				printout.writeBytes("data=" + URLEncoder.encode(queryString, "utf-8"));
-				printout.flush();
-				printout.close();
+				try (DataOutputStream printout = new DataOutputStream(connection.getOutputStream())) {
+					printout.writeBytes("data=" + URLEncoder.encode(queryString, "utf-8"));
+					printout.flush();
+				}
 
-				InputStream inputStream = connection.getInputStream();
+				try (InputStream inputStream = connection.getInputStream()) {
 
-				XmlStreamReader xmlReader = new XmlStreamReader(inputStream, true, CompressionMethod.None);
-				xmlReader.setSink(sink);
-				xmlReader.run();
+					XmlStreamReader xmlReader = new XmlStreamReader(inputStream, true, CompressionMethod.None);
+					xmlReader.setSink(sink);
+					xmlReader.run();
 
-				inputStream.close();
+				}
 
 			} catch (IOException e) {
 

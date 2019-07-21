@@ -45,34 +45,36 @@ public class ShaderManager {
 		if (stream == null) {
 			throw new RuntimeException("Vertex shader not found in classpath: \""+ filename +"\"");
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-		try {
+
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+
 			while ((line = reader.readLine()) != null) {
 				vertCode[0] += line + "\n";
 			}
+
+			// Associate the code string with the unique id
+			gl.glShaderSource(vertShader, 1, vertCode, null);
+			// compile the vertex shader
+			gl.glCompileShader(vertShader);
+
+			// acquire compilation status
+			IntBuffer shaderStatus = IntBuffer.allocate(1);
+			gl.glGetShaderiv(vertShader, GL3.GL_COMPILE_STATUS, shaderStatus);
+
+			// check whether compilation was successful
+			if (shaderStatus.get() == GL.GL_FALSE) {
+				printShaderInfoLog(gl, vertShader);
+				throw new IllegalStateException("compilation error for shader [" + filename + "].");
+			}
+			printShaderInfoLog(gl, vertShader);
+
+			// the int returned is now associated with the compiled shader
+			return vertShader;
+
 		} catch (IOException e) {
 			throw new RuntimeException("Failed reading vertex shader \"" + filename + "\".",e);
 		}
 
-		// Associate the code string with the unique id
-		gl.glShaderSource(vertShader, 1, vertCode, null);
-		// compile the vertex shader
-		gl.glCompileShader(vertShader);
-
-		// acquire compilation status
-		IntBuffer shaderStatus = IntBuffer.allocate(1);
-		gl.glGetShaderiv(vertShader, GL3.GL_COMPILE_STATUS, shaderStatus);
-
-		// check whether compilation was successful
-		if (shaderStatus.get() == GL.GL_FALSE) {
-			printShaderInfoLog(gl, vertShader);
-			throw new IllegalStateException("compilation error for shader ["
-					+ filename + "].");
-		}
-		printShaderInfoLog(gl, vertShader);
-
-		// the int returned is now associated with the compiled shader
-		return vertShader;
 	}
 
 	/**
@@ -94,31 +96,34 @@ public class ShaderManager {
 		if (stream == null) {
 			throw new RuntimeException("Fragment shader not found in classpath: \""+ filename +"\"");
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-		try {
+
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+
 			while ((line = reader.readLine()) != null) {
 				fragCode[0] += line + "\n";
 			}
+
+			gl.glShaderSource(fragShader, 1, fragCode, null);
+			gl.glCompileShader(fragShader);
+
+			// acquire compilation status
+			IntBuffer shaderStatus = IntBuffer.allocate(1);
+			gl.glGetShaderiv(fragShader, GL3.GL_COMPILE_STATUS, shaderStatus);
+
+			// check whether compilation was successful
+			if (shaderStatus.get() == GL.GL_FALSE) {
+				printShaderInfoLog(gl, fragShader);
+				throw new IllegalStateException("compilation error for shader ["
+						+ filename + "].");
+			}
+			printShaderInfoLog(gl, fragShader);
+
+			return fragShader;
+
 		} catch (IOException e) {
 			throw new RuntimeException("Failed reading fragment shader \"" + filename + "\".",e);
 		}
 
-		gl.glShaderSource(fragShader, 1, fragCode, null);
-		gl.glCompileShader(fragShader);
-
-		// acquire compilation status
-		IntBuffer shaderStatus = IntBuffer.allocate(1);
-		gl.glGetShaderiv(fragShader, GL3.GL_COMPILE_STATUS, shaderStatus);
-
-		// check whether compilation was successful
-		if (shaderStatus.get() == GL.GL_FALSE) {
-			printShaderInfoLog(gl, fragShader);
-			throw new IllegalStateException("compilation error for shader ["
-					+ filename + "].");
-		}
-		printShaderInfoLog(gl, fragShader);
-
-		return fragShader;
 	}
 
 	/**
