@@ -27,19 +27,19 @@ import org.xml.sax.SAXParseException;
  * The only change is the constructor accepting an InputStream parameter
  */
 public class XmlStreamReader implements RunnableSource {
-	
+
 	private static Logger log = Logger.getLogger(XmlStreamReader.class.getName());
-	
+
 	private Sink sink;
 	private File file;
 	private InputStream inputStream;
 	private boolean enableDateParsing;
 	private CompressionMethod compressionMethod;
-	
-	
+
+
 	/**
 	 * Creates a new instance.
-	 * 
+	 *
 	 * @param file
 	 *            The file to read.
 	 * @param enableDateParsing
@@ -53,7 +53,7 @@ public class XmlStreamReader implements RunnableSource {
 		this.enableDateParsing = enableDateParsing;
 		this.compressionMethod = compressionMethod;
 	}
-	
+
 	/**
 	 * Alternative constructor with an InputStream parameter.
 	 */
@@ -61,45 +61,45 @@ public class XmlStreamReader implements RunnableSource {
 		this.inputStream = inputStream;
 		this.enableDateParsing = enableDateParsing;
 		this.compressionMethod = compressionMethod;
-		
+
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	public void setSink(Sink sink) {
 		this.sink = sink;
 	}
-	
-	
+
+
 	/**
 	 * Creates a new SAX parser.
-	 * 
+	 *
 	 * @return The newly created SAX parser.
 	 */
 	private SAXParser createParser() {
 		try {
 			return SAXParserFactory.newInstance().newSAXParser();
-			
+
 		} catch (ParserConfigurationException e) {
 			throw new OsmosisRuntimeException("Unable to create SAX Parser.", e);
 		} catch (SAXException e) {
 			throw new OsmosisRuntimeException("Unable to create SAX Parser.", e);
 		}
 	}
-	
-	
+
+
 	/**
 	 * Reads all data from the file and send it to the sink.
 	 */
 	public void run() {
 		InputStream inputStream = null;
-		
+
 		try {
 			SAXParser parser;
-			
+
 			sink.initialize(Collections.<String, Object>emptyMap());
-			
+
 			if (file == null) {
 				inputStream = this.inputStream;
 			} else if (file.getName().equals("-")) {
@@ -108,18 +108,18 @@ public class XmlStreamReader implements RunnableSource {
 			} else {
 				inputStream = new FileInputStream(file);
 			}
-			
-			
+
+
 			inputStream =
 				new CompressionActivator(compressionMethod).
 					createCompressionInputStream(inputStream);
-			
+
 			parser = createParser();
-			
+
 			parser.parse(inputStream, new OsmHandler(sink, enableDateParsing));
-			
+
 			sink.complete();
-			
+
 		} catch (SAXParseException e) {
 			throw new OsmosisRuntimeException(
 				"Unable to parse xml file " + file
@@ -134,7 +134,7 @@ public class XmlStreamReader implements RunnableSource {
 			throw new OsmosisRuntimeException("Unable to read XML file " + file + ".", e);
 		} finally {
 			sink.close();
-			
+
 			if (inputStream != null) {
 				try {
 					inputStream.close();

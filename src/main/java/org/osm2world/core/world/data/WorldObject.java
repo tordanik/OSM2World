@@ -6,14 +6,14 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 
 public interface WorldObject {
-	
+
 	/**
 	 * returns the "primary" {@link MapElement} for this WorldObject;
 	 * i.e. the one it is most strongly associated with.
 	 * Can be null if there is no (clear) primary element for this feature.
 	 */
 	public MapElement getPrimaryMapElement();
-	
+
 	/**
 	 * returns whether this feature is on, above or below the ground.
 	 * This is relevant for elevation calculations,
@@ -23,16 +23,16 @@ public interface WorldObject {
 	 * features o.t.g. as well as other features above/below t.g.
 	 */
 	public GroundState getGroundState();
-	
+
 	/**
 	 * returns all {@link EleConnector}s used by this WorldObject
 	 */
 	public Iterable<EleConnector> getEleConnectors();
-	
+
 	/**
 	 * lets this object add constraints for the relative elevations of its
 	 * {@link EleConnector}s. Called after {@link #getEleConnectors()}.
 	 */
 	public void defineEleConstraints(EleConstraintEnforcer enforcer);
-	
+
 }

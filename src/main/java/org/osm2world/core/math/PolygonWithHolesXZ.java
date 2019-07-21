@@ -6,19 +6,19 @@ import java.util.Collections;
 import java.util.List;
 
 public class PolygonWithHolesXZ {
-	
+
 	private final SimplePolygonXZ outerPolygon;
 	private final List<SimplePolygonXZ> holes;
-	
+
 	public PolygonWithHolesXZ(SimplePolygonXZ outerPolygon,
 			List<SimplePolygonXZ> holes) {
 		this.outerPolygon = outerPolygon;
 		this.holes = holes;
 		/**
 		 * forces the early computation of the area to avoid the creation of an invalid one. This is a temporary kludge as
-		 * calling a method that can be overridden in a constructor is a bad practice. Moreover, the late call of the method 
-		 * calculateArea() was originally intended to avoid unnecessary computations but as it is necessary for intersection 
-		 * tests even before any rendering attempts, it no longer makes sense. A better solution would consist in running the 
+		 * calling a method that can be overridden in a constructor is a bad practice. Moreover, the late call of the method
+		 * calculateArea() was originally intended to avoid unnecessary computations but as it is necessary for intersection
+		 * tests even before any rendering attempts, it no longer makes sense. A better solution would consist in running the
 		 * computation of the area as soon as possible
 		 * */
 		this.getArea();
@@ -27,11 +27,11 @@ public class PolygonWithHolesXZ {
 	public SimplePolygonXZ getOuter() {
 		return outerPolygon;
 	}
-	
+
 	public List<SimplePolygonXZ> getHoles() {
 		return holes;
 	}
-	
+
 	/**
 	 * returns a list that contains the outer polygon and all holes
 	 */
@@ -95,7 +95,7 @@ public class PolygonWithHolesXZ {
 	}
 
 	//TODO (duplicate code): do something like intersects(geometricObject)
-	
+
 	public boolean intersects(LineSegmentXZ lineSegment) {
 		for (SimplePolygonXZ hole : holes) {
 			if (hole.intersects(lineSegment)) {
@@ -104,7 +104,7 @@ public class PolygonWithHolesXZ {
 		}
 		return outerPolygon.intersects(lineSegment);
 	}
-	
+
 	public boolean intersects(SimplePolygonXZ other) {
 		for (SimplePolygonXZ hole : holes) {
 			if (hole.intersects(other)) {
@@ -133,7 +133,7 @@ public class PolygonWithHolesXZ {
 		}
 		return intersectionPositions;
 	}
-	
+
 	public double getArea() {
 		//FIXME incorrect for overlapping holes
 		double area = outerPolygon.getArea();
@@ -142,5 +142,5 @@ public class PolygonWithHolesXZ {
 		}
 		return area;
 	}
-	
+
 }

@@ -94,56 +94,56 @@ public class ViewerFrame extends JFrame {
 	private static final int STENCIL_BITS = 8;
 
 	public ViewerGLCanvas glCanvas;
-	
+
 	private final Data data = new Data();
 	private final RenderOptions renderOptions = new RenderOptions();
 	private final MessageManager messageManager = new MessageManager();
 	private final List<DebugView> debugViews = new ArrayList<DebugView>();
-	
+
 	private final File configFile;
-	
+
 	/**
-	 * 
+	 *
 	 * @param config  configuration object, != null
 	 * @param configFile  properties (where config was loaded from), can be null
 	 * @param inputFile  osm data file to be loaded at viewer start, can be null
 	 */
 	public ViewerFrame(final Configuration config,
 			final File configFile, File inputFile) {
-		
+
 		super("OSM2World Viewer");
-		
+
 		this.configFile = configFile;
 		data.setConfig(config);
-		
+
 		createMenuBar();
-		
+
 		createCanvas(config);
-		
+
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
+
 		pack();
-		
+
 		if (inputFile != null) {
 			new OpenOSMAction(this, data, renderOptions).openOSMFile(inputFile, true);
 		}
-		
+
 	}
-	
+
 	private final Function<File, ActionListener> actionForFileFunction =
 			new Function<File, ActionListener>() {
-		
+
 		public ActionListener apply(final File file) {
-			
+
 			return new ActionListener() {
 				@Override public void actionPerformed(ActionEvent e) {
 					new OpenOSMAction(ViewerFrame.this, data,
 							renderOptions).openOSMFile(file, true);
 				}
 			};
-			
+
 		}
-		
+
 	};
 
 	private void createMenuBar() {
@@ -153,9 +153,9 @@ public class ViewerFrame extends JFrame {
 		{ //"File"
 
 			JMenu recentFilesMenu = new JMenu("Recent files");
-			
+
 			new RecentFilesUpdater(recentFilesMenu, actionForFileFunction);
-			
+
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
@@ -171,20 +171,20 @@ public class ViewerFrame extends JFrame {
 			menu.add(subMenu);
 
 		} { //"View"
-			
+
 			JMenu subMenu = new JMenu("View");
 			subMenu.setMnemonic(VK_V);
-			
+
 			subMenu.add(new JCheckBoxMenuItem(new ToggleWireframeAction(this, data, renderOptions)));
 			subMenu.add(new JCheckBoxMenuItem(new ToggleBackfaceCullingAction(this, data, renderOptions)));
-			
+
 			initAndAddDebugView(subMenu, VK_W, true,
 					new WorldObjectView(renderOptions));
 			initAndAddDebugView(subMenu, -1, true,
 					new SkyboxView());
-			
+
 			subMenu.addSeparator();
-			
+
 			initAndAddDebugView(subMenu, -1, false,
 					new TerrainBoundaryAABBDebugView());
 			initAndAddDebugView(subMenu, VK_L, false,
@@ -231,9 +231,9 @@ public class ViewerFrame extends JFrame {
 					new LinearInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,
 					new ShadowView(renderOptions));
-			
+
 			menu.add(subMenu);
-			
+
 		} { //"Camera"
 
 			JMenu subMenu = new JMenu("Camera");
@@ -251,12 +251,12 @@ public class ViewerFrame extends JFrame {
 
 			JMenu subMenu = new JMenu("Options");
 			subMenu.setMnemonic(VK_O);
-			
+
 			JMenu interpolatorMenu = new JMenu("TerrainInterpolator");
 			subMenu.add(interpolatorMenu);
-			
+
 			ButtonGroup interpolatorGroup = new ButtonGroup();
-			
+
 			@SuppressWarnings("unchecked")
 			List<Class<? extends TerrainInterpolator>> interpolatorClasses = asList(
 					ZeroInterpolator.class,
@@ -264,40 +264,40 @@ public class ViewerFrame extends JFrame {
 					InverseDistanceWeightingInterpolator.class,
 					LeastSquaresInterpolator.class,
 					NaturalNeighborInterpolator.class);
-			
+
 			for (Class<? extends TerrainInterpolator> c : interpolatorClasses) {
-				
+
 				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
 						new SetTerrainInterpolatorAction(c,
 								this, data, renderOptions));
-				
+
 				interpolatorGroup.add(item);
 				interpolatorMenu.add(item);
-				
+
 			}
-			
+
 			JMenu enforcerMenu = new JMenu("EleConstraintEnforcer");
 			subMenu.add(enforcerMenu);
-			
+
 			ButtonGroup enforcerGroup = new ButtonGroup();
-			
+
 			@SuppressWarnings("unchecked")
 			List<Class<? extends EleConstraintEnforcer>> enforcerClasses = asList(
 					NoneEleConstraintEnforcer.class,
 					SimpleEleConstraintEnforcer.class,
 					LPEleConstraintEnforcer.class);
-			
+
 			for (Class<? extends EleConstraintEnforcer> c : enforcerClasses) {
-				
+
 				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
 						new SetEleConstraintEnforcerAction(c,
 								this, data, renderOptions));
-				
+
 				enforcerGroup.add(item);
 				enforcerMenu.add(item);
-				
+
 			}
-			
+
 			menu.add(subMenu);
 
 		} { //"Help"
@@ -312,7 +312,7 @@ public class ViewerFrame extends JFrame {
 		}
 
 		this.setJMenuBar(menu);
-		
+
 	}
 
 	/**
@@ -320,21 +320,21 @@ public class ViewerFrame extends JFrame {
 	 */
 	private void initAndAddDebugView(JMenu menu, int keyEvent,
 			boolean enabled, DebugView debugView) {
-		
+
 		debugView.setConfiguration(data.getConfig());
-		
+
 		menu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 				debugView, keyEvent, enabled,
 				this, data, renderOptions)));
-		
+
 		debugViews.add(debugView);
-		
+
 	}
 
 	public MessageManager getMessageManager() {
 		return messageManager;
 	}
-	
+
 	/**
 	 * Prepare OpenGL (Profile/Capabilities) and create matching canvas.
 	 * @param config config for OpenGL parameters
@@ -348,22 +348,22 @@ public class ViewerFrame extends JFrame {
 			profile = GLProfile.get(GLProfile.GL2);
 		}
 		GLCapabilities caps = new GLCapabilities(profile);
-		
+
 		// set MSAA (Multi Sample Anti-Aliasing)
 		int msaa = config.getInt("msaa", 0);
 		if (msaa > 0) {
 			caps.setSampleBuffers(true);
 			caps.setNumSamples(msaa);
 		}
-		
+
 		if ("shader".equals(config.getString("joglImplementation"))) {
 			if ("shadowVolumes".equals(config.getString("shadowImplementation")) || "both".equals(config.getString("shadowImplementation")))
 				caps.setStencilBits(STENCIL_BITS);
 		}
-		
+
 		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
 		add(glCanvas, BorderLayout.CENTER);
-		
+
 		new FileDrop(glCanvas, new FileDrop.Listener() {
 			@Override
 			public void filesDropped(File[] files) {
@@ -373,7 +373,7 @@ public class ViewerFrame extends JFrame {
 				}
 			}
 		});
-		
+
 		DefaultNavigation navigation = new DefaultNavigation(this, renderOptions);
 		glCanvas.addMouseListener(navigation);
 		glCanvas.addMouseMotionListener(navigation);
@@ -387,22 +387,22 @@ public class ViewerFrame extends JFrame {
 	public void setConfiguration(Configuration config) {
 		if (!checkConfiguration(config)) {
 			System.out.println("OpenGL configuration changed. Recreating canvas.");
-			
+
 			// reset all DebugViews to free resources bound to the old OpenGL context. The context still needs to exist at this point
 			for(DebugView d : debugViews) {
 				d.reset();
 			}
-			
+
 			// destroy old OpenGL context
 			remove(glCanvas);
 			glCanvas.destroy();
-			
+
 			// recreate
 			createCanvas(config);
 			pack();
 		}
 	}
-	
+
 	/**
 	 * Check if the current OpenGL-Parameters match the given configuration.
 	 * @return true if the configuration matches, false otherwise. In the latter case the GLCanvas needs to be recreated
@@ -415,7 +415,7 @@ public class ViewerFrame extends JFrame {
 			if (!glCanvas.getGLProfile().isGL2())
 				return false;
 		}
-		
+
 		int msaa = config.getInt("msaa", 0);
 		if (glCanvas.getChosenGLCapabilities().getNumSamples() != msaa)
 			return false;
@@ -423,7 +423,7 @@ public class ViewerFrame extends JFrame {
 		if (glCanvas.getChosenGLCapabilities().getSampleBuffers() != msaa > 0)
 			return false;
 
-		
+
 		if ("shader".equals(config.getString("joglImplementation"))
 				&& ("shadowVolumes".equals(config.getString("shadowImplementation")) || "both".equals(config.getString("shadowImplementation")))) {
 			if (glCanvas.getChosenGLCapabilities().getStencilBits() != STENCIL_BITS)

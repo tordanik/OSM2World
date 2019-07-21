@@ -25,24 +25,24 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 
 	private final static double ANGLE_INCREMENT = Math.PI/200;
 	private final static double MOVEMENT_INCREMENT = 2.0;
-	
+
 	private final RenderOptions renderOptions;
 	private final ViewerFrame viewerFrame;
 
 	private final Timer timer;
-	
+
 	public DefaultNavigation(ViewerFrame viewerFrame, RenderOptions renderOptions) {
-		
+
 		this.viewerFrame = viewerFrame;
 		this.renderOptions = renderOptions;
-		
+
 		timer = new Timer(20, KEYBOARD_TASK);
 	}
-	
+
 	private boolean translationDrag = false;
 	private boolean rotationDrag = false;
 	private boolean movementDrag = false;
-	
+
 	private Point previousMousePoint;
 
 	private final Set<Integer> pressedKeys = new HashSet<Integer>();
@@ -63,49 +63,49 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 				timer.stop();
 		}
 	}
-	
+
 	@Override
 	public void keyTyped(KeyEvent e) {}
-	
+
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		
+
 		Point currentMousePoint = e.getPoint();
-		
+
 		float movementX = currentMousePoint.x - previousMousePoint.x;
 		float movementY = currentMousePoint.y - previousMousePoint.y;
-		
+
 		Camera camera = renderOptions.camera;
-		
+
 		if (camera != null) {
-	
+
 			if (translationDrag) {
-				
+
 				camera.moveMapForward(movementY);
 				camera.moveMapRight(movementX);
-				
+
 			} else if (rotationDrag) {
-					
+
 				/* view left/right */
 				camera.rotateY(movementX/100);
-				
+
 				/* view up/down */
 				camera.mapPitch(movementY/-100);
-			
+
 			} else if (movementDrag) {
-				
+
 				/* roll left/right */
 				camera.roll(movementX/100);
-				
+
 				/* move up/down */
 				camera.moveMapUp(movementY);
 			}
 		}
-			
+
 		previousMousePoint = currentMousePoint;
-			
+
 	}
-	
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
@@ -128,7 +128,7 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 		rotationDrag = false;
 		movementDrag = false;
 	}
-	
+
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 
@@ -137,7 +137,7 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 
 	private void zoom(boolean zoomIn, double scale) {
 		Camera c = renderOptions.camera;
-		
+
 		if (c != null) {
 
 			VectorXYZ toLookAt = c.getLookAt().subtract(c.getPos());
@@ -147,9 +147,9 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 			c.setPos(newPos);
 		}
 	}
-	
+
 	private final ActionListener KEYBOARD_TASK = new ActionListener() {
-		
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 

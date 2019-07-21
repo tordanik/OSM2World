@@ -23,20 +23,20 @@ import org.osm2world.viewer.model.RenderOptions;
 public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 	protected abstract TerrainInterpolator buildInterpolator();
-	
+
 	private static final double SAMPLE_DIST = 3;
-	
+
 	private static final Material TERRAIN_MAT =
 			new ImmutableMaterial(Interpolation.FLAT, Color.WHITE);
 
 	private final RenderOptions renderOptions;
-	
+
 	private MapProjection mapProjection = null;
-	
+
 	protected TerrainInterpolatorDebugView(RenderOptions renderOptions) {
 		this.renderOptions = renderOptions;
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return "shows empty terrain approximated by a " +
@@ -59,31 +59,31 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 		target.setRenderingParameters(new JOGLRenderingParameters(null,
     			renderOptions.isWireframe(), true));
-		
+
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
-		
+
 		try {
-			
+
 			Collection<VectorXYZ> sites = eleData.getSites(map);
-			
+
 			TerrainInterpolator strategy = buildInterpolator();
 			strategy.setKnownSites(sites);
-			
+
 			AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
-			
+
 			VectorGridXZ sampleGrid = new VectorGridXZ(bound, SAMPLE_DIST);
-			
+
 			VectorXYZ[][] samples = new VectorXYZ[sampleGrid.sizeX()][sampleGrid.sizeZ()];
-			
+
 			long startTimeMillis = System.currentTimeMillis();
-			
+
 			for (int x = 0; x < sampleGrid.sizeX(); x++) {
 				for (int z = 0; z < sampleGrid.sizeZ(); z++) {
-					
+
 					samples[x][z] = strategy.interpolateEle(sampleGrid.get(x, z));
-										
+
 				}
-				
+
 				if (x % 100 == 0) {
 					long finishedSamples = x * sampleGrid.sizeZ();
 					System.out.println(finishedSamples + "/" + sampleGrid.size()
@@ -92,22 +92,22 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 			}
 
 			/* draw surface from samples */
-			
+
 			for (int x = 0; x+1 < samples.length; x++) {
 				for (int z = 0; z+1 < samples[x].length; z++) {
-					
+
 					target.drawTriangleFan(TERRAIN_MAT,
 							asList(samples[x][z], samples[x+1][z],
 									samples[x+1][z+1], samples[x][z+1]),
 							null);
-					
+
 				}
 			}
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-						
+
 	}
-	
+
 }

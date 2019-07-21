@@ -51,7 +51,7 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 				this.y + other.y,
 				this.z + other.z);
 	}
-	
+
 	public VectorXYZ add(VectorXZ other) {
 		return new VectorXYZ(
 				this.x + other.x,
@@ -97,16 +97,16 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	 * {@link #cross(VectorXYZ)}, but avoids creating a temporary vector
 	 */
 	public VectorXYZ crossNormalized(VectorXYZ other) {
-		
+
 		//cross
 		double x = this.y * other.z - this.z * other.y;
 		double y = this.z * other.x - this.x * other.z;
 		double z = this.x * other.y - this.y * other.x;
-		
+
 		//normalize
 		double length = sqrt(x*x + y*y + z*z);
 		return new VectorXYZ(x / length, y / length, z / length);
-		
+
 	}
 
 	public double dot(VectorXYZ other) {
@@ -116,7 +116,7 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	public VectorXYZ mult(double scalar) {
 		return new VectorXYZ(x*scalar, y*scalar, z*scalar);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "(" + x + ", " + y + ", " + z + ")";
@@ -170,7 +170,7 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 		double a33 = n.z*n.z*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
 		return new VectorXYZ(a11*x+a12*y+a13*z, a21*x+a22*y+a23*z, a31*x+a32*y+a33*z);
 	}
-	
+
 	/**
 	 * returns the result of rotating this vector around a freely chosen
 	 * axis and origin
@@ -184,7 +184,7 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 		v = v.add(rotOrigin);
 		return v;
 	}
-	
+
 	/**
 	 * calculates the angle between this vector and other,
 	 * but only if both are normalized!
@@ -192,35 +192,35 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	public double angleTo(VectorXYZ other) {
 		return Math.acos(this.dot(other));
 	}
-	
+
 	public double distanceTo(VectorXYZ other) {
 		//SUGGEST (performance): don't create temporary vector
 		return (other.subtract(this)).length();
 	}
-	
+
 	public double distanceToSquared(VectorXYZ other) {
 		//SUGGEST (performance): don't create temporary vector
 		return (other.subtract(this)).lengthSquared();
 	}
-	
+
 	public double distanceToXZ(VectorXZ other) {
 		//SUGGEST (performance): don't create temporary vector
 		return VectorXZ.distance(this.xz(), other);
 	}
-	
+
 	public double distanceToXZ(VectorXYZ other) {
 		//SUGGEST (performance): don't create temporary vector
 		return VectorXZ.distance(this.xz(), other.xz());
 	}
-	
+
 	public VectorXZ xz() {
 		return new VectorXZ(x, z);
 	}
-	
+
 	public VectorXYZ x(double x) {
 		return new VectorXYZ(x, this.y, this.z);
 	}
-	
+
 	public VectorXYZ y(double y) {
 		return new VectorXYZ(this.x, y, this.z);
 	}
@@ -232,12 +232,12 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	public VectorXYZ invert() {
 		return new VectorXYZ(-x, -y, -z);
 	}
-	
+
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		return new AxisAlignedBoundingBoxXZ(x, z, x, z);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof VectorXYZ)) {
@@ -272,7 +272,7 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 			return new VectorXYZ(vector3D.getX(), vector3D.getY(), vector3D.getZ());
 		}
 	}
-	
+
 	public static List<VectorXYZ> addYList(List<VectorXYZ> list, double addY) {
 		List<VectorXYZ> result = new ArrayList<VectorXYZ>(list.size());
 		for (VectorXYZ listEntry : list) {
@@ -280,10 +280,10 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 		}
 		return result;
 	}
-	
+
 	public static final VectorXYZ NULL_VECTOR = new VectorXYZ(0, 0, 0);
 	public static final VectorXYZ X_UNIT = new VectorXYZ(1, 0, 0);
 	public static final VectorXYZ Y_UNIT = new VectorXYZ(0, 1, 0);
 	public static final VectorXYZ Z_UNIT = new VectorXYZ(0, 0, 1);
-		
+
 }

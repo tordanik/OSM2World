@@ -9,12 +9,12 @@ import javax.media.opengl.GL3;
  * Simple base class for a shader program. Manages vertex and fragment shaders, links and validates them.
  */
 public abstract class AbstractShader {
-	
+
 	protected GL3 gl;
 	protected int vertexShader;
 	protected int fragmentShader;
 	protected int shaderProgram;
-	
+
 	/**
 	 * Loads the vertex and fragment shaders with the basename name and ending <i>vertex</i> and <i>fragment</i>
 	 * and creates a shader program for them. The shader is linked but not validated.
@@ -51,7 +51,7 @@ public abstract class AbstractShader {
 		}
 		ShaderManager.printProgramInfoLog(gl, shaderProgram);
 	}
-	
+
 	/**
 	 * Validates the linked shader program. An exception is raised if the validation fails.
 	 */
@@ -67,18 +67,18 @@ public abstract class AbstractShader {
 		}
 		ShaderManager.printProgramInfoLog(gl, shaderProgram);
 	}
-	
+
 	/**
 	 * Make this shader program active.
 	 */
 	public void useShader() {
 		gl.glUseProgram(this.getProgram());
 	}
-	
+
 	public void disableShader() {
 		gl.glUseProgram(0);
 	}
-	
+
 	public int getProgram() {
 		return shaderProgram;
 	}
@@ -91,7 +91,7 @@ public abstract class AbstractShader {
 	    gl.glDeleteShader(fragmentShader);
 	    gl = null;
 	}
-	
+
 	@Override
 	protected void finalize() {
 		freeResources();

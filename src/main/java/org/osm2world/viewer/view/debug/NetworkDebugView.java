@@ -17,19 +17,19 @@ public class NetworkDebugView extends DebugView {
 
 	private static final Color OFFSET_COLOR = Color.PINK;
 	private static final Color CUT_COLOR = Color.ORANGE;
-	
+
 	@Override
 	public boolean canBeUsed() {
 		return map != null;
 	}
-	
+
 	@Override
 	public void fillTarget(JOGLTarget target) {
-						
+
 		for (MapWaySegment line : map.getMapWaySegments()) {
 			for (WorldObject worldObject : line.getRepresentations()) {
 				if (worldObject instanceof NetworkWaySegmentWorldObject) {
-					
+
 					NetworkWaySegmentWorldObject representation =
 						(NetworkWaySegmentWorldObject) worldObject;
 
@@ -57,17 +57,17 @@ public class NetworkDebugView extends DebugView {
 				}
 			}
 		}
-				
+
 	}
-	
+
 	private static void drawVectorAt(JOGLTarget target,
 			Color color, VectorXZ vector, MapNode start) {
-		
+
 		VectorXYZ startV = start.getPos().xyz(0);
 		VectorXYZ endV = startV.add(vector);
-		
+
 		drawArrow(target, color, 0.3f * (float)vector.length(), startV, endV);
-		
+
 	}
-	
+
 }

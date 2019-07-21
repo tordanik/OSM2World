@@ -11,9 +11,9 @@ import java.util.Map;
  * TagGroup that uses a key-value-Map to store tags
  */
 public class MapBasedTagGroup implements TagGroup {
-	
+
 	private final Map<String, String> tagMap;
-	
+
 	/**
 	 * @param tagMap  map from keys to values; != null;
 	 *                must not be modified after being used as parameter
@@ -22,10 +22,10 @@ public class MapBasedTagGroup implements TagGroup {
 		if (tagMap == null) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		this.tagMap = tagMap;
 	}
-	
+
 	/**
 	 * @param tags  tags to add to the group; != null, each != null
 	 */
@@ -42,7 +42,7 @@ public class MapBasedTagGroup implements TagGroup {
 			}
 		}
 	}
-	
+
 	/**
 	 * @param tags  tags to add to the group; each != null
 	 */
@@ -92,7 +92,7 @@ public class MapBasedTagGroup implements TagGroup {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -111,14 +111,14 @@ public class MapBasedTagGroup implements TagGroup {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean contains(String key, String value) {
 		assert key != null;
 		assert value != null;
 		return value.equals(tagMap.get(key));
 	}
-	
+
 	@Override
 	public boolean containsAny( Iterable<String> keys, String value) {
 		for (String key : keys) {
@@ -128,7 +128,7 @@ public class MapBasedTagGroup implements TagGroup {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean containsAny(Iterable<String> keys, Iterable<String> values) {
 		for (String key : keys) {
@@ -146,7 +146,7 @@ public class MapBasedTagGroup implements TagGroup {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -154,32 +154,32 @@ public class MapBasedTagGroup implements TagGroup {
 	public int size() {
 		return tagMap.size();
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return tagMap.isEmpty();
 	}
-	
+
 	/**
 	 * returns an Iterator providing access to all Tags.
 	 * The Iterator does not support the {@link Iterator#remove()} method.
 	 */
 	@Override
 	public Iterator<Tag> iterator() {
-		
+
 		Collection<Tag> tagCollection = new LinkedList<Tag>();
-		
+
 		for (String key : tagMap.keySet()) {
 			tagCollection.add(new Tag(key, tagMap.get(key)));
 		}
-		
+
 		return Collections.unmodifiableCollection(tagCollection).iterator();
-		
+
 	}
-	
+
 	@Override
 	public String toString() {
 		return tagMap.toString();
 	}
-	
+
 }

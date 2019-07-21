@@ -14,10 +14,10 @@ public class SportsModuleTest {
 
 	@Test
 	public void testPitchTexFunction() {
-		
+
 		PitchTexFunction texFunction = new PitchTexFunction(
 				NULL_VECTOR, new VectorXZ(2, 0), new VectorXZ(0, 1));
-		
+
 		assertAlmostEquals(new VectorXZ(0, 0),
 				texFunction.apply(asList(new VectorXYZ(0, 0, 0)), null).get(0));
 		assertAlmostEquals(new VectorXZ(0, 1),
@@ -32,10 +32,10 @@ public class SportsModuleTest {
 				texFunction.apply(asList(new VectorXYZ(4, 0, 2)), null).get(0));
 		assertAlmostEquals(new VectorXZ(0, -1),
 				texFunction.apply(asList(new VectorXYZ(-2, 0, 0)), null).get(0));
-		
+
 		texFunction = new PitchTexFunction(
 				NULL_VECTOR, new VectorXZ(0, -3), new VectorXZ(2, 0));
-		
+
 		assertAlmostEquals(new VectorXZ(0, 0),
 				texFunction.apply(asList(new VectorXYZ(0, 0, 0)), null).get(0));
 		assertAlmostEquals(new VectorXZ(0, 1),
@@ -44,7 +44,7 @@ public class SportsModuleTest {
 				texFunction.apply(asList(new VectorXYZ(2, 0, 0)), null).get(0));
 		assertAlmostEquals(new VectorXZ(1, 1),
 				texFunction.apply(asList(new VectorXYZ(2, 0, -3)), null).get(0));
-		
+
 	}
-	
+
 }

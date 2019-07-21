@@ -43,7 +43,7 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * module for power infrastructure
  */
 public final class PowerModule extends AbstractModule {
-		
+
 	private static TowerConfig generateTowerConfig(MapNode node) {
 
 		List<MapWaySegment> powerLines = new ArrayList<MapWaySegment>();
@@ -58,7 +58,7 @@ public final class PowerModule extends AbstractModule {
 		int voltage = -1;
 		for (MapWaySegment powerLine : powerLines) {
 			dir = dir.add(powerLine.getDirection());
-			
+
 			try {
 				cables = Integer.valueOf(powerLine.getTags().getValue("cables"));
 			} catch (NumberFormatException e) {}
@@ -70,14 +70,14 @@ public final class PowerModule extends AbstractModule {
 
 		return new TowerConfig(node, cables, voltage, dir);
 	}
-	
+
 	@Override
 	protected void applyToNode(MapNode node) {
-		
+
 		if (node.getTags().contains("power", "cable_distribution_cabinet")) {
 			node.addRepresentation(new PowerCabinet(node));
 		}
-		
+
 		if (node.getTags().contains("power", "pole")) {
 			node.addRepresentation(new Powerpole(node));
 		}
@@ -85,11 +85,11 @@ public final class PowerModule extends AbstractModule {
 			&& node.getTags().contains("generator:source", "wind")) {
 			node.addRepresentation(new WindTurbine(node));
 		}
-		
+
 		if (node.getTags().contains("power", "tower")) {
 
 			TowerConfig config = generateTowerConfig(node);
-			
+
 			if (node.getPrimaryRepresentation() == null) {
 				if (config.isHighVoltagePowerTower()) {
 					node.addRepresentation(new HighVoltagePowerTower(node, config));
@@ -99,18 +99,18 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 	}
-	
+
 	@Override
 	protected void applyToWaySegment(MapWaySegment segment) {
 		if (segment.getTags().contains("power", "minor_line")) {
 			segment.addRepresentation(new PowerMinorLine(segment));
 		}
-		
+
 		if (segment.getTags().contains("power", "line")) {
 			segment.addRepresentation(new PowerLine(segment));
 		}
 	}
-	
+
 	@Override
 	protected void applyToArea(MapArea area) {
 		if (area.getTags().contains("power", "generator")
@@ -118,38 +118,38 @@ public final class PowerModule extends AbstractModule {
 			area.addRepresentation(new PhotovoltaicPlant(area));
 		}
 	}
-	
+
 	private static final class PowerCabinet extends NoOutlineNodeWorldObject
 	implements RenderableToAllTargets {
 
 		public PowerCabinet(MapNode node) {
 			super(node);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
-						
+
 			target.drawBox(PLASTIC_GREY, getBase(),
 					faceVector, 1.5, 0.8, 0.3);
-			
+
 		}
-		
+
 		}
-	
+
 	private final static class TowerConfig {
 		MapNode pos;
 		int cables;
 		int voltage;
 		VectorXZ direction;
-		
+
 		public TowerConfig(MapNode pos, int cables, int voltage, VectorXZ direction) {
 			super();
 			this.pos = pos;
@@ -157,104 +157,104 @@ public final class PowerModule extends AbstractModule {
 			this.voltage = voltage;
 			this.direction = direction;
 		}
-		
+
 		public boolean isHighVoltagePowerTower() {
 			return voltage >= 50000 || cables >= 6;
 		}
 	}
-	
+
 	private static final class Powerpole extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
-		
+
 		public Powerpole(MapNode node) {
 			super(node);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			/* determine material */
-			
+
 			Material material = null;
-			
+
 			//TODO parse color
-			
+
 			if (material == null) {
 				material = Materials.getSurfaceMaterial(
 						node.getTags().getValue("material"));
 			}
-				
+
 			if (material == null) {
 				material = Materials.getSurfaceMaterial(
 						node.getTags().getValue("surface"), Materials.WOOD);
 			}
-			
+
 			target.drawColumn(material, null, getBase(),
 					parseHeight(node.getTags(), 8f),
 					0.15, 0.15, false, true);
 		}
-		
+
 	}
-	
+
 	private static final class WindTurbine extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
-		
+
 		public WindTurbine(MapNode node) {
 			super(node);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			float poleHeight = parseHeight(node.getTags(), 100f);
 			float poleRadiusBottom = parseWidth(node.getTags(), 5) / 2;
 			float poleRadiusTop = poleRadiusBottom / 2;
 			float nacelleHeight = poleHeight * 0.05f;
 			float nacelleDepth = poleHeight * 0.1f;
 			float bladeLength = poleHeight / 2;
-			
+
 			/* determine material */
-			
+
 			Material poleMaterial = null;
 			Material nacelleMaterial = Materials.STEEL;
 			Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
-			
+
 			//TODO parse color
-			
+
 			if (poleMaterial == null) {
 				poleMaterial = Materials.getSurfaceMaterial(
 						node.getTags().getValue("material"));
 			}
-				
+
 			if (poleMaterial == null) {
 				poleMaterial = Materials.getSurfaceMaterial(
 						node.getTags().getValue("surface"), Materials.STEEL);
 			}
-			
+
 			/* draw pole */
 			target.drawColumn(poleMaterial, null,
 					getBase(),
 					poleHeight,
 					poleRadiusBottom, poleRadiusTop, false, false);
-			
+
 			/* draw nacelle */
 			VectorXZ nacelleVector = VectorXZ.X_UNIT;
 			target.drawBox(nacelleMaterial,
 					getBase().addY(poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
-			
+
 			/* draw blades */
-			
+
 			// define first blade
 			List<VectorXYZ> bladeFront = asList(
 				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, +nacelleHeight/2),
@@ -266,11 +266,11 @@ public final class PowerModule extends AbstractModule {
 				bladeFront.get(2),
 				bladeFront.get(1)
 			);
-			
+
 			// rotate and draw blades
 			double rotCenterY = getBase().y + poleHeight + nacelleHeight/2;
 			double rotCenterZ = node.getPos().getZ();
-			
+
 			bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
 			bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
 			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
@@ -283,45 +283,45 @@ public final class PowerModule extends AbstractModule {
 			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
 			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
 			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
-			
+
 		}
-		
+
 	}
-	
+
 	private static class PowerMinorLine
 		extends NoOutlineWaySegmentWorldObject
 		implements RenderableToAllTargets {
-		
+
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
 		private static final Material material = PLASTIC_BLACK;
-		
+
 		public PowerMinorLine(MapWaySegment segment) {
 			super(segment);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			ShapeXZ powerlineShape = new PolylineXZ(
 				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL),
 				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN),
 				new VectorXZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL + DEFAULT_THICKN),
 				new VectorXZ(+DEFAULT_THICKN/2, DEFAULT_CLEARING_BL)
 			);
-			
+
 			List<VectorXYZ> path = getBaseline();
-			
+
 			target.drawExtrudedShape(material, powerlineShape, getBaseline(),
 					nCopies(path.size(), Y_UNIT), null, null, null);
-			
+
 		}
-		
+
 	}
 
 	private final static class PowerLine
@@ -334,19 +334,19 @@ public final class PowerModule extends AbstractModule {
 		private static final double SLACK_SPAN = 6;
 		private static final double INTERPOLATION_STEPS = 10;
 		private static final ShapeXZ powerlineShape = new CircleXZ(NULL_VECTOR, CABLE_THICKNESS/2);
-		
+
 		private int cables = -1;
 		private int voltage = -1;
 		private TowerConfig start;
 		private TowerConfig end;
 		private List<VectorXYZ> startPos = null;
 		private List<VectorXYZ> endPos = null;
-		
-		
+
+
 		public PowerLine(MapWaySegment line) {
 			super(line);
 		}
-		
+
 		private void addPos(VectorXYZ baseStart, VectorXYZ baseEnd, double gotoRight, double up) {
 			startPos.add(baseStart.add(start.direction.rightNormal().mult(gotoRight)).add(0, up, 0));
 			endPos.add(baseEnd.add(end.direction.rightNormal().mult(gotoRight)).add(0, up, 0));
@@ -358,10 +358,10 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		private void setup() {
-			
+
 			startPos = new ArrayList<VectorXYZ>();
 			endPos = new ArrayList<VectorXYZ>();
-			
+
 			// check number of power lines
 			try {
 				cables = Integer.valueOf(segment.getTags().getValue("cables"));
@@ -379,21 +379,21 @@ public final class PowerModule extends AbstractModule {
 			// get the tower configurations for start and end tower
 			start = generateTowerConfig(segment.getStartNode());
 			end = generateTowerConfig(segment.getEndNode());
-						
+
 			if (!start.isHighVoltagePowerTower() && !end.isHighVoltagePowerTower()) {
 
 				// normal PowerTower...
 
 				double startHeight = parseHeight(start.pos.getTags(), 14) + 0.25;
 				double endHeight = parseHeight(end.pos.getTags(), 14) + 0.25;
-				
+
 				VectorXYZ baseStart = getStartXYZ().addY(startHeight - 0.5);
 				VectorXYZ baseEnd = getEndXYZ().addY(endHeight - 0.5);
-			
+
 				// power lines at the top left and right
 				addPos(baseStart, baseEnd, 2, 0.5);
 				addPos(baseStart, baseEnd, -2, 0.5);
-				
+
 				if (cables >= 3) {
 					// additional power line at the top center
 					addPos(baseStart, baseEnd, 0, 0.5);
@@ -406,10 +406,10 @@ public final class PowerModule extends AbstractModule {
 			} else {
 
 				// High voltage PowerTower ...
-				
+
 				float default_height = voltage > 150000 ? 40 : 30;
 				float pole_width = voltage > 150000 ? 16 : 13;
-				
+
 				double startHeight = parseHeight(start.pos.getTags(), default_height);
 				double endHeight = parseHeight(end.pos.getTags(), default_height);
 
@@ -450,65 +450,65 @@ public final class PowerModule extends AbstractModule {
 				}
 			}
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			// do initial setup for height and position calculation, if necessary
 			if (startPos == null) {
 				setup();
 			}
-			
+
 			for (int i = 0; i < startPos.size(); i++) {
 
 				VectorXYZ start = startPos.get(i);
 				VectorXYZ end = endPos.get(i);
-				
+
 				double lenToEnd = end.distanceToXZ(start);
 				double heightDiff = end.y - start.y;
 
 				double stepSize = lenToEnd / INTERPOLATION_STEPS;
 				VectorXZ dir = end.xz().subtract(start.xz()).normalize();
-				
+
 				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
 				for (int x = 0; x <= INTERPOLATION_STEPS; x++) {
 					double ratio = x / INTERPOLATION_STEPS;
-					
+
 					// distance from start to position x
 					double dx = stepSize * x;
-					
+
 					// use a simple parabola between two towers
 					double height = (1 - Math.pow(2.0*(ratio - 0.5), 2)) * -SLACK_SPAN;
 					// add a linear function to account for different tower/terrain heights
 					height += ratio * heightDiff;
-					
+
 					path.add(start.add(dir.mult(dx)).add(0, height, 0));
 				}
-				
+
 				target.drawExtrudedShape(CABLE_MATERIAL, powerlineShape, path,
 						nCopies(path.size(), Y_UNIT), null, null, null);
-				
+
 			}
 		}
-		
+
 	}
-	
-	
+
+
 	private static final class PowerTower extends NoOutlineNodeWorldObject
 		implements RenderableToAllTargets {
 
 		private TowerConfig config;
-	
+
 		public PowerTower(MapNode node, TowerConfig config) {
 			super(node);
 			this.config = config;
 		}
-	
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
@@ -526,13 +526,13 @@ public final class PowerModule extends AbstractModule {
 			if (material == null) {
 				material = Materials.getSurfaceMaterial(node.getTags().getValue("surface"), Materials.STEEL);
 			}
-			
+
 			// draw base column
 			target.drawColumn(material, null, base, height, 0.5, 0.25, true, true);
-			
+
 			// draw cross "column"
 			target.drawBox(material, base.add(0, height, 0), config.direction, 0.25, 5, 0.25);
-		
+
 			// draw pieces holding the power lines
 			base = base.add(0, height + 0.25, 0);
 			target.drawColumn(Materials.CONCRETE, null, base.add(config.direction.rightNormal().mult(2)), 0.5, 0.1, 0.1, true, true);
@@ -553,13 +553,13 @@ public final class PowerModule extends AbstractModule {
 
 		private TowerConfig config;
 		private VectorXZ direction;
-		
+
 		public HighVoltagePowerTower(MapNode node, TowerConfig config) {
 			super(node);
 			this.config = config;
 			this.direction = config.direction;
 		}
-	
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
@@ -575,11 +575,11 @@ public final class PowerModule extends AbstractModule {
 
 			return height;
 		}
-		
+
 		private VectorXZ[][] getCorners(VectorXZ center, double diameter) {
 			double half = diameter/2;
 			VectorXZ ortho = direction.rightNormal();
-			
+
 			VectorXZ right_in = center.add(direction.mult(half));
 			VectorXZ left_in = center.add(direction.mult(-half));
 			VectorXZ right_out = center.add(direction.mult(half));
@@ -600,17 +600,17 @@ public final class PowerModule extends AbstractModule {
 							left_out.add(ortho.mult(half))
 					}};
 		}
-	
+
 		private void drawSegment(Target<?> target,
 				VectorXZ[] low, VectorXZ[] high, double base, double height) {
-			
+
 			for (int a = 0; a < 4; a++) {
-			
+
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
 				List<List<VectorXZ>> texList =
 					nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
-				
+
 				for (int i = 0; i < 2; i++) {
 					int idx = (a+i)%4;
 					vs.add(high[idx].xyz(height));
@@ -618,11 +618,11 @@ public final class PowerModule extends AbstractModule {
 					tex.add(new VectorXZ(i, 1));
 					tex.add(new VectorXZ(i, 0));
 				}
-				
+
 				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
 			}
 		}
-	
+
 		private void drawHorizontalSegment(Target<?> target,
 				VectorXZ left, VectorXZ right, double base,
 				double left_height, double right_height) {
@@ -631,28 +631,28 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXZ> tex = new ArrayList<VectorXZ>();
 			List<List<VectorXZ>> texList =
 					nCopies(Materials.POWER_TOWER_HORIZONTAL.getNumTextureLayers(), tex);
-		
+
 			vs.add(right.xyz(base));
 			vs.add(left.xyz(base));
 			vs.add(right.xyz(base+right_height));
 			vs.add(left.xyz(base+left_height));
-		
+
 			tex.add(new VectorXZ(1, 1));
 			tex.add(new VectorXZ(0, 1));
 			tex.add(new VectorXZ(1, 0));
 			tex.add(new VectorXZ(0, 0));
-		
+
 			target.drawTriangleStrip(Materials.POWER_TOWER_HORIZONTAL, vs, texList);
 		}
 
 		private void drawHorizontalTop(Target<?> target, VectorXZ[][] points,
 				double base, double border, double middle, double center) {
-			
+
 			double[] height = new double[]{border, middle, center, center, middle, border};
-			
+
 			int len = height.length;
 			for (int a = 0; a < len-1; a++) {
-			
+
 				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
 				List<VectorXZ> tex = new ArrayList<VectorXZ>();
 				List<List<VectorXZ>> texList =
@@ -667,8 +667,8 @@ public final class PowerModule extends AbstractModule {
 				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
 			}
 		}
-		
-		
+
+
 		private double drawPart(Target<?> target, double elevation,
 				int nr_segments, double segment_height, double ground_size,
 				double top_size) {
@@ -692,7 +692,7 @@ public final class PowerModule extends AbstractModule {
 
 		private VectorXZ[] getPoleCoordinates(VectorXZ base,
 				VectorXZ direction, double width, double size) {
-			
+
 			return new VectorXZ[] {
 					base.add(direction.mult(-width - size)),
 					base.add(direction.mult(-width / 2 - size)),
@@ -724,12 +724,12 @@ public final class PowerModule extends AbstractModule {
 				drawHorizontalSegment(target, draw[i][3], draw[i][4], elevation, diameter, diameter/2);
 				drawHorizontalSegment(target, draw[i][4], draw[i][5], elevation, diameter/2, 0.1);
 			}
-			
+
 			drawHorizontalTop(target, draw, elevation, 0.1, diameter/2, diameter);
 		}
 
 		// TODO we're missing the ceramics to hold the power lines
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
 
@@ -755,12 +755,12 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 	}
-	
+
 	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject
 		implements RenderableToAllTargets {
 
 		//TODO create individual EleConnector for panels
-		
+
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = new Comparator<VectorXZ>() {
 			@Override public int compare(VectorXZ v1, VectorXZ v2) {
@@ -771,146 +771,146 @@ public final class PowerModule extends AbstractModule {
 		protected PhotovoltaicPlant(MapArea area) {
 			super(area);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			/* construct panel geometry */
 
 			double panelAngle = PI / 4;
 			double panelHeight = 5;
-			
+
 			VectorXYZ upVector = Z_UNIT.mult(panelHeight).rotateX(-panelAngle);
-						
+
 			/* place and draw rows of panels */
-			
+
 			AxisAlignedBoundingBoxXZ box = this.getAxisAlignedBoundingBoxXZ();
-			
+
 			List<SimplePolygonXZ> obstacles = getGroundObstacles();
-			
+
 			double posZ = box.minZ;
-			
+
 			while (posZ + upVector.z < box.maxZ) {
-				
+
 				LineSegmentXZ rowLine = new LineSegmentXZ(
 						 new VectorXZ(box.minX - 10, posZ),
 						 new VectorXZ(box.maxX + 10, posZ));
-				
+
 				// calculate start and end points (maybe more than one each)
-				
+
 				List<VectorXZ> intersections =
 						area.getPolygon().intersectionPositions(rowLine);
-				
+
 				assert intersections.size() % 2 == 0;
-				
+
 				sort(intersections, X_COMPARATOR);
-				
+
 				// add more start/end points at ground-level obstacles
-				
+
 				for (SimplePolygonXZ obstacle : obstacles) {
-					
+
 					List<VectorXZ> obstacleIntersections =
 							obstacle.intersectionPositions(rowLine);
-					
+
 					for (int i = 0; i + 1 < obstacleIntersections.size(); i += 2) {
-						
+
 						int insertionIndexA = -binarySearch(intersections,
 								obstacleIntersections.get(i), X_COMPARATOR) - 1;
 						int insertionIndexB = -binarySearch(intersections,
 								obstacleIntersections.get(i + 1), X_COMPARATOR) - 1;
-						
+
 						sort(obstacleIntersections, X_COMPARATOR);
-						
+
 						if (insertionIndexA == insertionIndexB
 								&& insertionIndexA >= 0
 								&& insertionIndexA % 2 == 1) {
-							
+
 							intersections.add(insertionIndexA,
 									obstacleIntersections.get(i+1));
 							intersections.add(insertionIndexA,
 									obstacleIntersections.get(i));
-							
+
 						}
-						
+
 					}
-					
+
 				}
-				
+
 				// draw row of panels between each start/end pair
-				
+
 				assert intersections.size() % 2 == 0;
-				
+
 				for (int i = 0; i + 1 < intersections.size(); i += 2) {
-					
+
 					// TODO: take elevation into account
 					// Might necessitate individual panels or shorter strips.
-					
+
 //					renderPanelsTo(target,
 //							eleProfile.getWithEle(intersections.get(i)),
 //							eleProfile.getWithEle(intersections.get(i+1)),
 //							upVector);
-					
+
 				}
-				
+
 				posZ += upVector.z * 1.5;
-				
+
 			}
-			
+
 		}
 
 		/**
 		 * returns outlines from ground objects overlapping this area
 		 */
 		private List<SimplePolygonXZ> getGroundObstacles() {
-			
+
 			List<SimplePolygonXZ> obstacles = new ArrayList<SimplePolygonXZ>();
-			
+
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
-					
+
 					if (otherWO.getGroundState() == GroundState.ON
 							&& otherWO instanceof WorldObjectWithOutline) {
-						
+
 						obstacles.add(((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ());
-						
+
 					}
-				
+
 				}
 			}
-			
+
 			return obstacles;
-			
+
 		}
-		
+
 		private void renderPanelsTo(Target<?> target, VectorXYZ bottomLeft,
 				VectorXYZ bottomRight, VectorXYZ upVector) {
-			
+
 			/* draw front */
-			
+
 			List<VectorXYZ> vs = asList(
 					bottomLeft.add(upVector),
 					bottomLeft,
 					bottomRight.add(upVector),
 					bottomRight);
-			
+
 			target.drawTriangleStrip(Materials.SOLAR_PANEL, vs,
 					texCoordLists(vs, Materials.SOLAR_PANEL, STRIP_WALL));
-			
+
 			/* draw back */
-			
+
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
-			
+
 			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
 					texCoordLists(vs, Materials.PLASTIC_GREY, STRIP_WALL));
-						
+
 		}
-		
-		
+
+
 	}
-	
+
 }

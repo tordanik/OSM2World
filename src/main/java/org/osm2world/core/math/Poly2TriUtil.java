@@ -27,7 +27,7 @@ public class Poly2TriUtil {
 		// it seems poly2tri requires points to be unique objects
 		HashMap<VectorXZ, TriangulationPoint> pointSet
 			= new HashMap<VectorXZ, TriangulationPoint>();
-		
+
 		public CDTSet(SimplePolygonXZ polygon,
 				Collection<SimplePolygonXZ> holes,
 				Collection<LineSegmentXZ> cSegments,
@@ -36,7 +36,7 @@ public class Poly2TriUtil {
 			List<VectorXZ> vertices = polygon.getVertexLoop();
 
 			segmentSet.addAll(cSegments);
-			
+
 			for (VectorXZ p : cPoints) {
 				if (!pointSet.containsKey(p)) {
 					TPoint tp = new TPoint(p.x, p.z);
@@ -44,7 +44,7 @@ public class Poly2TriUtil {
 					points.add(tp);
 				}
 			}
-			
+
 			for (int i = 0, n = vertices.size() - 1; i < n; i++)
 				segmentSet.add(new LineSegmentXZ(vertices.get(i),
 						vertices.get(i + 1)));
@@ -142,7 +142,7 @@ public class Poly2TriUtil {
 
 			for (LineSegmentXZ l : segmentSet) {
 				TriangulationPoint tp1, tp2;
-				
+
 				if (!pointSet.containsKey(l.p1)){
 					tp1 = new TPoint(l.p1.x, l.p1.z);
 					pointSet.put(l.p1, tp1);
@@ -163,7 +163,7 @@ public class Poly2TriUtil {
 
 			segmentSet.clear();
 			pointSet.clear();
-	
+
 			tcx.addPoints(points);
 		}
 	}
@@ -178,9 +178,9 @@ public class Poly2TriUtil {
 		tcx.prepareTriangulation(cdt);
 
 		try {
-		
+
 			Poly2Tri.triangulate(tcx);
-					
+
 		} catch (Exception e) {
 			throw new TriangulationException(e);
 		} catch (StackOverflowError e) {

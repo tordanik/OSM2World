@@ -33,7 +33,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 	protected JOGLTextureManager textureManager;
 	protected JOGLRenderingParameters renderingParameters;
 	protected GlobalLightingParameters globalLightingParameters;
-	
+
 	public AbstractJOGLTarget(GL gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		this.textureManager = new JOGLTextureManager(gl);
@@ -60,9 +60,9 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 	protected void drawPrimitive(Primitive.Type type, Material material,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
-		
+
 		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
-		
+
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
 		if (material.getNumTextureLayers() > 0) {
@@ -70,86 +70,86 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 				textureManager.getTextureForFile(t.file, true);
 			}
 		}
-		
+
 	}
-	
+
 	private void drawNonAreaPrimitive(NonAreaPrimitive.Type type,
 			Color color, int width, List<VectorXYZ> vs) {
-		
+
 		nonAreaPrimitives.add(new NonAreaPrimitive(
 				type, color, width, vs));
-        
+
 	}
-	
+
 	@Override
 	public void drawPoints(Color color, VectorXYZ... vs) {
 		drawNonAreaPrimitive(POINTS, color, 1, asList(vs));
 	}
-	
+
 	@Override
 	public void drawLineStrip(Color color, int width, VectorXYZ... vs) {
 		drawNonAreaPrimitive(LINE_STRIP, color, width, asList(vs));
 	}
-	
+
 	@Override
 	public void drawLineStrip(Color color, int width, List<VectorXYZ> vs) {
 		drawNonAreaPrimitive(LINE_STRIP, color, width, vs);
 	}
-	
+
 	@Override
 	public void drawLineLoop(Color color, int width, List<VectorXYZ> vs) {
 		drawNonAreaPrimitive(LINE_LOOP, color, width, vs);
 	}
-	
+
 	/**
 	 * set global lighting parameters. Using this method affects all primitives
 	 * (even those from previous draw calls).
-	 * 
+	 *
 	 * @param parameters  parameter object; null disables lighting
 	 */
 	public void setGlobalLightingParameters(
 			GlobalLightingParameters parameters) {
-		
+
 		this.globalLightingParameters = parameters;
-		
+
 	}
-	
+
 	/**
 	 * set global rendering parameters. Using this method affects all primitives
 	 * (even those from previous draw calls).
 	 */
 	public void setRenderingParameters(
 			JOGLRenderingParameters renderingParameters) {
-		
+
 		this.renderingParameters = renderingParameters;
-		
+
 	}
-	
+
 	@Override
 	public void reset() {
 		this.primitiveBuffer = new PrimitiveBuffer();
 		this.nonAreaPrimitives = new ArrayList<NonAreaPrimitive>();
-		
+
 		if (renderer != null) {
 			renderer.freeResources();
 			renderer = null;
 		}
 	}
-	
+
 	@Override
 	public void freeResources() {
-		
+
 		textureManager.releaseAll();
-		
+
 		reset();
-		
+
 	}
 
 	@Override
 	public boolean isFinished() {
 		return renderer != null;
 	}
-	
+
 	static final int getGLConstant(Type type) {
 		switch (type) {
 		case TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
@@ -169,25 +169,25 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		default: throw new Error("programming error: unhandled primitive type");
 		}
 	}
-	
+
 	/**
 	 * clears the rendering surface, the z buffer and the stencil buffer
-	 * 
+	 *
 	 * @param clearColor  background color before rendering any primitives;
 	 *                     null uses a previously defined clear color
 	 */
 	public static final void clearGL(GL gl, Color clearColor) {
-		
+
 		if (clearColor != null) {
 			float[] c = {0f, 0f, 0f};
 			clearColor.getColorComponents(c);
 			gl.glClearColor(c[0], c[1], c[2], clearColor.getAlpha()/255f);
 		}
-		
+
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
-        
+
 	}
-	
+
 	static final FloatBuffer getFloatBuffer(Color color) {
 		float colorArray[] = {0, 0, 0, color.getAlpha() / 255f};
 		color.getRGBColorComponents(colorArray);

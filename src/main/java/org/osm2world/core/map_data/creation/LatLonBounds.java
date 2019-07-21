@@ -5,19 +5,19 @@ package org.osm2world.core.map_data.creation;
  * each with latitude and longitude. Immutable.
  */
 public class LatLonBounds {
-	
+
 	public final double minlat;
 	public final double minlon;
 	public final double maxlat;
 	public final double maxlon;
-	
+
 	public LatLonBounds(double minlat, double minlon, double maxlat, double maxlon) {
 		this.minlat = minlat;
 		this.minlon = minlon;
 		this.maxlat = maxlat;
 		this.maxlon = maxlon;
 	}
-	
+
 	public LatLonBounds(LatLon min, LatLon max) {
 		this.minlat = min.lat;
 		this.minlon = min.lon;
@@ -28,9 +28,9 @@ public class LatLonBounds {
 	public LatLon getMin() {
 		return new LatLon(minlat, minlon);
 	}
-	
+
 	public LatLon getMax() {
 		return new LatLon(maxlat, maxlon);
 	}
-	
+
 }

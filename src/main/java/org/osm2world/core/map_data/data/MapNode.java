@@ -22,29 +22,29 @@ public class MapNode implements MapElement {
 
 	private final VectorXZ pos;
 	private final OSMNode osmNode;
-	
+
 	private List<NodeWorldObject> representations = new ArrayList<NodeWorldObject>(1);
-	
+
 	private List<MapWaySegment> connectedWaySegments = new ArrayList<MapWaySegment>();
 	private List<MapSegment> connectedSegments = new ArrayList<MapSegment>();
-	
+
 	private List<MapWaySegment> inboundLines = new ArrayList<MapWaySegment>(); //TODO: maybe use list and sort by angle?
 	private List<MapWaySegment> outboundLines = new ArrayList<MapWaySegment>();
-		
+
 	private Collection<MapArea> adjacentAreas;
-	
+
 	public MapNode(VectorXZ pos, OSMNode osmNode) {
-		
+
 		this.pos = pos;
 		this.osmNode = osmNode;
 		this.adjacentAreas = new ArrayList<MapArea>();
-		
+
 	}
-	
+
 	public VectorXZ getPos() {
 		return pos;
 	}
-	
+
 	@Override
 	public int getLayer() {
 		if (osmNode.tags.containsKey("layer")) {
@@ -56,22 +56,22 @@ public class MapNode implements MapElement {
 		}
 		return 0;
 	}
-	
+
 	public OSMNode getOsmNode() {
 		return osmNode;
 	}
-	
+
 	@Override
 	public TagGroup getTags() {
 		return getOsmNode().tags;
 	}
-	
+
 	public Collection<MapArea> getAdjacentAreas() {
 		return adjacentAreas;
 	}
-	
+
 	public void addInboundLine(MapWaySegment inboundLine) {
-		
+
 		connectedWaySegments.add(inboundLine);
 		connectedSegments.add(inboundLine);
 		inboundLines.add(inboundLine);
@@ -79,21 +79,21 @@ public class MapNode implements MapElement {
 		sortLinesByAngle(connectedWaySegments);
 		sortLinesByAngle(connectedSegments);
 		sortLinesByAngle(inboundLines);
-		
+
 	}
-	
+
 	public void addOutboundLine(MapWaySegment outboundLine) {
-		
+
 		connectedWaySegments.add(outboundLine);
 		connectedSegments.add(outboundLine);
 		outboundLines.add(outboundLine);
-		
+
 		sortLinesByAngle(connectedWaySegments);
 		sortLinesByAngle(connectedSegments);
 		sortLinesByAngle(outboundLines);
-		
+
 	}
-	
+
 	/**
 	 * returns those connected lines that end here.
 	 * Sorting is as for {@link #getConnectedWaySegments()}.
@@ -101,7 +101,7 @@ public class MapNode implements MapElement {
 	public List<MapWaySegment> getInboundLines() {
 		return inboundLines;
 	}
-	
+
 	/**
 	 * returns those connected lines that start here.
 	 * Sorting is as for {@link #getConnectedWaySegments()}.
@@ -109,7 +109,7 @@ public class MapNode implements MapElement {
 	public List<MapWaySegment> getOutboundLines() {
 		return outboundLines;
 	}
-	
+
 	public void addAdjacentArea(MapArea adjacentArea) {
 		adjacentAreas.add(adjacentArea);
 	}
@@ -117,7 +117,7 @@ public class MapNode implements MapElement {
 	//TODO: with all that "needs to be called before x" etc. stuff (also in MapArea), switch to BUILDER?
 	/** needs to be called after adding and completing all adjacent areas */
 	public void calculateAdjacentAreaSegments() {
-	
+
 		for (MapArea adjacentArea : adjacentAreas) {
 			for (MapAreaSegment areaSegment : adjacentArea.getAreaSegments()) {
 				if (areaSegment.getStartNode() == this
@@ -129,7 +129,7 @@ public class MapNode implements MapElement {
 
 		sortLinesByAngle(connectedSegments);
 	}
-		
+
 	/**
 	 * returns all way segments connected with this node.
 	 * They will be sorted according to the clockwise
@@ -140,7 +140,7 @@ public class MapNode implements MapElement {
 	public List<MapWaySegment> getConnectedWaySegments() {
 		return connectedWaySegments;
 	}
-	
+
 	/**
 	 * returns all way segments and area segments connected with this node.
 	 * Sorted like {@link #getConnectedWaySegments()}.
@@ -148,7 +148,7 @@ public class MapNode implements MapElement {
 	public List<MapSegment> getConnectedSegments() {
 		return connectedSegments;
 	}
-	
+
 	/**
 	 * creates the ordering described for {@link #getConnectedSegments()}
 	 */
@@ -156,28 +156,28 @@ public class MapNode implements MapElement {
 		Collections.sort(lines, new Comparator<MapSegment>() {
 			@Override
 			public int compare(MapSegment l1, MapSegment l2) {
-				
+
 				VectorXZ d1 = l1.getDirection();
 				VectorXZ d2 = l2.getDirection();
-				
+
 				if (inboundLines.contains(l1)) {
 					d1 = d1.invert();
 				}
 				if (inboundLines.contains(l2)) {
 					d2 = d2.invert();
 				}
-				
+
 				return Double.compare(d1.angle(), d2.angle());
-				
+
 			}
 		});
 	}
-	
+
 	@Override
 	public List<NodeWorldObject> getRepresentations() {
 		return representations;
 	}
-	
+
 	@Override
 	public NodeWorldObject getPrimaryRepresentation() {
 		if (representations.isEmpty()) {
@@ -193,7 +193,7 @@ public class MapNode implements MapElement {
 	public void addRepresentation(NodeWorldObject representation) {
 		this.representations.add(representation);
 	}
-		
+
 	@Override
 	public String toString() {
 		return osmNode.toString();
@@ -208,5 +208,5 @@ public class MapNode implements MapElement {
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		return new AxisAlignedBoundingBoxXZ(pos.x, pos.z, pos.x, pos.z);
 	}
-	
+
 }

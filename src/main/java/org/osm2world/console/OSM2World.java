@@ -29,45 +29,45 @@ import com.lexicalscope.jewel.cli.CliFactory;
 public class OSM2World {
 
 	public static void main(String[] unparsedArgs) {
-		
+
 		/* assume --gui if no parameters are given */
-		
+
 		if (unparsedArgs.length == 0) {
-		 
+
 			System.out.println("No parameters, running graphical interface.\n"
 					+ "If you want to use the command line, use the --help"
 					+ " parameter for a list of available parameters.");
-			
+
 			unparsedArgs = new String[]{"--gui"};
-			
+
 		}
-		
+
 		/* parse command line arguments */
-		
+
 		CLIArguments args = null;
-		
+
 		try {
 			args = parseArguments(unparsedArgs);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
-		
+
 		/* parse lines from parameter file (if one exists) */
-		
+
 		List<CLIArguments> argumentsList = Collections.singletonList(args);
-		
+
 		if (args.isParameterFile()) {
-			
+
 			argumentsList = new ArrayList<CLIArguments>();
-			
+
 			try {
-				
+
 				List<String[]> unparsedArgsLines = CLIArgumentsUtil
 					.getUnparsedParameterGroups(args.getParameterFile());
-				
+
 				for (String[] unparsedArgsLine : unparsedArgsLines) {
-					
+
 					try {
 						argumentsList.add(parseArguments(unparsedArgsLine));
 					} catch (Exception e) {
@@ -76,25 +76,25 @@ public class OSM2World {
 						System.err.println("Ignoring it. Reason:");
 						System.err.println(e.getMessage());
 					}
-					
+
 				}
-				
+
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
 				System.exit(1);
 			}
-			
+
 		}
-		
+
 		/* collect parameter groups into compatible groups
 		 * (groups of parameter groups that use the same input and config files) */
-		
+
 		List<CLIArgumentsGroup> argumentsGroups = new ArrayList<CLIArgumentsGroup>();
-		
+
 		for (CLIArguments arguments : argumentsList) {
-			
+
 			boolean added = false;
-			
+
 			for (CLIArgumentsGroup compatibleGroup : argumentsGroups) {
 				if (compatibleGroup.isCompatible(arguments)) {
 					// add to existing compatible group
@@ -103,22 +103,22 @@ public class OSM2World {
 					break;
 				}
 			}
-			
+
 			if (!added) {
 				// start a new compatible group
 				argumentsGroups.add(new CLIArgumentsGroup(arguments));
 			}
-			
+
 		}
-		
+
 		/* execute conversions */
-		
+
 		if (argumentsGroups.isEmpty()) {
 			System.err.println("warning: empty parameter file, doing nothing");
 		}
-		
+
 		for (CLIArgumentsGroup argumentsGroup : argumentsGroups) {
-						
+
 			if (argumentsList.size() > 1) {
 				System.out.print("executing conversion for these parameter lines: ");
 				for (CLIArguments p : argumentsGroup.getCLIArgumentsList()) {
@@ -126,34 +126,34 @@ public class OSM2World {
 				}
 				System.out.print("\n");
 			}
-			
+
 			executeArgumentsGroup(argumentsGroup);
-			
+
 		}
-		
+
 	}
 
 	private static CLIArguments parseArguments(String[] unparsedArgs)
 		throws ArgumentValidationException, Exception {
-		
+
 		CLIArguments args = CliFactory.parseArguments(CLIArguments.class, unparsedArgs);
-		
+
 		if (!CLIArgumentsUtil.isValid(args)) {
 			throw new Exception(CLIArgumentsUtil.getErrorString(args));
 		}
 		return args;
-		
+
 	}
 
 	private static void executeArgumentsGroup(CLIArgumentsGroup argumentsGroup) {
-		
+
 		/* load configuration file */
-		
+
 		Configuration config = new BaseConfiguration();
 		File configFile = null;
-		
+
 		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
-		
+
 		if (representativeArgs.isConfig()) {
 			try {
 				configFile = representativeArgs.getConfig();
@@ -166,23 +166,23 @@ public class OSM2World {
 				System.err.println(e);
 			}
 		}
-		
+
 		/* run selected mode */
-		
+
 		ProgramMode programMode = getProgramMode(representativeArgs);
-		
+
 		switch (programMode) {
-		
+
 		case HELP:
 			System.out.println(
 					CliFactory.createCli(CLIArguments.class).getHelpMessage()
 					+ "\n\nFor more information, see " + GlobalValues.WIKI_URI);
 			break;
-			
+
 		case VERSION:
 			System.out.println("OSM2World " + VERSION_STRING);
 			break;
-		
+
 		case GUI:
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -193,7 +193,7 @@ public class OSM2World {
 					representativeArgs.getInput() : null;
 			new ViewerFrame(config, configFile, input).setVisible(true);
 			break;
-			
+
 		case CONVERT:
 			try {
 				Output.output(config, argumentsGroup);
@@ -201,8 +201,8 @@ public class OSM2World {
 				e.printStackTrace();
 			}
 			break;
-			
+
 		}
 	}
-	
+
 }

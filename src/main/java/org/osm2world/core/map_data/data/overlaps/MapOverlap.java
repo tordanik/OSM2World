@@ -8,12 +8,12 @@ import org.osm2world.core.map_data.data.MapWaySegment;
  * between two {@link MapElement}s
  */
 public abstract class MapOverlap<T1 extends MapElement, T2 extends MapElement> {
-	
+
 	public final T1 e1;
 	public final T2 e2;
-	
+
 	public final MapOverlapType type;
-	
+
 	public MapOverlap(T1 e1, T2 e2, MapOverlapType type) {
 		this.e1 = e1;
 		this.e2 = e2;
@@ -33,10 +33,10 @@ public abstract class MapOverlap<T1 extends MapElement, T2 extends MapElement> {
 			throw new IllegalArgumentException("element isn't part of this intersection");
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return "( " + e1.toString() + " - " + e2.toString() + " )";
 	}
-	
+
 }

@@ -7,19 +7,19 @@ import static javax.media.opengl.GL.GL_CW;
  * global parameters for rendering a JOGL scene
  */
 public class JOGLRenderingParameters {
-	
+
 	public static enum Winding {
-		
+
 		CW(GL_CW), CCW(GL_CCW);
-		
+
 		int glConstant;
-		
+
 		private Winding(int glConstant) {
 			this.glConstant = glConstant;
 		}
-		
+
 	};
-	
+
 	final Winding frontFace;
 	final boolean wireframe;
 	final boolean useZBuffer;
@@ -33,7 +33,7 @@ public class JOGLRenderingParameters {
 	final int SSAOkernelSize;
 	final float SSAOradius;
 	final boolean overwriteProjectionClippingPlanes;
-	
+
 	/**
 	 * @param frontFace
 	 *            winding of the front face for backface culling; null disables
@@ -73,9 +73,9 @@ public class JOGLRenderingParameters {
 	 */
 	public JOGLRenderingParameters(
 			Winding frontFace, boolean wireframe, boolean useZBuffer, boolean drawBoundingBox, boolean useShadowVolumes,
-			boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, int shadowMapCameraFrustumPadding, 
+			boolean useShadowMaps, int shadowMapWidth, int shadowMapHeight, int shadowMapCameraFrustumPadding,
 			boolean useSSAO, int SSAOkernelSize, float SSAOradius, boolean overwriteProjectionClippingPlanes) {
-		
+
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
@@ -90,7 +90,7 @@ public class JOGLRenderingParameters {
 		this.SSAOradius = SSAOradius;
 		this.overwriteProjectionClippingPlanes = overwriteProjectionClippingPlanes;
 	}
-	
+
 	/**
 	 * @param frontFace   winding of the front face for backface culling;
 	 *                     null disables backface culling
@@ -99,7 +99,7 @@ public class JOGLRenderingParameters {
 	 */
 	public JOGLRenderingParameters(
 			Winding frontFace, boolean wireframe, boolean useZBuffer) {
-		
+
 		this.frontFace = frontFace;
 		this.wireframe = wireframe;
 		this.useZBuffer = useZBuffer;
@@ -114,7 +114,7 @@ public class JOGLRenderingParameters {
 		this.SSAOradius = 0;
 		this.overwriteProjectionClippingPlanes = false;
 	}
-	
+
 	public JOGLRenderingParameters() {
 		this.frontFace = null;
 		this.wireframe = false;
@@ -130,5 +130,5 @@ public class JOGLRenderingParameters {
 		this.SSAOradius = 0;
 		this.overwriteProjectionClippingPlanes = false;
 	}
-	
+
 }

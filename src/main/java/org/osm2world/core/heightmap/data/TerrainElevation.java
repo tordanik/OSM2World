@@ -8,7 +8,7 @@ import java.util.Collection;
  * on the order of points with known elevation.
  */
 public interface TerrainElevation {
-	
+
 	public Collection<TerrainPoint> getTerrainPoints();
-	
+
 }

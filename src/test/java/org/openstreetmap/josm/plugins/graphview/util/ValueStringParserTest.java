@@ -107,21 +107,21 @@ public class ValueStringParserTest {
         assertNull(parseAngle("forward"));
         assertNull(parseAngle("-90"));
     }
-    
+
     @Test
     public void testParseColorDefault() {
     	assertEquals(new Color(255, 0, 0), parseColor("#ff0000"));
     	assertEquals(new Color(1, 2, 3), parseColor("#010203"));
     }
-    
+
     @Test
     public void testParseColorInvalid() {
     	assertNull(parseColor("ff0000"));
     	assertNull(parseColor("#"));
     }
-    
+
     /* utility methods for testing */
-    
+
     private static final void assertClose(float expected, float actual) {
         if (Math.abs(expected - actual) > 0.001) {
             throw new AssertionError("expected " + expected + ", was " + actual);

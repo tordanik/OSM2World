@@ -10,9 +10,9 @@ import org.osm2world.core.map_data.data.MapWaySegment;
  * or is completely contained within the area.
  */
 public class MapOverlapNA extends MapOverlap<MapNode, MapArea> {
-	
+
 	public MapOverlapNA(MapNode node, MapArea area, MapOverlapType type) {
 		super(node, area, type);
 	}
-	
+
 }

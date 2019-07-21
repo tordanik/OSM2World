@@ -15,13 +15,13 @@ import org.osm2world.core.math.VectorXZ;
 
 public abstract class AbstractCellularTerrainElevation implements
 		CellularTerrainElevation {
-	
+
 	final int numPointsX;
 	final int numPointsZ;
-	
+
 	final Collection<TerrainPoint> terrainPoints;
 	final TerrainPoint[][] terrainPointGrid;
-	
+
 	@Override
 	public Collection<TerrainPoint> getTerrainPoints() {
 		return terrainPoints;
@@ -34,9 +34,9 @@ public abstract class AbstractCellularTerrainElevation implements
 
 	@Override
 	public PolygonXYZ getBoundaryPolygon() {
-		
+
 		List<VectorXYZ> vertices = new ArrayList<VectorXYZ>();
-		
+
 		// first row
 		for (int x = 0; x < numPointsX; x++) {
 			vertices.add(vectorXYZForPointAt(x, 0));
@@ -56,16 +56,16 @@ public abstract class AbstractCellularTerrainElevation implements
 		for (int z = numPointsZ - 2; z >= 0 /* [0][0] will be added again*/; z--) {
 			vertices.add(vectorXYZForPointAt(0, z));
 		}
-		
+
 		return new PolygonXYZ(vertices);
-		
+
 	}
 
 	@Override
 	public PolygonXZ getBoundaryPolygonXZ() {
-		
+
 		List<VectorXZ> vertices = new ArrayList<VectorXZ>();
-		
+
 		// first row
 		for (int x = 0; x < numPointsX; x++) {
 			vertices.add(vectorXZForPointAt(x, 0));
@@ -85,9 +85,9 @@ public abstract class AbstractCellularTerrainElevation implements
 		for (int z = numPointsZ - 2; z >= 0 /* [0][0] will be added again*/; z--) {
 			vertices.add(vectorXZForPointAt(0, z));
 		}
-		
+
 		return new PolygonXZ(vertices);
-		
+
 	}
 
 	private VectorXYZ vectorXYZForPointAt(int x, int z) {
@@ -99,23 +99,23 @@ public abstract class AbstractCellularTerrainElevation implements
 		TerrainPoint point = terrainPointGrid[x][z];
 		return point.getPos();
 	}
-	
+
 	@Override
 	public Iterable<? extends TerrainElevationCell> getCells() {
-		
+
 		return new Iterable<CellImpl>() {
 			@Override public Iterator<CellImpl> iterator() {
 				return new CellIterator();
 			}
 		};
-		
+
 	}
-	
+
 	//TODO (duplicated code): merge with independently written version from IntersectionGrid
 	private final class CellIterator implements Iterator<CellImpl> {
 
 		int currX = -1, currZ = 0;
-		
+
 		@Override
 		public boolean hasNext() {
 			return currX + 1 < numPointsX-1 || currZ + 2 < numPointsZ-1;
@@ -123,7 +123,7 @@ public abstract class AbstractCellularTerrainElevation implements
 
 		@Override
 		public CellImpl next() {
-			
+
 			currX += 1;
 			if (currX == numPointsX-1) {
 				currZ += 1;
@@ -132,33 +132,33 @@ public abstract class AbstractCellularTerrainElevation implements
 					throw new NoSuchElementException();
 				}
 			}
-			
+
 			return new CellImpl(currX, currZ);
-			
+
 		}
 
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 	}
-	
+
 	private final class CellImpl implements TerrainElevationCell {
-		
+
 		private int leftXIndex;
 		private int bottomZIndex;
-		
+
 		public CellImpl(int leftXIndex, int bottomZIndex) {
-			
+
 			assert leftXIndex + 1 < numPointsX
 				&& bottomZIndex + 1 < numPointsZ;
-			
+
 			this.leftXIndex = leftXIndex;
 			this.bottomZIndex = bottomZIndex;
-			
+
 		}
-		
+
 		@Override public final TerrainPoint getBottomLeft() {
 			return terrainPointGrid[leftXIndex][bottomZIndex];
 		}
@@ -171,7 +171,7 @@ public abstract class AbstractCellularTerrainElevation implements
 		@Override public final TerrainPoint getTopRight() {
 			return terrainPointGrid[leftXIndex+1][bottomZIndex+1];
 		}
-		
+
 		@Override
 		public Collection<TerrainPoint> getTerrainPoints() {
 			List<TerrainPoint> terrainPoints = new ArrayList<TerrainPoint>(4);
@@ -181,7 +181,7 @@ public abstract class AbstractCellularTerrainElevation implements
 			terrainPoints.add(terrainPointGrid[leftXIndex][bottomZIndex+1]);
 			return terrainPoints;
 		}
-		
+
 		@Override
 		public final PolygonXYZ getPolygonXYZ() {
 			List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(5);
@@ -192,7 +192,7 @@ public abstract class AbstractCellularTerrainElevation implements
 			vertices.add(vertices.get(0));
 			return new PolygonXYZ(vertices);
 		}
-		
+
 		@Override
 		public final SimplePolygonXZ getPolygonXZ() {
 			List<VectorXZ> vertices = new ArrayList<VectorXZ>(5);
@@ -203,7 +203,7 @@ public abstract class AbstractCellularTerrainElevation implements
 			vertices.add(vertices.get(0));
 			return new SimplePolygonXZ(vertices);
 		}
-		
+
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 			return new AxisAlignedBoundingBoxXZ(
@@ -212,14 +212,14 @@ public abstract class AbstractCellularTerrainElevation implements
 				Math.max(getTopRight().getPos().x, getBottomRight().getPos().x),
 				Math.max(getTopLeft().getPos().z, getTopRight().getPos().z));
 		}
-		
+
 		@Override
 		public String toString() {
 			return "cell at x: " + leftXIndex + ", z: " + bottomZIndex;
 		}
 
 		/* auto-generated hashCode and equals follow */
-		
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -251,19 +251,19 @@ public abstract class AbstractCellularTerrainElevation implements
 		private AbstractCellularTerrainElevation getOuterType() {
 			return AbstractCellularTerrainElevation.this;
 		}
-		
+
 	}
-	
+
 	public AbstractCellularTerrainElevation(AxisAlignedBoundingBoxXZ boundary,
 			int numPointsX, int numPointsZ) {
 
 		if (numPointsX < 2 || numPointsZ < 2) {
 			throw new IllegalArgumentException("need at least 2x2 points for cell grid");
 		}
-		
+
 		this.numPointsX = numPointsX;
 		this.numPointsZ = numPointsZ;
-		
+
 		terrainPoints = new ArrayList<TerrainPoint>(numPointsX * numPointsZ);
 		terrainPointGrid = new TerrainPoint[numPointsX][numPointsZ];
 

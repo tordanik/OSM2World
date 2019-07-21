@@ -30,12 +30,12 @@ public class ResetCameraAction extends AbstractAction implements Observer {
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
-	
+
 		setEnabled(false);
 		data.addObserver(this);
-		
+
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		setEnabled(data.getConversionResults() != null);
@@ -51,7 +51,7 @@ public class ResetCameraAction extends AbstractAction implements Observer {
 		renderOptions.camera = new Camera();
 		renderOptions.camera.setCamera(camLookAt.x, 1000, camLookAt.z-1000,
                                        camLookAt.x, 0, camLookAt.z);
-		
+
 		renderOptions.projection = Defaults.PERSPECTIVE_PROJECTION;
 
 	}

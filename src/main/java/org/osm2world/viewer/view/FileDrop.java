@@ -57,14 +57,14 @@ class FileDrop
 {
     private transient javax.swing.border.Border normalBorder;
     private transient java.awt.dnd.DropTargetListener dropListener;
-    
-    
+
+
     /** Discover if the running JVM is modern enough to have drag and drop. */
     private static Boolean supportsDnD;
-    
+
     // Default border color
     private static java.awt.Color defaultBorderColor = new java.awt.Color( 0f, 0f, 1f, 0.25f );
-    
+
     /**
      * Constructs a {@link FileDrop} with a default light-blue border
      * and, if <var>c</var> is a {@link java.awt.Container}, recursively
@@ -84,10 +84,10 @@ class FileDrop
               true, // Recursive
               listener );
     }   // end constructor
-    
-    
-    
-    
+
+
+
+
     /**
      * Constructor with a default border and the option to recursively set drop targets.
      * If your component is a <tt>java.awt.Container</tt>, then each of its children
@@ -108,8 +108,8 @@ class FileDrop
               recursive, // Recursive
               listener );
     }   // end constructor
-    
-    
+
+
     /**
      * Constructor with a default border and debugging optionally turned on.
      * With Debugging turned on, more status messages will be displayed to
@@ -132,9 +132,9 @@ class FileDrop
               false, // Recursive
               listener );
     }   // end constructor
-    
-        
-    
+
+
+
     /**
      * Constructor with a default border, debugging optionally turned on
      * and the option to recursively set drop targets.
@@ -162,10 +162,10 @@ class FileDrop
               recursive, // Recursive
               listener );
     }   // end constructor
-    
-    
-    
-    
+
+
+
+
     /**
      * Constructor with a specified border
      *
@@ -185,10 +185,10 @@ class FileDrop
             false,  // Recursive
             listener );
     }   // end constructor
-    
-    
-        
-    
+
+
+
+
     /**
      * Constructor with a specified border and the option to recursively set drop targets.
      * If your component is a <tt>java.awt.Container</tt>, then each of its children
@@ -212,9 +212,9 @@ class FileDrop
             recursive,
             listener );
     }   // end constructor
-    
-            
-    
+
+
+
     /**
      * Constructor with a specified border and debugging optionally turned on.
      * With Debugging turned on, more status messages will be displayed to
@@ -240,11 +240,11 @@ class FileDrop
             false,  // Recursive
             listener );
     }   // end constructor
-    
-    
-    
-    
-    
+
+
+
+
+
     /**
      * Full constructor with a specified border and debugging optionally turned on.
      * With Debugging turned on, more status messages will be displayed to
@@ -266,7 +266,7 @@ class FileDrop
     final boolean recursive,
     final Listener listener)
     {
-        
+
         if( supportsDnD() )
         {   // Make a drop listener
             dropListener = new java.awt.dnd.DropTargetListener()
@@ -350,10 +350,10 @@ class FileDrop
                                     Reader reader = flavors[zz].getReaderForText(tr);
 
                                     BufferedReader br = new BufferedReader(reader);
-                                    
+
                                     if(listener != null)
                                         listener.filesDropped(createFileArray(br, out));
-                                    
+
                                     // Mark that drop is completed.
                                     evt.getDropTargetContext().dropComplete(true);
                                     log(out, "FileDrop: drop complete.");
@@ -422,7 +422,7 @@ class FileDrop
         }   // end else: does not support DnD
     }   // end constructor
 
-    
+
     private static boolean supportsDnD()
     {   // Static Boolean
         if( supportsDnD == null )
@@ -439,8 +439,8 @@ class FileDrop
         }   // end if: first time through
         return supportsDnD.booleanValue();
     }   // end supportsDnD
-    
-    
+
+
      // BEGIN 2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.
      private static String ZERO_CHAR_STRING = "" + (char)0;
      private static File[] createFileArray(BufferedReader bReader, PrintStream out)
@@ -452,7 +452,7 @@ class FileDrop
                 try {
                     // kde seems to append a 0 char to the end of the reader
                     if(ZERO_CHAR_STRING.equals(line)) continue;
-                    
+
                     java.io.File file = new java.io.File(new java.net.URI(line));
                     list.add(file);
                 } catch (Exception ex) {
@@ -467,8 +467,8 @@ class FileDrop
         return new File[0];
      }
      // END 2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.
-     
-    
+
+
     private void makeDropTarget( final java.io.PrintStream out, final java.awt.Component c, boolean recursive )
     {
         // Make drop target
@@ -480,7 +480,7 @@ class FileDrop
         {   e.printStackTrace();
             log(out, "FileDrop: Drop will not work due to previous error. Do you have another listener attached?" );
         }   // end catch
-        
+
         // Listen for hierarchy changes and remove the drop target when the parent gets cleared out.
         c.addHierarchyListener( new java.awt.event.HierarchyListener()
         {   public void hierarchyChanged( java.awt.event.HierarchyEvent evt )
@@ -498,30 +498,30 @@ class FileDrop
         }); // end hierarchy listener
         if( c.getParent() != null )
             new java.awt.dnd.DropTarget(c, dropListener);
-        
+
         if( recursive && (c instanceof java.awt.Container ) )
         {
             // Get the container
             java.awt.Container cont = (java.awt.Container) c;
-            
+
             // Get it's components
             java.awt.Component[] comps = cont.getComponents();
-            
+
             // Set it's components as listeners also
             for( int i = 0; i < comps.length; i++ )
                 makeDropTarget( out, comps[i], recursive );
         }   // end if: recursively set components as listener
     }   // end dropListener
-    
-    
-    
+
+
+
     /** Determine if the dragged data is a file list. */
     private boolean isDragOk( final java.io.PrintStream out, final java.awt.dnd.DropTargetDragEvent evt )
     {   boolean ok = false;
-        
+
         // Get data flavors being dragged
         java.awt.datatransfer.DataFlavor[] flavors = evt.getCurrentDataFlavors();
-        
+
         // See if any of the flavors are a file list
         int i = 0;
         while( !ok && i < flavors.length )
@@ -536,7 +536,7 @@ class FileDrop
             // END 2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.
             i++;
         }   // end while: through flavors
-        
+
         // If logging is enabled, show data flavors
         if( out != null )
         {   if( flavors.length == 0 )
@@ -544,11 +544,11 @@ class FileDrop
             for( i = 0; i < flavors.length; i++ )
                 log( out, flavors[i].toString() );
         }   // end if: logging enabled
-        
+
         return ok;
     }   // end isDragOk
-    
-    
+
+
     /** Outputs <tt>message</tt> to <tt>out</tt> if it's not null. */
     private static void log( java.io.PrintStream out, String message )
     {   // Log message if requested
@@ -556,9 +556,9 @@ class FileDrop
             out.println( message );
     }   // end log
 
-    
-    
-    
+
+
+
     /**
      * Removes the drag-and-drop hooks from the component and optionally
      * from the all children. You should call this if you add and remove
@@ -572,9 +572,9 @@ class FileDrop
     public static boolean remove( java.awt.Component c)
     {   return remove( null, c, true );
     }   // end remove
-    
-    
-    
+
+
+
     /**
      * Removes the drag-and-drop hooks from the component and optionally
      * from the all children. You should call this if you add and remove
@@ -600,13 +600,13 @@ class FileDrop
         }   // end if: supports DnD
         else return false;
     }   // end remove
-    
-    
 
-    
+
+
+
 /* ********  I N N E R   I N T E R F A C E   L I S T E N E R  ******** */
-    
-    
+
+
     /**
      * Implement this inner interface to listen for when files are dropped. For example
      * your class declaration may begin like this:
@@ -623,7 +623,7 @@ class FileDrop
      * @since 1.1
      */
     public static interface Listener {
-       
+
         /**
          * This method is called when files have been successfully dropped.
          *
@@ -631,14 +631,14 @@ class FileDrop
          * @since 1.0
          */
         public abstract void filesDropped( java.io.File[] files );
-        
-        
+
+
     }   // end inner-interface Listener
-    
-    
+
+
 /* ********  I N N E R   C L A S S  ******** */
-    
-    
+
+
     /**
      * This is the event that is passed to the
      * {@link Listener#filesDropped filesDropped(...)} method in
@@ -646,7 +646,7 @@ class FileDrop
      * a registered drop target.
      *
      * <p>I'm releasing this code into the Public Domain. Enjoy.</p>
-     * 
+     *
      * @author  Robert Harder
      * @author  rob@iharder.net
      * @version 1.2
@@ -680,13 +680,13 @@ class FileDrop
         public java.io.File[] getFiles() {
             return files;
         }   // end getFiles
-    
+
     }   // end inner class Event
-    
-    
-    
+
+
+
 /* ********  I N N E R   C L A S S  ******** */
-    
+
 
     /**
      * At last an easy way to encapsulate your custom objects for dragging and dropping
@@ -725,7 +725,7 @@ class FileDrop
      *
      *
      * <p>I'm releasing this code into the Public Domain. Enjoy.</p>
-     * 
+     *
      * @author  Robert Harder
      * @author  rob@iharder.net
      * @version 1.2
@@ -938,8 +938,8 @@ class FileDrop
 
     }   // end class TransferableObject
 
-    
-    
-    
-    
+
+
+
+
 }   // end class FileDrop

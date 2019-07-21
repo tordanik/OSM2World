@@ -21,12 +21,12 @@ public class SetEleConstraintEnforcerAction extends AbstractAction {
 	public SetEleConstraintEnforcerAction(
 			Class<? extends EleConstraintEnforcer> enforcerClass,
 			ViewerFrame viewerFrame, Data data, RenderOptions renderOptions) {
-		
+
 		super(enforcerClass.getSimpleName().replace("EleConstraintEnforcer", ""));
-		
+
 		putValue(SELECTED_KEY, enforcerClass.equals(
 				renderOptions.getEnforcerClass()));
-		
+
 		this.enforcerClass = enforcerClass;
 		this.viewerFrame = viewerFrame;
 		this.data = data;
@@ -40,13 +40,13 @@ public class SetEleConstraintEnforcerAction extends AbstractAction {
 		renderOptions.setEnforcerClass(enforcerClass);
 		putValue(SELECTED_KEY,
 				renderOptions.getEnforcerClass().equals(enforcerClass));
-		
+
 		if (data.getConversionResults() != null) {
 			JOptionPane.showMessageDialog(viewerFrame, "You need to reload or" +
 					" open a new OSM file for this option to have any effect!",
 					"Reload required", JOptionPane.INFORMATION_MESSAGE);
 		}
-		
+
 	}
 
 }

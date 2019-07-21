@@ -16,7 +16,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 
 	/** polygon vertices; first and last vertex are equal */
 	protected final List<VectorXZ> vertexLoop;
-		
+
 	/**
 	 * @param vertexLoop  vertices defining the polygon;
 	 *                    first and last vertex must be equal
@@ -24,13 +24,13 @@ public class PolygonXZ implements PolygonShapeXZ {
 	 *                                   or produces invalid area calculation results
 	 */
 	public PolygonXZ(List<VectorXZ> vertexLoop) {
-		
+
 		assertLoopProperty(vertexLoop);
-		
+
 		this.vertexLoop = vertexLoop;
-				
+
 	}
-	
+
 	/**
 	 * returns the number of vertices in this polygon.
 	 * The duplicated first/last vertex is <em>not</em> counted twice,
@@ -51,21 +51,21 @@ public class PolygonXZ implements PolygonShapeXZ {
 
 	/**
 	 * returns the polygon's vertices. First and last vertex are equal.
-	 * 
+	 *
 	 * @return list of vertices, not empty, not null
 	 */
 	@Override
 	public List<VectorXZ> getVertexList() {
 		return vertexLoop;
 	}
-	
+
 	/**
 	 * @deprecated Use the equivalent {@link #getVertexList()} instead.
 	 */
 	public List<VectorXZ> getVertexLoop() {
 		return vertexLoop;
 	}
-	
+
 	/**
 	 * returns a collection that contains all vertices of this polygon
 	 * at least once. Can be used if you don't care about whether the first/last
@@ -74,7 +74,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 	public List<VectorXZ> getVertexCollection() {
 		return vertexLoop;
 	}
-	
+
 	/**
 	 * returns the vertex at a position in the vertex sequence
 	 */
@@ -82,7 +82,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		assert 0 <= index && index < vertexLoop.size()-1;
 		return vertexLoop.get(index);
 	}
-	
+
 	/**
 	 * returns the successor of the vertex at a position in the vertex sequence.
 	 * This wraps around the vertex loop, so the successor of the last vertex
@@ -92,7 +92,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		assert 0 <= index && index < vertexLoop.size()-1;
 		return getVertex((index + 1) % size());
 	}
-	
+
 	/**
 	 * returns the predecessor of the vertex at a position in the vertex sequence.
 	 * This wraps around the vertex loop, so the predecessor of the first vertex
@@ -102,7 +102,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		assert 0 <= index && index < vertexLoop.size()-1;
 		return getVertex((index + size() - 1) % size());
 	}
-	
+
 	public List<LineSegmentXZ> getSegments() {
 		List<LineSegmentXZ> segments = new ArrayList<LineSegmentXZ>(vertexLoop.size());
 		for (int i=0; i+1 < vertexLoop.size(); i++) {
@@ -110,15 +110,15 @@ public class PolygonXZ implements PolygonShapeXZ {
 		}
 		return segments;
 	}
-	
+
 	/**
 	 * returns the polygon segment with minimum distance to a given point
 	 */
 	public LineSegmentXZ getClosestSegment(VectorXZ point) {
-		
+
 		LineSegmentXZ closestSegment = null;
 		double closestDistance = Double.MAX_VALUE;
-		
+
 		for (LineSegmentXZ segment : getSegments()) {
 			double distance = distanceFromLineSegment(point, segment);
 			if (distance < closestDistance) {
@@ -126,11 +126,11 @@ public class PolygonXZ implements PolygonShapeXZ {
 				closestDistance = distance;
 			}
 		}
-		
+
 		return closestSegment;
-		
+
 	}
-	
+
 	/**
 	 * returns true if there is an intersection between this polygon
 	 * and the line segment defined by the parameter
@@ -139,18 +139,18 @@ public class PolygonXZ implements PolygonShapeXZ {
 		//TODO: (performance): passing "vector TO second point", rather than point2, would avoid having to calc it here - and that information could be reused for all comparisons involving the segment
 
 		for (int i=0; i+1<vertexLoop.size(); i++) {
-			
+
 			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
 					segmentP1, segmentP2,
 					vertexLoop.get(i), vertexLoop.get(i+1)
 					);
-			
+
 			if (intersection != null) {
 				return true;
 			}
-			
+
 		}
-		
+
 		return false;
 	}
 
@@ -165,13 +165,13 @@ public class PolygonXZ implements PolygonShapeXZ {
 	public boolean intersects(PolygonXZ outlinePolygonXZ) {
 
 		//TODO (performance): currently performs pairwise intersection checks for sides of this and other - this might not be the fastest method
-		
+
 		for (int i=0; i+1<vertexLoop.size(); i++) {
 			if (outlinePolygonXZ.intersects(vertexLoop.get(i), vertexLoop.get(i+1))) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -181,56 +181,56 @@ public class PolygonXZ implements PolygonShapeXZ {
 		List<LineSegmentXZ> intersectionSegments = new ArrayList<LineSegmentXZ>();
 
 		for (LineSegmentXZ polygonSegment : getSegments()) {
-			
+
 			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
 					lineSegment.p1, lineSegment.p2,
 					polygonSegment.p1, polygonSegment.p2
 					);
-			
+
 			if (intersection != null) {
 				intersectionSegments.add(polygonSegment);
 			}
-			
+
 		}
-		
+
 		return intersectionSegments;
-		
+
 	}
 
 	public List<VectorXZ> intersectionPositions(
 			LineSegmentXZ lineSegment) {
-		
+
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
 
 		for (int i=0; i+1<vertexLoop.size(); i++) {
-			
+
 			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
 					lineSegment.p1, lineSegment.p2,
 					vertexLoop.get(i), vertexLoop.get(i+1)
 					);
-			
+
 			if (intersection != null) {
 				intersectionPositions.add(intersection);
 			}
-			
+
 		}
-		
+
 		return intersectionPositions;
-		
+
 	}
-	
+
 	/**
 	 * returns whether this polygon is self-intersecting
 	 */
 	public boolean isSelfIntersecting() {
 		return isSelfIntersecting(vertexLoop);
 	}
-	
+
 	/**
 	 * returns true if the polygon defined by the polygonVertexLoop parameter
 	 * is self-intersecting.<br/>
 	 * The Code is based on Shamos-Hoey's algorithm
-	 * 
+	 *
 	 * TODO: if the end vertex of two line segments are the same the
 	 *       polygon is never considered as self intersecting on purpose.
 	 *       This behavior should probably be reconsidered, but currently
@@ -241,7 +241,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		final class Event {
 			boolean start;
 			LineSegmentXZ line;
-			
+
 			Event(LineSegmentXZ l, boolean s) {
 				this.line = l;
 				this.start = s;
@@ -256,7 +256,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		for (int i = 0; i < segments; i++) {
 			VectorXZ v1 = polygonVertexLoop.get(i);
 			VectorXZ v2 = polygonVertexLoop.get(i+1);
-			
+
 			// Create a line where the first vertex is left (or above) the second vertex
 			LineSegmentXZ line;
 			if ((v1.x < v2.x) || ((v1.x == v2.x) && (v1.z < v2.z))) {
@@ -264,15 +264,15 @@ public class PolygonXZ implements PolygonShapeXZ {
 			} else {
 				line = new LineSegmentXZ(v2, v1);
 			}
-			
+
 			events[2*i] = new Event(line, true);
 			events[2*i+1] = new Event(line, false);
 		}
-		
+
 		// sort the input events according to the x-coordinate, then z-coordinate
 		Arrays.sort(events, new Comparator<Event>() {
 			public int compare(Event e1, Event e2) {
-				
+
 				VectorXZ v1 = e1.start? e1.line.p1 : e1.line.p2;
 				VectorXZ v2 = e2.start? e2.line.p1 : e2.line.p2;
 
@@ -283,7 +283,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 				}
 				return 1;
 			}});
-	
+
 		// A TreeSet, used for the sweepline algorithm
 		TreeSet<LineSegmentXZ> sweepLine = new TreeSet<LineSegmentXZ>(new Comparator<LineSegmentXZ>() {
 			public int compare(LineSegmentXZ l1, LineSegmentXZ l2) {
@@ -304,13 +304,13 @@ public class PolygonXZ implements PolygonShapeXZ {
 				}
 				return 1;
 			}});
-		
+
 		// start the algorithm by visiting every event
 		for (Event event : events) {
 			LineSegmentXZ line = event.line;
-			
+
 			if (event.start) { // if it is a startpoint
-			
+
 				LineSegmentXZ lower = sweepLine.lower(line);
 				LineSegmentXZ higher = sweepLine.higher(line);
 
@@ -321,14 +321,14 @@ public class PolygonXZ implements PolygonShapeXZ {
 						return true;
 					}
 				}
-				
+
 				if (higher != null) {
 					if (higher.intersects(line.p1, line.p2)) {
 						return true;
 					}
 				}
 			} else { // if it is an endpoint
-				
+
 				LineSegmentXZ lower = sweepLine.lower(line);
 				LineSegmentXZ higher = sweepLine.higher(line);
 
@@ -358,7 +358,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * returns a polygon with the coordinates of this polygon
 	 * that is an instance of {@link SimplePolygonXZ}.
@@ -384,7 +384,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 					vertexLoop.get(2));
 		}
 	}
-	
+
 	public PolygonXYZ xyz(final double y) {
 		return new PolygonXYZ(VectorXZ.listXYZ(vertexLoop, y));
 	}
@@ -394,7 +394,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		Collections.reverse(newVertexLoop);
 		return new PolygonXZ(newVertexLoop);
 	}
-	
+
 	/**
 	 * returns the average of all vertex coordinates.
 	 * The result is not necessarily contained by this polygon.
@@ -410,7 +410,7 @@ public class PolygonXZ implements PolygonShapeXZ {
 		}
 		return new VectorXZ(x, z);
 	}
-	
+
 	/**
 	 * returns the length of the polygon's outline.
 	 * (This does <em>not</em> return the number of vertices,
@@ -429,18 +429,18 @@ public class PolygonXZ implements PolygonShapeXZ {
 	 * possibly with a different start vertex
 	 */
 	public boolean isEquivalentTo(PolygonXZ other) {
-				
+
 		if (vertexLoop.size() != other.vertexLoop.size()) {
 			return false;
 		}
-		
+
 		List<VectorXZ> ownVertices = getVertices();
 		List<VectorXZ> otherVertices = other.getVertices();
-		
+
 		for (int offset = 0; offset < ownVertices.size(); offset ++) {
-			
+
 			boolean matches = true;
-			
+
 			for (int i = 0; i < ownVertices.size(); i++) {
 				int iWithOffset = (i + offset) % ownVertices.size();
 				if (!otherVertices.get(i).equals(ownVertices.get(iWithOffset))) {
@@ -448,17 +448,17 @@ public class PolygonXZ implements PolygonShapeXZ {
 					break;
 				}
 			}
-			
+
 			if (matches) {
 				return true;
 			}
-			
+
 		}
 
 		return false;
-		
+
 	}
-	
+
 	/**
 	 * checks that the first and last vertex of the vertex list are equal.
 	 * @throws IllegalArgumentException  if first and last vertex aren't equal
@@ -471,10 +471,10 @@ public class PolygonXZ implements PolygonShapeXZ {
 					+ "Polygon vertices: " + vertexLoop);
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return vertexLoop.toString();
 	}
-	
+
 }

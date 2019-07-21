@@ -50,9 +50,9 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	private static final Tag WATER_TAG = new Tag("natural", "water");
 	private static final Tag RIVERBANK_TAG = new Tag("waterway", "riverbank");
-	
+
 	private static final Map<String, Float> WATERWAY_WIDTHS;
-	
+
 	static {
 		WATERWAY_WIDTHS = new HashMap<String, Float>();
 		WATERWAY_WIDTHS.put("river", 3f);
@@ -61,12 +61,12 @@ public class WaterModule extends ConfigurableWorldModule {
 		WATERWAY_WIDTHS.put("ditch", 1f);
 		WATERWAY_WIDTHS.put("drain", 1f);
 	}
-	
+
 	//TODO: apply to is almost always the same! create a superclass handling this!
-	
+
 	@Override
 	public void applyTo(MapData mapData) {
-		
+
 		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			for (String value : WATERWAY_WIDTHS.keySet()) {
 				if (line.getTags().contains("waterway", value)) {
@@ -76,19 +76,19 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		for (MapNode node : mapData.getMapNodes()) {
-			
+
 			int connectedRivers = 0;
-			
+
 			for (MapWaySegment line : node.getConnectedWaySegments()) {
 				if (any(line.getRepresentations(), hasType(Waterway.class))) {
 					connectedRivers += 1;
 				}
 			}
-						
+
 			if (connectedRivers > 2) {
 				node.addRepresentation(new RiverJunction(node));
 			}
-			
+
 		}
 
 		for (MapArea area : mapData.getMapAreas()) {
@@ -100,34 +100,34 @@ public class WaterModule extends ConfigurableWorldModule {
 				area.addRepresentation(new AreaFountain(area));
 			}
 		}
-		
+
 	}
-	
+
 	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
-		
+
 		public Waterway(MapWaySegment line) {
 			super(line);
 		}
-		
+
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
-			
+
 			super.defineEleConstraints(enforcer);
-			
+
 			/* enforce downhill flow */
-			
+
 			if (!segment.getTags().containsKey("incline")) {
 				enforcer.requireIncline(MAX, 0, getCenterlineEleConnectors());
 			}
-			
+
 		}
-		
+
 		public float getWidth() {
 			return WorldModuleParseUtil.parseWidth(segment.getTags(),
 					WATERWAY_WIDTHS.get(segment.getTags().getValue("waterway")));
 		}
-		
+
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
 			if (isContainedWithinRiverbank()) {
@@ -136,7 +136,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				return super.getOutlinePolygon();
 			}
 		}
-		
+
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
 			if (isContainedWithinRiverbank()) {
@@ -145,41 +145,41 @@ public class WaterModule extends ConfigurableWorldModule {
 				return super.getOutlinePolygonXZ();
 			}
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			//note: simply "extending" a river cannot work - unlike streets -
 			//      because there can be islands within the riverbank polygon.
 			//      That's why rivers will be *replaced* with Water areas instead.
-			
+
 			/* only draw the river if it doesn't have a riverbank */
-			
+
 			//TODO: handle case where a river is completely within riverbanks, but not a *single* riverbank
-						
+
 			if (! isContainedWithinRiverbank()) {
-				
+
 				List<VectorXYZ> leftOutline = getOutline(false);
 				List<VectorXYZ> rightOutline = getOutline(true);
-				
+
 				List<VectorXYZ> leftWaterBorder = createLineBetween(
 						leftOutline, rightOutline, 0.05f);
 				List<VectorXYZ> rightWaterBorder = createLineBetween(
 						leftOutline, rightOutline, 0.95f);
-				
+
 				modifyLineHeight(leftWaterBorder, -0.2f);
 				modifyLineHeight(rightWaterBorder, -0.2f);
-	
+
 				List<VectorXYZ> leftGround = createLineBetween(
 						leftOutline, rightOutline, 0.35f);
 				List<VectorXYZ> rightGround = createLineBetween(
 						leftOutline, rightOutline, 0.65f);
-				
+
 				modifyLineHeight(leftGround, -1);
 				modifyLineHeight(rightGround, -1);
-				
+
 				/* render ground */
-				
+
 				@SuppressWarnings("unchecked") // generic vararg is intentional
 				List<List<VectorXYZ>> strips = asList(
 					createTriangleStripBetween(
@@ -193,27 +193,27 @@ public class WaterModule extends ConfigurableWorldModule {
 					createTriangleStripBetween(
 							rightWaterBorder, rightOutline)
 				);
-				
+
 				for (List<VectorXYZ> strip : strips) {
 					target.drawTriangleStrip(TERRAIN_DEFAULT, strip,
 						texCoordLists(strip, TERRAIN_DEFAULT, GLOBAL_X_Z));
 				}
-				
+
 				/* render water */
-				
+
 				List<VectorXYZ> vs = createTriangleStripBetween(
 						leftWaterBorder, rightWaterBorder);
-				
+
 				target.drawTriangleStrip(WATER, vs,
 						texCoordLists(vs, WATER, GLOBAL_X_Z));
-				
+
 			}
-			
+
 		}
 
 		private boolean isContainedWithinRiverbank() {
 			boolean containedWithinRiverbank = false;
-			
+
 			for (MapOverlap<?,?> overlap : segment.getOverlaps()) {
 				if (overlap.getOther(segment) instanceof MapArea) {
 					MapArea area = (MapArea)overlap.getOther(segment);
@@ -233,7 +233,7 @@ public class WaterModule extends ConfigurableWorldModule {
 				leftWaterBorder.set(i, v.y(v.y+yMod));
 			}
 		}
-		
+
 	}
 
 	public static class RiverJunction
@@ -251,28 +251,28 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			//TODO: check whether it's within a riverbank (as with Waterway)
-			
+
 			List<VectorXYZ> vertices = getOutlinePolygon().getVertices();
-			
+
 			target.drawConvexPolygon(WATER, vertices,
 					texCoordLists(vertices, WATER, GLOBAL_X_Z));
-			
+
 			//TODO: only cover with water to 0.95 * distance to center; add land below
-			
+
 		}
-		
+
 	}
-	
+
 	public static class Water extends NetworkAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
-		
+
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
 		// possible algorithm: for each node of the outer polygon, check whether it
 		// connects to another water surface. If it doesn't move it inwards,
 		// where "inwards" is calculated based on the two adjacent polygon segments.
-		
+
 		public Water(MapArea area) {
 			super(area);
 		}
@@ -281,21 +281,21 @@ public class WaterModule extends ConfigurableWorldModule {
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
 			enforcer.requireSameEle(getEleConnectors());
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(WATER, triangles,
 					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
 		}
-		
+
 	}
-	
+
 	private static class AreaFountain extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
@@ -312,28 +312,28 @@ public class WaterModule extends ConfigurableWorldModule {
 		public void renderTo(Target<?> target) {
 
 			/* render water */
-				
+
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(PURIFIED_WATER, triangles,
 					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));
-			
+
 			/* render walls */
-			
+
 			double width=0.1;
 			double height=0.5;
-			
+
 			ShapeXZ wallShape = new PolylineXZ(
 					new VectorXZ(+width/2, 0),
 					new VectorXZ(+width/2, height),
 					new VectorXZ(-width/2, height),
 					new VectorXZ(-width/2, 0)
 			);
-			
+
 			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
-			
+
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
 					nCopies(path.size(), Y_UNIT), null, null, null);
-							
+
 		}
 
 	}

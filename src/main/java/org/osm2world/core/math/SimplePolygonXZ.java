@@ -15,16 +15,16 @@ import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
  * a non-self-intersecting polygon in the XZ plane
  */
 public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
-	
+
 	/** stores the signed area */
 	private Double signedArea;
-	
+
 	/** stores the result for {@link #getArea()} */
 	private Double area;
 
 	/** stores the result for {@link #isClockwise()} */
 	private Boolean clockwise;
-	
+
 	/**
 	 * @param vertexLoop  vertices defining the polygon;
 	 *                    first and last vertex must be equal
@@ -32,22 +32,22 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 	 *                                   or produces invalid area calculation results
 	 */
 	public SimplePolygonXZ(List<VectorXZ> vertexLoop) {
-		
+
 		super(vertexLoop);
-		
+
 		assertLoopLength(vertexLoop);
 		assertNotSelfIntersecting(vertexLoop);
-				
+
 	}
 
 	private void calculateArea() {
 		this.signedArea = calculateSignedArea(vertexLoop);
 		this.area = Math.abs(signedArea);
 		this.clockwise = signedArea < 0;
-		
+
 		assertNonzeroArea();
 	}
-	
+
 	public List<LineSegmentXZ> getSegments() {
 		List<LineSegmentXZ> segments = new ArrayList<LineSegmentXZ>(vertexLoop.size());
 		for (int i=0; i+1 < vertexLoop.size(); i++) {
@@ -55,7 +55,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		}
 		return segments;
 	}
-	
+
 	/** returns the polygon's area */
 	public double getArea() {
 		if (area == null) {
@@ -63,44 +63,44 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		}
 		return area;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		
+
 		if (obj instanceof SimplePolygonXZ) {
 			return vertexLoop.equals(((SimplePolygonXZ)obj).vertexLoop);
 		} else {
 			return false;
 		}
-		
+
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return vertexLoop.hashCode();
 	}
-	
+
 	/** returns the centroid (or "barycenter") of the polygon */
 	public VectorXZ getCentroid() {
-		
+
 		if (signedArea == null) { calculateArea(); }
-		
+
 		double xSum = 0, zSum = 0;
-		
+
 		int numVertices = vertexLoop.size() - 1;
 		for (int i = 0; i < numVertices; i++) {
-			
+
 			double factor = vertexLoop.get(i).x * vertexLoop.get(i+1).z
 				- vertexLoop.get(i+1).x * vertexLoop.get(i).z;
-			
+
 			xSum += (vertexLoop.get(i).x + vertexLoop.get(i+1).x) * factor;
 			zSum += (vertexLoop.get(i).z + vertexLoop.get(i+1).z) * factor;
-			
+
 		}
-		
+
 		double areaFactor = 1 / (6 * signedArea);
 		return new VectorXZ(areaFactor * xSum, areaFactor * zSum);
-		
+
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		}
 		return maxDistance;
 	}
-	
+
 	/** returns true if the polygon has clockwise orientation */
 	public boolean isClockwise() {
 		if (area == null) {
@@ -127,7 +127,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		}
 		return clockwise;
 	}
-	
+
 	@Override
 	public boolean isSelfIntersecting() {
 		return false;
@@ -137,7 +137,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 	public boolean isSimple() {
 		return true;
 	}
-	
+
 	@Override
 	public SimplePolygonXZ asSimplePolygon() {
 		return this;
@@ -150,7 +150,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 	public PolygonWithHolesXZ asPolygonWithHolesXZ() {
 		return new PolygonWithHolesXZ(this, Collections.<SimplePolygonXZ>emptyList());
 	}
-	
+
 	/**
 	 * returns this polygon if it is counterclockwise,
 	 * or the reversed polygon if it is clockwise.
@@ -158,7 +158,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 	public SimplePolygonXZ makeClockwise() {
 		return makeRotationSense(true);
 	}
-	
+
 	/**
 	 * returns this polygon if it is clockwise,
 	 * or the reversed polygon if it is counterclockwise.
@@ -174,7 +174,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 			return this;
 		}
 	}
-	
+
 	@Override
 	public SimplePolygonXZ reverse() {
 		List<VectorXZ> newVertexLoop = new ArrayList<VectorXZ>(vertexLoop);
@@ -196,15 +196,15 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		newVertexLoop.add(newVertexLoop.get(0));
 		return new SimplePolygonXZ(newVertexLoop);
 	}
-	
+
 	/**
 	 * returns true if the polygon defined by the polygonVertexLoop parameter
 	 * contains a given position
 	 */
 	public static boolean contains(List<VectorXZ> polygonVertexLoop, VectorXZ test) {
-	
+
 		assertLoopProperty(polygonVertexLoop);
-		
+
 		int i, j;
 		boolean c = false;
 
@@ -217,9 +217,9 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		}
 
 		return c;
-		  
+
 	}
-	
+
 	/**
 	 * returns true if the polygon contains a given position
 	 */
@@ -251,17 +251,17 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		}
 		return minDistance;
 	}
-	
+
 	/**
 	 * returns a different polygon that is constructed from this polygon
 	 * by removing all vertices where this has an angle close to 180°
 	 * (i.e. where removing the vertex does not change the polygon very much).
 	 */
 	public SimplePolygonXZ getSimplifiedPolygon() {
-		
+
 		boolean[] delete = new boolean[size()];
 		int deleteCount = 0;
-		
+
 		for (int i = 0; i < size(); i++) {
 			VectorXZ segmentBefore = getVertex(i).subtract(getVertexBefore(i));
 			VectorXZ segmentAfter = getVertexAfter(i).subtract(getVertex(i));
@@ -271,47 +271,47 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 				deleteCount += 1;
 			}
 		}
-		
+
 		if (deleteCount == 0 || deleteCount > size() - 3) {
 			return this;
 		} else {
-			
+
 			List<VectorXZ> newVertexList = new ArrayList<VectorXZ>(getVertices());
-			
+
 			//iterate backwards => it doesn't matter when higher indices change
 			for (int i = size() - 1; i >= 0; i--) {
 				if (delete[i]) {
 					newVertexList.remove(i);
 				}
 			}
-			
+
 			newVertexList.add(newVertexList.get(0));
 			return new SimplePolygonXZ(newVertexList);
-			
+
 		}
-		
+
 	}
-	
+
 	@Override
 	public Collection<TriangleXZ> getTriangulation() {
 		return TriangulationUtil.triangulate(this, Collections.<SimplePolygonXZ>emptyList());
 	}
-	
+
 	/**
 	 * calculates the area of a planar non-self-intersecting polygon.
 	 * The result is negative if the polygon is clockwise.
 	 */
 	private static double calculateSignedArea(List<VectorXZ> vertexLoop) {
-				
+
 		double sum = 0f;
-		
+
 		for (int i = 0; i + 1 < vertexLoop.size(); i++) {
 			sum += vertexLoop.get(i).x * vertexLoop.get(i+1).z;
 			sum -= vertexLoop.get(i+1).x * vertexLoop.get(i).z;
 		}
-		
+
 		return sum / 2;
-		
+
 	}
 
 	/**
@@ -335,7 +335,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 					+ "Polygon vertices: " + vertexLoop);
 		}
 	}
-	
+
 	/**
 	 * @throws InvalidGeometryException  if area is 0
 	 */
@@ -348,5 +348,5 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 					+ "\nPolygon vertices: " + vertexLoop);
 		}
 	}
-	
+
 }

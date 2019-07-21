@@ -41,16 +41,16 @@ public class ExportScreenshotAction extends AbstractExportAction {
 	protected void performExport(File file) throws HeadlessException {
 
 		try {
-			
+
 			viewerFrame.glCanvas.getContext().makeCurrent();
-			
+
 			boolean exportAlpha = data.getConfig().getBoolean("exportAlpha", false);
 			AWTGLReadBufferUtil reader = new AWTGLReadBufferUtil(viewerFrame.glCanvas.getGLProfile(), exportAlpha);
 			BufferedImage img = reader.readPixelsToBufferedImage(viewerFrame.glCanvas.getGL(), true);
 		    ImageIO.write(img, "png", file);
 
 			viewerFrame.glCanvas.getContext().release();
-			
+
 			messageManager.addMessage("exported PNG file " + file);
 
 		} catch (IOException e) {

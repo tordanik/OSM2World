@@ -13,13 +13,13 @@ public class AboutAction extends AbstractAction {
 	public AboutAction() {
 		super("About OSM2World");
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		JOptionPane.showMessageDialog(null, "OSM2World\nVersion " + VERSION_STRING
 				+ "\n\nFor more information, visit\n"
-				+ WIKI_URI + "\n" + OSM2WORLD_URI, 
+				+ WIKI_URI + "\n" + OSM2WORLD_URI,
 				"About OSM2World", JOptionPane.INFORMATION_MESSAGE);
 	}
-	
+
 }

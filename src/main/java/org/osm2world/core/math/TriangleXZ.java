@@ -16,15 +16,15 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 	public final VectorXZ v1, v2, v3;
 
 	public TriangleXZ(VectorXZ v1, VectorXZ v2, VectorXZ v3) {
-		
+
 		assert v1 != null && v2 != null && v3 != null;
-		
+
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
-		
+
 	}
-	
+
 	@Override
 	public List<VectorXZ> getVertexList() {
 		return ImmutableList.of(v1, v2, v3, v1);
@@ -35,19 +35,19 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 				(v1.x + v2.x + v3.x) / 3,
 				(v1.z + v2.z + v3.z) / 3);
 	}
-	
+
 	public boolean contains(VectorXZ point) {
 		return SimplePolygonXZ.contains(Arrays.asList(v1, v2, v3, v1), point); //TODO: avoid creating new lists?
 	}
-	
+
 	public TriangleXYZ xyz(double y) {
 		return new TriangleXYZ(v1.xyz(y), v2.xyz(y), v3.xyz(y));
 	}
-	
+
 	public boolean isClockwise() {
 		return GeometryUtil.isRightOf(v3, v1, v2);
 	}
-	
+
 	/**
 	 * returns this triangle if it is counterclockwise,
 	 * or the reversed triangle if it is clockwise.
@@ -55,7 +55,7 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 	public TriangleXZ makeClockwise() {
 		return makeRotationSense(true);
 	}
-	
+
 	/**
 	 * returns this triangle if it is clockwise,
 	 * or the reversed triangle if it is counterclockwise.
@@ -76,7 +76,7 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 	 * returns the area of the triangle
 	 */
 	public double getArea() {
-		
+
 		double sum =
 				+ v1.x * v2.z
 				- v2.x * v1.z
@@ -84,11 +84,11 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 				- v3.x * v2.z
 				+ v3.x * v1.z
 				- v1.x * v3.z;
-		
+
 		return Math.abs(sum / 2);
-		
+
 	}
-	
+
 	/**
 	 * returns an inversed version of this triangle.
 	 * It consists of the same vertices, but has the other direction.
@@ -96,7 +96,7 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 	public TriangleXZ reverse() {
 		return new TriangleXZ(v3, v2, v1);
 	}
-	
+
 	@Override
 	public Collection<TriangleXZ> getTriangulation() {
 		return singleton(this);
@@ -114,7 +114,7 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 
 	@Override
 	public boolean equals(Object obj) {
-		
+
 		if (this == obj) {
 			return true;
 		} else if (!(obj instanceof TriangleXZ)) {
@@ -125,12 +125,12 @@ public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
 					&& v2.equals(other.v2)
 					&& v3.equals(other.v3);
 		}
-		
+
 	}
 
 	@Override
 	public String toString() {
 		return "[" + v1 + ", " + v2 + ", " + v3 + "]";
 	}
-	
+
 }

@@ -28,10 +28,10 @@ import org.poly2tri.triangulation.point.TPoint;
 public final class Poly2TriTriangulationUtil {
 
 	private Poly2TriTriangulationUtil() { }
-		
+
 	/**
 	 * triangulates of a polygon with holes.
-	 * 
+	 *
 	 * Accepts some unconnected points within the polygon area
 	 * and will create triangle vertices at these points.
 	 * It will also accept line segments as edges that must be integrated
@@ -43,28 +43,28 @@ public final class Poly2TriTriangulationUtil {
 			Collection<SimplePolygonXZ> holes,
 			Collection<LineSegmentXZ> segments,
 			Collection<VectorXZ> points) throws TriangulationException {
-		
+
 		/* remove any problematic data (duplicate points) from the input */
-		
+
 		Set<VectorXZ> knownVectors =
 				new HashSet<VectorXZ>(outerPolygon.getVertexCollection());
-		
+
 		List<SimplePolygonXZ> filteredHoles = new ArrayList<SimplePolygonXZ>();
-		
+
 		for (SimplePolygonXZ hole : holes) {
-			
+
 			if (disjoint(hole.getVertexCollection(), knownVectors)) {
 				filteredHoles.add(hole);
 				knownVectors.addAll(hole.getVertices());
 			}
-			
+
 		}
-		
+
 		//TODO filter segments
-		
+
 		Set<VectorXZ> filteredPoints = new HashSet<VectorXZ>(points);
 		filteredPoints.removeAll(knownVectors);
-		
+
 		// remove points that are *almost* the same as a known vector
 		Iterator<VectorXZ> filteredPointsIterator = filteredPoints.iterator();
 		while (filteredPointsIterator.hasNext()) {
@@ -76,11 +76,11 @@ public final class Poly2TriTriangulationUtil {
 				}
 			}
 		}
-		
+
 		/* run the actual triangulation */
-		
+
 		return triangulateFast(outerPolygon, filteredHoles, segments, filteredPoints);
-		
+
 	}
 
 	/**
@@ -94,47 +94,47 @@ public final class Poly2TriTriangulationUtil {
 			Collection<SimplePolygonXZ> holes,
 			Collection<LineSegmentXZ> segments,
 			Collection<VectorXZ> points) throws TriangulationException {
-		
+
 		/* prepare data for triangulation */
-		
+
 		Polygon triangulationPolygon = toPolygon(outerPolygon);
-		
+
 		for (SimplePolygonXZ hole : holes) {
 			triangulationPolygon.addHole(toPolygon(hole));
 		}
-		
+
 		//TODO collect points and constraints from segments
-		
+
 		for (VectorXZ p : points) {
 			triangulationPolygon.addSteinerPoint(toTPoint(p));
 		}
-		
+
 		try {
-			
+
 			/* run triangulation */
-			
+
 			Poly2Tri.triangulate(triangulationPolygon);
-			
+
 			/* convert the result to the desired format */
-			
+
 			List<DelaunayTriangle> triangles = triangulationPolygon.getTriangles();
-			
+
 			List<TriangleXZ> result = new ArrayList<TriangleXZ>(triangles.size());
-			
+
 			for (DelaunayTriangle triangle : triangles) {
 				result.add(toTriangleXZ(triangle));
 			}
-				
+
 			return result;
-			
+
 		} catch (Exception e) {
 			throw new TriangulationException(e);
 		} catch (StackOverflowError e) {
 			throw new TriangulationException(e);
 		}
-		
+
 	}
-	
+
 	private static final TPoint toTPoint(VectorXZ v) {
 		return new TPoint(v.x, v.z);
 	}
@@ -144,24 +144,24 @@ public final class Poly2TriTriangulationUtil {
 	}
 
 	private static final Polygon toPolygon(SimplePolygonXZ polygon) {
-				
+
 		List<PolygonPoint> points = new ArrayList<PolygonPoint>(polygon.size());
-		
+
 		for (VectorXZ v : polygon.getVertices()) {
 			points.add(new PolygonPoint(v.x, v.z));
 		}
-		
+
 		return new Polygon(points);
-		
+
 	}
 
 	private static final TriangleXZ toTriangleXZ(DelaunayTriangle triangle) {
-		
+
 		return new TriangleXZ(
 				toVectorXZ(triangle.points[0]),
 				toVectorXZ(triangle.points[1]),
 				toVectorXZ(triangle.points[2]));
-		
+
 	}
-	
+
 }

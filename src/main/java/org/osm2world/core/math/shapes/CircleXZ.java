@@ -10,82 +10,82 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 public class CircleXZ implements SimpleClosedShapeXZ {
-	
+
 	/** default number of points used to approximate the circle with a polygon */
 	private static final int NUM_POINTS = 36;
-	
+
 	private final VectorXZ center;
 	private final double radius;
-	
+
 	public CircleXZ(VectorXZ center, double radius) {
 		this.center = center;
 		this.radius = radius;
 	}
-	
+
 	public VectorXZ getCenter() {
 		return center;
 	}
-	
+
 	public double getRadius() {
 		return radius;
 	}
-	
+
 	public List<VectorXZ> getVertexList(int numPoints) {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>(numPoints + 1);
-		
+
 		double angleInterval = 2 * PI / numPoints;
-		
+
 		for (int i = 0; i < numPoints; i++) {
-			
+
 			double angle = -i * angleInterval;
 			double sin = Math.sin(angle);
 			double cos = Math.cos(angle);
-			
+
 			result.add(center.add(new VectorXZ(radius * sin, radius * cos)));
-			
+
 		}
-		
+
 		result.add(result.get(0));
-		
+
 		return result;
-		
+
 	}
 
 	@Override
 	public List<VectorXZ> getVertexList() {
 
 		return getVertexList(NUM_POINTS);
-		
+
 	}
 
 	@Override
 	public Collection<TriangleXZ> getTriangulation() {
-		
+
 		List<VectorXZ> vertices = getVertexList();
 
 		List<TriangleXZ> result = new ArrayList<TriangleXZ>(vertices.size() - 1);
-		
+
 		for (int i = 0; i + 1 < vertices.size(); i++) {
 			result.add(new TriangleXZ(center, vertices.get(i), vertices.get(i+1)));
 		}
-		
+
 		return result;
-		
+
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		
+
 		if (other instanceof CircleXZ) {
 			return center.equals(((CircleXZ)other).center)
 				&& radius == ((CircleXZ)other).radius;
 		} else {
 			return false;
 		}
-		
+
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -101,5 +101,5 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 	public String toString() {
 		return "CircleXZ{center=" + center + ", radius=" + radius + "}";
 	}
-	
+
 }

@@ -37,7 +37,7 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
 
 /**
  * adds tunnels to the world.
- * 
+ *
  * Needs to be applied <em>after</em> all the modules that generate
  * whatever runs through the tunnels.
  */
@@ -56,53 +56,53 @@ public class TunnelModule extends AbstractModule {
 			return isTunnel(((MapAreaSegment)segment).getArea().getTags());
 		}
 	}
-	
+
 	@Override
 	protected void applyToWaySegment(MapWaySegment segment) {
-		
+
 		WaySegmentWorldObject primaryRepresentation =
 			segment.getPrimaryRepresentation();
-		
+
 		if (primaryRepresentation instanceof AbstractNetworkWaySegmentWorldObject
 				&& isTunnel(segment)) {
-			
+
 			segment.addRepresentation(new Tunnel(segment,
 					(AbstractNetworkWaySegmentWorldObject) primaryRepresentation));
-			
+
 		}
-		
+
 	}
-	
+
 	@Override
 	protected void applyToNode(MapNode node) {
-		
+
 		/* entrances */
-		
+
 		if (node.getConnectedWaySegments().size() == 2) {
-			
+
 			MapWaySegment segmentA = node.getConnectedWaySegments().get(0);
 			MapWaySegment segmentB = node.getConnectedWaySegments().get(1);
-			
+
 			if (isTunnel(segmentA) && !isTunnel(segmentB)
 					&& segmentA.getPrimaryRepresentation() instanceof AbstractNetworkWaySegmentWorldObject) {
-				
+
 				node.addRepresentation(new TunnelEntrance(node,
 						(AbstractNetworkWaySegmentWorldObject)
 						segmentA.getPrimaryRepresentation()));
-				
+
 			} else if (isTunnel(segmentB) && !isTunnel(segmentA)
 					&& segmentB.getPrimaryRepresentation() instanceof AbstractNetworkWaySegmentWorldObject) {
-				
+
 				node.addRepresentation(new TunnelEntrance(node,
 						(AbstractNetworkWaySegmentWorldObject)
 						segmentB.getPrimaryRepresentation()));
-				
+
 			}
-			
+
 		}
-		
+
 		/* tunnel nodes and junctions */
-		
+
 		boolean onlyTunnelConnected = true;
 		for (MapWaySegment segment : node.getConnectedWaySegments()) {
 			if (!isTunnel(segment)) {
@@ -110,7 +110,7 @@ public class TunnelModule extends AbstractModule {
 				break;
 			}
 		}
-			
+
 		if (onlyTunnelConnected) {
 
 			if (node.getPrimaryRepresentation() instanceof VisibleConnectorNodeWorldObject) {
@@ -119,15 +119,15 @@ public class TunnelModule extends AbstractModule {
 				node.addRepresentation(new TunnelJunction(node,
 						(JunctionNodeWorldObject) node.getPrimaryRepresentation()));
 			}
-			
+
 		}
 
-		
+
 	}
-	
+
 	public static class Tunnel extends BridgeOrTunnel
 			implements RenderableToAllTargets {
-		
+
 		public Tunnel(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
 			super(segment, primaryWO);
@@ -137,47 +137,47 @@ public class TunnelModule extends AbstractModule {
 		public GroundState getGroundState() {
 			return GroundState.BELOW;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			List<VectorXYZ> leftOutline = primaryRep.getOutline(false);
 			List<VectorXYZ> rightOutline = primaryRep.getOutline(true);
-			
+
 			List<VectorXYZ> aboveLeftOutline =
 				new ArrayList<VectorXYZ>(leftOutline.size());
 			List<VectorXYZ> aboveRightOutline =
 				new ArrayList<VectorXYZ>(rightOutline.size());
-			
+
 			for (int i=0; i < leftOutline.size(); i++) {
-			
+
 				VectorXYZ clearingOffset = VectorXYZ.Y_UNIT.mult(
 						10); //TODO restore clearing
 //						primaryRep.getClearingAbove(leftOutline.get(i).xz()));
-				
+
 				aboveLeftOutline.add(leftOutline.get(i).add(clearingOffset));
 				aboveRightOutline.add(rightOutline.get(i).add(clearingOffset));
-				
+
 			}
-			
+
 			List<VectorXYZ> strip1 = createTriangleStripBetween(
 					rightOutline, aboveRightOutline);
 			List<VectorXYZ> strip2 = createTriangleStripBetween(
 					aboveRightOutline, aboveLeftOutline);
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					aboveLeftOutline, leftOutline);
-			
+
 			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip1, null);
 			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip2, null);
 			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip3, null);
-					
+
 		}
-		
+
 	}
-	
+
 	public static class TunnelEntrance implements NodeWorldObject,
 		TerrainBoundaryWorldObject {
-		
+
 		private final MapNode node;
 		private final AbstractNetworkWaySegmentWorldObject tunnelContent;
 
@@ -187,55 +187,55 @@ public class TunnelModule extends AbstractModule {
 		 * {@link #upperRight}, {@link #upperCenter} and {@link #upperLeft}.
 		 */
 		private SimplePolygonXZ outline;
-		
+
 		private VectorXZ lowerLeft;
 		private VectorXZ lowerCenter;
 		private VectorXZ lowerRight;
 		private VectorXZ upperLeft;
 		private VectorXZ upperCenter;
 		private VectorXZ upperRight;
-		
+
 		private EleConnectorGroup connectors;
-		
+
 		public TunnelEntrance(MapNode node,
 				AbstractNetworkWaySegmentWorldObject tunnelContent) {
-			
+
 			this.node = node;
 			this.tunnelContent = tunnelContent;
-			
+
 		}
-		
+
 		/**
 		 * creates outline as "ring" around the entrance
 		 */
 		private void calculateOutlineIfNecessary() {
-			
+
 			if (outline != null) return;
 
 			lowerCenter = node.getPos();
-			
+
 			VectorXZ toRight = tunnelContent.getStartCutVector()
 					.mult(tunnelContent.getWidth() * 0.5f);
-			
+
 			lowerLeft = lowerCenter.subtract(toRight);
 			lowerRight = lowerCenter.add(toRight);
-			
+
 			VectorXZ toBack = tunnelContent.segment.getDirection().mult(0.1);
 			if (tunnelContent.segment.getEndNode() == node) {
 				toBack = toBack.invert();
 			}
-			
+
 			upperLeft = lowerLeft.add(toBack);
 			upperCenter = lowerCenter.add(toBack);
 			upperRight = lowerRight.add(toBack);
-			
+
 			outline = new SimplePolygonXZ(asList(
 					lowerLeft, lowerCenter, lowerRight,
 					upperRight, upperCenter, upperLeft,
 					lowerLeft));
-			
+
 		}
-		
+
 		@Override
 		public MapNode getPrimaryMapElement() {
 			return node;
@@ -245,12 +245,12 @@ public class TunnelModule extends AbstractModule {
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
-			
+
 			calculateOutlineIfNecessary();
-			
+
 			if (connectors == null) {
 				connectors = new EleConnectorGroup();
 				connectors.add(new EleConnector(lowerLeft, node, ON));
@@ -260,19 +260,19 @@ public class TunnelModule extends AbstractModule {
 				connectors.add(new EleConnector(upperCenter, null, ON));
 				connectors.add(new EleConnector(upperRight, null, ON));
 			}
-			
+
 			return connectors;
-			
+
 		}
-		
+
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
-			
+
 			enforcer.requireVerticalDistance(
 					EXACT,
 					10,
 					connectors.getConnector(upperLeft), connectors.getConnector(lowerLeft));
-			
+
 			enforcer.requireVerticalDistance(
 					EXACT,
 					10,
@@ -282,76 +282,76 @@ public class TunnelModule extends AbstractModule {
 					EXACT,
 					10,
 					connectors.getConnector(upperRight), connectors.getConnector(lowerRight));
-			
+
 			//TODO restore original clearing
 			//tunnelPrimaryRep.getClearingAbove(node.getPos()));
-			
+
 		}
-		
+
 		@Override
 		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-			
+
 			calculateOutlineIfNecessary();
-			
+
 			return new AxisAlignedBoundingBoxXZ(getOutlinePolygon().getVertices());
-			
+
 		}
-		
+
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
-			
+
 			calculateOutlineIfNecessary();
-			
+
 			return outline;
-			
+
 		}
-		
+
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
-			
+
 			calculateOutlineIfNecessary();
-			
+
 			return connectors.getPosXYZ(getOutlinePolygonXZ());
-			
+
 		}
-		
+
 	}
-	
+
 	public static class TunnelJunction implements NodeWorldObject,
 		RenderableToAllTargets {
-	
+
 		private final MapNode node;
 		private final JunctionNodeWorldObject primaryRep;
-		
+
 		public TunnelJunction(MapNode node, JunctionNodeWorldObject primaryRep) {
 			this.node = node;
 			this.primaryRep = primaryRep;
 		}
-		
+
 		@Override
 		public MapNode getPrimaryMapElement() {
 			return node;
 		}
-	
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.BELOW;
 		}
-		
+
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
 			// TODO EleConnectors for tunnels
 			return emptyList();
 		}
-		
+
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			//TODO port to new elevation model
-			
+
 //			List<VectorXYZ> topOutline = new ArrayList<VectorXYZ>();
 //
 //			int segCount = node.getConnectedSegments().size();
@@ -416,7 +416,7 @@ public class TunnelModule extends AbstractModule {
 //			}
 //
 //		}
-		
+
 	}
-	
+
 }

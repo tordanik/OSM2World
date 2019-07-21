@@ -9,10 +9,10 @@ public class LeastSquaresInterpolatorDebugView extends TerrainInterpolatorDebugV
 	public LeastSquaresInterpolatorDebugView(RenderOptions renderOptions) {
 		super(renderOptions);
 	}
-	
+
 	@Override
 	protected LeastSquaresInterpolator buildInterpolator() {
 		return new LeastSquaresInterpolator();
 	}
-	
+
 }

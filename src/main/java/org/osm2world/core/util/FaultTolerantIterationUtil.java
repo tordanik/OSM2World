@@ -7,14 +7,14 @@ package org.osm2world.core.util;
 final public class FaultTolerantIterationUtil {
 
 	private FaultTolerantIterationUtil() { }
-	
+
 	public static interface Operation<T> {
 		public void perform(T input);
 	}
-	
+
 	public static final <T> void iterate(
 			Iterable<? extends T> collection, Operation<T> operation) {
-		
+
 		for (T input : collection) {
 			try {
 				operation.perform(input);
@@ -26,7 +26,7 @@ final public class FaultTolerantIterationUtil {
 						+ input);
 			}
 		}
-		
+
 	}
-	
+
 }

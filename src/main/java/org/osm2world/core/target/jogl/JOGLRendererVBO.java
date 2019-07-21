@@ -21,7 +21,7 @@ import org.osm2world.core.target.common.rendering.Projection;
 
 /**
  * Base class for renderer that use vertex buffer objects (VBO) to speed up the process.
- * 
+ *
  * If you don't need the renderer anymore, it's recommended to manually call
  * {@link #freeResources()} to delete the VBOs and other resources.
  */
@@ -31,11 +31,11 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 
 	/** VBOs with static, non-alphablended geometry for each material */
 	protected List<VBOData<?>> vbos = new ArrayList<VBOData<?>>();
-	
+
 	/** alphablended primitives, need to be sorted by distance from camera */
 	protected List<PrimitiveWithMaterial> transparentPrimitives =
 			new ArrayList<PrimitiveWithMaterial>();
-	
+
 	/**
 	 * the camera direction that was the basis for the previous sorting
 	 * of {@link #transparentPrimitives}.
@@ -43,17 +43,17 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	private CardinalDirection currentPrimitiveSortDirection = null;
 
 	protected static final class PrimitiveWithMaterial {
-		
+
 		public final Primitive primitive;
 		public final Material material;
 		public final VBOData<?> vbo;
-		
+
 		private PrimitiveWithMaterial(Primitive primitive, Material material, VBOData<?>vbo) {
 			this.primitive = primitive;
 			this.material = material;
 			this.vbo = vbo;
 		}
-		
+
 	}
 
 	/**
@@ -61,76 +61,76 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	 * in the vertex buffer layout appropriate for a given material.
 	 */
 	public static int getValuesPerVertex(Material material) {
-		
+
 		int numValues = 6; // vertex coordinates and normals
-		
+
 		if (material.getTextureDataList() != null) {
 			numValues += 2 * material.getTextureDataList().size();
 		}
 		if (material.hasBumpMap()) {
 			numValues += 4; // tangent vectors are 4D
 		}
-		
+
 		return numValues;
-		
+
 	}
-	
+
 	JOGLRendererVBO(JOGLTextureManager textureManager) {
 		super(textureManager);
 	}
-	
+
 	/**
 	 * Create the VBOs from a {@link PrimitiveBuffer}.
 	 * @param primitiveBuffer the source for the VBOs
 	 */
 	protected void init(PrimitiveBuffer primitiveBuffer) {
-		
+
 		for (Material material : primitiveBuffer.getMaterials()) {
-			
+
 			if (material.getTransparency() == Transparency.TRUE) {
-				
+
 				for (Primitive primitive : primitiveBuffer.getPrimitives(material)) {
 					transparentPrimitives.add(new PrimitiveWithMaterial(
 							primitive, material, this.createVBOData(
 									textureManager, material,
 									Arrays.asList(primitive))));
 				}
-				
+
 			} else {
-				
+
 				Collection<Primitive> primitives = primitiveBuffer.getPrimitives(material);
 				vbos.add(this.createVBOData(textureManager, material, primitives));
-				
+
 			}
-			
+
 		}
-		
+
 	}
-	
+
 	/**
 	 * Sort all transparent primitives back to front relative to the camera.
 	 * The projection can be used to speed up sorting if it is orthographic.
 	 */
 	protected void sortPrimitivesBackToFront(final Camera camera,
 			final Projection projection) {
-		
+
 		if (projection.isOrthographic() &&
 				abs(camera.getViewDirection().xz().angle() % (PI/2)) < 0.01 ) {
-			
+
 			/* faster sorting for cardinal directions */
-			
+
 			CardinalDirection closestCardinal = closestCardinal(camera.getViewDirection().xz().angle());
-			
+
 			if (closestCardinal.isOppositeOf(currentPrimitiveSortDirection)) {
-				
+
 				Collections.reverse(transparentPrimitives);
-				
+
 			} else if (closestCardinal != currentPrimitiveSortDirection) {
-				
+
 				Comparator<PrimitiveWithMaterial> comparator = null;
-				
+
 				switch(closestCardinal) {
-				
+
 				case N:
 					comparator = new Comparator<PrimitiveWithMaterial>() {
 						@Override
@@ -139,7 +139,7 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 						}
 					};
 					break;
-					
+
 				case E:
 					comparator = new Comparator<PrimitiveWithMaterial>() {
 						@Override
@@ -148,7 +148,7 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 						}
 					};
 					break;
-					
+
 				case S:
 					comparator = new Comparator<PrimitiveWithMaterial>() {
 						@Override
@@ -157,7 +157,7 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 						}
 					};
 					break;
-					
+
 				case W:
 					comparator = new Comparator<PrimitiveWithMaterial>() {
 						@Override
@@ -166,19 +166,19 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 						}
 					};
 					break;
-					
+
 				}
-				
+
 				Collections.sort(transparentPrimitives, comparator);
-				
+
 			}
-			
+
 			currentPrimitiveSortDirection = closestCardinal;
-			
+
 		} else {
-			
+
 			/* sort based on distance to camera */
-			
+
 			Collections.sort(transparentPrimitives, new Comparator<PrimitiveWithMaterial>() {
 				@Override
 				public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
@@ -187,47 +187,47 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 							distanceToCameraSq(camera, p1));
 				}
 			});
-			
+
 			currentPrimitiveSortDirection = null;
-			
+
 		}
-		
+
 	}
-	
+
 	private double distanceToCameraSq(Camera camera, PrimitiveWithMaterial p) {
 		return primitivePos(p).distanceToSquared(camera.getPos());
 	}
-	
+
 	private VectorXYZ primitivePos(PrimitiveWithMaterial p) {
-		
+
 		double sumX = 0, sumY = 0, sumZ = 0;
-		
+
 		for (VectorXYZ v : p.primitive.vertices) {
 			sumX += v.x;
 			sumY += v.y;
 			sumZ += v.z;
 		}
-		
+
 		return new VectorXYZ(sumX / p.primitive.vertices.size(),
 				sumY / p.primitive.vertices.size(),
 				sumZ / p.primitive.vertices.size());
-		
+
 	}
-	
+
 	@Override
 	public void freeResources() {
-		
+
 		if (vbos != null) {
 			for (VBOData<?> vbo : vbos) {
 				vbo.delete();
 			}
 			vbos = null;
 		}
-		
+
 		super.freeResources();
-		
+
 	}
-	
+
 	/**
 	 * Create a new vertex buffer object for a bunch of primitives with the same material.
 	 * @param textureManager the texture manager used if the material contains texture layers.

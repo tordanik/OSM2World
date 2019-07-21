@@ -105,7 +105,7 @@ public class ShaderManager {
 
 		gl.glShaderSource(fragShader, 1, fragCode, null);
 		gl.glCompileShader(fragShader);
-		
+
 		// acquire compilation status
 		IntBuffer shaderStatus = IntBuffer.allocate(1);
 		gl.glGetShaderiv(fragShader, GL3.GL_COMPILE_STATUS, shaderStatus);
@@ -120,7 +120,7 @@ public class ShaderManager {
 
 		return fragShader;
 	}
-	
+
 	/**
 	 * Prints the shader log to System.out
 	 */
@@ -141,7 +141,7 @@ public class ShaderManager {
 		}
 		return false;
 	 }
-	
+
 	/**
 	 * Reads the program log into a String.
 	 * @param prog handle to the shader program
@@ -163,7 +163,7 @@ public class ShaderManager {
 		}
 		return "";
 	}
-	
+
 	/**
 	 * Prints the program log to System.out
 	 */
@@ -184,14 +184,14 @@ public class ShaderManager {
 		}
 		return false;
 	 }
-	
+
 	/**
 	 * Save a depth buffer texture to a file as png.
 	 */
 	public static void saveDepthBuffer(File file, int depthBufferHandle, int width, int height, GL2GL3 gl) {
 		// create buffer to store image
-		FloatBuffer buffer=FloatBuffer.allocate(width*height);//ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4).asFloatBuffer(); 
-		
+		FloatBuffer buffer=FloatBuffer.allocate(width*height);//ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4).asFloatBuffer();
+
 		// load image in buffer
 		gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
 		gl.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT, GL.GL_FLOAT, buffer);
@@ -199,7 +199,7 @@ public class ShaderManager {
 
 		// create buffered image
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-		
+
 		// copy data to buffered image
 		WritableRaster wr = img.getRaster();
 		for (int col=0; col<img.getWidth(); col++) {
@@ -209,7 +209,7 @@ public class ShaderManager {
 				wr.setPixel(col, height-1-row, new int[] {v});
 			}
 		}
-		
+
 		// save to file
 		try {
 			ImageIO.write(img, "png", file);
@@ -218,7 +218,7 @@ public class ShaderManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Tries to load the shader file from classpath. If unsuccessful tries to
 	 * load from resources folder in filesystem. If also unsuccessful return

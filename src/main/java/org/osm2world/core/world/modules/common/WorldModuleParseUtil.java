@@ -28,7 +28,7 @@ public class WorldModuleParseUtil {
 		}
 		return fallback;
 	}
-	
+
 	/**
 	 * retrieves width using (in this priority order)
 	 * width tag, est_width tag, defaultValue parameter
@@ -60,25 +60,25 @@ public class WorldModuleParseUtil {
 	public static final float parseClearing(TagGroup tags, float defaultValue) {
 		return parseMeasure(tags, defaultValue, "maxheight:physical", "maxheight");
 	}
-	
+
 	/**
 	 * parses the direction tag and returns the direction
 	 * (or a default value) as radians
 	 */
 	public static final double parseDirection(TagGroup tags, double defaultValue) {
-		
+
 		Float directionAngle = null;
-		
+
 		if (tags.containsKey("direction")) {
 			directionAngle = parseAngle(tags.getValue("direction"));
 		}
-		
+
 		if (directionAngle != null) {
 			return Math.toRadians(directionAngle);
 		} else {
 			return defaultValue;
 		}
-		
+
 	}
 
 	public static final int parseInt(TagGroup tags, int defaultValue, String key) {
@@ -90,7 +90,7 @@ public class WorldModuleParseUtil {
 		}
 		return defaultValue;
 	}
-	
+
 	private static final float parseMeasure(TagGroup tags, float defaultValue,
 			String... keys) {
 
@@ -102,10 +102,10 @@ public class WorldModuleParseUtil {
 				}
 			}
 		}
-		
+
 		return defaultValue;
-		
+
 	}
-	
-	
+
+
 }

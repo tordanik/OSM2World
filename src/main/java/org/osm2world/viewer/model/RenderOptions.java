@@ -15,19 +15,19 @@ public class RenderOptions {
 
 	public Camera camera = null;
 	public Projection projection = Defaults.PERSPECTIVE_PROJECTION;
-	
+
 	public Set<DebugView> activeDebugViews = new HashSet<DebugView>();
-	
+
 	private boolean showGrid = true;
 	private boolean showTerrain = true;
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
-	
+
 	Class<? extends TerrainInterpolator> interpolatorClass =
 			LeastSquaresInterpolator.class;
 	Class<? extends EleConstraintEnforcer> enforcerClass =
 			NoneEleConstraintEnforcer.class;
-	
+
 	public boolean isShowGrid() {
 		return showGrid;
 	}
@@ -52,21 +52,21 @@ public class RenderOptions {
 	public void setBackfaceCulling(boolean backfaceCulling) {
 		this.backfaceCulling = backfaceCulling;
 	}
-	
+
 	public Class<? extends TerrainInterpolator> getInterpolatorClass() {
 		return interpolatorClass;
 	}
-	
+
 	public void setInterpolatorClass(Class<? extends TerrainInterpolator> interpolatorClass) {
 		this.interpolatorClass = interpolatorClass;
 	}
-	
+
 	public Class<? extends EleConstraintEnforcer> getEnforcerClass() {
 		return enforcerClass;
 	}
-	
+
 	public void setEnforcerClass(Class<? extends EleConstraintEnforcer> enforcerClass) {
 		this.enforcerClass = enforcerClass;
 	}
-		
+
 }

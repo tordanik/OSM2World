@@ -10,15 +10,15 @@ import org.osm2world.core.math.VectorXZ;
  * the origin. 1 meter distance is roughly represented by 1 internal unit.
  */
 public class MetricMapProjection extends OriginMapProjection {
-	
+
 	private double originX;
 	private double originY;
 	private double scaleFactor;
-		
+
 	public VectorXZ calcPos(double lat, double lon) {
-		
+
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
-		
+
 		double x = lonToX(lon) * scaleFactor - originX;
 		double y = latToY(lat) * scaleFactor - originY;
 
@@ -36,20 +36,20 @@ public class MetricMapProjection extends OriginMapProjection {
 
 	@Override
 	public double calcLat(VectorXZ pos) {
-		
+
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
-		
+
 		return yToLat((pos.z + originY) / scaleFactor);
-		
+
 	}
 
 	@Override
 	public double calcLon(VectorXZ pos) {
-		
+
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
-		
+
 		return xToLon((pos.x + originX) / scaleFactor);
-		
+
 	}
 
 	@Override

@@ -9,7 +9,7 @@ public interface RenderableToPOVRay extends Renderable {
 	 * This is called before the renderTo calls.
 	 */
 	public void addDeclarationsTo(POVRayTarget target);
-	
+
 	public void renderTo(POVRayTarget target);
-		
+
 }

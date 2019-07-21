@@ -29,7 +29,7 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 	protected MapElement getElement() {
 		return line;
 	}
-	
+
 	//TODO: is this needed?
 	/** sort pointsWithEle by ascending (squared) distance from startPos */
 	private void sortPointsWithEle() {
@@ -43,7 +43,7 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 			}
 		});
 	}
-	
+
 	/*
 	 * methods providing access to the results
 	 */
@@ -56,13 +56,13 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 	 */
 	@Override
 	public List<VectorXYZ> getPointsWithEle() {
-		
+
 		if (pointsWithEle == null) {
 			throw new IllegalStateException("elevations have not been calculated yet");
 		} else if (pointsWithEle.size() < 2) {
 			throw new IllegalStateException("a line must have at least two points with elevation");
 		}
-		
+
 		return pointsWithEle;
 	}
 
@@ -74,11 +74,11 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 		} else if (pointsWithEle.size() < 2) {
 			throw new IllegalStateException("a line must have at least two points with elevation");
 		}
-		
+
 		//TODO: start pos isn't identical with first pointWithEle! can this cause problems?
-		
+
 		VectorXZ startPos = line.getPrimaryRepresentation().getStartPosition();
-		
+
 		final double posDistance = pos.subtract(startPos).length();
 
 		// find points with known elevation directly before and after pos
@@ -112,7 +112,7 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 		}
 
 		// interpolate between points before and after
-		
+
 		double influenceOfAfter = (posDistance - beforeDistance)
 				/ (afterDistance - beforeDistance);
 
@@ -121,19 +121,19 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 		return ele;
 
 	}
-	
+
 	/**
 	 * adds a result of {@link ElevationCalculator}.
 	 * Must be called at least twice (start and end node)
 	 */
 	public void addPointWithEle(VectorXYZ pointWithEle) {
-		
+
 		if (pointsWithEle == null) {
 			pointsWithEle = new ArrayList<VectorXYZ>();
 		}
-		
+
 		this.pointsWithEle.add(pointWithEle);
-		
+
 		sortPointsWithEle(); //TODO: (performance) don't do this every time; insert in the right place instead
 	}
 
@@ -160,5 +160,5 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 		}
 		return minEle;
 	}
-	
+
 }

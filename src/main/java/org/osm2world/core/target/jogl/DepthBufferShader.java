@@ -29,25 +29,25 @@ import com.jogamp.opengl.util.texture.Texture;
 public class DepthBufferShader extends AbstractPrimitiveShader {
 
 	public static final boolean USE_TRANSPARENCY = true;
-	
+
 	private int modelViewProjectionMatrixID;
 	private int vertexPositionID;
 	private int[] vertexTexCoordID = new int[DefaultShader.MAX_TEXTURE_LAYERS];
-	
+
 	public DepthBufferShader(GL3 gl) {
 		super(gl, "/shaders/shadowmap");
-		
+
 		// get indices of named attributes
 		vertexPositionID = gl.glGetAttribLocation(shaderProgram, "VertexPosition");
 		for (int i=0; i<DefaultShader.MAX_TEXTURE_LAYERS; i++)
 			vertexTexCoordID[i] = gl.glGetAttribLocation(shaderProgram, "VertexTexCoord"+i+"");
-		
+
 		// get indices of uniform variables
 		modelViewProjectionMatrixID = gl.glGetUniformLocation(shaderProgram, "ModelViewProjectionMatrix");
-		
+
 		this.validateShader();
 	}
-	
+
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
 	 * @param pmvMatrix
@@ -57,12 +57,12 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 	}
-	
+
 	@Override
 	public int getVertexPositionID() {
 		return vertexPositionID;
 	}
-	
+
 	/**
 	 * Returns the id to use to bind the ModelViewProjectionMatrix attribute.
 	 */
@@ -72,11 +72,11 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
-		
+
 		if (!USE_TRANSPARENCY) {
 			return true;
 		}
-		
+
 		/*
 		 * only set textures (needed for transparency)
 		 */
@@ -84,7 +84,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
 		}
-		
+
 		/* set textures and associated parameters */
 		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useAlphaTreshold"), material.getTransparency() == Transparency.BINARY ? 1 : 0);
 		if (material.getTransparency() == Transparency.BINARY) {
@@ -104,28 +104,28 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 				Texture texture = textureManager.getTextureForFile(textureData.file);
 
 				texture.bind(gl);
-		        
+
 				/* wrapping behavior */
-		        
+
 				int wrap = 0;
-				
+
 				switch (textureData.wrap) {
 				case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
 				case REPEAT: wrap = GL_REPEAT; break;
 				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
 				}
-				
+
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-		        
-		        
+
+
 		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
-		        	
+
 		        	/* TODO: make the RGB configurable -  for some reason,
 		        	 * it shows up in lowzoom even if fully transparent */
 		        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
 		        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
-		        	
+
 		        }
 
 		        int loc = gl.glGetUniformLocation(shaderProgram, "Tex["+i+"]");
@@ -137,7 +137,7 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
 	    	}
 	    }
-	   
+
 	    return true;
 	}
 
@@ -151,11 +151,11 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
-	
+
 	static final int getGLTextureNumber(int textureNumber) {
 		return textureNumber + 1;
 	}
-	
+
 	@Override
 	public int getVertexNormalID() {
 		return -1; // unused

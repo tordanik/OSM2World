@@ -23,27 +23,27 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 		this.maxY = maxY;
 		this.maxZ = maxZ;
 	}
-	
+
 	/**
 	 * @param boundedPoints  must contain at least one point
 	 */
 	public AxisAlignedBoundingBoxXYZ(Collection<? extends Vector3D> boundedPoints) {
-		
+
 		assert (!boundedPoints.isEmpty());
-		
+
 		double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
 		double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
-		
+
 		for (Vector3D p : boundedPoints) {
 			minX = min(minX, p.getX()); minY = min(minY, p.getY()); minZ = min(minZ, p.getZ());
 			maxX = max(maxX, p.getX()); maxY = max(maxY, p.getY()); maxZ = max(maxZ, p.getZ());
 		}
-		
+
 		this.minX = minX; this.minY = minY; this.minZ = minZ;
 		this.maxX = maxX; this.maxY = maxY; this.maxZ = maxZ;
-		
+
 	}
-	
+
 	public double sizeX() { return maxX - minX; }
 	public double sizeY() { return maxY - minY; }
 	public double sizeZ() { return maxZ - minZ; }
@@ -51,7 +51,7 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 	public VectorXYZ center() {
 		return new VectorXYZ(minX + sizeX()/2, minY + sizeY()/2, minZ + sizeZ()/2);
 	}
-	
+
 	public Collection<VectorXYZ> corners() {
 		return Arrays.asList(new VectorXYZ[]{new VectorXYZ(minX, minY, minZ),
 				new VectorXYZ(minX, minY, maxZ),
@@ -62,7 +62,7 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 				new VectorXYZ(maxX, maxY, minZ),
 				new VectorXYZ(maxX, maxY, maxZ)});
 	}
-	
+
 	/**
 	 * returns a bounding box that is a bit larger than this one
 	 */
@@ -97,10 +97,10 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 	public boolean contains(VectorXYZ v) {
 		return v.x >= minX && v.x <= maxX && v.y >= minY && v.y <= maxY && v.z >= minZ && v.z <= maxZ;
 	}
-	
+
 	public static final AxisAlignedBoundingBoxXYZ union(
 			AxisAlignedBoundingBoxXYZ box1, AxisAlignedBoundingBoxXYZ box2) {
-		
+
 		return new AxisAlignedBoundingBoxXYZ(
 				Math.min(box1.minX, box2.minX),
 				Math.min(box1.minY, box2.minY),
@@ -108,12 +108,12 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 				Math.max(box1.maxX, box2.maxX),
 				Math.max(box1.maxY, box2.maxY),
 				Math.max(box1.maxZ, box2.maxZ));
-		
+
 	}
-	
+
 	public static final AxisAlignedBoundingBoxXYZ intersect(
 			AxisAlignedBoundingBoxXYZ box1, AxisAlignedBoundingBoxXYZ box2) {
-		
+
 		return new AxisAlignedBoundingBoxXYZ(
 				Math.max(box1.minX, box2.minX),
 				Math.max(box1.minY, box2.minY),
@@ -121,9 +121,9 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 				Math.min(box1.maxX, box2.maxX),
 				Math.min(box1.maxY, box2.maxY),
 				Math.min(box1.maxZ, box2.maxZ));
-		
+
 	}
-	
+
 	@Override
 	public AxisAlignedBoundingBoxXYZ clone() {
 		try {
@@ -132,5 +132,5 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 			throw new AssertionError("unexpected super.clone behavior");
 		}
 	}
-	
+
 }

@@ -12,10 +12,10 @@ import org.osm2world.core.map_data.data.MapSegment;
  * Subclasses determine the tag(s) to be used for this purpose.
  */
 public abstract class TagElevationCalculator implements ElevationCalculator {
-	
+
 	Double terrainElevation;
 	boolean enableUnknownEleWarning;
-	
+
 	/**
 	 * @param terrainElevation  elevation for the terrain
 	 */
@@ -24,11 +24,11 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 		this.terrainElevation = terrainElevation;
 		this.enableUnknownEleWarning = enableUnknownEleWarning;
 	}
-	
+
 	public TagElevationCalculator() {
 		this(0.0, false);
 	}
-	
+
 	@Override
 	public void calculateElevations(MapData mapData,
 			TerrainElevationData eleData) {
@@ -169,23 +169,23 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 //			area.setElevationProfile(profile);
 //
 //		}
-		
+
 	}
-	
+
 	/**
 	 * a sequence of {@link MapSegment}s
 	 * that leads to a {@link MapNode} at the end
 	 */
 	private static class Connection {
-		
+
 		public final List<MapSegment> segmentSequence;
 		public final MapNode endNode;
-		
+
 		public Connection(List<MapSegment> segmentSequence, MapNode endNode) {
 			this.segmentSequence = segmentSequence;
 			this.endNode = endNode;
 		}
-		
+
 		public double getLength() {
 			double distance = 0.0;
 			for (MapSegment s : segmentSequence) {
@@ -193,9 +193,9 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 			}
 			return distance;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Tries to find the segment sequence to a node with elevation information.
 	 * More precisely, this follows the sequence of segments started by
@@ -241,10 +241,10 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 //		}
 //
 //	}
-	
+
 	/**
 	 * returns the elevation as set explicitly by the tags
-	 * 
+	 *
 	 * @return  elevation; null if the tags don't define the elevation
 	 */
 	protected abstract Double getEleForTags(TagGroup tags);

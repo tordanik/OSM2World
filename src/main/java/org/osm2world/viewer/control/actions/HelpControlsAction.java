@@ -6,13 +6,13 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
 public class HelpControlsAction extends AbstractAction {
-	
+
 	private static final long serialVersionUID = 9195787581575616092L; //generated serialVersionUID
 
 	public HelpControlsAction() {
 		super("Controls");
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		JOptionPane.showMessageDialog(null, "OSM2World GUI Controls:\n"
@@ -22,5 +22,5 @@ public class HelpControlsAction extends AbstractAction {
 						" or away from the ground\n",
 				"About OSM2World", JOptionPane.INFORMATION_MESSAGE);
 	}
-	
+
 }

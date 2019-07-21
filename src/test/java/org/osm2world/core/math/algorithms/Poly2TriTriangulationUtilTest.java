@@ -20,7 +20,7 @@ public class Poly2TriTriangulationUtilTest {
 	private static final VectorXZ outlineA1 = new VectorXZ(-1.1f, 1.1f);
 	private static final VectorXZ outlineA2 = new VectorXZ(1.1f, 1.1f);
 	private static final VectorXZ outlineA3 = new VectorXZ(1.1f, -1.1f);
-	
+
 	private static final List<VectorXZ> outlineA = Arrays.asList(outlineA0,
 			outlineA1, outlineA2, outlineA3, outlineA0);
 
@@ -30,26 +30,26 @@ public class Poly2TriTriangulationUtilTest {
 			new VectorXZ(-99, 0),
 			new VectorXZ(0, -99),
 			new VectorXZ(100, 0));
-	
+
 	@Test
 	public void triangulateTest() throws TriangulationException {
-		
+
 		SimplePolygonXZ polygon = new SimplePolygonXZ(outlineB);
-		
+
 		List<TriangleXZ> triangles = Poly2TriTriangulationUtil.triangulate(
 				polygon,
 				Collections.<SimplePolygonXZ>emptyList(),
 				Collections.<LineSegmentXZ>emptyList(),
 				Collections.<VectorXZ>emptyList());
-		
+
 		double triangleArea = 0;
-		
+
 		for (TriangleXZ t : triangles) {
 			triangleArea += t.getArea();
 		}
-		
+
 		assertAlmostEquals(polygon.getArea(), triangleArea);
-		
+
 	}
-	
+
 }

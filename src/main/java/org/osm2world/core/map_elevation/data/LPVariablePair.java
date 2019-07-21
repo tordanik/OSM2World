@@ -10,9 +10,9 @@ import org.osm2world.core.math.VectorXYZ;
  * representing the elevation of a set of {@link EleConnector}s.
  */
 public class LPVariablePair {
-	
+
 	private final List<EleConnector> connectors = new ArrayList<EleConnector>(2);
-	
+
 	/**
 	 * creates a variable pair for a first {@link EleConnector}.
 	 * Others may be added later.
@@ -20,7 +20,7 @@ public class LPVariablePair {
 	public LPVariablePair(EleConnector firstMember) {
 		connectors.add(firstMember);
 	}
-	
+
 	/**
 	 * returns all connectors currently in this set.
 	 * Must return the same object over the lifetime of this
@@ -29,7 +29,7 @@ public class LPVariablePair {
 	public List<EleConnector> getConnectors() {
 		return connectors;
 	}
-	
+
 	/**
 	 * adds a connector to the set of {@link EleConnector}s whose elevation
 	 * is represented by this {@link LPVariablePair}
@@ -39,14 +39,14 @@ public class LPVariablePair {
 			connectors.add(c);
 		}
 	}
-	
+
 	/**
 	 * adds all connectors from another instance to this one
 	 */
 	public void addAll(LPVariablePair other) {
 		connectors.addAll(other.getConnectors());
 	}
-	
+
 	/**
 	 * {@link EleConnector#setPosXYZ(VectorXYZ)} for all connectors in this set
 	 */
@@ -55,27 +55,27 @@ public class LPVariablePair {
 			c.setPosXYZ(posXYZ);
 		}
 	}
-	
+
 	/**
 	 * {@link EleConnector#getPosXYZ()} for this set
 	 */
 	public VectorXYZ getPosXYZ() {
 		return connectors.get(0).getPosXYZ();
 	}
-	
+
 	/**
 	 * {@link EleConnector#connectsTo(EleConnector)} for this set
 	 */
 	public boolean connectsTo(EleConnector other) {
-		
+
 		for (EleConnector c : connectors) {
 			if (c.connectsTo(other)) return true;
 		}
-		
+
 		return false;
-		
+
 	}
-	
+
 	/**
 	 * TODO document
 	 * @see #negVar()
@@ -83,7 +83,7 @@ public class LPVariablePair {
 	public Object posVar() {
 		return this;
 	}
-	
+
 	/**
 	 * TODO document
 	 * @see #posVar()
@@ -91,10 +91,10 @@ public class LPVariablePair {
 	public Object negVar() {
 		return this.getConnectors();
 	}
-	
+
 	@Override
 	public String toString() {
 		return connectors.toString();
 	}
-	
+
 }

@@ -7,9 +7,9 @@ import java.util.HashMap;
  * utility class for converting CSS colour names to Java Color objects
  */
 public final class CSSColors {
-	
+
 	public static final HashMap<String, Color> colorMap = new HashMap<String, Color>();
-	
+
 	static {
 		colorMap.put("black", new Color(0,0,0));
 		colorMap.put("silver", new Color(192,192,192));
@@ -175,5 +175,5 @@ public final class CSSColors {
 		colorMap.put("yellow", new Color(255,255,0));
 		colorMap.put("yellowgreen", new Color(154,205,50));
 	}
-	
+
 }

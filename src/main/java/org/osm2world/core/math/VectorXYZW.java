@@ -10,7 +10,7 @@ public class VectorXYZW implements Vector4D {
 		this.z = z2;
 		this.w = w2;
 	}
-	
+
 	public VectorXYZW(VectorXYZ v, double w2) {
 		this.x = v.x;
 		this.y = v.y;
@@ -78,26 +78,26 @@ public class VectorXYZW implements Vector4D {
 	public VectorXYZW mult(double scalar) {
 		return new VectorXYZW(x*scalar, y*scalar, z*scalar, w*scalar);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "(" + x + ", " + y + ", " + z + ", " + w + ")";
 	}
-	
+
 	public double distanceTo(VectorXYZW other) {
 		//SUGGEST (performance): don't create temporary vector
 		return (other.subtract(this)).length();
 	}
-	
+
 	public double distanceToSquared(VectorXYZW other) {
 		//SUGGEST (performance): don't create temporary vector
 		return (other.subtract(this)).lengthSquared();
 	}
-	
+
 	public VectorXYZW x(double x) {
 		return new VectorXYZW(x, this.y, this.z, this.w);
 	}
-	
+
 	public VectorXYZW y(double y) {
 		return new VectorXYZW(this.x, y, this.z, this.w);
 	}
@@ -109,11 +109,11 @@ public class VectorXYZW implements Vector4D {
 	public VectorXYZW invert() {
 		return new VectorXYZW(-x, -y, -z, -w);
 	}
-	
+
 	public VectorXYZ xyz() {
 		return new VectorXYZ(x, y, z);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof VectorXYZW)) {
@@ -150,11 +150,11 @@ public class VectorXYZW implements Vector4D {
 			return new VectorXYZW(vector4D.getX(), vector4D.getY(), vector4D.getZ(), vector4D.getW());
 		}
 	}
-	
+
 	public static final VectorXYZW NULL_VECTOR = new VectorXYZW(0, 0, 0, 0);
 	public static final VectorXYZW X_UNIT = new VectorXYZW(1, 0, 0, 0);
 	public static final VectorXYZW Y_UNIT = new VectorXYZW(0, 1, 0, 0);
 	public static final VectorXYZW Z_UNIT = new VectorXYZW(0, 0, 1, 0);
 	public static final VectorXYZW W_UNIT = new VectorXYZW(0, 0, 0, 1);
-		
+
 }

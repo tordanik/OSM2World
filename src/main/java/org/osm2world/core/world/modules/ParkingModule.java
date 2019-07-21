@@ -20,23 +20,23 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * adds parking spaces to the world
  */
 public class ParkingModule extends AbstractModule {
-	
+
 	@Override
 	protected void applyToArea(MapArea area) {
 		if (area.getTags().contains("amenity","parking")) {
-		
+
 			String parkingValue = area.getTags().getValue("parking");
-			
+
 			if ("surface".equals(parkingValue) || parkingValue == null) {
 				area.addRepresentation(new SurfaceParking(area));
 			}
-						
+
 		}
 	}
-	
+
 	private static class SurfaceParking extends AbstractAreaWorldObject
 	implements TerrainBoundaryWorldObject, RenderableToAllTargets {
-		
+
 		public SurfaceParking(MapArea area) {
 			super(area);
 		}
@@ -45,20 +45,20 @@ public class ParkingModule extends AbstractModule {
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);
-			
+
 			Collection<TriangleXYZ> triangles = getTriangulation();
-			
+
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
-			
+
 		}
-		
+
 	}
-	
+
 }

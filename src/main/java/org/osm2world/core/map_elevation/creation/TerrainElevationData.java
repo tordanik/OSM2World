@@ -16,5 +16,5 @@ public interface TerrainElevationData {
 			double maxLon, double maxLat) throws IOException;
 
 	Collection<VectorXYZ> getSites(MapData mapData) throws IOException;
-	
+
 }

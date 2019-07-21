@@ -13,7 +13,7 @@ public interface WorldObjectWithOutline extends WorldObject {
 
 	/**
 	 * returns a counterclockwise polygon defining the object's ground footprint.
-	 * 
+	 *
 	 * @return outline polygon; null if this world object doesn't cover any area
 	 */
 	public PolygonXYZ getOutlinePolygon();
@@ -21,9 +21,9 @@ public interface WorldObjectWithOutline extends WorldObject {
 	/**
 	 * returns a counterclockwise polygon defining the object's ground footprint,
 	 * projected onto the XZ plane.
-	 * 
+	 *
 	 * @return outline polygon; null if this world object doesn't cover any area
 	 */
 	public SimplePolygonXZ getOutlinePolygonXZ();
-	
+
 }

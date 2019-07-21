@@ -23,7 +23,7 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 		super("Download OSM data", viewerFrame, data, renderOptions);
 		putValue(SHORT_DESCRIPTION, "Download OpenStreetMap data from Overpass API");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_D);
-		
+
 	}
 
 	@Override
@@ -32,9 +32,9 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 		LatLonBounds bounds = askLatLonBounds();
 
 		if (bounds != null) {
-			
+
 			OSMDataReader reader = new OverpassReader(bounds.getMin(), bounds.getMax());
-			
+
 			loadOSMData(reader, true);
 
 		}
@@ -42,7 +42,7 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 	}
 
 	private LatLonBounds askLatLonBounds() {
-		
+
 		double minLat = Double.parseDouble(
 				JOptionPane.showInputDialog(viewerFrame, "minLat"));
 		double minLon = Double.parseDouble(
@@ -51,33 +51,33 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 				JOptionPane.showInputDialog(viewerFrame, "maxLat"));
 		double maxLon = Double.parseDouble(
 				JOptionPane.showInputDialog(viewerFrame, "maxLon"));
-		
+
 		return new LatLonBounds(minLat, minLon, maxLat, maxLon);
-				
-		/*		
+
+		/*
 		JDialog dialog = new JDialog(viewerFrame);
 		dialog.setTitle("Select data bounds");
 		dialog.setSize(600, 300);
-		
+
 		JXMapKit map = new JXMapKit();
-		
+
 		map.setDefaultProvider(DefaultProviders.OpenStreetMaps);
 		map.setCenterPosition(new GeoPosition(50.746, 7.154));
 		map.setZoom(3);
 		dialog.add(map, java.awt.BorderLayout.CENTER);
-		
+
 		JPanel settingsPanel = new JPanel();
 		dialog.add(settingsPanel, java.awt.BorderLayout.EAST);
 		BoxLayout settingsPanelLayout = new BoxLayout(settingsPanel, BoxLayout.PAGE_AXIS);
 		settingsPanel.setLayout(settingsPanelLayout);
-		
+
 		ButtonGroup buttonGroup = new ButtonGroup();
 		JRadioButton coordinatesRB = new JRadioButton("Coordinates");
 		JRadioButton customQueryRB = new JRadioButton("Custom Query");
 		buttonGroup.add(coordinatesRB);
 		buttonGroup.add(customQueryRB);
 		settingsPanel.add(coordinatesRB);
-				
+
 		JTextField minLatField = new JTextField();
 		settingsPanel.add(new JLabel("minimum latitude"));
 		settingsPanel.add(minLatField);
@@ -90,16 +90,16 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 		JTextField maxLonField = new JTextField();
 		settingsPanel.add(new JLabel("maximum longitude"));
 		settingsPanel.add(maxLonField);
-		
+
 		settingsPanel.add(customQueryRB);
-		
+
 		JTextArea queryArea = new JTextArea();
 		settingsPanel.add(queryArea);
-		
+
 		dialog.setVisible(true);
-		
+
 		*/
-		
+
 	}
-	
+
 }

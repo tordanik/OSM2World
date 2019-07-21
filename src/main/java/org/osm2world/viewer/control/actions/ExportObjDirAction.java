@@ -22,14 +22,14 @@ public class ExportObjDirAction extends AbstractExportAction {
 
 		super("Export OBJ directory", viewerFrame, data, messageManager, renderOptions);
 		putValue(SHORT_DESCRIPTION, "Writes several smaller Wavefront .obj files to a directory");
-		
+
 	}
-	
+
 	@Override
 	protected boolean chooseDirectory() {
 		return true;
 	}
-	
+
 	protected FileNameExtensionFilter getFileNameExtensionFilter() {
 		return null;
 	}
@@ -38,12 +38,12 @@ public class ExportObjDirAction extends AbstractExportAction {
 	protected void performExport(File file) throws HeadlessException {
 
 		try {
-			
+
 			String thresholdString = JOptionPane.showInputDialog(
 					viewerFrame, "Graphics primitives per file", 10000);
-			
+
 			int primitiveThresholdPerFile = Integer.parseInt(thresholdString);
-			
+
 			/* write the file */
 
 			ObjWriter.writeObjFiles(

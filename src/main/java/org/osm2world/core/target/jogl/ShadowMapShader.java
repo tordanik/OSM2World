@@ -36,37 +36,37 @@ import com.jogamp.opengl.util.PMVMatrix;
  * Shader to render the depth buffer into a texture that can be used to implement shadow maps later.
  */
 public class ShadowMapShader extends DepthBufferShader {
-	
+
 	protected int shadowMapWidth = 1024;
 	protected int shadowMapHeight = 1024;
-	
+
 	/**
 	 * Padding for the calculated bounding box around the camera frustum.
 	 * This is needed to not cut away shadow casters outside but nearby the camera frustum
 	 * that may cast shadows which lay within the camera frustum.
 	 */
 	private int cameraFrustumPadding = 8;
-	
+
 	public int depthBufferHandle;
 	public int colorBufferHandle;
 	private int frameBufferHandle;
-	
+
 	private int[] viewport = new int[4];
-	
+
 	private boolean renderOpaque = true;
-	
+
 	/**
 	 *  model view projection matrix of the shadow casting light source
 	 */
 	private PMVMatrix pmvMat;
-	
+
 	public ShadowMapShader(GL3 gl) {
 		super(gl);
-		
+
 		pmvMat = new PMVMatrix();
 		initializeShadowMap();
 	}
-	
+
 	/**
 	 * Setup the framebuffer and texture.
 	 */
@@ -86,7 +86,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		        shadowMapWidth,                     // width of generated image
 		        shadowMapHeight,                    // height of generated image
 		        0,                          // border of image
-		        GL3.GL_DEPTH_COMPONENT,     // external pixel format 
+		        GL3.GL_DEPTH_COMPONENT,     // external pixel format
 		        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 		        null);  // buffer to store the texture in memory
 
@@ -94,7 +94,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		// GL_LINEAR might produce better results, but is slower. GL_NEAREST shows aliasing artifacts clearly
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-		
+
 		/* For texture access outside the shadow map use the highest depth value possible (1.0).
 		 * This means the fragment lies outside of the lights frustum and no shadow should be applied.
 		 * Therefore we use CLAMP_TO_BORDER with a border of (1.0, 0.0, 0.0, 0.0)
@@ -103,7 +103,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_BORDER);
 		float [] border = {1.0f, 0.0f, 0.0f, 0.0f};
 		gl.glTexParameterfv(GL.GL_TEXTURE_2D, GL3.GL_TEXTURE_BORDER_COLOR, border, 0);
-		
+
 		/* special for depth textures: do not retrieve the texture values, but the result of a comparison.
 		 * compare the third value (r) of the texture coordinate against the depth value stored at the texture coordinate (s,t)
 		 * result will be 1.0 if r is less than the texture value (which means the fragment is nearer) and 0.0 otherwise
@@ -113,8 +113,8 @@ public class ShadowMapShader extends DepthBufferShader {
 
 		gl.glActiveTexture(GL.GL_TEXTURE0);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
-		
-		
+
+
 		/*gl.glGenTextures(1,tmp,0);
 		colorBufferHandle = tmp[0];
 		gl.glActiveTexture(GL.GL_TEXTURE1);
@@ -129,12 +129,12 @@ public class ShadowMapShader extends DepthBufferShader {
 		        shadowMapWidth,                     // width of generated image
 		        shadowMapHeight,                    // height of generated image
 		        0,                          // border of image
-		        GL.GL_RGBA,     // external pixel format 
+		        GL.GL_RGBA,     // external pixel format
 		        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 		        null);  // buffer to store the texture in memory
 		*/
-		
-		
+
+
 		// create the frame buffer object (FBO)
 		gl.glGenFramebuffers(1, tmp, 0);
 		frameBufferHandle = tmp[0];
@@ -152,7 +152,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		        GL.GL_COLOR_ATTACHMENT0,
 		        GL.GL_TEXTURE_2D,
 		        colorBufferHandle,0);*/
-		
+
 		// set target for fragment shader output: not used, we only need the depth buffer
 		//int[] drawBuffers = {GL.GL_NONE};
 		//gl.glDrawBuffers(1, drawBuffers, 0);
@@ -184,14 +184,14 @@ public class ShadowMapShader extends DepthBufferShader {
 		}
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
 	}
-	
+
 	/**
 	 * @see #cameraFrustumPadding
 	 */
 	public void setCameraFrustumPadding(int padding) {
 		this.cameraFrustumPadding = padding;
 	}
-	
+
 	/**
 	 * Change the size of the shadow map texture. This needs to be called before {@link #useShader()},
 	 * as otherwise the viewport may be wrong.
@@ -201,7 +201,7 @@ public class ShadowMapShader extends DepthBufferShader {
 	public void setShadowMapSize(int width, int height) {
 		resizeBuffer(width, height);
 	}
-	
+
 	/**
 	 * Resize the framebuffer backing texture, if size doesn't match.
 	 */
@@ -210,7 +210,7 @@ public class ShadowMapShader extends DepthBufferShader {
 			this.shadowMapWidth = width;
 			this.shadowMapHeight = height;
 			gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
-	
+
 			gl.glTexImage2D(GL.GL_TEXTURE_2D,          // target texture type
 			        0,                                  // mipmap LOD level
 			        GL3.GL_DEPTH_COMPONENT,         // internal pixel format
@@ -218,12 +218,12 @@ public class ShadowMapShader extends DepthBufferShader {
 			        shadowMapWidth,                     // width of generated image
 			        shadowMapHeight,                    // height of generated image
 			        0,                          // border of image
-			        GL3.GL_DEPTH_COMPONENT,     // external pixel format 
+			        GL3.GL_DEPTH_COMPONENT,     // external pixel format
 			        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 			        null);  // buffer to store the texture in memory
 
 			/*gl.glBindTexture(GL.GL_TEXTURE_2D, colorBufferHandle);
-	
+
 			gl.glTexImage2D(GL.GL_TEXTURE_2D,          // target texture type
 			        0,                                  // mipmap LOD level
 			        GL.GL_RGBA,         // internal pixel format
@@ -231,41 +231,41 @@ public class ShadowMapShader extends DepthBufferShader {
 			        shadowMapWidth,                     // width of generated image
 			        shadowMapHeight,                    // height of generated image
 			        0,                          // border of image
-			        GL.GL_RGBA,     // external pixel format 
+			        GL.GL_RGBA,     // external pixel format
 			        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 			        null);  // buffer to store the texture in memory
 			*/
 		}
 	}
-	
+
 	/**
 	 * Prepare everything to render the shadow map (bind framebuffer, update viewport, clear buffer, etc.)
 	 */
 	private void prepareShadowMapGeneration() {
-		
+
 		// bind FBO
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, frameBufferHandle);
-		
+
 		// set right viewport for the framebuffer size, store old to reset later
 		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
         gl.glViewport(0, 0, shadowMapWidth, shadowMapHeight);
-		
+
 		// clear shadow map
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		// enable front face culling
 		gl.glFrontFace(GL_CCW);
 		gl.glCullFace(GL.GL_FRONT);
 		gl.glEnable (GL_CULL_FACE);
 		//gl.glDisable (GL_CULL_FACE);
-		
+
 		gl.glEnable(GL_DEPTH_TEST);
 	}
-	
+
 	public void saveColorBuffer(File file) {
 		// create buffer to store image
 		ByteBuffer buffer = ByteBuffer.allocate(shadowMapWidth*shadowMapHeight*4);
-		
+
 		// load image in buffer
 		gl.glBindTexture(GL.GL_TEXTURE_2D, colorBufferHandle);
 		gl.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buffer);
@@ -273,7 +273,7 @@ public class ShadowMapShader extends DepthBufferShader {
 
 		// create buffered image
 		BufferedImage img = new BufferedImage(shadowMapWidth, shadowMapHeight, BufferedImage.TYPE_INT_RGB);
-		
+
 		// copy data to buffered image
 		for (int col=0; col<img.getWidth(); col++) {
 			for (int row=0; row<img.getHeight(); row++) {
@@ -289,7 +289,7 @@ public class ShadowMapShader extends DepthBufferShader {
 				img.setRGB(col, shadowMapHeight-1-row, rgb);
 			}
 		}
-		
+
 
 		// save to file
 		try {
@@ -299,23 +299,23 @@ public class ShadowMapShader extends DepthBufferShader {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective using "Perspective Shadow Maps"
 	 * (see http://www-sop.inria.fr/reves/Marc.Stamminger/psm/)
 	 * @param lighting
 	 */
 	public void preparePMVMatrixPSM(GlobalLightingParameters lighting, PMVMatrix cameraPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
-		
+
 		// camera PMV Matrix:
 		FloatBuffer camPMvMat = FloatBuffer.allocate(16);
 		FloatUtil.multMatrixf(cameraPMV.glGetPMatrixf(), cameraPMV.glGetMvMatrixf(), camPMvMat);
-		
+
 		// transform light into camera space (unit cube)
 		float[] lightPos = {(float)lighting.lightFromDirection.x, (float)lighting.lightFromDirection.y, -(float)lighting.lightFromDirection.z, 0};
 		float[] lightPosCam = new float[4];
 		FloatUtil.multMatrixVecf(camPMvMat, lightPos, lightPosCam);
-		
+
 		// set view and projection matrices to light source
 		PMVMatrix pmvMatL = new PMVMatrix();
 		pmvMatL.glMatrixMode(GL_MODELVIEW);
@@ -323,7 +323,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		pmvMatL.gluLookAt(lightPosCam[0], lightPosCam[1], lightPosCam[2],
 				0f, 0f, 0f,
 				0f, 1f, 0f);
-		
+
 		pmvMatL.glMatrixMode(GL_PROJECTION);
 		pmvMatL.glLoadIdentity();
 		Projection projection = Defaults.PERSPECTIVE_PROJECTION;
@@ -333,27 +333,27 @@ public class ShadowMapShader extends DepthBufferShader {
 				(float)(projection.getNearClippingDistance()),
 				(float)(projection.getFarClippingDistance()));
 		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
-		
+
 		//float[] frustum;
 		/*frustum = intersectFrustum(calculateCameraLightFrustum(pmvMat, cameraPMV),
 				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));*/
 		//frustum = calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox);
 		//System.out.println("shadow map frustum: " + Arrays.toString(frustum));
 		//pmvMatL.glOrthof(frustum[0], frustum[1], frustum[2], frustum[3], frustum[4], frustum[5]);
-		
+
 		// M = M_cam
 		pmvMat.glMatrixMode(GL_MODELVIEW);
 		pmvMat.glLoadMatrixf(cameraPMV.glGetMvMatrixf());
-		
+
 		// P = P_light*Mv_light*P_cam
 		pmvMat.glMatrixMode(GL_PROJECTION);
 		pmvMat.glLoadMatrixf(pmvMatL.glGetPMatrixf());
 		pmvMat.glMultMatrixf(pmvMatL.glGetMvMatrixf());
 		pmvMat.glMultMatrixf(cameraPMV.glGetPMatrixf());
-		
+
 		setPMVMatrix(pmvMat);
 	}
-	
+
 	/**
 	 * Prepare and use PMVMatrix for rendering shadows from global lighting perspective
 	 * @param lighting contains the lights direction
@@ -361,16 +361,16 @@ public class ShadowMapShader extends DepthBufferShader {
 	 * @param primitivesBoundingBox bounding box around all relevant primitives in world coordinates. Also used to tighten the lights view frustum
 	 */
 	public void preparePMVMatrix(GlobalLightingParameters lighting, PMVMatrix cameraPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
-		
+
 		// set view and projection matrices to light source
 
-		
+
 		pmvMat.glMatrixMode(GL_MODELVIEW);
 		pmvMat.glLoadIdentity();
 		pmvMat.gluLookAt((float)lighting.lightFromDirection.x, (float)lighting.lightFromDirection.y, -(float)lighting.lightFromDirection.z,
 				0f, 0f, 0f,
 				0f, 1f, 0f);
-		
+
 		pmvMat.glMatrixMode(GL_PROJECTION);
 		pmvMat.glLoadIdentity();
 		/*Projection projection = Defaults.PERSPECTIVE_PROJECTION;
@@ -380,7 +380,7 @@ public class ShadowMapShader extends DepthBufferShader {
 				(float)(projection.getNearClippingDistance()),
 				(float)(projection.getFarClippingDistance()));*/
 		//pmvMat.glOrthof(-1000,1000,-1000,1000,-1000,1500);
-		
+
 		AxisAlignedBoundingBoxXYZ frustum;
 		frustum = AxisAlignedBoundingBoxXYZ.intersect(calculateCameraLightFrustum(pmvMat, cameraPMV),
 				calculatePrimitivesLightFrustum(pmvMat, primitivesBoundingBox));
@@ -388,10 +388,10 @@ public class ShadowMapShader extends DepthBufferShader {
 		//frustum = calculateCameraLightFrustum(pmvMat, cameraPMV);
 		pmvMat.glOrthof((float)frustum.minX, (float)frustum.maxX, (float)frustum.minY, (float)frustum.maxY, (float)frustum.minZ, (float)frustum.maxZ);
 		pmvMat.glMatrixMode(GL_MODELVIEW);
-		
+
 		setPMVMatrix(pmvMat);
 	}
-	
+
 	/**
 	 * Calculate the frustum for the light projection matrix based on the bounding box of all primitives.
 	 * Transforms the bounding box into lightspace and draws an axis aligned bounding box around it.
@@ -411,7 +411,7 @@ public class ShadowMapShader extends DepthBufferShader {
 
 		return frustum;
 	}
-	
+
 	/**
 	 * Calculate the frustum for the light projection matrix based on the frustum of the camera
 	 * @param lightPMV contains the lights ModelView matrix
@@ -430,7 +430,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		FloatUtil.multMatrixf(cameraPMV.glGetMviMatrixf(), cameraP_inverse, cameraPMV_inverse);
 		FloatBuffer NDC2light = FloatBuffer.allocate(16);
 		FloatUtil.multMatrixf(lightPMV.glGetMvMatrixf(), cameraPMV_inverse, NDC2light);
-		
+
 		/*
 		 * transform screen space bounding box to light space
 		 * and calculate axis aligned bounding box
@@ -449,7 +449,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		AxisAlignedBoundingBoxXYZ frustum = new AxisAlignedBoundingBoxXYZ(corners).pad(cameraFrustumPadding);
 		return frustum;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * Only primitives that support shadow will get rendered. For opaque objects see {@link #setRenderOpaque(boolean)}
@@ -464,7 +464,7 @@ public class ShadowMapShader extends DepthBufferShader {
 		}
 		return super.setMaterial(material, textureManager);
 	}
-	
+
 	/**
 	 * Sets whether to render opaque objects or not. Useful if the shadow map is only needed for transparent objects.
 	 */
@@ -479,14 +479,14 @@ public class ShadowMapShader extends DepthBufferShader {
 	public PMVMatrix getPMVMatrix() {
 		return pmvMat;
 	}
-	
+
 	/**
 	 * Returns the handle of the texture containing the rendered shadow map.
 	 */
 	public int getShadowMapHandle() {
 		return depthBufferHandle;
 	}
-	
+
 	/**
 	 * Prepares rendering of the shadow map. This changes the current framebuffer and viewport.
 	 * {@link #disableShader()} should be called after the rendering is complete to bind the default framebuffer again
@@ -497,20 +497,20 @@ public class ShadowMapShader extends DepthBufferShader {
 		super.useShader();
 		prepareShadowMapGeneration();
 	}
-	
+
 	/**
 	 * Completes the rendering of the shadow map. The default framebuffer and viewport get restored.
 	 */
 	@Override
 	public void disableShader() {
-		
+
 		// bind default framebuffer
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
-		
+
 		// reset viewport
 		gl.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 		super.disableShader();
-		
+
 	}
-	
+
 }

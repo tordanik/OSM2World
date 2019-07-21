@@ -14,32 +14,32 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  * and are not part of a network.
  * Instead, they are located at a single point on the terrain or other areas
  * and not connected to other features.
- * 
+ *
  * @see OutlineNodeWorldObject
  */
 public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 		IntersectionTestObject {
-	
+
 	protected final MapNode node;
-	
+
 	private final EleConnector connector;
-	
+
 	public NoOutlineNodeWorldObject(MapNode node) {
 		this.node = node;
 		this.connector = new EleConnector(node.getPos(), node,
 				getGroundState());
 	}
-	
+
 	@Override
 	public final MapNode getPrimaryMapElement() {
 		return node;
 	}
-	
+
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		return new AxisAlignedBoundingBoxXZ(singleton(node.getPos()));
 	}
-	
+
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
 		return singleton(connector);
@@ -47,7 +47,7 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 
 	@Override
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
-	
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + "(" + node + ")";
@@ -60,5 +60,5 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	protected VectorXYZ getBase() {
 		return connector.getPosXYZ();
 	}
-	
+
 }

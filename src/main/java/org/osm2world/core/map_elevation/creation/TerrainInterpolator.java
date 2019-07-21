@@ -11,7 +11,7 @@ import org.osm2world.core.math.VectorXZ;
 public interface TerrainInterpolator {
 
 	void setKnownSites(Collection<VectorXYZ> sites);
-	
+
 	VectorXYZ interpolateEle(VectorXZ pos);
-	
+
 }

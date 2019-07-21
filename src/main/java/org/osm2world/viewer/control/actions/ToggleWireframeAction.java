@@ -16,15 +16,15 @@ public class ToggleWireframeAction extends AbstractAction {
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;
-		
+
 	public ToggleWireframeAction(ViewerFrame viewerFrame, Data data,
 			RenderOptions renderOptions) {
-		
+
 		super("Wireframe view");
 		putValue(SHORT_DESCRIPTION, "Switches between wireframe and solid view");
-		putValue(MNEMONIC_KEY, KeyEvent.VK_F);		
+		putValue(MNEMONIC_KEY, KeyEvent.VK_F);
 		putValue(SELECTED_KEY, renderOptions.isWireframe());
-		
+
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
@@ -33,10 +33,10 @@ public class ToggleWireframeAction extends AbstractAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-				
+
 		renderOptions.setWireframe(!renderOptions.isWireframe());
 		putValue(SELECTED_KEY, renderOptions.isWireframe());
-				
+
 	}
 
 }

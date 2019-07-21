@@ -11,15 +11,15 @@ public class Primitive {
 		CONVEX_POLYGON,
 		TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN
 	}
-	
+
 	public final Type type;
-	
+
 	public final List<VectorXYZ> vertices;
-		
+
 	public final List<VectorXYZ> normals;
-	
+
 	public final List<List<VectorXZ>> texCoordLists;
-	
+
 	public Primitive(Type type, List<VectorXYZ> vertices,
 			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists) {
 		this.type = type;
@@ -27,10 +27,10 @@ public class Primitive {
 		this.normals = normals;
 		this.texCoordLists = texCoordLists;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "{" + type + ", " + vertices + "}";
 	}
-	
+
 }

@@ -24,29 +24,29 @@ public class ViewerGLCanvas extends GLCanvas {
 
 	public ViewerGLCanvas(Data data, MessageManager messageManager, RenderOptions renderOptions, GLCapabilities capabilities) {
 		super(capabilities);
-		
+
 		setSize(800, 600);
 		setIgnoreRepaint(true);
 
 		addGLEventListener(new ViewerGLEventListener(data, messageManager, renderOptions));
 
 		FPSAnimator animator = new FPSAnimator( this, 60 );
-        
+
 		animator.start();
 
 	}
-	
+
 
 	public class ViewerGLEventListener implements GLEventListener {
 
 		private final Data data;
 		private final MessageManager messageManager;
 		private final RenderOptions renderOptions;
-				
+
 		private final HelpView helpView = new HelpView();
-		
+
 		private TextRenderer textRenderer;
-		
+
 		public ViewerGLEventListener(Data data, MessageManager messageManager, RenderOptions renderOptions) {
 			this.data = data;
 			this.messageManager = messageManager;
@@ -55,17 +55,17 @@ public class ViewerGLCanvas extends GLCanvas {
 
 		@Override
 		public void display(GLAutoDrawable glDrawable) {
-			
+
 	        final GL gl = glDrawable.getGL();
-	        
+
 	        AbstractJOGLTarget.clearGL(gl, new Color(0, 0, 0, 0));
 
 	        if (renderOptions.camera == null) {
 	        	helpView.renderTo(gl, null, null);
 	        } else {
-	        	
+
 	        	/* prepare projection matrix stack */
-	        	
+
 	        	//TODO: reactivate to allow
 //		        //calculate height for orthographic projection to match
 //		        //the height of the perspective view volume at lookAt's distance
@@ -75,11 +75,11 @@ public class ViewerGLCanvas extends GLCanvas {
 //		        double tanAngle = Math.tan(renderOptions.projection.getVertAngle());
 //		        double height = tanAngle * dist;
 //		        renderOptions.projection = renderOptions.projection.withVolumeHeight(height);
-	        		        	
+
 	        	/* draw debug views */
-	        	
+
 	        	DebugView activeWorldObjectView = null;
-	        	
+
 	        	for (DebugView debugView : renderOptions.activeDebugViews) {
 	        		if (debugView instanceof WorldObjectView) {
 	        			// needs to be rendered last because of transparency
@@ -88,13 +88,13 @@ public class ViewerGLCanvas extends GLCanvas {
 	        		}
 	        		debugView.renderTo(gl, renderOptions.camera, renderOptions.projection);
 	        	}
-	        	
+
 	        	if (activeWorldObjectView != null) {
 	        		activeWorldObjectView.renderTo(gl, renderOptions.camera, renderOptions.projection);
 	        	}
-	        	
+
 	        	/* write messages */
-	        	
+
 	        	int messageCount = 0;
 	        	for (Message message : messageManager.getLiveMessages()) {
 	        		textRenderer.drawTextBottom(message.messageString,
@@ -102,11 +102,11 @@ public class ViewerGLCanvas extends GLCanvas {
 	        				Color.WHITE);
 	        		messageCount++;
 	        	}
-	        	
+
 	        	gl.glFlush();
 
 	        }
-			
+
 		}
 
 		@Override
@@ -123,27 +123,27 @@ public class ViewerGLCanvas extends GLCanvas {
 		@Override
 		public void reshape(GLAutoDrawable gLDrawable,
 				int x, int y, int width, int height) {
-			
+
 			final GL gl = gLDrawable.getGL();
 
 	        if (height <= 0) { // avoid a divide by zero error!
 	            height = 1;
 	        }
-	        	        
+
 	        gl.glViewport(0, 0, width, height);
-	        
+
 	        renderOptions.projection =
 	        	renderOptions.projection.withAspectRatio((double)width / height);
-	        
+
 	        textRenderer.reshape(width, height);
 	        helpView.reshape(width, height);
 		}
-	
+
 		@Override
 		public void dispose(GLAutoDrawable arg0) {
-			
+
 		}
-		
+
 	}
 
 }

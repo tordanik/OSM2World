@@ -80,21 +80,21 @@ import com.jogamp.opengl.util.texture.Texture;
  * JOGL target using the old fixed function OpenGL pipeline.
  */
 public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements JOGLTarget {
-	
+
 	/** maximum number of texture layers any material can use */
 	public static final int MAX_TEXTURE_LAYERS = 4;
-	
+
 	/** globally controls anisotropic filtering for all textures */
 	private static final boolean ANISOTROPIC_FILTERING = true;
-	
+
 	private final GL2 gl;
-	
+
 	private Configuration config = new BaseConfiguration();
-	
+
 	/**
 	 * creates a new JOGLTarget for a given {@link GL2} interface. It is
 	 * possible to have multiple targets that render to the same gl object.
-	 * 
+	 *
 	 * @param renderingParameters  global parameters for rendering;
 	 *   see {@link #setRenderingParameters(JOGLRenderingParameters)}
 	 * @param globalLightingParameters  global parameters for lighting;
@@ -102,24 +102,24 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	 */
 	public JOGLTargetFixedFunction(GL2 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
-		
+
 		super(gl, renderingParameters, globalLightingParameters);
 		this.gl = gl;
-		
+
 		reset();
-		
+
 	}
 
 	public static void drawPrimitive(GL2 gl, int glPrimitiveType,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
-		
+
 		assert vertices.size() == normals.size();
-		
+
 		gl.glBegin(glPrimitiveType);
-		
+
 		for (int i = 0; i < vertices.size(); i++) {
-			
+
 			if (texCoordLists != null) {
 				for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer++) {
 					VectorXZ textureCoord =	texCoordLists.get(texLayer).get(i);
@@ -127,27 +127,27 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 							textureCoord.x, textureCoord.z);
 				}
 			}
-			
+
 			VectorXYZ n = normals.get(i);
 			gl.glNormal3d(n.x, n.y,	-n.z);
-			
+
 			VectorXYZ v = vertices.get(i);
 			gl.glVertex3d(v.x, v.y, -v.z);
-			
+
 		}
-		
+
 		gl.glEnd();
-		
+
 	}
-	
+
 	/**
 	 * prepares a scene, based on the accumulated draw calls, for rendering.
 	 */
 	@Override
 	public void finish() {
-		
+
 		if (isFinished()) return;
-		
+
 		if ("DisplayList".equals(config.getString("joglImplementation"))) {
 			renderer = new JOGLRendererDisplayList(
 					gl, textureManager, primitiveBuffer);
@@ -155,56 +155,56 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			renderer = new JOGLRendererVBOFixedFunction(
 					gl, textureManager, primitiveBuffer);
 		}
-		
+
 	}
-	
+
 	/**
 	 * similar to {@link #render(Camera, Projection)},
 	 * but allows rendering only a part of the "normal" image.
 	 * For example, with xStart=0, xEnd=0.5, yStart=0 and yEnd=1,
 	 * only the left half of the full image will be rendered,
 	 * but it will be stretched to cover the available space.
-	 * 
+	 *
 	 * Only supported for orthographic projections!
 	 */
 	public void renderPart(Camera camera, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {
-		
+
 		if (renderer == null) {
 			throw new IllegalStateException("finish must be called first");
 		}
-		
+
 		/* apply camera and projection information */
-		
+
 		applyProjectionMatricesForPart(gl, projection,
 				xStart, xEnd, yStart, yEnd);
-		
+
 		applyCameraMatrices(gl, camera);
-		
+
 		/* apply global rendering parameters */
-		
+
 		applyRenderingParameters(gl, renderingParameters);
 		applyLightingParameters(gl, globalLightingParameters, projection.isOrthographic());
-		
+
 		/* render primitives */
-		
+
 		renderer.render(camera, projection);
-		
+
 		for (NonAreaPrimitive nonAreaPrimitive : nonAreaPrimitives) {
-			
+
 			gl.glLineWidth(nonAreaPrimitive.width);
-			
+
 			Color c = nonAreaPrimitive.color;
 			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f);
-			
+
 			gl.glBegin(AbstractJOGLTarget.getGLConstant(nonAreaPrimitive.type));
-	        
+
 			for (VectorXYZ v : nonAreaPrimitive.vs) {
 		        gl.glVertex3d(v.getX(), v.getY(), -v.getZ());
 			}
-			
+
 	        gl.glEnd();
-			
+
 		}
 
 		finishRendering(gl);
@@ -222,11 +222,11 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			gl.glDisable(GL_TEXTURE_2D);
 		}
 	}
-	
+
 	static final void applyCameraMatrices(GL2 gl, Camera camera) {
-		
+
     	gl.glLoadIdentity();
-		
+
 		VectorXYZ pos = camera.getPos();
 		VectorXYZ lookAt = camera.getLookAt();
 		VectorXYZ up = camera.getUp();
@@ -234,9 +234,9 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				pos.x, pos.y, -pos.z,
 				lookAt.x, lookAt.y, -lookAt.z,
 				up.x, up.y, -up.z);
-		
+
 	}
-	
+
 	static final void applyProjectionMatrices(GL2 gl, Projection projection) {
 		applyProjectionMatricesForPart(gl, projection, 0, 1, 0, 1);
 	}
@@ -247,20 +247,20 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	 */
 	static final void applyProjectionMatricesForPart(GL2 gl, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {
-		
+
 		if ((xStart != 0 || xEnd != 1 || yStart != 0 || yEnd != 1)
 				&& !projection.isOrthographic()) {
 			throw new IllegalArgumentException("section rendering only supported "
 					+ "for orthographic projections");
 		}
-		
+
 		gl.glMatrixMode(GL_PROJECTION);
 		gl.glLoadIdentity();
-		
+
 		if (projection.isOrthographic()) {
 
 			double volumeWidth = projection.getAspectRatio() * projection.getVolumeHeight();
-			
+
 			gl.glOrtho(
 					(-0.5 + xStart) * volumeWidth,
 					(-0.5 + xEnd  ) * volumeWidth,
@@ -268,7 +268,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 					(-0.5 + yEnd  ) * projection.getVolumeHeight(),
 					projection.getNearClippingDistance(),
 					projection.getFarClippingDistance());
-			
+
 		} else { //perspective
 
 			new GLU().gluPerspective(
@@ -276,18 +276,18 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 					projection.getAspectRatio(),
 					projection.getNearClippingDistance(),
 					projection.getFarClippingDistance());
-			
+
 		}
 
 		gl.glMatrixMode(GL_MODELVIEW);
-		
+
 	}
-	
+
 	static final void applyRenderingParameters(GL2 gl,
 			JOGLRenderingParameters parameters) {
-		
+
 		/* backface culling */
-		
+
 		if (parameters.frontFace == null) {
 			gl.glDisable(GL_CULL_FACE);
 		} else {
@@ -295,70 +295,70 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			gl.glCullFace(GL_BACK);
 			gl.glEnable (GL_CULL_FACE);
 		}
-		
+
 		/* wireframe mode */
-		
+
 		if (parameters.wireframe) {
     		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     	} else {
     		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     	}
-		
+
 		/* z buffer */
-		
+
 		if (parameters.useZBuffer) {
 			gl.glEnable(GL_DEPTH_TEST);
 		} else {
 			gl.glDisable(GL_DEPTH_TEST);
 		}
-				
+
 	}
-	
+
 	static final void applyLightingParameters(GL2 gl,
 			GlobalLightingParameters lighting, boolean orthographicProjection) {
-		
+
 		if (lighting == null) {
 
 			gl.glDisable(GL_LIGHT0);
 			gl.glDisable(GL_LIGHTING);
-			
+
 		} else {
-			
+
 			gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT,
 					getFloatBuffer(lighting.globalAmbientColor));
-			
+
 			gl.glLightfv(GL_LIGHT0, GL_AMBIENT,
 					getFloatBuffer(Color.BLACK));
 			gl.glLightfv(GL_LIGHT0, GL_DIFFUSE,
 					getFloatBuffer(lighting.lightColorDiffuse));
 			gl.glLightfv(GL_LIGHT0, GL_SPECULAR,
 					getFloatBuffer(lighting.lightColorSpecular));
-			
+
 			// make specular lighting computation more realistic
 			gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, orthographicProjection ? GL.GL_FALSE : GL.GL_TRUE);
 			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR);
-			
+
 			gl.glLightfv(GL_LIGHT0, GL_POSITION, new float[] {
 						(float)lighting.lightFromDirection.x,
 						(float)lighting.lightFromDirection.y,
 						-(float)lighting.lightFromDirection.z,
 						0.0f}, 0);
-			
+
 			gl.glEnable(GL_LIGHT0);
 			gl.glEnable(GL_LIGHTING);
-			
+
 		}
-		
+
 	}
-	
+
 	static final void setMaterial(GL2 gl, Material material,
 			JOGLTextureManager textureManager) {
-		
+
 		int numTexLayers = 0;
 		if (material.getTextureDataList() != null) {
 			numTexLayers = material.getTextureDataList().size();
 		}
-		
+
 		/* set lighting */
 		// wrong as interpolation is meant for normals? light shading should always be smooth
 		/*
@@ -368,50 +368,50 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			gl.glShadeModel(GL_FLAT);
 		}
 		*/
-		
+
 		/* set color */
-		
+
 		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
-			
+
 			//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
 			Color c = material.getColor();
 			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
-			
+
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
 					getFloatBuffer(material.ambientColor()));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
 					getFloatBuffer(material.diffuseColor()));
-			
+
 		} else {
-			
+
 			gl.glColor3f(1, 1, 1);
-			
+
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getAmbientFactor())));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE, getFloatBuffer(
 					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
-			
+
 		}
-		
+
 		// specular lighting
 		gl.glMaterialfv(GL.GL_FRONT, GL2.GL_SPECULAR, getFloatBuffer(
 				multiplyColor(Color.WHITE, material.getSpecularFactor())));
 		gl.glMateriali(GL.GL_FRONT, GL2.GL_SHININESS, material.getShininess());
-		
+
 		/* set textures and associated parameters */
-		
+
 		for (int i = 0; i < MAX_TEXTURE_LAYERS; i++) {
-			
+
 			gl.glActiveTexture(getGLTextureConstant(i));
-						
+
 			if (i >= numTexLayers) {
-				
+
 				gl.glDisable(GL_TEXTURE_2D);
-								
+
 			} else {
-				
+
 				gl.glEnable(GL_TEXTURE_2D);
-				
+
 				if (material.getTransparency() == TRUE) {
 					gl.glEnable(GL.GL_BLEND);
 					/* GL.GL_SRC_ALPHA and GL.GL_ONE_MINUS_SRC_ALPHA for color blending produces correct results for color, while
@@ -425,60 +425,60 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 					gl.glDisable(GL.GL_BLEND);
 					gl.glDisable(GL_ALPHA_TEST);
 				}
-				
+
 				TextureData textureData = material.getTextureDataList().get(i);
-				
+
 				Texture texture = textureManager.getTextureForFile(textureData.file);
 		        texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
-		        
+
 				/* enable anisotropic filtering (note: this could be a
 				 * per-texture setting, but currently isn't) */
-				
+
 		        if (gl.isExtensionAvailable("GL_EXT_texture_filter_anisotropic")) {
-					
+
 		        	if (ANISOTROPIC_FILTERING) {
-						
+
 						float max[] = new float[1];
 						gl.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, max, 0);
-						
+
 						gl.glTexParameterf(GL_TEXTURE_2D,
 								GL_TEXTURE_MAX_ANISOTROPY_EXT,
 								max[0]);
-						
+
 					} else {
-						
+
 						gl.glTexParameterf(GL_TEXTURE_2D,
 								GL_TEXTURE_MAX_ANISOTROPY_EXT,
 								1.0f);
-						
+
 					}
-					
+
 		        }
-				
+
 				/* wrapping behavior */
-		        
+
 				int wrap = 0;
-				
+
 				switch (textureData.wrap) {
 				case CLAMP: wrap = GL_CLAMP; break;
 				case REPEAT: wrap = GL_REPEAT; break;
 				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
 				}
-				
+
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-		        
-		        
+
+
 		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
-		        	
+
 		        	/* TODO: make the RGB configurable -  for some reason,
 		        	 * it shows up in lowzoom even if fully transparent */
 		        	gl.glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
 		        			getFloatBuffer(new Color(1f, 1f, 1f, 0f)));
-		        	
+
 		        }
-				
+
 		        /* combination of texture layers */
 	        	if (i == 0) {
 		        	/* Cv = Cp × Cs (Cp = ?)
@@ -486,7 +486,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		        	 */
 		        	gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		        } else {
-		        	
+
 		        	/* Cv = Arg0×Arg2 + Arg1×(1-Arg2)
 		        	 * Cv = Cs × As + Cp × (1-As)
 		        	 * Arg0 = Cs
@@ -511,11 +511,11 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		        	 * Arg1 = Ad
 		        	 * Arg2 = As
 		        	 */
-		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL_INTERPOLATE ); 
-		        	
+		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL_INTERPOLATE );
+
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE0_ALPHA, GL2.GL_CONSTANT );
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND0_ALPHA, GL_SRC_ALPHA );
-		        	
+
 		        	float[] mycolor = {0.0f, 0.0f, 0.0f, 1.0f}; //RGB doesn't matter since its not used
 		        	gl.glTexEnvfv(GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, mycolor, 0);
 
@@ -525,13 +525,13 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_SOURCE2_ALPHA, GL_TEXTURE );
 		        	gl.glTexEnvi( GL_TEXTURE_ENV, GL2.GL_OPERAND2_ALPHA, GL_SRC_ALPHA );
 		        }
-		        
+
 			}
-			
+
 		}
-		
+
 	}
-	
+
 
 
 	static final int getGLTextureConstant(int textureNumber) {
@@ -543,44 +543,44 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		default: throw new Error("programming error: unhandled texture number");
 		}
 	}
-	
+
 	public final void drawBackgoundImage(File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
 			JOGLTextureManager textureManager) {
-		
+
 		gl.glMatrixMode(GL_PROJECTION);
 		gl.glPushMatrix();
 		gl.glLoadIdentity();
 		gl.glOrtho(0, 1, 0, 1, 0, 1);
-		
+
 		gl.glMatrixMode(GL_MODELVIEW);
 		gl.glPushMatrix();
 		gl.glLoadIdentity();
-				
+
 		gl.glDepthMask( false );
-		
+
 		/* texture binding */
 
 		gl.glEnable(GL_TEXTURE_2D);
 		gl.glActiveTexture(GL_TEXTURE0);
-		
+
 		gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		
+
 		Texture backgroundTexture =
 				textureManager.getTextureForFile(backgroundImage);
 
 		backgroundTexture.enable(gl);
 		backgroundTexture.bind(gl);
-		
+
 		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		
+
 		int texWidth = backgroundTexture.getImageWidth();
 		int texHeight = backgroundTexture.getImageHeight();
-		
+
 		/* draw quad */
-				
+
 		gl.glBegin( GL_QUADS ); {
 			gl.glTexCoord2f(
 					(float) startPixelX / texWidth,
@@ -599,20 +599,20 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 					(float) (startPixelY + pixelHeight) / texHeight );
 			gl.glVertex2f( 0, 1f );
 		} gl.glEnd();
-		
+
 		/* restore some settings */
-		
+
 		gl.glDepthMask( true );
-		
+
 		gl.glPopMatrix();
 		gl.glMatrixMode(GL_PROJECTION);
 		gl.glPopMatrix();
 		gl.glMatrixMode(GL_MODELVIEW);
 		gl.glDisable(GL_TEXTURE_2D);
-		
+
 	}
 
 	@Override
 	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {}
-	
+
 }

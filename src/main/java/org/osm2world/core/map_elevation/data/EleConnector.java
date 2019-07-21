@@ -11,7 +11,7 @@ import org.osm2world.core.world.data.WorldObject;
 /**
  * a point referenced by one or more {@link WorldObject}s, with known xz coords
  * and an elevation to be assigned by an {@link ElevationCalculator}.
- * 
+ *
  * This class is a core concept of elevation calculation:
  * Because there is no injective mapping from xz coords to elevation (that
  * would not allow for bridges etc.), we need to represent whether points
@@ -20,20 +20,20 @@ import org.osm2world.core.world.data.WorldObject;
  * Thus, this purpose is served by EleConnectors.
  */
 public class EleConnector {
-	
+
 	public final VectorXZ pos;
-		
+
 	/** TODO document - MapNode or Intersection object, for example */
 	public final Object reference;
-	
+
 	/**
 	 * indicates whether this connector should be connected to the terrain,
 	 * or is instead above or below the terrain
 	 */
 	public final GroundState groundState;
-	
+
 	private VectorXYZ posXYZ;
-	
+
 	/**
 	 * creates an EleConnector at the given xz coordinates.
 	 * @param pos          final value for {@link #pos}; != null
@@ -46,24 +46,24 @@ public class EleConnector {
 		this.reference = reference;
 		this.groundState = groundState;
 	}
-	
+
 	/**
 	 * assigns the elevation that has been calculated for this connector.
 	 * Only for use by an {@link ElevationCalculator}.
-	 * 
+	 *
 	 * TODO make package-visible
 	 */
 	public void setPosXYZ(VectorXYZ posXYZ) {
-				
+
 		assert posXYZ.xz().equals(this.pos);
-		
+
 		this.posXYZ = posXYZ;
-		
+
 	}
-	
+
 	/**
 	 * returns the 3d position after it has been calculated.
-	 * 
+	 *
 	 * The elevation, and therefore this {@link VectorXYZ}, is the only
 	 * property which changes (exactly once) over the lifetime of an
 	 * {@link EleConnector}: It is null before elevation calculation,
@@ -72,7 +72,7 @@ public class EleConnector {
 	public VectorXYZ getPosXYZ() {
 		return posXYZ;
 	}
-	
+
 	/**
 	 * returns true if this connector is to be joined with the other one.
 	 * It is possible that connectors are joined even if this method returns
@@ -83,10 +83,10 @@ public class EleConnector {
 				&& ((reference != null && reference == other.reference)
 					|| (groundState == ON && other.groundState == ON));
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("(%s, %s, %s)", pos, reference, groundState);
 	}
-	
+
 }

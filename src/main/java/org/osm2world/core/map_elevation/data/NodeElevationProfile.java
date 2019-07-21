@@ -16,42 +16,42 @@ import org.osm2world.core.math.VectorXZ;
 public class NodeElevationProfile extends ElevationProfile {
 
 	private final MapNode node;
-	
+
 	private VectorXYZ pointWithEle;
 
 	public NodeElevationProfile(MapNode node) {
 		this.node = node;
 	}
-	
+
 	@Override
 	protected MapElement getElement() {
 		return node;
 	}
-		
+
 	public VectorXYZ getPointWithEle() {
 		if (pointWithEle == null) {
 			throw new IllegalStateException("elevations have not been calculated yet");
 		}
 		return pointWithEle;
 	}
-	
+
 	@Override
 	public Collection<VectorXYZ> getPointsWithEle() {
 		return Arrays.asList(pointWithEle);
 	}
-		
+
 	public double getEle() {
 		if (pointWithEle == null) {
 			throw new IllegalStateException("elevations have not been calculated yet");
 		}
 		return pointWithEle.y;
 	}
-	
+
 	@Override
 	public double getEleAt(VectorXZ pos) {
 		return getEle();
 	}
-	
+
 	@Override
 	public VectorXYZ getWithEle(VectorXZ pos) {
 		if (pointWithEle.x == pos.x && pointWithEle.z == pos.z) {
@@ -64,7 +64,7 @@ public class NodeElevationProfile extends ElevationProfile {
 	public void setEle(double ele) {
 		pointWithEle = node.getPos().xyz(ele);
 	}
-	
+
 	@Override
 	public double getMaxEle() {
 		if (pointWithEle == null) {
@@ -72,7 +72,7 @@ public class NodeElevationProfile extends ElevationProfile {
 		}
 		return pointWithEle.y;
 	}
-	
+
 	@Override
 	public double getMinEle() {
 		if (pointWithEle == null) {
@@ -80,5 +80,5 @@ public class NodeElevationProfile extends ElevationProfile {
 		}
 		return pointWithEle.y;
 	}
-	
+
 }

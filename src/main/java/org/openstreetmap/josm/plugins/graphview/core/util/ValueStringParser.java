@@ -39,14 +39,14 @@ public final class ValueStringParser {
 				try {
 
 					boolean negative = stringBeforePoint.startsWith("-");
-					
+
 					float beforePoint = Integer.parseInt(stringBeforePoint);
 					float afterPoint = Integer.parseInt(stringAfterPoint);
 
 					double result = Math.abs(beforePoint)
 							+ Math.pow(10, -stringAfterPoint.length()) * afterPoint;
 					if (negative) { result = - result; }
-					
+
 					if (result >= 0 || allowNegative) {
 						return (float)result;
 					}
@@ -229,12 +229,12 @@ public final class ValueStringParser {
 	public static final Float parseAngle(String value) {
 
 		/* try numeric angle */
-		
+
 		Float measure = parseOsmDecimal(value, false);
 		if (measure != null) {
 			return measure % 360;
 		}
-		
+
 		/* try cardinal directions (represented by letters) */
 
 		if ("N"  .equals(value)) { return   0.0f; }
@@ -253,7 +253,7 @@ public final class ValueStringParser {
 		if ("WNW".equals(value)) { return 292.5f; }
 		if ("NW" .equals(value)) { return 315.0f; }
 		if ("NNW".equals(value)) { return 337.5f; }
-		
+
 		return null;
 	}
 
@@ -263,13 +263,13 @@ public final class ValueStringParser {
 	 * @return  color; null if value had syntax errors
 	 */
 	public static final Color parseColor(String value) {
-		
+
 		try {
 			return Color.decode(value);
 		} catch (NumberFormatException e) {
 			return null;
 		}
-		
+
 	}
-	
+
 }

@@ -12,35 +12,35 @@ public class ProgressDialog extends JDialog {
 	private static final long serialVersionUID = -1016979607905010257L; //generated serialVersionUID
 	private final JProgressBar progressBar;
 	private final JTextField statusField;
-	
+
 	public ProgressDialog(ViewerFrame viewerFrame, String title) {
-		
+
 		super(viewerFrame, title);
-		
+
 		JPanel panel = new JPanel();
 		BorderLayout layout = new BorderLayout();
 		panel.setLayout(layout);
-		
+
 		progressBar = new JProgressBar();
 		panel.add(progressBar, BorderLayout.CENTER);
-		
+
 		statusField = new JTextField(50);
 		statusField.setEditable(false);
 		panel.add(statusField, BorderLayout.SOUTH);
 
 		this.add(panel);
-		
+
 		setProgress(null);
-		
+
 		this.pack();
 		this.setVisible(true);
-		
+
 	}
-	
+
 	public void setText(String text) {
 		statusField.setText(text);
 	}
-	
+
 	/**
 	 * @param progress  progress percentage or null for indeterminate progress
 	 */
@@ -52,5 +52,5 @@ public class ProgressDialog extends JDialog {
 			progressBar.setValue(progress);
 		}
 	}
-	
+
 }

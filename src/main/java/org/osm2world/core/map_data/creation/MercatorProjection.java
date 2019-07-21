@@ -32,7 +32,7 @@ final class MercatorProjection {
 
 	/**
 	 * Convert longitude to Mercator projection (range [0..1]).
-	 */ 
+	 */
 	public static double lonToX(double longitude) {
 		return (longitude + 180.0) / 360.0;
 	}
@@ -46,7 +46,7 @@ final class MercatorProjection {
 
 	/**
 	 * Convert latitude to Mercator projection (range [0..1]).
-	 */ 
+	 */
 	public static double latToY(double latitude) {
 		double sinLat = Math.sin(toRadians(latitude));
 		return Math.log((1.0 + sinLat) / (1.0 - sinLat)) / (4.0 * Math.PI) + 0.5;

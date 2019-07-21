@@ -35,14 +35,14 @@ public class ExportObjAction extends AbstractExportAction {
 	protected void performExport(File file) throws HeadlessException {
 
 		try {
-			
+
 			boolean underground = true;
-                        
+
 			if ( data.getConfig() != null )
 			{
 				underground = data.getConfig().getBoolean("renderUnderground", true);
 			}
-                        
+
 			/* write the file */
 			ObjWriter.writeObjFile(
 					file,

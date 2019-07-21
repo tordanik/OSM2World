@@ -21,7 +21,7 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
 /**
  * superclass for {@link NodeWorldObject}s that do have an outline
  * and are not just treated as an infinitely small point.
- * 
+ *
  * @see NoOutlineNodeWorldObject
  */
 public abstract class OutlineNodeWorldObject implements NodeWorldObject,
@@ -30,47 +30,47 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 	protected final MapNode node;
 
 	private EleConnectorGroup connectors = null;
-	
+
 	protected OutlineNodeWorldObject(MapNode node) {
 		this.node = node;
 	}
-	
+
 	@Override
 	public abstract SimplePolygonXZ getOutlinePolygonXZ();
-	
+
 	@Override
 	public final MapNode getPrimaryMapElement() {
 		return node;
 	}
-	
+
 	@Override
 	public EleConnectorGroup getEleConnectors() {
-		
+
 		if (connectors == null) {
-			
+
 			SimplePolygonXZ outlinePolygonXZ = getOutlinePolygonXZ();
-			
+
 			if (outlinePolygonXZ == null) {
-				
+
 				connectors = EleConnectorGroup.EMPTY;
-				
+
 			} else {
-				
+
 				connectors = new EleConnectorGroup();
 				connectors.addConnectorsFor(outlinePolygonXZ.getVertices(),
 						node, getGroundState());
-				
+
 			}
-			
+
 		}
-		
+
 		return connectors;
-		
+
 	}
-	
+
 	@Override
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
-	
+
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		if (getOutlinePolygonXZ() != null) {
@@ -82,31 +82,31 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 					node.getPos().x, node.getPos().z);
 		}
 	}
-	
+
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
 		return connectors.getPosXYZ(getOutlinePolygonXZ());
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + "(" + node + ")";
 	}
-	
+
 	/**
 	 * @return  a triangulation of the area covered by this junction
 	 */
 	protected Collection<TriangleXYZ> getTriangulation() {
-		
+
 		if (getOutlinePolygonXZ() == null) return emptyList();
-		
+
 		Collection<TriangleXZ> trianglesXZ = TriangulationUtil.triangulate(
 				getOutlinePolygonXZ(),
 				Collections.<SimplePolygonXZ>emptyList());
-		
+
 		Collection<TriangleXYZ> trianglesXYZ =
 			new ArrayList<TriangleXYZ>(trianglesXZ.size());
-		
+
 		for (TriangleXZ triangleXZ : trianglesXZ) {
 			VectorXYZ v1 = connectors.getPosXYZ(triangleXZ.v1);
 			VectorXYZ v2 = connectors.getPosXYZ(triangleXZ.v2);
@@ -117,9 +117,9 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 				trianglesXYZ.add(new TriangleXYZ(v1, v2, v3));
 			}
 		}
-		
+
 		return trianglesXYZ;
-		
+
 	}
-	
+
 }

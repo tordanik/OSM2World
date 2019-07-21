@@ -53,49 +53,49 @@ public class PoolModule extends ConfigurableWorldModule {
 	private final boolean isPool(TagGroup tags) {
 		boolean pool = tags.contains("amenity", "swimming_pool");
 		pool |= tags.contains("leisure", "swimming_pool");
-		
+
 		return pool;
 	}
-	
+
 	private final boolean isPool(MapArea area) {
 		return isPool(area.getTags());
 	}
-		
+
 	@Override
 	public void applyTo(MapData mapData) {
-		
+
 		for (MapArea area : mapData.getMapAreas()) {
 			if (isPool(area))
 				area.addRepresentation(new Pool(area));
 		}
-		
+
 		/*
-		
+
 		/* collect all segments of waterslide ways (because the entire slide needs
 		 * to be available at the same time for the height calculations) */
-		
+
 		Multimap<OSMWay, MapWaySegment> slideWaySegmentMap = ArrayListMultimap.create();
-		
+
 		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 			if (segment.getTags().contains("attraction", "water_slide")) {
 				slideWaySegmentMap.put(segment.getOsmWay(), segment);
 			}
 		}
-		
+
 		for (OSMWay key : slideWaySegmentMap.keySet()) {
-			
+
 			List<MapWaySegment> segments = new ArrayList<MapWaySegment>(slideWaySegmentMap.get(key));
 			sortWaySegmentList(key, segments);
-			
+
 			MapWaySegment primarySegment = segments.iterator().next();
-			
+
 			WaterSlide waterSlide = new WaterSlide(primarySegment, segments);
-			
+
 			// add it as the representation of one of the segments (arbitrary choice)
 			primarySegment.addRepresentation(waterSlide);
-			
+
 		}
-		
+
 	}
 
 	/**
@@ -103,24 +103,24 @@ public class PoolModule extends ConfigurableWorldModule {
 	 * and the way must not be self-intersecting for this to work!
 	 */
 	static void sortWaySegmentList(final OSMWay way, List<MapWaySegment> segments) {
-		
+
 		Collections.sort(segments, new Comparator<MapWaySegment>() {
 
 			@Override
 			public int compare(MapWaySegment s1, MapWaySegment s2) {
-				
+
 				int i1 = way.nodes.indexOf(s1.getStartNode().getOsmNode());
 				int i2 = way.nodes.indexOf(s2.getStartNode().getOsmNode());
-				
+
 				return Integer.valueOf(i1).compareTo(i2);
-				
+
 			}});
-		
+
 	}
-	
+
 	private static class Pool extends AbstractAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
-	
+
 		public Pool(MapArea area) {
 			super(area);
 		}
@@ -134,9 +134,9 @@ public class PoolModule extends ConfigurableWorldModule {
 		public void renderTo(Target<?> target) {
 
 			/* render water */
-			
+
 			Collection<TriangleXYZ> triangles = getTriangulation();
-			
+
 			target.drawTriangles(PURIFIED_WATER, triangles,
 					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));
 
@@ -144,7 +144,7 @@ public class PoolModule extends ConfigurableWorldModule {
 
 			double width=1;
 			double height=0.1;
-			
+
 			ShapeXZ wallShape = new PolylineXZ(
 					new VectorXZ(+width/2, 0),
 					new VectorXZ(+width/2, height),
@@ -153,46 +153,46 @@ public class PoolModule extends ConfigurableWorldModule {
 			);
 
 			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
-			
+
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
 					nCopies(path.size(), Y_UNIT), null, null, null);
-			
+
 		}
 	}
-	
+
 	private static class WaterSlide implements WaySegmentWorldObject,
 			RenderableToAllTargets {
-		
+
 		private static final Color DEFAULT_COLOR = ORANGE;
-		
+
 		/** cross-section of the pipe */
 		private static final ShapeXZ CROSS_SECTION_PIPE;
-		
+
 		/** cross-section of the water running down the pipe */
 		private static final ShapeXZ CROSS_SECTION_WATER;
-		
+
 		/** preferred distance between supporting pillars in meters */
 		private static final double PILLAR_DISTANCE = 5.5;
-		
+
 		static {
-			
+
 			double height = 0.8;
 			double waterHeight = 0.05;
-			
+
 			CircleXZ pipeCircle = new CircleXZ(new VectorXZ(0, height), height);
-			
+
 			List<VectorXZ> crossSection = new ArrayList<VectorXZ>();
-			
+
 			for (VectorXZ v : pipeCircle.getVertexList()) {
 				crossSection.add(new VectorXZ(v.x, v.z <= height ? v.z : height - (v.z - height)));
 			}
-			
+
 			CROSS_SECTION_PIPE = new PolylineXZ(crossSection);
-			
+
 			//find the lowest pipe vertices above the intended water line
-			
+
 			VectorXZ lowestRightVertexAboveWater = null;
-			
+
 			for (VectorXZ v : pipeCircle.getVertexList()) {
 				if (v.x > 0 && v.z >= waterHeight) {
 					if (lowestRightVertexAboveWater == null || v.z < lowestRightVertexAboveWater.z) {
@@ -200,116 +200,116 @@ public class PoolModule extends ConfigurableWorldModule {
 					}
 				}
 			}
-			
+
 			CROSS_SECTION_WATER = new LineSegmentXZ(lowestRightVertexAboveWater,
 					new VectorXZ(-lowestRightVertexAboveWater.x, lowestRightVertexAboveWater.z));
-			
+
 		}
-		
+
 		private final MapWaySegment primarySegment;
 		private final List<MapWaySegment> segments;
-		
+
 		private final List<EleConnector> eleConnectors;
-		
+
 		public WaterSlide(MapWaySegment primarySegment, List<MapWaySegment> segments) {
-			
+
 			this.primarySegment = primarySegment;
 			this.segments = segments;
-			
+
 			eleConnectors = new ArrayList<EleConnector>();
-			
+
 			eleConnectors.add(new EleConnector(segments.get(0).getStartNode().getPos(),
 					segments.get(0).getStartNode(), getGroundState()));
-			
+
 			for (MapWaySegment segment : segments) {
 				eleConnectors.add(new EleConnector(segment.getEndNode().getPos(),
 						segment.getEndNode(), getGroundState()));
 			}
-			
+
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
-			
+
 			//TODO parse material (e.g. for steel slides) and apply color to it
-			
+
 			Color color = null;
-			
+
 			if (primarySegment.getTags().containsKey("color")) {
 				color = parseColor(primarySegment.getTags().getValue("color"));
 			}
-			
+
 			if (color == null) {
 				color = DEFAULT_COLOR;
 			}
-			
+
 			Material material = new ImmutableMaterial(Interpolation.SMOOTH, color);
-			
+
 			/* construct the baseline */
-			
+
 			List<VectorXYZ> baseline = new ArrayList<VectorXYZ>(eleConnectors.size());
 
 			for (EleConnector eleConnector : eleConnectors) {
 				baseline.add(eleConnector.getPosXYZ());
 			}
-			
+
 			/* calculate plausible elevations by assuming constant incline */
-			
+
 			double totalLength = 0;
-			
+
 			for (MapWaySegment segment : segments) {
 				totalLength += segment.getLineSegment().getLength();
 			}
-			
+
 			double height = parseHeight(primarySegment.getTags(), (float)totalLength * 0.1f);
-			
+
 			List<VectorXYZ> path = new ArrayList<VectorXYZ>(baseline.size());
-			
+
 			VectorXYZ previousVector = null;
-			
+
 			for (VectorXYZ v : baseline) {
-				
+
 				VectorXYZ newPathVector;
-				
+
 				if (previousVector == null) {
-					
+
 					newPathVector = v.y(height);
-					
+
 				} else {
-					
+
 					newPathVector = v.y(previousVector.y
 							- v.distanceToXZ(previousVector) / totalLength * height);
-					
+
 				}
 
 				path.add(newPathVector);
 				previousVector = newPathVector;
-				
+
 			}
-			
+
 			/* draw the pipe and water using extrusion */
-			
+
 			List<VectorXYZ> up = nCopies(path.size(), Y_UNIT);
-			
+
 			target.drawExtrudedShape(material, CROSS_SECTION_PIPE, path, up, null, null, null);
 			target.drawExtrudedShape(WATER, CROSS_SECTION_WATER, path, up, null, null, null);
-			
+
 			/* draw supporting pillars */
-			
+
 			for (VectorXYZ v : equallyDistributePointsAlong(PILLAR_DISTANCE, false, path)) {
-				
+
 				double bottomHeight = -100;
-				
+
 				target.drawColumn(STEEL, null, v.y(bottomHeight),
 						v.y - bottomHeight, 0.15, 0.15, false, false);
-				
+
 			}
-			
+
 		}
 
 		@Override
@@ -336,7 +336,7 @@ public class PoolModule extends ConfigurableWorldModule {
 		public VectorXZ getEndPosition() {
 			return primarySegment.getEndNode().getPos();
 		}
-		
+
 	}
-	
+
 }

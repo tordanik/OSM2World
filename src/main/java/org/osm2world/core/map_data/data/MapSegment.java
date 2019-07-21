@@ -8,10 +8,10 @@ import org.osm2world.core.math.VectorXZ;
 import com.google.common.collect.ImmutableList;
 
 public class MapSegment {
-	
+
 	protected final MapNode startNode;
 	protected final MapNode endNode;
-	
+
 	public MapSegment(MapNode startNode, MapNode endNode) {
 		if (startNode == null || endNode == null) {
 			throw new IllegalArgumentException();
@@ -19,15 +19,15 @@ public class MapSegment {
 		this.startNode = startNode;
 		this.endNode = endNode;
 	}
-	
+
 	public MapNode getStartNode() {
 		return startNode;
 	}
-	
+
 	public MapNode getEndNode() {
 		return endNode;
 	}
-	
+
 	public MapNode getOtherNode(MapNode node) {
 		if (node == startNode) {
 			return endNode;
@@ -37,21 +37,21 @@ public class MapSegment {
 			throw new IllegalArgumentException("not a node of this segment");
 		}
 	}
-	
+
 	public List<MapNode> getStartEndNodes() {
 		return ImmutableList.of(startNode, endNode);
 	}
-	
+
 	public LineSegmentXZ getLineSegment() {
 		return new LineSegmentXZ(startNode.getPos(), endNode.getPos());
 	}
-	
+
 	/** caches the result for {@link #getDirection()} */
 	private VectorXZ direction = null;
-	
+
 	/** caches the result for {@link #getRightNormal()} */
 	private VectorXZ rightNormal = null;
-	
+
 	/**
 	 * returns a normalized vector indicating the line's horizontal direction
 	 */
@@ -63,7 +63,7 @@ public class MapSegment {
 		}
 		return direction;
 	}
-	
+
 	/**
 	 * returns a the result of applying {@link VectorXZ#rightNormal()}
 	 * to vector returned by {@link #getDirection()}
@@ -74,14 +74,14 @@ public class MapSegment {
 		}
 		return rightNormal;
 	}
-	
+
 	/**
 	 * returns the center of the line
 	 */
 	public VectorXZ getCenter() {
 		return (startNode.getPos().add(endNode.getPos())).mult(0.5);
 	}
-	
+
 	/**
 	 * returns true if this MapSegment shares a node with another MapSegment
 	 */
@@ -91,7 +91,7 @@ public class MapSegment {
 			|| startNode == other.getStartNode()
 			|| startNode == other.getEndNode();
 	}
-	
+
 	/**
 	 * returns true if this MapSegment shares a node with a MapArea
 	 */
@@ -99,7 +99,7 @@ public class MapSegment {
 		return other.getBoundaryNodes().contains(startNode)
 			|| other.getBoundaryNodes().contains(endNode);
 	}
-	
+
 	/**
 	 * returns true if this MapSegment shares both nodes with another MapSegment
 	 */
@@ -109,5 +109,5 @@ public class MapSegment {
 			|| (endNode == other.getEndNode()
 				&& startNode == other.getStartNode());
 	}
-	
+
 }

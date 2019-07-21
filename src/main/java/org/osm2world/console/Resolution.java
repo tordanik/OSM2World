@@ -16,7 +16,7 @@ public class Resolution {
 	 * pattern for parseable arguments
 	 */
 	public static final String PATTERN = "([0-9]{1,9}),([0-9]{1,9})";
-	
+
 	/**
 	 * regular constructor
 	 */
@@ -50,10 +50,10 @@ public class Resolution {
 			throw new IllegalArgumentException("not positive: " + x + ", " + y);
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return x + "," + y;
 	}
-		
+
 }

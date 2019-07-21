@@ -13,17 +13,17 @@ import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
  * Shader to render the depth buffer into a texture that can be used to implement SSAO later.
  */
 public class SSAOShader extends DepthBufferShader {
-	
+
 	private int depthBufferHandle;
 	private int frameBufferHandle;
 	private int width;
 	private int height;
-	
+
 	public SSAOShader(GL3 gl) {
 		super(gl);
 		initialize();
 	}
-	
+
 	/**
 	 * Setup the framebuffer and texture.
 	 */
@@ -47,7 +47,7 @@ public class SSAOShader extends DepthBufferShader {
 		        width,                     // width of generated image
 		        height,                    // height of generated image
 		        0,                          // border of image
-		        GL3.GL_DEPTH_COMPONENT,     // external pixel format 
+		        GL3.GL_DEPTH_COMPONENT,     // external pixel format
 		        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 		        null);  // buffer to store the texture in memory
 
@@ -55,7 +55,7 @@ public class SSAOShader extends DepthBufferShader {
 		// GL_LINEAR might produce better results, but is slower. GL_NEAREST shows aliasing artifacts clearly
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-		
+
 		/* For texture access outside the shadow map use the highest depth value possible (1.0).
 		 * This means the fragment lies outside of the lights frustum and no shadow should be applied.
 		 * Therefore we use CLAMP_TO_BORDER with a border of (1.0, 0.0, 0.0, 0.0)
@@ -64,7 +64,7 @@ public class SSAOShader extends DepthBufferShader {
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
 		//float [] border = {1.0f, 0.0f, 0.0f, 0.0f};
 		//gl.glTexParameterfv(GL.GL_TEXTURE_2D, GL3.GL_TEXTURE_BORDER_COLOR, border, 0);
-		
+
 		/* special for depth textures: do not retrieve the texture values, but the result of a comparison.
 		 * compare the third value (r) of the texture coordinate against the depth value stored at the texture coordinate (s,t)
 		 * result will be 1.0 if r is less than the texture value (which means the fragment is nearer) and 0.0 otherwise
@@ -74,8 +74,8 @@ public class SSAOShader extends DepthBufferShader {
 
 		gl.glActiveTexture(GL.GL_TEXTURE1);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
-		
-		
+
+
 		/*gl.glGenTextures(1,tmp,0);
 		colorBufferHandle = tmp[0];
 		gl.glActiveTexture(GL.GL_TEXTURE1);
@@ -90,11 +90,11 @@ public class SSAOShader extends DepthBufferShader {
 		        shadowMapWidth,                     // width of generated image
 		        shadowMapHeight,                    // height of generated image
 		        0,                          // border of image
-		        GL.GL_RGBA,     // external pixel format 
+		        GL.GL_RGBA,     // external pixel format
 		        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 		        null);  // buffer to store the texture in memory
 		*/
-		
+
 		// create the frame buffer object (FBO)
 		gl.glGenFramebuffers(1, tmp, 0);
 		frameBufferHandle = tmp[0];
@@ -112,7 +112,7 @@ public class SSAOShader extends DepthBufferShader {
 		        GL.GL_COLOR_ATTACHMENT0,
 		        GL.GL_TEXTURE_2D,
 		        colorBufferHandle,0);*/
-		
+
 		// set target for fragment shader output: not used, we only need the depth buffer
 		//int[] drawBuffers = {GL.GL_NONE};
 		//gl.glDrawBuffers(1, drawBuffers, 0);
@@ -144,7 +144,7 @@ public class SSAOShader extends DepthBufferShader {
 		}
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
 	}
-	
+
 	/**
 	 * Resize the framebuffer backing texture, if size doesn't match.
 	 */
@@ -153,7 +153,7 @@ public class SSAOShader extends DepthBufferShader {
 			this.width = width;
 			this.height = height;
 			gl.glBindTexture(GL.GL_TEXTURE_2D, depthBufferHandle);
-	
+
 			gl.glTexImage2D(GL.GL_TEXTURE_2D,          // target texture type
 			        0,                                  // mipmap LOD level
 			        GL3.GL_DEPTH_COMPONENT,         // internal pixel format
@@ -161,12 +161,12 @@ public class SSAOShader extends DepthBufferShader {
 			        width,                     // width of generated image
 			        height,                    // height of generated image
 			        0,                          // border of image
-			        GL3.GL_DEPTH_COMPONENT,     // external pixel format 
+			        GL3.GL_DEPTH_COMPONENT,     // external pixel format
 			        GL.GL_UNSIGNED_BYTE,        // datatype for each value
 			        null);  // buffer to store the texture in memory
 		}
 	}
-	
+
 	/**
 	 * Prepares rendering of the depth map. Binds the framebuffer and clears it.
 	 * The size of the framebuffer is automatically adjusted to match the current viewport.
@@ -175,30 +175,30 @@ public class SSAOShader extends DepthBufferShader {
 		int[] viewport = new int[4];
 		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
 		resizeBuffer(viewport[2], viewport[3]);
-		
+
 		// bind FBO
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, frameBufferHandle);
-		
+
 		// clear shadow map
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
-		
+
 		gl.glEnable(GL_DEPTH_TEST);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * Only primitives that support ambient occlusion will get rendered.
 	 */
 	@Override
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
-		
+
 		if (material.getAmbientOcclusion() == AmbientOcclusion.FALSE) {
 			return false;
 		}
-		
+
 		return super.setMaterial(material, textureManager);
 	}
-	
+
 	/**
 	 * Returns the handle of the texture containing the rendered depth map.
 	 */
@@ -215,18 +215,18 @@ public class SSAOShader extends DepthBufferShader {
 		super.useShader();
 		prepareDepthMapGeneration();
 	}
-	
+
 	/**
 	 * Completes the rendering of the depth map. The default framebuffer gets restored.
 	 */
 	@Override
 	public void disableShader() {
-		
+
 		//ShaderManager.saveDepthBuffer(new File("/home/sebastian/ssao_depth.png"), depthBufferHandle, width, height, gl);
-		
+
 		// bind default framebuffer
 		gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
 		super.disableShader();
 	}
-	
+
 }

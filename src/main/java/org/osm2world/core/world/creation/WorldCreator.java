@@ -9,26 +9,26 @@ import org.osm2world.core.map_data.data.MapData;
 public class WorldCreator {
 
 	private List<? extends WorldModule> modules;
-		
+
 	public WorldCreator(Configuration config, WorldModule... modules) {
 		this(config, Arrays.asList(modules));
 	}
-	
+
 	public WorldCreator(Configuration config, List<? extends WorldModule> modules) {
 		this.modules = modules;
 		for (WorldModule module : modules) {
 			module.setConfiguration(config);
 		}
 	}
-	
+
 	public void addRepresentationsTo(MapData mapData) {
-		
+
 		for (WorldModule module : modules) {
 			module.applyTo(mapData);
 		}
-		
+
 		NetworkCalculator.calculateNetworkInformationInGrid(mapData);
-		
+
 	}
-	
+
 }

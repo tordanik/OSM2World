@@ -30,38 +30,38 @@ import org.xml.sax.SAXException;
  * ignore small standard incompabilities in .osm files written by JOSM.
  */
 public class JOSMFileReader extends StrictOSMFileReader {
-	
+
 	public JOSMFileReader(File file) throws IOException,
 			ParserConfigurationException, SAXException,
 			TransformerException {
 		super(createTempOSMFile(file));
 	}
-	
+
 	/**
 	 * creates a temporary file in the .osm format. This removes some
 	 * JOSM-specific attributes present in the original file,
 	 * sets fake versions for unversioned elements,
 	 * and merges multiple bound elements.
-	 * 
+	 *
 	 * The generated file should <em>not</em> be used for anything except
 	 * feeding it to OSM2World.
 	 */
 	private static final File createTempOSMFile(File josmFile) throws
 			IOException, ParserConfigurationException, SAXException,
 			TransformerException {
-		
+
 		/* parse original file */
-		
+
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document doc = db.parse(josmFile);
-		
+
 		/* modify DOM */
-		
+
 		NodeList nodes = doc.getDocumentElement().getChildNodes();
 		List<Node> nodesToDelete = new ArrayList<Node>();
 		List<Element> boundsElements = new ArrayList<Element>();
-		
+
 		for (int i = 0; i < nodes.getLength(); i++) {
 			if (nodes.item(i) instanceof Element) {
 				Element element = (Element) nodes.item(i);
@@ -78,52 +78,52 @@ public class JOSMFileReader extends StrictOSMFileReader {
 				}
 			}
 		}
-		
+
 		if (boundsElements.size() > 1) {
-			
+
 			double minLat = Double.POSITIVE_INFINITY;
 			double minLon = Double.POSITIVE_INFINITY;
 			double maxLat = Double.NEGATIVE_INFINITY;
 			double maxLon = Double.NEGATIVE_INFINITY;
-			
+
 			for (Element bounds : boundsElements) {
 				minLat = min(minLat, parseDouble(bounds.getAttribute("minlat")));
 				minLon = min(minLon, parseDouble(bounds.getAttribute("minlon")));
 				maxLat = max(maxLat, parseDouble(bounds.getAttribute("maxlat")));
 				maxLon = max(maxLon, parseDouble(bounds.getAttribute("maxlon")));
 			}
-			
+
 			Element firstBounds = boundsElements.remove(0);
 			firstBounds.setAttribute("minlat", Double.toString(minLat));
 			firstBounds.setAttribute("minlon", Double.toString(minLon));
 			firstBounds.setAttribute("maxlat", Double.toString(maxLat));
 			firstBounds.setAttribute("maxlon", Double.toString(maxLon));
-			
+
 			nodesToDelete.addAll(boundsElements);
-			
+
 			System.out.println("WARNING: input file contains multiple <bounds>." +
 					" This can lead to wrong coastlines and other issues."); //TODO proper logging
-			
+
 		}
-		
+
 		for (Node node : nodesToDelete) {
 			doc.getDocumentElement().removeChild(node);
 		}
-		
+
 		/* write result */
-		
+
 		File tempFile = File.createTempFile("workaround", ".osm", null);
 		tempFile.deleteOnExit();
-		
+
 		TransformerFactory tFactory = TransformerFactory.newInstance();
 		Transformer transformer = tFactory.newTransformer();
-		
+
 		DOMSource source = new DOMSource(doc);
 		StreamResult result = new StreamResult(new FileOutputStream(tempFile));
 		transformer.transform(source, result);
-		
+
 		return tempFile;
-		
+
 	}
-	
+
 }

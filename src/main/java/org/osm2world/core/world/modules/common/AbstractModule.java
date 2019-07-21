@@ -10,16 +10,16 @@ import org.osm2world.core.world.data.WorldObject;
 
 /**
  * skeleton implementation for {@link WorldModule}s.
- * 
+ *
  * Subclasses need to be able to create {@link WorldObject}s
  * for each {@link MapElement} in isolation.
  * This can make parallel application of the module possible.
  */
 public abstract class AbstractModule extends ConfigurableWorldModule {
-		
+
 	@Override
 	public final void applyTo(MapData grid) {
-		
+
 		for (MapNode node : grid.getMapNodes()) {
 			applyToNode(node);
 		}
@@ -31,7 +31,7 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 		for (MapArea area : grid.getMapAreas()) {
 			applyToArea(area);
 		}
-		
+
 	}
 
 	/**
@@ -40,7 +40,7 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	 * The default implementation does not create any objects.
 	 */
 	protected void applyToElement(MapElement element) {}
-	
+
 	/**
 	 * create {@link WorldObject}s for a {@link MapNode}.
 	 * Can be overwritten by subclasses.
@@ -49,7 +49,7 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	protected void applyToNode(MapNode node) {
 		applyToElement(node);
 	}
-	
+
 	/**
 	 * create {@link WorldObject}s for a {@link MapWaySegment}.
 	 * Can be overwritten by subclasses.
@@ -58,7 +58,7 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	protected void applyToWaySegment(MapWaySegment segment) {
 		applyToElement(segment);
 	}
-	
+
 	/**
 	 * create {@link WorldObject}s for a {@link MapArea}.
 	 * Can be overwritten by subclasses.
@@ -67,5 +67,5 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	protected void applyToArea(MapArea area) {
 		applyToElement(area);
 	}
-	
+
 }

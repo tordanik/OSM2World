@@ -16,7 +16,7 @@ public class TileNumber {
 	 * pattern for parsing constructor
 	 */
 	public static final String PATTERN = "([0-9]{1,2}),([0-9]{1,9}),([0-9]{1,9})";
-	
+
 	/**
 	 * regular constructor
 	 */
@@ -53,10 +53,10 @@ public class TileNumber {
 			throw new IllegalArgumentException("not positive: " + x + ", " + y);
 		}
 	}
-	
+
 	@Override
-	public String toString() {		
+	public String toString() {
 		return zoom + "," + x + "," + y;
 	}
-	
+
 }

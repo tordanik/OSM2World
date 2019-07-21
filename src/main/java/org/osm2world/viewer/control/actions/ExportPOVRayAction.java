@@ -47,11 +47,11 @@ public class ExportPOVRayAction extends AbstractExportAction {
 
 			Camera povRayCamera = new Camera();
 			povRayCamera.setCamera(
-					renderOptions.camera.getPos().x, 
-					renderOptions.camera.getPos().y, 
+					renderOptions.camera.getPos().x,
+					renderOptions.camera.getPos().y,
 					renderOptions.camera.getPos().z,
-					renderOptions.camera.getLookAt().x, 
-					renderOptions.camera.getLookAt().y, 
+					renderOptions.camera.getLookAt().x,
+					renderOptions.camera.getLookAt().y,
 					renderOptions.camera.getLookAt().z,
 					renderOptions.camera.getUp().x,
 					renderOptions.camera.getUp().y,
@@ -60,7 +60,7 @@ public class ExportPOVRayAction extends AbstractExportAction {
 			/* write the file */
 
 			POVRayWriter.writePOVInstructionFile(
-					file, 
+					file,
 					data.getConversionResults().getMapData(),
 					povRayCamera, renderOptions.projection);
 
@@ -70,7 +70,7 @@ public class ExportPOVRayAction extends AbstractExportAction {
 			JOptionPane.showMessageDialog(viewerFrame,
 					e.toString(),
 					"Could not export POVRay file", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
 	}
 

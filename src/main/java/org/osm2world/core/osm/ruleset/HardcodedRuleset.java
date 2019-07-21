@@ -9,10 +9,10 @@ public class HardcodedRuleset implements Ruleset {
 
 	private static Collection<Tag> areaTags = new HashSet<Tag>();
 	private static Collection<String> areaKeys = new HashSet<String>();
-	
+
 	private static Collection<Tag> landTags = new HashSet<Tag>();
 	private static Collection<Tag> seaTags = new HashSet<Tag>();
-	
+
 	static {
 		areaTags.add(new Tag("area", "yes"));
 		areaTags.add(new Tag("amenity", "fountain"));
@@ -27,7 +27,7 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("natural", "scrub"));
 		areaTags.add(new Tag("power", "generator"));
 		areaTags.add(new Tag("waterway", "riverbank"));
-		
+
 		areaKeys.add("building");
 		areaKeys.add("building:part");
 		areaKeys.add("golf");
@@ -51,21 +51,21 @@ public class HardcodedRuleset implements Ruleset {
 		seaTags.add(new Tag("submarine", "yes"));
 		seaTags.add(new Tag("wetland", "tidalflat"));
 	}
-	
+
 	@Override
 	public boolean isAreaTag(Tag tag) {
 		return areaKeys.contains(tag.key)
 			|| areaTags.contains(tag);
 	}
-	
+
 	@Override
 	public boolean isLandTag(Tag tag) {
 		return landTags.contains(tag);
 	}
-	
+
 	@Override
 	public boolean isSeaTag(Tag tag) {
 		return seaTags.contains(tag);
 	}
-		
+
 }

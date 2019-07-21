@@ -10,14 +10,14 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  */
 public interface TerrainBoundaryWorldObject
 	extends WorldObjectWithOutline, IntersectionTestObject {
-	
+
 	//TODO: multipolygon support -> requires retrieving the inner polygons
 	// (preferably, the supertype WorldObjectWithOutline should be modified)
-	
+
 	/**
 	 * returns the axis aligned bounding box that contains the entire object
 	 */
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ();
-	
+
 }

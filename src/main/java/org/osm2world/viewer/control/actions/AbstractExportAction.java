@@ -24,86 +24,86 @@ public abstract class AbstractExportAction
 	protected final Data data;
 	protected final MessageManager messageManager;
 	protected final RenderOptions renderOptions;
-	
+
 	private File lastPath = null;
 
 	protected AbstractExportAction(String name,
 			ViewerFrame viewerFrame, Data data,
 			MessageManager messageManager,
 			RenderOptions renderOptions) {
-		
+
 		super(name);
-		
+
 		this.viewerFrame = viewerFrame;
 		this.messageManager = messageManager;
 		this.data = data;
 		this.renderOptions = renderOptions;
-		
+
 		setEnabled(false);
 		data.addObserver(this);
-		
+
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		setEnabled(data.getConversionResults() != null);
 	}
 
 	protected boolean chooseDirectory() { return false; }
-	
+
 	abstract protected FileNameExtensionFilter getFileNameExtensionFilter();
 
 	abstract protected void performExport(File file);
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-	
+
 		File file = askFile();
-		
+
 		if (file != null) {
 			new ExportFileThread(file).start();
 		}
-		
+
 	}
-	
+
 	private File askFile() {
-		
+
 		JFileChooser chooser = new JFileChooser(lastPath);
 		chooser.setDialogTitle("Export file");
-		
+
 		if (chooseDirectory()) {
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		} else {
 			chooser.setFileFilter(getFileNameExtensionFilter());
 		}
-		
+
 		int returnVal = chooser.showSaveDialog(null);
-	
+
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			
+
 			File selectedFile = chooser.getSelectedFile();
-			
+
 			lastPath = selectedFile.getParentFile();
-			
+
 			/* make sure that file uses correct extension */
-					
+
 			if (getFileNameExtensionFilter() != null &&
 					getFileNameExtensionFilter().getExtensions().length == 1) {
-				
+
 				String extension = getFileNameExtensionFilter().getExtensions()[0];
-								
+
 				if (!selectedFile.getPath().endsWith("." + extension)) {
 					selectedFile = new File(selectedFile.getPath() + "." + extension);
 				}
-				
+
 			}
-			
+
 			return selectedFile;
-			
+
 		} else {
 			return null;
 		}
-		
+
 	}
 	private class ExportFileThread extends Thread {
 
@@ -127,11 +127,11 @@ public abstract class AbstractExportAction
 				progressDescription += " of type "
 						+ getFileNameExtensionFilter().getDescription();
 			}
-			
+
 			progressDialog = new ProgressDialog(viewerFrame, progressDescription);
 			progressDialog.setProgress(null);
 			progressDialog.setText("Writing file: " + file.getAbsolutePath());
-			
+
 			performExport(file);
 
 			progressDialog.dispose();

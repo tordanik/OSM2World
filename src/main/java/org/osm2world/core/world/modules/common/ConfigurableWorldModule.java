@@ -8,12 +8,12 @@ import org.osm2world.core.world.creation.WorldModule;
  * {@link #setConfiguration(org.apache.commons.configuration.Configuration)}
  */
 public abstract class ConfigurableWorldModule implements WorldModule {
-	
+
 	protected Configuration config;
-	
+
 	@Override
 	public void setConfiguration(Configuration config) {
 		this.config = config;
 	}
-	
+
 }

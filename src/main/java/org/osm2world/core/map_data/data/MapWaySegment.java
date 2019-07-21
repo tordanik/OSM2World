@@ -21,17 +21,17 @@ import com.google.common.collect.Iterables;
 public class MapWaySegment extends MapSegment implements MapElement {
 
 	private final OSMWay osmWay;
-	
+
 	private List<WaySegmentWorldObject> representations = new ArrayList<WaySegmentWorldObject>(1);
-	
+
 	@SuppressWarnings("unchecked") //is later checked for EMPTY_LIST using ==
 	private Collection<MapOverlap<?,?>> overlaps = Collections.EMPTY_LIST;
-	
+
 	public MapWaySegment(OSMWay osmWay, MapNode startNode, MapNode endNode) {
 		super(startNode, endNode);
 		this.osmWay = osmWay;
 	}
-	
+
 	@Override
 	public int getLayer() {
 		if (osmWay.tags.containsKey("layer")) {
@@ -43,7 +43,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 		}
 		return 0;
 	}
-	
+
 	public OSMWay getOsmWay() {
 		return osmWay;
 	}
@@ -52,7 +52,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	public TagGroup getTags() {
 		return getOsmWay().tags;
 	}
-	
+
 	public void addOverlap(MapOverlap<?, ?> overlap) {
 		assert overlap.e1 == this || overlap.e2 == this;
 		if (overlaps == Collections.EMPTY_LIST) {
@@ -60,27 +60,27 @@ public class MapWaySegment extends MapSegment implements MapElement {
 		}
 		overlaps.add(overlap);
 	}
-	
+
 	@Override
 	public Collection<MapOverlap<?,?>> getOverlaps() {
 		return overlaps;
 	}
-	
+
 	public Iterable<MapIntersectionWW> getIntersectionsWW() {
 		return Iterables.filter(overlaps, MapIntersectionWW.class);
 	}
-	
+
 	@Override
 	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
 		return new AxisAlignedBoundingBoxXZ(Arrays.asList(
 				startNode.getPos(), endNode.getPos()));
 	}
-	
+
 	@Override
 	public List<WaySegmentWorldObject> getRepresentations() {
 		return representations;
 	}
-	
+
 	@Override
 	public WaySegmentWorldObject getPrimaryRepresentation() {
 		if (representations.isEmpty()) {
@@ -96,10 +96,10 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	public void addRepresentation(WaySegmentWorldObject representation) {
 		this.representations.add(representation);
 	}
-	
+
 	@Override
 	public String toString() {
 		return startNode + "->" + endNode;
 	}
-	
+
 }

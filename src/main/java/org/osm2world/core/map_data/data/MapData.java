@@ -26,7 +26,7 @@ public class MapData {
 
 	AxisAlignedBoundingBoxXZ fileBoundary;
 	AxisAlignedBoundingBoxXZ dataBoundary;
-	
+
 	public MapData(List<MapNode> mapNodes, List<MapWaySegment> mapWaySegments,
 			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ fileBoundary) {
 
@@ -36,16 +36,16 @@ public class MapData {
 		this.fileBoundary = fileBoundary;
 
 		calculateDataBoundary();
-		
+
 	}
-	
+
 	private void calculateDataBoundary() {
-		
+
 		double minX = Double.POSITIVE_INFINITY;
 		double maxX = Double.NEGATIVE_INFINITY;
 		double minZ = Double.POSITIVE_INFINITY;
 		double maxZ = Double.NEGATIVE_INFINITY;
-		
+
 		if (fileBoundary != null) {
 			// use the file boundary as the minimum extent of the data boundary
 			minX = fileBoundary.minX;
@@ -53,7 +53,7 @@ public class MapData {
 			minZ = fileBoundary.minZ;
 			maxZ = fileBoundary.maxZ;
 		}
-		
+
 		for (MapNode node : mapNodes) {
 			final double nodeX = node.getPos().x;
 			final double nodeZ = node.getPos().z;
@@ -62,9 +62,9 @@ public class MapData {
 			if (nodeZ < minZ) { minZ = nodeZ; }
 			if (nodeZ > maxZ) { maxZ = nodeZ; }
 		}
-		
+
 		dataBoundary = new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
-		
+
 	}
 
 	public Iterable<MapElement> getMapElements() {
@@ -90,7 +90,7 @@ public class MapData {
 	public AxisAlignedBoundingBoxXZ getDataBoundary() {
 		return dataBoundary;
 	}
-	
+
 	/**
 	 * returns a boundary based on the bounds in the input file if available,
 	 * otherwise returns the same as {@link #getDataBoundary()}
@@ -125,7 +125,7 @@ public class MapData {
 	 * returns all {@link WorldObject}s from elements in this data set.
 	 */
 	public Iterable<WorldObject> getWorldObjects() {
-		
+
 		return Iterables.concat(
 				Iterables.transform(getMapElements(),
 						new Function<MapElement, Iterable<? extends WorldObject>>() {
@@ -133,7 +133,7 @@ public class MapData {
 						return e.getRepresentations();
 					}
 				}));
-		
+
 	}
 
 	/**
@@ -145,5 +145,5 @@ public class MapData {
 	public <T> Iterable<T> getWorldObjects(Class<T> type) {
 		return Iterables.filter(getWorldObjects(), type);
 	}
-		
+
 }

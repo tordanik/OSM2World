@@ -23,90 +23,90 @@ import org.osm2world.core.target.common.material.Material;
  * Base class that keeps a VBO id along with associated information.
  */
 public abstract class VBOData<BufferT extends Buffer> {
-	
+
 	/** material associated with this VBO, determines VBO layout */
 	protected Material material;
-	
+
 	/** array with one element containing the VBO id */
 	protected final int[] id;
-	
+
 	/** number of vertices in the vbo */
 	protected final int vertexCount;
-	
+
 	/** size of each value in the vbo */
 	protected final int valueTypeSize;
-	
+
 	/** gl constant for the value type in the vbo */
 	protected final int glValueType;
 
 	/** create a buffer to store the vbo data for upload to graphics memory */
 	protected abstract BufferT createBuffer(int numValues);
-	
+
 	/** add a texture coordinate to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXZ texCoord);
-	
+
 	/** add 3d vertex data to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXYZ v);
-	
+
 	/** returns the size of each value in the vbo */
 	protected abstract int valueTypeSize();
-	
+
 	/** returns the gl constant for the value type in the vbo */
 	protected abstract int glValueType();
 
 	private GL gl;
 	protected JOGLTextureManager textureManager;
-	
+
 	/**
 	 * Creates a new vertex buffer object, adds all primitives to the buffer and uploads it to graphics memory.
 	 */
 	public VBOData(GL gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
-		
+
 		this.gl = gl;
 		this.textureManager = textureManager;
 		this.material = material;
-		
+
 		valueTypeSize = valueTypeSize();
 		glValueType = glValueType();
-		
+
 		vertexCount = countVertices(primitives);
-		
+
 		/* create the buffer */
-		
+
 		id = new int[1];
 		gl.glGenBuffers(1, id, 0);
-		
+
 		/* collect the data for the buffer */
-		
+
 		BufferT valueBuffer = createBuffer(
 				vertexCount * getValuesPerVertex(material));
-					
+
 		for (Primitive primitive : primitives) {
 			addPrimitiveToValueBuffer(valueBuffer, primitive);
 		}
-		
+
 		valueBuffer.rewind();
-		
+
 		/* write the data into the buffer */
-		
+
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
-		
+
 		gl.glBufferData(
 				GL_ARRAY_BUFFER,
 				valueBuffer.capacity() * valueTypeSize,
 				valueBuffer,
 				GL_STATIC_DRAW);
-		
+
 	}
-	
+
 	/**
 	 * returns the number of vertices required to represent a collection
 	 * of primitives with individual triangles
 	 */
 	static int countVertices(Collection<Primitive> primitives) {
-		
+
 		int vertexCount = 0;
-		
+
 		for (Primitive primitive : primitives) {
 			if (primitive.type == Type.TRIANGLES) {
 				vertexCount += primitive.vertices.size();
@@ -114,17 +114,17 @@ public abstract class VBOData<BufferT extends Buffer> {
 				vertexCount += 3 * (primitive.vertices.size() - 2);
 			}
 		}
-		
+
 		return vertexCount;
-		
+
 	}
-	
+
 	/**
 	 * put the values for a primitive's vertices into the buffer
 	 */
 	protected void addPrimitiveToValueBuffer(BufferT buffer,
 			Primitive primitive) {
-					
+
 		/*
 		 * rearrange the lists of vertices, normals and texture coordinates
 		 * to turn triangle strips and triangle fans into separate triangles
@@ -133,13 +133,13 @@ public abstract class VBOData<BufferT extends Buffer> {
 		List<VectorXYZ> primVertices = primitive.vertices;
 		List<VectorXYZ> primNormals = primitive.normals;
 		List<List<VectorXZ>> primTexCoordLists = primitive.texCoordLists;
-		
+
 		if (primitive.type == Type.TRIANGLE_STRIP) {
 
 			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleStrip(primVertices);
 			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
-			
+
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
 				for (List<VectorXZ> primTexCoordList : primTexCoordLists) {
@@ -147,13 +147,13 @@ public abstract class VBOData<BufferT extends Buffer> {
 				}
 				primTexCoordLists = newPrimTexCoordLists;
 			}
-			
+
 		} else if (primitive.type == Type.TRIANGLE_FAN) {
 
 			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
 			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
-			
+
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
 				for (List<VectorXZ> primTexCoordList : primTexCoordLists) {
@@ -161,40 +161,40 @@ public abstract class VBOData<BufferT extends Buffer> {
 				}
 				primTexCoordLists = newPrimTexCoordLists;
 			}
-			
+
 		}
-		
+
 		/* put the values into the buffer, in the right order */
-		
+
 		for (int i = 0; i < primVertices.size(); i++) {
-			
+
 			assert (primTexCoordLists == null
 					&& material.getNumTextureLayers() == 0)
 				|| (primTexCoordLists != null
 					&& primTexCoordLists.size() == material.getNumTextureLayers())
 				: "WorldModules need to provide the correct number of tex coords";
-			
+
 			if (primTexCoordLists == null && material.getNumTextureLayers() > 0) {
 				System.out.println(material);
 			}
-				
+
 			for (int t = 0; t < material.getNumTextureLayers(); t++) {
 				VectorXZ textureCoord =	primTexCoordLists.get(t).get(i);
 				put(buffer, textureCoord);
 			}
-			
+
 			put(buffer, primNormals.get(i));
 			put(buffer, primVertices.get(i));
-			
+
 		}
-		
+
 	}
-	
+
 	/**
 	 * Bind and render this vertex buffer object.
 	 */
 	public abstract void render();
-	
+
 	/**
 	 * Returns the number of values for each vertex in the vertex buffer layout appropriate for a given material.
 	 */

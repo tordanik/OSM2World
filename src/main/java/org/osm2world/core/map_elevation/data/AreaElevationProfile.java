@@ -18,18 +18,18 @@ import com.google.common.base.Function;
 public class AreaElevationProfile extends ElevationProfile {
 
 	private final MapArea area;
-	
+
 	private Collection<VectorXYZ> pointsWithEle = null;
 
 	private Function<VectorXZ, VectorXYZ> eleFunction;
-	
+
 	Collection<TriangleXYZ> triangulation = null;
-	
+
 	public AreaElevationProfile(MapArea area) {
 		super();
 		this.area = area;
 	}
-	
+
 	@Override
 	protected MapElement getElement() {
 		return area;
@@ -43,27 +43,27 @@ public class AreaElevationProfile extends ElevationProfile {
 	 */
 	@Override
 	public Collection<VectorXYZ> getPointsWithEle() {
-		
+
 		if (pointsWithEle == null) {
 			throw new IllegalStateException("elevations have not been calculated yet");
 		} else if (pointsWithEle.size() < 2) {
 			throw new IllegalStateException("an area must have at least two points with elevation");
 		}
-		
+
 		return pointsWithEle;
 	}
-	
+
 	@Override
 	public double getEleAt(final VectorXZ pos) {
-		
+
 //		if (triangulation == null) {
 //			calculateTriangulation();
 //		}
 		//TODO: calculate correctly and with better performance.
 		//Should be possible using a triangulation.
-		
+
 		//temporary solution: find closest point with ele
-				
+
 //		VectorXYZ closestPoint = Collections.min(pointsWithEle, new Comparator<VectorXYZ>(){
 //			public int compare(VectorXYZ p1, VectorXYZ p2) {
 //				return Double.compare(
@@ -73,31 +73,31 @@ public class AreaElevationProfile extends ElevationProfile {
 //		});
 //
 //		return closestPoint.y;
-		
+
 		return eleFunction.apply(pos).y;
-		
+
 	}
-	
+
 	@Override
 	public VectorXYZ getWithEle(VectorXZ pos) {
 		//TODO keep in sync with getEleAt
 		return eleFunction.apply(pos);
 	}
-			
+
 	/**
 	 * adds a result of {@link ElevationCalculator}.
 	 * Must be called at least once for every outline node
 	 */
 	public void addPointWithEle(VectorXYZ pointWithEle) {
-		
+
 		if (pointsWithEle == null) {
 			pointsWithEle = new ArrayList<VectorXYZ>();
 		}
-		
+
 		this.pointsWithEle.add(pointWithEle);
-		
+
 	}
-	
+
 	public void setEleFunction(Function<VectorXZ, VectorXYZ> eleFunction) {
 		this.eleFunction = eleFunction;
 	}
@@ -125,7 +125,7 @@ public class AreaElevationProfile extends ElevationProfile {
 		}
 		return minEle;
 	}
-	
+
 //  TODO: finish implementation
 //	/**
 //	 * returns a triangulation of the associated area
@@ -166,5 +166,5 @@ public class AreaElevationProfile extends ElevationProfile {
 //		}
 //
 //	}
-	
+
 }

@@ -14,7 +14,7 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 	 * Render objects that are semi transparent (see {@link Transparency#TRUE})
 	 */
 	protected boolean renderSemiTransparent = true;
-	
+
 	/**
 	 * Render only objects that are semi transparent (see {@link Transparency#TRUE})
 	 */
@@ -31,23 +31,23 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 	 * @return <code>true</code> if this shader wants to render primitives with the given material at all, <code>false</code> otherwise.
 	 */
 	public boolean setMaterial(Material material, JOGLTextureManager textureManager) {
-		
+
 		if (!renderSemiTransparent && material.getTransparency() == Transparency.TRUE) {
 			return false;
 		} else if (renderOnlySemiTransparent && material.getTransparency() != Transparency.TRUE) {
 			return false;
 		}
 		return true;
-		
+
 	}
-	
+
 	/**
 	 * see {@link #renderSemiTransparent}
 	 */
 	public void setRenderSemiTransparent(boolean renderSemiTransparent) {
 		this.renderSemiTransparent  = renderSemiTransparent;
 	}
-	
+
 	/**
 	 * see {@link #renderOnlySemiTransparent}
 	 */
@@ -72,7 +72,7 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 	 * May be -1 if the attribute is unused.
 	 */
 	public abstract int getVertexTexCoordID(int i);
-	
+
 	/**
 	 * Returns the id to use by {@link JOGLRendererVBOShader} to bind the vertex bumpmap coordinate attribute.
 	 * May be -1 if the attribute is unused.
@@ -84,7 +84,7 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 	 * May be -1 if the attribute is unused.
 	 */
 	public abstract int getVertexTangentID();
-	
+
 	/**
 	 * Enable a vertex attribute. Attributes with -1 are ignored.
 	 * @param index the index of the attribute. Can safely be -1
@@ -94,7 +94,7 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 			gl.glEnableVertexAttribArray(index);
 		}
 	}
-	
+
 	/**
 	 * Disable a vertex attribute. Attributes with -1 are ignored.
 	 * @param index the index of the attribute. Can safely be -1
@@ -104,7 +104,7 @@ public abstract class AbstractPrimitiveShader extends AbstractShader {
 			gl.glDisableVertexAttribArray(index);
 		}
 	}
-	
+
 	/**
 	 * Setup the vertex attribute pointer. Attributes with index -1 are ignores.
 	 */

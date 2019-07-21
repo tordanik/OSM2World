@@ -34,7 +34,7 @@ public abstract class OSMElement {
 			return false;
 		return true;
 	}
-	
+
 	/**
 	 * returns the id, plus an one-letter prefix for the element type
 	 */
@@ -42,5 +42,5 @@ public abstract class OSMElement {
 	public String toString() {
 		return "?" + id;
 	}
-	
+
 }

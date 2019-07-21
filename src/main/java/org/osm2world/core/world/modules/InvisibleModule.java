@@ -17,12 +17,12 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * but nevertheless contain important information (such as elevation at a point)
  */
 public class InvisibleModule extends AbstractModule {
-	
+
 	@Override
 	protected void applyToNode(MapNode node) {
 		if (node.getTags().containsKey("ele")
 				&& node.getRepresentations().isEmpty()) {
-			
+
 			boolean isInGroundSegment = false;
 			for (MapSegment segment : node.getConnectedSegments()) {
 				MapElement element;
@@ -38,14 +38,14 @@ public class InvisibleModule extends AbstractModule {
 					break;
 				}
 			}
-			
+
 			if (node.getConnectedSegments().isEmpty() || isInGroundSegment) {
 				node.addRepresentation(new InvisibleEleNode(node));
 			}
-			
+
 		}
 	}
-	
+
 	@Override
 	protected void applyToWaySegment(MapWaySegment segment) {
 		if (segment.getTags().containsKey("ele")
@@ -53,7 +53,7 @@ public class InvisibleModule extends AbstractModule {
 			segment.addRepresentation(new InvisibleEleWaySegment(segment));
 		}
 	}
-	
+
 	@Override
 	protected void applyToArea(MapArea area) {
 		if (area.getTags().containsKey("ele")
@@ -61,47 +61,47 @@ public class InvisibleModule extends AbstractModule {
 			area.addRepresentation(new InvisibleEleArea(area));
 		}
 	}
-	
+
 	private static class InvisibleEleNode extends NoOutlineNodeWorldObject {
-		
+
 		public InvisibleEleNode(MapNode node) {
 			super(node);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 	}
-	
+
 	private static class InvisibleEleWaySegment
 			extends NoOutlineWaySegmentWorldObject {
-		
+
 		public InvisibleEleWaySegment(MapWaySegment segment) {
 			super(segment);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 	}
-	
+
 	private static class InvisibleEleArea
 			extends AbstractAreaWorldObject {
-		
+
 		protected InvisibleEleArea(MapArea area) {
 			super(area);
 		}
-		
+
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
-		
+
 	}
-	
-	
+
+
 }

@@ -6,14 +6,14 @@ import java.awt.Font;
 import com.jogamp.opengl.util.awt.TextRenderer;
 
 public class TextRendererFixedFunction implements org.osm2world.viewer.view.TextRenderer {
-	
+
 	private TextRenderer textRenderer = new TextRenderer(
 			new Font("SansSerif", Font.PLAIN, 12), true, false);
 	//needs quite a bit of memory, so it must not create an instance for each use!
-	
+
 	private int screenWidth = 0, screenHeight = 0;
 	private float scale = 1;
-	
+
 //	@Override
 //	public final void drawText(String string, Vector3D pos, Color color) {
 //		textRenderer.setColor(color);
@@ -29,7 +29,7 @@ public class TextRendererFixedFunction implements org.osm2world.viewer.view.Text
 		textRenderer.draw(string, (int) x, (int) y);
 		textRenderer.endRendering();
 	}
-	
+
 	@Override
 	public void destroy() {
 		textRenderer.dispose();

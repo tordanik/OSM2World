@@ -30,12 +30,12 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
-	
+
 		setEnabled(false);
 		data.addObserver(this);
-		
+
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		setEnabled(data.getConversionResults() != null);
@@ -56,10 +56,10 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 					JOptionPane.showInputDialog(viewerFrame, "view angle"));
 			CardinalDirection from = CardinalDirection.valueOf(
 					JOptionPane.showInputDialog(viewerFrame, "from cardinal direction"));
-			
+
 			AxisAlignedBoundingBoxXZ tileBounds =
 				data.getConversionResults().getMapData().getDataBoundary();
-			
+
 			renderOptions.camera = OrthoTilesUtil.cameraForTile(
 					data.getConversionResults().getMapProjection(),
 					new TileNumber(zoom, tileX, tileY), angle, from);
@@ -67,11 +67,11 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 			renderOptions.projection = OrthoTilesUtil.projectionForTile(
 					data.getConversionResults().getMapProjection(),
 					new TileNumber(zoom, tileX, tileY), angle, from);
-						
+
 		} catch (NumberFormatException nfe) {
 			JOptionPane.showMessageDialog(viewerFrame, "invalid input");
 		}
-		
+
 	}
-	
+
 }

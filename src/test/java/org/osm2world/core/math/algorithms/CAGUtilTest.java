@@ -14,10 +14,10 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
 public class CAGUtilTest {
-	
+
 	@Test
 	public void testOverlap() {
-		
+
 		List<VectorXZ> outline = asList(
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1, 2),
@@ -25,7 +25,7 @@ public class CAGUtilTest {
 				new VectorXZ(-1,-2),
 				new VectorXZ( 1,-2)
 		);
-		
+
 		List<VectorXZ> subOutline = asList(
 				new VectorXZ( 2,-1),
 				new VectorXZ( 0,-1),
@@ -33,14 +33,14 @@ public class CAGUtilTest {
 				new VectorXZ( 2, 1),
 				new VectorXZ( 2,-1)
 		);
-		
+
 		List<PolygonWithHolesXZ> results = new ArrayList<PolygonWithHolesXZ>(
 				CAGUtil.subtractPolygons(
 						new SimplePolygonXZ(outline),
 						Arrays.asList(new SimplePolygonXZ(subOutline))));
-		
+
 		assertSame(1, results.size());
-		
+
 		assertSameCyclicOrder(true, results.get(0).getOuter().getVertices(),
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1,-1),
@@ -50,12 +50,12 @@ public class CAGUtilTest {
 				new VectorXZ( 1, 2),
 				new VectorXZ(-1, 2),
 				new VectorXZ(-1,-2));
-		
+
 	}
-	
+
 	@Test
 	public void testOverlapCommonNode() {
-		
+
 		List<VectorXZ> outline = asList(
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1, 2),
@@ -63,7 +63,7 @@ public class CAGUtilTest {
 				new VectorXZ(-1,-2),
 				new VectorXZ( 1,-2)
 		);
-		
+
 		List<VectorXZ> subOutline1 = asList(
 				new VectorXZ( 2,-1),
 				new VectorXZ( 0,-1),
@@ -71,7 +71,7 @@ public class CAGUtilTest {
 				new VectorXZ( 2, 0),
 				new VectorXZ( 2,-1)
 		);
-		
+
 		List<VectorXZ> subOutline2 = asList(
 				new VectorXZ( 2, 0),
 				new VectorXZ( 0, 0),
@@ -79,18 +79,18 @@ public class CAGUtilTest {
 				new VectorXZ( 2, 1),
 				new VectorXZ( 2, 0)
 		);
-		
+
 		List<PolygonWithHolesXZ> results = new ArrayList<PolygonWithHolesXZ>(
 				CAGUtil.subtractPolygons(
 						new SimplePolygonXZ(outline),
 						Arrays.asList(
 								new SimplePolygonXZ(subOutline1),
 								new SimplePolygonXZ(subOutline2))));
-		
+
 		assertSame(1, results.size());
-		
+
 		List<VectorXZ> res = results.get(0).getOuter().getVertices();
-		
+
 		assertSameCyclicOrder(true, res,
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1,-1),
@@ -101,12 +101,12 @@ public class CAGUtilTest {
 				new VectorXZ( 1, 2),
 				new VectorXZ(-1, 2),
 				new VectorXZ(-1,-2));
-		
+
 	}
-	
+
 	@Test
 	public void testOverlapConvex() {
-		
+
 		List<VectorXZ> outline = asList(
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1, 2),
@@ -114,7 +114,7 @@ public class CAGUtilTest {
 				new VectorXZ(-1,-2),
 				new VectorXZ( 1,-2)
 		);
-		
+
 		List<VectorXZ> subOutline = asList(
 				new VectorXZ( 0,-3),
 				new VectorXZ(-2,-3),
@@ -122,23 +122,23 @@ public class CAGUtilTest {
 				new VectorXZ( 0, 0),
 				new VectorXZ( 0,-3)
 		);
-		
+
 		List<PolygonWithHolesXZ> results = new ArrayList<PolygonWithHolesXZ>(
 				CAGUtil.subtractPolygons(
 						new SimplePolygonXZ(outline),
 						Arrays.asList(new SimplePolygonXZ(subOutline))));
-		
+
 		assertSame(1, results.size());
-		
+
 		List<VectorXZ> res = results.get(0).getOuter().getVertices();
-		
+
 		assertSameCyclicOrder(true, res,
 				new VectorXZ( 1,-2),
 				new VectorXZ( 1, 2),
 				new VectorXZ(-1/3.0, 0),
 				new VectorXZ( 0, 0),
 				new VectorXZ( 0,-2));
-		
+
 	}
-	
+
 }

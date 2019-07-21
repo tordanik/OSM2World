@@ -12,10 +12,10 @@ public class LineSegmentXYZ {
 	public LineSegmentXZ getSegmentXZ() {
 		return new LineSegmentXZ(p1.xz(), p2.xz());
 	}
-	
+
 	@Override
 	public String toString() {
 		return "[" + p1 + ", " + p2 + "]";
 	}
-		
+
 }

@@ -22,41 +22,41 @@ import org.osm2world.core.world.creation.WorldModule;
 
 
 public class PowerModuleTest {
-	
+
 	@Test
 	public void testRepeatedRendering() throws Exception {
-		
+
 		/* create fake data */
-		
+
 		List<OSMNode> nodes = asList(
 				new OSMNode(0, 0, new MapBasedTagGroup(new Tag("power","tower")), 101),
 				new OSMNode(0, 0.001, new MapBasedTagGroup(new Tag("power","tower")), 102)
 				);
-		
+
 		List<OSMWay> ways = asList(
 				new OSMWay(new MapBasedTagGroup(new Tag("power","line"), new Tag("cables","4")), 201, nodes)
 				);
-		
+
 		OSMData osmData = new OSMData(EMPTY_LIST, nodes, ways, EMPTY_LIST);
-		
+
 		/* render to multiple targets */
-		
+
 		ConversionFacade cf = new ConversionFacade();
-		
+
 		StatisticsTarget t1 = new StatisticsTarget();
 		StatisticsTarget t2 = new StatisticsTarget();
-		
+
 		List<Target<?>> targets = Arrays.<Target<?>>asList(t1, t2);
 		List<WorldModule> modules = Collections.<WorldModule>singletonList(new PowerModule());
-		
+
 		cf.createRepresentations(osmData, modules, null, targets);
-		
+
 		/* check whether the results are the same each time */
-		
+
 		for (Stat stat : Stat.values()) {
 			assertEquals(t1.getGlobalCount(stat), t2.getGlobalCount(stat));
 		}
-		
+
 	}
-	
+
 }

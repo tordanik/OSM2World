@@ -21,12 +21,12 @@ public class SetTerrainInterpolatorAction extends AbstractAction {
 	public SetTerrainInterpolatorAction(
 			Class<? extends TerrainInterpolator> interpolatorClass,
 			ViewerFrame viewerFrame, Data data, RenderOptions renderOptions) {
-		
+
 		super(interpolatorClass.getSimpleName().replaceAll("Interpolator", ""));
-		
+
 		putValue(SELECTED_KEY, interpolatorClass.equals(
 				renderOptions.getInterpolatorClass()));
-		
+
 		this.interpolatorClass = interpolatorClass;
 		this.viewerFrame = viewerFrame;
 		this.data = data;
@@ -40,13 +40,13 @@ public class SetTerrainInterpolatorAction extends AbstractAction {
 		renderOptions.setInterpolatorClass(interpolatorClass);
 		putValue(SELECTED_KEY,
 				renderOptions.getInterpolatorClass().equals(interpolatorClass));
-		
+
 		if (data.getConversionResults() != null) {
 			JOptionPane.showMessageDialog(viewerFrame, "You need to reload or" +
 					" open a new OSM file for this option to have any effect!",
 					"Reload required", JOptionPane.INFORMATION_MESSAGE);
 		}
-		
+
 	}
 
 }

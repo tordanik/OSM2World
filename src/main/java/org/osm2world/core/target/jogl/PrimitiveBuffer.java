@@ -28,14 +28,14 @@ public class PrimitiveBuffer extends
 	public Class<RenderableToPrimitiveTarget> getRenderableType() {
 		return RenderableToPrimitiveTarget.class;
 	}
-	
+
 	@Override
 	public void render(RenderableToPrimitiveTarget renderable) {
 		renderable.renderTo(this);
 	}
-	
+
 	private Multimap<Material, Primitive> primitiveMap = HashMultimap.create();
-	
+
 	@Override
 	protected void drawPrimitive(Type type, Material material,
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
@@ -43,19 +43,19 @@ public class PrimitiveBuffer extends
 		primitiveMap.put(material,
 				new Primitive(type, vertices, normals, texCoordLists));
 	}
-	
+
 	/**
 	 * returns all materials used in the buffer
 	 */
 	public Set<Material> getMaterials() {
 		return primitiveMap.keySet();
 	}
-	
+
 	/**
 	 * returns all primitives that use a given material
 	 */
 	public Collection<Primitive> getPrimitives(Material material) {
 		return primitiveMap.get(material);
 	}
-	
+
 }

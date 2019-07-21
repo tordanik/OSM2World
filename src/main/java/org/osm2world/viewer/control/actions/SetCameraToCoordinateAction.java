@@ -29,12 +29,12 @@ public class SetCameraToCoordinateAction extends AbstractAction implements Obser
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
-	
+
 		setEnabled(false);
 		data.addObserver(this);
-		
+
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		setEnabled(data.getConversionResults() != null);
@@ -49,14 +49,14 @@ public class SetCameraToCoordinateAction extends AbstractAction implements Obser
 				JOptionPane.showInputDialog(viewerFrame, "lon"));
 		double height = Double.parseDouble(
 				JOptionPane.showInputDialog(viewerFrame, "height"));
-		
+
 		MapProjection projection = data.getConversionResults().getMapProjection();
 
 		VectorXZ newPosXZ = projection.calcPos(lat, lon);
 		VectorXYZ newPos = newPosXZ.xyz(height);
-		
+
 		renderOptions.camera.move(newPos.subtract(renderOptions.camera.getPos()));
-		
+
 	}
 
 }

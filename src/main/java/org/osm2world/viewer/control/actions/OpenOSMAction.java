@@ -19,7 +19,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 public class OpenOSMAction extends AbstractLoadOSMAction {
 
 	private static final long serialVersionUID = -3092902524926341197L;
-	
+
 	private File lastPath = null;
 
 	public OpenOSMAction(ViewerFrame viewerFrame, Data data, RenderOptions renderOptions) {
@@ -29,11 +29,11 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		putValue(MNEMONIC_KEY, KeyEvent.VK_O);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
 				KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-		
+
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
-		
+
 	}
 
 	@Override
@@ -44,17 +44,17 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		if (osmFile != null) {
 
 			openOSMFile(osmFile, true);
-			
+
 		}
 
 	}
 
 	public void openOSMFile(File osmFile, boolean resetCamera) {
-		
+
 		if (osmFile.length() > 1e7) {
-			
+
 			String[] options = new String[] {"Try anyway" ,"Cancel"};
-			
+
 			int answer = JOptionPane.showOptionDialog(viewerFrame,
 					"The input file is probably too big.\n"
 					+ "This viewer can only handle relatively small areas well.\n",
@@ -62,24 +62,24 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.WARNING_MESSAGE,
 					null, options, options[1]);
-			
+
 			if (answer != JOptionPane.OK_OPTION) return;
-			
+
 		}
-		
+
 		try {
 			loadOSMData(new OSMFileReader(osmFile), resetCamera);
 		} catch (IOException e) {
-			
+
 			String msg = "File not found:\n" + osmFile;
-			
+
 			JOptionPane.showMessageDialog(viewerFrame, msg,
 					"Error", JOptionPane.ERROR_MESSAGE);
-			
+
 		}
-		
+
 		RecentFilesUpdater.addRecentFile(osmFile);
-		
+
 	}
 
 	private File askFile() {
@@ -109,5 +109,5 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		//		return new File(dialog.getFile());
 
 	}
-	
+
 }

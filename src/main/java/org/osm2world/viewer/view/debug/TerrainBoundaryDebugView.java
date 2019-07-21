@@ -22,17 +22,17 @@ public class TerrainBoundaryDebugView extends DebugView {
 	public String getDescription() {
 		return "draws terrain boundaries defined by world objects";
 	}
-	
+
 	@Override
 	public boolean canBeUsed() {
 		return map != null;
 	}
-	
+
 	@Override
 	public void fillTarget(JOGLTarget target) {
-				
+
 		/* draw terrain boundaries */
-		
+
 		for (TerrainBoundaryWorldObject terrainBoundary :
 			map.getWorldObjects(TerrainBoundaryWorldObject.class)) {
 
@@ -52,9 +52,9 @@ public class TerrainBoundaryDebugView extends DebugView {
 				}
 
 			}
-			
+
 		}
-				
+
 	}
-	
+
 }

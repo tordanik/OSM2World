@@ -16,7 +16,7 @@ import org.osm2world.core.world.data.WorldObject;
 public final class TargetUtil {
 
 	private TargetUtil() {}
-	
+
 	/**
 	 * render all world objects to a target instance
 	 * that are compatible with that target type
@@ -24,11 +24,11 @@ public final class TargetUtil {
 	public static <R extends Renderable> void renderWorldObjects(
 			final Target<R> target, final MapData mapData,
 			final boolean renderUnderground) {
-		
+
 		for (MapElement mapElement : mapData.getMapElements()) {
 			for (WorldObject r : mapElement.getRepresentations()) {
 				if (renderUnderground || r.getGroundState() != GroundState.BELOW) {
-				
+
 					try {
 						renderObject(target, r);
 					} catch (Exception e) {
@@ -38,7 +38,7 @@ public final class TargetUtil {
 						System.err.println("this exception occurred for the following input:\n"
 								+ mapElement);
 					}
-					
+
 				}
 			}
 		}
@@ -54,33 +54,33 @@ public final class TargetUtil {
 	public static <R extends RenderableToPrimitiveTarget> void renderWorldObjects(
 			final Iterator<? extends Target<R>> targetIterator,
 			final MapData mapData, final int primitiveThresholdPerTarget) {
-				
+
 		final StatisticsTarget primitiveCounter = new StatisticsTarget();
-		
+
 		iterate(mapData.getMapElements(), new Operation<MapElement>() {
 
 			Target<R> currentTarget = targetIterator.next();
-			
+
 			@Override public void perform(MapElement e) {
 				for (WorldObject r : e.getRepresentations()) {
-										
+
 					renderObject(primitiveCounter, r);
-					
+
 					renderObject(currentTarget, r);
-					
+
 					if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT)
 							>= primitiveThresholdPerTarget) {
 						currentTarget = targetIterator.next();
 						primitiveCounter.clear();
 					}
-					
+
 				}
 			}
-			
+
 		});
-		
+
 	}
-	
+
 	/**
 	 * renders any object to a target instance
 	 * if it is a renderable compatible with that target type.
@@ -88,31 +88,31 @@ public final class TargetUtil {
 	 */
 	public static final <R extends Renderable> void renderObject(
 			final Target<R> target, Object object) {
-		
+
 		Class<R> renderableType = target.getRenderableType();
-		
+
 		if (renderableType.isInstance(object)) {
-			
+
 			if (object instanceof WorldObject) {
 				target.beginObject((WorldObject)object);
 			} else {
 				target.beginObject(null);
 			}
-			
+
 			target.render(renderableType.cast(object));
-			
+
 		} else if (object instanceof RenderableToAllTargets) {
-			
+
 			if (object instanceof WorldObject) {
 				target.beginObject((WorldObject)object);
 			} else {
 				target.beginObject(null);
 			}
-			
+
 			((RenderableToAllTargets)object).renderTo(target);
-			
+
 		}
-		
+
 	}
-	
+
 }

@@ -9,7 +9,7 @@ import javax.swing.KeyStroke;
 /**
  * closes the application */
 public class ExitAction extends AbstractAction {
-		
+
 	private static final long serialVersionUID = -7239839993534668987L; //generated serialVersionUID
 
 	public ExitAction() {
@@ -19,10 +19,10 @@ public class ExitAction extends AbstractAction {
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
 				KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		System.exit(0);
 	}
-	
+
 }

@@ -12,11 +12,11 @@ import org.osm2world.core.target.common.TextureData;
  * (e.g. vertices forming triangle strips).
  */
 public interface TexCoordFunction {
-	
+
 	/**
 	 * calculates a texture coordinate for each vertex
 	 */
 	public List<VectorXZ> apply(
 			List<VectorXYZ> vs, TextureData textureData);
-	
+
 }

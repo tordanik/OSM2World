@@ -16,28 +16,28 @@ public class TerrainBoundaryAABBDebugView extends DebugView {
 	public String getDescription() {
 		return "shows the axis-aligned bounding boxes of the terrain boundaries";
 	}
-	
+
 	@Override
 	public boolean canBeUsed() {
 		return map != null;
 	}
-	
+
 	private static final Color BB_COLOR = Color.RED;
-		
+
 	@Override
 	protected void fillTarget(JOGLTarget target) {
 
 		for (TerrainBoundaryWorldObject tb :
 			map.getWorldObjects(TerrainBoundaryWorldObject.class)) {
-			
+
 			AxisAlignedBoundingBoxXZ box = tb.getAxisAlignedBoundingBoxXZ();
 			if (box != null) {
 				PolygonXZ polygon = box.polygonXZ();
 				target.drawLineLoop(BB_COLOR, 1, polygon.xyz(0).getVertices());
 			}
-			
+
 		}
-		
+
 	}
-	
+
 }

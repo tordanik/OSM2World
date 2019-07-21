@@ -19,7 +19,7 @@ public class FaceTargetTest {
 
 	@Test
 	public void testCombineTrianglesToFaces() {
-		
+
 		VectorXYZ bottomLeft = new VectorXYZ(-1, 0, 0);
 		VectorXYZ bottomCenter = new VectorXYZ(0, 0, 0);
 		VectorXYZ bottomRight = new VectorXYZ(+1, 0, 0);
@@ -27,33 +27,33 @@ public class FaceTargetTest {
 		VectorXYZ center = new VectorXYZ(0, 1, 0);
 		VectorXYZ centerRight = new VectorXYZ(+1, 1, 0);
 		VectorXYZ topCenter = new VectorXYZ(0, 2, 0);
-		
+
 		List<IsolatedTriangle> isolatedTriangles = new ArrayList<IsolatedTriangle>();
-		
+
 		isolatedTriangles.add(triangle(centerLeft, bottomLeft, center));
 		isolatedTriangles.add(triangle(bottomLeft, bottomCenter, center));
 		isolatedTriangles.add(triangle(center, bottomCenter, centerRight));
 		isolatedTriangles.add(triangle(bottomCenter, bottomRight, centerRight));
 		isolatedTriangles.add(triangle(centerLeft, center, topCenter));
 		isolatedTriangles.add(triangle(topCenter, center, centerRight));
-		
+
 		Collection<Face> faces =
 				FaceTarget.combineTrianglesToFaces(isolatedTriangles);
-		
+
 		assertSame(1, faces.size());
 		assertSame(6, faces.iterator().next().vs.size());
-		
+
 	}
-	
+
 	private static final IsolatedTriangle triangle(
 			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3) {
-		
+
 		TriangleXYZ triangleXYZ = new TriangleXYZ(v1, v2, v3);
-		
+
 		return new IsolatedTriangle(
 				triangleXYZ, triangleXYZ.getNormal(),
 				0, Collections.<List<VectorXZ>>emptyList());
-		
+
 	}
-	
+
 }

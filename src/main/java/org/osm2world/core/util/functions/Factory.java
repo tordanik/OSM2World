@@ -6,8 +6,8 @@ package org.osm2world.core.util.functions;
  * @param <T>  the type of objects created by this factory
  */
 public interface Factory<T> {
-	
+
 	/** creates a new instance */
 	T make();
-	
+
 }

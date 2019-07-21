@@ -28,7 +28,7 @@ import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 /**
  * adds bridges to the world.
- * 
+ *
  * Needs to be applied <em>after</em> all the modules that generate
  * whatever runs over the bridge.
  */
@@ -38,32 +38,32 @@ public class BridgeModule extends AbstractModule {
 		return tags.containsKey("bridge")
 			&& !"no".equals(tags.getValue("bridge"));
 	}
-	
+
 	public static final boolean isBridge(MapWaySegment segment) {
 		return isBridge(segment.getTags());
 	}
-	
+
 	@Override
 	protected void applyToWaySegment(MapWaySegment segment) {
-		
+
 		WaySegmentWorldObject primaryRepresentation =
 			segment.getPrimaryRepresentation();
-		
+
 		if (primaryRepresentation instanceof AbstractNetworkWaySegmentWorldObject
 				&& isBridge(segment)) {
-			
+
 			segment.addRepresentation(new Bridge(segment,
 					(AbstractNetworkWaySegmentWorldObject) primaryRepresentation));
-			
+
 		}
-		
+
 	}
-	
+
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
-		
+
 	private static class Bridge extends BridgeOrTunnel
 			implements RenderableToAllTargets {
-		
+
 		public Bridge(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
 			super(segment, primaryWO);
@@ -73,95 +73,95 @@ public class BridgeModule extends AbstractModule {
 		public GroundState getGroundState() {
 			return GroundState.ABOVE;
 		}
-		
+
 		@Override
 		public Iterable<EleConnector> getEleConnectors() {
 			// TODO EleConnectors for pillars
 			return super.getEleConnectors();
 		}
-		
+
 		@Override
 		public void renderTo(Target<?> target) {
 
 			drawBridgeUnderside(target);
-						
+
 			drawBridgePillars(target);
-			
+
 		}
 
 		private void drawBridgeUnderside(Target<?> target) {
-			
+
 			List<VectorXYZ> leftOutline = primaryRep.getOutline(false);
 			List<VectorXYZ> rightOutline = primaryRep.getOutline(true);
-			
+
 			List<VectorXYZ> belowLeftOutline = sequenceAbove(leftOutline, -BRIDGE_UNDERSIDE_HEIGHT);
 			List<VectorXYZ> belowRightOutline = sequenceAbove(rightOutline, -BRIDGE_UNDERSIDE_HEIGHT);
-			
+
 			List<VectorXYZ> strip1 = createTriangleStripBetween(
 					belowLeftOutline, leftOutline);
 			List<VectorXYZ> strip2 = createTriangleStripBetween(
 					belowRightOutline, belowLeftOutline);
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					rightOutline, belowRightOutline);
-			
+
 			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip1, null);
 			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip2, null);
 			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip3, null);
-			
+
 		}
 
 		private void drawBridgePillars(Target<?> target) {
-			
+
 			List<VectorXZ> pillarPositions = equallyDistributePointsAlong(
 					2f, false,
 					primaryRep.getStartPosition(),
 					primaryRep.getEndPosition());
-			
+
 			//make sure that the pillars doesn't pierce anything on the ground
-			
+
 			Collection<WorldObject> avoidedObjects = new ArrayList<WorldObject>();
-			
+
 			for (MapIntersectionWW i : segment.getIntersectionsWW()) {
 				for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
-					
+
 					if (otherRep.getGroundState() == GroundState.ON
 							&& !(otherRep instanceof Water || otherRep instanceof Waterway) //TODO: choose better criterion!
 					) {
 						avoidedObjects.add(otherRep);
 					}
-				
+
 				}
 			}
-			
+
 			filterWorldObjectCollisions(pillarPositions, avoidedObjects);
-			
+
 			//draw the pillars
-			
+
 			for (VectorXZ pos : pillarPositions) {
 				drawBridgePillarAt(target, pos);
 			}
-			
+
 		}
 
 		private void drawBridgePillarAt(Target<?> target, VectorXZ pos) {
-		
+
 			/* determine the bridge elevation at that point */
-			
+
 			VectorXYZ top = null;
-			
+
 			List<VectorXYZ> vs = primaryRep.getCenterline();
-			
+
 			for (int i = 0; i + 1 < vs.size(); i++) {
-				
+
 				if (isBetween(pos, vs.get(i).xz(), vs.get(i+1).xz())) {
 					top = interpolateElevation(pos, vs.get(i), vs.get(i+1));
                                         break;
 				}
-				
+
 			}
 
 			/* draw the pillar */
-			
+
 			// TODO: start pillar at ground instead of just 100 meters below the bridge
 			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
 					top.addY(-100),
@@ -169,7 +169,7 @@ public class BridgeModule extends AbstractModule {
 					0.2, 0.2, false, false);
 
 		}
-		
+
 	}
-	
+
 }

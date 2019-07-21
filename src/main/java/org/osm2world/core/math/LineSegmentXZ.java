@@ -23,16 +23,16 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	public List<VectorXZ> getVertexList() {
 		return asList(p1, p2);
 	}
-	
+
 	@Override
 	public List<LineSegmentXZ> getSegments() {
 		return singletonList(this);
 	}
-	
+
 	public VectorXZ getCenter() {
 		return GeometryUtil.interpolateBetween(p1, p2, 0.5);
 	}
-	
+
 	/**
 	 * returns true if there is an intersection between this line segment and
 	 * the line segment defined by the parameters
@@ -64,14 +64,14 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	public double getLength() {
 		return VectorXZ.distance(p1, p2);
 	}
-	
+
 	/**
 	 * produces the flipped version of this segment
 	 */
 	public LineSegmentXZ reverse() {
 		return new LineSegmentXZ(p2, p1);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "[" + p1 + ", " + p2 + "]";
@@ -88,14 +88,14 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 
 	@Override
 	public final boolean equals(Object obj) {
-		
+
 		if (obj instanceof LineSegmentXZ) {
 			LineSegmentXZ other = (LineSegmentXZ) obj;
 			return p1.equals(other.p1) && p2.equals(other.p2);
 		} else {
 			return false;
 		}
-		
+
 	}
-	
+
 }

@@ -7,13 +7,13 @@ package org.osm2world.core.util.functions;
  * for a given class.
  */
 public class DefaultFactory<T> implements Factory<T> {
-	
+
 	private final Class<? extends T> c;
-	
+
 	public DefaultFactory(Class<? extends T> c) {
 		this.c = c;
 	}
-	
+
 	@Override
 	public T make() {
 		try {
@@ -24,5 +24,5 @@ public class DefaultFactory<T> implements Factory<T> {
 			throw new Error(e);
 		}
 	}
-	
+
 }

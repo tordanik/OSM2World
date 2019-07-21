@@ -10,41 +10,41 @@ import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.viewer.model.RenderOptions;
 
 public class ShadowView extends DebugView {
-	
+
 	private final RenderOptions renderOptions;
-	
+
 	public ShadowView(RenderOptions renderOptions) {
 		this.renderOptions = renderOptions;
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return "shows the world from the perspective of the light";
 	};
-	
+
 	@Override
 	public boolean canBeUsed() {
 		return map != null;
 	}
-	
+
 	@Override
 	protected void fillTarget(final JOGLTarget target) {
 		if (target instanceof JOGLTargetShader) {
 			setParameters(target);
 			target.setXZBoundary(map.getBoundary());
 			((JOGLTargetShader)target).setShowShadowPerspective(true);
-		
+
 			boolean underground = config.getBoolean("renderUnderground", true);
-		
+
 			TargetUtil.renderWorldObjects(target, map, underground);
 		}
 	}
-	
+
 	@Override
 	protected void updateTarget(JOGLTarget target, boolean viewChanged) {
 		setParameters(target);
 	}
-	
+
 	private void setParameters(final JOGLTarget target) {
 
 		boolean drawBoundingBox = config.getBoolean("drawBoundingBox", false);
@@ -57,11 +57,11 @@ public class ShadowView extends DebugView {
 		int shadowMapCameraFrustumPadding = config.getInt("shadowMapCameraFrustumPadding", 8);
 		target.setRenderingParameters(new JOGLRenderingParameters(
 				renderOptions.isBackfaceCulling() ? CCW : null,
-    			renderOptions.isWireframe(), true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight, 
+    			renderOptions.isWireframe(), true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight,
     			shadowMapCameraFrustumPadding, false, 0, 0, false));
-		
+
 		target.setGlobalLightingParameters(GlobalLightingParameters.DEFAULT);
-		
+
 	}
 
 }

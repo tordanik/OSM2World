@@ -18,30 +18,30 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 
 public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
-	
+
 	private static final String INDENT = "  ";
-	
+
 	// this is approximatly one millimeter
 	private static final double SMALL_OFFSET = 1e-3;
-	
+
 	private final PrintStream output;
-	
+
 	private Map<TextureData, String> textureNames = new HashMap<TextureData, String>();
-	
+
 	public POVRayTarget(PrintStream output) {
 		this.output = output;
 	}
-	
+
 	@Override
 	public Class<RenderableToPOVRay> getRenderableType() {
 		return RenderableToPOVRay.class;
 	}
-	
+
 	@Override
 	public void render(RenderableToPOVRay renderable) {
 		renderable.renderTo(this);
 	}
-	
+
 //	int openBrackets = 0;
 //
 //	/**
@@ -52,7 +52,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 //			append(INDENT);
 //		}
 //	}
-	
+
 	/**
 	 * provides direct write access to the generated source code.
 	 * This is intended for Renderables using special POVRay features.
@@ -75,11 +75,11 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	public void append(int value) {
 		output.print(value);
 	}
-	
+
 	public void append(double value) {
 		output.print(value);
 	}
-	
+
 //	private final LinkedList<StringBuilder> stack = new LinkedList<StringBuilder>();
 //
 //	int openBrackets = 0;
@@ -107,37 +107,37 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 //	}
 
 	public void appendDefaultParameterValue(String name, String value) {
-		
+
 		append("#ifndef (" + name + ")\n");
 		append("#declare " + name + " = " + value);
 		append("\n#end\n\n");
-		
+
 	}
-	
+
 	public void appendMaterialDefinitions() {
-		
+
 		for (Material material : Materials.getMaterials()) {
-			
+
 			String uniqueName = Materials.getUniqueName(material);
 			String name = "texture_" + uniqueName;
-			
+
 			append("#ifndef (" + name + ")\n");
 			append("#declare " + name + " = ");
 			appendMaterial(material);
 			append("#end\n\n");
-			
+
 			if (material.getNumTextureLayers() == 1) {
-				
+
 				TextureData td = material.getTextureDataList().get(0);
-				
+
 				if (!td.colorable) {
 					textureNames.put(td, uniqueName);
 				}
-				
+
 			}
-			
+
 		}
-		
+
 	}
 
 	@Override
@@ -147,15 +147,15 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		if (!checkMeshValidity(triangles))
 			return;
-		
+
 		for (TriangleXYZ triangle : triangles) {
 			performNaNCheck(triangle);
 		}
-		
+
 		if (material.getNumTextureLayers() > 1) {
-			
+
 			int count = 0;
-			
+
 			for (TextureData textureData : material.getTextureDataList()) {
 
 				append("mesh {\n");
@@ -164,7 +164,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 				append("  uv_mapping ");
 				appendMaterial(material, textureData);
-				
+
 				if (count > 0)
 					append("  no_shadow");
 				append("}\n");
@@ -173,7 +173,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		} else {
 
 			append("mesh {\n");
-		
+
 			if (texCoordLists.size() > 0) {
 				drawTriangleMesh(triangles, texCoordLists.get(0), 0);
 			} else {
@@ -182,14 +182,14 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 					appendTriangle(triangle.v1, triangle.v2, triangle.v3);
 				}
 			}
-			
+
 			append(" uv_mapping ");
 			appendMaterialOrName(material);
-		
+
 			append("}\n");
 		}
 	}
-		
+
 	@Override
 	public void drawTrianglesWithNormals(Material material,
 			Collection<? extends TriangleXYZWithNormals> triangles,
@@ -199,25 +199,25 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			return;
 
 		if (material.getNumTextureLayers() > 1) {
-			
+
 			int count = 0;
-			
+
 			for (TextureData textureData : material.getTextureDataList()) {
-				
+
 				append("mesh {\n");
 
 				drawTriangleNormalMesh(triangles, texCoordLists.get(count), count);
 
 				append("  uv_mapping ");
 				appendMaterial(material, textureData);
-				
+
 				if (count > 0)
 					append("  no_shadow");
 				append("}\n");
 				count++;
 			}
 		} else {
-			
+
 			append("mesh {\n");
 
 			if (texCoordLists.size() > 0) {
@@ -241,9 +241,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		Iterator<? extends TriangleXYZWithNormals> itr1 = triangles.iterator();
 		Iterator<VectorXZ> itr2 = texCoordList.iterator();
-		
+
 		while (itr1.hasNext()) {
-		
+
 			TriangleXYZWithNormals triangle = itr1.next();
 			VectorXYZ n1 = triangle.n1;
 			VectorXYZ n2 = triangle.n2;
@@ -251,23 +251,23 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			VectorXZ tex1 = itr2.next();
 			VectorXZ tex2 = itr2.next();
 			VectorXZ tex3 = itr2.next();
-			
+
 			append(INDENT);
-		
+
 			if (depth > 0) {
-			
+
 				VectorXYZ d1 = n1.mult(depth*SMALL_OFFSET);
 				VectorXYZ d2 = n2.mult(depth*SMALL_OFFSET);
 				VectorXYZ d3 = n3.mult(depth*SMALL_OFFSET);
-				
+
 				appendTriangle(
 						triangle.v1.add(d1),
 						triangle.v2.add(d2),
 						triangle.v3.add(d3),
 						n1, n2, n3, tex1, tex2, tex3, false, true);
-			
+
 			} else {
-			
+
 				appendTriangle(triangle.v1, triangle.v2, triangle.v3,
 						null, null, null, tex1, tex2, tex3, false, true);
 			}
@@ -279,34 +279,34 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		Iterator<? extends TriangleXYZ> itr1 = triangles.iterator();
 		Iterator<VectorXZ> itr2 = texCoordList.iterator();
-		
+
 		while (itr1.hasNext()) {
-		
+
 			TriangleXYZ triangle = itr1.next();
 			VectorXYZ normal = triangle.getNormal();
 			VectorXZ tex1 = itr2.next();
 			VectorXZ tex2 = itr2.next();
 			VectorXZ tex3 = itr2.next();
-		
+
 			append(INDENT);
-		
+
 			if (depth > 0) {
-			
+
 				normal = normal.mult(depth*SMALL_OFFSET);
 				appendTriangle(
 						triangle.v1.add(normal),
 						triangle.v2.add(normal),
 						triangle.v3.add(normal),
 						null, null, null, tex1, tex2, tex3, false, true);
-			
+
 			} else {
-			
+
 				appendTriangle(triangle.v1, triangle.v2, triangle.v3,
 						null, null, null, tex1, tex2, tex3, false, true);
 			}
 		}
 	}
-	
+
 //	@Override
 //	public void drawTriangleStrip(Material material, VectorXYZ... vectors) {
 //
@@ -332,7 +332,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 //		append("}\n");
 //
 //	}
-	
+
 //	@Override
 //	public void drawTriangleFan(Material material, List<? extends VectorXYZ> vs) {
 //		for (VectorXYZ vector : vs) {
@@ -363,7 +363,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	@Override
 	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
 			List<List<VectorXZ>> texCoordLists) {
-		
+
 		for (VectorXYZ vector : vs) {
 			performNaNCheck(vector);
 		}
@@ -374,9 +374,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		for (VectorXYZ v : vs) {
 			appendVector(v);
 		}
-		
+
 		appendMaterialOrName(material);
-		
+
 		append("}\n");
 
 	}
@@ -387,7 +387,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			boolean drawBottom, boolean drawTop) {
 
 		performNaNCheck(base);
-		
+
 		if (height <= 0) return;
 
 		if (corners == null) {
@@ -415,9 +415,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 				// TODO: incorrect if only one is false
 				append(" open");
 			}
-			
+
 			appendMaterialOrName(material);
-			
+
 			append("}\n");
 
 		} else { // not round
@@ -438,7 +438,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		performNaNCheck(base);
 		performNaNCheck(cap);
-		
+
 		if (cap.equals(base))
 			return;
 
@@ -473,33 +473,33 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 					"drawing non-round columns isn't implemented yet");
 
 		}
-		
+
 		appendMaterialOrName(material);
-		
+
 		append("}\n");
 
 	}
-	
+
 	private boolean checkMeshValidity(Collection<? extends TriangleXYZ> triangles) {
-		
+
 		if (triangles.size() == 0)
 			return false;
-		
+
 		boolean result = false;
 		for (TriangleXYZ triangle : triangles) {
 
 			result |= !isDegenerated(triangle);
 		}
-		
+
 		return result;
 	}
-	
+
 	private boolean isDegenerated(TriangleXYZ triangle) {
 
 		VectorXYZ a = triangle.v1;
 		VectorXYZ b = triangle.v2;
 		VectorXYZ c = triangle.v3;
-		
+
 		if (a.equals(b) || a.equals(c) || b.equals(c)) {
 			return true;
 		} else if (a.x == b.x && b.x == c.x
@@ -515,7 +515,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		return false;
 	}
 
-	
+
 	public void appendTriangle(VectorXYZ a, VectorXYZ b, VectorXYZ c) {
 
 		appendTriangle(a, b, c, null, null, null, false);
@@ -528,7 +528,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		appendTriangle(a, b, c, na, nb, nc, null, null, null, smooth, false);
 	}
-		
+
 	public void appendTriangle(
 			VectorXYZ a, VectorXYZ b, VectorXYZ c,
 			VectorXYZ na, VectorXYZ nb, VectorXYZ nc,
@@ -536,7 +536,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			boolean smooth, boolean texture) {
 
 		// append the triangle
-		
+
 		if (smooth) append("smooth_");
 		append("triangle { ");
 		appendVector(a);
@@ -566,7 +566,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			append(", ");
 			appendInverseVector(tc);
 			*/
-			
+
 			append(" uv_vectors ");
 			appendVector(ta);
 			append(", ");
@@ -577,23 +577,23 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 		append("}\n");
 	}
-	
+
 
 	/**
 	 * adds a color. Syntax is "color rgb <x, y, z>".
 	 */
 	public void appendRGBColor(Color color) {
-		
+
 		append("color rgb ");
 		appendVector(
 				color.getRed()/255f,
 				color.getGreen()/255f,
 				color.getBlue()/255f);
-		
+
 	}
-	
+
 	public void appendMaterialOrName(Material material) {
-		
+
 		String materialName = Materials.getUniqueName(material);
 
 		if (materialName != null) {
@@ -601,7 +601,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		} else {
 			appendMaterial(material);
 		}
-		
+
 	}
 
 	private void appendMaterial(Material material) {
@@ -626,11 +626,11 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		}
 	}
 
-	
+
 	private void appendMaterial(Material material, TextureData textureData) {
 
 		String textureName = textureNames.get(textureData);
-		
+
 		if (textureName == null) {
 
 			if (textureData.colorable) {
@@ -652,7 +652,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			append("      diffuse " + material.getDiffuseFactor() + "\n");
 			append("    }\n");
 			append("  }\n");
-	
+
 		} else {
 
 			append("  texture { texture_" + textureName + "}");
@@ -675,7 +675,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		}
 		append("\n          }");
 	}
-	
+
 	/**
 	 * adds a vector to the String built by a StringBuilder.
 	 * Syntax is "<x, y, z>".
@@ -685,7 +685,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		if (Float.isNaN(x) || Float.isNaN(y) || Float.isNaN(z)) {
 			throw new IllegalArgumentException("NaN vector " + x + ", " + y + ", " + z);
 		}
-		
+
 		append("<");
 		append(x);
 		append(", ");
@@ -693,15 +693,15 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		append(", ");
 		append(z);
 		append(">");
-		
+
 	}
 
 	public void appendVector(double x, double y, double z) {
-		
+
 		if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
 			throw new IllegalArgumentException("NaN vector " + x + ", " + y + ", " + z);
 		}
-		
+
 		append("<");
 		append(x);
 		append(", ");
@@ -709,9 +709,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		append(", ");
 		append(z);
 		append(">");
-		
+
 	}
-	
+
 	/**
 	 * alternative to {@link #appendVector(double, double)}
 	 * using a vector object as parameter instead of individual coordinates
@@ -719,21 +719,21 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	public void appendVector(VectorXYZ vector) {
 		appendVector(vector.getX(), vector.getY(), vector.getZ());
 	}
-	
+
 	/**
 	 * adds a vector to the String built by a StringBuilder.
 	 * Syntax is "<v1, v2>".
 	 */
 	public void appendVector(double x, double z) {
-		
+
 		append("<");
 		append(x);
 		append(", ");
 		append(z);
 		append(">");
-		
+
 	}
-	
+
 	/**
 	 * alternative to {@link #appendVector(double, double)}
 	 * using a vector object as parameter instead of individual coordinates
@@ -750,11 +750,11 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param vs  polygon vertices; first and last should be equal
 	 */
 	public void appendPolygon(VectorXYZ... vs) {
-		
+
 		assert !vs[0].equals(vs[vs.length-1]) : "polygon not closed";
 
 		append("polygon {\n  ");
@@ -764,11 +764,11 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			appendVector(v);
 		}
 		append("}\n");
-		
+
 	}
-	
+
 	public void appendPrism(float y1, float y2, VectorXZ... vs) {
-		
+
 		append("prism {\n  ");
 		append(y1);
 		append(", ");
@@ -780,9 +780,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			appendVector(v);
 		}
 		append("\n}");
-				
+
 	}
-	
+
 	//TODO: avoid having to do this
 
 	private void performNaNCheck(TriangleXYZWithNormals triangle) {
@@ -793,7 +793,7 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		performNaNCheck(triangle.n2);
 		performNaNCheck(triangle.n3);
 	}
-	
+
 	private void performNaNCheck(TriangleXYZ triangle) {
 		performNaNCheck(triangle.v1);
 		performNaNCheck(triangle.v2);
@@ -805,5 +805,5 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			throw new IllegalArgumentException("NaN vector " + v.x + ", " + v.y + ", " + v.z);
 		}
 	}
-	
+
 }

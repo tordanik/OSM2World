@@ -19,7 +19,7 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 	private int width = 0, height = 0;
 	private float scale = 1;
 	private GL2ES2 gl;
-	
+
 	public TextRendererShader(GL2ES2 gl) {
 		this.gl = gl;
 		try {
@@ -58,7 +58,7 @@ public class TextRendererShader implements org.osm2world.viewer.view.TextRendere
 		textRenderer.drawString3D(gl, textRendererFont, string, posF, (int) (12 * scale), texSize);
 		textRenderer.enable(gl, false);
 	}
-	
+
 	@Override
 	public void destroy() {
 		textRenderer.destroy(gl);

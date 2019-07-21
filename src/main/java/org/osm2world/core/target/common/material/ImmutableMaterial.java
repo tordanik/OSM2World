@@ -10,19 +10,19 @@ import org.osm2world.core.target.common.TextureData;
  * requirements of {@link Material}
  */
 public final class ImmutableMaterial extends Material {
-	
+
 	public ImmutableMaterial(Interpolation interpolation, Color color,
 			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
 			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
 		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
 				transparency, shadow, ao, textureDataList);
 	}
-	
+
 	public ImmutableMaterial(Interpolation interpolation, Color color,
 			Transparency transparency, List<TextureData> textureDataList) {
 		super(interpolation, color, transparency, textureDataList);
 	}
-	
+
 	public ImmutableMaterial(Interpolation interpolation, Color color) {
 		super(interpolation, color);
 	}
@@ -101,5 +101,5 @@ public final class ImmutableMaterial extends Material {
 			return false;
 		return true;
 	}
-	
+
 }

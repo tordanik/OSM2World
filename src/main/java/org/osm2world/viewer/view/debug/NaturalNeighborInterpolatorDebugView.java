@@ -9,10 +9,10 @@ public class NaturalNeighborInterpolatorDebugView extends TerrainInterpolatorDeb
 	public NaturalNeighborInterpolatorDebugView(RenderOptions renderOptions) {
 		super(renderOptions);
 	}
-	
+
 	@Override
 	protected NaturalNeighborInterpolator buildInterpolator() {
 		return new NaturalNeighborInterpolator();
 	}
-	
+
 }

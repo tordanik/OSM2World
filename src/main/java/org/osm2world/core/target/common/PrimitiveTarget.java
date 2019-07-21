@@ -33,7 +33,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 	abstract protected void drawPrimitive(Primitive.Type type, Material material,
 			List<VectorXYZ> vs, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists);
-	
+
 	@Override
 	public void drawTriangleStrip(Material material, List<VectorXYZ> vs,
 			List<List<VectorXZ>> texCoordLists) {
@@ -51,27 +51,27 @@ public abstract class PrimitiveTarget<R extends Renderable>
 				calculateTriangleFanNormals(vs, smooth),
 				texCoordLists);
 	}
-	
+
 	@Override
 	public void drawTriangles(Material material,
 			Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
-		
+
 		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
-		
+
 		for (TriangleXYZ triangle : triangles) {
 			vectors.add(triangle.v1);
 			vectors.add(triangle.v2);
 			vectors.add(triangle.v3);
 		}
-		
+
 		drawPrimitive(TRIANGLES, material, vectors,
 				calculateTriangleNormals(vectors,
 						material.getInterpolation() == Interpolation.SMOOTH),
 						texCoordLists);
-		
+
 	}
-	
+
 	@Override
 	public void drawTrianglesWithNormals(Material material,
 			Collection<? extends TriangleXYZWithNormals> triangles,
@@ -79,7 +79,7 @@ public abstract class PrimitiveTarget<R extends Renderable>
 
 		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
 		List<VectorXYZ> normals = new ArrayList<VectorXYZ>(triangles.size()*3);
-				
+
 		for (TriangleXYZWithNormals triangle : triangles) {
 			vectors.add(triangle.v1);
 			vectors.add(triangle.v2);
@@ -88,9 +88,9 @@ public abstract class PrimitiveTarget<R extends Renderable>
 			normals.add(triangle.n2);
 			normals.add(triangle.n3);
 		}
-		
+
 		drawPrimitive(TRIANGLES, material, vectors, normals, texCoordLists);
-		
+
 	}
-	
+
 }

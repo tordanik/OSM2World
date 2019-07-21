@@ -25,10 +25,10 @@ import org.osm2world.core.target.common.material.Material;
  * class that keeps a VBO id along with associated information for the shader based OpenGL pipeline
  */
 abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
-	
+
 	protected GL3 gl;
 	protected AbstractPrimitiveShader shader;
-	
+
 	/**
 	 * @see VBOData#VBOData(javax.media.opengl.GL, JOGLTextureManager, Material, Collection)
 	 */
@@ -36,7 +36,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		super(gl, textureManager, material, primitives);
 		this.gl = gl;
 	}
-	
+
 	/**
 	 * Set the shader this VBO uses when rendering (e.g. calls
 	 * {@link AbstractPrimitiveShader#setMaterial(Material, JOGLTextureManager)}.
@@ -44,11 +44,11 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	public void setShader(AbstractPrimitiveShader shader) {
 		this.shader = shader;
 	}
-	
+
 	@Override
 	protected void addPrimitiveToValueBuffer(BufferT buffer,
 			Primitive primitive) {
-					
+
 		/*
 		 * rearrange the lists of vertices, normals and texture coordinates
 		 * to turn triangle strips and triangle fans into separate triangles
@@ -57,13 +57,13 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		List<VectorXYZ> primVertices = primitive.vertices;
 		List<VectorXYZ> primNormals = primitive.normals;
 		List<List<VectorXZ>> primTexCoordLists = primitive.texCoordLists;
-		
+
 		if (primitive.type == Type.TRIANGLE_STRIP) {
-			
+
 			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleStrip(primVertices);
 			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
-			
+
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
 				for (List<VectorXZ> primTexCoordList : primTexCoordLists) {
@@ -71,13 +71,13 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 				}
 				primTexCoordLists = newPrimTexCoordLists;
 			}
-			
+
 		} else if (primitive.type == Type.TRIANGLE_FAN) {
 
 			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
 			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
-			
+
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
 				for (List<VectorXZ> primTexCoordList : primTexCoordLists) {
@@ -85,29 +85,29 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 				}
 				primTexCoordLists = newPrimTexCoordLists;
 			}
-			
+
 		}
-		
+
 		List<VectorXYZW> primTangents = null;
 		if (material.hasBumpMap()) {
 			primTangents = calculateTangentVectorsForTexLayer(primVertices, primNormals, primTexCoordLists.get(material.getBumpMapInd()));
 		}
-			
+
 		/* put the values into the buffer, in the right order */
-		
+
 		for (int i = 0; i < primVertices.size(); i++) {
-			
+
 			int count = 0;
 			assert (primTexCoordLists == null
 					&& material.getNumTextureLayers() == 0)
 				|| (primTexCoordLists != null
 					&& primTexCoordLists.size() == material.getNumTextureLayers())
 				: "WorldModules need to provide the correct number of tex coords";
-			
+
 			if (primTexCoordLists == null && material.getNumTextureLayers() > 0) {
 				System.out.println(material);
 			}
-				
+
 			for (int t = 0; t < material.getNumTextureLayers(); t++) {
 				if (!material.hasBumpMap() || t != material.getBumpMapInd()) {
 					VectorXZ textureCoord =	primTexCoordLists.get(t).get(i);
@@ -116,7 +116,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 					count += 2;
 				}
 			}
-			
+
 			put(buffer, primNormals.get(i));
 			count += 3;
 			if (material.hasBumpMap()) {
@@ -127,14 +127,14 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 			}
 			put(buffer, primVertices.get(i));
 			count += 3;
-			
+
 			if (count != JOGLRendererVBO.getValuesPerVertex(material)) {
 				throw new RuntimeException("put: "+count +" values:" + JOGLRendererVBO.getValuesPerVertex(material));
 			}
 		}
-		
+
 	}
-	
+
 	@Override
 	public void render() {
 		gl.glBindBuffer(GL_ARRAY_BUFFER, id[0]);
@@ -142,20 +142,20 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		setPointerLayout();
 		if (shader.setMaterial(material, textureManager))
 			gl.glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-		
+
 		for (int i=1; i<DefaultShader.MAX_TEXTURE_LAYERS; i++) {
 			shader.glDisableVertexAttribArray(shader.getVertexTexCoordID(i));
 		}
 		shader.glDisableVertexAttribArray(shader.getVertexBumpMapCoordID());
 		shader.glDisableVertexAttribArray(shader.getVertexTangentID());
 	}
-	
+
 	private void setPointerLayout() {
-		
+
 		int stride = valueTypeSize * JOGLRendererVBO.getValuesPerVertex(material);
-		
+
 		int offset = 0;
-		
+
 		for (int i = 0; i < material.getNumTextureLayers(); i++) {
 
 			if (!material.hasBumpMap() || i != material.getBumpMapInd()) {
@@ -163,12 +163,12 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 				shader.glVertexAttribPointer(shader.getVertexTexCoordID(i), 2, glValueType(), false, stride, offset);
 				offset += 2 * valueTypeSize;
 			}
-			
+
 		}
-		
+
 		shader.glVertexAttribPointer(shader.getVertexNormalID(), 3, glValueType(), false, stride, offset);
 		offset += valueTypeSize() * 3;
-		
+
 		if (material.hasBumpMap()) {
 			shader.glEnableVertexAttribArray(shader.getVertexTangentID());
 			shader.glVertexAttribPointer(shader.getVertexTangentID(), 4, glValueType(), false, stride, offset);
@@ -182,13 +182,13 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		}
 		shader.glVertexAttribPointer(shader.getVertexPositionID(), 3, glValueType(), false, stride, offset);
 	}
-	
+
 	@Override
 	protected int getValuesPerVertex(Material material) {
 		return JOGLRendererVBO.getValuesPerVertex(material);
 	}
-	
+
 	/** add 4d vertex data to the vbo buffer */
 	protected abstract void put(BufferT buffer, VectorXYZW t);
-	
+
 }

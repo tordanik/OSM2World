@@ -19,35 +19,35 @@ public class StatisticsAction extends AbstractAction implements Observer {
 	private static final long serialVersionUID = -7894095901533692645L;
 	private final ViewerFrame viewerFrame;
 	private final Data data;
-	
+
 	public StatisticsAction(ViewerFrame viewerFrame, Data data) {
-		
+
 		super("Statistics");
 		putValue(SHORT_DESCRIPTION, "Shows statistics for the current scene");
-		
+
 		this.viewerFrame = viewerFrame;
 		this.data = data;
-		
+
 		setEnabled(false);
 		data.addObserver(this);
-		
+
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		setEnabled(data.getConversionResults() != null);
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		
+
 		Results conversionResults = data.getConversionResults();
-		
+
 		StatisticsTarget stats = new StatisticsTarget();
-		
+
 		TargetUtil.renderWorldObjects(stats, conversionResults.getMapData(), true);
 		new StatisticsDialog(viewerFrame, stats).setVisible(true);
-		
+
 	}
-		
+
 }

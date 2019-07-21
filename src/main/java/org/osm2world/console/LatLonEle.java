@@ -13,7 +13,7 @@ public class LatLonEle {
 	public final double ele;
 
 	private static final String DOUBLE_P = "[+-]?\\d+(?:\\.\\d+)?";
-	
+
 	/**
 	 * pattern for parseable arguments
 	 */
@@ -29,14 +29,14 @@ public class LatLonEle {
 		this.ele = ele;
 		validateValues();
 	}
-	
+
 	/**
 	 * regular constructor (with default elevation of 0)
 	 */
 	public LatLonEle(double lat, double lon) {
 		this(lat, lon, 0);
 	}
-	
+
 	/**
 	 * parsing constructor
 	 * @param arg  command line argument to be parsed;
@@ -68,10 +68,10 @@ public class LatLonEle {
 			throw new IllegalArgumentException("not valid: " + lat + ", " + lon);
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return lat + "," + lon;
 	}
-	
+
 }

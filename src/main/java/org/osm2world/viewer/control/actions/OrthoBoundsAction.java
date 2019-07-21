@@ -30,12 +30,12 @@ public class OrthoBoundsAction extends AbstractAction implements Observer {
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
-	
+
 		setEnabled(false);
 		data.addObserver(this);
-		
+
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		setEnabled(data.getConversionResults() != null);
@@ -46,13 +46,13 @@ public class OrthoBoundsAction extends AbstractAction implements Observer {
 
 		AxisAlignedBoundingBoxXZ bounds =
 			data.getConversionResults().getMapData().getDataBoundary();
-		
+
 		renderOptions.camera =
 			OrthoTilesUtil.cameraForBounds(bounds, 30, CardinalDirection.S);
 
 		renderOptions.projection =
 			OrthoTilesUtil.projectionForBounds(bounds, 30, CardinalDirection.S);
-		
+
 	}
-	
+
 }

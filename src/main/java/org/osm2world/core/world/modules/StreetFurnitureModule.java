@@ -672,7 +672,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			ShapeXZ shape = new LineSegmentXZ(new VectorXZ(0.01, 0), new VectorXZ(0, 0));
 
 			List<List<VectorXYZ>> paths = new ArrayList<List<VectorXYZ>>();
-			
+
 			VectorXZ leftMost = getBase().add(boardVector.mult(placeForRopes)).xz();
 			VectorXZ rightMost = getBase().add(boardVector.mult(-placeForRopes)).xz();
 

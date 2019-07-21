@@ -14,14 +14,14 @@ public class ToggleBackfaceCullingAction extends AbstractAction {
 	private final ViewerFrame viewerFrame;
 	private final Data data;
 	private final RenderOptions renderOptions;
-		
+
 	public ToggleBackfaceCullingAction(ViewerFrame viewerFrame, Data data,
 			RenderOptions renderOptions) {
-		
+
 		super("Backface culling");
-		putValue(SHORT_DESCRIPTION, "Switches backface culling on and off");	
+		putValue(SHORT_DESCRIPTION, "Switches backface culling on and off");
 		putValue(SELECTED_KEY, renderOptions.isBackfaceCulling());
-		
+
 		this.viewerFrame = viewerFrame;
 		this.data = data;
 		this.renderOptions = renderOptions;
@@ -30,10 +30,10 @@ public class ToggleBackfaceCullingAction extends AbstractAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-				
+
 		renderOptions.setBackfaceCulling(!renderOptions.isBackfaceCulling());
 		putValue(SELECTED_KEY, renderOptions.isBackfaceCulling());
-				
+
 	}
 
 }
