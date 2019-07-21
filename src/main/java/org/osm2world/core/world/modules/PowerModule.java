@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -762,11 +763,7 @@ public final class PowerModule extends AbstractModule {
 		//TODO create individual EleConnector for panels
 
 		/** compares vectors by x coordinate */
-		private static final Comparator<VectorXZ> X_COMPARATOR = new Comparator<VectorXZ>() {
-			@Override public int compare(VectorXZ v1, VectorXZ v2) {
-				return Double.compare(v1.x, v2.x);
-			}
-		};
+		private static final Comparator<VectorXZ> X_COMPARATOR = comparingDouble(v -> v.x);
 
 		protected PhotovoltaicPlant(MapArea area) {
 			super(area);
@@ -808,7 +805,7 @@ public final class PowerModule extends AbstractModule {
 
 				assert intersections.size() % 2 == 0;
 
-				sort(intersections, X_COMPARATOR);
+				intersections.sort(X_COMPARATOR);
 
 				// add more start/end points at ground-level obstacles
 
@@ -824,7 +821,7 @@ public final class PowerModule extends AbstractModule {
 						int insertionIndexB = -binarySearch(intersections,
 								obstacleIntersections.get(i + 1), X_COMPARATOR) - 1;
 
-						sort(obstacleIntersections, X_COMPARATOR);
+						obstacleIntersections.sort(X_COMPARATOR);
 
 						if (insertionIndexA == insertionIndexB
 								&& insertionIndexA >= 0

@@ -1,9 +1,9 @@
 package org.osm2world.core.map_elevation.data;
 
 
+import static java.util.Comparator.comparingDouble;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapElement;
@@ -33,15 +33,8 @@ public class WaySegmentElevationProfile extends ElevationProfile {
 	//TODO: is this needed?
 	/** sort pointsWithEle by ascending (squared) distance from startPos */
 	private void sortPointsWithEle() {
-		Collections.sort(pointsWithEle, new Comparator<VectorXYZ>() {
-			final VectorXZ startPos = line.getPrimaryRepresentation().getStartPosition();
-			@Override
-			public int compare(VectorXYZ v1, VectorXYZ v2) {
-				return Double.compare(v1.xz().subtract(startPos)
-						.lengthSquared(), v2.xz().subtract(startPos)
-						.lengthSquared());
-			}
-		});
+		final VectorXZ startPos = line.getPrimaryRepresentation().getStartPosition();
+		pointsWithEle.sort(comparingDouble(v -> v.xz().subtract(startPos).lengthSquared()));
 	}
 
 	/*

@@ -1,7 +1,7 @@
 package org.osm2world.core.target.jogl;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
+import static java.util.Comparator.comparingDouble;
 import static javax.media.opengl.GL2.GL_COMPILE;
 import static org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection.closestCardinal;
 import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.drawPrimitive;
@@ -184,7 +184,7 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 
 				}
 
-				Collections.sort(transparentPrimitives, comparator);
+				transparentPrimitives.sort(comparator);
 
 			}
 
@@ -194,14 +194,7 @@ class JOGLRendererDisplayList extends JOGLRenderer {
 
 			/* sort based on distance to camera */
 
-			Collections.sort(transparentPrimitives, new Comparator<PrimitiveWithMaterial>() {
-				@Override
-				public int compare(PrimitiveWithMaterial p1, PrimitiveWithMaterial p2) {
-					return Double.compare(
-							distanceToCameraSq(camera, p2),
-							distanceToCameraSq(camera, p1));
-				}
-			});
+			transparentPrimitives.sort(comparingDouble(p -> distanceToCameraSq(camera, p)));
 
 			currentPrimitiveSortDirection = null;
 

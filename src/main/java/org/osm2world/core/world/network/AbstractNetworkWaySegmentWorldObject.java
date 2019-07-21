@@ -2,6 +2,7 @@ package org.osm2world.core.world.network;
 
 import static java.lang.Double.*;
 import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparingDouble;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
@@ -10,7 +11,6 @@ import static org.osm2world.core.math.VectorXZ.distanceSquared;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
@@ -201,14 +201,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			if (centerlineXZ.size() > 3) {
 
 				// sort by distance from start
-				Collections.sort(centerlineXZ, new Comparator<VectorXZ>() {
-					@Override
-					public int compare(VectorXZ v1, VectorXZ v2) {
-						return Double.compare(
-								distanceSquared(v1, start),
-								distanceSquared(v2, start));
-					}
-				});
+				centerlineXZ.sort(comparingDouble(v -> distanceSquared(v, start)));
 
 			}
 

@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.awt.Color.ORANGE;
 import static java.util.Collections.nCopies;
+import static java.util.Comparator.comparingInt;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
@@ -13,8 +14,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -104,17 +103,7 @@ public class PoolModule extends ConfigurableWorldModule {
 	 */
 	static void sortWaySegmentList(final OSMWay way, List<MapWaySegment> segments) {
 
-		Collections.sort(segments, new Comparator<MapWaySegment>() {
-
-			@Override
-			public int compare(MapWaySegment s1, MapWaySegment s2) {
-
-				int i1 = way.nodes.indexOf(s1.getStartNode().getOsmNode());
-				int i2 = way.nodes.indexOf(s2.getStartNode().getOsmNode());
-
-				return Integer.valueOf(i1).compareTo(i2);
-
-			}});
+		segments.sort(comparingInt((MapWaySegment s) -> way.nodes.indexOf(s.getStartNode().getOsmNode())));
 
 	}
 

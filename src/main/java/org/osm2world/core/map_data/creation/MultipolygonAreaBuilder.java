@@ -2,15 +2,16 @@ package org.osm2world.core.map_data.creation;
 
 import static java.lang.Boolean.*;
 import static java.lang.Double.NaN;
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -443,13 +444,7 @@ final class MultipolygonAreaBuilder {
 				/* add intersections for this side of the bbox,
 				 * sorted by distance from corner */
 
-				Collections.sort(intersectionsSide, new Comparator<NodeOnBBox>() {
-					@Override public int compare(NodeOnBBox n1, NodeOnBBox n2) {
-						return Double.compare(
-								n1.node.getPos().distanceTo(side.p1),
-								n2.node.getPos().distanceTo(side.p1));
-					}
-				});
+				intersectionsSide.sort(comparingDouble(n -> n.node.getPos().distanceTo(side.p1)));
 
 				bBoxNodes.addAll(intersectionsSide);
 

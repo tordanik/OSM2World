@@ -1,9 +1,10 @@
 package org.osm2world.core.map_data.data;
 
+import static java.util.Comparator.comparingDouble;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -153,24 +154,19 @@ public class MapNode implements MapElement {
 	 * creates the ordering described for {@link #getConnectedSegments()}
 	 */
 	private void sortLinesByAngle(List<? extends MapSegment> lines) {
-		Collections.sort(lines, new Comparator<MapSegment>() {
-			@Override
-			public int compare(MapSegment l1, MapSegment l2) {
 
-				VectorXZ d1 = l1.getDirection();
-				VectorXZ d2 = l2.getDirection();
+		lines.sort(comparingDouble((MapSegment l) -> {
 
-				if (inboundLines.contains(l1)) {
-					d1 = d1.invert();
-				}
-				if (inboundLines.contains(l2)) {
-					d2 = d2.invert();
-				}
+			VectorXZ d = l.getDirection();
 
-				return Double.compare(d1.angle(), d2.angle());
-
+			if (inboundLines.contains(l)) {
+				d = d.invert();
 			}
-		});
+
+			return d.angle();
+
+		}));
+
 	}
 
 	@Override

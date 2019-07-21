@@ -1,10 +1,11 @@
 package org.osm2world.core.map_data.data.overlaps;
 
 import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.VectorXZ.distance;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -68,13 +69,7 @@ public class MapOverlapWA extends MapOverlap<MapWaySegment, MapArea> {
 			positions.add(e1.getStartNode().getPos());
 			positions.add(e1.getEndNode().getPos());
 
-			sort(positions, new Comparator<VectorXZ>() {
-				public int compare(VectorXZ v1, VectorXZ v2) {
-					return Double.compare(
-							VectorXZ.distance(v1, e1.getStartNode().getPos()),
-							VectorXZ.distance(v2, e1.getStartNode().getPos()));
-				}
-			});
+			positions.sort(comparingDouble(v -> distance(v, e1.getStartNode().getPos())));
 
 			/* check for each line segments between two positions
 			 * whether it overlaps with the area */
