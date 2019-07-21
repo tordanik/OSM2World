@@ -37,7 +37,6 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
-import org.osm2world.core.util.functions.DefaultFactory;
 import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
@@ -155,21 +154,16 @@ public class ConversionFacade {
 
 	}
 
-	private Factory<? extends OriginMapProjection> mapProjectionFactory =
-		new DefaultFactory<MetricMapProjection>(MetricMapProjection.class);
+	private Factory<? extends OriginMapProjection> mapProjectionFactory = MetricMapProjection::new;
 
-	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory =
-		new DefaultFactory<LeastSquaresInterpolator>(LeastSquaresInterpolator.class);
+	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = LeastSquaresInterpolator::new;
 
-	private Factory<? extends EleConstraintEnforcer> eleConstraintEnforcerFactory =
-		new DefaultFactory<NoneEleConstraintEnforcer>(NoneEleConstraintEnforcer.class);
+	private Factory<? extends EleConstraintEnforcer> eleConstraintEnforcerFactory = NoneEleConstraintEnforcer::new;
 
 	/**
 	 * sets the factory that will make {@link MapProjection}
 	 * instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
-	 *
-	 * @see DefaultFactory
 	 */
 	public void setMapProjectionFactory(
 			Factory<? extends OriginMapProjection> mapProjectionFactory) {
@@ -180,8 +174,6 @@ public class ConversionFacade {
 	 * sets the factory that will make {@link EleConstraintEnforcer}
 	 * instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
-	 *
-	 * @see DefaultFactory
 	 */
 	public void setEleConstraintEnforcerFactory(
 			Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
@@ -192,8 +184,6 @@ public class ConversionFacade {
 	 * sets the factory that will make {@link TerrainInterpolator}
 	 * instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
-	 *
-	 * @see DefaultFactory
 	 */
 	public void setTerrainEleInterpolatorFactory(
 			Factory<? extends TerrainInterpolator> enforcerFactory) {
@@ -275,7 +265,7 @@ public class ConversionFacade {
 		/* create map data from OSM data */
 		updatePhase(Phase.MAP_DATA);
 
-		OriginMapProjection mapProjection = mapProjectionFactory.make();
+		OriginMapProjection mapProjection = mapProjectionFactory.get();
 		mapProjection.setOrigin(osmData);
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
@@ -337,7 +327,7 @@ public class ConversionFacade {
 
 		final TerrainInterpolator interpolator =
 				(eleData != null)
-				? terrainEleInterpolatorFactory.make()
+				? terrainEleInterpolatorFactory.get()
 				: new ZeroInterpolator();
 
 		/* provide known elevations from eleData to the interpolator */
@@ -395,8 +385,8 @@ public class ConversionFacade {
 
 		final EleConstraintEnforcer enforcer = debugConstraints
 				? new EleConstraintValidator(mapData,
-						eleConstraintEnforcerFactory.make())
-				: eleConstraintEnforcerFactory.make();
+						eleConstraintEnforcerFactory.get())
+				: eleConstraintEnforcerFactory.get();
 
 		enforcer.addConnectors(connectors);
 

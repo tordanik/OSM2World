@@ -16,7 +16,6 @@ import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.util.functions.DefaultFactory;
-import org.osm2world.core.util.functions.Factory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;

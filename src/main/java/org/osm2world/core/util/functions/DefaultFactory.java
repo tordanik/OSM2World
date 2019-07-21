@@ -15,7 +15,7 @@ public class DefaultFactory<T> implements Factory<T> {
 	}
 
 	@Override
-	public T make() {
+	public T get() {
 		try {
 			return c.newInstance();
 		} catch (InstantiationException e) {

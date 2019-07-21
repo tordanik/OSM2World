@@ -1,5 +1,7 @@
 package org.osm2world.console;
 
+import static java.lang.Double.*;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,10 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-
-import static java.lang.Double.*;
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.console.CLIArgumentsUtil.InputMode;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
@@ -20,13 +19,11 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -40,7 +37,6 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
-import org.osm2world.core.util.functions.DefaultFactory;
 
 public final class Output {
 
@@ -103,26 +99,20 @@ public final class Output {
 
 		String interpolatorType = config.getString("terrainInterpolator");
 		if ("ZeroInterpolator".equals(interpolatorType)) {
-			cf.setTerrainEleInterpolatorFactory(
-					new DefaultFactory<TerrainInterpolator>(ZeroInterpolator.class));
+			cf.setTerrainEleInterpolatorFactory(ZeroInterpolator::new);
 		} else if ("LeastSquaresInterpolator".equals(interpolatorType)) {
-			cf.setTerrainEleInterpolatorFactory(
-					new DefaultFactory<TerrainInterpolator>(LeastSquaresInterpolator.class));
+			cf.setTerrainEleInterpolatorFactory(LeastSquaresInterpolator::new);
 		} else if ("NaturalNeighborInterpolator".equals(interpolatorType)) {
-			cf.setTerrainEleInterpolatorFactory(
-					new DefaultFactory<TerrainInterpolator>(NaturalNeighborInterpolator.class));
+			cf.setTerrainEleInterpolatorFactory(NaturalNeighborInterpolator::new);
 		}
 
 		String enforcerType = config.getString("eleConstraintEnforcer");
 		if ("NoneEleConstraintEnforcer".equals(enforcerType)) {
-			cf.setEleConstraintEnforcerFactory(
-					new DefaultFactory<EleConstraintEnforcer>(NoneEleConstraintEnforcer.class));
+			cf.setEleConstraintEnforcerFactory(NoneEleConstraintEnforcer::new);
 		} else if ("SimpleEleConstraintEnforcer".equals(enforcerType)) {
-			cf.setEleConstraintEnforcerFactory(
-					new DefaultFactory<EleConstraintEnforcer>(SimpleEleConstraintEnforcer.class));
+			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
 		} else if ("LPEleConstraintEnforcer".equals(enforcerType)) {
-			cf.setEleConstraintEnforcerFactory(
-					new DefaultFactory<EleConstraintEnforcer>(LPEleConstraintEnforcer.class));
+			cf.setEleConstraintEnforcerFactory(LPEleConstraintEnforcer::new);
 		}
 
 		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
