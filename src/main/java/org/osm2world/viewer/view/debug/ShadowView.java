@@ -20,7 +20,7 @@ public class ShadowView extends DebugView {
 	@Override
 	public String getDescription() {
 		return "shows the world from the perspective of the light";
-	};
+	}
 
 	@Override
 	public boolean canBeUsed() {

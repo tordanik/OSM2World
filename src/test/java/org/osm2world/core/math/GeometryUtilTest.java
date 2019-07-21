@@ -64,7 +64,6 @@ public class GeometryUtilTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void testEquallyDistributePointsAlong1StartEnd() {
 
 		List<VectorXZ> result1 = equallyDistributePointsAlong(
@@ -88,7 +87,6 @@ public class GeometryUtilTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void testEquallyDistributePointsAlong1NoStartEnd() {
 
 		List<VectorXZ> result1 = equallyDistributePointsAlong(

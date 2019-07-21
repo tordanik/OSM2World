@@ -5,7 +5,7 @@ package org.osm2world.core;
  */
 public final class GlobalValues {
 
-	private GlobalValues() {};
+	private GlobalValues() {}
 
 	/** version string */
 	public static final String VERSION_STRING = "0.3.0-dev";

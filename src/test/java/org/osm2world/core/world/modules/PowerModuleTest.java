@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.EMPTY_LIST;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
@@ -37,7 +37,7 @@ public class PowerModuleTest {
 				new OSMWay(new MapBasedTagGroup(new Tag("power","line"), new Tag("cables","4")), 201, nodes)
 				);
 
-		OSMData osmData = new OSMData(EMPTY_LIST, nodes, ways, EMPTY_LIST);
+		OSMData osmData = new OSMData(emptyList(), nodes, ways, emptyList());
 
 		/* render to multiple targets */
 

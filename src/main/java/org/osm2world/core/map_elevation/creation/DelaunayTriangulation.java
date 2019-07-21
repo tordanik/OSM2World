@@ -433,7 +433,7 @@ public class DelaunayTriangulation {
 
 				public boolean hasNext() {
 					return nextTriangle != null;
-				};
+				}
 
 				public DelaunayTriangle next() {
 
@@ -473,11 +473,11 @@ public class DelaunayTriangulation {
 
 					return currentTriangle;
 
-				};
+				}
 
 				public void remove() {
 					throw new UnsupportedOperationException();
-				};
+				}
 
 			};
 

@@ -251,15 +251,15 @@ public class OSMFileDataSource implements
 
 	public boolean isNMember(OwnMember member) {
 		return member.member instanceof OwnNode;
-	};
+	}
 
 	public boolean isWMember(OwnMember member) {
 		return member.member instanceof OwnWay;
-	};
+	}
 
 	public boolean isRMember(OwnMember member) {
 		return member.member instanceof OwnRelation;
-	};
+	}
 
 	public class OwnNode {
 		private final double lat;

@@ -649,7 +649,6 @@ final class MultipolygonAreaBuilder {
 
 		Ruleset ruleset = new HardcodedRuleset();
 
-		@SuppressWarnings("unchecked")
 		List<Collection<? extends OSMElement>> collections = asList(
 				osmData.getWays(), osmData.getNodes());
 

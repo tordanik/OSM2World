@@ -257,7 +257,6 @@ public class ViewerFrame extends JFrame {
 
 			ButtonGroup interpolatorGroup = new ButtonGroup();
 
-			@SuppressWarnings("unchecked")
 			List<Class<? extends TerrainInterpolator>> interpolatorClasses = asList(
 					ZeroInterpolator.class,
 					LinearInterpolator.class,
@@ -281,7 +280,6 @@ public class ViewerFrame extends JFrame {
 
 			ButtonGroup enforcerGroup = new ButtonGroup();
 
-			@SuppressWarnings("unchecked")
 			List<Class<? extends EleConstraintEnforcer>> enforcerClasses = asList(
 					NoneEleConstraintEnforcer.class,
 					SimpleEleConstraintEnforcer.class,

@@ -76,7 +76,7 @@ public final class EarClippingTriangulationUtil {
 		//However, at least one hole will be inserted during each loop execution.
 		while (!remainingHoles.isEmpty()) {
 			for (Iterator<SimplePolygonXZ> holeIt = remainingHoles.iterator(); holeIt.hasNext(); ) {
-				SimplePolygonXZ hole = (SimplePolygonXZ) holeIt.next();
+				SimplePolygonXZ hole = holeIt.next();
 				boolean success = insertHoleInPolygonOutline(polygonOutline, hole, remainingHoles);
 				if (success) {
 					holeIt.remove();

@@ -1,7 +1,6 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_CCW;
-import static javax.media.opengl.GL.GL_CW;
+import static javax.media.opengl.GL.*;
 
 /**
  * global parameters for rendering a JOGL scene
@@ -18,7 +17,7 @@ public class JOGLRenderingParameters {
 			this.glConstant = glConstant;
 		}
 
-	};
+	}
 
 	final Winding frontFace;
 	final boolean wireframe;

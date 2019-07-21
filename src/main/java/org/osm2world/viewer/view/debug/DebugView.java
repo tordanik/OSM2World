@@ -149,7 +149,7 @@ public abstract class DebugView {
 	 *
 	 * @param viewChanged  true if camera or projection have changed
 	 */
-	protected void updateTarget(JOGLTarget target, boolean viewChanged) {};
+	protected void updateTarget(JOGLTarget target, boolean viewChanged) {}
 
 	protected static final void drawBoxAround(JOGLTarget target,
 			VectorXZ center, Color color, float halfWidth) {
@@ -185,8 +185,8 @@ public abstract class DebugView {
 
 		/* draw head */
 
-		VectorXYZ lastV = VectorXYZ.xyz(vs[vs.length-1]);
-		VectorXYZ slastV = VectorXYZ.xyz(vs[vs.length-2]);
+		VectorXYZ lastV = vs[vs.length-1];
+		VectorXYZ slastV = vs[vs.length-2];
 
 		VectorXYZ endDir = lastV.subtract(slastV).normalize();
 		VectorXYZ headStart = lastV.subtract(endDir.mult(headLength));

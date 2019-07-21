@@ -261,18 +261,6 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 		return result;
 	}
 
-	/**
-	 * creates a VectorXYZ for any Vector3D object.
-	 * If the Vector3D is already a VectorXYZ, this can return the original vector.
-	 */
-	public static VectorXYZ xyz(VectorXYZ vector3D) {
-		if (vector3D instanceof VectorXYZ) {
-			return (VectorXYZ)vector3D;
-		} else {
-			return new VectorXYZ(vector3D.getX(), vector3D.getY(), vector3D.getZ());
-		}
-	}
-
 	public static List<VectorXYZ> addYList(List<VectorXYZ> list, double addY) {
 		List<VectorXYZ> result = new ArrayList<VectorXYZ>(list.size());
 		for (VectorXYZ listEntry : list) {

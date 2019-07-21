@@ -62,7 +62,6 @@ public abstract class BridgeOrTunnel implements WaySegmentWorldObject {
 	@Override
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {
 
-		@SuppressWarnings("unchecked")
 		List<List<VectorXZ>> lines = asList(
 				primaryRep.getCenterlineXZ(),
 				primaryRep.getOutlineXZ(true),

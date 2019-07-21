@@ -19,7 +19,7 @@ public class WorldObjectView extends DebugView {
 	@Override
 	public String getDescription() {
 		return "shows the world objects";
-	};
+	}
 
 	@Override
 	public boolean canBeUsed() {

@@ -178,7 +178,6 @@ public class WaterModule extends ConfigurableWorldModule {
 
 				/* render ground */
 
-				@SuppressWarnings("unchecked") // generic vararg is intentional
 				List<List<VectorXYZ>> strips = asList(
 					createTriangleStripBetween(
 							leftOutline, leftWaterBorder),

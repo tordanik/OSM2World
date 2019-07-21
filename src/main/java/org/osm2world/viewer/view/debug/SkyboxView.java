@@ -13,7 +13,7 @@ public class SkyboxView extends DebugView {
 	@Override
 	public String getDescription() {
 		return "shows a skybox in the background";
-	};
+	}
 
 	@Override
 	public boolean canBeUsed() {

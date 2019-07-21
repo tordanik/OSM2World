@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 
-import org.osm2world.viewer.view.FileDrop.TransferableObject;
-
 /*
  * this class has been copied from the Public Domain resource
  * http://www.iharder.net/current/java/filedrop/
@@ -317,14 +315,12 @@ class FileDrop
                             log( out, "FileDrop: file list accepted." );
 
                             // Get a useful list
-                            java.util.List fileList = (java.util.List)
+                            @SuppressWarnings("unchecked")
+							java.util.List<File> fileList = (java.util.List<File>)
                                 tr.getTransferData(java.awt.datatransfer.DataFlavor.javaFileListFlavor);
-                            java.util.Iterator iterator = fileList.iterator();
 
                             // Convert list to array
-                            java.io.File[] filesTemp = new java.io.File[ fileList.size() ];
-                            fileList.toArray( filesTemp );
-                            final java.io.File[] files = filesTemp;
+                            final java.io.File[] files = fileList.toArray( new java.io.File[ fileList.size() ] );
 
                             // Alert listener to drop.
                             if( listener != null )
@@ -429,7 +425,8 @@ class FileDrop
         {
             boolean support = false;
             try
-            {   Class arbitraryDndClass = Class.forName( "java.awt.dnd.DnDConstants" );
+            {   @SuppressWarnings("unused")
+			Class<?> arbitraryDndClass = Class.forName( "java.awt.dnd.DnDConstants" );
                 support = true;
             }   // end try
             catch( Exception e )
@@ -446,7 +443,7 @@ class FileDrop
      private static File[] createFileArray(BufferedReader bReader, PrintStream out)
      {
         try {
-            java.util.List list = new java.util.ArrayList();
+            java.util.List<File> list = new java.util.ArrayList<>();
             java.lang.String line = null;
             while ((line = bReader.readLine()) != null) {
                 try {
@@ -460,7 +457,7 @@ class FileDrop
                 }
             }
 
-            return (java.io.File[]) list.toArray(new File[list.size()]);
+            return list.toArray(new File[list.size()]);
         } catch (IOException ex) {
             log(out, "FileDrop: IOException");
         }
@@ -701,7 +698,7 @@ class FileDrop
      *      ...
      * </code></pre>
      * Or if you need to know when the data was actually dropped, like when you're
-     * moving data out of a list, say, you can use the {@link TransferableObject.Fetcher}
+     * moving data out of a list, say, you can use the TransferableObject.Fetcher
      * inner class to return your object Just in Time.
      * For example:
      * <pre><code>
@@ -807,7 +804,7 @@ class FileDrop
          * @param fetcher The {@link Fetcher} that will return the data object
          * @since 1.1
          */
-        public TransferableObject( Class dataClass, Fetcher fetcher )
+        public TransferableObject( Class<?> dataClass, Fetcher fetcher )
         {   this.fetcher = fetcher;
             this.customFlavor = new java.awt.datatransfer.DataFlavor( dataClass, MIME_TYPE );
         }   // end constructor

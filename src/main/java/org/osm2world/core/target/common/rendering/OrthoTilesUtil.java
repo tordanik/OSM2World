@@ -42,7 +42,7 @@ public final class OrthoTilesUtil {
 					|| this == W && other == E;
 		}
 
-	};
+	}
 
 	/** prevents instantiation */
 	private OrthoTilesUtil() { }

@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 
 public final class CLIArgumentsUtil {
 
-	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE};
-	public static enum OutputMode {OBJ, POV, PNG, PPM, GD};
-	public static enum InputMode {FILE, OVERPASS};
+	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE}
+	public static enum OutputMode {OBJ, POV, PNG, PPM, GD}
+	public static enum InputMode {FILE, OVERPASS}
 
 	private CLIArgumentsUtil() { }
 

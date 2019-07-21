@@ -12,7 +12,7 @@ import org.osm2world.core.target.common.TextureData;
  */
 public abstract class Material {
 
-	public static enum Interpolation {FLAT, SMOOTH};
+	public static enum Interpolation {FLAT, SMOOTH}
 
 	public static enum Transparency {
 		/** arbitrary transparency, including partially transparent pixels */
