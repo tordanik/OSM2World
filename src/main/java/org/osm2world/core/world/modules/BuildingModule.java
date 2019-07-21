@@ -677,35 +677,50 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			String buildingValue = getValue("building");
 
-			if ("greenhouse".equals(buildingValue)) {
+			switch (buildingValue) {
+
+			case "greenhouse":
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.GLASS;
 				defaultMaterialRoof = Materials.GLASS_ROOF;
 				defaultMaterialWindows = null;
-			} else if ("garage".equals(buildingValue)
-					|| "garages".equals(buildingValue)) {
+				break;
+
+			case "garage":
+			case "garages":
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.CONCRETE;
 				defaultMaterialRoof = Materials.CONCRETE;
 				defaultMaterialWindows = Materials.GARAGE_DOORS;
-			} else if ("hut".equals(buildingValue)
-					|| "shed".equals(buildingValue)) {
+				break;
+
+			case "hut":
+			case "shed":
 				defaultLevels = 1;
-			} else if ("cabin".equals(buildingValue)) {
+				break;
+
+			case "cabin":
 				defaultLevels = 1;
 				defaultMaterialWall = Materials.WOOD_WALL;
 				defaultMaterialRoof = Materials.WOOD;
-			} else if ("roof".equals(buildingValue)) {
+				break;
+
+			case "roof":
 				defaultLevels = 1;
 				defaultMaterialWindows = null;
-			} else if ("church".equals(buildingValue)
-					|| "hangar".equals(buildingValue)
-					|| "industrial".equals(buildingValue)) {
+				break;
+
+			case "church":
+			case "hangar":
+			case "industrial":
 				defaultMaterialWindows = null;
-			} else {
+				break;
+
+			default:
 				if (getValue("building:levels") == null) {
 					defaultMaterialWindows = null;
 				}
+				break;
 			}
 
 			if ("multi-storey".equals(getValue("parking"))) {
@@ -759,29 +774,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				try {
 
-					if ("pyramidal".equals(roofShape)) {
-						roof = new PyramidalRoof();
-					} else if ("onion".equals(roofShape)) {
-						roof = new OnionRoof();
-					} else if ("skillion".equals(roofShape)) {
-						roof = new SkillionRoof();
-					} else if ("gabled".equals(roofShape)) {
-						roof = new GabledRoof();
-					} else if ("hipped".equals(roofShape)) {
-						roof = new HippedRoof();
-					} else if ("half-hipped".equals(roofShape)) {
-						roof = new HalfHippedRoof();
-					} else if ("gambrel".equals(roofShape)) {
-						roof = new GambrelRoof();
-					} else if ("mansard".equals(roofShape)) {
-						roof = new MansardRoof();
-					} else if ("dome".equals(roofShape)) {
-						roof = new DomeRoof();
-					} else if ("round".equals(roofShape)) {
-						roof = new RoundRoof();
-					} else {
-						roof = new FlatRoof();
-					}
+					roof = createRoofForShape(roofShape);
 
 				} catch (InvalidGeometryException e) {
 					System.err.println("falling back to FlatRoof: " + e);
@@ -936,6 +929,24 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			return material;
+
+		}
+
+		private Roof createRoofForShape(String roofShape) {
+
+			switch (roofShape) {
+			case "pyramidal": return new PyramidalRoof();
+			case "onion": return new OnionRoof();
+			case "skillion": return new SkillionRoof();
+			case "gabled": return new GabledRoof();
+			case "hipped": return new HippedRoof();
+			case "half-hipped": return new HalfHippedRoof();
+			case "gambrel": return new GambrelRoof();
+			case "mansard": return new MansardRoof();
+			case "dome": return new DomeRoof();
+			case "round": return new RoundRoof();
+			default: return new FlatRoof();
+			}
 
 		}
 
