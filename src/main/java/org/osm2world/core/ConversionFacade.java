@@ -36,7 +36,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
@@ -363,16 +362,13 @@ public class ConversionFacade {
 
 		final List<EleConnector> connectors = new ArrayList<EleConnector>();
 
-		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
-				new Operation<WorldObject>() {
-			@Override public void perform(WorldObject worldObject) {
+		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 
-				for (EleConnector conn : worldObject.getEleConnectors()) {
-					conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
-					connectors.add(conn);
-				}
-
+			for (EleConnector conn : worldObject.getEleConnectors()) {
+				conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
+				connectors.add(conn);
 			}
+
 		});
 
 		System.out.println("time terrain interpolation: " + stopWatch);
@@ -393,13 +389,7 @@ public class ConversionFacade {
 		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {
 
 			FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
-					new Operation<WorldObject>() {
-				@Override public void perform(WorldObject worldObject) {
-
-					worldObject.defineEleConstraints(enforcer);
-
-				}
-			});
+					(WorldObject o) -> o.defineEleConstraints(enforcer));
 
 		}
 

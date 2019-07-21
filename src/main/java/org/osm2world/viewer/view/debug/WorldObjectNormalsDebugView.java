@@ -11,8 +11,6 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.PrimitiveBuffer;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
-import org.osm2world.core.world.data.WorldObject;
 
 public class WorldObjectNormalsDebugView extends DebugView {
 
@@ -34,11 +32,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 
 		final PrimitiveBuffer primitiveBuffer = new PrimitiveBuffer();
 
-		iterate(map.getWorldObjects(), new Operation<WorldObject>() {
-			@Override public void perform(WorldObject w) {
-				TargetUtil.renderObject(primitiveBuffer, w);
-			}
-		});
+		iterate(map.getWorldObjects(), w -> TargetUtil.renderObject(primitiveBuffer, w));
 
 		for (Material material : primitiveBuffer .getMaterials()) {
 

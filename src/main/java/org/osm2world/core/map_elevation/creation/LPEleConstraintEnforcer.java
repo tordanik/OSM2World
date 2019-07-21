@@ -9,6 +9,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.LPVariablePair;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import net.sf.javailp.Linear;
 import net.sf.javailp.OptType;
 import net.sf.javailp.Problem;
@@ -16,16 +25,6 @@ import net.sf.javailp.Result;
 import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryLpSolve;
-
-import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.map_elevation.data.LPVariablePair;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.util.FaultTolerantIterationUtil;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * enforces constraints using linear programming
@@ -357,16 +356,14 @@ public class LPEleConstraintEnforcer implements EleConstraintEnforcer {
 
 			/* apply elevation values */
 
-			FaultTolerantIterationUtil.iterate(variables, new Operation<LPVariablePair>() {
-				@Override public void perform(LPVariablePair v) {
+			FaultTolerantIterationUtil.iterate(variables, (LPVariablePair v) -> {
 
-					VectorXYZ posXYZ = v.getPosXYZ().addY(
-							+ result.get(v.posVar()).doubleValue()
-							- result.get(v.negVar()).doubleValue());
+				VectorXYZ posXYZ = v.getPosXYZ().addY(
+						+ result.get(v.posVar()).doubleValue()
+						- result.get(v.negVar()).doubleValue());
 
-					v.setPosXYZ(posXYZ);
+				v.setPosXYZ(posXYZ);
 
-				}
 			});
 
 		}

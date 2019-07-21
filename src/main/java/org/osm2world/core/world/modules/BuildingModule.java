@@ -62,7 +62,6 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.CSSColors;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.util.MinMaxUtil;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -86,22 +85,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 		final boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
 		final boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
 
-		iterate(mapData.getMapAreas(), new Operation<MapArea>() {
-			@Override public void perform(MapArea area) {
+		iterate(mapData.getMapAreas(), (MapArea area) -> {
 
-				if (!area.getRepresentations().isEmpty()) return;
+			if (!area.getRepresentations().isEmpty()) return;
 
-				String buildingValue = area.getTags().getValue("building");
+			String buildingValue = area.getTags().getValue("building");
 
-				if (buildingValue != null && !buildingValue.equals("no")) {
+			if (buildingValue != null && !buildingValue.equals("no")) {
 
-					Building building = new Building(area,
-							useBuildingColors, drawBuildingWindows);
-					area.addRepresentation(building);
-
-				}
+				Building building = new Building(area,
+						useBuildingColors, drawBuildingWindows);
+				area.addRepresentation(building);
 
 			}
+
 		});
 
 	}

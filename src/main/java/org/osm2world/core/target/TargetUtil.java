@@ -4,13 +4,13 @@ import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.PRIMITI
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.statistics.StatisticsTarget;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 import org.osm2world.core.world.data.WorldObject;
 
 public final class TargetUtil {
@@ -57,11 +57,11 @@ public final class TargetUtil {
 
 		final StatisticsTarget primitiveCounter = new StatisticsTarget();
 
-		iterate(mapData.getMapElements(), new Operation<MapElement>() {
+		iterate(mapData.getMapElements(), new Consumer<MapElement>() {
 
 			Target<R> currentTarget = targetIterator.next();
 
-			@Override public void perform(MapElement e) {
+			@Override public void accept(MapElement e) {
 				for (WorldObject r : e.getRepresentations()) {
 
 					renderObject(primitiveCounter, r);

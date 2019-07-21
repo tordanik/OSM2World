@@ -44,7 +44,6 @@ import org.osm2world.core.osm.data.OSMRelation;
 import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
-import org.osm2world.core.util.FaultTolerantIterationUtil.Operation;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -107,29 +106,27 @@ public class OSMToMapDataConverter {
 
 		/* ... based on multipolygons */
 
-		iterate(osmData.getRelations(), new Operation<OSMRelation>() {
-			@Override public void perform(OSMRelation relation) {
+		iterate(osmData.getRelations(), (OSMRelation relation) -> {
 
-				if (relation.tags.contains(MULTIPOLYON_TAG)) {
+			if (relation.tags.contains(MULTIPOLYON_TAG)) {
 
-					for (MapArea area : MultipolygonAreaBuilder.
-							createAreasForMultipolygon(relation, nodeMap)) {
+				for (MapArea area : MultipolygonAreaBuilder.
+						createAreasForMultipolygon(relation, nodeMap)) {
 
-						mapAreas.add(area);
+					mapAreas.add(area);
 
-						for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
-							boundaryMapNode.addAdjacentArea(area);
-						}
+					for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
+						boundaryMapNode.addAdjacentArea(area);
+					}
 
-						if (area.getOsmObject() instanceof OSMWay) {
-							areaMap.put((OSMWay)area.getOsmObject(), area);
-						}
-
+					if (area.getOsmObject() instanceof OSMWay) {
+						areaMap.put((OSMWay)area.getOsmObject(), area);
 					}
 
 				}
 
 			}
+
 		});
 
 		/* ... based on coastline ways */
