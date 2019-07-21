@@ -1,6 +1,5 @@
 package org.osm2world.core.world.modules;
 
-import static com.google.common.collect.Iterables.any;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
@@ -8,7 +7,6 @@ import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.Collection;
@@ -79,8 +77,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			int connectedRivers = 0;
 
-			for (MapWaySegment line : node.getConnectedWaySegments()) {
-				if (any(line.getRepresentations(), hasType(Waterway.class))) {
+			for (MapWaySegment segment : node.getConnectedWaySegments()) {
+				if (segment.getRepresentations().stream().anyMatch(r -> r instanceof Waterway)) {
 					connectedRivers += 1;
 				}
 			}

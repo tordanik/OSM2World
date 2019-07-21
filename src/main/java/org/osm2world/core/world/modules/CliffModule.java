@@ -1,10 +1,8 @@
 package org.osm2world.core.world.modules;
 
-import static com.google.common.collect.Iterables.any;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.util.Predicates.hasType;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
@@ -51,7 +49,7 @@ public class CliffModule extends ConfigurableWorldModule {
 		int result = 0;
 
 		for (MapWaySegment segment : node.getConnectedWaySegments()) {
-			if (any(segment.getRepresentations(), hasType(Cliff.class))) {
+			if (segment.getRepresentations().stream().anyMatch(r -> r instanceof Cliff)) {
 				result += 1;
 			}
 		}
