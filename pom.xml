@@ -30,6 +30,17 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
+	<repositories>
+		<repository>
+		    <id>topobyte-repo</id>
+		    <url>http://mvn.topobyte.de</url>
+		</repository>
+		<repository>
+		    <id>slimjars-repo</id>
+		    <url>http://mvn.slimjars.com</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 
 		<dependency>
@@ -82,6 +93,22 @@
 			<groupId>org.openstreetmap.osmosis</groupId>
 			<artifactId>osmosis-xml</artifactId>
 			<version>0.47</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-core</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-pbf</artifactId>
+			<version>0.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>de.topobyte</groupId>
+			<artifactId>osm4j-xml</artifactId>
+			<version>0.1.2</version>
 		</dependency>
 
 		<dependency>
