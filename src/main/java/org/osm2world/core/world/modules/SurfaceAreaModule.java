@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Collections.*;
-import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
+import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -102,7 +102,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			Material material = null;
 
-			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				material = Materials.TERRAIN_DEFAULT;
 			} else {
 				material = Materials.getSurfaceMaterial(surface);
@@ -130,7 +130,7 @@ public class SurfaceAreaModule extends AbstractModule {
 				return triangulationXZ;
 			}
 
-			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_TAG.value);
+			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_VALUE);
 
 			/* collect the outlines of overlapping ground polygons and other polygons,
 			 * and EleConnectors within the area */
@@ -316,7 +316,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 		@Override
 		public PolygonXYZ getOutlinePolygon() {
-			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				// avoid interfering with e.g. tree placement
 				return null;
 			} else {
@@ -326,7 +326,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
-			if (surface.equals(EMPTY_SURFACE_TAG.value)) {
+			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				// avoid interfering with e.g. tree placement
 				return null;
 			} else {

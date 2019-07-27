@@ -85,17 +85,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.openstreetmap.osmosis</groupId>
-			<artifactId>osmosis-pbf</artifactId>
-			<version>0.47</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openstreetmap.osmosis</groupId>
-			<artifactId>osmosis-xml</artifactId>
-			<version>0.47</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.topobyte</groupId>
 			<artifactId>osm4j-core</artifactId>
 			<version>0.1.0</version>

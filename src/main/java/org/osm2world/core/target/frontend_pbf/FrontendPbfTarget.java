@@ -2,7 +2,7 @@ package org.osm2world.core.target.frontend_pbf;
 
 import static java.lang.Math.round;
 import static java.util.Collections.*;
-import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_TAG;
+import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.TERRAIN_DEFAULT;
@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
+import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -551,6 +552,8 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 	/** factor applied to coordinate values before rounding to integers */
 	private final int COORD_PRECISION_FACTOR = 1000;
+
+	private static final Tag EMPTY_SURFACE_TAG = new Tag("surface", EMPTY_SURFACE_VALUE);
 
 	private final OutputStream outputStream;
 	private final AxisAlignedBoundingBoxXZ bbox;

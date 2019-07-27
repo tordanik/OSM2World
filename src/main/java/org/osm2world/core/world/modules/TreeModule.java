@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
@@ -26,7 +25,6 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
@@ -44,6 +42,8 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
+
+import de.topobyte.osm4j.core.model.impl.Node;
 
 /**
  * adds trees, tree rows, tree groups and forests to the world
@@ -168,9 +168,10 @@ public class TreeModule extends ConfigurableWorldModule {
 				// if the row's trees are already represented as nodes, skip it
 				boolean hasTreesAsNodes = false;
 
-				for (OSMNode n : segment.getOsmWay().nodes) {
-					hasTreesAsNodes |= n.tags.contains("natural", "tree");
-				}
+				//TODO: use MapWay (i.e. complete ways in MapData) to restore this feature
+//				for (OSMNode n : segment.getOsmWay().nodes) {
+//					hasTreesAsNodes |= n.tags.contains("natural", "tree");
+//				}
 
 				if (!hasTreesAsNodes) {
 					segment.addRepresentation(new TreeRow(segment));
@@ -370,8 +371,9 @@ public class TreeModule extends ConfigurableWorldModule {
 		public void render(Target<?> target, VectorXYZ position, double direction,
 				Double height, Double width, Double length) {
 
-			TagGroup tags = new MapBasedTagGroup(new Tag("height", "1 m"));
-			MapElement element = new MapNode(position.xz(), new OSMNode(0, 0, tags, 0));
+			Node osmNode = new Node(0, 0, 0);
+			osmNode.setTags(asList(new de.topobyte.osm4j.core.model.impl.Tag("height", "1 m")));
+			MapElement element = new MapNode(position.xz(), osmNode);
 
 			renderTree(target, element, position, leafType, leafCycle, species);
 
@@ -582,7 +584,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			/* place the trees */
 
 			List<VectorXZ> treePositions =
-				GeometryUtil.distributePointsOn(area.getOsmObject().id,
+				GeometryUtil.distributePointsOn(area.getOsmObject().getId(),
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 

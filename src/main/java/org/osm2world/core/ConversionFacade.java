@@ -12,7 +12,6 @@ import java.util.List;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
-import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
@@ -59,6 +58,9 @@ import org.osm2world.core.world.modules.TrafficSignModule;
 import org.osm2world.core.world.modules.TreeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 import org.osm2world.core.world.modules.WaterModule;
+
+import de.topobyte.osm4j.core.model.iface.OsmBounds;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 /**
  * provides an easy way to call all steps of the conversion process
@@ -253,7 +255,7 @@ public class ConversionFacade {
 
 		Double maxBoundingBoxDegrees = config.getDouble("maxBoundingBoxDegrees", null);
 		if (maxBoundingBoxDegrees != null) {
-			for (Bound bound : osmData.getBounds()) {
+			for (OsmBounds bound : osmData.getBounds()) {
 				if (bound.getTop() - bound.getBottom() > maxBoundingBoxDegrees
 						|| bound.getRight() - bound.getLeft() > maxBoundingBoxDegrees) {
 					throw new BoundingBoxSizeException(bound);
@@ -268,7 +270,12 @@ public class ConversionFacade {
 		mapProjection.setOrigin(osmData);
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
-		MapData mapData = converter.createMapData(osmData);
+		MapData mapData = null;
+		try {
+			mapData = converter.createMapData(osmData);
+		} catch (EntityNotFoundException e) {
+			// TODO: what to do here?
+		}
 
 		/* apply world modules */
 		updatePhase(Phase.REPRESENTATION);
@@ -452,9 +459,9 @@ public class ConversionFacade {
 	public static class BoundingBoxSizeException extends RuntimeException {
 
 		private static final long serialVersionUID = 2841146365929523046L; //generated VersionID
-		public final Bound bound;
+		public final OsmBounds bound;
 
-		private BoundingBoxSizeException(Bound bound) {
+		private BoundingBoxSizeException(OsmBounds bound) {
 			this.bound = bound;
 		}
 

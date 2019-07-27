@@ -5,13 +5,15 @@ import java.util.HashSet;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 
+import de.topobyte.osm4j.core.model.iface.OsmTag;
+
 public class HardcodedRuleset implements Ruleset {
 
-	private static Collection<Tag> areaTags = new HashSet<Tag>();
-	private static Collection<String> areaKeys = new HashSet<String>();
+	private static Collection<Tag> areaTags = new HashSet<>();
+	private static Collection<String> areaKeys = new HashSet<>();
 
-	private static Collection<Tag> landTags = new HashSet<Tag>();
-	private static Collection<Tag> seaTags = new HashSet<Tag>();
+	private static Collection<Tag> landTags = new HashSet<>();
+	private static Collection<Tag> seaTags = new HashSet<>();
 
 	static {
 		areaTags.add(new Tag("area", "yes"));
@@ -55,19 +57,19 @@ public class HardcodedRuleset implements Ruleset {
 	}
 
 	@Override
-	public boolean isAreaTag(Tag tag) {
-		return areaKeys.contains(tag.key)
-			|| areaTags.contains(tag);
+	public boolean isAreaTag(OsmTag tag) {
+		return areaKeys.contains(tag.getKey())
+			|| areaTags.contains(new Tag(tag.getKey(), tag.getValue()));
 	}
 
 	@Override
-	public boolean isLandTag(Tag tag) {
-		return landTags.contains(tag);
+	public boolean isLandTag(OsmTag tag) {
+		return landTags.contains(new Tag(tag.getKey(), tag.getValue()));
 	}
 
 	@Override
-	public boolean isSeaTag(Tag tag) {
-		return seaTags.contains(tag);
+	public boolean isSeaTag(OsmTag tag) {
+		return seaTags.contains(new Tag(tag.getKey(), tag.getValue()));
 	}
 
 }

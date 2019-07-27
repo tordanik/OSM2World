@@ -74,8 +74,8 @@ public class SRTMData implements TerrainElevationData {
 
 		for (MapNode mapNode : mapData.getMapNodes()) {
 
-			double lon = mapNode.getOsmNode().lon;
-			double lat = mapNode.getOsmNode().lat;
+			double lon = mapNode.getOsmNode().getLongitude();
+			double lat = mapNode.getOsmNode().getLatitude();
 
 			if (!isNaN(lat) && !isNaN(lon)) {
 				minLon = min(minLon, lon);

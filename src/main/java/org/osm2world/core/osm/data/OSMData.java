@@ -1,43 +1,64 @@
 package org.osm2world.core.osm.data;
 
+import static java.util.Collections.*;
+
 import java.util.Collection;
 
-import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
+import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
+import de.topobyte.osm4j.core.model.iface.OsmBounds;
+import de.topobyte.osm4j.core.model.iface.OsmNode;
+import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
 
 /**
  * OSM dataset containing nodes, areas and relations
  */
 public class OSMData {
 
-	private final Collection<Bound> bounds;
-	private final Collection<OSMNode> nodes;
-	private final Collection<OSMWay> ways;
-	private final Collection<OSMRelation> relations;
+	private final Collection<OsmBounds> bounds;
+	private InMemoryMapDataSet data;
 
-	public OSMData(Collection<Bound> bounds, Collection<OSMNode> nodes,
-			Collection<OSMWay> ways, Collection<OSMRelation> relations) {
+	public OSMData(InMemoryMapDataSet data) {
+
+		if (data.hasBounds()) {
+			bounds = singletonList(data.getBounds());
+		} else {
+			bounds = emptyList();
+		}
+
+		this.data = data;
+
+	}
+
+	public OSMData(Collection<OsmBounds> bounds, Collection<? extends OsmNode> nodes,
+			Collection<? extends OsmWay> ways, Collection<? extends OsmRelation> relations) {
 
 		this.bounds = bounds;
-		this.nodes = nodes;
-		this.ways = ways;
-		this.relations = relations;
+
+		data = new InMemoryMapDataSet();
+		for (OsmNode node : nodes) {
+			data.getNodes().put(node.getId(), node);
+		}
+		for (OsmWay way : ways) {
+			data.getWays().put(way.getId(), way);
+		}
+		for (OsmRelation relation : relations) {
+			data.getRelations().put(relation.getId(), relation);
+		}
 
 	}
 
-	public Collection<OSMNode> getNodes() {
-		return nodes;
-	}
-
-	public Collection<OSMWay> getWays() {
-		return ways;
-	}
-
-	public Collection<OSMRelation> getRelations() {
-		return relations;
-	}
-
-	public Collection<Bound> getBounds() {
+	public Collection<OsmBounds> getBounds() {
 		return bounds;
+	}
+
+	public InMemoryMapDataSet getData() {
+		return data;
+	}
+
+	public OsmEntityProvider getEntityProvider() {
+		return data;
 	}
 
 }

@@ -1,18 +1,22 @@
 package org.osm2world.core.map_data.data;
 
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 import static java.util.Comparator.comparingDouble;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMNode;
 import org.osm2world.core.world.data.NodeWorldObject;
+
+import de.topobyte.osm4j.core.model.iface.OsmNode;
 
 /**
  * grid representation of an OSM node,
@@ -22,7 +26,7 @@ import org.osm2world.core.world.data.NodeWorldObject;
 public class MapNode implements MapElement {
 
 	private final VectorXZ pos;
-	private final OSMNode osmNode;
+	private final OsmNode osmNode;
 
 	private List<NodeWorldObject> representations = new ArrayList<NodeWorldObject>(1);
 
@@ -32,14 +36,11 @@ public class MapNode implements MapElement {
 	private List<MapWaySegment> inboundLines = new ArrayList<MapWaySegment>(); //TODO: maybe use list and sort by angle?
 	private List<MapWaySegment> outboundLines = new ArrayList<MapWaySegment>();
 
-	private Collection<MapArea> adjacentAreas;
+	private Collection<MapArea> adjacentAreas = new ArrayList<MapArea>();
 
-	public MapNode(VectorXZ pos, OSMNode osmNode) {
-
+	public MapNode(VectorXZ pos, OsmNode osmNode) {
 		this.pos = pos;
 		this.osmNode = osmNode;
-		this.adjacentAreas = new ArrayList<MapArea>();
-
 	}
 
 	public VectorXZ getPos() {
@@ -48,9 +49,10 @@ public class MapNode implements MapElement {
 
 	@Override
 	public int getLayer() {
-		if (osmNode.tags.containsKey("layer")) {
+		Map<String, String> tags = getTagsAsMap(osmNode);
+		if (tags.containsKey("layer")) {
 			try {
-				return Integer.parseInt(osmNode.tags.getValue("layer"));
+				return Integer.parseInt(tags.get("layer"));
 			} catch (NumberFormatException nfe) {
 				return 0;
 			}
@@ -58,13 +60,13 @@ public class MapNode implements MapElement {
 		return 0;
 	}
 
-	public OSMNode getOsmNode() {
+	public OsmNode getOsmNode() {
 		return osmNode;
 	}
 
 	@Override
 	public TagGroup getTags() {
-		return getOsmNode().tags;
+		return new MapBasedTagGroup(getTagsAsMap(osmNode));
 	}
 
 	public Collection<MapArea> getAdjacentAreas() {

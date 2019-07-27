@@ -18,12 +18,15 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.creation.StrictOSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+
 public class OSMToMapDataConverterTest {
 
 	/**
 	 * loads {@link MapData} from a file in the test files directory
+	 * @throws EntityNotFoundException
 	 */
-	private static MapData loadMapData(String filename) throws IOException {
+	private static MapData loadMapData(String filename) throws IOException, EntityNotFoundException {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource(filename).getFile());
@@ -40,8 +43,9 @@ public class OSMToMapDataConverterTest {
 	/**
 	 * test code for a group multipolygon test files which
 	 * represent the same case with different multipolygon variants
+	 * @throws EntityNotFoundException
 	 */
-	private void genericMultipolygonTest(String filename) throws IOException {
+	private void genericMultipolygonTest(String filename) throws IOException, EntityNotFoundException {
 
 		MapData mapData = loadMapData(filename);
 
@@ -58,33 +62,33 @@ public class OSMToMapDataConverterTest {
 	}
 
 	@Test
-	public void testMultipolygon() throws IOException {
+	public void testMultipolygon() throws IOException, EntityNotFoundException {
 		genericMultipolygonTest("mp_two_holes.osm");
 	}
 
 	@Test
-	public void testMultipolygonOuterTagged() throws IOException {
+	public void testMultipolygonOuterTagged() throws IOException, EntityNotFoundException {
 		genericMultipolygonTest("mp_two_holes_outer_tagged.osm");
 	}
 
 	@Test
-	public void testMultipolygonAdvanced() throws IOException {
+	public void testMultipolygonAdvanced() throws IOException, EntityNotFoundException {
 		genericMultipolygonTest("mp_two_holes_advanced.osm");
 	}
 
 	@Test
-	public void testMultipolygonAdvanced2() throws IOException {
+	public void testMultipolygonAdvanced2() throws IOException, EntityNotFoundException {
 		genericMultipolygonTest("mp_two_holes_advanced2.osm");
 	}
 
 	@Ignore
 	@Test
-	public void testMultipolygonTouchingInners() throws IOException {
+	public void testMultipolygonTouchingInners() throws IOException, EntityNotFoundException {
 		genericMultipolygonTest("mp_two_holes_touching_inners.osm");
 	}
 
 	private void genericCoastlineTest(String filename, List<LatLon> landSites,
-			List<LatLon> waterSites) throws IOException {
+			List<LatLon> waterSites) throws IOException, EntityNotFoundException {
 
 		/* create map data */
 
@@ -103,6 +107,7 @@ public class OSMToMapDataConverterTest {
 		List<MapArea> waterAreas = new ArrayList<MapArea>();
 
 		for (MapArea area : mapData.getMapAreas()) {
+			System.out.println(area.getTags());
 			if (area.getTags().contains("natural", "water")) {
 				waterAreas.add(area);
 			}
@@ -139,7 +144,7 @@ public class OSMToMapDataConverterTest {
 	}
 
 	@Test
-	public void	testCoastlineBigIsland() throws IOException {
+	public void	testCoastlineBigIsland() throws IOException, EntityNotFoundException {
 
 		genericCoastlineTest("coastline_big_island.osm",
 				asList(new LatLon(51.4946619, 2.1931507)),
@@ -151,7 +156,7 @@ public class OSMToMapDataConverterTest {
 	}
 
 	@Test
-	public void	testCoastlineIslands() throws IOException {
+	public void	testCoastlineIslands() throws IOException, EntityNotFoundException {
 
 		genericCoastlineTest("coastline_islands.osm",
 				asList(new LatLon(51.4662933, 2.2364075),
@@ -162,7 +167,7 @@ public class OSMToMapDataConverterTest {
 	}
 
 	@Test
-	public void	testCoastlineIslandsAndCoast() throws IOException {
+	public void	testCoastlineIslandsAndCoast() throws IOException, EntityNotFoundException {
 
 		genericCoastlineTest("coastline_islands_and_coast.osm",
 				asList(new LatLon(51.4957716, 2.2466687),
@@ -175,7 +180,7 @@ public class OSMToMapDataConverterTest {
 	}
 
 	@Test
-	public void	testCoastlineMultipleCoasts() throws IOException {
+	public void	testCoastlineMultipleCoasts() throws IOException, EntityNotFoundException {
 
 		genericCoastlineTest("coastline_multiple_coasts.osm",
 				asList(new LatLon(51.4730977, 2.2165471)),
@@ -187,26 +192,28 @@ public class OSMToMapDataConverterTest {
 
 	/**
 	 * reads two nodes with the same coordinates
+	 * @throws EntityNotFoundException
 	 */
 	@Test
-	public void testSameCoordNodes() throws IOException {
+	public void testSameCoordNodes() throws IOException, EntityNotFoundException {
 
 		MapData mapData = loadMapData("sameCoordNodes.osm");
 
 		assertSame(2, mapData.getMapNodes().size());
 
 		MapNode[] nodes = mapData.getMapNodes().toArray(new MapNode[2]);
-		assertNotSame(nodes[0].getOsmNode().id, nodes[1].getOsmNode().id);
+		assertNotSame(nodes[0].getOsmNode().getId(), nodes[1].getOsmNode().getId());
 
 	}
 
 	/**
 	 * reads a self intersecting polygon (can be filtered, but must not crash)
+	 * @throws EntityNotFoundException
 	 */
 	@Test
-	public void testSelfIntersection() throws IOException {
+	public void testSelfIntersection() throws IOException, EntityNotFoundException {
 
-		MapData mapData = loadMapData("self_intersection.osm");
+		loadMapData("self_intersection.osm");
 
 	}
 

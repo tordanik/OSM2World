@@ -101,8 +101,8 @@ public class BarrierModule extends AbstractModule {
 
 			super(waySegment);
 
-			height = parseHeight(waySegment.getOsmWay().tags, defaultHeight);
-			width = parseWidth(waySegment.getOsmWay().tags, defaultWidth);
+			height = parseHeight(waySegment.getTags(), defaultHeight);
+			width = parseWidth(waySegment.getTags(), defaultWidth);
 
 		}
 

@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
 import static java.awt.Color.ORANGE;
 import static java.util.Collections.nCopies;
 import static java.util.Comparator.comparingInt;
@@ -30,7 +31,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -43,6 +43,8 @@ import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
+import de.topobyte.osm4j.core.model.iface.OsmWay;
 
 /**
  * adds swimming pools and water parks to the world
@@ -73,7 +75,7 @@ public class PoolModule extends ConfigurableWorldModule {
 		/* collect all segments of waterslide ways (because the entire slide needs
 		 * to be available at the same time for the height calculations) */
 
-		Multimap<OSMWay, MapWaySegment> slideWaySegmentMap = ArrayListMultimap.create();
+		Multimap<OsmWay, MapWaySegment> slideWaySegmentMap = ArrayListMultimap.create();
 
 		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 			if (segment.getTags().contains("attraction", "water_slide")) {
@@ -81,7 +83,7 @@ public class PoolModule extends ConfigurableWorldModule {
 			}
 		}
 
-		for (OSMWay key : slideWaySegmentMap.keySet()) {
+		for (OsmWay key : slideWaySegmentMap.keySet()) {
 
 			List<MapWaySegment> segments = new ArrayList<MapWaySegment>(slideWaySegmentMap.get(key));
 			sortWaySegmentList(key, segments);
@@ -101,10 +103,9 @@ public class PoolModule extends ConfigurableWorldModule {
 	 * sorts a way's segments. All segments must be part of the way,
 	 * and the way must not be self-intersecting for this to work!
 	 */
-	static void sortWaySegmentList(final OSMWay way, List<MapWaySegment> segments) {
-
-		segments.sort(comparingInt((MapWaySegment s) -> way.nodes.indexOf(s.getStartNode().getOsmNode())));
-
+	static void sortWaySegmentList(final OsmWay way, List<MapWaySegment> segments) {
+		segments.sort(comparingInt(
+				(MapWaySegment s) ->  nodesAsList(way).indexOf(s.getStartNode().getOsmNode().getId())));
 	}
 
 	public static class Pool extends AbstractAreaWorldObject

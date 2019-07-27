@@ -1,10 +1,15 @@
 package org.osm2world.core.map_data.data;
 
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
+import static java.util.Collections.emptyList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
@@ -12,12 +17,14 @@ import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.world.data.AreaWorldObject;
+
+import de.topobyte.osm4j.core.model.iface.OsmEntity;
+
 
 public class MapArea implements MapElement {
 
-	private final OSMElement objectWithTags;
+	private final OsmEntity objectWithTags;
 
 	private final List<MapNode> nodes;
 	private final List<List<MapNode>> holes;
@@ -34,11 +41,11 @@ public class MapArea implements MapElement {
 
 	//TODO: contained / intersecting nodes/lines
 
-	public MapArea(OSMElement objectWithTags, List<MapNode> nodes) {
-		this(objectWithTags, nodes, Collections.<List<MapNode>>emptyList());
+	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes) {
+		this(objectWithTags, nodes, emptyList());
 	}
 
-	public MapArea(OSMElement objectWithTags, List<MapNode> nodes,
+	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes,
 			List<List<MapNode>> holes) {
 
 		this.objectWithTags = objectWithTags;
@@ -57,7 +64,7 @@ public class MapArea implements MapElement {
 
 	}
 
-	public MapArea(OSMElement objectWithTags, List<MapNode> nodes,
+	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes,
 			List<List<MapNode>> holes, PolygonWithHolesXZ polygon) {
 
 		this.objectWithTags = objectWithTags;
@@ -102,9 +109,10 @@ public class MapArea implements MapElement {
 
 	@Override
 	public int getLayer() {
-		if (objectWithTags.tags.containsKey("layer")) {
+		Map<String, String> tags = getTagsAsMap(objectWithTags);
+		if (tags.containsKey("layer")) {
 			try {
-				return Integer.parseInt(objectWithTags.tags.getValue("layer"));
+				return Integer.parseInt(tags.get("layer"));
 			} catch (NumberFormatException nfe) {
 				return 0;
 			}
@@ -117,13 +125,13 @@ public class MapArea implements MapElement {
 	}
 
 	/** returns the way or relation with the tags for this area */
-	public OSMElement getOsmObject() {
+	public OsmEntity getOsmObject() {
 		return objectWithTags;
 	}
 
 	@Override
 	public TagGroup getTags() {
-		return objectWithTags.tags;
+		return new MapBasedTagGroup(getTagsAsMap(objectWithTags));
 	}
 
 	/**

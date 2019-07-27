@@ -7,7 +7,6 @@ import static org.osm2world.core.target.common.material.Material.multiplyColor;
 
 import java.awt.Color;
 import java.io.PrintStream;
-import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,15 +15,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMElement;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -48,7 +43,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 	private int currentMaterialLayer = 0;
 	private static int anonymousMaterialCounter = 0;
 
-	// this is approximatly one millimeter
+	// this is approximately one millimeter
 	private static final double SMALL_OFFSET = 1e-3;
 
 	public ObjTarget(PrintStream objStream, PrintStream mtlStream) {
@@ -94,22 +89,12 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			/* start an object with the object's class
 			 * and the underlying OSM element's name/ref tags */
 
-			MapElement element = object.getPrimaryMapElement();
-			OSMElement osmElement;
-			if (element instanceof MapNode) {
-				osmElement = ((MapNode) element).getOsmNode();
-			} else if (element instanceof MapWaySegment) {
-				osmElement = ((MapWaySegment) element).getOsmWay();
-			} else if (element instanceof MapArea) {
-				osmElement = ((MapArea) element).getOsmObject();
-			} else {
-				osmElement = null;
-			}
+			TagGroup tags = object.getPrimaryMapElement().getTags();
 
-			if (osmElement != null && osmElement.tags.containsKey("name")) {
-				objStream.println("o " + object.getClass().getSimpleName() + " " + osmElement.tags.getValue("name"));
-			} else if (osmElement != null && osmElement.tags.containsKey("ref")) {
-				objStream.println("o " + object.getClass().getSimpleName() + " " + osmElement.tags.getValue("ref"));
+			if (tags.containsKey("name")) {
+				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("name"));
+			} else if (tags.containsKey("ref")) {
+				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("ref"));
 			} else {
 				objStream.println("o " + object.getClass().getSimpleName() + anonymousWOCounter ++);
 			}

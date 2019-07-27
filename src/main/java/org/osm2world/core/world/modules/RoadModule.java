@@ -78,7 +78,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		for (MapNode node : grid.getMapNodes()) {
 
-			TagGroup tags = node.getOsmNode().tags;
+			TagGroup tags = node.getTags();
 
 			List<Road> connectedRoads = getConnectedRoads(node, false);
 

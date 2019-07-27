@@ -12,7 +12,7 @@ import org.osm2world.core.osm.data.OSMData;
  * DataSource providing information from a single .osm file, including common
  * non-standard variants such as those files produced by JOSM. The file is read
  * during the {@link #getData()} call, there will be no updates when the file is
- * changed later. This class internally uses Osmosis to read the file.
+ * changed later. This class internally uses osm4j to read the file.
  *
  * At its core, this reader combines the capabilities of the {@link OSMFileReader}
  * and the {@link JOSMFileReader}.
@@ -42,7 +42,7 @@ public class OSMFileReader implements OSMDataReader {
 			useJOSMReader = true;
 		} else {
 
-			/* try to read file using Osmosis */
+			/* try to read file using osm4j */
 
 			try {
 				osmData = new StrictOSMFileReader(file).getData();
@@ -92,7 +92,9 @@ public class OSMFileReader implements OSMDataReader {
 				}
 			}
 
-		} catch (IOException e) { }
+		} catch (IOException e) {
+			// ignore
+		}
 
 		return false;
 

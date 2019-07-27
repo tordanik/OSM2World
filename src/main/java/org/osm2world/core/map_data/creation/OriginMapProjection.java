@@ -1,9 +1,10 @@
 package org.osm2world.core.map_data.creation;
 
-import org.openstreetmap.osmosis.core.domain.v0_6.Bound;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMNode;
+
+import de.topobyte.osm4j.core.model.iface.OsmBounds;
+import de.topobyte.osm4j.core.model.iface.OsmNode;
 
 
 /**
@@ -46,7 +47,7 @@ public abstract class OriginMapProjection implements MapProjection {
 
 		if (osmData.getBounds() != null && !osmData.getBounds().isEmpty()) {
 
-			Bound firstBound = osmData.getBounds().iterator().next();
+			OsmBounds firstBound = osmData.getBounds().iterator().next();
 
 			setOrigin(new LatLon(
 					(firstBound.getTop() + firstBound.getBottom()) / 2,
@@ -54,13 +55,13 @@ public abstract class OriginMapProjection implements MapProjection {
 
 		} else {
 
-			if (osmData.getNodes().isEmpty()) {
+			if (osmData.getData().getNodes().isEmpty()) {
 				throw new IllegalArgumentException(
 						"OSM data must contain bounds or nodes");
 			}
 
-			OSMNode firstNode = osmData.getNodes().iterator().next();
-			setOrigin(new LatLon(firstNode.lat, firstNode.lon));
+			OsmNode firstNode = osmData.getData().getNodes().valueCollection().iterator().next();
+			setOrigin(new LatLon(firstNode.getLatitude(), firstNode.getLongitude()));
 
 		}
 
