@@ -374,19 +374,19 @@ final class MultipolygonAreaBuilder {
 
 		List<OsmWay> coastlineWays = new ArrayList<OsmWay>();
 
-		for (OsmWay way : osmData.getData().getWays().valueCollection()) {
+		for (OsmWay way : osmData.getWays()) {
 			if ("coastline".equals(getTagsAsMap(way).get("natural"))) {
 				coastlineWays.add(way);
 			}
 		}
 
-		for (OsmRelation relation : osmData.getData().getRelations().valueCollection()) {
+		for (OsmRelation relation : osmData.getRelations()) {
 			if (relation.getId() > highestRelationId) {
 				highestRelationId = relation.getId();
 			}
 		}
 
-		for (OsmNode node : osmData.getData().getNodes().valueCollection()) {
+		for (OsmNode node : osmData.getNodes()) {
 			if (node.getId() > highestNodeId) {
 				highestNodeId = node.getId();
 			}
@@ -665,9 +665,7 @@ final class MultipolygonAreaBuilder {
 
 		Ruleset ruleset = new HardcodedRuleset();
 
-		List<Collection<? extends OsmEntity>> collections = asList(
-				osmData.getData().getWays().valueCollection(),
-				osmData.getData().getNodes().valueCollection());
+		List<Collection<? extends OsmEntity>> collections = asList(osmData.getWays(), osmData.getNodes());
 
 		for (Collection<? extends OsmEntity> collection : collections) {
 			for (OsmEntity element : collection) {

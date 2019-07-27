@@ -47,7 +47,6 @@ import de.topobyte.osm4j.core.model.iface.OsmTag;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
-import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -98,7 +97,7 @@ public class OSMToMapDataConverter {
 
 		final Map<OsmNode, MapNode> nodeMap = new HashMap<OsmNode, MapNode>();
 
-		for (OsmNode node : osmData.getData().getNodes().valueCollection()) {
+		for (OsmNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.calcPos(node.getLatitude(), node.getLongitude());
 			MapNode mapNode = new MapNode(nodePos, node);
 			mapNodes.add(mapNode);
@@ -111,7 +110,7 @@ public class OSMToMapDataConverter {
 
 		/* ... based on multipolygons */
 
-		iterate(osmData.getData().getRelations().valueCollection(), (OsmRelation relation ) -> {
+		iterate(osmData.getRelations(), (OsmRelation relation ) -> {
 
 			Map<String, String> tags = getTagsAsMap(relation);
 
@@ -122,7 +121,7 @@ public class OSMToMapDataConverter {
 
 			try {
 				for (MapArea area : MultipolygonAreaBuilder
-						.createAreasForMultipolygon(relation, nodeMap, osmData.getEntityProvider())) {
+						.createAreasForMultipolygon(relation, nodeMap, osmData)) {
 
 					mapAreas.add(area);
 
@@ -145,7 +144,7 @@ public class OSMToMapDataConverter {
 
 		for (MapArea area : MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeMap, mapNodes,
-				calculateFileBoundary(osmData.getBounds()), osmData.getEntityProvider())) {
+				calculateFileBoundary(osmData.getBounds()), osmData)) {
 
 			mapAreas.add(area);
 
@@ -157,9 +156,7 @@ public class OSMToMapDataConverter {
 
 		/* ... based on closed ways */
 
-		OsmEntityProvider ep = osmData.getEntityProvider();
-
-		for (OsmWay way : osmData.getData().getWays().valueCollection()) {
+		for (OsmWay way : osmData.getWays()) {
 			if (isClosed(way) && !areaMap.containsKey(way)) {
 				//create MapArea only if at least one tag is an area tag
 				for (OsmTag tag : getTagsAsList(way)) {
@@ -170,7 +167,7 @@ public class OSMToMapDataConverter {
 						for (long id : nodesAsList(way).toArray()) {
 							OsmNode boundaryOSMNode;
 							try {
-								boundaryOSMNode = ep.getNode(id);
+								boundaryOSMNode = osmData.getNode(id);
 								nodes.add(nodeMap.get(boundaryOSMNode));
 							} catch (EntityNotFoundException e) {
 								// TODO handle better sometime...
@@ -219,7 +216,7 @@ public class OSMToMapDataConverter {
 
 		/* create way segments from remaining ways */
 
-		for (OsmWay way : osmData.getData().getWays().valueCollection()) {
+		for (OsmWay way : osmData.getWays()) {
 			boolean hasTags = way.getNumberOfTags() != 0;
 			if (hasTags && !areaMap.containsKey(way)) {
 
@@ -227,7 +224,7 @@ public class OSMToMapDataConverter {
 				for (long id : nodesAsList(way).toArray()) {
 					OsmNode node = null;
 					try {
-						node = ep.getNode(id);
+						node = osmData.getNode(id);
 					} catch (EntityNotFoundException e) {
 						// TODO handle better sometime
 						continue;

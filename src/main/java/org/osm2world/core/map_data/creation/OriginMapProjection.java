@@ -55,12 +55,12 @@ public abstract class OriginMapProjection implements MapProjection {
 
 		} else {
 
-			if (osmData.getData().getNodes().isEmpty()) {
+			if (osmData.getNodes().isEmpty()) {
 				throw new IllegalArgumentException(
 						"OSM data must contain bounds or nodes");
 			}
 
-			OsmNode firstNode = osmData.getData().getNodes().valueCollection().iterator().next();
+			OsmNode firstNode = osmData.getNodes().iterator().next();
 			setOrigin(new LatLon(firstNode.getLatitude(), firstNode.getLongitude()));
 
 		}

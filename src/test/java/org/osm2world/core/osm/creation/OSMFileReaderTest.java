@@ -13,7 +13,6 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
-import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
 
 
 public class OSMFileReaderTest {
@@ -25,19 +24,17 @@ public class OSMFileReaderTest {
 		File testFile = new File(classLoader.getResource("validFile.osm").getFile());
 		OSMData osmData = new OSMFileReader(testFile).getData();
 
-		assertSame(4, osmData.getData().getNodes().size());
-		assertSame(1, osmData.getData().getWays().size());
-		assertSame(1, osmData.getData().getRelations().size());
+		assertSame(4, osmData.getNodes().size());
+		assertSame(1, osmData.getWays().size());
+		assertSame(1, osmData.getRelations().size());
 
-		OsmWay way = osmData.getData().getWays().valueCollection().iterator().next();
+		OsmWay way = osmData.getWays().iterator().next();
 		assertSame(3, way.getNumberOfNodes());
 
-		OsmEntityProvider ep = osmData.getEntityProvider();
-
-		OsmNode node1 = ep.getNode(nodesAsList(way).get(1));
+		OsmNode node1 = osmData.getNode(nodesAsList(way).get(1));
 		assertEquals("traffic_signals", getTagsAsMap(node1).get("highway"));
 
-		OsmRelation relation = osmData.getData().getRelations().valueCollection().iterator().next();
+		OsmRelation relation = osmData.getRelations().iterator().next();
 		assertEquals("associatedStreet",  getTagsAsMap(relation).get("type"));
 
 	}

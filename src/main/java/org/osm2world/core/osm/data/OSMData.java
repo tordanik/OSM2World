@@ -9,15 +9,16 @@ import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
 
 /**
  * OSM dataset containing nodes, areas and relations
  */
-public class OSMData {
+public class OSMData implements OsmEntityProvider {
 
 	private final Collection<OsmBounds> bounds;
-	private InMemoryMapDataSet data;
+	private final InMemoryMapDataSet data;
 
 	public OSMData(InMemoryMapDataSet data) {
 
@@ -57,8 +58,31 @@ public class OSMData {
 		return data;
 	}
 
-	public OsmEntityProvider getEntityProvider() {
-		return data;
+	public Collection<OsmNode> getNodes() {
+		return data.getNodes().valueCollection();
+	}
+
+	@Override
+	public OsmNode getNode(long id) throws EntityNotFoundException {
+		return data.getNode(id);
+	}
+
+	public Collection<OsmWay> getWays() {
+		return data.getWays().valueCollection();
+	}
+
+	@Override
+	public OsmWay getWay(long id) throws EntityNotFoundException {
+		return data.getWay(id);
+	}
+
+	public Collection<OsmRelation> getRelations() {
+		return data.getRelations().valueCollection();
+	}
+
+	@Override
+	public OsmRelation getRelation(long id) throws EntityNotFoundException {
+		return data.getRelation(id);
 	}
 
 }

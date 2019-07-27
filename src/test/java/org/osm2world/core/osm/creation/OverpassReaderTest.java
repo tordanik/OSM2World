@@ -18,9 +18,9 @@ public class OverpassReaderTest {
 
 		OSMData data = reader.getData();
 
-		assertFalse(data.getData().getNodes().isEmpty());
-		assertFalse(data.getData().getWays().isEmpty());
-		assertFalse(data.getData().getRelations().isEmpty());
+		assertFalse(data.getNodes().isEmpty());
+		assertFalse(data.getWays().isEmpty());
+		assertFalse(data.getRelations().isEmpty());
 
 	}
 
