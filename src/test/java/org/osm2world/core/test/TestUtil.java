@@ -8,25 +8,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMNode;
 
 public final class TestUtil {
 
 	private TestUtil() {}
-
-	/**
-	 * returns a list of nodes where yon don't care about the attributes
-	 */
-	public static final List<OSMNode> createTestNodes(int numberOfNodes) {
-		List<OSMNode> result = new ArrayList<OSMNode>(numberOfNodes);
-		for (int i = 0; i < numberOfNodes; i++) {
-			result.add(new OSMNode(i, i, EmptyTagGroup.EMPTY_TAG_GROUP, i));
-		}
-		return result;
-	}
 
 	/**
 	 * returns VectorXZ objects;

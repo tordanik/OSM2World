@@ -26,8 +26,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.data.OSMNode;
-import org.osm2world.core.osm.data.OSMWay;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
@@ -66,7 +64,7 @@ final class MultipolygonAreaBuilder {
 	 * {@link MapNode#addAdjacentArea(MapArea)}.
 	 *
 	 * @param relation  the multipolygon relation
-	 * @param nodeMap   map from {@link OSMNode}s to {@link MapNode}s
+	 * @param nodeMap   map from {@link OsmNode}s to {@link MapNode}s
 	 *
 	 * @return  constructed area(s), multiple areas will be created if there
 	 *          is more than one outer ring. Empty for invalid multipolygons.
@@ -699,7 +697,7 @@ final class MultipolygonAreaBuilder {
 		}
 
 		/**
-		 * creates a node sequence from an {@link OSMWay}
+		 * creates a node sequence from an {@link OsmWay}
 		 * @throws EntityNotFoundException
 		 */
 		public NodeSequence(OsmWay way, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
