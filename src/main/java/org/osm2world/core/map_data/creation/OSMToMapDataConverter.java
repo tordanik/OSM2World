@@ -129,8 +129,8 @@ public class OSMToMapDataConverter {
 						boundaryMapNode.addAdjacentArea(area);
 					}
 
-					if (area.getOsmObject() instanceof OsmWay) {
-						areaMap.put((OsmWay) area.getOsmObject(), area);
+					if (area.getOsmElement() instanceof OsmWay) {
+						areaMap.put((OsmWay) area.getOsmElement(), area);
 					}
 
 				}

@@ -202,7 +202,7 @@ public class OSMToMapDataConverterTest {
 		assertSame(2, mapData.getMapNodes().size());
 
 		MapNode[] nodes = mapData.getMapNodes().toArray(new MapNode[2]);
-		assertNotSame(nodes[0].getOsmNode().getId(), nodes[1].getOsmNode().getId());
+		assertNotSame(nodes[0].getOsmElement().getId(), nodes[1].getOsmElement().getId());
 
 	}
 

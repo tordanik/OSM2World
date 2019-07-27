@@ -1674,8 +1674,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				if (intersections.size() < 2) {
 					throw new InvalidGeometryException(
-							"cannot handle roof geometry for element "
-									+ area.getOsmObject().getId());
+							"cannot handle roof geometry for element " + area.getOsmElement().getId());
 				}
 
 				//TODO choose outermost instead of any pair of intersections

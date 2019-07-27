@@ -79,7 +79,7 @@ public class PoolModule extends ConfigurableWorldModule {
 
 		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 			if (segment.getTags().contains("attraction", "water_slide")) {
-				slideWaySegmentMap.put(segment.getOsmWay(), segment);
+				slideWaySegmentMap.put(segment.getOsmElement(), segment);
 			}
 		}
 
@@ -105,7 +105,7 @@ public class PoolModule extends ConfigurableWorldModule {
 	 */
 	static void sortWaySegmentList(final OsmWay way, List<MapWaySegment> segments) {
 		segments.sort(comparingInt(
-				(MapWaySegment s) ->  nodesAsList(way).indexOf(s.getStartNode().getOsmNode().getId())));
+				(MapWaySegment s) ->  nodesAsList(way).indexOf(s.getStartNode().getOsmElement().getId())));
 	}
 
 	public static class Pool extends AbstractAreaWorldObject

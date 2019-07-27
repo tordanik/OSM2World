@@ -823,7 +823,7 @@ final class MultipolygonAreaBuilder {
 
 		@Override
 		public String toString() {
-			return "(" + outgoingIntersection + ", " + node.getOsmNode().getId() +
+			return "(" + outgoingIntersection + ", " + node.getOsmElement().getId() +
 					"@" + node.getPos() + ")";
 		}
 

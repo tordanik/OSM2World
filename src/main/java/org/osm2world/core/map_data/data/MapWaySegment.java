@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -38,19 +37,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	}
 
 	@Override
-	public int getLayer() {
-		Map<String, String> tags = getTagsAsMap(osmWay);
-		if (tags.containsKey("layer")) {
-			try {
-				return Integer.parseInt(tags.get("layer"));
-			} catch (NumberFormatException nfe) {
-				return 0;
-			}
-		}
-		return 0;
-	}
-
-	public OsmWay getOsmWay() {
+	public OsmWay getOsmElement() {
 		return osmWay;
 	}
 

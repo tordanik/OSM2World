@@ -85,6 +85,10 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import de.topobyte.osm4j.core.model.iface.OsmNode;
+import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
+
 public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 		implements ModelTarget<RenderableToModelTarget> {
 
@@ -517,12 +521,12 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 				if (element != null) {
 
-					if (element instanceof MapArea) {
-						objectBuilder.setOsmId(((MapArea)element).getOsmObject().toString());
-					} else if (element instanceof MapWaySegment) {
-						objectBuilder.setOsmId(((MapWaySegment)element).getOsmWay().toString());
-					} else if (element instanceof MapNode) {
-						objectBuilder.setOsmId(((MapNode)element).getOsmNode().toString());
+					if (element.getOsmElement() instanceof OsmNode) {
+						objectBuilder.setOsmId("n" + element.getOsmElement().getId());
+					} else if (element.getOsmElement() instanceof OsmWay) {
+						objectBuilder.setOsmId("w" + element.getOsmElement().getId());
+					} else if (element.getOsmElement() instanceof OsmRelation) {
+						objectBuilder.setOsmId("r" + element.getOsmElement().getId());
 					}
 
 				}
