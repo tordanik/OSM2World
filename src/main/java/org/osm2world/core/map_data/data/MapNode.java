@@ -194,7 +194,7 @@ public class MapNode implements MapElement {
 
 	@Override
 	public String toString() {
-		return osmNode.toString();
+		return "n" + osmNode.getId();
 	}
 
 	@Override

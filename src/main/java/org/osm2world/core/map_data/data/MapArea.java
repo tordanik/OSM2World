@@ -20,6 +20,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AreaWorldObject;
 
 import de.topobyte.osm4j.core.model.iface.OsmEntity;
+import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
 
 
 public class MapArea implements MapElement {
@@ -226,7 +228,12 @@ public class MapArea implements MapElement {
 
 	@Override
 	public String toString() {
-		return objectWithTags.toString();
+		if (objectWithTags instanceof OsmWay) {
+			return "w" + objectWithTags.getId();
+		} else {
+			assert objectWithTags instanceof OsmRelation;
+			return "r" + objectWithTags.getId();
+		}
 	}
 
 }
