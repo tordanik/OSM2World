@@ -1,10 +1,7 @@
 package org.osm2world.core.map_data.data;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -44,17 +41,5 @@ public interface MapElement extends IntersectionTestObject {
 
 	/** returns this element's tags */
 	TagGroup getTags();
-
-	default public int getLayer() {
-		Map<String, String> tags = getTagsAsMap(getOsmElement());
-		if (tags.containsKey("layer")) {
-			try {
-				return Integer.parseInt(tags.get("layer"));
-			} catch (NumberFormatException nfe) {
-				return 0;
-			}
-		}
-		return 0;
-	}
 
 }
