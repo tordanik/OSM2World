@@ -23,6 +23,11 @@ import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 
 
+/**
+ * An area (closed way or multipolygon relation) from an OSM dataset.
+ *
+ * @See {@link MapData} for context
+ */
 public class MapArea implements MapElement {
 
 	private final OsmEntity objectWithTags;

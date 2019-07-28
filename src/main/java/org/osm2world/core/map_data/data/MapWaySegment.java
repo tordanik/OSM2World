@@ -19,8 +19,11 @@ import com.google.common.collect.Iterables;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 
+
 /**
- * line between two nodes in the map data
+ * Segment (the straight line between two successive nodes) of a way from an OSM dataset.
+ *
+ * @See {@link MapData} for context
  */
 public class MapWaySegment extends MapSegment implements MapElement {
 

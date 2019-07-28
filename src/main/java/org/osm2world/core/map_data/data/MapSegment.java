@@ -7,6 +7,11 @@ import org.osm2world.core.math.VectorXZ;
 
 import com.google.common.collect.ImmutableList;
 
+/**
+ * connection between two {@link MapNode}s that's part of a polyline or polygon.
+ *
+ * @See {@link MapData} for context
+ */
 public class MapSegment {
 
 	protected final MapNode startNode;

@@ -17,10 +17,11 @@ import org.osm2world.core.world.data.NodeWorldObject;
 
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 
+
 /**
- * grid representation of an OSM node,
- * references inbound and outbound {@link MapWaySegment}s.
- * For each OSM node, one GridNode will be created.
+ * A node from an OSM dataset.
+ *
+ * @See {@link MapData} for context
  */
 public class MapNode implements MapElement {
 

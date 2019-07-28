@@ -10,6 +10,11 @@ import org.osm2world.core.world.data.WorldObject;
 
 import de.topobyte.osm4j.core.model.iface.OsmEntity;
 
+/**
+ * An element from an OSM dataset.
+ *
+ * @See {@link MapData} for context
+ */
 public interface MapElement extends IntersectionTestObject {
 
 	/**

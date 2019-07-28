@@ -14,9 +14,15 @@ import com.google.common.collect.Iterables;
 
 /**
  * OSM2World's abstraction of {@link OSMData}, consists of {@link MapElement}s.
- * Initially contains only a slightly altered representation of OSM
- * map data. During later conversion steps, additional information is
- * added to the {@link MapElement}s.
+ *
+ * Unlike {@link OSMData}, which uses long/lat, this is projected to a local coordinate system.
+ * It's also slightly more convenient to work with because it uses object references
+ * to represent relationships between elements (such as nodes of ways and members of relations,
+ * but also inverse lookup – e.g. of the ways a node is contained in –,
+ * and implicit relationships like intersections).
+ *
+ * Initially contains only a slightly altered representation of OSM map data as described above.
+ * During later conversion steps, additional information is added to the {@link MapElement}s.
  */
 public class MapData {
 
