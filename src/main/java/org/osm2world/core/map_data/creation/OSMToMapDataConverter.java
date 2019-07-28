@@ -48,6 +48,8 @@ import de.topobyte.osm4j.core.model.iface.OsmTag;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -96,13 +98,13 @@ public class OSMToMapDataConverter {
 
 		/* create MapNode for each OSM node */
 
-		final Map<OsmNode, MapNode> nodeMap = new HashMap<OsmNode, MapNode>();
+		final TLongObjectMap<MapNode> nodeIdMap = new TLongObjectHashMap<MapNode>();
 
 		for (OsmNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.calcPos(node.getLatitude(), node.getLongitude());
 			MapNode mapNode = new MapNode(nodePos, node);
 			mapNodes.add(mapNode);
-			nodeMap.put(node, mapNode);
+			nodeIdMap.put(node.getId(), mapNode);
 		}
 
 		/* create areas ... */
@@ -122,7 +124,7 @@ public class OSMToMapDataConverter {
 
 			try {
 				for (MapArea area : MultipolygonAreaBuilder
-						.createAreasForMultipolygon(relation, nodeMap, osmData)) {
+						.createAreasForMultipolygon(relation, nodeIdMap, osmData)) {
 
 					mapAreas.add(area);
 
@@ -144,8 +146,8 @@ public class OSMToMapDataConverter {
 		/* ... based on coastline ways */
 
 		for (MapArea area : MultipolygonAreaBuilder.createAreasForCoastlines(
-				osmData, nodeMap, mapNodes,
-				calculateFileBoundary(osmData.getBounds()), osmData)) {
+				osmData, nodeIdMap, mapNodes,
+				calculateFileBoundary(osmData.getBounds()))) {
 
 			mapAreas.add(area);
 
@@ -164,15 +166,9 @@ public class OSMToMapDataConverter {
 					if (ruleset.isAreaTag(tag)) {
 						//TODO: check whether this is old-style MP outer
 
-						List<MapNode> nodes = new ArrayList<MapNode>(way.getNumberOfNodes());
+						List<MapNode> nodes = new ArrayList<>(way.getNumberOfNodes());
 						for (long id : nodesAsList(way).toArray()) {
-							OsmNode boundaryOSMNode;
-							try {
-								boundaryOSMNode = osmData.getNode(id);
-								nodes.add(nodeMap.get(boundaryOSMNode));
-							} catch (EntityNotFoundException e) {
-								// TODO handle better sometime...
-							}
+							nodes.add(nodeIdMap.get(id));
 						}
 
 						try {
@@ -211,7 +207,7 @@ public class OSMToMapDataConverter {
 
 		/* finish calculations */
 
-		for (MapNode node : nodeMap.values()) {
+		for (MapNode node : mapNodes) {
 			node.calculateAdjacentAreaSegments();
 		}
 
@@ -224,7 +220,7 @@ public class OSMToMapDataConverter {
 				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
 
 				for (long id : nodesAsList(osmWay).toArray()) {
-					nodes.add(nodeMap.get(osmData.getNode(id)));
+					nodes.add(nodeIdMap.get(id));
 				}
 
 				MapWay way = new MapWay(osmWay, nodes);

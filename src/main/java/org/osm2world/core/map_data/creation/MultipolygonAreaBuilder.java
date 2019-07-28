@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
@@ -41,6 +40,7 @@ import de.topobyte.osm4j.core.model.impl.Relation;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 import de.topobyte.osm4j.core.resolve.OsmEntityProvider;
+import gnu.trove.map.TLongObjectMap;
 
 /**
  * utility class for creating areas from multipolygon relations,
@@ -64,19 +64,19 @@ final class MultipolygonAreaBuilder {
 	 * {@link MapNode#addAdjacentArea(MapArea)}.
 	 *
 	 * @param relation  the multipolygon relation
-	 * @param nodeMap   map from {@link OsmNode}s to {@link MapNode}s
+	 * @param nodeIdMap   map from node ids to {@link MapNode}s
 	 *
 	 * @return  constructed area(s), multiple areas will be created if there
 	 *          is more than one outer ring. Empty for invalid multipolygons.
 	 * @throws EntityNotFoundException
 	 */
-	public static final Collection<MapArea> createAreasForMultipolygon(
-			OsmRelation relation, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
+	public static final Collection<MapArea> createAreasForMultipolygon(OsmRelation relation,
+			TLongObjectMap<MapNode> nodeIdMap, OsmEntityProvider db) throws EntityNotFoundException {
 
 		if (isSimpleMultipolygon(relation, db)) {
-			return createAreasForSimpleMultipolygon(relation, nodeMap, db);
+			return createAreasForSimpleMultipolygon(relation, nodeIdMap, db);
 		} else {
-			return createAreasForAdvancedMultipolygon(relation, nodeMap, db);
+			return createAreasForAdvancedMultipolygon(relation, nodeIdMap, db);
 		}
 
 	}
@@ -113,14 +113,13 @@ final class MultipolygonAreaBuilder {
 	/**
 	 * handles the common simple case with only one outer way.
 	 * Expected to be faster than the more general method
-	 * {@link #createAreasForAdvancedMultipolygon(OsmRelation, Map, OsmEntityProvider)}
+	 * {@link #createAreasForAdvancedMultipolygon(OsmRelation, TLongObjectMap, OsmEntityProvider)}
 	 *
 	 * @param relation  has to be a simple multipolygon relation
-	 * @param nodeMap
 	 * @throws EntityNotFoundException
 	 */
-	private static final Collection<MapArea> createAreasForSimpleMultipolygon(
-			OsmRelation relation, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
+	private static final Collection<MapArea> createAreasForSimpleMultipolygon(OsmRelation relation,
+			TLongObjectMap<MapNode> nodeIdMap, OsmEntityProvider db) throws EntityNotFoundException {
 
 		assert isSimpleMultipolygon(relation, db);
 
@@ -138,7 +137,7 @@ final class MultipolygonAreaBuilder {
 					List<MapNode> hole = new ArrayList<MapNode>(way.getNumberOfNodes());
 
 					for (long nodeId : nodesAsList(way).toArray()) {
-						hole.add(nodeMap.get(db.getNode(nodeId)));
+						hole.add(nodeIdMap.get(nodeId));
 						//TODO: add area as adjacent to node for inners' nodes, too?
 					}
 
@@ -150,7 +149,7 @@ final class MultipolygonAreaBuilder {
 
 					outerNodes = new ArrayList<MapNode>(way.getNumberOfNodes());
 					for (long nodeId : nodesAsList(way).toArray()) {
-						outerNodes.add(nodeMap.get(db.getNode(nodeId)));
+						outerNodes.add(nodeIdMap.get(nodeId));
 					}
 
 				}
@@ -162,8 +161,8 @@ final class MultipolygonAreaBuilder {
 
 	}
 
-	private static final Collection<MapArea> createAreasForAdvancedMultipolygon(
-			OsmRelation relation, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
+	private static final Collection<MapArea> createAreasForAdvancedMultipolygon(OsmRelation relation,
+			TLongObjectMap<MapNode> nodeIdMap, OsmEntityProvider db) throws EntityNotFoundException {
 
 		List<NodeSequence> innersAndOuters = new ArrayList<NodeSequence>();
 
@@ -175,8 +174,7 @@ final class MultipolygonAreaBuilder {
 							|| "inner".equals(member.getRole())) ) {
 
 				OsmWay way = db.getWay(member.getId());
-				innersAndOuters.add(new NodeSequence(
-						way, nodeMap, db));
+				innersAndOuters.add(new NodeSequence(way, nodeIdMap));
 
 			}
 		}
@@ -366,8 +364,8 @@ final class MultipolygonAreaBuilder {
 	 * @throws EntityNotFoundException
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
-			OSMData osmData, Map<OsmNode, MapNode> nodeMap,
-			Collection<MapNode> mapNodes, AxisAlignedBoundingBoxXZ fileBoundary, OsmEntityProvider db) throws EntityNotFoundException {
+			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
+			Collection<MapNode> mapNodes, AxisAlignedBoundingBoxXZ fileBoundary) throws EntityNotFoundException {
 
 		long highestRelationId = 0;
 		long highestNodeId = 0;
@@ -399,7 +397,7 @@ final class MultipolygonAreaBuilder {
 			List<NodeSequence> origCoastlines = new ArrayList<NodeSequence>();
 
 			for (OsmWay coastlineWay : coastlineWays) {
-				origCoastlines.add(new NodeSequence(coastlineWay, nodeMap, db));
+				origCoastlines.add(new NodeSequence(coastlineWay, nodeIdMap));
 			}
 
 			/* find coastline intersections with bounding box.
@@ -435,7 +433,7 @@ final class MultipolygonAreaBuilder {
 							} else {
 
 								intersectionNode = createFakeMapNode(intersection,
-										++highestNodeId, osmData, nodeMap, mapNodes);
+										++highestNodeId, osmData, nodeIdMap, mapNodes);
 
 								coastline.add(i + 1, intersectionNode);
 
@@ -460,7 +458,7 @@ final class MultipolygonAreaBuilder {
 				bBoxNodes.addAll(intersectionsSide);
 
 				MapNode cornerNode = createFakeMapNode(side.p2,
-						++highestNodeId, osmData, nodeMap, mapNodes);
+						++highestNodeId, osmData, nodeIdMap, mapNodes);
 				bBoxNodes.add(new NodeOnBBox(cornerNode, null));
 
 			}
@@ -595,7 +593,7 @@ final class MultipolygonAreaBuilder {
 
 						for (VectorXZ pos : fileBoundary.polygonXZ().getVertices()) {
 							boundaryRing.add(createFakeMapNode(pos,
-									++highestNodeId, osmData, nodeMap, mapNodes));
+									++highestNodeId, osmData, nodeIdMap, mapNodes));
 						}
 
 						boundaryRing.add(boundaryRing.get(0));
@@ -640,7 +638,7 @@ final class MultipolygonAreaBuilder {
 	}
 
 	private static MapNode createFakeMapNode(VectorXZ pos, long nodeId,
-			OSMData osmData, Map<OsmNode, MapNode> nodeMap,
+			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
 			Collection<MapNode> mapNodes) {
 
 		Node osmNode = new Node(nodeId + 1, NaN, NaN);
@@ -650,7 +648,7 @@ final class MultipolygonAreaBuilder {
 
 		MapNode mapNode = new MapNode(pos, osmNode);
 		mapNodes.add(mapNode);
-		nodeMap.put(osmNode, mapNode);
+		nodeIdMap.put(osmNode.getId(), mapNode);
 
 		return mapNode;
 
@@ -698,12 +696,12 @@ final class MultipolygonAreaBuilder {
 		 * creates a node sequence from an {@link OsmWay}
 		 * @throws EntityNotFoundException
 		 */
-		public NodeSequence(OsmWay way, Map<OsmNode, MapNode> nodeMap, OsmEntityProvider db) throws EntityNotFoundException {
+		public NodeSequence(OsmWay way, TLongObjectMap<MapNode> nodeIdMap) throws EntityNotFoundException {
 
 			super(way.getNumberOfNodes());
 
 			for (long nodeId : nodesAsList(way).toArray()) {
-				add(nodeMap.get(db.getNode(nodeId)));
+				add(nodeIdMap.get(nodeId));
 			}
 
 		}
