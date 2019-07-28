@@ -1,14 +1,11 @@
 package org.osm2world.core.map_data.data;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -27,26 +24,33 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  */
 public class MapWaySegment extends MapSegment implements MapElement {
 
-	private final OsmWay osmWay;
+	private final List<WaySegmentWorldObject> representations = new ArrayList<WaySegmentWorldObject>(1);
 
-	private List<WaySegmentWorldObject> representations = new ArrayList<WaySegmentWorldObject>(1);
+	private final MapWay way;
 
 	@SuppressWarnings("unchecked") //is later checked for EMPTY_LIST using ==
 	private Collection<MapOverlap<?,?>> overlaps = Collections.EMPTY_LIST;
 
-	public MapWaySegment(OsmWay osmWay, MapNode startNode, MapNode endNode) {
+	MapWaySegment(MapWay way, MapNode startNode, MapNode endNode) {
 		super(startNode, endNode);
-		this.osmWay = osmWay;
+		this.way = way;
+	}
+
+	/** returns this segment's parent {@link MapWay} */
+	public MapWay getWay() {
+		return way;
 	}
 
 	@Override
 	public OsmWay getOsmElement() {
-		return osmWay;
+		//TODO: remove this method eventually
+		return getWay().getOsmElement();
 	}
 
+	/** returns the parent {@link MapWay}'s tags */
 	@Override
 	public TagGroup getTags() {
-		return new MapBasedTagGroup(getTagsAsMap(osmWay));
+		return getWay().getTags();
 	}
 
 	public void addOverlap(MapOverlap<?, ?> overlap) {
@@ -91,11 +95,6 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	 */
 	public void addRepresentation(WaySegmentWorldObject representation) {
 		this.representations.add(representation);
-	}
-
-	@Override
-	public String toString() {
-		return startNode + "->" + endNode;
 	}
 
 }

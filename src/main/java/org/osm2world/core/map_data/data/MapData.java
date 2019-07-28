@@ -1,5 +1,7 @@
 package org.osm2world.core.map_data.data;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -27,19 +29,22 @@ import com.google.common.collect.Iterables;
 public class MapData {
 
 	final List<MapNode> mapNodes;
+	final List<MapWay> mapWays;
 	final List<MapWaySegment> mapWaySegments;
 	final List<MapArea> mapAreas;
 
 	AxisAlignedBoundingBoxXZ fileBoundary;
 	AxisAlignedBoundingBoxXZ dataBoundary;
 
-	public MapData(List<MapNode> mapNodes, List<MapWaySegment> mapWaySegments,
+	public MapData(List<MapNode> mapNodes, List<MapWay> mapWays,
 			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ fileBoundary) {
 
 		this.mapNodes = mapNodes;
-		this.mapWaySegments = mapWaySegments;
+		this.mapWays = mapWays;
 		this.mapAreas = mapAreas;
 		this.fileBoundary = fileBoundary;
+
+		mapWaySegments = mapWays.stream().flatMap(w -> w.getWaySegments().stream()).collect(toList());
 
 		calculateDataBoundary();
 
@@ -79,6 +84,10 @@ public class MapData {
 
 	public Collection<MapArea> getMapAreas() {
 		return mapAreas;
+	}
+
+	public Collection<MapWay> getMapWays() {
+		return mapWays;
 	}
 
 	public Collection<MapWaySegment> getMapWaySegments() {

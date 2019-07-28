@@ -12,12 +12,12 @@ import com.google.common.collect.ImmutableList;
  *
  * @See {@link MapData} for context
  */
-public class MapSegment {
+public abstract class MapSegment {
 
 	protected final MapNode startNode;
 	protected final MapNode endNode;
 
-	public MapSegment(MapNode startNode, MapNode endNode) {
+	protected MapSegment(MapNode startNode, MapNode endNode) {
 		if (startNode == null || endNode == null) {
 			throw new IllegalArgumentException();
 		}
@@ -113,6 +113,11 @@ public class MapSegment {
 				&& startNode == other.getEndNode())
 			|| (endNode == other.getEndNode()
 				&& startNode == other.getStartNode());
+	}
+
+	@Override
+	public String toString() {
+		return startNode + "->" + endNode;
 	}
 
 }

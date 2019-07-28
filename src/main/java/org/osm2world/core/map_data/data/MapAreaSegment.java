@@ -12,7 +12,7 @@ public class MapAreaSegment extends MapSegment {
 	private final MapArea area;
 	private final boolean areaRight;
 
-	public MapAreaSegment(MapArea area, boolean areaRight,
+	MapAreaSegment(MapArea area, boolean areaRight,
 			MapNode startNode, MapNode endNode) {
 		super(startNode, endNode);
 		this.area = area;

@@ -23,6 +23,7 @@ import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
@@ -68,13 +69,13 @@ public class OSMToMapDataConverter {
 
 	public MapData createMapData(OSMData osmData) throws IOException, EntityNotFoundException {
 
-		final List<MapNode> mapNodes = new ArrayList<MapNode>();
-		final List<MapWaySegment> mapWaySegs = new ArrayList<MapWaySegment>();
-		final List<MapArea> mapAreas = new ArrayList<MapArea>();
+		final List<MapNode> mapNodes = new ArrayList<>();
+		final List<MapWay> mapWays = new ArrayList<>();
+		final List<MapArea> mapAreas = new ArrayList<>();
 
-		createMapElements(osmData, mapNodes, mapWaySegs, mapAreas);
+		createMapElements(osmData, mapNodes, mapWays, mapAreas);
 
-		MapData mapData = new MapData(mapNodes, mapWaySegs, mapAreas,
+		MapData mapData = new MapData(mapNodes, mapWays, mapAreas,
 				calculateFileBoundary(osmData.getBounds()));
 
 		calculateIntersectionsInMapData(mapData);
@@ -90,7 +91,7 @@ public class OSMToMapDataConverter {
 	 * @throws EntityNotFoundException
 	 */
 	private void createMapElements(final OSMData osmData,
-			final List<MapNode> mapNodes, final List<MapWaySegment> mapWaySegs,
+			final List<MapNode> mapNodes, final List<MapWay> mapWays,
 			final List<MapArea> mapAreas) throws EntityNotFoundException {
 
 		/* create MapNode for each OSM node */
@@ -214,32 +215,33 @@ public class OSMToMapDataConverter {
 			node.calculateAdjacentAreaSegments();
 		}
 
-		/* create way segments from remaining ways */
+		/* create ways from remaining OSM ways */
 
-		for (OsmWay way : osmData.getWays()) {
-			boolean hasTags = way.getNumberOfTags() != 0;
-			if (hasTags && !areaMap.containsKey(way)) {
+		for (OsmWay osmWay : osmData.getWays()) {
+			boolean hasTags = osmWay.getNumberOfTags() != 0;
+			if (hasTags && !areaMap.containsKey(osmWay)) {
 
-				OsmNode previousNode = null;
-				for (long id : nodesAsList(way).toArray()) {
-					OsmNode node = null;
-					try {
-						node = osmData.getNode(id);
-					} catch (EntityNotFoundException e) {
-						// TODO handle better sometime
-						continue;
+				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
+
+				for (long id : nodesAsList(osmWay).toArray()) {
+					nodes.add(nodeMap.get(osmData.getNode(id)));
+				}
+
+				MapWay way = new MapWay(osmWay, nodes);
+				mapWays.add(way);
+
+				for (int i = 0; i < nodes.size(); i++) {
+
+					MapNode node = nodes.get(i);
+
+					if (i > 0) {
+						node.addInboundLine(way.getWaySegments().get(i - 1));
 					}
-					if (previousNode != null) {
 
-						MapWaySegment mapWaySeg = new MapWaySegment(
-								way, nodeMap.get(previousNode), nodeMap.get(node));
-
-						mapWaySegs.add(mapWaySeg);
-						nodeMap.get(previousNode).addOutboundLine(mapWaySeg);
-						nodeMap.get(node).addInboundLine(mapWaySeg);
-
+					if (i + 1 < nodes.size()) {
+						node.addOutboundLine(way.getWaySegments().get(i));
 					}
-					previousNode = node;
+
 				}
 
 			}
