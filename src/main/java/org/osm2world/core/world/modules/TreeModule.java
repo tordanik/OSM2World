@@ -166,12 +166,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			if (segment.getTags().contains(new Tag("natural", "tree_row"))) {
 
 				// if the row's trees are already represented as nodes, skip it
-				boolean hasTreesAsNodes = false;
-
-				//TODO: use MapWay (i.e. complete ways in MapData) to restore this feature
-//				for (OSMNode n : segment.getOsmWay().nodes) {
-//					hasTreesAsNodes |= n.tags.contains("natural", "tree");
-//				}
+				boolean hasTreesAsNodes = segment.getWay().getNodes().stream().anyMatch(
+						n -> n.getTags().contains("natural", "tree"));
 
 				if (!hasTreesAsNodes) {
 					segment.addRepresentation(new TreeRow(segment));

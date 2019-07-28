@@ -1,9 +1,7 @@
 package org.osm2world.core.world.modules;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
 import static java.awt.Color.ORANGE;
 import static java.util.Collections.nCopies;
-import static java.util.Comparator.comparingInt;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
@@ -17,9 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -39,73 +35,37 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
-import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
-import de.topobyte.osm4j.core.model.iface.OsmWay;
+import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
  * adds swimming pools and water parks to the world
  */
-public class PoolModule extends ConfigurableWorldModule {
+public class PoolModule extends AbstractModule {
 
-	private final boolean isPool(TagGroup tags) {
-		boolean pool = tags.contains("amenity", "swimming_pool");
-		pool |= tags.contains("leisure", "swimming_pool");
-
-		return pool;
-	}
-
-	private final boolean isPool(MapArea area) {
-		return isPool(area.getTags());
+	@Override
+	protected void applyToArea(MapArea area) {
+		if (area.getTags().contains("amenity", "swimming_pool")
+				|| area.getTags().contains("leisure", "swimming_pool")) {
+			area.addRepresentation(new Pool(area));
+		}
 	}
 
 	@Override
-	public void applyTo(MapData mapData) {
+	protected void applyToWaySegment(MapWaySegment segment) {
 
-		for (MapArea area : mapData.getMapAreas()) {
-			if (isPool(area))
-				area.addRepresentation(new Pool(area));
-		}
+		if (segment.getTags().contains("attraction", "water_slide")) {
 
-		/*
+			List<MapWaySegment> segments = segment.getWay().getWaySegments();
 
-		/* collect all segments of waterslide ways (because the entire slide needs
-		 * to be available at the same time for the height calculations) */
+			// WaterSlide renders the entire way at once, so only add it to the first way segment
+			if (segment.equals(segments.get(0))) {
 
-		Multimap<OsmWay, MapWaySegment> slideWaySegmentMap = ArrayListMultimap.create();
+				segment.addRepresentation(new WaterSlide(segment, segments));
 
-		for (MapWaySegment segment : mapData.getMapWaySegments()) {
-			if (segment.getTags().contains("attraction", "water_slide")) {
-				slideWaySegmentMap.put(segment.getOsmElement(), segment);
 			}
-		}
-
-		for (OsmWay key : slideWaySegmentMap.keySet()) {
-
-			List<MapWaySegment> segments = new ArrayList<MapWaySegment>(slideWaySegmentMap.get(key));
-			sortWaySegmentList(key, segments);
-
-			MapWaySegment primarySegment = segments.iterator().next();
-
-			WaterSlide waterSlide = new WaterSlide(primarySegment, segments);
-
-			// add it as the representation of one of the segments (arbitrary choice)
-			primarySegment.addRepresentation(waterSlide);
 
 		}
 
-	}
-
-	/**
-	 * sorts a way's segments. All segments must be part of the way,
-	 * and the way must not be self-intersecting for this to work!
-	 */
-	static void sortWaySegmentList(final OsmWay way, List<MapWaySegment> segments) {
-		segments.sort(comparingInt(
-				(MapWaySegment s) ->  nodesAsList(way).indexOf(s.getStartNode().getOsmElement().getId())));
 	}
 
 	public static class Pool extends AbstractAreaWorldObject
