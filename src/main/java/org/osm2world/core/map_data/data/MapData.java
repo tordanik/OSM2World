@@ -32,16 +32,18 @@ public class MapData {
 	final List<MapWay> mapWays;
 	final List<MapWaySegment> mapWaySegments;
 	final List<MapArea> mapAreas;
+	final List<MapRelation> mapRelations;
 
 	AxisAlignedBoundingBoxXZ fileBoundary;
 	AxisAlignedBoundingBoxXZ dataBoundary;
 
-	public MapData(List<MapNode> mapNodes, List<MapWay> mapWays,
-			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ fileBoundary) {
+	public MapData(List<MapNode> mapNodes, List<MapWay> mapWays, List<MapArea> mapAreas,
+			List<MapRelation> mapRelations, AxisAlignedBoundingBoxXZ fileBoundary) {
 
 		this.mapNodes = mapNodes;
 		this.mapWays = mapWays;
 		this.mapAreas = mapAreas;
+		this.mapRelations = mapRelations;
 		this.fileBoundary = fileBoundary;
 
 		mapWaySegments = mapWays.stream().flatMap(w -> w.getWaySegments().stream()).collect(toList());
@@ -80,6 +82,10 @@ public class MapData {
 
 	public Iterable<MapElement> getMapElements() {
 		return Iterables.concat(mapNodes, mapWaySegments, mapAreas);
+	}
+
+	public List<MapRelation> getMapRelations() {
+		return mapRelations;
 	}
 
 	public Collection<MapArea> getMapAreas() {

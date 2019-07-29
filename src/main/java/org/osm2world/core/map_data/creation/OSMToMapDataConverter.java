@@ -23,6 +23,8 @@ import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
@@ -44,6 +46,7 @@ import org.osm2world.core.osm.ruleset.Ruleset;
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
 import de.topobyte.osm4j.core.model.iface.OsmTag;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.impl.Tag;
@@ -74,10 +77,11 @@ public class OSMToMapDataConverter {
 		final List<MapNode> mapNodes = new ArrayList<>();
 		final List<MapWay> mapWays = new ArrayList<>();
 		final List<MapArea> mapAreas = new ArrayList<>();
+		final List<MapRelation> mapRelations = new ArrayList<>();
 
-		createMapElements(osmData, mapNodes, mapWays, mapAreas);
+		createMapElements(osmData, mapNodes, mapWays, mapAreas, mapRelations);
 
-		MapData mapData = new MapData(mapNodes, mapWays, mapAreas,
+		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations,
 				calculateFileBoundary(osmData.getBounds()));
 
 		calculateIntersectionsInMapData(mapData);
@@ -90,11 +94,12 @@ public class OSMToMapDataConverter {
 	 * creates {@link MapElement}s
 	 * based on OSM data from an {@link OSMData} dataset.
 	 * and adds them to collections
+	 * @param mapRelations
 	 * @throws EntityNotFoundException
 	 */
 	private void createMapElements(final OSMData osmData,
 			final List<MapNode> mapNodes, final List<MapWay> mapWays,
-			final List<MapArea> mapAreas) throws EntityNotFoundException {
+			final List<MapArea> mapAreas, List<MapRelation> mapRelations) throws EntityNotFoundException {
 
 		/* create MapNode for each OSM node */
 
@@ -242,6 +247,69 @@ public class OSMToMapDataConverter {
 
 			}
 		}
+
+		/* crate relations from remaining OSM relations */
+
+		TLongObjectMap<MapRelation.Element> wayIdMap = new TLongObjectHashMap<>();
+		TLongObjectMap<MapRelation.Element> relationIdMap = new TLongObjectHashMap<>();
+
+		for (MapWay way : mapWays) {
+			wayIdMap.put(way.getOsmElement().getId(), way);
+		}
+
+		for (MapArea area : mapAreas) {
+			if (area.getOsmElement() instanceof OsmWay) {
+				wayIdMap.put(area.getOsmElement().getId(), area);
+			} else {
+				relationIdMap.put(area.getOsmElement().getId(), area);
+			}
+		}
+
+		for (OsmRelation osmRelation : osmData.getRelations()) {
+			boolean hasTags = osmRelation.getNumberOfTags() != 0;
+			if (hasTags && !relationIdMap.containsKey(osmRelation.getId())) {
+
+				MapRelation relation = new MapRelation(osmRelation);
+
+				for (OsmRelationMember osmMember : membersAsList(osmRelation)) {
+
+					Element element = null;
+
+					switch (osmMember.getType()) {
+					case Node:
+						element = nodeIdMap.get(osmMember.getId());
+						break;
+					case Way:
+						element = wayIdMap.get(osmMember.getId());
+						break;
+					case Relation:
+						if (relationIdMap.get(osmMember.getId()) instanceof MapArea) {
+							element = relationIdMap.get(osmMember.getId());
+							break;
+						} else {
+							//TODO: support relations containing other (non-multipolygon) relations as members
+							continue;
+						}
+					}
+
+					if (element == null) {
+						System.err.println("Warning: Relation " + osmMember.getId() + " is incomplete,"
+								+ " missing member " + osmMember.getRole() + ": "
+								+ osmMember.getType() + " " + osmMember.getId());
+						continue;
+					}
+
+					relation.addMembership(osmMember.getRole(), element);
+
+				}
+
+
+				mapRelations.add(relation);
+
+			}
+		}
+
+
 
 	}
 

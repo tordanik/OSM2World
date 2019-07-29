@@ -28,7 +28,7 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  *
  * @See {@link MapData} for context
  */
-public class MapArea implements MapElement {
+public class MapArea extends MapRelation.Element implements MapElement {
 
 	private final OsmEntity objectWithTags;
 

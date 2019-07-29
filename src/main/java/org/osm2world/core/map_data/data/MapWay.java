@@ -18,7 +18,7 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  *
  * @See {@link MapData} for context
  */
-public class MapWay {
+public class MapWay extends MapRelation.Element {
 
 	private final OsmWay osmWay;
 	private final List<MapNode> nodes;

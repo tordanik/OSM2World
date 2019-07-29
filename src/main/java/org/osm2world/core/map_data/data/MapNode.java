@@ -23,7 +23,7 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
  *
  * @See {@link MapData} for context
  */
-public class MapNode implements MapElement {
+public class MapNode extends MapRelation.Element implements MapElement {
 
 	private final VectorXZ pos;
 	private final OsmNode osmNode;
