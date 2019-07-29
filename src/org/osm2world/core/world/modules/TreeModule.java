@@ -547,9 +547,11 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(POVRayTarget target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
+			if (treeConnectors != null) {
+				for (EleConnector treeConnector : treeConnectors) {
+					renderTree(target, area, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				}
 			}
 		}
 		
@@ -560,18 +562,22 @@ public class TreeModule extends ConfigurableWorldModule {
 		
 		@Override
 		public void renderTo(FaceTarget<?> target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-				target.flushReconstructedFaces();
+			if (treeConnectors != null) {
+				for (EleConnector treeConnector : treeConnectors) {
+					renderTree(target, area, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+					target.flushReconstructedFaces();
+				}
 			}
 		}
 		
 		@Override
 		public void renderTo(Target<?> target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
+			if (treeConnectors != null) {
+				for (EleConnector treeConnector : treeConnectors) {
+					renderTree(target, area, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				}
 			}
 		}
 		

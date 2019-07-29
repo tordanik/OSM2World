@@ -193,7 +193,17 @@ public final class Output {
 				case OBJ:
 					Integer primitiveThresholdOBJ =
 						config.getInteger("primitiveThresholdOBJ", null);
-					if (primitiveThresholdOBJ == null) {
+					
+					Integer tilesZoomLevel = config.getInteger("tilesZoomOBJ", null);
+					String tilesetPath = config.getString("cesiumTileset", null);
+
+					if (tilesZoomLevel != null) {
+						
+						ObjWriter.writeObjFileTiled(outputFile,
+								results.getMapData(), results.getMapProjection(),
+								camera, projection, tilesZoomLevel, tilesetPath);
+						
+					} else if (primitiveThresholdOBJ == null) {
 						boolean underground = config.getBoolean("renderUnderground", true);
                         
 						ObjWriter.writeObjFile(outputFile,
