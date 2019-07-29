@@ -4,23 +4,60 @@
 // TODO: set from java to match MAX_TEXTURE_LAYERS there
 #define MAX_TEXTURE_LAYERS 4
 #define SSAO_RANDOM_ROTATION
-	
-uniform bool isShadowed;
+
+#define MAX_UNIQUE_LIGHTS 32
+#define MAX_LIGHTS 256
+
+/*** LIGHTING UNIFORMS ***/
+// Enable or disable lighting effects
 uniform bool useLighting;
-struct LightInfo {
-	vec4 Position; // Light position in world coords.
-	vec3 La; // Ambient light intensity
-	vec3 Ld; // Diffuse light intensity
-	vec3 Ls; // Specular light intensity
-};
-uniform LightInfo Light;
-	
+uniform bool isShadowed;
+
+// Should the environment map be used to calculate the sunlight information
+uniform bool envLighting;
+
+// Number of unique light sources
+uniform int numLights;
+
+// OpenGL 3 does not support uniform struct arrays
+// Aggregated lighting info
+uniform vec3[MAX_UNIQUE_LIGHTS] lightLa;
+uniform vec3[MAX_UNIQUE_LIGHTS] lightLd;
+uniform vec3[MAX_UNIQUE_LIGHTS] lightLs;
+
+// Per-source lighting info
+uniform vec4[MAX_LIGHTS] lightPos;
+uniform uint[MAX_LIGHTS] lightIndex;
+
+
+/** REFLECTION UNIFORMS **/
+// Should the environment map be reflected off this fragment
+uniform bool showReflections;
+uniform samplerCube envMap;
+
+// Should world geometry be reflected off this fragment using the geomMap as a local environment map
+uniform bool useGeomMap;
+uniform samplerCube geomMap;
+
+// Should reflectance maps be used be used to determine the reflectance of this fragment
+uniform bool useReflMaps;
+uniform sampler2D ReflMap;
+
+// View of the world as seen when reflected across the ground plane
+uniform bool useGroundPlane;
+uniform sampler2D groundPlane;
+
+uniform mat4 reflectedMV;
+
+
+/*** MATERIAL UNIFORMS ***/
 struct MaterialInfo {
 	vec3 Color; // Material color
 	float Ka; // Ambient reflectivity
 	float Kd; // Diffuse reflectivity
 	float Ks; // Specular reflectivity
 	int Shininess; // Specular shininess factor
+	float Reflectance; // Reflectance constant
 };
 uniform MaterialInfo Material;
 
@@ -32,11 +69,26 @@ in vec3 VertexEye;
 in vec3 NormalEye;
 in vec4 TangentEye;
 in vec2 BumpMapCoord;
+in vec2 ReflMapCoord;
 in vec4 ShadowCoord;
 in vec2 TexCoord0;
 in vec2 TexCoord1;
 in vec2 TexCoord2;
 in vec2 TexCoord3;
+in vec3 WorldCoord;
+in vec3 WorldNormal;
+
+// Procedural textures
+uniform vec3 procColor[MAX_TEXTURE_LAYERS];
+uniform vec3 procDev[MAX_TEXTURE_LAYERS];
+
+uniform float procXScale[MAX_TEXTURE_LAYERS];
+uniform float procYScale[MAX_TEXTURE_LAYERS];
+
+uniform bool useProc[MAX_TEXTURE_LAYERS];
+
+uniform bool useProcNorm;
+uniform float normDev;
 
 uniform bool useTexture[MAX_TEXTURE_LAYERS];
 uniform sampler2D Tex[MAX_TEXTURE_LAYERS];
@@ -65,30 +117,44 @@ out vec4 FragColor;
 /*
  * shading with phong model (ambient, diffuse, specular)
  * lightDir, viewDir and norm have to be in the same coordinate system (e.g. eye or tangent space)
+ * Returns a mat3 where phong[0] is ambient, phong[1] is diffuse, and phong[2] is specular
  */
-vec3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm, out vec3 ambient, out vec3 diffuse, out vec3 spec )
-{	
-	vec3 r = reflect( -lightDir, norm );
-	ambient = Light.La;
+mat3 phongModel( vec3 lightDir, vec3 viewDir, vec3 norm,
+				 vec3 la, vec3 ld, vec3 ls)
+{
+	mat3 lightMat = mat3(0);
+
+	// Ambient
+	lightMat[0] = la;
+
+	// Diffuse 
 	float sDotN = max( dot(lightDir,norm), 0.0 );
-	diffuse = Light.Ld * sDotN;
-	spec = vec3(0.0);
+	lightMat[1] = ld * sDotN;
+
+	// Specular
+	vec3 r = reflect( -lightDir, norm );
 	if( sDotN > 0.0 )
-		spec = Light.Ls *
+		lightMat[2] = ls *
 				pow( max( dot(r,viewDir), 0.0 ), Material.Shininess );
-	return ambient + diffuse + spec;
+
+	return lightMat;
 }
 
 const int levels = 3;
 const float scaleFactor = 1.0 / levels;
 // toon shading (only ambient and diffuse)
-vec3 toonShade( vec3 lightDir, vec3 norm, out vec3 ambient, out vec3 diffuse )
+mat3 toonShade( vec3 lightDir, vec3 norm, vec3 la, vec3 ld )
 {
-	ambient = Light.La;
+	mat3 lightMat = mat3(0);
+
+	// Ambient
+	lightMat[0] = la;
+
+	// Diffuse
 	float cosine = max( dot(lightDir,norm) , 0.0 );
-	diffuse = Light.Ld * floor( cosine * levels ) * scaleFactor;
+	lightMat[1] = ld * floor( cosine * levels ) * scaleFactor;
 	
-	return ambient + diffuse;
+	return lightMat;
 }
 
 //float linearizeDepthPerspective(in float depth, in mat4 projMatrix) {
@@ -183,28 +249,107 @@ float ssao( vec3 origin, vec3 normal, out vec3 debug )
 	//occlusion = occlusion / float(uKernelSize);
 	return occlusion;
 }
+
+float rand(vec2 seed)
+{
+	return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453 );
+}
+
+float interpolate(float a, float b, float x)
+{
+	return a + x * (b - a);
+}
+
+float fade(float t)
+{
+	return t * t * t * (t * (t * 6 - 15) + 10); 
+}
+
+
+float perlin(vec2 texCoord, float xScale, float yScale)
+{
+	texCoord.x = texCoord.x * xScale;
+	texCoord.y = texCoord.y * yScale;
+
+	// Calculate the adjacent integer corners
+	vec2 corners[4];
+	corners[0] = vec2(floor(texCoord.x), floor(texCoord.y));
+	corners[1] = corners[0] + vec2(1, 0);
+	corners[2] = corners[0] + vec2(1, 1);
+	corners[3] = corners[0] + vec2(0, 1);
+
+	vec2 gradients[4];
+	gradients[0] = vec2( 1, 1);
+	gradients[1] = vec2(-1, 1);
+	gradients[2] = vec2(-1,-1);
+	gradients[3] = vec2( 1,-1);
+
+	// Calculate the influence at each corner
+	float influence[4];
+	for(int i = 0; i < 4; i++)
+		influence[i] = dot(texCoord - corners[i], gradients[int(rand(corners[i]) * 3)]); 
+
+	// Interpolate the influence
+	float tx = interpolate(influence[0], influence[1], fade(fract(texCoord.x)));
+	float bx = interpolate(influence[3], influence[2], fade(fract(texCoord.x)));
+
+	return interpolate(tx, bx, fade(fract(texCoord.y)));
+}
  
 void main()
 {
-	vec3 ambient, diff, spec=vec3(0.0);
 	vec4 texColor = vec4(1.0);
+
+	// lightMat[0] = ambient, lightMat[1] = diffuse, lightMat[2] = specular
+	mat3 lightMat = mat3(0.0);
 
 	// apply textures
 	// TODO: autogenerate based on MAX_TEXTURE_LAYERS
 	if ( useTexture[0] ) {
-		texColor = texture( Tex[0], TexCoord0 );
+		if(useProc[0]) {
+			float p = perlin(TexCoord0, procXScale[0], procYScale[0]) * 2 - 1;
+			texColor = vec4(procColor[0] + (procDev[0] * p), 1.0);
+		} else {
+			texColor = texture( Tex[0], TexCoord0 );
+		}
 	}
 	texColor = texColor * vec4(Material.Color, 1.0); // color first layer only
+
 	if ( useTexture[1] ) {
-		vec4 layerColor = texture( Tex[1], TexCoord1 );
+		vec4 layerColor;
+		
+		if(useProc[1]) {
+			float p = perlin(TexCoord1, procXScale[1], procYScale[1]) * 2 - 1;
+			layerColor = vec4(procColor[1] + (procDev[1] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[1], TexCoord1 );
+		}
+
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
+
 	if ( useTexture[2] ) {
-		vec4 layerColor = texture( Tex[2], TexCoord2 );
+		vec4 layerColor;
+		
+		if(useProc[2]) {
+			float p = perlin(TexCoord2, procXScale[2], procYScale[2]) * 2 - 1;
+			layerColor = vec4(procColor[2] + (procDev[2] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[2], TexCoord1 );
+		}
+
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	if ( useTexture[3] ) {
-		vec4 layerColor = texture( Tex[3], TexCoord3 );
+		vec4 layerColor;
+		
+		if(useProc[3]) {
+			float p = perlin(TexCoord3, procXScale[3], procYScale[3]) * 2 - 1;
+			layerColor = vec4(procColor[3] + (procDev[3] * p), 1.0);
+		} else {
+			layerColor = texture( Tex[3], TexCoord1 );
+		}
+
 		texColor = mix(texColor, vec4(layerColor.rgb,1), layerColor.a);
 	}
 	
@@ -216,46 +361,130 @@ void main()
 		if ( useSSAO )
 			occlusionFactor = ssao( VertexEye, normalEye, debug );
 		
-		if ( isShadowed ) {
-			ambient = Light.La;
-			diff = vec3(0.0);
-		} else {
-			vec3 viewDirection, lightDirection;
-			vec4 lightPositionEye = ModelViewMatrix * Light.Position;
-			
-			// transform light and view direction to eye space
-			
-			if( ProjectionMatrix[3][3] == 0.0 )
-				viewDirection = normalize(-VertexEye); // perspective projection
-			else
-				viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
-			
-			// directional light?
-			if( Light.Position.w == 0.0 )
-				lightDirection = normalize(vec3(lightPositionEye));
-			else
-				lightDirection = normalize(vec3(lightPositionEye) - VertexEye);
-			
-			vec3 normal = normalEye;
-			if ( useBumpMaps ) {
-				vec3 tangentEye = normalize(TangentEye.xyz);
-				// compute bitangent
-				vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
+		vec3 viewDirection;
+		if( ProjectionMatrix[3][3] == 0.0 )
+			viewDirection = normalize(-VertexEye); // perspective projection
+		else
+			viewDirection = vec3(0.0, 0.0, 1.0); // orthographic projection: camera is infinite far away, so vertex coordinates don't matter
 		
-				// transformation from eye to tangent space
-				mat3 tangentMatrix = mat3(
-					tangentEye.x, bitangentEye.x, normalEye.x,
-					tangentEye.y, bitangentEye.y, normalEye.y,
-					tangentEye.z, bitangentEye.z, normalEye.z );
-			
-				// transform light and view direction to tangent space
-				viewDirection = tangentMatrix * viewDirection;
-				lightDirection = tangentMatrix * lightDirection;
-				normal = normalize(texture( BumpMap, BumpMapCoord ).xyz * 2.0 - 1.0);
+		mat3 tangentMatrix = mat3(1.0);
+
+		// Bumpmap calcuations
+		vec3 normal = normalEye;
+		vec3 procNormal = vec3(0.0);
+
+		// To use bumpmaps, the view and light vectors are transformed into tangent space so that
+		// the normal vector can be read directly from the map
+		if ( useBumpMaps ) {
+			vec3 tangentEye = normalize(TangentEye.xyz);
+			// compute bitangent
+			vec3 bitangentEye = normalize( cross( normalEye, tangentEye ) ) * TangentEye.w;
+	
+			// transformation from eye to tangent space
+			tangentMatrix = mat3(
+				tangentEye.x, bitangentEye.x, normalEye.x,
+				tangentEye.y, bitangentEye.y, normalEye.y,
+				tangentEye.z, bitangentEye.z, normalEye.z );
+		
+			// transform view direction to tangent space
+			viewDirection = tangentMatrix * viewDirection;
+
+			// Procedural normal generation
+			if(useProcNorm) {
+				// Calculate the procedural height at three points
+				float p0 = normDev * perlin(TexCoord0, procXScale[0], procYScale[0]) * 2 - 1;
+				float pu = normDev * perlin(TexCoord0 + vec2(1, 0) , procXScale[0], procYScale[0]) * 2 - 1;
+				float pv = normDev * perlin(TexCoord0 + vec2(0, 1), procXScale[0], procYScale[0]) * 2 - 1;
+
+				// Calculate the vectors from the fragment to the two test points
+				vec3 p = vec3(TexCoord0, p0);
+				vec3 puv = p - vec3(TexCoord0 + vec2(1, 0), pu);
+				vec3 pvv = p - vec3(TexCoord0 + vec2(0, 1), pv);
+
+				// Calculate the normal vector by cross multiplying the two vectors
+				normal = normalize(cross(puv, pvv)).rgb;
+			} else {
+				normal = normalize(texture( BumpMap, BumpMapCoord ).rgb * 2.0 - 1.0);
 			}
-			
-			phongModel( lightDirection, viewDirection, normal, ambient, diff, spec );
-			//toonShade( lightDirection, normal, ambient, diff );
+		}
+
+		if(useProcNorm) {
+			// Calculate the procedural height at three points
+			float p0 = normDev * perlin(TexCoord0, procXScale[0], procYScale[0]) * 2 - 1;
+			float pu = normDev * perlin(TexCoord0 + vec2(1, 0) , procXScale[0], procYScale[0]) * 2 - 1;
+			float pv = normDev * perlin(TexCoord0 + vec2(0, 1), procXScale[0], procYScale[0]) * 2 - 1;
+
+			// Calculate the vectors from the fragment to the two test points
+			vec3 p = vec3(TexCoord0, p0);
+			vec3 puv = p - vec3(TexCoord0 + vec2(1, 0), pu);
+			vec3 pvv = p - vec3(TexCoord0 + vec2(0, 1), pv);
+
+			// Calculate the normal vector by cross multiplying the two vectors
+			procNormal = normalize(cross(puv, pvv)).xzy;
+		}
+
+		// Actual lighting calculations for each source
+		for(int i = 0; i < numLights; i++) {
+			// If this light is turned off, skip it
+			if( (lightIndex[i] & 1U) == 0U ) continue;
+
+			vec4 lightPositionEye = ModelViewMatrix * lightPos[i];
+		
+			// directional light?
+			if(lightPos[i].w == 0.0) {
+				// tangentMatrix is the identity if normal mapping is not in use
+				vec3 lightDirection = tangentMatrix * normalize(vec3(lightPositionEye));
+				vec3 la = lightLa[lightIndex[i] >> 1];
+				vec3 ld = lightLd[lightIndex[i] >> 1];
+				vec3 ls = lightLs[lightIndex[i] >> 1];
+
+				// If use skybox for lighting
+				if( envLighting ) {
+					// To do this properly, the ambient light should be the average of every vector
+					//   in the hemisphere centered at and tangent to the fragment. These values could
+					//   be precomputed for every vector in the envMap, and passed as a second lightMap.
+					//
+					// Instead it is approximated by using the color of direct sunlight
+					vec3 ambientVector = vec3(lightPos[i].x, max(lightPos[i].y, 0.0), -lightPos[i].z);
+					la = texture(envMap, ambientVector).rgb;
+
+
+					ld = texture(envMap, WorldNormal).rgb;
+
+					mat3 rotMat = mat3(ModelViewMatrix);
+
+					// Grab translation vector from view matrix
+					vec3 d = vec3(ModelViewMatrix[3]);
+
+					// Calculate vector incoming to reflection point in worldspace
+					vec3 cameraPosition = -d * rotMat;
+					vec3 viewVector = normalize(WorldCoord - cameraPosition);
+
+					vec3 reflectionVector = reflect(viewVector, WorldNormal);
+					ls = texture(envMap, reflectionVector).rgb;
+				}
+
+				// If this fragment is shadowded from this light source, only
+				// apply it's ambient
+				if ( isShadowed ) {
+					lightMat[0] += la;
+				} else {
+					lightMat += phongModel(lightDirection, viewDirection, normal,
+										   la, ld, ls);
+				}
+
+			} else {
+				vec3 r = vec3(lightPositionEye) - VertexEye;
+
+				// tangentMatrix is the identity if normal mapping is not in use
+				vec3 lightDirection = tangentMatrix * normalize(r);
+				float dist = length(r);
+
+				lightMat += phongModel(lightDirection, viewDirection, normal,
+									   lightLa[(lightIndex[i] >> 1)] * (10 / (dist * dist)), 
+									   lightLd[(lightIndex[i] >> 1)] * (10 / (dist * dist)), 
+									   lightLs[(lightIndex[i] >> 1)] * (10 / (dist * dist)));
+			}
 		}
 		
 		// shadow map lookup
@@ -278,13 +507,63 @@ void main()
 		}
 		if ( isShadowed )
 			shadowFactor = 0.0;
+
+		if( (showReflections || useGeomMap || useGroundPlane) 
+		  && (Material.Reflectance > 0.0 || useReflMaps) ) {
+			// Calculate the reflectance of this fragment
+			float r = Material.Reflectance;
+			if(useReflMaps)
+				// POVRay style reflectance maps
+				r = 1 - texture(ReflMap, TexCoord1).r;
+
+			// Truncate the view matrix to get the rotationMatrix
+			mat3 rotMat = mat3(ModelViewMatrix);
+
+			// Grab translation vector from view matrix
+			vec3 d = vec3(ModelViewMatrix[3]);
+
+			// Calculate vector incoming to reflection point in worldspace
+			vec3 cameraPosition = -d * rotMat;
+			vec3 viewVector = normalize(WorldCoord - cameraPosition);
+
+			// Calculate the reflected vector
+			vec3 reflectionVector = reflect(viewVector, WorldNormal);
+
+			// Mix the reflections for the final color
+			vec4 reflection = vec4(0.0);
+
+			if( showReflections ) {
+				vec4 skyReflection = texture(envMap, reflectionVector);
+				reflection = skyReflection;
+			}
+
+			if( useGeomMap ) {
+				vec4 geomReflection = texture(geomMap, reflectionVector);
+				reflection = mix(reflection, geomReflection, geomReflection.a);
+
+			}
+
+			if( useGroundPlane ) {
+				// Transform world coordinate to reflection texture uv
+				vec4 reflCoord = reflectedMV * vec4(WorldCoord, 1.0);
+				vec2 sampleCoord = vec2(reflCoord.x / 800 + 0.5, reflCoord.y / 600 + 0.5);
+				vec4 groundReflection = texture(groundPlane, sampleCoord);
+				reflection = mix(reflection, groundReflection, groundReflection.a);
+			}
+
+			texColor = mix(texColor, reflection, r);
+		}
 		
-		diff = diff * shadowFactor * occlusionFactor;
-		spec = spec * shadowFactor * occlusionFactor;
-		ambient = ambient * occlusionFactor;
-		
-		FragColor = vec4(ambient*Material.Ka + diff*Material.Kd, 1.0) * texColor + vec4(spec*Material.Ks, 0.0);
-		//FragColor = texColor;
+		// Breakout the lighting matrix
+		vec3 ambient = lightMat[0] * occlusionFactor;
+		vec3 diff    = lightMat[1] * shadowFactor * occlusionFactor;
+		vec3 spec    = lightMat[2] * shadowFactor * occlusionFactor;
+
+		FragColor = vec4(ambient*Material.Ka + diff*Material.Kd, 1.0) * texColor
+				  + vec4(spec*Material.Ks*0, 0.0);
+
+		//FragColor = vec4(vec3(shadowFactor), 1.0);
+
 		//FragColor = vec4(occlusionFactor, occlusionFactor, occlusionFactor, FragColor.a);
 		//FragColor = vec4(normalEye, FragColor.a);
 		//FragColor = vec4(debug, FragColor.a);

@@ -9,6 +9,7 @@ in vec3 VertexPosition;
 in vec3 VertexNormal;
 in vec4 VertexTangent;
 in vec2 VertexBumpMapCoord;
+in vec2 VertexReflMapCoord;
 in vec2 VertexTexCoord0;
 in vec2 VertexTexCoord1;
 in vec2 VertexTexCoord2;
@@ -26,19 +27,27 @@ out vec3 VertexEye; // in eye space
 out vec3 NormalEye;
 out vec4 TangentEye; // last coordinate is the handedness to reconstruct the bitangent
 out vec2 BumpMapCoord;
+out vec2 ReflMapCoord;
 out vec4 ShadowCoord;
 out vec2 TexCoord0;
 out vec2 TexCoord1;
 out vec2 TexCoord2;
 out vec2 TexCoord3;
 
+// Neccassary for world reflections
+out vec3 WorldCoord;
+out vec3 WorldNormal;
+
 void main()
 {
+	WorldCoord = VertexPosition;
+	WorldNormal = VertexNormal;
 	TexCoord0 = VertexTexCoord0;
 	TexCoord1 = VertexTexCoord1;
 	TexCoord2 = VertexTexCoord2;
 	TexCoord3 = VertexTexCoord3;
 	BumpMapCoord = VertexBumpMapCoord;
+	ReflMapCoord = VertexReflMapCoord;
 	
 	// Transform to eye coordinates
 	NormalEye = normalize(vec3(NormalMatrix * vec4(VertexNormal, 1.0)));

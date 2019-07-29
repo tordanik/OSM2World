@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Calendar;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -34,11 +37,13 @@ import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.AbstractJOGLTarget;
+import org.osm2world.core.target.jogl.Cubemap;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
+import org.osm2world.core.target.jogl.Sky;
 
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLineByte;
@@ -105,6 +110,22 @@ public class ImageExporter {
 			} else {
 				System.err.println("incorrect color value: "
 						+ config.getString(BG_COLOR_KEY));
+			}
+		}
+
+		if (config.containsKey("scatterColor")) {
+			Color scatterColor = parseColor(config.getString("scatterColor"));
+			Sky.scatterColor = scatterColor;
+		}
+		
+		if (config.containsKey("timeAndDate")) {
+			try {
+				SimpleDateFormat format = new SimpleDateFormat("MMM dd HH:mm");
+				Calendar c = Calendar.getInstance();
+				c.setTime(format.parse(config.getString("timeAndDate")));
+				clearColor = GlobalLightingParameters.DEFAULT.setTime(c);
+			} catch (ParseException e) {
+				System.err.println("Invalid date (MMM dd HH:mm): " + config.getString("timeAndDate"));
 			}
 		}
 		
@@ -324,10 +345,76 @@ public class ImageExporter {
 			int SSAOkernelSize = config.getInt("SSAOkernelSize", 16);
 			float SSAOradius = config.getFloat("SSAOradius", 1);
 			boolean overwriteProjectionClippingPlanes = "true".equals(config.getString("overwriteProjectionClippingPlanes"));
+			boolean showSkyReflections = config.getBoolean("showSkyReflections", false);
+			boolean showGroundReflections = config.getBoolean("showGroundReflections", false);
+			boolean useEnvLighting = config.getBoolean("useEnvLighting", false);
+			boolean showEnvMap = config.getBoolean("showEnvMap", false);
+			
+			int geomReflType = 0;
+			switch(config.getString("geomReflectionType", "none")) {
+				case "cubemap":
+					geomReflType = 1;
+					break;
+				case "plane":
+					geomReflType = 0;
+					System.err.println("Planar reflections are not yet supported");
+					break;
+				default:
+					geomReflType = 0;
+					break;
+			}
+
+			String skyboxType = config.getString("skybox", "procedural");
+			String[] filenames = new String[6];
+
+			if(skyboxType.equals("static")) {
+				useEnvLighting = false;
+
+				boolean missingName = false;
+
+				for(int i = 0; i < 6; i++) {
+					filenames[i] = config.getString("skybox_"+Cubemap.NAMES[i], "none");
+					if(filenames[i].equals("none")) {
+						System.err.println("Missing skybox_" + Cubemap.NAMES[i]);
+						missingName = true;
+					}
+				}
+
+				if(missingName) {
+					skyboxType = "none";
+					showEnvMap = false;
+				}
+			}
+
 			target = new JOGLTargetShader(gl.getGL3(),
-					new JOGLRenderingParameters(CCW, false, true, drawBoundingBox, shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight,
-			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, SSAOradius, overwriteProjectionClippingPlanes),
+					new JOGLRenderingParameters(CCW, false, true, drawBoundingBox, 
+							shadowVolumes, shadowMaps, shadowMapWidth, shadowMapHeight,
+			    			shadowMapCameraFrustumPadding, useSSAO, SSAOkernelSize, 
+							SSAOradius, overwriteProjectionClippingPlanes, showSkyReflections,
+							showGroundReflections, geomReflType, useEnvLighting),
 					GlobalLightingParameters.DEFAULT);
+
+			assert target instanceof JOGLTargetShader;
+
+			((JOGLTargetShader)target).setShowEnvMap(showEnvMap);
+
+			if(skyboxType.equals("procedural")) {
+
+				Sky.updateSky(gl.getGL3());
+				Cubemap skybox = Sky.getSky();
+				((JOGLTargetShader)target).setEnvMap(skybox);
+
+			} else if(skyboxType.equals("static")) {
+				Cubemap skybox = new Cubemap(filenames);
+				((JOGLTargetShader)target).setEnvMap(skybox);
+
+			} else if(skyboxType.equals("none")) {
+				((JOGLTargetShader)target).setEnvMap(null);
+				((JOGLTargetShader)target).setShowEnvMap(false);
+			}
+
+
+
 		} else {
 			target = new JOGLTargetFixedFunction(gl.getGL2(),
 					new JOGLRenderingParameters(CCW, false, true),

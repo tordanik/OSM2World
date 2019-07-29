@@ -67,7 +67,9 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget<RenderableToJOG
 		// in some situations even errors were encountered
 		if (material.getNumTextureLayers() > 0) {
 			for (TextureData t : material.getTextureDataList()) {
-				textureManager.getTextureForFile(t.file, true);
+				if(!t.isProcedural) {
+					textureManager.getTextureForFile(t.file, true);
+				}
 			}
 		}
 		

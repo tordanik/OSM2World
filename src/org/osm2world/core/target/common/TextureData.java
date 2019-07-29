@@ -35,9 +35,20 @@ public class TextureData {
 	public final boolean colorable;
 	
 	public final boolean isBumpMap;
+	public final boolean isReflMap;
+	public final boolean isProcedural;
 
 	public TextureData(File file, double width, double height, Wrap wrap,
-			TexCoordFunction texCoordFunction, boolean colorable, boolean isBumpMap) {
+			TexCoordFunction texCoordFunction, 
+			boolean colorable, boolean isBumpMap) {
+		
+		this(file, width, height, wrap, texCoordFunction, colorable, isBumpMap, false, false);
+	}
+
+	// TODO Consider bitwise flags instead of multiple booleans
+	public TextureData(File file, double width, double height, Wrap wrap,
+			TexCoordFunction texCoordFunction, 
+			boolean colorable, boolean isBumpMap, boolean isProcedural, boolean isReflMap) {
 		
 		this.file = file;
 		this.width = width;
@@ -46,8 +57,10 @@ public class TextureData {
 		this.coordFunction = texCoordFunction;
 		this.colorable = colorable;
 		this.isBumpMap = isBumpMap;
-		
+		this.isReflMap = isReflMap;
+		this.isProcedural = isProcedural;
 	}
+
 
 	//auto-generated
 	@Override

@@ -1,0 +1,18 @@
+#version 130
+ 
+uniform mat4 viewMat;
+uniform mat4 proMat;
+
+in vec3 VertexPosition;
+
+out vec3 cubemapCoord;
+ 
+
+void main() {
+	cubemapCoord = VertexPosition;
+	vec4 pos = proMat * mat4(mat3(viewMat)) * vec4(VertexPosition, 1.0);
+
+	// Setting the z coordinate to w will push the fragments to the far clipping plane
+	gl_Position = vec4(pos.xyww);
+} 
+

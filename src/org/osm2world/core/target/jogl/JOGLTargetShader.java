@@ -21,6 +21,12 @@ import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 import java.awt.Color;
 import java.io.File;
 import java.nio.FloatBuffer;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL2GL3;
@@ -29,15 +35,23 @@ import javax.media.opengl.GL3;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.common.lighting.LightSource;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+
+import org.osm2world.core.world.data.WorldObject;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
+
+import org.osm2world.core.target.common.Primitive;
+import org.osm2world.core.target.common.material.Material;
+
 
 public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private DefaultShader defaultShader;
@@ -47,6 +61,12 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private SSAOShader ssaoShader;
 	private NonAreaShader nonAreaShader;
 	private BackgroundShader backgroundShader;
+
+	private CubemapShader cubeShader;
+
+	private Map<LightSource, Integer> lightIndex;
+	private List<LightSource.LightColor> lightInfo;
+
 	private GL3 gl;
 	
 	/**
@@ -58,7 +78,21 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private JOGLRendererVBOShadowVolume rendererShadowVolume;
 	private AxisAlignedBoundingBoxXZ xzBoundary;
 	private boolean showShadowPerspective;
-	
+
+	private Cubemap envMap;
+	// TODO move to render parameters
+	private boolean showEnvMap;
+
+	private ReflectiveObject activeObject;
+
+	private Map<ReflectiveObject, JOGLMaterial> reflectionMaps;
+
+	private VectorXYZ camPos;
+
+	private Framebuffer groundBuffer;
+
+	private boolean renderingCubemap;
+
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
 			GlobalLightingParameters globalLightingParameters) {
 		super(gl, renderingParameters, globalLightingParameters);
@@ -72,6 +106,13 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		this.gl = gl;
 		pmvMatrix = new PMVMatrix();
 		reset();
+
+		cubeShader = new CubemapShader(gl);
+		lightInfo = new ArrayList<>();
+		lightIndex = new HashMap<>();
+		reflectionMaps = new HashMap<>();
+		groundBuffer = new Framebuffer(GL3.GL_TEXTURE_2D, 800, 600, true);
+		groundBuffer.init(gl, true);
 	}
 
 	@Override
@@ -222,22 +263,53 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	}
 
 	@Override
+	public void drawLight(VectorXYZ pos, float intensity) {
+		// TODO Hack to remove strange extenous light sources
+		if(pos.length() < 1000) {
+			// Create the new light source
+			LightSource thisLight = new LightSource(pos, new Color(intensity, intensity, intensity));
+
+			// Check if we have a same colored source
+			int index = lightInfo.indexOf(thisLight.color);
+			if(index == -1) {
+				// If not, add this color
+				lightInfo.add(thisLight.color);
+				lightIndex.put(thisLight, lightInfo.size() - 1);
+			} else {
+				// If so, use that color
+				lightIndex.put(thisLight, index);
+			}
+
+		} else {
+			System.out.println("Pruned extenous light source");
+		}
+	}
+
+	@Override
 	public void renderPart(Camera camera, Projection projection, double xStart,
 			double xEnd, double yStart, double yEnd) {
 		if (renderer == null) {
 			throw new IllegalStateException("finish must be called first");
 		}
+
+		if (renderingParameters.showGroundReflections) {
+			if(!renderingCubemap)
+				drawGroundReflections(camera, projection);
+		}
 		
 		if (renderingParameters.overwriteProjectionClippingPlanes) {
 			projection = updateClippingPlanesForCamera(camera, projection, rendererShader.getBoundingBox());
 		}
-		
+
 		applyProjectionMatricesForPart(pmvMatrix, projection,
 				xStart, xEnd, yStart, yEnd);
 		
 		applyCameraMatrices(pmvMatrix, camera);
+
+		camPos = camera.getPos();
+
 		
-		if (renderingParameters.useSSAO) {
+		if (renderingParameters.useSSAO && !renderingCubemap) {
 			defaultShader.setSSAOkernelSize(renderingParameters.SSAOkernelSize);
 			defaultShader.setSSAOradius(renderingParameters.SSAOradius);
 			
@@ -251,7 +323,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			ssaoShader.disableShader();
 		}
 		
-		if (renderingParameters.useShadowMaps) {
+		if (renderingParameters.useShadowMaps && !renderingCubemap) {
 			
 			// TODO: render only part?
 			shadowMapShader.setCameraFrustumPadding(renderingParameters.shadowMapCameraFrustumPadding);
@@ -272,11 +344,17 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			
 			shadowMapShader.disableShader();
 		}
+
 		
 		/* apply camera and projection information */
 		defaultShader.useShader();
 		defaultShader.loadDefaults();
-		
+		defaultShader.setEnvMap(envMap);
+		defaultShader.setShowReflections(renderingParameters.showSkyReflections);
+		defaultShader.setUseEnvLight(renderingParameters.useEnvLighting);
+
+		defaultShader.setLocalLighting(lightInfo, lightIndex, Sky.isNight());
+
 		if (showShadowPerspective)
 			defaultShader.setPMVMatrix(shadowMapShader.getPMVMatrix());
 		else
@@ -291,7 +369,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
 			defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
 		}
-		if (!showShadowPerspective && renderingParameters.useSSAO) {
+		if (!showShadowPerspective && renderingParameters.useSSAO && !renderingCubemap) {
 			defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 		}
 		
@@ -304,6 +382,10 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		rendererShader.render(camera, projection);
 		
 		defaultShader.disableShader();
+
+		if(showEnvMap && envMap != null)
+			drawCubemap(camera, envMap);
+
 		
 		/* non area primitives */
 		nonAreaShader.useShader();
@@ -370,7 +452,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 			defaultShader.setPMVMatrix(pmvMatrix);
 			defaultShader.setShadowed(true);
 			
-			if (!showShadowPerspective && renderingParameters.useSSAO) {
+			if (!showShadowPerspective && renderingParameters.useSSAO && !renderingCubemap) {
 				defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 			}
 
@@ -423,7 +505,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 				defaultShader.bindShadowMap(shadowMapShader.getShadowMapHandle());
 				defaultShader.setShadowMatrix(shadowMapShader.getPMVMatrix());
 			}
-			if (!showShadowPerspective && renderingParameters.useSSAO) {
+			if (!showShadowPerspective && renderingParameters.useSSAO && !renderingCubemap) {
 				defaultShader.enableSSAOwithDepthMap(ssaoShader.getDepthBuferHandle());
 			}
 			defaultShader.setRenderOnlySemiTransparent(true);
@@ -629,6 +711,9 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		nonAreaRenderer = new JOGLRendererVBONonAreaShader(gl, nonAreaShader, nonAreaPrimitives);
 		if (renderingParameters.useShadowVolumes)
 			rendererShadowVolume = new JOGLRendererVBOShadowVolume(gl, primitiveBuffer, new VectorXYZW(globalLightingParameters.lightFromDirection, 0));
+		
+		if(activeObject != null)
+			activeObject.finish();
 	}
 	
 	@Override
@@ -652,4 +737,322 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	public void setShowShadowPerspective(boolean s) {
 		this.showShadowPerspective = s;
 	}
+
+	public void setShowEnvMap(boolean s) {
+		this.showEnvMap = s;
+	}
+
+	public void setEnvMap(Cubemap cubemap) {
+		envMap = cubemap;
+	}
+
+	public void updateSky() {
+		Sky.updateSky(gl);
+	}
+
+
+	private class ReflectiveObject {
+		private List<Primitive> primitives = new ArrayList<>();
+		private VectorXYZ center;
+		private Framebuffer reflectionBuffer;
+		private boolean needsUpdate;
+		private boolean everUpdated;
+		private double height;
+		private double maxY;
+
+		public void add(Primitive primitive) {
+			primitives.add(primitive);
+		}
+
+		public Framebuffer getFramebuffer() {
+			if(reflectionBuffer == null) {
+				int s = 400;
+				reflectionBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
+				reflectionBuffer.init(gl, true);
+			}
+			return reflectionBuffer;
+		}
+
+		public VectorXYZ getCenter() {
+			return center;
+		}
+
+		public double getHeight() {
+			return height;
+		}
+
+		public double maxY() {
+			return maxY;
+		}
+
+		public boolean needsUpdate() {
+			if(!everUpdated) {
+				everUpdated = true;
+				return true;
+			}
+
+			return needsUpdate;
+		}
+
+		public boolean finish() {
+			center = new VectorXYZ(0, 0, 0);
+			int verts = 0;
+			boolean groundPlane = true;
+
+			double minY = 100000;
+			maxY = 0;
+
+			for(Primitive p : primitives) {
+				for(VectorXYZ vertex : p.vertices) {
+					if(Math.abs(vertex.getY()) > 0.0)
+						groundPlane = false;
+
+					minY = Math.min(vertex.getY(), minY);
+					maxY = Math.max(vertex.getY(), maxY);
+
+					center = center.add(vertex);
+					verts++;
+				}
+			}
+			center = center.mult(1.0 / verts);
+			height = maxY - minY;
+
+			if(reflectionMaps.containsKey(this)) {
+				if(groundPlane) {
+					reflectionMaps.get(this).setUseGround(true);
+					needsUpdate = false;
+				} else
+					needsUpdate = true;
+				return true;
+			} else {
+				return false;
+			}
+
+		}
+	}
+
+	
+	@Override
+	protected void drawPrimitive(Primitive.Type type, Material material,
+			List<VectorXYZ> vertices, List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
+
+		activeObject.add(new Primitive(type, vertices, normals, texCoordLists));
+
+		// If the material is reflective, we have to create a new JOGLMaterial to store the reflection
+		// cubemap
+		if(renderingParameters.geomReflType != 0 && (material.getReflectance() > 0.0)) {
+			// If this object already has a reflective material associated with it use that
+			JOGLMaterial mat;
+			if(renderingParameters.geomReflType == 1) {
+				if(reflectionMaps.containsKey(activeObject)) {
+					mat = reflectionMaps.get(activeObject);
+				} else {
+					mat = new JOGLMaterial(material);
+					reflectionMaps.put(activeObject, mat);
+				}
+				super.drawPrimitive(type, mat, vertices, normals, texCoordLists);
+			} else if(renderingParameters.geomReflType == 2) {
+				// Test if the primitive is coplaner
+				VectorXYZ firstNormal = normals.get(0);
+				boolean coplaner = true;
+
+				for(VectorXYZ normal : normals) {
+					if(!firstNormal.equals(normal)) {
+						coplaner = false;
+						System.out.println("Primitive is not coplaner");
+						break;
+					}
+				}
+				
+				// If this primitive is coplaner, we can reflect the camera across it to calculate
+				// reflections
+				if(coplaner) {
+				}
+
+			}
+		} else {
+			super.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		}
+
+	}
+
+	@Override
+	public void beginObject(WorldObject wo) {
+		if(activeObject != null)
+			activeObject.finish();
+		activeObject = new ReflectiveObject();
+	}
+
+	private Cubemap captureCubemap(VectorXYZ center) {
+		int s = 400;
+
+		Framebuffer cubeBuffer = new Framebuffer(GL3.GL_TEXTURE_CUBE_MAP, s, s, true);
+
+		cubeBuffer.init(gl, true);
+		return captureCubemap(center, cubeBuffer);
+	}
+
+	private Cubemap captureCubemap(VectorXYZ center, Framebuffer target) {
+
+		Camera cam = new Camera();
+		Projection proj = new Projection(false, 1, 90, 50, 1.0, 100000.0);
+
+		for(int i = 0; i < 6; i ++) {
+			target.bind(GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			switch(i + GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
+				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX() + 1.0f, center.getY(), center.getZ(),
+								0.0f, -1.0f, 0.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+					gl.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX() - 1.0f, center.getY(), center.getZ(),
+								0.0f, -1.0f, 0.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+					gl.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY() + 1.0f, center.getZ(),
+								0.0f, 0.0f, -1.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+					gl.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY() - 1.0f, center.getZ(),
+								0.0f, 0.0f, 1.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+					gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY(), center.getZ() - 1.0f,
+								0.0f, -1.0f, 0.0f);
+					break;
+
+				case GL3.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+					gl.glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+					cam.setCamera(
+								center.getX(), center.getY(), center.getZ(),
+								center.getX(), center.getY(), center.getZ() + 1.0f,
+								0.0f, -1.0f, 0.0f);
+					break;
+			}
+
+			gl.glDepthMask(true);
+			gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+			gl.glEnable(GL_DEPTH_TEST);
+
+			renderingCubemap = true;
+			render(cam, proj);
+			renderingCubemap = false;
+			
+			target.unbind();
+		}
+
+		return target.getCubemap();
+	}
+
+	public void updateReflections() {
+		if(renderingParameters.geomReflType == 1) {
+			for(Entry<ReflectiveObject, JOGLMaterial> e : reflectionMaps.entrySet()) {
+				ReflectiveObject o = e.getKey();
+				if(!o.needsUpdate()) continue;
+
+				// Test if the object is in front of the camera
+				VectorXYZ c = e.getKey().getCenter();
+				
+				// Hide the object we are capturing a cubemap for
+				e.getValue().disable();
+
+				VectorXYZ reflCenter;
+				if(o.getHeight() < 1.0)
+					reflCenter = c;
+				else
+					reflCenter = new VectorXYZ(c.getX(), Math.min(camPos.getY(), o.maxY()), c.getZ());
+
+				// Render the reflections
+				Cubemap refl = captureCubemap(reflCenter, e.getKey().getFramebuffer());
+				e.getValue().setRefl(refl);
+
+				// Unhide
+				e.getValue().enable();
+			}
+		} else if (renderingParameters.geomReflType == 2) {
+		}
+	}
+
+	private void drawGroundReflections(Camera cam, Projection proj) {
+		// Reflect camera across the ground
+		double x = cam.getPos().getX();
+		double y = - cam.getPos().getY();
+		double z = cam.getPos().getZ();
+
+		double kx = cam.getLookAt().getX();
+		double ky = cam.getLookAt().getY();
+		double kz = cam.getLookAt().getZ();
+
+		Camera reflectedCamera = new Camera();
+		reflectedCamera.setCamera(x, y, z, kx, ky, kz);
+
+		groundBuffer.bind();
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+		renderingCubemap = true;
+
+		// TODO for some reason this projetion is orthographic
+		render(reflectedCamera, proj);
+
+		renderingCubemap = false;
+		groundBuffer.unbind();
+
+		PMVMatrix reflectedMV = new PMVMatrix();
+		applyCameraMatrices(reflectedMV, reflectedCamera);
+
+		defaultShader.setGroundReflections(groundBuffer.getTexture(), reflectedMV);
+	}
+
+	private void drawCubemap(Camera camera, Cubemap cubemap) {
+		cubeShader.useShader();
+
+		int[] t = new int[1];
+		gl.glGenBuffers(1, t, 0);
+		int id = t[0];
+
+		FloatBuffer vertBuf = FloatBuffer.wrap(Cubemap.VERTS);
+
+		gl.glDepthFunc(GL.GL_LEQUAL);
+		gl.glBindBuffer(GL_ARRAY_BUFFER, t[0]);
+		gl.glBufferData(
+				GL_ARRAY_BUFFER,
+				vertBuf.capacity() * Buffers.SIZEOF_FLOAT,
+				vertBuf,
+				GL_STATIC_DRAW);
+
+		gl.glEnableVertexAttribArray(cubeShader.getVertexPositionID());
+		gl.glVertexAttribPointer(cubeShader.getVertexPositionID(), 3, GL.GL_FLOAT, false, 0, 0);
+		
+		cubeShader.setPMVMatrix(pmvMatrix);
+		cubeShader.setCubemap(cubemap);
+
+		gl.glDrawArrays(GL.GL_TRIANGLES, 0, Cubemap.VERTS.length / 3);
+		
+		gl.glDisableVertexAttribArray(cubeShader.getVertexPositionID());
+		gl.glDepthFunc(GL.GL_LESS);
+		cubeShader.disableShader();
+		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, 0);
+	}
+
 }

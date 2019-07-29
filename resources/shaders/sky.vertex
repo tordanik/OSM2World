@@ -1,0 +1,18 @@
+#version 130
+
+uniform mat4 viewMat;
+uniform mat4 proMat;
+
+uniform mat3 rotation;
+
+in vec3 VertexPosition;
+
+out vec3 cubemapCoord;
+ 
+void main()
+{
+	vec4 pos = mat4(mat3(viewMat)) * vec4(VertexPosition, 1.0);
+	gl_Position = vec4(pos.xy, pos.w, pos.w);
+	cubemapCoord = VertexPosition;
+} 
+

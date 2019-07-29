@@ -3,6 +3,9 @@ package org.osm2world.viewer.view;
 import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
 
+import static org.osm2world.core.util.ConfigUtil.*;
+
+import java.awt.Color;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,7 +33,11 @@ import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.jogl.Sky;
 import org.osm2world.viewer.control.actions.AboutAction;
+import org.osm2world.viewer.control.actions.ChangeTimeAction;
+import org.osm2world.viewer.control.actions.ConfigShadersAction;
 import org.osm2world.viewer.control.actions.DownloadOverpassAction;
 import org.osm2world.viewer.control.actions.ExitAction;
 import org.osm2world.viewer.control.actions.ExportObjAction;
@@ -77,6 +84,7 @@ import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
 import org.osm2world.viewer.view.debug.ShadowView;
 import org.osm2world.viewer.view.debug.SkyboxView;
+import org.osm2world.viewer.view.debug.SkyView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
@@ -115,6 +123,12 @@ public class ViewerFrame extends JFrame {
 		
 		this.configFile = configFile;
 		data.setConfig(config);
+
+		// TODO Move this somewhere better
+		if (config.containsKey("scatterColor")) {
+			Color scatterColor = parseColor(config.getString("scatterColor"));
+			Sky.scatterColor = scatterColor;
+		}
 		
 		createMenuBar();
 		
@@ -181,6 +195,8 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, VK_W, true,
 					new WorldObjectView(renderOptions));
 			initAndAddDebugView(subMenu, -1, true,
+					new SkyView(true));
+			initAndAddDebugView(subMenu, -1, false,
 					new SkyboxView());
 			
 			subMenu.addSeparator();
@@ -297,6 +313,9 @@ public class ViewerFrame extends JFrame {
 				enforcerMenu.add(item);
 				
 			}
+
+			subMenu.add(new ChangeTimeAction(this));
+			subMenu.add(new ConfigShadersAction(this, data.getConfig()));
 			
 			menu.add(subMenu);
 
@@ -310,7 +329,6 @@ public class ViewerFrame extends JFrame {
 			menu.add(subMenu);
 
 		}
-
 		this.setJMenuBar(menu);
 		
 	}

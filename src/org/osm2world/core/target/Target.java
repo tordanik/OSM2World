@@ -161,6 +161,11 @@ public interface Target<R extends Renderable> {
 			VectorXYZ base, double height, double radiusBottom,
 			double radiusTop, boolean drawBottom, boolean drawTop);
 
+	default void drawLight(VectorXYZ position, float intensity) {
+		System.out.println("Light source at " + position + " @ "+ intensity);
+	}
+
+
 	/**
 	 * gives the target the chance to perform finish/cleanup operations
 	 * after all objects have been drawn.
