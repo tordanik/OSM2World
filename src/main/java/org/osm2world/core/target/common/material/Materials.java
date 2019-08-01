@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.target.common.ImageTextureData;
+import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
@@ -191,6 +194,12 @@ public final class Materials {
 
 	public static final ConfMaterial SIGN_DE_206 =
 		new ConfMaterial(Interpolation.FLAT, Color.RED);
+
+	public static final ConfMaterial SIGN_DE_274 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
+
+	public static final ConfMaterial SIGN_DE_1001_31 =
+		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
 
 	public static final ConfMaterial SIGN_DE_625_11 =
 		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
@@ -417,7 +426,7 @@ public final class Materials {
 	}
 
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap))";
+			"material_(.+)_(color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|type|text|font|topOffset|leftOffset))";
 
 	/**
 	 * configures the attributes of the materials within this class
@@ -500,7 +509,6 @@ public final class Materials {
 
 						for (int i = 0; i < 32; i++) {
 
-							String fileKey = "material_" + materialName + "_texture" + i + "_file";
 							String widthKey = "material_" + materialName + "_texture" + i + "_width";
 							String heightKey = "material_" + materialName + "_texture" + i + "_height";
 							String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
@@ -508,37 +516,100 @@ public final class Materials {
 							String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
 							String bumpmapKey = "material_" + materialName + "_texture" + i + "_bumpmap";
 
-							if (config.getString(fileKey) == null) break;
+							String typeKey = "material_" + materialName + "_texture" + i + "_type";
+							String type = config.getString(typeKey, "image");
 
-							File file = new File(config.getString(fileKey));
+								if("text".equals(type)) {
 
-							double width = config.getDouble(widthKey, 1);
-							double height = config.getDouble(heightKey, 1);
-							boolean colorable = config.getBoolean(colorableKey, false);
-							boolean isBumpMap = config.getBoolean(bumpmapKey, false);
+									double defaultWidth = 0.5;
+									double defaultHeight = 0.5;
 
-							String wrapString = config.getString(wrapKey);
-							Wrap wrap = Wrap.REPEAT;
-							if ("clamp_to_border".equalsIgnoreCase(wrapString)) {
-								wrap = Wrap.CLAMP_TO_BORDER;
-							} else if ("clamp".equalsIgnoreCase(wrapString)) {
-								wrap = Wrap.CLAMP;
-							}
+									String fontKey = "material_" + materialName + "_texture" + i + "_font";
+									String textKey = "material_" + materialName + "_texture" + i + "_text";
+									String topOffsetKey = "material_" + materialName + "_texture" + i + "_topOffset";
+									String leftOffsetKey = "material_" + materialName + "_texture" + i + "_leftOffset";
 
-							String coordFunctionString = config.getString(coordFunctionKey);
-							TexCoordFunction coordFunction = null;
-							if (coordFunctionString != null) {
-								coordFunction = NamedTexCoordFunction.valueOf(
-										coordFunctionString.toUpperCase());
-							}
+									String text = "";
 
-							// bumpmaps are only supported in the shader implementation, skip for others
-							if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
-								TextureData textureData = new TextureData(
-										file, width, height, wrap, coordFunction, colorable, isBumpMap);
-								textureDataList.add(textureData);
-							}
+									if(config.getString(textKey) != null) {
+										text = config.getString(textKey);
+									}
 
+									Font font = null;
+
+									if(config.getString(fontKey) == null) {
+										font = new Font("Dialog", Font.BOLD, 100);
+									} else {
+										String[] values = config.getString(fontKey).split(",");
+										if(values.length == 2) {
+											font = new Font(values[0], Font.BOLD, Integer.parseInt(values[1]));
+										} else {
+											font = new Font(config.getString(fontKey), Font.BOLD, 100);
+										}
+									}
+
+									double width = config.getDouble(widthKey, defaultWidth);
+									double height = config.getDouble(heightKey, defaultHeight);
+									boolean colorable = config.getBoolean(colorableKey, false);
+									boolean isBumpMap = config.getBoolean(bumpmapKey, false);
+
+									String wrapString = config.getString(wrapKey);
+									Wrap wrap = getWrap(wrapString);
+
+									String coordFunctionString = config.getString(coordFunctionKey);
+									TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
+
+									String topOffset = config.getString(topOffsetKey);
+									if(topOffset!=null) {
+										if(topOffset.endsWith("%")) {
+											topOffset = topOffset.substring(0, topOffset.length() - 1);
+										}
+									}else {
+										topOffset = Integer.toString(50);
+									}
+
+									String leftOffset = config.getString(leftOffsetKey);
+									if(leftOffset!=null) {
+										if(leftOffset.endsWith("%")) {
+											leftOffset = leftOffset.substring(0, leftOffset.length() - 1);
+										}
+									}else {
+										leftOffset = Integer.toString(50);
+									}
+
+									TextTextureData textTextureData = new TextTextureData(text, font, width, height,
+											Double.parseDouble(topOffset), Double.parseDouble(leftOffset),
+											wrap, coordFunction, colorable, isBumpMap);
+
+									textureDataList.add(textTextureData);
+
+								} else if("image".equals(type)) {
+
+									String fileKey = "material_" + materialName + "_texture" + i + "_file";
+
+									if (config.getString(fileKey) == null) break;
+
+									File file = new File(config.getString(fileKey));
+
+									double width = config.getDouble(widthKey, 1);
+									double height = config.getDouble(heightKey, 1);
+									boolean colorable = config.getBoolean(colorableKey, false);
+									boolean isBumpMap = config.getBoolean(bumpmapKey, false);
+
+									String wrapString = config.getString(wrapKey);
+									Wrap wrap = getWrap(wrapString);
+
+									String coordFunctionString = config.getString(coordFunctionKey);
+									TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
+
+									// bumpmaps are only supported in the shader implementation, skip for others
+									if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
+
+										TextureData textureData = new ImageTextureData(
+												file, width, height, wrap, coordFunction, colorable, isBumpMap);
+										textureDataList.add(textureData);
+									}
+								} else System.err.println("unknown type value: " + type);
 						}
 
 						material.setTextureDataList(textureDataList);
@@ -556,6 +627,29 @@ public final class Materials {
 
 		}
 
+	}
+
+	private static Wrap getWrap(String wrapString) {
+
+		Wrap wrap = Wrap.REPEAT;
+		if ("clamp_to_border".equalsIgnoreCase(wrapString)) {
+			wrap = Wrap.CLAMP_TO_BORDER;
+		} else if ("clamp".equalsIgnoreCase(wrapString)) {
+			wrap = Wrap.CLAMP;
+		}
+
+		return wrap;
+	}
+
+	private static TexCoordFunction getCoordFunction(String coordFunctionString) {
+
+		TexCoordFunction coordFunction = null;
+		if (coordFunctionString != null) {
+			coordFunction = NamedTexCoordFunction.valueOf(
+					coordFunctionString.toUpperCase());
+		}
+
+		return coordFunction;
 	}
 
 }

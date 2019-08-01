@@ -50,6 +50,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.ExtrudeOption;
+import org.osm2world.core.target.common.ImageTextureData;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
@@ -715,18 +716,20 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 		}
 
 		for (TextureData textureData : material.getTextureDataList()) {
-			materialBuilder.addTextureLayer(convertTextureLayer(textureData));
+			if (textureData instanceof ImageTextureData) {
+				materialBuilder.addTextureLayer(convertTextureLayer((ImageTextureData)textureData));
+			}
 		}
 
 		return materialBuilder.build();
 
 	}
 
-	private TextureLayer convertTextureLayer(TextureData textureData) {
+	private TextureLayer convertTextureLayer(ImageTextureData textureData) {
 
 		TextureLayer.Builder layerBuilder = TextureLayer.newBuilder();
 
-		layerBuilder.setTextureURL(TEXTURE_BASE_URL + textureData.file.getName());
+		layerBuilder.setTextureURL(TEXTURE_BASE_URL + textureData.getFile().getName());
 
 		switch (textureData.wrap) {
 			case CLAMP:

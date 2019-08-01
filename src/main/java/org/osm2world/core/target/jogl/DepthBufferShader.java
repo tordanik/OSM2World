@@ -101,7 +101,8 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 				} else {
 		    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 1);
 				}
-				Texture texture = textureManager.getTextureForFile(textureData.file);
+				
+ 				Texture texture = textureManager.getTextureForFile(textureData.getFile());
 
 				texture.bind(gl);
 

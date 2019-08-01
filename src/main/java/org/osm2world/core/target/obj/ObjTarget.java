@@ -21,6 +21,7 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
+import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -276,6 +277,11 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			TextureData textureData = null;
 			if (material.getNumTextureLayers() > 0) {
 				textureData = material.getTextureDataList().get(i);
+				
+				//temporarily ignore TextTextureData layers
+				if(textureData instanceof TextTextureData) {
+					continue;
+				}
 			}
 
 			mtlStream.println("newmtl " + name + "_" + i);
@@ -293,8 +299,8 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 
 			if (textureData != null) {
-				mtlStream.println("map_Ka " + textureData.file.getName());
-				mtlStream.println("map_Kd " + textureData.file.getName());
+				mtlStream.println("map_Ka " + textureData.getFile().getName());
+				mtlStream.println("map_Kd " + textureData.getFile().getName());
 			}
 
 			mtlStream.println(String.format("Ni %d", material.getShininess()));
@@ -314,3 +320,4 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 	}
 
 }
+

@@ -8,8 +8,11 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.ST
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -17,10 +20,14 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
+import org.osm2world.core.world.modules.common.TrafficSignType;
 
 
 /**
@@ -50,95 +57,80 @@ public class TrafficSignModule extends AbstractModule {
 
 		List<TrafficSignType> types = new ArrayList<TrafficSignType>(signs.length);
 
+		String regex = null;
+		Pattern pattern = null;
+		Matcher matcher = null;
+
 		for (String sign : signs) {
 
-			sign = sign.trim();
+			Material signMaterial = null;
+
+			sign.trim();
 			sign = sign.replace('-', '_');
 
-			try {
-				types.add(TrafficSignType.valueOf(country + '_' + sign));
-			} catch (IllegalArgumentException e) {
-				// not a supported traffic sign type
+			regex = "274_(\\d+)";
+			pattern = Pattern.compile(regex);
+			matcher = pattern.matcher(sign);
+
+			if(matcher.matches()) { //if the sign is of DE:274-... type
+
+				String speedLimit = matcher.group(1);
+				ConfMaterial originalMaterial = SIGN_DE_274;
+				TextTextureData layer = null;
+
+				for(TextureData td : originalMaterial.getTextureDataList()) {
+					if(td instanceof TextTextureData) {
+						layer = (TextTextureData) td;
+						break;
+					}
+				}
+
+				signMaterial = configureMaterial(originalMaterial, speedLimit, layer);
 			}
 
+			regex = "1001_31\\[(\\d+.*)\\]";
+			pattern = Pattern.compile(regex);
+			matcher = pattern.matcher(sign);
+
+			if(matcher.matches()) { //if sign is of DE:1001-31[...] type
+
+				String value = matcher.group(1);
+				if(!value.contains("km")) {
+					value = value+"km";
+				}
+
+				value = value.replaceAll("\\s", ""); //remove all spaces
+
+				ConfMaterial originalMaterial = SIGN_DE_1001_31;
+				TextTextureData layer = null;
+
+				//TODO make this a separate method
+				for(TextureData td : originalMaterial.getTextureDataList()) {
+					if(td instanceof TextTextureData) {
+						layer = (TextTextureData) td;
+						break;
+					}
+				}
+
+				signMaterial = configureMaterial(originalMaterial, value, layer);
+			}
+
+			if(signMaterial == null) {
+
+				signMaterial = getMaterial("SIGN_"+country+"_"+sign);
+
+				if(signMaterial==null) {
+					//if there is no texture for the sign, create simple white sign
+					signMaterial = new ConfMaterial(Interpolation.FLAT, Color.white);
+				}
+			}
+			types.add(new TrafficSignType(signMaterial,1,2));
 		}
 
 		/* create a visual representation for the traffic sign */
 
 		if (types.size() > 0) {
 			node.addRepresentation(new TrafficSign(node, types));
-		}
-
-	}
-
-	private enum TrafficSignType {
-
-		STOP(SIGN_DE_206, 1, 2),
-
-		DE_206(SIGN_DE_206, 1, 2),
-		DE_250(SIGN_DE_250, 1, 2),
-		DE_625(SIGN_DE_625_11, 2, .80),
-		DE_625_11(SIGN_DE_625_11, 2, .80),
-		DE_625_21(SIGN_DE_625_21, 2, .80),
-
-		DE_101(SIGN_DE_101, 1, 2),
-		DE_101_10(SIGN_DE_101_10, 1, 2),
-		DE_101_11(SIGN_DE_101_11, 1, 2),
-		DE_101_12(SIGN_DE_101_12, 1, 2),
-		DE_101_13(SIGN_DE_101_13, 1, 2),
-		DE_101_14(SIGN_DE_101_14, 1, 2),
-		DE_101_15(SIGN_DE_101_15, 1, 2),
-		DE_101_20(SIGN_DE_101_20, 1, 2),
-		DE_101_21(SIGN_DE_101_21, 1, 2),
-		DE_101_22(SIGN_DE_101_22, 1, 2),
-		DE_101_23(SIGN_DE_101_23, 1, 2),
-		DE_101_24(SIGN_DE_101_24, 1, 2),
-		DE_101_25(SIGN_DE_101_25, 1, 2),
-		DE_101_51(SIGN_DE_101_51, 1, 2),
-		DE_101_52(SIGN_DE_101_52, 1, 2),
-		DE_101_53(SIGN_DE_101_53, 1, 2),
-		DE_101_54(SIGN_DE_101_54, 1, 2),
-		DE_101_55(SIGN_DE_101_55, 1, 2),
-		DE_102(SIGN_DE_102, 1, 2),
-		DE_103_10(SIGN_DE_103_10, 1, 2),
-		DE_103_20(SIGN_DE_103_20, 1, 2),
-		DE_105_10(SIGN_DE_105_10, 1, 2),
-		DE_105_20(SIGN_DE_105_20, 1, 2),
-		DE_108_10(SIGN_DE_108_10, 1, 2),
-		DE_110_12(SIGN_DE_110_12, 1, 2),
-		DE_112(SIGN_DE_112, 1, 2),
-		DE_114(SIGN_DE_114, 1, 2),
-		DE_117_10(SIGN_DE_117_10, 1, 2),
-		DE_117_20(SIGN_DE_117_20, 1, 2),
-		DE_120(SIGN_DE_120, 1, 2),
-		DE_121_10(SIGN_DE_121_10, 1, 2),
-		DE_121_20(SIGN_DE_121_20, 1, 2),
-		DE_123(SIGN_DE_123, 1, 2),
-		DE_124(SIGN_DE_124, 1, 2),
-		DE_125(SIGN_DE_125, 1, 2),
-		DE_131(SIGN_DE_131, 1, 2),
-		DE_133_10(SIGN_DE_133_10, 1, 2),
-		DE_133_20(SIGN_DE_133_20, 1, 2),
-		DE_136_10(SIGN_DE_136_10, 1, 2),
-		DE_136_20(SIGN_DE_136_20, 1, 2),
-		DE_138_10(SIGN_DE_138_10, 1, 2),
-		DE_138_20(SIGN_DE_138_20, 1, 2),
-		DE_142_10(SIGN_DE_142_10, 1, 2),
-		DE_142_20(SIGN_DE_142_20, 1, 2),
-		DE_145(SIGN_DE_145, 1, 2),
-		DE_151(SIGN_DE_151, 1, 2),
-		DE_301(SIGN_DE_301, 1, 2);
-
-		public final Material material;
-
-		public final int numPosts;
-
-		private final double defaultHeight;
-
-		TrafficSignType(Material material, int numPosts, double defaultHeight) {
-			this.material = material;
-			this.numPosts = numPosts;
-			this.defaultHeight = defaultHeight;
 		}
 
 	}
@@ -152,6 +144,41 @@ public class TrafficSignModule extends AbstractModule {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Creates a replica of originalMaterial with a new textureDataList.
+	 * The new list is a copy of the old one with the parameterized layer
+	 * replaced by a new TextTextureData instance of different text.
+	 * Returns the new ConfMaterial created.
+	 *
+	 * @param originalMaterial The ConfMaterial to replicate
+	 * @param value The text of the new TextTextureData layer object
+	 * @param layer The textureDataList layer to be replaced
+	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
+	 */
+	private Material configureMaterial(ConfMaterial originalMaterial, String value, TextTextureData layer) {
+
+		if(layer == null) return originalMaterial;
+
+		Material newMaterial = null;
+		int index = originalMaterial.getTextureDataList().indexOf(layer);
+
+		TextTextureData textData = new TextTextureData(value, layer.font, layer.width,
+						layer.height, layer.topOffset, layer.leftOffset, layer.wrap,
+						layer.coordFunction, layer.colorable, layer.isBumpMap);
+
+		List<TextureData> newList = new ArrayList<TextureData>(originalMaterial.getTextureDataList());
+
+		newList.set(index, textData);
+
+		newMaterial = new ConfMaterial(originalMaterial.getInterpolation(),originalMaterial.getColor(),
+						originalMaterial.getAmbientFactor(),originalMaterial.getDiffuseFactor(),originalMaterial.getSpecularFactor(),
+						originalMaterial.getShininess(),originalMaterial.getTransparency(),originalMaterial.getShadow(),
+						originalMaterial.getAmbientOcclusion(),newList);
+
+
+		return newMaterial;
 	}
 
 	private static final class TrafficSign extends NoOutlineNodeWorldObject
@@ -289,3 +316,4 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 }
+

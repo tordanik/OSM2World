@@ -1,58 +1,13 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_BACK;
-import static javax.media.opengl.GL.GL_CCW;
-import static javax.media.opengl.GL.GL_CULL_FACE;
-import static javax.media.opengl.GL.GL_DEPTH_TEST;
-import static javax.media.opengl.GL.GL_FRONT;
-import static javax.media.opengl.GL.GL_FRONT_AND_BACK;
-import static javax.media.opengl.GL.GL_GREATER;
-import static javax.media.opengl.GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
-import static javax.media.opengl.GL.GL_REPEAT;
-import static javax.media.opengl.GL.GL_REPLACE;
-import static javax.media.opengl.GL.GL_SRC_ALPHA;
-import static javax.media.opengl.GL.GL_SRC_COLOR;
-import static javax.media.opengl.GL.GL_TEXTURE;
-import static javax.media.opengl.GL.GL_TEXTURE0;
-import static javax.media.opengl.GL.GL_TEXTURE1;
-import static javax.media.opengl.GL.GL_TEXTURE2;
-import static javax.media.opengl.GL.GL_TEXTURE3;
-import static javax.media.opengl.GL.GL_TEXTURE_2D;
-import static javax.media.opengl.GL.GL_TEXTURE_MAX_ANISOTROPY_EXT;
-import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
-import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
-import static javax.media.opengl.GL2.GL_CLAMP;
-import static javax.media.opengl.GL2.GL_SOURCE0_RGB;
-import static javax.media.opengl.GL2.GL_SOURCE1_RGB;
-import static javax.media.opengl.GL2.GL_SOURCE2_RGB;
-import static javax.media.opengl.GL2ES1.GL_ALPHA_TEST;
-import static javax.media.opengl.GL2ES1.GL_COMBINE;
-import static javax.media.opengl.GL2ES1.GL_COMBINE_RGB;
-import static javax.media.opengl.GL2ES1.GL_INTERPOLATE;
-import static javax.media.opengl.GL2ES1.GL_LIGHT_MODEL_AMBIENT;
-import static javax.media.opengl.GL2ES1.GL_MODULATE;
-import static javax.media.opengl.GL2ES1.GL_OPERAND0_RGB;
-import static javax.media.opengl.GL2ES1.GL_OPERAND1_RGB;
-import static javax.media.opengl.GL2ES1.GL_OPERAND2_RGB;
-import static javax.media.opengl.GL2ES1.GL_PREVIOUS;
-import static javax.media.opengl.GL2ES1.GL_TEXTURE_ENV;
-import static javax.media.opengl.GL2ES1.GL_TEXTURE_ENV_MODE;
-import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
-import static javax.media.opengl.GL2GL3.GL_FILL;
-import static javax.media.opengl.GL2GL3.GL_LINE;
-import static javax.media.opengl.GL2GL3.GL_QUADS;
-import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_AMBIENT;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_DIFFUSE;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_LIGHTING;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_POSITION;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.GL_SPECULAR;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
+import static javax.media.opengl.GL.*;
+import static javax.media.opengl.GL2.*;
+import static javax.media.opengl.GL2ES1.*;
+import static javax.media.opengl.GL2GL3.*;
+import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
+import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
-import static org.osm2world.core.target.common.material.Material.Transparency.BINARY;
-import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
+import static org.osm2world.core.target.common.material.Material.Transparency.*;
 
 import java.awt.Color;
 import java.io.File;
@@ -428,8 +383,8 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 				TextureData textureData = material.getTextureDataList().get(i);
 
-				Texture texture = textureManager.getTextureForFile(textureData.file);
-		        texture.enable(gl); //TODO: should this be called every time?
+				Texture texture = textureManager.getTextureForTextureData(textureData);
+				texture.enable(gl); //TODO: should this be called every time?
 		        texture.bind(gl);
 
 				/* enable anisotropic filtering (note: this could be a
@@ -616,3 +571,4 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {}
 
 }
+

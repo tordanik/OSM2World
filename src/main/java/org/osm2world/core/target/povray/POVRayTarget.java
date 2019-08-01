@@ -13,6 +13,7 @@ import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -158,35 +159,38 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 			for (TextureData textureData : material.getTextureDataList()) {
 
-				append("mesh {\n");
+				if(!(textureData instanceof TextTextureData)) { //temporarily ignore TextTextureData layers
+					append("mesh {\n");
 
-				drawTriangleMesh(triangles, texCoordLists.get(count), count);
+					drawTriangleMesh(triangles, texCoordLists.get(count), count);
 
-				append("  uv_mapping ");
-				appendMaterial(material, textureData);
+					append("  uv_mapping ");
+					appendMaterial(material, textureData);
 
-				if (count > 0)
-					append("  no_shadow");
-				append("}\n");
-				count++;
+					if (count > 0)
+						append("  no_shadow");
+					append("}\n");
+					count++;
+				}
 			}
 		} else {
 
-			append("mesh {\n");
+				append("mesh {\n");
 
-			if (texCoordLists.size() > 0) {
-				drawTriangleMesh(triangles, texCoordLists.get(0), 0);
-			} else {
-				for (TriangleXYZ triangle : triangles) {
-					append(INDENT);
-					appendTriangle(triangle.v1, triangle.v2, triangle.v3);
+				if (texCoordLists.size() > 0) {
+					drawTriangleMesh(triangles, texCoordLists.get(0), 0);
+				} else {
+					for (TriangleXYZ triangle : triangles) {
+						append(INDENT);
+						appendTriangle(triangle.v1, triangle.v2, triangle.v3);
+					}
 				}
-			}
 
-			append(" uv_mapping ");
-			appendMaterialOrName(material);
+				append(" uv_mapping ");
+				appendMaterialOrName(material);
 
-			append("}\n");
+				append("}\n");
+
 		}
 	}
 
@@ -203,36 +207,38 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 			int count = 0;
 
 			for (TextureData textureData : material.getTextureDataList()) {
+				if(!(textureData instanceof TextTextureData)) { //temporarily ignore TextTextureData layers
+					append("mesh {\n");
 
-				append("mesh {\n");
+					drawTriangleNormalMesh(triangles, texCoordLists.get(count), count);
 
-				drawTriangleNormalMesh(triangles, texCoordLists.get(count), count);
+					append("  uv_mapping ");
+					appendMaterial(material, textureData);
 
-				append("  uv_mapping ");
-				appendMaterial(material, textureData);
-
-				if (count > 0)
-					append("  no_shadow");
-				append("}\n");
-				count++;
+					if (count > 0)
+						append("  no_shadow");
+					append("}\n");
+					count++;
+				}
 			}
 		} else {
 
-			append("mesh {\n");
+				append("mesh {\n");
 
-			if (texCoordLists.size() > 0) {
-				drawTriangleNormalMesh(triangles, texCoordLists.get(0), 0);
-			} else {
-				for (TriangleXYZWithNormals triangle : triangles) {
-					append(INDENT);
-					appendTriangle(triangle.v1, triangle.v2, triangle.v3,
-							triangle.n1, triangle.n2, triangle.n3, true);
+				if (texCoordLists.size() > 0) {
+					drawTriangleNormalMesh(triangles, texCoordLists.get(0), 0);
+				} else {
+					for (TriangleXYZWithNormals triangle : triangles) {
+						append(INDENT);
+						appendTriangle(triangle.v1, triangle.v2, triangle.v3,
+								triangle.n1, triangle.n2, triangle.n3, true);
+					}
 				}
-			}
 
-			append(" uv_mapping ");
-			appendMaterialOrName(material);
-			append("}\n");
+				append(" uv_mapping ");
+				appendMaterialOrName(material);
+				append("}\n");
+
 		}
 	}
 
@@ -620,8 +626,9 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 		} else {
 
 			for (TextureData textureData : material.getTextureDataList()) {
-
-				appendMaterial(material, textureData);
+				if(!(textureData instanceof TextTextureData)) { //temporarily ignore TextTextureData layers
+					appendMaterial(material, textureData);
+				}
 			}
 		}
 	}
@@ -629,51 +636,51 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 	private void appendMaterial(Material material, TextureData textureData) {
 
-		String textureName = textureNames.get(textureData);
+			String textureName = textureNames.get(textureData);
 
-		if (textureName == null) {
+			if (textureName == null) {
 
-			if (textureData.colorable) {
+				if (textureData.colorable) {
+					append("  texture {\n");
+					append("    pigment { ");
+					appendRGBColor(material.getColor());
+					append(" }\n    finish {\n");
+					append("      ambient " + material.getAmbientFactor() + "\n");
+					append("      diffuse " + material.getDiffuseFactor() + "\n");
+					append("    }\n");
+					append("  }\n");
+				}
+
 				append("  texture {\n");
 				append("    pigment { ");
-				appendRGBColor(material.getColor());
+				appendImageMap(textureData);
 				append(" }\n    finish {\n");
 				append("      ambient " + material.getAmbientFactor() + "\n");
 				append("      diffuse " + material.getDiffuseFactor() + "\n");
 				append("    }\n");
 				append("  }\n");
+
+			} else {
+
+				append("  texture { texture_" + textureName + "}");
 			}
-
-			append("  texture {\n");
-			append("    pigment { ");
-			appendImageMap(textureData);
-			append(" }\n    finish {\n");
-			append("      ambient " + material.getAmbientFactor() + "\n");
-			append("      diffuse " + material.getDiffuseFactor() + "\n");
-			append("    }\n");
-			append("  }\n");
-
-		} else {
-
-			append("  texture { texture_" + textureName + "}");
-		}
 	}
 
 
 	private void appendImageMap(TextureData textureData) {
 
-		append("        image_map {\n");
+			append("        image_map {\n");
 
-		if (textureData.file.getName().toLowerCase().endsWith("png")) {
-			append("             png \"" + textureData.file + "\"\n");
-		} else {
-			append("             jpeg \"" + textureData.file + "\"\n");
-		}
+			if (textureData.getFile().getName().toLowerCase().endsWith("png")) {
+				append("             png \"" + textureData.getFile() + "\"\n");
+			} else {
+				append("             jpeg \"" + textureData.getFile() + "\"\n");
+			}
 
-		if (textureData.colorable) {
-			append("             filter all 1.0\n");
-		}
-		append("\n          }");
+			if (textureData.colorable) {
+				append("             filter all 1.0\n");
+			}
+			append("\n          }");
 	}
 
 	/**
@@ -807,3 +814,4 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 	}
 
 }
+
