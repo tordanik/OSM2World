@@ -488,7 +488,9 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 				for (InstanceParameters instanceParams : currentModelInstances.get(model)) {
 
-					geometryBuilder.addPosition(vector3dBlock.toIndex(instanceParams.position));
+					geometryBuilder.addPosition(round(instanceParams.position.x * COORD_PRECISION_FACTOR));
+					geometryBuilder.addPosition(round(instanceParams.position.y * COORD_PRECISION_FACTOR));
+					geometryBuilder.addPosition(round(instanceParams.position.z * COORD_PRECISION_FACTOR));
 
 					int direction = (int)round(instanceParams.direction * 1000.0);
 					geometryBuilder.addDirection(direction);

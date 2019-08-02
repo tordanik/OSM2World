@@ -220,15 +220,17 @@ message InstanceGeometry {
 	   Alternatively, a prototype model included in this file can be referenced using the model field. */
 	optional string resourceIdentifier = 5;
 
-	/* position of each instance, referencing the vector3dBlock */
-	repeated uint32 position = 2 [packed=true];
+	/* position of each instance.
+	   Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+	   Each position is represented as an x, y, z triple of values. */
+	repeated sint64 position = 2 [packed=true];
 
 	/* rotation angle around the y axis for each instance in milliradians, clockwise.
-	   Either the same length as pos or empty (for a default of 0). */
+	   Either one third of the length of 'position' or empty (for a default of 0). */
 	repeated int32 direction = 3 [packed=true];
 
 	/* scale factor for each instance in 1/1000.
-	   Either the same length as pos or empty (for a default of 1). */
+	   Either one third of the length of 'position' or empty (for a default of 1). */
 	repeated uint32 scale = 4 [packed=true];
 
 }

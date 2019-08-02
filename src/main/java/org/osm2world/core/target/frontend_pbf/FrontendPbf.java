@@ -37,7 +37,7 @@ public final class FrontendPbf {
    * Vectors are referenced via their position in this block.
    * Values are in millimeters relative to the center of the tile.
    * The first 3 values are x, y, and z coordinates of the first vector, etc.
-   * Therefore, the number of coordinates must be divisible by 3.
+   * Therefore, the number of coordinates must be divisible by 3. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.Vector3dBlock}
@@ -337,7 +337,7 @@ public final class FrontendPbf {
      * Vectors are referenced via their position in this block.
      * Values are in millimeters relative to the center of the tile.
      * The first 3 values are x, y, and z coordinates of the first vector, etc.
-     * Therefore, the number of coordinates must be divisible by 3.
+     * Therefore, the number of coordinates must be divisible by 3. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.Vector3dBlock}
@@ -638,7 +638,7 @@ public final class FrontendPbf {
    * <pre>
    * a block containing all two-dimensional vectors used in the tile.
    * See Vector3dBlock for more details.
-   * All values are multiplied with 1000.
+   * All values are multiplied with 1000. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.Vector2dBlock}
@@ -936,7 +936,7 @@ public final class FrontendPbf {
      * <pre>
      * a block containing all two-dimensional vectors used in the tile.
      * See Vector3dBlock for more details.
-     * All values are multiplied with 1000.
+     * All values are multiplied with 1000. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.Vector2dBlock}
@@ -1241,7 +1241,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * a block containing strings referenced elsewhere in the tile.
+   * a block containing strings referenced elsewhere in the tile. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.StringBlock}
@@ -1520,7 +1520,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a block containing strings referenced elsewhere in the tile.
+     * a block containing strings referenced elsewhere in the tile. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.StringBlock}
@@ -1834,7 +1834,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape> 
         getShapesList();
     /**
      * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
@@ -1847,7 +1847,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder> 
         getShapesOrBuilderList();
     /**
      * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
@@ -1857,7 +1857,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * a block containing all 2d shapes used in the tile.
+   * a block containing all 2d shapes used in the tile. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.ShapeBlock}
@@ -1954,7 +1954,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder> 
         getShapesOrBuilderList() {
       return shapes_;
     }
@@ -2144,7 +2144,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a block containing all 2d shapes used in the tile.
+     * a block containing all 2d shapes used in the tile. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.ShapeBlock}
@@ -2293,7 +2293,7 @@ public final class FrontendPbf {
               shapesBuilder_ = null;
               shapes_ = other.shapes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              shapesBuilder_ =
+              shapesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getShapesFieldBuilder() : null;
             } else {
@@ -2531,7 +2531,7 @@ public final class FrontendPbf {
       /**
        * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder> 
            getShapesOrBuilderList() {
         if (shapesBuilder_ != null) {
           return shapesBuilder_.getMessageOrBuilderList();
@@ -2557,12 +2557,12 @@ public final class FrontendPbf {
       /**
        * <code>repeated .frontend_pbf.Shape shapes = 1;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape.Builder> 
            getShapesBuilderList() {
         return getShapesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape, org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape, org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeOrBuilder> 
           getShapesFieldBuilder() {
         if (shapesBuilder_ == null) {
           shapesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -2644,7 +2644,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * parameters for the shape, such as the radius of a circle.
-     *The precise meaning depends on the shape type!
+     *The precise meaning depends on the shape type! 
      * </pre>
      *
      * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -2653,7 +2653,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * parameters for the shape, such as the radius of a circle.
-     *The precise meaning depends on the shape type!
+     *The precise meaning depends on the shape type! 
      * </pre>
      *
      * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -2662,7 +2662,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * parameters for the shape, such as the radius of a circle.
-     *The precise meaning depends on the shape type!
+     *The precise meaning depends on the shape type! 
      * </pre>
      *
      * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -2671,7 +2671,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * a 2d shape
+   * a 2d shape 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.Shape}
@@ -2799,7 +2799,7 @@ public final class FrontendPbf {
       CIRCLE(1),
       /**
        * <pre>
-       * a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters.
+       * a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. 
        * </pre>
        *
        * <code>POLYGON = 2;</code>
@@ -2807,7 +2807,7 @@ public final class FrontendPbf {
       POLYGON(2),
       /**
        * <pre>
-       * a polyline. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters.
+       * a polyline. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. 
        * </pre>
        *
        * <code>POLYLINE = 3;</code>
@@ -2827,7 +2827,7 @@ public final class FrontendPbf {
       public static final int CIRCLE_VALUE = 1;
       /**
        * <pre>
-       * a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters.
+       * a closed polygon. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. 
        * </pre>
        *
        * <code>POLYGON = 2;</code>
@@ -2835,7 +2835,7 @@ public final class FrontendPbf {
       public static final int POLYGON_VALUE = 2;
       /**
        * <pre>
-       * a polyline. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters.
+       * a polyline. The parameters represent a series of 2d vectors (x0, y0, x1, y1, ...). Vector components are in millimeters. 
        * </pre>
        *
        * <code>POLYLINE = 3;</code>
@@ -2932,7 +2932,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * parameters for the shape, such as the radius of a circle.
-     *The precise meaning depends on the shape type!
+     *The precise meaning depends on the shape type! 
      * </pre>
      *
      * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -2944,7 +2944,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * parameters for the shape, such as the radius of a circle.
-     *The precise meaning depends on the shape type!
+     *The precise meaning depends on the shape type! 
      * </pre>
      *
      * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -2955,7 +2955,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * parameters for the shape, such as the radius of a circle.
-     *The precise meaning depends on the shape type!
+     *The precise meaning depends on the shape type! 
      * </pre>
      *
      * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3159,7 +3159,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a 2d shape
+     * a 2d shape 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.Shape}
@@ -3382,7 +3382,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3394,7 +3394,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3405,7 +3405,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3416,7 +3416,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3431,7 +3431,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3445,7 +3445,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3461,7 +3461,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * parameters for the shape, such as the radius of a circle.
-       *The precise meaning depends on the shape type!
+       *The precise meaning depends on the shape type! 
        * </pre>
        *
        * <code>repeated sint64 parameters = 2 [packed = true];</code>
@@ -3532,7 +3532,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.Material materials = 1;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material> 
         getMaterialsList();
     /**
      * <code>repeated .frontend_pbf.Material materials = 1;</code>
@@ -3545,7 +3545,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.Material materials = 1;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder> 
         getMaterialsOrBuilderList();
     /**
      * <code>repeated .frontend_pbf.Material materials = 1;</code>
@@ -3555,7 +3555,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * a block containing all materials used in the tile.
+   * a block containing all materials used in the tile. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.MaterialBlock}
@@ -3652,7 +3652,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.Material materials = 1;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder> 
         getMaterialsOrBuilderList() {
       return materials_;
     }
@@ -3842,7 +3842,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a block containing all materials used in the tile.
+     * a block containing all materials used in the tile. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.MaterialBlock}
@@ -3991,7 +3991,7 @@ public final class FrontendPbf {
               materialsBuilder_ = null;
               materials_ = other.materials_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              materialsBuilder_ =
+              materialsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getMaterialsFieldBuilder() : null;
             } else {
@@ -4229,7 +4229,7 @@ public final class FrontendPbf {
       /**
        * <code>repeated .frontend_pbf.Material materials = 1;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder> 
            getMaterialsOrBuilderList() {
         if (materialsBuilder_ != null) {
           return materialsBuilder_.getMessageOrBuilderList();
@@ -4255,12 +4255,12 @@ public final class FrontendPbf {
       /**
        * <code>repeated .frontend_pbf.Material materials = 1;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder> 
            getMaterialsBuilderList() {
         return getMaterialsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialOrBuilder> 
           getMaterialsFieldBuilder() {
         if (materialsBuilder_ == null) {
           materialsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -4422,16 +4422,16 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> 
         getTextureLayerList();
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -4439,7 +4439,7 @@ public final class FrontendPbf {
     org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer getTextureLayer(int index);
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -4447,16 +4447,16 @@ public final class FrontendPbf {
     int getTextureLayerCount();
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder> 
         getTextureLayerOrBuilderList();
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -4466,7 +4466,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the type of transparency
+     * the type of transparency 
      * </pre>
      *
      * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -4474,7 +4474,7 @@ public final class FrontendPbf {
     boolean hasTransparency();
     /**
      * <pre>
-     * the type of transparency
+     * the type of transparency 
      * </pre>
      *
      * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -4483,7 +4483,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * whether this material casts shadows
+     * whether this material casts shadows 
      * </pre>
      *
      * <code>optional bool castShadow = 17 [default = true];</code>
@@ -4491,7 +4491,7 @@ public final class FrontendPbf {
     boolean hasCastShadow();
     /**
      * <pre>
-     * whether this material casts shadows
+     * whether this material casts shadows 
      * </pre>
      *
      * <code>optional bool castShadow = 17 [default = true];</code>
@@ -4501,7 +4501,7 @@ public final class FrontendPbf {
   /**
    * <pre>
    * a set of material properties, using RGB colors.
-   * Color components are in the range [0, 255].
+   * Color components are in the range [0, 255]. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.Material}
@@ -4673,7 +4673,7 @@ public final class FrontendPbf {
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
        * <pre>
-       * arbitrary transparency, including partially transparent pixels
+       * arbitrary transparency, including partially transparent pixels 
        * </pre>
        *
        * <code>TRUE = 1;</code>
@@ -4681,7 +4681,7 @@ public final class FrontendPbf {
       TRUE(1),
       /**
        * <pre>
-       * only allow pixels to be either fully transparent or fully opaque
+       * only allow pixels to be either fully transparent or fully opaque 
        * </pre>
        *
        * <code>BINARY = 2;</code>
@@ -4689,7 +4689,7 @@ public final class FrontendPbf {
       BINARY(2),
       /**
        * <pre>
-       * all pixels are opaque
+       * all pixels are opaque 
        * </pre>
        *
        * <code>FALSE = 3;</code>
@@ -4699,7 +4699,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * arbitrary transparency, including partially transparent pixels
+       * arbitrary transparency, including partially transparent pixels 
        * </pre>
        *
        * <code>TRUE = 1;</code>
@@ -4707,7 +4707,7 @@ public final class FrontendPbf {
       public static final int TRUE_VALUE = 1;
       /**
        * <pre>
-       * only allow pixels to be either fully transparent or fully opaque
+       * only allow pixels to be either fully transparent or fully opaque 
        * </pre>
        *
        * <code>BINARY = 2;</code>
@@ -4715,7 +4715,7 @@ public final class FrontendPbf {
       public static final int BINARY_VALUE = 2;
       /**
        * <pre>
-       * all pixels are opaque
+       * all pixels are opaque 
        * </pre>
        *
        * <code>FALSE = 3;</code>
@@ -4795,7 +4795,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * url of the texture image, can be relative
+       * url of the texture image, can be relative 
        * </pre>
        *
        * <code>required string textureURL = 1;</code>
@@ -4803,7 +4803,7 @@ public final class FrontendPbf {
       boolean hasTextureURL();
       /**
        * <pre>
-       * url of the texture image, can be relative
+       * url of the texture image, can be relative 
        * </pre>
        *
        * <code>required string textureURL = 1;</code>
@@ -4811,7 +4811,7 @@ public final class FrontendPbf {
       java.lang.String getTextureURL();
       /**
        * <pre>
-       * url of the texture image, can be relative
+       * url of the texture image, can be relative 
        * </pre>
        *
        * <code>required string textureURL = 1;</code>
@@ -4822,7 +4822,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * how the texture behaves for texture coordinates
-       * less than 0 or greater than 1
+       * less than 0 or greater than 1 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -4831,7 +4831,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * how the texture behaves for texture coordinates
-       * less than 0 or greater than 1
+       * less than 0 or greater than 1 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -4840,7 +4840,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * whether the texture should be multiplied with the material's base color
+       * whether the texture should be multiplied with the material's base color 
        * </pre>
        *
        * <code>required bool colorable = 3;</code>
@@ -4848,7 +4848,7 @@ public final class FrontendPbf {
       boolean hasColorable();
       /**
        * <pre>
-       * whether the texture should be multiplied with the material's base color
+       * whether the texture should be multiplied with the material's base color 
        * </pre>
        *
        * <code>required bool colorable = 3;</code>
@@ -4857,7 +4857,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * width of the texture in millimeters.
+       * width of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureWidth = 4;</code>
@@ -4865,7 +4865,7 @@ public final class FrontendPbf {
       boolean hasTextureWidth();
       /**
        * <pre>
-       * width of the texture in millimeters.
+       * width of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureWidth = 4;</code>
@@ -4874,7 +4874,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * height of the texture in millimeters.
+       * height of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureHeight = 5;</code>
@@ -4882,7 +4882,7 @@ public final class FrontendPbf {
       boolean hasTextureHeight();
       /**
        * <pre>
-       * height of the texture in millimeters.
+       * height of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureHeight = 5;</code>
@@ -5117,7 +5117,7 @@ public final class FrontendPbf {
           implements com.google.protobuf.ProtocolMessageEnum {
         /**
          * <pre>
-         * No standard function is used. Texture coordinates for this layer will be provided alongside the geometry.
+         * No standard function is used. Texture coordinates for this layer will be provided alongside the geometry. 
          * </pre>
          *
          * <code>CUSTOM = 1;</code>
@@ -5125,7 +5125,7 @@ public final class FrontendPbf {
         CUSTOM(1),
         /**
          * <pre>
-         * uses x and z vertex coords together with the texture's width and height to place a texture
+         * uses x and z vertex coords together with the texture's width and height to place a texture 
          * </pre>
          *
          * <code>GLOBAL_X_Z = 2;</code>
@@ -5135,7 +5135,7 @@ public final class FrontendPbf {
 
         /**
          * <pre>
-         * No standard function is used. Texture coordinates for this layer will be provided alongside the geometry.
+         * No standard function is used. Texture coordinates for this layer will be provided alongside the geometry. 
          * </pre>
          *
          * <code>CUSTOM = 1;</code>
@@ -5143,7 +5143,7 @@ public final class FrontendPbf {
         public static final int CUSTOM_VALUE = 1;
         /**
          * <pre>
-         * uses x and z vertex coords together with the texture's width and height to place a texture
+         * uses x and z vertex coords together with the texture's width and height to place a texture 
          * </pre>
          *
          * <code>GLOBAL_X_Z = 2;</code>
@@ -5221,7 +5221,7 @@ public final class FrontendPbf {
       private volatile java.lang.Object textureURL_;
       /**
        * <pre>
-       * url of the texture image, can be relative
+       * url of the texture image, can be relative 
        * </pre>
        *
        * <code>required string textureURL = 1;</code>
@@ -5231,7 +5231,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * url of the texture image, can be relative
+       * url of the texture image, can be relative 
        * </pre>
        *
        * <code>required string textureURL = 1;</code>
@@ -5241,7 +5241,7 @@ public final class FrontendPbf {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs =
+          com.google.protobuf.ByteString bs = 
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -5252,7 +5252,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * url of the texture image, can be relative
+       * url of the texture image, can be relative 
        * </pre>
        *
        * <code>required string textureURL = 1;</code>
@@ -5261,7 +5261,7 @@ public final class FrontendPbf {
           getTextureURLBytes() {
         java.lang.Object ref = textureURL_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           textureURL_ = b;
@@ -5276,7 +5276,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * how the texture behaves for texture coordinates
-       * less than 0 or greater than 1
+       * less than 0 or greater than 1 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -5287,7 +5287,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * how the texture behaves for texture coordinates
-       * less than 0 or greater than 1
+       * less than 0 or greater than 1 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -5302,7 +5302,7 @@ public final class FrontendPbf {
       private boolean colorable_;
       /**
        * <pre>
-       * whether the texture should be multiplied with the material's base color
+       * whether the texture should be multiplied with the material's base color 
        * </pre>
        *
        * <code>required bool colorable = 3;</code>
@@ -5312,7 +5312,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * whether the texture should be multiplied with the material's base color
+       * whether the texture should be multiplied with the material's base color 
        * </pre>
        *
        * <code>required bool colorable = 3;</code>
@@ -5325,7 +5325,7 @@ public final class FrontendPbf {
       private int textureWidth_;
       /**
        * <pre>
-       * width of the texture in millimeters.
+       * width of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureWidth = 4;</code>
@@ -5335,7 +5335,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * width of the texture in millimeters.
+       * width of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureWidth = 4;</code>
@@ -5348,7 +5348,7 @@ public final class FrontendPbf {
       private int textureHeight_;
       /**
        * <pre>
-       * height of the texture in millimeters.
+       * height of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureHeight = 5;</code>
@@ -5358,7 +5358,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * height of the texture in millimeters.
+       * height of the texture in millimeters. 
        * </pre>
        *
        * <code>required uint32 textureHeight = 5;</code>
@@ -5855,7 +5855,7 @@ public final class FrontendPbf {
         private java.lang.Object textureURL_ = "";
         /**
          * <pre>
-         * url of the texture image, can be relative
+         * url of the texture image, can be relative 
          * </pre>
          *
          * <code>required string textureURL = 1;</code>
@@ -5865,7 +5865,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * url of the texture image, can be relative
+         * url of the texture image, can be relative 
          * </pre>
          *
          * <code>required string textureURL = 1;</code>
@@ -5886,7 +5886,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * url of the texture image, can be relative
+         * url of the texture image, can be relative 
          * </pre>
          *
          * <code>required string textureURL = 1;</code>
@@ -5895,7 +5895,7 @@ public final class FrontendPbf {
             getTextureURLBytes() {
           java.lang.Object ref = textureURL_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString b = 
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             textureURL_ = b;
@@ -5906,7 +5906,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * url of the texture image, can be relative
+         * url of the texture image, can be relative 
          * </pre>
          *
          * <code>required string textureURL = 1;</code>
@@ -5923,7 +5923,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * url of the texture image, can be relative
+         * url of the texture image, can be relative 
          * </pre>
          *
          * <code>required string textureURL = 1;</code>
@@ -5936,7 +5936,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * url of the texture image, can be relative
+         * url of the texture image, can be relative 
          * </pre>
          *
          * <code>required string textureURL = 1;</code>
@@ -5956,7 +5956,7 @@ public final class FrontendPbf {
         /**
          * <pre>
          * how the texture behaves for texture coordinates
-         * less than 0 or greater than 1
+         * less than 0 or greater than 1 
          * </pre>
          *
          * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -5967,7 +5967,7 @@ public final class FrontendPbf {
         /**
          * <pre>
          * how the texture behaves for texture coordinates
-         * less than 0 or greater than 1
+         * less than 0 or greater than 1 
          * </pre>
          *
          * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -5980,7 +5980,7 @@ public final class FrontendPbf {
         /**
          * <pre>
          * how the texture behaves for texture coordinates
-         * less than 0 or greater than 1
+         * less than 0 or greater than 1 
          * </pre>
          *
          * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -5997,7 +5997,7 @@ public final class FrontendPbf {
         /**
          * <pre>
          * how the texture behaves for texture coordinates
-         * less than 0 or greater than 1
+         * less than 0 or greater than 1 
          * </pre>
          *
          * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -6012,7 +6012,7 @@ public final class FrontendPbf {
         private boolean colorable_ ;
         /**
          * <pre>
-         * whether the texture should be multiplied with the material's base color
+         * whether the texture should be multiplied with the material's base color 
          * </pre>
          *
          * <code>required bool colorable = 3;</code>
@@ -6022,7 +6022,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * whether the texture should be multiplied with the material's base color
+         * whether the texture should be multiplied with the material's base color 
          * </pre>
          *
          * <code>required bool colorable = 3;</code>
@@ -6032,7 +6032,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * whether the texture should be multiplied with the material's base color
+         * whether the texture should be multiplied with the material's base color 
          * </pre>
          *
          * <code>required bool colorable = 3;</code>
@@ -6045,7 +6045,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * whether the texture should be multiplied with the material's base color
+         * whether the texture should be multiplied with the material's base color 
          * </pre>
          *
          * <code>required bool colorable = 3;</code>
@@ -6060,7 +6060,7 @@ public final class FrontendPbf {
         private int textureWidth_ ;
         /**
          * <pre>
-         * width of the texture in millimeters.
+         * width of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureWidth = 4;</code>
@@ -6070,7 +6070,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * width of the texture in millimeters.
+         * width of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureWidth = 4;</code>
@@ -6080,7 +6080,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * width of the texture in millimeters.
+         * width of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureWidth = 4;</code>
@@ -6093,7 +6093,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * width of the texture in millimeters.
+         * width of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureWidth = 4;</code>
@@ -6108,7 +6108,7 @@ public final class FrontendPbf {
         private int textureHeight_ ;
         /**
          * <pre>
-         * height of the texture in millimeters.
+         * height of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureHeight = 5;</code>
@@ -6118,7 +6118,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * height of the texture in millimeters.
+         * height of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureHeight = 5;</code>
@@ -6128,7 +6128,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * height of the texture in millimeters.
+         * height of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureHeight = 5;</code>
@@ -6141,7 +6141,7 @@ public final class FrontendPbf {
         }
         /**
          * <pre>
-         * height of the texture in millimeters.
+         * height of the texture in millimeters. 
          * </pre>
          *
          * <code>required uint32 textureHeight = 5;</code>
@@ -6397,7 +6397,7 @@ public final class FrontendPbf {
     private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> textureLayer_;
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -6407,18 +6407,18 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder> 
         getTextureLayerOrBuilderList() {
       return textureLayer_;
     }
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -6428,7 +6428,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -6438,7 +6438,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * texture layers, ordered from bottom to top
+     * texture layers, ordered from bottom to top 
      * </pre>
      *
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -6452,7 +6452,7 @@ public final class FrontendPbf {
     private int transparency_;
     /**
      * <pre>
-     * the type of transparency
+     * the type of transparency 
      * </pre>
      *
      * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -6462,7 +6462,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the type of transparency
+     * the type of transparency 
      * </pre>
      *
      * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -6477,7 +6477,7 @@ public final class FrontendPbf {
     private boolean castShadow_;
     /**
      * <pre>
-     * whether this material casts shadows
+     * whether this material casts shadows 
      * </pre>
      *
      * <code>optional bool castShadow = 17 [default = true];</code>
@@ -6487,7 +6487,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * whether this material casts shadows
+     * whether this material casts shadows 
      * </pre>
      *
      * <code>optional bool castShadow = 17 [default = true];</code>
@@ -6895,7 +6895,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * a set of material properties, using RGB colors.
-     * Color components are in the range [0, 255].
+     * Color components are in the range [0, 255]. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.Material}
@@ -7148,7 +7148,7 @@ public final class FrontendPbf {
               textureLayerBuilder_ = null;
               textureLayer_ = other.textureLayer_;
               bitField0_ = (bitField0_ & ~0x00000400);
-              textureLayerBuilder_ =
+              textureLayerBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTextureLayerFieldBuilder() : null;
             } else {
@@ -7561,7 +7561,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7575,7 +7575,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7589,7 +7589,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7603,7 +7603,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7624,7 +7624,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7642,7 +7642,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7662,7 +7662,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7683,7 +7683,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7701,7 +7701,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7719,7 +7719,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7738,7 +7738,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7755,7 +7755,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7772,7 +7772,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7783,7 +7783,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7797,12 +7797,12 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder> 
            getTextureLayerOrBuilderList() {
         if (textureLayerBuilder_ != null) {
           return textureLayerBuilder_.getMessageOrBuilderList();
@@ -7812,7 +7812,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7823,7 +7823,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -7835,17 +7835,17 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * texture layers, ordered from bottom to top
+       * texture layers, ordered from bottom to top 
        * </pre>
        *
        * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder> 
            getTextureLayerBuilderList() {
         return getTextureLayerFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder> 
           getTextureLayerFieldBuilder() {
         if (textureLayerBuilder_ == null) {
           textureLayerBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -7862,7 +7862,7 @@ public final class FrontendPbf {
       private int transparency_ = 3;
       /**
        * <pre>
-       * the type of transparency
+       * the type of transparency 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -7872,7 +7872,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the type of transparency
+       * the type of transparency 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -7884,7 +7884,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the type of transparency
+       * the type of transparency 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -7900,7 +7900,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the type of transparency
+       * the type of transparency 
        * </pre>
        *
        * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -7915,7 +7915,7 @@ public final class FrontendPbf {
       private boolean castShadow_ = true;
       /**
        * <pre>
-       * whether this material casts shadows
+       * whether this material casts shadows 
        * </pre>
        *
        * <code>optional bool castShadow = 17 [default = true];</code>
@@ -7925,7 +7925,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * whether this material casts shadows
+       * whether this material casts shadows 
        * </pre>
        *
        * <code>optional bool castShadow = 17 [default = true];</code>
@@ -7935,7 +7935,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * whether this material casts shadows
+       * whether this material casts shadows 
        * </pre>
        *
        * <code>optional bool castShadow = 17 [default = true];</code>
@@ -7948,7 +7948,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * whether this material casts shadows
+       * whether this material casts shadows 
        * </pre>
        *
        * <code>optional bool castShadow = 17 [default = true];</code>
@@ -8018,16 +8018,16 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> 
         getModelsList();
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8035,7 +8035,7 @@ public final class FrontendPbf {
     org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject getModels(int index);
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8043,16 +8043,16 @@ public final class FrontendPbf {
     int getModelsCount();
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
         getModelsOrBuilderList();
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8064,7 +8064,7 @@ public final class FrontendPbf {
    * <pre>
    * a block containing all template models used in this file.
    * Each model is represented as a WorldObject with no id or type.
-   * A template model must not use InstanceGeometry itself.
+   * A template model must not use InstanceGeometry itself. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.ModelBlock}
@@ -8154,7 +8154,7 @@ public final class FrontendPbf {
     private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> models_;
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8164,18 +8164,18 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
         getModelsOrBuilderList() {
       return models_;
     }
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8185,7 +8185,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8195,7 +8195,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the template models that can be copied (with slight variations) in multiple locations
+     * the template models that can be copied (with slight variations) in multiple locations 
      * </pre>
      *
      * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8373,7 +8373,7 @@ public final class FrontendPbf {
      * <pre>
      * a block containing all template models used in this file.
      * Each model is represented as a WorldObject with no id or type.
-     * A template model must not use InstanceGeometry itself.
+     * A template model must not use InstanceGeometry itself. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.ModelBlock}
@@ -8522,7 +8522,7 @@ public final class FrontendPbf {
               modelsBuilder_ = null;
               models_ = other.models_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              modelsBuilder_ =
+              modelsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getModelsFieldBuilder() : null;
             } else {
@@ -8579,7 +8579,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8593,7 +8593,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8607,7 +8607,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8621,7 +8621,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8642,7 +8642,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8660,7 +8660,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8680,7 +8680,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8701,7 +8701,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8719,7 +8719,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8737,7 +8737,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8756,7 +8756,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8773,7 +8773,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8790,7 +8790,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8801,7 +8801,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8815,12 +8815,12 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
            getModelsOrBuilderList() {
         if (modelsBuilder_ != null) {
           return modelsBuilder_.getMessageOrBuilderList();
@@ -8830,7 +8830,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8841,7 +8841,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
@@ -8853,17 +8853,17 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the template models that can be copied (with slight variations) in multiple locations
+       * the template models that can be copied (with slight variations) in multiple locations 
        * </pre>
        *
        * <code>repeated .frontend_pbf.WorldObject models = 1;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder> 
            getModelsBuilderList() {
         return getModelsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
           getModelsFieldBuilder() {
         if (modelsBuilder_ == null) {
           modelsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -8935,7 +8935,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -8943,7 +8943,7 @@ public final class FrontendPbf {
     boolean hasMaterial();
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -8954,7 +8954,7 @@ public final class FrontendPbf {
      * <pre>
      * vertices of the triangles, represented as
      * 3 references to the Vector3d block each.
-     * At least 1 triangle (i.e. 3 vertex references) required.
+     * At least 1 triangle (i.e. 3 vertex references) required. 
      * </pre>
      *
      * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -8964,7 +8964,7 @@ public final class FrontendPbf {
      * <pre>
      * vertices of the triangles, represented as
      * 3 references to the Vector3d block each.
-     * At least 1 triangle (i.e. 3 vertex references) required.
+     * At least 1 triangle (i.e. 3 vertex references) required. 
      * </pre>
      *
      * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -8974,7 +8974,7 @@ public final class FrontendPbf {
      * <pre>
      * vertices of the triangles, represented as
      * 3 references to the Vector3d block each.
-     * At least 1 triangle (i.e. 3 vertex references) required.
+     * At least 1 triangle (i.e. 3 vertex references) required. 
      * </pre>
      *
      * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -8989,7 +8989,7 @@ public final class FrontendPbf {
      * which are using the CUSTOM texture coordinate function (see Material).
      * The length of this list is that of
      * vertices, times the number of CUSTOM-coordinated texture layers.
-     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc. 
      * </pre>
      *
      * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9003,7 +9003,7 @@ public final class FrontendPbf {
      * which are using the CUSTOM texture coordinate function (see Material).
      * The length of this list is that of
      * vertices, times the number of CUSTOM-coordinated texture layers.
-     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc. 
      * </pre>
      *
      * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9017,7 +9017,7 @@ public final class FrontendPbf {
      * which are using the CUSTOM texture coordinate function (see Material).
      * The length of this list is that of
      * vertices, times the number of CUSTOM-coordinated texture layers.
-     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc. 
      * </pre>
      *
      * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9026,7 +9026,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * geometry consisting of a set of triangles
+   * geometry consisting of a set of triangles 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.TriangleGeometry}
@@ -9160,7 +9160,7 @@ public final class FrontendPbf {
     private int material_;
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -9170,7 +9170,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -9185,7 +9185,7 @@ public final class FrontendPbf {
      * <pre>
      * vertices of the triangles, represented as
      * 3 references to the Vector3d block each.
-     * At least 1 triangle (i.e. 3 vertex references) required.
+     * At least 1 triangle (i.e. 3 vertex references) required. 
      * </pre>
      *
      * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9198,7 +9198,7 @@ public final class FrontendPbf {
      * <pre>
      * vertices of the triangles, represented as
      * 3 references to the Vector3d block each.
-     * At least 1 triangle (i.e. 3 vertex references) required.
+     * At least 1 triangle (i.e. 3 vertex references) required. 
      * </pre>
      *
      * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9210,7 +9210,7 @@ public final class FrontendPbf {
      * <pre>
      * vertices of the triangles, represented as
      * 3 references to the Vector3d block each.
-     * At least 1 triangle (i.e. 3 vertex references) required.
+     * At least 1 triangle (i.e. 3 vertex references) required. 
      * </pre>
      *
      * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9230,7 +9230,7 @@ public final class FrontendPbf {
      * which are using the CUSTOM texture coordinate function (see Material).
      * The length of this list is that of
      * vertices, times the number of CUSTOM-coordinated texture layers.
-     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc. 
      * </pre>
      *
      * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9247,7 +9247,7 @@ public final class FrontendPbf {
      * which are using the CUSTOM texture coordinate function (see Material).
      * The length of this list is that of
      * vertices, times the number of CUSTOM-coordinated texture layers.
-     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc. 
      * </pre>
      *
      * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9263,7 +9263,7 @@ public final class FrontendPbf {
      * which are using the CUSTOM texture coordinate function (see Material).
      * The length of this list is that of
      * vertices, times the number of CUSTOM-coordinated texture layers.
-     * Starts with all vertices' tex coords for layer 0, then 1 etc.
+     * Starts with all vertices' tex coords for layer 0, then 1 etc. 
      * </pre>
      *
      * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9495,7 +9495,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry consisting of a set of triangles
+     * geometry consisting of a set of triangles 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.TriangleGeometry}
@@ -9691,7 +9691,7 @@ public final class FrontendPbf {
       private int material_ ;
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -9701,7 +9701,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -9711,7 +9711,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -9724,7 +9724,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -9747,7 +9747,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9760,7 +9760,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9772,7 +9772,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9784,7 +9784,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9800,7 +9800,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9815,7 +9815,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9832,7 +9832,7 @@ public final class FrontendPbf {
        * <pre>
        * vertices of the triangles, represented as
        * 3 references to the Vector3d block each.
-       * At least 1 triangle (i.e. 3 vertex references) required.
+       * At least 1 triangle (i.e. 3 vertex references) required. 
        * </pre>
        *
        * <code>repeated uint64 vertices = 2 [packed = true];</code>
@@ -9859,7 +9859,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9876,7 +9876,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9892,7 +9892,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9908,7 +9908,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9928,7 +9928,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9947,7 +9947,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -9968,7 +9968,7 @@ public final class FrontendPbf {
        * which are using the CUSTOM texture coordinate function (see Material).
        * The length of this list is that of
        * vertices, times the number of CUSTOM-coordinated texture layers.
-       * Starts with all vertices' tex coords for layer 0, then 1 etc.
+       * Starts with all vertices' tex coords for layer 0, then 1 etc. 
        * </pre>
        *
        * <code>repeated uint64 texCoords = 3 [packed = true];</code>
@@ -10038,7 +10038,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -10046,7 +10046,7 @@ public final class FrontendPbf {
     boolean hasMaterial();
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -10055,7 +10055,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the shape to be extruded, referencing shapeBlock
+     * the shape to be extruded, referencing shapeBlock 
      * </pre>
      *
      * <code>required uint32 shape = 2;</code>
@@ -10063,7 +10063,7 @@ public final class FrontendPbf {
     boolean hasShape();
     /**
      * <pre>
-     * the shape to be extruded, referencing shapeBlock
+     * the shape to be extruded, referencing shapeBlock 
      * </pre>
      *
      * <code>required uint32 shape = 2;</code>
@@ -10072,7 +10072,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock 
      * </pre>
      *
      * <code>repeated uint64 path = 3;</code>
@@ -10080,7 +10080,7 @@ public final class FrontendPbf {
     java.util.List<java.lang.Long> getPathList();
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock 
      * </pre>
      *
      * <code>repeated uint64 path = 3;</code>
@@ -10088,7 +10088,7 @@ public final class FrontendPbf {
     int getPathCount();
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock 
      * </pre>
      *
      * <code>repeated uint64 path = 3;</code>
@@ -10097,7 +10097,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * referencing vector3dBlock. Same length as path.
+     * referencing vector3dBlock. Same length as path. 
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -10105,7 +10105,7 @@ public final class FrontendPbf {
     java.util.List<java.lang.Long> getUpVectorsList();
     /**
      * <pre>
-     * referencing vector3dBlock. Same length as path.
+     * referencing vector3dBlock. Same length as path. 
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -10113,7 +10113,7 @@ public final class FrontendPbf {
     int getUpVectorsCount();
     /**
      * <pre>
-     * referencing vector3dBlock. Same length as path.
+     * referencing vector3dBlock. Same length as path. 
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -10122,7 +10122,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10130,7 +10130,7 @@ public final class FrontendPbf {
     java.util.List<java.lang.Long> getScaleFactorsList();
     /**
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10138,7 +10138,7 @@ public final class FrontendPbf {
     int getScaleFactorsCount();
     /**
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10166,7 +10166,7 @@ public final class FrontendPbf {
   /**
    * <pre>
    * geometry produced by extruding a 2d shape.
-   *See OSM2World's Target.drawExtrudedShape method for documentation of the parameters.
+   *See OSM2World's Target.drawExtrudedShape method for documentation of the parameters. 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.ExtrusionGeometry}
@@ -10343,7 +10343,7 @@ public final class FrontendPbf {
     private int material_;
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -10353,7 +10353,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the geometry's material, referencing materialBlock
+     * the geometry's material, referencing materialBlock 
      * </pre>
      *
      * <code>required uint32 material = 1;</code>
@@ -10366,7 +10366,7 @@ public final class FrontendPbf {
     private int shape_;
     /**
      * <pre>
-     * the shape to be extruded, referencing shapeBlock
+     * the shape to be extruded, referencing shapeBlock 
      * </pre>
      *
      * <code>required uint32 shape = 2;</code>
@@ -10376,7 +10376,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the shape to be extruded, referencing shapeBlock
+     * the shape to be extruded, referencing shapeBlock 
      * </pre>
      *
      * <code>required uint32 shape = 2;</code>
@@ -10389,7 +10389,7 @@ public final class FrontendPbf {
     private java.util.List<java.lang.Long> path_;
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock 
      * </pre>
      *
      * <code>repeated uint64 path = 3;</code>
@@ -10400,7 +10400,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock 
      * </pre>
      *
      * <code>repeated uint64 path = 3;</code>
@@ -10410,7 +10410,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * referencing vector3dBlock
+     * referencing vector3dBlock 
      * </pre>
      *
      * <code>repeated uint64 path = 3;</code>
@@ -10423,7 +10423,7 @@ public final class FrontendPbf {
     private java.util.List<java.lang.Long> upVectors_;
     /**
      * <pre>
-     * referencing vector3dBlock. Same length as path.
+     * referencing vector3dBlock. Same length as path. 
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -10434,7 +10434,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * referencing vector3dBlock. Same length as path.
+     * referencing vector3dBlock. Same length as path. 
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -10444,7 +10444,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * referencing vector3dBlock. Same length as path.
+     * referencing vector3dBlock. Same length as path. 
      * </pre>
      *
      * <code>repeated uint64 upVectors = 4;</code>
@@ -10457,7 +10457,7 @@ public final class FrontendPbf {
     private java.util.List<java.lang.Long> scaleFactors_;
     /**
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10468,7 +10468,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10478,7 +10478,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
      * </pre>
      *
      * <code>repeated uint64 scaleFactors = 5;</code>
@@ -10793,7 +10793,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * geometry produced by extruding a 2d shape.
-     *See OSM2World's Target.drawExtrudedShape method for documentation of the parameters.
+     *See OSM2World's Target.drawExtrudedShape method for documentation of the parameters. 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.ExtrusionGeometry}
@@ -11036,7 +11036,7 @@ public final class FrontendPbf {
       private int material_ ;
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -11046,7 +11046,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -11056,7 +11056,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -11069,7 +11069,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the geometry's material, referencing materialBlock
+       * the geometry's material, referencing materialBlock 
        * </pre>
        *
        * <code>required uint32 material = 1;</code>
@@ -11084,7 +11084,7 @@ public final class FrontendPbf {
       private int shape_ ;
       /**
        * <pre>
-       * the shape to be extruded, referencing shapeBlock
+       * the shape to be extruded, referencing shapeBlock 
        * </pre>
        *
        * <code>required uint32 shape = 2;</code>
@@ -11094,7 +11094,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the shape to be extruded, referencing shapeBlock
+       * the shape to be extruded, referencing shapeBlock 
        * </pre>
        *
        * <code>required uint32 shape = 2;</code>
@@ -11104,7 +11104,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the shape to be extruded, referencing shapeBlock
+       * the shape to be extruded, referencing shapeBlock 
        * </pre>
        *
        * <code>required uint32 shape = 2;</code>
@@ -11117,7 +11117,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the shape to be extruded, referencing shapeBlock
+       * the shape to be extruded, referencing shapeBlock 
        * </pre>
        *
        * <code>required uint32 shape = 2;</code>
@@ -11138,7 +11138,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11149,7 +11149,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11159,7 +11159,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11169,7 +11169,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11183,7 +11183,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11196,7 +11196,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11211,7 +11211,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock
+       * referencing vector3dBlock 
        * </pre>
        *
        * <code>repeated uint64 path = 3;</code>
@@ -11232,7 +11232,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11243,7 +11243,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11253,7 +11253,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11263,7 +11263,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11277,7 +11277,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11290,7 +11290,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11305,7 +11305,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * referencing vector3dBlock. Same length as path.
+       * referencing vector3dBlock. Same length as path. 
        * </pre>
        *
        * <code>repeated uint64 upVectors = 4;</code>
@@ -11326,7 +11326,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11337,7 +11337,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11347,7 +11347,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11357,7 +11357,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11371,7 +11371,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11384,7 +11384,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11399,7 +11399,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path.
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
        * </pre>
        *
        * <code>repeated uint64 scaleFactors = 5;</code>
@@ -11534,7 +11534,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * the prototype model, referencing the modelBlock.
-     *Alternatively, an external resource can be referenced using resourceIdentifier.
+     *Alternatively, an external resource can be referenced using resourceIdentifier. 
      * </pre>
      *
      * <code>optional uint32 model = 1;</code>
@@ -11543,7 +11543,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * the prototype model, referencing the modelBlock.
-     *Alternatively, an external resource can be referenced using resourceIdentifier.
+     *Alternatively, an external resource can be referenced using resourceIdentifier. 
      * </pre>
      *
      * <code>optional uint32 model = 1;</code>
@@ -11553,7 +11553,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * string identifying an external model in some way, e.g. as an URI or a string constant.
-     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     *Alternatively, a prototype model included in this file can be referenced using the model field. 
      * </pre>
      *
      * <code>optional string resourceIdentifier = 5;</code>
@@ -11562,7 +11562,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * string identifying an external model in some way, e.g. as an URI or a string constant.
-     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     *Alternatively, a prototype model included in this file can be referenced using the model field. 
      * </pre>
      *
      * <code>optional string resourceIdentifier = 5;</code>
@@ -11571,7 +11571,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * string identifying an external model in some way, e.g. as an URI or a string constant.
-     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     *Alternatively, a prototype model included in this file can be referenced using the model field. 
      * </pre>
      *
      * <code>optional string resourceIdentifier = 5;</code>
@@ -11581,33 +11581,39 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * position of each instance, referencing the vector3dBlock
+     * position of each instance.
+     *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+     *Each position is represented as an x, y, z triple of values. 
      * </pre>
      *
-     * <code>repeated uint32 position = 2 [packed = true];</code>
+     * <code>repeated sint64 position = 2 [packed = true];</code>
      */
-    java.util.List<java.lang.Integer> getPositionList();
+    java.util.List<java.lang.Long> getPositionList();
     /**
      * <pre>
-     * position of each instance, referencing the vector3dBlock
+     * position of each instance.
+     *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+     *Each position is represented as an x, y, z triple of values. 
      * </pre>
      *
-     * <code>repeated uint32 position = 2 [packed = true];</code>
+     * <code>repeated sint64 position = 2 [packed = true];</code>
      */
     int getPositionCount();
     /**
      * <pre>
-     * position of each instance, referencing the vector3dBlock
+     * position of each instance.
+     *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+     *Each position is represented as an x, y, z triple of values. 
      * </pre>
      *
-     * <code>repeated uint32 position = 2 [packed = true];</code>
+     * <code>repeated sint64 position = 2 [packed = true];</code>
      */
-    int getPosition(int index);
+    long getPosition(int index);
 
     /**
      * <pre>
      * rotation angle around the y axis for each instance in milliradians, clockwise.
-     *Either the same length as pos or empty (for a default of 0).
+     *Either one third of the length of 'position' or empty (for a default of 0). 
      * </pre>
      *
      * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -11616,7 +11622,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * rotation angle around the y axis for each instance in milliradians, clockwise.
-     *Either the same length as pos or empty (for a default of 0).
+     *Either one third of the length of 'position' or empty (for a default of 0). 
      * </pre>
      *
      * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -11625,7 +11631,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * rotation angle around the y axis for each instance in milliradians, clockwise.
-     *Either the same length as pos or empty (for a default of 0).
+     *Either one third of the length of 'position' or empty (for a default of 0). 
      * </pre>
      *
      * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -11635,7 +11641,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * scale factor for each instance in 1/1000.
-     *Either the same length as pos or empty (for a default of 1).
+     *Either one third of the length of 'position' or empty (for a default of 1). 
      * </pre>
      *
      * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -11644,7 +11650,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * scale factor for each instance in 1/1000.
-     *Either the same length as pos or empty (for a default of 1).
+     *Either one third of the length of 'position' or empty (for a default of 1). 
      * </pre>
      *
      * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -11653,7 +11659,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * scale factor for each instance in 1/1000.
-     *Either the same length as pos or empty (for a default of 1).
+     *Either one third of the length of 'position' or empty (for a default of 1). 
      * </pre>
      *
      * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -11662,7 +11668,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * copies of some prototype model, possibly rotated and scaled
+   * copies of some prototype model, possibly rotated and scaled 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.InstanceGeometry}
@@ -11715,21 +11721,21 @@ public final class FrontendPbf {
             }
             case 16: {
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                position_ = new java.util.ArrayList<java.lang.Integer>();
+                position_ = new java.util.ArrayList<java.lang.Long>();
                 mutable_bitField0_ |= 0x00000004;
               }
-              position_.add(input.readUInt32());
+              position_.add(input.readSInt64());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
-                position_ = new java.util.ArrayList<java.lang.Integer>();
+                position_ = new java.util.ArrayList<java.lang.Long>();
                 mutable_bitField0_ |= 0x00000004;
               }
               while (input.getBytesUntilLimit() > 0) {
-                position_.add(input.readUInt32());
+                position_.add(input.readSInt64());
               }
               input.popLimit(limit);
               break;
@@ -11829,7 +11835,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * the prototype model, referencing the modelBlock.
-     *Alternatively, an external resource can be referenced using resourceIdentifier.
+     *Alternatively, an external resource can be referenced using resourceIdentifier. 
      * </pre>
      *
      * <code>optional uint32 model = 1;</code>
@@ -11840,7 +11846,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * the prototype model, referencing the modelBlock.
-     *Alternatively, an external resource can be referenced using resourceIdentifier.
+     *Alternatively, an external resource can be referenced using resourceIdentifier. 
      * </pre>
      *
      * <code>optional uint32 model = 1;</code>
@@ -11854,7 +11860,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * string identifying an external model in some way, e.g. as an URI or a string constant.
-     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     *Alternatively, a prototype model included in this file can be referenced using the model field. 
      * </pre>
      *
      * <code>optional string resourceIdentifier = 5;</code>
@@ -11865,7 +11871,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * string identifying an external model in some way, e.g. as an URI or a string constant.
-     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     *Alternatively, a prototype model included in this file can be referenced using the model field. 
      * </pre>
      *
      * <code>optional string resourceIdentifier = 5;</code>
@@ -11875,7 +11881,7 @@ public final class FrontendPbf {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -11887,7 +11893,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * string identifying an external model in some way, e.g. as an URI or a string constant.
-     *Alternatively, a prototype model included in this file can be referenced using the model field.
+     *Alternatively, a prototype model included in this file can be referenced using the model field. 
      * </pre>
      *
      * <code>optional string resourceIdentifier = 5;</code>
@@ -11896,7 +11902,7 @@ public final class FrontendPbf {
         getResourceIdentifierBytes() {
       java.lang.Object ref = resourceIdentifier_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         resourceIdentifier_ = b;
@@ -11907,36 +11913,42 @@ public final class FrontendPbf {
     }
 
     public static final int POSITION_FIELD_NUMBER = 2;
-    private java.util.List<java.lang.Integer> position_;
+    private java.util.List<java.lang.Long> position_;
     /**
      * <pre>
-     * position of each instance, referencing the vector3dBlock
+     * position of each instance.
+     *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+     *Each position is represented as an x, y, z triple of values. 
      * </pre>
      *
-     * <code>repeated uint32 position = 2 [packed = true];</code>
+     * <code>repeated sint64 position = 2 [packed = true];</code>
      */
-    public java.util.List<java.lang.Integer>
+    public java.util.List<java.lang.Long>
         getPositionList() {
       return position_;
     }
     /**
      * <pre>
-     * position of each instance, referencing the vector3dBlock
+     * position of each instance.
+     *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+     *Each position is represented as an x, y, z triple of values. 
      * </pre>
      *
-     * <code>repeated uint32 position = 2 [packed = true];</code>
+     * <code>repeated sint64 position = 2 [packed = true];</code>
      */
     public int getPositionCount() {
       return position_.size();
     }
     /**
      * <pre>
-     * position of each instance, referencing the vector3dBlock
+     * position of each instance.
+     *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+     *Each position is represented as an x, y, z triple of values. 
      * </pre>
      *
-     * <code>repeated uint32 position = 2 [packed = true];</code>
+     * <code>repeated sint64 position = 2 [packed = true];</code>
      */
-    public int getPosition(int index) {
+    public long getPosition(int index) {
       return position_.get(index);
     }
     private int positionMemoizedSerializedSize = -1;
@@ -11946,7 +11958,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * rotation angle around the y axis for each instance in milliradians, clockwise.
-     *Either the same length as pos or empty (for a default of 0).
+     *Either one third of the length of 'position' or empty (for a default of 0). 
      * </pre>
      *
      * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -11958,7 +11970,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * rotation angle around the y axis for each instance in milliradians, clockwise.
-     *Either the same length as pos or empty (for a default of 0).
+     *Either one third of the length of 'position' or empty (for a default of 0). 
      * </pre>
      *
      * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -11969,7 +11981,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * rotation angle around the y axis for each instance in milliradians, clockwise.
-     *Either the same length as pos or empty (for a default of 0).
+     *Either one third of the length of 'position' or empty (for a default of 0). 
      * </pre>
      *
      * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -11984,7 +11996,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * scale factor for each instance in 1/1000.
-     *Either the same length as pos or empty (for a default of 1).
+     *Either one third of the length of 'position' or empty (for a default of 1). 
      * </pre>
      *
      * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -11996,7 +12008,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * scale factor for each instance in 1/1000.
-     *Either the same length as pos or empty (for a default of 1).
+     *Either one third of the length of 'position' or empty (for a default of 1). 
      * </pre>
      *
      * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12007,7 +12019,7 @@ public final class FrontendPbf {
     /**
      * <pre>
      * scale factor for each instance in 1/1000.
-     *Either the same length as pos or empty (for a default of 1).
+     *Either one third of the length of 'position' or empty (for a default of 1). 
      * </pre>
      *
      * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12040,7 +12052,7 @@ public final class FrontendPbf {
         output.writeUInt32NoTag(positionMemoizedSerializedSize);
       }
       for (int i = 0; i < position_.size(); i++) {
-        output.writeUInt32NoTag(position_.get(i));
+        output.writeSInt64NoTag(position_.get(i));
       }
       if (getDirectionList().size() > 0) {
         output.writeUInt32NoTag(26);
@@ -12076,7 +12088,7 @@ public final class FrontendPbf {
         int dataSize = 0;
         for (int i = 0; i < position_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeUInt32SizeNoTag(position_.get(i));
+            .computeSInt64SizeNoTag(position_.get(i));
         }
         size += dataSize;
         if (!getPositionList().isEmpty()) {
@@ -12277,7 +12289,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * copies of some prototype model, possibly rotated and scaled
+     * copies of some prototype model, possibly rotated and scaled 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.InstanceGeometry}
@@ -12499,7 +12511,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * the prototype model, referencing the modelBlock.
-       *Alternatively, an external resource can be referenced using resourceIdentifier.
+       *Alternatively, an external resource can be referenced using resourceIdentifier. 
        * </pre>
        *
        * <code>optional uint32 model = 1;</code>
@@ -12510,7 +12522,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * the prototype model, referencing the modelBlock.
-       *Alternatively, an external resource can be referenced using resourceIdentifier.
+       *Alternatively, an external resource can be referenced using resourceIdentifier. 
        * </pre>
        *
        * <code>optional uint32 model = 1;</code>
@@ -12521,7 +12533,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * the prototype model, referencing the modelBlock.
-       *Alternatively, an external resource can be referenced using resourceIdentifier.
+       *Alternatively, an external resource can be referenced using resourceIdentifier. 
        * </pre>
        *
        * <code>optional uint32 model = 1;</code>
@@ -12535,7 +12547,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * the prototype model, referencing the modelBlock.
-       *Alternatively, an external resource can be referenced using resourceIdentifier.
+       *Alternatively, an external resource can be referenced using resourceIdentifier. 
        * </pre>
        *
        * <code>optional uint32 model = 1;</code>
@@ -12551,7 +12563,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * string identifying an external model in some way, e.g. as an URI or a string constant.
-       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       *Alternatively, a prototype model included in this file can be referenced using the model field. 
        * </pre>
        *
        * <code>optional string resourceIdentifier = 5;</code>
@@ -12562,7 +12574,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * string identifying an external model in some way, e.g. as an URI or a string constant.
-       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       *Alternatively, a prototype model included in this file can be referenced using the model field. 
        * </pre>
        *
        * <code>optional string resourceIdentifier = 5;</code>
@@ -12584,7 +12596,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * string identifying an external model in some way, e.g. as an URI or a string constant.
-       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       *Alternatively, a prototype model included in this file can be referenced using the model field. 
        * </pre>
        *
        * <code>optional string resourceIdentifier = 5;</code>
@@ -12593,7 +12605,7 @@ public final class FrontendPbf {
           getResourceIdentifierBytes() {
         java.lang.Object ref = resourceIdentifier_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           resourceIdentifier_ = b;
@@ -12605,7 +12617,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * string identifying an external model in some way, e.g. as an URI or a string constant.
-       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       *Alternatively, a prototype model included in this file can be referenced using the model field. 
        * </pre>
        *
        * <code>optional string resourceIdentifier = 5;</code>
@@ -12623,7 +12635,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * string identifying an external model in some way, e.g. as an URI or a string constant.
-       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       *Alternatively, a prototype model included in this file can be referenced using the model field. 
        * </pre>
        *
        * <code>optional string resourceIdentifier = 5;</code>
@@ -12637,7 +12649,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * string identifying an external model in some way, e.g. as an URI or a string constant.
-       *Alternatively, a prototype model included in this file can be referenced using the model field.
+       *Alternatively, a prototype model included in this file can be referenced using the model field. 
        * </pre>
        *
        * <code>optional string resourceIdentifier = 5;</code>
@@ -12653,53 +12665,61 @@ public final class FrontendPbf {
         return this;
       }
 
-      private java.util.List<java.lang.Integer> position_ = java.util.Collections.emptyList();
+      private java.util.List<java.lang.Long> position_ = java.util.Collections.emptyList();
       private void ensurePositionIsMutable() {
         if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          position_ = new java.util.ArrayList<java.lang.Integer>(position_);
+          position_ = new java.util.ArrayList<java.lang.Long>(position_);
           bitField0_ |= 0x00000004;
          }
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
-      public java.util.List<java.lang.Integer>
+      public java.util.List<java.lang.Long>
           getPositionList() {
         return java.util.Collections.unmodifiableList(position_);
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
       public int getPositionCount() {
         return position_.size();
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
-      public int getPosition(int index) {
+      public long getPosition(int index) {
         return position_.get(index);
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
       public Builder setPosition(
-          int index, int value) {
+          int index, long value) {
         ensurePositionIsMutable();
         position_.set(index, value);
         onChanged();
@@ -12707,12 +12727,14 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
-      public Builder addPosition(int value) {
+      public Builder addPosition(long value) {
         ensurePositionIsMutable();
         position_.add(value);
         onChanged();
@@ -12720,13 +12742,15 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
       public Builder addAllPosition(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
+          java.lang.Iterable<? extends java.lang.Long> values) {
         ensurePositionIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, position_);
@@ -12735,10 +12759,12 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * position of each instance, referencing the vector3dBlock
+       * position of each instance.
+       *Values are in millimeters relative to the center of the tile (like Vector3dBlock).
+       *Each position is represented as an x, y, z triple of values. 
        * </pre>
        *
-       * <code>repeated uint32 position = 2 [packed = true];</code>
+       * <code>repeated sint64 position = 2 [packed = true];</code>
        */
       public Builder clearPosition() {
         position_ = java.util.Collections.emptyList();
@@ -12757,7 +12783,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12769,7 +12795,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12780,7 +12806,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12791,7 +12817,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12806,7 +12832,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12820,7 +12846,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12836,7 +12862,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * rotation angle around the y axis for each instance in milliradians, clockwise.
-       *Either the same length as pos or empty (for a default of 0).
+       *Either one third of the length of 'position' or empty (for a default of 0). 
        * </pre>
        *
        * <code>repeated int32 direction = 3 [packed = true];</code>
@@ -12858,7 +12884,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12870,7 +12896,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12881,7 +12907,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12892,7 +12918,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12907,7 +12933,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12921,7 +12947,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -12937,7 +12963,7 @@ public final class FrontendPbf {
       /**
        * <pre>
        * scale factor for each instance in 1/1000.
-       *Either the same length as pos or empty (for a default of 1).
+       *Either one third of the length of 'position' or empty (for a default of 1). 
        * </pre>
        *
        * <code>repeated uint32 scale = 4 [packed = true];</code>
@@ -13007,7 +13033,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the OSM id of the primary element this object is created from, if any
+     * the OSM id of the primary element this object is created from, if any 
      * </pre>
      *
      * <code>optional string osmId = 1;</code>
@@ -13015,7 +13041,7 @@ public final class FrontendPbf {
     boolean hasOsmId();
     /**
      * <pre>
-     * the OSM id of the primary element this object is created from, if any
+     * the OSM id of the primary element this object is created from, if any 
      * </pre>
      *
      * <code>optional string osmId = 1;</code>
@@ -13023,7 +13049,7 @@ public final class FrontendPbf {
     java.lang.String getOsmId();
     /**
      * <pre>
-     * the OSM id of the primary element this object is created from, if any
+     * the OSM id of the primary element this object is created from, if any 
      * </pre>
      *
      * <code>optional string osmId = 1;</code>
@@ -13033,7 +13059,7 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * the type of this WorldObject, in broad terms. References stringBlock.
+     * the type of this WorldObject, in broad terms. References stringBlock. 
      * </pre>
      *
      * <code>optional uint32 typeName = 2;</code>
@@ -13041,7 +13067,7 @@ public final class FrontendPbf {
     boolean hasTypeName();
     /**
      * <pre>
-     * the type of this WorldObject, in broad terms. References stringBlock.
+     * the type of this WorldObject, in broad terms. References stringBlock. 
      * </pre>
      *
      * <code>optional uint32 typeName = 2;</code>
@@ -13050,16 +13076,16 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> 
         getTriangleGeometriesList();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13067,7 +13093,7 @@ public final class FrontendPbf {
     org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry getTriangleGeometries(int index);
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13075,16 +13101,16 @@ public final class FrontendPbf {
     int getTriangleGeometriesCount();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder> 
         getTriangleGeometriesOrBuilderList();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13094,16 +13120,16 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry> 
         getExtrusionGeometriesList();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13111,7 +13137,7 @@ public final class FrontendPbf {
     org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry getExtrusionGeometries(int index);
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13119,16 +13145,16 @@ public final class FrontendPbf {
     int getExtrusionGeometriesCount();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder> 
         getExtrusionGeometriesOrBuilderList();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13138,16 +13164,16 @@ public final class FrontendPbf {
 
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry> 
         getInstanceGeometriesList();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13155,7 +13181,7 @@ public final class FrontendPbf {
     org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry getInstanceGeometries(int index);
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13163,16 +13189,16 @@ public final class FrontendPbf {
     int getInstanceGeometriesCount();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder> 
         getInstanceGeometriesOrBuilderList();
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13182,7 +13208,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * a three-dimensional object
+   * a three-dimensional object 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.WorldObject}
@@ -13312,7 +13338,7 @@ public final class FrontendPbf {
     private volatile java.lang.Object osmId_;
     /**
      * <pre>
-     * the OSM id of the primary element this object is created from, if any
+     * the OSM id of the primary element this object is created from, if any 
      * </pre>
      *
      * <code>optional string osmId = 1;</code>
@@ -13322,7 +13348,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the OSM id of the primary element this object is created from, if any
+     * the OSM id of the primary element this object is created from, if any 
      * </pre>
      *
      * <code>optional string osmId = 1;</code>
@@ -13332,7 +13358,7 @@ public final class FrontendPbf {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -13343,7 +13369,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the OSM id of the primary element this object is created from, if any
+     * the OSM id of the primary element this object is created from, if any 
      * </pre>
      *
      * <code>optional string osmId = 1;</code>
@@ -13352,7 +13378,7 @@ public final class FrontendPbf {
         getOsmIdBytes() {
       java.lang.Object ref = osmId_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b =
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         osmId_ = b;
@@ -13366,7 +13392,7 @@ public final class FrontendPbf {
     private int typeName_;
     /**
      * <pre>
-     * the type of this WorldObject, in broad terms. References stringBlock.
+     * the type of this WorldObject, in broad terms. References stringBlock. 
      * </pre>
      *
      * <code>optional uint32 typeName = 2;</code>
@@ -13376,7 +13402,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * the type of this WorldObject, in broad terms. References stringBlock.
+     * the type of this WorldObject, in broad terms. References stringBlock. 
      * </pre>
      *
      * <code>optional uint32 typeName = 2;</code>
@@ -13389,7 +13415,7 @@ public final class FrontendPbf {
     private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry> triangleGeometries_;
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13399,18 +13425,18 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder> 
         getTriangleGeometriesOrBuilderList() {
       return triangleGeometries_;
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13420,7 +13446,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13430,7 +13456,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -13444,7 +13470,7 @@ public final class FrontendPbf {
     private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry> extrusionGeometries_;
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13454,18 +13480,18 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder> 
         getExtrusionGeometriesOrBuilderList() {
       return extrusionGeometries_;
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13475,7 +13501,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13485,7 +13511,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -13499,7 +13525,7 @@ public final class FrontendPbf {
     private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry> instanceGeometries_;
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13509,18 +13535,18 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder> 
         getInstanceGeometriesOrBuilderList() {
       return instanceGeometries_;
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13530,7 +13556,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13540,7 +13566,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+     * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
      * </pre>
      *
      * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -13779,7 +13805,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a three-dimensional object
+     * a three-dimensional object 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.WorldObject}
@@ -13982,7 +14008,7 @@ public final class FrontendPbf {
               triangleGeometriesBuilder_ = null;
               triangleGeometries_ = other.triangleGeometries_;
               bitField0_ = (bitField0_ & ~0x00000004);
-              triangleGeometriesBuilder_ =
+              triangleGeometriesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTriangleGeometriesFieldBuilder() : null;
             } else {
@@ -14008,7 +14034,7 @@ public final class FrontendPbf {
               extrusionGeometriesBuilder_ = null;
               extrusionGeometries_ = other.extrusionGeometries_;
               bitField0_ = (bitField0_ & ~0x00000008);
-              extrusionGeometriesBuilder_ =
+              extrusionGeometriesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getExtrusionGeometriesFieldBuilder() : null;
             } else {
@@ -14034,7 +14060,7 @@ public final class FrontendPbf {
               instanceGeometriesBuilder_ = null;
               instanceGeometries_ = other.instanceGeometries_;
               bitField0_ = (bitField0_ & ~0x00000010);
-              instanceGeometriesBuilder_ =
+              instanceGeometriesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getInstanceGeometriesFieldBuilder() : null;
             } else {
@@ -14085,7 +14111,7 @@ public final class FrontendPbf {
       private java.lang.Object osmId_ = "";
       /**
        * <pre>
-       * the OSM id of the primary element this object is created from, if any
+       * the OSM id of the primary element this object is created from, if any 
        * </pre>
        *
        * <code>optional string osmId = 1;</code>
@@ -14095,7 +14121,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the OSM id of the primary element this object is created from, if any
+       * the OSM id of the primary element this object is created from, if any 
        * </pre>
        *
        * <code>optional string osmId = 1;</code>
@@ -14116,7 +14142,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the OSM id of the primary element this object is created from, if any
+       * the OSM id of the primary element this object is created from, if any 
        * </pre>
        *
        * <code>optional string osmId = 1;</code>
@@ -14125,7 +14151,7 @@ public final class FrontendPbf {
           getOsmIdBytes() {
         java.lang.Object ref = osmId_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           osmId_ = b;
@@ -14136,7 +14162,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the OSM id of the primary element this object is created from, if any
+       * the OSM id of the primary element this object is created from, if any 
        * </pre>
        *
        * <code>optional string osmId = 1;</code>
@@ -14153,7 +14179,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the OSM id of the primary element this object is created from, if any
+       * the OSM id of the primary element this object is created from, if any 
        * </pre>
        *
        * <code>optional string osmId = 1;</code>
@@ -14166,7 +14192,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the OSM id of the primary element this object is created from, if any
+       * the OSM id of the primary element this object is created from, if any 
        * </pre>
        *
        * <code>optional string osmId = 1;</code>
@@ -14185,7 +14211,7 @@ public final class FrontendPbf {
       private int typeName_ ;
       /**
        * <pre>
-       * the type of this WorldObject, in broad terms. References stringBlock.
+       * the type of this WorldObject, in broad terms. References stringBlock. 
        * </pre>
        *
        * <code>optional uint32 typeName = 2;</code>
@@ -14195,7 +14221,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the type of this WorldObject, in broad terms. References stringBlock.
+       * the type of this WorldObject, in broad terms. References stringBlock. 
        * </pre>
        *
        * <code>optional uint32 typeName = 2;</code>
@@ -14205,7 +14231,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the type of this WorldObject, in broad terms. References stringBlock.
+       * the type of this WorldObject, in broad terms. References stringBlock. 
        * </pre>
        *
        * <code>optional uint32 typeName = 2;</code>
@@ -14218,7 +14244,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * the type of this WorldObject, in broad terms. References stringBlock.
+       * the type of this WorldObject, in broad terms. References stringBlock. 
        * </pre>
        *
        * <code>optional uint32 typeName = 2;</code>
@@ -14244,7 +14270,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14258,7 +14284,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14272,7 +14298,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14286,7 +14312,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14307,7 +14333,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14325,7 +14351,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14345,7 +14371,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14366,7 +14392,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14384,7 +14410,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14402,7 +14428,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14421,7 +14447,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14438,7 +14464,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14455,7 +14481,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14466,7 +14492,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14480,12 +14506,12 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder> 
            getTriangleGeometriesOrBuilderList() {
         if (triangleGeometriesBuilder_ != null) {
           return triangleGeometriesBuilder_.getMessageOrBuilderList();
@@ -14495,7 +14521,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14506,7 +14532,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
@@ -14518,17 +14544,17 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.TriangleGeometry triangleGeometries = 3;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder> 
            getTriangleGeometriesBuilderList() {
         return getTriangleGeometriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometryOrBuilder> 
           getTriangleGeometriesFieldBuilder() {
         if (triangleGeometriesBuilder_ == null) {
           triangleGeometriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -14556,7 +14582,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14570,7 +14596,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14584,7 +14610,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14598,7 +14624,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14619,7 +14645,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14637,7 +14663,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14657,7 +14683,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14678,7 +14704,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14696,7 +14722,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14714,7 +14740,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14733,7 +14759,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14750,7 +14776,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14767,7 +14793,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14778,7 +14804,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14792,12 +14818,12 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder> 
            getExtrusionGeometriesOrBuilderList() {
         if (extrusionGeometriesBuilder_ != null) {
           return extrusionGeometriesBuilder_.getMessageOrBuilderList();
@@ -14807,7 +14833,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14818,7 +14844,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
@@ -14830,17 +14856,17 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.ExtrusionGeometry extrusionGeometries = 4;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry.Builder> 
            getExtrusionGeometriesBuilderList() {
         return getExtrusionGeometriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometryOrBuilder> 
           getExtrusionGeometriesFieldBuilder() {
         if (extrusionGeometriesBuilder_ == null) {
           extrusionGeometriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -14868,7 +14894,7 @@ public final class FrontendPbf {
 
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14882,7 +14908,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14896,7 +14922,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14910,7 +14936,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14931,7 +14957,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14949,7 +14975,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14969,7 +14995,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -14990,7 +15016,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15008,7 +15034,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15026,7 +15052,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15045,7 +15071,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15062,7 +15088,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15079,7 +15105,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15090,7 +15116,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15104,12 +15130,12 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder> 
            getInstanceGeometriesOrBuilderList() {
         if (instanceGeometriesBuilder_ != null) {
           return instanceGeometriesBuilder_.getMessageOrBuilderList();
@@ -15119,7 +15145,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15130,7 +15156,7 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
@@ -15142,17 +15168,17 @@ public final class FrontendPbf {
       }
       /**
        * <pre>
-       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required
+       * geometry this object is composed of; at least 1 of this or one of the other geometry types is required 
        * </pre>
        *
        * <code>repeated .frontend_pbf.InstanceGeometry instanceGeometries = 5;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry.Builder> 
            getInstanceGeometriesBuilderList() {
         return getInstanceGeometriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry, org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder> 
           getInstanceGeometriesFieldBuilder() {
         if (instanceGeometriesBuilder_ == null) {
           instanceGeometriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -15303,7 +15329,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
      */
-    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject>
+    java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject> 
         getObjectsList();
     /**
      * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
@@ -15316,7 +15342,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
      */
-    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+    java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
         getObjectsOrBuilderList();
     /**
      * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
@@ -15326,7 +15352,7 @@ public final class FrontendPbf {
   }
   /**
    * <pre>
-   * a tile with 3d data
+   * a tile with 3d data 
    * </pre>
    *
    * Protobuf type {@code frontend_pbf.Tile}
@@ -15628,7 +15654,7 @@ public final class FrontendPbf {
     /**
      * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
      */
-    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+    public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
         getObjectsOrBuilderList() {
       return objects_;
     }
@@ -15950,7 +15976,7 @@ public final class FrontendPbf {
     }
     /**
      * <pre>
-     * a tile with 3d data
+     * a tile with 3d data 
      * </pre>
      *
      * Protobuf type {@code frontend_pbf.Tile}
@@ -16209,7 +16235,7 @@ public final class FrontendPbf {
               objectsBuilder_ = null;
               objects_ = other.objects_;
               bitField0_ = (bitField0_ & ~0x00000040);
-              objectsBuilder_ =
+              objectsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getObjectsFieldBuilder() : null;
             } else {
@@ -16384,7 +16410,7 @@ public final class FrontendPbf {
        * <code>required .frontend_pbf.Vector3dBlock vector3dBlock = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlockOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlockOrBuilder> 
           getVector3DBlockFieldBuilder() {
         if (vector3DBlockBuilder_ == null) {
           vector3DBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -16502,7 +16528,7 @@ public final class FrontendPbf {
        * <code>required .frontend_pbf.Vector2dBlock vector2dBlock = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlockOrBuilder> 
           getVector2DBlockFieldBuilder() {
         if (vector2DBlockBuilder_ == null) {
           vector2DBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -16620,7 +16646,7 @@ public final class FrontendPbf {
        * <code>required .frontend_pbf.StringBlock stringBlock = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlockOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlockOrBuilder> 
           getStringBlockFieldBuilder() {
         if (stringBlockBuilder_ == null) {
           stringBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -16738,7 +16764,7 @@ public final class FrontendPbf {
        * <code>required .frontend_pbf.ShapeBlock shapeBlock = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlockOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlockOrBuilder> 
           getShapeBlockFieldBuilder() {
         if (shapeBlockBuilder_ == null) {
           shapeBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -16856,7 +16882,7 @@ public final class FrontendPbf {
        * <code>required .frontend_pbf.MaterialBlock materialBlock = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlockOrBuilder> 
           getMaterialBlockFieldBuilder() {
         if (materialBlockBuilder_ == null) {
           materialBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -16974,7 +17000,7 @@ public final class FrontendPbf {
        * <code>required .frontend_pbf.ModelBlock modelBlock = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlockOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlock, org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlock.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlockOrBuilder> 
           getModelBlockFieldBuilder() {
         if (modelBlockBuilder_ == null) {
           modelBlockBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -17182,7 +17208,7 @@ public final class FrontendPbf {
       /**
        * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
        */
-      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+      public java.util.List<? extends org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
            getObjectsOrBuilderList() {
         if (objectsBuilder_ != null) {
           return objectsBuilder_.getMessageOrBuilderList();
@@ -17208,12 +17234,12 @@ public final class FrontendPbf {
       /**
        * <code>repeated .frontend_pbf.WorldObject objects = 7;</code>
        */
-      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder>
+      public java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder> 
            getObjectsBuilderList() {
         return getObjectsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder>
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObjectOrBuilder> 
           getObjectsFieldBuilder() {
         if (objectsBuilder_ == null) {
           objectsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -17281,72 +17307,72 @@ public final class FrontendPbf {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Vector3dBlock_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Vector3dBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Vector2dBlock_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Vector2dBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_StringBlock_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_StringBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_ShapeBlock_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_ShapeBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Shape_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Shape_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_MaterialBlock_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_MaterialBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Material_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Material_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Material_TextureLayer_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Material_TextureLayer_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_ModelBlock_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_ModelBlock_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_TriangleGeometry_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_TriangleGeometry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_ExtrusionGeometry_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_ExtrusionGeometry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_InstanceGeometry_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_InstanceGeometry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_WorldObject_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_WorldObject_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_Tile_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_Tile_fieldAccessorTable;
 
@@ -17395,7 +17421,7 @@ public final class FrontendPbf {
       "\010startCap\030\007 \001(\010:\005false\022\025\n\006endCap\030\010 \001(\010:\005" +
       "false\"}\n\020InstanceGeometry\022\r\n\005model\030\001 \001(\r" +
       "\022\032\n\022resourceIdentifier\030\005 \001(\t\022\024\n\010position" +
-      "\030\002 \003(\rB\002\020\001\022\025\n\tdirection\030\003 \003(\005B\002\020\001\022\021\n\005sca" +
+      "\030\002 \003(\022B\002\020\001\022\025\n\tdirection\030\003 \003(\005B\002\020\001\022\021\n\005sca" +
       "le\030\004 \003(\rB\002\020\001\"\344\001\n\013WorldObject\022\r\n\005osmId\030\001 " +
       "\001(\t\022\020\n\010typeName\030\002 \001(\r\022:\n\022triangleGeometr" +
       "ies\030\003 \003(\0132\036.frontend_pbf.TriangleGeometr" +
