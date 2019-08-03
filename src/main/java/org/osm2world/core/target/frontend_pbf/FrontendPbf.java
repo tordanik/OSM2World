@@ -11665,6 +11665,31 @@ public final class FrontendPbf {
      * <code>repeated uint32 scale = 4 [packed = true];</code>
      */
     int getScale(int index);
+
+    /**
+     * <pre>
+     * this message is present if this geometry is animated 
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Animation animation = 6;</code>
+     */
+    boolean hasAnimation();
+    /**
+     * <pre>
+     * this message is present if this geometry is animated 
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Animation animation = 6;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation getAnimation();
+    /**
+     * <pre>
+     * this message is present if this geometry is animated 
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Animation animation = 6;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder getAnimationOrBuilder();
   }
   /**
    * <pre>
@@ -11786,6 +11811,19 @@ public final class FrontendPbf {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
               resourceIdentifier_ = bs;
+              break;
+            }
+            case 50: {
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = animation_.toBuilder();
+              }
+              animation_ = input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(animation_);
+                animation_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
               break;
             }
             default: {
@@ -12029,6 +12067,39 @@ public final class FrontendPbf {
     }
     private int scaleMemoizedSerializedSize = -1;
 
+    public static final int ANIMATION_FIELD_NUMBER = 6;
+    private org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation animation_;
+    /**
+     * <pre>
+     * this message is present if this geometry is animated 
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Animation animation = 6;</code>
+     */
+    public boolean hasAnimation() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <pre>
+     * this message is present if this geometry is animated 
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Animation animation = 6;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation getAnimation() {
+      return animation_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance() : animation_;
+    }
+    /**
+     * <pre>
+     * this message is present if this geometry is animated 
+     * </pre>
+     *
+     * <code>optional .frontend_pbf.Animation animation = 6;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder getAnimationOrBuilder() {
+      return animation_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance() : animation_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -12036,6 +12107,12 @@ public final class FrontendPbf {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (hasAnimation()) {
+        if (!getAnimation().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -12070,6 +12147,9 @@ public final class FrontendPbf {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, resourceIdentifier_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(6, getAnimation());
       }
       unknownFields.writeTo(output);
     }
@@ -12129,6 +12209,10 @@ public final class FrontendPbf {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, resourceIdentifier_);
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, getAnimation());
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -12161,6 +12245,11 @@ public final class FrontendPbf {
           .equals(other.getDirectionList());
       result = result && getScaleList()
           .equals(other.getScaleList());
+      result = result && (hasAnimation() == other.hasAnimation());
+      if (hasAnimation()) {
+        result = result && getAnimation()
+            .equals(other.getAnimation());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -12191,6 +12280,10 @@ public final class FrontendPbf {
       if (getScaleCount() > 0) {
         hash = (37 * hash) + SCALE_FIELD_NUMBER;
         hash = (53 * hash) + getScaleList().hashCode();
+      }
+      if (hasAnimation()) {
+        hash = (37 * hash) + ANIMATION_FIELD_NUMBER;
+        hash = (53 * hash) + getAnimation().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -12324,6 +12417,7 @@ public final class FrontendPbf {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getAnimationFieldBuilder();
         }
       }
       @java.lang.Override
@@ -12339,6 +12433,12 @@ public final class FrontendPbf {
         bitField0_ = (bitField0_ & ~0x00000008);
         scale_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (animationBuilder_ == null) {
+          animation_ = null;
+        } else {
+          animationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -12390,6 +12490,14 @@ public final class FrontendPbf {
           bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.scale_ = scale_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (animationBuilder_ == null) {
+          result.animation_ = animation_;
+        } else {
+          result.animation_ = animationBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -12477,6 +12585,9 @@ public final class FrontendPbf {
           }
           onChanged();
         }
+        if (other.hasAnimation()) {
+          mergeAnimation(other.getAnimation());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -12484,6 +12595,11 @@ public final class FrontendPbf {
 
       @java.lang.Override
       public final boolean isInitialized() {
+        if (hasAnimation()) {
+          if (!getAnimation().isInitialized()) {
+            return false;
+          }
+        }
         return true;
       }
 
@@ -12974,6 +13090,160 @@ public final class FrontendPbf {
         onChanged();
         return this;
       }
+
+      private org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation animation_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation, org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder> animationBuilder_;
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public boolean hasAnimation() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation getAnimation() {
+        if (animationBuilder_ == null) {
+          return animation_ == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance() : animation_;
+        } else {
+          return animationBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public Builder setAnimation(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation value) {
+        if (animationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          animation_ = value;
+          onChanged();
+        } else {
+          animationBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public Builder setAnimation(
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder builderForValue) {
+        if (animationBuilder_ == null) {
+          animation_ = builderForValue.build();
+          onChanged();
+        } else {
+          animationBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public Builder mergeAnimation(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation value) {
+        if (animationBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+              animation_ != null &&
+              animation_ != org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance()) {
+            animation_ =
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.newBuilder(animation_).mergeFrom(value).buildPartial();
+          } else {
+            animation_ = value;
+          }
+          onChanged();
+        } else {
+          animationBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public Builder clearAnimation() {
+        if (animationBuilder_ == null) {
+          animation_ = null;
+          onChanged();
+        } else {
+          animationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder getAnimationBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getAnimationFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder getAnimationOrBuilder() {
+        if (animationBuilder_ != null) {
+          return animationBuilder_.getMessageOrBuilder();
+        } else {
+          return animation_ == null ?
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance() : animation_;
+        }
+      }
+      /**
+       * <pre>
+       * this message is present if this geometry is animated 
+       * </pre>
+       *
+       * <code>optional .frontend_pbf.Animation animation = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation, org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder> 
+          getAnimationFieldBuilder() {
+        if (animationBuilder_ == null) {
+          animationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation, org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder>(
+                  getAnimation(),
+                  getParentForChildren(),
+                  isClean());
+          animation_ = null;
+        }
+        return animationBuilder_;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -13022,6 +13292,1161 @@ public final class FrontendPbf {
 
     @java.lang.Override
     public org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface AnimationOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:frontend_pbf.Animation)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType getType();
+
+    /**
+     * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+     */
+    boolean hasLoopMode();
+    /**
+     * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode getLoopMode();
+
+    /**
+     * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+     */
+    boolean hasTimerType();
+    /**
+     * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+     */
+    org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType getTimerType();
+
+    /**
+     * <pre>
+     * the fraction of the entire animation that is completed each second. 
+     * </pre>
+     *
+     * <code>required double runsPerSecond = 4;</code>
+     */
+    boolean hasRunsPerSecond();
+    /**
+     * <pre>
+     * the fraction of the entire animation that is completed each second. 
+     * </pre>
+     *
+     * <code>required double runsPerSecond = 4;</code>
+     */
+    double getRunsPerSecond();
+  }
+  /**
+   * <pre>
+   * The parameters defining an animation.
+   *At the moment, this does not support keys yet.
+   *Instead, there's an assumption based on the type of animation,
+   *e.g. rotations assume that each run of the animation means one full (360°) rotation. 
+   * </pre>
+   *
+   * Protobuf type {@code frontend_pbf.Animation}
+   */
+  public  static final class Animation extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:frontend_pbf.Animation)
+      AnimationOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use Animation.newBuilder() to construct.
+    private Animation(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private Animation() {
+      type_ = 1;
+      loopMode_ = 1;
+      timerType_ = 1;
+      runsPerSecond_ = 0D;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Animation(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType value = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = rawValue;
+              }
+              break;
+            }
+            case 16: {
+              int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode value = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(2, rawValue);
+              } else {
+                bitField0_ |= 0x00000002;
+                loopMode_ = rawValue;
+              }
+              break;
+            }
+            case 24: {
+              int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType value = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(3, rawValue);
+              } else {
+                bitField0_ |= 0x00000004;
+                timerType_ = rawValue;
+              }
+              break;
+            }
+            case 33: {
+              bitField0_ |= 0x00000008;
+              runsPerSecond_ = input.readDouble();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Animation_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Animation_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder.class);
+    }
+
+    /**
+     * <pre>
+     * the property that is being modified 
+     * </pre>
+     *
+     * Protobuf enum {@code frontend_pbf.Animation.AnimationType}
+     */
+    public enum AnimationType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       * clockwise rotation around the model's local x axis
+       *(before InstanceGeometry's transformations are applied) 
+       * </pre>
+       *
+       * <code>ROTATION_X = 1;</code>
+       */
+      ROTATION_X(1),
+      ;
+
+      /**
+       * <pre>
+       * clockwise rotation around the model's local x axis
+       *(before InstanceGeometry's transformations are applied) 
+       * </pre>
+       *
+       * <code>ROTATION_X = 1;</code>
+       */
+      public static final int ROTATION_X_VALUE = 1;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static AnimationType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static AnimationType forNumber(int value) {
+        switch (value) {
+          case 1: return ROTATION_X;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<AnimationType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          AnimationType> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<AnimationType>() {
+              public AnimationType findValueByNumber(int number) {
+                return AnimationType.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final AnimationType[] VALUES = values();
+
+      public static AnimationType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private AnimationType(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:frontend_pbf.Animation.AnimationType)
+    }
+
+    /**
+     * <pre>
+     * what happens after the animation completes 
+     * </pre>
+     *
+     * Protobuf enum {@code frontend_pbf.Animation.LoopMode}
+     */
+    public enum LoopMode
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       * restart the animation from the beginning.
+       *Remaining progress should be used in the next cycle (i.e. modulo-style wrap). 
+       * </pre>
+       *
+       * <code>CYCLE = 1;</code>
+       */
+      CYCLE(1),
+      ;
+
+      /**
+       * <pre>
+       * restart the animation from the beginning.
+       *Remaining progress should be used in the next cycle (i.e. modulo-style wrap). 
+       * </pre>
+       *
+       * <code>CYCLE = 1;</code>
+       */
+      public static final int CYCLE_VALUE = 1;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static LoopMode valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static LoopMode forNumber(int value) {
+        switch (value) {
+          case 1: return CYCLE;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<LoopMode>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          LoopMode> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<LoopMode>() {
+              public LoopMode findValueByNumber(int number) {
+                return LoopMode.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDescriptor().getEnumTypes().get(1);
+      }
+
+      private static final LoopMode[] VALUES = values();
+
+      public static LoopMode valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private LoopMode(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:frontend_pbf.Animation.LoopMode)
+    }
+
+    /**
+     * <pre>
+     * the source of the animation timer.
+     *May eventually be extended to include local time in the simulated location,
+     *animations triggered by user interaction, or factors such as wind direction. 
+     * </pre>
+     *
+     * Protobuf enum {@code frontend_pbf.Animation.TimerType}
+     */
+    public enum TimerType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       * A clock counting seconds with arbitrary starting point.
+       *Can even be started at different values for different models to prevent synced animations. 
+       * </pre>
+       *
+       * <code>MODEL_TIME = 1;</code>
+       */
+      MODEL_TIME(1),
+      ;
+
+      /**
+       * <pre>
+       * A clock counting seconds with arbitrary starting point.
+       *Can even be started at different values for different models to prevent synced animations. 
+       * </pre>
+       *
+       * <code>MODEL_TIME = 1;</code>
+       */
+      public static final int MODEL_TIME_VALUE = 1;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static TimerType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static TimerType forNumber(int value) {
+        switch (value) {
+          case 1: return MODEL_TIME;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<TimerType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          TimerType> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<TimerType>() {
+              public TimerType findValueByNumber(int number) {
+                return TimerType.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDescriptor().getEnumTypes().get(2);
+      }
+
+      private static final TimerType[] VALUES = values();
+
+      public static TimerType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private TimerType(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:frontend_pbf.Animation.TimerType)
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private int type_;
+    /**
+     * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType getType() {
+      @SuppressWarnings("deprecation")
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType.valueOf(type_);
+      return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType.ROTATION_X : result;
+    }
+
+    public static final int LOOPMODE_FIELD_NUMBER = 2;
+    private int loopMode_;
+    /**
+     * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+     */
+    public boolean hasLoopMode() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode getLoopMode() {
+      @SuppressWarnings("deprecation")
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode.valueOf(loopMode_);
+      return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode.CYCLE : result;
+    }
+
+    public static final int TIMERTYPE_FIELD_NUMBER = 3;
+    private int timerType_;
+    /**
+     * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+     */
+    public boolean hasTimerType() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+     */
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType getTimerType() {
+      @SuppressWarnings("deprecation")
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType.valueOf(timerType_);
+      return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType.MODEL_TIME : result;
+    }
+
+    public static final int RUNSPERSECOND_FIELD_NUMBER = 4;
+    private double runsPerSecond_;
+    /**
+     * <pre>
+     * the fraction of the entire animation that is completed each second. 
+     * </pre>
+     *
+     * <code>required double runsPerSecond = 4;</code>
+     */
+    public boolean hasRunsPerSecond() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <pre>
+     * the fraction of the entire animation that is completed each second. 
+     * </pre>
+     *
+     * <code>required double runsPerSecond = 4;</code>
+     */
+    public double getRunsPerSecond() {
+      return runsPerSecond_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (!hasType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasRunsPerSecond()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeEnum(2, loopMode_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeEnum(3, timerType_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeDouble(4, runsPerSecond_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(2, loopMode_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(3, timerType_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(4, runsPerSecond_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation)) {
+        return super.equals(obj);
+      }
+      org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation other = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation) obj;
+
+      boolean result = true;
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && type_ == other.type_;
+      }
+      result = result && (hasLoopMode() == other.hasLoopMode());
+      if (hasLoopMode()) {
+        result = result && loopMode_ == other.loopMode_;
+      }
+      result = result && (hasTimerType() == other.hasTimerType());
+      if (hasTimerType()) {
+        result = result && timerType_ == other.timerType_;
+      }
+      result = result && (hasRunsPerSecond() == other.hasRunsPerSecond());
+      if (hasRunsPerSecond()) {
+        result = result && (
+            java.lang.Double.doubleToLongBits(getRunsPerSecond())
+            == java.lang.Double.doubleToLongBits(
+                other.getRunsPerSecond()));
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
+      }
+      if (hasLoopMode()) {
+        hash = (37 * hash) + LOOPMODE_FIELD_NUMBER;
+        hash = (53 * hash) + loopMode_;
+      }
+      if (hasTimerType()) {
+        hash = (37 * hash) + TIMERTYPE_FIELD_NUMBER;
+        hash = (53 * hash) + timerType_;
+      }
+      if (hasRunsPerSecond()) {
+        hash = (37 * hash) + RUNSPERSECOND_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            java.lang.Double.doubleToLongBits(getRunsPerSecond()));
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * The parameters defining an animation.
+     *At the moment, this does not support keys yet.
+     *Instead, there's an assumption based on the type of animation,
+     *e.g. rotations assume that each run of the animation means one full (360°) rotation. 
+     * </pre>
+     *
+     * Protobuf type {@code frontend_pbf.Animation}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:frontend_pbf.Animation)
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.AnimationOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Animation_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Animation_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.class, org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.Builder.class);
+      }
+
+      // Construct using org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        type_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        loopMode_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        timerType_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        runsPerSecond_ = 0D;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.internal_static_frontend_pbf_Animation_descriptor;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation getDefaultInstanceForType() {
+        return org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation build() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation buildPartial() {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation result = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.loopMode_ = loopMode_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.timerType_ = timerType_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.runsPerSecond_ = runsPerSecond_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation) {
+          return mergeFrom((org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation other) {
+        if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasLoopMode()) {
+          setLoopMode(other.getLoopMode());
+        }
+        if (other.hasTimerType()) {
+          setTimerType(other.getTimerType());
+        }
+        if (other.hasRunsPerSecond()) {
+          setRunsPerSecond(other.getRunsPerSecond());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        if (!hasType()) {
+          return false;
+        }
+        if (!hasRunsPerSecond()) {
+          return false;
+        }
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int type_ = 1;
+      /**
+       * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType getType() {
+        @SuppressWarnings("deprecation")
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType.valueOf(type_);
+        return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType.ROTATION_X : result;
+      }
+      /**
+       * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+       */
+      public Builder setType(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required .frontend_pbf.Animation.AnimationType type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = 1;
+        onChanged();
+        return this;
+      }
+
+      private int loopMode_ = 1;
+      /**
+       * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+       */
+      public boolean hasLoopMode() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode getLoopMode() {
+        @SuppressWarnings("deprecation")
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode.valueOf(loopMode_);
+        return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode.CYCLE : result;
+      }
+      /**
+       * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+       */
+      public Builder setLoopMode(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.LoopMode value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
+        loopMode_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .frontend_pbf.Animation.LoopMode loopMode = 2 [default = CYCLE];</code>
+       */
+      public Builder clearLoopMode() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        loopMode_ = 1;
+        onChanged();
+        return this;
+      }
+
+      private int timerType_ = 1;
+      /**
+       * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+       */
+      public boolean hasTimerType() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+       */
+      public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType getTimerType() {
+        @SuppressWarnings("deprecation")
+        org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType result = org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType.valueOf(timerType_);
+        return result == null ? org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType.MODEL_TIME : result;
+      }
+      /**
+       * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+       */
+      public Builder setTimerType(org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.TimerType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
+        timerType_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .frontend_pbf.Animation.TimerType timerType = 3 [default = MODEL_TIME];</code>
+       */
+      public Builder clearTimerType() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        timerType_ = 1;
+        onChanged();
+        return this;
+      }
+
+      private double runsPerSecond_ ;
+      /**
+       * <pre>
+       * the fraction of the entire animation that is completed each second. 
+       * </pre>
+       *
+       * <code>required double runsPerSecond = 4;</code>
+       */
+      public boolean hasRunsPerSecond() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <pre>
+       * the fraction of the entire animation that is completed each second. 
+       * </pre>
+       *
+       * <code>required double runsPerSecond = 4;</code>
+       */
+      public double getRunsPerSecond() {
+        return runsPerSecond_;
+      }
+      /**
+       * <pre>
+       * the fraction of the entire animation that is completed each second. 
+       * </pre>
+       *
+       * <code>required double runsPerSecond = 4;</code>
+       */
+      public Builder setRunsPerSecond(double value) {
+        bitField0_ |= 0x00000008;
+        runsPerSecond_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * the fraction of the entire animation that is completed each second. 
+       * </pre>
+       *
+       * <code>required double runsPerSecond = 4;</code>
+       */
+      public Builder clearRunsPerSecond() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        runsPerSecond_ = 0D;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:frontend_pbf.Animation)
+    }
+
+    // @@protoc_insertion_point(class_scope:frontend_pbf.Animation)
+    private static final org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation();
+    }
+
+    public static org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<Animation>
+        PARSER = new com.google.protobuf.AbstractParser<Animation>() {
+      @java.lang.Override
+      public Animation parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Animation(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<Animation> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Animation> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -13595,6 +15020,12 @@ public final class FrontendPbf {
           return false;
         }
       }
+      for (int i = 0; i < getInstanceGeometriesCount(); i++) {
+        if (!getInstanceGeometries(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -14082,6 +15513,11 @@ public final class FrontendPbf {
         }
         for (int i = 0; i < getExtrusionGeometriesCount(); i++) {
           if (!getExtrusionGeometries(i).isInitialized()) {
+            return false;
+          }
+        }
+        for (int i = 0; i < getInstanceGeometriesCount(); i++) {
+          if (!getInstanceGeometries(i).isInitialized()) {
             return false;
           }
         }
@@ -17366,6 +18802,11 @@ public final class FrontendPbf {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_frontend_pbf_InstanceGeometry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_frontend_pbf_Animation_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_frontend_pbf_Animation_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_frontend_pbf_WorldObject_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -17419,26 +18860,34 @@ public final class FrontendPbf {
       "l\030\001 \002(\r\022\r\n\005shape\030\002 \002(\r\022\014\n\004path\030\003 \003(\004\022\021\n\t" +
       "upVectors\030\004 \003(\004\022\024\n\014scaleFactors\030\005 \003(\004\022\027\n" +
       "\010startCap\030\007 \001(\010:\005false\022\025\n\006endCap\030\010 \001(\010:\005" +
-      "false\"}\n\020InstanceGeometry\022\r\n\005model\030\001 \001(\r" +
-      "\022\032\n\022resourceIdentifier\030\005 \001(\t\022\024\n\010position" +
-      "\030\002 \003(\022B\002\020\001\022\025\n\tdirection\030\003 \003(\005B\002\020\001\022\021\n\005sca" +
-      "le\030\004 \003(\rB\002\020\001\"\344\001\n\013WorldObject\022\r\n\005osmId\030\001 " +
-      "\001(\t\022\020\n\010typeName\030\002 \001(\r\022:\n\022triangleGeometr" +
-      "ies\030\003 \003(\0132\036.frontend_pbf.TriangleGeometr" +
-      "y\022<\n\023extrusionGeometries\030\004 \003(\0132\037.fronten" +
-      "d_pbf.ExtrusionGeometry\022:\n\022instanceGeome" +
-      "tries\030\005 \003(\0132\036.frontend_pbf.InstanceGeome" +
-      "try\"\332\002\n\004Tile\0222\n\rvector3dBlock\030\001 \002(\0132\033.fr" +
-      "ontend_pbf.Vector3dBlock\0222\n\rvector2dBloc" +
-      "k\030\002 \002(\0132\033.frontend_pbf.Vector2dBlock\022.\n\013" +
-      "stringBlock\030\003 \002(\0132\031.frontend_pbf.StringB" +
-      "lock\022,\n\nshapeBlock\030\004 \002(\0132\030.frontend_pbf." +
-      "ShapeBlock\0222\n\rmaterialBlock\030\005 \002(\0132\033.fron" +
-      "tend_pbf.MaterialBlock\022,\n\nmodelBlock\030\006 \002" +
-      "(\0132\030.frontend_pbf.ModelBlock\022*\n\007objects\030" +
-      "\007 \003(\0132\031.frontend_pbf.WorldObjectB5\n&org." +
-      "osm2world.core.target.frontend_pbfB\013Fron" +
-      "tendPbf"
+      "false\"\251\001\n\020InstanceGeometry\022\r\n\005model\030\001 \001(" +
+      "\r\022\032\n\022resourceIdentifier\030\005 \001(\t\022\024\n\010positio" +
+      "n\030\002 \003(\022B\002\020\001\022\025\n\tdirection\030\003 \003(\005B\002\020\001\022\021\n\005sc" +
+      "ale\030\004 \003(\rB\002\020\001\022*\n\tanimation\030\006 \001(\0132\027.front" +
+      "end_pbf.Animation\"\251\002\n\tAnimation\0223\n\004type\030" +
+      "\001 \002(\0162%.frontend_pbf.Animation.Animation" +
+      "Type\0229\n\010loopMode\030\002 \001(\0162 .frontend_pbf.An" +
+      "imation.LoopMode:\005CYCLE\022@\n\ttimerType\030\003 \001" +
+      "(\0162!.frontend_pbf.Animation.TimerType:\nM" +
+      "ODEL_TIME\022\025\n\rrunsPerSecond\030\004 \002(\001\"\037\n\rAnim" +
+      "ationType\022\016\n\nROTATION_X\020\001\"\025\n\010LoopMode\022\t\n" +
+      "\005CYCLE\020\001\"\033\n\tTimerType\022\016\n\nMODEL_TIME\020\001\"\344\001" +
+      "\n\013WorldObject\022\r\n\005osmId\030\001 \001(\t\022\020\n\010typeName" +
+      "\030\002 \001(\r\022:\n\022triangleGeometries\030\003 \003(\0132\036.fro" +
+      "ntend_pbf.TriangleGeometry\022<\n\023extrusionG" +
+      "eometries\030\004 \003(\0132\037.frontend_pbf.Extrusion" +
+      "Geometry\022:\n\022instanceGeometries\030\005 \003(\0132\036.f" +
+      "rontend_pbf.InstanceGeometry\"\332\002\n\004Tile\0222\n" +
+      "\rvector3dBlock\030\001 \002(\0132\033.frontend_pbf.Vect" +
+      "or3dBlock\0222\n\rvector2dBlock\030\002 \002(\0132\033.front" +
+      "end_pbf.Vector2dBlock\022.\n\013stringBlock\030\003 \002" +
+      "(\0132\031.frontend_pbf.StringBlock\022,\n\nshapeBl" +
+      "ock\030\004 \002(\0132\030.frontend_pbf.ShapeBlock\0222\n\rm" +
+      "aterialBlock\030\005 \002(\0132\033.frontend_pbf.Materi" +
+      "alBlock\022,\n\nmodelBlock\030\006 \002(\0132\030.frontend_p" +
+      "bf.ModelBlock\022*\n\007objects\030\007 \003(\0132\031.fronten" +
+      "d_pbf.WorldObjectB5\n&org.osm2world.core." +
+      "target.frontend_pbfB\013FrontendPbf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -17523,15 +18972,21 @@ public final class FrontendPbf {
     internal_static_frontend_pbf_InstanceGeometry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_InstanceGeometry_descriptor,
-        new java.lang.String[] { "Model", "ResourceIdentifier", "Position", "Direction", "Scale", });
-    internal_static_frontend_pbf_WorldObject_descriptor =
+        new java.lang.String[] { "Model", "ResourceIdentifier", "Position", "Direction", "Scale", "Animation", });
+    internal_static_frontend_pbf_Animation_descriptor =
       getDescriptor().getMessageTypes().get(11);
+    internal_static_frontend_pbf_Animation_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_frontend_pbf_Animation_descriptor,
+        new java.lang.String[] { "Type", "LoopMode", "TimerType", "RunsPerSecond", });
+    internal_static_frontend_pbf_WorldObject_descriptor =
+      getDescriptor().getMessageTypes().get(12);
     internal_static_frontend_pbf_WorldObject_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_WorldObject_descriptor,
         new java.lang.String[] { "OsmId", "TypeName", "TriangleGeometries", "ExtrusionGeometries", "InstanceGeometries", });
     internal_static_frontend_pbf_Tile_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_frontend_pbf_Tile_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_frontend_pbf_Tile_descriptor,

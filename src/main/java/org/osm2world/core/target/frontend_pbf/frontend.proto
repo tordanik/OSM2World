@@ -233,6 +233,55 @@ message InstanceGeometry {
 	   Either one third of the length of 'position' or empty (for a default of 1). */
 	repeated uint32 scale = 4 [packed=true];
 
+	/* this message is present if this geometry is animated */
+	optional Animation animation = 6;
+
+}
+
+/* The parameters defining an animation.
+   At the moment, this does not support keys yet.
+   Instead, there's an assumption based on the type of animation,
+   e.g. rotations assume that each run of the animation means one full (360°) rotation. */
+message Animation {
+
+	/* the property that is being modified */
+	enum AnimationType {
+
+		/* clockwise rotation around the model's local x axis
+		   (before InstanceGeometry's transformations are applied) */ 
+		ROTATION_X = 1;
+
+	}
+
+	/* what happens after the animation completes */
+	enum LoopMode {
+
+		/* restart the animation from the beginning.
+		   Remaining progress should be used in the next cycle (i.e. modulo-style wrap). */ 
+		CYCLE = 1;
+
+	}
+
+	/* the source of the animation timer.
+	   May eventually be extended to include local time in the simulated location,
+	   animations triggered by user interaction, or factors such as wind direction. */
+	enum TimerType {
+
+		/* A clock counting seconds with arbitrary starting point.
+		   Can even be started at different values for different models to prevent synced animations. */ 
+		MODEL_TIME = 1;
+
+	}
+
+	required AnimationType type = 1;
+
+	optional LoopMode loopMode = 2 [default = CYCLE];
+
+	optional TimerType timerType = 3 [default = MODEL_TIME];
+
+	/* the fraction of the entire animation that is completed each second. */
+	required double runsPerSecond = 4;
+
 }
 
 /* a three-dimensional object */
