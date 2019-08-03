@@ -57,6 +57,8 @@ import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
@@ -76,6 +78,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.PoolModule.Pool;
+import org.osm2world.core.world.modules.PowerModule.WindTurbine;
 import org.osm2world.core.world.modules.TreeModule.Forest;
 import org.osm2world.core.world.modules.WaterModule.AreaFountain;
 import org.osm2world.core.world.modules.WaterModule.RiverJunction;
@@ -510,6 +513,16 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 				if (allUnscaled) {
 					geometryBuilder.clearScale();
+				}
+
+				if (model == WindTurbine.ROTOR) {
+
+					// hard-coded animation of wind turbine rotors
+					Animation.Builder animationBuilder = Animation.newBuilder();
+					animationBuilder.setType(AnimationType.ROTATION_X);
+					animationBuilder.setRunsPerSecond(0.3);
+					geometryBuilder.setAnimation(animationBuilder );
+
 				}
 
 				instanceGeometries.add(geometryBuilder.build());

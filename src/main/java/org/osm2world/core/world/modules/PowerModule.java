@@ -4,6 +4,7 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseMeasure;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -33,6 +34,9 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.frontend_pbf.ModelTarget;
+import org.osm2world.core.target.frontend_pbf.RenderableToModelTarget;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -202,8 +206,50 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private static final class WindTurbine extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	public static final class WindTurbine extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets, RenderableToModelTarget {
+
+		/** model of a rotor with 1 m rotor diameter */
+		public static final Model ROTOR = new Model() {
+
+			@Override
+			public void render(Target<?> target, VectorXYZ position,
+					double direction, Double height, Double width, Double length) {
+
+				double bladeLength = (height == 0 ? 1 : height) / 2;
+				double bladeWidth = 0.1 * bladeLength;
+
+				Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
+
+				// define first blade
+				List<VectorXYZ> bladeFront = asList(
+						position.add(0, 0, +bladeWidth/2),
+						position.add(0, -bladeLength, 0),
+						position.add(0, 0, -bladeWidth/2)
+				);
+
+				List<VectorXYZ> bladeBack = asList(bladeFront.get(0), bladeFront.get(2), bladeFront.get(1));
+
+				// rotate and draw blades
+				double rotCenterY = position.y;
+				double rotCenterZ = position.z;
+
+				bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
+				bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
+				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
+				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
+				bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
+				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
+				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
+				bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
+				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
+				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+
+			}
+
+		};
 
 		public WindTurbine(MapNode node) {
 			super(node);
@@ -222,13 +268,17 @@ public final class PowerModule extends AbstractModule {
 			float poleRadiusTop = poleRadiusBottom / 2;
 			float nacelleHeight = poleHeight * 0.05f;
 			float nacelleDepth = poleHeight * 0.1f;
-			float bladeLength = poleHeight / 2;
+			double rotorDiameter = poleHeight;
+
+			if (node.getTags().containsKey("rotor:diameter")
+					&& parseMeasure(node.getTags().getValue("rotor:diameter")) != null) {
+				rotorDiameter = parseMeasure(node.getTags().getValue("rotor:diameter"));
+			}
 
 			/* determine material */
 
 			Material poleMaterial = null;
 			Material nacelleMaterial = Materials.STEEL;
-			Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
 
 			//TODO parse color
 
@@ -254,37 +304,27 @@ public final class PowerModule extends AbstractModule {
 					getBase().addY(poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
-			/* draw blades */
+			/* draw rotor blades */
 
-			// define first blade
-			List<VectorXYZ> bladeFront = asList(
-				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, +nacelleHeight/2),
-				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2 - bladeLength, 0f),
-				getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, -nacelleHeight/2)
-			);
-			List<VectorXYZ> bladeBack = asList(
-				bladeFront.get(0),
-				bladeFront.get(2),
-				bladeFront.get(1)
-			);
+			if (target instanceof ModelTarget<?>) {
 
-			// rotate and draw blades
-			double rotCenterY = getBase().y + poleHeight + nacelleHeight/2;
-			double rotCenterZ = node.getPos().getZ();
+				((ModelTarget<?>) target).drawModel(ROTOR,
+						getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, 0),
+						0, rotorDiameter, rotorDiameter, rotorDiameter);
 
-			bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
-			bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
-			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
-			bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
-			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
-			bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
-			bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-			target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-			target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+			} else {
 
+				ROTOR.render(target,
+						getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, 0),
+						0, rotorDiameter, rotorDiameter, rotorDiameter);
+
+			}
+
+		}
+
+		@Override
+		public void renderTo(ModelTarget<?> target) {
+			renderTo(target);
 		}
 
 	}
