@@ -40,9 +40,6 @@ public class DelaunayTriangulationTest {
 
 			for (int insertCount = 0; insertCount < 100; insertCount++) {
 
-				System.out.println(RANDOMS.indexOf(random) + ":"
-						+ insertCount);
-
 				double x = (random.nextDouble() * 2 * SIZE) - SIZE;
 				double z = (random.nextDouble() * 2 * SIZE) - SIZE;
 
@@ -142,10 +139,6 @@ public class DelaunayTriangulationTest {
 						&& triangle.p1 != otherPoint
 						&& triangle.p2 != otherPoint) {
 
-					if (otherPoint.distanceToXZ(center) <= radius) {
-						System.out.println(otherPoint);
-						System.out.println(triangle);
-					}
 					assertTrue(otherPoint.distanceToXZ(center) > radius);
 
 				}

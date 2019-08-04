@@ -107,7 +107,6 @@ public class OSMToMapDataConverterTest {
 		List<MapArea> waterAreas = new ArrayList<MapArea>();
 
 		for (MapArea area : mapData.getMapAreas()) {
-			System.out.println(area.getTags());
 			if (area.getTags().contains("natural", "water")) {
 				waterAreas.add(area);
 			}

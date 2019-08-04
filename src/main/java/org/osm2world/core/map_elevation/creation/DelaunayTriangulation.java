@@ -655,11 +655,6 @@ public class DelaunayTriangulation {
 
 		for (int i = 0; i < result.neighbors.length; i++) {
 			result.relativeWeights[i] /= areaDifferenceSum;
-
-			if (result.relativeWeights[i] > 1) {
-				System.out.println(result.relativeWeights[i]);
-			}
-
 		}
 
 		return result;
