@@ -77,7 +77,7 @@ public class AbstractTargetTest {
 
 		TestTarget target = new TestTarget();
 
-		target.drawShape(PLASTIC, shape, new VectorXYZ(0, 5, 0), X_UNIT, Y_UNIT);
+		target.drawShape(PLASTIC, shape, new VectorXYZ(0, 5, 0), X_UNIT, Y_UNIT, 1.0);
 
 		List<TriangleXYZ> result = target.getDrawnTriangles();
 

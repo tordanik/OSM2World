@@ -47,7 +47,7 @@ public abstract class AbstractTarget<R extends Renderable>
 
 	@Override
 	public void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,
-			VectorXYZ frontVector, VectorXYZ upVector) {
+			VectorXYZ frontVector, VectorXYZ upVector, double scaleFactor) {
 
 		for (TriangleXZ triangle : shape.getTriangulation()) {
 
@@ -55,6 +55,10 @@ public abstract class AbstractTarget<R extends Renderable>
 
 			for (VectorXZ v : triangle.getVertexList()) {
 				triangleVertices.add(new VectorXYZ(-v.x, v.z, 0));
+			}
+
+			if (scaleFactor != 1.0) {
+				triangleVertices = scaleShapeVectors(triangleVertices, scaleFactor);
 			}
 
 			triangleVertices = transformShape(
@@ -200,14 +204,14 @@ public abstract class AbstractTarget<R extends Renderable>
 
 		if (shape instanceof SimpleClosedShapeXZ) {
 
-			if (options.contains(START_CAP)) {
+			if (options.contains(START_CAP) && scaleFactors.get(0) > 0) {
 				drawShape(material, new SimplePolygonXZ(reverse(shape.getVertexList())), // invert winding
-						path.get(0), forwardVectors.get(0), upVectors.get(0));
+						path.get(0), forwardVectors.get(0), upVectors.get(0), scaleFactors.get(0));
 			}
 
-			if (options.contains(END_CAP)) {
+			if (options.contains(END_CAP) && scaleFactors.get(last) > 0) {
 				drawShape(material, (SimpleClosedShapeXZ)shape,
-						path.get(last), forwardVectors.get(last), upVectors.get(last));
+						path.get(last), forwardVectors.get(last), upVectors.get(last), scaleFactors.get(last));
 			}
 
 		}

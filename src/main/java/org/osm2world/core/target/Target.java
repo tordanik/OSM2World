@@ -102,9 +102,10 @@ public interface Target<R extends Renderable> {
 	 *                     Defines the shape's rotation along with upVector; != null
 	 * @param upVector     up direction of the shape.
 	 *                     Defines the shape's rotation along with frontVector; != null
+	 * @param scaleFactor  a factor to scale the shape by, 1.0 leaves the shape unscaled.
 	 */
 	void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,
-			VectorXYZ frontVector, VectorXYZ upVector);
+			VectorXYZ frontVector, VectorXYZ upVector, double scaleFactor);
 
 	/**
 	 * extrudes a 2d shape along a path.
