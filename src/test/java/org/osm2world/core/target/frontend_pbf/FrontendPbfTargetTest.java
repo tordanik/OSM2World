@@ -7,7 +7,6 @@ import static org.osm2world.core.math.VectorXZ.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -69,7 +68,8 @@ public class FrontendPbfTargetTest {
 		ConversionFacade cf = new ConversionFacade();
 		Results results = cf.createRepresentations(osmData, asList(new TestWorldModule()), null, null);
 
-		File outputFile = Files.createTempFile("unittest", ".o2w.pbf").toFile();
+		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
+		outputFile.deleteOnExit();
 		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null);
 
 	}

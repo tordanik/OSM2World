@@ -5,7 +5,7 @@
 
 	<groupId>org.osm2world</groupId>
 	<artifactId>osm2world</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.3.0-SNAPSHOT</version>
 
 	<name>OSM2World</name>
 	<description>OSM2World creates three-dimensional models of the world from OpenStreetMap data</description>
@@ -38,6 +38,10 @@
 		<repository>
 		    <id>slimjars-repo</id>
 		    <url>http://mvn.slimjars.com</url>
+		</repository>
+		<repository>
+			<id>local-libs</id>
+			<url>file:///${project.basedir}/local-libs</url>
 		</repository>
 	</repositories>
 
@@ -143,27 +147,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.sf.javailp</groupId>
-			<artifactId>javailp</artifactId>
-			<version>1.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/javailp/javailp-1.2a.jar</systemPath>
-		</dependency>
-
-		<dependency>
-			<groupId>lpsolve</groupId>
-			<artifactId>lpsolve</artifactId>
-			<version>5.5</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/lp_solve/lpsolve55j.jar</systemPath>
-		</dependency>
-
-		<dependency>
 			<groupId>earcut4j</groupId>
 			<artifactId>earcut4j</artifactId>
 			<version>2.1.1</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/earcut4j/earcut4j-2.1.1.jar</systemPath>
 		</dependency>
 
 	</dependencies>
@@ -172,10 +158,32 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.2</version>
 				<configuration>
 					<archive>
 						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
 							<mainClass>org.osm2world.console.OSM2World</mainClass>
 						</manifest>
 					</archive>
