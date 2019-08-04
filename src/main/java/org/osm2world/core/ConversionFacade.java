@@ -19,7 +19,6 @@ import org.osm2world.core.map_data.creation.OriginMapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.EleConstraintValidator;
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SRTMData;
 import org.osm2world.core.map_elevation.creation.TerrainElevationData;
@@ -157,7 +156,7 @@ public class ConversionFacade {
 
 	private Factory<? extends OriginMapProjection> mapProjectionFactory = MetricMapProjection::new;
 
-	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = LeastSquaresInterpolator::new;
+	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = ZeroInterpolator::new;
 
 	private Factory<? extends EleConstraintEnforcer> eleConstraintEnforcerFactory = NoneEleConstraintEnforcer::new;
 

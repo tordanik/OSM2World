@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.viewer.view.debug.DebugView;
@@ -23,10 +23,8 @@ public class RenderOptions {
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
 
-	Class<? extends TerrainInterpolator> interpolatorClass =
-			LeastSquaresInterpolator.class;
-	Class<? extends EleConstraintEnforcer> enforcerClass =
-			NoneEleConstraintEnforcer.class;
+	Class<? extends TerrainInterpolator> interpolatorClass = ZeroInterpolator.class;
+	Class<? extends EleConstraintEnforcer> enforcerClass = NoneEleConstraintEnforcer.class;
 
 	public boolean isShowGrid() {
 		return showGrid;
