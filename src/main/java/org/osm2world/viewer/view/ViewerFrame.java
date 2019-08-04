@@ -22,7 +22,6 @@ import javax.swing.JRadioButtonMenuItem;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.InverseDistanceWeightingInterpolator;
-import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.LinearInterpolator;
 import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
@@ -282,8 +281,7 @@ public class ViewerFrame extends JFrame {
 
 			List<Class<? extends EleConstraintEnforcer>> enforcerClasses = asList(
 					NoneEleConstraintEnforcer.class,
-					SimpleEleConstraintEnforcer.class,
-					LPEleConstraintEnforcer.class);
+					SimpleEleConstraintEnforcer.class);
 
 			for (Class<? extends EleConstraintEnforcer> c : enforcerClasses) {
 

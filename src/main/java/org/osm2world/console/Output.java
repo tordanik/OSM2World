@@ -19,7 +19,6 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_elevation.creation.LPEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
@@ -112,8 +111,6 @@ public final class Output {
 			cf.setEleConstraintEnforcerFactory(NoneEleConstraintEnforcer::new);
 		} else if ("SimpleEleConstraintEnforcer".equals(enforcerType)) {
 			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
-		} else if ("LPEleConstraintEnforcer".equals(enforcerType)) {
-			cf.setEleConstraintEnforcerFactory(LPEleConstraintEnforcer::new);
 		}
 
 		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
