@@ -19,6 +19,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.viewer.view.ViewerFrame;
+import org.osm2world.core.util.ConfigUtil;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
@@ -167,6 +168,8 @@ public class OSM2World {
 				fileConfig.setListDelimiter(';');
 				fileConfig.load(configFile);
 				config = fileConfig;
+				ConfigUtil.parseFonts(config);
+
 			} catch (ConfigurationException e) {
 				System.err.println("could not read config, ignoring it: ");
 				System.err.println(e);
