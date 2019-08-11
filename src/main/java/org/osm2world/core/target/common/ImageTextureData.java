@@ -1,31 +1,96 @@
 package org.osm2world.core.target.common;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.osm2world.core.target.common.material.TexCoordFunction;
 
 public class ImageTextureData extends TextureData {
 
-	/** 
+	/**
 	 * Path to the texture file.
 	 * Represents a permanent, already saved
-	 * image file in contrast to the file 
-	 * field in {@link TextTextureData} 
+	 * image file in contrast to the file
+	 * field in {@link TextTextureData}
 	 */
 	private final File file;
-	
+
+	private File convertedToPng;
+
 	public ImageTextureData(File file, double width, double height, Wrap wrap, TexCoordFunction texCoordFunction,
 			boolean colorable, boolean isBumpMap) {
-		
+
 		super(width, height, wrap, texCoordFunction, colorable, isBumpMap);
-		
+
 		this.file = file;
+		this.convertedToPng = null;
 	}
-	
+
+	@Override
 	public File getFile() {
+
+		if(this.file.getName().endsWith(".svg") && this.convertedToPng == null) {
+			convertedToPng = SVG2PNG(this.file);
+		}
+
+		if(this.file.getName().endsWith(".svg") && this.convertedToPng != null) {
+			return convertedToPng;
+		}
+
 		return this.file;
+
 	}
-	
+
+
+	/**
+	 * Converts an .svg image file into a (temporary) .png
+	 *
+	 * @param svg The svg file to be converted
+	 * @return a File object representation of the generated png
+	 */
+	private File SVG2PNG(File svg) {
+
+		String prefix = svg.getName().substring(0, svg.getName().indexOf('.')) + "osm2World";
+
+		PNGTranscoder t = new PNGTranscoder();
+
+		//create the transcoder input
+		String svgURI = svg.toURI().toString();
+		TranscoderInput input = new TranscoderInput(svgURI);
+
+		File outputFile = null;
+
+		try {
+
+			//create a temporary file in the default temporary-file directory
+			outputFile = File.createTempFile(prefix, ".png");
+			outputFile.deleteOnExit();
+
+			OutputStream ostream = new FileOutputStream(outputFile);
+
+			TranscoderOutput output = new TranscoderOutput(ostream);
+
+			//save the image.
+			t.transcode(input, output);
+
+			//clear and close the stream
+			ostream.flush();
+			ostream.close();
+
+		} catch (IOException | TranscoderException e) {
+
+			throw new RuntimeException(e);
+		}
+
+		return outputFile;
+	}
+
 	@Override
 	public String toString() {
 		return "ImageTextureData [file=" + file + ", width=" + width + ", height=" + height + ", wrap=" + wrap
@@ -58,7 +123,4 @@ public class ImageTextureData extends TextureData {
 			return false;
 		return true;
 	}
-	
-	
-
 }
