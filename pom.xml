@@ -152,6 +152,45 @@
 			<version>2.1.1</version>
 		</dependency>
 
+		<!-- Batik library dependencies -->
+
+		<dependency>
+    		<groupId>org.apache.xmlgraphics</groupId>
+    		<artifactId>batik-transcoder</artifactId>
+    		<version>1.11</version>
+		</dependency>
+
+		<dependency>
+    		<groupId>org.apache.xmlgraphics</groupId>
+    		<artifactId>batik-rasterizer</artifactId>
+    		<version>1.11</version>
+		</dependency>
+
+		<dependency>
+    		<groupId>org.apache.xmlgraphics</groupId>
+    		<artifactId>batik-slideshow</artifactId>
+    		<version>1.11</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-squiggle</artifactId>
+		    <version>1.11</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-svgpp</artifactId>
+		    <version>1.11</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-ttf2svg</artifactId>
+		    <version>1.11</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
