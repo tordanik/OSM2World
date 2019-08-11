@@ -1,8 +1,15 @@
 package org.osm2world.core.util;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
+import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.configuration.Configuration;
 
 /**
  * utility class for parsing configuration values
@@ -41,13 +48,13 @@ final public class ConfigUtil {
 		"^hsv\\s*\\(\\s*(\\d{1,3})\\s*," +
 			"\\s*(\\d{1,3})\\s*%\\s*," +
 			"\\s*(\\d{1,3})\\s*%\\s*\\)");
-
+		
 	/**
 	 * parses colors that are given as a color scheme identifier
 	 * with a value tuple in brackets.
-	 *
+	 * 
 	 * Currently only supports hsv.
-	 *
+	 * 
 	 * @return color; null on parsing errors
 	 */
 	public static final Color parseColorTuple(String colorString) {
@@ -72,6 +79,37 @@ final public class ConfigUtil {
 
 		return null;
 
+	}
+
+	/**
+	 * Registers the fonts that exist in the directory specified
+	 * by the "fontDirectory" key in the configuration file.
+	 * The respective fonts can then be used in Font object constructors.
+	 */
+	public static void parseFonts(Configuration config) {
+
+		if(!config.containsKey("fontDirectory")) return;
+
+		String directoryName = config.getString("fontDirectory");
+		File fontDir = new File(directoryName);
+
+		if(!fontDir.isDirectory()) return;
+
+		GraphicsEnvironment gEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+
+		File[] listOfFiles = fontDir.listFiles();
+
+		for (File file : listOfFiles) {
+		    if (file.isFile()) {
+
+		    	try {
+					gEnv.registerFont(Font.createFont(Font.TRUETYPE_FONT, file));
+				} catch (FontFormatException | IOException e) {
+					System.err.println("Could not register font "+file.getName());
+					e.printStackTrace();
+				}
+		    }
+		}
 	}
 
 }

@@ -15,6 +15,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
+import org.osm2world.core.util.ConfigUtil;
 
 /**
  * reloads the previously opened OSM file
@@ -62,6 +63,7 @@ public class ReloadOSMAction extends AbstractAction implements Observer {
 				fileConfig.setListDelimiter(';');
 				fileConfig.load(configFile);
 				data.setConfig(fileConfig);
+				ConfigUtil.parseFonts(fileConfig);
 
 			} catch (ConfigurationException e) {
 
@@ -81,7 +83,7 @@ public class ReloadOSMAction extends AbstractAction implements Observer {
 
 		new OpenOSMAction(viewerFrame, data, renderOptions)
 				.openOSMFile(data.getOsmFile(), false);
-
+		
 	}
 
 	@Override
