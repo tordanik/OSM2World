@@ -35,11 +35,13 @@ public class ImageTextureData extends TextureData {
 	@Override
 	public File getFile() {
 
-		if(this.file.getName().endsWith(".svg") && this.convertedToPng == null) {
-			convertedToPng = SVG2PNG(this.file);
-		}
+		if(this.file.getName().endsWith(".svg")) {
 
-		if(this.file.getName().endsWith(".svg") && this.convertedToPng != null) {
+			if(this.convertedToPng==null) {
+
+				convertedToPng = SVG2PNG(this.file);
+			}
+
 			return convertedToPng;
 		}
 
@@ -64,31 +66,30 @@ public class ImageTextureData extends TextureData {
 		String svgURI = svg.toURI().toString();
 		TranscoderInput input = new TranscoderInput(svgURI);
 
-		File outputFile = null;
-
 		try {
+
+			File outputFile = null;
 
 			//create a temporary file in the default temporary-file directory
 			outputFile = File.createTempFile(prefix, ".png");
 			outputFile.deleteOnExit();
 
-			OutputStream ostream = new FileOutputStream(outputFile);
+			try(OutputStream ostream = new FileOutputStream(outputFile)) {
 
-			TranscoderOutput output = new TranscoderOutput(ostream);
+				TranscoderOutput output = new TranscoderOutput(ostream);
 
-			//save the image.
-			t.transcode(input, output);
+				//save the image.
+				t.transcode(input, output);
 
-			//clear and close the stream
-			ostream.flush();
-			ostream.close();
+				ostream.flush();
+			}
+
+			return outputFile;
 
 		} catch (IOException | TranscoderException e) {
 
 			throw new RuntimeException(e);
 		}
-
-		return outputFile;
 	}
 
 	@Override
