@@ -11,10 +11,14 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
@@ -42,89 +46,107 @@ public class TrafficSignModule extends AbstractModule {
 
 		if (isInHighway(node)) return; //only exact positions (next to highway)
 
+		String tagValue = node.getTags().getValue("traffic_sign");
+
+		String country = "";
+		String signs[];
+		TrafficSignType attributes;
+
 		/* split the traffic sign value into its components */
 
-		String tagValue = node.getTags().getValue("traffic_sign");
-		String[] countryAndSigns = tagValue.split(":", 2);
+		if(tagValue.contains(":")) {
 
-		if (countryAndSigns.length != 2) return;
+			//if country prefix is used
+			String[] countryAndSigns = tagValue.split(":", 2);
+			if(countryAndSigns.length !=2) return;
+			country = countryAndSigns[0];
+			signs = countryAndSigns[1].split("[;,]");
 
-		String country = countryAndSigns[0];
+		} else {
 
-		String[] signs = countryAndSigns[1].split("[;,]");
-
-		/* match each individual sign to the list of supported types */
+			//human-readable value
+			signs = tagValue.split("[;,]");
+		}
 
 		List<TrafficSignType> types = new ArrayList<TrafficSignType>(signs.length);
 
 		String regex = null;
 		Pattern pattern = null;
-		Matcher matcher = null;
+		Matcher matcher1 = null; //the matcher to match traffic sign values in .osm file
 
 		for (String sign : signs) {
 
-			Material signMaterial = null;
+			//re-initialize the values below for every sign
+			ConfMaterial originalMaterial = null;
+			HashMap<String, String> map = new HashMap<String, String>();
 
 			sign.trim();
 			sign = sign.replace('-', '_');
 
-			regex = "274_(\\d+)";
+			/* extract subtype and/or brackettext values */
+
+			regex = "[A-Za-z0-9]*\\.?\\d*_?(\\d+)?(?:\\[(.*)\\])?"; //match every traffic sign
 			pattern = Pattern.compile(regex);
-			matcher = pattern.matcher(sign);
+			matcher1 = pattern.matcher(sign);
 
-			if(matcher.matches()) { //if the sign is of DE:274-... type
+			if(matcher1.matches()) {
 
-				String speedLimit = matcher.group(1);
-				ConfMaterial originalMaterial = SIGN_DE_274;
-				TextTextureData layer = null;
-
-				for(TextureData td : originalMaterial.getTextureDataList()) {
-					if(td instanceof TextTextureData) {
-						layer = (TextTextureData) td;
-						break;
-					}
+				if(matcher1.group(1)!=null) {
+					map.put("traffic_sign.subtype", matcher1.group(1));
 				}
 
-				signMaterial = configureMaterial(originalMaterial, speedLimit, layer);
+				if(matcher1.group(2)!=null) {
+
+					String brackettext = matcher1.group(2).replace('_', '-'); //revert the previous replacement
+					map.put("traffic_sign.brackettext", brackettext);
+
+					//cut off value to get the actual sign name
+					sign = sign.replace("["+matcher1.group(2)+"]", "");
+				}
+
 			}
 
-			regex = "1001_31\\[(\\d+.*)\\]";
-			pattern = Pattern.compile(regex);
-			matcher = pattern.matcher(sign);
+			sign = sign.toUpperCase();
 
-			if(matcher.matches()) { //if sign is of DE:1001-31[...] type
+			String signName = generateSignName(country, sign);
 
-				String value = matcher.group(1);
-				if(!value.contains("km")) {
-					value = value+"km";
-				}
+			attributes = mapSignAttributes(signName);
 
-				value = value.replaceAll("\\s", ""); //remove all spaces
+			/* "Fallback" functionality in case no attributes and material are defined for this sign name
+			 *
+			 * attributes.materialName.isEmpty() -> no "trafficSign_name_material = " defined for this sign
+			 * getMaterial(signName)==null -> no material defined for this sign name
+			 * map.containsKey("traffic_sign.subtype") -> sign name contains a subtype value (e.g. 50 in 274-50)
+			 */
+			if(attributes.materialName.isEmpty() && getMaterial(signName)==null && map.containsKey("traffic_sign.subtype")) {
 
-				ConfMaterial originalMaterial = SIGN_DE_1001_31;
-				TextTextureData layer = null;
+				sign = sign.replace("_"+matcher1.group(1), ""); //cut off subtype value
 
-				//TODO make this a separate method
-				for(TextureData td : originalMaterial.getTextureDataList()) {
-					if(td instanceof TextTextureData) {
-						layer = (TextTextureData) td;
-						break;
-					}
-				}
+				signName = generateSignName(country, sign);
 
-				signMaterial = configureMaterial(originalMaterial, value, layer);
+				attributes = mapSignAttributes(signName); //retry with new sign name
 			}
 
-			if(signMaterial == null) {
+			if(!attributes.materialName.isEmpty()) {
+				originalMaterial = getMaterial(attributes.materialName);
+				attributes.material = configureMaterial(originalMaterial, map, node);
+			}
 
-				signMaterial = getMaterial("SIGN_"+country+"_"+sign);
+			if(attributes.material==null) {
 
-				if(signMaterial==null) {
-					//if there is no texture for the sign, create simple white sign
-					signMaterial = new ConfMaterial(Interpolation.FLAT, Color.white);
+				//if there is no material configured for the sign, try predefined ones
+				originalMaterial = getMaterial(signName);
+				attributes.material = configureMaterial(originalMaterial, map, node);
+
+				//if there is no material defined for the sign, create simple white sign
+				if(attributes.material==null) {
+					attributes.material = new ConfMaterial(Interpolation.FLAT, Color.white);
 				}
 			}
-			types.add(new TrafficSignType(signMaterial,1,2));
+
+			if(attributes.defaultHeight==0) attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
+			
+			types.add(attributes);
 		}
 
 		/* create a visual representation for the traffic sign */
@@ -146,37 +168,137 @@ public class TrafficSignModule extends AbstractModule {
 		return false;
 	}
 
+	private String generateSignName(String country, String sign) {
+
+		String signName = "";
+
+		if(!country.isEmpty()) {
+			signName = "SIGN_"+country+"_"+sign;
+		}else {
+			signName = "SIGN_"+sign;
+		}
+
+		return signName;
+	}
+
+	/**
+	 * Parses configuration files for the traffic sign-specific keys
+	 * trafficSign_NAME_numPosts|defaultHeight|material
+	 *
+	 * @param signName The sign name (country prefix and subtype/brackettext value)
+	 * @return A TrafficSignType instance of the the parsed values
+	 */
+	private TrafficSignType mapSignAttributes(String signName) {
+
+		String regex = "trafficSign_"+signName+"_(numPosts|defaultHeight|material)";
+
+		String originalMaterial = "";
+		int numPosts = 1;
+		double defaultHeight = 0;
+
+		Matcher matcher = null;
+
+		@SuppressWarnings("unchecked")
+		Iterator<String> keyIterator = config.getKeys();
+
+		//parse traffic sign specific configuration values
+		while (keyIterator.hasNext()) {
+
+			String key = keyIterator.next();
+			matcher = Pattern.compile(regex).matcher(key);
+
+			if (matcher.matches()) {
+
+				String attribute = matcher.group(1);
+
+				if("material".equals(attribute)) {
+
+					originalMaterial = config.getString(key, "").toUpperCase();
+
+				} else if("numPosts".equals(attribute)) {
+
+					numPosts = config.getInt(key, 1);
+
+				} else if("defaultHeight".equals(attribute)) {
+
+					defaultHeight = config.getDouble(key, 0);
+				}
+			}
+		}
+
+		return new TrafficSignType(originalMaterial, numPosts, defaultHeight);
+	}
+
 	/**
 	 * Creates a replica of originalMaterial with a new textureDataList.
-	 * The new list is a copy of the old one with the parameterized layer
+	 * The new list is a copy of the old one with its TextTextureData layers
 	 * replaced by a new TextTextureData instance of different text.
 	 * Returns the new ConfMaterial created.
 	 *
 	 * @param originalMaterial The ConfMaterial to replicate
-	 * @param value The text of the new TextTextureData layer object
-	 * @param layer The textureDataList layer to be replaced
+	 * @param map A HashMap used to map each of traffic_sign.subtype / traffic_sign.brackettext
+	 * to their corresponding values
+	 * @param element The MapElement object to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	private Material configureMaterial(ConfMaterial originalMaterial, String value, TextTextureData layer) {
+	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, MapElement element) {
 
-		if(layer == null) return originalMaterial;
+		if(originalMaterial == null) return null;
 
 		Material newMaterial = null;
-		int index = originalMaterial.getTextureDataList().indexOf(layer);
-
-		TextTextureData textData = new TextTextureData(value, layer.font, layer.width,
-						layer.height, layer.topOffset, layer.leftOffset, layer.wrap,
-						layer.coordFunction, layer.colorable, layer.isBumpMap);
-
 		List<TextureData> newList = new ArrayList<TextureData>(originalMaterial.getTextureDataList());
 
-		newList.set(index, textData);
+		String regex = ".*(%\\{(.+)\\}).*";
+		Pattern pattern = Pattern.compile(regex);
+
+		for(TextureData layer : originalMaterial.getTextureDataList()) {
+
+			if(layer instanceof TextTextureData) {
+
+				String newText = "";
+				Matcher matcher = pattern.matcher(((TextTextureData) layer).text);
+				int index = originalMaterial.getTextureDataList().indexOf(layer);
+
+				if( matcher.matches() ) {
+
+					newText = ((TextTextureData)layer).text;
+
+					while(matcher.matches()) {
+
+						if(element.getTags().containsKey(matcher.group(2))) {
+
+							newText = newText.replace(matcher.group(1), element.getTags().getValue(matcher.group(2)));
+
+						} else if(!map.isEmpty()) {
+
+							for (String key : map.keySet()) {
+								if(key.equals(matcher.group(2))) {
+									newText = newText.replace(matcher.group(1), map.get(matcher.group(2)));
+								}
+							}
+
+						} else {
+							System.err.println("Unknown attribute: "+matcher.group(2));
+							newText = newText.replace(matcher.group(1), "");
+						}
+
+						matcher = pattern.matcher(newText);
+					}
+
+					TextTextureData textData = new TextTextureData(newText, ((TextTextureData)layer).font, layer.width,
+							layer.height, ((TextTextureData)layer).topOffset, ((TextTextureData)layer).leftOffset,
+							((TextTextureData)layer).textColor, ((TextTextureData) layer).relativeFontSize,
+							layer.wrap, layer.coordFunction, layer.colorable, layer.isBumpMap);
+
+					newList.set(index, textData);
+				}
+			}
+		}
 
 		newMaterial = new ConfMaterial(originalMaterial.getInterpolation(),originalMaterial.getColor(),
 						originalMaterial.getAmbientFactor(),originalMaterial.getDiffuseFactor(),originalMaterial.getSpecularFactor(),
 						originalMaterial.getShininess(),originalMaterial.getTransparency(),originalMaterial.getShadow(),
 						originalMaterial.getAmbientOcclusion(),newList);
-
 
 		return newMaterial;
 	}
