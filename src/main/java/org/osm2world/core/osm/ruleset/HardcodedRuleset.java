@@ -36,6 +36,7 @@ public class HardcodedRuleset implements Ruleset {
 		areaKeys.add("building:part");
 		areaKeys.add("golf");
 		areaKeys.add("landuse");
+		areaKeys.add("landcover");
 
 		landTags.add(new Tag("landuse", "forest"));
 		landTags.add(new Tag("natural", "water"));

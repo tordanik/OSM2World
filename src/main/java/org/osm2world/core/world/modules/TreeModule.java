@@ -181,6 +181,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			if (area.getTags().contains("natural", "wood")
 					|| area.getTags().contains("landuse", "forest")
+					|| area.getTags().contains("landcover", "trees")
 					|| area.getTags().containsKey("wood")
 					|| area.getTags().contains("landuse", "orchard")) {
 				area.addRepresentation(new Forest(area, mapData));
