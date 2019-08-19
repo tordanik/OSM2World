@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.ImageTextureData;
 import org.osm2world.core.target.common.TextTextureData;
+import org.osm2world.core.target.common.TextTextureData.FontStyle;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
@@ -189,119 +190,6 @@ public final class Materials {
 	public static final ConfMaterial BUS_STOP_SIGN =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.98f, 0.90f, 0.05f));
 
-	public static final ConfMaterial SIGN_DE_250 =
-		new ConfMaterial(Interpolation.FLAT, Color.RED);
-
-	public static final ConfMaterial SIGN_DE_206 =
-		new ConfMaterial(Interpolation.FLAT, Color.RED);
-
-	public static final ConfMaterial SIGN_DE_274 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-
-	public static final ConfMaterial SIGN_DE_1001_31 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-
-	public static final ConfMaterial SIGN_DE_625_11 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-
-	public static final ConfMaterial SIGN_DE_625_21 =
-			new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-
-	public static final ConfMaterial SIGN_DE_101 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_11 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_12 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_13 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_14 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_15 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_21 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_22 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_23 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_24 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_25 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_51 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_52 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_53 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_54 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_101_55 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_102 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_103_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_103_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_105_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_105_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_108_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_110_12 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_112 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_114 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_117_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_117_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_120 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_121_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_121_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_123 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_124 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_125 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_131 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_133_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_133_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_136_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_136_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_138_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_138_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_142_10 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_142_20 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_145 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_151 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-	public static final ConfMaterial SIGN_DE_301 =
-		new ConfMaterial(Interpolation.FLAT, Color.WHITE);
-
 	public static final ConfMaterial GRITBIN_DEFAULT =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.4f));
 
@@ -349,6 +237,8 @@ public final class Materials {
 		new HashMap<String, ConfMaterial>();
 	private static final Map<ConfMaterial, String> fieldNameMap =
 		new HashMap<ConfMaterial, String>();
+	private static final Map<String, ConfMaterial> externalMaterials =
+		new HashMap<String, ConfMaterial>();
 
 	static {
 
@@ -398,6 +288,17 @@ public final class Materials {
 				return entry.getKey();
 			}
 		}
+
+		/*
+		 * If the material is not defined in Materials.java, loop
+		 * through externalMaterials map
+		 */
+		for (String key : externalMaterials.keySet()) {
+			if(fieldName.equals(key)) {
+				return externalMaterials.get(fieldName);
+			}
+		}
+
 		return null;
 	}
 
@@ -426,7 +327,7 @@ public final class Materials {
 	}
 
 	private static final String CONF_KEY_REGEX =
-			"material_(.+)_(color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|type|text|font|topOffset|leftOffset))";
+					"material_(.+)_(diffuseFactor|ambientFactor|interpolation|color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|colorable|type|text|font|topOffset|leftOffset|textColor|relative_font_size))";
 
 	/**
 	 * configures the attributes of the materials within this class
@@ -449,185 +350,231 @@ public final class Materials {
 				String materialName = matcher.group(1);
 				ConfMaterial material = getMaterial(materialName);
 
-				if (material != null) {
-
-					String attribute = matcher.group(2);
-
-					if ("color".equals(attribute)) {
-
-						Color color = ConfigUtil.parseColor(
-								config.getString(key));
-
-						if (color != null) {
-							material.setColor(color);
-						} else {
-							System.err.println("incorrect color value: "
-									+ config.getString(key));
-						}
-
-					} else if ("specular".equals(attribute)) {
-
-						float specular = config.getFloat(key);
-						material.setSpecularFactor(specular);
-
-					} else if ("shininess".equals(attribute)) {
-
-						int shininess = config.getInt(key);
-						material.setShininess(shininess);
-
-					} else if ("shadow".equals(attribute)) {
-
-						String value = config.getString(key).toUpperCase();
-						Shadow shadow = Shadow.valueOf(value);
-
-						if (shadow != null) {
-							material.setShadow(shadow);
-						}
-
-					} else if ("ssao".equals(attribute)) {
-
-						String value = config.getString(key).toUpperCase();
-						AmbientOcclusion ao = AmbientOcclusion.valueOf(value);
-
-						if (ao != null) {
-							material.setAmbientOcclusion(ao);
-						}
-
-					} else if ("transparency".equals(attribute)) {
-
-						String value = config.getString(key).toUpperCase();
-						Transparency transparency = Transparency.valueOf(value);
-
-						if (transparency != null) {
-							material.setTransparency(transparency);
-						}
-
-					} else if (attribute.startsWith("texture")) {
-
-						List<TextureData> textureDataList =
-							new ArrayList<TextureData>();
-
-						for (int i = 0; i < 32; i++) {
-
-							String widthKey = "material_" + materialName + "_texture" + i + "_width";
-							String heightKey = "material_" + materialName + "_texture" + i + "_height";
-							String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
-							String coordFunctionKey = "material_" + materialName + "_texture" + i + "_coord_function";
-							String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
-							String bumpmapKey = "material_" + materialName + "_texture" + i + "_bumpmap";
-
-							String typeKey = "material_" + materialName + "_texture" + i + "_type";
-							String type = config.getString(typeKey, "image");
-
-								if("text".equals(type)) {
-
-									double defaultWidth = 0.5;
-									double defaultHeight = 0.5;
-
-									String fontKey = "material_" + materialName + "_texture" + i + "_font";
-									String textKey = "material_" + materialName + "_texture" + i + "_text";
-									String topOffsetKey = "material_" + materialName + "_texture" + i + "_topOffset";
-									String leftOffsetKey = "material_" + materialName + "_texture" + i + "_leftOffset";
-
-									String text = "";
-
-									if(config.getString(textKey) != null) {
-										text = config.getString(textKey);
-									}
-
-									Font font = null;
-
-									if(config.getString(fontKey) == null) {
-										font = new Font("Dialog", Font.BOLD, 100);
-									} else {
-										String[] values = config.getString(fontKey).split(",");
-										if(values.length == 2) {
-											font = new Font(values[0], Font.BOLD, Integer.parseInt(values[1]));
-										} else {
-											font = new Font(config.getString(fontKey), Font.BOLD, 100);
-										}
-									}
-
-									double width = config.getDouble(widthKey, defaultWidth);
-									double height = config.getDouble(heightKey, defaultHeight);
-									boolean colorable = config.getBoolean(colorableKey, false);
-									boolean isBumpMap = config.getBoolean(bumpmapKey, false);
-
-									String wrapString = config.getString(wrapKey);
-									Wrap wrap = getWrap(wrapString);
-
-									String coordFunctionString = config.getString(coordFunctionKey);
-									TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
-
-									String topOffset = config.getString(topOffsetKey);
-									if(topOffset!=null) {
-										if(topOffset.endsWith("%")) {
-											topOffset = topOffset.substring(0, topOffset.length() - 1);
-										}
-									}else {
-										topOffset = Integer.toString(50);
-									}
-
-									String leftOffset = config.getString(leftOffsetKey);
-									if(leftOffset!=null) {
-										if(leftOffset.endsWith("%")) {
-											leftOffset = leftOffset.substring(0, leftOffset.length() - 1);
-										}
-									}else {
-										leftOffset = Integer.toString(50);
-									}
-
-									TextTextureData textTextureData = new TextTextureData(text, font, width, height,
-											Double.parseDouble(topOffset), Double.parseDouble(leftOffset),
-											wrap, coordFunction, colorable, isBumpMap);
-
-									textureDataList.add(textTextureData);
-
-								} else if("image".equals(type)) {
-
-									String fileKey = "material_" + materialName + "_texture" + i + "_file";
-
-									if (config.getString(fileKey) == null) break;
-
-									File file = new File(config.getString(fileKey));
-
-									double width = config.getDouble(widthKey, 1);
-									double height = config.getDouble(heightKey, 1);
-									boolean colorable = config.getBoolean(colorableKey, false);
-									boolean isBumpMap = config.getBoolean(bumpmapKey, false);
-
-									String wrapString = config.getString(wrapKey);
-									Wrap wrap = getWrap(wrapString);
-
-									String coordFunctionString = config.getString(coordFunctionKey);
-									TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
-
-									// bumpmaps are only supported in the shader implementation, skip for others
-									if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
-
-										TextureData textureData = new ImageTextureData(
-												file, width, height, wrap, coordFunction, colorable, isBumpMap);
-										textureDataList.add(textureData);
-									}
-								} else System.err.println("unknown type value: " + type);
-						}
-
-						material.setTextureDataList(textureDataList);
-
-					} else {
-						System.err.println("unknown material attribute: "
-								+ attribute);
-					}
-
-				} else {
-					System.err.println("unknown material: " + materialName);
+			/* If material is not defined in Materials.java, create new material
+			   and add it to externalMaterials map */
+				if (material == null) {
+					material = new ConfMaterial(Interpolation.FLAT, Color.white);
+					externalMaterials.put(materialName, material);
 				}
 
+				String attribute = matcher.group(2);
+
+				if("interpolation".equals(attribute)) {
+
+					String value = config.getString(key).toUpperCase();
+					Interpolation interpolation = Interpolation.valueOf(value);
+
+					if (interpolation != null) {
+						material.setInterpolation(interpolation);
+					}
+
+				} else if("ambientFactor".equals(attribute)) {
+
+					float ambient = config.getFloat(key);
+					material.setAmbientFactor(ambient);
+
+				} else if("diffuseFactor".equals(attribute)) {
+
+					float diffuse = config.getFloat(key);
+					material.setDiffuseFactor(diffuse);
+
+				} else if ("color".equals(attribute)) {
+
+					Color color = ConfigUtil.parseColor(
+							config.getString(key));
+
+					if (color != null) {
+						material.setColor(color);
+					} else {
+						System.err.println("incorrect color value: "
+								+ config.getString(key));
+					}
+
+				} else if ("specular".equals(attribute)) {
+
+					float specular = config.getFloat(key);
+					material.setSpecularFactor(specular);
+
+				} else if ("shininess".equals(attribute)) {
+
+					int shininess = config.getInt(key);
+					material.setShininess(shininess);
+
+				} else if ("shadow".equals(attribute)) {
+
+					String value = config.getString(key).toUpperCase();
+					Shadow shadow = Shadow.valueOf(value);
+
+					if (shadow != null) {
+						material.setShadow(shadow);
+					}
+
+				} else if ("ssao".equals(attribute)) {
+
+					String value = config.getString(key).toUpperCase();
+					AmbientOcclusion ao = AmbientOcclusion.valueOf(value);
+
+					if (ao != null) {
+						material.setAmbientOcclusion(ao);
+					}
+
+				} else if ("transparency".equals(attribute)) {
+
+					String value = config.getString(key).toUpperCase();
+					Transparency transparency = Transparency.valueOf(value);
+
+					if (transparency != null) {
+						material.setTransparency(transparency);
+					}
+
+				} else if (attribute.startsWith("texture")) {
+
+					List<TextureData> textureDataList =
+						new ArrayList<TextureData>();
+
+					for (int i = 0; i < 32; i++) {
+
+						String widthKey = "material_" + materialName + "_texture" + i + "_width";
+						String heightKey = "material_" + materialName + "_texture" + i + "_height";
+						String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
+						String coordFunctionKey = "material_" + materialName + "_texture" + i + "_coord_function";
+						String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
+						String bumpmapKey = "material_" + materialName + "_texture" + i + "_bumpmap";
+
+						//get texture layer type
+						String typeKey = "material_" + materialName + "_texture" + i + "_type";
+						String type = config.getString(typeKey, "image");
+
+							if("text".equals(type)) {
+
+								double defaultWidth = 0.5;
+								double defaultHeight = 0.5;
+
+								String fontKey = "material_" + materialName + "_texture" + i + "_font";
+								String textKey = "material_" + materialName + "_texture" + i + "_text";
+								String topOffsetKey = "material_" + materialName + "_texture" + i + "_topOffset";
+								String leftOffsetKey = "material_" + materialName + "_texture" + i + "_leftOffset";
+								String relativeFontSizeKey = "material_" + materialName + "_texture" + i + "_relative_font_size";
+								String textColorKey = "material_" + materialName + "_texture" + i + "_textColor";
+
+								String text = "";
+
+								//get text configuration
+								if(config.getString(textKey) != null) {
+									text = config.getString(textKey);
+								}
+
+								//get font configuration
+								Font font = null;
+								if(config.getString(fontKey) == null) {
+
+									font = new Font("Dialog", Font.PLAIN, 100);
+
+								} else {
+
+									String[] values = config.getString(fontKey).split(",", 2);
+
+									if(values.length == 2) {
+
+										int fontStyle = FontStyle.getStyle(values[1].toUpperCase());
+
+										font = new Font(values[0], fontStyle, 100);
+
+									}else {
+										font = new Font("Dialog", Font.PLAIN, 100);
+									}
+								}
+
+								double width = config.getDouble(widthKey, defaultWidth);
+								double height = config.getDouble(heightKey, defaultHeight);
+								boolean colorable = config.getBoolean(colorableKey, false);
+								boolean isBumpMap = config.getBoolean(bumpmapKey, false);
+
+								String wrapString = config.getString(wrapKey);
+								Wrap wrap = getWrap(wrapString);
+
+								String coordFunctionString = config.getString(coordFunctionKey);
+								TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
+
+								//get top/left offset configuration
+								String topOffset = config.getString(topOffsetKey);
+								if(topOffset!=null) {
+									if(topOffset.endsWith("%")) {
+										topOffset = topOffset.substring(0, topOffset.length() - 1);
+									}
+								}else {
+									topOffset = Integer.toString(50);
+								}
+
+								String leftOffset = config.getString(leftOffsetKey);
+								if(leftOffset!=null) {
+									if(leftOffset.endsWith("%")) {
+										leftOffset = leftOffset.substring(0, leftOffset.length() - 1);
+									}
+								}else {
+									leftOffset = Integer.toString(50);
+								}
+
+								//get text color configuration
+								Color color = Color.BLACK;
+								String colorString = config.getString(textColorKey);
+								if(colorString!=null) {
+									color = ConfigUtil.parseColor(colorString);
+									if(color==null) {
+										System.err.println("Incorrect color value: "+colorString+". Defaulting to black.");
+										color = Color.BLACK;
+									}
+								}
+
+								//get relative font size
+								double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
+
+								TextTextureData textTextureData = new TextTextureData(text, font, width, height,
+										Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
+										relativeFontSize, wrap, coordFunction, colorable, isBumpMap);
+
+								textureDataList.add(textTextureData);
+
+							} else if("image".equals(type)) {
+
+								String fileKey = "material_" + materialName + "_texture" + i + "_file";
+
+								if (config.getString(fileKey) == null) break;
+
+								File file = new File(config.getString(fileKey));
+
+								double width = config.getDouble(widthKey, 1);
+								double height = config.getDouble(heightKey, 1);
+								boolean colorable = config.getBoolean(colorableKey, false);
+								boolean isBumpMap = config.getBoolean(bumpmapKey, false);
+
+								String wrapString = config.getString(wrapKey);
+								Wrap wrap = getWrap(wrapString);
+
+								String coordFunctionString = config.getString(coordFunctionKey);
+								TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
+
+								// bumpmaps are only supported in the shader implementation, skip for others
+								if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
+
+									TextureData textureData = new ImageTextureData(
+											file, width, height, wrap, coordFunction, colorable, isBumpMap);
+									textureDataList.add(textureData);
+								}
+							} else System.err.println("unknown type value: " + type);
+					}
+
+					material.setTextureDataList(textureDataList);
+
+				} else {
+					System.err.println("unknown material attribute: "
+							+ attribute);
+				}
 			}
-
 		}
-
 	}
+
+
 
 	private static Wrap getWrap(String wrapString) {
 
