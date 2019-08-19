@@ -4,6 +4,9 @@ import org.osm2world.core.target.common.material.Material;
 
 public class TrafficSignType {
 
+	/** holds the rotation angle of DestinationSigns */
+	public double rotation;
+
 	/** Variable to use in {@link org.osm2world.core.world.modules.TrafficSignModule#mapSignAttributes()} */
 	public String materialName;
 	
