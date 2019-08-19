@@ -42,6 +42,22 @@ public class TrafficSignModule extends AbstractModule {
 	@Override
 	protected void applyToNode(MapNode node) {
 
+		/* if sign is a destination sign */
+
+		if(!node.getMemberships().isEmpty()) {
+
+			//collection with the relations this node is part of
+			Collection<Membership> membList = node.getMemberships();
+
+			for(Membership m : membList) {
+
+				if(m.getRelation().getTags().contains("type", "destination_sign") && m.getRole().equals("sign")) {
+
+					node.addRepresentation(new DestinationSign(node));
+				}
+			}
+		}
+
 		if (!node.getTags().containsKey("traffic_sign")) return;
 
 		if (isInHighway(node)) return; //only exact positions (next to highway)
@@ -301,6 +317,362 @@ public class TrafficSignModule extends AbstractModule {
 						originalMaterial.getAmbientOcclusion(),newList);
 
 		return newMaterial;
+	}
+
+	private final class DestinationSign extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+
+		//relation attributes
+		private MapElement from;
+		private MapElement to;
+		private MapNode intersection;
+		private MapNode sign;
+		private String destination;
+		private String distance;
+		private String arrowColour;
+		private Color backgroundColor;
+		private Color textColor;
+
+		//calculated values
+		private double rotation;
+		private String pointingDirection;
+
+		private MapRelation relation;
+
+		private ArrayList<TrafficSignType> types = new ArrayList<TrafficSignType>();
+		private double postRadius;
+
+		public DestinationSign(MapNode node) {
+
+			super(node);
+
+			//default values
+			this.backgroundColor = Color.WHITE;
+			this.textColor = Color.BLACK;
+			this.postRadius = config.getDouble("standardPoleRadius", 0.05);
+
+			determineDestinationSignMaterial();
+		}
+
+		private MapWaySegment getAdjacentSegment(MapWay way, MapNode intersection) {
+
+			List<MapWaySegment> waySegments = way.getWaySegments(); //get the way's segments
+
+			for(MapWaySegment segment : asList(waySegments.get(0), waySegments.get(waySegments.size()-1))) {
+
+				if(segment.getStartNode().equals(intersection) || segment.getEndNode().equals(intersection)) {
+					return segment;
+				}
+			}
+
+			return null;
+		}
+
+		private void determineDestinationSignMaterial() {
+
+			//collection with the relations this node is part of
+			Collection<Membership> membList = node.getMemberships();
+
+			for(Membership m : membList) {
+
+				MapWaySegment toSegment = null;
+				MapWaySegment fromSegment = null;
+
+				this.relation = m.getRelation();
+				ConfMaterial originalMat = null;
+
+				this.destination = relation.getTags().getValue("destination");
+				if(this.destination==null) {
+					System.err.println("Destination can not be null. Returning. Relation "+relation);
+					return;
+				}
+				this.distance = relation.getTags().getValue("distance");
+
+				//parse background color
+				if(relation.getTags().getValue("colour:back")!=null) {
+
+					Field field;
+
+					try {
+						field = Color.class.getField(relation.getTags().getValue("colour:back"));
+						this.backgroundColor = (Color) field.get(null);
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				//parse text color
+				if(relation.getTags().getValue("colour:text")!=null) {
+
+					Field field;
+
+					try {
+						field = Color.class.getField(relation.getTags().getValue("colour:text"));
+						this.textColor = (Color) field.get(null);
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				this.arrowColour = relation.getTags().getValue("colour:arrow");
+				if(arrowColour==null) this.arrowColour = "BLACK";
+
+				//map to use in configureMaterial
+				HashMap<String, String> map = new HashMap<String, String>();
+
+				map.put("destination", destination);
+				if(distance!=null) map.put("distance", distance);
+
+				//List to hold all "from" members of the relation (if multiple)
+				List<MapElement> fromMembers = new ArrayList<MapElement>();
+
+				for(Membership member : relation.getMemberships()) {
+
+					if(member.getRole().equals("from")) {
+						fromMembers.add(member.getElement());
+					}else if(member.getRole().equals("to")) {
+						this.to = member.getElement();
+					}else if(member.getRole().equals("intersection")) {
+						this.intersection = (MapNode) member.getElement();
+					}else if(member.getRole().equals("sign")) {
+						this.sign = (MapNode) member.getElement();
+					}
+				}
+
+				/* if there are multiple "from" members or none at all,
+				use the vector from "sign" to "intersection" instead */
+
+				if(fromMembers.size() > 1 || fromMembers.size() == 0) {
+					List<MapNode> signAndIntersection = asList(
+							this.sign,
+							this.intersection);
+
+					//create a new MapWay instance from sign node to intersection node
+					MapWay signToIntersection = new MapWay(null, signAndIntersection);
+					this.from = signToIntersection;
+
+				}else {
+					//if size==1
+					this.from = fromMembers.get(0);
+				}
+
+				//get facing direction
+
+				boolean mustBeInverted = false;
+
+				if(from instanceof MapWay) {
+
+					fromSegment = getAdjacentSegment((MapWay) from, intersection);
+
+					if(fromSegment!=null) {
+						if(fromSegment.getEndNode().equals(intersection)) {
+							mustBeInverted = true;
+						}
+					}else {
+						System.err.println("Way "+from+" is not connected to intersection "+intersection+". Returning");
+						return;
+					}
+
+					VectorXZ facingDir = fromSegment.getDirection();
+
+					//if the segment is facing towards the intersection, invert its direction vector
+					if(mustBeInverted) facingDir = facingDir.invert();
+
+					this.rotation = facingDir.angle();
+				}
+
+
+				if(to instanceof MapWay) {
+
+					toSegment = getAdjacentSegment((MapWay) to, intersection);
+
+					if(toSegment==null) {
+						System.err.println("Way "+to+" is not connected to intersection "+intersection+". Returning");
+						return;
+					}
+				}
+
+				//explicit direction definition overwrites from-derived facing direction
+				if(node.getTags().containsKey("direction")) {
+
+					this.rotation = parseDirection(node.getTags(), PI);
+				}
+
+				//get the other ends of the segments
+				MapNode otherToSegmentNode = toSegment.getOtherNode(this.intersection);
+				MapNode otherFromSegmentNode = fromSegment.getOtherNode(this.intersection);
+
+				boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(), this.intersection.getPos());
+
+				if(isRightOf) {
+					this.pointingDirection = "RIGHT";
+				}else {
+					this.pointingDirection = "LEFT";
+				}
+
+				//parse traffic sign specific configurable values: material,numPosts,defaultHeight
+				String signName = "SIGN_DESTINATION_SIGN_"+arrowColour.toUpperCase()+"_"+pointingDirection.toUpperCase();
+
+				TrafficSignType attributes = mapSignAttributes(signName);
+
+				//if trafficSign_signName_material = * is defined
+				if(!attributes.materialName.isEmpty()) {
+
+					originalMat = getMaterial(attributes.materialName);
+					attributes.material = configureMaterial(originalMat, map, node);
+				}
+
+				if(attributes.material==null) {
+
+					//if there is no material configured for the sign, try predefined ones
+					originalMat = getMaterial(signName);
+
+					attributes.material = configureMaterial(originalMat, map, node);
+
+					//if there is no material defined for the sign, create simple white sign
+					if(attributes.material==null) {
+
+						attributes.material = new ConfMaterial(Interpolation.FLAT, Color.white);
+					}
+				}
+
+				//set material background color
+				attributes.material = attributes.material.withColor(this.backgroundColor);
+
+				//set material text color
+				attributes.material = attributes.material.withTextColor(this.textColor, 1);
+
+				//if trafficSign_signName_defaultHeight = *  was not defined
+				if(attributes.defaultHeight==0) attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
+
+				attributes.rotation = this.rotation;
+
+				types.add(attributes);
+
+			}
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			System.out.println("DestinationSign rendered!!");
+
+			/* get basic parameters */
+
+			double height = parseHeight(node.getTags(), (float)types.get(0).defaultHeight);
+
+			double[] signHeights = new double[types.size()];
+			double[] signWidths = new double[types.size()];
+
+			for (int sign = 0; sign < types.size(); sign++) {
+
+				TextureData textureData = null;
+
+				if (types.get(sign).material.getNumTextureLayers() != 0) {
+					textureData = types.get(sign).material.getTextureDataList().get(0);
+				}
+
+				if (textureData == null) {
+					signHeights[sign] = 0.6;
+					signWidths[sign] = 0.6;
+				} else {
+					signHeights[sign] = textureData.height;
+					signWidths[sign] = textureData.width;
+				}
+
+			}
+
+			/* position the post(s) */
+
+			int numPosts = types.get(0).numPosts;
+
+			List<VectorXYZ> positions = new ArrayList<VectorXYZ>(numPosts);
+
+			for (int i = 0; i < numPosts; i++) {
+				double relativePosition = 0.5 - (i+1)/(double)(numPosts+1);
+				positions.add(getBase().add(X_UNIT.mult(relativePosition * signWidths[0])));
+			}
+
+			/* create the front and back side of the sign */
+
+			List<List<VectorXYZ>> signGeometries = new ArrayList<List<VectorXYZ>>();
+
+			double distanceBetweenSigns = 0.1;
+			double upperHeight = height;
+
+			for (int sign = 0; sign < types.size(); sign++) {
+
+				double signHeight = signHeights[sign];
+				double signWidth = signWidths[sign];
+
+				List<VectorXYZ> vs = asList(
+						getBase().add(+signWidth/2, upperHeight, postRadius),
+						getBase().add(+signWidth/2, upperHeight-signHeight, postRadius),
+						getBase().add(-signWidth/2, upperHeight, postRadius),
+						getBase().add(-signWidth/2, upperHeight-signHeight, postRadius)
+						);
+
+				signGeometries.add(vs);
+
+				upperHeight -= signHeight + distanceBetweenSigns;
+			}
+
+			/* rotate the sign around the base to match the direction value */
+
+			for (List<VectorXYZ> vs : signGeometries) {
+
+				int index = signGeometries.indexOf(vs);
+				double rotation = types.get(index).rotation;
+
+				for (int i = 0; i < vs.size(); i++) {
+
+					VectorXYZ v = vs.get(i);
+					v = v.rotateVec(rotation, getBase(), VectorXYZ.Y_UNIT);
+					vs.set(i, v);
+				}
+
+			}
+
+			if (positions.size() > 1) { // if 1, the post is exactly on the base
+				for (int i = 0; i < positions.size(); i++) {
+					VectorXYZ v = positions.get(i);
+					v = v.rotateVec(this.rotation, getBase(), VectorXYZ.Y_UNIT);
+					positions.set(i, v);
+				}
+			}
+
+			/* render the post(s) */
+
+			for (VectorXYZ position : positions) {
+				target.drawColumn(STEEL, null, position,
+						height, postRadius, postRadius,
+						false, true);
+			}
+
+			/* render the sign (front, then back) */
+
+			for (int sign = 0; sign < types.size(); sign++) {
+
+				TrafficSignType type = types.get(sign);
+				List<VectorXYZ> vs = signGeometries.get(sign);
+
+				target.drawTriangleStrip(type.material, vs,
+						texCoordLists(vs, type.material, STRIP_FIT));
+
+				vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
+
+				target.drawTriangleStrip(STEEL, vs,
+						texCoordLists(vs, STEEL, STRIP_FIT));
+
+			}
+		}
 	}
 
 	private static final class TrafficSign extends NoOutlineNodeWorldObject
