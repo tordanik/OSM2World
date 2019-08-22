@@ -216,7 +216,7 @@ public final class PowerModule extends AbstractModule {
 			public void render(Target<?> target, VectorXYZ position,
 					double direction, Double height, Double width, Double length) {
 
-				double bladeLength = (height == 0 ? 1 : height) / 2;
+				double bladeLength = (height == null ? 1 : height) / 2;
 				double bladeWidth = 0.1 * bladeLength;
 
 				Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
@@ -324,7 +324,7 @@ public final class PowerModule extends AbstractModule {
 
 		@Override
 		public void renderTo(ModelTarget<?> target) {
-			renderTo(target);
+			renderTo((Target<?>)target);
 		}
 
 	}
