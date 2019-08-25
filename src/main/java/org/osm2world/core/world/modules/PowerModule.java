@@ -223,9 +223,9 @@ public final class PowerModule extends AbstractModule {
 
 				// define first blade
 				List<VectorXYZ> bladeFront = asList(
-						position.add(0, 0, +bladeWidth/2),
+						position.add(-bladeWidth/5, 0, +bladeWidth/2),
 						position.add(0, -bladeLength, 0),
-						position.add(0, 0, -bladeWidth/2)
+						position.add(+bladeWidth/5, 0, -bladeWidth/2)
 				);
 
 				List<VectorXYZ> bladeBack = asList(bladeFront.get(0), bladeFront.get(2), bladeFront.get(1));
@@ -309,13 +309,13 @@ public final class PowerModule extends AbstractModule {
 			if (target instanceof ModelTarget<?>) {
 
 				((ModelTarget<?>) target).drawModel(ROTOR,
-						getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, 0),
+						getBase().addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 						0, rotorDiameter, rotorDiameter, rotorDiameter);
 
 			} else {
 
 				ROTOR.render(target,
-						getBase().addY(poleHeight).add(-poleRadiusTop*2, nacelleHeight/2, 0),
+						getBase().addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 						0, rotorDiameter, rotorDiameter, rotorDiameter);
 
 			}
