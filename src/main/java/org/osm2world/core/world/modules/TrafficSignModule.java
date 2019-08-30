@@ -9,19 +9,26 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLis
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapElement;
+//import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelation.Membership;
+import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextTextureData;
@@ -32,6 +39,7 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.TrafficSignType;
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 
 
 /**
@@ -46,14 +54,14 @@ public class TrafficSignModule extends AbstractModule {
 
 		if(!node.getMemberships().isEmpty()) {
 
-			//collection with the relations this node is part of
-			Collection<Membership> membList = node.getMemberships();
+			//for each relation this node is part of
 
-			for(Membership m : membList) {
+			for(Membership m : node.getMemberships()) {
 
 				if(m.getRelation().getTags().contains("type", "destination_sign") && m.getRole().equals("sign")) {
 
 					node.addRepresentation(new DestinationSign(node));
+					return;
 				}
 			}
 		}
@@ -101,7 +109,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* extract subtype and/or brackettext values */
 
-			regex = "[A-Za-z0-9]*\\.?\\d*_?(\\d+)?(?:\\[(.*)\\])?"; //match every traffic sign
+			regex = "[A-Za-z0-9]*\\.?\\d*_?(\\d+)?[A-Za-z]*(?:\\[(.*)\\])?"; //match every traffic sign
 			pattern = Pattern.compile(regex);
 			matcher1 = pattern.matcher(sign);
 
@@ -145,14 +153,14 @@ public class TrafficSignModule extends AbstractModule {
 
 			if(!attributes.materialName.isEmpty()) {
 				originalMaterial = getMaterial(attributes.materialName);
-				attributes.material = configureMaterial(originalMaterial, map, node);
+				attributes.material = configureMaterial(originalMaterial, map, node.getTags());
 			}
 
 			if(attributes.material==null) {
 
 				//if there is no material configured for the sign, try predefined ones
 				originalMaterial = getMaterial(signName);
-				attributes.material = configureMaterial(originalMaterial, map, node);
+				attributes.material = configureMaterial(originalMaterial, map, node.getTags());
 
 				//if there is no material defined for the sign, create simple white sign
 				if(attributes.material==null) {
@@ -257,7 +265,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param element The MapElement object to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, MapElement element) {
+	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
 
 		if(originalMaterial == null) return null;
 
@@ -281,17 +289,23 @@ public class TrafficSignModule extends AbstractModule {
 
 					while(matcher.matches()) {
 
-						if(element.getTags().containsKey(matcher.group(2))) {
+						if(tags.containsKey(matcher.group(2))) {
 
-							newText = newText.replace(matcher.group(1), element.getTags().getValue(matcher.group(2)));
+							newText = newText.replace(matcher.group(1), tags.getValue(matcher.group(2)));
 
 						} else if(!map.isEmpty()) {
+
+							//TODO: implement that with streams
+							boolean matched = false;
 
 							for (String key : map.keySet()) {
 								if(key.equals(matcher.group(2))) {
 									newText = newText.replace(matcher.group(1), map.get(matcher.group(2)));
+									matched = true;
 								}
 							}
+
+							if(!matched) newText = newText.replace(matcher.group(1), "");
 
 						} else {
 							System.err.println("Unknown attribute: "+matcher.group(2));
@@ -319,23 +333,28 @@ public class TrafficSignModule extends AbstractModule {
 		return newMaterial;
 	}
 
+	public static MapWaySegment getAdjacentSegment(MapWay way, MapNode intersection) {
+
+			List<MapWaySegment> waySegments = way.getWaySegments(); //get the way's segments
+
+			for(MapWaySegment segment : asList(waySegments.get(0), waySegments.get(waySegments.size()-1))) {
+
+				if(segment.getStartNode().equals(intersection) || segment.getEndNode().equals(intersection)) {
+					return segment;
+				}
+			}
+
+			return null;
+		}
+
 	private final class DestinationSign extends NoOutlineNodeWorldObject
 			implements RenderableToAllTargets {
 
 		//relation attributes
-		private MapElement from;
-		private MapElement to;
-		private MapNode intersection;
-		private MapNode sign;
-		private String destination;
-		private String distance;
-		private String arrowColour;
 		private Color backgroundColor;
 		private Color textColor;
 
-		//calculated values
 		private double rotation;
-		private String pointingDirection;
 
 		private MapRelation relation;
 
@@ -354,26 +373,19 @@ public class TrafficSignModule extends AbstractModule {
 			determineDestinationSignMaterial();
 		}
 
-		private MapWaySegment getAdjacentSegment(MapWay way, MapNode intersection) {
-
-			List<MapWaySegment> waySegments = way.getWaySegments(); //get the way's segments
-
-			for(MapWaySegment segment : asList(waySegments.get(0), waySegments.get(waySegments.size()-1))) {
-
-				if(segment.getStartNode().equals(intersection) || segment.getEndNode().equals(intersection)) {
-					return segment;
-				}
-			}
-
-			return null;
-		}
-
 		private void determineDestinationSignMaterial() {
 
-			//collection with the relations this node is part of
-			Collection<Membership> membList = node.getMemberships();
+			for(Membership m : node.getMemberships()) {
 
-			for(Membership m : membList) {
+				String pointingDirection;
+
+				//relation attributes
+				MapWay from = null;
+				MapWay to = null;
+				MapNode intersection = null;
+				String destination;
+				String distance;
+				String arrowColour;
 
 				MapWaySegment toSegment = null;
 				MapWaySegment fromSegment = null;
@@ -381,12 +393,12 @@ public class TrafficSignModule extends AbstractModule {
 				this.relation = m.getRelation();
 				ConfMaterial originalMat = null;
 
-				this.destination = relation.getTags().getValue("destination");
-				if(this.destination==null) {
-					System.err.println("Destination can not be null. Returning. Relation "+relation);
-					return;
+				destination = relation.getTags().getValue("destination");
+				if(destination==null) {
+					System.err.println("Destination can not be null. Destination sign rendering ommited for relation "+relation);
+					continue;
 				}
-				this.distance = relation.getTags().getValue("distance");
+				distance = relation.getTags().getValue("distance");
 
 				//parse background color
 				if(relation.getTags().getValue("colour:back")!=null) {
@@ -416,8 +428,8 @@ public class TrafficSignModule extends AbstractModule {
 					}
 				}
 
-				this.arrowColour = relation.getTags().getValue("colour:arrow");
-				if(arrowColour==null) this.arrowColour = "BLACK";
+				arrowColour = relation.getTags().getValue("colour:arrow");
+				if(arrowColour==null) arrowColour = "BLACK";
 
 				//map to use in configureMaterial
 				HashMap<String, String> map = new HashMap<String, String>();
@@ -426,72 +438,108 @@ public class TrafficSignModule extends AbstractModule {
 				if(distance!=null) map.put("distance", distance);
 
 				//List to hold all "from" members of the relation (if multiple)
-				List<MapElement> fromMembers = new ArrayList<MapElement>();
+				List<MapWay> fromMembers = new ArrayList<>();
+
+				//variable to avoid calculating 'from' using vector from "sign" to "intersection"
+				//if fromMembers size is 0 because of not acceptable mapping
+				boolean wrongFrom = false;
 
 				for(Membership member : relation.getMemberships()) {
 
 					if(member.getRole().equals("from")) {
-						fromMembers.add(member.getElement());
+
+						if(member.getElement() instanceof MapWay) {
+							fromMembers.add((MapWay)member.getElement());
+						}else {
+							System.err.println("'from' member of relation "+
+									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							wrongFrom = true;
+							continue;
+						}
+
 					}else if(member.getRole().equals("to")) {
-						this.to = member.getElement();
+
+						if(member.getElement() instanceof MapWay) {
+							to = (MapWay)member.getElement();
+						}else {
+							System.err.println("'to' member of relation "+
+									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							continue;
+						}
+
 					}else if(member.getRole().equals("intersection")) {
-						this.intersection = (MapNode) member.getElement();
-					}else if(member.getRole().equals("sign")) {
-						this.sign = (MapNode) member.getElement();
+
+						if(!(member.getElement() instanceof MapNode)) {
+							System.err.println("'intersection' member of relation "+
+									this.relation.getOsmElement().getId()+" is not a node. It is not being considered for rendering this relation's destination sign");
+							continue;
+						}
+
+						intersection = (MapNode) member.getElement();
 					}
+				}
+
+
+				//check intersection first as it is being used in 'from' calculation below
+				if(intersection==null) {
+					System.err.println("Member 'intersection' was not defined in relation "+relation.getOsmElement().getId()+
+							". Destination sign rendering is ommited for this relation.");
+					continue;
 				}
 
 				/* if there are multiple "from" members or none at all,
 				use the vector from "sign" to "intersection" instead */
 
-				if(fromMembers.size() > 1 || fromMembers.size() == 0) {
+				if(fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
 					List<MapNode> signAndIntersection = asList(
-							this.sign,
-							this.intersection);
+							node,
+							intersection);
 
 					//create a new MapWay instance from sign node to intersection node
 					MapWay signToIntersection = new MapWay(null, signAndIntersection);
-					this.from = signToIntersection;
+					from = signToIntersection;
 
-				}else {
-					//if size==1
-					this.from = fromMembers.get(0);
+				}else if(fromMembers.size()==1) {
+					
+					from = fromMembers.get(0);
+				}
+
+				//check if the rest of the "vital" relation members where defined
+				if(from==null || to==null) {
+					System.err.println("not all members of relation "+
+							relation.getOsmElement().getId()+" where defined. Destination sign rendering is ommited for this relation.");
+					continue;
 				}
 
 				//get facing direction
 
 				boolean mustBeInverted = false;
 
-				if(from instanceof MapWay) {
+				//'from' member is a way
+				fromSegment = getAdjacentSegment(from, intersection);
 
-					fromSegment = getAdjacentSegment((MapWay) from, intersection);
-
-					if(fromSegment!=null) {
-						if(fromSegment.getEndNode().equals(intersection)) {
-							mustBeInverted = true;
-						}
-					}else {
-						System.err.println("Way "+from+" is not connected to intersection "+intersection+". Returning");
-						return;
+				if(fromSegment!=null) {
+					if(fromSegment.getEndNode().equals(intersection)) {
+						mustBeInverted = true;
 					}
-
-					VectorXZ facingDir = fromSegment.getDirection();
-
-					//if the segment is facing towards the intersection, invert its direction vector
-					if(mustBeInverted) facingDir = facingDir.invert();
-
-					this.rotation = facingDir.angle();
+				}else {
+					System.err.println("Way "+from+" is not connected to intersection "+intersection);
+					return;
 				}
 
+				VectorXZ facingDir = fromSegment.getDirection();
 
-				if(to instanceof MapWay) {
+				//if the segment is facing towards the intersection, invert its direction vector
+				if(mustBeInverted) facingDir = facingDir.invert();
 
-					toSegment = getAdjacentSegment((MapWay) to, intersection);
+				this.rotation = facingDir.angle();
 
-					if(toSegment==null) {
-						System.err.println("Way "+to+" is not connected to intersection "+intersection+". Returning");
-						return;
-					}
+				//'to' member is also a way
+				toSegment = getAdjacentSegment(to, intersection);
+
+				if(toSegment==null) {
+					System.err.println("Way "+to+" is not connected to intersection "+intersection+". Returning");
+					return;
 				}
 
 				//explicit direction definition overwrites from-derived facing direction
@@ -501,15 +549,15 @@ public class TrafficSignModule extends AbstractModule {
 				}
 
 				//get the other ends of the segments
-				MapNode otherToSegmentNode = toSegment.getOtherNode(this.intersection);
-				MapNode otherFromSegmentNode = fromSegment.getOtherNode(this.intersection);
+				MapNode otherToSegmentNode = toSegment.getOtherNode(intersection);
+				MapNode otherFromSegmentNode = fromSegment.getOtherNode(intersection);
 
-				boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(), this.intersection.getPos());
+				boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(), intersection.getPos());
 
 				if(isRightOf) {
-					this.pointingDirection = "RIGHT";
+					pointingDirection = "RIGHT";
 				}else {
-					this.pointingDirection = "LEFT";
+					pointingDirection = "LEFT";
 				}
 
 				//parse traffic sign specific configurable values: material,numPosts,defaultHeight
@@ -521,7 +569,7 @@ public class TrafficSignModule extends AbstractModule {
 				if(!attributes.materialName.isEmpty()) {
 
 					originalMat = getMaterial(attributes.materialName);
-					attributes.material = configureMaterial(originalMat, map, node);
+					attributes.material = configureMaterial(originalMat, map, relation.getTags());
 				}
 
 				if(attributes.material==null) {
@@ -529,7 +577,7 @@ public class TrafficSignModule extends AbstractModule {
 					//if there is no material configured for the sign, try predefined ones
 					originalMat = getMaterial(signName);
 
-					attributes.material = configureMaterial(originalMat, map, node);
+					attributes.material = configureMaterial(originalMat, map, relation.getTags());
 
 					//if there is no material defined for the sign, create simple white sign
 					if(attributes.material==null) {
@@ -561,8 +609,6 @@ public class TrafficSignModule extends AbstractModule {
 
 		@Override
 		public void renderTo(Target<?> target) {
-
-			System.out.println("DestinationSign rendered!!");
 
 			/* get basic parameters */
 

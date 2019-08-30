@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.TextTextureData;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -207,8 +208,6 @@ public abstract class Material {
 
 			if(layer instanceof TextTextureData) {
 
-				counter++;
-
 				if(counter==numberOfTextLayer) {
 
 					//create a new TextTextureData instance with different textColor
@@ -225,6 +224,8 @@ public abstract class Material {
 							getShininess(),getTransparency(),getShadow(),
 							getAmbientOcclusion(),textureDataList);
 				}
+
+				counter++;
 			}
 		}
 
