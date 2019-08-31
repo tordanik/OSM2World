@@ -21,9 +21,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 /**
  * A class containing all the necessary information
  * to render a traffic sign.
- *
- * @author Jason Manoloudis
- *
  */
 public class TrafficSignModel {
 
@@ -185,43 +182,18 @@ public class TrafficSignModel {
 		//Direction the way the node is part of, is facing
 		VectorXZ wayDir = node.getConnectedWaySegments().get(0).getDirection();
 
-		if(nodeTags.containsKey("direction")) {
+		if(nodeTags.containsKey("direction") && !nodeTags.containsAny("direction", asList("forward", "backward"))) {
 
-			if(!nodeTags.containsAny("direction", asList("forward", "backward"))) {
+			//get direction mapped as angle or cardinal direction
+			double dir = parseDirection(nodeTags, PI);
+			this.direction = dir;
+			return;
 
-				//get direction mapped as angle or cardinal direction
-				double dir = parseDirection(nodeTags, PI);
-				this.direction = dir;
-				return;
+		}else if(nodeTags.contains("direction", "backward") || nodeTags.containsKey("traffic_sign:backward")) {
 
-			}else {
-
-				if(nodeTags.getValue("direction").equals("backward")) {
-
-					this.direction = wayDir.angle();
-					return;
-				}
-
-			}
-
-		}else if(nodeTags.containsAnyKey(asList("traffic_sign:forward", "traffic_sign:backward"))) {
-
-			String regex = "traffic_sign:(forward|backward)";
-			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher;
-
-			for(Tag tag : nodeTags) {
-
-				matcher = pattern.matcher(tag.key);
-
-				if(matcher.matches()) {
-
-					if(matcher.group(1).equals("backward")) {
-						this.direction = wayDir.angle();
-						return;
-					}
-				}
-			}
+			this.direction = wayDir.angle();
+			return;
+		
 		}else if(nodeTags.containsAny("highway", asList("give_way", "stop"))) {
 
 			/*
