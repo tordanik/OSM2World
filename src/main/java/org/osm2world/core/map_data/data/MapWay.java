@@ -79,22 +79,4 @@ public class MapWay extends MapRelation.Element {
 		return "w" + osmWay.getId();
 	}
 
-	@Override
-	public List<? extends WorldObject> getRepresentations() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public WorldObject getPrimaryRepresentation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<MapOverlap<? extends MapElement, ? extends MapElement>> getOverlaps() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

@@ -24,7 +24,7 @@ public class MapRelation {
 	 * TODO: eventually merge with {@link MapElement}
 	 * Something that can be a member of a relation
 	 */
-	public static abstract class Element implements MapElement {
+	public static abstract class Element {
 
 		private List<Membership> memberships = emptyList();
 
