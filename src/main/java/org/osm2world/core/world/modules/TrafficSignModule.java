@@ -109,8 +109,6 @@ public class TrafficSignModule extends AbstractModule {
 
 		if(wayTags.containsAnyKey(asList("maxspeed", "overtaking", "maxwidth", "maxheight", "maxweight", "traffic_sign"))) {
 
-			System.out.println("im in! "+wayTags.getValue("traffic_sign"));
-
 			List<String> containedKeys = wayTags.containsWhichKeys(asList("maxspeed", "overtaking", "maxwidth", "maxheight", "maxweight", "traffic_sign"));
 
 			if(!containedKeys.isEmpty()) {
@@ -119,7 +117,7 @@ public class TrafficSignModule extends AbstractModule {
 
 
 
-				side = node.getConnectedWaySegments().get(0).hasRightHandTraffic();
+				side = RoadModule.hasRightHandTraffic(node.getConnectedWaySegments().get(0));
 
 				if(side) side &= !wayTags.contains("side", "left");
 				else side &= !wayTags.contains("side", "right");
@@ -305,8 +303,8 @@ public class TrafficSignModule extends AbstractModule {
 
 				MapWaySegment otherSegment = node.getConnectedWaySegments().get(1);
 
-				if(segment.hasRightHandTraffic() && otherSegment.hasRightHandTraffic()) {
-					side = segment.hasRightHandTraffic();
+				if(RoadModule.hasRightHandTraffic(segment) && RoadModule.hasRightHandTraffic(otherSegment)) {
+					side = RoadModule.hasRightHandTraffic(segment);
 				}
 			}
 

@@ -108,6 +108,27 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
+	/**
+	 * Determine whether this segment has
+	 * right-hand traffic or not, based
+	 * on {@value org.osm2world.core.world.modules.RoadModule#RIGHT_HAND_TRAFFIC_BY_DEFAULT}
+	 * and way's driving_side tags, if any.
+	 */
+	public static boolean hasRightHandTraffic(MapWaySegment segment) {
+
+		TagGroup wayTags = segment.getTags();
+
+		if (wayTags.contains("driving_side", "left")) {
+			return false;
+		}
+
+		if (wayTags.contains("driving_side", "right")) {
+			return true;
+		}
+
+		return RIGHT_HAND_TRAFFIC_BY_DEFAULT;
+	}
+
 	public static boolean isRoad(TagGroup tags) {
 		if (tags.containsKey("highway")
 				&& !tags.contains("highway", "construction")
