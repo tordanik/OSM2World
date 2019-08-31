@@ -1,5 +1,7 @@
 package org.openstreetmap.josm.plugins.graphview.core.data;
 
+import java.util.List;
+
 /**
  * represents a group of OSM tags (e.g. all tags of a way).
  * TagGroups are expected to be immutable, so modifying the tags means creation of a new group.
@@ -24,6 +26,12 @@ public interface TagGroup extends Iterable<Tag> {
 	 * @param keys  keys to check for; != null
 	 */
 	public boolean containsAnyKey(Iterable<String> keys);
+
+	/**
+	 * returns a List of the keys found in this tag group. Empty list if no match was found
+	 * @param keys keys to check for; != null
+	 */
+	public List<String> containsWhichKeys(Iterable<String> keys);
 
 	/**
 	 * returns true if this tag group contains at least one tag with the given value

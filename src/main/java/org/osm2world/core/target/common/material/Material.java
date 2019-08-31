@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
 
 /**
@@ -176,6 +177,61 @@ public abstract class Material {
 
 	}
 
+	/**
+	 * returns a material that is the same as this one,
+	 * except with a different color
+	 */
+	public Material withColor(Color color) {
+
+		if(color==null) return this;
+
+		return new ImmutableMaterial(getInterpolation(), color,
+			getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+			getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+	}
+
+	/**
+	 * returns a copy of {@code material} with its {@link TextTextureData} layer
+	 * No. {@code numberOfTextLayer} changed with a replica with textColor={@code color}
+	 */
+	public Material withTextColor(Color color, int numberOfTextLayer){
+
+		if(getTextureDataList().isEmpty()) return this;
+
+		//copy of the material textureDataList
+		List<TextureData> textureDataList =
+				new ArrayList<TextureData>(getTextureDataList());
+
+		int counter = 0;
+
+		for(TextureData layer : getTextureDataList()) {
+
+			if(layer instanceof TextTextureData) {
+
+				counter++;
+
+				if(counter==numberOfTextLayer) {
+
+					//create a new TextTextureData instance with different textColor
+					TextTextureData textData = new TextTextureData(((TextTextureData) layer).text, ((TextTextureData)layer).font, layer.width,
+							layer.height, ((TextTextureData)layer).topOffset, ((TextTextureData)layer).leftOffset,
+							color, ((TextTextureData) layer).relativeFontSize,
+							layer.wrap, layer.coordFunction, layer.colorable, layer.isBumpMap);
+
+					textureDataList.set(numberOfTextLayer, textData);
+
+					//return a copy of the material with the new textureDataList
+					return new ConfMaterial(getInterpolation(),getColor(),
+							getAmbientFactor(),getDiffuseFactor(),getSpecularFactor(),
+							getShininess(),getTransparency(),getShadow(),
+							getAmbientOcclusion(),textureDataList);
+				}
+			}
+		}
+
+		return this;
+	}
+
 	public Transparency getTransparency() {
 		return transparency;
 	}
@@ -212,6 +268,7 @@ public abstract class Material {
 		return this.bumpMapInd;
 	}
 
+	@Override
 	public String toString() {
 		return String.format("{%s, #%06x, a%3f, d%3f, s%3f, sh%d, %d tex, ",
 				interpolation, color.getRGB() & 0x00ffffff, ambientFactor,

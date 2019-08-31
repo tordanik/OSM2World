@@ -3,14 +3,20 @@ package org.osm2world.core.world.modules.common;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static java.util.Arrays.asList;
+import static java.lang.Math.PI;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
+import org.osm2world.core.world.modules.TrafficSignModule;
+
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 /**
  * A class containing all the necessary information
@@ -163,35 +169,86 @@ public class TrafficSignModel {
 
 	/**
 	 * Same as {@link #calculateDirection(MapWaySegment)} but also parses the node's
-	 * tags for the direction specification and returns true if it is found. False otherwise.
-	 * The segment to extract the direction from is the segment the node is part of.
+	 * tags for the direction specification and takes into account the
+	 * highway=give_way/stop special case. To be used on nodes that are part of ways.
 	 */
 	public void calculateDirection() {
 
-		String regex = "traffic_sign:(forward|backward)";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher;
+		if(node.getConnectedWaySegments().isEmpty()) {
+			System.err.println("Node "+node.getOsmElement().getId()+" is not part of a way.");
+			this.direction = PI;
+			return;
+		}
 
+		TagGroup nodeTags = node.getTags();
+
+		//Direction the way the node is part of, is facing
 		VectorXZ wayDir = node.getConnectedWaySegments().get(0).getDirection();
 
-		for(Tag tag : node.getTags()) {
+		if(nodeTags.containsKey("direction")) {
 
-			matcher = pattern.matcher(tag.key);
+			if(!nodeTags.containsAny("direction", asList("forward", "backward"))) {
 
-			if(matcher.matches()) {
+				//get direction mapped as angle or cardinal direction
+				double dir = parseDirection(nodeTags, PI);
+				this.direction = dir;
+				return;
 
-				if(matcher.group(1).equals("backward")) {
+			}else {
+
+				if(nodeTags.getValue("direction").equals("backward")) {
+
 					this.direction = wayDir.angle();
+					return;
+				}
+
+			}
+
+		}else if(nodeTags.containsAnyKey(asList("traffic_sign:forward", "traffic_sign:backward"))) {
+
+			String regex = "traffic_sign:(forward|backward)";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher;
+
+			for(Tag tag : nodeTags) {
+
+				matcher = pattern.matcher(tag.key);
+
+				if(matcher.matches()) {
+
+					if(matcher.group(1).equals("backward")) {
+						this.direction = wayDir.angle();
+						return;
+					}
+				}
+			}
+		}else if(nodeTags.containsAny("highway", asList("give_way", "stop"))) {
+
+			/*
+			 * if no direction is specified with any of the above cases and a
+			 * sign of type highway=give_way/stop is mapped, calculate model's
+			 * direction based on the position of the junction closest to the node
+			 */
+
+			if(RoadModule.getConnectedRoads(node, false).size()<=2) {
+
+				MapNode closestJunction = TrafficSignModule.findClosestJunction(node);
+
+				if(closestJunction!=null) {
+
+					this.direction = (node.getPos().subtract(closestJunction.getPos())).normalize().angle();
 					return;
 				}
 			}
 		}
 
-		//Either traffic_sign:forward is specified or no forward/backward is specified at all.
-		//traffic_sign:forward affects vehicles moving in the same direction as
-		//the way. Therefore they must face the sign so the way's direction is inverted.
-		//Vehicles facing the sign is the most common case so it is set as the default case
-		//as well
+		/*
+		 * Either traffic_sign:forward or direction=forward is specified or no forward/backward is specified at all.
+		 * traffic_sign:forward affects vehicles moving in the same direction as
+		 * the way. Therefore they must face the sign so the way's direction is inverted.
+		 * Vehicles facing the sign is the most common case so it is set as the default case
+		 * as well
+		 */
 		wayDir = wayDir.invert();
 		this.direction = wayDir.angle();
 		return;

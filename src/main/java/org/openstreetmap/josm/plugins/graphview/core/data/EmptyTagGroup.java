@@ -2,6 +2,7 @@ package org.openstreetmap.josm.plugins.graphview.core.data;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 public final class EmptyTagGroup implements TagGroup {
 
@@ -42,6 +43,11 @@ public final class EmptyTagGroup implements TagGroup {
 	@Override
 	public boolean containsAnyKey(Iterable<String> keys) {
 		return false;
+	}
+
+	@Override
+	public List<String> containsWhichKeys(Iterable<String> keys) {
+		return Collections.emptyList();
 	}
 
 	@Override

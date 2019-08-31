@@ -3,13 +3,16 @@ package org.osm2world.core.map_data.data;
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.world.data.WorldObject;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 
@@ -74,6 +77,24 @@ public class MapWay extends MapRelation.Element {
 	@Override
 	public String toString() {
 		return "w" + osmWay.getId();
+	}
+
+	@Override
+	public List<? extends WorldObject> getRepresentations() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public WorldObject getPrimaryRepresentation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<MapOverlap<? extends MapElement, ? extends MapElement>> getOverlaps() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -1,10 +1,12 @@
 package org.openstreetmap.josm.plugins.graphview.core.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,6 +79,21 @@ public class MapBasedTagGroup implements TagGroup {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public List<String> containsWhichKeys(Iterable<String> keys) {
+
+		List<String> foundKeys = new ArrayList<>();
+
+		for(String key : keys) {
+			if(this.containsKey(key)) {
+				foundKeys.add(key);
+			}
+		}
+		if(foundKeys.size()>0) return foundKeys;
+
+		return Collections.emptyList();
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.modules.RoadModule;
 
 import com.google.common.collect.Iterables;
 
@@ -59,6 +60,33 @@ public class MapWaySegment extends MapSegment implements MapElement {
 			overlaps = new ArrayList<MapOverlap<?,?>>();
 		}
 		overlaps.add(overlap);
+	}
+
+	/**
+	 * Determine whether this segment has
+	 * right-hand traffic or not, based
+	 * on {@value org.osm2world.core.world.modules.RoadModule#RIGHT_HAND_TRAFFIC_BY_DEFAULT}
+	 * and way's driving_side tags, if any.
+	 */
+	public boolean hasRightHandTraffic() {
+
+		TagGroup wayTags = this.getTags();
+		boolean side = RoadModule.RIGHT_HAND_TRAFFIC_BY_DEFAULT;
+
+		if (side) {
+
+			if (wayTags.contains("driving_side", "left")) {
+				side = false;
+			}
+
+		} else {
+
+			if (wayTags.contains("driving_side", "right")) {
+				side = true;
+			}
+		}
+
+		return side;
 	}
 
 	@Override
