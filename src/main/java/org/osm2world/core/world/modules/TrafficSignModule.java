@@ -178,7 +178,7 @@ public class TrafficSignModule extends AbstractModule {
 						 * Avoid the case where the last node of the way may be a junction
 						 */
 						if(bottomSegment.getEndNode().getConnectedWaySegments().size()<3) {
-							secondModel.calculatePosition(bottomSegment, side);
+							secondModel.calculatePosition(bottomSegment, !side);
 						}else {
 
 							if(RoadModule.isRoad(wayTags)) {
@@ -338,7 +338,7 @@ public class TrafficSignModule extends AbstractModule {
 
 				MapWaySegment otherSegment = node.getConnectedWaySegments().get(1);
 
-				if(RoadModule.hasRightHandTraffic(segment) && RoadModule.hasRightHandTraffic(otherSegment)) {
+				if(RoadModule.hasRightHandTraffic(segment) == RoadModule.hasRightHandTraffic(otherSegment)) {
 					side = RoadModule.hasRightHandTraffic(segment);
 				}
 			}
