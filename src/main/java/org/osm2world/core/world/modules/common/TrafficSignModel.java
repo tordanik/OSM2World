@@ -130,18 +130,27 @@ public class TrafficSignModel {
 	 * will always be either the first one of it's way
 	 * or the last one.
 	 */
-	public void calculateDirection(MapWaySegment segment) {
+	public void calculateDirection(MapWaySegment segment, String key) {
 
 		//segments of the way this node is part of
 		List<MapWaySegment> segments = node.getConnectedWaySegments().get(0).getWay().getWaySegments();
 
 		VectorXZ wayDir = segment.getDirection();
 
+		if(key.equals("traffic_sign:backward")) {
+			wayDir = wayDir.invert();
+			this.direction = wayDir.angle();
+			return;
+		}else if(key.equals("traffic_sign:forward")) {
+			this.direction = wayDir.angle();
+			return;
+		}
+
 		//handle ways with only 1 segment
 		if(segments.size()==1) {
 
 			//if the node is the segment's first node, face the incoming traffic
-			if(node.equals(segments.get(0).getStartNode())) {
+			if(node.equals(segment.getStartNode())) {
 				wayDir = wayDir.invert();
 			}
 
