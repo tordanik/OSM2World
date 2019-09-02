@@ -21,6 +21,9 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 /**
  * A class containing all the necessary information
  * to render a traffic sign.
+ *
+ * @author Jason Manoloudis
+ *
  */
 public class TrafficSignModel {
 
@@ -98,7 +101,7 @@ public class TrafficSignModel {
 	 * Calculate the position this model will be rendered to, based on the
 	 * {@code side} of the road it is supposed to be and the width of the road
 	 */
-	public void calculatePosition(MapWaySegment segment, boolean side) {
+	public void calculatePosition(MapWaySegment segment, boolean side, String key) {
 
 		//if way is not a road
 		if(!RoadModule.isRoad(segment.getTags())) {
@@ -111,16 +114,33 @@ public class TrafficSignModel {
 
 		double roadWidth = r.getWidth();
 
+		//TODO: side=* overwrites all
+
 		//rightNormal() vector will always be orthogonal to the segment, no matter its direction,
 		//so we use that to place the signs to the left/right of the way
 		VectorXZ rightNormal = segment.getDirection().rightNormal();
 
 		if(side) {
-			this.position = node.getPos().add(rightNormal.mult(-roadWidth));
-			return;
+
+			if(key.contains("forward")) {
+				this.position = node.getPos().add(rightNormal.mult(roadWidth));
+				return;
+			}else {
+				//if backwards
+				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
+				return;
+			}
+
 		}else {
-			this.position = node.getPos().add(rightNormal.mult(roadWidth));
-			return;
+
+			if(key.contains("forward")) {
+				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
+				return;
+			}else {
+				this.position = node.getPos().add(rightNormal.mult(roadWidth));
+				return;
+			}
+
 		}
 	}
 
@@ -132,16 +152,41 @@ public class TrafficSignModel {
 	 */
 	public void calculateDirection(MapWaySegment segment, String key) {
 
+		VectorXZ wayDir = segment.getDirection();
+
+		//if(startOrEnd) {
+
+			if(key.contains("forward")) {
+				wayDir = wayDir.invert();
+				this.direction = wayDir.angle();
+			}else {
+				this.direction = wayDir.angle();
+			}
+
+		//}else {
+
+
+
+			/*if(key.contains("forward")) {
+				this.direction = wayDir.angle();
+			}else {
+				if(segment.getTags().containsValue("DE:239")) System.out.println("na me");
+				wayDir = wayDir.invert();
+				this.direction = wayDir.angle();
+			}*/
+		//}
+
+
 		//segments of the way this node is part of
-		List<MapWaySegment> segments = node.getConnectedWaySegments().get(0).getWay().getWaySegments();
+		/*List<MapWaySegment> segments = node.getConnectedWaySegments().get(0).getWay().getWaySegments();
 
 		VectorXZ wayDir = segment.getDirection();
 
 		if(key.equals("traffic_sign:backward")) {
-			wayDir = wayDir.invert();
 			this.direction = wayDir.angle();
 			return;
 		}else if(key.equals("traffic_sign:forward")) {
+			wayDir = wayDir.invert();
 			this.direction = wayDir.angle();
 			return;
 		}
@@ -170,7 +215,7 @@ public class TrafficSignModel {
 		}else if(segment.equals(segments.get(segments.size()-1))) {
 
 			this.direction = wayDir.angle();
-		}
+		}*/
 	}
 
 	/**
@@ -191,18 +236,43 @@ public class TrafficSignModel {
 		//Direction the way the node is part of, is facing
 		VectorXZ wayDir = node.getConnectedWaySegments().get(0).getDirection();
 
-		if(nodeTags.containsKey("direction") && !nodeTags.containsAny("direction", asList("forward", "backward"))) {
+		if(nodeTags.containsKey("direction")) {
 
-			//get direction mapped as angle or cardinal direction
-			double dir = parseDirection(nodeTags, PI);
-			this.direction = dir;
-			return;
+			if(!nodeTags.containsAny("direction", asList("forward", "backward"))) {
 
-		}else if(nodeTags.contains("direction", "backward") || nodeTags.containsKey("traffic_sign:backward")) {
+				//get direction mapped as angle or cardinal direction
+				double dir = parseDirection(nodeTags, PI);
+				this.direction = dir;
+				return;
 
-			this.direction = wayDir.angle();
-			return;
-		
+			}else {
+
+				if(nodeTags.getValue("direction").equals("backward")) {
+
+					this.direction = wayDir.angle();
+					return;
+				}
+
+			}
+
+		}else if(nodeTags.containsAnyKey(asList("traffic_sign:forward", "traffic_sign:backward"))) {
+
+			String regex = "traffic_sign:(forward|backward)";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher;
+
+			for(Tag tag : nodeTags) {
+
+				matcher = pattern.matcher(tag.key);
+
+				if(matcher.matches()) {
+
+					if(matcher.group(1).equals("backward")) {
+						this.direction = wayDir.angle();
+						return;
+					}
+				}
+			}
 		}else if(nodeTags.containsAny("highway", asList("give_way", "stop"))) {
 
 			/*

@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.ArrayUtils;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
@@ -116,29 +115,40 @@ public class TrafficSignModule extends AbstractModule {
 
 			if(!containedKeys.isEmpty()) {
 
-				//check left/right (of the road) sign placement. "both" is not applicable in this case
-
-				side = RoadModule.hasRightHandTraffic(node.getConnectedWaySegments().get(0));
-
-				if(side) side &= !wayTags.contains("side", "left");
-				else side &= !wayTags.contains("side", "right");
+				String tempKey = "";
 
 				//determine rendering positions
 				for(String key : containedKeys) {
 
 					//if a way adjacent to the beginning of this way does not contain the same traffic sign
-					if(!TrafficSignModel.adjacentWayContains(true, way, key, wayTags.getValue(key))) {
+					if(!TrafficSignModel.adjacentWayContains(true, way, key, wayTags.getValue(key)) && !key.contains("backward")) {
+
+						//when at the beginning of the way, handle the sign
+						//as it was mapped as sign:forward (affect vehicles moving at the same
+						//direction as the way)
+						if(!key.contains("backward") && !key.contains("forward")) {
+							tempKey = key + ":forward";
+						}else {
+							tempKey = key;
+						}
+
+						//System.out.println("tempkey top of way: "+tempKey+ " "+wayTags.getValue(key));
 
 						//get first way segment
 						MapWaySegment topSegment = way.getWaySegments().get(0);
 
-						//new TrafficSignModel at the beginning of the way.
-						//Avoid the case where the first node of the way may be a junction
-
+						//new TrafficSignModel at the beginning of the way
 						firstModel = new TrafficSignModel(topSegment.getStartNode());
 
+						//get segment's driving side
+						side = RoadModule.hasRightHandTraffic(topSegment);
+
+						//set the model's facing direction
+						firstModel.calculateDirection(topSegment, tempKey);
+
+						//Avoid the case where the first node of the way may be a junction
 						if(topSegment.getStartNode().getConnectedWaySegments().size()<3) {
-							firstModel.calculatePosition(topSegment, side);
+							firstModel.calculatePosition(topSegment, side, tempKey);
 						}else {
 
 							if(RoadModule.isRoad(wayTags)) {
@@ -147,13 +157,9 @@ public class TrafficSignModule extends AbstractModule {
 							}else {
 								firstModel.position = firstModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
 							}
-
 						}
 
 						keysForFirstModel.add(key);
-
-						//set the model's rendering position and facing direction
-						firstModel.calculateDirection(topSegment, key);
 					}
 
 					/*
@@ -163,8 +169,16 @@ public class TrafficSignModule extends AbstractModule {
 					 * Configuration definition deduceTrafficSignsFromWayTags=limited "turns off" this mechanism
 					 */
 					if(!TrafficSignModel.adjacentWayContains(false, way, key, wayTags.getValue(key)) && !RoadModule.isOneway(way.getTags())
-							&& !state.equalsIgnoreCase("limited")) {
-						
+							&& !state.equalsIgnoreCase("limited") && !key.contains("forward")) {
+
+						//when at the end of the way, handle traffic sign
+						//as it was mapped as sign:backward
+						if(!key.contains("backward") && !key.contains("forward")) {
+							tempKey = key + ":backward";
+						}else {
+							tempKey = key;
+						}
+
 						//get number of segments from the way this node is part of
 						int numOfSegments = way.getWaySegments().size();
 
@@ -173,12 +187,20 @@ public class TrafficSignModule extends AbstractModule {
 
 						secondModel = new TrafficSignModel(bottomSegment.getEndNode());
 
+						//get segment's driving side
+						side = RoadModule.hasRightHandTraffic(bottomSegment);
+
+						secondModel.calculateDirection(bottomSegment, tempKey);
+
 						/*
 						 * new TrafficSignModel at the end of the way.
 						 * Avoid the case where the last node of the way may be a junction
 						 */
 						if(bottomSegment.getEndNode().getConnectedWaySegments().size()<3) {
-							secondModel.calculatePosition(bottomSegment, !side);
+
+							secondModel.calculatePosition(bottomSegment, side, tempKey);
+
+							//System.out.println("tempkey end of way: "+tempKey+ " "+wayTags.getValue(key) +" key is: "+key+ " secondModel: "+secondModel);
 						}else {
 
 							if(RoadModule.isRoad(wayTags)) {
@@ -187,12 +209,9 @@ public class TrafficSignModule extends AbstractModule {
 							}else {
 								secondModel.position = secondModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
 							}
-
 						}
 
 						keysForSecondModel.add(key);
-
-						secondModel.calculateDirection(bottomSegment, key);
 					}
 				}
 
@@ -266,6 +285,8 @@ public class TrafficSignModule extends AbstractModule {
 						firstModel.types = types;
 						node.addRepresentation(new TrafficSign(firstModel, config));
 					}
+				}
+				if(typesForSecondSign.size() > 0) {
 
 					if(secondModel!=null) {
 
@@ -310,17 +331,24 @@ public class TrafficSignModule extends AbstractModule {
 		//if node is part of a way
 		if(inHighway) {
 
+			String tempKey = "";
+
 			//one rendering is required
 			firstModel = new TrafficSignModel(node);
 
-			firstModel.calculateDirection();
-
 			if(node.getTags().containsKey("traffic_sign:forward")) {
 				tagValue = node.getTags().getValue("traffic_sign:forward");
+				tempKey = "traffic_sign:forward";
 			}else if(node.getTags().containsKey("traffic_sign:backward")){
 				tagValue = node.getTags().getValue("traffic_sign:backward");
+				tempKey = "traffic_sign:backward";
 			}else if(node.getTags().containsKey("traffic_sign")){
 				tagValue = node.getTags().getValue("traffic_sign");
+				tempKey = "traffic_sign:forward";
+			}else {
+				//in case of highway=give_way/stop, affect vehicles moving in the way's direction
+				//if no explicit direction tag is defined
+				tempKey += "forward";
 			}
 
 			//the segment this node is part of
@@ -339,15 +367,24 @@ public class TrafficSignModule extends AbstractModule {
 				MapWaySegment otherSegment = node.getConnectedWaySegments().get(1);
 
 				if(RoadModule.hasRightHandTraffic(segment) == RoadModule.hasRightHandTraffic(otherSegment)) {
+
 					side = RoadModule.hasRightHandTraffic(segment);
 				}
 			}
 
 			//explicit tags side=left/right may overwrite placement based on driving side
-			if(side) side &= !node.getTags().contains("side", "left");
-			else side &= !node.getTags().contains("side", "right");
+			//if(side) side &= !node.getTags().contains("side", "left");
+			//else side &= !node.getTags().contains("side", "right");
 
-			firstModel.calculatePosition(segment, side);
+			if(node.getTags().containsKey("traffic_sign")) {
+				if(node.getTags().getValue("traffic_sign").equals("maxspeed")) {
+					System.out.println("my side is: "+side);
+				}
+			}
+
+			firstModel.calculatePosition(segment, side, tempKey);
+
+			firstModel.calculateDirection();
 
 			if(node.getTags().contains("side", "both")) {
 
@@ -356,10 +393,8 @@ public class TrafficSignModule extends AbstractModule {
 				secondModel = new TrafficSignModel(node);
 
 				secondModel.direction = firstModel.direction;
-				secondModel.calculatePosition(segment, !side);
+				secondModel.calculatePosition(segment, !side, tempKey);
 			}
-
-			firstModel.calculatePosition(segment, side);
 
 		}else {
 
@@ -475,7 +510,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * Prepare a {@link TrafficSignType} object to (usually) be added in a
 	 * {@link TrafficSignModel}
 	 */
-	private TrafficSignType configureSignType(String country, String sign, TagGroup tags) {
+	private TrafficSignType configureSignType(String country, String sign, /*MapElement elementToGetTagsFrom*/ TagGroup elementToGetTagsFrom) {
 
 		sign.trim();
 		sign = sign.replace('-', '_');
@@ -530,14 +565,14 @@ public class TrafficSignModule extends AbstractModule {
 
 		if(!attributes.materialName.isEmpty()) {
 			originalMaterial = getMaterial(attributes.materialName);
-			attributes.material = configureMaterial(originalMaterial, map, tags);
+			attributes.material = configureMaterial(originalMaterial, map, elementToGetTagsFrom);
 		}
 
 		if(attributes.material==null) {
 
 			//if there is no material configured for the sign, try predefined ones
 			originalMaterial = getMaterial(signName);
-			attributes.material = configureMaterial(originalMaterial, map, tags);
+			attributes.material = configureMaterial(originalMaterial, map, elementToGetTagsFrom);
 
 			//if there is no material defined for the sign, create simple white sign
 			if(attributes.material==null) {
@@ -620,10 +655,10 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param originalMaterial The ConfMaterial to replicate
 	 * @param map A HashMap used to map each of traffic_sign.subtype / traffic_sign.brackettext
 	 * to their corresponding values
-	 * @param element The MapElement object to extract values from
+	 * @param tags The MapElement object to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
+	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, /*MapElement tags*/ TagGroup tags) {
 
 		if(originalMaterial == null) return null;
 
@@ -641,7 +676,7 @@ public class TrafficSignModule extends AbstractModule {
 				Matcher matcher = pattern.matcher(((TextTextureData) layer).text);
 				int index = originalMaterial.getTextureDataList().indexOf(layer);
 
-				if( matcher.matches() ) {
+				if( matcher.matches() && !((TextTextureData) layer).text.isEmpty()) {
 
 					newText = ((TextTextureData)layer).text;
 
@@ -666,6 +701,7 @@ public class TrafficSignModule extends AbstractModule {
 							if(!matched) newText = newText.replace(matcher.group(1), "");
 
 						} else {
+							System.err.println("Unknown attribute: "+matcher.group(2));
 							newText = newText.replace(matcher.group(1), "");
 						}
 
@@ -690,7 +726,7 @@ public class TrafficSignModule extends AbstractModule {
 		return newMaterial;
 	}
 
-		/**
+	/**
 	 * Finds the junction closest to {@code node}.
 	 * A node with 3 or more roads connected to it is considered
 	 * a junction.
@@ -819,20 +855,20 @@ public class TrafficSignModule extends AbstractModule {
 
 		private void determineDestinationSignMaterial() {
 
-			String pointingDirection;
-
-			//relation attributes
-			MapWay from;
-			MapWay to = null;
-			MapNode intersection = null;
-			String destination;
-			String distance;
-			String arrowColour;
-
 			//collection with the relations this node is part of
 			Collection<Membership> membList = node.getMemberships();
 
 			for(Membership m : membList) {
+
+				String pointingDirection;
+
+				//relation attributes
+				MapWay from = null;
+				MapWay to = null;
+				MapNode intersection = null;
+				String destination;
+				String distance;
+				String arrowColour;
 
 				MapWaySegment toSegment = null;
 				MapWaySegment fromSegment = null;
@@ -842,8 +878,8 @@ public class TrafficSignModule extends AbstractModule {
 
 				destination = relation.getTags().getValue("destination");
 				if(destination==null) {
-					System.err.println("Destination can not be null. Returning. Relation "+relation);
-					return;
+					System.err.println("Destination can not be null. Destination sign rendering ommited for relation "+relation);
+					continue;
 				}
 				distance = relation.getTags().getValue("distance");
 
@@ -887,6 +923,10 @@ public class TrafficSignModule extends AbstractModule {
 				//List to hold all "from" members of the relation (if multiple)
 				List<MapWay> fromMembers = new ArrayList<>();
 
+				//variable to avoid calculating 'from' using vector from "sign" to "intersection"
+				//if fromMembers size is 0 because of not acceptable mapping
+				boolean wrongFrom = false;
+
 				for(Membership member : relation.getMemberships()) {
 
 					if(member.getRole().equals("from")) {
@@ -895,8 +935,9 @@ public class TrafficSignModule extends AbstractModule {
 							fromMembers.add((MapWay)member.getElement());
 						}else {
 							System.err.println("'from' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a way. Destination sign rendering for this relation is ommited");
-							return;
+									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							wrongFrom = true;
+							continue;
 						}
 
 					}else if(member.getRole().equals("to")) {
@@ -905,26 +946,33 @@ public class TrafficSignModule extends AbstractModule {
 							to = (MapWay)member.getElement();
 						}else {
 							System.err.println("'to' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a way. Destination sign rendering for this relation is ommited");
-							return;
+									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							continue;
 						}
 
 					}else if(member.getRole().equals("intersection")) {
 
 						if(!(member.getElement() instanceof MapNode)) {
 							System.err.println("'intersection' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a node. Destination sign rendering for this relation is ommited");
-							return;
+									this.relation.getOsmElement().getId()+" is not a node. It is not being considered for rendering this relation's destination sign");
+							continue;
 						}
 
 						intersection = (MapNode) member.getElement();
 					}
 				}
 
+				//check intersection first as it is being used in 'from' calculation below
+				if(intersection==null) {
+					System.err.println("Member 'intersection' was not defined in relation "+relation.getOsmElement().getId()+
+							". Destination sign rendering is ommited for this relation.");
+					continue;
+				}
+
 				/* if there are multiple "from" members or none at all,
 				use the vector from "sign" to "intersection" instead */
 
-				if(fromMembers.size() > 1 || fromMembers.size() == 0) {
+				if(fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
 					List<MapNode> signAndIntersection = asList(
 							node,
 							intersection);
@@ -933,9 +981,16 @@ public class TrafficSignModule extends AbstractModule {
 					MapWay signToIntersection = new MapWay(null, signAndIntersection);
 					from = signToIntersection;
 
-				}else {
-					//if size==1
+				}else if(fromMembers.size()==1) {
+
 					from = fromMembers.get(0);
+				}
+
+				//check if the rest of the "vital" relation members where defined
+				if(from==null || to==null) {
+					System.err.println("not all members of relation "+
+							relation.getOsmElement().getId()+" where defined. Destination sign rendering is ommited for this relation.");
+					continue;
 				}
 
 				//get facing direction
@@ -943,7 +998,7 @@ public class TrafficSignModule extends AbstractModule {
 				boolean mustBeInverted = false;
 
 				//'from' member is a way
-				fromSegment = getAdjacentSegment((MapWay) from, intersection);
+				fromSegment = getAdjacentSegment(from, intersection);
 
 				if(fromSegment!=null) {
 					if(fromSegment.getEndNode().equals(intersection)) {
@@ -951,7 +1006,7 @@ public class TrafficSignModule extends AbstractModule {
 					}
 				}else {
 					System.err.println("Way "+from+" is not connected to intersection "+intersection);
-					return;
+					continue;
 				}
 
 				VectorXZ facingDir = fromSegment.getDirection();
@@ -962,13 +1017,12 @@ public class TrafficSignModule extends AbstractModule {
 				this.rotation = facingDir.angle();
 
 				//'to' member is also a way
-				toSegment = getAdjacentSegment((MapWay) to, intersection);
+				toSegment = getAdjacentSegment(to, intersection);
 
 				if(toSegment==null) {
 					System.err.println("Way "+to+" is not connected to intersection "+intersection+". Returning");
-					return;
+					continue;
 				}
-				
 
 				//explicit direction definition overwrites from-derived facing direction
 				if(node.getTags().containsKey("direction")) {
@@ -1041,6 +1095,8 @@ public class TrafficSignModule extends AbstractModule {
 			System.out.println("DestinationSign rendered!!");
 
 			/* get basic parameters */
+
+			if(types.size()==0) return;
 
 			double height = parseHeight(node.getTags(), (float)types.get(0).defaultHeight);
 
