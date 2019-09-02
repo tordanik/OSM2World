@@ -673,7 +673,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param tags The MapElement object to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, /*MapElement tags*/ TagGroup tags) {
+	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
 
 		if(originalMaterial == null) return null;
 
