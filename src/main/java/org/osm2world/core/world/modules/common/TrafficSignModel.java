@@ -22,8 +22,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
  * A class containing all the necessary information
  * to render a traffic sign.
  *
- * @author Jason Manoloudis
- *
  */
 public class TrafficSignModel {
 
@@ -101,7 +99,7 @@ public class TrafficSignModel {
 	 * Calculate the position this model will be rendered to, based on the
 	 * {@code side} of the road it is supposed to be and the width of the road
 	 */
-	public void calculatePosition(MapWaySegment segment, boolean side, String key) {
+	public void calculatePosition(MapWaySegment segment, boolean side, String key, boolean isNode) {
 
 		//if way is not a road
 		if(!RoadModule.isRoad(segment.getTags())) {
@@ -114,11 +112,22 @@ public class TrafficSignModel {
 
 		double roadWidth = r.getWidth();
 
-		//TODO: side=* overwrites all
-
 		//rightNormal() vector will always be orthogonal to the segment, no matter its direction,
 		//so we use that to place the signs to the left/right of the way
 		VectorXZ rightNormal = segment.getDirection().rightNormal();
+
+		/*
+		 * Explicit side tag overwrites all. Applies only to sign mapped on way nodes
+		 */
+		if(node.getTags().containsKey("side") && isNode) {
+			if(node.getTags().getValue("side").equals("right")) {
+				this.position = node.getPos().add(rightNormal.mult(roadWidth));
+				return;
+			}else if(node.getTags().getValue("side").equals("left")) {
+				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
+				return;
+			}
+		}
 
 		if(side) {
 
@@ -134,6 +143,7 @@ public class TrafficSignModel {
 		}else {
 
 			if(key.contains("forward")) {
+
 				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
 				return;
 			}else {
@@ -154,68 +164,12 @@ public class TrafficSignModel {
 
 		VectorXZ wayDir = segment.getDirection();
 
-		//if(startOrEnd) {
-
-			if(key.contains("forward")) {
-				wayDir = wayDir.invert();
-				this.direction = wayDir.angle();
-			}else {
-				this.direction = wayDir.angle();
-			}
-
-		//}else {
-
-
-
-			/*if(key.contains("forward")) {
-				this.direction = wayDir.angle();
-			}else {
-				if(segment.getTags().containsValue("DE:239")) System.out.println("na me");
-				wayDir = wayDir.invert();
-				this.direction = wayDir.angle();
-			}*/
-		//}
-
-
-		//segments of the way this node is part of
-		/*List<MapWaySegment> segments = node.getConnectedWaySegments().get(0).getWay().getWaySegments();
-
-		VectorXZ wayDir = segment.getDirection();
-
-		if(key.equals("traffic_sign:backward")) {
-			this.direction = wayDir.angle();
-			return;
-		}else if(key.equals("traffic_sign:forward")) {
+		if(key.contains("forward")) {
 			wayDir = wayDir.invert();
 			this.direction = wayDir.angle();
-			return;
+		}else {
+			this.direction = wayDir.angle();
 		}
-
-		//handle ways with only 1 segment
-		if(segments.size()==1) {
-
-			//if the node is the segment's first node, face the incoming traffic
-			if(node.equals(segment.getStartNode())) {
-				wayDir = wayDir.invert();
-			}
-
-			this.direction = wayDir.angle();
-			return;
-		}
-
-		//if the segment is the first one on it's way,
-		//have the sign face the opposite direction (the incoming vehicles)
-		if(segment.equals(segments.get(0))) {
-
-			wayDir = wayDir.invert();
-			this.direction = wayDir.angle();
-
-		//if it is the last one, make the signs face the segment's direction,
-		//for 2-way traffic
-		}else if(segment.equals(segments.get(segments.size()-1))) {
-
-			this.direction = wayDir.angle();
-		}*/
 	}
 
 	/**
@@ -281,7 +235,7 @@ public class TrafficSignModel {
 			 * direction based on the position of the junction closest to the node
 			 */
 
-			if(RoadModule.getConnectedRoads(node, false).size()<=2) {
+			if(RoadModule.getConnectedRoads(node, false).size()<=2 && RoadModule.getConnectedRoads(node, false).size() > 0) {
 
 				MapNode closestJunction = TrafficSignModule.findClosestJunction(node);
 
@@ -289,6 +243,8 @@ public class TrafficSignModel {
 
 					this.direction = (node.getPos().subtract(closestJunction.getPos())).normalize().angle();
 					return;
+				}else {
+					this.direction = wayDir.angle();
 				}
 			}
 		}

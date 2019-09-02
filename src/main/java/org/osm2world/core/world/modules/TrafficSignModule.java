@@ -123,43 +123,62 @@ public class TrafficSignModule extends AbstractModule {
 					//if a way adjacent to the beginning of this way does not contain the same traffic sign
 					if(!TrafficSignModel.adjacentWayContains(true, way, key, wayTags.getValue(key)) && !key.contains("backward")) {
 
+						boolean renderMe = true;
+
 						//when at the beginning of the way, handle the sign
 						//as it was mapped as sign:forward (affect vehicles moving at the same
 						//direction as the way)
-						if(!key.contains("backward") && !key.contains("forward")) {
+						if(!key.contains("forward")) {
 							tempKey = key + ":forward";
+
+							//check the way adjacent to the beginning of this way for sign mapped with forward direction
+							if(TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))){
+
+								renderMe = false;
+							}
+
 						}else {
+
+							//check the way adjacent to the beginning of this way for sign mapped without direction specified
+							tempKey = key.substring(0, key.indexOf(':'));
+
+							if(TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))){
+
+								renderMe = false;
+							}
+
 							tempKey = key;
 						}
 
-						//System.out.println("tempkey top of way: "+tempKey+ " "+wayTags.getValue(key));
+						if(renderMe) {
 
-						//get first way segment
-						MapWaySegment topSegment = way.getWaySegments().get(0);
+							//get first way segment
+							MapWaySegment topSegment = way.getWaySegments().get(0);
 
-						//new TrafficSignModel at the beginning of the way
-						firstModel = new TrafficSignModel(topSegment.getStartNode());
+							//new TrafficSignModel at the beginning of the way
+							firstModel = new TrafficSignModel(topSegment.getStartNode());
 
-						//get segment's driving side
-						side = RoadModule.hasRightHandTraffic(topSegment);
+							//get segment's driving side
+							side = RoadModule.hasRightHandTraffic(topSegment);
 
-						//set the model's facing direction
-						firstModel.calculateDirection(topSegment, tempKey);
+							//set the model's facing direction
+							firstModel.calculateDirection(topSegment, tempKey);
 
-						//Avoid the case where the first node of the way may be a junction
-						if(topSegment.getStartNode().getConnectedWaySegments().size()<3) {
-							firstModel.calculatePosition(topSegment, side, tempKey);
-						}else {
-
-							if(RoadModule.isRoad(wayTags)) {
-								VectorXZ offset = ((Road)topSegment.getPrimaryRepresentation()).getStartOffset();
-								firstModel.position = firstModel.node.getPos().add(offset);
+							//Avoid the case where the first node of the way may be a junction
+							if(topSegment.getStartNode().getConnectedWaySegments().size()<3) {
+								firstModel.calculatePosition(topSegment, side, tempKey, false);
 							}else {
-								firstModel.position = firstModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
-							}
-						}
 
-						keysForFirstModel.add(key);
+								if(RoadModule.isRoad(wayTags)) {
+									VectorXZ offset = ((Road)topSegment.getPrimaryRepresentation()).getStartOffset();
+									firstModel.position = firstModel.node.getPos().add(offset);
+								}else {
+									firstModel.position = firstModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
+								}
+							}
+
+							keysForFirstModel.add(key);
+						}
 					}
 
 					/*
@@ -171,47 +190,67 @@ public class TrafficSignModule extends AbstractModule {
 					if(!TrafficSignModel.adjacentWayContains(false, way, key, wayTags.getValue(key)) && !RoadModule.isOneway(way.getTags())
 							&& !state.equalsIgnoreCase("limited") && !key.contains("forward")) {
 
+						boolean renderMe = true;
+
 						//when at the end of the way, handle traffic sign
 						//as it was mapped as sign:backward
-						if(!key.contains("backward") && !key.contains("forward")) {
+						if(!key.contains("backward")) {
 							tempKey = key + ":backward";
+
+							//check the way adjacent to the beginning of this way for sign mapped with forward direction
+							if(TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))){
+								//continue;
+								renderMe = false;
+							}
+
 						}else {
+
+							//check the way adjacent to the beginning of this way for sign mapped without direction specified
+							tempKey = key.substring(0, key.indexOf(':'));
+
+							if(TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))){
+								//continue;
+								renderMe = false;
+							}
+
 							tempKey = key;
 						}
 
-						//get number of segments from the way this node is part of
-						int numOfSegments = way.getWaySegments().size();
+						if(renderMe) {
 
-						//get last way segment
-						MapWaySegment bottomSegment = way.getWaySegments().get(numOfSegments-1);
+							//get number of segments from the way this node is part of
+							int numOfSegments = way.getWaySegments().size();
 
-						secondModel = new TrafficSignModel(bottomSegment.getEndNode());
+							//get last way segment
+							MapWaySegment bottomSegment = way.getWaySegments().get(numOfSegments-1);
 
-						//get segment's driving side
-						side = RoadModule.hasRightHandTraffic(bottomSegment);
+							secondModel = new TrafficSignModel(bottomSegment.getEndNode());
 
-						secondModel.calculateDirection(bottomSegment, tempKey);
+							//get segment's driving side
+							side = RoadModule.hasRightHandTraffic(bottomSegment);
 
-						/*
-						 * new TrafficSignModel at the end of the way.
-						 * Avoid the case where the last node of the way may be a junction
-						 */
-						if(bottomSegment.getEndNode().getConnectedWaySegments().size()<3) {
+							secondModel.calculateDirection(bottomSegment, tempKey);
 
-							secondModel.calculatePosition(bottomSegment, side, tempKey);
+							/*
+							 * new TrafficSignModel at the end of the way.
+							 * Avoid the case where the last node of the way may be a junction
+							 */
+							if(bottomSegment.getEndNode().getConnectedWaySegments().size()<3) {
 
-							//System.out.println("tempkey end of way: "+tempKey+ " "+wayTags.getValue(key) +" key is: "+key+ " secondModel: "+secondModel);
-						}else {
+								secondModel.calculatePosition(bottomSegment, side, tempKey, false);
 
-							if(RoadModule.isRoad(wayTags)) {
-								VectorXZ offset = ((Road)bottomSegment.getPrimaryRepresentation()).getEndOffset();
-								secondModel.position = secondModel.node.getPos().add(offset);
 							}else {
-								secondModel.position = secondModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
-							}
-						}
 
-						keysForSecondModel.add(key);
+								if(RoadModule.isRoad(wayTags)) {
+									VectorXZ offset = ((Road)bottomSegment.getPrimaryRepresentation()).getEndOffset();
+									secondModel.position = secondModel.node.getPos().add(offset);
+								}else {
+									secondModel.position = secondModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
+								}
+							}
+
+							keysForSecondModel.add(key);
+						}
 					}
 				}
 
@@ -346,9 +385,9 @@ public class TrafficSignModule extends AbstractModule {
 				tagValue = node.getTags().getValue("traffic_sign");
 				tempKey = "traffic_sign:forward";
 			}else {
-				//in case of highway=give_way/stop, affect vehicles moving in the way's direction
-				//if no explicit direction tag is defined
-				tempKey += "forward";
+				//in case of highway=give_way/stop, treat sign as if it was mapped as forward:
+				//affect vehicles moving in the way's direction if no explicit direction tag is defined
+				tempKey = "highway:forward";
 			}
 
 			//the segment this node is part of
@@ -356,33 +395,9 @@ public class TrafficSignModule extends AbstractModule {
 
 			//calculate the model's position
 
-			boolean side = RoadModule.RIGHT_HAND_TRAFFIC_BY_DEFAULT;
+			boolean side = RoadModule.hasRightHandTraffic(segment);
 
-			/*
-			 * If node is not the last node of a way or a junction,
-			 * both connected roads must "agree" on the driving side
-			 */
-			if(node.getConnectedSegments().size()==2) {
-
-				MapWaySegment otherSegment = node.getConnectedWaySegments().get(1);
-
-				if(RoadModule.hasRightHandTraffic(segment) == RoadModule.hasRightHandTraffic(otherSegment)) {
-
-					side = RoadModule.hasRightHandTraffic(segment);
-				}
-			}
-
-			//explicit tags side=left/right may overwrite placement based on driving side
-			//if(side) side &= !node.getTags().contains("side", "left");
-			//else side &= !node.getTags().contains("side", "right");
-
-			if(node.getTags().containsKey("traffic_sign")) {
-				if(node.getTags().getValue("traffic_sign").equals("maxspeed")) {
-					System.out.println("my side is: "+side);
-				}
-			}
-
-			firstModel.calculatePosition(segment, side, tempKey);
+			firstModel.calculatePosition(segment, side, tempKey, true);
 
 			firstModel.calculateDirection();
 
@@ -393,7 +408,7 @@ public class TrafficSignModule extends AbstractModule {
 				secondModel = new TrafficSignModel(node);
 
 				secondModel.direction = firstModel.direction;
-				secondModel.calculatePosition(segment, !side, tempKey);
+				secondModel.calculatePosition(segment, !side, tempKey, true);
 			}
 
 		}else {
