@@ -7,9 +7,9 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 
 import java.awt.Color;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osm2world.core.map_data.data.MapNode;
-//import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
@@ -36,6 +35,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.TrafficSignType;
@@ -262,10 +262,10 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param originalMaterial The ConfMaterial to replicate
 	 * @param map A HashMap used to map each of traffic_sign.subtype / traffic_sign.brackettext
 	 * to their corresponding values
-	 * @param element The MapElement object to extract values from
+	 * @param tags The tag group to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	private static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
+	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
 
 		if(originalMaterial == null) return null;
 
@@ -403,28 +403,26 @@ public class TrafficSignModule extends AbstractModule {
 				//parse background color
 				if(relation.getTags().getValue("colour:back")!=null) {
 
-					Field field;
+					String color = relation.getTags().getValue("colour:back");
 
-					try {
-						field = Color.class.getField(relation.getTags().getValue("colour:back"));
-						this.backgroundColor = (Color) field.get(null);
-
-					} catch (Exception e) {
-						e.printStackTrace();
+					if(CSSColors.colorMap.containsKey(color)){
+						this.backgroundColor = CSSColors.colorMap.get(color);
+					} else {
+						this.backgroundColor = parseColor(color);
+						if(this.backgroundColor==null) this.backgroundColor = Color.WHITE;
 					}
 				}
 
 				//parse text color
 				if(relation.getTags().getValue("colour:text")!=null) {
 
-					Field field;
+					String color = relation.getTags().getValue("colour:text");
 
-					try {
-						field = Color.class.getField(relation.getTags().getValue("colour:text"));
-						this.textColor = (Color) field.get(null);
-
-					} catch (Exception e) {
-						e.printStackTrace();
+					if(CSSColors.colorMap.containsKey(color)){
+						this.textColor = CSSColors.colorMap.get(color);
+					} else {
+						this.textColor = parseColor(color);
+						if(this.textColor==null) this.textColor = Color.BLACK;
 					}
 				}
 

@@ -236,7 +236,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * returns all roads connected to a node
 	 * @param requireLanes  only include roads that are not paths and have lanes
 	 */
-	private static List<Road> getConnectedRoads(MapNode node,
+	public static List<Road> getConnectedRoads(MapNode node,
 			boolean requireLanes) {
 
 		List<Road> connectedRoadsWithLanes = new ArrayList<Road>();
