@@ -14,8 +14,7 @@ import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringPars
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
-import static org.osm2world.core.math.VectorXZ.listXYZ;
+import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.SINGLE_WINDOW;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -33,12 +32,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
@@ -178,10 +179,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			outlineConnectors = new EleConnectorGroup();
 			outlineConnectors.addConnectorsFor(area.getPolygon(), null, ON);
 
-		}
-
-		public MapArea getArea() { //TODO: redundant because of getPrimaryMapElement
-			return area;
 		}
 
 		public List<BuildingPart> getParts() {
@@ -349,26 +346,86 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* create walls */
 
-			//TODO use building:wall, use angles at nodes
+			walls = splitIntoWalls(area, emptyList())
+					.stream()
+					.map(nodes -> new Wall(nodes))
+					.collect(toList());
 
-			walls = new ArrayList<>();
+		}
 
-			List<List<MapNode>> nodeRings = new ArrayList<>(area.getHoles());
-			nodeRings.add(area.getBoundaryNodes());
+		/**
+		 * splits the outer and inner boundaries of a building into separate walls.
+		 * TODO: document the two criteria (wall ways, simplified polygon)
+		 *
+		 * @param buildingPartArea  the building:part=* area (or building=*, for buildings without parts)
+		 * @param wallWays  all building:wall=* ways belonging to this building part
+		 *
+		 * @return list of walls, each represented as a list of nodes.
+		 *   The list of nodes is ordered such that the building part's outside is to the right.
+		 */
+		static List<List<MapNode>> splitIntoWalls(MapArea buildingPartArea, List<MapWay> wallWays) {
+
+			//TODO implement wallWays by inserting additional split points
+			//  and passing the way as an additional parameter to the relevant wall(s!)
+
+			List<List<MapNode>> result = new ArrayList<>();
+
+			List<List<MapNode>> nodeRings = new ArrayList<>(buildingPartArea.getHoles());
+			nodeRings.add(buildingPartArea.getBoundaryNodes());
 
 			for (List<MapNode> nodeRing : nodeRings) {
 
 				List<MapNode> nodes = new ArrayList<>(nodeRing);
 
-				if (MapArea.polygonFromMapNodeLoop(nodes).isClockwise() ^ area.getHoles().contains(nodeRing)) {
+				SimplePolygonXZ simplifiedPolygon = MapArea.polygonFromMapNodeLoop(nodes).getSimplifiedPolygon();
+
+				if (simplifiedPolygon.isClockwise() ^ buildingPartArea.getHoles().contains(nodeRing)) {
 					reverse(nodes);
 				}
 
-				for (int i = 0; i + 1 < nodes.size(); i++) {
-					walls.add(new Wall(asList(nodes.get(i), nodes.get(i+1))));
+				nodes.remove(nodes.size() - 1); //remove the duplicated node at the end
+
+				/* figure out where we don't want to split the wall (points in the middle of a straight wall) */
+
+				boolean[] noSplitAtNode = new boolean[nodes.size()];
+
+				for (int i = 0; i < nodes.size(); i++) {
+					if (!simplifiedPolygon.getVertexCollection().contains(nodes.get(i).getPos())) {
+						noSplitAtNode[i] = true;
+					}
 				}
 
+				/* split the outline into walls, splitting at each node that's not flagged in noSplitAtNode */
+
+				int firstSplitNode = IntStream.range(0, nodes.size())
+						.filter(i -> !noSplitAtNode[i])
+						.min().getAsInt();
+
+				int i = firstSplitNode;
+
+				List<MapNode> currentWallNodes = new ArrayList<>();
+				currentWallNodes.add(nodes.get(firstSplitNode));
+
+				do {
+
+					i = (i + 1) % nodes.size();
+
+					if (!noSplitAtNode[i]) {
+						if (currentWallNodes != null) {
+							currentWallNodes.add(nodes.get(i));
+							assert currentWallNodes.size() >= 2;
+							result.add(currentWallNodes);
+						}
+						currentWallNodes = new ArrayList<>();
+					}
+
+					currentWallNodes.add(nodes.get(i));
+
+				} while (i != firstSplitNode);
+
 			}
+
+			return result;
 
 		}
 
@@ -2384,33 +2441,36 @@ public class BuildingModule extends ConfigurableWorldModule {
 				double floorHeight = calculateFloorHeight(roof);
 				double floorEle = baseEle + floorHeight;
 
-				/* TODO document: calculate bottomPoints and topPoints */
+				/* calculate the lower boundary of the wall */
 
-				List<VectorXZ> bottomPoints = nodes.stream().map(MapNode::getPos).collect(toList());
+				List<VectorXYZ> bottomPoints = nodes.stream()
+						.map(MapNode::getPos)
+						.map(p -> p.xyz(0)) //set to 0 because y is relative height within the wall here
+						.collect(toList());
 
-				List<VectorXZ> topPoints = null;
+				/* calculate the upper boundary of the wall (from roof polygons) */
+
+				List<VectorXZ> topPointsXZ = null;
 
 				for (SimplePolygonXZ rawPolygon : roof.getPolygon().getPolygons()) {
-
-					//FIXME: Punkte wie Eingänge in einem ansonsten geraden Wall sind im Dachumriss offensichtlich nicht enthalten! => dürfen nicht Endpunkte von Mauern sein
 
 					SimplePolygonXZ polygon = roof.getPolygon().getHoles().contains(rawPolygon)
 							? rawPolygon.makeClockwise()
 							: rawPolygon.makeCounterclockwise();
 
-					int firstIndex = polygon.getVertices().indexOf(bottomPoints.get(0));
-					int lastIndex = polygon.getVertices().indexOf(bottomPoints.get(bottomPoints.size() - 1));
+					int firstIndex = polygon.getVertices().indexOf(bottomPoints.get(0).xz());
+					int lastIndex = polygon.getVertices().indexOf(bottomPoints.get(bottomPoints.size() - 1).xz());
 
 					if (firstIndex != -1 && lastIndex != -1) {
 
-						topPoints = new ArrayList<>();
+						topPointsXZ = new ArrayList<>();
 
 						if (lastIndex < firstIndex) {
 							lastIndex += polygon.size();
 						}
 
 						for (int i = firstIndex; i <= lastIndex; i ++) {
-							topPoints.add(polygon.getVertex(i % polygon.size()));
+							topPointsXZ.add(polygon.getVertex(i % polygon.size()));
 						}
 
 						break;
@@ -2419,42 +2479,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				}
 
-				if (topPoints == null) {
+				if (topPointsXZ == null) {
 					throw new IllegalArgumentException("cannot construct top boundary of wall");
 				}
 
-				/* convert to points on the wall surface */
-				//TODO extract into method
-
-				List<VectorXZ> lowerBoundary = new ArrayList<>(bottomPoints.size());
-
-				{
-					double accumulatedLength = 0;
-					VectorXZ previousPoint = bottomPoints.get(0);
-
-					for (VectorXZ point : bottomPoints) {
-						accumulatedLength += previousPoint.distanceTo(point);
-						lowerBoundary.add(new VectorXZ(accumulatedLength, 0));
-						previousPoint = point;
-					}
-				}
-
-				List<VectorXZ> upperBoundary = new ArrayList<>(topPoints.size());
-
-				{
-					double accumulatedLength = 0;
-					VectorXZ previousPoint = topPoints.get(0);
-
-					for (VectorXZ point : topPoints) {
-						accumulatedLength += previousPoint.distanceTo(point);
-						upperBoundary.add(new VectorXZ(accumulatedLength, roof.getRoofEleAt(point) - floorEle));
-						previousPoint = point;
-					}
-				}
+				List<VectorXYZ> topPoints = topPointsXZ.stream()
+						.map(p -> p.xyz(roof.getRoofEleAt(p) - floorEle))
+						.collect(toList());
 
 				/* construct the surface */
 
-				WallSurface surface = new WallSurface(lowerBoundary, upperBoundary);
+				List<VectorXZ> lowerSurfaceBoundary = toPointsOnSurface(bottomPoints);
+				List<VectorXZ> upperSurfaceBoundary = toPointsOnSurface(topPoints);
+
+				WallSurface surface = new WallSurface(lowerSurfaceBoundary, upperSurfaceBoundary);
 
 				/* add windows */
 
@@ -2466,13 +2504,38 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				/* draw the wall */
 
-				List<VectorXYZ> bottomPointsXYZ = listXYZ(bottomPoints, floorEle);
+				List<VectorXYZ> bottomPointsXYZ = addYList(bottomPoints, floorEle);
 				surface.renderTo(target, bottomPointsXYZ);
 
 				//TODO: der fehlende Bereich "unter dem Dach" (z.B. bei Runddach) liegt an fehlenden Punkten aus Roof-Umriss
 				// drawSimpleWall(target, baseEle, 0, roof, bottomPoints);
 
 				//FIXME draw floor of the building part
+
+			}
+
+			/**
+			 * converts a list of 3d points to 2d coordinates on a vertical wall surface.
+			 *
+			 * The surface is defined by the same list of points! That is,
+			 * the wall is assumed to start at the first point's XZ position,
+			 * and continue through the other points' XZ positions.
+			 * Y coordinates are preserved.
+			 */
+			private List<VectorXZ> toPointsOnSurface(List<VectorXYZ> points) {
+
+				List<VectorXZ> result = new ArrayList<>(points.size());
+
+				double accumulatedLength = 0;
+				VectorXYZ previousPoint = points.get(0);
+
+				for (VectorXYZ point : points) {
+					accumulatedLength += previousPoint.distanceToXZ(point);
+					result.add(new VectorXZ(accumulatedLength, point.y));
+					previousPoint = point;
+				}
+
+				return result;
 
 			}
 
