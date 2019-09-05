@@ -1,7 +1,7 @@
 package org.osm2world.core.map_data.data;
 
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +45,6 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	private List<AreaWorldObject> representations =
 		new ArrayList<AreaWorldObject>(1);
 
-	//TODO: contained / intersecting nodes/lines
-
 	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes) {
 		this(objectWithTags, nodes, emptyList());
 	}
@@ -61,6 +59,8 @@ public class MapArea extends MapRelation.Element implements MapElement {
 		try {
 
 			this.polygon = convertToPolygon(nodes, holes);
+
+			finishConstruction();
 
 		} catch (InvalidGeometryException e) {
 			throw new InvalidGeometryException(
@@ -78,6 +78,8 @@ public class MapArea extends MapRelation.Element implements MapElement {
 		this.holes = holes;
 		this.polygon = polygon;
 
+		finishConstruction();
+
 	}
 
 	private static final PolygonWithHolesXZ convertToPolygon(
@@ -94,6 +96,13 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 		return new PolygonWithHolesXZ(outerPolygon, holePolygons);
 
+	}
+
+	/** shared functionality used by multiple constructors */
+	private void finishConstruction() {
+		for (List<MapNode> ring : getRings()) {
+			ring.forEach(node -> node.addAdjacentArea(this));
+		}
 	}
 
 	public static final SimplePolygonXZ polygonFromMapNodeLoop(
@@ -115,6 +124,17 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 	public Collection<List<MapNode>> getHoles() {
 		return holes;
+	}
+
+	/** returns all outer and inner rings as lists of nodes: {@link #getHoles()} plus {@link #getBoundaryNodes()}. */
+	public Collection<List<MapNode>> getRings() {
+		if (holes.isEmpty()) {
+			return singletonList(nodes);
+		} else {
+			List<List<MapNode>> result = new ArrayList<>(holes);
+			result.add(0, nodes);
+			return result;
+		}
 	}
 
 	/** returns the {@link OsmWay} or {@link OsmRelation} with the tags for this area */

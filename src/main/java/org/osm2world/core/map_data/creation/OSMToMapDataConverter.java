@@ -128,20 +128,18 @@ public class OSMToMapDataConverter {
 			}
 
 			try {
+
 				for (MapArea area : MultipolygonAreaBuilder
 						.createAreasForMultipolygon(relation, nodeIdMap, osmData)) {
 
 					mapAreas.add(area);
-
-					for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
-						boundaryMapNode.addAdjacentArea(area);
-					}
 
 					if (area.getOsmElement() instanceof OsmWay) {
 						areaMap.put((OsmWay) area.getOsmElement(), area);
 					}
 
 				}
+
 			} catch (EntityNotFoundException e) {
 				// TODO: what to do here?
 			}
@@ -150,17 +148,9 @@ public class OSMToMapDataConverter {
 
 		/* ... based on coastline ways */
 
-		for (MapArea area : MultipolygonAreaBuilder.createAreasForCoastlines(
+		mapAreas.addAll(MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeIdMap, mapNodes,
-				calculateFileBoundary(osmData.getBounds()))) {
-
-			mapAreas.add(area);
-
-			for (MapNode boundaryMapNode : area.getBoundaryNodes()) {
-				boundaryMapNode.addAdjacentArea(area);
-			}
-
-		}
+				calculateFileBoundary(osmData.getBounds())));
 
 		/* ... based on closed ways */
 
@@ -230,20 +220,6 @@ public class OSMToMapDataConverter {
 
 				MapWay way = new MapWay(osmWay, nodes);
 				mapWays.add(way);
-
-				for (int i = 0; i < nodes.size(); i++) {
-
-					MapNode node = nodes.get(i);
-
-					if (i > 0) {
-						node.addInboundLine(way.getWaySegments().get(i - 1));
-					}
-
-					if (i + 1 < nodes.size()) {
-						node.addOutboundLine(way.getWaySegments().get(i));
-					}
-
-				}
 
 			}
 		}

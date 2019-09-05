@@ -102,7 +102,9 @@ public class MapNode extends MapRelation.Element implements MapElement {
 	}
 
 	public void addAdjacentArea(MapArea adjacentArea) {
-		adjacentAreas.add(adjacentArea);
+		if (!adjacentAreas.contains(adjacentArea)) {
+			adjacentAreas.add(adjacentArea);
+		}
 	}
 
 	//TODO: with all that "needs to be called before x" etc. stuff (also in MapArea), switch to BUILDER?

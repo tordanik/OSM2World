@@ -10,6 +10,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 
+import de.topobyte.osm4j.core.model.iface.OsmEntity;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 
 /**
@@ -44,6 +45,12 @@ public class MapRelation {
 			memberships.add(membership);
 
 		}
+
+		/** see {@link MapElement#getOsmElement()} */
+		public abstract OsmEntity getOsmElement();
+
+		/** see {@link MapElement#getTags()} */
+		public abstract TagGroup getTags();
 
 	}
 

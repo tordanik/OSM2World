@@ -138,7 +138,6 @@ final class MultipolygonAreaBuilder {
 
 					for (long nodeId : nodesAsList(way).toArray()) {
 						hole.add(nodeIdMap.get(nodeId));
-						//TODO: add area as adjacent to node for inners' nodes, too?
 					}
 
 					holes.add(hole);

@@ -41,6 +41,20 @@ public class MapWay extends MapRelation.Element {
 			waySegments.add(new MapWaySegment(this, nodes.get(v), nodes.get(v + 1)));
 		}
 
+		for (int i = 0; i < nodes.size(); i++) {
+
+			MapNode node = nodes.get(i);
+
+			if (i > 0) {
+				node.addInboundLine(waySegments.get(i - 1));
+			}
+
+			if (i + 1 < nodes.size()) {
+				node.addOutboundLine(waySegments.get(i));
+			}
+
+		}
+
 	}
 
 	public List<MapNode> getNodes() {
