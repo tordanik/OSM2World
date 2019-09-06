@@ -120,8 +120,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private final EleConnectorGroup outlineConnectors;
 
-		public Building(MapArea area, boolean useBuildingColors,
-				boolean drawBuildingWindows) {
+		public Building(MapArea area, boolean useBuildingColors, boolean drawBuildingWindows) {
 
 			this.area = area;
 
@@ -133,42 +132,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 					MapArea otherArea = (MapArea)other;
 
 					//TODO: check whether the building contains the part (instead of just touching it)
-					if (area.getPolygon().contains(
-							otherArea.getPolygon().getOuter())) {
-						parts.add(new BuildingPart(this, otherArea,
-							otherArea.getPolygon(), useBuildingColors,
-							drawBuildingWindows));
+					if (area.getPolygon().contains(otherArea.getPolygon().getOuter())) {
+						parts.add(new BuildingPart(this, otherArea, useBuildingColors, drawBuildingWindows));
 					}
 
 				}
 			}
 
-			/* add part(s) for area not covered by building:part polygons */
-			boolean isBuildingPart = false;
-			if (area.getTags().containsKey("building:part"))
-				isBuildingPart = !("no".equals(area.getTags().getValue("building:part")));
+			/* use the building itself as a part if no parts exist,
+			 * or if it's explicitly tagged as a building part at the same time (non-standard mapping) */
 
-			if (parts.isEmpty() || isBuildingPart) {
-				parts.add(new BuildingPart(this, area,
-						area.getPolygon(), useBuildingColors, drawBuildingWindows));
-			} else {
-				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
+			String buildingPartValue = area.getTags().getValue("building:part");
 
-				for (BuildingPart part : parts) {
-					subtractPolygons.add(part.getPolygon().getOuter());
-				}
-				subtractPolygons.addAll(area.getPolygon().getHoles());
-
-				Collection<PolygonWithHolesXZ> remainingPolys =
-					CAGUtil.subtractPolygons(
-							area.getPolygon().getOuter(),
-							subtractPolygons);
-
-				for (PolygonWithHolesXZ remainingPoly : remainingPolys) {
-					parts.add(new BuildingPart(this, area, remainingPoly,
-							useBuildingColors, drawBuildingWindows));
-				}
-
+			if (parts.isEmpty() || buildingPartValue != null && !"no".equals(buildingPartValue)) {
+				parts.add(new BuildingPart(this, area, useBuildingColors, drawBuildingWindows));
 			}
 
 			/* create connectors along the outline.
@@ -322,13 +299,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final List<Wall> walls;
 		private Roof roof;
 
-		public BuildingPart(Building building,
-				MapArea area, PolygonWithHolesXZ polygon,
-				boolean useBuildingColors, boolean drawBuildingWindows) {
+		public BuildingPart(Building building, MapArea area, boolean useBuildingColors, boolean drawBuildingWindows) {
 
 			this.building = building;
 			this.area = area;
-			this.polygon = polygon;
+			this.polygon = area.getPolygon();
 
 			setAttributes(useBuildingColors, drawBuildingWindows);
 
