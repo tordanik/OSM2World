@@ -112,7 +112,11 @@ public class JTSConversionUtil {
 
 		if (geometry instanceof Polygon) {
 			if (geometry.getNumPoints() > 2) {
-				result.add(polygonXZFromJTSPolygon((Polygon)geometry));
+				try {
+					result.add(polygonXZFromJTSPolygon((Polygon)geometry));
+				} catch (InvalidGeometryException e) {
+					System.err.println("Ignoring invalid JTS polygon: " + e.getMessage());
+				}
 			}
 		} else if (geometry instanceof GeometryCollection) {
 			GeometryCollection collection = (GeometryCollection)geometry;
