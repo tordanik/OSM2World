@@ -123,6 +123,20 @@ public class MapNode extends MapRelation.Element implements MapElement {
 		sortLinesByAngle(connectedSegments);
 	}
 
+	public Collection<MapWay> getConnectedWays() {
+
+		List<MapWay> result = new ArrayList<>();
+
+		for (MapWaySegment segment : connectedWaySegments) {
+			if (!result.contains(segment.getWay())) {
+				result.add(segment.getWay());
+			}
+		}
+
+		return result;
+
+	}
+
 	/**
 	 * returns all way segments connected with this node.
 	 * They will be sorted according to the clockwise

@@ -388,10 +388,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				/* create walls and floor normally (no building passages) */
 
-				walls = splitIntoWalls(area, emptyList())
-						.stream()
-						.map(nodes -> new Wall(this, nodes, calculateFloorHeight()))
-						.collect(toList());
+				walls = splitIntoWalls(area, this);
 
 				if (floorHeight > 0) {
 					floors = singletonList(new Floor(this, materialWall, polygon, floorHeight));
@@ -518,25 +515,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		/**
 		 * splits the outer and inner boundaries of a building into separate walls.
-		 * TODO: document the two criteria (wall ways, simplified polygon)
+		 * The boundaries are split at the beginning and end of building:wall=* ways belonging to this building part,
+		 * as well as any node where the angle isn't (almost) completely straight.
 		 *
 		 * @param buildingPartArea  the building:part=* area (or building=*, for buildings without parts)
-		 * @param wallWays  all building:wall=* ways belonging to this building part
+		 * @param buildingPart  the parent object for the walls created by this method. Non-null except for tests.
 		 *
 		 * @return list of walls, each represented as a list of nodes.
 		 *   The list of nodes is ordered such that the building part's outside is to the right.
 		 */
-		static List<List<MapNode>> splitIntoWalls(MapArea buildingPartArea, List<MapWay> wallWays) {
+		static List<Wall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
 
-			//TODO implement wallWays by inserting additional split points
-			//  and passing the way as an additional parameter to the relevant wall(s!)
+			List<Wall> result = new ArrayList<>();
 
-			List<List<MapNode>> result = new ArrayList<>();
-
-			List<List<MapNode>> nodeRings = new ArrayList<>(buildingPartArea.getHoles());
-			nodeRings.add(buildingPartArea.getBoundaryNodes());
-
-			for (List<MapNode> nodeRing : nodeRings) {
+			for (List<MapNode> nodeRing : buildingPartArea.getRings()) {
 
 				List<MapNode> nodes = new ArrayList<>(nodeRing);
 
@@ -548,20 +540,34 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				nodes.remove(nodes.size() - 1); //remove the duplicated node at the end
 
-				/* figure out where we don't want to split the wall (points in the middle of a straight wall) */
+				/* figure out where we don't want to split the wall:
+				 * points in the middle of a straight wall, unless they are the start/end point of a wall way */
 
-				boolean[] noSplitAtNode = new boolean[nodes.size()];
+				boolean[] splitAtNode = new boolean[nodes.size()];
 
 				for (int i = 0; i < nodes.size(); i++) {
-					if (!simplifiedPolygon.getVertexCollection().contains(nodes.get(i).getPos())) {
-						noSplitAtNode[i] = true;
+
+					MapNode node = nodes.get(i);
+
+					boolean isCorner = simplifiedPolygon.getVertexCollection().contains(node.getPos());
+					boolean isStartOrEndOfWallWay = false;
+
+					for (MapWay way : node.getConnectedWays()) {
+						if (way.getTags().containsKey("building:wall")
+								&& !way.getTags().contains("building:wall", "no")
+								&& (way.getNodes().get(0).equals(node) || getLast(way.getNodes()).equals(node))) {
+							isStartOrEndOfWallWay = true;
+						}
 					}
+
+					splitAtNode[i] = isCorner || isStartOrEndOfWallWay;
+
 				}
 
 				/* split the outline into walls, splitting at each node that's not flagged in noSplitAtNode */
 
 				int firstSplitNode = IntStream.range(0, nodes.size())
-						.filter(i -> !noSplitAtNode[i])
+						.filter(i -> splitAtNode[i])
 						.min().getAsInt();
 
 				int i = firstSplitNode;
@@ -573,11 +579,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 					i = (i + 1) % nodes.size();
 
-					if (!noSplitAtNode[i]) {
+					if (splitAtNode[i]) {
 						if (currentWallNodes != null) {
 							currentWallNodes.add(nodes.get(i));
 							assert currentWallNodes.size() >= 2;
-							result.add(currentWallNodes);
+							result.add(new Wall(buildingPart, currentWallNodes));
 						}
 						currentWallNodes = new ArrayList<>();
 					}
@@ -2256,7 +2262,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class Wall implements RenderableToAllTargets {
+	static class Wall implements RenderableToAllTargets {
 
 		private final BuildingPart buildingPart;
 
@@ -2276,11 +2282,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			this.floorHeight = floorHeight;
 		}
 
-		public Wall(BuildingPart buildingPart, List<MapNode> nodes, double floorHeight) {
+		public Wall(BuildingPart buildingPart, List<MapNode> nodes) {
 			this(buildingPart,
 					nodes.stream().map(MapNode::getPos).collect(toList()),
 					nodes.stream().collect(toMap(MapNode::getPos, n -> n)),
-					floorHeight);
+					buildingPart == null ? 0 : buildingPart.calculateFloorHeight());
 		}
 
 		@Override
@@ -2411,6 +2417,21 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 		}
+
+		/**
+		 * returns the list of nodes forming this wall.
+		 * Not guaranteed to contain all points, or even be non-empty, as some points may not be based on nodes
+		 */
+		List<MapNode> getNodes() {
+			List<MapNode> result = new ArrayList<>();
+			for (VectorXZ point : points) {
+				if (pointNodeMap.containsKey(point)) {
+					result.add(pointNodeMap.get(point));
+				}
+			}
+			return result;
+		}
+
 
 		/**
 		 * converts a list of 3d points to 2d coordinates on a vertical wall surface.
