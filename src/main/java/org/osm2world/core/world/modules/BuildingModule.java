@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.getLast;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Math.*;
 import static java.lang.Math.max;
@@ -9,7 +10,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.apache.commons.configuration.Configuration;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -63,6 +65,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
@@ -82,6 +85,7 @@ import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 /**
  * adds buildings to the world
@@ -91,9 +95,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 
-		final boolean useBuildingColors = config.getBoolean("useBuildingColors", true);
-		final boolean drawBuildingWindows = config.getBoolean("drawBuildingWindows", true);
-
 		iterate(mapData.getMapAreas(), (MapArea area) -> {
 
 			if (!area.getRepresentations().isEmpty()) return;
@@ -102,13 +103,39 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			if (buildingValue != null && !buildingValue.equals("no")) {
 
-				Building building = new Building(area,
-						useBuildingColors, drawBuildingWindows);
+				Building building = new Building(area, config);
 				area.addRepresentation(building);
 
 			}
 
 		});
+
+	}
+
+	/**
+	 * how windows on building walls should be implemented.
+	 * This represents a trade-off between visuals and various performance factors.
+	 */
+	private static enum WindowImplementation {
+
+		/** no windows at all */
+		NONE,
+		/** a repeating texture image on a flat wall */
+		FLAT_TEXTURES,
+		/** windows with actual geometry */
+		GEOMETRY;
+
+		public static WindowImplementation getValue(String value, WindowImplementation defaultValue) {
+
+			if (value != null) {
+				try {
+					return WindowImplementation.valueOf(value.toUpperCase());
+				} catch (IllegalArgumentException e) {}
+			}
+
+			return defaultValue;
+
+		}
 
 	}
 
@@ -124,7 +151,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private final EleConnectorGroup outlineConnectors;
 
-		public Building(MapArea area, boolean useBuildingColors, boolean drawBuildingWindows) {
+		public Building(MapArea area, Configuration config) {
 
 			this.area = area;
 
@@ -137,7 +164,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 					//TODO: check whether the building contains the part (instead of just touching it)
 					if (area.getPolygon().contains(otherArea.getPolygon().getOuter())) {
-						parts.add(new BuildingPart(this, otherArea, useBuildingColors, drawBuildingWindows));
+						parts.add(new BuildingPart(this, otherArea, config));
 					}
 
 				}
@@ -149,7 +176,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			String buildingPartValue = area.getTags().getValue("building:part");
 
 			if (parts.isEmpty() || buildingPartValue != null && !"no".equals(buildingPartValue)) {
-				parts.add(new BuildingPart(this, area, useBuildingColors, drawBuildingWindows));
+				parts.add(new BuildingPart(this, area, config));
 			}
 
 			/* create connectors along the outline.
@@ -289,6 +316,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final MapArea area;
 		private final PolygonWithHolesXZ polygon;
 
+		private final Configuration config;
+
 		/** the tags for this part, including tags inherited from the parent */
 		private final TagGroup tags;
 
@@ -301,20 +330,32 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private Material materialWallWithWindows;
 		private Material materialRoof;
 
-		private List<BuildingEntrance> entrances = new ArrayList<BuildingEntrance>();
-
-		private final List<Wall> walls;
 		private Roof roof;
 
-		public BuildingPart(Building building, MapArea area, boolean useBuildingColors, boolean drawBuildingWindows) {
+		private List<Wall> walls = null;
+		private List<Floor> floors = null;
+		private List<BuildingEntrance> entrances = null;
+
+		public BuildingPart(Building building, MapArea area, Configuration config) {
 
 			this.building = building;
 			this.area = area;
 			this.polygon = area.getPolygon();
 
+			this.config = config;
+
 			this.tags = inheritTags(area.getTags(), building.area.getTags());
 
-			setAttributes(useBuildingColors, drawBuildingWindows);
+			setAttributes();
+
+		}
+
+		/** creates the walls, floors etc. making up this part */
+		private void createComponents() {
+
+			/* create building entrances */
+
+			entrances = new ArrayList<BuildingEntrance>();
 
 			for (MapNode node : area.getBoundaryNodes()) {
 				if ((node.getTags().contains("building", "entrance")
@@ -328,13 +369,151 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 
-			/* create walls */
+			double floorHeight = calculateFloorHeight();
 
-			walls = splitIntoWalls(area, emptyList())
-					.stream()
-					.map(nodes -> new Wall(this, nodes))
-					.collect(toList());
+			/* find passages through this building part */
 
+			double clearingAbovePassage = 2.5;
+
+			List<TerrainBoundaryWorldObject> buildingPassages = area.getOverlaps().stream()
+				.map(o -> o.getOther(area))
+				.filter(o -> o.getTags().containsAny("tunnel", asList("building_passage", "passage")))
+				.filter(o -> o.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject)
+				.map(o -> (TerrainBoundaryWorldObject)o.getPrimaryRepresentation())
+				.filter(o -> o.getGroundState() == GroundState.ON)
+				.filter(o -> clearingAbovePassage > floorHeight)
+				.collect(toList());
+
+			if (buildingPassages.isEmpty()) {
+
+				/* create walls and floor normally (no building passages) */
+
+				walls = splitIntoWalls(area, emptyList())
+						.stream()
+						.map(nodes -> new Wall(this, nodes, calculateFloorHeight()))
+						.collect(toList());
+
+				if (floorHeight > 0) {
+					floors = singletonList(new Floor(this, materialWall, polygon, floorHeight));
+				} else {
+					floors = emptyList();
+				}
+
+			} else {
+
+				Map<PolygonWithHolesXZ, Double> polygonFloorHeightMap = new HashMap<>();
+
+				/* construct those polygons where the area does not overlap with terrain boundaries */
+
+				List<SimplePolygonXZ> subtractPolygons = new ArrayList<>();
+
+				for (TerrainBoundaryWorldObject o : buildingPassages) {
+
+					SimplePolygonXZ subtractPoly = o.getOutlinePolygonXZ();
+
+					subtractPolygons.add(subtractPoly);
+
+					if (o instanceof WaySegmentWorldObject) {
+
+						// extend the subtract polygon for segments that end
+						// at a common node with this building part's outline.
+						// (otherwise, the subtract polygon will probably
+						// not exactly line up with the polygon boundary)
+
+						WaySegmentWorldObject waySegmentWO = (WaySegmentWorldObject)o;
+						VectorXZ start = waySegmentWO.getStartPosition();
+						VectorXZ end = waySegmentWO.getEndPosition();
+
+						boolean startCommonNode = false;
+						boolean endCommonNode = false;
+
+						for (SimplePolygonXZ p : polygon.getPolygons()) {
+							startCommonNode |= p.getVertexCollection().contains(start);
+							endCommonNode |= p.getVertexCollection().contains(end);
+						}
+
+						VectorXZ direction = end.subtract(start).normalize();
+
+						if (startCommonNode) {
+							subtractPolygons.add(subtractPoly.shift(direction));
+						}
+
+						if (endCommonNode) {
+							subtractPolygons.add(subtractPoly.shift(direction.invert()));
+						}
+
+					}
+
+				}
+
+				subtractPolygons.addAll(roof.getPolygon().getHoles());
+
+				Collection<PolygonWithHolesXZ> buildingPartPolys =
+					CAGUtil.subtractPolygons(
+							roof.getPolygon().getOuter(),
+							subtractPolygons);
+
+				for (PolygonWithHolesXZ p : buildingPartPolys) {
+					polygonFloorHeightMap.put(p, floorHeight);
+				}
+
+				/* construct the polygons directly above the passages */
+
+				for (TerrainBoundaryWorldObject o : buildingPassages) {
+
+					Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
+
+					Collection<PolygonWithHolesXZ> polysAboveTBWOs =
+						CAGUtil.intersectPolygons(Arrays.asList(
+								polygon.getOuter(), o.getOutlinePolygon().getSimpleXZPolygon()));
+
+
+					if (polygon.getHoles().isEmpty()) {
+						raisedBuildingPartPolys = polysAboveTBWOs;
+					} else {
+						raisedBuildingPartPolys = new ArrayList<PolygonWithHolesXZ>();
+						for (PolygonWithHolesXZ p : polysAboveTBWOs) {
+							List<SimplePolygonXZ> subPolys = new ArrayList<SimplePolygonXZ>();
+							subPolys.addAll(polygon.getHoles());
+							subPolys.addAll(p.getHoles());
+							raisedBuildingPartPolys.addAll(
+									CAGUtil.subtractPolygons(p.getOuter(), subPolys));
+						}
+					}
+
+					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
+						double newFloorHeight = clearingAbovePassage;
+						if (newFloorHeight < floorHeight) {
+							newFloorHeight = floorHeight;
+						}
+						polygonFloorHeightMap.put(p, newFloorHeight);
+					}
+
+				}
+
+				/* create the walls and floors */
+
+				floors = new ArrayList<>();
+				walls = new ArrayList<>();
+
+				for (PolygonWithHolesXZ polygon : polygonFloorHeightMap.keySet()) {
+
+					floors.add(new Floor(this, materialWall, polygon, polygonFloorHeightMap.get(polygon)));
+
+					for (SimplePolygonXZ ring : polygon.getPolygons()) {
+						ring = polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise();
+						ring = ring.getSimplifiedPolygon();
+						for (int i = 0; i < ring.size(); i++) {
+							walls.add(new Wall(this,
+									asList(ring.getVertex(i), ring.getVertex(i + 1)),
+									emptyMap(),
+									polygonFloorHeightMap.get(polygon)));
+						}
+					}
+
+				}
+
+			}
 		}
 
 		/**
@@ -428,160 +607,21 @@ public class BuildingModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			//TODO
-			//renderWalls(target, roof);
+			if (walls == null) {
+				// the reason why this is called here rather than the constructor is tunnel=building_passage:
+				// in the constructor, the roads' calculations aren't completed yet
+				createComponents();
+			}
 
 			walls.forEach(w -> w.renderTo(target));
 
 			roof.renderTo(target);
 
-		}
-
-		private void renderFloor(Target<?> target, double floorEle) {
-
-			Collection<TriangleXZ> triangles =
-				TriangulationUtil.triangulate(polygon);
-
-			List<TriangleXYZ> trianglesXYZ =
-				new ArrayList<TriangleXYZ>(triangles.size());
-
-			for (TriangleXZ triangle : triangles) {
-				trianglesXYZ.add(triangle.makeClockwise().xyz(floorEle));
-			}
-
-			target.drawTriangles(materialWall, trianglesXYZ,
-					triangleTexCoordLists(trianglesXYZ, materialWall, GLOBAL_X_Z));
+			floors.forEach(f -> f.renderTo(target));
 
 		}
 
-		private void renderWalls(Target<?> target, Roof roof) {
-
-			double baseEle = building.getGroundLevelEle();
-
-			double floorHeight = calculateFloorHeight(roof);
-			boolean renderFloor = (floorHeight > 0);
-
-			if (area.getOverlaps().isEmpty()) {
-
-				renderWalls(target, roof.getPolygon(),
-						baseEle, floorHeight, roof);
-
-			} else {
-
-				/* find terrain boundaries on the ground
-				 * that overlap with the building */
-
-				List<TerrainBoundaryWorldObject> tbWorldObjects = new ArrayList<TerrainBoundaryWorldObject>();
-
-				for (MapOverlap<?,?> overlap : area.getOverlaps()) {
-					MapElement other = overlap.getOther(area);
-					if (other.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject
-							&& other.getPrimaryRepresentation().getGroundState() == GroundState.ON
-							&& (other.getTags().contains("tunnel", "passage")
-									|| other.getTags().contains("tunnel", "building_passage"))) {
-						tbWorldObjects.add((TerrainBoundaryWorldObject)
-								other.getPrimaryRepresentation());
-					}
-				}
-
-				/* render building parts where the building polygon does not overlap with terrain boundaries */
-
-				List<SimplePolygonXZ> subtractPolygons = new ArrayList<SimplePolygonXZ>();
-
-				for (TerrainBoundaryWorldObject o : tbWorldObjects) {
-
-					SimplePolygonXZ subtractPoly = o.getOutlinePolygonXZ();
-
-					subtractPolygons.add(subtractPoly);
-
-					if (o instanceof WaySegmentWorldObject) {
-
-						// extend the subtract polygon for segments that end
-						// at a common node with this building part's outline.
-						// (otherwise, the subtract polygon will probably
-						// not exactly line up with the polygon boundary)
-
-						WaySegmentWorldObject waySegmentWO = (WaySegmentWorldObject)o;
-						VectorXZ start = waySegmentWO.getStartPosition();
-						VectorXZ end = waySegmentWO.getEndPosition();
-
-						boolean startCommonNode = false;
-						boolean endCommonNode = false;
-
-						for (SimplePolygonXZ p : polygon.getPolygons()) {
-							startCommonNode |= p.getVertexCollection().contains(start);
-							endCommonNode |= p.getVertexCollection().contains(end);
-						}
-
-						VectorXZ direction = end.subtract(start).normalize();
-
-						if (startCommonNode) {
-							subtractPolygons.add(subtractPoly.shift(direction));
-						}
-
-						if (endCommonNode) {
-							subtractPolygons.add(subtractPoly.shift(direction.invert()));
-						}
-
-					}
-
-				}
-
-				subtractPolygons.addAll(roof.getPolygon().getHoles());
-
-				Collection<PolygonWithHolesXZ> buildingPartPolys =
-					CAGUtil.subtractPolygons(
-							roof.getPolygon().getOuter(),
-							subtractPolygons);
-
-				for (PolygonWithHolesXZ p : buildingPartPolys) {
-					renderWalls(target, p, baseEle, floorHeight, roof);
-					if (renderFloor) {
-						renderFloor(target, baseEle + floorHeight);
-					}
-				}
-
-				/* render building parts above the terrain boundaries */
-
-				for (TerrainBoundaryWorldObject o : tbWorldObjects) {
-
-					Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
-
-					Collection<PolygonWithHolesXZ> polysAboveTBWOs =
-						CAGUtil.intersectPolygons(Arrays.asList(
-								polygon.getOuter(), o.getOutlinePolygon().getSimpleXZPolygon()));
-
-
-					if (polygon.getHoles().isEmpty()) {
-						raisedBuildingPartPolys = polysAboveTBWOs;
-					} else {
-						raisedBuildingPartPolys = new ArrayList<PolygonWithHolesXZ>();
-						for (PolygonWithHolesXZ p : polysAboveTBWOs) {
-							List<SimplePolygonXZ> subPolys = new ArrayList<SimplePolygonXZ>();
-							subPolys.addAll(polygon.getHoles());
-							subPolys.addAll(p.getHoles());
-							raisedBuildingPartPolys.addAll(
-									CAGUtil.subtractPolygons(p.getOuter(), subPolys));
-						}
-					}
-
-					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
-						double newFloorHeight = 3;
-							//TODO restore clearing - o.getClearingAbove(o.getOutlinePolygon().getSimpleXZPolygon().getCenter());
-						if (newFloorHeight < floorHeight) {
-							newFloorHeight = floorHeight;
-						}
-						renderWalls(target, p, baseEle, newFloorHeight, roof);
-						renderFloor(target, baseEle);
-					}
-
-				}
-
-			}
-
-		}
-
-		private double calculateFloorHeight(Roof roof) {
+		private double calculateFloorHeight() {
 
 			if (tags.containsKey("min_height")) {
 
@@ -609,125 +649,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		}
 
-		private void renderWalls(Target<?> target, PolygonWithHolesXZ p,
-				double baseEle, double floorHeight,
-				Roof roof) {
-
-			drawSimpleWall(target, baseEle, floorHeight,
-					roof, p.getOuter().makeCounterclockwise().getVertexLoop());
-
-			for (SimplePolygonXZ polygon : p.getHoles()) {
-				drawSimpleWall(target, baseEle, floorHeight,
-						roof, polygon.makeClockwise().getVertexLoop());
-			}
-
-		}
-
-		private void drawSimpleWall(Target<?> target, double baseEle,
-				double floorHeight, Roof roof, List<VectorXZ> vertices) {
-
-			double floorEle = baseEle + floorHeight;
-
-			List<TextureData> textureDataList = materialWallWithWindows.getTextureDataList();
-
-			List<VectorXYZ> mainWallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
-			List<VectorXYZ> roofWallVectors = new ArrayList<VectorXYZ>(vertices.size() * 2);
-
-			List<List<VectorXZ>> mainWallTexCoordLists = new ArrayList<List<VectorXZ>>(
-					textureDataList.size());
-
-			for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
-				mainWallTexCoordLists.add(new ArrayList<VectorXZ>());
-			}
-
-			double accumulatedLength = 0;
-			double[] previousS = new double[textureDataList.size()];
-
-			for (int i = 0; i < vertices.size(); i++) {
-
-				final VectorXZ coord = vertices.get(i);
-
-				/* update accumulated wall length */
-
-				if (i > 0) {
-					accumulatedLength += coord.distanceTo(vertices.get(i-1));
-				}
-
-				/* add wall vectors */
-
-				final VectorXYZ upperVector = coord.xyz(roof.getRoofEleAt(coord));
-				final VectorXYZ middleVector = coord.xyz(baseEle + heightWithoutRoof);
-
-				double upperEle = upperVector.y;
-				double middleEle = middleVector.y;
-
-				mainWallVectors.add(middleVector);
-				mainWallVectors.add(new VectorXYZ(coord.x,
-						min(floorEle, middleEle), coord.z));
-
-				roofWallVectors.add(upperVector);
-				roofWallVectors.add(new VectorXYZ(coord.x,
-						min(middleEle, upperEle), coord.z));
-
-
-				/* add texture coordinates */
-
-				for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
-
-					TextureData textureData = textureDataList.get(texLayer);
-					List<VectorXZ> texCoordList = mainWallTexCoordLists.get(texLayer);
-
-					double s, lowerT, middleT;
-
-					// determine s (width dimension) coordinate
-
-					if (textureData.height > 0) {
-						s = accumulatedLength / textureData.width;
-					} else {
-						if (i == 0) {
-							s = 0;
-						} else {
-							s = previousS[texLayer] + round(vertices.get(i-1)
-									.distanceTo(coord) / textureData.width);
-						}
-					}
-
-					previousS[texLayer] = s;
-
-					// determine t (height dimension) coordinates
-
-					if (textureData.height > 0) {
-
-						lowerT = (floorEle - baseEle) / textureData.height;
-						middleT = (middleEle - baseEle) / textureData.height;
-
-					} else {
-
-						lowerT = buildingLevels *
-							(floorEle - baseEle) / (middleEle - baseEle);
-						middleT = buildingLevels;
-
-					}
-
-					// set texture coordinates
-
-					texCoordList.add(new VectorXZ(s, middleT));
-					texCoordList.add(new VectorXZ(s, lowerT));
-
-				}
-
-			}
-
-			target.drawTriangleStrip(materialWallWithWindows, mainWallVectors,
-					mainWallTexCoordLists);
-
-			drawStripWithoutDegenerates(target, materialWall, roofWallVectors,
-					texCoordLists(roofWallVectors, materialWall, STRIP_WALL));
-
-		}
-
 		/**
-		 * sets the building part attributes (height, colors) depending on
+		 * sets the building part attributes (height, colors, ...) depending on
 		 * the building's and building part's tags.
 		 * If available, explicitly tagged data is used,
 		 * with tags of the building part overriding building tags.
@@ -735,8 +658,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * (level height) or ultimately the building class as determined
 		 * by the "building" key.
 		 */
-		private void setAttributes(boolean useBuildingColors,
-				boolean drawBuildingWindows) {
+		private void setAttributes() {
 
 			/* determine defaults for building type */
 
@@ -873,7 +795,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		    	defaultMaterialRoof = Materials.CONCRETE;
 		    }
 
-		    if (useBuildingColors) {
+		    if (config.getBoolean("useBuildingColors", true)) {
 
 		    	materialWall = buildMaterial(
 		    			tags.getValue("building:material"),
@@ -897,20 +819,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultMaterialWindows = null;
 		    }
 
-		    materialWallWithWindows = materialWall;
-
-		    if (drawBuildingWindows) {
-
-		    	Material materialWindows = defaultMaterialWindows;
-
-		    	if (materialWindows != null) {
-
-		    		materialWallWithWindows = materialWallWithWindows.
-		    				withAddedLayers(materialWindows.getTextureDataList());
-
-		    	}
-
-		    }
+	    	if (defaultMaterialWindows == null) {
+	    		materialWallWithWindows = materialWall;
+	    	} else {
+	    		materialWallWithWindows = materialWall.withAddedLayers(defaultMaterialWindows.getTextureDataList());
+	    	}
 
 		}
 
@@ -1018,47 +931,34 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		}
 
-		/**
-		 * draws a triangle strip, but omits degenerate triangles
-		 */
-		private static final void drawStripWithoutDegenerates(
-				Target<?> target, Material material, List<VectorXYZ> vectors,
-				List<List<VectorXZ>> texCoordLists) {
+		private static class Floor implements RenderableToAllTargets {
 
-			List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>();
-			List<List<VectorXZ>> triangleTexCoordLists = new ArrayList<List<VectorXZ>>(texCoordLists.size());
+			private final BuildingPart buildingPart;
+			private final Material material;
+			private final PolygonWithHolesXZ polygon;
+			private final double floorHeight;
 
-			for (int i = 0; i < texCoordLists.size(); i ++) {
-				triangleTexCoordLists.add(new ArrayList<VectorXZ>());
+			public Floor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeight) {
+				this.buildingPart = buildingPart;
+				this.material = material;
+				this.polygon = polygon;
+				this.floorHeight = floorHeight;
 			}
 
-			for (int triangle = 0; triangle < vectors.size() - 2; triangle++) {
+			@Override
+			public void renderTo(Target<?> target) {
 
-				int indexA = triangle % 2 == 0 ? triangle : triangle + 1;
-				int indexB = triangle % 2 == 0 ? triangle + 1 : triangle;
-				int indexC = triangle + 2;
+				double floorEle = buildingPart.building.getGroundLevelEle() + floorHeight;
 
-				TriangleXYZ t = new TriangleXYZ(
-						vectors.get(indexA),
-						vectors.get(indexB),
-						vectors.get(indexC));
+				Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
-				if (!t.isDegenerate()) {
+				List<TriangleXYZ> trianglesXYZ = triangles.stream()
+						.map(t -> t.makeClockwise().xyz(floorEle))
+						.collect(toList());
 
-					triangles.add(t);
+				target.drawTriangles(material, trianglesXYZ,
+						triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
 
-					for (int i = 0; i < texCoordLists.size(); i ++) {
-
-						triangleTexCoordLists.get(i).add(texCoordLists.get(i).get(indexA));
-						triangleTexCoordLists.get(i).add(texCoordLists.get(i).get(indexB));
-						triangleTexCoordLists.get(i).add(texCoordLists.get(i).get(indexC));
-
-					}
-				}
-			}
-
-			if (triangles.size() > 0) {
-				target.drawTriangles(material, triangles, triangleTexCoordLists);
 			}
 
 		}
@@ -1555,18 +1455,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 					}
 				}
 
-				// fallback from roof:direction to roof:slope:direction
-				if (slopeDirection == null && tags.containsKey("roof:slope:direction")) {
-					Float angle = parseAngle(tags.getValue("roof:slope:direction"));
-					if (angle != null) {
-						slopeDirection = VectorXZ.fromAngle(toRadians(angle));
-					}
-				}
-
 				if (slopeDirection != null) {
 
-					SimplePolygonXZ simplifiedOuter =
-							polygon.getOuter().getSimplifiedPolygon();
+					SimplePolygonXZ simplifiedOuter = polygon.getOuter().getSimplifiedPolygon();
 
 					/* find ridge by calculating the outermost intersections of
 					 * the quasi-infinite slope "line" towards the centroid vector
@@ -1574,35 +1465,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 					VectorXZ center = simplifiedOuter.getCentroid();
 
-					Collection<LineSegmentXZ> intersections =
-							simplifiedOuter.intersectionSegments(new LineSegmentXZ(
-								center.add(slopeDirection.mult(-1000)), center));
+					Collection<LineSegmentXZ> intersectedSegments = simplifiedOuter.intersectionSegments(
+							new LineSegmentXZ(center.add(slopeDirection.mult(-1000)), center));
 
-					LineSegmentXZ outermostIntersection = null;
-					double distanceOutermostIntersection = -1;
-
-					for (LineSegmentXZ i : intersections) {
-						double distance = distanceFromLineSegment(center, i);
-						if (distance > distanceOutermostIntersection) {
-							outermostIntersection = i;
-							distanceOutermostIntersection = distance;
-						}
-					}
-
-					ridge = outermostIntersection;
+					ridge = max(intersectedSegments, comparingDouble(i -> distanceFromLineSegment(center, i)));
 
 					/* calculate maximum distance from ridge */
 
-					double maxDistance = 0.1;
-
-					for (VectorXZ v : polygon.getOuter().getVertexLoop()) {
-						double distance = distanceFromLine(v, ridge.p1, ridge.p2);
-						if (distance > maxDistance) {
-							maxDistance = distance;
-						}
-					}
-
-					roofLength = maxDistance;
+					roofLength = polygon.getOuter().getVertexList().stream()
+							.mapToDouble(v -> distanceFromLine(v, ridge.p1, ridge.p2))
+							.max().getAsDouble();
 
 				} else {
 
@@ -2388,25 +2260,58 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private final BuildingPart buildingPart;
 
-		/** nodes, ordered such that the building's outside is to the right */
-		private final List<MapNode> nodes;
+		/** points, ordered such that the building's outside is to the right */
+		private final List<VectorXZ> points;
 
-		public Wall(BuildingPart buildingPart, List<MapNode> nodes) {
+		/** the nodes corresponding to the {@link #points}. No guarantee that all/any points have a matching node! */
+		private final Map<VectorXZ, MapNode> pointNodeMap;
+
+		private final double floorHeight;
+
+		public Wall(BuildingPart buildingPart, List<VectorXZ> points, Map<VectorXZ, MapNode> pointNodeMap,
+				double floorHeight) {
 			this.buildingPart = buildingPart;
-			this.nodes = nodes;
+			this.points = points;
+			this.pointNodeMap = pointNodeMap;
+			this.floorHeight = floorHeight;
+		}
+
+		public Wall(BuildingPart buildingPart, List<MapNode> nodes, double floorHeight) {
+			this(buildingPart,
+					nodes.stream().map(MapNode::getPos).collect(toList()),
+					nodes.stream().collect(toMap(MapNode::getPos, n -> n)),
+					floorHeight);
 		}
 
 		@Override
 		public void renderTo(Target<?> target) {
 
 			double baseEle = buildingPart.building.getGroundLevelEle();
-			double floorHeight = buildingPart.calculateFloorHeight(buildingPart.roof);
 			double floorEle = baseEle + floorHeight;
+			double heightWithoutRoof = buildingPart.heightWithoutRoof;
+
+			boolean wallHasWindows = !buildingPart.materialWallWithWindows.equals(buildingPart.materialWall);
+
+			if (new PolylineXZ(points).getLength() < 1) {
+				wallHasWindows = false;
+			}
+
+			/* use configuration to determine which implementation of window rendering to use */
+
+			WindowImplementation windowImplementation;
+
+			if (Streams.stream(buildingPart.tags).anyMatch(t -> t.key.startsWith("window"))) {
+				//explicitly mapped windows, use different (usually higher LOD) setting
+				windowImplementation = WindowImplementation.getValue(
+						buildingPart.config.getString("explicitWindowImplementation"), WindowImplementation.GEOMETRY);
+			} else {
+				windowImplementation = WindowImplementation.getValue(
+					buildingPart.config.getString("implicitWindowImplementation"), WindowImplementation.FLAT_TEXTURES);
+			}
 
 			/* calculate the lower boundary of the wall */
 
-			List<VectorXYZ> bottomPoints = nodes.stream()
-					.map(MapNode::getPos)
+			List<VectorXYZ> bottomPoints = points.stream()
 					.map(p -> p.xyz(0)) //set to 0 because y is relative height within the wall here
 					.collect(toList());
 
@@ -2442,37 +2347,68 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			if (topPointsXZ == null) {
-				throw new IllegalArgumentException("cannot construct top boundary of wall");
+				// just use the same points as for the bottom.
+				// This might miss some roof details and should only happen with legacy features like building_passage.
+				System.err.println("Warning: cannot construct top boundary of wall for " + buildingPart.area);
+				topPointsXZ = points;
 			}
 
 			List<VectorXYZ> topPoints = topPointsXZ.stream()
 					.map(p -> p.xyz(buildingPart.roof.getRoofEleAt(p) - floorEle))
 					.collect(toList());
 
-			/* construct the surface */
+			/* construct the surface(s) */
 
 			List<VectorXZ> lowerSurfaceBoundary = toPointsOnSurface(bottomPoints);
 			List<VectorXZ> upperSurfaceBoundary = toPointsOnSurface(topPoints);
 
-			WallSurface surface = new WallSurface(lowerSurfaceBoundary, upperSurfaceBoundary);
+			WallSurface mainSurface, roofSurface;
+
+			double maxHeight = max(upperSurfaceBoundary, comparingDouble(v -> v.z)).z;
+
+			if (windowImplementation != WindowImplementation.FLAT_TEXTURES
+					|| !wallHasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
+
+				mainSurface = new WallSurface(lowerSurfaceBoundary, upperSurfaceBoundary);
+				roofSurface = null;
+
+			} else {
+
+				// using window textures. Need to separate the bit of wall "in the roof" which should not have windows.
+
+				List<VectorXZ> middleSurfaceBoundary = asList(
+						new VectorXZ(lowerSurfaceBoundary.get(0).x, heightWithoutRoof - floorHeight),
+						new VectorXZ(lowerSurfaceBoundary.get(bottomPoints.size() - 1).x, heightWithoutRoof - floorHeight));
+
+				mainSurface = new WallSurface(lowerSurfaceBoundary, middleSurfaceBoundary);
+
+				middleSurfaceBoundary = middleSurfaceBoundary.stream()
+						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
+						.collect(toList());
+				upperSurfaceBoundary = upperSurfaceBoundary.stream()
+						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
+						.collect(toList());
+
+				roofSurface = new WallSurface(middleSurfaceBoundary, upperSurfaceBoundary);
+
+			}
 
 			/* add windows */
 
-			//TODO remove - surface.addElementIfSpaceFree(new Window(new VectorXZ(surface.getLength() / 2, 3), 2.6, 1.5));
-
-			//TODO: no windows for glass walls, churches etc.
-
-			placeDefaultWindows(surface);
+			if (wallHasWindows && windowImplementation == WindowImplementation.GEOMETRY) {
+				placeDefaultWindows(mainSurface);
+			}
 
 			/* draw the wall */
 
 			List<VectorXYZ> bottomPointsXYZ = addYList(bottomPoints, floorEle);
-			surface.renderTo(target, bottomPointsXYZ);
+			mainSurface.renderTo(target, bottomPointsXYZ,
+					wallHasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
 
-			//TODO: der fehlende Bereich "unter dem Dach" (z.B. bei Runddach) liegt an fehlenden Punkten aus Roof-Umriss
-			// drawSimpleWall(target, baseEle, 0, roof, bottomPoints);
-
-			//FIXME draw floor of the building part
+			if (roofSurface != null) {
+				List<VectorXYZ> middlePointsXYZ = addYList(bottomPoints, floorEle + heightWithoutRoof - floorHeight);
+				roofSurface.renderTo(target, middlePointsXYZ, false);
+			}
 
 		}
 
@@ -2514,7 +2450,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 				double breastHeight = 0.3 * levelHeight;
 
 				double windowWidth = 1;
-				//double windowWidth = 0.81 * windowHeight; //TODO remove
 
 				int numColums = (int) round(surface.getLength() / (2 * windowWidth));
 
@@ -2541,7 +2476,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			private final List<VectorXZ> lowerBoundary;
 			private final List<VectorXZ> upperBoundary;
-
 			private final SimplePolygonXZ wallOutline;
 
 			private final List<WallElement> elements = new ArrayList<>();
@@ -2571,7 +2505,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 				/* construct an outline polygon from the lower and upper boundary */
 
 				List<VectorXZ> outerLoop = new ArrayList<>(upperBoundary);
+
+				if (upperBoundary.get(0).distanceTo(lowerBoundary.get(0)) < 0.01) {
+					outerLoop.remove(0);
+				}
+				if (getLast(upperBoundary).distanceTo(getLast(lowerBoundary)) < 0.01) {
+					outerLoop.remove(outerLoop.size() - 1);
+				}
+
 				reverse(outerLoop);
+
 				outerLoop.addAll(0, lowerBoundary);
 				outerLoop.add(lowerBoundary.get(0));
 
@@ -2599,7 +2542,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			/** renders the wall; requires it to be anchored back into 3D space */
-			public void renderTo(Target<?> target, List<VectorXYZ> bottomPointsXYZ) {
+			public void renderTo(Target<?> target, List<VectorXYZ> bottomPointsXYZ, boolean applyWindowTexture) {
+
+				/* render the elements on the wall */
+
+				for (WallElement e : elements) {
+					e.renderTo(target, this, bottomPointsXYZ);
+				}
 
 				/* triangulate the empty wall surface */
 
@@ -2608,22 +2557,64 @@ public class BuildingModule extends ConfigurableWorldModule {
 				List<TriangleXZ> triangles = triangulate(wallOutline, holes);
 				List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t, bottomPointsXYZ)).collect(toList());
 
-				List<VectorXZ> texCoords = new ArrayList<>();
+				/* determine the material depending on whether a window texture should be applied */
 
-				for (TriangleXZ triangle : triangles) {
-					texCoords.add(triangle.v1);
-					texCoords.add(triangle.v2);
-					texCoords.add(triangle.v3);
+				Material material = applyWindowTexture
+						? buildingPart.materialWallWithWindows
+						: buildingPart.materialWall;
+
+				/* calculate basic texture coordinates (for a hypothetical 'unit texture' of width and height 1) */
+
+				List<TextureData> textureDataList = material.getTextureDataList();
+
+				List<List<VectorXZ>> texCoordLists = new ArrayList<>(textureDataList.size());
+
+				for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
+
+					List<VectorXZ> texCoords = new ArrayList<>();
+
+					for (TriangleXZ triangle : triangles) {
+						texCoords.add(triangle.v1);
+						texCoords.add(triangle.v2);
+						texCoords.add(triangle.v3);
+					}
+
+					texCoordLists.add(texCoords);
+
 				}
 
-				target.drawTriangles(buildingPart.materialWall, trianglesXYZ,
-						nCopies(buildingPart.materialWall.getNumTextureLayers(), texCoords));
+				/* scale the texture coordinates based on the texture's height and width or,
+				 * for textures with the special height value 0 (windows!), to an integer number of repetitions */
 
-				/* render the elements on the wall */
+				for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
 
-				for (WallElement e : elements) {
-					e.renderTo(target, this, bottomPointsXYZ);
+					TextureData textureData = textureDataList.get(texLayer);
+					List<VectorXZ> texCoords = texCoordLists.get(texLayer);
+
+					boolean specialWindowHandling = (textureData.height == 0);
+
+					for (int i = 0; i < texCoords.size(); i++) {
+
+						double height = textureData.height;
+						double width = textureData.width;
+
+						if (specialWindowHandling) {
+							height = buildingPart.heightWithoutRoof / buildingPart.buildingLevels;
+							width = getLength() / max(1, round(getLength() / textureData.width));
+						}
+
+						double s = texCoords.get(i).x / width;
+						double t = (texCoords.get(i).z + floorHeight) / height;
+
+						texCoords.set(i, new VectorXZ(s, t));
+
+					}
+
 				}
+
+				/* render the wall */
+
+				target.drawTriangles(material, trianglesXYZ, texCoordLists);
 
 			}
 
@@ -2690,7 +2681,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			@Override
 			public void renderTo(Target<?> target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
 
-				double depth = 0.15;
+				double depth = 0.10;
 
 				VectorXYZ bottomLeft = surface.convertTo3D(outline().getVertex(0), bottomPointsXYZ);
 				VectorXYZ bottomRight = surface.convertTo3D(outline().getVertex(1), bottomPointsXYZ);
@@ -2723,7 +2714,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				Material material = new ImmutableMaterial(
 						buildingPart.materialWall.getInterpolation(),
 						buildingPart.materialWall.getColor(),
-						0.2f * buildingPart.materialWall.getAmbientFactor(), //coarsely approximate ambient occlusion
+						0.5f * buildingPart.materialWall.getAmbientFactor(), //coarsely approximate ambient occlusion
 						buildingPart.materialWall.getDiffuseFactor(),
 						buildingPart.materialWall.getSpecularFactor(),
 						buildingPart.materialWall.getShininess(),
