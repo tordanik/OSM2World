@@ -1505,7 +1505,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if (ridge == null) {
 					return getMaxRoofEle();
 				} else {
-					double distance = distanceFromLineSegment(pos, ridge);
+					double distance = distanceFromLine(pos, ridge.p1, ridge.p2);
 					double relativeDistance = distance / roofLength;
 					return getMaxRoofEle() - relativeDistance * roofHeight;
 				}
