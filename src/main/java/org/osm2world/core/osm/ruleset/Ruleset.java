@@ -19,4 +19,7 @@ public interface Ruleset {
 	 */
 	public boolean isSeaTag(OsmTag tag);
 
+	/** checks if this relation type is considered relevant for OSM2World */
+	public boolean isWhitelistedRelationType(String type);
+
 }

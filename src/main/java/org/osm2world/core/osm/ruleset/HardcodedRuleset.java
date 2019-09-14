@@ -1,5 +1,7 @@
 package org.osm2world.core.osm.ruleset;
 
+import static java.util.Arrays.asList;
+
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -14,6 +16,8 @@ public class HardcodedRuleset implements Ruleset {
 
 	private static Collection<Tag> landTags = new HashSet<>();
 	private static Collection<Tag> seaTags = new HashSet<>();
+
+	private static final Collection<String> relationTypeWhitelist;
 
 	static {
 		areaTags.add(new Tag("area", "yes"));
@@ -55,6 +59,17 @@ public class HardcodedRuleset implements Ruleset {
 		seaTags.add(new Tag("seamark:type", "cable_submarine"));
 		seaTags.add(new Tag("submarine", "yes"));
 		seaTags.add(new Tag("wetland", "tidalflat"));
+
+		relationTypeWhitelist = asList(
+				"multipolygon",
+				"destination_sign",
+				"building",
+				"enforcement",
+				"bridge",
+				"connectivity",
+				"tunnel"
+				);
+
 	}
 
 	@Override
@@ -71,6 +86,11 @@ public class HardcodedRuleset implements Ruleset {
 	@Override
 	public boolean isSeaTag(OsmTag tag) {
 		return seaTags.contains(new Tag(tag.getKey(), tag.getValue()));
+	}
+
+	@Override
+	public boolean isWhitelistedRelationType(String type) {
+		return relationTypeWhitelist.contains(type);
 	}
 
 }

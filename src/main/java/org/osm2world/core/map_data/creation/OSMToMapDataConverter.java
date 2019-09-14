@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.creation.index.MapDataIndex;
@@ -247,6 +248,8 @@ public class OSMToMapDataConverter {
 
 				MapRelation relation = new MapRelation(osmRelation);
 
+				List<OsmRelationMember> incompleteMembers = null;
+
 				for (OsmRelationMember osmMember : membersAsList(osmRelation)) {
 
 					Element element = null;
@@ -269,9 +272,8 @@ public class OSMToMapDataConverter {
 					}
 
 					if (element == null) {
-						System.err.println("Warning: Relation " + osmMember.getId() + " is incomplete,"
-								+ " missing member " + osmMember.getRole() + ": "
-								+ osmMember.getType() + " " + osmMember.getId());
+						if (incompleteMembers == null) { incompleteMembers = new ArrayList<>(); }
+						incompleteMembers.add(osmMember);
 						continue;
 					}
 
@@ -279,6 +281,20 @@ public class OSMToMapDataConverter {
 
 				}
 
+				if (!ruleset.isWhitelistedRelationType(relation.getTags().getValue("type"))) {
+					continue;
+				}
+
+				if (incompleteMembers != null) {
+
+					StringJoiner memberList = new StringJoiner(", ");
+					incompleteMembers.forEach(m -> memberList.add(
+							"'" + m.getRole() + "': " + m.getType() + " " + m.getId()));
+					System.err.println("Relation " + relation + " is incomplete, missing members: " + memberList);
+
+					if (relation.getMemberships().isEmpty()) continue;
+
+				}
 
 				mapRelations.add(relation);
 
