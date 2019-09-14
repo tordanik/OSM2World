@@ -17,7 +17,7 @@ import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
-import static org.osm2world.core.target.common.material.Materials.SINGLE_WINDOW;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
@@ -35,7 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
+import org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -326,11 +329,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private double heightWithoutRoof;
 
-		private Material materialWall;
-		private Material materialWallWithWindows;
-		private Material materialRoof;
-
 		private Roof roof;
+		private Material materialRoof;
 
 		private List<Wall> walls = null;
 		private List<Floor> floors = null;
@@ -346,12 +346,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			this.tags = inheritTags(area.getTags(), building.area.getTags());
 
-			setAttributes();
+			setLevelsHeightAndRoof();
 
 		}
 
 		/** creates the walls, floors etc. making up this part */
 		private void createComponents() {
+
+			Material materialWall = createWallMaterial(tags, config);
 
 			/* create building entrances */
 
@@ -501,7 +503,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						ring = polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise();
 						ring = ring.getSimplifiedPolygon();
 						for (int i = 0; i < ring.size(); i++) {
-							walls.add(new Wall(this,
+							walls.add(new Wall(null, this,
 									asList(ring.getVertex(i), ring.getVertex(i + 1)),
 									emptyMap(),
 									polygonFloorHeightMap.get(polygon)));
@@ -544,6 +546,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				 * points in the middle of a straight wall, unless they are the start/end point of a wall way */
 
 				boolean[] splitAtNode = new boolean[nodes.size()];
+				Set<MapWay> wallWays = new HashSet<>();
 
 				for (int i = 0; i < nodes.size(); i++) {
 
@@ -557,6 +560,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 								&& !way.getTags().contains("building:wall", "no")
 								&& (way.getNodes().get(0).equals(node) || getLast(way.getNodes()).equals(node))) {
 							isStartOrEndOfWallWay = true;
+							wallWays.add(way);
 						}
 					}
 
@@ -581,9 +585,29 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 					if (splitAtNode[i]) {
 						if (currentWallNodes != null) {
+
 							currentWallNodes.add(nodes.get(i));
 							assert currentWallNodes.size() >= 2;
-							result.add(new Wall(buildingPart, currentWallNodes));
+
+							MapWay wallWay = null;
+
+							for (MapWay w : wallWays) {
+								boolean containsAllSegments = true;
+								for (int j = 0; j + 1 < currentWallNodes.size(); j++) {
+									List<MapNode> pair = asList(currentWallNodes.get(j), currentWallNodes.get(j + 1));
+									if (!w.getWaySegments().stream().anyMatch(s ->
+											s.getStartEndNodes().containsAll(pair))) {
+										containsAllSegments = false;
+									}
+								}
+								if (containsAllSegments) {
+									wallWay = w;
+									break;
+								}
+							}
+
+							result.add(new Wall(wallWay, buildingPart, currentWallNodes));
+
 						}
 						currentWallNodes = new ArrayList<>();
 					}
@@ -656,84 +680,20 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		/**
-		 * sets the building part attributes (height, colors, ...) depending on
-		 * the building's and building part's tags.
-		 * If available, explicitly tagged data is used,
-		 * with tags of the building part overriding building tags.
-		 * Otherwise, the values depend on indirect assumptions
-		 * (level height) or ultimately the building class as determined
-		 * by the "building" key.
+		 * figures out level and height information, plus roofs, based on the building's and building part's tags.
+		 * If available, explicitly tagged data is used, with tags of the building part overriding building tags.
+		 * Otherwise, the values depend on indirect assumptions (level height)
+		 * or ultimately the building class as determined by the "building" and "building:part" keys.
 		 */
-		private void setAttributes() {
+		private void setLevelsHeightAndRoof() {
 
-			/* determine defaults for building type */
+			BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
-			int defaultLevels = 3;
-			double defaultHeightPerLevel = 2.5;
-			Material defaultMaterialWall = Materials.BUILDING_DEFAULT;
-			Material defaultMaterialRoof = Materials.ROOF_DEFAULT;
-			Material defaultMaterialWindows = Materials.BUILDING_WINDOWS;
-			String defaultRoofShape = "flat";
-
-			String buildingValue = tags.getValue("building:part");
-			if (buildingValue == null || buildingValue.equals("yes")) {
-				buildingValue = tags.getValue("building");
-			}
-
-			switch (buildingValue) {
-
-			case "greenhouse":
-				defaultLevels = 1;
-				defaultMaterialWall = Materials.GLASS;
-				defaultMaterialRoof = Materials.GLASS_ROOF;
-				defaultMaterialWindows = null;
-				break;
-
-			case "garage":
-			case "garages":
-				defaultLevels = 1;
-				defaultMaterialWall = Materials.CONCRETE;
-				defaultMaterialRoof = Materials.CONCRETE;
-				defaultMaterialWindows = Materials.GARAGE_DOORS;
-				break;
-
-			case "hut":
-			case "shed":
-				defaultLevels = 1;
-				break;
-
-			case "cabin":
-				defaultLevels = 1;
-				defaultMaterialWall = Materials.WOOD_WALL;
-				defaultMaterialRoof = Materials.WOOD;
-				break;
-
-			case "roof":
-				defaultLevels = 1;
-				defaultMaterialWindows = null;
-				break;
-
-			case "church":
-			case "hangar":
-			case "industrial":
-				defaultMaterialWindows = null;
-				break;
-
-			default:
-				if (!tags.containsKey("building:levels")) {
-					defaultMaterialWindows = null;
-				}
-				break;
-			}
-
-			if (tags.contains("parking", "multi-storey")) {
-				defaultLevels = 5;
-				defaultMaterialWindows = null;
-			}
+			double heightPerLevel = defaults.heightPerLevel;
 
 			/* determine levels */
 
-			buildingLevels = defaultLevels;
+			buildingLevels = defaults.levels;
 
 			Float parsedLevels = null;
 
@@ -744,7 +704,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if (parsedLevels != null) {
 				buildingLevels = (int)(float)parsedLevels;
 			} else if (parseHeight(tags, -1) > 0) {
-				buildingLevels = max(1, (int)(parseHeight(tags, -1) / defaultHeightPerLevel));
+				buildingLevels = max(1, (int)(parseHeight(tags, -1) / heightPerLevel));
 			}
 
 			minLevel = 0;
@@ -758,19 +718,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* determine roof shape */
 
-			boolean explicitRoofTagging = true;
-
 			if (!("no".equals(tags.getValue("roof:lines"))) && hasComplexRoof(area)) {
 				roof = new ComplexRoof();
 			} else {
 
 				String roofShape = tags.getValue("roof:shape");
 				if (roofShape == null) { roofShape = tags.getValue("building:roof:shape"); }
-
-				if (roofShape == null) {
-					roofShape = defaultRoofShape;
-					explicitRoofTagging = false;
-				}
+				if (roofShape == null) { roofShape = defaults.roofShape; }
 
 				try {
 
@@ -779,14 +733,29 @@ public class BuildingModule extends ConfigurableWorldModule {
 				} catch (InvalidGeometryException e) {
 					System.err.println("falling back to FlatRoof: " + e);
 					roof = new FlatRoof();
-					explicitRoofTagging = false;
 				}
 
 			}
 
+			/* construct roof material */
+
+			materialRoof = defaults.materialRoof;
+
+		    if (tags.contains("roof:shape", "flat") && materialRoof == Materials.ROOF_DEFAULT) {
+		    	materialRoof = Materials.CONCRETE;
+		    }
+
+		    if (config.getBoolean("useBuildingColors", true)) {
+		    	materialRoof = buildMaterial(
+		    			tags.getValue("roof:material"),
+		    			tags.getValue("roof:colour"),
+		    			materialRoof, true);
+
+		    }
+
 			/* determine height */
 
-			double fallbackHeight = buildingLevels * defaultHeightPerLevel + roof.getRoofHeight();
+			double fallbackHeight = buildingLevels * heightPerLevel + roof.getRoofHeight();
 			double height = parseHeight(tags, (float)fallbackHeight);
 
 			// Make sure buildings have at least some height
@@ -794,46 +763,28 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			heightWithoutRoof = height - roof.getRoofHeight();
 
-			/* determine materials */
+		}
 
-		    if (defaultMaterialRoof == Materials.ROOF_DEFAULT
-		    		&& explicitRoofTagging && roof instanceof FlatRoof) {
-		    	defaultMaterialRoof = Materials.CONCRETE;
-		    }
+		private static Material createWallMaterial(TagGroup tags, Configuration config) {
 
-		    if (config.getBoolean("useBuildingColors", true)) {
+			BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
-		    	materialWall = buildMaterial(
+			if (config.getBoolean("useBuildingColors", true)) {
+
+		    	return BuildingPart.buildMaterial(
 		    			tags.getValue("building:material"),
 		    			tags.getValue("building:colour"),
-		    			defaultMaterialWall, false);
-		    	materialRoof = buildMaterial(
-		    			tags.getValue("roof:material"),
-		    			tags.getValue("roof:colour"),
-		    			defaultMaterialRoof, true);
+		    			defaults.materialWall, false);
 
 		    } else {
 
-		    	materialWall = defaultMaterialWall;
-		    	materialRoof = defaultMaterialRoof;
+		    	return defaults.materialWall;
 
 		    }
-
-		    if (materialWall == Materials.GLASS) {
-				// avoid placing windows into a glass front
-				// TODO: the == currently only works if GLASS is not colorable
-				defaultMaterialWindows = null;
-		    }
-
-	    	if (defaultMaterialWindows == null) {
-	    		materialWallWithWindows = materialWall;
-	    	} else {
-	    		materialWallWithWindows = materialWall.withAddedLayers(defaultMaterialWindows.getTextureDataList());
-	    	}
 
 		}
 
-		private Material buildMaterial(String materialString,
+		private static Material buildMaterial(String materialString,
 				String colorString, Material defaultMaterial,
 				boolean roof) {
 
@@ -2264,6 +2215,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 	static class Wall implements RenderableToAllTargets {
 
+		final @Nullable MapWay wallWay;
+
 		private final BuildingPart buildingPart;
 
 		/** points, ordered such that the building's outside is to the right */
@@ -2274,16 +2227,30 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private final double floorHeight;
 
-		public Wall(BuildingPart buildingPart, List<VectorXZ> points, Map<VectorXZ, MapNode> pointNodeMap,
-				double floorHeight) {
+		/** the tags for this part, including tags inherited from {@link #buildingPart} and its {@link Building} */
+		private final TagGroup tags;
+
+		public Wall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<VectorXZ> points,
+				Map<VectorXZ, MapNode> pointNodeMap, double floorHeight) {
+
+			this.wallWay = wallWay;
 			this.buildingPart = buildingPart;
 			this.points = points;
 			this.pointNodeMap = pointNodeMap;
 			this.floorHeight = floorHeight;
+
+			if (buildingPart == null) {
+				this.tags = EmptyTagGroup.EMPTY_TAG_GROUP;
+			} else if (wallWay != null) {
+				this.tags = inheritTags(wallWay.getTags(), buildingPart.tags);
+			} else {
+				this.tags = buildingPart.tags;
+			}
+
 		}
 
-		public Wall(BuildingPart buildingPart, List<MapNode> nodes) {
-			this(buildingPart,
+		public Wall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<MapNode> nodes) {
+			this(wallWay, buildingPart,
 					nodes.stream().map(MapNode::getPos).collect(toList()),
 					nodes.stream().collect(toMap(MapNode::getPos, n -> n)),
 					buildingPart == null ? 0 : buildingPart.calculateFloorHeight());
@@ -2292,14 +2259,27 @@ public class BuildingModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
+			BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
+
 			double baseEle = buildingPart.building.getGroundLevelEle();
 			double floorEle = baseEle + floorHeight;
 			double heightWithoutRoof = buildingPart.heightWithoutRoof;
 
-			boolean wallHasWindows = !buildingPart.materialWallWithWindows.equals(buildingPart.materialWall);
+			Material material = BuildingPart.createWallMaterial(tags, buildingPart.config);
 
-			if (new PolylineXZ(points).getLength() < 1) {
-				wallHasWindows = false;
+			/* determine if the wall has windows */
+
+			boolean hasWindows = defaults.hasWindows;
+
+			if (!tags.containsKey("building:levels")
+					|| new PolylineXZ(points).getLength() < 1) {
+				hasWindows = false;
+			}
+
+			if (material == Materials.GLASS) {
+				// avoid placing windows into a glass front
+				// TODO: the == currently only works if GLASS is not colorable
+				hasWindows = false;
 			}
 
 			/* use configuration to determine which implementation of window rendering to use */
@@ -2373,9 +2353,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 			double maxHeight = max(upperSurfaceBoundary, comparingDouble(v -> v.z)).z;
 
 			if (windowImplementation != WindowImplementation.FLAT_TEXTURES
-					|| !wallHasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
+					|| !hasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
 
-				mainSurface = new WallSurface(lowerSurfaceBoundary, upperSurfaceBoundary);
+				mainSurface = new WallSurface(material, lowerSurfaceBoundary, upperSurfaceBoundary);
 				roofSurface = null;
 
 			} else {
@@ -2386,7 +2366,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						new VectorXZ(lowerSurfaceBoundary.get(0).x, heightWithoutRoof - floorHeight),
 						new VectorXZ(lowerSurfaceBoundary.get(bottomPoints.size() - 1).x, heightWithoutRoof - floorHeight));
 
-				mainSurface = new WallSurface(lowerSurfaceBoundary, middleSurfaceBoundary);
+				mainSurface = new WallSurface(material, lowerSurfaceBoundary, middleSurfaceBoundary);
 
 				middleSurfaceBoundary = middleSurfaceBoundary.stream()
 						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
@@ -2395,13 +2375,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
 						.collect(toList());
 
-				roofSurface = new WallSurface(middleSurfaceBoundary, upperSurfaceBoundary);
+				roofSurface = new WallSurface(material, middleSurfaceBoundary, upperSurfaceBoundary);
 
 			}
 
 			/* add windows */
 
-			if (wallHasWindows && windowImplementation == WindowImplementation.GEOMETRY) {
+			if (hasWindows && windowImplementation == WindowImplementation.GEOMETRY) {
 				placeDefaultWindows(mainSurface);
 			}
 
@@ -2409,13 +2389,22 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> bottomPointsXYZ = addYList(bottomPoints, floorEle);
 			mainSurface.renderTo(target, bottomPointsXYZ,
-					wallHasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
+					hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
 
 			if (roofSurface != null) {
 				List<VectorXYZ> middlePointsXYZ = addYList(bottomPoints, floorEle + heightWithoutRoof - floorHeight);
 				roofSurface.renderTo(target, middlePointsXYZ, false);
 			}
 
+		}
+
+		@Override
+		public String toString() {
+			if (getNodes().size() == points.size()) {
+				return getNodes().toString();
+			} else {
+				return points.toString();
+			}
 		}
 
 		/**
@@ -2495,6 +2484,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 */
 		private class WallSurface {
 
+			private final Material material;
+
 			private final List<VectorXZ> lowerBoundary;
 			private final List<VectorXZ> upperBoundary;
 			private final SimplePolygonXZ wallOutline;
@@ -2506,8 +2497,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * The boundaries' x coordinates is the position along the wall (starting with 0 for the first point),
 			 * the z coordinates refer to height.
 			 */
-			public WallSurface(List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary) {
+			public WallSurface(Material material, List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary) {
 
+				this.material = material;
 				this.lowerBoundary = lowerBoundary;
 				this.upperBoundary = upperBoundary;
 
@@ -2563,7 +2555,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			/** renders the wall; requires it to be anchored back into 3D space */
-			public void renderTo(Target<?> target, List<VectorXYZ> bottomPointsXYZ, boolean applyWindowTexture) {
+			public void renderTo(Target<?> target, List<VectorXYZ> bottomPointsXYZ,
+					boolean applyWindowTexture) {
 
 				/* render the elements on the wall */
 
@@ -2581,8 +2574,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				/* determine the material depending on whether a window texture should be applied */
 
 				Material material = applyWindowTexture
-						? buildingPart.materialWallWithWindows
-						: buildingPart.materialWall;
+						? this.material.withAddedLayers(BUILDING_WINDOWS.getTextureDataList())
+						: this.material;
 
 				/* calculate basic texture coordinates (for a hypothetical 'unit texture' of width and height 1) */
 
@@ -2733,16 +2726,16 @@ public class BuildingModule extends ConfigurableWorldModule {
 						bottomLeftBack, bottomLeft);
 
 				Material material = new ImmutableMaterial(
-						buildingPart.materialWall.getInterpolation(),
-						buildingPart.materialWall.getColor(),
-						0.5f * buildingPart.materialWall.getAmbientFactor(), //coarsely approximate ambient occlusion
-						buildingPart.materialWall.getDiffuseFactor(),
-						buildingPart.materialWall.getSpecularFactor(),
-						buildingPart.materialWall.getShininess(),
-						buildingPart.materialWall.getTransparency(),
-						buildingPart.materialWall.getShadow(),
-						buildingPart.materialWall.getAmbientOcclusion(),
-						buildingPart.materialWall.getTextureDataList());
+						surface.material.getInterpolation(),
+						surface.material.getColor(),
+						0.5f * surface.material.getAmbientFactor(), //coarsely approximate ambient occlusion
+						surface.material.getDiffuseFactor(),
+						surface.material.getSpecularFactor(),
+						surface.material.getShininess(),
+						surface.material.getTransparency(),
+						surface.material.getShadow(),
+						surface.material.getAmbientOcclusion(),
+						surface.material.getTextureDataList());
 
 				target.drawTriangleStrip(material, vsWall,
 						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
@@ -2882,6 +2875,103 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		return new MapBasedTagGroup(tags);
+
+	}
+
+	/** default properties for a particular building or building:part type */
+	public static class BuildingDefaults {
+
+		public final int levels;
+		public final double heightPerLevel;
+		public final String roofShape;
+		public final Material materialWall;
+		public final Material materialRoof;
+		public final boolean hasWindows;
+
+		public BuildingDefaults(int levels, double heightPerLevel, String roofShape,
+				Material materialWall, Material materialRoof, boolean hasWindows) {
+			this.levels = levels;
+			this.heightPerLevel = heightPerLevel;
+			this.roofShape = roofShape;
+			this.materialWall = materialWall;
+			this.materialRoof = materialRoof;
+			this.hasWindows = hasWindows;
+		}
+
+		public static BuildingDefaults getDefaultsFor(TagGroup tags) {
+
+			String type = tags.getValue("building:part");
+			if (type == null || "yes".equals(type)) {
+				type = tags.getValue("building");
+			}
+
+			if (type == null) {
+				throw new IllegalArgumentException("Tags do not contain a building type: " + tags);
+			}
+
+			/* determine defaults for building type */
+
+			int levels = 3;
+			double heightPerLevel = 2.5;
+			Material materialWall = Materials.BUILDING_DEFAULT;
+			Material materialRoof = Materials.ROOF_DEFAULT;
+			boolean hasWindows = true;
+			String roofShape = "flat";
+
+			switch (type) {
+
+			case "greenhouse":
+				levels = 1;
+				materialWall = Materials.GLASS;
+				materialRoof = Materials.GLASS_ROOF;
+				hasWindows = false;
+				break;
+
+			case "garage":
+			case "garages":
+				levels = 1;
+				materialWall = Materials.CONCRETE;
+				materialRoof = Materials.CONCRETE;
+				hasWindows = false;
+				break;
+
+			case "hut":
+			case "shed":
+				levels = 1;
+				break;
+
+			case "cabin":
+				levels = 1;
+				materialWall = Materials.WOOD_WALL;
+				materialRoof = Materials.WOOD;
+				break;
+
+			case "roof":
+				levels = 1;
+				hasWindows = false;
+				break;
+
+			case "church":
+			case "hangar":
+			case "industrial":
+				hasWindows = false;
+				break;
+
+			}
+
+			/* handle other tags */
+
+			if (tags.contains("parking", "multi-storey")) {
+				levels = 5;
+				hasWindows = false;
+			}
+
+			/* return an object populated with the results */
+
+	    	return new BuildingDefaults(levels, heightPerLevel, roofShape,
+	    			materialWall, materialRoof, hasWindows);
+
+		}
 
 	}
 
