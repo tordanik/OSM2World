@@ -2801,8 +2801,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
 
-				List<VectorXYZ> vs = frontOutline.getVertices();
-				VectorXYZ toBack = new TriangleXYZ(vs.get(0), vs.get(2), vs.get(1)).getNormal().mult(depth);
+				List<VectorXYZ> verts = frontOutline.getVertices();
+				VectorXYZ toBack = new TriangleXYZ(verts.get(0), verts.get(2), verts.get(1)).getNormal().mult(depth);
 				PolygonXYZ backOutline = frontOutline.add(toBack);
 
 				/* draw the door itself */
@@ -2812,10 +2812,35 @@ public class BuildingModule extends ConfigurableWorldModule {
 				VectorXYZ topLeft = backOutline.getVertices().get(3);
 				VectorXYZ topRight = backOutline.getVertices().get(2);
 
-				List<VectorXYZ> vsDoor = asList(topLeft, bottomLeft, topRight, bottomRight);
+				if (parameters.numberOfWings == 1 || !"hinged".equals(parameters.type)) {
 
-				target.drawTriangleStrip(doorMaterial, vsDoor,
-						texCoordLists(vsDoor, doorMaterial, STRIP_FIT));
+					List<VectorXYZ> vsDoor = asList(topLeft, bottomLeft, topRight, bottomRight);
+					target.drawTriangleStrip(doorMaterial, vsDoor,
+							texCoordLists(vsDoor, doorMaterial, STRIP_FIT));
+
+				} else {
+
+					if (parameters.numberOfWings > 2) {
+						System.err.println("Warning: Unusual door:wings for " + node + ": " + parameters.numberOfWings);
+					}
+
+					VectorXYZ bottomCenter = interpolateBetween(bottomLeft, bottomRight, 0.5);
+					VectorXYZ topCenter = interpolateBetween(topLeft, topRight, 0.5);
+
+					List<VectorXYZ> vsDoorLeft = asList(topLeft, bottomLeft, topCenter, bottomCenter);
+					target.drawTriangleStrip(doorMaterial, vsDoorLeft,
+							texCoordLists(vsDoorLeft, doorMaterial, STRIP_FIT));
+
+					List<VectorXYZ> vsDoorRight = asList(topCenter, bottomCenter, topRight, bottomRight);
+					target.drawTriangleStrip(doorMaterial, vsDoorRight,
+							texCoordLists(vsDoorRight, doorMaterial, (List<VectorXYZ> vs, TextureData textureData) -> {
+								//mirror the door for the right wing
+								//TODO: maybe create a general-purpose function from this?
+								List<VectorXZ> result = STRIP_FIT.apply(vs, textureData);
+								return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).collect(toList());
+							}));
+
+				}
 
 				/* draw the wall around the door */
 
@@ -2870,6 +2895,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 */
 		public static DoorParameters fromTags(TagGroup tags, @Nullable TagGroup parentTags) {
 
+			/* determine the type */
+
 			String type = "hinged";
 
 			if (parentTags.containsAny(
@@ -2881,6 +2908,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if (tags.containsKey("door")) {
 				type = tags.getValue("door");
 			}
+
+			/* determine material and other attributes */
 
 			String materialName = null;
 			if (tags.containsKey("material")) {
@@ -2896,6 +2925,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 			}
 
+			int numberOfWings = NumberUtils.toInt(tags.getValue("door:wings"), 1);
+
+			/* parse or estimate width and height */
+
 			double defaultWidth = 1.0;
 			double defaultHeight = 2.0;
 
@@ -2904,12 +2937,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 				defaultWidth = 2.5;
 				defaultHeight = 2.125;
 				break;
+			case "hinged":
+				if (numberOfWings == 2) {
+					defaultWidth *= 2;
+				}
+				break;
 			}
 
 			double width = parseWidth(tags, (float)defaultWidth);
 			double height = parseHeight(tags, (float)defaultHeight);
 
-			int numberOfWings = NumberUtils.toInt(tags.getValue("door:wings"), 1);
+			/* return the result */
 
 			return new DoorParameters(type, materialName, color, width, height, numberOfWings);
 
