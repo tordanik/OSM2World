@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,6 +107,10 @@ public class PolygonXYZ {
 		List<VectorXYZ> newVertexLoop = new ArrayList<VectorXYZ>(vertexLoop);
 		Collections.reverse(newVertexLoop);
 		return new PolygonXYZ(newVertexLoop);
+	}
+
+	public PolygonXYZ add(VectorXYZ v) {
+		return new PolygonXYZ(getVertexLoop().stream().map(v::add).collect(toList()));
 	}
 
 }

@@ -1,5 +1,7 @@
 package org.osm2world.core.target.common.material;
 
+import static java.awt.Color.*;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
@@ -127,15 +129,15 @@ public final class Materials {
 	public static final ConfMaterial BUILDING_WINDOWS =
 		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
 	public static final ConfMaterial SINGLE_WINDOW =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0.8f, 0.85f));
+			new ConfMaterial(Interpolation.FLAT, WHITE);
 	public static final ConfMaterial ROOF_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
 	public static final ConfMaterial GLASS_ROOF =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ENTRANCE_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.2f, 0, 0));
-	public static final ConfMaterial GARAGE_DOORS =
-			new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
+	public static final ConfMaterial GARAGE_DOOR =
+			new ConfMaterial(Interpolation.FLAT, WHITE);
 
 	public static final ConfMaterial WALL_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, Color.GRAY);
@@ -234,6 +236,9 @@ public final class Materials {
 	public static final ConfMaterial SKYBOX =
 		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1),
 				1, 0, Transparency.FALSE, null);
+
+	/** material for "nothingness" which reflects no light. Used e.g. for openings into buildings without indoor. */
+	public static final ConfMaterial VOID = new ConfMaterial(Interpolation.FLAT, BLACK);
 
 	private static final Map<String, ConfMaterial> surfaceMaterialMap =
 		new HashMap<String, ConfMaterial>();

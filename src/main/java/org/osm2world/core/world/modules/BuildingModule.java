@@ -12,8 +12,7 @@ import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.map_elevation.data.GroundState.*;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
@@ -21,6 +20,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -38,6 +38,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
@@ -68,6 +69,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -80,12 +83,10 @@ import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
-import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
@@ -212,62 +213,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
-
-			List<EleConnector> groundLevelEntrances = new ArrayList<EleConnector>();
-
-			/* add constraints between entrances with different levels */
-
-			for (BuildingPart part : parts) {
-
-				// add vertical distances
-
-				for (int i = 0; i < part.entrances.size(); i++) {
-
-					BuildingEntrance e1 = part.entrances.get(i);
-
-					for (int j = i+1; j < part.entrances.size(); j++) {
-
-						BuildingEntrance e2 = part.entrances.get(j);
-
-						double heightPerLevel = part.heightWithoutRoof / part.buildingLevels;
-
-						if (e1.getLevel() > e2.getLevel()) {
-
-							enforcer.requireVerticalDistance(EXACT,
-									heightPerLevel * (e1.getLevel() - e2.getLevel()),
-									e1.connector, e2.connector);
-
-						} else if (e1.getLevel() < e2.getLevel()) {
-
-							enforcer.requireVerticalDistance(EXACT,
-									heightPerLevel * (e2.getLevel() - e1.getLevel()),
-									e2.connector, e1.connector);
-
-						}
-
-					}
-
-					// collect entrances for next step
-
-					if (e1.getLevel() == 0 && e1.getGroundState() == ON) {
-						groundLevelEntrances.add(e1.connector);
-					}
-
-				}
-
-			}
-
-			/* make sure that a level=0 ground entrance is the building's lowest point */
-
-			for (EleConnector outlineConnector : outlineConnectors) {
-				for (EleConnector entranceConnector : groundLevelEntrances) {
-					enforcer.requireVerticalDistance(
-							MIN, 0, outlineConnector, entranceConnector);
-				}
-			}
-
-		}
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) { }
 
 		//TODO
 //		@Override
@@ -334,7 +280,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private List<Wall> walls = null;
 		private List<Floor> floors = null;
-		private List<BuildingEntrance> entrances = null;
 
 		public BuildingPart(Building building, MapArea area, Configuration config) {
 
@@ -354,22 +299,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private void createComponents() {
 
 			Material materialWall = createWallMaterial(tags, config);
-
-			/* create building entrances */
-
-			entrances = new ArrayList<BuildingEntrance>();
-
-			for (MapNode node : area.getBoundaryNodes()) {
-				if ((node.getTags().contains("building", "entrance")
-						|| node.getTags().containsKey("entrance"))
-						&& node.getRepresentations().isEmpty()) {
-
-					BuildingEntrance entrance = new BuildingEntrance(this, node);
-					entrances.add(entrance);
-					node.addRepresentation(entrance);
-
-				}
-			}
 
 			double floorHeight = calculateFloorHeight();
 
@@ -649,6 +578,17 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			floors.forEach(f -> f.renderTo(target));
 
+		}
+
+		/** returns the distance between the bottom and the top of a level */
+		public double getLevelHeight(int level) {
+			//TODO: in the future, allow levels of different height (e.g. based on indoor=level elements)
+			return heightWithoutRoof / buildingLevels;
+		}
+
+		/** returns the distance between the bottom and the top of a level */
+		public double getLevelHeightAboveBase(int level) {
+			return (heightWithoutRoof / buildingLevels) * level;
 		}
 
 		private double calculateFloorHeight() {
@@ -2220,7 +2160,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final BuildingPart buildingPart;
 
 		/** points, ordered such that the building's outside is to the right */
-		private final List<VectorXZ> points;
+		private final PolylineShapeXZ points;
 
 		/** the nodes corresponding to the {@link #points}. No guarantee that all/any points have a matching node! */
 		private final Map<VectorXZ, MapNode> pointNodeMap;
@@ -2235,7 +2175,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			this.wallWay = wallWay;
 			this.buildingPart = buildingPart;
-			this.points = points;
+			this.points = points.size() == 2 ? new LineSegmentXZ(points.get(0), points.get(1)) : new PolylineXZ(points);
 			this.pointNodeMap = pointNodeMap;
 			this.floorHeight = floorHeight;
 
@@ -2272,7 +2212,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			boolean hasWindows = defaults.hasWindows;
 
 			if (!tags.containsKey("building:levels")
-					|| new PolylineXZ(points).getLength() < 1) {
+					|| points.getLength() < 1.0) {
 				hasWindows = false;
 			}
 
@@ -2297,7 +2237,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* calculate the lower boundary of the wall */
 
-			List<VectorXYZ> bottomPoints = points.stream()
+			List<VectorXYZ> bottomPoints = points.getVertexList().stream()
 					.map(p -> p.xyz(0)) //set to 0 because y is relative height within the wall here
 					.collect(toList());
 
@@ -2336,7 +2276,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				// just use the same points as for the bottom.
 				// This might miss some roof details and should only happen with legacy features like building_passage.
 				System.err.println("Warning: cannot construct top boundary of wall for " + buildingPart.area);
-				topPointsXZ = points;
+				topPointsXZ = points.getVertexList();
 			}
 
 			List<VectorXYZ> topPoints = topPointsXZ.stream()
@@ -2379,7 +2319,32 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			}
 
-			/* add windows */
+			/* add doors (if any) */
+			//TODO: doors at corners of the building (or boundaries between building:wall=yes ways) do not work yet
+			//TODO: cannot place doors into roof walls yet
+
+			for (MapNode node : getNodes()) {
+				if ((node.getTags().contains("building", "entrance")
+						|| node.getTags().containsKey("entrance"))) {
+
+					int level = NumberUtils.toInt(node.getTags().getValue("level"), 0);
+
+					VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
+							buildingPart.getLevelHeightAboveBase(level));
+
+					mainSurface.addElementIfSpaceFree(new Door(pos, node));
+
+				}
+			}
+
+			if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
+				if (!buildingPart.area.getBoundaryNodes().stream().anyMatch(
+						n -> n.getTags().containsAnyKey(asList("entrance", "door")))) {
+					placeDefaultGarageDoors(mainSurface);
+				}
+			}
+
+			/* add windows (after doors, because default windows should be displaced by them) */
 
 			if (hasWindows && windowImplementation == WindowImplementation.GEOMETRY) {
 				placeDefaultWindows(mainSurface);
@@ -2400,7 +2365,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		@Override
 		public String toString() {
-			if (getNodes().size() == points.size()) {
+			if (getNodes().size() == points.getVertexList().size()) {
 				return getNodes().toString();
 			} else {
 				return points.toString();
@@ -2413,7 +2378,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 */
 		List<MapNode> getNodes() {
 			List<MapNode> result = new ArrayList<>();
-			for (VectorXZ point : points) {
+			for (VectorXZ point : points.getVertexList()) {
 				if (pointNodeMap.containsKey(point)) {
 					result.add(pointNodeMap.get(point));
 				}
@@ -2431,6 +2396,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * Y coordinates are preserved.
 		 */
 		private List<VectorXZ> toPointsOnSurface(List<VectorXYZ> points) {
+
+			//TODO consider using PolylineShapeXZ.offsetOf here
 
 			List<VectorXZ> result = new ArrayList<>(points.size());
 
@@ -2452,9 +2419,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			for (int level = 0; level < buildingPart.buildingLevels; level++) {
 
-				//TODO: in the future, allow levels of different height (but calculate level heights in BuildingPart)
-				double levelHeight = buildingPart.heightWithoutRoof / buildingPart.buildingLevels;
-				double levelMinHeight = levelHeight * level;
+				double levelHeight = buildingPart.getLevelHeight(level);
+				double heightAboveBase = buildingPart.getLevelHeightAboveBase(level);
 
 				double windowHeight = 0.5 * levelHeight;
 				double breastHeight = 0.3 * levelHeight;
@@ -2466,13 +2432,29 @@ public class BuildingModule extends ConfigurableWorldModule {
 				for (int i = 0; i < numColums; i++) {
 
 					VectorXZ pos = new VectorXZ(i * surface.getLength() / numColums,
-							levelMinHeight + breastHeight + windowHeight/2);
+							heightAboveBase + breastHeight);
 
 					Window window = new Window(pos, windowWidth, windowHeight);
 					surface.addElementIfSpaceFree(window);
 
 				}
 
+			}
+
+		}
+
+		/** places default (i.e. not explicitly mapped) doors onto garage walls */
+		private void placeDefaultGarageDoors(WallSurface surface) {
+
+			MapBasedTagGroup doorTags = new MapBasedTagGroup(new Tag("door", "overhead"));
+
+			double doorDistance = 1.25 * DoorParameters.fromTags(doorTags, this.tags).width;
+			int numDoors = (int) round(surface.getLength() / doorDistance);
+
+			for (int i = 0; i < numDoors; i++) {
+				VectorXZ pos = new VectorXZ(surface.getLength() / numDoors * (i + 0.5), 0);
+				System.out.println(pos.x);
+				surface.addElementIfSpaceFree(new Door(pos , doorTags));
 			}
 
 		}
@@ -2546,7 +2528,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 					return;
 				}
 
-				boolean spaceOccupied = elements.stream().anyMatch(e -> e.outline().intersects(element.outline()));
+				boolean spaceOccupied = elements.stream().anyMatch(e ->
+						e.outline().intersects(element.outline()) || e.outline().contains(element.outline()));
 
 				if (!spaceOccupied) {
 					elements.add(element);
@@ -2649,6 +2632,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 						convertTo3D(t.v3, bottomPointsXYZ));
 			}
 
+			private PolygonXYZ convertTo3D(PolygonShapeXZ polygon, List<VectorXYZ> bottomPointsXYZ) {
+				List<VectorXYZ> outline = new ArrayList<>(polygon.getVertexList().size());
+				polygon.getVertexList().forEach(v -> outline.add(convertTo3D(v, bottomPointsXYZ)));
+				return new PolygonXYZ(outline);
+			}
+
 		}
 
 		/**
@@ -2684,11 +2673,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			public SimplePolygonXZ outline() {
 
 				return new SimplePolygonXZ(asList(
-						position.add(new VectorXZ(-width/2, -height/2)),
-						position.add(new VectorXZ(+width/2, -height/2)),
-						position.add(new VectorXZ(+width/2, +height/2)),
-						position.add(new VectorXZ(-width/2, +height/2)),
-						position.add(new VectorXZ(-width/2, -height/2))));
+						position.add(new VectorXZ(-width/2, 0)),
+						position.add(new VectorXZ(+width/2, 0)),
+						position.add(new VectorXZ(+width/2, +height)),
+						position.add(new VectorXZ(-width/2, +height)),
+						position.add(new VectorXZ(-width/2, 0))));
 
 			}
 
@@ -2697,33 +2686,141 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				double depth = 0.10;
 
-				VectorXYZ bottomLeft = surface.convertTo3D(outline().getVertex(0), bottomPointsXYZ);
-				VectorXYZ bottomRight = surface.convertTo3D(outline().getVertex(1), bottomPointsXYZ);
-				VectorXYZ topLeft = surface.convertTo3D(outline().getVertex(3), bottomPointsXYZ);
-				VectorXYZ topRight = surface.convertTo3D(outline().getVertex(2), bottomPointsXYZ);
+				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
 
-				VectorXYZ toBack = new TriangleXYZ(bottomLeft, topLeft, bottomRight).getNormal().mult(depth);
-
-				VectorXYZ bottomLeftBack = bottomLeft.add(toBack);
-				VectorXYZ bottomRightBack = bottomRight.add(toBack);
-				VectorXYZ topLeftBack = topLeft.add(toBack);
-				VectorXYZ topRightBack = topRight.add(toBack);
+				List<VectorXYZ> vs = frontOutline.getVertices();
+				VectorXYZ toBack = new TriangleXYZ(vs.get(0), vs.get(2), vs.get(1)).getNormal().mult(depth);
+				PolygonXYZ backOutline = frontOutline.add(toBack);
 
 				/* draw the window itself */
 
-				List<VectorXYZ> vsWindow = asList(topLeftBack, bottomLeftBack, topRightBack, bottomRightBack);
+				VectorXYZ bottomLeft = backOutline.getVertices().get(0);
+				VectorXYZ bottomRight = backOutline.getVertices().get(1);
+				VectorXYZ topLeft = backOutline.getVertices().get(3);
+				VectorXYZ topRight = backOutline.getVertices().get(2);
+
+				List<VectorXYZ> vsWindow = asList(topLeft, bottomLeft, topRight, bottomRight);
 
 				target.drawTriangleStrip(SINGLE_WINDOW, vsWindow,
 						texCoordLists(vsWindow, SINGLE_WINDOW, STRIP_FIT));
 
 				/* draw the wall around the window */
 
-				List<VectorXYZ> vsWall = asList(
-						bottomLeftBack, bottomLeft,
-						bottomRightBack, bottomRight,
-						topRightBack, topRight,
-						topLeftBack, topLeft,
-						bottomLeftBack, bottomLeft);
+				List<VectorXYZ> vsWall = createTriangleStripBetween(
+						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
+
+				Material material = new ImmutableMaterial(
+						surface.material.getInterpolation(),
+						surface.material.getColor(),
+						0.5f * surface.material.getAmbientFactor(), //coarsely approximate ambient occlusion
+						surface.material.getDiffuseFactor(),
+						surface.material.getSpecularFactor(),
+						surface.material.getShininess(),
+						surface.material.getTransparency(),
+						surface.material.getShadow(),
+						surface.material.getAmbientOcclusion(),
+						surface.material.getTextureDataList());
+
+				target.drawTriangleStrip(material, vsWall,
+						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+
+			}
+
+		}
+
+		private class Door implements WallElement {
+
+			/** position on a wall surface */
+			private final VectorXZ position;
+
+			private final @Nullable MapNode node;
+			private final TagGroup tags;
+
+			private final DoorParameters parameters;
+
+
+			public Door(VectorXZ position, TagGroup tags) {
+				this.position = position;
+				this.node = null;
+				this.tags = tags;
+				this.parameters = DoorParameters.fromTags(tags, Wall.this.tags);
+			}
+
+			public Door(VectorXZ position, MapNode node) {
+
+				this.position = position;
+				this.node = node;
+				this.tags = node.getTags();
+
+				this.parameters = DoorParameters.fromTags(tags, Wall.this.tags);
+
+			}
+
+			@Override
+			public SimplePolygonXZ outline() {
+
+				return new SimplePolygonXZ(asList(
+						position.add(new VectorXZ(-parameters.width/2, 0)),
+						position.add(new VectorXZ(+parameters.width/2, 0)),
+						position.add(new VectorXZ(+parameters.width/2, +parameters.height)),
+						position.add(new VectorXZ(-parameters.width/2, +parameters.height)),
+						position.add(new VectorXZ(-parameters.width/2, 0))));
+
+			}
+
+			@Override
+			public void renderTo(Target<?> target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+
+				Material doorMaterial = ENTRANCE_DEFAULT;
+
+				switch (parameters.type) {
+				case "no":
+					doorMaterial = VOID;
+					break;
+				case "overhead":
+					doorMaterial = GARAGE_DOOR;
+					break;
+				}
+
+				if (parameters.color != null) {
+					//TODO: create and use a Material.withColor method
+					doorMaterial = new ImmutableMaterial(
+							doorMaterial.getInterpolation(),
+							parameters.color,
+							doorMaterial.getAmbientFactor(),
+							doorMaterial.getDiffuseFactor(),
+							doorMaterial.getSpecularFactor(),
+							doorMaterial.getShininess(),
+							doorMaterial.getTransparency(),
+							doorMaterial.getShadow(),
+							doorMaterial.getAmbientOcclusion(),
+							doorMaterial.getTextureDataList());
+				}
+
+				double depth = 0.10;
+
+				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
+
+				List<VectorXYZ> vs = frontOutline.getVertices();
+				VectorXYZ toBack = new TriangleXYZ(vs.get(0), vs.get(2), vs.get(1)).getNormal().mult(depth);
+				PolygonXYZ backOutline = frontOutline.add(toBack);
+
+				/* draw the door itself */
+
+				VectorXYZ bottomLeft = backOutline.getVertices().get(0);
+				VectorXYZ bottomRight = backOutline.getVertices().get(1);
+				VectorXYZ topLeft = backOutline.getVertices().get(3);
+				VectorXYZ topRight = backOutline.getVertices().get(2);
+
+				List<VectorXYZ> vsDoor = asList(topLeft, bottomLeft, topRight, bottomRight);
+
+				target.drawTriangleStrip(doorMaterial, vsDoor,
+						texCoordLists(vsDoor, doorMaterial, STRIP_FIT));
+
+				/* draw the wall around the door */
+
+				List<VectorXYZ> vsWall = createTriangleStripBetween(
+						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
 
 				Material material = new ImmutableMaterial(
 						surface.material.getInterpolation(),
@@ -2746,119 +2843,75 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class BuildingEntrance implements NodeWorldObject,
-		RenderableToAllTargets {
+	public static class DoorParameters {
 
-		private final BuildingPart buildingPart;
-		private final MapNode node;
+		public final String type;
+		public final @Nullable String materialName;
+		public final @Nullable Color color;
 
-		private final EleConnector connector;
+		public final double width;
+		public final double height;
 
-		public BuildingEntrance(BuildingPart buildingPart, MapNode node) {
-			this.buildingPart = buildingPart;
-			this.node = node;
-			this.connector = new EleConnector(node.getPos(), node, getGroundState());
+		public final int numberOfWings;
+
+		public DoorParameters(String type, String materialName, Color color,
+				double width, double height, int numberOfWings) {
+			this.type = type;
+			this.materialName = materialName;
+			this.color = color;
+			this.width = width;
+			this.height = height;
+			this.numberOfWings = numberOfWings;
 		}
 
-		@Override
-		public MapNode getPrimaryMapElement() {
-			return node;
-		}
+		/**
+		 * extracts door parameters from a set of tags
+		 * and (optionally) another set of tags describing the building part and/or wall the door is in
+		 */
+		public static DoorParameters fromTags(TagGroup tags, @Nullable TagGroup parentTags) {
 
-		@Override
-		public Iterable<EleConnector> getEleConnectors() {
-			return singleton(connector);
-		}
+			String type = "hinged";
 
-		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {
+			if (parentTags.containsAny(
+					asList("building", "building:part"),
+					asList("garage", "garages"))) {
+				type = "overhead";
+			}
 
-			/* TODO for level != null and ABOVE/BELO, add vertical distance to ground */
+			if (tags.containsKey("door")) {
+				type = tags.getValue("door");
+			}
 
-		}
+			String materialName = null;
+			if (tags.containsKey("material")) {
+				materialName = tags.getValue("material");
+			}
 
-		@Override
-		public GroundState getGroundState() {
-
-			boolean onlyOn = true;
-			boolean onlyAbove = true;
-			boolean onlyBelow = true;
-
-			for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
-
-				if (waySegment.getPrimaryRepresentation() instanceof
-						AbstractNetworkWaySegmentWorldObject) {
-
-					switch (waySegment.getPrimaryRepresentation().getGroundState()) {
-					case ABOVE: onlyOn = false; onlyBelow = false; break;
-					case BELOW: onlyOn = false; onlyAbove = false; break;
-					case ON: onlyBelow = false; onlyAbove = false; break;
-					}
-
+			Color color = null;
+			if (tags.containsKey("colour")) {
+				if (CSSColors.colorMap.containsKey(tags.getValue("colour"))) {
+					color = CSSColors.colorMap.get(tags.getValue("colour"));
+				} else {
+					color = parseColor(tags.getValue("colour"));
 				}
-
 			}
 
-			if (onlyOn) {
-				return ON;
-			} else if (onlyAbove) {
-				return ABOVE;
-			} else if (onlyBelow) {
-				return BELOW;
-			} else {
-				return ON;
+			double defaultWidth = 1.0;
+			double defaultHeight = 2.0;
+
+			switch (type) {
+			case "overhead":
+				defaultWidth = 2.5;
+				defaultHeight = 2.125;
+				break;
 			}
 
-		}
+			double width = parseWidth(tags, (float)defaultWidth);
+			double height = parseHeight(tags, (float)defaultHeight);
 
-		public int getLevel() {
+			int numberOfWings = NumberUtils.toInt(tags.getValue("door:wings"), 1);
 
-			try {
-				return Integer.parseInt(node.getTags().getValue("level"));
-			} catch (NumberFormatException e) {
-				return 0;
-			}
-
-		}
-
-		@Override
-		public void renderTo(Target<?> target) {
-
-			/* calculate a vector that points out of the building */
-
-			VectorXZ outOfBuilding = VectorXZ.Z_UNIT;
-
-			for (SimplePolygonXZ polygon :
-				buildingPart.polygon.getPolygons()) {
-
-				final List<VectorXZ> vs = polygon.getVertexLoop();
-				int entranceI = vs.indexOf(node.getPos());
-
-				if (entranceI != -1) {
-
-					VectorXZ posBefore = vs.get((vs.size() + entranceI - 1) % vs.size());
-					VectorXZ posAfter = vs.get((vs.size() + entranceI + 1) % vs.size());
-
-					outOfBuilding = posBefore.subtract(posAfter).rightNormal();
-					if (!polygon.isClockwise()) {
-						outOfBuilding = outOfBuilding.invert();
-					}
-
-					break;
-
-				}
-
-			}
-
-			/* draw the entrance as a box protruding from the building */
-
-			VectorXYZ center = connector.getPosXYZ();
-
-			float height = parseHeight(node.getTags(), 2);
-			float width = parseWidth(node.getTags(), 1);
-
-			target.drawBox(Materials.ENTRANCE_DEFAULT,
-					center, outOfBuilding, height, width, 0.1);
+			return new DoorParameters(type, materialName, color, width, height, numberOfWings);
 
 		}
 
