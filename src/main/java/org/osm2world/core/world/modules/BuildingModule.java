@@ -2211,15 +2211,28 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			boolean hasWindows = defaults.hasWindows;
 
-			if (!tags.containsKey("building:levels")
-					|| points.getLength() < 1.0) {
-				hasWindows = false;
-			}
+			if (tags.containsKey("window")) {
 
-			if (material == Materials.GLASS) {
-				// avoid placing windows into a glass front
-				// TODO: the == currently only works if GLASS is not colorable
-				hasWindows = false;
+				// explicit tagging gets preference over heuristics
+				if (tags.contains("window", "no")) {
+					hasWindows = false;
+				} else {
+					hasWindows = true;
+				}
+
+			} else {
+
+				if (!tags.containsKey("building:levels")
+						|| points.getLength() < 1.0) {
+					hasWindows = false;
+				}
+
+				if (material == Materials.GLASS) {
+					// avoid placing windows into a glass front
+					// TODO: the == currently only works if GLASS is not colorable
+					hasWindows = false;
+				}
+
 			}
 
 			/* use configuration to determine which implementation of window rendering to use */
