@@ -699,7 +699,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			double height = parseHeight(tags, (float)fallbackHeight);
 
 			// Make sure buildings have at least some height
-			height = Math.max(height, 0.001);
+			height = Math.max(height, 0.01);
 
 			heightWithoutRoof = height - roof.getRoofHeight();
 
@@ -2308,8 +2308,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if (windowImplementation != WindowImplementation.FLAT_TEXTURES
 					|| !hasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
 
-				mainSurface = new WallSurface(material, lowerSurfaceBoundary, upperSurfaceBoundary);
 				roofSurface = null;
+
+				try {
+					mainSurface = new WallSurface(material, lowerSurfaceBoundary, upperSurfaceBoundary);
+				} catch (InvalidGeometryException e) {
+					mainSurface = null;
+				}
 
 			} else {
 
@@ -2319,7 +2324,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 						new VectorXZ(lowerSurfaceBoundary.get(0).x, heightWithoutRoof - floorHeight),
 						new VectorXZ(lowerSurfaceBoundary.get(bottomPoints.size() - 1).x, heightWithoutRoof - floorHeight));
 
-				mainSurface = new WallSurface(material, lowerSurfaceBoundary, middleSurfaceBoundary);
+				try {
+					mainSurface = new WallSurface(material, lowerSurfaceBoundary, middleSurfaceBoundary);
+				} catch (InvalidGeometryException e) {
+					mainSurface = null;
+				}
 
 				middleSurfaceBoundary = middleSurfaceBoundary.stream()
 						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
@@ -2328,7 +2337,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
 						.collect(toList());
 
-				roofSurface = new WallSurface(material, middleSurfaceBoundary, upperSurfaceBoundary);
+				try {
+					roofSurface = new WallSurface(material, middleSurfaceBoundary, upperSurfaceBoundary);
+				} catch (InvalidGeometryException e) {
+					roofSurface = null;
+				}
 
 			}
 
@@ -2366,8 +2379,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/* draw the wall */
 
 			List<VectorXYZ> bottomPointsXYZ = addYList(bottomPoints, floorEle);
-			mainSurface.renderTo(target, bottomPointsXYZ,
-					hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
+
+			if (mainSurface != null) {
+				mainSurface.renderTo(target, bottomPointsXYZ,
+						hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
+			}
 
 			if (roofSurface != null) {
 				List<VectorXYZ> middlePointsXYZ = addYList(bottomPoints, floorEle + heightWithoutRoof - floorHeight);
@@ -2491,8 +2507,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * Constructs a wall surface from a lower and upper wall boundary.
 			 * The boundaries' x coordinates is the position along the wall (starting with 0 for the first point),
 			 * the z coordinates refer to height.
+			 *
+			 * @throws InvalidGeometryException  if the lower and upper boundary do not represent a proper surface.
+			 * This can happen, for example, because the wall has a zero or almost-zero height.
 			 */
-			public WallSurface(Material material, List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary) {
+			public WallSurface(Material material, List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary)
+					throws IllegalArgumentException {
 
 				this.material = material;
 				this.lowerBoundary = lowerBoundary;
@@ -2525,6 +2545,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				outerLoop.addAll(0, lowerBoundary);
 				outerLoop.add(lowerBoundary.get(0));
+
+				if (outerLoop.size() < 2) {
+					throw new InvalidGeometryException("cannot construct a valid wall surface");
+				}
 
 				wallOutline = new SimplePolygonXZ(outerLoop);
 
