@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.*;
@@ -49,6 +50,38 @@ public class GeometryUtilTest {
 		assertTrue(isBetween(NULL_VECTOR, X_UNIT, X_UNIT.invert()));
 		assertTrue(isBetween(NULL_VECTOR, X_UNIT.invert(), X_UNIT));
 		assertTrue(isBetween(Z_UNIT, X_UNIT.invert(), X_UNIT));
+
+	}
+
+	@Test
+	public void testRoughlyContains() {
+
+		PolygonWithHolesXZ p1 = new PolygonWithHolesXZ(new SimplePolygonXZ(asList(
+				new VectorXZ(-1, -1),
+				new VectorXZ(+1, -1),
+				new VectorXZ(+1, +1),
+				new VectorXZ(-1, +1),
+				new VectorXZ(-1, -1)
+		)), emptyList());
+
+		SimplePolygonXZ p2a = new SimplePolygonXZ(asList(
+				new VectorXZ( 0, -1),
+				new VectorXZ(+1, -1),
+				new VectorXZ(+1, +1.01),
+				new VectorXZ( 0, +1),
+				new VectorXZ( 0, -1)
+		));
+
+		SimplePolygonXZ p2b = new SimplePolygonXZ(asList(
+				new VectorXZ( 0, -1),
+				new VectorXZ(+1, -1),
+				new VectorXZ(+1, +1.5),
+				new VectorXZ( 0, +1),
+				new VectorXZ( 0, -1)
+		));
+
+		assertTrue(roughlyContains(p1, p2a));
+		assertFalse(roughlyContains(p1, p2b));
 
 	}
 

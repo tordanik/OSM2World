@@ -53,8 +53,24 @@ public class JTSConversionUtil {
 	}
 
 	public static final Polygon polygonXZToJTSPolygon(SimplePolygonXZ polygon) {
+		return new Polygon(polygonXZToJTSLinearRing(polygon), null, GF);
+	}
 
-		List<VectorXZ> vertices = polygon.getVertexLoop();
+	public static final Polygon polygonXZToJTSPolygon(PolygonWithHolesXZ polygon) {
+
+		LinearRing shell = polygonXZToJTSLinearRing(polygon.getOuter());
+
+		LinearRing[] holes = polygon.getHoles().stream()
+				.map(h -> polygonXZToJTSLinearRing(h))
+				.toArray(LinearRing[]::new);
+
+		return new Polygon(shell, holes, GF);
+
+	}
+
+	private static final LinearRing polygonXZToJTSLinearRing(SimplePolygonXZ polygon) {
+
+		List<VectorXZ> vertices = polygon.getVertexList();
 
 		Coordinate[] array = new Coordinate[vertices.size()];
 
@@ -63,9 +79,7 @@ public class JTSConversionUtil {
 			array[i] = vectorXZToJTSCoordinate(vertex);
 		}
 
-		return new Polygon(
-				new LinearRing(new CoordinateArraySequence(array), GF),
-				null, GF);
+		return new LinearRing(new CoordinateArraySequence(array), GF);
 
 	}
 

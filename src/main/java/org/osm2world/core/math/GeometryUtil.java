@@ -1,11 +1,13 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.sqrt;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygonsWithHolesXZ;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -237,6 +239,23 @@ public final class GeometryUtil {
 
 		return distSqL1L2 > distSqPL1
 			&& distSqL1L2 > distSqPL2;
+
+	}
+
+	/**
+	 * returns true if the second polygon is entirely or almost (> 99%) contained within the first.
+	 * This can be used to prevent small mapping inaccuracies from causing problems,
+	 * e.g. when checking if building parts are contained in a building outline.
+	 */
+	public static final boolean roughlyContains(PolygonWithHolesXZ p1, SimplePolygonXZ p2) {
+
+		if (p1.contains(p2)) {
+			return true;
+		}
+
+		Collection<PolygonWithHolesXZ> remainder = subtractPolygonsWithHolesXZ(p2, singletonList(p1));
+		double remainderArea = remainder.stream().mapToDouble(p -> p.getArea()).sum();
+		return remainderArea / p2.getArea() < 0.01;
 
 	}
 

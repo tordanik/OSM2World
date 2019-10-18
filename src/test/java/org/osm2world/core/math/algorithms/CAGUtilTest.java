@@ -16,7 +16,7 @@ import org.osm2world.core.math.VectorXZ;
 public class CAGUtilTest {
 
 	@Test
-	public void testOverlap() {
+	public void testSubtractPolygons() {
 
 		List<VectorXZ> outline = asList(
 				new VectorXZ( 1,-2),
@@ -54,7 +54,7 @@ public class CAGUtilTest {
 	}
 
 	@Test
-	public void testOverlapCommonNode() {
+	public void testSubtractPolygonsCommonNode() {
 
 		List<VectorXZ> outline = asList(
 				new VectorXZ( 1,-2),
@@ -105,7 +105,7 @@ public class CAGUtilTest {
 	}
 
 	@Test
-	public void testOverlapConvex() {
+	public void testsubtractPolygonsConvex() {
 
 		List<VectorXZ> outline = asList(
 				new VectorXZ( 1,-2),
@@ -138,6 +138,49 @@ public class CAGUtilTest {
 				new VectorXZ(-1/3.0, 0),
 				new VectorXZ( 0, 0),
 				new VectorXZ( 0,-2));
+
+	}
+
+	@Test
+	public void testSubtractPolygonsHole() {
+
+		List<VectorXZ> outline = asList(
+				new VectorXZ(-2, -2),
+				new VectorXZ(+2, -2),
+				new VectorXZ(+2, +2),
+				new VectorXZ(-2, +2),
+				new VectorXZ(-2, -2)
+		);
+
+		List<VectorXZ> subOutline = asList(
+				new VectorXZ(-3, -3),
+				new VectorXZ(+3, -3),
+				new VectorXZ(+3, +3),
+				new VectorXZ(-3, +3),
+				new VectorXZ(-3, -3)
+		);
+
+		List<VectorXZ> subOutlineHole = asList(
+				new VectorXZ(-1, -1),
+				new VectorXZ(+1, -1),
+				new VectorXZ(+1, +1),
+				new VectorXZ(-1, +1),
+				new VectorXZ(-1, -1)
+		);
+
+		List<PolygonWithHolesXZ> results = new ArrayList<PolygonWithHolesXZ>(
+				CAGUtil.subtractPolygonsWithHolesXZ(
+						new SimplePolygonXZ(outline),
+						asList(new PolygonWithHolesXZ(new SimplePolygonXZ(subOutline),
+								asList(new SimplePolygonXZ(subOutlineHole))))));
+
+		assertSame(1, results.size());
+
+		assertSameCyclicOrder(true, results.get(0).getOuter().getVertices(),
+				new VectorXZ(-1, -1),
+				new VectorXZ(+1, -1),
+				new VectorXZ(+1, +1),
+				new VectorXZ(-1, +1));
 
 	}
 

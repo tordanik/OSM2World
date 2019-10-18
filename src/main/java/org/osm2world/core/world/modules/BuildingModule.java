@@ -166,8 +166,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 					MapArea otherArea = (MapArea)other;
 
-					//TODO: check whether the building contains the part (instead of just touching it)
-					if (area.getPolygon().contains(otherArea.getPolygon().getOuter())) {
+					if (roughlyContains(area.getPolygon(), otherArea.getPolygon().getOuter())) {
 						parts.add(new BuildingPart(this, otherArea, config));
 					}
 

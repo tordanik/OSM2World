@@ -1,5 +1,6 @@
 package org.osm2world.core.math.algorithms;
 
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.JTSConversionUtil.*;
 
 import java.util.ArrayList;
@@ -25,21 +26,32 @@ public final class CAGUtil {
 	 * takes a polygon outline, "subtracts" a collection of other polygon outlines,
 	 * and returns a collection of polygons that covers the difference area.
 	 *
-	 * The result polygons should cover the area that was
-	 * within the original polygon (excluding its holes),
+	 * The result polygons should cover the area that was within the original polygon,
 	 * but not within a subtracted polygon.
 	 *
-	 * @return
-	 * 	 polygons without self-intersections, but maybe with holes
+	 * @return  polygons without self-intersections, but maybe with holes
 	 */
 	public static final Collection<PolygonWithHolesXZ> subtractPolygons(
 			SimplePolygonXZ basePolygon,
 			List<? extends SimplePolygonXZ> subtractPolygons) {
 
+		return subtractPolygonsWithHolesXZ(basePolygon,
+				subtractPolygons.stream().map(p -> p.asPolygonWithHolesXZ()).collect(toList()));
+
+	}
+
+	/**
+	 * variant of {@link #subtractPolygons(SimplePolygonXZ, List)} which accepts polygons with holes
+	 * TODO make obsolete by turning simple polygons into a subtype of complex polygons
+	 */
+	public static final Collection<PolygonWithHolesXZ> subtractPolygonsWithHolesXZ(
+			SimplePolygonXZ basePolygon,
+			List<? extends PolygonWithHolesXZ> subtractPolygons) {
+
 		List<Geometry> remainingGeometry = Collections.singletonList(
 				(Geometry)polygonXZToJTSPolygon(basePolygon));
 
-		for (SimplePolygonXZ subtractPolygon : subtractPolygons) {
+		for (PolygonWithHolesXZ subtractPolygon : subtractPolygons) {
 
 			Polygon jtsSubtractPolygon = polygonXZToJTSPolygon(subtractPolygon);
 
