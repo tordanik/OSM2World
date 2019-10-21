@@ -1014,14 +1014,18 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			if (leftSidewalk) {
-				layout.leftLanes.add(new Lane(this,
-						KERB, RoadPart.LEFT, getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb")));
+				TagGroup kerbTags = getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb");
+				if (!kerbTags.contains("kerb", "no")) {
+					layout.leftLanes.add(new Lane(this, KERB, RoadPart.LEFT, kerbTags));
+				}
 				layout.leftLanes.add(new Lane(this,
 						SIDEWALK, RoadPart.LEFT, getTagsWithPrefix(tags, "sidewalk:left:", null)));
 			}
 			if (rightSidewalk) {
-				layout.rightLanes.add(new Lane(this,
-						KERB, RoadPart.RIGHT, getTagsWithPrefix(tags, "sidewalk:right:kerb", "kerb")));
+				TagGroup kerbTags = getTagsWithPrefix(tags, "sidewalk:right:kerb", "kerb");
+				if (!kerbTags.contains("kerb", "no")) {
+					layout.rightLanes.add(new Lane(this, KERB, RoadPart.RIGHT, kerbTags));
+				}
 				layout.rightLanes.add(new Lane(this,
 						SIDEWALK, RoadPart.RIGHT, getTagsWithPrefix(tags, "sidewalk:right:", null)));
 			}
