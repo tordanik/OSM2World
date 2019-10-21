@@ -1,11 +1,16 @@
 package org.osm2world.core.world.modules.common;
 
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseAngle;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 
+import java.util.List;
+
+import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
+import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
 import org.osm2world.core.world.creation.WorldModule;
+
+import com.google.common.collect.Lists;
 
 /**
  * utility class that can be used by {@link WorldModule}s
@@ -107,5 +112,18 @@ public class WorldModuleParseUtil {
 
 	}
 
+	public static final TagGroup inheritTags(TagGroup ownTags, TagGroup parentTags) {
+
+		List<Tag> tags = Lists.newArrayList(ownTags);
+
+		for (Tag tag : parentTags) {
+			if (!ownTags.containsKey(tag.key)) {
+				tags.add(tag);
+			}
+		}
+
+		return new MapBasedTagGroup(tags);
+
+	}
 
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
@@ -67,26 +66,6 @@ public class BuildingModuleTest {
 		assertNull(result.get(3).wallWay);
 		assertEquals(nodes.subList(4, 6), result.get(4).getNodes());
 		assertEquals(wallWay, result.get(4).wallWay);
-
-	}
-
-	@Test
-	public void testInheritTags() {
-
-		TagGroup ownTags = new MapBasedTagGroup(asList(
-				new Tag("key0", "valA"),
-				new Tag("key1", "valB")));
-
-		TagGroup parentTags = new MapBasedTagGroup(asList(
-				new Tag("key1", "valX"),
-				new Tag("key2", "valY")));
-
-		TagGroup result = BuildingModule.inheritTags(ownTags, parentTags);
-
-		assertEquals(3, result.size());
-		assertEquals("valA", result.getValue("key0"));
-		assertEquals("valB", result.getValue("key1"));
-		assertEquals("valY", result.getValue("key2"));
 
 	}
 

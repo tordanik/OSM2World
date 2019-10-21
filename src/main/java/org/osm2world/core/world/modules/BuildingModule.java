@@ -88,7 +88,6 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 
 /**
@@ -2988,20 +2987,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			return new DoorParameters(type, materialName, color, width, height, numberOfWings);
 
 		}
-
-	}
-
-	static final TagGroup inheritTags(TagGroup ownTags, TagGroup parentTags) {
-
-		List<Tag> tags = Lists.newArrayList(ownTags);
-
-		for (Tag tag : parentTags) {
-			if (!ownTags.containsKey(tag.key)) {
-				tags.add(tag);
-			}
-		}
-
-		return new MapBasedTagGroup(tags);
 
 	}
 

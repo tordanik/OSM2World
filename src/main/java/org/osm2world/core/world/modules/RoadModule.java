@@ -13,7 +13,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -991,43 +991,61 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			//special lanes
 
+			//TODO: reduce code duplication by iterating over special lane types
+
 			if (leftCycleway) {
-				layout.leftLanes.add(new Lane(this,
-						CYCLEWAY, RoadPart.LEFT, getTagsWithPrefix(tags, "cycleway:left:", null)));
+				layout.leftLanes.add(new Lane(this, CYCLEWAY, RoadPart.LEFT, inheritTags(
+						getTagsWithPrefix(tags, "cycleway:left:", null),
+						getTagsWithPrefix(tags, "cycleway:both:", null))));
 			}
 			if (rightCycleway) {
-				layout.rightLanes.add(new Lane(this,
-						CYCLEWAY, RoadPart.RIGHT, getTagsWithPrefix(tags, "cycleway:right:", null)));
+				layout.rightLanes.add(new Lane(this, CYCLEWAY, RoadPart.RIGHT, inheritTags(
+						getTagsWithPrefix(tags, "cycleway:right:", null),
+						getTagsWithPrefix(tags, "cycleway:both:", null))));
 			}
 
 			if (leftBusBay) {
-				layout.leftLanes.add(new Lane(this,
-						DASHED_LINE, RoadPart.LEFT, EMPTY_TAG_GROUP));
-				layout.leftLanes.add(new Lane(this,
-						BUS_BAY, RoadPart.LEFT, getTagsWithPrefix(tags, "bus_bay:left:", null)));
+				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, EMPTY_TAG_GROUP));
+				layout.leftLanes.add(new Lane(this, BUS_BAY, RoadPart.LEFT, inheritTags(
+						getTagsWithPrefix(tags, "bus_bay:left:", null),
+						getTagsWithPrefix(tags, "bus_bay:both:", null))));
 			}
 			if (rightBusBay) {
-				layout.rightLanes.add(new Lane(this,
-						DASHED_LINE, RoadPart.RIGHT, EMPTY_TAG_GROUP));
-				layout.rightLanes.add(new Lane(this,
-						BUS_BAY, RoadPart.RIGHT, getTagsWithPrefix(tags, "bus_bay:right:", null)));
+				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+				layout.rightLanes.add(new Lane(this, BUS_BAY, RoadPart.RIGHT, inheritTags(
+						getTagsWithPrefix(tags, "bus_bay:right:", null),
+						getTagsWithPrefix(tags, "bus_bay:both:", null))));
 			}
 
 			if (leftSidewalk) {
-				TagGroup kerbTags = getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb");
+
+				TagGroup kerbTags = inheritTags(
+						getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb"),
+						getTagsWithPrefix(tags, "sidewalk:both:kerb", "kerb"));
+
 				if (!kerbTags.contains("kerb", "no")) {
 					layout.leftLanes.add(new Lane(this, KERB, RoadPart.LEFT, kerbTags));
 				}
-				layout.leftLanes.add(new Lane(this,
-						SIDEWALK, RoadPart.LEFT, getTagsWithPrefix(tags, "sidewalk:left:", null)));
+
+				layout.leftLanes.add(new Lane(this,SIDEWALK, RoadPart.LEFT, inheritTags(
+						getTagsWithPrefix(tags, "sidewalk:left:", null),
+						getTagsWithPrefix(tags, "sidewalk:both:", null))));
+
 			}
 			if (rightSidewalk) {
-				TagGroup kerbTags = getTagsWithPrefix(tags, "sidewalk:right:kerb", "kerb");
+
+				TagGroup kerbTags = inheritTags(
+						getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb"),
+						getTagsWithPrefix(tags, "sidewalk:right:kerb", "kerb"));
+
 				if (!kerbTags.contains("kerb", "no")) {
 					layout.rightLanes.add(new Lane(this, KERB, RoadPart.RIGHT, kerbTags));
 				}
-				layout.rightLanes.add(new Lane(this,
-						SIDEWALK, RoadPart.RIGHT, getTagsWithPrefix(tags, "sidewalk:right:", null)));
+
+				layout.rightLanes.add(new Lane(this, SIDEWALK, RoadPart.RIGHT, inheritTags(
+						getTagsWithPrefix(tags, "sidewalk:right:", null),
+						getTagsWithPrefix(tags, "sidewalk:both:", null))));
+
 			}
 
 			return layout;
