@@ -8,6 +8,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,8 +47,6 @@ import org.osm2world.core.world.network.NetworkAreaWorldObject;
  */
 public class WaterModule extends ConfigurableWorldModule {
 
-	//TODO: add canal, ditch, drain
-
 	private static final Tag WATER_TAG = new Tag("natural", "water");
 	private static final Tag RIVERBANK_TAG = new Tag("waterway", "riverbank");
 
@@ -61,8 +60,6 @@ public class WaterModule extends ConfigurableWorldModule {
 		WATERWAY_WIDTHS.put("ditch", 1f);
 		WATERWAY_WIDTHS.put("drain", 1f);
 	}
-
-	//TODO: apply to is almost always the same! create a superclass handling this!
 
 	@Override
 	public void applyTo(MapData mapData) {
@@ -92,19 +89,9 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		for (MapNode node : mapData.getMapNodes()) {
-
-			int connectedRivers = 0;
-
-			for (MapWaySegment segment : node.getConnectedWaySegments()) {
-				if (segment.getRepresentations().stream().anyMatch(r -> r instanceof Waterway)) {
-					connectedRivers += 1;
-				}
-			}
-
-			if (connectedRivers > 2) {
+			if (getConnectedNetworkSegments(node, Waterway.class, null).size() > 2) {
 				node.addRepresentation(new RiverJunction(node));
 			}
-
 		}
 
 		for (MapArea area : mapData.getMapAreas()) {

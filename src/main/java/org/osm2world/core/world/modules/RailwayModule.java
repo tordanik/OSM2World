@@ -8,6 +8,7 @@ import static org.osm2world.core.target.common.material.Materials.RAIL_DEFAULT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
+import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.HashMap;
 import java.util.List;
@@ -104,30 +105,19 @@ public class RailwayModule extends ConfigurableWorldModule {
 	private final Map<Double, SleeperModel> sleeperModelByWidth = new HashMap<Double, SleeperModel>();
 
 	@Override
-	public void applyTo(MapData grid) {
+	public void applyTo(MapData mapData) {
 
-		for (MapWaySegment segment : grid.getMapWaySegments()) {
+		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 			if (segment.getTags().containsAny("railway", RAILWAY_VALUES)) {
 				segment.addRepresentation(new Rail(segment));
 			}
 		}
 
-		//TODO: the following for loop is copied from water module and should be in a common superclass
-		for (MapNode node : grid.getMapNodes()) {
-
-			int connectedRails = 0;
-
-			for (MapWaySegment segment : node.getConnectedWaySegments()) {
-				if (segment.getRepresentations().stream().anyMatch(r -> r instanceof Rail)) {
-					connectedRails += 1;
-				}
-			}
-
-			if (connectedRails > 2) {
+		for (MapNode node : mapData.getMapNodes()) {
+			if (getConnectedNetworkSegments(node, Rail.class, null).size() > 2) {
 				// node.addRepresentation(new RailJunction(node));
 				// TODO: reactivate after implementing proper rendering for rail junctions
 			}
-
 		}
 
 	}

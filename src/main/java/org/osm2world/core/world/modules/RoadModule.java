@@ -14,6 +14,7 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -168,23 +169,19 @@ public class RoadModule extends ConfigurableWorldModule {
 		Material surface = getSurfaceMaterial(
 				node.getTags().getValue("surface"), null);
 
-		if (surface == null) {
+		if (surface != null) {
+			return surface;
+		} else {
 
 			/* choose the surface of any adjacent road */
 
-			for (MapWaySegment segment : node.getConnectedWaySegments()) {
-
-				if (segment.getPrimaryRepresentation() instanceof Road) {
-					Road road = (Road)segment.getPrimaryRepresentation();
-					surface = road.getSurface();
-					break;
-				}
-
+			for (Road road : getConnectedRoads(node, false)) {
+				return road.getSurface();
 			}
 
-		}
+			throw new IllegalStateException("node " + node + " has no connected roads");
 
-		return surface;
+		}
 
 	}
 
@@ -236,24 +233,10 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * returns all roads connected to a node
 	 * @param requireLanes  only include roads that are not paths and have lanes
 	 */
-	public static List<Road> getConnectedRoads(MapNode node,
-			boolean requireLanes) {
+	public static List<Road> getConnectedRoads(MapNode node, boolean requireLanes) {
 
-		List<Road> connectedRoadsWithLanes = new ArrayList<Road>();
-
-		for (MapWaySegment segment : node.getConnectedWaySegments()) {
-
-			if (segment.getPrimaryRepresentation() instanceof Road) {
-				Road road = (Road)segment.getPrimaryRepresentation();
-				if (!requireLanes ||
-						(road.getLaneLayout() != null && !isPath(road.tags))) {
-					connectedRoadsWithLanes.add(road);
-				}
-			}
-
-		}
-
-		return connectedRoadsWithLanes;
+		return getConnectedNetworkSegments(node, Road.class,
+				road -> !requireLanes || (road.getLaneLayout() != null && !isPath(road.tags)));
 
 	}
 
@@ -1512,8 +1495,6 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	public static class RoadArea extends NetworkAreaWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
-
-		private static final float DEFAULT_CLEARING = 5f;
 
 		public RoadArea(MapArea area) {
 			super(area);
