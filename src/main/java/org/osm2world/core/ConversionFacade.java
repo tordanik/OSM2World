@@ -38,6 +38,7 @@ import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.modules.AerowayModule;
 import org.osm2world.core.world.modules.BarrierModule;
 import org.osm2world.core.world.modules.BicycleParkingModule;
 import org.osm2world.core.world.modules.BridgeModule;
@@ -133,6 +134,7 @@ public class ConversionFacade {
 		return Arrays.asList((WorldModule)
 				new RoadModule(),
 				new RailwayModule(),
+				new AerowayModule(),
 				new BuildingModule(),
 				new ParkingModule(),
 				new TreeModule(),

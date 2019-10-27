@@ -21,6 +21,7 @@ public class HardcodedRuleset implements Ruleset {
 
 	static {
 		areaTags.add(new Tag("area", "yes"));
+		areaTags.add(new Tag("aeroway", "helipad"));
 		areaTags.add(new Tag("amenity", "fountain"));
 		areaTags.add(new Tag("amenity", "parking"));
 		areaTags.add(new Tag("amenity", "parking_space"));
