@@ -210,11 +210,6 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 		}
 
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
 	}
 
 	public static class AerowayConnector extends VisibleConnectorNodeWorldObject
@@ -247,11 +242,6 @@ public class AerowayModule extends ConfigurableWorldModule {
 			target.drawTriangles(material, trianglesXYZ,
 					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
 
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 	}

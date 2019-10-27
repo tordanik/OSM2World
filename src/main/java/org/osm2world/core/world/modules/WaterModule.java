@@ -247,11 +247,6 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void renderTo(Target<?> target) {
 
 			//TODO: check whether it's within a riverbank (as with Waterway)

@@ -10,10 +10,8 @@ import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.NetworkCalculator;
-import org.osm2world.core.world.data.OutlineNodeWorldObject;
 
-public abstract class VisibleConnectorNodeWorldObject
-	extends OutlineNodeWorldObject {
+public abstract class VisibleConnectorNodeWorldObject extends NetworkNodeWorldObject {
 
 	protected boolean informationProvided;
 

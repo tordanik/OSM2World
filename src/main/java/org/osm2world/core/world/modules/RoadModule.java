@@ -545,24 +545,6 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		@Override
-		public GroundState getGroundState() {
-			GroundState currentGroundState = null;
-			checkEachLine: {
-				for (MapWaySegment line : this.node.getConnectedWaySegments()) {
-					if (line.getPrimaryRepresentation() == null) continue;
-					GroundState lineGroundState = line.getPrimaryRepresentation().getGroundState();
-					if (currentGroundState == null) {
-						currentGroundState = lineGroundState;
-					} else if (currentGroundState != lineGroundState) {
-						currentGroundState = GroundState.ON;
-						break checkEachLine;
-					}
-				}
-			}
-			return currentGroundState;
-		}
-
 	}
 
 	/* TODO: crossings at junctions - when there is, e.g., a footway connecting to the road!
@@ -621,24 +603,6 @@ public class RoadModule extends ConfigurableWorldModule {
 			target.drawTriangles(material, trianglesXYZ,
 					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
 
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			GroundState currentGroundState = null;
-			checkEachLine: {
-				for (MapWaySegment line : this.node.getConnectedWaySegments()) {
-					if (line.getPrimaryRepresentation() == null) continue;
-					GroundState lineGroundState = line.getPrimaryRepresentation().getGroundState();
-					if (currentGroundState == null) {
-						currentGroundState = lineGroundState;
-					} else if (currentGroundState != lineGroundState) {
-						currentGroundState = GroundState.ON;
-						break checkEachLine;
-					}
-				}
-			}
-			return currentGroundState;
 		}
 
 	}
@@ -707,24 +671,6 @@ public class RoadModule extends ConfigurableWorldModule {
 				connection.renderTo(target);
 			}
 
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			GroundState currentGroundState = null;
-			checkEachLine: {
-				for (MapWaySegment line : this.node.getConnectedWaySegments()) {
-					if (line.getPrimaryRepresentation() == null) continue;
-					GroundState lineGroundState = line.getPrimaryRepresentation().getGroundState();
-					if (currentGroundState == null) {
-						currentGroundState = lineGroundState;
-					} else if (currentGroundState != lineGroundState) {
-						currentGroundState = GroundState.ON;
-						break checkEachLine;
-					}
-				}
-			}
-			return currentGroundState;
 		}
 
 	}

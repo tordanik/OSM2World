@@ -239,25 +239,6 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			//TODO (code duplication): copied from RoadModule
-			GroundState currentGroundState = null;
-			checkEachLine: {
-				for (MapWaySegment line : this.node.getConnectedWaySegments()) {
-					if (line.getPrimaryRepresentation() == null) continue;
-					GroundState lineGroundState = line.getPrimaryRepresentation().getGroundState();
-					if (currentGroundState == null) {
-						currentGroundState = lineGroundState;
-					} else if (currentGroundState != lineGroundState) {
-						currentGroundState = GroundState.ON;
-						break checkEachLine;
-					}
-				}
-			}
-			return currentGroundState;
-		}
-
-		@Override
 		public void renderTo(Target<?> target) {
 
 			if (getOutlinePolygon() == null) return;

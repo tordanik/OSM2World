@@ -10,9 +10,8 @@ import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.NetworkCalculator;
-import org.osm2world.core.world.data.OutlineNodeWorldObject;
 
-public abstract class JunctionNodeWorldObject extends OutlineNodeWorldObject {
+public abstract class JunctionNodeWorldObject extends NetworkNodeWorldObject {
 
 	protected boolean informationProvided = false;
 	protected List<VectorXZ> cutVectors;
