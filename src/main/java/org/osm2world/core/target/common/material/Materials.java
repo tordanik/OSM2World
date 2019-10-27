@@ -124,6 +124,11 @@ public final class Materials {
 	public static final ConfMaterial RAIL_BALLAST_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, Color.DARK_GRAY);
 
+	public static final ConfMaterial RUNWAY_CENTER_MARKING =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial HELIPAD_MARKING =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+
 	public static final ConfMaterial BUILDING_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.9f, 0.55f));
 	public static final ConfMaterial BUILDING_WINDOWS =

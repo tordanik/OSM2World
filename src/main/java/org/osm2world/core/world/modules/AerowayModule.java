@@ -1,12 +1,15 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.min;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,9 +20,12 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
@@ -103,12 +109,24 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
+			TexCoordFunction localXZTexCoordFunction = (List<VectorXYZ> vs, TextureData textureData) -> {
+				VectorXZ center = area.getOuterPolygon().getCentroid();
+				List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(center)).collect(toList());
+				List<VectorXZ> result = GLOBAL_X_Z.apply(localCoords, textureData);
+				return result.stream().map(v -> v.add(new VectorXZ(0.5, 0.5))).collect(toList());
+			};
+
 			Collection<TriangleXYZ> triangles = getTriangulation();
 
-			Material material = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
+			Material baseMaterial = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
+			List<List<VectorXZ>> baseTexCoords = triangleTexCoordLists(triangles, baseMaterial, GLOBAL_X_Z);
 
-			target.drawTriangles(material, triangles,
-					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+			Material fullMaterial = baseMaterial.withAddedLayers(HELIPAD_MARKING.getTextureDataList());
+			List<List<VectorXZ>> texCoords = new ArrayList<>(baseTexCoords);
+			texCoords.addAll(triangleTexCoordLists(triangles, HELIPAD_MARKING, localXZTexCoordFunction));
+
+			target.drawTriangles(fullMaterial, triangles, texCoords);
+
 
 		}
 
@@ -175,6 +193,35 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public float getWidth() {
 			return parseWidth(segment.getTags(), 20.0f);
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			List<VectorXYZ> leftOuter = getOutline(false);
+			List<VectorXYZ> rightOuter = getOutline(true);
+
+			// create geometry for the central marking
+			float centerlineWidthMeters = 0.9144f;
+			float relativeMarkingWidth = centerlineWidthMeters / getWidth();
+			List<VectorXYZ> leftInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 - relativeMarkingWidth));
+			List<VectorXYZ> rightInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 + relativeMarkingWidth));
+
+			Material material = getSurface();
+
+			List<VectorXYZ> leftVs = WorldModuleGeometryUtil.createTriangleStripBetween(leftOuter, leftInner);
+			target.drawTriangleStrip(material, leftVs, texCoordLists(leftVs, material, GLOBAL_X_Z));
+
+			List<VectorXYZ> rightVs = WorldModuleGeometryUtil.createTriangleStripBetween(rightInner, rightOuter);
+			target.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, GLOBAL_X_Z));
+
+			if (material == ASPHALT || material == CONCRETE) {
+				material = material.withAddedLayers(RUNWAY_CENTER_MARKING.getTextureDataList());
+			}
+
+			List<VectorXYZ> centerVs = WorldModuleGeometryUtil.createTriangleStripBetween(leftInner, rightInner);
+			target.drawTriangleStrip(material, centerVs, texCoordLists(centerVs, material, GLOBAL_X_Z));
+
 		}
 
 	}
