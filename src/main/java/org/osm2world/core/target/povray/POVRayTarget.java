@@ -671,10 +671,10 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 			append("        image_map {\n");
 
-			if (textureData.getFile().getName().toLowerCase().endsWith("png")) {
-				append("             png \"" + textureData.getFile() + "\"\n");
+			if (textureData.getRasterImage().getName().toLowerCase().endsWith("png")) {
+				append("             png \"" + textureData.getRasterImage() + "\"\n");
 			} else {
-				append("             jpeg \"" + textureData.getFile() + "\"\n");
+				append("             jpeg \"" + textureData.getRasterImage() + "\"\n");
 			}
 
 			if (textureData.colorable) {

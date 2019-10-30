@@ -299,8 +299,8 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 
 			if (textureData != null) {
-				mtlStream.println("map_Ka " + textureData.getFile().getName());
-				mtlStream.println("map_Kd " + textureData.getFile().getName());
+				mtlStream.println("map_Ka " + textureData.getRasterImage().getName());
+				mtlStream.println("map_Kd " + textureData.getRasterImage().getName());
 			}
 
 			mtlStream.println(String.format("Ni %d", material.getShininess()));

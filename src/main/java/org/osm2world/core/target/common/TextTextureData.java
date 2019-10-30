@@ -49,7 +49,7 @@ public class TextTextureData extends TextureData {
 	}
 
 	@Override
-	public File getFile() {
+	public File getRasterImage() {
 
 		if(file == null) {
 

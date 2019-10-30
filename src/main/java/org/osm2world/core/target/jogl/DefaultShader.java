@@ -212,7 +212,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				gl.glActiveTexture(getGLTextureConstant(i));
 				TextureData textureData = material.getTextureDataList().get(i);
 				
-				Texture texture = textureManager.getTextureForFile(textureData.getFile());
+				Texture texture = textureManager.getTextureForFile(textureData.getRasterImage());
 
 				texture.bind(gl);
 

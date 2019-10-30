@@ -32,8 +32,12 @@ public class ImageTextureData extends TextureData {
 		this.convertedToPng = null;
 	}
 
-	@Override
 	public File getFile() {
+		return file;
+	}
+
+	@Override
+	public File getRasterImage() {
 
 		if(this.file.getName().endsWith(".svg")) {
 

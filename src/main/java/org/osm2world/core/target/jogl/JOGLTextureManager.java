@@ -34,7 +34,7 @@ public class JOGLTextureManager {
 	}
 
 	public Texture getTextureForTextureData(TextureData textureData) {
-		return getTextureForFile(textureData.getFile());
+		return getTextureForFile(textureData.getRasterImage());
 	}
 
 	public Texture getTextureForFile(File file, boolean createMipmaps) {

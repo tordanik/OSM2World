@@ -45,7 +45,11 @@ public abstract class TextureData {
 
 	}
 
-	public abstract File getFile();
+	/**
+	 * returns the texture as a raster image file (png or jpeg).
+	 * If the texture is originally defined as a procedural texture or vector graphics, a temporary file is provided.
+	 */
+	public abstract File getRasterImage();
 
 	//auto-generated
 	@Override
