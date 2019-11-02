@@ -745,13 +745,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			String divider = tags.getValue("divider");
 
-			String sidewalk = tags.containsKey("sidewalk") ?
-					tags.getValue("sidewalk") : tags.getValue("footway");
-
-			boolean leftSidewalk = "left".equals(sidewalk)
-					|| "both".equals(sidewalk);
-			boolean rightSidewalk = "right".equals(sidewalk)
-					|| "both".equals(sidewalk);
+			boolean leftSidewalk = tags.contains("sidewalk", "left")
+					|| tags.contains("sidewalk", "both");
+			boolean rightSidewalk = tags.contains("sidewalk", "right")
+					|| tags.contains("sidewalk", "both");
 
 			boolean leftCycleway = tags.contains("cycleway:left", "lane")
 					|| tags.contains("cycleway", "lane");
