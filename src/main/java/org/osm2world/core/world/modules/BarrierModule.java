@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.reverse;
 import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
@@ -14,6 +15,7 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLis
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,6 +37,7 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -164,6 +167,8 @@ public class BarrierModule extends AbstractModule {
 
 	private static class Wall extends ColoredWall {
 
+		private final static Material DEFAULT_MATERIAL = Materials.CONCRETE;
+
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "wall");
 		}
@@ -180,11 +185,31 @@ public class BarrierModule extends AbstractModule {
 				material = Materials.getMaterial(tags.getValue("material").toUpperCase());
 			}
 
-			if (material != null) {
-				return material;
-			} else {
-				return Materials.WALL_DEFAULT;
+			if (material == null) {
+				material = DEFAULT_MATERIAL;
 			}
+
+			String colorString = tags.getValue("colour");
+			boolean colorable = material.getNumTextureLayers() == 0
+					|| material.getTextureDataList().get(0).colorable;
+
+			if (colorString != null && colorable) {
+
+				Color color = null;
+
+				if (CSSColors.colorMap.containsKey(colorString)) {
+					color = CSSColors.colorMap.get(colorString);
+				} else {
+					color = parseColor(colorString);
+				}
+
+				if (color != null) {
+					material = material.withColor(color);
+				}
+
+			}
+
+			return material;
 
 		}
 
@@ -199,7 +224,7 @@ public class BarrierModule extends AbstractModule {
 			return tags.contains("barrier", "city_wall");
 		}
 		public CityWall(MapWaySegment segment) {
-			super(Materials.WALL_DEFAULT, segment, 10, 2);
+			super(Wall.DEFAULT_MATERIAL, segment, 10, 2);
 		}
 	}
 
