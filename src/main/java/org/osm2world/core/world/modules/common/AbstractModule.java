@@ -4,6 +4,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
@@ -18,17 +19,21 @@ import org.osm2world.core.world.data.WorldObject;
 public abstract class AbstractModule extends ConfigurableWorldModule {
 
 	@Override
-	public final void applyTo(MapData grid) {
+	public final void applyTo(MapData mapData) {
 
-		for (MapNode node : grid.getMapNodes()) {
+		for (MapNode node : mapData.getMapNodes()) {
 			applyToNode(node);
 		}
 
-		for (MapWaySegment segment : grid.getMapWaySegments()) {
-			applyToWaySegment(segment);
+		for (MapWay way : mapData.getMapWays()) {
+			applyToWay(way);
 		}
 
-		for (MapArea area : grid.getMapAreas()) {
+		for (MapWaySegment waySegment : mapData.getMapWaySegments()) {
+			applyToWaySegment(waySegment);
+		}
+
+		for (MapArea area : mapData.getMapAreas()) {
 			applyToArea(area);
 		}
 
@@ -39,7 +44,7 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	 * Can be overwritten by subclasses.
 	 * The default implementation does not create any objects.
 	 */
-	protected void applyToElement(MapElement element) {}
+	protected void applyToElement(@SuppressWarnings("unused") MapElement element) {}
 
 	/**
 	 * create {@link WorldObject}s for a {@link MapNode}.
@@ -49,6 +54,14 @@ public abstract class AbstractModule extends ConfigurableWorldModule {
 	protected void applyToNode(MapNode node) {
 		applyToElement(node);
 	}
+
+	/**
+	 * create {@link WorldObject}s for a {@link MapWay}.
+	 * Can be overwritten by subclasses.
+	 * The default implementation does nothing. Note that {@link #applyToWaySegment(MapWaySegment)} is called
+	 * for each of the way's segments regardless of whether or not this method is overwritten.
+	 */
+	protected void applyToWay(@SuppressWarnings("unused") MapWay way) {}
 
 	/**
 	 * create {@link WorldObject}s for a {@link MapWaySegment}.
