@@ -19,6 +19,7 @@ import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -80,7 +81,6 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.NamedTexCoordFunction;
-import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -783,24 +783,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 					} else {
 						color = new Color(170, 130, 80);
 					}
-				} else if (CSSColors.colorMap.containsKey(colorString)){
-					color = CSSColors.colorMap.get(colorString);
 				} else {
-					color = parseColor(colorString);
+					color = parseColor(colorString, CSS_COLORS);
 				}
 
-				if (color != null) {
-					material = new ImmutableMaterial(
-							material.getInterpolation(), color,
-							material.getAmbientFactor(),
-							material.getDiffuseFactor(),
-							material.getSpecularFactor(),
-							material.getShininess(),
-							material.getTransparency(),
-							material.getShadow(),
-							material.getAmbientOcclusion(),
-							material.getTextureDataList());
-				}
+				material = material.withColor(color);
 
 			}
 
@@ -2817,20 +2804,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 					break;
 				}
 
-				if (parameters.color != null) {
-					//TODO: create and use a Material.withColor method
-					doorMaterial = new ImmutableMaterial(
-							doorMaterial.getInterpolation(),
-							parameters.color,
-							doorMaterial.getAmbientFactor(),
-							doorMaterial.getDiffuseFactor(),
-							doorMaterial.getSpecularFactor(),
-							doorMaterial.getShininess(),
-							doorMaterial.getTransparency(),
-							doorMaterial.getShadow(),
-							doorMaterial.getAmbientOcclusion(),
-							doorMaterial.getTextureDataList());
-				}
+				doorMaterial = doorMaterial.withColor(parameters.color);
 
 				double depth = 0.10;
 
@@ -2951,14 +2925,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				materialName = tags.getValue("material");
 			}
 
-			Color color = null;
-			if (tags.containsKey("colour")) {
-				if (CSSColors.colorMap.containsKey(tags.getValue("colour"))) {
-					color = CSSColors.colorMap.get(tags.getValue("colour"));
-				} else {
-					color = parseColor(tags.getValue("colour"));
-				}
-			}
+			Color color = parseColor(tags.getValue("colour"), CSS_COLORS);
 
 			int numberOfWings = NumberUtils.toInt(tags.getValue("door:wings"), 1);
 

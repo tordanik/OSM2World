@@ -2,6 +2,7 @@ package org.openstreetmap.josm.plugins.graphview.util;
 
 import static org.junit.Assert.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 
 import java.awt.Color;
 
@@ -115,9 +116,17 @@ public class ValueStringParserTest {
     }
 
     @Test
+    public void testParseColorNamed() {
+    	assertEquals(new Color(255, 0, 0), parseColor("red", CSS_COLORS));
+    }
+
+    @Test
     public void testParseColorInvalid() {
-    	assertNull(parseColor("ff0000"));
     	assertNull(parseColor("#"));
+    	assertNull(parseColor("ff0000"));
+    	assertNull(parseColor("ff0000", CSS_COLORS));
+    	assertNull(parseColor("nosuchvalue", CSS_COLORS));
+    	assertNull(parseColor(null, CSS_COLORS));
     }
 
     /* utility methods for testing */

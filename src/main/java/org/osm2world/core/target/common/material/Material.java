@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.TextTextureData;
+import org.osm2world.core.target.common.TextureData;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -178,16 +178,17 @@ public abstract class Material {
 	}
 
 	/**
-	 * returns a material that is the same as this one,
-	 * except with a different color
+	 * returns a material that is the same as this one, except with a different color.
+	 * @param color  the color to use. Can be null, in which case this material is returned unaltered.
 	 */
 	public Material withColor(Color color) {
 
-		if(color==null) return this;
+		if (color == null) return this;
 
-		return new ConfMaterial(getInterpolation(), color,
-			getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
-			getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+		return new ImmutableMaterial(getInterpolation(), color,
+				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+
 	}
 
 	/**

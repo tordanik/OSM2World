@@ -2,32 +2,33 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
+import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.VectorXYZ.X_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextTextureData;
@@ -35,11 +36,9 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.TrafficSignType;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 
 
 /**
@@ -169,7 +168,7 @@ public class TrafficSignModule extends AbstractModule {
 			}
 
 			if(attributes.defaultHeight==0) attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
-			
+
 			types.add(attributes);
 		}
 
@@ -401,29 +400,15 @@ public class TrafficSignModule extends AbstractModule {
 				distance = relation.getTags().getValue("distance");
 
 				//parse background color
-				if(relation.getTags().getValue("colour:back")!=null) {
-
-					String color = relation.getTags().getValue("colour:back");
-
-					if(CSSColors.colorMap.containsKey(color)){
-						this.backgroundColor = CSSColors.colorMap.get(color);
-					} else {
-						this.backgroundColor = parseColor(color);
-						if(this.backgroundColor==null) this.backgroundColor = Color.WHITE;
-					}
+				if (relation.getTags().containsKey("colour:back")) {
+					this.backgroundColor = parseColor(relation.getTags().getValue("colour:back"), CSS_COLORS);
+					if (this.backgroundColor==null) this.backgroundColor = Color.WHITE;
 				}
 
 				//parse text color
-				if(relation.getTags().getValue("colour:text")!=null) {
-
-					String color = relation.getTags().getValue("colour:text");
-
-					if(CSSColors.colorMap.containsKey(color)){
-						this.textColor = CSSColors.colorMap.get(color);
-					} else {
-						this.textColor = parseColor(color);
-						if(this.textColor==null) this.textColor = Color.BLACK;
-					}
+				if (relation.getTags().containsKey("colour:text")) {
+					this.textColor = parseColor(relation.getTags().getValue("colour:text"), CSS_COLORS);
+					if(this.textColor==null) this.textColor = Color.BLACK;
 				}
 
 				arrowColour = relation.getTags().getValue("colour:arrow");
@@ -498,7 +483,7 @@ public class TrafficSignModule extends AbstractModule {
 					from = signToIntersection;
 
 				}else if(fromMembers.size()==1) {
-					
+
 					from = fromMembers.get(0);
 				}
 

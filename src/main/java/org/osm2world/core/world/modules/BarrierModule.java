@@ -12,10 +12,10 @@ import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -37,7 +37,6 @@ import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.util.CSSColors;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -194,19 +193,7 @@ public class BarrierModule extends AbstractModule {
 					|| material.getTextureDataList().get(0).colorable;
 
 			if (colorString != null && colorable) {
-
-				Color color = null;
-
-				if (CSSColors.colorMap.containsKey(colorString)) {
-					color = CSSColors.colorMap.get(colorString);
-				} else {
-					color = parseColor(colorString);
-				}
-
-				if (color != null) {
-					material = material.withColor(color);
-				}
-
+				material = material.withColor(parseColor(colorString, CSS_COLORS));
 			}
 
 			return material;

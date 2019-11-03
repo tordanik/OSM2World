@@ -8,6 +8,7 @@ import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 import java.awt.Color;
@@ -188,11 +189,7 @@ public class PoolModule extends AbstractModule {
 
 			//TODO parse material (e.g. for steel slides) and apply color to it
 
-			Color color = null;
-
-			if (primarySegment.getTags().containsKey("color")) {
-				color = parseColor(primarySegment.getTags().getValue("color"));
-			}
+			Color color = parseColor(primarySegment.getTags().getValue("color"), CSS_COLORS);
 
 			if (color == null) {
 				color = DEFAULT_COLOR;

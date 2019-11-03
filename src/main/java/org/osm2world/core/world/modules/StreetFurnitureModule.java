@@ -6,12 +6,14 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -362,27 +364,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			 * creates a material for each colored stripe
 			 */
 			private static List<Material> createStripeMaterials(List<Color> colors) {
-
-				List<Material> stripeMaterials = new ArrayList<Material>(colors.size());
-
-				for (Color color : colors) {
-
-					stripeMaterials.add(new ImmutableMaterial(
-							FLAGCLOTH.getInterpolation(),
-							color,
-							FLAGCLOTH.getAmbientFactor(),
-							FLAGCLOTH.getDiffuseFactor(),
-							FLAGCLOTH.getSpecularFactor(),
-							FLAGCLOTH.getShininess(),
-							FLAGCLOTH.getTransparency(),
-							FLAGCLOTH.getShadow(),
-							FLAGCLOTH.getAmbientOcclusion(),
-							FLAGCLOTH.getTextureDataList()));
-
-				}
-
-				return stripeMaterials;
-
+				return colors.stream().map(FLAGCLOTH::withColor).collect(toList());
 			}
 
 		}
@@ -609,8 +591,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			final double ropesOffset = 0.07;
 
 			// determine material and color
+
 			Material material = null;
-			Color color = null;
 
 			if (node.getTags().containsKey("material")) {
 				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
@@ -620,23 +602,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				material = WOOD;
 			}
 
-			if (node.getTags().containsKey("colour")) {
-				color = parseColor(node.getTags().getValue("colour"));
-			}
-
-			if (color != null) {
-				material = new ImmutableMaterial(
-						material.getInterpolation(),
-						color,
-						material.getAmbientFactor(),
-						material.getDiffuseFactor(),
-						material.getSpecularFactor(),
-						material.getShininess(),
-						material.getTransparency(),
-						material.getShadow(),
-						material.getAmbientOcclusion(),
-						material.getTextureDataList());
-			}
+			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
 
 			// calculate vectors and corners
 
@@ -730,7 +696,6 @@ public class StreetFurnitureModule extends AbstractModule {
 			/* determine material and color */
 
 			Material material = null;
-			Color color = null;
 
 			if (node.getTags().containsKey("material")) {
 				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
@@ -740,23 +705,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				material = WOOD;
 			}
 
-			if (node.getTags().containsKey("colour")) {
-				color = parseColor(node.getTags().getValue("colour"));
-			}
-
-			if (color != null) {
-				material = new ImmutableMaterial(
-						material.getInterpolation(),
-						color,
-						material.getAmbientFactor(),
-						material.getDiffuseFactor(),
-						material.getSpecularFactor(),
-						material.getShininess(),
-						material.getTransparency(),
-						material.getShadow(),
-						material.getAmbientOcclusion(),
-						material.getTextureDataList());
-			}
+			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
 
 			/* calculate vectors and corners */
 

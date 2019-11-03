@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osm2world.core.util.ColorNameDefinition;
+
 public final class ValueStringParser {
 
 	/** prevents instantiation */
@@ -257,6 +259,21 @@ public final class ValueStringParser {
 		}
 
 		return null;
+	}
+
+	/**
+	 * parses an hexadecimal color value or color name.
+	 *
+	 * @return  color; null if value had syntax errors or was null
+	 */
+	public static final Color parseColor(String value, ColorNameDefinition colorNameDefinition) {
+		if (value == null) {
+			return null;
+		} else if (colorNameDefinition.contains(value)) {
+			return colorNameDefinition.get(value);
+		} else {
+			return parseColor(value);
+		}
 	}
 
 	/**
