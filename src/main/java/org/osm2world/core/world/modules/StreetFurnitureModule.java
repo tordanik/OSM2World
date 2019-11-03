@@ -164,34 +164,41 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw the flag (if any) */
 
+			Flag flag = null;
+
 			if (node.getTags().contains("flag:type", "national")
 					&& node.getTags().containsKey("country")) {
+				flag = NATIONAL_FLAGS.get(node.getTags().getValue("country"));
+			}
 
-				Flag flag = NATIONAL_FLAGS.get(node.getTags().getValue("country"));
-
-				if (flag != null) {
-
-					double flagHeight = min(2.0, poleHeight / 4);
-
-					VectorXYZ flagTop = poleBase.add(Y_UNIT.mult(poleHeight * 0.97));
-
-					VectorXYZ flagBottom = flagTop.add(poleBase.subtract(flagTop).normalize().mult(flagHeight));
-					VectorXYZ flagFrontNormal = Z_UNIT.invert();
-
-					double flagWidth = flagHeight / flag.getHeightWidthRatio();
-
-					VectorXYZ toOuterEnd = flagTop.subtract(flagBottom).crossNormalized(flagFrontNormal).invert();
-					VectorXYZ outerBottom = flagBottom.add(toOuterEnd.mult(flagWidth));
-					VectorXYZ outerTop = outerBottom.add(flagTop.subtract(flagBottom));
-
-					flagTop = flagTop.add(toOuterEnd.mult(poleRadius));
-					flagBottom = flagBottom.add(toOuterEnd.mult(poleRadius));
-					outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
-					outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
-
-					flag.renderFlag(target, createFlagMesh(flagTop, flagHeight, flagWidth));
-
+			if (flag == null && node.getTags().containsKey("flag:colour")) {
+				Color color = parseColor(node.getTags().getValue("flag:colour"), CSS_COLORS);
+				if (color != null) {
+					flag = new TexturedFlag(2 / 3.0, FLAGCLOTH.withColor(color));
 				}
+			}
+
+			if (flag != null) {
+
+				double flagHeight = min(2.0, poleHeight / 4);
+
+				VectorXYZ flagTop = poleBase.add(Y_UNIT.mult(poleHeight * 0.97));
+
+				VectorXYZ flagBottom = flagTop.add(poleBase.subtract(flagTop).normalize().mult(flagHeight));
+				VectorXYZ flagFrontNormal = Z_UNIT.invert();
+
+				double flagWidth = flagHeight / flag.getHeightWidthRatio();
+
+				VectorXYZ toOuterEnd = flagTop.subtract(flagBottom).crossNormalized(flagFrontNormal).invert();
+				VectorXYZ outerBottom = flagBottom.add(toOuterEnd.mult(flagWidth));
+				VectorXYZ outerTop = outerBottom.add(flagTop.subtract(flagBottom));
+
+				flagTop = flagTop.add(toOuterEnd.mult(poleRadius));
+				flagBottom = flagBottom.add(toOuterEnd.mult(poleRadius));
+				outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
+				outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
+
+				flag.renderFlag(target, createFlagMesh(flagTop, flagHeight, flagWidth));
 
 			}
 
