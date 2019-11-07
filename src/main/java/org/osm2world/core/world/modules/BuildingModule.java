@@ -2467,7 +2467,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			for (int i = 0; i < numDoors; i++) {
 				VectorXZ pos = new VectorXZ(surface.getLength() / numDoors * (i + 0.5), 0);
-				System.out.println(pos.x);
 				surface.addElementIfSpaceFree(new Door(pos , doorTags));
 			}
 
