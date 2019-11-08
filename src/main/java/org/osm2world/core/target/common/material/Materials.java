@@ -112,8 +112,6 @@ public final class Materials {
 			new ConfMaterial(Interpolation.FLAT, new Color(0.6f, 0.3f, 0.3f));
 	public static final ConfMaterial KERB =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
-	public static final ConfMaterial STEPS_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, Color.DARK_GRAY);
 	public static final ConfMaterial HANDRAIL_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, Color.LIGHT_GRAY);
 
@@ -294,7 +292,7 @@ public final class Materials {
 	/** returns a material defined here based on its field name */
 	public static final ConfMaterial getMaterial(String fieldName) {
 		for (Entry<ConfMaterial, String> entry : fieldNameMap.entrySet()) {
-			if (entry.getValue().equals(fieldName)) {
+			if (entry.getValue().equalsIgnoreCase(fieldName)) {
 				return entry.getKey();
 			}
 		}

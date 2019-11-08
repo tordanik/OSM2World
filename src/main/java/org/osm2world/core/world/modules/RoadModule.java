@@ -12,6 +12,7 @@ import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -1247,6 +1248,24 @@ public class RoadModule extends ConfigurableWorldModule {
 			double lineLength = VectorXZ.distance (
 					segment.getStartNode().getPos(), segment.getEndNode().getPos());
 
+			/* evaluate material and color */
+
+			Material material = null;
+
+			if (tags.containsKey("material")) {
+				material = Materials.getMaterial(tags.getValue("material"));
+			}
+
+			if (material == null && tags.containsKey("surface")) {
+				material = Materials.getSurfaceMaterial(tags.getValue("surface"));
+			}
+
+			if (material == null) {
+				material = CONCRETE;
+			}
+
+			material = material.withColor(parseColor(tags.getValue("colour"), CSS_COLORS));
+
 			/* render ground first (so gaps between the steps look better) */
 
 			List<VectorXYZ> vs = createTriangleStripBetween(
@@ -1322,15 +1341,15 @@ public class RoadModule extends ConfigurableWorldModule {
 				}
 
 				List<VectorXYZ> topStrip = asList(frontLeft, frontRight, edgeLeft, edgeRight, backLeft, backRight);
-				target.drawTriangleStrip(Materials.STEPS_DEFAULT, topStrip,
-						texCoordLists(topStrip, STEPS_DEFAULT, STRIP_WALL));
+				target.drawTriangleStrip(material, topStrip,
+						texCoordLists(topStrip, material, STRIP_WALL));
 
 				List<TriangleXYZ> sideTriangles = asList(
 						new TriangleXYZ(frontLeft, edgeLeft, backLeft),
 						new TriangleXYZ(backRight, edgeRight, frontRight));
 
-				target.drawTriangles(STEPS_DEFAULT, sideTriangles,
-						triangleTexCoordLists(sideTriangles, STEPS_DEFAULT, SLOPED_TRIANGLES));
+				target.drawTriangles(material, sideTriangles,
+						triangleTexCoordLists(sideTriangles, material, SLOPED_TRIANGLES));
 
 			}
 
