@@ -1,11 +1,14 @@
 package org.osm2world.core.math;
 
+import static java.util.Collections.singletonList;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-public class PolygonWithHolesXZ {
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+
+public class PolygonWithHolesXZ implements PolygonShapeXZ {
 
 	private final SimplePolygonXZ outerPolygon;
 	private final List<SimplePolygonXZ> holes;
@@ -24,24 +27,28 @@ public class PolygonWithHolesXZ {
 		this.getArea();
 	}
 
+	@Override
+	public List<VectorXZ> getVertexList() {
+		return outerPolygon.getVertexList();
+	}
+
 	public SimplePolygonXZ getOuter() {
 		return outerPolygon;
 	}
 
+	@Override
 	public List<SimplePolygonXZ> getHoles() {
 		return holes;
 	}
 
-	/**
-	 * returns a list that contains the outer polygon and all holes
-	 */
+	@Override
 	public List<SimplePolygonXZ> getPolygons() {
-		if (holes.isEmpty()) {
-			return Collections.singletonList(outerPolygon);
+		if (getHoles().isEmpty()) {
+			return singletonList(getOuter());
 		} else {
-			List<SimplePolygonXZ> result = new ArrayList<SimplePolygonXZ>(holes.size()+1);
-			result.add(outerPolygon);
-			result.addAll(holes);
+			List<SimplePolygonXZ> result = new ArrayList<>(getHoles().size() + 1);
+			result.add(getOuter());
+			result.addAll(getHoles());
 			return result;
 		}
 	}
@@ -60,19 +67,6 @@ public class PolygonWithHolesXZ {
 		} else {
 			for (SimplePolygonXZ hole : holes) {
 				if (hole.contains(boundary)) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
-	public boolean contains(VectorXZ v) {
-		if (!outerPolygon.contains(v)) {
-			return false;
-		} else {
-			for (SimplePolygonXZ hole : holes) {
-				if (hole.contains(v)) {
 					return false;
 				}
 			}

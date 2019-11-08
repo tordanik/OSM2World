@@ -1,7 +1,7 @@
 package org.osm2world.core.world.data;
 
 import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 
 /**
  * world object that has a defined outline that can be used for purposes
@@ -24,6 +24,6 @@ public interface WorldObjectWithOutline extends WorldObject {
 	 *
 	 * @return outline polygon; null if this world object doesn't cover any area
 	 */
-	public SimplePolygonXZ getOutlinePolygonXZ();
+	public PolygonShapeXZ getOutlinePolygonXZ();
 
 }

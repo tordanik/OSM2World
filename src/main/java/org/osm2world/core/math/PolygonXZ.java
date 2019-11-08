@@ -4,15 +4,14 @@ import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 
-public class PolygonXZ implements PolygonShapeXZ {
+public class PolygonXZ implements ShapeXZ {
 
 	/** polygon vertices; first and last vertex are equal */
 	protected final List<VectorXZ> vertexLoop;
@@ -126,14 +125,6 @@ public class PolygonXZ implements PolygonShapeXZ {
 
 	}
 
-	public List<LineSegmentXZ> getSegments() {
-		List<LineSegmentXZ> segments = new ArrayList<LineSegmentXZ>(vertexLoop.size());
-		for (int i=0; i+1 < vertexLoop.size(); i++) {
-			segments.add(new LineSegmentXZ(vertexLoop.get(i), vertexLoop.get(i+1)));
-		}
-		return segments;
-	}
-
 	/**
 	 * returns the polygon segment with minimum distance to a given point
 	 */
@@ -151,94 +142,6 @@ public class PolygonXZ implements PolygonShapeXZ {
 		}
 
 		return closestSegment;
-
-	}
-
-	/**
-	 * returns true if there is an intersection between this polygon
-	 * and the line segment defined by the parameter
-	 */
-	public boolean intersects(VectorXZ segmentP1, VectorXZ segmentP2) {
-		//TODO: (performance): passing "vector TO second point", rather than point2, would avoid having to calc it here - and that information could be reused for all comparisons involving the segment
-
-		for (int i=0; i+1<vertexLoop.size(); i++) {
-
-			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
-					segmentP1, segmentP2,
-					vertexLoop.get(i), vertexLoop.get(i+1)
-					);
-
-			if (intersection != null) {
-				return true;
-			}
-
-		}
-
-		return false;
-	}
-
-	public boolean intersects(LineSegmentXZ lineSegment) {
-		return intersects(lineSegment.p1, lineSegment.p2);
-	}
-
-	/**
-	 * returns true if there is an intersection between this polygon's
-	 * and the parameter polygon's sides
-	 */
-	public boolean intersects(PolygonXZ outlinePolygonXZ) {
-
-		//TODO (performance): currently performs pairwise intersection checks for sides of this and other - this might not be the fastest method
-
-		for (int i=0; i+1<vertexLoop.size(); i++) {
-			if (outlinePolygonXZ.intersects(vertexLoop.get(i), vertexLoop.get(i+1))) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public Collection<LineSegmentXZ> intersectionSegments(
-			LineSegmentXZ lineSegment) {
-
-		List<LineSegmentXZ> intersectionSegments = new ArrayList<LineSegmentXZ>();
-
-		for (LineSegmentXZ polygonSegment : getSegments()) {
-
-			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
-					lineSegment.p1, lineSegment.p2,
-					polygonSegment.p1, polygonSegment.p2
-					);
-
-			if (intersection != null) {
-				intersectionSegments.add(polygonSegment);
-			}
-
-		}
-
-		return intersectionSegments;
-
-	}
-
-	public List<VectorXZ> intersectionPositions(
-			LineSegmentXZ lineSegment) {
-
-		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
-
-		for (int i=0; i+1<vertexLoop.size(); i++) {
-
-			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
-					lineSegment.p1, lineSegment.p2,
-					vertexLoop.get(i), vertexLoop.get(i+1)
-					);
-
-			if (intersection != null) {
-				intersectionPositions.add(intersection);
-			}
-
-		}
-
-		return intersectionPositions;
 
 	}
 

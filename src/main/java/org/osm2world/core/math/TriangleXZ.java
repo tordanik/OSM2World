@@ -6,12 +6,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 import com.google.common.collect.ImmutableList;
 
-public class TriangleXZ implements PolygonShapeXZ, SimpleClosedShapeXZ {
+public class TriangleXZ implements SimplePolygonShapeXZ {
 
 	public final VectorXZ v1, v2, v3;
 

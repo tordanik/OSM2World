@@ -169,7 +169,7 @@ public class CAGUtilTest {
 		);
 
 		List<PolygonWithHolesXZ> results = new ArrayList<PolygonWithHolesXZ>(
-				CAGUtil.subtractPolygonsWithHolesXZ(
+				CAGUtil.subtractPolygons(
 						new SimplePolygonXZ(outline),
 						asList(new PolygonWithHolesXZ(new SimplePolygonXZ(subOutline),
 								asList(new SimplePolygonXZ(subOutlineHole))))));

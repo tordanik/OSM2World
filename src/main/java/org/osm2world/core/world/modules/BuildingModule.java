@@ -74,6 +74,7 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
@@ -331,11 +332,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				/* construct those polygons where the area does not overlap with terrain boundaries */
 
-				List<SimplePolygonXZ> subtractPolygons = new ArrayList<>();
+				List<SimplePolygonShapeXZ> subtractPolygons = new ArrayList<>();
 
 				for (TerrainBoundaryWorldObject o : buildingPassages) {
 
-					SimplePolygonXZ subtractPoly = o.getOutlinePolygonXZ();
+					SimplePolygonShapeXZ subtractPoly = o.getOutlinePolygonXZ().getOuter();
 
 					subtractPolygons.add(subtractPoly);
 

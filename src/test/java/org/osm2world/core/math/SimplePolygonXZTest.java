@@ -7,6 +7,7 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 public class SimplePolygonXZTest {
 
@@ -77,9 +78,9 @@ public class SimplePolygonXZTest {
 	@Test
 	public void testShift() {
 
-		SimplePolygonXZ shiftP = p1.shift(VectorXZ.X_UNIT);
+		SimplePolygonShapeXZ shiftP = p1.shift(VectorXZ.X_UNIT);
 
-		assertSame(p1.size(), shiftP.size());
+		assertSame(p1.size(), shiftP.getVertexList().size() - 1);
 		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexList().get(0));
 		assertAlmostEquals(new VectorXZ( 0,  0), shiftP.getVertexList().get(1));
 		assertAlmostEquals(new VectorXZ( 0, +1), shiftP.getVertexList().get(2));

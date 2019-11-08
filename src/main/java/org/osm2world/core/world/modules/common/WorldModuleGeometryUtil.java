@@ -11,9 +11,9 @@ import java.util.List;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
@@ -182,14 +182,14 @@ public final class WorldModuleGeometryUtil {
 		 * instead of doing this within the loop iterating over positions.
 		 */
 
-		List<SimplePolygonXZ> filterPolygons = new ArrayList<SimplePolygonXZ>();
+		List<PolygonShapeXZ> filterPolygons = new ArrayList<>();
 
 		for (WorldObject worldObject : worldObjects) {
 
 			if (worldObject.getGroundState() == GroundState.ON
 				&& (worldObject instanceof WorldObjectWithOutline)) {
 
-				SimplePolygonXZ outline = null;
+				PolygonShapeXZ outline = null;
 
 				try {
 					outline = ((WorldObjectWithOutline)worldObject).
@@ -214,7 +214,7 @@ public final class WorldModuleGeometryUtil {
 
 			VectorXZ pos = positionIterator.next();
 
-			for (SimplePolygonXZ filterPolygon : filterPolygons) {
+			for (PolygonShapeXZ filterPolygon : filterPolygons) {
 				if (filterPolygon.contains(pos)) {
 					positionIterator.remove();
 					break;

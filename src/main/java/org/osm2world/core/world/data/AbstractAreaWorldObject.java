@@ -6,8 +6,8 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
@@ -26,7 +26,7 @@ public abstract class AbstractAreaWorldObject
 
 	protected final MapArea area;
 
-	private final SimplePolygonXZ outlinePolygonXZ;
+	private final PolygonWithHolesXZ outlinePolygonXZ;
 
 	private EleConnectorGroup connectors;
 
@@ -34,7 +34,13 @@ public abstract class AbstractAreaWorldObject
 
 		this.area = area;
 
-		outlinePolygonXZ = area.getPolygon().getOuter().makeCounterclockwise();
+		if (!area.getPolygon().getOuter().isClockwise()) {
+			outlinePolygonXZ = area.getPolygon();
+		} else {
+			outlinePolygonXZ = new PolygonWithHolesXZ(
+					area.getPolygon().getOuter().makeCounterclockwise(),
+					area.getPolygon().getHoles());
+		}
 
 	}
 
@@ -58,13 +64,13 @@ public abstract class AbstractAreaWorldObject
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 	@Override
-	public SimplePolygonXZ getOutlinePolygonXZ() {
+	public PolygonWithHolesXZ getOutlinePolygonXZ() {
 		return outlinePolygonXZ;
 	}
 
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
-		return connectors.getPosXYZ(outlinePolygonXZ);
+		return connectors.getPosXYZ(outlinePolygonXZ.getOuter());
 	}
 
 	@Override

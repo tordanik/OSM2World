@@ -13,6 +13,8 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
  * converts between own and JTS geometry representations.
@@ -52,11 +54,11 @@ public class JTSConversionUtil {
 
 	}
 
-	public static final Polygon polygonXZToJTSPolygon(SimplePolygonXZ polygon) {
+	public static final Polygon polygonXZToJTSPolygon(SimplePolygonShapeXZ polygon) {
 		return new Polygon(polygonXZToJTSLinearRing(polygon), null, GF);
 	}
 
-	public static final Polygon polygonXZToJTSPolygon(PolygonWithHolesXZ polygon) {
+	public static final Polygon polygonXZToJTSPolygon(PolygonShapeXZ polygon) {
 
 		LinearRing shell = polygonXZToJTSLinearRing(polygon.getOuter());
 
@@ -68,7 +70,7 @@ public class JTSConversionUtil {
 
 	}
 
-	private static final LinearRing polygonXZToJTSLinearRing(SimplePolygonXZ polygon) {
+	private static final LinearRing polygonXZToJTSLinearRing(SimplePolygonShapeXZ polygon) {
 
 		List<VectorXZ> vertices = polygon.getVertexList();
 

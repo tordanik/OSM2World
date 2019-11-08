@@ -7,8 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
  * immutable representation of an axis-aligned bounding box
@@ -16,7 +15,7 @@ import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
  *
  * TODO: rename to AxisAlignedRectangleXZ?
  */
-public class AxisAlignedBoundingBoxXZ implements Cloneable, PolygonShapeXZ, SimpleClosedShapeXZ {
+public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ {
 
 	public final double minX, minZ, maxX, maxZ;
 

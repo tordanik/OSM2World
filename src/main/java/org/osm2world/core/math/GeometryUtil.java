@@ -3,7 +3,7 @@ package org.osm2world.core.math;
 import static java.lang.Math.sqrt;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXZ.*;
-import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygonsWithHolesXZ;
+import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -253,7 +253,7 @@ public final class GeometryUtil {
 			return true;
 		}
 
-		Collection<PolygonWithHolesXZ> remainder = subtractPolygonsWithHolesXZ(p2, singletonList(p1));
+		Collection<PolygonWithHolesXZ> remainder = subtractPolygons(p2, singletonList(p1));
 		double remainderArea = remainder.stream().mapToDouble(p -> p.getArea()).sum();
 		return remainderArea / p2.getArea() < 0.01;
 

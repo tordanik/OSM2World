@@ -1,7 +1,9 @@
 package org.osm2world.core.math.shapes;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /**
@@ -19,5 +21,15 @@ public interface ShapeXZ {
 	 * @return list of vertices, not empty, not null
 	 */
 	public List<VectorXZ> getVertexList();
+
+	/** returns the line segments connecting each successive pair of vertices */
+	public default List<LineSegmentXZ> getSegments() {
+		List<VectorXZ> vertexList = getVertexList();
+		List<LineSegmentXZ> segments = new ArrayList<>(vertexList.size() - 1);
+		for (int i = 0; i + 1 < vertexList.size(); i++) {
+			segments.add(new LineSegmentXZ(vertexList.get(i), vertexList.get(i + 1)));
+		}
+		return segments;
+	}
 
 }

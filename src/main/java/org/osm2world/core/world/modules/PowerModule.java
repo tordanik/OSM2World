@@ -24,10 +24,10 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
@@ -828,7 +828,7 @@ public final class PowerModule extends AbstractModule {
 
 			AxisAlignedBoundingBoxXZ box = this.getAxisAlignedBoundingBoxXZ();
 
-			List<SimplePolygonXZ> obstacles = getGroundObstacles();
+			List<PolygonShapeXZ> obstacles = getGroundObstacles();
 
 			double posZ = box.minZ;
 
@@ -849,7 +849,7 @@ public final class PowerModule extends AbstractModule {
 
 				// add more start/end points at ground-level obstacles
 
-				for (SimplePolygonXZ obstacle : obstacles) {
+				for (PolygonShapeXZ obstacle : obstacles) {
 
 					List<VectorXZ> obstacleIntersections =
 							obstacle.intersectionPositions(rowLine);
@@ -903,9 +903,9 @@ public final class PowerModule extends AbstractModule {
 		/**
 		 * returns outlines from ground objects overlapping this area
 		 */
-		private List<SimplePolygonXZ> getGroundObstacles() {
+		private List<PolygonShapeXZ> getGroundObstacles() {
 
-			List<SimplePolygonXZ> obstacles = new ArrayList<SimplePolygonXZ>();
+			List<PolygonShapeXZ> obstacles = new ArrayList<>();
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {

@@ -24,13 +24,13 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -139,10 +139,10 @@ public class SurfaceAreaModule extends AbstractModule {
 			/* collect the outlines of overlapping ground polygons and other polygons,
 			 * and EleConnectors within the area */
 
-			List<SimplePolygonXZ> subtractPolys = new ArrayList<SimplePolygonXZ>();
-			List<SimplePolygonXZ> allPolys = new ArrayList<SimplePolygonXZ>();
+			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
+			List<PolygonShapeXZ> allPolys = new ArrayList<>();
 
-			List<VectorXZ> eleConnectorPoints = new ArrayList<VectorXZ>();
+			List<VectorXZ> eleConnectorPoints = new ArrayList<>();
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
@@ -164,7 +164,7 @@ public class SurfaceAreaModule extends AbstractModule {
 					TerrainBoundaryWorldObject terrainBoundary =
 						(TerrainBoundaryWorldObject)otherWO;
 
-					SimplePolygonXZ outlinePolygon = terrainBoundary.getOutlinePolygonXZ();
+					PolygonShapeXZ outlinePolygon = terrainBoundary.getOutlinePolygonXZ();
 
 					if (outlinePolygon != null) {
 
@@ -173,7 +173,8 @@ public class SurfaceAreaModule extends AbstractModule {
 
 						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
 
-							if (!outlinePolygon.getVertexCollection().contains(eleConnector.pos)) {
+							if (!outlinePolygon.getPolygons().stream().anyMatch(
+									p-> p.getVertexList().contains(eleConnector.pos))) {
 								eleConnectorPoints.add(eleConnector.pos);
 							}
 
@@ -198,13 +199,10 @@ public class SurfaceAreaModule extends AbstractModule {
 
 					if (otherWO instanceof WorldObjectWithOutline) {
 
-						SimplePolygonXZ outlinePolygon =
-								((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ();
+						PolygonShapeXZ outlinePolygon = ((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ();
 
 						if (outlinePolygon != null) {
-
 							allPolys.add(outlinePolygon);
-
 						}
 
 					}
@@ -227,7 +225,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 				boolean safe = true;
 
-				for (SimplePolygonXZ polygon : allPolys) {
+				for (PolygonShapeXZ polygon : allPolys) {
 					if (polygon.contains(point)) {
 						safe = false;
 						break;
@@ -329,7 +327,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
-		public SimplePolygonXZ getOutlinePolygonXZ() {
+		public PolygonWithHolesXZ getOutlinePolygonXZ() {
 			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				// avoid interfering with e.g. tree placement
 				return null;

@@ -10,12 +10,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
  * a non-self-intersecting polygon in the XZ plane
  */
-public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
+public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 
 	/** stores the signed area */
 	private Double signedArea;
@@ -47,14 +47,6 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 		this.clockwise = signedArea < 0;
 
 		assertNonzeroArea();
-	}
-
-	public List<LineSegmentXZ> getSegments() {
-		List<LineSegmentXZ> segments = new ArrayList<LineSegmentXZ>(vertexLoop.size());
-		for (int i=0; i+1 < vertexLoop.size(); i++) {
-			segments.add(new LineSegmentXZ(vertexLoop.get(i), vertexLoop.get(i+1)));
-		}
-		return segments;
 	}
 
 	/** returns the polygon's area */
@@ -184,21 +176,6 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 	}
 
 	/**
-	 * creates a new polygon by adding a shift vector to each vector of this
-	 */
-	public SimplePolygonXZ shift(VectorXZ shiftVector) {
-		List<VectorXZ> newVertexLoop = new ArrayList<VectorXZ>(vertexLoop.size());
-		newVertexLoop.add(vertexLoop.get(0).add(shiftVector));
-		for (VectorXZ v : vertexLoop) {
-			if (!v.equals(vertexLoop.get(0))) {
-				newVertexLoop.add(v.add(shiftVector));
-			}
-		}
-		newVertexLoop.add(newVertexLoop.get(0));
-		return new SimplePolygonXZ(newVertexLoop);
-	}
-
-	/**
 	 * returns true if the polygon defined by the polygonVertexLoop parameter
 	 * contains a given position
 	 */
@@ -219,13 +196,6 @@ public class SimplePolygonXZ extends PolygonXZ implements SimpleClosedShapeXZ {
 
 		return c;
 
-	}
-
-	/**
-	 * returns true if the polygon contains a given position
-	 */
-	public boolean contains(VectorXZ test) {
-		return SimplePolygonXZ.contains(vertexLoop, test);
 	}
 
 	/**

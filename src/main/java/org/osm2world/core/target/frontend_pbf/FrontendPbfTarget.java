@@ -34,7 +34,6 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.TriangleXZ;
@@ -588,7 +587,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
 
-	private final List<SimplePolygonXZ> waterAreas = new ArrayList<SimplePolygonXZ>();
+	private final List<PolygonShapeXZ> waterAreas = new ArrayList<>();
 
 	private WorldObjectBuilder currentObjectBuilder = new WorldObjectBuilder(null);
 
@@ -790,11 +789,11 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 				try {
 
-					SimplePolygonXZ outline = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject)
+					PolygonShapeXZ outline = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject)
 							.getOutlinePolygonXZ();
 
 					if (outline != null) {
-						if (outline.getVertexCollection().stream().anyMatch(v -> bbox.contains(v))
+						if (outline.getVertexList().stream().anyMatch(v -> bbox.contains(v))
 								|| outline.intersects(bbox.polygonXZ())) {
 
 							waterAreas.add(outline);
