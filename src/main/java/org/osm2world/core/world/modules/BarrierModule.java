@@ -1,9 +1,8 @@
 package org.osm2world.core.world.modules;
 
-import static com.google.common.collect.Lists.reverse;
 import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -13,8 +12,9 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +40,8 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
+
+import com.google.common.collect.Lists;
 
 /**
  * adds barriers to the world
@@ -82,7 +84,7 @@ public class BarrierModule extends AbstractModule {
 	protected void applyToNode(MapNode node) {
 
 		TagGroup tags = node.getTags();
-		if (!tags.containsKey("barrier") && !tags.containsKey("power")) return; //fast exit for common case
+		if (!tags.containsKey("barrier")) return; //fast exit for common case
 
 		if (Bollard.fits(tags)) {
 			node.addRepresentation(new Bollard(node, tags));
@@ -91,9 +93,8 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static abstract class LinearBarrier
-	extends AbstractNetworkWaySegmentWorldObject
-	implements RenderableToAllTargets {
+	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject
+			implements RenderableToAllTargets {
 
 		protected final float height;
 		protected final float width;
@@ -109,21 +110,6 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public VectorXZ getStartPosition() {
-			return segment.getStartNode().getPos();
-		}
-
-		@Override
-		public VectorXZ getEndPosition() {
-			return segment.getEndNode().getPos();
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON; //TODO: flexible ground states
-		}
-
-		@Override
 		public float getWidth() {
 			return width;
 		}
@@ -131,7 +117,7 @@ public class BarrierModule extends AbstractModule {
 	}
 
 	/**
-	 * superclass for linear barriers that are a simple colored "wall"
+	 * superclass for linear barriers that are a simple colored or textured "wall"
 	 * (use width and height to create vertical sides and a flat top)
 	 */
 	private static abstract class ColoredWall extends LinearBarrier {
@@ -147,18 +133,56 @@ public class BarrierModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			//TODO: join ways back together to reduce the number of caps
+			List<VectorXYZ> leftBottomOutline = getOutline(false);
+			List<VectorXYZ> leftTopOutline = addYList(leftBottomOutline, height);
 
-			ShapeXZ wallShape = new SimplePolygonXZ(asList(
-					new VectorXZ(+width/2, 0),
-					new VectorXZ(+width/2, height),
-					new VectorXZ(-width/2, height),
-					new VectorXZ(-width/2, 0),
-					new VectorXZ(+width/2, 0)
-					));
+			List<VectorXYZ> rightBottomOutline = getOutline(true);
+			List<VectorXYZ> rightTopOutline = addYList(rightBottomOutline, height);
 
-			target.drawExtrudedShape(material, wallShape, getCenterline(),
-					nCopies(getCenterline().size(), Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
+			/* close the wall at the end if necessary */
+
+			if (getConnectedNetworkSegments(segment.getStartNode(), this.getClass(), s -> s != this).isEmpty()) {
+				List<VectorXYZ> startCapVs = asList(
+						leftTopOutline.get(0),
+						leftBottomOutline.get(0),
+						rightTopOutline.get(0),
+						rightBottomOutline.get(0));
+				target.drawTriangleStrip(material, startCapVs, texCoordLists(startCapVs, material, STRIP_WALL));
+			}
+
+			if (getConnectedNetworkSegments(segment.getEndNode(), this.getClass(), s -> s != this).isEmpty()) {
+				List<VectorXYZ> startCapVs = asList(
+						rightTopOutline.get(rightTopOutline.size() - 1),
+						rightBottomOutline.get(rightBottomOutline.size() - 1),
+						leftTopOutline.get(leftTopOutline.size() - 1),
+						leftBottomOutline.get(leftBottomOutline.size() - 1));
+				target.drawTriangleStrip(material, startCapVs, texCoordLists(startCapVs, material, STRIP_WALL));
+			}
+
+			/* draw the top of the wall */
+
+			List<VectorXYZ> topVs = asList(
+					leftTopOutline.get(0),
+					rightTopOutline.get(0),
+					leftTopOutline.get(leftTopOutline.size() - 1),
+					rightTopOutline.get(rightTopOutline.size() - 1));
+
+			if (leftTopOutline.size() > 2 && leftTopOutline.size() == rightTopOutline.size()) {
+				topVs = createTriangleStripBetween(leftTopOutline, rightTopOutline);
+			}
+
+			target.drawTriangleStrip(material, topVs, texCoordLists(topVs, material, STRIP_WALL));
+
+			/* draw the sides of the wall */
+
+			reverse(leftTopOutline);
+			reverse(leftBottomOutline);
+
+			List<VectorXYZ> leftVs = createTriangleStripBetween(leftTopOutline, leftBottomOutline);
+			target.drawTriangleStrip(material, leftVs, texCoordLists(leftVs, material, STRIP_WALL));
+
+			List<VectorXYZ> rightVs = createTriangleStripBetween(rightTopOutline, rightBottomOutline);
+			target.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, STRIP_WALL));
 
 		}
 
@@ -590,7 +614,7 @@ public class BarrierModule extends AbstractModule {
 					path, nCopies(path.size(), Y_UNIT), null, null, null);
 
 			//back
-			target.drawExtrudedShape(material, new PolylineXZ(reverse(SHAPE_GERMAN_B.getVertexList())),
+			target.drawExtrudedShape(material, new PolylineXZ(Lists.reverse(SHAPE_GERMAN_B.getVertexList())),
 					path, nCopies(path.size(), Y_UNIT), null, null, null);
 
 			/* add posts */
