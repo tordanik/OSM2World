@@ -239,11 +239,11 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class AerowayJunction extends JunctionNodeWorldObject
+	public static class AerowayJunction extends JunctionNodeWorldObject<AerowaySegment>
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public AerowayJunction(MapNode node) {
-			super(node);
+			super(node, AerowaySegment.class);
 		}
 
 		@Override
@@ -259,24 +259,19 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class AerowayConnector extends VisibleConnectorNodeWorldObject
+	public static class AerowayConnector extends VisibleConnectorNodeWorldObject<AerowaySegment>
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public AerowayConnector(MapNode node) {
-			super(node);
+			super(node, AerowaySegment.class);
 		}
 
 		@Override
 		public float getLength() {
-
 			// length is at most a third of the shorter segment's length
-
-			List<AerowaySegment> connectedSegments = getConnectedNetworkSegments(node, AerowaySegment.class, null);
-
 			return (float)min(
-					connectedSegments.get(0).segment.getLineSegment().getLength() / 3,
-					connectedSegments.get(1).segment.getLineSegment().getLength() / 3);
-
+					getConnectedNetworkSegments().get(0).segment.getLineSegment().getLength() / 3,
+					getConnectedNetworkSegments().get(1).segment.getLineSegment().getLength() / 3);
 		}
 
 		@Override

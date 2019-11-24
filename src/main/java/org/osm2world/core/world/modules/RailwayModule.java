@@ -231,11 +231,11 @@ public class RailwayModule extends ConfigurableWorldModule {
 	}
 
 	public static class RailJunction
-		extends JunctionNodeWorldObject
+		extends JunctionNodeWorldObject<Rail>
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public RailJunction(MapNode node) {
-			super(node);
+			super(node, Rail.class);
 		}
 
 		@Override

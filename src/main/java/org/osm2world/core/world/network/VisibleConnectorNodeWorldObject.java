@@ -11,7 +11,8 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.NetworkCalculator;
 
-public abstract class VisibleConnectorNodeWorldObject extends NetworkNodeWorldObject {
+public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmentWorldObject>
+		extends NetworkNodeWorldObject<S> {
 
 	protected boolean informationProvided;
 
@@ -54,8 +55,8 @@ public abstract class VisibleConnectorNodeWorldObject extends NetworkNodeWorldOb
 
 	}
 
-	public VisibleConnectorNodeWorldObject(MapNode node) {
-		super(node);
+	public VisibleConnectorNodeWorldObject(MapNode node, Class<S> segmentType) {
+		super(node, segmentType);
 	}
 
 	@Override

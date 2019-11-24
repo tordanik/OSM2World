@@ -2,6 +2,7 @@ package org.osm2world.core.world.network;
 
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.creation.NetworkCalculator;
+import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -17,7 +18,7 @@ import org.osm2world.core.world.data.WorldObject;
  * Features using these types of representation include roads,
  * railways and rivers.
  */
-public interface NetworkWaySegmentWorldObject extends WorldObject {
+public interface NetworkWaySegmentWorldObject extends WaySegmentWorldObject {
 
 	/**
 	 * returns the line's width

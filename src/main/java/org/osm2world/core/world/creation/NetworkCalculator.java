@@ -1,7 +1,14 @@
 package org.osm2world.core.world.creation;
 
+import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
@@ -14,6 +21,9 @@ import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+
 /**
  * class that will calculate the information for those {@link MapElement}s
  * that implement an interface from org.o3dw.representation.network and set it.
@@ -23,14 +33,7 @@ public class NetworkCalculator {
 
 	private NetworkCalculator() {}
 
-
-
-	//FIXME: must be able to handle connectors with lines of opposite direction!
-
-
-
 	private static final float ROAD_PUSHING_STEP = 0.01f;
-
 
 	/**
 	 * calculates cut and offset information for all
@@ -40,61 +43,71 @@ public class NetworkCalculator {
 
 		for (MapNode node : grid.getMapNodes()) {
 
+			Set<NetworkWaySegmentWorldObject> unhandledNetworkSegments = new HashSet<>(
+					getConnectedNetworkSegments(node, NetworkWaySegmentWorldObject.class, null));
 
-			//TODO: also work with nodes that aren't Network*NodeRepresentations,
-			//  but connect two NetworkWaySegmentRep.s (invisible connectors)
+			Predicate<NetworkWaySegmentWorldObject> isInbound = s -> node.getInboundLines().contains(s.getPrimaryMapElement());
+			Predicate<NetworkWaySegmentWorldObject> isOutbound = isInbound.negate();
 
-			final List<MapWaySegment> inboundNLines = new ArrayList<MapWaySegment>();
-			List<MapWaySegment> outboundNLines = new ArrayList<MapWaySegment>();
+			for (NodeWorldObject nodeWorldObject : node.getRepresentations()) {
 
-			for (MapWaySegment line : node.getInboundLines()) {
-				if (line.getPrimaryRepresentation() instanceof NetworkWaySegmentWorldObject) {
-					inboundNLines.add(line);
-				}
-			}
+				if (nodeWorldObject instanceof JunctionNodeWorldObject) {
 
-			for (MapWaySegment line : node.getOutboundLines()) {
-				if (line.getPrimaryRepresentation() instanceof NetworkWaySegmentWorldObject) {
-					outboundNLines.add(line);
-				}
-			}
+					JunctionNodeWorldObject<?> junction = (JunctionNodeWorldObject<?>)nodeWorldObject;
 
+					calculateJunctionNodeEffects(node, junction,
+							junction.getConnectedNetworkSegments(isInbound),
+							junction.getConnectedNetworkSegments(isOutbound));
 
-			if (node.getPrimaryRepresentation() instanceof JunctionNodeWorldObject) {
+					unhandledNetworkSegments.removeAll(junction.getConnectedNetworkSegments());
 
-				/* junctions */
+				} else if (nodeWorldObject instanceof VisibleConnectorNodeWorldObject) {
 
-				calculateJunctionNodeEffects(node,
-						(JunctionNodeWorldObject)node.getPrimaryRepresentation(),
-						inboundNLines, outboundNLines);
+					VisibleConnectorNodeWorldObject<?> connector = (VisibleConnectorNodeWorldObject<?>) nodeWorldObject;
 
-			} else if (inboundNLines.size() + outboundNLines.size() == 2) {
+					if (connector.getConnectedNetworkSegments().size() != 2) {
+						System.err.println("Illegal number of connected segments for " + node + ": "
+								+ connector.getConnectedNetworkSegments());
+						continue;
+					}
 
-				/* visible or invisible connectors */
+					NetworkWaySegmentWorldObject s1 = connector.getConnectedNetworkSegments().get(0);
+					NetworkWaySegmentWorldObject s2 = connector.getConnectedNetworkSegments().get(1);
 
-				List<MapWaySegment> connectedNLines = new ArrayList<MapWaySegment>(2);
-				connectedNLines.addAll(inboundNLines);
-				connectedNLines.addAll(outboundNLines);
+					calculateConnectorNodeEffects(connector, s1, s2, isInbound.test(s1), isInbound.test(s2));
 
-				MapWaySegment line1 = connectedNLines.get(0);
-				MapWaySegment line2 = connectedNLines.get(1);
+					unhandledNetworkSegments.removeAll(connector.getConnectedNetworkSegments());
 
-				calculateConnectorNodeEffects(node.getPrimaryRepresentation(),
-						line1, line2,
-						inboundNLines.contains(line1),
-						inboundNLines.contains(line2));
-
-			} else {
-
-				for (MapWaySegment outboundNLine : outboundNLines) {
-					setOrthogonalCutVector(outboundNLine, true);
-				}
-
-				for (MapWaySegment inboundNLine : inboundNLines) {
-					setOrthogonalCutVector(inboundNLine, false);
 				}
 
 			}
+
+			/* handle the remaining network segments (untagged connecting nodes may not be turned into a WorldObject) */
+
+			Multimap<?, NetworkWaySegmentWorldObject> netSegmentsByClass =
+					Multimaps.index(unhandledNetworkSegments, Object::getClass);
+
+			netSegmentsByClass.asMap().forEach((k, networkSegments) -> {
+
+				if (networkSegments.size() == 2) {
+
+					/* exactly 2 segments of the same type connecting to each other, e.g. in the middle of a road way */
+
+					List<NetworkWaySegmentWorldObject> segmentList = new ArrayList<>(networkSegments);
+					NetworkWaySegmentWorldObject s1 = segmentList.get(0);
+					NetworkWaySegmentWorldObject s2 = segmentList.get(1);
+
+					calculateConnectorNodeEffects(null, s1, s2, isInbound.test(s1), isInbound.test(s2));
+
+				} else {
+
+					for (NetworkWaySegmentWorldObject nSegment : networkSegments) {
+						setOrthogonalCutVector(nSegment, isOutbound.test(nSegment));
+					}
+
+				}
+
+			});
 
 		}
 
@@ -104,21 +117,12 @@ public class NetworkCalculator {
 	 * calculates the effects of both visible and invisible connector nodes.
 	 */
 	private static void calculateConnectorNodeEffects(
-			NodeWorldObject nodeRepresentation,
-			MapWaySegment line1, MapWaySegment line2,
+			@Nullable VisibleConnectorNodeWorldObject<?> visibleConnectorRep,
+			NetworkWaySegmentWorldObject renderable1, NetworkWaySegmentWorldObject renderable2,
 			boolean inbound1, boolean inbound2) {
 
-		NetworkWaySegmentWorldObject renderable1 =
-			((NetworkWaySegmentWorldObject)line1.getPrimaryRepresentation());
-		NetworkWaySegmentWorldObject renderable2 =
-			((NetworkWaySegmentWorldObject)line2.getPrimaryRepresentation());
-
-		VisibleConnectorNodeWorldObject visibleConnectorRep = null;
-
-		if (nodeRepresentation instanceof VisibleConnectorNodeWorldObject) {
-			visibleConnectorRep =
-				(VisibleConnectorNodeWorldObject)nodeRepresentation;
-		}
+		MapWaySegment line1 = renderable1.getPrimaryMapElement();
+		MapWaySegment line2 = renderable2.getPrimaryMapElement();
 
 		/* calculate cut as angle bisector between the two lines */
 
@@ -190,10 +194,7 @@ public class NetworkCalculator {
 
 			/* provide information to node's representation */
 
-			if (nodeRepresentation instanceof VisibleConnectorNodeWorldObject) {
-
-				VisibleConnectorNodeWorldObject connectorRep =
-					(VisibleConnectorNodeWorldObject)nodeRepresentation;
+			if (visibleConnectorRep != null) {
 
 				VectorXZ connectedPos1;
 				VectorXZ connectedPos2;
@@ -210,7 +211,7 @@ public class NetworkCalculator {
 					connectedPos2 = line2.getStartNode().getPos();
 				}
 
-				connectorRep.setInformation(
+				visibleConnectorRep.setInformation(
 						cutVector,
 						connectedPos1.add(offset1),
 						connectedPos2.add(offset2),
@@ -225,59 +226,53 @@ public class NetworkCalculator {
 
 	}
 
-	private static void calculateJunctionNodeEffects(
-			MapNode node, JunctionNodeWorldObject nodeRepresentation,
-			final List<MapWaySegment> inboundNLines, List<MapWaySegment> outboundNLines) {
+	private static void calculateJunctionNodeEffects(MapNode node, JunctionNodeWorldObject<?> nodeRepresentation,
+			List<? extends NetworkWaySegmentWorldObject> inboundNSegments,
+			List<? extends NetworkWaySegmentWorldObject> outboundNSegments) {
 
-		/* create list of all connected roads.
-		 * Order of adds is important, it needs to match
-		 * the order of cutVectors, coords and widths adds. */
+		/* create list of all connected segments which have a network segment representation.
+		 * Order of adds is important, it needs to match the order of cutVectors, coords and widths adds. */
 
-		List<MapWaySegment> connectedNSegments = new ArrayList<MapWaySegment>();
-		connectedNSegments.addAll(inboundNLines);
-		connectedNSegments.addAll(outboundNLines);
+		List<MapWaySegment> connectedNSegments = new ArrayList<>();
+		inboundNSegments.forEach(s -> connectedNSegments.add(s.getPrimaryMapElement()));
+		outboundNSegments.forEach(s -> connectedNSegments.add(s.getPrimaryMapElement()));
 
-		//all cut vectors in here will point to the right from the junctions pov!
+		//all cut vectors in here will point to the right from the junction's pov!
 		List<VectorXZ> cutVectors = new ArrayList<VectorXZ>(connectedNSegments.size());
 		List<VectorXZ> coords = new ArrayList<VectorXZ>(connectedNSegments.size());
 		List<Float> widths = new ArrayList<Float>(connectedNSegments.size());
 
-		/* determine cut angles:
-		 * always orthogonal to the connected line */
+		/* determine cut angles: always orthogonal to the connected line */
 
-		for (MapWaySegment in : inboundNLines) {
+		for (NetworkWaySegmentWorldObject inNSegment : inboundNSegments) {
 
-			NetworkWaySegmentWorldObject inRenderable =
-				((NetworkWaySegmentWorldObject)in.getPrimaryRepresentation());
+			MapSegment in = inNSegment.getPrimaryMapElement();
 
 			VectorXZ cutVector = in.getRightNormal();
-			inRenderable.setEndCutVector(cutVector);
+			inNSegment.setEndCutVector(cutVector);
 			cutVectors.add(cutVector.invert());
 
 			coords.add(in.getEndNode().getPos());
-			widths.add(inRenderable.getWidth());
+			widths.add(inNSegment.getWidth());
 
 		}
 
-		for (MapWaySegment out : outboundNLines) {
+		for (NetworkWaySegmentWorldObject outNSegment : outboundNSegments) {
 
-			NetworkWaySegmentWorldObject outRenderable =
-				((NetworkWaySegmentWorldObject)out.getPrimaryRepresentation());
+			MapSegment out = outNSegment.getPrimaryMapElement();
 
 			VectorXZ cutVector = out.getRightNormal();
-			outRenderable.setStartCutVector(cutVector);
+			outNSegment.setStartCutVector(cutVector);
 			cutVectors.add(cutVector);
 
 			coords.add(out.getStartNode().getPos());
-			widths.add(outRenderable.getWidth());
+			widths.add(outNSegment.getWidth());
 
 		}
 
 		/* move roads away from the intersection until they cannot overlap anymore,
 		 * this is certain if the distance between their ends' center points
 		 * is greater than the sum of their half-widths */
-
-		//TODO (performance) if roads were ordered by angle here already, this would be much faster -> only neighbors checked
 
 		boolean overlapPossible;
 
@@ -322,30 +317,26 @@ public class NetworkCalculator {
 
 				coords.clear();
 
-				for (MapWaySegment in : inboundNLines) {
+				for (NetworkWaySegmentWorldObject inNSegment : inboundNSegments) {
 
-					NetworkWaySegmentWorldObject inRenderable =
-						((NetworkWaySegmentWorldObject)in.getPrimaryRepresentation());
-					VectorXZ inVector = in.getDirection();
+					MapSegment in = inNSegment.getPrimaryMapElement();
 
-					VectorXZ offsetModification = inVector.mult(-ROAD_PUSHING_STEP);
+					VectorXZ offsetModification = in.getDirection().mult(-ROAD_PUSHING_STEP);
 
-					VectorXZ newEndOffset = inRenderable.getEndOffset().add(offsetModification);
-					inRenderable.setEndOffset(newEndOffset);
+					VectorXZ newEndOffset = inNSegment.getEndOffset().add(offsetModification);
+					inNSegment.setEndOffset(newEndOffset);
 					coords.add(in.getEndNode().getPos().add(newEndOffset));
 
 				}
 
-				for (MapWaySegment out : outboundNLines) {
+				for (NetworkWaySegmentWorldObject outNSegment : outboundNSegments) {
 
-					NetworkWaySegmentWorldObject outRenderable =
-						((NetworkWaySegmentWorldObject)out.getPrimaryRepresentation());
-					VectorXZ outVector = out.getDirection();
+					MapSegment out = outNSegment.getPrimaryMapElement();
 
-					VectorXZ offsetModification = outVector.mult(ROAD_PUSHING_STEP);
+					VectorXZ offsetModification = out.getDirection().mult(ROAD_PUSHING_STEP);
 
-					VectorXZ newStartOffset = outRenderable.getStartOffset().add(offsetModification);
-					outRenderable.setStartOffset(newStartOffset);
+					VectorXZ newStartOffset = outNSegment.getStartOffset().add(offsetModification);
+					outNSegment.setStartOffset(newStartOffset);
 					coords.add(out.getStartNode().getPos().add(newStartOffset));
 
 				}
@@ -358,9 +349,9 @@ public class NetworkCalculator {
 
 		List<MapSegment> segments = node.getConnectedSegments();
 
-		ArrayList<VectorXZ> junctionCutCenters = new ArrayList<VectorXZ>(segments.size());
-		ArrayList<VectorXZ> junctionCutVectors = new ArrayList<VectorXZ>(segments.size());
-		ArrayList<Float> junctionWidths = new ArrayList<Float>(segments.size());
+		ArrayList<VectorXZ> junctionCutCenters = new ArrayList<>(segments.size());
+		ArrayList<VectorXZ> junctionCutVectors = new ArrayList<>(segments.size());
+		ArrayList<Float> junctionWidths = new ArrayList<>(segments.size());
 
 		for (MapSegment segment : segments) {
 
@@ -387,20 +378,14 @@ public class NetworkCalculator {
 
 	}
 
-	/**
-	 * @param l  line with {@link NetworkWaySegmentWorldObject} as representation
-	 */
-	private static void setOrthogonalCutVector(MapWaySegment l, boolean setStartVector) {
+	private static void setOrthogonalCutVector(NetworkWaySegmentWorldObject s, boolean setStartVector) {
 
-		VectorXZ cutVector = l.getRightNormal();
-
-		NetworkWaySegmentWorldObject lRepresentation =
-			(NetworkWaySegmentWorldObject)l.getPrimaryRepresentation();
+		VectorXZ cutVector = s.getPrimaryMapElement().getRightNormal();
 
 		if (setStartVector) {
-			lRepresentation.setStartCutVector(cutVector);
+			s.setStartCutVector(cutVector);
 		} else {
-			lRepresentation.setEndCutVector(cutVector);
+			s.setEndCutVector(cutVector);
 		}
 
 	}

@@ -239,11 +239,11 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class RiverJunction
-		extends JunctionNodeWorldObject
+		extends JunctionNodeWorldObject<Waterway>
 		implements TerrainBoundaryWorldObject, RenderableToAllTargets {
 
 		public RiverJunction(MapNode node) {
-			super(node);
+			super(node, Waterway.class);
 		}
 
 		@Override

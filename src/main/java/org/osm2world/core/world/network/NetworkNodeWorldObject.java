@@ -1,26 +1,41 @@
 package org.osm2world.core.world.network;
 
 import static java.util.stream.Collectors.toSet;
-import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.world.data.OutlineNodeWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
-/** parent type for junctions and connectors between {@link NetworkWaySegmentWorldObject}s, see there for more info */
-public abstract class NetworkNodeWorldObject extends OutlineNodeWorldObject {
+/**
+ * parent type for junctions and connectors between {@link NetworkWaySegmentWorldObject}s, see there for more info
+ * @param <S>  the type of {@link NetworkWaySegmentWorldObject} connected by this network node
+ */
+public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObject> extends OutlineNodeWorldObject {
 
-	protected NetworkNodeWorldObject(MapNode node) {
+	private final Class<S> segmentType;
+
+	protected NetworkNodeWorldObject(MapNode node, Class<S> segmentType) {
 		super(node);
+		this.segmentType = segmentType;
+	}
+
+	public List<S> getConnectedNetworkSegments() {
+		return NetworkUtil.getConnectedNetworkSegments(node, segmentType, null);
+	}
+
+	public List<S> getConnectedNetworkSegments(Predicate<? super S> filter) {
+		return NetworkUtil.getConnectedNetworkSegments(node, segmentType, filter);
 	}
 
 	@Override
 	public GroundState getGroundState() {
 
-		Set<GroundState> connectedStates = getConnectedNetworkSegments(node, NetworkWaySegmentWorldObject.class, null)
+		Set<GroundState> connectedStates = getConnectedNetworkSegments()
 			.stream()
 			.map(WorldObject::getGroundState)
 			.collect(toSet());

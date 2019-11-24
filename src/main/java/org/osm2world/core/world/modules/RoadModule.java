@@ -519,11 +519,11 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * representation for junctions between roads.
 	 */
 	public static class RoadJunction
-		extends JunctionNodeWorldObject
+		extends JunctionNodeWorldObject<Road>
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		public RoadJunction(MapNode node) {
-			super(node);
+			super(node, Road.class);
 		}
 
 		@Override
@@ -558,13 +558,13 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * visible connectors where a road changes width or lane layout
 	 */
 	public static class RoadConnector
-		extends VisibleConnectorNodeWorldObject
+		extends VisibleConnectorNodeWorldObject<Road>
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 
 		public RoadConnector(MapNode node) {
-			super(node);
+			super(node, Road.class);
 		}
 
 		@Override
@@ -612,13 +612,13 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * representation for crossings (zebra crossing etc.) on roads
 	 */
 	public static class RoadCrossingAtConnector
-		extends VisibleConnectorNodeWorldObject
+		extends VisibleConnectorNodeWorldObject<Road>
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
 		private static final float CROSSING_WIDTH = 3f;
 
 		public RoadCrossingAtConnector(MapNode node) {
-			super(node);
+			super(node, Road.class);
 		}
 
 		@Override
