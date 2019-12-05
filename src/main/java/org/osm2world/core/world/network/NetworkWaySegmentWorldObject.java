@@ -1,7 +1,6 @@
 package org.osm2world.core.world.network;
 
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.world.creation.NetworkCalculator;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 

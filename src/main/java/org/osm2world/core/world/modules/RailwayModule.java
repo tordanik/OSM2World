@@ -254,19 +254,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			/* draw connection between each pair of rails */
 
-			/* TODO: use node.getConnectedLines() instead?
-			 * (allows access to information from there,
-			 *  such as getOutline!)
-			 */
-
-			for (int i=0; i<cutCenters.size(); i++) {
-				for (int j=0; j<i; j++) {
-
-					/* connect those rails with an obtuse angle between them */
-
-
-				}
-			}
+			// TODO: implement proper rendering for railway crosses and switches
 
 		}
 

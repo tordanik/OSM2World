@@ -9,7 +9,6 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.world.creation.NetworkCalculator;
 
 public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmentWorldObject>
 		extends NetworkNodeWorldObject<S> {
@@ -41,7 +40,7 @@ public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmen
 	 * Most methods in this class cannot be used until this method
 	 * has provided the required information!
 	 */
-	public void setInformation(VectorXZ cutVector,
+	void setInformation(VectorXZ cutVector,
 			VectorXZ startPos, VectorXZ endPos,
 			float startWidth, float endWidth) {
 

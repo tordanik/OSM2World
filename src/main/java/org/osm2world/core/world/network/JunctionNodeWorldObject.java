@@ -4,51 +4,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.world.creation.NetworkCalculator;
 
 public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldObject>
 		extends NetworkNodeWorldObject<S> {
 
-	protected boolean informationProvided = false;
-	protected List<VectorXZ> cutVectors;
-	protected List<VectorXZ> cutCenters;
-	protected List<Float> widths;
+	/**
+	 * describes the geometry of how one incoming way segment "interfaces" with the junction area.
+	 * "Left" and "Right" are seen from the junction node's point of view.
+	 */
+	protected static class JunctionSegmentInterface {
+
+		public final VectorXZ leftContactPos;
+		public final VectorXZ rightContactPos;
+
+		public JunctionSegmentInterface(VectorXZ leftContactPos, VectorXZ rightContactPos) {
+			this.leftContactPos = leftContactPos;
+			this.rightContactPos = rightContactPos;
+		}
+
+	}
+
+	protected List<JunctionSegmentInterface> segmentInterfaces = null;
+
+	public JunctionNodeWorldObject(MapNode node, Class<S> segmentType) {
+		super(node, segmentType);
+	}
 
 	/**
 	 * sets the results of {@link NetworkCalculator}'s calculations.
 	 *
-	 * Cut information will not be created for all way/area segments.
-	 * The lists can therefore contain null entries.
-	 *
-	 * @param cutCenters
-	 * centers of the cuts to each;
-	 * indices are the same as for the GridNode's {@link MapNode#getConnectedSegments()}
-	 * @param cutVectors
-	 * vectors describing indicating the cut line,
-	 * pointing to the right from the node's pov;
-	 * for indices see junctionCutCenters
-	 * @param widths
-	 * widths of the junction cut;
-	 * for indices see junctionCutCenters
+	 * @param segmentInterfaces  How each segment connects to the junction area.
+	 * Indices are the same as for {@link MapNode#getConnectedSegments()}.
+	 * This kind of information will not be created for all way/area segments.
+	 * The list can therefore contain null entries.
 	 */
-	public void setInformation(List<VectorXZ> cutCenters,
-			List<VectorXZ> cutVectors, List<Float> widths) {
-
-		this.informationProvided = true;
-
-		this.cutCenters = cutCenters;
-		this.cutVectors = cutVectors;
-		this.widths = widths;
-
-	}
-
-	public JunctionNodeWorldObject(MapNode node, Class<S> segmentType) {
-		super(node, segmentType);
+	void setInformation(List<JunctionSegmentInterface> segmentInterfaces) {
+		this.segmentInterfaces = segmentInterfaces;
 	}
 
 
@@ -92,22 +87,14 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
 
-		List<VectorXZ> vectors = new ArrayList<VectorXZ>(cutCenters.size()*2+1);
+		checkInformationProvided();
 
-		for (int i=0; i < cutCenters.size(); i++) {
+		List<VectorXZ> vectors = new ArrayList<>(segmentInterfaces.size() * 2);
 
-			if (cutCenters.get(i) == null) continue;
-
-			VectorXZ left = getCutNode(i, false);
-			VectorXZ right = getCutNode(i, true);
-
-			if (left != null) {
-				vectors.add(left);
-			}
-			if (right != null) {
-				vectors.add(right);
-			}
-
+		for (JunctionSegmentInterface segmentInterface : segmentInterfaces) {
+			if (segmentInterface == null) continue; //TODO: this special case should be made obsolete
+			vectors.add(segmentInterface.leftContactPos);
+			vectors.add(segmentInterface.rightContactPos);
 		}
 
 		/* try to convert into a valid, counterclockwise simple polygon */
@@ -143,83 +130,11 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 	}
 
 	/**
-	 * calculates the left or right node of a cut
-	 * (Only available if junction information for this representation has been
-	 * provided using {@link #setInformation(List, List, List)}).
-	 *
-	 * @return cut node position; null if connected section #i has no outline
-	 */
-	protected VectorXZ getCutNode(int i, boolean right) {
-
-		checkInformationProvided();
-
-		VectorXZ cutCenter = cutCenters.get(i);
-		VectorXZ cutVector = cutVectors.get(i);
-		Float width = widths.get(i);
-
-		if (cutCenter == null) {
-			return null;
-		} else {
-
-			if (right) {
-				return cutCenter.add(cutVector.mult(width * 0.5f));
-			} else {
-				return cutCenter.subtract(cutVector.mult(width * 0.5f));
-			}
-
-		}
-
-	}
-
-	/**
-	 * provides outline for the areas covered by the junction.
-	 *
-	 * The from and to indices refer to the list
-	 * returned by the underlying {@link MapNode}'s
-	 * {@link MapNode#getConnectedSegments()} method.
-	 */
-	public List<VectorXZ> getOutline(int from, int to) {
-
-		checkInformationProvided();
-
-		List<VectorXZ> outline = new ArrayList<VectorXZ>();
-
-		List<MapSegment> segments = node.getConnectedSegments();
-
-		assert from >= 0 && from < segments.size();
-		assert to >= 0 && to < segments.size();
-
-		int i = from;
-
-		while (i != to) {
-
-			VectorXZ newNodeA = getCutNode(i, false);
-			if (newNodeA != null) {
-				outline.add(newNodeA);
-			}
-
-			int nextI = i - 1;
-			if (nextI < 0) { nextI = segments.size() - 1; }
-
-			VectorXZ newNodeB = getCutNode(nextI, true);
-			if (newNodeB != null) {
-				outline.add(newNodeB);
-			}
-
-			i = nextI;
-
-		}
-
-		return outline;
-
-	}
-
-	/**
 	 * throws an IllegalStateException if information hasn't been
 	 * provided by a {@link NetworkCalculator}
 	 */
 	private void checkInformationProvided() throws IllegalStateException {
-		if (!informationProvided) {
+		if (segmentInterfaces == null) {
 			throw new IllegalStateException("no junction information" +
 					" has been set for this representation");
 		}

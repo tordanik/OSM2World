@@ -1,4 +1,4 @@
-package org.osm2world.core.world.creation;
+package org.osm2world.core.world.network;
 
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
@@ -17,9 +17,7 @@ import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.NodeWorldObject;
-import org.osm2world.core.world.network.JunctionNodeWorldObject;
-import org.osm2world.core.world.network.NetworkWaySegmentWorldObject;
-import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
+import org.osm2world.core.world.network.JunctionNodeWorldObject.JunctionSegmentInterface;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -349,9 +347,7 @@ public class NetworkCalculator {
 
 		List<MapSegment> segments = node.getConnectedSegments();
 
-		ArrayList<VectorXZ> junctionCutCenters = new ArrayList<>(segments.size());
-		ArrayList<VectorXZ> junctionCutVectors = new ArrayList<>(segments.size());
-		ArrayList<Float> junctionWidths = new ArrayList<>(segments.size());
+		List<JunctionSegmentInterface> segmentInterfaces = new ArrayList<>(segments.size());
 
 		for (MapSegment segment : segments) {
 
@@ -359,22 +355,17 @@ public class NetworkCalculator {
 
 				int index = connectedNSegments.indexOf(segment);
 
-				junctionCutCenters.add(coords.get(index));
-				junctionCutVectors.add(cutVectors.get(index));
-				junctionWidths.add(widths.get(index));
+				segmentInterfaces.add(new JunctionSegmentInterface(
+						coords.get(index).subtract(cutVectors.get(index).mult(widths.get(index) * 0.5f)),
+						coords.get(index).add(cutVectors.get(index).mult(widths.get(index) * 0.5f))));
 
 			} else {
-
-				junctionCutCenters.add(null);
-				junctionCutVectors.add(null);
-				junctionWidths.add(null);
-
+				segmentInterfaces.add(null);
 			}
 
 		}
 
-		nodeRepresentation.setInformation(
-				junctionCutCenters, junctionCutVectors, junctionWidths);
+		nodeRepresentation.setInformation(segmentInterfaces);
 
 	}
 
