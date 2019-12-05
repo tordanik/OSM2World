@@ -274,6 +274,13 @@ public final class GeometryUtil {
 		return sJTS.distance(new Coordinate(p.x, p.z));
 	}
 
+	/** returns the foot of the perpendicular through the point p onto the line defined by v1 and v2 */
+	public static final VectorXZ projectPerpendicular(VectorXZ p, VectorXZ v1, VectorXZ v2) {
+		LineSegment sJTS = new LineSegment(v1.x, v1.z, v2.x, v2.z);
+		Coordinate resultJTS = sJTS.project(new Coordinate(p.x, p.z));
+		return JTSConversionUtil.vectorXZFromJTSCoordinate(resultJTS);
+	}
+
 	/**
 	 * returns a sequence of vectors at a distance above an original sequence
 	 *

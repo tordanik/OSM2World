@@ -24,10 +24,12 @@ public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObj
 		this.segmentType = segmentType;
 	}
 
+	/** version of {@link #getConnectedNetworkSegments(Predicate)} without a filter */
 	public List<S> getConnectedNetworkSegments() {
 		return NetworkUtil.getConnectedNetworkSegments(node, segmentType, null);
 	}
 
+	/** @see NetworkUtil#getConnectedNetworkSegments(MapNode, Class, Predicate) */
 	public List<S> getConnectedNetworkSegments(Predicate<? super S> filter) {
 		return NetworkUtil.getConnectedNetworkSegments(node, segmentType, filter);
 	}

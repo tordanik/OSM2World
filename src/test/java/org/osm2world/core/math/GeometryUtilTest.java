@@ -86,6 +86,23 @@ public class GeometryUtilTest {
 	}
 
 	@Test
+	public void testProjectPerpendicular() {
+
+		VectorXZ v1 = new VectorXZ(-10, 2);
+		VectorXZ v2 = new VectorXZ(+10, 2);
+
+		assertAlmostEquals(new VectorXZ(5, 2), projectPerpendicular(new VectorXZ(5, 5), v1, v2));
+		assertAlmostEquals(new VectorXZ(5, 2), projectPerpendicular(new VectorXZ(5, 5), v2, v1));
+
+		assertAlmostEquals(new VectorXZ(15, 2), projectPerpendicular(new VectorXZ(15, 0), v1, v2));
+		assertAlmostEquals(new VectorXZ(15, 2), projectPerpendicular(new VectorXZ(15, 0), v2, v1));
+
+		assertAlmostEquals(new VectorXZ(-3, 2), projectPerpendicular(new VectorXZ(-3, 2), v1, v2));
+		assertAlmostEquals(new VectorXZ(-3, 2), projectPerpendicular(new VectorXZ(-3, 2), v2, v1));
+
+	}
+
+	@Test
 	public void testInterpolateElevation() {
 
 		assertEquals(9.0, GeometryUtil.interpolateElevation(

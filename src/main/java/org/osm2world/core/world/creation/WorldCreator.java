@@ -28,7 +28,7 @@ public class WorldCreator {
 			module.applyTo(mapData);
 		}
 
-		NetworkCalculator.calculateNetworkInformationInGrid(mapData);
+		NetworkCalculator.calculateNetworkInformationInMapData(mapData);
 
 	}
 

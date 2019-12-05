@@ -1,10 +1,15 @@
 package org.osm2world.core.world.network;
 
+import static java.lang.Math.PI;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -13,8 +18,8 @@ import javax.annotation.Nullable;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject.JunctionSegmentInterface;
@@ -24,22 +29,22 @@ import com.google.common.collect.Multimaps;
 
 /**
  * class that will calculate the information for those {@link MapElement}s
- * that implement an interface from org.o3dw.representation.network and set it.
+ * that implement one of the relevant interfaces from this package and set it.
  * Calling this is necessary for those representations to work properly!
  */
 public class NetworkCalculator {
 
 	private NetworkCalculator() {}
 
-	private static final float ROAD_PUSHING_STEP = 0.01f;
+	private static final double PARALLEL_ROAD_THRESHOLD_ANGLE = PI / 18;
+	private static final double JUNCTION_OUTLINE_SNAP_DISTANCE = 0.01;
 
 	/**
-	 * calculates cut and offset information for all
-	 * NetworkNode/Line/AreaRepresentations of elements in a grid.
+	 * calculates cut and offset information for all Network*WorldObjects of elements in the dataset.
 	 */
-	public static void calculateNetworkInformationInGrid(MapData grid) {
+	public static void calculateNetworkInformationInMapData(MapData mapData) {
 
-		for (MapNode node : grid.getMapNodes()) {
+		for (MapNode node : mapData.getMapNodes()) {
 
 			Set<NetworkWaySegmentWorldObject> unhandledNetworkSegments = new HashSet<>(
 					getConnectedNetworkSegments(node, NetworkWaySegmentWorldObject.class, null));
@@ -53,9 +58,7 @@ public class NetworkCalculator {
 
 					JunctionNodeWorldObject<?> junction = (JunctionNodeWorldObject<?>)nodeWorldObject;
 
-					calculateJunctionNodeEffects(node, junction,
-							junction.getConnectedNetworkSegments(isInbound),
-							junction.getConnectedNetworkSegments(isOutbound));
+					calculateJunctionNodeEffects(node, junction);
 
 					unhandledNetworkSegments.removeAll(junction.getConnectedNetworkSegments());
 
@@ -116,11 +119,11 @@ public class NetworkCalculator {
 	 */
 	private static void calculateConnectorNodeEffects(
 			@Nullable VisibleConnectorNodeWorldObject<?> visibleConnectorRep,
-			NetworkWaySegmentWorldObject renderable1, NetworkWaySegmentWorldObject renderable2,
+			NetworkWaySegmentWorldObject segment1, NetworkWaySegmentWorldObject segment2,
 			boolean inbound1, boolean inbound2) {
 
-		MapWaySegment line1 = renderable1.getPrimaryMapElement();
-		MapWaySegment line2 = renderable2.getPrimaryMapElement();
+		MapWaySegment line1 = segment1.getPrimaryMapElement();
+		MapWaySegment line2 = segment2.getPrimaryMapElement();
 
 		/* calculate cut as angle bisector between the two lines */
 
@@ -146,20 +149,6 @@ public class NetworkCalculator {
 			cutVector = cutVector.invert();
 		}
 
-		/* set calculated cut vector */
-
-		if (inbound1) {
-			renderable1.setEndCutVector(cutVector);
-		} else {
-			renderable1.setStartCutVector(cutVector.invert());
-		}
-
-		if (inbound2) {
-			renderable2.setEndCutVector(cutVector.invert());
-		} else {
-			renderable2.setStartCutVector(cutVector);
-		}
-
 		/* perform calculations necessary for connectors
 		 * whose representation requires space */
 
@@ -169,214 +158,227 @@ public class NetworkCalculator {
 			connectorLength = visibleConnectorRep.getLength();
 		}
 
-		if (connectorLength > 0) {
-
-			/* move connected lines to make room for the node's representation */
-
-			//connected node of line1 is moved orthogonally to the cut vector
-			VectorXZ offset1 = cutVector.rightNormal();
-			offset1 = offset1.mult(connectorLength / 2);
-			if (inbound1) {
-				renderable1.setEndOffset(offset1);
-			} else {
-				renderable1.setStartOffset(offset1);
-			}
-
-			//node of line2 is moved into the opposite direction
-			VectorXZ offset2 = offset1.invert();
-			if (inbound2) {
-				renderable2.setEndOffset(offset2);
-			} else {
-				renderable2.setStartOffset(offset2);
-			}
-
-			/* provide information to node's representation */
-
-			if (visibleConnectorRep != null) {
-
-				VectorXZ connectedPos1;
-				VectorXZ connectedPos2;
-
-				if (inbound1) {
-					connectedPos1 = line1.getEndNode().getPos();
-				} else {
-					connectedPos1 = line1.getStartNode().getPos();
-				}
-
-				if (inbound2) {
-					connectedPos2 = line2.getEndNode().getPos();
-				} else {
-					connectedPos2 = line2.getStartNode().getPos();
-				}
-
-				visibleConnectorRep.setInformation(
-						cutVector,
-						connectedPos1.add(offset1),
-						connectedPos2.add(offset2),
-						renderable1.getWidth(),
-						renderable2.getWidth());
-
-			}
-
-			//TODO: if done properly, this might affect NOT ONLY the directly adjacent lines
-
-		}
-
-	}
-
-	private static void calculateJunctionNodeEffects(MapNode node, JunctionNodeWorldObject<?> nodeRepresentation,
-			List<? extends NetworkWaySegmentWorldObject> inboundNSegments,
-			List<? extends NetworkWaySegmentWorldObject> outboundNSegments) {
-
-		/* create list of all connected segments which have a network segment representation.
-		 * Order of adds is important, it needs to match the order of cutVectors, coords and widths adds. */
-
-		List<MapWaySegment> connectedNSegments = new ArrayList<>();
-		inboundNSegments.forEach(s -> connectedNSegments.add(s.getPrimaryMapElement()));
-		outboundNSegments.forEach(s -> connectedNSegments.add(s.getPrimaryMapElement()));
-
-		//all cut vectors in here will point to the right from the junction's pov!
-		List<VectorXZ> cutVectors = new ArrayList<VectorXZ>(connectedNSegments.size());
-		List<VectorXZ> coords = new ArrayList<VectorXZ>(connectedNSegments.size());
-		List<Float> widths = new ArrayList<Float>(connectedNSegments.size());
-
-		/* determine cut angles: always orthogonal to the connected line */
-
-		for (NetworkWaySegmentWorldObject inNSegment : inboundNSegments) {
-
-			MapSegment in = inNSegment.getPrimaryMapElement();
-
-			VectorXZ cutVector = in.getRightNormal();
-			inNSegment.setEndCutVector(cutVector);
-			cutVectors.add(cutVector.invert());
-
-			coords.add(in.getEndNode().getPos());
-			widths.add(inNSegment.getWidth());
-
-		}
-
-		for (NetworkWaySegmentWorldObject outNSegment : outboundNSegments) {
-
-			MapSegment out = outNSegment.getPrimaryMapElement();
-
-			VectorXZ cutVector = out.getRightNormal();
-			outNSegment.setStartCutVector(cutVector);
-			cutVectors.add(cutVector);
-
-			coords.add(out.getStartNode().getPos());
-			widths.add(outNSegment.getWidth());
-
-		}
-
-		/* move roads away from the intersection until they cannot overlap anymore,
-		 * this is certain if the distance between their ends' center points
-		 * is greater than the sum of their half-widths */
-
-		boolean overlapPossible;
-
-		do {
-
-			overlapPossible = false;
-
-			overlapCheck:
-			for (int r1=0; r1 < coords.size(); r1++) {
-				for (int r2=r1+1; r2 < coords.size(); r2++) {
-
-					/* ignore overlapping (or almost overlapping) way segments
-					 * as no reasonable amount of pushing would separate these */
-					if (VectorXZ.distance(connectedNSegments.get(r1).getDirection(),
-							connectedNSegments.get(r2).getDirection()) < 0.1
-						||	VectorXZ.distance(connectedNSegments.get(r1).getDirection(),
-								connectedNSegments.get(r2).getDirection().invert()) < 0.1) {
-						continue;
-					}
-
-					double distance = Math.abs(coords.get(r1).subtract(coords.get(r2)).length());
-
-					if (distance > 200) {
-						//TODO: proper error handling
-						System.err.println("distance has exceeded 200 at node " + node
-								+ "\n (representation: " + nodeRepresentation + ")");
-						// overlapCheck will remain false, no further size increase
-						break overlapCheck;
-					}
-
-					if (distance <= widths.get(r1)*0.5 + widths.get(r2)*0.5) {
-						overlapPossible = true;
-						break overlapCheck;
-					}
-
-				}
-			}
-
-			if (overlapPossible) {
-
-				/* push outwards */
-
-				coords.clear();
-
-				for (NetworkWaySegmentWorldObject inNSegment : inboundNSegments) {
-
-					MapSegment in = inNSegment.getPrimaryMapElement();
-
-					VectorXZ offsetModification = in.getDirection().mult(-ROAD_PUSHING_STEP);
-
-					VectorXZ newEndOffset = inNSegment.getEndOffset().add(offsetModification);
-					inNSegment.setEndOffset(newEndOffset);
-					coords.add(in.getEndNode().getPos().add(newEndOffset));
-
-				}
-
-				for (NetworkWaySegmentWorldObject outNSegment : outboundNSegments) {
-
-					MapSegment out = outNSegment.getPrimaryMapElement();
-
-					VectorXZ offsetModification = out.getDirection().mult(ROAD_PUSHING_STEP);
-
-					VectorXZ newStartOffset = outNSegment.getStartOffset().add(offsetModification);
-					outNSegment.setStartOffset(newStartOffset);
-					coords.add(out.getStartNode().getPos().add(newStartOffset));
-
-				}
-
-			}
-
-		} while(overlapPossible);
-
-		/* set calculated information using the correct order */
-
-		List<MapSegment> segments = node.getConnectedSegments();
-
-		List<JunctionSegmentInterface> segmentInterfaces = new ArrayList<>(segments.size());
-
-		for (MapSegment segment : segments) {
-
-			if (connectedNSegments.contains(segment)) {
-
-				int index = connectedNSegments.indexOf(segment);
-
-				segmentInterfaces.add(new JunctionSegmentInterface(
-						coords.get(index).subtract(cutVectors.get(index).mult(widths.get(index) * 0.5f)),
-						coords.get(index).add(cutVectors.get(index).mult(widths.get(index) * 0.5f))));
-
-			} else {
-				segmentInterfaces.add(null);
-			}
-
-		}
-
-		nodeRepresentation.setInformation(segmentInterfaces);
-
-	}
-
-	private static void setOrthogonalCutVector(NetworkWaySegmentWorldObject s, boolean setStartVector) {
-
-		VectorXZ cutVector = s.getPrimaryMapElement().getRightNormal();
-
-		if (setStartVector) {
-			s.setStartCutVector(cutVector);
+		//connected node of line1 is moved orthogonally to the cut vector
+		VectorXZ offset1 = cutVector.rightNormal().mult(connectorLength / 2);
+
+		if (inbound1) {
+			VectorXZ center = segment1.getPrimaryMapElement().getEndNode().getPos();
+			center = center.add(offset1);
+			VectorXZ toRight = cutVector.mult(segment1.getWidth() * 0.5);
+			segment1.setEndCut(center.subtract(toRight), center, center.add(toRight));
 		} else {
-			s.setEndCutVector(cutVector);
+			VectorXZ center = segment1.getPrimaryMapElement().getStartNode().getPos();
+			center = center.add(offset1);
+			VectorXZ toRight = cutVector.mult(-segment1.getWidth() * 0.5);
+			segment1.setStartCut(center.subtract(toRight), center, center.add(toRight));
+		}
+
+		//connected node of line2 is moved into the opposite direction
+		VectorXZ offset2 = offset1.invert();
+
+		if (inbound2) {
+			VectorXZ center = segment2.getPrimaryMapElement().getEndNode().getPos();
+			center = center.add(offset2);
+			VectorXZ toRight = cutVector.mult(-segment2.getWidth() * 0.5);
+			segment2.setEndCut(center.subtract(toRight), center, center.add(toRight));
+		} else {
+			VectorXZ center = segment2.getPrimaryMapElement().getStartNode().getPos();
+			center = center.add(offset2);
+			VectorXZ toRight = cutVector.mult(segment2.getWidth() * 0.5);
+			segment2.setStartCut(center.subtract(toRight), center, center.add(toRight));
+		}
+
+		/* provide information to node's representation */
+
+		if (visibleConnectorRep != null) {
+
+			VectorXZ connectedPos1;
+			VectorXZ connectedPos2;
+
+			if (inbound1) {
+				connectedPos1 = line1.getEndNode().getPos();
+			} else {
+				connectedPos1 = line1.getStartNode().getPos();
+			}
+
+			if (inbound2) {
+				connectedPos2 = line2.getEndNode().getPos();
+			} else {
+				connectedPos2 = line2.getStartNode().getPos();
+			}
+
+			visibleConnectorRep.setInformation(
+					cutVector,
+					connectedPos1.add(offset1),
+					connectedPos2.add(offset2),
+					segment1.getWidth(),
+					segment2.getWidth());
+
+		}
+
+		//TODO: if done properly, this might affect NOT ONLY the directly adjacent lines
+
+	}
+
+	/**
+	 * calculates the polygon covered by a junction
+	 */
+	private static void calculateJunctionNodeEffects(MapNode junctionNode, JunctionNodeWorldObject<?> junction) {
+
+		List<? extends NetworkWaySegmentWorldObject> networkSegments = junction.getConnectedNetworkSegments();
+
+		/* Step 1: Find intersections between the (extended) sides of neighboring way segments.
+		 * For segments which are (almost) parallel, null is inserted as the intersection.
+		 * Intersection i is the one between segment i and segment i + 1. */
+
+		List<VectorXZ> intersections = new ArrayList<>(networkSegments.size());
+
+		for (int i = 0; i < networkSegments.size(); i++) {
+
+			NetworkWaySegmentWorldObject s = networkSegments.get(i);
+			NetworkWaySegmentWorldObject t = networkSegments.get((i + 1) % networkSegments.size());
+
+			// determine a point and direction vector for the *left* edge of s
+
+			VectorXZ sEdgeDirection = s.getPrimaryMapElement().getDirection();
+			VectorXZ sVectorToEdge = s.getPrimaryMapElement().getRightNormal().mult(-0.5 * s.getWidth());
+
+			if (s.getPrimaryMapElement().getStartNode() == junctionNode) {
+				// outbound segment, flip the vectors
+				sEdgeDirection = sEdgeDirection.invert();
+				sVectorToEdge = sVectorToEdge.invert();
+			}
+
+			VectorXZ sEdgePos = s.getPrimaryMapElement().getCenter().add(sVectorToEdge);
+
+			// determine a point and direction vector for the *right* edge of t
+
+			VectorXZ tEdgeDirection = t.getPrimaryMapElement().getDirection();
+			VectorXZ tVectorToEdge = t.getPrimaryMapElement().getRightNormal().mult(+0.5 * t.getWidth());
+
+			if (t.getPrimaryMapElement().getStartNode() == junctionNode) {
+				// outbound segment, flip the vectors
+				tEdgeDirection = tEdgeDirection.invert();
+				tVectorToEdge = tVectorToEdge.invert();
+			}
+
+			VectorXZ tEdgePos = t.getPrimaryMapElement().getCenter().add(tVectorToEdge);
+
+			// find the intersection unless the segments are (almost) parallel
+
+			if (angleBetween(sEdgeDirection, tEdgeDirection.invert()) < PARALLEL_ROAD_THRESHOLD_ANGLE) {
+				intersections.add(null);
+			} else {
+				intersections.add(getLineIntersection(sEdgePos, sEdgeDirection, tEdgePos, tEdgeDirection));
+			}
+
+		}
+
+		/* Step 2: Project the intersections (and the junction node) onto the segment.
+		 * Pick the one farthest "back" as the place where the segment ends and the junction begins. */
+
+		List<VectorXZ> cutPoints = new ArrayList<>();
+
+		for (int i = 0; i < networkSegments.size(); i++) {
+
+			LineSegmentXZ lineSegment = networkSegments.get(i).getPrimaryMapElement().getLineSegment();
+
+			List<VectorXZ> candidatePositions = new ArrayList<>();
+			candidatePositions.add(junctionNode.getPos());
+			candidatePositions.add(intersections.get(i));
+			candidatePositions.add(intersections.get((i-1 + intersections.size()) % intersections.size()));
+			candidatePositions.removeIf(Objects::isNull);
+
+			// project them onto the segment's infinite line
+			candidatePositions.replaceAll(p -> projectPerpendicular(p, lineSegment.p1, lineSegment.p2));
+
+			// find the one with the largest distance from a point very (200 m) far beyond the junction
+			// (cannot just use distance from junction because some points might be beyond the junction)
+			VectorXZ referencePoint = lineSegment.getCenter().add(
+					junctionNode.getPos().subtract(lineSegment.getCenter()).normalize().mult(200+1));
+			VectorXZ point = candidatePositions.stream().max(comparingDouble(p -> distance(p, referencePoint))).get();
+
+			cutPoints.add(point);
+
+		}
+
+		/* calculate the interfaces between this junction and connected network segments */
+
+		List<JunctionSegmentInterface> segmentInterfaces = new ArrayList<>();
+		ArrayList<VectorXZ> pointsBetween = new ArrayList<>();
+
+		for (int i = 0; i < junction.getConnectedNetworkSegments().size(); i++) {
+
+			NetworkWaySegmentWorldObject networkSegment = networkSegments.get(i);
+			MapWaySegment segment = networkSegment.getPrimaryMapElement();
+
+			VectorXZ cutPoint = cutPoints.get(i);
+			VectorXZ scaledCutVector = segment.getRightNormal().mult(networkSegment.getWidth() * 0.5);
+
+			if (segment.getEndNode() == junctionNode) {
+				scaledCutVector = scaledCutVector.invert();
+			}
+
+			segmentInterfaces.add(new JunctionSegmentInterface(
+					cutPoint.subtract(scaledCutVector), cutPoint.add(scaledCutVector)));
+
+			pointsBetween.add(intersections.get(i));
+
+		}
+
+		/* filter out or merge points that are too close to each other */
+
+		for (int i = 0; i < segmentInterfaces.size(); i++) {
+			JunctionSegmentInterface sA = segmentInterfaces.get(i);
+			JunctionSegmentInterface sB = segmentInterfaces.get((i + 1) % segmentInterfaces.size());
+			if (sA == null || sB == null) continue;
+			if (sB.leftContactPos.distanceTo(sA.rightContactPos) < JUNCTION_OUTLINE_SNAP_DISTANCE) {
+				sA = new JunctionSegmentInterface(sA.leftContactPos, sB.leftContactPos);
+				segmentInterfaces.set(i, sA);
+			}
+		}
+
+		for (int i = 0; i < pointsBetween.size(); i++) {
+			VectorXZ pointBetween = pointsBetween.get(i);
+			if (pointBetween != null && segmentInterfaces.stream().anyMatch(s -> s != null
+					&& (s.leftContactPos.distanceTo(pointBetween) < JUNCTION_OUTLINE_SNAP_DISTANCE
+					|| s.rightContactPos.distanceTo(pointBetween) < JUNCTION_OUTLINE_SNAP_DISTANCE))) {
+				pointsBetween.set(i, null);
+			}
+		}
+
+		/* provide the results to the junction as well as the connected segments */
+
+		junction.setInformation(segmentInterfaces, pointsBetween);
+
+		for (int i = 0; i < junction.getConnectedNetworkSegments().size(); i++) {
+
+			NetworkWaySegmentWorldObject networkSegment = networkSegments.get(i);
+			MapWaySegment segment = networkSegment.getPrimaryMapElement();
+
+			VectorXZ cutPoint = cutPoints.get(i);
+			JunctionSegmentInterface segmentInterface = segmentInterfaces.get(i);
+
+			if (segment.getStartNode() == junctionNode) {
+				networkSegment.setStartCut(segmentInterface.leftContactPos, cutPoint, segmentInterface.rightContactPos);
+			} else {
+				networkSegment.setEndCut(segmentInterface.rightContactPos, cutPoint, segmentInterface.leftContactPos);
+			}
+
+		}
+
+	}
+
+	private static void setOrthogonalCutVector(NetworkWaySegmentWorldObject s, boolean start) {
+
+		VectorXZ toRight = s.getPrimaryMapElement().getRightNormal().mult(s.getWidth() * 0.5);
+
+		if (start) {
+			VectorXZ center = s.getPrimaryMapElement().getStartNode().getPos();
+			s.setStartCut(center.subtract(toRight), center, center.add(toRight));
+		} else {
+			VectorXZ center = s.getPrimaryMapElement().getEndNode().getPos();
+			s.setEndCut(center.subtract(toRight), center, center.add(toRight));
 		}
 
 	}

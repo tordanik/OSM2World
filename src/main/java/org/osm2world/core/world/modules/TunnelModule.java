@@ -214,7 +214,7 @@ public class TunnelModule extends AbstractModule {
 
 			lowerCenter = node.getPos();
 
-			VectorXZ toRight = tunnelContent.getStartCutVector()
+			VectorXZ toRight = tunnelContent.getOutlineXZ(true).get(0).subtract((tunnelContent.getStartPosition()))
 					.mult(tunnelContent.getWidth() * 0.5f);
 
 			lowerLeft = lowerCenter.subtract(toRight);

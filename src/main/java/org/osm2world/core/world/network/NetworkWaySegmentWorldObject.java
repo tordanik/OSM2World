@@ -5,14 +5,11 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
- * "networks" are sets of {@link WorldObject}s that have certain
+ * A linear component of a network.
+ *
+ * "Networks" are sets of {@link WorldObject}s that have certain
  * frequently required characteristics. Most importantly, a network
  * consists of nodes, lines and areas linked with each other.
- *
- * Other characteristics include
- * - cut angles where lines (or lines and areas) connect
- * - junctions at nodes that occupy some area and push back connecting lines
- *  //TODO (documentation): explain more
  *
  * Features using these types of representation include roads,
  * railways and rivers.
@@ -25,53 +22,17 @@ public interface NetworkWaySegmentWorldObject extends WaySegmentWorldObject {
 	public float getWidth();
 
 	/**
-	 * returns the cut vector for the start of the line.
-	 * Only available after {@link #setStartCutVector(VectorXZ)}.
-	 */
-	public VectorXZ getStartCutVector();
-
-	/**
-	 * Sets the cut vector for the start of the line. //TODO: explain "cut vectors"
+	 * Sets the calculated start of this network segment.
+	 * This may be moved from the start of the OSM way to make room for features (junctions, crossings, ...) at nodes.
 	 * To be used by {@link NetworkCalculator}.
 	 */
-	public void setStartCutVector(VectorXZ cutVector);
+	public void setStartCut(VectorXZ left, VectorXZ center, VectorXZ right);
 
 	/**
-	 * returns the cut vector for the end of the line.
-	 * Only available after {@link #setStartCutVector(VectorXZ)}.
-	 */
-	public VectorXZ getEndCutVector();
-
-	/**
-	 * Sets the cut vector for the end of the line. //TODO: explain "cut vectors"
+	 * Sets the calculated end of this network segment.
+	 * This may be moved from the start of the OSM way to make room for features (junctions, crossings, ...) at nodes.
 	 * To be used by {@link NetworkCalculator}.
 	 */
-	public void setEndCutVector(VectorXZ cutVector);
-
-	/**
-	 * returns the current offset for the end of the line.
-	 * Should already be usable before first {@link #setEndOffset(VectorXZ)}
-	 * call, returning (0,0).
-	 */
-	public VectorXZ getStartOffset();
-
-	/**
-	 * Sets the offset for the start of the line.
-	 * To be used by {@link NetworkCalculator}.
-	 */
-	public void setStartOffset(VectorXZ offsetVector);
-
-	/**
-	 * returns the current offset for the end of the line.
-	 * Should already be usable before first {@link #setEndOffset(VectorXZ)}
-	 * call, returning (0,0).
-	 */
-	public VectorXZ getEndOffset();
-
-	/**
-	 * Sets the offset for the end of the line.
-	 * To be used by {@link NetworkCalculator}.
-	 */
-	public void setEndOffset(VectorXZ offsetVector);
+	public void setEndCut(VectorXZ left, VectorXZ center, VectorXZ right);
 
 }

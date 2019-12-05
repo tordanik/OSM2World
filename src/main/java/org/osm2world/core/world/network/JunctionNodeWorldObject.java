@@ -1,14 +1,15 @@
 package org.osm2world.core.world.network;
 
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
+/** junction between at least three segments in a network */
 public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldObject>
 		extends NetworkNodeWorldObject<S> {
 
@@ -26,9 +27,15 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 			this.rightContactPos = rightContactPos;
 		}
 
+		@Override
+		public String toString() {
+			return asList(leftContactPos, rightContactPos).toString();
+		}
+
 	}
 
 	protected List<JunctionSegmentInterface> segmentInterfaces = null;
+	protected List<VectorXZ> pointsBetween;
 
 	public JunctionNodeWorldObject(MapNode node, Class<S> segmentType) {
 		super(node, segmentType);
@@ -38,12 +45,18 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 	 * sets the results of {@link NetworkCalculator}'s calculations.
 	 *
 	 * @param segmentInterfaces  How each segment connects to the junction area.
-	 * Indices are the same as for {@link MapNode#getConnectedSegments()}.
+	 * Indices are the same as for {@link #getConnectedNetworkSegments()}.
 	 * This kind of information will not be created for all way/area segments.
-	 * The list can therefore contain null entries.
+	 *
+	 * @param pointsBetween  points to be inserted between the segment interfaces, can contain null entries.
+	 * Point i should be inserted in the junction's outline after the interface for the i-th segment, unless it's null.
 	 */
-	void setInformation(List<JunctionSegmentInterface> segmentInterfaces) {
+	void setInformation(List<JunctionSegmentInterface> segmentInterfaces, List<VectorXZ> pointsBetween) {
+		if (segmentInterfaces.size() != pointsBetween.size() || segmentInterfaces.size() < 3) {
+			throw new IllegalArgumentException();
+		}
 		this.segmentInterfaces = segmentInterfaces;
+		this.pointsBetween = pointsBetween;
 	}
 
 
@@ -89,42 +102,37 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 
 		checkInformationProvided();
 
-		List<VectorXZ> vectors = new ArrayList<>(segmentInterfaces.size() * 2);
+		List<VectorXZ> vectors = new ArrayList<>();
 
-		for (JunctionSegmentInterface segmentInterface : segmentInterfaces) {
-			if (segmentInterface == null) continue; //TODO: this special case should be made obsolete
-			vectors.add(segmentInterface.leftContactPos);
+		for (int i = 0; i < segmentInterfaces.size(); i++) {
+
+			JunctionSegmentInterface segmentInterface = segmentInterfaces.get(i);
+
+			if (vectors.isEmpty() || !segmentInterface.leftContactPos.equals(vectors.get(vectors.size() - 1))) {
+				vectors.add(segmentInterface.leftContactPos);
+			}
+
 			vectors.add(segmentInterface.rightContactPos);
+
+			if (pointsBetween.get(i) != null) {
+				vectors.add(pointsBetween.get(i));
+			}
+
 		}
 
 		/* try to convert into a valid, counterclockwise simple polygon */
 
-		if (vectors.size() > 2) {
+		// close polygon
+		if (!vectors.get(vectors.size() - 1).equals(vectors.get(0))) {
+			vectors.add(vectors.get(0));
+		}
 
-			vectors.add(vectors.get(0)); //close polygon
+		SimplePolygonXZ simplePoly = new SimplePolygonXZ(vectors);
 
-			PolygonXZ poly = new PolygonXZ(vectors);
-
-			try {
-
-				SimplePolygonXZ simplePoly = poly.asSimplePolygon();
-
-				if (simplePoly.isClockwise()) {
-					return simplePoly.reverse();
-				} else {
-					return simplePoly;
-				}
-
-			} catch (InvalidGeometryException e) {
-				//deal with non-simple polygons
-				//TODO: this should be prevented from ever happening
-				return null;
-			}
-
+		if (simplePoly.isClockwise()) {
+			return simplePoly.reverse();
 		} else {
-
-			return null;
-
+			return simplePoly;
 		}
 
 	}
