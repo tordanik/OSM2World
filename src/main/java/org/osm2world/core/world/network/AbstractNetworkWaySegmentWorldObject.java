@@ -7,7 +7,7 @@ import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringPars
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
-import static org.osm2world.core.math.VectorXZ.distanceSquared;
+import static org.osm2world.core.math.VectorXZ.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +42,8 @@ import org.osm2world.core.world.modules.TunnelModule;
 public abstract class AbstractNetworkWaySegmentWorldObject
 	implements NetworkWaySegmentWorldObject, WaySegmentWorldObject,
 	           IntersectionTestObject, WorldObjectWithOutline {
+
+	private static final double CONNECTOR_SNAP_DIST = 0.001;
 
 	public final MapWaySegment segment;
 
@@ -135,12 +137,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 					MapIntersectionWW intersection = (MapIntersectionWW) overlap;
 
 					if (GeometryUtil.isBetween(intersection.pos, start, end)) {
-
-						centerlineXZ.add(intersection.pos);
-
-						connectors.add(new EleConnector(intersection.pos,
-								null, getGroundState()));
-
+						if (!centerlineXZ.stream().anyMatch(p -> distance(p, intersection.pos) < CONNECTOR_SNAP_DIST)) {
+							centerlineXZ.add(intersection.pos);
+							connectors.add(new EleConnector(intersection.pos, null, getGroundState()));
+						}
 					}
 
 				} else if (overlap instanceof MapOverlapWA
@@ -156,12 +156,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 						VectorXZ pos = overlapWA.getIntersectionPositions().get(i);
 
 						if (GeometryUtil.isBetween(pos, start, end)) {
-
-							centerlineXZ.add(pos);
-
-							connectors.add(new EleConnector(pos,
-									null, getGroundState()));
-
+							if (!centerlineXZ.stream().anyMatch(p -> distance(p, pos) < CONNECTOR_SNAP_DIST)) {
+								centerlineXZ.add(pos);
+								connectors.add(new EleConnector(pos, null, getGroundState()));
+							}
 						}
 
 					}
