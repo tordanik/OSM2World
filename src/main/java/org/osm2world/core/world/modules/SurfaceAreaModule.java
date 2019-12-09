@@ -147,6 +147,8 @@ public class SurfaceAreaModule extends AbstractModule {
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
 
+				// TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way)
+
 				if (otherWO instanceof TerrainBoundaryWorldObject
 						&& otherWO.getGroundState() == GroundState.ON) {
 
