@@ -245,7 +245,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * find matching lane pairs
 	 * (lanes that can be connected at a junction or connector)
 	 */
-	private static Map<Integer, Integer> findMatchingLanes(
+	static Map<Integer, Integer> findMatchingLanes(
 			List<Lane> lanes1, List<Lane> lanes2,
 			boolean isJunction, boolean isCrossing) {
 
@@ -300,7 +300,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			if (matches.containsKey(lane1Index)
-					|| matches.containsKey(lane2Index)) {
+					|| matches.containsValue(lane2Index)) {
 				continue;
 			}
 
@@ -1487,12 +1487,12 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static enum RoadPart {
+	static enum RoadPart {
 		LEFT, RIGHT
 		//TODO add CENTRE lane support
 	}
 
-	private static class LaneLayout {
+	static class LaneLayout {
 
 		public final List<Lane> leftLanes = new ArrayList<Lane>();
 		public final List<Lane> rightLanes = new ArrayList<Lane>();
@@ -1618,7 +1618,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * {@link #setCalculatedValues1(double, double)} and
 	 * {@link #setCalculatedValues2(double, double)}, respectively.
 	 */
-	private static final class Lane implements RenderableToAllTargets {
+	static final class Lane implements RenderableToAllTargets {
 
 		public final Road road;
 		public final LaneType type;
@@ -1738,7 +1738,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * a connection between two lanes (e.g. at a junction)
 	 */
-	private static class LaneConnection implements RenderableToAllTargets {
+	static class LaneConnection implements RenderableToAllTargets {
 
 		public final LaneType type;
 		public final RoadPart roadPart;
@@ -1790,7 +1790,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * a type of lanes. Determines visual appearance,
 	 * and contains the intelligence for evaluating type-specific tags.
 	 */
-	private static abstract class LaneType {
+	static abstract class LaneType {
 
 		private final String typeName;
 		public final boolean isConnectableAtCrossings;
@@ -1825,7 +1825,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static abstract class FlatTexturedLane extends LaneType {
+	static abstract class FlatTexturedLane extends LaneType {
 
 		private FlatTexturedLane(String typeName,
 				boolean isConnectableAtCrossings,
@@ -1910,7 +1910,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static final LaneType VEHICLE_LANE = new FlatTexturedLane(
+	static final LaneType VEHICLE_LANE = new FlatTexturedLane(
 			"VEHICLE_LANE", false, false) {
 
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
@@ -1927,7 +1927,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType BUS_BAY = new FlatTexturedLane(
+	static final LaneType BUS_BAY = new FlatTexturedLane(
 			"BUS_BAY", false, false) {
 
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
@@ -1944,7 +1944,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType CYCLEWAY = new FlatTexturedLane(
+	static final LaneType CYCLEWAY = new FlatTexturedLane(
 			"CYCLEWAY", false, false) {
 
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
@@ -1960,7 +1960,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType SIDEWALK = new FlatTexturedLane(
+	static final LaneType SIDEWALK = new FlatTexturedLane(
 			"SIDEWALK", true, true) {
 
 		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
@@ -1969,7 +1969,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType SOLID_LINE = new FlatTexturedLane(
+	static final LaneType SOLID_LINE = new FlatTexturedLane(
 			"SOLID_LINE", false, false) {
 
 		@Override
@@ -1984,7 +1984,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType DASHED_LINE = new FlatTexturedLane(
+	static final LaneType DASHED_LINE = new FlatTexturedLane(
 			"DASHED_LINE", false, false) {
 
 		@Override
@@ -1999,7 +1999,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType KERB = new LaneType(
+	static final LaneType KERB = new LaneType(
 			"KERB", true, true) {
 
 		@Override
