@@ -322,7 +322,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		List<Road> roads = getConnectedRoads(node, true);
 
-		/* check whether the oneway special case applies */
+		/* check whether the oneway special case applies (for one oneway splitting into multiple, or vice versa) */
 
 		if (isJunction) {
 
@@ -349,8 +349,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				// sort into inbound and outbound oneways
 				// (need to be sequential blocks in the road list)
 
-				List<Road> inboundOnewayRoads = new ArrayList<Road>();
-				List<Road> outboundOnewayRoads = new ArrayList<Road>();
+				List<Road> inboundOnewayRoads = new ArrayList<>();
+				List<Road> outboundOnewayRoads = new ArrayList<>();
 
 				int i = 0;
 
@@ -373,7 +373,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				}
 
-				if (allOneway) {
+				if (allOneway &&
+						(inboundOnewayRoads.size() == 1 || outboundOnewayRoads.size() == 1)) {
 					return buildLaneConnections_allOneway(node,
 							inboundOnewayRoads, outboundOnewayRoads);
 				}
