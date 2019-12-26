@@ -124,6 +124,8 @@ public final class Materials {
 
 	public static final ConfMaterial RUNWAY_CENTER_MARKING =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial TAXIWAY_CENTER_MARKING =
+			new ConfMaterial(Interpolation.FLAT, YELLOW);
 	public static final ConfMaterial HELIPAD_MARKING =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 

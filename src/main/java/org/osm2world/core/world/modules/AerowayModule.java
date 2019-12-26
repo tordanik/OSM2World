@@ -161,38 +161,11 @@ public class AerowayModule extends ConfigurableWorldModule {
 	public static abstract class AerowaySegment extends AbstractNetworkWaySegmentWorldObject
 		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
 
-		protected AerowaySegment(MapWaySegment segment) {
+		final float centerlineWidthMeters;
+
+		protected AerowaySegment(MapWaySegment segment, float centerlineWidthMeters) {
 			super(segment);
-		}
-
-		@Override
-		public void renderTo(Target<?> target) {
-
-			Material material = getSurface();
-
-			List<VectorXYZ> groundVs = WorldModuleGeometryUtil.createTriangleStripBetween(
-					getOutline(false), getOutline(true));
-
-			target.drawTriangleStrip(material, groundVs,
-					texCoordLists(groundVs, material, GLOBAL_X_Z));
-
-		}
-
-		Material getSurface() {
-			return getSurfaceMaterial(segment.getTags().getValue("surface"), ASPHALT);
-		}
-
-	}
-
-	public static class Runway extends AerowaySegment {
-
-		protected Runway(MapWaySegment segment) {
-			super(segment);
-		}
-
-		@Override
-		public float getWidth() {
-			return parseWidth(segment.getTags(), 20.0f);
+			this.centerlineWidthMeters = centerlineWidthMeters;
 		}
 
 		@Override
@@ -202,8 +175,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 			List<VectorXYZ> rightOuter = getOutline(true);
 
 			// create geometry for the central marking
-			float centerlineWidthMeters = 0.9144f;
-			float relativeMarkingWidth = centerlineWidthMeters / getWidth();
+			float relativeMarkingWidth = min(centerlineWidthMeters / getWidth(), 0.2f);
 			List<VectorXYZ> leftInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 - relativeMarkingWidth));
 			List<VectorXYZ> rightInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 + relativeMarkingWidth));
 
@@ -215,13 +187,40 @@ public class AerowayModule extends ConfigurableWorldModule {
 			List<VectorXYZ> rightVs = WorldModuleGeometryUtil.createTriangleStripBetween(rightInner, rightOuter);
 			target.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, GLOBAL_X_Z));
 
-			if (material == ASPHALT || material == CONCRETE) {
-				material = material.withAddedLayers(RUNWAY_CENTER_MARKING.getTextureDataList());
-			}
+			material = getCenterlineSurface();
 
 			List<VectorXYZ> centerVs = WorldModuleGeometryUtil.createTriangleStripBetween(leftInner, rightInner);
 			target.drawTriangleStrip(material, centerVs, texCoordLists(centerVs, material, GLOBAL_X_Z));
 
+
+		}
+
+		Material getSurface() {
+			return getSurfaceMaterial(segment.getTags().getValue("surface"), ASPHALT);
+		}
+
+		abstract Material getCenterlineSurface();
+
+	}
+
+	public static class Runway extends AerowaySegment {
+
+		protected Runway(MapWaySegment segment) {
+			super(segment, 0.9f);
+		}
+
+		@Override
+		public float getWidth() {
+			return parseWidth(segment.getTags(), 20.0f);
+		}
+
+		@Override
+		Material getCenterlineSurface() {
+			if (getSurface() == ASPHALT || getSurface() == CONCRETE) {
+				return getSurface().withAddedLayers(RUNWAY_CENTER_MARKING.getTextureDataList());
+			} else {
+				return getSurface();
+			}
 		}
 
 	}
@@ -229,12 +228,21 @@ public class AerowayModule extends ConfigurableWorldModule {
 	public static class Taxiway extends AerowaySegment {
 
 		protected Taxiway(MapWaySegment segment) {
-			super(segment);
+			super(segment, 0.15f);
 		}
 
 		@Override
 		public float getWidth() {
 			return parseWidth(segment.getTags(), 5.0f);
+		}
+
+		@Override
+		Material getCenterlineSurface() {
+			if (getSurface() == ASPHALT || getSurface() == CONCRETE) {
+				return TAXIWAY_CENTER_MARKING;
+			} else {
+				return getSurface();
+			}
 		}
 
 	}
