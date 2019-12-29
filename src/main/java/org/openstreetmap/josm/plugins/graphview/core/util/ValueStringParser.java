@@ -263,16 +263,20 @@ public final class ValueStringParser {
 
 	/**
 	 * parses an hexadecimal color value or color name.
+	 * Names following the OSM underscore convention (e.g. light_blue) are normalized by removing the underscores.
 	 *
 	 * @return  color; null if value had syntax errors or was null
 	 */
 	public static final Color parseColor(String value, ColorNameDefinition colorNameDefinition) {
 		if (value == null) {
 			return null;
-		} else if (colorNameDefinition.contains(value)) {
-			return colorNameDefinition.get(value);
 		} else {
-			return parseColor(value);
+			String normalizedValue = value.replaceAll("_", "").toLowerCase();
+			if (colorNameDefinition.contains(normalizedValue)) {
+				return colorNameDefinition.get(normalizedValue);
+			} else {
+				return parseColor(value);
+			}
 		}
 	}
 
