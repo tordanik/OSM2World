@@ -2337,7 +2337,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			for (MapNode node : getNodes()) {
 				if ((node.getTags().contains("building", "entrance")
-						|| node.getTags().containsKey("entrance"))) {
+						|| node.getTags().containsKey("entrance")
+						|| node.getTags().containsKey("door"))) {
 
 					int level = NumberUtils.toInt(node.getTags().getValue("level"), 0);
 
@@ -2914,7 +2915,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				type = "overhead";
 			}
 
-			if (tags.containsKey("door")) {
+			if (tags.containsKey("door") && !"yes".equals(tags.getValue("door"))) {
 				type = tags.getValue("door");
 			}
 
