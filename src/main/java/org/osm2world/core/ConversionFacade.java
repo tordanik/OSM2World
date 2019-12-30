@@ -29,7 +29,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
@@ -93,35 +92,6 @@ public class ConversionFacade {
 
 		public TerrainElevationData getEleData() {
 			return eleData;
-		}
-
-		/**
-		 * collects and returns all representations that implement a
-		 * renderableType, including terrain.
-		 * Convenience method.
-		 */
-		public <R extends Renderable> Collection<R> getRenderables(Class<R> renderableType) {
-			return getRenderables(renderableType, true, true);
-		}
-
-		/**
-		 * @see #getRenderables(Class)
-		 */
-		public <R extends Renderable> Collection<R> getRenderables(
-				Class<R> renderableType, boolean includeGrid, boolean includeTerrain) {
-
-			//TODO make use of or drop includeTerrain
-
-			Collection<R> representations = new ArrayList<R>();
-
-			if (includeGrid) {
-				for (R r : mapData.getWorldObjects(renderableType)) {
-					representations.add(r);
-				}
-			}
-
-			return representations;
-
 		}
 
 	}
