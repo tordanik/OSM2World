@@ -21,7 +21,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -94,8 +93,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 	}
 
-	public static class Helipad extends AbstractAreaWorldObject
-			implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Helipad extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		protected Helipad(MapArea area) {
 			super(area);
@@ -107,7 +105,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			TexCoordFunction localXZTexCoordFunction = (List<VectorXYZ> vs, TextureData textureData) -> {
 				VectorXZ center = area.getOuterPolygon().getCentroid();
@@ -132,15 +130,14 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Apron extends NetworkAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Apron extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		public Apron(MapArea area) {
 			super(area);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
 
@@ -159,7 +156,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	/** some linear "road" on an airport, e.g. a runway or taxiway */
 	public static abstract class AerowaySegment extends AbstractNetworkWaySegmentWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		final float centerlineWidthMeters;
 
@@ -169,7 +166,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<VectorXYZ> leftOuter = getOutline(false);
 			List<VectorXYZ> rightOuter = getOutline(true);
@@ -248,14 +245,14 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class AerowayJunction extends JunctionNodeWorldObject<AerowaySegment>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		public AerowayJunction(MapNode node) {
 			super(node, AerowaySegment.class);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = getSurfaceForNode(node);
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
@@ -268,7 +265,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class AerowayConnector extends VisibleConnectorNodeWorldObject<AerowaySegment>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		public AerowayConnector(MapNode node) {
 			super(node, AerowaySegment.class);
@@ -283,7 +280,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = getSurfaceForNode(node);
 

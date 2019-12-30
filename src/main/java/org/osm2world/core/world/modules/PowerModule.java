@@ -30,13 +30,11 @@ import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.frontend_pbf.ModelTarget;
-import org.osm2world.core.target.frontend_pbf.RenderableToModelTarget;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -124,8 +122,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PowerCabinet extends NoOutlineNodeWorldObject
-	implements RenderableToAllTargets {
+	private static final class PowerCabinet extends NoOutlineNodeWorldObject {
 
 		public PowerCabinet(MapNode node) {
 			super(node);
@@ -137,7 +134,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -168,8 +165,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class Powerpole extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Powerpole extends NoOutlineNodeWorldObject {
 
 		public Powerpole(MapNode node) {
 			super(node);
@@ -181,7 +177,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* determine material */
 
@@ -206,14 +202,13 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	public static final class WindTurbine extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets, RenderableToModelTarget {
+	public static final class WindTurbine extends NoOutlineNodeWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
 		public static final Model ROTOR = new Model() {
 
 			@Override
-			public void render(Target<?> target, VectorXYZ position,
+			public void render(Target target, VectorXYZ position,
 					double direction, Double height, Double width, Double length) {
 
 				double bladeLength = (height == null ? 1 : height) / 2;
@@ -261,7 +256,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float poleHeight = parseHeight(node.getTags(), 100f);
 			float poleRadiusBottom = parseWidth(node.getTags(), 5) / 2;
@@ -306,9 +301,9 @@ public final class PowerModule extends AbstractModule {
 
 			/* draw rotor blades */
 
-			if (target instanceof ModelTarget<?>) {
+			if (target instanceof ModelTarget) {
 
-				((ModelTarget<?>) target).drawModel(ROTOR,
+				((ModelTarget) target).drawModel(ROTOR,
 						getBase().addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 						0, rotorDiameter, rotorDiameter, rotorDiameter);
 
@@ -322,16 +317,9 @@ public final class PowerModule extends AbstractModule {
 
 		}
 
-		@Override
-		public void renderTo(ModelTarget<?> target) {
-			renderTo((Target<?>)target);
-		}
-
 	}
 
-	private static class PowerMinorLine
-		extends NoOutlineWaySegmentWorldObject
-		implements RenderableToAllTargets {
+	private static class PowerMinorLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
@@ -347,7 +335,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			ShapeXZ powerlineShape = new PolylineXZ(
 				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL),
@@ -365,9 +353,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private final static class PowerLine
-		extends NoOutlineWaySegmentWorldObject
-		implements RenderableToAllTargets {
+	private final static class PowerLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float CABLE_THICKNESS = 0.05f;
 		// TODO: we need black plastic for cable material
@@ -498,7 +484,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			// do initial setup for height and position calculation, if necessary
 			if (startPos == null) {
@@ -540,8 +526,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class PowerTower extends NoOutlineNodeWorldObject
-		implements RenderableToAllTargets {
+	private static final class PowerTower extends NoOutlineNodeWorldObject {
 
 		private TowerConfig config;
 
@@ -558,7 +543,7 @@ public final class PowerModule extends AbstractModule {
 		// TODO we're missing the ceramics to hold the power lines
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			VectorXYZ base = getBase().addY(-0.5);
 			double height = parseHeight(node.getTags(), 14);
@@ -589,8 +574,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject
-		implements RenderableToAllTargets {
+	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject {
 
 		private TowerConfig config;
 		private VectorXZ direction;
@@ -642,7 +626,7 @@ public final class PowerModule extends AbstractModule {
 					}};
 		}
 
-		private void drawSegment(Target<?> target,
+		private void drawSegment(Target target,
 				VectorXZ[] low, VectorXZ[] high, double base, double height) {
 
 			for (int a = 0; a < 4; a++) {
@@ -664,7 +648,7 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 
-		private void drawHorizontalSegment(Target<?> target,
+		private void drawHorizontalSegment(Target target,
 				VectorXZ left, VectorXZ right, double base,
 				double left_height, double right_height) {
 
@@ -686,7 +670,7 @@ public final class PowerModule extends AbstractModule {
 			target.drawTriangleStrip(Materials.POWER_TOWER_HORIZONTAL, vs, texList);
 		}
 
-		private void drawHorizontalTop(Target<?> target, VectorXZ[][] points,
+		private void drawHorizontalTop(Target target, VectorXZ[][] points,
 				double base, double border, double middle, double center) {
 
 			double[] height = new double[]{border, middle, center, center, middle, border};
@@ -710,7 +694,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 
-		private double drawPart(Target<?> target, double elevation,
+		private double drawPart(Target target, double elevation,
 				int nr_segments, double segment_height, double ground_size,
 				double top_size) {
 
@@ -744,7 +728,7 @@ public final class PowerModule extends AbstractModule {
 			};
 		}
 
-		private void drawHorizontalPole(Target<?> target, double elevation,
+		private void drawHorizontalPole(Target target, double elevation,
 				double diameter, double width) {
 
 			double half = diameter / 2;
@@ -772,7 +756,7 @@ public final class PowerModule extends AbstractModule {
 		// TODO we're missing the ceramics to hold the power lines
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float pole_width = config.voltage > 150000 ? 16 : 13;
 			float[] tower_width = config.voltage > 150000 ? new float[]{11,6,4f,0} : new float[]{8,5,3,0};
@@ -797,8 +781,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject
-		implements RenderableToAllTargets {
+	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject {
 
 		//TODO create individual EleConnector for panels
 
@@ -815,7 +798,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* construct panel geometry */
 
@@ -924,7 +907,7 @@ public final class PowerModule extends AbstractModule {
 
 		}
 
-		private void renderPanelsTo(Target<?> target, VectorXYZ bottomLeft,
+		private void renderPanelsTo(Target target, VectorXYZ bottomLeft,
 				VectorXYZ bottomRight, VectorXYZ upVector) {
 
 			/* draw front */

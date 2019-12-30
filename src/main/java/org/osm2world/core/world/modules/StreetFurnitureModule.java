@@ -31,7 +31,6 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
@@ -137,8 +136,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		return false;
 	}
 
-	private static final class Flagpole extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Flagpole extends NoOutlineNodeWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -150,7 +148,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* draw the pole */
 
@@ -286,7 +284,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			 *
 			 * @param flagMesh  flag geometry and tex coords, e.g. created by {@link Flagpole#createFlagMesh}
 			 */
-			public void renderFlag(Target<?> target,
+			public void renderFlag(Target target,
 					Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> flagMesh) {
 
 				VectorXYZ[][] mesh = flagMesh.getKey();
@@ -437,8 +435,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class AdvertisingColumn extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class AdvertisingColumn extends NoOutlineNodeWorldObject {
 
 		public AdvertisingColumn(MapNode node) {
 			super(node);
@@ -450,7 +447,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float height = parseHeight(node.getTags(), 3f);
 
@@ -475,8 +472,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Billboard extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Billboard extends NoOutlineNodeWorldObject {
 
 		public Billboard(MapNode node) {
 			super(node);
@@ -488,7 +484,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float width = parseWidth(node.getTags(), 4);
 			float height = parseHeight(node.getTags(), 3.5f);
@@ -565,8 +561,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Swing extends NoOutlineNodeWorldObject
-	implements RenderableToAllTargets {
+	private static final class Swing extends NoOutlineNodeWorldObject {
 
 		public Swing(MapNode node) {
 			super(node);
@@ -578,7 +573,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			// determine width and height of the swing structure
 			final float swingHeight = parseHeight(node.getTags(),1.5f);
@@ -679,8 +674,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 	}
 
-	private static final class Bench extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Bench extends NoOutlineNodeWorldObject {
 
 		public Bench(MapNode node) {
 			super(node);
@@ -692,7 +686,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* determine the width of the bench */
 
@@ -753,8 +747,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	private static final class Table extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Table extends NoOutlineNodeWorldObject {
 
 		private final ConfMaterial defaultMaterial;
 
@@ -774,7 +767,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			int seats = parseInt(node.getTags(), 4, "seats");
 
@@ -839,7 +832,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			renderSeatSide(target, material, boardVector.mult(-width / 2 - seatHeight / 2.5f), length, rightSeats, seatHeight);
 		}
 
-		private void renderSeatSide(Target<?> target, Material material, VectorXZ rowPos, float length, int seats, float seatHeight) {
+		private void renderSeatSide(Target target, Material material, VectorXZ rowPos, float length, int seats, float seatHeight) {
 			VectorXZ boardVector = rowPos.rightNormal();
 			VectorXZ faceVector = rowPos.normalize();
 
@@ -886,8 +879,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a summit cross or wayside cross
 	 */
-	private static final class Cross extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Cross extends NoOutlineNodeWorldObject {
 
 		public Cross(MapNode node) {
 			super(node);
@@ -899,7 +891,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			boolean summit = node.getTags().containsKey("summit:cross")
 					|| node.getTags().contains("natural", "peak");
@@ -940,8 +932,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class RecyclingContainer extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class RecyclingContainer extends NoOutlineNodeWorldObject {
 
 		double directionAngle = parseDirection(node.getTags(), PI);
 		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -956,7 +947,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float distanceX = 3f;
 			float distanceZ = 1.6f;
@@ -991,7 +982,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		private void drawContainer(Target<?> target, String trash, VectorXYZ pos) {
+		private void drawContainer(Target target, String trash, VectorXYZ pos) {
 
 			if ("clothes".equals(trash)) {
 				target.drawBox(new ImmutableMaterial(Interpolation.FLAT, new Color(0.82f, 0.784f, 0.75f)),
@@ -1036,8 +1027,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class WasteBasket extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class WasteBasket extends NoOutlineNodeWorldObject {
 
 		public WasteBasket(MapNode node) {
 			super(node);
@@ -1049,7 +1039,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* determine material */
 
@@ -1079,8 +1069,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class GritBin extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class GritBin extends NoOutlineNodeWorldObject {
 
 		public GritBin(MapNode node) {
 			super(node);
@@ -1092,7 +1081,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float height = parseHeight(node.getTags(), 0.5f);
 			float width = parseWidth(node.getTags(), 1);
@@ -1138,8 +1127,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Phone extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Phone extends NoOutlineNodeWorldObject {
 
 		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 
@@ -1153,7 +1141,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1219,8 +1207,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class VendingMachineVice extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class VendingMachineVice extends NoOutlineNodeWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1234,7 +1221,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1286,8 +1273,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class PostBox extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class PostBox extends NoOutlineNodeWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1301,7 +1287,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1362,8 +1348,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class BusStop extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class BusStop extends NoOutlineNodeWorldObject {
 
 		public BusStop(MapNode node) {
 			super(node);
@@ -1380,7 +1365,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 			if (!isInHighway(node)) {
 				float height = parseHeight(node.getTags(), 3f);
 				float signHeight = 0.7f;
@@ -1411,8 +1396,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	private static final class ParcelMachine extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class ParcelMachine extends NoOutlineNodeWorldObject {
 
 		public ParcelMachine(MapNode node) {
 			super(node);
@@ -1424,7 +1408,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double ele = getBase().y;
 
@@ -1489,8 +1473,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class FireHydrant extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class FireHydrant extends NoOutlineNodeWorldObject {
 
 		public FireHydrant(MapNode node) {
 			super(node);
@@ -1502,7 +1485,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float height = parseHeight(node.getTags(), 1f);
 
@@ -1527,8 +1510,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class StreetLamp extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class StreetLamp extends NoOutlineNodeWorldObject {
 
 		public StreetLamp(MapNode node) {
 			super(node);
@@ -1540,7 +1522,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			float lampHeight = 0.8f;
 			float lampHalfWidth = 0.4f;
@@ -1595,8 +1577,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Board extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class Board extends NoOutlineNodeWorldObject {
 
 		public Board(MapNode node) {
 			super(node);
@@ -1608,7 +1589,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);

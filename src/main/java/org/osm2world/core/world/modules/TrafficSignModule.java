@@ -29,7 +29,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
@@ -346,8 +345,7 @@ public class TrafficSignModule extends AbstractModule {
 			return null;
 		}
 
-	private final class DestinationSign extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private final class DestinationSign extends NoOutlineNodeWorldObject {
 
 		//relation attributes
 		private Color backgroundColor;
@@ -591,7 +589,7 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* get basic parameters */
 
@@ -704,8 +702,7 @@ public class TrafficSignModule extends AbstractModule {
 		}
 	}
 
-	private static final class TrafficSign extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class TrafficSign extends NoOutlineNodeWorldObject {
 
 		private final List<TrafficSignType> types;
 
@@ -723,7 +720,7 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* get basic parameters */
 

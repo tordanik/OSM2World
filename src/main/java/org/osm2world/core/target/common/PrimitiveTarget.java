@@ -11,7 +11,6 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 
@@ -21,8 +20,7 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
  * They convert them all to a list of vertices
  * and represent the primitive type using an enum or flags.
  */
-public abstract class PrimitiveTarget<R extends Renderable>
-		extends AbstractTarget<R> {
+public abstract class PrimitiveTarget extends AbstractTarget {
 
 	/**
 	 * @param vs       vertices that form the primitive

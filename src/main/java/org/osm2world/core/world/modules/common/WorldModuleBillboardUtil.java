@@ -25,10 +25,8 @@ public final class WorldModuleBillboardUtil {
 	 * two halves, separated at the billboard's intersection axis,
 	 * to allow sorting of primitives for transparent rendering.
 	 */
-	public static final void renderCrosstree(Target<?> target,
-			Material material, VectorXYZ pos,
-			double width, double height,
-			boolean mirroredTextures) {
+	public static final void renderCrosstree(Target target, Material material, VectorXYZ pos,
+			double width, double height, boolean mirroredTextures) {
 
 		double halfWidth = 0.5 * width;
 

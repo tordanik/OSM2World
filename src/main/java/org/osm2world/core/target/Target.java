@@ -18,32 +18,19 @@ import org.osm2world.core.world.data.WorldObject;
 
 /**
  * A sink for rendering/writing {@link WorldObject}s to.
- *
- * @param <R>  subtype of {@link Renderable} designed for visualization
- *             with this target
  */
-public interface Target<R extends Renderable> {
-
-	/**
-	 * returns the renderable type designed for this target
-	 */
-	Class<R> getRenderableType();
+public interface Target {
 
 	void setConfiguration(Configuration config);
-
-	/**
-	 * renders a renderable object to this target.
-	 * Usually, this means calling a "renderTo" method on that renderable,
-	 * with this target as a parameter.
-	 */
-	void render(R renderable);
 
 	/**
 	 * announces the begin of the draw* calls for a {@link WorldObject}.
 	 * This allows targets to group them, if desired.
 	 * Otherwise, this can be ignored.
+	 *
+	 * @param object  the object that all draw method calls until the next beginObject belong to; can be null
 	 */
-	void beginObject(WorldObject object);
+	default void beginObject(WorldObject object) {}
 
 	/**
 	 * draws triangles.

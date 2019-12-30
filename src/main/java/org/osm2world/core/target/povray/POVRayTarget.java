@@ -18,7 +18,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 
-public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
+public class POVRayTarget extends AbstractTarget {
 
 	private static final String INDENT = "  ";
 
@@ -31,16 +31,6 @@ public class POVRayTarget extends AbstractTarget<RenderableToPOVRay> {
 
 	public POVRayTarget(PrintStream output) {
 		this.output = output;
-	}
-
-	@Override
-	public Class<RenderableToPOVRay> getRenderableType() {
-		return RenderableToPOVRay.class;
-	}
-
-	@Override
-	public void render(RenderableToPOVRay renderable) {
-		renderable.renderTo(this);
 	}
 
 //	int openBrackets = 0;

@@ -16,7 +16,6 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -62,8 +61,7 @@ public class BridgeModule extends AbstractModule {
 
 	public static final double BRIDGE_UNDERSIDE_HEIGHT = 0.2f;
 
-	private static class Bridge extends BridgeOrTunnel
-			implements RenderableToAllTargets {
+	private static class Bridge extends BridgeOrTunnel {
 
 		public Bridge(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
@@ -82,7 +80,7 @@ public class BridgeModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			drawBridgeUnderside(target);
 
@@ -90,7 +88,7 @@ public class BridgeModule extends AbstractModule {
 
 		}
 
-		private void drawBridgeUnderside(Target<?> target) {
+		private void drawBridgeUnderside(Target target) {
 
 			List<VectorXYZ> leftOutline = primaryRep.getOutline(false);
 			List<VectorXYZ> rightOutline = primaryRep.getOutline(true);
@@ -111,7 +109,7 @@ public class BridgeModule extends AbstractModule {
 
 		}
 
-		private void drawBridgePillars(Target<?> target) {
+		private void drawBridgePillars(Target target) {
 
 			List<VectorXZ> pillarPositions = equallyDistributePointsAlong(
 					2f, false,
@@ -144,7 +142,7 @@ public class BridgeModule extends AbstractModule {
 
 		}
 
-		private void drawBridgePillarAt(Target<?> target, VectorXZ pos) {
+		private void drawBridgePillarAt(Target target, VectorXZ pos) {
 
 			/* determine the bridge elevation at that point */
 

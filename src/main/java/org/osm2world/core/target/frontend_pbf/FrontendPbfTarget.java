@@ -92,8 +92,7 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 
-public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
-		implements ModelTarget<RenderableToModelTarget> {
+public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	/**
 	 * whether empty terrain should be faked as a big rectangle slightly below
@@ -258,8 +257,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	/**
 	 * internally used {@link Target} implementation that collects all geometry for a single object
 	 */
-	private class WorldObjectBuilder extends AbstractTarget<RenderableToModelTarget>
-			implements ModelTarget<RenderableToModelTarget> {
+	private class WorldObjectBuilder extends AbstractTarget implements ModelTarget {
 
 		private final WorldObject worldObject;
 
@@ -273,16 +271,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 		 */
 		public WorldObjectBuilder(WorldObject worldObject) {
 			this.worldObject = worldObject;
-		}
-
-		@Override
-		public Class<RenderableToModelTarget> getRenderableType() {
-			return RenderableToModelTarget.class;
-		}
-
-		@Override
-		public void render(RenderableToModelTarget renderable) {
-			renderable.renderTo(this);
 		}
 
 		@Override
@@ -613,16 +601,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 
 		//TODO implement, then check size differences
 
-	}
-
-	@Override
-	public Class<RenderableToModelTarget> getRenderableType() {
-		return RenderableToModelTarget.class;
-	}
-
-	@Override
-	public void render(RenderableToModelTarget renderable) {
-		renderable.renderTo(this);
 	}
 
 	@Override

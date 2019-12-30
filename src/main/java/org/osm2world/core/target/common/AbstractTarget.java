@@ -22,18 +22,15 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.world.data.WorldObject;
 
 /**
  * superclass for {@link Target} implementations that defines some
  * of the required methods using others. Extending it reduces the number of
  * methods that have to be provided by the implementation
  */
-public abstract class AbstractTarget<R extends Renderable>
-		implements Target<R> {
+public abstract class AbstractTarget implements Target {
 
 	protected Configuration config;
 
@@ -41,9 +38,6 @@ public abstract class AbstractTarget<R extends Renderable>
 	public void setConfiguration(Configuration config) {
 		this.config = config;
 	}
-
-	@Override
-	public void beginObject(WorldObject object) {}
 
 	@Override
 	public void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,

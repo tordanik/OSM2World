@@ -12,7 +12,6 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -26,8 +25,7 @@ import com.google.common.collect.Multimap;
  *
  * TODO: this currently produces faces that are not convex
  */
-public abstract class FaceTarget<R extends Renderable>
-	extends AbstractTarget<R> {
+public abstract class FaceTarget extends AbstractTarget {
 
 	abstract public void drawFace(Material material, List<VectorXYZ> vs,
 			List<VectorXYZ> normals, List<List<VectorXZ>> texCoordLists);

@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.statistics.StatisticsTarget;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -21,9 +20,7 @@ public final class TargetUtil {
 	 * render all world objects to a target instance
 	 * that are compatible with that target type
 	 */
-	public static <R extends Renderable> void renderWorldObjects(
-			final Target<R> target, final MapData mapData,
-			final boolean renderUnderground) {
+	public static void renderWorldObjects(Target target, MapData mapData, boolean renderUnderground) {
 
 		for (MapElement mapElement : mapData.getMapElements()) {
 			forEach(mapElement.getRepresentations(), (WorldObject r) -> {
@@ -41,15 +38,14 @@ public final class TargetUtil {
 	 * reaches the primitive threshold, then the next target is retrieved
 	 * from the iterator.
 	 */
-	public static <R extends RenderableToPrimitiveTarget> void renderWorldObjects(
-			final Iterator<? extends Target<R>> targetIterator,
-			final MapData mapData, final int primitiveThresholdPerTarget) {
+	public static void renderWorldObjects(Iterator<? extends Target> targetIterator, MapData mapData,
+			int primitiveThresholdPerTarget) {
 
 		final StatisticsTarget primitiveCounter = new StatisticsTarget();
 
 		forEach(mapData.getMapElements(), new Consumer<MapElement>() {
 
-			Target<R> currentTarget = targetIterator.next();
+			Target currentTarget = targetIterator.next();
 
 			@Override public void accept(MapElement e) {
 				for (WorldObject r : e.getRepresentations()) {
@@ -58,8 +54,7 @@ public final class TargetUtil {
 
 					renderObject(currentTarget, r);
 
-					if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT)
-							>= primitiveThresholdPerTarget) {
+					if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT) >= primitiveThresholdPerTarget) {
 						currentTarget = targetIterator.next();
 						primitiveCounter.clear();
 					}
@@ -72,37 +67,12 @@ public final class TargetUtil {
 	}
 
 	/**
-	 * renders any object to a target instance
-	 * if it is a renderable compatible with that target type.
+	 * renders any object to a target instance.
 	 * Also sends {@link Target#beginObject(WorldObject)} calls.
 	 */
-	public static final <R extends Renderable> void renderObject(
-			final Target<R> target, Object object) {
-
-		Class<R> renderableType = target.getRenderableType();
-
-		if (renderableType.isInstance(object)) {
-
-			if (object instanceof WorldObject) {
-				target.beginObject((WorldObject)object);
-			} else {
-				target.beginObject(null);
-			}
-
-			target.render(renderableType.cast(object));
-
-		} else if (object instanceof RenderableToAllTargets) {
-
-			if (object instanceof WorldObject) {
-				target.beginObject((WorldObject)object);
-			} else {
-				target.beginObject(null);
-			}
-
-			((RenderableToAllTargets)object).renderTo(target);
-
-		}
-
+	public static final void renderObject(Target target, WorldObject object) {
+		target.beginObject(object);
+		object.renderTo(target);
 	}
 
 }

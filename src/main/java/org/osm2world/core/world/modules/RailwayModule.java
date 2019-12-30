@@ -22,7 +22,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -88,7 +87,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(Target<?> target, VectorXYZ position, double direction,
+		public void render(Target target, VectorXYZ position, double direction,
 				Double height, Double width, Double length) {
 
 			if (height == null) { height = SLEEPER_HEIGHT; }
@@ -122,8 +121,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	private class Rail extends AbstractNetworkWaySegmentWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	private class Rail extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
 
 		final double gaugeMeters;
 		final double railDist;
@@ -164,7 +162,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* draw ground */
 
@@ -205,9 +203,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 				SleeperModel sleeperModel = sleeperModelByWidth.get(sleeperWidth);
 
-				if (target instanceof ModelTarget<?>) {
+				if (target instanceof ModelTarget) {
 
-					((ModelTarget<?>)target).drawModel(sleeperModel,
+					((ModelTarget)target).drawModel(sleeperModel,
 							sleeperPosition, segment.getDirection().angle(),
 							null, sleeperWidth, null);
 
@@ -230,16 +228,14 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RailJunction
-		extends JunctionNodeWorldObject<Rail>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class RailJunction extends JunctionNodeWorldObject<Rail> implements TerrainBoundaryWorldObject {
 
 		public RailJunction(MapNode node) {
 			super(node, Rail.class);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			if (getOutlinePolygon() == null) return;
 

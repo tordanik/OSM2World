@@ -19,7 +19,6 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.PolygonUtil;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -56,8 +55,7 @@ public class SportsModule extends AbstractModule {
 	/**
 	 * a pitch with markings for any sport
 	 */
-	static abstract class Pitch extends AbstractAreaWorldObject
-			implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	static abstract class Pitch extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		public Pitch(MapArea area) {
 
@@ -93,7 +91,7 @@ public class SportsModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Collection<TriangleXYZ> triangles = getTriangulation();
 
@@ -341,7 +339,7 @@ public class SportsModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* let the supertype draw the pitch surface */
 

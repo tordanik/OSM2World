@@ -16,7 +16,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.PolygonUtil;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
@@ -44,8 +43,7 @@ public class ParkingModule extends AbstractModule {
 		}
 	}
 
-	private static class SurfaceParking extends AbstractAreaWorldObject
-	implements TerrainBoundaryWorldObject, RenderableToAllTargets {
+	private static class SurfaceParking extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		private final List<MapArea> parkingSpaces = new ArrayList<MapArea>();
 
@@ -74,7 +72,7 @@ public class ParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);
@@ -99,8 +97,8 @@ public class ParkingModule extends AbstractModule {
 				}
 				direction = direction.normalize();
 
-				if (target instanceof ModelTarget<?>) {
-					((ModelTarget<?>)target).drawModel(carModel, bbox.getCenter().xyz(0), //TODO add elevation support
+				if (target instanceof ModelTarget) {
+					((ModelTarget)target).drawModel(carModel, bbox.getCenter().xyz(0), //TODO add elevation support
 							direction.angle(), null, null, null);
 				}
 

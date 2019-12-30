@@ -28,7 +28,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
@@ -69,8 +68,7 @@ public class PoolModule extends AbstractModule {
 
 	}
 
-	public static class Pool extends AbstractAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Pool extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		public Pool(MapArea area) {
 			super(area);
@@ -82,7 +80,7 @@ public class PoolModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* render water */
 
@@ -111,8 +109,7 @@ public class PoolModule extends AbstractModule {
 		}
 	}
 
-	private static class WaterSlide implements WaySegmentWorldObject,
-			RenderableToAllTargets {
+	private static class WaterSlide implements WaySegmentWorldObject {
 
 		private static final Color DEFAULT_COLOR = ORANGE;
 
@@ -185,7 +182,7 @@ public class PoolModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			//TODO parse material (e.g. for steel slides) and apply color to it
 

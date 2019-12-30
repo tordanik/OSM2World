@@ -33,7 +33,6 @@ import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -93,8 +92,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject
-			implements RenderableToAllTargets {
+	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject {
 
 		protected final float height;
 		protected final float width;
@@ -131,7 +129,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<VectorXYZ> leftBottomOutline = getOutline(false);
 			List<VectorXYZ> leftTopOutline = addYList(leftBottomOutline, height);
@@ -266,7 +264,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = METAL_FENCE;
 
@@ -331,7 +329,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* render fence */
 
@@ -402,7 +400,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			if (material == null) {
 				material = defaultFenceMaterial;
@@ -480,7 +478,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			double distanceBetweenRepetitions = 0.3;
 
@@ -551,8 +549,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class Guardrail extends LinearBarrier
-			implements RenderableToAllTargets {
+	private static class Guardrail extends LinearBarrier {
 
 		private static final float DEFAULT_HEIGHT = 0.75f;
 
@@ -599,7 +596,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<VectorXYZ> centerline = getCenterline();
 
@@ -660,8 +657,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class JerseyBarrier extends LinearBarrier
-			implements RenderableToAllTargets {
+	private static class JerseyBarrier extends LinearBarrier {
 
 		private static final float DEFAULT_HEIGHT = 1.145f;
 		private static final float DEFAULT_WIDTH = 0.82f;
@@ -689,7 +685,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* subdivide the centerline;
 			 * there'll be a jersey barrier element between each pair of successive points */
@@ -716,8 +712,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class Bollard extends NoOutlineNodeWorldObject
-	implements RenderableToAllTargets {
+	private static class Bollard extends NoOutlineNodeWorldObject {
 
 		private static final float DEFAULT_HEIGHT = 1;
 
@@ -741,7 +736,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 			target.drawColumn(Materials.CONCRETE,
 					null, getBase(), height, 0.15f, 0.15f, false, true);
 		}

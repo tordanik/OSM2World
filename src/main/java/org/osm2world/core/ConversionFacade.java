@@ -178,7 +178,7 @@ public class ConversionFacade {
 	 */
 	public Results createRepresentations(File osmFile,
 			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target<?>> targets)
+			List<? extends Target> targets)
 			throws IOException {
 
 		if (osmFile == null) {
@@ -211,7 +211,7 @@ public class ConversionFacade {
 	 */
 	public Results createRepresentations(OSMData osmData,
 			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target<?>> targets)
+			List<? extends Target> targets)
 			throws IOException, BoundingBoxSizeException {
 
 		/* check the inputs */
@@ -284,7 +284,7 @@ public class ConversionFacade {
 		boolean underground = config.getBoolean("renderUnderground", true);
 
 		if (targets != null) {
-			for (Target<?> target : targets) {
+			for (Target target : targets) {
 				TargetUtil.renderWorldObjects(target, mapData, underground);
 				target.finish();
 			}

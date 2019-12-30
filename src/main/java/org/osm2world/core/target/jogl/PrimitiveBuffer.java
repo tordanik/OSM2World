@@ -9,7 +9,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
-import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
 
 import com.google.common.collect.HashMultimap;
@@ -21,18 +20,7 @@ import com.google.common.collect.Multimap;
  * Higher-level information, such as object coherence, OSM attributes
  * or representations, isn't present in a PrimitiveBuffer.
  */
-public class PrimitiveBuffer extends
-		PrimitiveTarget<RenderableToPrimitiveTarget> {
-
-	@Override
-	public Class<RenderableToPrimitiveTarget> getRenderableType() {
-		return RenderableToPrimitiveTarget.class;
-	}
-
-	@Override
-	public void render(RenderableToPrimitiveTarget renderable) {
-		renderable.renderTo(this);
-	}
+public class PrimitiveBuffer extends PrimitiveTarget {
 
 	private Multimap<Material, Primitive> primitiveMap = HashMultimap.create();
 

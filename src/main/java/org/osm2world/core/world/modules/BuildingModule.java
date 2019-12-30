@@ -75,7 +75,7 @@ import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -146,8 +146,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	/**
 	 * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
 	 */
-	public static class Building implements AreaWorldObject,
-		WorldObjectWithOutline, RenderableToAllTargets {
+	public static class Building implements AreaWorldObject, WorldObjectWithOutline {
 
 		private final MapArea area;
 		private final List<BuildingPart> parts =
@@ -250,7 +249,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 			for (BuildingPart part : parts) {
 				part.renderTo(target);
 			}
@@ -258,7 +257,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class BuildingPart implements RenderableToAllTargets {
+	public static class BuildingPart implements Renderable {
 
 		private final Building building;
 		private final MapArea area;
@@ -563,7 +562,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			if (walls == null) {
 				// the reason why this is called here rather than the constructor is tunnel=building_passage:
@@ -814,7 +813,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		}
 
-		private static class Floor implements RenderableToAllTargets {
+		private static class Floor implements Renderable {
 
 			private final BuildingPart buildingPart;
 			private final Material material;
@@ -829,7 +828,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target<?> target) {
+			public void renderTo(Target target) {
 
 				double floorEle = buildingPart.building.getGroundLevelEle() + floorHeight;
 
@@ -848,7 +847,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private static final float DEFAULT_RIDGE_HEIGHT = 5;
 
-		public static interface Roof extends RenderableToAllTargets {
+		public static interface Roof extends Renderable {
 
 			/**
 			 * returns the outline (with holes) of the roof.
@@ -938,7 +937,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				return getMaxRoofEle() - getRoofHeight();
 			}
 			protected void renderSpindle(
-					Target<?> target, Material material,
+					Target target, Material material,
 					SimplePolygonXZ polygon,
 					List<Double> heights, List<Double> scaleFactors) {
 
@@ -1062,7 +1061,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private class OnionRoof extends SpindleRoof {
 
 			@Override
-			public void renderTo(Target<?> target) {
+			public void renderTo(Target target) {
 
 				double roofY = getMaxRoofEle() - getRoofHeight();
 
@@ -1093,7 +1092,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			private static final int HEIGHT_RINGS = 10;
 
 			@Override
-			public void renderTo(Target<?> target) {
+			public void renderTo(Target target) {
 
 				double roofY = getMaxRoofEle() - getRoofHeight();
 
@@ -1188,7 +1187,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target<?> target) {
+			public void renderTo(Target target) {
 
 				/* create the triangulation of the roof */
 
@@ -2139,7 +2138,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 	}
 
-	static class Wall implements RenderableToAllTargets {
+	static class Wall implements Renderable {
 
 		final @Nullable MapWay wallWay;
 
@@ -2183,7 +2182,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -2561,7 +2560,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			/** renders the wall; requires it to be anchored back into 3D space */
-			public void renderTo(Target<?> target, List<VectorXYZ> bottomPointsXYZ,
+			public void renderTo(Target target, List<VectorXYZ> bottomPointsXYZ,
 					boolean applyWindowTexture) {
 
 				/* render the elements on the wall */
@@ -2674,7 +2673,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 */
 			public SimplePolygonXZ outline(); //TODO allow any ShapeXZ; requires an intersect method though
 
-			public void renderTo(Target<?> target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ);
+			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ);
 
 		}
 
@@ -2705,7 +2704,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target<?> target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
 
 				double depth = 0.10;
 
@@ -2792,7 +2791,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target<?> target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
 
 				Material doorMaterial = ENTRANCE_DEFAULT;
 

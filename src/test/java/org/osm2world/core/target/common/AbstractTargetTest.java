@@ -23,7 +23,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 
@@ -33,22 +32,12 @@ public class AbstractTargetTest {
 	 * a test implementation of {@link Target}.
 	 * It collects all triangles "drawn" with it in a list.
 	 */
-	private static class TestTarget extends AbstractTarget<RenderableToAllTargets> {
+	private static class TestTarget extends AbstractTarget {
 
 		private final List<TriangleXYZ> drawnTriangles = new ArrayList<TriangleXYZ>();
 
 		public List<TriangleXYZ> getDrawnTriangles() {
 			return drawnTriangles;
-		}
-
-		@Override
-		public Class<RenderableToAllTargets> getRenderableType() {
-			return RenderableToAllTargets.class;
-		}
-
-		@Override
-		public void render(RenderableToAllTargets renderable) {
-			renderable.renderTo(this);
 		}
 
 		@Override

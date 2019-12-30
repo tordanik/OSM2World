@@ -7,6 +7,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -73,6 +74,11 @@ public class InvisibleModule extends AbstractModule {
 			return GroundState.ON;
 		}
 
+		@Override
+		public void renderTo(Target target) {
+			// no rendering
+		}
+
 	}
 
 	private static class InvisibleEleWaySegment
@@ -87,6 +93,11 @@ public class InvisibleModule extends AbstractModule {
 			return GroundState.ON;
 		}
 
+		@Override
+		public void renderTo(Target target) {
+			// no rendering
+		}
+
 	}
 
 	private static class InvisibleEleArea
@@ -99,6 +110,11 @@ public class InvisibleModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public void renderTo(Target target) {
+			// no rendering
 		}
 
 	}

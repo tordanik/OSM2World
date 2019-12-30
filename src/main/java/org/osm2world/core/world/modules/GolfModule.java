@@ -28,7 +28,6 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
@@ -87,8 +86,7 @@ public class GolfModule extends AbstractModule {
 
 	}
 
-	private static class Green extends AbstractAreaWorldObject
-			implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	private static class Green extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		private final VectorXZ pinPosition;
 		private final SimplePolygonXZ pinHoleLoop;
@@ -167,7 +165,7 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* render green surface */
 
@@ -206,8 +204,7 @@ public class GolfModule extends AbstractModule {
 
 		}
 
-		private static void drawPin(Target<?> target,
-				VectorXZ pos, List<VectorXYZ> upperHoleRing) {
+		private static void drawPin(Target target, VectorXZ pos, List<VectorXYZ> upperHoleRing) {
 
 			double minHoleEle = min(upperHoleRing, comparingDouble(v -> v.y)).y;
 

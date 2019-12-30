@@ -27,7 +27,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
-public class ObjTarget extends FaceTarget<RenderableToObj> {
+public class ObjTarget extends FaceTarget {
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
@@ -52,16 +52,6 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
 
-	}
-
-	@Override
-	public Class<RenderableToObj> getRenderableType() {
-		return RenderableToObj.class;
-	}
-
-	@Override
-	public void render(RenderableToObj renderable) {
-		renderable.renderTo(this);
 	}
 
 	@Override
@@ -277,7 +267,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			TextureData textureData = null;
 			if (material.getNumTextureLayers() > 0) {
 				textureData = material.getTextureDataList().get(i);
-				
+
 				//temporarily ignore TextTextureData layers
 				if(textureData instanceof TextTextureData) {
 					continue;

@@ -31,7 +31,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -89,8 +88,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 	}
 
-	public static class SurfaceArea extends AbstractAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class SurfaceArea extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		private final String surface;
 
@@ -102,7 +100,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = null;
 

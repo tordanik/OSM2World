@@ -16,7 +16,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -39,8 +38,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	private static final class BicycleStands extends NoOutlineWaySegmentWorldObject
-			implements RenderableToAllTargets {
+	private static final class BicycleStands extends NoOutlineWaySegmentWorldObject {
 
 		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
@@ -90,7 +88,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			VectorXZ start = segment.getStartNode().getPos();
 			VectorXZ end = segment.getEndNode().getPos();

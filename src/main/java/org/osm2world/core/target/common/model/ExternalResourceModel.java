@@ -19,7 +19,7 @@ public class ExternalResourceModel implements Model {
 	}
 
 	@Override
-	public void render(Target<?> target, VectorXYZ position, double direction,
+	public void render(Target target, VectorXYZ position, double direction,
 			Double height, Double width, Double length) {
 		throw new UnsupportedOperationException();
 	}

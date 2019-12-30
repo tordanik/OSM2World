@@ -40,7 +40,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -519,16 +519,14 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * representation for junctions between roads.
 	 */
-	public static class RoadJunction
-		extends JunctionNodeWorldObject<Road>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class RoadJunction extends JunctionNodeWorldObject<Road> implements TerrainBoundaryWorldObject {
 
 		public RoadJunction(MapNode node) {
 			super(node, Road.class);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = getSurfaceForNode(node);
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
@@ -560,7 +558,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 
@@ -583,7 +581,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<LaneConnection> connections = buildLaneConnections(
 					node, false, false);
@@ -614,7 +612,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		private static final float CROSSING_WIDTH = 3f;
 
@@ -628,7 +626,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			VectorXYZ startLeft = getEleConnectors().getPosXYZ(
 					startPos.subtract(cutVector.mult(0.5 * startWidth)));
@@ -678,9 +676,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/** representation of a road */
-	public static class Road
-		extends AbstractNetworkWaySegmentWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Road extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
 
 		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
 
@@ -1237,7 +1233,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			return laneLayout;
 		}
 
-		private void renderStepsTo(Target<?> target) {
+		private void renderStepsTo(Target target) {
 
 			final VectorXZ startWithOffset = getStartPosition();
 			final VectorXZ endWithOffset = getEndPosition();
@@ -1404,7 +1400,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		private void renderLanesTo(Target<?> target) {
+		private void renderLanesTo(Target target) {
 
 			List<Lane> lanesLeftToRight = laneLayout.getLanesLeftToRight();
 
@@ -1444,7 +1440,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			if (steps) {
 				renderStepsTo(target);
@@ -1456,15 +1452,14 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RoadArea extends NetworkAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class RoadArea extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		public RoadArea(MapArea area) {
 			super(area);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);
@@ -1619,7 +1614,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * {@link #setCalculatedValues1(double, double)} and
 	 * {@link #setCalculatedValues2(double, double)}, respectively.
 	 */
-	static final class Lane implements RenderableToAllTargets {
+	static final class Lane implements Renderable {
 
 		public final Road road;
 		public final LaneType type;
@@ -1708,7 +1703,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			assert phase > 1;
 
@@ -1739,7 +1734,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * a connection between two lanes (e.g. at a junction)
 	 */
-	static class LaneConnection implements RenderableToAllTargets {
+	static class LaneConnection implements Renderable {
 
 		public final LaneType type;
 		public final RoadPart roadPart;
@@ -1778,7 +1773,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			type.render(target, roadPart, rightHandTraffic,
 					EMPTY_TAG_GROUP, EMPTY_TAG_GROUP, leftBorder, rightBorder);
@@ -1807,7 +1802,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public abstract void render(Target<?> target, RoadPart roadPart,
+		public abstract void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic,
 				TagGroup roadTags, TagGroup laneTags,
 				List<VectorXYZ> leftLaneBorder,
@@ -1837,7 +1832,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(Target<?> target, RoadPart roadPart,
+		public void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic,
 				TagGroup roadTags, TagGroup laneTags,
 				List<VectorXYZ> leftLaneBorder,
@@ -2004,7 +1999,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			"KERB", true, true) {
 
 		@Override
-		public void render(Target<?> target, RoadPart roadPart,
+		public void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic, TagGroup roadTags, TagGroup laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {

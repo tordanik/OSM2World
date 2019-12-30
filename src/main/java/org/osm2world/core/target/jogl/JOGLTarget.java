@@ -12,7 +12,7 @@ import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
-public interface JOGLTarget extends Target<RenderableToJOGL> {
+public interface JOGLTarget extends Target {
 
 	/**
 	 * discards all accumulated draw calls
