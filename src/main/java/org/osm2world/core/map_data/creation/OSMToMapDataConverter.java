@@ -3,7 +3,7 @@ package org.osm2world.core.map_data.creation;
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.VectorXZ.distance;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class OSMToMapDataConverter {
 
 		/* ... based on multipolygons */
 
-		iterate(osmData.getRelations(), (OsmRelation relation ) -> {
+		forEach(osmData.getRelations(), (OsmRelation relation ) -> {
 
 			Map<String, String> tags = getTagsAsMap(relation);
 

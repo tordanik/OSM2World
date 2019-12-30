@@ -340,7 +340,7 @@ public class ConversionFacade {
 
 		final List<EleConnector> connectors = new ArrayList<EleConnector>();
 
-		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(), (WorldObject worldObject) -> {
+		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 
 			for (EleConnector conn : worldObject.getEleConnectors()) {
 				conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
@@ -366,7 +366,7 @@ public class ConversionFacade {
 
 		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {
 
-			FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
+			FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(),
 					(WorldObject o) -> o.defineEleConstraints(enforcer));
 
 		}

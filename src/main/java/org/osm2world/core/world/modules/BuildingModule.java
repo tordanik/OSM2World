@@ -20,7 +20,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
@@ -99,7 +99,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 
-		iterate(mapData.getMapAreas(), (MapArea area) -> {
+		forEach(mapData.getMapAreas(), (MapArea area) -> {
 
 			if (!area.getRepresentations().isEmpty()) return;
 

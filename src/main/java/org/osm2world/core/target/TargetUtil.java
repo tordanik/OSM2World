@@ -1,7 +1,7 @@
 package org.osm2world.core.target;
 
 import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.PRIMITIVE_COUNT;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.*;
 
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -26,21 +26,11 @@ public final class TargetUtil {
 			final boolean renderUnderground) {
 
 		for (MapElement mapElement : mapData.getMapElements()) {
-			for (WorldObject r : mapElement.getRepresentations()) {
+			forEach(mapElement.getRepresentations(), (WorldObject r) -> {
 				if (renderUnderground || r.getGroundState() != GroundState.BELOW) {
-
-					try {
-						renderObject(target, r);
-					} catch (Exception e) {
-						System.err.println("ignored exception:");
-						//TODO proper logging
-						e.printStackTrace();
-						System.err.println("this exception occurred for the following input:\n"
-								+ mapElement);
-					}
-
+					renderObject(target, r);
 				}
-			}
+			}, (e, r) -> DEFAULT_EXCEPTION_HANDLER.accept(e, r.getPrimaryMapElement()));
 		}
 	}
 
@@ -57,7 +47,7 @@ public final class TargetUtil {
 
 		final StatisticsTarget primitiveCounter = new StatisticsTarget();
 
-		iterate(mapData.getMapElements(), new Consumer<MapElement>() {
+		forEach(mapData.getMapElements(), new Consumer<MapElement>() {
 
 			Target<R> currentTarget = targetIterator.next();
 

@@ -1,5 +1,6 @@
 package org.osm2world.core.util;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -10,21 +11,31 @@ final public class FaultTolerantIterationUtil {
 
 	private FaultTolerantIterationUtil() { }
 
-	public static final <T> void iterate(
-			Iterable<? extends T> collection, Consumer<T> operation) {
+	public static final <T> void forEach(Iterable<? extends T> iterable,
+			Consumer<? super T> action, BiConsumer<? super Exception, ? super T> exceptionHandler) {
 
-		for (T input : collection) {
+		for (T t : iterable) {
 			try {
-				operation.accept(input);
+				action.accept(t);
 			} catch (Exception e) {
-				System.err.println("ignored exception:");
-				//TODO proper logging
-				e.printStackTrace();
-				System.err.println("this exception occurred for the following input:\n"
-						+ input);
+				exceptionHandler.accept(e, t);
 			}
 		}
 
 	}
+
+	/**
+	 * version of {@link #forEach(Iterable, Consumer)} that uses {@link #DEFAULT_EXCEPTION_HANDLER}
+	 */
+	public static final <T> void forEach(Iterable<? extends T> iterable, Consumer<? super T> action) {
+		forEach(iterable, action, DEFAULT_EXCEPTION_HANDLER);
+	}
+
+	/** a default exception handler that prints to System.err */
+	public static final BiConsumer<Exception, Object> DEFAULT_EXCEPTION_HANDLER = (Exception e, Object o) -> {
+		System.err.println("ignored exception:");
+		e.printStackTrace();
+		System.err.println("this exception occurred for the following input:\n" + o);
+	};
 
 }
