@@ -38,7 +38,6 @@ import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
@@ -528,12 +527,8 @@ public class OSMToMapDataConverter {
 
 	}
 
-	/**
-	 * adds the overlap between two {@link MapArea}s
-	 * to both, if it exists
-	 */
-	private static void addOverlapBetween(
-			MapArea area1, MapArea area2) {
+	/** adds the overlap between two {@link MapArea}s to both, if it exists */
+	private static void addOverlapBetween(MapArea area1, MapArea area2) {
 
 		/* check whether the areas have a shared segment */
 
@@ -568,17 +563,15 @@ public class OSMToMapDataConverter {
 
 			/* determine common nodes */
 
-			Set<VectorXZ> commonNodes = new HashSet<VectorXZ>();
-			for (SimplePolygonXZ p : polygon1.getPolygons()) {
-				commonNodes.addAll(p.getVertices());
-			}
+			Collection<VectorXZ> commonNodes = new ArrayList<>();
 
-			Set<VectorXZ> nodes2 = new HashSet<VectorXZ>();
-			for (SimplePolygonXZ p : polygon2.getPolygons()) {
-				nodes2.addAll(p.getVertices());
+			for (List<MapNode> ring : area1.getRings()) {
+				for (MapNode node : ring) {
+					if (node.getAdjacentAreas().contains(area2)) {
+						commonNodes.add(node.getPos());
+					}
+				}
 			}
-
-			commonNodes.retainAll(nodes2);
 
 			/* check whether the areas' outlines intersects somewhere
 			 * else than just at the common node(s).
@@ -590,6 +583,7 @@ public class OSMToMapDataConverter {
 				for (VectorXZ commonNode : commonNodes) {
 					if (distance(pos, commonNode) < 0.01) {
 						trueIntersection = false;
+						break;
 					}
 				}
 				if (trueIntersection) {
