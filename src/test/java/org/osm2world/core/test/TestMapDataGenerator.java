@@ -58,18 +58,20 @@ public class TestMapDataGenerator {
 		projection.setOrigin(new LatLon(0, 0));
 	}
 
-	public MapNode createNode(VectorXZ pos, TagGroup tags) {
+	public MapNode createNode(double x, double z, TagGroup tags) {
+		VectorXZ pos = new VectorXZ(x, z);
 		OsmNode osmNode = createOsm4jNode(projection.calcLon(pos), projection.calcLat(pos), tags);
 		MapNode result = new MapNode(pos, osmNode);
 		nodes.add(result);
 		return result;
 	}
 
-	public MapNode createNode(VectorXZ pos) {
-		return createNode(pos, EMPTY_TAG_GROUP);
+	public MapNode createNode(double x, double z) {
+		return createNode(x, z, EMPTY_TAG_GROUP);
 	}
 
 	public MapWay createWay(List<MapNode> wayNodes, TagGroup tags) {
+		wayNodes = closeLoop(wayNodes);
 		OsmWay osmWay = createOsm4jWay(wayNodes, tags);
 		MapWay result = new MapWay(osmWay, wayNodes);
 		ways.add(result);
@@ -77,6 +79,7 @@ public class TestMapDataGenerator {
 	}
 
 	public MapArea createWayArea(List<MapNode> wayNodes, TagGroup tags) {
+		wayNodes = closeLoop(wayNodes);
 		OsmWay osmWay = createOsm4jWay(wayNodes, tags);
 		MapArea result = new MapArea(osmWay, wayNodes);
 		areas.add(result);
@@ -136,6 +139,18 @@ public class TestMapDataGenerator {
 
 		return new RelationMember(entity.getId(), type, role);
 
+	}
+
+	/**
+	 * returns the list itself if the last element of the list equals the first;
+	 * otherwise, returns a list that's the same except with the first element appended to the end.
+	 */
+	private <T> List<T> closeLoop(List<T> list) {
+		if (!list.get(0).equals(list.get(list.size() - 1))) {
+			list = new ArrayList<>(list);
+			list.add(list.get(0));
+		}
+		return list;
 	}
 
 }

@@ -12,7 +12,6 @@ import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
 import org.osm2world.core.world.modules.BuildingModule.Wall;
@@ -25,12 +24,11 @@ public class BuildingModuleTest {
 		TestMapDataGenerator generator = new TestMapDataGenerator();
 
 		List<MapNode> nodes = new ArrayList<>(asList(
-				generator.createNode(new VectorXZ(-10, -5)),
-				generator.createNode(new VectorXZ(  0, -5)),
-				generator.createNode(new VectorXZ(+10, -5)),
-				generator.createNode(new VectorXZ(+10, +5)),
-				generator.createNode(new VectorXZ(-10, +5))
-				));
+				generator.createNode(-10, -5),
+				generator.createNode(  0, -5),
+				generator.createNode(+10, -5),
+				generator.createNode(+10, +5),
+				generator.createNode(-10, +5)));
 
 		nodes.add(nodes.get(0));
 
