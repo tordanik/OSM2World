@@ -277,11 +277,9 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 		public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
 				List<List<VectorXZ>> texCoordLists) {
 
-			TriangleData triangleData;
+			TriangleData triangleData = currentTriangles.get(material);
 
-			if (currentTriangles.containsKey(material)) {
-				triangleData = currentTriangles.get(material);
-			} else {
+			if (triangleData == null) {
 				triangleData = new TriangleData(material.getTextureDataList().size());
 				currentTriangles.put(material, triangleData);
 			}
