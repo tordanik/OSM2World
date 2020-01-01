@@ -1,11 +1,8 @@
 package org.osm2world.core.math.algorithms;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import org.locationtech.jts.triangulate.ConstraintEnforcementException;
-import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -25,26 +22,7 @@ public class TriangulationUtil {
 			Collection<SimplePolygonXZ> holes,
 			Collection<VectorXZ> points) {
 
-		if (points.isEmpty()) {
-			return triangulate(outerPolygon, holes);
-		}
-
-		/* use JTS if there are unconnected points */
-
-		try {
-
-			return JTSTriangulationUtil.triangulate(outerPolygon, holes,
-					Collections.<LineSegmentXZ>emptyList(), points);
-
-		} catch (ConstraintEnforcementException e2) {
-
-			/* JTS triangulation failed, falling back to earcut */
-
-			// TODO: log warning
-
-			return Earcut4JTriangulationUtil.triangulate(outerPolygon, holes, points);
-
-		}
+		return Earcut4JTriangulationUtil.triangulate(outerPolygon, holes, points);
 
 	}
 
