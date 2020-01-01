@@ -101,25 +101,22 @@ public class MapNode extends MapRelation.Element implements MapElement {
 		return outboundLines;
 	}
 
-	public void addAdjacentArea(MapArea adjacentArea) {
+	public void addAdjacentArea(MapArea adjacentArea, MapAreaSegment adjacentAreaSegment) {
+
+		assert adjacentAreaSegment.getArea() == adjacentArea;
+		assert adjacentAreaSegment.getStartNode() == this || adjacentAreaSegment.getEndNode() == this;
+
 		if (!adjacentAreas.contains(adjacentArea)) {
 			adjacentAreas.add(adjacentArea);
 		}
+
+		connectedSegments.add(adjacentAreaSegment);
+
 	}
 
 	//TODO: with all that "needs to be called before x" etc. stuff (also in MapArea), switch to BUILDER?
 	/** needs to be called after adding and completing all adjacent areas */
 	public void calculateAdjacentAreaSegments() {
-
-		for (MapArea adjacentArea : adjacentAreas) {
-			for (MapAreaSegment areaSegment : adjacentArea.getAreaSegments()) {
-				if (areaSegment.getStartNode() == this
-						|| areaSegment.getEndNode() == this) {
-					connectedSegments.add(areaSegment);
-				}
-			}
-		}
-
 		sortLinesByAngle(connectedSegments);
 	}
 

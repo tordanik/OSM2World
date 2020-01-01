@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
@@ -61,7 +62,7 @@ final class MultipolygonAreaBuilder {
 	/**
 	 * Creates areas for a multipolygon relation.
 	 * Also adds this area to the adjacent nodes using
-	 * {@link MapNode#addAdjacentArea(MapArea)}.
+	 * {@link MapNode#addAdjacentArea(MapArea, MapAreaSegment)}.
 	 *
 	 * @param relation  the multipolygon relation
 	 * @param nodeIdMap   map from node ids to {@link MapNode}s

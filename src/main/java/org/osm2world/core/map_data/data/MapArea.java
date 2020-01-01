@@ -100,9 +100,33 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 	/** shared functionality used by multiple constructors */
 	private void finishConstruction() {
+
+		areaSegments = new ArrayList<MapAreaSegment>();
+
 		for (List<MapNode> ring : getRings()) {
-			ring.forEach(node -> node.addAdjacentArea(this));
+
+			boolean isOuter = ring == nodes;
+
+			SimplePolygonXZ ringPolygon = isOuter
+					? polygon.getOuter()
+					: polygon.getHoles().get(holes.indexOf(ring));
+
+			for (int v = 0; v+1 < ring.size(); v++) {
+				//relies on duplication of first/last node
+
+				MapAreaSegment segment = new MapAreaSegment(this,
+						isOuter ? ringPolygon.isClockwise() : !ringPolygon.isClockwise(),
+						ring.get(v), ring.get(v+1));
+
+				segment.getStartNode().addAdjacentArea(this, segment);
+				segment.getEndNode().addAdjacentArea(this, segment);
+
+				areaSegments.add(segment);
+
+			}
+
 		}
+
 	}
 
 	public static final SimplePolygonXZ polygonFromMapNodeLoop(
@@ -163,40 +187,7 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	 * returns the segments making up this area's outer and inner boundaries
 	 */
 	public Collection<MapAreaSegment> getAreaSegments() {
-
-		if (areaSegments == null) {
-
-			areaSegments = new ArrayList<MapAreaSegment>();
-
-			for (int v = 0; v+1 < nodes.size(); v++) {
-				//relies on duplication of first/last node
-
-				areaSegments.add(new MapAreaSegment(this,
-						getPolygon().getOuter().isClockwise(),
-						nodes.get(v), nodes.get(v+1)));
-
-			}
-
-			for (int h = 0; h < holes.size(); h++) {
-
-				List<MapNode> holeNodes = holes.get(h);
-				SimplePolygonXZ holePolygon = polygon.getHoles().get(h);
-
-				for (int v = 0; v+1 < holeNodes.size(); v++) {
-					//relies on duplication of first/last node
-
-					areaSegments.add(new MapAreaSegment(this,
-							!holePolygon.isClockwise(),
-							holeNodes.get(v), holeNodes.get(v+1)));
-
-				}
-
-			}
-
-		}
-
 		return areaSegments;
-
 	}
 
 	@Override
