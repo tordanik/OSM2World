@@ -119,7 +119,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 		assert(gridBounds.contains(object));
 
-		AxisAlignedBoundingBoxXZ objectAABB = object.getAxisAlignedBoundingBoxXZ();
+		AxisAlignedBoundingBoxXZ objectAABB = object.boundingBox();
 
 		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
 		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
@@ -146,7 +146,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 		assert(gridBounds.contains(object));
 
-		AxisAlignedBoundingBoxXZ objectAABB = object.getAxisAlignedBoundingBoxXZ();
+		AxisAlignedBoundingBoxXZ objectAABB = object.boundingBox();
 
 		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
 		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
@@ -172,7 +172,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 		assert(gridBounds.contains(object));
 
-		AxisAlignedBoundingBoxXZ objectAABB = object.getAxisAlignedBoundingBoxXZ();
+		AxisAlignedBoundingBoxXZ objectAABB = object.boundingBox();
 
 		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
 		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);

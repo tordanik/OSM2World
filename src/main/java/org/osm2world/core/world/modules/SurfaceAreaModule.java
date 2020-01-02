@@ -215,7 +215,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			/* add a grid of points within the area for smoother surface shapes */
 
 			VectorGridXZ pointGrid = new VectorGridXZ(
-					area.getAxisAlignedBoundingBoxXZ(),
+					area.boundingBox(),
 					EmptyTerrainBuilder.POINT_GRID_DIST);
 
 			for (VectorXZ point : pointGrid) {

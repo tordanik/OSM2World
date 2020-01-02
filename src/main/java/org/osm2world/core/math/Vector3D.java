@@ -1,6 +1,8 @@
 package org.osm2world.core.math;
 
-public interface Vector3D {
+import org.osm2world.core.math.datastructures.IntersectionTestObject;
+
+public interface Vector3D extends IntersectionTestObject {
 
 	public double getX();
 	public double getY();

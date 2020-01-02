@@ -1,5 +1,7 @@
 package org.osm2world.core.heightmap.data;
 
+import static java.lang.Math.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -205,12 +207,12 @@ public abstract class AbstractCellularTerrainElevation implements
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		public AxisAlignedBoundingBoxXZ boundingBox() {
 			return new AxisAlignedBoundingBoxXZ(
-				Math.min(getTopLeft().getPos().x, getBottomLeft().getPos().x),
-				Math.min(getBottomLeft().getPos().z, getBottomRight().getPos().z),
-				Math.max(getTopRight().getPos().x, getBottomRight().getPos().x),
-				Math.max(getTopLeft().getPos().z, getTopRight().getPos().z));
+					min(getTopLeft().getPos().x, getBottomLeft().getPos().x),
+					min(getBottomLeft().getPos().z, getBottomRight().getPos().z),
+					max(getTopRight().getPos().x, getBottomRight().getPos().x),
+					max(getTopLeft().getPos().z, getTopRight().getPos().z));
 		}
 
 		@Override

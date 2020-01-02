@@ -286,7 +286,7 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		public AxisAlignedBoundingBoxXZ boundingBox() {
 
 			calculateOutlineIfNecessary();
 

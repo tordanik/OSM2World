@@ -71,7 +71,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 		return new AxisAlignedBoundingBoxXZ(Arrays.asList(
 				startNode.getPos(), endNode.getPos()));
 	}

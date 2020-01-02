@@ -30,7 +30,7 @@ public class TerrainBoundaryAABBDebugView extends DebugView {
 		for (TerrainBoundaryWorldObject tb :
 			map.getWorldObjects(TerrainBoundaryWorldObject.class)) {
 
-			AxisAlignedBoundingBoxXZ box = tb.getAxisAlignedBoundingBoxXZ();
+			AxisAlignedBoundingBoxXZ box = tb.boundingBox();
 			if (box != null) {
 				PolygonXZ polygon = box.polygonXZ();
 				target.drawLineLoop(BB_COLOR, 1, polygon.xyz(0).getVertices());

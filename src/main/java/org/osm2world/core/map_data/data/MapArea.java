@@ -225,8 +225,8 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(getOuterPolygon().getVertexCollection());
+	public AxisAlignedBoundingBoxXZ boundingBox() {
+		return getOuterPolygon().boundingBox();
 	}
 
 	@Override

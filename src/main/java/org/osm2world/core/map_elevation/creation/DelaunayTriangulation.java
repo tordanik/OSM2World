@@ -176,7 +176,7 @@ public class DelaunayTriangulation {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		public AxisAlignedBoundingBoxXZ boundingBox() {
 			return new AxisAlignedBoundingBoxXZ(
 					min(p0.x, min(p1.x, p2.x)),
 					min(p0.z, min(p1.z, p2.z)),

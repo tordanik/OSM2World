@@ -73,6 +73,11 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ
 		return new VectorXZ(minX + sizeX()/2, minZ + sizeZ()/2);
 	}
 
+	@Override
+	public AxisAlignedBoundingBoxXZ boundingBox() {
+		return this;
+	}
+
 	private SimplePolygonXZ polygonXZ;
 
 	public SimplePolygonXZ polygonXZ() {
@@ -135,7 +140,7 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ
 
 	public boolean contains(IntersectionTestObject object) {
 		return polygonXZ().contains(
-				object.getAxisAlignedBoundingBoxXZ().polygonXZ());
+				object.boundingBox().polygonXZ());
 	}
 
 	public boolean contains(VectorXZ v) {

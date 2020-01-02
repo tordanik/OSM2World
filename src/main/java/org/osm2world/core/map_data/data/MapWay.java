@@ -9,6 +9,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.math.shapes.PolylineXZ;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
@@ -18,7 +19,7 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  *
  * @See {@link MapData} for context
  */
-public class MapWay extends MapRelation.Element {
+public class MapWay extends MapRelation.Element implements IntersectionTestObject {
 
 	private final OsmWay osmWay;
 	private final List<MapNode> nodes;
@@ -73,7 +74,8 @@ public class MapWay extends MapRelation.Element {
 		return waySegments;
 	}
 
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	@Override
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 		return new AxisAlignedBoundingBoxXZ(getPolylineXZ().getVertexList());
 	}
 

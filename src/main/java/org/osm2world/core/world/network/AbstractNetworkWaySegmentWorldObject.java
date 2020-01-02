@@ -583,7 +583,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 
 		if (isBroken() || getOutlinePolygonXZ() == null) {
 			return null;

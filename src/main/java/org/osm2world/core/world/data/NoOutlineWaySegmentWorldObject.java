@@ -60,7 +60,7 @@ public abstract class NoOutlineWaySegmentWorldObject
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 		return new AxisAlignedBoundingBoxXZ(asList(
 				getStartPosition(), getEndPosition()));
 	}

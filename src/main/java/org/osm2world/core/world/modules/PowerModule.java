@@ -809,7 +809,7 @@ public final class PowerModule extends AbstractModule {
 
 			/* place and draw rows of panels */
 
-			AxisAlignedBoundingBoxXZ box = this.getAxisAlignedBoundingBoxXZ();
+			AxisAlignedBoundingBoxXZ box = this.boundingBox();
 
 			List<PolygonShapeXZ> obstacles = getGroundObstacles();
 

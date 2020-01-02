@@ -779,7 +779,7 @@ final class MultipolygonAreaBuilder {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		public AxisAlignedBoundingBoxXZ boundingBox() {
 
 			double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
 			double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;

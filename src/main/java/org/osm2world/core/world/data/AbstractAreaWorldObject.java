@@ -74,7 +74,7 @@ public abstract class AbstractAreaWorldObject
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 		return new AxisAlignedBoundingBoxXZ(
 				area.getOuterPolygon().getVertexCollection());
 	}

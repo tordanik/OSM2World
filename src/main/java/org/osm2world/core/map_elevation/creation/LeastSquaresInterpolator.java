@@ -288,8 +288,8 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-			return pos.getAxisAlignedBoundingBoxXZ();
+		public AxisAlignedBoundingBoxXZ boundingBox() {
+			return pos.boundingBox();
 		}
 
 		@Override

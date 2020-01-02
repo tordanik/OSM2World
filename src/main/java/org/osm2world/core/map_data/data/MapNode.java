@@ -204,7 +204,7 @@ public class MapNode extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 		return new AxisAlignedBoundingBoxXZ(pos.x, pos.z, pos.x, pos.z);
 	}
 

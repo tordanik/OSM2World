@@ -6,7 +6,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
@@ -21,7 +20,6 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -396,11 +394,6 @@ public class TreeModule extends ConfigurableWorldModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
-		}
-
-		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-			return new AxisAlignedBoundingBoxXZ(Collections.singleton(node.getPos()));
 		}
 
 		@Override

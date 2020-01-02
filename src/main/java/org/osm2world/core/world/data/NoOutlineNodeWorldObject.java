@@ -17,8 +17,7 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  *
  * @see OutlineNodeWorldObject
  */
-public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
-		IntersectionTestObject {
+public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, IntersectionTestObject {
 
 	protected final MapNode node;
 
@@ -36,8 +35,10 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(singleton(node.getPos()));
+	public AxisAlignedBoundingBoxXZ boundingBox() {
+		return new AxisAlignedBoundingBoxXZ(
+				node.getPos().x, node.getPos().z,
+				node.getPos().x, node.getPos().z);
 	}
 
 	@Override

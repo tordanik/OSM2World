@@ -8,6 +8,6 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
  */
 public interface IntersectionTestObject {
 
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ();
+	public AxisAlignedBoundingBoxXZ boundingBox();
 
 }

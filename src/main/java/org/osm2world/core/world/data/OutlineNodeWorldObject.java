@@ -72,7 +72,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedBoundingBoxXZ boundingBox() {
 		if (getOutlinePolygonXZ() != null) {
 			return new AxisAlignedBoundingBoxXZ(
 					getOutlinePolygonXZ().getVertexCollection());

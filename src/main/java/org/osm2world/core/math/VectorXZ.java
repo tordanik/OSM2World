@@ -135,6 +135,11 @@ public class VectorXZ implements Vector3D {
 	}
 
 	@Override
+	public AxisAlignedBoundingBoxXZ boundingBox() {
+		return new AxisAlignedBoundingBoxXZ(x, z, x, z);
+	}
+
+	@Override
 	public String toString() {
 		return "(" + x + "," + z + ")";
 	}

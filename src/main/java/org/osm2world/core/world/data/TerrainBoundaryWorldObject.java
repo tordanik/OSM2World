@@ -14,6 +14,6 @@ public interface TerrainBoundaryWorldObject extends WorldObjectWithOutline, Inte
 	 * returns the axis aligned bounding box that contains the entire object
 	 */
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ();
+	public AxisAlignedBoundingBoxXZ boundingBox();
 
 }
