@@ -74,9 +74,12 @@ public class WaterModule extends ConfigurableWorldModule {
 					for (MapOverlap<?, ?> overlap : line.getOverlaps()) {
 						MapElement other = overlap.getOther(line);
 						if (other instanceof MapArea) {
-							lineInsideWaterArea |= overlap.type == MapOverlapType.CONTAIN;
-							lineStartInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getStartNode().getPos());
-							lineEndInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getEndNode().getPos());
+							if (overlap.type == MapOverlapType.CONTAIN) {
+								lineInsideWaterArea = true;
+							} else if (overlap.type == MapOverlapType.INTERSECT) {
+								lineStartInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getStartNode().getPos());
+								lineEndInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getEndNode().getPos());
+							}
 						}
 					}
 
