@@ -2,20 +2,20 @@ package org.osm2world.core.world.modules.common;
 
 import static java.lang.Math.toRadians;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.creation.WorldModule;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 
 /**
@@ -162,8 +162,8 @@ public final class WorldModuleGeometryUtil {
 
 
 	/**
-	 * removes positions from a collection if they are on the area covered by a
-	 * {@link WorldObjectWithOutline} from a collection of {@link WorldObject}s.
+	 * removes positions from a collection if they are on the area
+	 * which is already covered by some {@link WorldObjectWithOutline}.
 	 *
 	 * This can be used to avoid placing trees, bridge pillars
 	 * and other randomly distributed features on roads, rails
@@ -171,7 +171,8 @@ public final class WorldModuleGeometryUtil {
 	 */
 	public static final void filterWorldObjectCollisions(
 			Collection<VectorXZ> positions,
-			Collection<WorldObject> worldObjects) {
+			Collection<WorldObjectWithOutline> avoidedObjects,
+			AxisAlignedBoundingBoxXZ positionBbox) {
 
 		//TODO: add support for avoiding a radius around the position, too.
 		//this is easily possible once "inflating"/"shrinking" polygons is supported [would also be useful for water bodies etc.]
@@ -184,29 +185,20 @@ public final class WorldModuleGeometryUtil {
 
 		List<PolygonShapeXZ> filterPolygons = new ArrayList<>();
 
-		for (WorldObject worldObject : worldObjects) {
-
-			if (worldObject.getGroundState() == GroundState.ON
-				&& (worldObject instanceof WorldObjectWithOutline)) {
-
-				PolygonShapeXZ outline = null;
-
-				try {
-					outline = ((WorldObjectWithOutline)worldObject).
-							getOutlinePolygonXZ();
-				} catch (InvalidGeometryException e) {
-					//ignore this outline
+		for (WorldObjectWithOutline avoidedObject : avoidedObjects) {
+			try {
+				PolygonShapeXZ outlinePolygonXZ = avoidedObject.getOutlinePolygonXZ();
+				if (outlinePolygonXZ != null) {
+					filterPolygons.add(outlinePolygonXZ);
 				}
-
-				if (outline != null) {
-					filterPolygons.add(outline);
-				}
-
+			} catch (InvalidGeometryException e) {
+				//ignore this outline
 			}
-
 		}
 
 		/* perform filtering of positions */
+
+		List<AxisAlignedBoundingBoxXZ> filterPolygonBbox = filterPolygons.stream().map(p -> p.boundingBox()).collect(toList());
 
 		Iterator<VectorXZ> positionIterator = positions.iterator();
 
@@ -214,8 +206,9 @@ public final class WorldModuleGeometryUtil {
 
 			VectorXZ pos = positionIterator.next();
 
-			for (PolygonShapeXZ filterPolygon : filterPolygons) {
-				if (filterPolygon.contains(pos)) {
+			for (int i = 0; i < filterPolygons.size(); i++) {
+				if (filterPolygonBbox.get(i).contains(pos)
+						&& filterPolygons.get(i).contains(pos)) {
 					positionIterator.remove();
 					break;
 				}

@@ -20,6 +20,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.WaterModule.Water;
 import org.osm2world.core.world.modules.WaterModule.Waterway;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -118,21 +119,22 @@ public class BridgeModule extends AbstractModule {
 
 			//make sure that the pillars doesn't pierce anything on the ground
 
-			Collection<WorldObject> avoidedObjects = new ArrayList<WorldObject>();
+			Collection<WorldObjectWithOutline> avoidedObjects = new ArrayList<>();
 
 			for (MapIntersectionWW i : segment.getIntersectionsWW()) {
 				for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
 
 					if (otherRep.getGroundState() == GroundState.ON
+							&& otherRep instanceof WorldObjectWithOutline
 							&& !(otherRep instanceof Water || otherRep instanceof Waterway) //TODO: choose better criterion!
 					) {
-						avoidedObjects.add(otherRep);
+						avoidedObjects.add((WorldObjectWithOutline) otherRep);
 					}
 
 				}
 			}
 
-			filterWorldObjectCollisions(pillarPositions, avoidedObjects);
+			filterWorldObjectCollisions(pillarPositions, avoidedObjects, null);
 
 			//draw the pillars
 
