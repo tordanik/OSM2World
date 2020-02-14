@@ -2437,19 +2437,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 				double levelHeight = buildingPart.getLevelHeight(level);
 				double heightAboveBase = buildingPart.getLevelHeightAboveBase(level);
 
-				double windowHeight = 0.5 * levelHeight;
-				double breastHeight = 0.3 * levelHeight;
+				WindowParameters windowParams = new WindowParameters(tags, levelHeight);
 
-				double windowWidth = 1;
-
-				int numColums = (int) round(surface.getLength() / (2 * windowWidth));
+				int numColums = windowParams.numberWindows != null
+						? windowParams.numberWindows
+						: (int) round(surface.getLength() / (2 * windowParams.width));
 
 				for (int i = 0; i < numColums; i++) {
 
 					VectorXZ pos = new VectorXZ(i * surface.getLength() / numColums,
-							heightAboveBase + breastHeight);
+							heightAboveBase + windowParams.breast);
 
-					Window window = new Window(pos, windowWidth, windowHeight);
+					Window window = new Window(pos, windowParams);
 					surface.addElementIfSpaceFree(window);
 
 				}
@@ -2682,24 +2681,22 @@ public class BuildingModule extends ConfigurableWorldModule {
 			/** position on a wall surface */
 			private final VectorXZ position;
 
-			private final double width;
-			private final double height;
+			private final WindowParameters params;
 
-			public Window(VectorXZ position, double width, double height) {
+			public Window(VectorXZ position, WindowParameters params) {
 				this.position = position;
-				this.width = width;
-				this.height = height;
+				this.params = params;
 			}
 
 			@Override
 			public SimplePolygonXZ outline() {
 
 				return new SimplePolygonXZ(asList(
-						position.add(new VectorXZ(-width/2, 0)),
-						position.add(new VectorXZ(+width/2, 0)),
-						position.add(new VectorXZ(+width/2, +height)),
-						position.add(new VectorXZ(-width/2, +height)),
-						position.add(new VectorXZ(-width/2, 0))));
+						position.add(new VectorXZ(-params.width/2, 0)),
+						position.add(new VectorXZ(+params.width/2, 0)),
+						position.add(new VectorXZ(+params.width/2, +params.height)),
+						position.add(new VectorXZ(-params.width/2, +params.height)),
+						position.add(new VectorXZ(-params.width/2, 0))));
 
 			}
 
@@ -2872,6 +2869,136 @@ public class BuildingModule extends ConfigurableWorldModule {
 						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
 
 			}
+
+		}
+
+	}
+
+	/**
+	 * data about the window(s) on a wall, door, or for a single window.
+	 * This object type is immutable after its construction from a set of tags.
+	 */
+	private static class WindowParameters {
+
+		private static enum WindowType {
+			PLAIN, DISPLAY_WINDOW
+		}
+
+		private static enum WindowShape {
+
+			RECTANGLE, CIRCLE, ROUNDTOP;
+
+			/**
+			 * convenient alternative to valueOf
+			 * @return  the matching value, can be null
+			 */
+			public static WindowShape getValue(String shapeName) {
+
+				if (shapeName == null) {
+					return null;
+				}
+
+				try {
+					return valueOf(shapeName.toUpperCase());
+				} catch (IllegalArgumentException e) {
+					return null;
+				}
+
+			}
+
+		}
+
+		private static final double DEFAULT_WIDTH = 1;
+		private static final double DEFAULT_HEIGHT_RELATIVE_TO_LEVEL = 0.5f;
+		private static final double DEFAULT_BREAST_RELATIVE_TO_LEVEL = 0.3f;
+
+		public final WindowType type;
+
+		public final boolean hasLeftShutter;
+		public final boolean hasRightShutter;
+
+		public final @Nullable Integer numberWindows;
+		public final int groupSize;
+
+		public final double width;
+		public final double height;
+		public final double breast;
+
+		public final int panesHorizontal;
+		public final int panesVertical;
+
+		public final WindowShape windowShape;
+
+		public final Material windowMaterial;
+		public final Material frameMaterial;
+		public final Material shutterMaterial;
+
+		public WindowParameters(TagGroup tags, double levelHeight) {
+
+			/* window */
+
+			String windowString = tags.getValue("window");
+
+			if ("display_window".equals(windowString)) {
+				type = WindowType.DISPLAY_WINDOW;
+			} else {
+				type = WindowType.PLAIN;
+			}
+
+			windowMaterial = BuildingPart.buildMaterial(
+					tags.getValue("window:material"),
+					tags.getValue("window:colour"),
+					Materials.GLASS, false);
+
+			numberWindows = parseUInt(tags.getValue("window:count"));
+			groupSize = parseUInt(tags.getValue("window:group_size"), 1);
+
+			width = parseMeasure(tags.getValue("window:width"), DEFAULT_WIDTH);
+			height = parseMeasure(tags.getValue("window:height"), DEFAULT_HEIGHT_RELATIVE_TO_LEVEL * levelHeight);
+			breast = parseMeasure(tags.getValue("window:breast"), DEFAULT_BREAST_RELATIVE_TO_LEVEL * levelHeight);
+
+
+			String panesValue = tags.getValue("window:panes");
+
+			if (panesValue != null && panesValue.matches("^\\d+x\\d+$")) {
+				String[] s = panesValue.split("x");
+				panesHorizontal = parseUInt(s[0], 1);
+				panesVertical = parseUInt(s[1], 1);
+			} else {
+				panesVertical = 1;
+				panesHorizontal = 1;
+			}
+
+			WindowShape tempWindowShape = WindowShape.getValue(tags.getValue("window:shape"));
+			windowShape = tempWindowShape != null ? tempWindowShape : WindowShape.RECTANGLE;
+
+			/* frame */
+
+			frameMaterial = BuildingPart.buildMaterial(
+					tags.getValue("window:frame:material"),
+					tags.getValue("window:frame:colour"),
+					Materials.PLASTIC, false);
+
+			/* shutters */
+
+			if (tags.contains("window:shutter", "both")) {
+				hasLeftShutter = true;
+				hasRightShutter = true;
+			} else if (tags.contains("window:shutter", "left")) {
+				hasLeftShutter = true;
+				hasRightShutter = false;
+			} else if (tags.contains("window:shutter", "right")) {
+				hasLeftShutter = false;
+				hasRightShutter = true;
+			} else {
+				hasLeftShutter = false;
+				hasRightShutter = false;
+			}
+
+			shutterMaterial = BuildingPart.buildMaterial(
+					tags.getValue("window:shutter:material"),
+					tags.getValue("window:shutter:colour"),
+					Materials.WOOD, false);
 
 		}
 
