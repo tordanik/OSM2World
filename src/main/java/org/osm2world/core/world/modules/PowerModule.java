@@ -263,12 +263,7 @@ public final class PowerModule extends AbstractModule {
 			float poleRadiusTop = poleRadiusBottom / 2;
 			float nacelleHeight = poleHeight * 0.05f;
 			float nacelleDepth = poleHeight * 0.1f;
-			double rotorDiameter = poleHeight;
-
-			if (node.getTags().containsKey("rotor:diameter")
-					&& parseMeasure(node.getTags().getValue("rotor:diameter")) != null) {
-				rotorDiameter = parseMeasure(node.getTags().getValue("rotor:diameter"));
-			}
+			double rotorDiameter = parseMeasure(node.getTags().getValue("rotor:diameter"), poleHeight);
 
 			/* determine material */
 

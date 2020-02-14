@@ -14,6 +14,26 @@ public final class ValueStringParser {
 	/** pattern that splits into a part before and after a decimal point */
 	private static final Pattern DEC_POINT_PATTERN = Pattern.compile("^(\\-?\\d+)\\.(\\d+)$");
 
+	public static final Integer parseUInt(String value) {
+		try {
+			int result = Integer.parseInt(value);
+			if (result >= 0) {
+				return result;
+			} else {
+				return null;
+			}
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/** variant of {@link #parseUInt(String)} with a default value */
+	public static final int parseUInt(String value, int defaultValue) {
+		if (value == null) return defaultValue;
+		Integer result = parseUInt(value);
+		return result == null ? defaultValue : result;
+	}
+
 	public static final Float parseOsmDecimal(String value, boolean allowNegative) {
 
 		/* positive integer */
@@ -61,6 +81,14 @@ public final class ValueStringParser {
 		return null;
 	}
 
+	/** variant of {@link #parseOsmDecimal(String, boolean)} with a default value */
+	public static final double parseOsmDecimal(String value, boolean allowNegative, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseOsmDecimal(value, allowNegative);
+		return result == null ? defaultValue : result;
+	}
+
+
 	private static final Pattern KMH_PATTERN = Pattern.compile("^(\\d+)\\s*km/h$");
 	private static final Pattern MPH_PATTERN = Pattern.compile("^(\\d+)\\s*mph$");
 
@@ -104,6 +132,13 @@ public final class ValueStringParser {
 		/* all possibilities failed */
 
 		return null;
+	}
+
+	/** variant of {@link #parseSpeed(String)} with a default value */
+	public static final double parseSpeed(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseSpeed(value);
+		return result == null ? defaultValue : result;
 	}
 
 	private static final Pattern M_PATTERN = Pattern.compile("^([\\d\\.]+)\\s*m$");
@@ -174,6 +209,13 @@ public final class ValueStringParser {
 		return null;
 	}
 
+	/** variant of {@link #parseMeasure(String)} with a default value */
+	public static final double parseMeasure(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseMeasure(value);
+		return result == null ? defaultValue : result;
+	}
+
 	private static final Pattern T_PATTERN = Pattern.compile("^([\\d\\.]+)\\s*t$");
 
 	/**
@@ -204,6 +246,13 @@ public final class ValueStringParser {
 
 	}
 
+	/** variant of {@link #parseWeight(String)} with a default value */
+	public static final double parseWeight(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseWeight(value);
+		return result == null ? defaultValue : result;
+	}
+
 	private static final Pattern INCLINE_PATTERN = Pattern.compile("^(\\-?\\d+(?:\\.\\d+)?)\\s*%$");
 
 	/**
@@ -220,6 +269,13 @@ public final class ValueStringParser {
 		}
 
 		return null;
+	}
+
+	/** variant of {@link #parseIncline(String)} with a default value */
+	public static final double parseIncline(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseIncline(value);
+		return result == null ? defaultValue : result;
 	}
 
 	/**
@@ -259,6 +315,13 @@ public final class ValueStringParser {
 		}
 
 		return null;
+	}
+
+	/** variant of {@link #parseAngle(String)} with a default value */
+	public static final double parseAngle(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseAngle(value);
+		return result == null ? defaultValue : result;
 	}
 
 	/**

@@ -10,6 +10,16 @@ import org.junit.Test;
 
 public class ValueStringParserTest {
 
+	@Test
+	public void testParseUInt() {
+		assertEquals((Integer)5, parseUInt("5"));
+		assertEquals((Integer)0, parseUInt("0"));
+		assertNull(parseUInt("-5"));
+		assertNull(parseUInt("1.5"));
+		assertNull(parseUInt("foobar"));
+		assertNull(parseUInt(null));
+	}
+
     /* speed */
 
     @Test
