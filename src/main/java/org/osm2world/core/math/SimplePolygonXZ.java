@@ -176,42 +176,6 @@ public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 	}
 
 	/**
-	 * returns true if the polygon defined by the polygonVertexLoop parameter
-	 * contains a given position
-	 */
-	public static boolean contains(List<VectorXZ> polygonVertexLoop, VectorXZ test) {
-
-		assertLoopProperty(polygonVertexLoop);
-
-		int i, j;
-		boolean c = false;
-
-		for (i = 0, j = polygonVertexLoop.size() - 1; i < polygonVertexLoop.size(); j = i++) {
-			if (((polygonVertexLoop.get(i).z > test.z) != (polygonVertexLoop.get(j).z > test.z))
-					&& (test.x < (polygonVertexLoop.get(j).x - polygonVertexLoop.get(i).x)
-							* (test.z - polygonVertexLoop.get(i).z)
-							/ (polygonVertexLoop.get(j).z - polygonVertexLoop.get(i).z) + polygonVertexLoop.get(i).x))
-				c = !c;
-		}
-
-		return c;
-
-	}
-
-	/**
-	 * returns true if this polygon contains the parameter polygon
-	 */
-	public boolean contains(PolygonXZ p) {
-		//FIXME: it is possible that a polygon contains all vertices of another polygon, but still not the entire polygon
-		for (VectorXZ v : p.getVertices()) {
-			if (!vertexLoop.contains(v) && !this.contains(v)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
 	 * returns the distance of a point to the segments this polygon.
 	 * Note that the distance can be > 0 even if the polygon contains the point
 	 */

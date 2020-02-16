@@ -2,7 +2,6 @@ package org.osm2world.core.math;
 
 import static java.util.Collections.singleton;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,10 +36,6 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 		return new VectorXZ(
 				(v1.x + v2.x + v3.x) / 3,
 				(v1.z + v2.z + v3.z) / 3);
-	}
-
-	public boolean contains(VectorXZ point) {
-		return SimplePolygonXZ.contains(Arrays.asList(v1, v2, v3, v1), point); //TODO: avoid creating new lists?
 	}
 
 	public TriangleXYZ xyz(double y) {
