@@ -9,6 +9,7 @@ import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Collections.max;
+import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
@@ -28,6 +29,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +59,7 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.Poly2TriUtil;
@@ -70,6 +74,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
@@ -77,6 +82,7 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
@@ -126,8 +132,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 		NONE,
 		/** a repeating texture image on a flat wall */
 		FLAT_TEXTURES,
+		/** windows using a combination of geometry and textures */
+		INSET_TEXTURES,
 		/** windows with actual geometry */
-		GEOMETRY;
+		FULL_GEOMETRY;
 
 		public static WindowImplementation getValue(String value, WindowImplementation defaultValue) {
 
@@ -2227,7 +2235,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			if (Streams.stream(buildingPart.tags).anyMatch(t -> t.key.startsWith("window"))) {
 				//explicitly mapped windows, use different (usually higher LOD) setting
 				windowImplementation = WindowImplementation.getValue(
-						buildingPart.config.getString("explicitWindowImplementation"), WindowImplementation.GEOMETRY);
+						buildingPart.config.getString("explicitWindowImplementation"), WindowImplementation.FULL_GEOMETRY);
 			} else {
 				windowImplementation = WindowImplementation.getValue(
 					buildingPart.config.getString("implicitWindowImplementation"), WindowImplementation.FLAT_TEXTURES);
@@ -2358,8 +2366,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* add windows (after doors, because default windows should be displaced by them) */
 
-			if (hasWindows && windowImplementation == WindowImplementation.GEOMETRY) {
-				placeDefaultWindows(mainSurface);
+			if (hasWindows && (windowImplementation == WindowImplementation.INSET_TEXTURES
+					|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
+				placeDefaultWindows(mainSurface, windowImplementation);
 			}
 
 			/* draw the wall */
@@ -2430,7 +2439,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
-		private void placeDefaultWindows(WallSurface surface) {
+		private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation) {
 
 			for (int level = 0; level < buildingPart.buildingLevels; level++) {
 
@@ -2445,10 +2454,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				for (int i = 0; i < numColums; i++) {
 
-					VectorXZ pos = new VectorXZ(i * surface.getLength() / numColums,
+					VectorXZ pos = new VectorXZ((i + 0.5) * surface.getLength() / numColums,
 							heightAboveBase + windowParams.breast);
 
-					Window window = new Window(pos, windowParams);
+					Window window = implementation == WindowImplementation.FULL_GEOMETRY
+							? new GeometryWindow(pos, windowParams)
+							: new TexturedWindow(pos, windowParams);
 					surface.addElementIfSpaceFree(window);
 
 				}
@@ -2659,6 +2670,27 @@ public class BuildingModule extends ConfigurableWorldModule {
 				return new PolygonXYZ(outline);
 			}
 
+			public VectorXYZ normalAt(VectorXZ v, List<VectorXYZ> bottomPointsXYZ) {
+
+				/* calculate the normal by placing 3 points close to each other on the surface,
+				 * and calculating the normal of that triangle */
+
+				double smallXDist = min(0.01, getLength() / 3);
+				double smallZDist = 0.01;
+
+				if (v.x + smallXDist > getLength()) {
+					assert v.x - smallXDist >= 0;
+					v = v.add(-smallXDist, 0);
+				}
+
+				VectorXYZ vXYZ = convertTo3D(v, bottomPointsXYZ);
+				VectorXYZ vXYZRight = convertTo3D(v.add(smallXDist, 0), bottomPointsXYZ);
+				VectorXYZ vXYZTop = convertTo3D(v.add(0, smallZDist), bottomPointsXYZ);
+
+				return vXYZTop.subtract(vXYZ).crossNormalized(vXYZRight.subtract(vXYZ));
+
+			}
+
 		}
 
 		/**
@@ -2670,20 +2702,22 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * returns the space on the 2D wall surface occupied by this element.
 			 * The element is responsible for handling rendering inside this area.
 			 */
-			public SimplePolygonXZ outline(); //TODO allow any ShapeXZ; requires an intersect method though
+			public SimplePolygonXZ outline(); //TODO allow any SimpleClosedShapeXZ
 
 			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ);
 
 		}
 
-		private class Window implements WallElement {
+		private static interface Window extends WallElement {}
+
+		private class TexturedWindow implements Window {
 
 			/** position on a wall surface */
 			private final VectorXZ position;
 
 			private final WindowParameters params;
 
-			public Window(VectorXZ position, WindowParameters params) {
+			public TexturedWindow(VectorXZ position, WindowParameters params) {
 				this.position = position;
 				this.params = params;
 			}
@@ -2742,6 +2776,140 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				target.drawTriangleStrip(material, vsWall,
 						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+
+			}
+
+		}
+
+		private class GeometryWindow implements Window {
+
+			private static final boolean TWO_SIDED = false;
+			private static final double OUTER_FRAME_WIDTH = 0.1;
+			private static final double INNER_FRAME_WIDTH = 0.05;
+			private static final double OUTER_FRAME_THICKNESS = 0.05;
+			private static final double INNER_FRAME_THICKNESS = 0.03;
+
+			private final VectorXZ position;
+			private final WindowParameters params;
+
+			private final SimplePolygonXZ outline;
+			private final SimplePolygonXZ paneOutline;
+			private final List<VectorXZ> outerFramePath;
+			private final List<List<VectorXZ>> innerFramePaths;
+
+			public GeometryWindow(VectorXZ position, WindowParameters params) {
+
+				this.position = position;
+				this.params = params;
+
+				switch (params.windowShape) {
+				case CIRCLE:
+					outline = circleShape(position, params.width, params.height);
+					paneOutline = circleShape(position.add(new VectorXZ(0, OUTER_FRAME_WIDTH / 2)),
+							params.width - OUTER_FRAME_WIDTH, params.height - OUTER_FRAME_WIDTH);
+					break;
+				case RECTANGLE:
+				default:
+					outline = rectangleShape(position, params.width, params.height);
+					paneOutline = rectangleShape(position.add(new VectorXZ(0, OUTER_FRAME_WIDTH / 2)),
+							params.width - OUTER_FRAME_WIDTH, params.height - OUTER_FRAME_WIDTH);
+					break;
+				}
+
+				outerFramePath = paneOutline.getVertexList();
+
+				innerFramePaths = new ArrayList<>();
+
+				AxisAlignedBoundingBoxXZ paneBbox = paneOutline.boundingBox();
+
+				VectorXZ windowBottom = paneBbox.center().add(0, -paneBbox.sizeZ() / 2);
+				VectorXZ windowTop = paneBbox.center().add(0, +paneBbox.sizeZ() / 2);
+				for (int vertFrameI = 0; vertFrameI < params.panesVertical - 1; vertFrameI ++) {
+					VectorXZ center = interpolateBetween(windowBottom, windowTop, (vertFrameI + 1.0)/params.panesVertical);
+					LineSegmentXZ intersectionSegment = new LineSegmentXZ(
+							center.add(-paneBbox.sizeX(), 0), center.add(+paneBbox.sizeX(), 0));
+					List<VectorXZ> is = paneOutline.intersectionPositions(intersectionSegment);
+					innerFramePaths.add(asList(
+							min(is, Comparator.comparingDouble(v -> v.x)),
+							max(is, Comparator.comparingDouble(v -> v.x))));
+				}
+
+				VectorXZ windowLeft = paneBbox.center().add(-paneBbox.sizeX() / 2, 0);
+				VectorXZ windowRight = paneBbox.center().add(+paneBbox.sizeX() / 2, 0);
+				for (int horizFrameI = 0; horizFrameI < params.panesHorizontal - 1; horizFrameI ++) {
+					VectorXZ center = interpolateBetween(windowLeft, windowRight, (horizFrameI + 1.0)/params.panesHorizontal);
+					LineSegmentXZ intersectionSegment = new LineSegmentXZ(
+							center.add(0, -paneBbox.sizeZ()), center.add(0, +paneBbox.sizeZ()));
+					List<VectorXZ> is = paneOutline.intersectionPositions(intersectionSegment);
+					innerFramePaths.add(asList(
+							min(is, Comparator.comparingDouble(v -> v.z)),
+							max(is, Comparator.comparingDouble(v -> v.z))));
+				}
+
+			}
+
+			private SimplePolygonXZ rectangleShape(VectorXZ position, double width, double height) {
+				return new SimplePolygonXZ(new AxisAlignedBoundingBoxXZ(-width/2, 0, +width/2, height).shift(position));
+			}
+
+			private SimplePolygonXZ circleShape(VectorXZ position, double width, double height) {
+				return new SimplePolygonXZ(new CircleXZ(position.add(0, height / 2), max(height, width)/2));
+			}
+
+			@Override
+			public SimplePolygonXZ outline() {
+				return outline;
+			}
+
+			@Override
+			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+
+				double depth = 0.10;
+				VectorXYZ windowNormal = surface.normalAt(paneOutline.boundingBox().center(), bottomPointsXYZ);
+
+				VectorXYZ toBack = windowNormal.mult(-depth);
+
+				/* draw the window pane */
+
+				Collection<TriangleXZ> paneTrianglesXZ = paneOutline.getTriangulation();
+				Collection<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
+						.map(t -> surface.convertTo3D(t, bottomPointsXYZ).shift(toBack))
+						.collect(toList());
+				target.drawTriangles(GLASS, paneTriangles,
+						triangleTexCoordLists(paneTriangles, GLASS, SLOPED_TRIANGLES)); //TODO: use the tex coord function from WallSurface.renderTo
+
+				/* draw frame */
+
+				for (List<List<VectorXZ>> framePaths : asList(innerFramePaths, asList(outerFramePath))) {
+					for (List<VectorXZ> framePath : framePaths) {
+
+						double width = framePath == outerFramePath ? OUTER_FRAME_WIDTH : INNER_FRAME_WIDTH;
+						double thickness = framePath == outerFramePath ? OUTER_FRAME_THICKNESS : INNER_FRAME_THICKNESS;
+
+						List<VectorXYZ> framePathXYZ = framePath.stream()
+								.map(v -> surface.convertTo3D(v, bottomPointsXYZ))
+								.map(v -> v.add(toBack))
+								.collect(toList());
+						target.drawExtrudedShape(params.frameMaterial,
+								new AxisAlignedBoundingBoxXZ(-width/2, -thickness/2, +width/2, +thickness/2),
+								framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
+								null, null, EnumSet.noneOf(ExtrudeOption.class));
+
+					}
+				}
+
+				/* draw the wall around the window */
+
+				//TODO avoid code duplication with TextureWindow
+
+				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
+				PolygonXYZ backOutline = frontOutline.add(toBack);
+
+				List<VectorXYZ> vsWall = createTriangleStripBetween(
+						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
+
+				target.drawTriangleStrip(surface.material, vsWall,
+						texCoordLists(vsWall, surface.material, NamedTexCoordFunction.STRIP_WALL));
 
 			}
 
@@ -2966,7 +3134,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				panesVertical = parseUInt(s[1], 1);
 			} else {
 				panesVertical = 1;
-				panesHorizontal = 1;
+				panesHorizontal = 2;
 			}
 
 			WindowShape tempWindowShape = WindowShape.getValue(tags.getValue("window:shape"));

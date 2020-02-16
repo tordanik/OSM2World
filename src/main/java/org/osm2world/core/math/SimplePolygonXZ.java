@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
@@ -39,6 +40,10 @@ public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 		assertLoopLength(vertexLoop);
 		assertNotSelfIntersecting(vertexLoop);
 
+	}
+
+	public SimplePolygonXZ(SimpleClosedShapeXZ shape) {
+		this(shape.getVertexList());
 	}
 
 	private void calculateArea() {

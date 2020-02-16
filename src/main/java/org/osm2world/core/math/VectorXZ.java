@@ -60,6 +60,10 @@ public class VectorXZ implements Vector3D {
 		return new VectorXZ(x + other.x, z + other.z);
 	}
 
+	public VectorXZ add(double x, double z) {
+		return new VectorXZ(this.x + x, this.z + z);
+	}
+
 	/**
 	 * subtracts the parameter from this vector and returns the result
 	 */

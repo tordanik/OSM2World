@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -46,10 +45,10 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	}
 
 	/** returns true if this polygon contains the parameter polygon */
-	public default boolean contains(PolygonXZ p) {
+	public default boolean contains(PolygonShapeXZ p) {
 		//FIXME: it is possible that a polygon contains all vertices of another polygon, but still not the entire polygon
 		List<VectorXZ> vertexLoop = getVertexList();
-		for (VectorXZ v : p.getVertices()) {
+		for (VectorXZ v : p.getVertexList()) {
 			if (!vertexLoop.contains(v) && !this.contains(v)) {
 				return false;
 			}
