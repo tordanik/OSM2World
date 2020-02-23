@@ -1,10 +1,9 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static java.util.Collections.min;
+import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.VectorXZ.fromAngle;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
@@ -12,7 +11,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -28,6 +26,7 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
@@ -129,17 +128,7 @@ public class GolfModule extends AbstractModule {
 
 			/* create circle around the hole */
 
-			List<VectorXZ> holeRing = new ArrayList<VectorXZ>(HOLE_CIRCLE_VERTICES);
-
-			for (int i = 0; i < HOLE_CIRCLE_VERTICES; i++) {
-				VectorXZ direction = fromAngle(2 * PI * ((double)i / HOLE_CIRCLE_VERTICES));
-				VectorXZ vertex = pinPosition.add(direction.mult(HOLE_RADIUS));
-				holeRing.add(vertex);
-			}
-
-			holeRing.add(holeRing.get(0));
-
-			pinHoleLoop = new SimplePolygonXZ(holeRing);
+			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).getVertexList(HOLE_CIRCLE_VERTICES));
 
 			pinConnectors = new EleConnectorGroup();
 			pinConnectors.addConnectorsFor(pinHoleLoop.getVertexCollection(), area, GroundState.ON);
@@ -192,16 +181,9 @@ public class GolfModule extends AbstractModule {
 		}
 
 		private List<TriangleXZ> getGreenTriangulation() {
-
-			List<SimplePolygonXZ> holes = area.getPolygon().getHoles();
-
+			List<SimplePolygonXZ> holes = new ArrayList<>(area.getPolygon().getHoles());
 			holes.add(pinHoleLoop);
-
-			return TriangulationUtil.triangulate(
-				area.getPolygon().getOuter(),
-				holes,
-				Collections.<VectorXZ>emptyList());
-
+			return TriangulationUtil.triangulate(area.getPolygon().getOuter(), holes, emptyList());
 		}
 
 		private static void drawPin(Target target, VectorXZ pos, List<VectorXYZ> upperHoleRing) {
@@ -212,13 +194,9 @@ public class GolfModule extends AbstractModule {
 
 			/* draw hole */
 
-			List<VectorXYZ> lowerHoleRing = new ArrayList<VectorXYZ>();
-			for (VectorXYZ v : upperHoleRing) {
-				lowerHoleRing.add(v.y(holeBottomEle));
-			}
+			List<VectorXYZ> lowerHoleRing = upperHoleRing.stream().map(v -> v.y(holeBottomEle)).collect(toList());
 
-			List<VectorXYZ> vs = createTriangleStripBetween(
-					upperHoleRing, lowerHoleRing);
+			List<VectorXYZ> vs = createTriangleStripBetween(upperHoleRing, lowerHoleRing);
 
 			Material groundMaterial = Materials.EARTH.makeSmooth();
 
@@ -240,6 +218,8 @@ public class GolfModule extends AbstractModule {
 					new VectorXYZ(pos.x, 1.2, pos.z),
 					new VectorXYZ(pos.x + 0.4, 1.5, pos.z),
 					new VectorXYZ(pos.x + 0.4, 1.2, pos.z));
+
+			flagVertices = flagVertices.stream().map(v -> v.addY(holeBottomEle)).collect(toList());
 
 			target.drawTriangleStrip(flagcloth, flagVertices,
 					texCoordLists(flagVertices, flagcloth, STRIP_WALL));
