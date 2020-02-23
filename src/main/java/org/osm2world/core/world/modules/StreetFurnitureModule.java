@@ -136,7 +136,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		return false;
 	}
 
-	private static final class Flagpole extends NoOutlineNodeWorldObject {
+	static final class Flagpole extends NoOutlineNodeWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -196,7 +196,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				outerTop = outerTop.add(toOuterEnd.mult(poleRadius));
 				outerBottom = outerBottom.add(toOuterEnd.mult(poleRadius));
 
-				flag.renderFlag(target, createFlagMesh(flagTop, flagHeight, flagWidth));
+				flag.renderFlag(target, flagTop, flagHeight, flagWidth);
 
 			}
 
@@ -205,9 +205,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		/**
 		 * creates a grid of vertices as the geometry of the flag.
 		 * The grid is deformed to give the appearance of cloth.
-		 *
-		 * @param height  height of the flag in meters
-		 * @param width  width of the flag in meters
 		 *
 		 * @return a pair consisting of the grid of vertices and the matching texture coordinates
 		 */
@@ -255,7 +252,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		private static abstract class Flag {
+		static abstract class Flag {
 
 			private final double heightWidthRatio;
 			private final List<Material> stripeMaterials;
@@ -282,11 +279,13 @@ public class StreetFurnitureModule extends AbstractModule {
 			/**
 			 * renders the flag to any {@link Target}.
 			 *
-			 * @param flagMesh  flag geometry and tex coords, e.g. created by {@link Flagpole#createFlagMesh}
+			 * @param origin  top point of the flag on the side connected to the pole)
+			 * @param height  height of the flag in meters
+			 * @param width  width of the flag in meters
 			 */
-			public void renderFlag(Target target,
-					Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> flagMesh) {
+			public void renderFlag(Target target, VectorXYZ origin, double height, double width) {
 
+				Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> flagMesh = createFlagMesh(origin, height, width);
 				VectorXYZ[][] mesh = flagMesh.getKey();
 				final Map<VectorXYZ, VectorXZ> texCoordMap = flagMesh.getValue();
 
@@ -357,7 +356,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		private static class StripedFlag extends Flag {
+		static class StripedFlag extends Flag {
 
 			public StripedFlag(double heightWidthRatio, List<Color> colors, boolean verticalStripes) {
 
@@ -378,7 +377,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		 * flag entirely made of a single, usually textured, {@link Material}.
 		 * Allows for untextured materials in addition to textured ones.
 		 */
-		public static class TexturedFlag extends Flag {
+		static class TexturedFlag extends Flag {
 
 			public TexturedFlag(double heightWidthRatio, Material material) {
 				super(heightWidthRatio, singletonList(material), false);

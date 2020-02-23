@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.awt.Color.YELLOW;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
@@ -8,7 +9,6 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,12 +28,11 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.modules.StreetFurnitureModule.Flagpole.StripedFlag;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -206,23 +205,13 @@ public class GolfModule extends AbstractModule {
 			target.drawConvexPolygon(groundMaterial, lowerHoleRing,
 					texCoordLists(vs, groundMaterial, GLOBAL_X_Z));
 
-			/* draw flag */
+			/* draw pole and flag */
 
 			target.drawColumn(Materials.PLASTIC_GREY.makeSmooth(), null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 
-			ImmutableMaterial flagcloth = new ImmutableMaterial(Interpolation.SMOOTH, Color.YELLOW);
-
-			List<VectorXYZ> flagVertices = asList(
-					new VectorXYZ(pos.x, 1.5, pos.z),
-					new VectorXYZ(pos.x, 1.2, pos.z),
-					new VectorXYZ(pos.x + 0.4, 1.5, pos.z),
-					new VectorXYZ(pos.x + 0.4, 1.2, pos.z));
-
-			flagVertices = flagVertices.stream().map(v -> v.addY(holeBottomEle)).collect(toList());
-
-			target.drawTriangleStrip(flagcloth, flagVertices,
-					texCoordLists(flagVertices, flagcloth, STRIP_WALL));
+			StripedFlag flag = new StripedFlag(3 / 4, asList(YELLOW), true);
+			flag.renderFlag(target, pos.xyz(holeBottomEle + 1.5), 0.3, 0.4);
 
 		}
 
