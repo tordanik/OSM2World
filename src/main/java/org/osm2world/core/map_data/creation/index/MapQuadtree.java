@@ -9,7 +9,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -241,7 +241,7 @@ public class MapQuadtree implements MapDataIndex {
 
 	}
 
-	public MapQuadtree(AxisAlignedBoundingBoxXZ dataBoundary) {
+	public MapQuadtree(AxisAlignedRectangleXZ dataBoundary) {
 
 		root = new QuadInnerNode(
 				dataBoundary.minX, dataBoundary.maxX,

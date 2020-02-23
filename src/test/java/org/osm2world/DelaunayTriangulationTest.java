@@ -11,7 +11,7 @@ import java.util.Random;
 import org.junit.Test;
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation;
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -28,7 +28,7 @@ public class DelaunayTriangulationTest {
 
 		for (Random random : RANDOMS) {
 
-			AxisAlignedBoundingBoxXZ bounds = new AxisAlignedBoundingBoxXZ(
+			AxisAlignedRectangleXZ bounds = new AxisAlignedRectangleXZ(
 					-SIZE, -SIZE, +SIZE, +SIZE);
 
 			DelaunayTriangulation triangulation =

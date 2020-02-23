@@ -14,7 +14,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -176,8 +176,8 @@ public class DelaunayTriangulation {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ boundingBox() {
-			return new AxisAlignedBoundingBoxXZ(
+		public AxisAlignedRectangleXZ boundingBox() {
+			return new AxisAlignedRectangleXZ(
 					min(p0.x, min(p1.x, p2.x)),
 					min(p0.z, min(p1.z, p2.z)),
 					max(p0.x, max(p1.x, p2.x)),
@@ -491,7 +491,7 @@ public class DelaunayTriangulation {
 	 */
 	public final DelaunayTriangle handleTriangle;
 
-	public DelaunayTriangulation(AxisAlignedBoundingBoxXZ bounds) {
+	public DelaunayTriangulation(AxisAlignedRectangleXZ bounds) {
 
 		VectorXYZ boundV0 = bounds.bottomLeft().xyz(0);
 		VectorXYZ boundV1 = bounds.bottomRight().xyz(0);

@@ -25,7 +25,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -249,10 +249,10 @@ public class BarrierModule extends AbstractModule {
 	private static class Railing extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE =
-				new AxisAlignedBoundingBoxXZ(-0.5, -0.3, 0.5, 0);
+				new AxisAlignedRectangleXZ(-0.5, -0.3, 0.5, 0);
 
 		private static final SimpleClosedShapeXZ SQUARE =
-				new AxisAlignedBoundingBoxXZ(-0.5, -0.5, 0.5, 0.5);
+				new AxisAlignedRectangleXZ(-0.5, -0.5, 0.5, 0.5);
 
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "fence")

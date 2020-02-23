@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
@@ -60,7 +60,7 @@ public class FrontendPbfTargetTest {
 	@Test
 	public void testWritePbfFile() throws BoundingBoxSizeException, IOException {
 
-		AxisAlignedBoundingBoxXZ bbox = new AxisAlignedBoundingBoxXZ(-1, -1, +1, +1);
+		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
 		OsmNode node = new Node(0, 0, 0);
 		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());

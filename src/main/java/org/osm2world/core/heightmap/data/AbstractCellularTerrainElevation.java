@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -207,8 +207,8 @@ public abstract class AbstractCellularTerrainElevation implements
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ boundingBox() {
-			return new AxisAlignedBoundingBoxXZ(
+		public AxisAlignedRectangleXZ boundingBox() {
+			return new AxisAlignedRectangleXZ(
 					min(getTopLeft().getPos().x, getBottomLeft().getPos().x),
 					min(getBottomLeft().getPos().z, getBottomRight().getPos().z),
 					max(getTopRight().getPos().x, getBottomRight().getPos().x),
@@ -256,7 +256,7 @@ public abstract class AbstractCellularTerrainElevation implements
 
 	}
 
-	public AbstractCellularTerrainElevation(AxisAlignedBoundingBoxXZ boundary,
+	public AbstractCellularTerrainElevation(AxisAlignedRectangleXZ boundary,
 			int numPointsX, int numPointsZ) {
 
 		if (numPointsX < 2 || numPointsZ < 2) {

@@ -6,31 +6,34 @@ import static java.util.Arrays.asList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
- * immutable representation of an axis-aligned bounding box
- * with x and z dimensions
- *
- * TODO: rename to AxisAlignedRectangleXZ?
+ * immutable representation of an axis-aligned rectangle with x and z dimensions.
+ * Often used to represent bounding boxes.
  */
-public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ {
+public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 
 	public final double minX, minZ, maxX, maxZ;
 
-	public AxisAlignedBoundingBoxXZ(double minX, double minZ,
-			double maxX, double maxZ) {
+	public AxisAlignedRectangleXZ(double minX, double minZ, double maxX, double maxZ) {
 		this.minX = minX;
 		this.minZ = minZ;
 		this.maxX = maxX;
 		this.maxZ = maxZ;
 	}
 
+	public AxisAlignedRectangleXZ(VectorXZ center, double sizeX, double sizeZ) {
+		this.minX = center.x - sizeX / 2;
+		this.minZ = center.z - sizeZ / 2;
+		this.maxX = center.x + sizeX / 2;
+		this.maxZ = center.z + sizeZ / 2;
+	}
+
 	/**
 	 * @param boundedPoints  must contain at least one point
 	 */
-	public AxisAlignedBoundingBoxXZ(Collection<? extends Vector3D> boundedPoints) {
+	public static AxisAlignedRectangleXZ bbox(Collection<? extends Vector3D> boundedPoints) {
 
 		assert (!boundedPoints.isEmpty());
 
@@ -42,17 +45,14 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ
 			maxX = max(maxX, p.getX()); maxZ = max(maxZ, p.getZ());
 		}
 
-		this.minX = minX; this.minZ = minZ;
-		this.maxX = maxX; this.maxZ = maxZ;
+		return new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 
 	}
 
 	public double sizeX() { return maxX - minX; }
 	public double sizeZ() { return maxZ - minZ; }
 
-	/**
-	 * returns the area covered by this bounding box
-	 */
+	/** returns the area covered by this rectangle */
 	public double area() {
 		return sizeX() * sizeZ();
 	}
@@ -74,7 +74,7 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
+	public AxisAlignedRectangleXZ boundingBox() {
 		return this;
 	}
 
@@ -91,19 +91,19 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ
 	}
 
 	public VectorXZ bottomLeft() {
-		return polygonXZ().getVertexCollection().get(0);
+		return polygonXZ().getVertex(0);
 	}
 
 	public VectorXZ bottomRight() {
-		return polygonXZ().getVertexCollection().get(1);
+		return polygonXZ().getVertex(1);
 	}
 
 	public VectorXZ topRight() {
-		return polygonXZ().getVertexCollection().get(2);
+		return polygonXZ().getVertex(2);
 	}
 
 	public VectorXZ topLeft() {
-		return polygonXZ().getVertexCollection().get(3);
+		return polygonXZ().getVertex(3);
 	}
 
 	@Override
@@ -113,58 +113,42 @@ public class AxisAlignedBoundingBoxXZ implements Cloneable, SimplePolygonShapeXZ
 				new TriangleXZ(topLeft(), bottomLeft(), bottomRight()));
 	}
 
-	/**
-	 * returns a bounding box that is a bit larger than this one
-	 */
-	public AxisAlignedBoundingBoxXZ pad(double paddingSize) {
-		return new AxisAlignedBoundingBoxXZ(
+	/** returns a rectangle that is a bit larger than this one */
+	public AxisAlignedRectangleXZ pad(double paddingSize) {
+		return new AxisAlignedRectangleXZ(
 				minX - paddingSize,
 				minZ - paddingSize,
 				maxX + paddingSize,
 				maxZ + paddingSize);
 	}
 
-	public boolean overlaps(AxisAlignedBoundingBoxXZ otherBox) {
+	public boolean overlaps(AxisAlignedRectangleXZ otherBox) {
 		return !(maxX <= otherBox.minX
 				|| minX >= otherBox.maxX
 				|| maxZ <= otherBox.minZ
 				|| minZ >= otherBox.maxZ);
 	}
 
-	public boolean contains(AxisAlignedBoundingBoxXZ otherBox) {
+	public boolean contains(AxisAlignedRectangleXZ otherBox) {
 		return minX <= otherBox.minX
 				&& minZ <= otherBox.minZ
 				&& maxX >= otherBox.maxX
 				&& maxZ >= otherBox.maxZ;
 	}
 
-	public boolean contains(IntersectionTestObject object) {
-		return polygonXZ().contains(
-				object.boundingBox().polygonXZ());
-	}
-
 	public boolean contains(VectorXZ v) {
 		return v.x >= minX && v.x <= maxX && v.z >= minZ && v.z <= maxZ;
 	}
 
-	public static final AxisAlignedBoundingBoxXZ union(
-			AxisAlignedBoundingBoxXZ box1, AxisAlignedBoundingBoxXZ box2) {
+	public static final AxisAlignedRectangleXZ union(
+			AxisAlignedRectangleXZ box1, AxisAlignedRectangleXZ box2) {
 
-		return new AxisAlignedBoundingBoxXZ(
+		return new AxisAlignedRectangleXZ(
 				Math.min(box1.minX, box2.minX),
 				Math.min(box1.minZ, box2.minZ),
 				Math.max(box1.maxX, box2.maxX),
 				Math.max(box1.maxZ, box2.maxZ));
 
-	}
-
-	@Override
-	public AxisAlignedBoundingBoxXZ clone() {
-		try {
-			return (AxisAlignedBoundingBoxXZ) super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new AssertionError("unexpected super.clone behavior");
-		}
 	}
 
 }

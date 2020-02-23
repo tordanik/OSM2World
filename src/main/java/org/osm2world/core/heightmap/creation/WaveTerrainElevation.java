@@ -1,12 +1,12 @@
 package org.osm2world.core.heightmap.creation;
 
 import org.osm2world.core.heightmap.data.AbstractCellularTerrainElevation;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 public class WaveTerrainElevation extends AbstractCellularTerrainElevation {
 
-	public WaveTerrainElevation(AxisAlignedBoundingBoxXZ boundary,
+	public WaveTerrainElevation(AxisAlignedRectangleXZ boundary,
 			int numPointsX, int numPointsZ) {
 		super(boundary, numPointsX, numPointsZ);
 	}

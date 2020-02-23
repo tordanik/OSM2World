@@ -1,7 +1,6 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,7 +9,7 @@ import java.util.Collection;
  * immutable representation of an axis-aligned bounding box
  * with x, y and z dimensions
  */
-public class AxisAlignedBoundingBoxXYZ implements Cloneable {
+public class AxisAlignedBoundingBoxXYZ {
 
 	public final double minX, minY, minZ, maxX, maxY, maxZ;
 
@@ -122,15 +121,6 @@ public class AxisAlignedBoundingBoxXYZ implements Cloneable {
 				Math.min(box1.maxY, box2.maxY),
 				Math.min(box1.maxZ, box2.maxZ));
 
-	}
-
-	@Override
-	public AxisAlignedBoundingBoxXYZ clone() {
-		try {
-			return (AxisAlignedBoundingBoxXYZ) super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new AssertionError("unexpected super.clone behavior");
-		}
 	}
 
 }

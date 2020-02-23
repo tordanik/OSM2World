@@ -11,7 +11,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.NodeWorldObject;
 
@@ -204,8 +204,8 @@ public class MapNode extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
-		return new AxisAlignedBoundingBoxXZ(pos.x, pos.z, pos.x, pos.z);
+	public AxisAlignedRectangleXZ boundingBox() {
+		return new AxisAlignedRectangleXZ(pos.x, pos.z, pos.x, pos.z);
 	}
 
 }

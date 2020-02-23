@@ -7,7 +7,7 @@ import java.util.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.TileNumber;
@@ -57,7 +57,7 @@ public class OrthoTileAction extends AbstractAction implements Observer {
 			CardinalDirection from = CardinalDirection.valueOf(
 					JOptionPane.showInputDialog(viewerFrame, "from cardinal direction"));
 
-			AxisAlignedBoundingBoxXZ tileBounds =
+			AxisAlignedRectangleXZ tileBounds =
 				data.getConversionResults().getMapData().getDataBoundary();
 
 			renderOptions.camera = OrthoTilesUtil.cameraForTile(

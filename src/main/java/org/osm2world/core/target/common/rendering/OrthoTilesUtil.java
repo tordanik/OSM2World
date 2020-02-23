@@ -1,13 +1,13 @@
 package org.osm2world.core.target.common.rendering;
 
 import static java.lang.Math.PI;
-import static org.osm2world.core.math.AxisAlignedBoundingBoxXZ.union;
+import static java.util.Arrays.asList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -58,14 +58,14 @@ public final class OrthoTilesUtil {
 
 		if (tiles.isEmpty()) { throw new IllegalArgumentException("empty tiles list"); }
 
-		AxisAlignedBoundingBoxXZ result = boundsForTiles(mapProjection, tiles);
+		AxisAlignedRectangleXZ result = boundsForTiles(mapProjection, tiles);
 
 		return cameraForBounds(result, angleDeg, from);
 
 	}
 
 	public static final Camera cameraForBounds(
-			AxisAlignedBoundingBoxXZ bounds, double angleDeg,
+			AxisAlignedRectangleXZ bounds, double angleDeg,
 			CardinalDirection from) {
 
 		Camera result = new Camera();
@@ -104,7 +104,7 @@ public final class OrthoTilesUtil {
 
 	public static final Projection projectionForTile(MapProjection mapProjection,
 			TileNumber tile, double angleDeg, CardinalDirection from) {
-		AxisAlignedBoundingBoxXZ tileBounds = boundsForTile(mapProjection, tile);
+		AxisAlignedRectangleXZ tileBounds = boundsForTile(mapProjection, tile);
 		return projectionForBounds(tileBounds, angleDeg, from);
 	}
 
@@ -113,14 +113,14 @@ public final class OrthoTilesUtil {
 
 		if (tiles.isEmpty()) { throw new IllegalArgumentException("empty tiles list"); }
 
-		AxisAlignedBoundingBoxXZ result = boundsForTiles(mapProjection, tiles);
+		AxisAlignedRectangleXZ result = boundsForTiles(mapProjection, tiles);
 
 		return projectionForBounds(result, angleDeg, from);
 
 	}
 
 	public static final Projection projectionForBounds(
-			AxisAlignedBoundingBoxXZ bounds, double angleDeg,
+			AxisAlignedRectangleXZ bounds, double angleDeg,
 			CardinalDirection from) {
 
 		double sin = Math.sin(Math.toRadians(angleDeg));
@@ -142,7 +142,7 @@ public final class OrthoTilesUtil {
 
 	}
 
-	private static final AxisAlignedBoundingBoxXZ boundsForTile(
+	private static final AxisAlignedRectangleXZ boundsForTile(
 			MapProjection mapProjection, TileNumber tile) {
 
 		VectorXZ tilePos1 = mapProjection.calcPos(
@@ -151,17 +151,17 @@ public final class OrthoTilesUtil {
 		VectorXZ tilePos2 = mapProjection.calcPos(
 				tile2lat(tile.y+1, tile.zoom), tile2lon(tile.x+1, tile.zoom));
 
-		return new AxisAlignedBoundingBoxXZ(Arrays.asList(tilePos1, tilePos2));
+		return bbox(asList(tilePos1, tilePos2));
 
 	}
 
-	public static final AxisAlignedBoundingBoxXZ boundsForTiles(
+	public static final AxisAlignedRectangleXZ boundsForTiles(
 			MapProjection mapProjection, List<TileNumber> tiles) {
 
-		AxisAlignedBoundingBoxXZ result = boundsForTile(mapProjection, tiles.get(0));
+		AxisAlignedRectangleXZ result = boundsForTile(mapProjection, tiles.get(0));
 
 		for (int i=1; i<tiles.size(); i++) {
-			AxisAlignedBoundingBoxXZ newBox = boundsForTile(mapProjection, tiles.get(i));
+			AxisAlignedRectangleXZ newBox = boundsForTile(mapProjection, tiles.get(i));
 			result = union(result, newBox);
 		}
 

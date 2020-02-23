@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -34,11 +34,11 @@ public class MapData {
 	final List<MapArea> mapAreas;
 	final List<MapRelation> mapRelations;
 
-	AxisAlignedBoundingBoxXZ fileBoundary;
-	AxisAlignedBoundingBoxXZ dataBoundary;
+	AxisAlignedRectangleXZ fileBoundary;
+	AxisAlignedRectangleXZ dataBoundary;
 
 	public MapData(List<MapNode> mapNodes, List<MapWay> mapWays, List<MapArea> mapAreas,
-			List<MapRelation> mapRelations, AxisAlignedBoundingBoxXZ fileBoundary) {
+			List<MapRelation> mapRelations, AxisAlignedRectangleXZ fileBoundary) {
 
 		this.mapNodes = mapNodes;
 		this.mapWays = mapWays;
@@ -76,7 +76,7 @@ public class MapData {
 			if (nodeZ > maxZ) { maxZ = nodeZ; }
 		}
 
-		dataBoundary = new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
+		dataBoundary = new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 
 	}
 
@@ -108,7 +108,7 @@ public class MapData {
 	 * returns a rectangular boundary polygon from the minimum/maximum of
 	 * coordinates in the map data
 	 */
-	public AxisAlignedBoundingBoxXZ getDataBoundary() {
+	public AxisAlignedRectangleXZ getDataBoundary() {
 		return dataBoundary;
 	}
 
@@ -116,7 +116,7 @@ public class MapData {
 	 * returns a boundary based on the bounds in the input file if available,
 	 * otherwise returns the same as {@link #getDataBoundary()}
 	 */
-	public AxisAlignedBoundingBoxXZ getBoundary() {
+	public AxisAlignedRectangleXZ getBoundary() {
 		if (fileBoundary != null) {
 			return fileBoundary;
 		} else {

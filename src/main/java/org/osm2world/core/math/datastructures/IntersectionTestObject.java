@@ -1,6 +1,6 @@
 package org.osm2world.core.math.datastructures;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 
 /**
  * object which can be inserted into data structures
@@ -8,6 +8,6 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
  */
 public interface IntersectionTestObject {
 
-	public AxisAlignedBoundingBoxXZ boundingBox();
+	public AxisAlignedRectangleXZ boundingBox();
 
 }

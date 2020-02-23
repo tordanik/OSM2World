@@ -31,7 +31,7 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -561,7 +561,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	private static final Tag EMPTY_SURFACE_TAG = new Tag("surface", EMPTY_SURFACE_VALUE);
 
 	private final OutputStream outputStream;
-	private final AxisAlignedBoundingBoxXZ bbox;
+	private final AxisAlignedRectangleXZ bbox;
 	private final MapProjection projection;
 
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
@@ -584,7 +584,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	 *              Objects are part of the output if their center is inside this box.
 	 * @param projection
 	 */
-	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedBoundingBoxXZ bbox, MapProjection projection) {
+	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedRectangleXZ bbox, MapProjection projection) {
 
 		this.outputStream = outputStream;
 		this.bbox = bbox;
@@ -941,7 +941,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	}
 
 	public static void writePbfFile(File outputFile, MapData mapData,
-			AxisAlignedBoundingBoxXZ bbox, MapProjection projection) throws IOException {
+			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
 
 		FileOutputStream output = null;
 
@@ -960,7 +960,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	}
 
 	public static void writePbfStream(OutputStream output, MapData mapData,
-			AxisAlignedBoundingBoxXZ bbox, MapProjection projection) throws IOException {
+			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
 
 		if (bbox == null) {
 			bbox = mapData.getBoundary();

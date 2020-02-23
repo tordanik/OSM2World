@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -53,7 +53,7 @@ public class EmptyTerrainBuilder {
 	 * as mapped areas later on to avoid unnecessary special case handling.
 	 */
 	static void createAreasForEmptyTerrain(List<MapNode> mapNodes,
-			List<MapArea> mapAreas, AxisAlignedBoundingBoxXZ dataBounds) {
+			List<MapArea> mapAreas, AxisAlignedRectangleXZ dataBounds) {
 
 		VectorGridXZ posGrid = new VectorGridXZ(
 				dataBounds.pad(POINT_GRID_DIST), POINT_GRID_DIST);

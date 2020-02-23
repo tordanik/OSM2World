@@ -9,7 +9,7 @@ import java.util.Collection;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -69,7 +69,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 			TerrainInterpolator strategy = buildInterpolator();
 			strategy.setKnownSites(sites);
 
-			AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
+			AxisAlignedRectangleXZ bound = map.getDataBoundary();
 
 			VectorGridXZ sampleGrid = new VectorGridXZ(bound, SAMPLE_DIST);
 

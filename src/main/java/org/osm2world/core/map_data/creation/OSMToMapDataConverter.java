@@ -2,6 +2,7 @@ package org.osm2world.core.map_data.creation;
 
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
@@ -33,7 +34,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
@@ -185,7 +186,7 @@ public class OSMToMapDataConverter {
 
 		/* ... for empty terrain */
 
-		AxisAlignedBoundingBoxXZ terrainBoundary =
+		AxisAlignedRectangleXZ terrainBoundary =
 				calculateFileBoundary(osmData.getBounds());
 
 		if (terrainBoundary != null
@@ -640,10 +641,9 @@ public class OSMToMapDataConverter {
 
 	}
 
-	private AxisAlignedBoundingBoxXZ calculateFileBoundary(
-			Collection<OsmBounds> bounds) {
+	private AxisAlignedRectangleXZ calculateFileBoundary(Collection<OsmBounds> bounds) {
 
-		Collection<VectorXZ> boundedPoints = new ArrayList<VectorXZ>();
+		Collection<VectorXZ> boundedPoints = new ArrayList<>();
 
 		for (OsmBounds bound : bounds) {
 
@@ -657,7 +657,7 @@ public class OSMToMapDataConverter {
 		if (boundedPoints.isEmpty()) {
 			return null;
 		} else {
-			return new AxisAlignedBoundingBoxXZ(boundedPoints);
+			return bbox(boundedPoints);
 		}
 
 	}

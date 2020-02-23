@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -76,8 +76,8 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
-		return new AxisAlignedBoundingBoxXZ(center.x - radius, center.z - radius, center.x + radius, center.z + radius);
+	public AxisAlignedRectangleXZ boundingBox() {
+		return new AxisAlignedRectangleXZ(center.x - radius, center.z - radius, center.x + radius, center.z + radius);
 	}
 
 	@Override

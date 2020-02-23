@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.VectorXYZ;
@@ -172,7 +172,7 @@ public final class WorldModuleGeometryUtil {
 	public static final void filterWorldObjectCollisions(
 			Collection<VectorXZ> positions,
 			Collection<WorldObjectWithOutline> avoidedObjects,
-			AxisAlignedBoundingBoxXZ positionBbox) {
+			AxisAlignedRectangleXZ positionBbox) {
 
 		//TODO: add support for avoiding a radius around the position, too.
 		//this is easily possible once "inflating"/"shrinking" polygons is supported [would also be useful for water bodies etc.]
@@ -198,7 +198,7 @@ public final class WorldModuleGeometryUtil {
 
 		/* perform filtering of positions */
 
-		List<AxisAlignedBoundingBoxXZ> filterPolygonBbox = filterPolygons.stream().map(p -> p.boundingBox()).collect(toList());
+		List<AxisAlignedRectangleXZ> filterPolygonBbox = filterPolygons.stream().map(p -> p.boundingBox()).collect(toList());
 
 		Iterator<VectorXZ> positionIterator = positions.iterator();
 

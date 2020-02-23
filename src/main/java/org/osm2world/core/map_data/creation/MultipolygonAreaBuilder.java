@@ -18,7 +18,7 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -365,7 +365,7 @@ final class MultipolygonAreaBuilder {
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
-			Collection<MapNode> mapNodes, AxisAlignedBoundingBoxXZ fileBoundary) throws EntityNotFoundException {
+			Collection<MapNode> mapNodes, AxisAlignedRectangleXZ fileBoundary) throws EntityNotFoundException {
 
 		long highestRelationId = 0;
 		long highestNodeId = 0;
@@ -482,7 +482,7 @@ final class MultipolygonAreaBuilder {
 						}
 					}
 
-					if (fileBoundary.contains(node) || isOnBBox) {
+					if (fileBoundary.contains(node.getPos()) || isOnBBox) {
 
 						modifiedCoastline.add(node);
 
@@ -627,7 +627,7 @@ final class MultipolygonAreaBuilder {
 	}
 
 	private static final List<LineSegmentXZ> getSidesClockwise(
-			AxisAlignedBoundingBoxXZ fileBoundary) {
+			AxisAlignedRectangleXZ fileBoundary) {
 
 		return asList(
 				new LineSegmentXZ(fileBoundary.topLeft(), fileBoundary.topRight()),
@@ -779,7 +779,7 @@ final class MultipolygonAreaBuilder {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ boundingBox() {
+		public AxisAlignedRectangleXZ boundingBox() {
 
 			double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
 			double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -789,7 +789,7 @@ final class MultipolygonAreaBuilder {
 				maxX = max(maxX, n.getPos().x); maxZ = max(maxZ, n.getPos().z);
 			}
 
-			return new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
+			return new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 
 		}
 

@@ -59,7 +59,7 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.Poly2TriUtil;
@@ -2820,7 +2820,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				innerFramePaths = new ArrayList<>();
 
-				AxisAlignedBoundingBoxXZ paneBbox = paneOutline.boundingBox();
+				AxisAlignedRectangleXZ paneBbox = paneOutline.boundingBox();
 
 				VectorXZ windowBottom = paneBbox.center().add(0, -paneBbox.sizeZ() / 2);
 				VectorXZ windowTop = paneBbox.center().add(0, +paneBbox.sizeZ() / 2);
@@ -2849,7 +2849,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			private SimplePolygonXZ rectangleShape(VectorXZ position, double width, double height) {
-				return new SimplePolygonXZ(new AxisAlignedBoundingBoxXZ(-width/2, 0, +width/2, height).shift(position));
+				return new SimplePolygonXZ(new AxisAlignedRectangleXZ(-width/2, 0, +width/2, height).shift(position));
 			}
 
 			private SimplePolygonXZ circleShape(VectorXZ position, double width, double height) {
@@ -2891,7 +2891,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 								.map(v -> v.add(toBack))
 								.collect(toList());
 						target.drawExtrudedShape(params.frameMaterial,
-								new AxisAlignedBoundingBoxXZ(-width/2, -thickness/2, +width/2, +thickness/2),
+								new AxisAlignedRectangleXZ(-width/2, -thickness/2, +width/2, +thickness/2),
 								framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
 								null, null, EnumSet.noneOf(ExtrudeOption.class));
 

@@ -22,7 +22,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -804,7 +804,7 @@ public final class PowerModule extends AbstractModule {
 
 			/* place and draw rows of panels */
 
-			AxisAlignedBoundingBoxXZ box = this.boundingBox();
+			AxisAlignedRectangleXZ box = this.boundingBox();
 
 			List<PolygonShapeXZ> obstacles = getGroundObstacles();
 

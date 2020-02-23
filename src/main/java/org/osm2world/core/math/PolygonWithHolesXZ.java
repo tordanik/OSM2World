@@ -62,7 +62,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
+	public AxisAlignedRectangleXZ boundingBox() {
 		return getOuter().boundingBox();
 	}
 

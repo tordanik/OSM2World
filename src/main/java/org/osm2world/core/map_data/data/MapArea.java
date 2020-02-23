@@ -11,7 +11,7 @@ import java.util.List;
 import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -225,7 +225,7 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
+	public AxisAlignedRectangleXZ boundingBox() {
 		return getOuterPolygon().boundingBox();
 	}
 

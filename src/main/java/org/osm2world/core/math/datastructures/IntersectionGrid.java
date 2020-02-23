@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 
 /**
  * a data structure that can be used to speed up intersection tests.
@@ -16,14 +16,14 @@ import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
  */
 public class IntersectionGrid<T extends IntersectionTestObject> {
 
-	private final AxisAlignedBoundingBoxXZ gridBounds;
+	private final AxisAlignedRectangleXZ gridBounds;
 	private Collection<T>[][] cells;
 
 	private final int cellCountX, cellCountZ;
 
 	private final double cellSizeX, cellSizeZ;
 
-	public IntersectionGrid(AxisAlignedBoundingBoxXZ gridBounds,
+	public IntersectionGrid(AxisAlignedRectangleXZ gridBounds,
 			int cellCountX, int cellCountZ) {
 
 		this.gridBounds = gridBounds;
@@ -46,7 +46,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 	 * alternative constructor that uses a target cell size to calculate
 	 * the number of cells
 	 */
-	public IntersectionGrid(AxisAlignedBoundingBoxXZ gridBounds,
+	public IntersectionGrid(AxisAlignedRectangleXZ gridBounds,
 			double approxCellSizeX, double approxCellSizeZ) {
 		this(gridBounds,
 				((int) (gridBounds.sizeX() / approxCellSizeX)) + 1,
@@ -117,9 +117,9 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 	public Collection<Collection<T>> cellsFor(
 			IntersectionTestObject object) {
 
-		assert(gridBounds.contains(object));
+		assert(gridBounds.contains(object.boundingBox()));
 
-		AxisAlignedBoundingBoxXZ objectAABB = object.boundingBox();
+		AxisAlignedRectangleXZ objectAABB = object.boundingBox();
 
 		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
 		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
@@ -144,9 +144,9 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 	public void insert(T object) {
 
-		assert(gridBounds.contains(object));
+		assert(gridBounds.contains(object.boundingBox()));
 
-		AxisAlignedBoundingBoxXZ objectAABB = object.boundingBox();
+		AxisAlignedRectangleXZ objectAABB = object.boundingBox();
 
 		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
 		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
@@ -170,9 +170,9 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 	public void remove(T object) {
 
-		assert(gridBounds.contains(object));
+		assert(gridBounds.contains(object.boundingBox()));
 
-		AxisAlignedBoundingBoxXZ objectAABB = object.boundingBox();
+		AxisAlignedRectangleXZ objectAABB = object.boundingBox();
 
 		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
 		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);

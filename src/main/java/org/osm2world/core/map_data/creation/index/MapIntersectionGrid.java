@@ -3,7 +3,7 @@ package org.osm2world.core.map_data.creation.index;
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
 
 
@@ -11,9 +11,9 @@ public class MapIntersectionGrid implements MapDataIndex {
 
 	private final IntersectionGrid<MapElement> intersectionGrid;
 
-	public MapIntersectionGrid(AxisAlignedBoundingBoxXZ dataBoundary) {
+	public MapIntersectionGrid(AxisAlignedRectangleXZ dataBoundary) {
 
-		AxisAlignedBoundingBoxXZ gridBounds = dataBoundary.pad(10);
+		AxisAlignedRectangleXZ gridBounds = dataBoundary.pad(10);
 
 		intersectionGrid = new IntersectionGrid<MapElement>(
 				gridBounds,

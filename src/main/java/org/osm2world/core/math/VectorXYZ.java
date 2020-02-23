@@ -234,8 +234,8 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
-		return new AxisAlignedBoundingBoxXZ(x, z, x, z);
+	public AxisAlignedRectangleXZ boundingBox() {
+		return new AxisAlignedRectangleXZ(x, z, x, z);
 	}
 
 	@Override

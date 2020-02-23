@@ -1,9 +1,11 @@
 package org.osm2world.core.math.shapes;
 
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
@@ -35,8 +37,8 @@ public interface ShapeXZ extends IntersectionTestObject {
 	}
 
 	@Override
-	default AxisAlignedBoundingBoxXZ boundingBox() {
-		return new AxisAlignedBoundingBoxXZ(getVertexList());
+	default AxisAlignedRectangleXZ boundingBox() {
+		return bbox(getVertexList());
 	}
 
 }

@@ -11,7 +11,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /**
@@ -232,7 +232,7 @@ public class Map2dTree implements MapDataIndex {
 
 	}
 
-	public Map2dTree(AxisAlignedBoundingBoxXZ dataBoundary) {
+	public Map2dTree(AxisAlignedRectangleXZ dataBoundary) {
 
 		root = new InnerNode(true, (dataBoundary.minX + dataBoundary.maxX) / 2);
 

@@ -24,7 +24,7 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonXYZ;
@@ -583,13 +583,12 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
+	public AxisAlignedRectangleXZ boundingBox() {
 
 		if (isBroken() || getOutlinePolygonXZ() == null) {
 			return null;
 		} else {
-			return new AxisAlignedBoundingBoxXZ(
-					getOutlinePolygonXZ().getVertexCollection());
+			return getOutlinePolygonXZ().boundingBox();
 		}
 
 	}

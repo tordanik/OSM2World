@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -74,9 +74,8 @@ public abstract class AbstractAreaWorldObject
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ boundingBox() {
-		return new AxisAlignedBoundingBoxXZ(
-				area.getOuterPolygon().getVertexCollection());
+	public AxisAlignedRectangleXZ boundingBox() {
+		return area.getOuterPolygon().boundingBox();
 	}
 
 	@Override

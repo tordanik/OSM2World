@@ -11,7 +11,7 @@ import java.util.Collection;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.math.VectorXZ;
@@ -129,7 +129,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	 * @param xzBoundary the boundary of the OSM file. Used to tighten the bounding box to only primitives within these bounds.
 	 */
 	JOGLRendererVBOShader(GL3 gl, JOGLTextureManager textureManager,
-			PrimitiveBuffer primitiveBuffer, AxisAlignedBoundingBoxXZ xzBoundary) {
+			PrimitiveBuffer primitiveBuffer, AxisAlignedRectangleXZ xzBoundary) {
 
 		super(textureManager);
 		this.gl = gl;
@@ -229,7 +229,7 @@ public class JOGLRendererVBOShader extends JOGLRendererVBO {
 	}
 
 	/**
-	 * Get the bounding box around all relevant primitives computed at {@link #JOGLRendererVBOShader(GL3, JOGLTextureManager, PrimitiveBuffer, AxisAlignedBoundingBoxXZ)}
+	 * Get the bounding box around all relevant primitives computed at {@link #JOGLRendererVBOShader(GL3, JOGLTextureManager, PrimitiveBuffer, AxisAlignedRectangleXZ)}
 	 */
 	public AxisAlignedBoundingBoxXYZ getBoundingBox() {
 		return boundingBox;

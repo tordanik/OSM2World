@@ -571,7 +571,7 @@ public final class GeometryUtil {
 
 	/**
 	 * constant used by {@link #distributePointsOn(long, PolygonWithHolesXZ,
-	 *  AxisAlignedBoundingBoxXZ, double, double)}
+	 *  AxisAlignedRectangleXZ, double, double)}
 	 */
 	private static final int POINTS_PER_BOX = 100;
 
@@ -597,22 +597,21 @@ public final class GeometryUtil {
 	 */
 	public static List<VectorXZ> distributePointsOn(
 			long seed, PolygonWithHolesXZ polygonWithHolesXZ,
-			AxisAlignedBoundingBoxXZ boundary,
+			AxisAlignedRectangleXZ boundary,
 			double density,	double minimumDistance) {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>();
 
 		Random rand = new Random(seed);
 
-		AxisAlignedBoundingBoxXZ outerBox = new AxisAlignedBoundingBoxXZ(
-				polygonWithHolesXZ.getOuter().getVertices());
+		AxisAlignedRectangleXZ outerBox = polygonWithHolesXZ.boundingBox();
 
 		double boxSize = sqrt(100 / density);
 
 		for (int boxZ = 0; boxZ <= (int)(outerBox.sizeZ() / boxSize); ++boxZ) {
 			for (int boxX = 0; boxX <= (int)(outerBox.sizeX() / boxSize); ++boxX) {
 
-				AxisAlignedBoundingBoxXZ box = new AxisAlignedBoundingBoxXZ(
+				AxisAlignedRectangleXZ box = new AxisAlignedRectangleXZ(
 						outerBox.minX + boxSize * boxX,
 						outerBox.minZ + boxSize * boxZ,
 						outerBox.minX + boxSize * (boxX + 1),

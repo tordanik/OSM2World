@@ -1,10 +1,10 @@
 package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Math.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.util.Collection;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
@@ -32,7 +32,7 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 		this.sites = sites;
 
 		siteGrid = new IntersectionGrid<VectorXYZ>(
-				new AxisAlignedBoundingBoxXZ(sites).pad(CUTOFF/2),
+				bbox(sites).pad(CUTOFF/2),
 				CUTOFF, CUTOFF);
 
 		for (VectorXYZ site : sites) {
