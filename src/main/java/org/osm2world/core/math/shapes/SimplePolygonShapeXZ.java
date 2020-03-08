@@ -23,6 +23,15 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 		return emptyList();
 	}
 
+	/**
+	 * returns the number of vertices in this polygon.
+	 * The duplicated first/last vertex is <em>not</em> counted twice,
+	 * so the result is equivalent to {@link #getVertexListNoDup()}.size().
+	 */
+	public default int size() {
+		return getVertexList().size() - 1;
+	}
+
 	/** returns true if the polygon contains a given position */
 	@Override
 	public default boolean contains(VectorXZ v) {
