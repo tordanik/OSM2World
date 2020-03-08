@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules.common;
 import static java.lang.Math.toRadians;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,9 +13,11 @@ import java.util.List;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 
@@ -215,6 +218,31 @@ public final class WorldModuleGeometryUtil {
 			}
 
 		}
+
+	}
+
+	public static final Collection<TriangleXZ> trianguateAreaBetween(PolygonShapeXZ large, List<? extends PolygonShapeXZ> small) {
+
+		List<TriangleXZ> result = new ArrayList<>();
+
+		// to get the area between the two polygons:
+		// - subtract small's outers and large's inners from large's outer
+		// - subtract large's inners from small's inner's
+
+		{
+			List<SimplePolygonShapeXZ> smallOuters = small.stream().map(p -> p.getOuter()).collect(toList());
+			List<SimplePolygonShapeXZ> holes = new ArrayList<>(large.getHoles());
+			holes.addAll(smallOuters);
+			result.addAll(triangulate(large.getOuter(), holes));
+		} {
+			List<SimplePolygonShapeXZ> smallInners = small.stream().flatMap(p -> p.getHoles().stream()).collect(toList());
+			for (SimplePolygonShapeXZ smallInner : smallInners) {
+				List<SimplePolygonShapeXZ> holes = large.getHoles().stream().filter(p -> smallInner.contains(p)).collect(toList());
+				result.addAll(triangulate(smallInner, holes));
+			}
+		}
+
+		return result;
 
 	}
 

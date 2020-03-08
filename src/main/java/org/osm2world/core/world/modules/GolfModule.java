@@ -5,13 +5,16 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.target.common.material.Materials.SAND;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -19,12 +22,14 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.Target;
@@ -35,6 +40,8 @@ import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.StreetFurnitureModule.Flagpole.StripedFlag;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.core.world.modules.common.AbstractModule;
+
+import com.google.common.collect.Streams;
 
 /**
  * adds golf courses to the map
@@ -54,6 +61,8 @@ public class GolfModule extends AbstractModule {
 			area.addRepresentation(new Tee(area));
 		} else if (area.getTags().contains("golf", "fairway")) {
 			area.addRepresentation(new Fairway(area));
+		} else if (area.getTags().contains("golf", "bunker")) {
+			area.addRepresentation(new Bunker(area));
 		} else if (area.getTags().contains("golf", "green")) {
 			area.addRepresentation(new Green(area));
 		}
@@ -79,6 +88,90 @@ public class GolfModule extends AbstractModule {
 			super(area, area.getTags().containsKey("surface")
 					? area.getTags().getValue("surface")
 					: "grass");
+
+		}
+
+	}
+
+	private static class Bunker extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+
+		public Bunker(MapArea area) {
+			super(area);
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public void renderTo(Target target) {
+
+			/* draw the bunker as a depression by shrinking the outline polygon and lowering it at each step.
+			 *
+			 * The first step gets special handling and is primarily intended for bunkers in uneven terrain.
+			 * It involves an almost vertical drop towards the lowest point of the bunker outline
+			 * that is textured with ground, not sand. */
+
+			Collection<TriangleXYZ> resultingTriangulation = new ArrayList<>();
+
+			double[] dropSteps = {-0.03, -0.07, -0.05, -0.02};
+
+			List<PolygonWithHolesXZ> currentPolys = asList(area.getPolygon());
+			double currentEle = Streams.stream(getEleConnectors()).mapToDouble(c -> c.getPosXYZ().y).min().getAsDouble();
+
+			for (int i = 0; i < dropSteps.length; i++) {
+
+				List<PolygonWithHolesXZ> newPolys = new ArrayList<>();
+
+				double oldEle = currentEle;
+				double newEle = currentEle + dropSteps[i];
+
+				for (PolygonWithHolesXZ large : currentPolys) {
+
+					List<PolygonWithHolesXZ> small = JTSBufferUtil.bufferPolygon(large, -0.5);
+
+					Function<VectorXZ, VectorXYZ> withEle = v -> {
+
+						if (getEleConnectors().getConnector(v) != null) {
+							return getEleConnectors().getPosXYZ(v);
+						} else if (large.getVertexList().contains(v)
+								|| large.getHoles().stream().anyMatch(h -> h.getVertexList().contains(v))) {
+							return v.xyz(oldEle);
+						} else {
+							return v.xyz(newEle);
+						}
+
+					};
+
+					Collection<TriangleXZ> triangulationXZ = trianguateAreaBetween(large, small);
+
+					triangulationXZ.stream()
+							.map(t -> new TriangleXYZ(withEle.apply(t.v1), withEle.apply(t.v2), withEle.apply(t.v3)))
+							.forEach(resultingTriangulation::add);
+
+					newPolys.addAll(small);
+
+				}
+
+				currentPolys = newPolys;
+				currentEle = newEle;
+
+			}
+
+			/* fill in the rest of the area (if any) with a flat surface at the lowest elevation */
+
+			List<TriangleXZ> triangulationXZ = currentPolys.stream().flatMap(p -> triangulate(p).stream()).collect(toList());
+
+			if (!triangulationXZ.isEmpty()) {
+				double ele = currentEle;
+				triangulationXZ.stream().map(t -> t.xyz(ele)).forEach(resultingTriangulation::add);
+			}
+
+			/* render everything with a sand texture */
+
+			target.drawTriangles(SAND, resultingTriangulation,
+					triangleTexCoordLists(resultingTriangulation, SAND, GLOBAL_X_Z));
 
 		}
 

@@ -51,8 +51,6 @@ public class SurfaceAreaModule extends AbstractModule {
 		= new HashMap<Tag, String>();
 
 	static {
-		defaultSurfaceMap.put(new Tag("golf", "bunker"), "sand");
-		defaultSurfaceMap.put(new Tag("golf", "green"), "grass");
 		defaultSurfaceMap.put(new Tag("landcover", "grass"), "grass");
 		defaultSurfaceMap.put(new Tag("landcover", "gravel"), "gravel");
 		defaultSurfaceMap.put(new Tag("landcover", "ground"), "ground");
