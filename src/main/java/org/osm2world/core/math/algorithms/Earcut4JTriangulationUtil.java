@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 import com.google.common.primitives.Ints;
 
@@ -25,21 +25,21 @@ public class Earcut4JTriangulationUtil {
 	 * triangulate a polygon with holes
 	 */
 	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ polygon,
-			Collection<SimplePolygonXZ> holes) {
+			SimplePolygonShapeXZ polygon,
+			Collection<? extends SimplePolygonShapeXZ> holes) {
 
 		return triangulate(polygon, holes, emptyList());
 
 	}
 
 	/**
-	 * variant of {@link #triangulate(SimplePolygonXZ, Collection)}
+	 * variant of {@link #triangulate(SimplePolygonShapeXZ, Collection)}
 	 * that accepts some unconnected points within the polygon area
 	 * and will try to create triangle vertices at these points.
 	 */
 	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ polygon,
-			Collection<SimplePolygonXZ> holes,
+			SimplePolygonShapeXZ polygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {
 
 		/* convert input data to the required format */
@@ -50,17 +50,17 @@ public class Earcut4JTriangulationUtil {
 
 		int dataIndex = 0;
 
-		for (VectorXZ v : polygon.getVertices()) {
+		for (VectorXZ v : polygon.getVertexListNoDup()) {
 			data[2 * dataIndex] = v.x;
 			data[2 * dataIndex + 1] = v.z;
 			dataIndex ++;
 		}
 
-		for (SimplePolygonXZ hole : holes) {
+		for (SimplePolygonShapeXZ hole : holes) {
 
 			holeIndices.add(dataIndex);
 
-			for (VectorXZ v : hole.getVertices()) {
+			for (VectorXZ v : hole.getVertexListNoDup()) {
 				data[2 * dataIndex] = v.x;
 				data[2 * dataIndex + 1] = v.z;
 				dataIndex ++;

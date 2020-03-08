@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
  * triangulation utility class that picks a suitable implementation, such as
@@ -18,8 +18,8 @@ public class TriangulationUtil {
 	 * triangulates a two-dimensional polygon with holes and unconnected points.
 	 */
 	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ outerPolygon,
-			Collection<SimplePolygonXZ> holes,
+			SimplePolygonShapeXZ outerPolygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {
 
 		return Earcut4JTriangulationUtil.triangulate(outerPolygon, holes, points);
@@ -30,15 +30,15 @@ public class TriangulationUtil {
 	 * triangulates a two-dimensional polygon with holes.
 	 */
 	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ outerPolygon,
-			Collection<SimplePolygonXZ> holes) {
+			SimplePolygonShapeXZ outerPolygon,
+			Collection<? extends SimplePolygonShapeXZ> holes) {
 
 		return Earcut4JTriangulationUtil.triangulate(outerPolygon, holes);
 
 	}
 
 	/**
-	 * @see #triangulate(SimplePolygonXZ, Collection)
+	 * @see #triangulate(SimplePolygonShapeXZ, Collection)
 	 */
 	public static final List<TriangleXZ> triangulate(
 			PolygonWithHolesXZ polygon,
@@ -49,7 +49,7 @@ public class TriangulationUtil {
 	}
 
 	/**
-	 * @see #triangulate(SimplePolygonXZ, Collection)
+	 * @see #triangulate(SimplePolygonShapeXZ, Collection)
 	 */
 	public static final List<TriangleXZ> triangulate(
 			PolygonWithHolesXZ polygon) {
