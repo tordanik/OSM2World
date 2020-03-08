@@ -55,16 +55,20 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 			Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
-		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
+		List<? extends TriangleXYZ> triangleList = (triangles instanceof List)
+				? (List<? extends TriangleXYZ>) triangles
+				: new ArrayList<>(triangles);
 
-		for (TriangleXYZ triangle : triangles) {
+		List<VectorXYZ> vectors = new ArrayList<>(triangleList.size() * 3);
+
+		for (TriangleXYZ triangle : triangleList) {
 			vectors.add(triangle.v1);
 			vectors.add(triangle.v2);
 			vectors.add(triangle.v3);
 		}
 
 		drawPrimitive(TRIANGLES, material, vectors,
-				calculateTriangleNormals(vectors,
+				calculateTriangleNormals(triangleList,
 						material.getInterpolation() == Interpolation.SMOOTH),
 						texCoordLists);
 

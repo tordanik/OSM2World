@@ -1,5 +1,6 @@
 package org.osm2world.core.math.algorithms;
 
+import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -8,10 +9,42 @@ import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 
 
 public class NormalCalculationUtilTest {
+
+	@Test
+	public final void testCalculateTriangleNormals() {
+
+		List<TriangleXYZ> triangles = asList(
+				new TriangleXYZ(X_UNIT, Z_UNIT, NULL_VECTOR),
+				new TriangleXYZ(Y_UNIT, NULL_VECTOR, Z_UNIT));
+
+		{
+			List<VectorXYZ> normalsFlat = NormalCalculationUtil.calculateTriangleNormals(triangles, false);
+
+			assertEquals(6, normalsFlat.size());
+			assertAlmostEquals(Y_UNIT, normalsFlat.get(0));
+			assertAlmostEquals(Y_UNIT, normalsFlat.get(1));
+			assertAlmostEquals(Y_UNIT, normalsFlat.get(2));
+			assertAlmostEquals(X_UNIT, normalsFlat.get(3));
+			assertAlmostEquals(X_UNIT, normalsFlat.get(4));
+			assertAlmostEquals(X_UNIT, normalsFlat.get(5));
+		} {
+			List<VectorXYZ> normalsSmooth = NormalCalculationUtil.calculateTriangleNormals(triangles, true);
+
+			assertEquals(6, normalsSmooth.size());
+			assertAlmostEquals(Y_UNIT, normalsSmooth.get(0));
+			assertAlmostEquals(new VectorXYZ(1/sqrt(2), 1/sqrt(2), 0), normalsSmooth.get(1));
+			assertAlmostEquals(new VectorXYZ(1/sqrt(2), 1/sqrt(2), 0), normalsSmooth.get(2));
+			assertAlmostEquals(X_UNIT, normalsSmooth.get(3));
+			assertAlmostEquals(new VectorXYZ(1/sqrt(2), 1/sqrt(2), 0), normalsSmooth.get(4));
+			assertAlmostEquals(new VectorXYZ(1/sqrt(2), 1/sqrt(2), 0), normalsSmooth.get(5));
+		}
+
+	}
 
 	@Test
 	public final void testCalculateTriangleStripNormals() {

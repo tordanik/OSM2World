@@ -1,6 +1,7 @@
 package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,45 +13,51 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 public final class NormalCalculationUtil {
 
 	/** prevents instantiation */
 	private NormalCalculationUtil() {}
 
 	/**
-	 * calculates normals for a collection of triangles
+	 * calculates normals for the vertices of a list of triangles
 	 */
 	public static final List<VectorXYZ> calculateTriangleNormals(
-			List<VectorXYZ> vertices, boolean smooth) {
+			List<? extends TriangleXYZ> triangles, boolean smooth) {
 
-		assert vertices.size() % 3 == 0;
+		List<VectorXYZ> result = new ArrayList<>(triangles.size() * 3);
 
-		VectorXYZ[] normals = new VectorXYZ[vertices.size()];
+		if (!smooth) { //flat
 
-		//TODO: implement smooth case
-		if (/*!smooth*/ true) { //flat
+			for (int triangle = 0; triangle < triangles.size(); triangle++) {
+				VectorXYZ normal = triangles.get(triangle).getNormal();
+				result.add(normal);
+				result.add(normal);
+				result.add(normal);
+			}
 
-			for (int triangle = 0; triangle < vertices.size() / 3; triangle++) {
+		} else {
 
-				int i = triangle * 3 + 1;
+			Multimap<VectorXYZ, VectorXYZ> adjacentNormals = HashMultimap.create();
 
-				VectorXYZ vBefore = vertices.get(i-1);
-				VectorXYZ vAt = vertices.get(i);
-				VectorXYZ vAfter = vertices.get(i+1);
+			for (TriangleXYZ t : triangles) {
+				for (VectorXYZ v : t.getVertices()) {
+					adjacentNormals.put(v, t.getNormal());
+				}
+			}
 
-				VectorXYZ toBefore = vBefore.subtract(vAt);
-				VectorXYZ toAfter = vAfter.subtract(vAt);
-
-				normals[i] = toBefore.crossNormalized(toAfter);
-
-				normals[i-1] = normals[i];
-				normals[i+1] = normals[i];
-
+			for (TriangleXYZ t : triangles) {
+				for (VectorXYZ v : t.getVertices()) {
+					VectorXYZ averageNormal = adjacentNormals.get(v).stream().reduce(NULL_VECTOR, VectorXYZ::add);
+					result.add(averageNormal.normalize());
+				}
 			}
 
 		}
 
-		return asList(normals);
+		return result;
 
 	}
 
