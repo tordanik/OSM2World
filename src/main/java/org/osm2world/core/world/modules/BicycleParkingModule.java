@@ -8,17 +8,21 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.PolygonUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -27,36 +31,32 @@ import org.osm2world.core.world.modules.common.AbstractModule;
 public class BicycleParkingModule extends AbstractModule {
 
 	@Override
-	protected void applyToWaySegment(MapWaySegment segment) {
+	protected void applyToArea(MapArea area) {
+		if (area.getTags().contains("amenity", "bicycle_parking")) {
 
-		if (segment.getTags().contains("amenity", "bicycle_parking")) {
-
-			if (segment.getTags().contains("bicycle_parking", "stands")) {
-				segment.addRepresentation(new BicycleStands(segment));
+			if (area.getTags().contains("bicycle_parking", "stands")) {
+				area.addRepresentation(new BicycleStands(area));
 			}
 
 		}
 
 	}
 
-	private static final class BicycleStands extends NoOutlineWaySegmentWorldObject
-			implements RenderableToAllTargets {
+	private static final class BicycleStands extends AbstractAreaWorldObject implements
+		RenderableToAllTargets {
 
 		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
 		private static final float STAND_DEFAULT_HEIGHT = 0.7f;
 
-		private List<EleConnector> standConnectors;
+		private EleConnectorGroup standConnectors;
 
 		private final double height;
 
-		private BicycleStands(MapWaySegment segment) {
-
-			super(segment);
-
-			height = parseHeight(segment.getTags(), STAND_DEFAULT_HEIGHT);
-
+		protected BicycleStands(MapArea area) {
+			super(area);
+			height = parseHeight(area.getTags(), STAND_DEFAULT_HEIGHT);
 		}
 
 		@Override
@@ -64,25 +64,46 @@ public class BicycleParkingModule extends AbstractModule {
 			return GroundState.ON; //TODO better ground state calculations
 		}
 
+		protected Material getStandMaterial() {
+			return STEEL;
+		}
+
 		@Override
-		public Iterable<EleConnector> getEleConnectors() {
+		public EleConnectorGroup getEleConnectors() {
 
 			//replaces the default implementation (connectors at start and end of the segment)
 			//with one that sets up an ele connector for each stand
 
 			if (standConnectors == null) {
 
-				List<VectorXZ> standLocations = equallyDistributePointsAlong(1.0, true,
-						segment.getStartNode().getPos(), segment.getEndNode().getPos());
+				SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(area.getOuterPolygon());
+				List<VectorXZ> standLocations;
+				VectorXZ midpoint1, midpoint2;
 
-				//TODO: take capacity into account, but that requires having access to the entire way
+				// place the stand an eighth of the distance from either end of the bounded box
+				// ensures the stand is within the box and passing through the centre
+				if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > bbox.getVertex(1)
+					.distanceTo(bbox.getVertex(0))) {
+					midpoint1 = bbox.getVertex(0).add(bbox.getVertex(1)).mult(0.5);
+					midpoint2 = bbox.getVertex(2).add(bbox.getVertex(3)).mult(0.5);
+				} else {
+					midpoint1 = bbox.getVertex(1).add(bbox.getVertex(2)).mult(0.5);
+					midpoint2 = bbox.getVertex(3).add(bbox.getVertex(0)).mult(0.5);
+				}
+				standLocations = equallyDistributePointsAlong(1.0, true,
+					midpoint1.add(midpoint2.subtract(midpoint1).mult(0.125)),
+					midpoint2.add(midpoint1.subtract(midpoint2).mult(0.125)));
 
-				standConnectors = new ArrayList<EleConnector>();
+				//TODO: take capacity into account
+
+				standConnectors = new EleConnectorGroup();
 
 				for (VectorXZ standLocation : standLocations) {
-					standConnectors.add(new EleConnector(standLocation, null, getGroundState()));
+					if (area.getPolygon().contains(standLocation)) {
+						standConnectors
+							.add(new EleConnector(standLocation, null, getGroundState()));
+					}
 				}
-
 			}
 
 			return standConnectors;
@@ -92,10 +113,16 @@ public class BicycleParkingModule extends AbstractModule {
 		@Override
 		public void renderTo(Target<?> target) {
 
-			VectorXZ start = segment.getStartNode().getPos();
-			VectorXZ end = segment.getEndNode().getPos();
+			SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(area.getOuterPolygon());
 
-			VectorXZ direction = end.subtract(start).rightNormal();
+			VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
+
+			//Determining which side of the bounded box is longer; main direction of the stand
+			if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > direction.length()) {
+				direction = bbox.getVertex(2).subtract(bbox.getVertex(1));
+			}
+
+			direction = direction.rightNormal();
 			VectorXYZ toFront = direction.mult(STAND_DEFAULT_LENGTH / 2).xyz(0);
 
 			for (EleConnector standConnector : standConnectors) {
@@ -103,10 +130,10 @@ public class BicycleParkingModule extends AbstractModule {
 				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
 
 				path.add(standConnector.getPosXYZ().add(toFront));
-				path.add(standConnector.getPosXYZ().add(toFront).addY(height*0.95));
+				path.add(standConnector.getPosXYZ().add(toFront).addY(height * 0.95));
 				path.add(standConnector.getPosXYZ().add(toFront.mult(0.95)).addY(height));
 				path.add(standConnector.getPosXYZ().add(toFront.invert().mult(0.95)).addY(height));
-				path.add(standConnector.getPosXYZ().add(toFront.invert()).addY(height*0.95));
+				path.add(standConnector.getPosXYZ().add(toFront.invert()).addY(height * 0.95));
 				path.add(standConnector.getPosXYZ().add(toFront.invert()));
 
 				List<VectorXYZ> upVectors = new ArrayList<VectorXYZ>();
@@ -118,12 +145,10 @@ public class BicycleParkingModule extends AbstractModule {
 				upVectors.add(toFront.invert().normalize());
 				upVectors.add(upVectors.get(4));
 
-				target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors, null, null, null);
+				target.drawExtrudedShape(getStandMaterial(), STAND_SHAPE, path, upVectors,
+					null, null, null);
 
 			}
-
 		}
-
 	}
-
 }
