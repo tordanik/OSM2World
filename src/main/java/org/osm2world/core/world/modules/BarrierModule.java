@@ -76,6 +76,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new TrellisWorkFence(line));
 		} else if (PoleFence.fits(tags)) {
 			line.addRepresentation(new PoleFence(line));
+		}else if (BollardRow.fits(tags)) {
+			line.addRepresentation(new BollardRow(line));
 		}
 
 	}
@@ -748,7 +750,47 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	//TODO: bollard_count or similar tag exists? create "Bollards" rep.
-	//just as lift gates etc, this should use the line.getRightNormal and the road width
+	private static class BollardRow extends PoleFence{
+
+
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "bollard");
+		}
+
+
+		public BollardRow(MapWaySegment line) {
+			super(line);
+
+			this.barWidth = 0.15f;
+			this.poleMaterial = CONCRETE;
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			List<VectorXYZ> pointsWithEle = getCenterline();
+
+			/* render bollards */
+
+			//TODO connect the bollards to the ground independently
+
+			//TODO: bollard_count or similar tag exists? create "Bollards" rep.
+			//just as lift gates etc, this should use the line.getRightNormal and the road width
+			
+
+			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(
+					2f, true, getCenterline());
+
+			for (VectorXYZ base : bollardPositions) {
+
+				target.drawColumn(this.poleMaterial, null, base,
+						height, this.barWidth, this.barWidth, false, true);
+
+			}
+
+		}
+
+	}
+
 
 }
