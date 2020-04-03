@@ -1,6 +1,6 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.ceil;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.function.Cosh;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -42,6 +43,7 @@ import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
 import com.google.common.collect.Lists;
+import org.osm2world.core.world.network.NetworkWaySegmentWorldObject;
 
 /**
  * adds barriers to the world
@@ -90,6 +92,8 @@ public class BarrierModule extends AbstractModule {
 
 		if (Bollard.fits(tags)) {
 			node.addRepresentation(new Bollard(node, tags));
+		} else if (Chain.fits(tags)){
+			node.addRepresentation(new Chain(node, tags));
 		}
 
 
@@ -718,6 +722,48 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
+	private static class BollardRow extends PoleFence{
+
+
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "bollard");
+		}
+
+
+		public BollardRow(MapWaySegment line) {
+			super(line);
+
+			this.barWidth = 0.15f;
+			this.poleMaterial = CONCRETE;
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			List<VectorXYZ> pointsWithEle = getCenterline();
+
+			/* render bollards */
+
+			//TODO connect the bollards to the ground independently
+
+			//TODO: bollard_count or similar tag exists? create "Bollards" rep.
+			//just as lift gates etc, this should use the line.getRightNormal and the road width
+
+
+			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(
+					2f, false, getCenterline());
+
+			for (VectorXYZ base : bollardPositions) {
+
+				target.drawColumn(this.poleMaterial, null, base,
+						height, this.barWidth, this.barWidth, false, true);
+
+			}
+
+		}
+
+	}
+
 	private static class Bollard extends NoOutlineNodeWorldObject
 	implements RenderableToAllTargets {
 
@@ -750,47 +796,77 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class BollardRow extends PoleFence{
+	private static class Chain extends NoOutlineNodeWorldObject
+			implements RenderableToAllTargets {
+
+		private static final float DEFAULT_HEIGHT = 1;
+		private final float height;
+		private Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
+
+		private static final SimpleClosedShapeXZ BAR_SHAPE =
+				new AxisAlignedBoundingBoxXZ(-0.03, -0.03, 0.03, 0);
 
 
 		public static boolean fits(TagGroup tags) {
-			return tags.contains("barrier", "bollard");
+			return tags.contains("barrier", "chain");
 		}
 
 
-		public BollardRow(MapWaySegment line) {
-			super(line);
+		public Chain(MapNode node, TagGroup tags) {
 
-			this.barWidth = 0.15f;
-			this.poleMaterial = CONCRETE;
+			super(node);
+
+			height = parseHeight(tags, DEFAULT_HEIGHT);
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON; //TODO: flexible ground states
 		}
 
 		@Override
 		public void renderTo(Target<?> target) {
 
-			List<VectorXYZ> pointsWithEle = getCenterline();
+			/* render posts */
 
-			/* render bollards */
+			VectorXYZ offset;
 
-			//TODO connect the bollards to the ground independently
-
-			//TODO: bollard_count or similar tag exists? create "Bollards" rep.
-			//just as lift gates etc, this should use the line.getRightNormal and the road width
-			
-
-			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(
-					2f, true, getCenterline());
-
-			for (VectorXYZ base : bollardPositions) {
-
-				target.drawColumn(this.poleMaterial, null, base,
-						height, this.barWidth, this.barWidth, false, true);
-
+			if (node.getConnectedWaySegments().get(0) != null) {
+				offset = node.getConnectedWaySegments().get(0).getDirection().xyz(0).rotateY(PI / 2);
+			} else {
+				//Face north if no connecting ways segements
+				offset = new VectorXYZ(1,0,0);
 			}
+			VectorXYZ post1Pos = getBase().add(offset);
+			VectorXYZ post2Pos = getBase().add(offset.rotateY(PI));
+			double distanceBetweenPosts = offset.length() * 2;
+
+			target.drawColumn(STEEL, null, post1Pos,
+					height, 0.05f, 0.05f, false, true);
+
+			target.drawColumn(STEEL, null, post2Pos,
+					height, 0.05f, 0.05f, false, true);
+
+
+			/* render chain */
+
+			List<VectorXYZ> chainPath = new ArrayList<VectorXYZ>();
+
+			for(float i = 0f; i <= distanceBetweenPosts; i += distanceBetweenPosts/DEFAULT_NO_CHAIN_SEGMENTS){
+				//approximation of chain sag
+				double a = 5f / 2f;
+				double sag = a * cosh((i-(distanceBetweenPosts/2))/a)  -  a * cosh(distanceBetweenPosts/(2 * a));
+				double pointDrop = height + sag;
+				chainPath.add(post2Pos.add(offset.normalize().mult(i)).y(pointDrop));
+			}
+
+			target.drawExtrudedShape(STEEL, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
+					Y_UNIT), null, null, EnumSet.of(START_CAP, END_CAP));
 
 		}
 
 	}
+
 
 
 }
