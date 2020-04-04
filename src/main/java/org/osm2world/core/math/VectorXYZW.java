@@ -4,18 +4,18 @@ public class VectorXYZW implements Vector4D {
 
 	public final double x, y, z, w;
 
-	public VectorXYZW(double x2, double y2, double z2, double w2) {
-		this.x = x2;
-		this.y = y2;
-		this.z = z2;
-		this.w = w2;
+	public VectorXYZW(double x, double y, double z, double w) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.w = w;
 	}
 
-	public VectorXYZW(VectorXYZ v, double w2) {
+	public VectorXYZW(VectorXYZ v, double w) {
 		this.x = v.x;
 		this.y = v.y;
 		this.z = v.z;
-		this.w = w2;
+		this.w = w;
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class VectorXYZW implements Vector4D {
 
 	@Override
 	public double getW() {
-		return z;
+		return w;
 	}
 
 	public double length() {
