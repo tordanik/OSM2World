@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
+import static org.osm2world.core.map_data.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.osm2world.core.world.modules.RoadModule.findMatchingLanes;
 
 import java.util.List;

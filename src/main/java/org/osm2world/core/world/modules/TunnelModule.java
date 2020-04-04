@@ -9,11 +9,11 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;

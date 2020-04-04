@@ -1,13 +1,13 @@
 package org.osm2world.core.world.modules.common;
 
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+import static org.osm2world.core.util.ValueParseUtil.*;
 
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
+import org.osm2world.core.map_data.data.MapBasedTagGroup;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 import com.google.common.collect.Lists;
@@ -101,7 +101,7 @@ public class WorldModuleParseUtil {
 
 		for (String key : keys) {
 			if (tags.containsKey(key)) {
-				Float value = ValueStringParser.parseMeasure(tags.getValue(key));
+				Float value = ValueParseUtil.parseMeasure(tags.getValue(key));
 				if (value != null) {
 					return value;
 				}

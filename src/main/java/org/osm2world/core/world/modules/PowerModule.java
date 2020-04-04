@@ -4,12 +4,12 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseMeasure;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 

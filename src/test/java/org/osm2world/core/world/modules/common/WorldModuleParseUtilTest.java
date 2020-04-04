@@ -4,9 +4,9 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.MapBasedTagGroup;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagGroup;
 
 public class WorldModuleParseUtilTest {
 

@@ -1,6 +1,6 @@
 package org.osm2world.core.map_elevation.creation;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 

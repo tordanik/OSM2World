@@ -5,8 +5,6 @@ import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;

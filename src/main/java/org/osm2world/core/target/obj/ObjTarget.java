@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;

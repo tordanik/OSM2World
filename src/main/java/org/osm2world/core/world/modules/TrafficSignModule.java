@@ -2,12 +2,12 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.VectorXYZ.X_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -19,12 +19,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;

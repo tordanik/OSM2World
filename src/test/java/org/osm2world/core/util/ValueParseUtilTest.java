@@ -1,14 +1,14 @@
-package org.openstreetmap.josm.plugins.graphview.util;
+package org.osm2world.core.util;
 
 import static org.junit.Assert.*;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.*;
 
 import java.awt.Color;
 
 import org.junit.Test;
 
-public class ValueStringParserTest {
+public class ValueParseUtilTest {
 
 	@Test
 	public void testParseUInt() {

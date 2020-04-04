@@ -1,13 +1,12 @@
 package org.osm2world.core.test;
 
 import static java.util.stream.Collectors.toList;
-import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
+import static org.osm2world.core.map_data.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.OriginMapProjection;
 import org.osm2world.core.map_data.creation.OrthographicAzimuthalMapProjection;
@@ -17,6 +16,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.math.VectorXZ;
 
 import com.google.common.collect.Streams;

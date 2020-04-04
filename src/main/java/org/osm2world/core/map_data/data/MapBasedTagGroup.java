@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.graphview.core.data;
+package org.osm2world.core.map_data.data;
 
 import java.util.Collection;
 import java.util.Collections;

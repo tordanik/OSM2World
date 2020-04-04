@@ -1,15 +1,14 @@
-package org.openstreetmap.josm.plugins.graphview.core.util;
+package org.osm2world.core.util;
 
 import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osm2world.core.util.ColorNameDefinition;
-
-public final class ValueStringParser {
+/** parses the syntax of typical OSM tag values */
+public final class ValueParseUtil {
 
 	/** prevents instantiation */
-	private ValueStringParser() { }
+	private ValueParseUtil() { }
 
 	/** pattern that splits into a part before and after a decimal point */
 	private static final Pattern DEC_POINT_PATTERN = Pattern.compile("^(\\-?\\d+)\\.(\\d+)$");

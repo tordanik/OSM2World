@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapBasedTagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
 import org.osm2world.core.world.modules.BuildingModule.Wall;

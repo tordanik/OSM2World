@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
+import org.osm2world.core.map_data.data.Tag;
 
 import de.topobyte.osm4j.core.model.iface.OsmTag;
 

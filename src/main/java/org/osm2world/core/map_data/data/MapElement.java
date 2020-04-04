@@ -3,7 +3,6 @@ package org.osm2world.core.map_data.data;
 import java.util.Collection;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.world.data.WorldObject;
