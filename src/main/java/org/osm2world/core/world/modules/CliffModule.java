@@ -29,9 +29,9 @@ import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 public class CliffModule extends ConfigurableWorldModule {
 
 	@Override
-	public void applyTo(MapData grid) {
+	public void applyTo(MapData mapData) {
 
-		for (MapWaySegment segment : grid.getMapWaySegments()) {
+		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 
 			if (segment.getTags().contains("natural", "cliff")) {
 				segment.addRepresentation(new Cliff(segment));

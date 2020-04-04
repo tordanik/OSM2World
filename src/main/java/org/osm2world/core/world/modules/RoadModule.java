@@ -62,15 +62,15 @@ public class RoadModule extends ConfigurableWorldModule {
 	private static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
 
 	@Override
-	public void applyTo(MapData grid) {
+	public void applyTo(MapData mapData) {
 
-		for (MapWaySegment line : grid.getMapWaySegments()) {
+		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			if (isRoad(line.getTags())) {
 				line.addRepresentation(new Road(line, line.getTags()));
 			}
 		}
 
-		for (MapArea area : grid.getMapAreas()) {
+		for (MapArea area : mapData.getMapAreas()) {
 
 			if (isRoad(area.getTags())) {
 				area.addRepresentation(new RoadArea(area));
@@ -78,7 +78,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		for (MapNode node : grid.getMapNodes()) {
+		for (MapNode node : mapData.getMapNodes()) {
 
 			TagGroup tags = node.getTags();
 

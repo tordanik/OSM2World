@@ -161,7 +161,7 @@ public class MapData {
 	 * returns all {@link WorldObject}s from elements in this data set
 	 * that are instances of a certain type.
 	 * Can be used, for example, to access all
-	 * {@link TerrainBoundaryWorldObject}s in the grid.
+	 * {@link TerrainBoundaryWorldObject}s.
 	 */
 	public <T> Iterable<T> getWorldObjects(Class<T> type) {
 		return Iterables.filter(getWorldObjects(), type);
