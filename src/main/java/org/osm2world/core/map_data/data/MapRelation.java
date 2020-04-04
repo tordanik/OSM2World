@@ -101,7 +101,7 @@ public class MapRelation {
 	}
 
 	public TagGroup getTags() {
-		return new MapBasedTagGroup(getTagsAsMap(osmRelation));
+		return TagGroup.of(getTagsAsMap(osmRelation));
 	}
 
 	@Override

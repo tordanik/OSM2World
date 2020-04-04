@@ -43,15 +43,12 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.osm2world.core.map_data.data.EmptyTagGroup;
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapBasedTagGroup;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
@@ -314,7 +311,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			List<TerrainBoundaryWorldObject> buildingPassages = area.getOverlaps().stream()
 				.map(o -> o.getOther(area))
-				.filter(o -> o.getTags().containsAny("tunnel", asList("building_passage", "passage")))
+				.filter(o -> o.getTags().containsAny(asList("tunnel"), asList("building_passage", "passage")))
 				.filter(o -> o.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject)
 				.map(o -> (TerrainBoundaryWorldObject)o.getPrimaryRepresentation())
 				.filter(o -> o.getGroundState() == GroundState.ON)
@@ -2173,7 +2170,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			this.floorHeight = floorHeight;
 
 			if (buildingPart == null) {
-				this.tags = EmptyTagGroup.EMPTY_TAG_GROUP;
+				this.tags = TagGroup.of();
 			} else if (wallWay != null) {
 				this.tags = inheritTags(wallWay.getTags(), buildingPart.tags);
 			} else {
@@ -2359,7 +2356,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
 				if (!buildingPart.area.getBoundaryNodes().stream().anyMatch(
-						n -> n.getTags().containsAnyKey(asList("entrance", "door")))) {
+						n -> n.getTags().containsKey("entrance") || n.getTags().containsKey("door"))) {
 					placeDefaultGarageDoors(mainSurface);
 				}
 			}
@@ -2471,7 +2468,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		/** places default (i.e. not explicitly mapped) doors onto garage walls */
 		private void placeDefaultGarageDoors(WallSurface surface) {
 
-			MapBasedTagGroup doorTags = new MapBasedTagGroup(new Tag("door", "overhead"));
+			TagGroup doorTags = TagGroup.of("door", "overhead");
 
 			double doorDistance = 1.25 * DoorParameters.fromTags(doorTags, this.tags).width;
 			int numDoors = (int) round(surface.getLength() / doorDistance);

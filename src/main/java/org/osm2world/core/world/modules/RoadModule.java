@@ -4,7 +4,6 @@ import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static org.osm2world.core.map_data.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapBasedTagGroup;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -871,7 +869,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				if (dividerType != null) {
 					layout.getLanes(RoadPart.RIGHT).add(new Lane(this,
-							dividerType, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+							dividerType, RoadPart.RIGHT, TagGroup.of()));
 				}
 
 			}
@@ -895,7 +893,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						// divider between lanes in the same direction
 
 						layout.getLanes(roadPart).add(new Lane(this,
-								DASHED_LINE, roadPart, EMPTY_TAG_GROUP));
+								DASHED_LINE, roadPart, TagGroup.of()));
 
 					}
 
@@ -904,7 +902,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 					TagGroup tags = (laneTags != null)
 							? laneTags[i]
-							: EMPTY_TAG_GROUP;
+							: TagGroup.of();
 
 					layout.getLanes(roadPart).add(new Lane(this,
 							VEHICLE_LANE, roadPart, tags));
@@ -929,13 +927,13 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			if (leftBusBay) {
-				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, EMPTY_TAG_GROUP));
+				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, TagGroup.of()));
 				layout.leftLanes.add(new Lane(this, BUS_BAY, RoadPart.LEFT, inheritTags(
 						getTagsWithPrefix(tags, "bus_bay:left:", null),
 						getTagsWithPrefix(tags, "bus_bay:both:", null))));
 			}
 			if (rightBusBay) {
-				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, TagGroup.of()));
 				layout.rightLanes.add(new Lane(this, BUS_BAY, RoadPart.RIGHT, inheritTags(
 						getTagsWithPrefix(tags, "bus_bay:right:", null),
 						getTagsWithPrefix(tags, "bus_bay:both:", null))));
@@ -1051,7 +1049,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				TagGroup[] result = new TagGroup[resultMaps.length];
 
 				for (int i = 0; i < resultMaps.length; i++) {
-					result[i] = new MapBasedTagGroup(resultMaps[i]);
+					result[i] = TagGroup.of(resultMaps[i]);
 				}
 
 				return result;
@@ -1090,7 +1088,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			}
 
-			return new MapBasedTagGroup(result);
+			return TagGroup.of(result);
 
 		}
 
@@ -1112,7 +1110,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			// if there is some basic info on lanes, use that
 
-			if (tags.containsAnyKey(asList("lanes", "lanes:forward", "lanes:backward", "divider"))) {
+			if (asList("lanes", "lanes:forward", "lanes:backward", "divider").stream().anyMatch(tags::containsKey)) {
 
 				return calculateLaneBasedWidth(true, false);
 
@@ -1776,7 +1774,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public void renderTo(Target target) {
 
 			type.render(target, roadPart, rightHandTraffic,
-					EMPTY_TAG_GROUP, EMPTY_TAG_GROUP, leftBorder, rightBorder);
+					TagGroup.of(), TagGroup.of(), leftBorder, rightBorder);
 
 		}
 

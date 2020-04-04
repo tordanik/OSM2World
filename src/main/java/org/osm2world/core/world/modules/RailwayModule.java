@@ -107,7 +107,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 	public void applyTo(MapData mapData) {
 
 		for (MapWaySegment segment : mapData.getMapWaySegments()) {
-			if (segment.getTags().containsAny("railway", RAILWAY_VALUES)) {
+			if (segment.getTags().containsAny(asList("railway"), RAILWAY_VALUES)) {
 				segment.addRepresentation(new Rail(segment));
 			}
 		}

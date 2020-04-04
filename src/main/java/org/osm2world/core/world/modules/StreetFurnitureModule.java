@@ -85,19 +85,19 @@ public class StreetFurnitureModule extends AbstractModule {
 			node.addRepresentation(new GritBin(node));
 		}
 		if (node.getTags().contains("amenity", "post_box")
-				&& (node.getTags().containsAnyKey(asList("operator", "brand")))) {
+				&& asList("operator", "brand").stream().anyMatch(node.getTags()::containsKey)) {
 			node.addRepresentation(new PostBox(node));
 		}
 		if (node.getTags().contains("amenity", "telephone")
-				&& (node.getTags().containsAnyKey(asList("operator", "brand")))) {
+				&& asList("operator", "brand").stream().anyMatch(node.getTags()::containsKey)) {
 			node.addRepresentation(new Phone(node));
 		}
 		if (node.getTags().contains("amenity", "vending_machine")
-				&& (node.getTags().containsAny("vending", asList("parcel_pickup;parcel_mail_in", "parcel_mail_in")))) {
+				&& (node.getTags().containsAny(asList("vending"), asList("parcel_pickup;parcel_mail_in", "parcel_mail_in")))) {
 			node.addRepresentation(new ParcelMachine(node));
 		}
 		if (node.getTags().contains("amenity", "vending_machine")
-				&& (node.getTags().containsAny("vending", asList("bicycle_tube", "cigarettes", "condoms")))) {
+				&& (node.getTags().containsAny(asList("vending"), asList("bicycle_tube", "cigarettes", "condoms")))) {
 			node.addRepresentation(new VendingMachineVice(node));
 		}
 		if (node.getTags().contains("amenity", "recycling")
@@ -128,7 +128,8 @@ public class StreetFurnitureModule extends AbstractModule {
 	private static boolean isInHighway(MapNode node) {
 		if (node.getConnectedWaySegments().size() > 0) {
 			for (MapWaySegment way : node.getConnectedWaySegments()) {
-				if (way.getTags().containsKey("highway") && !way.getTags().containsAny("highway", asList("path", "footway", "platform"))) {
+				if (way.getTags().containsKey("highway")
+						&& !asList("path", "footway", "platform").contains(way.getTags().getValue("highway"))) {
 					return true;
 				}
 			}
@@ -954,7 +955,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			int n = -1;
 			int m = 0;
 
-			if (node.getTags().containsAny(asList("recycling:glass_bottles", "recycling:glass"), "yes")) {
+			if (node.getTags().containsAny(asList("recycling:glass_bottles", "recycling:glass"), asList("yes"))) {
 				n++;
 			}
 			if (node.getTags().contains("recycling:paper", "yes")) {
@@ -969,7 +970,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				drawContainer(target, "paper", getBase().add(new VectorXYZ((distanceX * (-n / 2 + m)), 0f, -(distanceZ / 2)).rotateY(faceVector.angle())));
 				m++;
 			}
-			if (node.getTags().containsAny(asList("recycling:glass_bottles", "recycling:glass"), "yes")) {
+			if (node.getTags().containsAny(asList("recycling:glass_bottles", "recycling:glass"), asList("yes"))) {
 				drawContainer(target, "white_glass", getBase().add(new VectorXYZ((distanceX * (-n / 2 + m)), 0f, (distanceZ / 2)).rotateY(faceVector.angle())));
 				drawContainer(target, "coloured_glass", getBase().add(new VectorXYZ((distanceX * (-n / 2 + m)), 0f, -(distanceZ / 2)).rotateY(faceVector.angle())));
 				m++;
@@ -1160,7 +1161,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (node.getTags().containsAny(asList("operator", "brand"), asList("Deutsche Telekom AG", "Deutsche Telekom", "Telekom"))) {
 				roofMaterial = TELEKOM_MANGENTA;
 				poleMaterial = STEEL;
-			} else if (node.getTags().containsAny(asList("operator", "brand"), "British Telecom")) {
+			} else if (node.getTags().containsAny(asList("operator", "brand"), asList("British Telecom"))) {
 				roofMaterial = POSTBOX_ROYALMAIL;
 				poleMaterial = POSTBOX_ROYALMAIL;
 			} else {
@@ -1229,7 +1230,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material poleMaterial = STEEL;
 			Type type = null;
 
-			if (node.getTags().contains("vending", "bicycle_tube") && node.getTags().containsAny("operator", asList("Continental", "continental"))) {
+			if (node.getTags().contains("vending", "bicycle_tube")
+					&& node.getTags().containsAny(asList("operator"), asList("Continental", "continental"))) {
 				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, Color.ORANGE);
 			} else if (node.getTags().contains("vending", "bicycle_tube")) {
 				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, Color.BLUE);

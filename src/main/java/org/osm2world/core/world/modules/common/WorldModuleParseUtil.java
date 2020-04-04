@@ -4,7 +4,6 @@ import static org.osm2world.core.util.ValueParseUtil.*;
 
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapBasedTagGroup;
 import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.map_data.data.TagGroup;
 import org.osm2world.core.util.ValueParseUtil;
@@ -122,7 +121,7 @@ public class WorldModuleParseUtil {
 			}
 		}
 
-		return new MapBasedTagGroup(tags);
+		return TagGroup.of(tags);
 
 	}
 

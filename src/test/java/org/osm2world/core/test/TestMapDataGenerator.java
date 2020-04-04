@@ -1,7 +1,6 @@
 package org.osm2world.core.test;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.map_data.data.EmptyTagGroup.EMPTY_TAG_GROUP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +66,7 @@ public class TestMapDataGenerator {
 	}
 
 	public MapNode createNode(double x, double z) {
-		return createNode(x, z, EMPTY_TAG_GROUP);
+		return createNode(x, z, TagGroup.of());
 	}
 
 	public MapWay createWay(List<MapNode> wayNodes, TagGroup tags) {

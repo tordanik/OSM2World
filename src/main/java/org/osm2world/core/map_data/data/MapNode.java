@@ -52,7 +52,7 @@ public class MapNode extends MapRelation.Element implements MapElement {
 
 	@Override
 	public TagGroup getTags() {
-		return new MapBasedTagGroup(getTagsAsMap(osmNode));
+		return TagGroup.of(getTagsAsMap(osmNode));
 	}
 
 	public Collection<MapArea> getAdjacentAreas() {
