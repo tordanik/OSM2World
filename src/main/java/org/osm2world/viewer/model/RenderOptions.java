@@ -19,7 +19,6 @@ public class RenderOptions {
 	public Set<DebugView> activeDebugViews = new HashSet<>();
 
 	private boolean showWorldObjects = true;
-	private boolean showTerrain = true;
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
 
@@ -31,12 +30,6 @@ public class RenderOptions {
 	}
 	public void setShowWorldObjects(boolean showWorldObjects) {
 		this.showWorldObjects = showWorldObjects;
-	}
-	public boolean isShowTerrain() {
-		return showTerrain;
-	}
-	public void setShowTerrain(boolean showTerrain) {
-		this.showTerrain = showTerrain;
 	}
 	public boolean isWireframe() {
 		return wireframe;
