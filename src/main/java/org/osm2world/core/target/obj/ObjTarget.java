@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
@@ -80,7 +80,7 @@ public class ObjTarget extends FaceTarget {
 			/* start an object with the object's class
 			 * and the underlying OSM element's name/ref tags */
 
-			TagGroup tags = object.getPrimaryMapElement().getTags();
+			TagSet tags = object.getPrimaryMapElement().getTags();
 
 			if (tags.containsKey("name")) {
 				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("name"));

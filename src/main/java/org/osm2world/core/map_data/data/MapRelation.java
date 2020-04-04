@@ -47,7 +47,7 @@ public class MapRelation {
 		public abstract OsmEntity getOsmElement();
 
 		/** see {@link MapElement#getTags()} */
-		public abstract TagGroup getTags();
+		public abstract TagSet getTags();
 
 	}
 
@@ -100,8 +100,8 @@ public class MapRelation {
 		return osmRelation;
 	}
 
-	public TagGroup getTags() {
-		return TagGroup.of(getTagsAsMap(osmRelation));
+	public TagSet getTags() {
+		return TagSet.of(getTagsAsMap(osmRelation));
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
@@ -42,7 +42,7 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  */
 public class TunnelModule extends AbstractModule {
 
-	public static final boolean isTunnel(TagGroup tags) {
+	public static final boolean isTunnel(TagSet tags) {
 		return tags.containsKey("tunnel")
 				&& !"no".equals(tags.getValue("tunnel"))
 				&& !"building_passage".equals(tags.getValue("tunnel"));

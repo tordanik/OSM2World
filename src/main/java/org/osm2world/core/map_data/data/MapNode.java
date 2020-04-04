@@ -51,8 +51,8 @@ public class MapNode extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public TagGroup getTags() {
-		return TagGroup.of(getTagsAsMap(osmNode));
+	public TagSet getTags() {
+		return TagSet.of(getTagsAsMap(osmNode));
 	}
 
 	public Collection<MapArea> getAdjacentAreas() {

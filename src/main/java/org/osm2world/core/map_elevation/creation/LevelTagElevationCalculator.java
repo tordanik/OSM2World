@@ -2,7 +2,7 @@ package org.osm2world.core.map_elevation.creation;
 
 import static org.osm2world.core.util.ValueParseUtil.parseOsmDecimal;
 
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 
 /**
  * sets elevations based on level tags
@@ -21,7 +21,7 @@ public class LevelTagElevationCalculator extends TagElevationCalculator {
 	}
 
 	@Override
-	protected Double getEleForTags(TagGroup tags) {
+	protected Double getEleForTags(TagSet tags) {
 
 		Float value = null;
 

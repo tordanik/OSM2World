@@ -16,7 +16,7 @@ import java.util.Map;
 import org.osm2world.core.map_data.creation.EmptyTerrainBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -69,7 +69,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 		if (!area.getRepresentations().isEmpty()) return;
 
-		TagGroup tags = area.getTags();
+		TagSet tags = area.getTags();
 
 		if (tags.containsKey("surface")) {
 			area.addRepresentation(new SurfaceArea(area, tags.getValue("surface")));

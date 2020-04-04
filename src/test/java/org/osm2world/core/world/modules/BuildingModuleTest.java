@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
 import org.osm2world.core.world.modules.BuildingModule.Wall;
@@ -31,7 +31,7 @@ public class BuildingModuleTest {
 
 		nodes.add(nodes.get(0));
 
-		MapArea buildingPartArea = generator.createWayArea(nodes, TagGroup.of("building", "yes"));
+		MapArea buildingPartArea = generator.createWayArea(nodes, TagSet.of("building", "yes"));
 
 		/* test the basic case */
 
@@ -47,7 +47,7 @@ public class BuildingModuleTest {
 		/* add a building:wall=yes way and test again */
 
 		MapWay wallWay = generator.createWay(asList(nodes.get(1), nodes.get(0), nodes.get(4)),
-				TagGroup.of("building:wall", "yes"));
+				TagSet.of("building:wall", "yes"));
 
 		result = BuildingPart.splitIntoWalls(buildingPartArea, null);
 

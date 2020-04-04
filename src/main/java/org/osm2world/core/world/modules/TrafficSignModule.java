@@ -24,7 +24,7 @@ import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
@@ -264,7 +264,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param tags The tag group to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
+	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagSet tags) {
 
 		if(originalMaterial == null) return null;
 

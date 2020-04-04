@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -50,7 +50,7 @@ public class BarrierModule extends AbstractModule {
 	@Override
 	protected void applyToWaySegment(MapWaySegment line) {
 
-		TagGroup tags = line.getTags();
+		TagSet tags = line.getTags();
 		if (!tags.containsKey("barrier")) return; //fast exit for common case
 
 		if (Wall.fits(tags)) {
@@ -82,7 +82,7 @@ public class BarrierModule extends AbstractModule {
 	@Override
 	protected void applyToNode(MapNode node) {
 
-		TagGroup tags = node.getTags();
+		TagSet tags = node.getTags();
 		if (!tags.containsKey("barrier")) return; //fast exit for common case
 
 		if (Bollard.fits(tags)) {
@@ -190,11 +190,11 @@ public class BarrierModule extends AbstractModule {
 
 		private final static Material DEFAULT_MATERIAL = Materials.CONCRETE;
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "wall");
 		}
 
-		private static Material getMaterial(TagGroup tags) {
+		private static Material getMaterial(TagSet tags) {
 
 			Material material = null;
 
@@ -229,7 +229,7 @@ public class BarrierModule extends AbstractModule {
 	}
 
 	private static class CityWall extends ColoredWall {
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "city_wall");
 		}
 		public CityWall(MapWaySegment segment) {
@@ -238,7 +238,7 @@ public class BarrierModule extends AbstractModule {
 	}
 
 	private static class Hedge extends ColoredWall {
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "hedge");
 		}
 		public Hedge(MapWaySegment segment) {
@@ -254,7 +254,7 @@ public class BarrierModule extends AbstractModule {
 		private static final SimpleClosedShapeXZ SQUARE =
 				new AxisAlignedRectangleXZ(-0.5, -0.5, 0.5, 0.5);
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence")
 					&& tags.contains("fence_type", "railing");
 		}
@@ -319,7 +319,7 @@ public class BarrierModule extends AbstractModule {
 
 	private static class ChainLinkFence extends LinearBarrier {
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence")
 					&& (tags.contains("fence_type", "chain_link") || (tags.contains("fence_type", "metal")));
 		}
@@ -382,7 +382,7 @@ public class BarrierModule extends AbstractModule {
 		protected Material defaultPoleMaterial = Materials.WOOD;
 		protected Material poleMaterial;
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence");
 		}
 
@@ -468,7 +468,7 @@ public class BarrierModule extends AbstractModule {
 
 		}
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence")
 					&& tags.contains("fence_type", "trellis_work");
 		}
@@ -512,7 +512,7 @@ public class BarrierModule extends AbstractModule {
 
 	private static class CableBarrier extends PoleFence {
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "cable_barrier");
 		}
 
@@ -531,7 +531,7 @@ public class BarrierModule extends AbstractModule {
 
 	private static class HandRail extends PoleFence {
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "handrail");
 		}
 
@@ -587,7 +587,7 @@ public class BarrierModule extends AbstractModule {
 		private static final double BOLT_RADIUS = 0.015;
 		private static final double BOLT_DEPTH = 0.02;
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "guard_rail");
 		}
 
@@ -676,7 +676,7 @@ public class BarrierModule extends AbstractModule {
 				new VectorXZ(+0.41, 0    )
 				));
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "jersey_barrier");
 		}
 
@@ -716,13 +716,13 @@ public class BarrierModule extends AbstractModule {
 
 		private static final float DEFAULT_HEIGHT = 1;
 
-		public static boolean fits(TagGroup tags) {
+		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "bollard");
 		}
 
 		private final float height;
 
-		public Bollard(MapNode node, TagGroup tags) {
+		public Bollard(MapNode node, TagSet tags) {
 
 			super(node);
 

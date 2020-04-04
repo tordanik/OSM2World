@@ -49,7 +49,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -271,7 +271,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final Configuration config;
 
 		/** the tags for this part, including tags inherited from the parent */
-		private final TagGroup tags;
+		private final TagSet tags;
 
 		private int buildingLevels;
 		private int minLevel;
@@ -708,7 +708,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		}
 
-		private static Material createWallMaterial(TagGroup tags, Configuration config) {
+		private static Material createWallMaterial(TagSet tags, Configuration config) {
 
 			BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -2131,7 +2131,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public static boolean hasComplexRoof(MapArea area) {
 			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 				if (overlap instanceof MapOverlapWA) {
-					TagGroup tags = overlap.e1.getTags();
+					TagSet tags = overlap.e1.getTags();
 					if (tags.contains("roof:ridge", "yes")
 							|| tags.contains("roof:edge", "yes")) {
 						return true;
@@ -2158,7 +2158,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		private final double floorHeight;
 
 		/** the tags for this part, including tags inherited from {@link #buildingPart} and its {@link Building} */
-		private final TagGroup tags;
+		private final TagSet tags;
 
 		public Wall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<VectorXZ> points,
 				Map<VectorXZ, MapNode> pointNodeMap, double floorHeight) {
@@ -2170,7 +2170,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			this.floorHeight = floorHeight;
 
 			if (buildingPart == null) {
-				this.tags = TagGroup.of();
+				this.tags = TagSet.of();
 			} else if (wallWay != null) {
 				this.tags = inheritTags(wallWay.getTags(), buildingPart.tags);
 			} else {
@@ -2468,7 +2468,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		/** places default (i.e. not explicitly mapped) doors onto garage walls */
 		private void placeDefaultGarageDoors(WallSurface surface) {
 
-			TagGroup doorTags = TagGroup.of("door", "overhead");
+			TagSet doorTags = TagSet.of("door", "overhead");
 
 			double doorDistance = 1.25 * DoorParameters.fromTags(doorTags, this.tags).width;
 			int numDoors = (int) round(surface.getLength() / doorDistance);
@@ -2918,12 +2918,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 			private final VectorXZ position;
 
 			private final @Nullable MapNode node;
-			private final TagGroup tags;
+			private final TagSet tags;
 
 			private final DoorParameters parameters;
 
 
-			public Door(VectorXZ position, TagGroup tags) {
+			public Door(VectorXZ position, TagSet tags) {
 				this.position = position;
 				this.node = null;
 				this.tags = tags;
@@ -3098,7 +3098,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		public final Material frameMaterial;
 		public final Material shutterMaterial;
 
-		public WindowParameters(TagGroup tags, double levelHeight) {
+		public WindowParameters(TagSet tags, double levelHeight) {
 
 			/* window */
 
@@ -3194,7 +3194,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * extracts door parameters from a set of tags
 		 * and (optionally) another set of tags describing the building part and/or wall the door is in
 		 */
-		public static DoorParameters fromTags(TagGroup tags, @Nullable TagGroup parentTags) {
+		public static DoorParameters fromTags(TagSet tags, @Nullable TagSet parentTags) {
 
 			/* determine the type */
 
@@ -3269,7 +3269,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			this.hasWindows = hasWindows;
 		}
 
-		public static BuildingDefaults getDefaultsFor(TagGroup tags) {
+		public static BuildingDefaults getDefaultsFor(TagSet tags) {
 
 			String type = tags.getValue("building:part");
 			if (type == null || "yes".equals(type)) {

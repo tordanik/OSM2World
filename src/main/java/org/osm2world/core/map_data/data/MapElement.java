@@ -44,6 +44,6 @@ public interface MapElement extends IntersectionTestObject {
 	OsmEntity getOsmElement();
 
 	/** returns this element's tags */
-	TagGroup getTags();
+	TagSet getTags();
 
 }

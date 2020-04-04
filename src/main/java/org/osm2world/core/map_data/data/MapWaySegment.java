@@ -50,7 +50,7 @@ public class MapWaySegment extends MapSegment implements MapElement {
 
 	/** returns the parent {@link MapWay}'s tags */
 	@Override
-	public TagGroup getTags() {
+	public TagSet getTags() {
 		return getWay().getTags();
 	}
 

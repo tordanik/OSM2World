@@ -15,7 +15,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXZ;
 
 import com.google.common.collect.Streams;
@@ -57,7 +57,7 @@ public class TestMapDataGenerator {
 		projection.setOrigin(new LatLon(0, 0));
 	}
 
-	public MapNode createNode(double x, double z, TagGroup tags) {
+	public MapNode createNode(double x, double z, TagSet tags) {
 		VectorXZ pos = new VectorXZ(x, z);
 		OsmNode osmNode = createOsm4jNode(projection.calcLon(pos), projection.calcLat(pos), tags);
 		MapNode result = new MapNode(pos, osmNode);
@@ -66,10 +66,10 @@ public class TestMapDataGenerator {
 	}
 
 	public MapNode createNode(double x, double z) {
-		return createNode(x, z, TagGroup.of());
+		return createNode(x, z, TagSet.of());
 	}
 
-	public MapWay createWay(List<MapNode> wayNodes, TagGroup tags) {
+	public MapWay createWay(List<MapNode> wayNodes, TagSet tags) {
 		wayNodes = closeLoop(wayNodes);
 		OsmWay osmWay = createOsm4jWay(wayNodes, tags);
 		MapWay result = new MapWay(osmWay, wayNodes);
@@ -77,7 +77,7 @@ public class TestMapDataGenerator {
 		return result;
 	}
 
-	public MapArea createWayArea(List<MapNode> wayNodes, TagGroup tags) {
+	public MapArea createWayArea(List<MapNode> wayNodes, TagSet tags) {
 		wayNodes = closeLoop(wayNodes);
 		OsmWay osmWay = createOsm4jWay(wayNodes, tags);
 		MapArea result = new MapArea(osmWay, wayNodes);
@@ -87,7 +87,7 @@ public class TestMapDataGenerator {
 
 	//TODO implement a createMultipolygonArea method
 
-	public MapRelation createRelation(Map<String, MapRelation.Element> members, TagGroup tags) {
+	public MapRelation createRelation(Map<String, MapRelation.Element> members, TagSet tags) {
 		OsmRelation osmRelation = createOsm4jRelation(members, tags);
 		MapRelation result = new MapRelation(osmRelation);
 		relations.add(result);
@@ -99,24 +99,24 @@ public class TestMapDataGenerator {
 		return new MapData(nodes, ways, areas, relations, null);
 	}
 
-	private OsmNode createOsm4jNode(double lon, double lat, TagGroup tags) {
+	private OsmNode createOsm4jNode(double lon, double lat, TagSet tags) {
 		return new Node(createdNodes ++, lon, lat, toOsm4jTags(tags));
 	}
 
-	private OsmWay createOsm4jWay(List<MapNode> wayNodes, TagGroup tags) {
+	private OsmWay createOsm4jWay(List<MapNode> wayNodes, TagSet tags) {
 		TLongArrayList nodeIds = new TLongArrayList();
 		wayNodes.forEach(n -> nodeIds.add(n.getOsmElement().getId()));
 		return new Way(createdWays ++, nodeIds, toOsm4jTags(tags));
 	}
 
-	private OsmRelation createOsm4jRelation(Map<String, MapRelation.Element> members, TagGroup tags) {
+	private OsmRelation createOsm4jRelation(Map<String, MapRelation.Element> members, TagSet tags) {
 		List<OsmRelationMember> osm4jMembers = members.entrySet().stream()
 				.map(m -> toOsm4jMember(m.getKey(), m.getValue().getOsmElement()))
 				.collect(toList());
 		return new Relation(createdRelations ++, osm4jMembers, toOsm4jTags(tags));
 	}
 
-	private static List<OsmTag> toOsm4jTags(TagGroup tags) {
+	private static List<OsmTag> toOsm4jTags(TagSet tags) {
 		return Streams.stream(tags)
 			.map(t -> new Tag(t.key, t.value))
 			.collect(toList());

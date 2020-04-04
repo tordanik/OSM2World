@@ -81,8 +81,8 @@ public class MapWay extends MapRelation.Element implements IntersectionTestObjec
 		return osmWay;
 	}
 
-	public TagGroup getTags() {
-		return TagGroup.of(getTagsAsMap(osmWay));
+	public TagSet getTags() {
+		return TagSet.of(getTagsAsMap(osmWay));
 	}
 
 	@Override

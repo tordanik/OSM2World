@@ -166,8 +166,8 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public TagGroup getTags() {
-		return TagGroup.of(getTagsAsMap(objectWithTags));
+	public TagSet getTags() {
+		return TagSet.of(getTagsAsMap(objectWithTags));
 	}
 
 	/**

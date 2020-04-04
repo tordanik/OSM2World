@@ -4,22 +4,22 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 
 public class WorldModuleParseUtilTest {
 
 	@Test
 	public void testInheritTags() {
 
-		TagGroup ownTags = TagGroup.of(
+		TagSet ownTags = TagSet.of(
 				new Tag("key0", "valA"),
 				new Tag("key1", "valB"));
 
-		TagGroup parentTags = TagGroup.of(
+		TagSet parentTags = TagSet.of(
 				new Tag("key1", "valX"),
 				new Tag("key2", "valY"));
 
-		TagGroup result = WorldModuleParseUtil.inheritTags(ownTags, parentTags);
+		TagSet result = WorldModuleParseUtil.inheritTags(ownTags, parentTags);
 
 		assertEquals(3, result.size());
 		assertEquals("valA", result.getValue("key0"));

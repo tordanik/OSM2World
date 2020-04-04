@@ -15,7 +15,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -60,7 +60,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			this.values = asList(values);
 		}
 
-		public static LeafType getValue(TagGroup tags) {
+		public static LeafType getValue(TagSet tags) {
 			for (LeafType type : values()) {
 				if (tags.containsAny(LEAF_TYPE_KEYS, type.values)) {
 					return type;
@@ -87,7 +87,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			this.values = asList(values);
 		}
 
-		public static LeafCycle getValue(TagGroup tags) {
+		public static LeafCycle getValue(TagSet tags) {
 			for (LeafCycle type : values()) {
 				if (tags.containsAny(LEAF_CYCLE_KEYS, type.values)) {
 					return type;
@@ -108,7 +108,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			this.value = value;
 		}
 
-		public static TreeSpecies getValue(TagGroup tags) {
+		public static TreeSpecies getValue(TagSet tags) {
 
 			String speciesString = tags.getValue("species");
 
