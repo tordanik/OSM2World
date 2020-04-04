@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
-import static java.util.Arrays.asList;
+import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
@@ -1004,7 +1004,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* evaluate tags with one of the relevant suffixes */
 
-			Map<String, String>[] resultMaps = null;
+			List<Tag>[] resultLists = null;
 
 			for (String suffix : relevantSuffixes) {
 
@@ -1016,15 +1016,15 @@ public class RoadModule extends ConfigurableWorldModule {
 
 						String[] values = tag.value.split("\\|");
 
-						if (resultMaps == null) {
+						if (resultLists == null) {
 
-							resultMaps = new Map[values.length];
+							resultLists = new List[values.length];
 
-							for (int i = 0; i < resultMaps.length; i++) {
-								resultMaps[i] = new HashMap<String, String>();
+							for (int i = 0; i < resultLists.length; i++) {
+								resultLists[i] = new ArrayList<>();
 							}
 
-						} else if (values.length != resultMaps.length) {
+						} else if (values.length != resultLists.length) {
 
 							// inconsistent number of lanes
 							return null;
@@ -1032,7 +1032,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						}
 
 						for (int i = 0; i < values.length; i++) {
-							resultMaps[i].put(baseKey, values[i].trim());
+							resultLists[i].add(new Tag(baseKey, values[i].trim()));
 						}
 
 					}
@@ -1042,18 +1042,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* build a TagGroup for each lane from the result */
 
-			if (resultMaps == null) {
+			if (resultLists == null) {
 				return null;
 			} else {
-
-				TagSet[] result = new TagSet[resultMaps.length];
-
-				for (int i = 0; i < resultMaps.length; i++) {
-					result[i] = TagSet.of(resultMaps[i]);
-				}
-
-				return result;
-
+				return stream(resultLists).map(TagSet::of).toArray(TagSet[]::new);
 			}
 
 		}

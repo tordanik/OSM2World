@@ -29,6 +29,7 @@ import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
@@ -45,6 +46,7 @@ import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
+import de.topobyte.osm4j.core.model.iface.OsmEntity;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
@@ -301,7 +303,18 @@ public class OSMToMapDataConverter {
 			}
 		}
 
+	}
 
+	public static TagSet tagsOfEntity(OsmEntity osmNode) {
+
+		if (osmNode.getNumberOfTags() == 0) return TagSet.of();
+
+		org.osm2world.core.map_data.data.Tag[] tags =
+				new org.osm2world.core.map_data.data.Tag[osmNode.getNumberOfTags()];
+		for (int i = 0; i < osmNode.getNumberOfTags(); i++) {
+			tags[i] = new org.osm2world.core.map_data.data.Tag(osmNode.getTag(i).getKey(), osmNode.getTag(i).getValue());
+		}
+		return TagSet.of(tags);
 
 	}
 

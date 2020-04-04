@@ -1,11 +1,12 @@
 package org.osm2world.core.map_data.data;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 
 import de.topobyte.osm4j.core.model.iface.OsmEntity;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
@@ -101,7 +102,7 @@ public class MapRelation {
 	}
 
 	public TagSet getTags() {
-		return TagSet.of(getTagsAsMap(osmRelation));
+		return OSMToMapDataConverter.tagsOfEntity(osmRelation);
 	}
 
 	@Override

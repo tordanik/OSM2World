@@ -1,14 +1,11 @@
 package org.osm2world.core.map_data.data;
 
 import static java.util.Arrays.sort;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Iterators;
@@ -85,12 +82,6 @@ public final class TagSet implements Iterable<Tag> {
 		}
 		return new TagSet(tags);
 
-	}
-
-	/** creates a {@link TagSet} from a {@link Map} of keys and values */
-	public static final TagSet of(Map<String, String> keyValueMap) {
-		List<Tag> tags = keyValueMap.entrySet().stream().map(e -> new Tag(e.getKey(), e.getValue())).collect(toList());
-		return TagSet.of(tags);
 	}
 
 	/** returns true if this set contains any tags */

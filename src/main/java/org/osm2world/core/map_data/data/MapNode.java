@@ -1,6 +1,5 @@
 package org.osm2world.core.map_data.data;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 import static java.util.Comparator.comparingDouble;
 
 import java.util.ArrayList;
@@ -8,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -52,7 +52,7 @@ public class MapNode extends MapRelation.Element implements MapElement {
 
 	@Override
 	public TagSet getTags() {
-		return TagSet.of(getTagsAsMap(osmNode));
+		return OSMToMapDataConverter.tagsOfEntity(osmNode);
 	}
 
 	public Collection<MapArea> getAdjacentAreas() {
