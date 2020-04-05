@@ -433,8 +433,8 @@ public class TrafficSignModule extends AbstractModule {
 						if(member.getElement() instanceof MapWay) {
 							fromMembers.add((MapWay)member.getElement());
 						}else {
-							System.err.println("'from' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							System.err.println("'from' member of relation " + this.relation + " is not a way."
+									+ " It is not being considered for rendering this relation's destination sign.");
 							wrongFrom = true;
 							continue;
 						}
@@ -444,16 +444,16 @@ public class TrafficSignModule extends AbstractModule {
 						if(member.getElement() instanceof MapWay) {
 							to = (MapWay)member.getElement();
 						}else {
-							System.err.println("'to' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							System.err.println("'to' member of relation " + this.relation + " is not a way. "
+									+ "It is not being considered for rendering this relation's destination sign");
 							continue;
 						}
 
 					}else if(member.getRole().equals("intersection")) {
 
 						if(!(member.getElement() instanceof MapNode)) {
-							System.err.println("'intersection' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a node. It is not being considered for rendering this relation's destination sign");
+							System.err.println("'intersection' member of relation " + this.relation + " is not a node."
+									+ " It is not being considered for rendering this relation's destination sign");
 							continue;
 						}
 
@@ -464,8 +464,8 @@ public class TrafficSignModule extends AbstractModule {
 
 				//check intersection first as it is being used in 'from' calculation below
 				if(intersection==null) {
-					System.err.println("Member 'intersection' was not defined in relation "+relation.getOsmElement().getId()+
-							". Destination sign rendering is ommited for this relation.");
+					System.err.println("Member 'intersection' was not defined in relation " + relation
+							+ ". Destination sign rendering is omitted for this relation.");
 					continue;
 				}
 
@@ -478,7 +478,7 @@ public class TrafficSignModule extends AbstractModule {
 							intersection);
 
 					//create a new MapWay instance from sign node to intersection node
-					MapWay signToIntersection = new MapWay(null, signAndIntersection);
+					MapWay signToIntersection = new MapWay(-1, TagSet.of(), signAndIntersection);
 					from = signToIntersection;
 
 				}else if(fromMembers.size()==1) {
@@ -488,8 +488,8 @@ public class TrafficSignModule extends AbstractModule {
 
 				//check if the rest of the "vital" relation members where defined
 				if(from==null || to==null) {
-					System.err.println("not all members of relation "+
-							relation.getOsmElement().getId()+" where defined. Destination sign rendering is ommited for this relation.");
+					System.err.println("not all members of relation " + relation
+							+" were defined. Destination sign rendering is ommited for this relation.");
 					continue;
 				}
 

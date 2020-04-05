@@ -1,25 +1,16 @@
 package org.osm2world.core.map_data.creation;
 
 import static java.lang.Math.min;
-import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
-
-import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
-
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmTag;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-import de.topobyte.osm4j.core.model.impl.Node;
-import de.topobyte.osm4j.core.model.impl.Tag;
-import de.topobyte.osm4j.core.model.impl.Way;
 
 /**
  * utility class for building geometry representing empty terrain.
@@ -31,15 +22,7 @@ public class EmptyTerrainBuilder {
 
 	/** value of the 'surface' key to be internally used on faked ways around "empty terrain" */
 	public static final String EMPTY_SURFACE_VALUE = "osm2world:empty_terrain";
-	private static final OsmTag EMPTY_SURFACE_TAG = new Tag("surface", EMPTY_SURFACE_VALUE);
-
-	/** faked outline node for the terrain areas */
-	private static final OsmNode EMPTY_SURFACE_NODE = new Node(
-			0, Double.NaN, Double.NaN);
-
-	/** faked outline way for the terrain areas */
-	private static final OsmWay EMPTY_SURFACE_WAY = new Way(
-			0, new TLongArrayList(), singletonList(EMPTY_SURFACE_TAG));
+	private static final TagSet EMPTY_SURFACE_TAGS = TagSet.of("surface", EMPTY_SURFACE_VALUE);
 
 	public static final double POINT_GRID_DIST = 30;
 	public static final int PATCH_SIZE_POINTS = 10;
@@ -70,7 +53,7 @@ public class EmptyTerrainBuilder {
 
 					VectorXZ pos = posGrid.get(x, z);
 
-					MapNode mapNode = new MapNode(pos, EMPTY_SURFACE_NODE);
+					MapNode mapNode = new MapNode(-1, TagSet.of(), pos);
 
 					nodeGrid[x][z] = mapNode;
 					mapNodes.add(mapNode);
@@ -126,7 +109,7 @@ public class EmptyTerrainBuilder {
 			nodes.add(nodeGrid[startX][z]);
 		}
 
-		return new MapArea(EMPTY_SURFACE_WAY, nodes);
+		return new MapArea(-1, false, EMPTY_SURFACE_TAGS, nodes);
 
 	}
 

@@ -88,10 +88,6 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-
 public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	/**
@@ -521,15 +517,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 			if (worldObject != null) {
 
 				if (element != null) {
-
-					if (element.getOsmElement() instanceof OsmNode) {
-						objectBuilder.setOsmId("n" + element.getOsmElement().getId());
-					} else if (element.getOsmElement() instanceof OsmWay) {
-						objectBuilder.setOsmId("w" + element.getOsmElement().getId());
-					} else if (element.getOsmElement() instanceof OsmRelation) {
-						objectBuilder.setOsmId("r" + element.getOsmElement().getId());
-					}
-
+					objectBuilder.setOsmId(element.toString());
 				}
 
 				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));

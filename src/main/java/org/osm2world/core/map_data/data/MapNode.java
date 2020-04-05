@@ -7,13 +7,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.NodeWorldObject;
-
-import de.topobyte.osm4j.core.model.iface.OsmNode;
 
 
 /**
@@ -23,8 +20,9 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
  */
 public class MapNode extends MapRelation.Element implements MapElement {
 
+	private final long id;
+	private final TagSet tags;
 	private final VectorXZ pos;
-	private final OsmNode osmNode;
 
 	private List<NodeWorldObject> representations = new ArrayList<NodeWorldObject>(1);
 
@@ -36,23 +34,24 @@ public class MapNode extends MapRelation.Element implements MapElement {
 
 	private Collection<MapArea> adjacentAreas = new ArrayList<MapArea>();
 
-	public MapNode(VectorXZ pos, OsmNode osmNode) {
+	public MapNode(long id, TagSet tags, VectorXZ pos) {
+		this.id = id;
+		this.tags = tags;
 		this.pos = pos;
-		this.osmNode = osmNode;
-	}
-
-	public VectorXZ getPos() {
-		return pos;
 	}
 
 	@Override
-	public OsmNode getOsmElement() {
-		return osmNode;
+	public long getId() {
+		return id;
 	}
 
 	@Override
 	public TagSet getTags() {
-		return OSMToMapDataConverter.tagsOfEntity(osmNode);
+		return tags;
+	}
+
+	public VectorXZ getPos() {
+		return pos;
 	}
 
 	public Collection<MapArea> getAdjacentAreas() {
@@ -193,7 +192,7 @@ public class MapNode extends MapRelation.Element implements MapElement {
 
 	@Override
 	public String toString() {
-		return "n" + osmNode.getId();
+		return "n" + id;
 	}
 
 	@Override

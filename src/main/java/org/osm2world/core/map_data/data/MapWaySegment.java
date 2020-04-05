@@ -15,8 +15,6 @@ import org.osm2world.core.world.data.WaySegmentWorldObject;
 
 import com.google.common.collect.Iterables;
 
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-
 
 /**
  * Segment (the straight line between two successive nodes) of a way from an OSM dataset.
@@ -40,12 +38,6 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	/** returns this segment's parent {@link MapWay} */
 	public MapWay getWay() {
 		return way;
-	}
-
-	@Override
-	public OsmWay getOsmElement() {
-		//TODO: remove this method eventually
-		return getWay().getOsmElement();
 	}
 
 	/** returns the parent {@link MapWay}'s tags */

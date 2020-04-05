@@ -110,14 +110,14 @@ public class OSMToMapDataConverter {
 
 		for (OsmNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.calcPos(node.getLatitude(), node.getLongitude());
-			MapNode mapNode = new MapNode(nodePos, node);
+			MapNode mapNode = new MapNode(node.getId(), tagsOfEntity(node), nodePos);
 			mapNodes.add(mapNode);
 			nodeIdMap.put(node.getId(), mapNode);
 		}
 
 		/* create areas ... */
 
-		final Map<OsmWay, MapArea> areaMap = new HashMap<OsmWay, MapArea>();
+		final Map<Long, MapArea> areaMap = new HashMap<>();
 
 		/* ... based on multipolygons */
 
@@ -137,8 +137,8 @@ public class OSMToMapDataConverter {
 
 					mapAreas.add(area);
 
-					if (area.getOsmElement() instanceof OsmWay) {
-						areaMap.put((OsmWay) area.getOsmElement(), area);
+					if (!area.isBasedOnRelation()) {
+						areaMap.put(area.getId(), area);
 					}
 
 				}
@@ -158,7 +158,7 @@ public class OSMToMapDataConverter {
 		/* ... based on closed ways */
 
 		for (OsmWay way : osmData.getWays()) {
-			if (isClosed(way) && !areaMap.containsKey(way)) {
+			if (isClosed(way) && !areaMap.containsKey(way.getId())) {
 				//create MapArea only if at least one tag is an area tag
 				for (OsmTag tag : getTagsAsList(way)) {
 					if (ruleset.isAreaTag(tag)) {
@@ -171,10 +171,10 @@ public class OSMToMapDataConverter {
 
 						try {
 
-							MapArea mapArea = new MapArea(way, nodes);
+							MapArea mapArea = new MapArea(way.getId(), false, tagsOfEntity(way), nodes);
 
 							mapAreas.add(mapArea);
-							areaMap.put(way, mapArea);
+							areaMap.put(way.getId(), mapArea);
 
 						} catch (InvalidGeometryException e) {
 							System.err.println(e);
@@ -213,7 +213,7 @@ public class OSMToMapDataConverter {
 
 		for (OsmWay osmWay : osmData.getWays()) {
 			boolean hasTags = osmWay.getNumberOfTags() != 0;
-			if (hasTags && !areaMap.containsKey(osmWay)) {
+			if (hasTags && !areaMap.containsKey(osmWay.getId())) {
 
 				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
 
@@ -221,7 +221,7 @@ public class OSMToMapDataConverter {
 					nodes.add(nodeIdMap.get(id));
 				}
 
-				MapWay way = new MapWay(osmWay, nodes);
+				MapWay way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
 				mapWays.add(way);
 
 			}
@@ -233,14 +233,14 @@ public class OSMToMapDataConverter {
 		TLongObjectMap<MapRelation.Element> relationIdMap = new TLongObjectHashMap<>();
 
 		for (MapWay way : mapWays) {
-			wayIdMap.put(way.getOsmElement().getId(), way);
+			wayIdMap.put(way.getId(), way);
 		}
 
 		for (MapArea area : mapAreas) {
-			if (area.getOsmElement() instanceof OsmWay) {
-				wayIdMap.put(area.getOsmElement().getId(), area);
+			if (!area.isBasedOnRelation()) {
+				wayIdMap.put(area.getId(), area);
 			} else {
-				relationIdMap.put(area.getOsmElement().getId(), area);
+				relationIdMap.put(area.getId(), area);
 			}
 		}
 
@@ -248,7 +248,7 @@ public class OSMToMapDataConverter {
 			boolean hasTags = osmRelation.getNumberOfTags() != 0;
 			if (hasTags && !relationIdMap.containsKey(osmRelation.getId())) {
 
-				MapRelation relation = new MapRelation(osmRelation);
+				MapRelation relation = new MapRelation(osmRelation.getId(), tagsOfEntity(osmRelation));
 
 				List<OsmRelationMember> incompleteMembers = null;
 
@@ -305,7 +305,7 @@ public class OSMToMapDataConverter {
 
 	}
 
-	public static TagSet tagsOfEntity(OsmEntity osmNode) {
+	static TagSet tagsOfEntity(OsmEntity osmNode) {
 
 		if (osmNode.getNumberOfTags() == 0) return TagSet.of();
 

@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
@@ -15,10 +14,6 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AreaWorldObject;
-
-import de.topobyte.osm4j.core.model.iface.OsmEntity;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
 
 
 /**
@@ -28,7 +23,9 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  */
 public class MapArea extends MapRelation.Element implements MapElement {
 
-	private final OsmEntity objectWithTags;
+	private final long id;
+	private final boolean basedOnRelation;
+	private final TagSet tags;
 
 	private final List<MapNode> nodes;
 	private final List<List<MapNode>> holes;
@@ -43,14 +40,15 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	private List<AreaWorldObject> representations =
 		new ArrayList<AreaWorldObject>(1);
 
-	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes) {
-		this(objectWithTags, nodes, emptyList());
+	public MapArea(long id, boolean basedOnRelation, TagSet tags, List<MapNode> nodes) {
+		this(id, basedOnRelation, tags, nodes, emptyList());
 	}
 
-	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes,
-			List<List<MapNode>> holes) {
+	public MapArea(long id, boolean basedOnRelation, TagSet tags, List<MapNode> nodes, List<List<MapNode>> holes) {
 
-		this.objectWithTags = objectWithTags;
+		this.id = id;
+		this.basedOnRelation = basedOnRelation;
+		this.tags = tags;
 		this.nodes = nodes;
 		this.holes = holes;
 
@@ -61,17 +59,17 @@ public class MapArea extends MapRelation.Element implements MapElement {
 			finishConstruction();
 
 		} catch (InvalidGeometryException e) {
-			throw new InvalidGeometryException(
-					"outer polygon is not simple for this object: "
-					+ objectWithTags, e);
+			throw new InvalidGeometryException("invalid polygon for " + (basedOnRelation ? "r" : "w") + id);
 		}
 
 	}
 
-	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes,
+	public MapArea(long id, boolean basedOnRelation, TagSet tags, List<MapNode> nodes,
 			List<List<MapNode>> holes, PolygonWithHolesXZ polygon) {
 
-		this.objectWithTags = objectWithTags;
+		this.id = id;
+		this.basedOnRelation = basedOnRelation;
+		this.tags = tags;
 		this.nodes = nodes;
 		this.holes = holes;
 		this.polygon = polygon;
@@ -140,6 +138,16 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 	}
 
+	@Override
+	public long getId() {
+		return id;
+	}
+
+	/** whether this area is based on a relation (as opposed to a closed way) */
+	public boolean isBasedOnRelation() {
+		return basedOnRelation;
+	}
+
 	public List<MapNode> getBoundaryNodes() {
 		return nodes;
 	}
@@ -159,15 +167,9 @@ public class MapArea extends MapRelation.Element implements MapElement {
 		}
 	}
 
-	/** returns the {@link OsmWay} or {@link OsmRelation} with the tags for this area */
-	@Override
-	public OsmEntity getOsmElement() {
-		return objectWithTags;
-	}
-
 	@Override
 	public TagSet getTags() {
-		return OSMToMapDataConverter.tagsOfEntity(objectWithTags);
+		return tags;
 	}
 
 	/**
@@ -229,12 +231,7 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 	@Override
 	public String toString() {
-		if (objectWithTags instanceof OsmWay) {
-			return "w" + objectWithTags.getId();
-		} else {
-			assert objectWithTags instanceof OsmRelation;
-			return "r" + objectWithTags.getId();
-		}
+		return (basedOnRelation ? "r" : "w") + id;
 	}
 
 }

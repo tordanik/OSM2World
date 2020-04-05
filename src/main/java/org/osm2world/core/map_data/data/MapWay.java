@@ -3,13 +3,10 @@ package org.osm2world.core.map_data.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.math.shapes.PolylineXZ;
-
-import de.topobyte.osm4j.core.model.iface.OsmWay;
 
 /**
  * A way from an OSM dataset.
@@ -18,19 +15,21 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  */
 public class MapWay extends MapRelation.Element implements IntersectionTestObject {
 
-	private final OsmWay osmWay;
+	private final long id;
+	private final TagSet tags;
 	private final List<MapNode> nodes;
 
 	private final List<MapWaySegment> waySegments;
 
-	public MapWay(OsmWay osmWay, List<MapNode> nodes) {
+	public MapWay(long id, TagSet tags, List<MapNode> nodes) {
 
 		if (nodes.size() < 2) {
 			throw new IllegalArgumentException("a way needs at least two nodes, but "
-					+ osmWay + " was created with only " + nodes.size());
+					+ "w" + id + " was created with only " + nodes.size());
 		}
 
-		this.osmWay = osmWay;
+		this.id = id;
+		this.tags = tags;
 		this.nodes = nodes;
 
 		waySegments = new ArrayList<>(nodes.size() - 1);
@@ -55,6 +54,11 @@ public class MapWay extends MapRelation.Element implements IntersectionTestObjec
 
 	}
 
+	@Override
+	public long getId() {
+		return id;
+	}
+
 	public List<MapNode> getNodes() {
 		return nodes;
 	}
@@ -76,17 +80,13 @@ public class MapWay extends MapRelation.Element implements IntersectionTestObjec
 		return getPolylineXZ().boundingBox();
 	}
 
-	public OsmWay getOsmElement() {
-		return osmWay;
-	}
-
 	public TagSet getTags() {
-		return OSMToMapDataConverter.tagsOfEntity(osmWay);
+		return tags;
 	}
 
 	@Override
 	public String toString() {
-		return "w" + osmWay.getId();
+		return "w" + id;
 	}
 
 }

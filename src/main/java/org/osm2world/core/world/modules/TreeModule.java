@@ -39,8 +39,6 @@ import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
 
-import de.topobyte.osm4j.core.model.impl.Node;
-
 /**
  * adds trees, tree rows, tree groups and forests to the world
  */
@@ -364,9 +362,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		public void render(Target target, VectorXYZ position, double direction,
 				Double height, Double width, Double length) {
 
-			Node osmNode = new Node(0, 0, 0);
-			osmNode.setTags(asList(new de.topobyte.osm4j.core.model.impl.Tag("height", "1 m")));
-			MapElement element = new MapNode(position.xz(), osmNode);
+			MapElement element = new MapNode(-1, TagSet.of("height", "1 m"), position.xz());
 
 			renderTree(target, element, position, leafType, leafCycle, species);
 
@@ -557,7 +553,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			/* place the trees */
 
 			List<VectorXZ> treePositions =
-				GeometryUtil.distributePointsOn(area.getOsmElement().getId(),
+				GeometryUtil.distributePointsOn(area.getId(),
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 
