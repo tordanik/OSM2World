@@ -53,18 +53,6 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 	}
 
-	/** returns true if this polygon contains the parameter polygon */
-	public default boolean contains(PolygonShapeXZ p) {
-		//FIXME: it is possible that a polygon contains all vertices of another polygon, but still not the entire polygon
-		List<VectorXZ> vertexLoop = getVertexList();
-		for (VectorXZ v : p.getVertexList()) {
-			if (!vertexLoop.contains(v) && !this.contains(v)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	/** creates a new polygon by adding a shift vector to each vector of this */
 	public default SimplePolygonShapeXZ shift(VectorXZ shiftVector) {
 		return new SimplePolygonXZ(getVertexList().stream().map(shiftVector::add).collect(toList()));
