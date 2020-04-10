@@ -8,7 +8,6 @@ import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import java.awt.Color;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +16,6 @@ import java.util.Map;
 
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
@@ -117,35 +115,6 @@ public class ObjTarget extends FaceTarget {
 			writeFace(verticesToIndices((layer == 0)? vs : offsetVertices(vs, nCopies(vs.size(), faceNormal), layer * SMALL_OFFSET)),
 					normalIndices, texCoordIndices);
 		}
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		for (int layer = 0; layer < max(1, material.getNumTextureLayers()); layer++) {
-
-			useMaterial(material, layer);
-
-			int triangleNumber = 0;
-			for (TriangleXYZWithNormals t : triangles) {
-
-				int[] texCoordIndices = null;
-				if (texCoordLists != null && !texCoordLists.isEmpty()) {
-					List<VectorXZ> texCoords = texCoordLists.get(layer);
-					texCoordIndices = texCoordsToIndices(
-							texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
-				}
-
-				writeFace(verticesToIndices((layer == 0)? t.getVertices() : offsetVertices(t.getVertices(), t.getNormals(), layer * SMALL_OFFSET)),
-						normalsToIndices(t.getNormals()), texCoordIndices);
-
-				triangleNumber ++;
-			}
-
-		}
-
 	}
 
 	private void useMaterial(Material material, int layer) {

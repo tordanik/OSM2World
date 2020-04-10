@@ -35,7 +35,6 @@ import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
@@ -322,12 +321,6 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 		}
 
 		@Override
-		public void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles,
-				List<List<VectorXZ>> texCoordLists) {
-			drawTriangles(material, triangles, texCoordLists);
-		}
-
-		@Override
 		public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path, List<VectorXYZ> upVectors,
 				List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, EnumSet<ExtrudeOption> options) {
 
@@ -604,12 +597,6 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 		currentObjectBuilder.drawTriangles(material, triangles, texCoordLists);
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-		currentObjectBuilder.drawTrianglesWithNormals(material, triangles, texCoordLists);
 	}
 
 	@Override

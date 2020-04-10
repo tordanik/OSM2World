@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
@@ -181,92 +180,6 @@ public class POVRayTarget extends AbstractTarget {
 
 				append("}\n");
 
-		}
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		if (!checkMeshValidity(triangles))
-			return;
-
-		if (material.getNumTextureLayers() > 1) {
-
-			int count = 0;
-
-			for (TextureData textureData : material.getTextureDataList()) {
-				if(!(textureData instanceof TextTextureData)) { //temporarily ignore TextTextureData layers
-					append("mesh {\n");
-
-					drawTriangleNormalMesh(triangles, texCoordLists.get(count), count);
-
-					append("  uv_mapping ");
-					appendMaterial(material, textureData);
-
-					if (count > 0)
-						append("  no_shadow");
-					append("}\n");
-					count++;
-				}
-			}
-		} else {
-
-				append("mesh {\n");
-
-				if (texCoordLists.size() > 0) {
-					drawTriangleNormalMesh(triangles, texCoordLists.get(0), 0);
-				} else {
-					for (TriangleXYZWithNormals triangle : triangles) {
-						append(INDENT);
-						appendTriangle(triangle.v1, triangle.v2, triangle.v3,
-								triangle.n1, triangle.n2, triangle.n3, true);
-					}
-				}
-
-				append(" uv_mapping ");
-				appendMaterialOrName(material);
-				append("}\n");
-
-		}
-	}
-
-	private void drawTriangleNormalMesh(Collection<? extends TriangleXYZWithNormals> triangles,
-			List<VectorXZ> texCoordList, int depth) {
-
-		Iterator<? extends TriangleXYZWithNormals> itr1 = triangles.iterator();
-		Iterator<VectorXZ> itr2 = texCoordList.iterator();
-
-		while (itr1.hasNext()) {
-
-			TriangleXYZWithNormals triangle = itr1.next();
-			VectorXYZ n1 = triangle.n1;
-			VectorXYZ n2 = triangle.n2;
-			VectorXYZ n3 = triangle.n3;
-			VectorXZ tex1 = itr2.next();
-			VectorXZ tex2 = itr2.next();
-			VectorXZ tex3 = itr2.next();
-
-			append(INDENT);
-
-			if (depth > 0) {
-
-				VectorXYZ d1 = n1.mult(depth*SMALL_OFFSET);
-				VectorXYZ d2 = n2.mult(depth*SMALL_OFFSET);
-				VectorXYZ d3 = n3.mult(depth*SMALL_OFFSET);
-
-				appendTriangle(
-						triangle.v1.add(d1),
-						triangle.v2.add(d2),
-						triangle.v3.add(d3),
-						n1, n2, n3, tex1, tex2, tex3, false, true);
-
-			} else {
-
-				appendTriangle(triangle.v1, triangle.v2, triangle.v3,
-						null, null, null, tex1, tex2, tex3, false, true);
-			}
 		}
 	}
 
@@ -781,15 +694,6 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 	//TODO: avoid having to do this
-
-	private void performNaNCheck(TriangleXYZWithNormals triangle) {
-		performNaNCheck(triangle.v1);
-		performNaNCheck(triangle.v2);
-		performNaNCheck(triangle.v3);
-		performNaNCheck(triangle.n1);
-		performNaNCheck(triangle.n2);
-		performNaNCheck(triangle.n3);
-	}
 
 	private void performNaNCheck(TriangleXYZ triangle) {
 		performNaNCheck(triangle.v1);

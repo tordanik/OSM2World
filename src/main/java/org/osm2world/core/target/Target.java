@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
@@ -41,15 +40,6 @@ public interface Target {
 	 */
 	void drawTriangles(Material material,
 			Collection<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists);
-
-	/**
-	 * draws triangles with explicitly defined normal vectors.
-	 *
-	 * @see #drawTriangles(Material, Collection, List)
-	 */
-	void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
 			List<List<VectorXZ>> texCoordLists);
 
 	/**

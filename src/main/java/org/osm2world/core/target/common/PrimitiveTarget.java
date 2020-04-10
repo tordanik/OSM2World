@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
@@ -71,27 +70,6 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 				calculateTriangleNormals(triangleList,
 						material.getInterpolation() == Interpolation.SMOOTH),
 						texCoordLists);
-
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
-		List<VectorXYZ> normals = new ArrayList<VectorXYZ>(triangles.size()*3);
-
-		for (TriangleXYZWithNormals triangle : triangles) {
-			vectors.add(triangle.v1);
-			vectors.add(triangle.v2);
-			vectors.add(triangle.v3);
-			normals.add(triangle.n1);
-			normals.add(triangle.n2);
-			normals.add(triangle.n3);
-		}
-
-		drawPrimitive(TRIANGLES, material, vectors, normals, texCoordLists);
 
 	}
 

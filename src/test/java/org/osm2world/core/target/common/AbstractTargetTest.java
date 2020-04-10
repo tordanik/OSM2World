@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -34,7 +33,7 @@ public class AbstractTargetTest {
 	 */
 	private static class TestTarget extends AbstractTarget {
 
-		private final List<TriangleXYZ> drawnTriangles = new ArrayList<TriangleXYZ>();
+		private final List<TriangleXYZ> drawnTriangles = new ArrayList<>();
 
 		public List<TriangleXYZ> getDrawnTriangles() {
 			return drawnTriangles;
@@ -42,12 +41,6 @@ public class AbstractTargetTest {
 
 		@Override
 		public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
-				List<List<VectorXZ>> texCoordLists) {
-			drawnTriangles.addAll(triangles);
-		}
-
-		@Override
-		public void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles,
 				List<List<VectorXZ>> texCoordLists) {
 			drawnTriangles.addAll(triangles);
 		}

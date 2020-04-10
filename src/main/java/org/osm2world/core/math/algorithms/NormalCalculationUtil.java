@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 
 import com.google.common.collect.HashMultimap;
@@ -142,68 +141,6 @@ public final class NormalCalculationUtil {
 		normals[1] = normals[2];
 
 		return normals;
-
-	}
-
-	private static final double MAX_ANGLE_RADIANS = Math.toRadians(75);
-
-	/**
-	 * calculates normals for vertices that are shared by multiple triangles.
-	 */
-	public static final Collection<TriangleXYZWithNormals> calculateTrianglesWithNormals(
-			Collection<TriangleXYZ> triangles) {
-
-		Multimap<VectorXYZ, VectorXYZ> adjacentNormals = calculateAdjacentNormals(triangles);
-
-		Collection<TriangleXYZWithNormals> result =
-			new ArrayList<TriangleXYZWithNormals>(triangles.size());
-
-		for (TriangleXYZ triangle : triangles) {
-
-			result.add(new TriangleXYZWithNormals(triangle,
-					calculateNormal(triangle.v1, triangle, adjacentNormals),
-					calculateNormal(triangle.v2, triangle, adjacentNormals),
-					calculateNormal(triangle.v3, triangle, adjacentNormals)));
-
-		}
-
-		return result;
-
-	}
-
-	private static VectorXYZ calculateNormal(VectorXYZ v, TriangleXYZ triangle,
-			Multimap<VectorXYZ, VectorXYZ> adjacentNormals) {
-
-		/* find adjacent triangles whose normals are close enough to that of t
-		 * and save their normal vectors */
-
-		List<VectorXYZ> relevantNormals = new ArrayList<VectorXYZ>();
-
-		for (VectorXYZ normal : adjacentNormals.get(v)) {
-
-			if (triangle.getNormal().angleTo(normal) <= MAX_ANGLE_RADIANS) {
-
-				//add, unless one of the existing normals is very similar
-
-				boolean notCoplanar = true;
-				for (VectorXYZ n : relevantNormals) {
-					if (n.angleTo(normal) < 0.01) {
-						notCoplanar = false;
-						break;
-					}
-				}
-
-				if (notCoplanar) {
-					relevantNormals.add(normal);
-				}
-
-			}
-		}
-
-		/* calculate sum of relevant normals,
-		 * normalize it and set the result as normal for the vertex */
-
-		return averageNormal(relevantNormals);
 
 	}
 

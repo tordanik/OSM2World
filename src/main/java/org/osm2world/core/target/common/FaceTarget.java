@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
@@ -262,17 +261,6 @@ public abstract class FaceTarget extends AbstractTarget {
 
 			i++;
 		}
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		drawTriangles(material, triangles, texCoordLists);
-
-		//TODO keep normals information
-
 	}
 
 	@Override
