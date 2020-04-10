@@ -69,6 +69,7 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
+import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
@@ -2791,7 +2792,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			private final SimplePolygonXZ outline;
 			private final SimplePolygonXZ paneOutline;
-			private final List<VectorXZ> outerFramePath;
 			private final List<List<VectorXZ>> innerFramePaths;
 
 			public GeometryWindow(VectorXZ position, WindowParameters params) {
@@ -2812,8 +2812,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 							params.width - OUTER_FRAME_WIDTH, params.height - OUTER_FRAME_WIDTH);
 					break;
 				}
-
-				outerFramePath = paneOutline.getVertexList();
 
 				innerFramePaths = new ArrayList<>();
 
@@ -2865,6 +2863,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				VectorXYZ windowNormal = surface.normalAt(paneOutline.boundingBox().center(), bottomPointsXYZ);
 
 				VectorXYZ toBack = windowNormal.mult(-depth);
+				VectorXYZ toOuterFrame = windowNormal.mult(-depth + OUTER_FRAME_THICKNESS);
 
 				/* draw the window pane */
 
@@ -2875,24 +2874,50 @@ public class BuildingModule extends ConfigurableWorldModule {
 				target.drawTriangles(GLASS, paneTriangles,
 						triangleTexCoordLists(paneTriangles, GLASS, SLOPED_TRIANGLES)); //TODO: use the tex coord function from WallSurface.renderTo
 
-				/* draw frame */
+				/* draw outer frame */
 
-				for (List<List<VectorXZ>> framePaths : asList(innerFramePaths, asList(outerFramePath))) {
-					for (List<VectorXZ> framePath : framePaths) {
+				List<SimplePolygonShapeXZ> innerOutlines = JTSBufferUtil.bufferPolygon(outline, -OUTER_FRAME_WIDTH)
+						.stream().map(p -> p.getOuter()).collect(toList());
 
-						double width = framePath == outerFramePath ? OUTER_FRAME_WIDTH : INNER_FRAME_WIDTH;
-						double thickness = framePath == outerFramePath ? OUTER_FRAME_THICKNESS : INNER_FRAME_THICKNESS;
+				List<TriangleXZ> frontFaceTriangles = triangulate(outline, innerOutlines);
+				List<TriangleXYZ> frontFaceTrianglesXYZ = frontFaceTriangles.stream()
+						.map(t -> surface.convertTo3D(t, bottomPointsXYZ))
+						.map(t -> t.shift(toOuterFrame))
+						.collect(toList());
+				target.drawTriangles(params.frameMaterial, frontFaceTrianglesXYZ,
+						triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, SLOPED_TRIANGLES));
 
-						List<VectorXYZ> framePathXYZ = framePath.stream()
-								.map(v -> surface.convertTo3D(v, bottomPointsXYZ))
-								.map(v -> v.add(toBack))
-								.collect(toList());
-						target.drawExtrudedShape(params.frameMaterial,
-								new AxisAlignedRectangleXZ(-width/2, -thickness/2, +width/2, +thickness/2),
-								framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
-								null, null, EnumSet.noneOf(ExtrudeOption.class));
+				Material frameSideMaterial = params.frameMaterial;
+				if (params.windowShape == WindowParameters.WindowShape.CIRCLE) {
+					frameSideMaterial = frameSideMaterial.makeSmooth();
+				}
 
-					}
+				for (SimplePolygonShapeXZ innerOutline : innerOutlines) {
+					PolygonXYZ innerOutlineXYZ = surface.convertTo3D(innerOutline, bottomPointsXYZ);
+					List<VectorXYZ> vsFrameSideStrip = createTriangleStripBetween(
+							innerOutlineXYZ.add(toOuterFrame).getVertexLoop(),
+							innerOutlineXYZ.add(toBack).getVertexLoop());
+					target.drawTriangleStrip(frameSideMaterial, vsFrameSideStrip,
+							texCoordLists(vsFrameSideStrip, frameSideMaterial, STRIP_WALL));
+				}
+
+				/* draw inner frame elements with shape extrusion along paths */
+
+				ShapeXZ innerFrameShape = new AxisAlignedRectangleXZ(
+						-INNER_FRAME_WIDTH/2, -INNER_FRAME_THICKNESS/2,
+						+INNER_FRAME_WIDTH/2, +INNER_FRAME_THICKNESS/2);
+
+				for (List<VectorXZ> framePath : innerFramePaths) {
+
+					List<VectorXYZ> framePathXYZ = framePath.stream()
+							.map(v -> surface.convertTo3D(v, bottomPointsXYZ))
+							.map(v -> v.add(toBack))
+							.collect(toList());
+
+					target.drawExtrudedShape(params.frameMaterial, innerFrameShape,
+							framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
+							null, null, EnumSet.noneOf(ExtrudeOption.class));
+
 				}
 
 				/* draw the wall around the window */
@@ -2900,7 +2925,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				//TODO avoid code duplication with TextureWindow
 
 				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
-				PolygonXYZ backOutline = frontOutline.add(toBack);
+				PolygonXYZ backOutline = frontOutline.add(toOuterFrame);
 
 				List<VectorXYZ> vsWall = createTriangleStripBetween(
 						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
