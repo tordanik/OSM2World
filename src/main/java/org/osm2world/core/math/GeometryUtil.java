@@ -75,10 +75,14 @@ public final class GeometryUtil {
 
 	}
 
-	public static final <V> List<V> triangleNormalListFromTriangleStripOrFan(
-			List<? extends V> normals) {
+	/**
+	 * turns the list of normals for a triangle strip/fan into the list of normals for a list of triangles.
+	 * This works for flat shading. For smooth shading, use {@link #triangleVertexListFromTriangleStrip(List)}
+	 * or {@link #triangleVertexListFromTriangleFan(List)}, respectively.
+	 */
+	public static final <V> List<V> triangleNormalListFromTriangleStripOrFan(List<? extends V> normals) {
 
-		List<V> result = new ArrayList<V>((normals.size() - 2) * 3);
+		List<V> result = new ArrayList<>((normals.size() - 2) * 3);
 
 		for (int triangle = 0; triangle + 2 < normals.size(); triangle++) {
 			V normal = normals.get(triangle + 2);

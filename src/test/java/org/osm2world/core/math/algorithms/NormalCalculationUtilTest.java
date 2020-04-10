@@ -56,12 +56,21 @@ public class NormalCalculationUtilTest {
 				new VectorXYZ(1, 1, 0)
 				);
 
-		List<VectorXYZ> normals =
-				NormalCalculationUtil.calculateTriangleStripNormals(vs, true);
+		{
+			List<VectorXYZ> normalsFlat = NormalCalculationUtil.calculateTriangleStripNormals(vs, false);
 
-		assertEquals(4, normals.size());
-		assertAlmostEquals(Y_UNIT, normals.get(2));
-		assertAlmostEquals(X_UNIT.invert(), normals.get(3));
+			assertEquals(4, normalsFlat.size());
+			assertAlmostEquals(Y_UNIT, normalsFlat.get(2));
+			assertAlmostEquals(X_UNIT.invert(), normalsFlat.get(3));
+		} {
+			List<VectorXYZ> normalsSmooth = NormalCalculationUtil.calculateTriangleStripNormals(vs, true);
+
+			assertEquals(4, normalsSmooth.size());
+			assertAlmostEquals(Y_UNIT, normalsSmooth.get(0));
+			assertAlmostEquals(new VectorXYZ(-1, 1, 0).normalize(), normalsSmooth.get(1));
+			assertAlmostEquals(new VectorXYZ(-1, 1, 0).normalize(), normalsSmooth.get(2));
+			assertAlmostEquals(X_UNIT.invert(), normalsSmooth.get(3));
+		}
 
 	}
 
@@ -75,12 +84,21 @@ public class NormalCalculationUtilTest {
 				new VectorXYZ(1, 1, 0)
 				);
 
-		List<VectorXYZ> normals =
-				NormalCalculationUtil.calculateTriangleFanNormals(vs, true);
+		{
+			List<VectorXYZ> normalsFlat = NormalCalculationUtil.calculateTriangleFanNormals(vs, false);
 
-		assertEquals(4, normals.size());
-		assertAlmostEquals(Y_UNIT, normals.get(2));
-		assertAlmostEquals(Z_UNIT.invert(), normals.get(3));
+			assertEquals(4, normalsFlat.size());
+			assertAlmostEquals(Y_UNIT, normalsFlat.get(2));
+			assertAlmostEquals(Z_UNIT.invert(), normalsFlat.get(3));
+		} {
+			List<VectorXYZ> normalsSmooth = NormalCalculationUtil.calculateTriangleFanNormals(vs, true);
+
+			assertEquals(4, normalsSmooth.size());
+			assertAlmostEquals(new VectorXYZ(0, 1, -1).normalize(), normalsSmooth.get(0));
+			assertAlmostEquals(Y_UNIT, normalsSmooth.get(1));
+			assertAlmostEquals(new VectorXYZ(0, 1, -1).normalize(), normalsSmooth.get(2));
+			assertAlmostEquals(Z_UNIT.invert(), normalsSmooth.get(3));
+		}
 
 	}
 

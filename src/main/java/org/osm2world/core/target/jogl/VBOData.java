@@ -1,10 +1,7 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
-import static javax.media.opengl.GL.GL_STATIC_DRAW;
-import static org.osm2world.core.math.GeometryUtil.triangleNormalListFromTriangleStripOrFan;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleFan;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
+import static javax.media.opengl.GL.*;
+import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -18,6 +15,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Interpolation;
 
 /**
  * Base class that keeps a VBO id along with associated information.
@@ -136,9 +134,13 @@ public abstract class VBOData<BufferT extends Buffer> {
 
 		if (primitive.type == Type.TRIANGLE_STRIP) {
 
-			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleStrip(primVertices);
-			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
+
+			if (material.getInterpolation() == Interpolation.FLAT) {
+				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
+			} else {
+				primNormals = triangleVertexListFromTriangleStrip(primNormals);
+			}
 
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
@@ -150,9 +152,13 @@ public abstract class VBOData<BufferT extends Buffer> {
 
 		} else if (primitive.type == Type.TRIANGLE_FAN) {
 
-			// TODO: support smooth interpolation of normals
 			primVertices = triangleVertexListFromTriangleFan(primVertices);
-			primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
+
+			if (material.getInterpolation() == Interpolation.FLAT) {
+				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
+			} else {
+				primNormals = triangleVertexListFromTriangleFan(primNormals);
+			}
 
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
