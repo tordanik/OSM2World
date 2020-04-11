@@ -219,17 +219,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) { }
 
-		//TODO
-//		@Override
-//		public double getClearingAbove(VectorXZ pos) {
-//			double maxClearingAbove = 0;
-//			for (BuildingPart part : parts) {
-//				double clearing = part.getClearingAbove(pos);
-//				maxClearingAbove = max(clearing, maxClearingAbove);
-//			}
-//			return maxClearingAbove;
-//		}
-
 		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
 			return area.getPolygon().getOuter().makeCounterclockwise();
@@ -563,10 +552,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			return roof;
 		}
 
-		public double getClearingAbove(VectorXZ pos) {
-			return heightWithoutRoof + roof.getRoofHeight();
-		}
-
 		@Override
 		public void renderTo(Target target) {
 
@@ -590,7 +575,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			return heightWithoutRoof / buildingLevels;
 		}
 
-		/** returns the distance between the bottom and the top of a level */
 		public double getLevelHeightAboveBase(int level) {
 			return (heightWithoutRoof / buildingLevels) * level;
 		}
@@ -2491,7 +2475,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			private final Material material;
 
 			private final List<VectorXZ> lowerBoundary;
-			private final List<VectorXZ> upperBoundary;
 			private final SimplePolygonXZ wallOutline;
 
 			private final List<WallElement> elements = new ArrayList<>();
@@ -2509,7 +2492,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				this.material = material;
 				this.lowerBoundary = lowerBoundary;
-				this.upperBoundary = upperBoundary;
 
 				if (lowerBoundary.size() < 2)
 					throw new IllegalArgumentException("need at least two bottom points");
@@ -2700,7 +2682,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * returns the space on the 2D wall surface occupied by this element.
 			 * The element is responsible for handling rendering inside this area.
 			 */
-			public SimplePolygonXZ outline(); //TODO allow any SimpleClosedShapeXZ
+			public SimplePolygonXZ outline();
 
 			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ);
 
@@ -2739,8 +2721,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
 
-				List<VectorXYZ> vs = frontOutline.getVertices();
-				VectorXYZ toBack = new TriangleXYZ(vs.get(0), vs.get(2), vs.get(1)).getNormal().mult(depth);
+				VectorXYZ windowNormal = surface.normalAt(outline().getCentroid(), bottomPointsXYZ);
+				VectorXYZ toBack = windowNormal.mult(-depth);
 				PolygonXYZ backOutline = frontOutline.add(toBack);
 
 				/* draw the window itself */
@@ -2781,7 +2763,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 		private class GeometryWindow implements Window {
 
-			private static final boolean TWO_SIDED = false;
 			private static final double OUTER_FRAME_WIDTH = 0.1;
 			private static final double INNER_FRAME_WIDTH = 0.05;
 			private static final double OUTER_FRAME_THICKNESS = 0.05;
@@ -2860,7 +2841,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
 
 				double depth = 0.10;
-				VectorXYZ windowNormal = surface.normalAt(paneOutline.boundingBox().center(), bottomPointsXYZ);
+				VectorXYZ windowNormal = surface.normalAt(outline().getCentroid(), bottomPointsXYZ);
 
 				VectorXYZ toBack = windowNormal.mult(-depth);
 				VectorXYZ toOuterFrame = windowNormal.mult(-depth + OUTER_FRAME_THICKNESS);
@@ -2921,8 +2902,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 
 				/* draw the wall around the window */
-
-				//TODO avoid code duplication with TextureWindow
 
 				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
 				PolygonXYZ backOutline = frontOutline.add(toOuterFrame);
@@ -2997,8 +2976,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
 
-				List<VectorXYZ> verts = frontOutline.getVertices();
-				VectorXYZ toBack = new TriangleXYZ(verts.get(0), verts.get(2), verts.get(1)).getNormal().mult(depth);
+				VectorXYZ doorNormal = surface.normalAt(outline().getCentroid(), bottomPointsXYZ);
+				VectorXYZ toBack = doorNormal.mult(-depth);
 				PolygonXYZ backOutline = frontOutline.add(toBack);
 
 				/* draw the door itself */
