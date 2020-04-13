@@ -2336,9 +2336,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			for (MapNode node : getNodes()) {
 
-				List<Integer> levels = new ArrayList<>();
-				levels.add(NumberUtils.toInt(node.getTags().getValue("level"), 0));
-				//TODO: support repeat_on
+				Set<Integer> levels = new HashSet<>();
+				levels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
+				levels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
 				for (int level : levels) {
 

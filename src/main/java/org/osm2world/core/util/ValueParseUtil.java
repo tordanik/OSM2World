@@ -1,6 +1,8 @@
 package org.osm2world.core.util;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -357,4 +359,51 @@ public final class ValueParseUtil {
 
 	}
 
+	private static final Pattern LEVEL_RANGE_PATTERN = Pattern.compile("([-]?\\d+)-([-]?\\d+)");
+
+	/**
+	 * parses a Simple Indoor Tagging level value (for keys like level=* and repeat_on).
+	 * Works for integer level values (including negative levels).
+	 * Supports ranges and semicolon-separated values in addition to single values.
+	 *
+	 * @return list of levels, at least one value, ascending. null if value had syntax errors.
+	 */
+	public static final List<Integer> parseLevels(String value) {
+
+		if (value == null) return null;
+
+		List<Integer> result = new ArrayList<>(1);
+
+		for (String levelRange : value.replaceAll("\\s+", "").split(";")) {
+			try {
+
+				Matcher rangePatternMatcher = LEVEL_RANGE_PATTERN.matcher(levelRange);
+
+				if (rangePatternMatcher.matches()) {
+					// range (e.g. "-5-10")
+					int lowerLevel = Integer.parseInt(rangePatternMatcher.group(1));
+					int upperLevel = Integer.parseInt(rangePatternMatcher.group(2));
+					for (int i = lowerLevel; i <= upperLevel; i++) {
+						result.add(i);
+					}
+				} else {
+					// single value (e.g. "3")
+					result.add(Integer.parseInt(levelRange));
+				}
+
+			} catch (NumberFormatException e) {}
+		}
+
+		result.sort(null);
+
+		return result.isEmpty() ? null : result;
+
+	}
+
+	/** variant of {@link #parseLevels(String)} with a default value */
+	public static final List<Integer> parseLevels(String value, List<Integer> defaultValue) {
+		if (value == null) return defaultValue;
+		List<Integer> result = parseLevels(value);
+		return result == null ? defaultValue : result;
+	}
 }
