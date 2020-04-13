@@ -2328,22 +2328,40 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			}
 
-			/* add doors (if any) */
+			/* add individually mapped doors and windows (if any) */
 			//TODO: doors at corners of the building (or boundaries between building:wall=yes ways) do not work yet
 			//TODO: cannot place doors into roof walls yet
 
-			for (MapNode node : getNodes()) {
-				if ((node.getTags().contains("building", "entrance")
-						|| node.getTags().containsKey("entrance")
-						|| node.getTags().containsKey("door"))) {
+			boolean individuallyMappedWindows = false;
 
-					int level = NumberUtils.toInt(node.getTags().getValue("level"), 0);
+			for (MapNode node : getNodes()) {
+
+				List<Integer> levels = new ArrayList<>();
+				levels.add(NumberUtils.toInt(node.getTags().getValue("level"), 0));
+				//TODO: support repeat_on
+
+				for (int level : levels) {
 
 					VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
 							buildingPart.getLevelHeightAboveBase(level));
 
-					mainSurface.addElementIfSpaceFree(new Door(pos, node));
+					if ((node.getTags().contains("building", "entrance")
+							|| node.getTags().containsKey("entrance")
+							|| node.getTags().containsKey("door"))) {
 
+						mainSurface.addElementIfSpaceFree(new Door(pos, node));
+
+					} else if (node.getTags().containsKey("window")
+							&& !node.getTags().contains("window", "no")) {
+
+						TagSet windowTags = inheritTags(node.getTags(), tags);
+						WindowParameters params = new WindowParameters(windowTags, buildingPart.getLevelHeight(level));
+						GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params);
+						mainSurface.addElementIfSpaceFree(window);
+
+						individuallyMappedWindows = true;
+
+					}
 				}
 			}
 
@@ -2356,8 +2374,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* add windows (after doors, because default windows should be displaced by them) */
 
-			if (hasWindows && (windowImplementation == WindowImplementation.INSET_TEXTURES
-					|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
+			if (hasWindows && !individuallyMappedWindows
+					&& (windowImplementation == WindowImplementation.INSET_TEXTURES
+						|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
 				placeDefaultWindows(mainSurface, windowImplementation);
 			}
 
@@ -2367,7 +2386,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			if (mainSurface != null) {
 				mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
-						hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES, windowHeight);
+						hasWindows && !individuallyMappedWindows
+							&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
+						windowHeight);
 			}
 
 			if (roofSurface != null) {
