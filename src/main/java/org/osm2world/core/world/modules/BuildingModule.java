@@ -2276,6 +2276,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			List<VectorXZ> lowerSurfaceBoundary = toPointsOnSurface(bottomPoints);
 			List<VectorXZ> upperSurfaceBoundary = toPointsOnSurface(topPoints);
 
+			List<VectorXYZ> lowerBoundaryXYZ = addYList(bottomPoints, floorEle);
+
 			WallSurface mainSurface, roofSurface;
 
 			double maxHeight = max(upperSurfaceBoundary, comparingDouble(v -> v.z)).z;
@@ -2286,7 +2288,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				roofSurface = null;
 
 				try {
-					mainSurface = new WallSurface(material, lowerSurfaceBoundary, upperSurfaceBoundary);
+					mainSurface = new WallSurface(material,
+							lowerSurfaceBoundary, upperSurfaceBoundary, lowerBoundaryXYZ);
 				} catch (InvalidGeometryException e) {
 					mainSurface = null;
 				}
@@ -2300,7 +2303,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 						new VectorXZ(lowerSurfaceBoundary.get(bottomPoints.size() - 1).x, heightWithoutRoof - floorHeight));
 
 				try {
-					mainSurface = new WallSurface(material, lowerSurfaceBoundary, middleSurfaceBoundary);
+					mainSurface = new WallSurface(material,
+							lowerSurfaceBoundary, middleSurfaceBoundary, lowerBoundaryXYZ);
 				} catch (InvalidGeometryException e) {
 					mainSurface = null;
 				}
@@ -2313,7 +2317,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 						.collect(toList());
 
 				try {
-					roofSurface = new WallSurface(material, middleSurfaceBoundary, upperSurfaceBoundary);
+					List<VectorXYZ> roofLowerXYZ = addYList(lowerBoundaryXYZ, heightWithoutRoof - floorHeight);
+					roofSurface = new WallSurface(material,
+							middleSurfaceBoundary, upperSurfaceBoundary, roofLowerXYZ);
 				} catch (InvalidGeometryException e) {
 					roofSurface = null;
 				}
@@ -2355,16 +2361,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* draw the wall */
 
-			List<VectorXYZ> bottomPointsXYZ = addYList(bottomPoints, floorEle);
-
 			if (mainSurface != null) {
-				mainSurface.renderTo(target, bottomPointsXYZ,
+				mainSurface.renderTo(target,
 						hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
 			}
 
 			if (roofSurface != null) {
-				List<VectorXYZ> middlePointsXYZ = addYList(bottomPoints, floorEle + heightWithoutRoof - floorHeight);
-				roofSurface.renderTo(target, middlePointsXYZ, false);
+				roofSurface.renderTo(target, false);
 			}
 
 		}
@@ -2477,6 +2480,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 			private final List<VectorXZ> lowerBoundary;
 			private final SimplePolygonXZ wallOutline;
 
+			private final List<VectorXYZ> lowerBoundaryXYZ;
+
 			private final List<WallElement> elements = new ArrayList<>();
 
 			/**
@@ -2484,19 +2489,24 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 * The boundaries' x coordinates is the position along the wall (starting with 0 for the first point),
 			 * the z coordinates refer to height.
 			 *
+			 * @param lowerBoundaryXYZ  the lower boundary in global 3D space
+			 *
 			 * @throws InvalidGeometryException  if the lower and upper boundary do not represent a proper surface.
 			 * This can happen, for example, because the wall has a zero or almost-zero height.
 			 */
-			public WallSurface(Material material, List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary)
-					throws IllegalArgumentException {
+			public WallSurface(Material material, List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary,
+					List<VectorXYZ> lowerBoundaryXYZ) throws IllegalArgumentException {
 
 				this.material = material;
 				this.lowerBoundary = lowerBoundary;
+				this.lowerBoundaryXYZ = lowerBoundaryXYZ;
 
 				if (lowerBoundary.size() < 2)
 					throw new IllegalArgumentException("need at least two bottom points");
 				if (upperBoundary.size() < 2)
 					throw new IllegalArgumentException("need at least two top points");
+				if (lowerBoundaryXYZ.size() < 2)
+					throw new IllegalArgumentException("need at least two bottom XYZ points");
 				if (lowerBoundary.get(0).x != 0)
 					throw new IllegalArgumentException("origin is in the bottom left corner");
 				if (upperBoundary.get(0).x != 0)
@@ -2550,13 +2560,12 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			/** renders the wall; requires it to be anchored back into 3D space */
-			public void renderTo(Target target, List<VectorXYZ> bottomPointsXYZ,
-					boolean applyWindowTexture) {
+			public void renderTo(Target target, boolean applyWindowTexture) {
 
 				/* render the elements on the wall */
 
 				for (WallElement e : elements) {
-					e.renderTo(target, this, bottomPointsXYZ);
+					e.renderTo(target, this);
 				}
 
 				/* triangulate the empty wall surface */
@@ -2564,7 +2573,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
 
 				List<TriangleXZ> triangles = triangulate(wallOutline, holes);
-				List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t, bottomPointsXYZ)).collect(toList());
+				List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t)).collect(toList());
 
 				/* determine the material depending on whether a window texture should be applied */
 
@@ -2627,30 +2636,30 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			}
 
-			private VectorXYZ convertTo3D(VectorXZ v, List<VectorXYZ> bottomPointsXYZ) {
+			private VectorXYZ convertTo3D(VectorXZ v) {
 
 				double ratio = v.x / getLength();
 
-				VectorXYZ point = interpolateOn(bottomPointsXYZ, ratio);
+				VectorXYZ point = interpolateOn(lowerBoundaryXYZ, ratio);
 
 				return point.addY(v.z);
 
 			}
 
-			private TriangleXYZ convertTo3D(TriangleXZ t, List<VectorXYZ> bottomPointsXYZ) {
+			private TriangleXYZ convertTo3D(TriangleXZ t) {
 				return new TriangleXYZ(
-						convertTo3D(t.v1, bottomPointsXYZ),
-						convertTo3D(t.v2, bottomPointsXYZ),
-						convertTo3D(t.v3, bottomPointsXYZ));
+						convertTo3D(t.v1),
+						convertTo3D(t.v2),
+						convertTo3D(t.v3));
 			}
 
-			private PolygonXYZ convertTo3D(PolygonShapeXZ polygon, List<VectorXYZ> bottomPointsXYZ) {
+			private PolygonXYZ convertTo3D(PolygonShapeXZ polygon) {
 				List<VectorXYZ> outline = new ArrayList<>(polygon.getVertexList().size());
-				polygon.getVertexList().forEach(v -> outline.add(convertTo3D(v, bottomPointsXYZ)));
+				polygon.getVertexList().forEach(v -> outline.add(convertTo3D(v)));
 				return new PolygonXYZ(outline);
 			}
 
-			public VectorXYZ normalAt(VectorXZ v, List<VectorXYZ> bottomPointsXYZ) {
+			public VectorXYZ normalAt(VectorXZ v) {
 
 				/* calculate the normal by placing 3 points close to each other on the surface,
 				 * and calculating the normal of that triangle */
@@ -2663,9 +2672,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 					v = v.add(-smallXDist, 0);
 				}
 
-				VectorXYZ vXYZ = convertTo3D(v, bottomPointsXYZ);
-				VectorXYZ vXYZRight = convertTo3D(v.add(smallXDist, 0), bottomPointsXYZ);
-				VectorXYZ vXYZTop = convertTo3D(v.add(0, smallZDist), bottomPointsXYZ);
+				VectorXYZ vXYZ = convertTo3D(v);
+				VectorXYZ vXYZRight = convertTo3D(v.add(smallXDist, 0));
+				VectorXYZ vXYZTop = convertTo3D(v.add(0, smallZDist));
 
 				return vXYZTop.subtract(vXYZ).crossNormalized(vXYZRight.subtract(vXYZ));
 
@@ -2684,7 +2693,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			 */
 			public SimplePolygonXZ outline();
 
-			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ);
+			public void renderTo(Target target, Wall.WallSurface surface);
 
 		}
 
@@ -2715,13 +2724,13 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+			public void renderTo(Target target, Wall.WallSurface surface) {
 
 				double depth = 0.10;
 
-				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
+				PolygonXYZ frontOutline = surface.convertTo3D(outline());
 
-				VectorXYZ windowNormal = surface.normalAt(outline().getCentroid(), bottomPointsXYZ);
+				VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
 				VectorXYZ toBack = windowNormal.mult(-depth);
 				PolygonXYZ backOutline = frontOutline.add(toBack);
 
@@ -2838,10 +2847,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+			public void renderTo(Target target, Wall.WallSurface surface) {
 
 				double depth = 0.10;
-				VectorXYZ windowNormal = surface.normalAt(outline().getCentroid(), bottomPointsXYZ);
+				VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
 
 				VectorXYZ toBack = windowNormal.mult(-depth);
 				VectorXYZ toOuterFrame = windowNormal.mult(-depth + OUTER_FRAME_THICKNESS);
@@ -2850,7 +2859,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				Collection<TriangleXZ> paneTrianglesXZ = paneOutline.getTriangulation();
 				Collection<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
-						.map(t -> surface.convertTo3D(t, bottomPointsXYZ).shift(toBack))
+						.map(t -> surface.convertTo3D(t).shift(toBack))
 						.collect(toList());
 				target.drawTriangles(GLASS, paneTriangles,
 						triangleTexCoordLists(paneTriangles, GLASS, SLOPED_TRIANGLES)); //TODO: use the tex coord function from WallSurface.renderTo
@@ -2862,7 +2871,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				List<TriangleXZ> frontFaceTriangles = triangulate(outline, innerOutlines);
 				List<TriangleXYZ> frontFaceTrianglesXYZ = frontFaceTriangles.stream()
-						.map(t -> surface.convertTo3D(t, bottomPointsXYZ))
+						.map(t -> surface.convertTo3D(t))
 						.map(t -> t.shift(toOuterFrame))
 						.collect(toList());
 				target.drawTriangles(params.frameMaterial, frontFaceTrianglesXYZ,
@@ -2874,7 +2883,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				}
 
 				for (SimplePolygonShapeXZ innerOutline : innerOutlines) {
-					PolygonXYZ innerOutlineXYZ = surface.convertTo3D(innerOutline, bottomPointsXYZ);
+					PolygonXYZ innerOutlineXYZ = surface.convertTo3D(innerOutline);
 					List<VectorXYZ> vsFrameSideStrip = createTriangleStripBetween(
 							innerOutlineXYZ.add(toOuterFrame).getVertexLoop(),
 							innerOutlineXYZ.add(toBack).getVertexLoop());
@@ -2891,7 +2900,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				for (List<VectorXZ> framePath : innerFramePaths) {
 
 					List<VectorXYZ> framePathXYZ = framePath.stream()
-							.map(v -> surface.convertTo3D(v, bottomPointsXYZ))
+							.map(v -> surface.convertTo3D(v))
 							.map(v -> v.add(toBack))
 							.collect(toList());
 
@@ -2903,7 +2912,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				/* draw the wall around the window */
 
-				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
+				PolygonXYZ frontOutline = surface.convertTo3D(outline());
 				PolygonXYZ backOutline = frontOutline.add(toOuterFrame);
 
 				List<VectorXYZ> vsWall = createTriangleStripBetween(
@@ -2957,7 +2966,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			@Override
-			public void renderTo(Target target, Wall.WallSurface surface, List<VectorXYZ> bottomPointsXYZ) {
+			public void renderTo(Target target, Wall.WallSurface surface) {
 
 				Material doorMaterial = ENTRANCE_DEFAULT;
 
@@ -2974,9 +2983,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				double depth = 0.10;
 
-				PolygonXYZ frontOutline = surface.convertTo3D(outline(), bottomPointsXYZ);
+				PolygonXYZ frontOutline = surface.convertTo3D(outline());
 
-				VectorXYZ doorNormal = surface.normalAt(outline().getCentroid(), bottomPointsXYZ);
+				VectorXYZ doorNormal = surface.normalAt(outline().getCentroid());
 				VectorXYZ toBack = doorNormal.mult(-depth);
 				PolygonXYZ backOutline = frontOutline.add(toBack);
 
