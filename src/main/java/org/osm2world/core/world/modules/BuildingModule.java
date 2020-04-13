@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.*;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -86,6 +87,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.NamedTexCoordFunction;
+import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.util.exception.TriangulationException;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -2361,13 +2363,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* draw the wall */
 
+			double windowHeight = buildingPart.heightWithoutRoof / buildingPart.buildingLevels;
+
 			if (mainSurface != null) {
-				mainSurface.renderTo(target,
-						hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES);
+				mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
+						hasWindows && windowImplementation == WindowImplementation.FLAT_TEXTURES, windowHeight);
 			}
 
 			if (roofSurface != null) {
-				roofSurface.renderTo(target, false);
+				roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight);
 			}
 
 		}
@@ -2469,11 +2473,11 @@ public class BuildingModule extends ConfigurableWorldModule {
 		}
 
 		/**
-		 * a simplified representation of the wall as a 2D plane, with its origin in the bottom left corner.
+		 * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
 		 * This streamlines the placement of objects (windows, doors, and similar features) onto the wall.
 		 * Afterwards, positions are converted back into 3D space.
 		 */
-		private class WallSurface {
+		static class WallSurface {
 
 			private final Material material;
 
@@ -2559,8 +2563,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			}
 
-			/** renders the wall; requires it to be anchored back into 3D space */
-			public void renderTo(Target target, boolean applyWindowTexture) {
+			/**
+			 * renders the wall
+			 *
+			 * @param textureOrigin  the origin of the texture coordinates on the wall surface
+			 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+			 */
+			public void renderTo(Target target, VectorXZ textureOrigin,
+					boolean applyWindowTexture, double windowHeight) {
 
 				/* render the elements on the wall */
 
@@ -2581,7 +2591,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						? this.material.withAddedLayers(BUILDING_WINDOWS.getTextureDataList())
 						: this.material;
 
-				/* calculate basic texture coordinates (for a hypothetical 'unit texture' of width and height 1) */
+				/* calculate texture coordinates */
 
 				List<TextureData> textureDataList = material.getTextureDataList();
 
@@ -2589,44 +2599,15 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
 
-					List<VectorXZ> texCoords = new ArrayList<>();
+					List<VectorXZ> vs = new ArrayList<>();
 
 					for (TriangleXZ triangle : triangles) {
-						texCoords.add(triangle.v1);
-						texCoords.add(triangle.v2);
-						texCoords.add(triangle.v3);
+						vs.add(triangle.v1);
+						vs.add(triangle.v2);
+						vs.add(triangle.v3);
 					}
 
-					texCoordLists.add(texCoords);
-
-				}
-
-				/* scale the texture coordinates based on the texture's height and width or,
-				 * for textures with the special height value 0 (windows!), to an integer number of repetitions */
-
-				for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
-
-					TextureData textureData = textureDataList.get(texLayer);
-					List<VectorXZ> texCoords = texCoordLists.get(texLayer);
-
-					boolean specialWindowHandling = (textureData.height == 0);
-
-					for (int i = 0; i < texCoords.size(); i++) {
-
-						double height = textureData.height;
-						double width = textureData.width;
-
-						if (specialWindowHandling) {
-							height = buildingPart.heightWithoutRoof / buildingPart.buildingLevels;
-							width = getLength() / max(1, round(getLength() / textureData.width));
-						}
-
-						double s = texCoords.get(i).x / width;
-						double t = (texCoords.get(i).z + floorHeight) / height;
-
-						texCoords.set(i, new VectorXZ(s, t));
-
-					}
+					texCoordLists.add(texCoords(vs, textureDataList.get(texLayer), textureOrigin, windowHeight));
 
 				}
 
@@ -2659,6 +2640,28 @@ public class BuildingModule extends ConfigurableWorldModule {
 				return new PolygonXYZ(outline);
 			}
 
+			/**
+			 * Projects a point in global 3D space onto the wall,
+			 * then returns the wall surface coordinate of that projection.
+			 * Conceptually the inverse of {@link #convertTo3D(VectorXZ)}
+			 * (except that it also accepts points which are not on the wall).
+			 */
+			private VectorXZ toWallCoord(VectorXYZ v) {
+
+				PolylineXZ wallXZ = new PolylineXZ(lowerBoundaryXYZ.stream().map(VectorXYZ::xz).collect(toList()));
+
+				LineSegmentXZ closestSegment =
+						min(wallXZ.getSegments(), Comparator.comparing(s -> distanceFromLineSegment(v.xz(), s)));
+
+				VectorXZ projectedPointXZ = projectPerpendicular(v.xz(), closestSegment.p1, closestSegment.p2);
+				double relativeLengthProjectedPoint = wallXZ.offsetOf(projectedPointXZ) / wallXZ.getLength();
+
+				return new VectorXZ(
+						relativeLengthProjectedPoint * this.getLength(),
+						v.y - lowerBoundaryXYZ.get(0).y);
+
+			}
+
 			public VectorXYZ normalAt(VectorXZ v) {
 
 				/* calculate the normal by placing 3 points close to each other on the surface,
@@ -2678,6 +2681,59 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				return vXYZTop.subtract(vXYZ).crossNormalized(vXYZRight.subtract(vXYZ));
 
+			}
+
+			/**
+			 * generates texture coordinates for textures placed on the wall surface.
+			 * One texture coordinate dimension running along the wall, the other running up the wall.
+			 * Input coordinates are surface coordinates.
+			 *
+			 * @param textureOrigin  the origin of the texture coordinates on the wall surface
+			 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+			 */
+			public List<VectorXZ> texCoords(List<VectorXZ> vs, TextureData textureData,
+					VectorXZ textureOrigin, double windowHeight) {
+
+				List<VectorXZ> result = new ArrayList<>(vs.size());
+
+				/* As surface coords, the input coords are already texture coordinates for a hypothetical
+				 * 'unit texture' of width and height 1). We now scale them based on the texture's height and width or,
+				 * for textures with the special height value 0 (windows!), to an integer number of repetitions */
+
+				boolean specialWindowHandling = (textureData.height == 0);
+
+				for (int i = 0; i < vs.size(); i++) {
+
+					double height = textureData.height;
+					double width = textureData.width;
+
+					if (specialWindowHandling) {
+						height = windowHeight;
+						width = getLength() / max(1, round(getLength() / textureData.width));
+					}
+
+					double s = (vs.get(i).x - textureOrigin.x) / width;
+					double t = (vs.get(i).z - textureOrigin.z) / height;
+
+					result.add(new VectorXZ(s, t));
+
+
+				}
+
+				return result;
+
+			}
+
+
+			/**
+			 * generates texture coordinates for textures placed on the wall surface,
+			 * compare {@link #texCoords(List, TextureData, VectorXZ, double)}.
+			 * Input coordinates are global coordinates and will be projected onto the wall.
+			 * Can be used as a {@link TexCoordFunction}.
+			 */
+			public List<VectorXZ> texCoordsGlobal(List<VectorXYZ> vs, TextureData textureData) {
+				List<VectorXZ> wallSurfaceVectors = vs.stream().map(v -> toWallCoord(v)).collect(toList());
+				return texCoords(wallSurfaceVectors, textureData, NULL_VECTOR, 1);
 			}
 
 		}
@@ -2862,7 +2918,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						.map(t -> surface.convertTo3D(t).shift(toBack))
 						.collect(toList());
 				target.drawTriangles(GLASS, paneTriangles,
-						triangleTexCoordLists(paneTriangles, GLASS, SLOPED_TRIANGLES)); //TODO: use the tex coord function from WallSurface.renderTo
+						triangleTexCoordLists(paneTriangles, GLASS, surface::texCoordsGlobal));
 
 				/* draw outer frame */
 
@@ -2875,7 +2931,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 						.map(t -> t.shift(toOuterFrame))
 						.collect(toList());
 				target.drawTriangles(params.frameMaterial, frontFaceTrianglesXYZ,
-						triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, SLOPED_TRIANGLES));
+						triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, surface::texCoordsGlobal));
 
 				Material frameSideMaterial = params.frameMaterial;
 				if (params.windowShape == WindowParameters.WindowShape.CIRCLE) {
