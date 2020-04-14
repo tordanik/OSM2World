@@ -891,7 +891,10 @@ public final class PowerModule extends AbstractModule {
 					if (otherWO.getGroundState() == GroundState.ON
 							&& otherWO instanceof WorldObjectWithOutline) {
 
-						obstacles.add(((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ());
+						PolygonShapeXZ obstaclePolygon = ((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ();
+						if (obstaclePolygon != null) {
+							obstacles.add(obstaclePolygon);
+						}
 
 					}
 
