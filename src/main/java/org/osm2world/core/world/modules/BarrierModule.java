@@ -16,10 +16,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.math3.analysis.function.Cosh;
 import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
@@ -80,6 +77,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new PoleFence(line));
 		}else if (BollardRow.fits(tags)) {
 			line.addRepresentation(new BollardRow(line));
+		}else if (ChainRow.fits(tags)) {
+			line.addRepresentation(new ChainRow(line));
 		}
 
 	}
@@ -724,23 +723,24 @@ public class BarrierModule extends AbstractModule {
 
 	private static class BollardRow extends PoleFence{
 
-
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "bollard");
 		}
-
 
 		public BollardRow(MapWaySegment line) {
 			super(line);
 
 			this.barWidth = 0.15f;
-			this.poleMaterial = CONCRETE;
+			this.defaultPoleMaterial = CONCRETE;
+			this.barGap = 2;
 		}
 
 		@Override
 		public void renderTo(Target<?> target) {
 
-			List<VectorXYZ> pointsWithEle = getCenterline();
+			if (this.poleMaterial == null) {
+				poleMaterial = defaultPoleMaterial;
+			}
 
 			/* render bollards */
 
@@ -751,29 +751,84 @@ public class BarrierModule extends AbstractModule {
 
 
 			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(
-					2f, false, getCenterline());
+					this.barGap, false, getCenterline());
 
 			for (VectorXYZ base : bollardPositions) {
-
 				target.drawColumn(this.poleMaterial, null, base,
-						height, this.barWidth, this.barWidth, false, true);
-
+						this.height, this.barWidth, this.barWidth, false, true);
 			}
+		}
+	}
 
+	private static class ChainRow extends PoleFence{
+
+		private static final Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
+
+		private static final SimpleClosedShapeXZ BAR_SHAPE =
+				new AxisAlignedBoundingBoxXZ(-0.03, -0.03, 0.03, 0);
+
+		public static boolean fits(TagGroup tags) {
+			return tags.contains("barrier", "chain");
 		}
 
+		public ChainRow(MapWaySegment line) {
+			super(line);
+
+			this.barWidth = 0.05f;
+			this.defaultPoleMaterial = STEEL;
+			this.defaultFenceMaterial = STEEL;
+			this.barGap = 1.5f;
+		}
+
+		@Override
+		public void renderTo(Target<?> target) {
+
+			if (this.poleMaterial == null) {
+				poleMaterial = defaultPoleMaterial;
+			}
+
+			/* render poles */
+
+			List<VectorXYZ> polePositions = equallyDistributePointsAlong(
+					this.barGap, true, getCenterline());
+
+			for (VectorXYZ base : polePositions) {
+				target.drawColumn(this.poleMaterial, null, base,
+						this.height, this.barWidth, this.barWidth, false, true);
+			}
+
+			/* render chain */
+
+			for(int k = 0; k < polePositions.size() - 1; k++){
+
+				List<VectorXYZ> chainPath = new ArrayList<VectorXYZ>();
+				VectorXYZ offset = polePositions.get(k+1).subtract(polePositions.get(k));
+				float actualBarGap = (float)offset.length();
+
+				// +0.1 allows for floating point errors
+				for(float i = 0f; i <= actualBarGap + 0.1; i += actualBarGap/DEFAULT_NO_CHAIN_SEGMENTS){
+					//approximation of chain sag
+					double a = 5f / 2f;
+					double sag = a * cosh((i-(actualBarGap/2))/a)  -  a * cosh(actualBarGap/(2 * a));
+					double pointDrop = height + sag;
+					chainPath.add(polePositions.get(k).add(offset.normalize().mult(i)).addY(pointDrop));
+				}
+
+				target.drawExtrudedShape(defaultFenceMaterial, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
+						Y_UNIT), null, null, null);
+			}
+		}
 	}
 
 	private static class Bollard extends NoOutlineNodeWorldObject
 	implements RenderableToAllTargets {
 
 		private static final float DEFAULT_HEIGHT = 1;
+		private final float height;
 
 		public static boolean fits(TagGroup tags) {
 			return tags.contains("barrier", "bollard");
 		}
-
-		private final float height;
 
 		public Bollard(MapNode node, TagGroup tags) {
 
@@ -801,7 +856,8 @@ public class BarrierModule extends AbstractModule {
 
 		private static final float DEFAULT_HEIGHT = 1;
 		private final float height;
-		private Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
+		private static final Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
+		private static final float DEFAULT_BAR_WIDTH = 0.05f;
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE =
 				new AxisAlignedBoundingBoxXZ(-0.03, -0.03, 0.03, 0);
@@ -817,6 +873,7 @@ public class BarrierModule extends AbstractModule {
 			super(node);
 
 			height = parseHeight(tags, DEFAULT_HEIGHT);
+
 		}
 
 		@Override
@@ -831,7 +888,7 @@ public class BarrierModule extends AbstractModule {
 
 			VectorXYZ offset;
 
-			if (node.getConnectedWaySegments().get(0) != null) {
+			if (!node.getConnectedWaySegments().isEmpty()) {
 				offset = node.getConnectedWaySegments().get(0).getDirection().xyz(0).rotateY(PI / 2);
 			} else {
 				//Face north if no connecting ways segements
@@ -842,22 +899,22 @@ public class BarrierModule extends AbstractModule {
 			double distanceBetweenPosts = offset.length() * 2;
 
 			target.drawColumn(STEEL, null, post1Pos,
-					height, 0.05f, 0.05f, false, true);
+					height, DEFAULT_BAR_WIDTH, DEFAULT_BAR_WIDTH, false, true);
 
 			target.drawColumn(STEEL, null, post2Pos,
-					height, 0.05f, 0.05f, false, true);
+					height, DEFAULT_BAR_WIDTH, DEFAULT_BAR_WIDTH, false, true);
 
 
 			/* render chain */
 
 			List<VectorXYZ> chainPath = new ArrayList<VectorXYZ>();
 
-			for(float i = 0f; i <= distanceBetweenPosts; i += distanceBetweenPosts/DEFAULT_NO_CHAIN_SEGMENTS){
+			for(float i = 0f; i <= distanceBetweenPosts + 0.1; i += distanceBetweenPosts/DEFAULT_NO_CHAIN_SEGMENTS){
 				//approximation of chain sag
 				double a = 5f / 2f;
 				double sag = a * cosh((i-(distanceBetweenPosts/2))/a)  -  a * cosh(distanceBetweenPosts/(2 * a));
 				double pointDrop = height + sag;
-				chainPath.add(post2Pos.add(offset.normalize().mult(i)).y(pointDrop));
+				chainPath.add(post2Pos.add(offset.normalize().mult(i)).addY(pointDrop));
 			}
 
 			target.drawExtrudedShape(STEEL, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
@@ -866,7 +923,6 @@ public class BarrierModule extends AbstractModule {
 		}
 
 	}
-
 
 
 }
