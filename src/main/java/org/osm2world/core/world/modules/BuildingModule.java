@@ -724,7 +724,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				if ("brick".equals(materialString)) {
 					material = Materials.BRICK;
 				} else if ("glass".equals(materialString)) {
-					material = roof ? Materials.GLASS_ROOF : Materials.GLASS;
+					material = roof ? Materials.GLASS_ROOF : Materials.GLASS_WALL;
 				} else if ("wood".equals(materialString)) {
 					material = Materials.WOOD_WALL;
 				} else if (Materials.getSurfaceMaterial(materialString) != null) {
@@ -2204,9 +2204,9 @@ public class BuildingModule extends ConfigurableWorldModule {
 					hasWindows = false;
 				}
 
-				if (material == Materials.GLASS) {
+				if (material == Materials.GLASS_WALL) {
 					// avoid placing windows into a glass front
-					// TODO: the == currently only works if GLASS is not colorable
+					// TODO: the == currently only works if GLASS_WALL is not colorable
 					hasWindows = false;
 				}
 
@@ -2938,8 +2938,8 @@ public class BuildingModule extends ConfigurableWorldModule {
 				Collection<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
 						.map(t -> surface.convertTo3D(t).shift(toBack))
 						.collect(toList());
-				target.drawTriangles(GLASS, paneTriangles,
-						triangleTexCoordLists(paneTriangles, GLASS, surface::texCoordsGlobal));
+				target.drawTriangles(params.windowMaterial, paneTriangles,
+						triangleTexCoordLists(paneTriangles, params.windowMaterial, surface::texCoordsGlobal));
 
 				/* draw outer frame */
 
@@ -3383,7 +3383,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			case "greenhouse":
 				levels = 1;
-				materialWall = Materials.GLASS;
+				materialWall = Materials.GLASS_WALL;
 				materialRoof = Materials.GLASS_ROOF;
 				hasWindows = false;
 				break;

@@ -139,6 +139,8 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(0.8f, 0, 0));
 	public static final ConfMaterial GLASS_ROOF =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
+	public static final ConfMaterial GLASS_WALL =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
 	public static final ConfMaterial ENTRANCE_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.2f, 0, 0));
 	public static final ConfMaterial GARAGE_DOOR =
