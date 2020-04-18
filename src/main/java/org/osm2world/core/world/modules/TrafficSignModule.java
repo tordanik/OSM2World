@@ -2,12 +2,12 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseColor;
 import static org.osm2world.core.math.VectorXYZ.X_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -19,17 +19,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextTextureData;
 import org.osm2world.core.target.common.TextureData;
@@ -183,7 +182,8 @@ public class TrafficSignModule extends AbstractModule {
 	private static boolean isInHighway(MapNode node){
 		if (node.getConnectedWaySegments().size()>0){
 			for(MapWaySegment way: node.getConnectedWaySegments()){
-				if( way.getTags().containsKey("highway") && !way.getTags().containsAny("highway", asList("path", "footway", "platform") ) ){
+				if (way.getTags().containsKey("highway")
+						&& !asList("path", "footway", "platform").contains(way.getTags().getValue("highway"))) {
 					return true;
 				}
 			}
@@ -264,7 +264,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param tags The tag group to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its textureDataList altered
 	 */
-	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagGroup tags) {
+	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagSet tags) {
 
 		if(originalMaterial == null) return null;
 
@@ -346,8 +346,7 @@ public class TrafficSignModule extends AbstractModule {
 			return null;
 		}
 
-	private final class DestinationSign extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private final class DestinationSign extends NoOutlineNodeWorldObject {
 
 		//relation attributes
 		private Color backgroundColor;
@@ -434,8 +433,8 @@ public class TrafficSignModule extends AbstractModule {
 						if(member.getElement() instanceof MapWay) {
 							fromMembers.add((MapWay)member.getElement());
 						}else {
-							System.err.println("'from' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							System.err.println("'from' member of relation " + this.relation + " is not a way."
+									+ " It is not being considered for rendering this relation's destination sign.");
 							wrongFrom = true;
 							continue;
 						}
@@ -445,16 +444,16 @@ public class TrafficSignModule extends AbstractModule {
 						if(member.getElement() instanceof MapWay) {
 							to = (MapWay)member.getElement();
 						}else {
-							System.err.println("'to' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a way. It is not being considered for rendering this relation's destination sign");
+							System.err.println("'to' member of relation " + this.relation + " is not a way. "
+									+ "It is not being considered for rendering this relation's destination sign");
 							continue;
 						}
 
 					}else if(member.getRole().equals("intersection")) {
 
 						if(!(member.getElement() instanceof MapNode)) {
-							System.err.println("'intersection' member of relation "+
-									this.relation.getOsmElement().getId()+" is not a node. It is not being considered for rendering this relation's destination sign");
+							System.err.println("'intersection' member of relation " + this.relation + " is not a node."
+									+ " It is not being considered for rendering this relation's destination sign");
 							continue;
 						}
 
@@ -465,8 +464,8 @@ public class TrafficSignModule extends AbstractModule {
 
 				//check intersection first as it is being used in 'from' calculation below
 				if(intersection==null) {
-					System.err.println("Member 'intersection' was not defined in relation "+relation.getOsmElement().getId()+
-							". Destination sign rendering is ommited for this relation.");
+					System.err.println("Member 'intersection' was not defined in relation " + relation
+							+ ". Destination sign rendering is omitted for this relation.");
 					continue;
 				}
 
@@ -479,7 +478,7 @@ public class TrafficSignModule extends AbstractModule {
 							intersection);
 
 					//create a new MapWay instance from sign node to intersection node
-					MapWay signToIntersection = new MapWay(null, signAndIntersection);
+					MapWay signToIntersection = new MapWay(-1, TagSet.of(), signAndIntersection);
 					from = signToIntersection;
 
 				}else if(fromMembers.size()==1) {
@@ -489,8 +488,8 @@ public class TrafficSignModule extends AbstractModule {
 
 				//check if the rest of the "vital" relation members where defined
 				if(from==null || to==null) {
-					System.err.println("not all members of relation "+
-							relation.getOsmElement().getId()+" where defined. Destination sign rendering is ommited for this relation.");
+					System.err.println("not all members of relation " + relation
+							+" were defined. Destination sign rendering is ommited for this relation.");
 					continue;
 				}
 
@@ -591,7 +590,7 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* get basic parameters */
 
@@ -704,8 +703,7 @@ public class TrafficSignModule extends AbstractModule {
 		}
 	}
 
-	private static final class TrafficSign extends NoOutlineNodeWorldObject
-			implements RenderableToAllTargets {
+	private static final class TrafficSign extends NoOutlineNodeWorldObject {
 
 		private final List<TrafficSignType> types;
 
@@ -723,7 +721,7 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* get basic parameters */
 

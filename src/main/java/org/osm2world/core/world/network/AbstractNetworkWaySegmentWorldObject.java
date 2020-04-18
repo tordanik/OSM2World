@@ -3,11 +3,11 @@ package org.osm2world.core.world.network;
 import static java.lang.Double.*;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingDouble;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseIncline;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
-import static org.osm2world.core.math.VectorXZ.distanceSquared;
+import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.util.ValueParseUtil.parseIncline;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonXYZ;
@@ -43,13 +43,17 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	implements NetworkWaySegmentWorldObject, WaySegmentWorldObject,
 	           IntersectionTestObject, WorldObjectWithOutline {
 
+	private static final double CONNECTOR_SNAP_DIST = 0.001;
+
 	public final MapWaySegment segment;
 
-	private VectorXZ startCutVector = null;
-	private VectorXZ endCutVector = null;
+	private VectorXZ startCutLeft = null;
+	private VectorXZ startCutCenter = null;
+	private VectorXZ startCutRight = null;
 
-	private VectorXZ startOffset = VectorXZ.NULL_VECTOR;
-	private VectorXZ endOffset = VectorXZ.NULL_VECTOR;
+	private VectorXZ endCutLeft = null;
+	private VectorXZ endCutCenter = null;
+	private VectorXZ endCutRight = null;
 
 	protected EleConnectorGroup connectors;
 
@@ -72,51 +76,29 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 
 	@Override
-	public void setStartCutVector(VectorXZ cutVector) {
-		this.startCutVector = cutVector;
+	public VectorXZ getStartPosition() {
+		return startCutCenter;
 	}
 
 	@Override
-	public void setEndCutVector(VectorXZ cutVector) {
-		this.endCutVector = cutVector;
+	public VectorXZ getEndPosition() {
+		return endCutCenter;
 	}
 
 	@Override
-	public VectorXZ getStartCutVector() {
-		return startCutVector;
+	public void setStartCut(VectorXZ left, VectorXZ center, VectorXZ right) {
+		if (left == null || center == null || right == null) { throw new IllegalArgumentException(); }
+		this.startCutLeft = left;
+		this.startCutCenter = center;
+		this.startCutRight = right;
 	}
 
 	@Override
-	public VectorXZ getEndCutVector() {
-		return endCutVector;
-	}
-
-	public VectorXZ getCutVectorAt(MapNode node) {
-		if (node == segment.getStartNode()) {
-			return getStartCutVector();
-		} else if (node == segment.getEndNode()) {
-			return getEndCutVector();
-		} else {
-			throw new IllegalArgumentException("node is not part of the line");
-		}
-	}
-
-	@Override
-	public void setStartOffset(VectorXZ offsetVector) {
-		this.startOffset = offsetVector;
-	}
-
-	@Override
-	public void setEndOffset(VectorXZ offsetVector) {
-		this.endOffset = offsetVector;
-	}
-
-	protected VectorXZ getStartWithOffset() {
-		return segment.getStartNode().getPos().add(startOffset); //SUGGEST (performance): cache? [also getEnd*]
-	}
-
-	protected VectorXZ getEndWithOffset() {
-		return segment.getEndNode().getPos().add(endOffset);
+	public void setEndCut(VectorXZ left, VectorXZ center, VectorXZ right) {
+		if (left == null || center == null || right == null) { throw new IllegalArgumentException(); }
+		this.endCutLeft = left;
+		this.endCutCenter = center;
+		this.endCutRight = right;
 	}
 
 	/**
@@ -125,18 +107,18 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	 */
 	private void calculateXZGeometry() {
 
-		if (startCutVector == null || endCutVector == null) {
-			throw new IllegalStateException("cannot calculate outlines before cut vectors");
+		if (startCutCenter == null || endCutCenter == null) {
+			throw new IllegalStateException("cannot calculate outlines before cut information is set");
 		}
 
 		connectors = new EleConnectorGroup();
 
 		{ /* calculate centerline */
 
-			centerlineXZ = new ArrayList<VectorXZ>();
+			centerlineXZ = new ArrayList<>();
 
-			final VectorXZ start = getStartWithOffset();
-			final VectorXZ end = getEndWithOffset();
+			final VectorXZ start = getStartPosition();
+			final VectorXZ end = getEndPosition();
 
 			centerlineXZ.add(start);
 
@@ -155,12 +137,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 					MapIntersectionWW intersection = (MapIntersectionWW) overlap;
 
 					if (GeometryUtil.isBetween(intersection.pos, start, end)) {
-
-						centerlineXZ.add(intersection.pos);
-
-						connectors.add(new EleConnector(intersection.pos,
-								null, getGroundState()));
-
+						if (!centerlineXZ.stream().anyMatch(p -> distance(p, intersection.pos) < CONNECTOR_SNAP_DIST)) {
+							centerlineXZ.add(intersection.pos);
+							connectors.add(new EleConnector(intersection.pos, null, getGroundState()));
+						}
 					}
 
 				} else if (overlap instanceof MapOverlapWA
@@ -176,12 +156,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 						VectorXZ pos = overlapWA.getIntersectionPositions().get(i);
 
 						if (GeometryUtil.isBetween(pos, start, end)) {
-
-							centerlineXZ.add(pos);
-
-							connectors.add(new EleConnector(pos,
-									null, getGroundState()));
-
+							if (!centerlineXZ.stream().anyMatch(p -> distance(p, pos) < CONNECTOR_SNAP_DIST)) {
+								centerlineXZ.add(pos);
+								connectors.add(new EleConnector(pos, null, getGroundState()));
+							}
 						}
 
 					}
@@ -209,16 +187,15 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 		{ /* calculate left and right outlines */
 
-			leftOutlineXZ = new ArrayList<VectorXZ>(centerlineXZ.size());
-			rightOutlineXZ = new ArrayList<VectorXZ>(centerlineXZ.size());
+			leftOutlineXZ = new ArrayList<>(centerlineXZ.size());
+			rightOutlineXZ = new ArrayList<>(centerlineXZ.size());
 
 			assert centerlineXZ.size() >= 2;
 
-			double halfWidth = getWidth() * 0.5f;
+			double halfWidth = getWidth() * 0.5;
 
-			VectorXZ centerStart = centerlineXZ.get(0);
-			leftOutlineXZ.add(centerStart.add(startCutVector.mult(-halfWidth)));
-			rightOutlineXZ.add(centerStart.add(startCutVector.mult(halfWidth)));
+			leftOutlineXZ.add(startCutLeft);
+			rightOutlineXZ.add(startCutRight);
 
 			connectors.add(new EleConnector(leftOutlineXZ.get(0),
 					segment.getStartNode(), getGroundState(segment.getStartNode())));
@@ -237,9 +214,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 			}
 
-			VectorXZ centerEnd = centerlineXZ.get(centerlineXZ.size() - 1);
-			leftOutlineXZ.add(centerEnd.add(endCutVector.mult(-halfWidth)));
-			rightOutlineXZ.add(centerEnd.add(endCutVector.mult(halfWidth)));
+			leftOutlineXZ.add(endCutLeft);
+			rightOutlineXZ.add(endCutRight);
 
 			connectors.add(new EleConnector(leftOutlineXZ.get(leftOutlineXZ.size() - 1),
 					segment.getEndNode(), getGroundState(segment.getEndNode())));
@@ -250,12 +226,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 		{ /* calculate the outline loop */
 
-			List<VectorXZ> outlineLoopXZ =
-					new ArrayList<VectorXZ>(centerlineXZ.size() * 2 + 1);
+			List<VectorXZ> outlineLoopXZ = new ArrayList<>(centerlineXZ.size() * 2 + 1);
 
 			outlineLoopXZ.addAll(rightOutlineXZ);
 
-			List<VectorXZ> left = new ArrayList<VectorXZ>(leftOutlineXZ);
+			List<VectorXZ> left = new ArrayList<>(leftOutlineXZ);
 			Collections.reverse(left);
 			outlineLoopXZ.addAll(left);
 
@@ -594,13 +569,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 		assert 0 <= relativePosFromLeft && relativePosFromLeft <= 1;
 
-		VectorXZ position = start ? getStartWithOffset() : getEndWithOffset();
-		VectorXZ cutVector = start ? getStartCutVector() : getEndCutVector();
-
-		VectorXYZ left = connectors.getPosXYZ(position.add(
-				cutVector.mult(-0.5 * getWidth())));
-		VectorXYZ right = connectors.getPosXYZ(position.add(
-				cutVector.mult(+0.5 * getWidth())));
+		VectorXYZ left = connectors.getPosXYZ(start ? startCutLeft : endCutLeft);
+		VectorXYZ right = connectors.getPosXYZ(start ? startCutRight : endCutRight);
 
 		if (relativePosFromLeft == 0) {
 			return left;
@@ -613,33 +583,12 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	}
 
 	@Override
-	public VectorXZ getStartOffset() {
-		return startOffset;
-	}
-
-	@Override
-	public VectorXZ getEndOffset() {
-		return endOffset;
-	}
-
-	@Override
-	public VectorXZ getStartPosition() {
-		return segment.getStartNode().getPos().add(getStartOffset());
-	}
-
-	@Override
-	public VectorXZ getEndPosition() {
-		return segment.getEndNode().getPos().add(getEndOffset());
-	}
-
-	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedRectangleXZ boundingBox() {
 
 		if (isBroken() || getOutlinePolygonXZ() == null) {
 			return null;
 		} else {
-			return new AxisAlignedBoundingBoxXZ(
-					getOutlinePolygonXZ().getVertexCollection());
+			return getOutlinePolygonXZ().boundingBox();
 		}
 
 	}

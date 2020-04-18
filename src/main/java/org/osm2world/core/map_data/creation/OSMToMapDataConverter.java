@@ -2,8 +2,9 @@ package org.osm2world.core.map_data.creation;
 
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,23 +29,24 @@ import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
+import de.topobyte.osm4j.core.model.iface.OsmEntity;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
@@ -108,18 +110,18 @@ public class OSMToMapDataConverter {
 
 		for (OsmNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.calcPos(node.getLatitude(), node.getLongitude());
-			MapNode mapNode = new MapNode(nodePos, node);
+			MapNode mapNode = new MapNode(node.getId(), tagsOfEntity(node), nodePos);
 			mapNodes.add(mapNode);
 			nodeIdMap.put(node.getId(), mapNode);
 		}
 
 		/* create areas ... */
 
-		final Map<OsmWay, MapArea> areaMap = new HashMap<OsmWay, MapArea>();
+		final Map<Long, MapArea> areaMap = new HashMap<>();
 
 		/* ... based on multipolygons */
 
-		iterate(osmData.getRelations(), (OsmRelation relation ) -> {
+		forEach(osmData.getRelations(), (OsmRelation relation ) -> {
 
 			Map<String, String> tags = getTagsAsMap(relation);
 
@@ -135,8 +137,8 @@ public class OSMToMapDataConverter {
 
 					mapAreas.add(area);
 
-					if (area.getOsmElement() instanceof OsmWay) {
-						areaMap.put((OsmWay) area.getOsmElement(), area);
+					if (!area.isBasedOnRelation()) {
+						areaMap.put(area.getId(), area);
 					}
 
 				}
@@ -156,7 +158,7 @@ public class OSMToMapDataConverter {
 		/* ... based on closed ways */
 
 		for (OsmWay way : osmData.getWays()) {
-			if (isClosed(way) && !areaMap.containsKey(way)) {
+			if (isClosed(way) && !areaMap.containsKey(way.getId())) {
 				//create MapArea only if at least one tag is an area tag
 				for (OsmTag tag : getTagsAsList(way)) {
 					if (ruleset.isAreaTag(tag)) {
@@ -169,10 +171,10 @@ public class OSMToMapDataConverter {
 
 						try {
 
-							MapArea mapArea = new MapArea(way, nodes);
+							MapArea mapArea = new MapArea(way.getId(), false, tagsOfEntity(way), nodes);
 
 							mapAreas.add(mapArea);
-							areaMap.put(way, mapArea);
+							areaMap.put(way.getId(), mapArea);
 
 						} catch (InvalidGeometryException e) {
 							System.err.println(e);
@@ -186,7 +188,7 @@ public class OSMToMapDataConverter {
 
 		/* ... for empty terrain */
 
-		AxisAlignedBoundingBoxXZ terrainBoundary =
+		AxisAlignedRectangleXZ terrainBoundary =
 				calculateFileBoundary(osmData.getBounds());
 
 		if (terrainBoundary != null
@@ -211,7 +213,7 @@ public class OSMToMapDataConverter {
 
 		for (OsmWay osmWay : osmData.getWays()) {
 			boolean hasTags = osmWay.getNumberOfTags() != 0;
-			if (hasTags && !areaMap.containsKey(osmWay)) {
+			if (hasTags && !areaMap.containsKey(osmWay.getId())) {
 
 				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
 
@@ -219,7 +221,7 @@ public class OSMToMapDataConverter {
 					nodes.add(nodeIdMap.get(id));
 				}
 
-				MapWay way = new MapWay(osmWay, nodes);
+				MapWay way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
 				mapWays.add(way);
 
 			}
@@ -231,14 +233,14 @@ public class OSMToMapDataConverter {
 		TLongObjectMap<MapRelation.Element> relationIdMap = new TLongObjectHashMap<>();
 
 		for (MapWay way : mapWays) {
-			wayIdMap.put(way.getOsmElement().getId(), way);
+			wayIdMap.put(way.getId(), way);
 		}
 
 		for (MapArea area : mapAreas) {
-			if (area.getOsmElement() instanceof OsmWay) {
-				wayIdMap.put(area.getOsmElement().getId(), area);
+			if (!area.isBasedOnRelation()) {
+				wayIdMap.put(area.getId(), area);
 			} else {
-				relationIdMap.put(area.getOsmElement().getId(), area);
+				relationIdMap.put(area.getId(), area);
 			}
 		}
 
@@ -246,7 +248,7 @@ public class OSMToMapDataConverter {
 			boolean hasTags = osmRelation.getNumberOfTags() != 0;
 			if (hasTags && !relationIdMap.containsKey(osmRelation.getId())) {
 
-				MapRelation relation = new MapRelation(osmRelation);
+				MapRelation relation = new MapRelation(osmRelation.getId(), tagsOfEntity(osmRelation));
 
 				List<OsmRelationMember> incompleteMembers = null;
 
@@ -301,7 +303,18 @@ public class OSMToMapDataConverter {
 			}
 		}
 
+	}
 
+	static TagSet tagsOfEntity(OsmEntity osmNode) {
+
+		if (osmNode.getNumberOfTags() == 0) return TagSet.of();
+
+		org.osm2world.core.map_data.data.Tag[] tags =
+				new org.osm2world.core.map_data.data.Tag[osmNode.getNumberOfTags()];
+		for (int i = 0; i < osmNode.getNumberOfTags(); i++) {
+			tags[i] = new org.osm2world.core.map_data.data.Tag(osmNode.getTag(i).getKey(), osmNode.getTag(i).getValue());
+		}
+		return TagSet.of(tags);
 
 	}
 
@@ -528,12 +541,8 @@ public class OSMToMapDataConverter {
 
 	}
 
-	/**
-	 * adds the overlap between two {@link MapArea}s
-	 * to both, if it exists
-	 */
-	private static void addOverlapBetween(
-			MapArea area1, MapArea area2) {
+	/** adds the overlap between two {@link MapArea}s to both, if it exists */
+	private static void addOverlapBetween(MapArea area1, MapArea area2) {
 
 		/* check whether the areas have a shared segment */
 
@@ -568,17 +577,15 @@ public class OSMToMapDataConverter {
 
 			/* determine common nodes */
 
-			Set<VectorXZ> commonNodes = new HashSet<VectorXZ>();
-			for (SimplePolygonXZ p : polygon1.getPolygons()) {
-				commonNodes.addAll(p.getVertices());
-			}
+			Collection<VectorXZ> commonNodes = new ArrayList<>();
 
-			Set<VectorXZ> nodes2 = new HashSet<VectorXZ>();
-			for (SimplePolygonXZ p : polygon2.getPolygons()) {
-				nodes2.addAll(p.getVertices());
+			for (List<MapNode> ring : area1.getRings()) {
+				for (MapNode node : ring) {
+					if (node.getAdjacentAreas().contains(area2)) {
+						commonNodes.add(node.getPos());
+					}
+				}
 			}
-
-			commonNodes.retainAll(nodes2);
 
 			/* check whether the areas' outlines intersects somewhere
 			 * else than just at the common node(s).
@@ -590,6 +597,7 @@ public class OSMToMapDataConverter {
 				for (VectorXZ commonNode : commonNodes) {
 					if (distance(pos, commonNode) < 0.01) {
 						trueIntersection = false;
+						break;
 					}
 				}
 				if (trueIntersection) {
@@ -646,10 +654,9 @@ public class OSMToMapDataConverter {
 
 	}
 
-	private AxisAlignedBoundingBoxXZ calculateFileBoundary(
-			Collection<OsmBounds> bounds) {
+	private AxisAlignedRectangleXZ calculateFileBoundary(Collection<OsmBounds> bounds) {
 
-		Collection<VectorXZ> boundedPoints = new ArrayList<VectorXZ>();
+		Collection<VectorXZ> boundedPoints = new ArrayList<>();
 
 		for (OsmBounds bound : bounds) {
 
@@ -663,7 +670,7 @@ public class OSMToMapDataConverter {
 		if (boundedPoints.isEmpty()) {
 			return null;
 		} else {
-			return new AxisAlignedBoundingBoxXZ(boundedPoints);
+			return bbox(boundedPoints);
 		}
 
 	}

@@ -15,7 +15,6 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -30,9 +29,9 @@ import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 public class CliffModule extends ConfigurableWorldModule {
 
 	@Override
-	public void applyTo(MapData grid) {
+	public void applyTo(MapData mapData) {
 
-		for (MapWaySegment segment : grid.getMapWaySegments()) {
+		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 
 			if (segment.getTags().contains("natural", "cliff")) {
 				segment.addRepresentation(new Cliff(segment));
@@ -58,9 +57,8 @@ public class CliffModule extends ConfigurableWorldModule {
 
 	}
 
-	private abstract static class AbstractCliff
-			extends AbstractNetworkWaySegmentWorldObject
-			implements TerrainBoundaryWorldObject, RenderableToAllTargets {
+	private abstract static class AbstractCliff extends AbstractNetworkWaySegmentWorldObject
+			implements TerrainBoundaryWorldObject {
 
 		protected AbstractCliff(MapWaySegment segment) {
 			super(segment);
@@ -109,7 +107,7 @@ public class CliffModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<VectorXYZ> groundVs = createTriangleStripBetween(
 					getOutline(false), getOutline(true));

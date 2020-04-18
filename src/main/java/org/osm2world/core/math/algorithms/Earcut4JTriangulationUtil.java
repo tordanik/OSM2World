@@ -4,11 +4,13 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 import com.google.common.primitives.Ints;
 
@@ -23,51 +25,76 @@ public class Earcut4JTriangulationUtil {
 	 * triangulate a polygon with holes
 	 */
 	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ polygon,
-			Collection<SimplePolygonXZ> holes) {
+			SimplePolygonShapeXZ polygon,
+			Collection<? extends SimplePolygonShapeXZ> holes) {
 
 		return triangulate(polygon, holes, emptyList());
 
 	}
 
 	/**
-	 * variant of {@link #triangulate(SimplePolygonXZ, Collection)}
+	 * variant of {@link #triangulate(SimplePolygonShapeXZ, Collection)}
 	 * that accepts some unconnected points within the polygon area
 	 * and will try to create triangle vertices at these points.
 	 */
 	public static final List<TriangleXZ> triangulate(
-			SimplePolygonXZ polygon,
-			Collection<SimplePolygonXZ> holes,
+			SimplePolygonShapeXZ polygon,
+			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {
 
 		/* convert input data to the required format */
 
-		int numVertices = polygon.size() + holes.stream().mapToInt(h -> h.size()).sum();
+		int numVertices = polygon.size() + holes.stream().mapToInt(h -> h.size()).sum() + points.size() * 2;
 		double[] data = new double[2 * numVertices];
 		List<Integer> holeIndices = new ArrayList<>();
 
 		int dataIndex = 0;
 
-		for (VectorXZ v : polygon.getVertices()) {
+		for (VectorXZ v : polygon.getVertexListNoDup()) {
 			data[2 * dataIndex] = v.x;
 			data[2 * dataIndex + 1] = v.z;
 			dataIndex ++;
 		}
 
-		for (SimplePolygonXZ hole : holes) {
+		for (SimplePolygonShapeXZ hole : holes) {
 
 			holeIndices.add(dataIndex);
 
-			for (VectorXZ v : hole.getVertices()) {
+			for (VectorXZ v : hole.getVertexListNoDup()) {
 				data[2 * dataIndex] = v.x;
 				data[2 * dataIndex + 1] = v.z;
 				dataIndex ++;
 			}
 		}
 
+		/* points are simulated as holes with 2 almost identical points which are merged back together later.
+		 * (Single-point holes get a special treatment by earcut4j and may not be contained in the result at all.) */
+
+		Map<Integer, Integer> mergeIndexMap = new HashMap<>();
+
+		for (VectorXZ point : points) {
+			holeIndices.add(dataIndex);
+			data[2 * dataIndex] = point.x;
+			data[2 * dataIndex + 1] = point.z;
+			data[2 * (dataIndex + 1)] = point.x + 1e-6;
+			data[2 * (dataIndex + 1) + 1] = point.z + 1e-6;
+			mergeIndexMap.put(dataIndex + 1, dataIndex);
+			dataIndex +=2;
+		}
+
 		/* run the triangulation */
 
 		List<Integer> rawResult = Earcut.earcut(data, Ints.toArray(holeIndices), 2);
+
+		/* undo the duplication of individual points by merging their indices back together
+		 * (this also requires checking triangles for duplicate indices later) */
+
+		for (int i = 0; i < rawResult.size(); i++) {
+			Integer newIndex = mergeIndexMap.get(rawResult.get(i));
+			if (newIndex != null) {
+				rawResult.set(i, newIndex);
+			}
+		}
 
 		/* turn the result (index lists) into TriangleXZ instances */
 
@@ -82,20 +109,12 @@ public class Earcut4JTriangulationUtil {
 					vectorAtIndex(data, rawResult.get(3*i + 1)),
 					vectorAtIndex(data, rawResult.get(3*i + 2)));
 
-			boolean containsNoPoints = true;
+			if (!triangle.v1.equals(triangle.v2)
+					&& !triangle.v2.equals(triangle.v3)
+					&& !triangle.v3.equals(triangle.v1)) {  // check required due to workaround for individual points
 
-			for (VectorXZ point : points) {
-				if (triangle.contains(point)) {
-					containsNoPoints = false;
-					result.add(new TriangleXZ(point, triangle.v2, triangle.v3));
-					result.add(new TriangleXZ(triangle.v1, point, triangle.v3));
-					result.add(new TriangleXZ(triangle.v1, triangle.v2, point));
-					break;
-				}
-			}
-
-			if (containsNoPoints) {
 				result.add(triangle);
+
 			}
 
 		}

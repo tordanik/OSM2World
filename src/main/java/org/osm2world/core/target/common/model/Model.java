@@ -17,7 +17,7 @@ public interface Model {
 	 * @param width      width of the model; null for default (unspecified) width
 	 * @param length     length of the model; null for default (unspecified) length
 	 */
-	public void render(Target<?> target, VectorXYZ position,
+	public void render(Target target, VectorXYZ position,
 			double direction, Double height, Double width, Double length);
 
 }

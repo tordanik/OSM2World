@@ -21,7 +21,8 @@ import com.jogamp.common.nio.Buffers;
  * Uses vertex buffer objects (VBO) to speed up the process.
  *
  * If you don't need the renderer anymore, it's recommended to manually call
- * {@link #freeResources()} to delete the VBOs and other resources.
+ * #freeResources() to delete the VBOs and other resources.
+ * TODO fix the reference to #freeResources() (method does not exist)
  */
 public class JOGLRendererVBONonAreaShader {
 

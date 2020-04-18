@@ -1,9 +1,11 @@
 package org.osm2world.core.map_elevation.creation;
 
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+
 import java.util.Collection;
 
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.NaturalNeighbors;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -17,7 +19,7 @@ public class NaturalNeighborInterpolator implements TerrainInterpolator {
 	@Override
 	public void setKnownSites(Collection<VectorXYZ> sites) {
 
-		AxisAlignedBoundingBoxXZ boundingBox = new AxisAlignedBoundingBoxXZ(sites);
+		AxisAlignedRectangleXZ boundingBox = bbox(sites);
 		boundingBox = boundingBox.pad(100);
 
 		triangulation = new DelaunayTriangulation(boundingBox);

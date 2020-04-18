@@ -29,7 +29,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
@@ -93,35 +92,6 @@ public class ConversionFacade {
 
 		public TerrainElevationData getEleData() {
 			return eleData;
-		}
-
-		/**
-		 * collects and returns all representations that implement a
-		 * renderableType, including terrain.
-		 * Convenience method.
-		 */
-		public <R extends Renderable> Collection<R> getRenderables(Class<R> renderableType) {
-			return getRenderables(renderableType, true, true);
-		}
-
-		/**
-		 * @see #getRenderables(Class)
-		 */
-		public <R extends Renderable> Collection<R> getRenderables(
-				Class<R> renderableType, boolean includeGrid, boolean includeTerrain) {
-
-			//TODO make use of or drop includeTerrain
-
-			Collection<R> representations = new ArrayList<R>();
-
-			if (includeGrid) {
-				for (R r : mapData.getWorldObjects(renderableType)) {
-					representations.add(r);
-				}
-			}
-
-			return representations;
-
 		}
 
 	}
@@ -208,7 +178,7 @@ public class ConversionFacade {
 	 */
 	public Results createRepresentations(File osmFile,
 			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target<?>> targets)
+			List<? extends Target> targets)
 			throws IOException {
 
 		if (osmFile == null) {
@@ -241,7 +211,7 @@ public class ConversionFacade {
 	 */
 	public Results createRepresentations(OSMData osmData,
 			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target<?>> targets)
+			List<? extends Target> targets)
 			throws IOException, BoundingBoxSizeException {
 
 		/* check the inputs */
@@ -314,7 +284,7 @@ public class ConversionFacade {
 		boolean underground = config.getBoolean("renderUnderground", true);
 
 		if (targets != null) {
-			for (Target<?> target : targets) {
+			for (Target target : targets) {
 				TargetUtil.renderWorldObjects(target, mapData, underground);
 				target.finish();
 			}
@@ -370,7 +340,7 @@ public class ConversionFacade {
 
 		final List<EleConnector> connectors = new ArrayList<EleConnector>();
 
-		FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(), (WorldObject worldObject) -> {
+		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 
 			for (EleConnector conn : worldObject.getEleConnectors()) {
 				conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
@@ -396,7 +366,7 @@ public class ConversionFacade {
 
 		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {
 
-			FaultTolerantIterationUtil.iterate(mapData.getWorldObjects(),
+			FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(),
 					(WorldObject o) -> o.defineEleConstraints(enforcer));
 
 		}

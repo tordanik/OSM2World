@@ -8,6 +8,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
@@ -18,11 +19,9 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.PolygonUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -42,8 +41,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	private static final class BicycleStands extends AbstractAreaWorldObject implements
-		RenderableToAllTargets {
+	private static final class BicycleStands extends AbstractAreaWorldObject {
 
 		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
@@ -111,7 +109,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(area.getOuterPolygon());
 

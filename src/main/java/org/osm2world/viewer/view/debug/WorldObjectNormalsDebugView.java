@@ -1,6 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
-import static org.osm2world.core.util.FaultTolerantIterationUtil.iterate;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 import java.awt.Color;
 
@@ -32,7 +32,7 @@ public class WorldObjectNormalsDebugView extends DebugView {
 
 		final PrimitiveBuffer primitiveBuffer = new PrimitiveBuffer();
 
-		iterate(map.getWorldObjects(), w -> TargetUtil.renderObject(primitiveBuffer, w));
+		forEach(map.getWorldObjects(), w -> TargetUtil.renderObject(primitiveBuffer, w));
 
 		for (Material material : primitiveBuffer .getMaterials()) {
 

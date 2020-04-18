@@ -22,7 +22,7 @@ import javax.swing.KeyStroke;
 
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayTriangle;
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.NaturalNeighbors;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -97,7 +97,7 @@ public class NNDebugViewer {
 			if (triangulation == null) {
 
 				triangulation = new DelaunayTriangulation(
-						new AxisAlignedBoundingBoxXZ(-SIZE, -SIZE, SIZE, SIZE));
+						new AxisAlignedRectangleXZ(-SIZE, -SIZE, SIZE, SIZE));
 
 			}
 

@@ -15,12 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -32,7 +32,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
@@ -75,9 +74,12 @@ public class WaterModule extends ConfigurableWorldModule {
 					for (MapOverlap<?, ?> overlap : line.getOverlaps()) {
 						MapElement other = overlap.getOther(line);
 						if (other instanceof MapArea) {
-							lineInsideWaterArea |= overlap.type == MapOverlapType.CONTAIN;
-							lineStartInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getStartNode().getPos());
-							lineEndInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getEndNode().getPos());
+							if (overlap.type == MapOverlapType.CONTAIN) {
+								lineInsideWaterArea = true;
+							} else if (overlap.type == MapOverlapType.INTERSECT) {
+								lineStartInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getStartNode().getPos());
+								lineEndInsideWaterArea |= ((MapArea)other).getPolygon().contains(line.getEndNode().getPos());
+							}
 						}
 					}
 
@@ -106,8 +108,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Waterway extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
 
 		public Waterway(MapWaySegment line) {
 			super(line);
@@ -150,7 +151,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			//note: simply "extending" a river cannot work - unlike streets -
 			//      because there can be islands within the riverbank polygon.
@@ -238,16 +239,14 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RiverJunction
-		extends JunctionNodeWorldObject<Waterway>
-		implements TerrainBoundaryWorldObject, RenderableToAllTargets {
+	public static class RiverJunction extends JunctionNodeWorldObject<Waterway> implements TerrainBoundaryWorldObject {
 
 		public RiverJunction(MapNode node) {
 			super(node, Waterway.class);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			//TODO: check whether it's within a riverbank (as with Waterway)
 
@@ -262,8 +261,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Water extends NetworkAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Water extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
 		// possible algorithm: for each node of the outer polygon, check whether it
@@ -285,7 +283,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 			Collection<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(WATER, triangles,
 					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
@@ -293,8 +291,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class AreaFountain extends AbstractAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class AreaFountain extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		public AreaFountain(MapArea area) {
 			super(area);
@@ -306,7 +303,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* render water */
 

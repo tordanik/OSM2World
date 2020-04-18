@@ -2,7 +2,6 @@ package org.osm2world.core.map_data.creation;
 
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
 import static java.lang.Boolean.*;
-import static java.lang.Double.NaN;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
@@ -16,8 +15,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -35,7 +36,6 @@ import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
 import de.topobyte.osm4j.core.model.iface.OsmTag;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
-import de.topobyte.osm4j.core.model.impl.Node;
 import de.topobyte.osm4j.core.model.impl.Relation;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
@@ -61,7 +61,7 @@ final class MultipolygonAreaBuilder {
 	/**
 	 * Creates areas for a multipolygon relation.
 	 * Also adds this area to the adjacent nodes using
-	 * {@link MapNode#addAdjacentArea(MapArea)}.
+	 * {@link MapNode#addAdjacentArea(MapArea, MapAreaSegment)}.
 	 *
 	 * @param relation  the multipolygon relation
 	 * @param nodeIdMap   map from node ids to {@link MapNode}s
@@ -156,7 +156,8 @@ final class MultipolygonAreaBuilder {
 			}
 		}
 
-		return singleton(new MapArea(tagSource, outerNodes, holes));
+		return singleton(new MapArea(tagSource.getId(), tagSource instanceof OsmRelation,
+				OSMToMapDataConverter.tagsOfEntity(tagSource), outerNodes, holes));
 
 	}
 
@@ -331,8 +332,8 @@ final class MultipolygonAreaBuilder {
 				holesXZ.add(innerRing.getPolygon());
 			}
 
-			MapArea area = new MapArea(relation, outerRing.getNodeLoop(), holes,
-					new PolygonWithHolesXZ(outerRing.getPolygon(), holesXZ));
+			MapArea area = new MapArea(relation.getId(), true, OSMToMapDataConverter.tagsOfEntity(relation),
+					outerRing.getNodeLoop(), holes, new PolygonWithHolesXZ(outerRing.getPolygon(), holesXZ));
 
 			finishedPolygons.add(area);
 
@@ -345,8 +346,8 @@ final class MultipolygonAreaBuilder {
 
 	}
 
-	private static final List<OsmTag> COASTLINE_NODE_TAGS = singletonList(
-		new Tag("osm2world:note", "fake node from coastline processing"));
+	private static final TagSet COASTLINE_NODE_TAGS = TagSet.of(
+			"osm2world:note", "fake node from coastline processing");
 
 	/**
 	 * turns all coastline ways into {@link MapArea}s
@@ -364,7 +365,7 @@ final class MultipolygonAreaBuilder {
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
-			Collection<MapNode> mapNodes, AxisAlignedBoundingBoxXZ fileBoundary) throws EntityNotFoundException {
+			Collection<MapNode> mapNodes, AxisAlignedRectangleXZ fileBoundary) throws EntityNotFoundException {
 
 		long highestRelationId = 0;
 		long highestNodeId = 0;
@@ -432,7 +433,7 @@ final class MultipolygonAreaBuilder {
 							} else {
 
 								intersectionNode = createFakeMapNode(intersection,
-										++highestNodeId, osmData, nodeIdMap, mapNodes);
+										++highestNodeId, nodeIdMap, mapNodes);
 
 								coastline.add(i + 1, intersectionNode);
 
@@ -457,7 +458,7 @@ final class MultipolygonAreaBuilder {
 				bBoxNodes.addAll(intersectionsSide);
 
 				MapNode cornerNode = createFakeMapNode(side.p2,
-						++highestNodeId, osmData, nodeIdMap, mapNodes);
+						++highestNodeId, nodeIdMap, mapNodes);
 				bBoxNodes.add(new NodeOnBBox(cornerNode, null));
 
 			}
@@ -481,7 +482,7 @@ final class MultipolygonAreaBuilder {
 						}
 					}
 
-					if (fileBoundary.contains(node) || isOnBBox) {
+					if (fileBoundary.contains(node.getPos()) || isOnBBox) {
 
 						modifiedCoastline.add(node);
 
@@ -592,7 +593,7 @@ final class MultipolygonAreaBuilder {
 
 						for (VectorXZ pos : fileBoundary.polygonXZ().getVertices()) {
 							boundaryRing.add(createFakeMapNode(pos,
-									++highestNodeId, osmData, nodeIdMap, mapNodes));
+									++highestNodeId, nodeIdMap, mapNodes));
 						}
 
 						boundaryRing.add(boundaryRing.get(0));
@@ -626,7 +627,7 @@ final class MultipolygonAreaBuilder {
 	}
 
 	private static final List<LineSegmentXZ> getSidesClockwise(
-			AxisAlignedBoundingBoxXZ fileBoundary) {
+			AxisAlignedRectangleXZ fileBoundary) {
 
 		return asList(
 				new LineSegmentXZ(fileBoundary.topLeft(), fileBoundary.topRight()),
@@ -637,17 +638,12 @@ final class MultipolygonAreaBuilder {
 	}
 
 	private static MapNode createFakeMapNode(VectorXZ pos, long nodeId,
-			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
-			Collection<MapNode> mapNodes) {
+			TLongObjectMap<MapNode> nodeIdMap, Collection<MapNode> mapNodes) {
 
-		Node osmNode = new Node(nodeId + 1, NaN, NaN);
-		osmNode.setTags(COASTLINE_NODE_TAGS);
-
-		osmData.getData().getNodes().put(osmNode.getId(), osmNode);
-
-		MapNode mapNode = new MapNode(pos, osmNode);
+		long id = nodeId + 1;
+		MapNode mapNode = new MapNode(id, COASTLINE_NODE_TAGS, pos);
 		mapNodes.add(mapNode);
-		nodeIdMap.put(osmNode.getId(), mapNode);
+		nodeIdMap.put(id, mapNode);
 
 		return mapNode;
 
@@ -778,7 +774,7 @@ final class MultipolygonAreaBuilder {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		public AxisAlignedRectangleXZ boundingBox() {
 
 			double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
 			double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -788,7 +784,7 @@ final class MultipolygonAreaBuilder {
 				maxX = max(maxX, n.getPos().x); maxZ = max(maxZ, n.getPos().z);
 			}
 
-			return new AxisAlignedBoundingBoxXZ(minX, minZ, maxX, maxZ);
+			return new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 
 		}
 
@@ -820,8 +816,7 @@ final class MultipolygonAreaBuilder {
 
 		@Override
 		public String toString() {
-			return "(" + outgoingIntersection + ", " + node.getOsmElement().getId() +
-					"@" + node.getPos() + ")";
+			return "(" + outgoingIntersection + ", " + node.getId() + "@" + node.getPos() + ")";
 		}
 
 	}

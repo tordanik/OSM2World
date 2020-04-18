@@ -5,7 +5,7 @@ import static java.util.Collections.singleton;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
@@ -17,8 +17,7 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  *
  * @see OutlineNodeWorldObject
  */
-public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
-		IntersectionTestObject {
+public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, IntersectionTestObject {
 
 	protected final MapNode node;
 
@@ -36,8 +35,10 @@ public abstract class NoOutlineNodeWorldObject implements NodeWorldObject,
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(singleton(node.getPos()));
+	public AxisAlignedRectangleXZ boundingBox() {
+		return new AxisAlignedRectangleXZ(
+				node.getPos().x, node.getPos().z,
+				node.getPos().x, node.getPos().z);
 	}
 
 	@Override

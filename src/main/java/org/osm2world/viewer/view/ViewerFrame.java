@@ -70,7 +70,6 @@ import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
 import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
 import org.osm2world.viewer.view.debug.MapDataDebugView;
 import org.osm2world.viewer.view.debug.NaturalNeighborInterpolatorDebugView;
-import org.osm2world.viewer.view.debug.NetworkDebugView;
 import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
 import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
@@ -199,8 +198,6 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, -1, false,
 					new FaceDebugView());
 			initAndAddDebugView(subMenu, VK_X, false,
-					new NetworkDebugView());
-			initAndAddDebugView(subMenu, VK_Q, false,
 					new QuadtreeDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new Map2dTreeDebugView());

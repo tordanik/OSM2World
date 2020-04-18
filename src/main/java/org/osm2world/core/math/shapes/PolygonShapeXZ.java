@@ -53,6 +53,17 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 		}
 	}
 
+	/** returns true if this polygon contains the parameter polygon */
+	public default boolean contains(PolygonShapeXZ p) {
+		//FIXME: it is possible that a polygon contains all vertices of another polygon, but still not the entire polygon
+		List<VectorXZ> vertexLoop = getVertexList();
+		for (VectorXZ v : p.getVertexList()) {
+			if (!vertexLoop.contains(v) && !this.contains(v)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/** checks if this polygon's outline intersects the line segment defined by the two parameter points */
 	public default boolean intersects(VectorXZ segmentP1, VectorXZ segmentP2) {

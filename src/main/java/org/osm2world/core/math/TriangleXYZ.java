@@ -70,6 +70,11 @@ public class TriangleXYZ {
 		return getArea() < 0.0001;
 	}
 
+	/** creates a new triangle by adding a shift vector to each vertex of this triangle */
+	public TriangleXYZ shift(VectorXYZ v) {
+		return new TriangleXYZ(v1.add(v), v2.add(v), v3.add(v));
+	}
+
 	@Override
 	public String toString() {
 		return "[" + v1 + ", " + v2 + ", " + v3 + "]";

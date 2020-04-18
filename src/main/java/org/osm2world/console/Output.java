@@ -1,6 +1,7 @@
 package org.osm2world.console;
 
 import static java.lang.Double.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,7 +25,7 @@ import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.creation.OSMDataReader;
@@ -144,8 +145,7 @@ public final class Output {
 				for (LatLonEle l : args.getOviewBoundingBox()) {
 					pointsXZ.add(results.getMapProjection().calcPos(l.lat, l.lon));
 				}
-				AxisAlignedBoundingBoxXZ bounds =
-					new AxisAlignedBoundingBoxXZ(pointsXZ);
+				AxisAlignedRectangleXZ bounds = bbox(pointsXZ);
 
 				camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
 				projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
@@ -200,7 +200,7 @@ public final class Output {
 					break;
 
 				case WEB_PBF:
-					AxisAlignedBoundingBoxXZ bbox = null;
+					AxisAlignedRectangleXZ bbox = null;
 					if (args.isOviewTiles()) {
 						// TODO define a more generic --tiles parameter (as well as --bbox)
 						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());

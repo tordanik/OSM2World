@@ -5,7 +5,7 @@ import static java.lang.Math.*;
 
 import java.awt.Color;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
@@ -29,7 +29,7 @@ public class InternalCoordsDebugView extends DebugView {
 	@Override
 	public void fillTarget(JOGLTarget target) {
 
-		AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
+		AxisAlignedRectangleXZ bound = map.getDataBoundary();
 
 		for (int x = (int)floor(bound.minX / LINE_DIST); x < (int)ceil(bound.maxX / LINE_DIST); x++) {
 			for (int z = (int)floor(bound.minZ / LINE_DIST); z < (int)ceil(bound.maxZ / LINE_DIST); z++) {

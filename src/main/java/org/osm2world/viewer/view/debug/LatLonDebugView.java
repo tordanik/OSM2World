@@ -5,7 +5,7 @@ import static java.lang.Math.*;
 
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
@@ -37,7 +37,7 @@ public class LatLonDebugView extends DebugView {
 	@Override
 	public void fillTarget(JOGLTarget target) {
 
-		AxisAlignedBoundingBoxXZ bound = map.getDataBoundary();
+		AxisAlignedRectangleXZ bound = map.getDataBoundary();
 
 		double minLon = toDegrees(mapProjection.calcLon(new VectorXZ(bound.minX, bound.minZ)));
 		double minLat = toDegrees(mapProjection.calcLat(new VectorXZ(bound.minX, bound.minZ)));

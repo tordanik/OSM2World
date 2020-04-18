@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.creation.EmptyTerrainBuilder;
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -31,7 +31,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -52,8 +51,6 @@ public class SurfaceAreaModule extends AbstractModule {
 		= new HashMap<Tag, String>();
 
 	static {
-		defaultSurfaceMap.put(new Tag("golf", "bunker"), "sand");
-		defaultSurfaceMap.put(new Tag("golf", "green"), "grass");
 		defaultSurfaceMap.put(new Tag("landcover", "grass"), "grass");
 		defaultSurfaceMap.put(new Tag("landcover", "gravel"), "gravel");
 		defaultSurfaceMap.put(new Tag("landcover", "ground"), "ground");
@@ -72,7 +69,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 		if (!area.getRepresentations().isEmpty()) return;
 
-		TagGroup tags = area.getTags();
+		TagSet tags = area.getTags();
 
 		if (tags.containsKey("surface")) {
 			area.addRepresentation(new SurfaceArea(area, tags.getValue("surface")));
@@ -89,8 +86,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 	}
 
-	public static class SurfaceArea extends AbstractAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class SurfaceArea extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		private final String surface;
 
@@ -102,7 +98,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = null;
 
@@ -146,6 +142,8 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+
+				// TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way)
 
 				if (otherWO instanceof TerrainBoundaryWorldObject
 						&& otherWO.getGroundState() == GroundState.ON) {
@@ -215,7 +213,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			/* add a grid of points within the area for smoother surface shapes */
 
 			VectorGridXZ pointGrid = new VectorGridXZ(
-					area.getAxisAlignedBoundingBoxXZ(),
+					area.boundingBox(),
 					EmptyTerrainBuilder.POINT_GRID_DIST);
 
 			for (VectorXZ point : pointGrid) {

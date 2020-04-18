@@ -9,21 +9,20 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.NodeWorldObject;
@@ -43,7 +42,7 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  */
 public class TunnelModule extends AbstractModule {
 
-	public static final boolean isTunnel(TagGroup tags) {
+	public static final boolean isTunnel(TagSet tags) {
 		return tags.containsKey("tunnel")
 				&& !"no".equals(tags.getValue("tunnel"))
 				&& !"building_passage".equals(tags.getValue("tunnel"));
@@ -117,7 +116,7 @@ public class TunnelModule extends AbstractModule {
 				//TODO: TunnelConnector
 			} else if (node.getPrimaryRepresentation() instanceof JunctionNodeWorldObject) {
 				node.addRepresentation(new TunnelJunction(node,
-						(JunctionNodeWorldObject) node.getPrimaryRepresentation()));
+						(JunctionNodeWorldObject<?>) node.getPrimaryRepresentation()));
 			}
 
 		}
@@ -125,8 +124,7 @@ public class TunnelModule extends AbstractModule {
 
 	}
 
-	public static class Tunnel extends BridgeOrTunnel
-			implements RenderableToAllTargets {
+	public static class Tunnel extends BridgeOrTunnel {
 
 		public Tunnel(MapWaySegment segment,
 				AbstractNetworkWaySegmentWorldObject primaryWO) {
@@ -139,7 +137,7 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<VectorXYZ> leftOutline = primaryRep.getOutline(false);
 			List<VectorXYZ> rightOutline = primaryRep.getOutline(true);
@@ -175,8 +173,7 @@ public class TunnelModule extends AbstractModule {
 
 	}
 
-	public static class TunnelEntrance implements NodeWorldObject,
-		TerrainBoundaryWorldObject {
+	public static class TunnelEntrance implements NodeWorldObject, TerrainBoundaryWorldObject {
 
 		private final MapNode node;
 		private final AbstractNetworkWaySegmentWorldObject tunnelContent;
@@ -214,7 +211,7 @@ public class TunnelModule extends AbstractModule {
 
 			lowerCenter = node.getPos();
 
-			VectorXZ toRight = tunnelContent.getStartCutVector()
+			VectorXZ toRight = tunnelContent.getOutlineXZ(true).get(0).subtract((tunnelContent.getStartPosition()))
 					.mult(tunnelContent.getWidth() * 0.5f);
 
 			lowerLeft = lowerCenter.subtract(toRight);
@@ -289,11 +286,11 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+		public AxisAlignedRectangleXZ boundingBox() {
 
 			calculateOutlineIfNecessary();
 
-			return new AxisAlignedBoundingBoxXZ(getOutlinePolygon().getVertices());
+			return getOutlinePolygonXZ().boundingBox();
 
 		}
 
@@ -315,15 +312,19 @@ public class TunnelModule extends AbstractModule {
 
 		}
 
+		@Override
+		public void renderTo(Target target) {
+			// no rendering
+		}
+
 	}
 
-	public static class TunnelJunction implements NodeWorldObject,
-		RenderableToAllTargets {
+	public static class TunnelJunction implements NodeWorldObject {
 
 		private final MapNode node;
-		private final JunctionNodeWorldObject primaryRep;
+		private final JunctionNodeWorldObject<?> primaryRep;
 
-		public TunnelJunction(MapNode node, JunctionNodeWorldObject primaryRep) {
+		public TunnelJunction(MapNode node, JunctionNodeWorldObject<?> primaryRep) {
 			this.node = node;
 			this.primaryRep = primaryRep;
 		}
@@ -348,7 +349,7 @@ public class TunnelModule extends AbstractModule {
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			//TODO port to new elevation model
 

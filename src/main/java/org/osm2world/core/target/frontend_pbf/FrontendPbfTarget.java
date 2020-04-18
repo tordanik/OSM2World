@@ -24,18 +24,17 @@ import java.util.Map;
 
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
@@ -88,12 +87,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-
-public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
-		implements ModelTarget<RenderableToModelTarget> {
+public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	/**
 	 * whether empty terrain should be faked as a big rectangle slightly below
@@ -258,8 +252,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	/**
 	 * internally used {@link Target} implementation that collects all geometry for a single object
 	 */
-	private class WorldObjectBuilder extends AbstractTarget<RenderableToModelTarget>
-			implements ModelTarget<RenderableToModelTarget> {
+	private class WorldObjectBuilder extends AbstractTarget implements ModelTarget {
 
 		private final WorldObject worldObject;
 
@@ -276,24 +269,12 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 		}
 
 		@Override
-		public Class<RenderableToModelTarget> getRenderableType() {
-			return RenderableToModelTarget.class;
-		}
-
-		@Override
-		public void render(RenderableToModelTarget renderable) {
-			renderable.renderTo(this);
-		}
-
-		@Override
 		public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
 				List<List<VectorXZ>> texCoordLists) {
 
-			TriangleData triangleData;
+			TriangleData triangleData = currentTriangles.get(material);
 
-			if (currentTriangles.containsKey(material)) {
-				triangleData = currentTriangles.get(material);
-			} else {
+			if (triangleData == null) {
 				triangleData = new TriangleData(material.getTextureDataList().size());
 				currentTriangles.put(material, triangleData);
 			}
@@ -337,12 +318,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 					nCopies(vertices.size(), Y_UNIT), //TODO replace with actual normals by extending PrimitiveTarget
 					texCoordLists);
 
-		}
-
-		@Override
-		public void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles,
-				List<List<VectorXZ>> texCoordLists) {
-			drawTriangles(material, triangles, texCoordLists);
 		}
 
 		@Override
@@ -535,15 +510,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 			if (worldObject != null) {
 
 				if (element != null) {
-
-					if (element.getOsmElement() instanceof OsmNode) {
-						objectBuilder.setOsmId("n" + element.getOsmElement().getId());
-					} else if (element.getOsmElement() instanceof OsmWay) {
-						objectBuilder.setOsmId("w" + element.getOsmElement().getId());
-					} else if (element.getOsmElement() instanceof OsmRelation) {
-						objectBuilder.setOsmId("r" + element.getOsmElement().getId());
-					}
-
+					objectBuilder.setOsmId(element.toString());
 				}
 
 				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));
@@ -575,7 +542,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	private static final Tag EMPTY_SURFACE_TAG = new Tag("surface", EMPTY_SURFACE_VALUE);
 
 	private final OutputStream outputStream;
-	private final AxisAlignedBoundingBoxXZ bbox;
+	private final AxisAlignedRectangleXZ bbox;
 	private final MapProjection projection;
 
 	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
@@ -598,7 +565,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	 *              Objects are part of the output if their center is inside this box.
 	 * @param projection
 	 */
-	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedBoundingBoxXZ bbox, MapProjection projection) {
+	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedRectangleXZ bbox, MapProjection projection) {
 
 		this.outputStream = outputStream;
 		this.bbox = bbox;
@@ -616,16 +583,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	}
 
 	@Override
-	public Class<RenderableToModelTarget> getRenderableType() {
-		return RenderableToModelTarget.class;
-	}
-
-	@Override
-	public void render(RenderableToModelTarget renderable) {
-		renderable.renderTo(this);
-	}
-
-	@Override
 	public void beginObject(WorldObject object) {
 
 		finishCurrentObject();
@@ -640,12 +597,6 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 		currentObjectBuilder.drawTriangles(material, triangles, texCoordLists);
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material, Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-		currentObjectBuilder.drawTrianglesWithNormals(material, triangles, texCoordLists);
 	}
 
 	@Override
@@ -965,7 +916,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	}
 
 	public static void writePbfFile(File outputFile, MapData mapData,
-			AxisAlignedBoundingBoxXZ bbox, MapProjection projection) throws IOException {
+			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
 
 		FileOutputStream output = null;
 
@@ -984,7 +935,7 @@ public class FrontendPbfTarget extends AbstractTarget<RenderableToModelTarget>
 	}
 
 	public static void writePbfStream(OutputStream output, MapData mapData,
-			AxisAlignedBoundingBoxXZ bbox, MapProjection projection) throws IOException {
+			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
 
 		if (bbox == null) {
 			bbox = mapData.getBoundary();

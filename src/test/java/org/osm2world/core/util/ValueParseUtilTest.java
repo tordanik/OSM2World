@@ -1,14 +1,25 @@
-package org.openstreetmap.josm.plugins.graphview.util;
+package org.osm2world.core.util;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.*;
 
 import java.awt.Color;
 
 import org.junit.Test;
 
-public class ValueStringParserTest {
+public class ValueParseUtilTest {
+
+	@Test
+	public void testParseUInt() {
+		assertEquals((Integer)5, parseUInt("5"));
+		assertEquals((Integer)0, parseUInt("0"));
+		assertNull(parseUInt("-5"));
+		assertNull(parseUInt("1.5"));
+		assertNull(parseUInt("foobar"));
+		assertNull(parseUInt(null));
+	}
 
     /* speed */
 
@@ -127,6 +138,23 @@ public class ValueStringParserTest {
     	assertNull(parseColor("ff0000", CSS_COLORS));
     	assertNull(parseColor("nosuchvalue", CSS_COLORS));
     	assertNull(parseColor(null, CSS_COLORS));
+    }
+
+    @Test
+    public void testParseLevels() {
+    	assertEquals(asList(-5), parseLevels("-5"));
+    	assertEquals(asList(13, 14), parseLevels("13 - 14"));
+    	assertEquals(asList(-1, 0, 1, 2, 3), parseLevels("-1-3"));
+    	assertEquals(asList(-4, -3), parseLevels("-4--3"));
+    	assertEquals(asList(5, 6, 7), parseLevels("6;5 ; 7"));
+    	assertEquals(asList(-3, 0, 1, 2, 3), parseLevels(" -3; 0-2 ;3"));
+    }
+
+    @Test
+    public void testParseLevelsInvalid() {
+    	assertNull(parseLevels("ground floor"));
+    	assertNull(parseLevels("3-1"));
+    	assertNull(parseLevels("5.5"));
     }
 
     /* utility methods for testing */

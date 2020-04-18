@@ -60,18 +60,10 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 		return outerPolygon.asTriangleXZ();
 	}
 
-	public boolean contains(SimplePolygonXZ boundary) {
-		//FIXME currently returns true if boundary intersects one of the holes!
-		if (!outerPolygon.contains(boundary)) {
-			return false;
-		} else {
-			for (SimplePolygonXZ hole : holes) {
-				if (hole.contains(boundary)) {
-					return false;
-				}
-			}
-			return true;
-		}
+
+	@Override
+	public AxisAlignedRectangleXZ boundingBox() {
+		return getOuter().boundingBox();
 	}
 
 	public boolean contains(LineSegmentXZ lineSegment) {

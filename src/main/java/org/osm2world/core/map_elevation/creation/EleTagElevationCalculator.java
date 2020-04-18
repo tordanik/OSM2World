@@ -1,8 +1,8 @@
 package org.osm2world.core.map_elevation.creation;
 
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.parseOsmDecimal;
+import static org.osm2world.core.util.ValueParseUtil.parseOsmDecimal;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 
 /**
  * sets elevations based on ele tags
@@ -10,7 +10,7 @@ import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 public class EleTagElevationCalculator extends TagElevationCalculator {
 
 	@Override
-	protected Double getEleForTags(TagGroup tags) {
+	protected Double getEleForTags(TagSet tags) {
 
 		Float value = null;
 

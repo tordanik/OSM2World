@@ -2,10 +2,8 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
-import static java.util.Arrays.asList;
+import static java.util.Arrays.*;
 import static java.util.Collections.*;
-import static org.openstreetmap.josm.plugins.graphview.core.data.EmptyTagGroup.EMPTY_TAG_GROUP;
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -13,6 +11,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -24,13 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
@@ -40,7 +38,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -62,15 +60,15 @@ public class RoadModule extends ConfigurableWorldModule {
 	private static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
 
 	@Override
-	public void applyTo(MapData grid) {
+	public void applyTo(MapData mapData) {
 
-		for (MapWaySegment line : grid.getMapWaySegments()) {
+		for (MapWaySegment line : mapData.getMapWaySegments()) {
 			if (isRoad(line.getTags())) {
 				line.addRepresentation(new Road(line, line.getTags()));
 			}
 		}
 
-		for (MapArea area : grid.getMapAreas()) {
+		for (MapArea area : mapData.getMapAreas()) {
 
 			if (isRoad(area.getTags())) {
 				area.addRepresentation(new RoadArea(area));
@@ -78,9 +76,9 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		for (MapNode node : grid.getMapNodes()) {
+		for (MapNode node : mapData.getMapNodes()) {
 
-			TagGroup tags = node.getTags();
+			TagSet tags = node.getTags();
 
 			List<Road> connectedRoads = getConnectedRoads(node, false);
 
@@ -110,7 +108,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static boolean isRoad(TagGroup tags) {
+	private static boolean isRoad(TagSet tags) {
 		if (tags.containsKey("highway")
 				&& !tags.contains("highway", "construction")
 				&& !tags.contains("highway", "proposed")) {
@@ -121,11 +119,11 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 	}
 
-	private static boolean isSteps(TagGroup tags) {
+	private static boolean isSteps(TagSet tags) {
 		return tags.contains(new Tag("highway","steps"));
 	}
 
-	private static boolean isPath(TagGroup tags) {
+	private static boolean isPath(TagSet tags) {
 		String highwayValue = tags.getValue("highway");
 		return "path".equals(highwayValue)
 			|| "footway".equals(highwayValue)
@@ -134,14 +132,14 @@ public class RoadModule extends ConfigurableWorldModule {
 			|| "steps".equals(highwayValue);
 	}
 
-	private static boolean isOneway(TagGroup tags) {
+	private static boolean isOneway(TagSet tags) {
 		return tags.contains("oneway", "yes")
 				|| (!tags.contains("oneway", "no")
 					&& (tags.contains("highway", "motorway")
 					|| (tags.contains("highway", "motorway_link"))));
 	}
 
-	private static int getDefaultLanes(TagGroup tags) {
+	private static int getDefaultLanes(TagSet tags) {
 		String highwayValue = tags.getValue("highway");
 		if (highwayValue == null
 				|| isPath(tags)
@@ -186,7 +184,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static Material getSurfaceForRoad(TagGroup tags,
+	private static Material getSurfaceForRoad(TagSet tags,
 			Material defaultSurface) {
 
 		Material result;
@@ -207,7 +205,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static Material getSurfaceMiddleForRoad(TagGroup tags,
+	private static Material getSurfaceMiddleForRoad(TagSet tags,
 			Material defaultSurface) {
 
 		Material result;
@@ -245,7 +243,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * find matching lane pairs
 	 * (lanes that can be connected at a junction or connector)
 	 */
-	private static Map<Integer, Integer> findMatchingLanes(
+	static Map<Integer, Integer> findMatchingLanes(
 			List<Lane> lanes1, List<Lane> lanes2,
 			boolean isJunction, boolean isCrossing) {
 
@@ -300,7 +298,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			if (matches.containsKey(lane1Index)
-					|| matches.containsKey(lane2Index)) {
+					|| matches.containsValue(lane2Index)) {
 				continue;
 			}
 
@@ -322,7 +320,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		List<Road> roads = getConnectedRoads(node, true);
 
-		/* check whether the oneway special case applies */
+		/* check whether the oneway special case applies (for one oneway splitting into multiple, or vice versa) */
 
 		if (isJunction) {
 
@@ -349,8 +347,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				// sort into inbound and outbound oneways
 				// (need to be sequential blocks in the road list)
 
-				List<Road> inboundOnewayRoads = new ArrayList<Road>();
-				List<Road> outboundOnewayRoads = new ArrayList<Road>();
+				List<Road> inboundOnewayRoads = new ArrayList<>();
+				List<Road> outboundOnewayRoads = new ArrayList<>();
 
 				int i = 0;
 
@@ -373,7 +371,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				}
 
-				if (allOneway) {
+				if (allOneway &&
+						(inboundOnewayRoads.size() == 1 || outboundOnewayRoads.size() == 1)) {
 					return buildLaneConnections_allOneway(node,
 							inboundOnewayRoads, outboundOnewayRoads);
 				}
@@ -518,16 +517,14 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * representation for junctions between roads.
 	 */
-	public static class RoadJunction
-		extends JunctionNodeWorldObject<Road>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class RoadJunction extends JunctionNodeWorldObject<Road> implements TerrainBoundaryWorldObject {
 
 		public RoadJunction(MapNode node) {
 			super(node, Road.class);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			Material material = getSurfaceForNode(node);
 			Collection<TriangleXYZ> triangles = super.getTriangulation();
@@ -559,7 +556,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 
@@ -582,7 +579,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			List<LaneConnection> connections = buildLaneConnections(
 					node, false, false);
@@ -613,7 +610,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject {
 
 		private static final float CROSSING_WIDTH = 3f;
 
@@ -627,7 +624,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			VectorXYZ startLeft = getEleConnectors().getPosXYZ(
 					startPos.subtract(cutVector.mult(0.5 * startWidth)));
@@ -677,9 +674,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/** representation of a road */
-	public static class Road
-		extends AbstractNetworkWaySegmentWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class Road extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
 
 		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
 
@@ -695,12 +690,12 @@ public class RoadModule extends ConfigurableWorldModule {
 		public final LaneLayout laneLayout;
 		public final float width;
 
-		final private TagGroup tags;
+		final private TagSet tags;
 		final public VectorXZ startCoord, endCoord;
 
 		final private boolean steps;
 
-		public Road(MapWaySegment line, TagGroup tags) {
+		public Road(MapWaySegment line, TagSet tags) {
 
 			super(line);
 
@@ -763,8 +758,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* get individual values for each lane */
 
-			TagGroup[] laneTagsRight = getPerLaneTags(RoadPart.RIGHT);
-			TagGroup[] laneTagsLeft = getPerLaneTags(RoadPart.LEFT);
+			TagSet[] laneTagsRight = getPerLaneTags(RoadPart.RIGHT);
+			TagSet[] laneTagsLeft = getPerLaneTags(RoadPart.LEFT);
 
 			/* determine the number of lanes */
 
@@ -874,7 +869,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				if (dividerType != null) {
 					layout.getLanes(RoadPart.RIGHT).add(new Lane(this,
-							dividerType, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+							dividerType, RoadPart.RIGHT, TagSet.of()));
 				}
 
 			}
@@ -887,7 +882,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						? vehicleLaneCountRight
 						: vehicleLaneCountLeft;
 
-				TagGroup[] laneTags = (roadPart == RoadPart.RIGHT)
+				TagSet[] laneTags = (roadPart == RoadPart.RIGHT)
 						? laneTagsRight
 						: laneTagsLeft;
 
@@ -898,16 +893,16 @@ public class RoadModule extends ConfigurableWorldModule {
 						// divider between lanes in the same direction
 
 						layout.getLanes(roadPart).add(new Lane(this,
-								DASHED_LINE, roadPart, EMPTY_TAG_GROUP));
+								DASHED_LINE, roadPart, TagSet.of()));
 
 					}
 
 
 					//lane itself
 
-					TagGroup tags = (laneTags != null)
+					TagSet tags = (laneTags != null)
 							? laneTags[i]
-							: EMPTY_TAG_GROUP;
+							: TagSet.of();
 
 					layout.getLanes(roadPart).add(new Lane(this,
 							VEHICLE_LANE, roadPart, tags));
@@ -932,13 +927,13 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 
 			if (leftBusBay) {
-				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, EMPTY_TAG_GROUP));
+				layout.leftLanes.add(new Lane(this, DASHED_LINE, RoadPart.LEFT, TagSet.of()));
 				layout.leftLanes.add(new Lane(this, BUS_BAY, RoadPart.LEFT, inheritTags(
 						getTagsWithPrefix(tags, "bus_bay:left:", null),
 						getTagsWithPrefix(tags, "bus_bay:both:", null))));
 			}
 			if (rightBusBay) {
-				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, EMPTY_TAG_GROUP));
+				layout.rightLanes.add(new Lane(this, DASHED_LINE, RoadPart.RIGHT, TagSet.of()));
 				layout.rightLanes.add(new Lane(this, BUS_BAY, RoadPart.RIGHT, inheritTags(
 						getTagsWithPrefix(tags, "bus_bay:right:", null),
 						getTagsWithPrefix(tags, "bus_bay:both:", null))));
@@ -946,7 +941,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			if (leftSidewalk) {
 
-				TagGroup kerbTags = inheritTags(
+				TagSet kerbTags = inheritTags(
 						getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb"),
 						getTagsWithPrefix(tags, "sidewalk:both:kerb", "kerb"));
 
@@ -961,7 +956,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			}
 			if (rightSidewalk) {
 
-				TagGroup kerbTags = inheritTags(
+				TagSet kerbTags = inheritTags(
 						getTagsWithPrefix(tags, "sidewalk:left:kerb", "kerb"),
 						getTagsWithPrefix(tags, "sidewalk:right:kerb", "kerb"));
 
@@ -985,7 +980,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		 * @return  array with values; null if the tag isn't used
 		 */
 		@SuppressWarnings("unchecked")
-		private TagGroup[] getPerLaneTags(RoadPart roadPart) {
+		private TagSet[] getPerLaneTags(RoadPart roadPart) {
 
 			/* determine which of the suffixes :lanes[:forward|:backward] matter */
 
@@ -1009,7 +1004,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* evaluate tags with one of the relevant suffixes */
 
-			Map<String, String>[] resultMaps = null;
+			List<Tag>[] resultLists = null;
 
 			for (String suffix : relevantSuffixes) {
 
@@ -1021,15 +1016,15 @@ public class RoadModule extends ConfigurableWorldModule {
 
 						String[] values = tag.value.split("\\|");
 
-						if (resultMaps == null) {
+						if (resultLists == null) {
 
-							resultMaps = new Map[values.length];
+							resultLists = new List[values.length];
 
-							for (int i = 0; i < resultMaps.length; i++) {
-								resultMaps[i] = new HashMap<String, String>();
+							for (int i = 0; i < resultLists.length; i++) {
+								resultLists[i] = new ArrayList<>();
 							}
 
-						} else if (values.length != resultMaps.length) {
+						} else if (values.length != resultLists.length) {
 
 							// inconsistent number of lanes
 							return null;
@@ -1037,7 +1032,7 @@ public class RoadModule extends ConfigurableWorldModule {
 						}
 
 						for (int i = 0; i < values.length; i++) {
-							resultMaps[i].put(baseKey, values[i].trim());
+							resultLists[i].add(new Tag(baseKey, values[i].trim()));
 						}
 
 					}
@@ -1047,18 +1042,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* build a TagGroup for each lane from the result */
 
-			if (resultMaps == null) {
+			if (resultLists == null) {
 				return null;
 			} else {
-
-				TagGroup[] result = new TagGroup[resultMaps.length];
-
-				for (int i = 0; i < resultMaps.length; i++) {
-					result[i] = new MapBasedTagGroup(resultMaps[i]);
-				}
-
-				return result;
-
+				return stream(resultLists).map(TagSet::of).toArray(TagSet[]::new);
 			}
 
 		}
@@ -1073,7 +1060,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		 * @param newPrefix  prefix that is added to the resulting tags, after lanePrefix has been removed.
 		 *   Can be (and often is) null.
 		 */
-		static TagGroup getTagsWithPrefix(TagGroup tags, String prefix, String newPrefix) {
+		static TagSet getTagsWithPrefix(TagSet tags, String prefix, String newPrefix) {
 
 			List<Tag> result = new ArrayList<Tag>();
 
@@ -1093,7 +1080,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			}
 
-			return new MapBasedTagGroup(result);
+			return TagSet.of(result);
 
 		}
 
@@ -1115,7 +1102,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			// if there is some basic info on lanes, use that
 
-			if (tags.containsKey("lanes") || tags.containsKey("divider")) {
+			if (asList("lanes", "lanes:forward", "lanes:backward", "divider").stream().anyMatch(tags::containsKey)) {
 
 				return calculateLaneBasedWidth(true, false);
 
@@ -1236,7 +1223,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			return laneLayout;
 		}
 
-		private void renderStepsTo(Target<?> target) {
+		private void renderStepsTo(Target target) {
 
 			final VectorXZ startWithOffset = getStartPosition();
 			final VectorXZ endWithOffset = getEndPosition();
@@ -1403,7 +1390,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		private void renderLanesTo(Target<?> target) {
+		private void renderLanesTo(Target target) {
 
 			List<Lane> lanesLeftToRight = laneLayout.getLanesLeftToRight();
 
@@ -1443,7 +1430,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			if (steps) {
 				renderStepsTo(target);
@@ -1455,15 +1442,14 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RoadArea extends NetworkAreaWorldObject
-		implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	public static class RoadArea extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		public RoadArea(MapArea area) {
 			super(area);
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);
@@ -1487,12 +1473,12 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static enum RoadPart {
+	static enum RoadPart {
 		LEFT, RIGHT
 		//TODO add CENTRE lane support
 	}
 
-	private static class LaneLayout {
+	static class LaneLayout {
 
 		public final List<Lane> leftLanes = new ArrayList<Lane>();
 		public final List<Lane> rightLanes = new ArrayList<Lane>();
@@ -1618,12 +1604,12 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * {@link #setCalculatedValues1(double, double)} and
 	 * {@link #setCalculatedValues2(double, double)}, respectively.
 	 */
-	private static final class Lane implements RenderableToAllTargets {
+	static final class Lane implements Renderable {
 
 		public final Road road;
 		public final LaneType type;
 		public final RoadPart roadPart;
-		public final TagGroup laneTags;
+		public final TagSet laneTags;
 
 		private int phase = 0;
 
@@ -1634,7 +1620,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		private double relativePositionRight;
 
 		public Lane(Road road, LaneType type, RoadPart roadPart,
-				TagGroup laneTags) {
+				TagSet laneTags) {
 			this.road = road;
 			this.type = type;
 			this.roadPart = roadPart;
@@ -1707,7 +1693,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			assert phase > 1;
 
@@ -1738,7 +1724,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * a connection between two lanes (e.g. at a junction)
 	 */
-	private static class LaneConnection implements RenderableToAllTargets {
+	static class LaneConnection implements Renderable {
 
 		public final LaneType type;
 		public final RoadPart roadPart;
@@ -1777,10 +1763,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			type.render(target, roadPart, rightHandTraffic,
-					EMPTY_TAG_GROUP, EMPTY_TAG_GROUP, leftBorder, rightBorder);
+					TagSet.of(), TagSet.of(), leftBorder, rightBorder);
 
 		}
 
@@ -1790,7 +1776,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * a type of lanes. Determines visual appearance,
 	 * and contains the intelligence for evaluating type-specific tags.
 	 */
-	private static abstract class LaneType {
+	static abstract class LaneType {
 
 		private final String typeName;
 		public final boolean isConnectableAtCrossings;
@@ -1806,17 +1792,17 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public abstract void render(Target<?> target, RoadPart roadPart,
+		public abstract void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic,
-				TagGroup roadTags, TagGroup laneTags,
+				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder);
 
 		public abstract Double getAbsoluteWidth(
-				TagGroup roadTags, TagGroup laneTags);
+				TagSet roadTags, TagSet laneTags);
 
 		public abstract double getHeightOffset(
-				TagGroup roadTags, TagGroup laneTags);
+				TagSet roadTags, TagSet laneTags);
 
 		@Override
 		public String toString() {
@@ -1825,7 +1811,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static abstract class FlatTexturedLane extends LaneType {
+	static abstract class FlatTexturedLane extends LaneType {
 
 		private FlatTexturedLane(String typeName,
 				boolean isConnectableAtCrossings,
@@ -1836,9 +1822,9 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(Target<?> target, RoadPart roadPart,
+		public void render(Target target, RoadPart roadPart,
 				boolean rightHandTraffic,
-				TagGroup roadTags, TagGroup laneTags,
+				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
 
@@ -1890,18 +1876,18 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public double getHeightOffset(TagGroup roadTags, TagGroup laneTags) {
+		public double getHeightOffset(TagSet roadTags, TagSet laneTags) {
 			return 0;
 		}
 
-		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
 
 			return getSurfaceMaterial(laneTags.getValue("surface"),
 					getSurfaceForRoad(roadTags, ASPHALT));
 
 		}
 
-		protected Material getSurfaceMiddle(TagGroup roadTags, TagGroup laneTags) {
+		protected Material getSurfaceMiddle(TagSet roadTags, TagSet laneTags) {
 
 			return getSurfaceMaterial(laneTags.getValue("surface:middle"),
 					getSurfaceMiddleForRoad(roadTags, null));
@@ -1910,10 +1896,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static final LaneType VEHICLE_LANE = new FlatTexturedLane(
+	static final LaneType VEHICLE_LANE = new FlatTexturedLane(
 			"VEHICLE_LANE", false, false) {
 
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 
 			double width = parseWidth(laneTags, -1);
 
@@ -1927,10 +1913,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType BUS_BAY = new FlatTexturedLane(
+	static final LaneType BUS_BAY = new FlatTexturedLane(
 			"BUS_BAY", false, false) {
 
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 
 			double width = parseWidth(laneTags, -1);
 
@@ -1944,15 +1930,15 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType CYCLEWAY = new FlatTexturedLane(
+	static final LaneType CYCLEWAY = new FlatTexturedLane(
 			"CYCLEWAY", false, false) {
 
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 0.5f);
 		}
 
 		@Override
-		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
 			Material material = super.getSurface(roadTags, laneTags);
 			if (material == ASPHALT) return RED_ROAD_MARKING;
 			else return material;
@@ -1960,51 +1946,51 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	};
 
-	private static final LaneType SIDEWALK = new FlatTexturedLane(
+	static final LaneType SIDEWALK = new FlatTexturedLane(
 			"SIDEWALK", true, true) {
 
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 1.0f);
 		}
 
 	};
 
-	private static final LaneType SOLID_LINE = new FlatTexturedLane(
+	static final LaneType SOLID_LINE = new FlatTexturedLane(
 			"SOLID_LINE", false, false) {
 
 		@Override
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 0.1f);
 		}
 
 		@Override
-		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
 			return ROAD_MARKING;
 		}
 
 	};
 
-	private static final LaneType DASHED_LINE = new FlatTexturedLane(
+	static final LaneType DASHED_LINE = new FlatTexturedLane(
 			"DASHED_LINE", false, false) {
 
 		@Override
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 0.1f);
 		}
 
 		@Override
-		protected Material getSurface(TagGroup roadTags, TagGroup laneTags) {
+		protected Material getSurface(TagSet roadTags, TagSet laneTags) {
 			return ROAD_MARKING_DASHED;
 		}
 
 	};
 
-	private static final LaneType KERB = new LaneType(
+	static final LaneType KERB = new LaneType(
 			"KERB", true, true) {
 
 		@Override
-		public void render(Target<?> target, RoadPart roadPart,
-				boolean rightHandTraffic, TagGroup roadTags, TagGroup laneTags,
+		public void render(Target target, RoadPart roadPart,
+				boolean rightHandTraffic, TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {
 
@@ -2040,12 +2026,12 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Double getAbsoluteWidth(TagGroup roadTags, TagGroup laneTags) {
+		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 0.15f);
 		}
 
 		@Override
-		public double getHeightOffset(TagGroup roadTags, TagGroup laneTags) {
+		public double getHeightOffset(TagSet roadTags, TagSet laneTags) {
 			//TODO split dividerTags and laneTags
 
 			String kerb = laneTags.getValue("kerb");
@@ -2068,7 +2054,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * @return  a material based on the input, possibly with added turn arrows
 	 */
 	private static Material addTurnArrows(Material material,
-			TagGroup laneTags) {
+			TagSet laneTags) {
 
 		Material arrowMaterial = null;
 

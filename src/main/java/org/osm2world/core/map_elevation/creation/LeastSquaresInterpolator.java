@@ -1,6 +1,7 @@
 package org.osm2world.core.map_elevation.creation;
 
 import static java.lang.Math.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +19,7 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IntersectionGrid;
@@ -46,7 +47,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		sites = new ArrayList<SiteWithPolynomial>(siteVectors.size());
 
 		siteGrid = new IntersectionGrid<SiteWithPolynomial>(
-				new AxisAlignedBoundingBoxXZ(siteVectors).pad(CELL_SIZE/2),
+				bbox(siteVectors).pad(CELL_SIZE/2),
 				CELL_SIZE, CELL_SIZE);
 
 		for (VectorXYZ siteVector : siteVectors) {
@@ -288,8 +289,8 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-			return pos.getAxisAlignedBoundingBoxXZ();
+		public AxisAlignedRectangleXZ boundingBox() {
+			return pos.boundingBox();
 		}
 
 		@Override

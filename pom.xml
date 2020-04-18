@@ -40,8 +40,8 @@
 		    <url>http://mvn.slimjars.com</url>
 		</repository>
 		<repository>
-			<id>local-libs</id>
-			<url>file:///${project.basedir}/local-libs</url>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
 
@@ -147,9 +147,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>earcut4j</groupId>
+			<groupId>com.github.earcut4j</groupId>
 			<artifactId>earcut4j</artifactId>
-			<version>2.1.1</version>
+			<version>a5b26b5</version>
 		</dependency>
 
 		<dependency>

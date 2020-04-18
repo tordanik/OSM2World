@@ -1,13 +1,12 @@
 package org.osm2world.core.world.modules.common;
 
-import static org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser.*;
+import static org.osm2world.core.util.ValueParseUtil.*;
 
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.util.ValueStringParser;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 import com.google.common.collect.Lists;
@@ -25,7 +24,7 @@ public class WorldModuleParseUtil {
 	 * or the fallback value if none of the keys exists
 	 */
 	public static final String getValueWithFallback(String fallback,
-			TagGroup tags, String... keys) {
+			TagSet tags, String... keys) {
 		for (String key : keys) {
 			if (tags.containsKey(key)) {
 				return tags.getValue(key);
@@ -38,7 +37,7 @@ public class WorldModuleParseUtil {
 	 * retrieves width using (in this priority order)
 	 * width tag, est_width tag, defaultValue parameter
 	 */
-	public static final float parseWidth(TagGroup tags, float defaultValue) {
+	public static final float parseWidth(TagSet tags, float defaultValue) {
 		return parseMeasure(tags, defaultValue, "width", "est_width");
 	}
 
@@ -46,7 +45,7 @@ public class WorldModuleParseUtil {
 	 * retrieves length using (in this priority order)
 	 * length tag, defaultValue parameter
 	 */
-	public static final float parseLength(TagGroup tags, float defaultValue) {
+	public static final float parseLength(TagSet tags, float defaultValue) {
 		return parseMeasure(tags, defaultValue, "length");
 	}
 
@@ -54,7 +53,7 @@ public class WorldModuleParseUtil {
 	 * retrieves height using (in this priority order)
 	 * height tag, building:height tag, est_height tag, defaultValue parameter
 	 */
-	public static final float parseHeight(TagGroup tags, float defaultValue) {
+	public static final float parseHeight(TagSet tags, float defaultValue) {
 		return parseMeasure(tags, defaultValue, "height", "building:height", "est_height");
 	}
 
@@ -62,7 +61,7 @@ public class WorldModuleParseUtil {
 	 * retrieves clearing using (in this priority order)
 	 * practical:maxheight tag, maxheight tag, defaultValue parameter
 	 */
-	public static final float parseClearing(TagGroup tags, float defaultValue) {
+	public static final float parseClearing(TagSet tags, float defaultValue) {
 		return parseMeasure(tags, defaultValue, "maxheight:physical", "maxheight");
 	}
 
@@ -70,7 +69,7 @@ public class WorldModuleParseUtil {
 	 * parses the direction tag and returns the direction
 	 * (or a default value) as radians
 	 */
-	public static final double parseDirection(TagGroup tags, double defaultValue) {
+	public static final double parseDirection(TagSet tags, double defaultValue) {
 
 		Float directionAngle = null;
 
@@ -86,7 +85,7 @@ public class WorldModuleParseUtil {
 
 	}
 
-	public static final int parseInt(TagGroup tags, int defaultValue, String key) {
+	public static final int parseInt(TagSet tags, int defaultValue, String key) {
 		if(tags.containsKey(key)) {
 			Float value = parseOsmDecimal(tags.getValue(key), false);
 			if (value != null) {
@@ -96,12 +95,12 @@ public class WorldModuleParseUtil {
 		return defaultValue;
 	}
 
-	private static final float parseMeasure(TagGroup tags, float defaultValue,
+	private static final float parseMeasure(TagSet tags, float defaultValue,
 			String... keys) {
 
 		for (String key : keys) {
 			if (tags.containsKey(key)) {
-				Float value = ValueStringParser.parseMeasure(tags.getValue(key));
+				Float value = ValueParseUtil.parseMeasure(tags.getValue(key));
 				if (value != null) {
 					return value;
 				}
@@ -112,7 +111,7 @@ public class WorldModuleParseUtil {
 
 	}
 
-	public static final TagGroup inheritTags(TagGroup ownTags, TagGroup parentTags) {
+	public static final TagSet inheritTags(TagSet ownTags, TagSet parentTags) {
 
 		List<Tag> tags = Lists.newArrayList(ownTags);
 
@@ -122,7 +121,7 @@ public class WorldModuleParseUtil {
 			}
 		}
 
-		return new MapBasedTagGroup(tags);
+		return TagSet.of(tags);
 
 	}
 

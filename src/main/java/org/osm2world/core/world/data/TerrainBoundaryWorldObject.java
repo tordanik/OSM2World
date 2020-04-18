@@ -1,6 +1,6 @@
 package org.osm2world.core.world.data;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
@@ -14,6 +14,6 @@ public interface TerrainBoundaryWorldObject extends WorldObjectWithOutline, Inte
 	 * returns the axis aligned bounding box that contains the entire object
 	 */
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ();
+	public AxisAlignedRectangleXZ boundingBox();
 
 }

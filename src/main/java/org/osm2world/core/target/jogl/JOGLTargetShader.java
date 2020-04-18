@@ -14,7 +14,7 @@ import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -43,7 +43,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	private JOGLRendererVBONonAreaShader nonAreaRenderer;
 	private JOGLRendererVBOShader rendererShader;
 	private JOGLRendererVBOShadowVolume rendererShadowVolume;
-	private AxisAlignedBoundingBoxXZ xzBoundary;
+	private AxisAlignedRectangleXZ xzBoundary;
 	private boolean showShadowPerspective;
 
 	public JOGLTargetShader(GL3 gl, JOGLRenderingParameters renderingParameters,
@@ -628,7 +628,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 	}
 
 	@Override
-	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary) {
+	public void setXZBoundary(AxisAlignedRectangleXZ boundary) {
 		this.xzBoundary = boundary;
 	}
 

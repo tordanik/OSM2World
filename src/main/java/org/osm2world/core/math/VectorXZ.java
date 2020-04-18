@@ -60,6 +60,10 @@ public class VectorXZ implements Vector3D {
 		return new VectorXZ(x + other.x, z + other.z);
 	}
 
+	public VectorXZ add(double x, double z) {
+		return new VectorXZ(this.x + x, this.z + z);
+	}
+
 	/**
 	 * subtracts the parameter from this vector and returns the result
 	 */
@@ -132,6 +136,11 @@ public class VectorXZ implements Vector3D {
 		double sin = sin(angleRad);
 		double cos = cos(angleRad);
 		return new VectorXZ(sin*z + cos*x, cos*z - sin*x);
+	}
+
+	@Override
+	public AxisAlignedRectangleXZ boundingBox() {
+		return new AxisAlignedRectangleXZ(x, z, x, z);
 	}
 
 	@Override

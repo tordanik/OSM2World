@@ -135,4 +135,11 @@ public final class TestUtil {
 
 	}
 
+	public static final void assertSameCyclicOrder(boolean reversible,
+			List<VectorXZ> expected, List<VectorXZ> actual) {
+
+		assertSameCyclicOrder(reversible, actual, expected.toArray(new VectorXZ[0]));
+
+	}
+
 }

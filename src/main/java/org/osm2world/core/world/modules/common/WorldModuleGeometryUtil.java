@@ -2,20 +2,23 @@ package org.osm2world.core.world.modules.common;
 
 import static java.lang.Math.toRadians;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.world.creation.WorldModule;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 
 /**
@@ -162,8 +165,8 @@ public final class WorldModuleGeometryUtil {
 
 
 	/**
-	 * removes positions from a collection if they are on the area covered by a
-	 * {@link WorldObjectWithOutline} from a collection of {@link WorldObject}s.
+	 * removes positions from a collection if they are on the area
+	 * which is already covered by some {@link WorldObjectWithOutline}.
 	 *
 	 * This can be used to avoid placing trees, bridge pillars
 	 * and other randomly distributed features on roads, rails
@@ -171,7 +174,8 @@ public final class WorldModuleGeometryUtil {
 	 */
 	public static final void filterWorldObjectCollisions(
 			Collection<VectorXZ> positions,
-			Collection<WorldObject> worldObjects) {
+			Collection<WorldObjectWithOutline> avoidedObjects,
+			AxisAlignedRectangleXZ positionBbox) {
 
 		//TODO: add support for avoiding a radius around the position, too.
 		//this is easily possible once "inflating"/"shrinking" polygons is supported [would also be useful for water bodies etc.]
@@ -184,29 +188,20 @@ public final class WorldModuleGeometryUtil {
 
 		List<PolygonShapeXZ> filterPolygons = new ArrayList<>();
 
-		for (WorldObject worldObject : worldObjects) {
-
-			if (worldObject.getGroundState() == GroundState.ON
-				&& (worldObject instanceof WorldObjectWithOutline)) {
-
-				PolygonShapeXZ outline = null;
-
-				try {
-					outline = ((WorldObjectWithOutline)worldObject).
-							getOutlinePolygonXZ();
-				} catch (InvalidGeometryException e) {
-					//ignore this outline
+		for (WorldObjectWithOutline avoidedObject : avoidedObjects) {
+			try {
+				PolygonShapeXZ outlinePolygonXZ = avoidedObject.getOutlinePolygonXZ();
+				if (outlinePolygonXZ != null) {
+					filterPolygons.add(outlinePolygonXZ);
 				}
-
-				if (outline != null) {
-					filterPolygons.add(outline);
-				}
-
+			} catch (InvalidGeometryException e) {
+				//ignore this outline
 			}
-
 		}
 
 		/* perform filtering of positions */
+
+		List<AxisAlignedRectangleXZ> filterPolygonBbox = filterPolygons.stream().map(p -> p.boundingBox()).collect(toList());
 
 		Iterator<VectorXZ> positionIterator = positions.iterator();
 
@@ -214,14 +209,40 @@ public final class WorldModuleGeometryUtil {
 
 			VectorXZ pos = positionIterator.next();
 
-			for (PolygonShapeXZ filterPolygon : filterPolygons) {
-				if (filterPolygon.contains(pos)) {
+			for (int i = 0; i < filterPolygons.size(); i++) {
+				if (filterPolygonBbox.get(i).contains(pos)
+						&& filterPolygons.get(i).contains(pos)) {
 					positionIterator.remove();
 					break;
 				}
 			}
 
 		}
+
+	}
+
+	public static final Collection<TriangleXZ> trianguateAreaBetween(PolygonShapeXZ large, List<? extends PolygonShapeXZ> small) {
+
+		List<TriangleXZ> result = new ArrayList<>();
+
+		// to get the area between the two polygons:
+		// - subtract small's outers and large's inners from large's outer
+		// - subtract large's inners from small's inner's
+
+		{
+			List<SimplePolygonShapeXZ> smallOuters = small.stream().map(p -> p.getOuter()).collect(toList());
+			List<SimplePolygonShapeXZ> holes = new ArrayList<>(large.getHoles());
+			holes.addAll(smallOuters);
+			result.addAll(triangulate(large.getOuter(), holes));
+		} {
+			List<SimplePolygonShapeXZ> smallInners = small.stream().flatMap(p -> p.getHoles().stream()).collect(toList());
+			for (SimplePolygonShapeXZ smallInner : smallInners) {
+				List<SimplePolygonShapeXZ> holes = large.getHoles().stream().filter(p -> smallInner.contains(p)).collect(toList());
+				result.addAll(triangulate(smallInner, holes));
+			}
+		}
+
+		return result;
 
 	}
 

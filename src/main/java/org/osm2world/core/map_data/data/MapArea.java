@@ -1,6 +1,5 @@
 package org.osm2world.core.map_data.data;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
 import static java.util.Collections.*;
 
 import java.util.ArrayList;
@@ -8,19 +7,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.MapBasedTagGroup;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AreaWorldObject;
-
-import de.topobyte.osm4j.core.model.iface.OsmEntity;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
 
 
 /**
@@ -30,7 +23,9 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  */
 public class MapArea extends MapRelation.Element implements MapElement {
 
-	private final OsmEntity objectWithTags;
+	private final long id;
+	private final boolean basedOnRelation;
+	private final TagSet tags;
 
 	private final List<MapNode> nodes;
 	private final List<List<MapNode>> holes;
@@ -45,14 +40,15 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	private List<AreaWorldObject> representations =
 		new ArrayList<AreaWorldObject>(1);
 
-	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes) {
-		this(objectWithTags, nodes, emptyList());
+	public MapArea(long id, boolean basedOnRelation, TagSet tags, List<MapNode> nodes) {
+		this(id, basedOnRelation, tags, nodes, emptyList());
 	}
 
-	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes,
-			List<List<MapNode>> holes) {
+	public MapArea(long id, boolean basedOnRelation, TagSet tags, List<MapNode> nodes, List<List<MapNode>> holes) {
 
-		this.objectWithTags = objectWithTags;
+		this.id = id;
+		this.basedOnRelation = basedOnRelation;
+		this.tags = tags;
 		this.nodes = nodes;
 		this.holes = holes;
 
@@ -63,17 +59,17 @@ public class MapArea extends MapRelation.Element implements MapElement {
 			finishConstruction();
 
 		} catch (InvalidGeometryException e) {
-			throw new InvalidGeometryException(
-					"outer polygon is not simple for this object: "
-					+ objectWithTags, e);
+			throw new InvalidGeometryException("invalid polygon for " + (basedOnRelation ? "r" : "w") + id);
 		}
 
 	}
 
-	public MapArea(OsmEntity objectWithTags, List<MapNode> nodes,
+	public MapArea(long id, boolean basedOnRelation, TagSet tags, List<MapNode> nodes,
 			List<List<MapNode>> holes, PolygonWithHolesXZ polygon) {
 
-		this.objectWithTags = objectWithTags;
+		this.id = id;
+		this.basedOnRelation = basedOnRelation;
+		this.tags = tags;
 		this.nodes = nodes;
 		this.holes = holes;
 		this.polygon = polygon;
@@ -100,9 +96,33 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 	/** shared functionality used by multiple constructors */
 	private void finishConstruction() {
+
+		areaSegments = new ArrayList<MapAreaSegment>();
+
 		for (List<MapNode> ring : getRings()) {
-			ring.forEach(node -> node.addAdjacentArea(this));
+
+			boolean isOuter = ring == nodes;
+
+			SimplePolygonXZ ringPolygon = isOuter
+					? polygon.getOuter()
+					: polygon.getHoles().get(holes.indexOf(ring));
+
+			for (int v = 0; v+1 < ring.size(); v++) {
+				//relies on duplication of first/last node
+
+				MapAreaSegment segment = new MapAreaSegment(this,
+						isOuter ? ringPolygon.isClockwise() : !ringPolygon.isClockwise(),
+						ring.get(v), ring.get(v+1));
+
+				segment.getStartNode().addAdjacentArea(this, segment);
+				segment.getEndNode().addAdjacentArea(this, segment);
+
+				areaSegments.add(segment);
+
+			}
+
 		}
+
 	}
 
 	public static final SimplePolygonXZ polygonFromMapNodeLoop(
@@ -116,6 +136,16 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 		return new SimplePolygonXZ(vertices);
 
+	}
+
+	@Override
+	public long getId() {
+		return id;
+	}
+
+	/** whether this area is based on a relation (as opposed to a closed way) */
+	public boolean isBasedOnRelation() {
+		return basedOnRelation;
 	}
 
 	public List<MapNode> getBoundaryNodes() {
@@ -137,15 +167,9 @@ public class MapArea extends MapRelation.Element implements MapElement {
 		}
 	}
 
-	/** returns the {@link OsmWay} or {@link OsmRelation} with the tags for this area */
 	@Override
-	public OsmEntity getOsmElement() {
-		return objectWithTags;
-	}
-
-	@Override
-	public TagGroup getTags() {
-		return new MapBasedTagGroup(getTagsAsMap(objectWithTags));
+	public TagSet getTags() {
+		return tags;
 	}
 
 	/**
@@ -163,40 +187,7 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	 * returns the segments making up this area's outer and inner boundaries
 	 */
 	public Collection<MapAreaSegment> getAreaSegments() {
-
-		if (areaSegments == null) {
-
-			areaSegments = new ArrayList<MapAreaSegment>();
-
-			for (int v = 0; v+1 < nodes.size(); v++) {
-				//relies on duplication of first/last node
-
-				areaSegments.add(new MapAreaSegment(this,
-						getPolygon().getOuter().isClockwise(),
-						nodes.get(v), nodes.get(v+1)));
-
-			}
-
-			for (int h = 0; h < holes.size(); h++) {
-
-				List<MapNode> holeNodes = holes.get(h);
-				SimplePolygonXZ holePolygon = polygon.getHoles().get(h);
-
-				for (int v = 0; v+1 < holeNodes.size(); v++) {
-					//relies on duplication of first/last node
-
-					areaSegments.add(new MapAreaSegment(this,
-							!holePolygon.isClockwise(),
-							holeNodes.get(v), holeNodes.get(v+1)));
-
-				}
-
-			}
-
-		}
-
 		return areaSegments;
-
 	}
 
 	@Override
@@ -234,18 +225,13 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(getOuterPolygon().getVertexCollection());
+	public AxisAlignedRectangleXZ boundingBox() {
+		return getOuterPolygon().boundingBox();
 	}
 
 	@Override
 	public String toString() {
-		if (objectWithTags instanceof OsmWay) {
-			return "w" + objectWithTags.getId();
-		} else {
-			assert objectWithTags instanceof OsmRelation;
-			return "r" + objectWithTags.getId();
-		}
+		return (basedOnRelation ? "r" : "w") + id;
 	}
 
 }

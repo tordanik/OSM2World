@@ -30,7 +30,7 @@ public class VectorGridXZ implements Iterable<VectorXZ> {
 	/**
 	 * returns a regular grid of points within a bounding box.
 	 */
-	public VectorGridXZ(AxisAlignedBoundingBoxXZ box, double sampleDistance) {
+	public VectorGridXZ(AxisAlignedRectangleXZ box, double sampleDistance) {
 
 		this.sampleDistance = sampleDistance;
 

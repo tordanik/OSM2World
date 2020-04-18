@@ -23,7 +23,7 @@ public class ToggleWorldObjectsAction extends AbstractAction {
 		super("World objects");
 		putValue(SHORT_DESCRIPTION, "Controls whether world objects are displayed");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_W);
-		putValue(SELECTED_KEY, renderOptions.isShowGrid());
+		putValue(SELECTED_KEY, renderOptions.isShowWorldObjects());
 
 		this.viewerFrame = viewerFrame;
 		this.data = data;
@@ -34,8 +34,8 @@ public class ToggleWorldObjectsAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		renderOptions.setShowGrid(!renderOptions.isShowGrid());
-		putValue(SELECTED_KEY, renderOptions.isShowGrid());
+		renderOptions.setShowWorldObjects(!renderOptions.isShowWorldObjects());
+		putValue(SELECTED_KEY, renderOptions.isShowWorldObjects());
 
 	}
 

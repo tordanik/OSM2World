@@ -4,8 +4,9 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.target.Renderable;
 
-public interface WorldObject {
+public interface WorldObject extends Renderable {
 
 	/**
 	 * returns the "primary" {@link MapElement} for this WorldObject;

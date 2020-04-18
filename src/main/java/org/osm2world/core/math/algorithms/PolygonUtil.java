@@ -5,12 +5,13 @@ import static java.lang.Double.NaN;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -139,7 +140,7 @@ public class PolygonUtil {
 		 * These are the candidate boxes for minimum area.
 		 */
 
-		AxisAlignedBoundingBoxXZ minBox = null;
+		AxisAlignedRectangleXZ minBox = null;
 		double angleForMinBox = NaN;
 
 		for (int i = 0; i < polygon.size(); i++) {
@@ -151,7 +152,7 @@ public class PolygonUtil {
 				rotatedVertices.add(v.rotate(-angle));
 			}
 
-			AxisAlignedBoundingBoxXZ box = new AxisAlignedBoundingBoxXZ(rotatedVertices);
+			AxisAlignedRectangleXZ box = bbox(rotatedVertices);
 
 			if (minBox == null || box.area() < minBox.area()) {
 				minBox = box;

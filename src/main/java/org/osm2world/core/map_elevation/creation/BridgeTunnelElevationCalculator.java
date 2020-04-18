@@ -1,6 +1,6 @@
 package org.osm2world.core.map_elevation.creation;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 
@@ -23,7 +23,7 @@ public class BridgeTunnelElevationCalculator extends TagElevationCalculator {
 	}
 
 	@Override
-	protected Double getEleForTags(TagGroup tags) {
+	protected Double getEleForTags(TagSet tags) {
 
 		if (BridgeModule.isBridge(tags)) {
 			return eleBridge;

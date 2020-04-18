@@ -7,9 +7,8 @@ import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.PrimitiveTarget;
-import org.osm2world.core.target.common.RenderableToPrimitiveTarget;
 import org.osm2world.core.target.common.Primitive.Type;
+import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.jogl.JOGLRendererVBO;
 import org.osm2world.core.world.data.WorldObject;
@@ -18,8 +17,7 @@ import org.osm2world.core.world.data.WorldObject;
  * a target that simply counts the primitives that are sent to it
  * to create statistics.
  */
-public class StatisticsTarget extends
-		PrimitiveTarget<RenderableToPrimitiveTarget> {
+public class StatisticsTarget extends PrimitiveTarget {
 
 	private long[] globalCounts = new long[Stat.values().length];
 	private Map<Material, long[]> countsPerMaterial = new HashMap<Material, long[]>();
@@ -126,16 +124,6 @@ public class StatisticsTarget extends
 			this.impl = impl;
 		}
 
-	}
-
-	@Override
-	public Class<RenderableToPrimitiveTarget> getRenderableType() {
-		return RenderableToPrimitiveTarget.class;
-	}
-
-	@Override
-	public void render(RenderableToPrimitiveTarget renderable) {
-		renderable.renderTo(this);
 	}
 
 	@Override

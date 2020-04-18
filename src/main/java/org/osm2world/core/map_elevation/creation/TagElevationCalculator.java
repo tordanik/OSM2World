@@ -2,10 +2,10 @@ package org.osm2world.core.map_elevation.creation;
 
 import java.util.List;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
+import org.osm2world.core.map_data.data.TagSet;
 
 /**
  * relies on tags that explicitly set elevation.
@@ -247,6 +247,6 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 	 *
 	 * @return  elevation; null if the tags don't define the elevation
 	 */
-	protected abstract Double getEleForTags(TagGroup tags);
+	protected abstract Double getEleForTags(TagSet tags);
 
 }

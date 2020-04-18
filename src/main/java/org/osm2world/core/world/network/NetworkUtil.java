@@ -16,7 +16,9 @@ public final class NetworkUtil {
 	private NetworkUtil() {}
 
 	/**
-	 * Returns the connected world objects
+	 * Returns the connected {@link NetworkWaySegmentWorldObject}s.
+	 * The result is ordered in the same fashion as {@link MapNode#getConnectedWaySegments()}
+	 *
 	 * @param type  the type of network segment to look for
 	 */
 	public static final <S extends NetworkWaySegmentWorldObject> List<S> getConnectedNetworkSegments(

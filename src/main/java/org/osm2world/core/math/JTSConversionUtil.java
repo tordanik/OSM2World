@@ -1,7 +1,6 @@
 package org.osm2world.core.math;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -120,11 +119,9 @@ public class JTSConversionUtil {
 		return new SimplePolygonXZ(vertexLoop);
 	}
 
-	public static final Collection<PolygonWithHolesXZ>
-		polygonsXZFromJTSGeometry(Geometry geometry) {
+	public static final List<PolygonWithHolesXZ> polygonsXZFromJTSGeometry(Geometry geometry) {
 
-		Collection<PolygonWithHolesXZ> result =
-			new ArrayList<PolygonWithHolesXZ>(1);
+		List<PolygonWithHolesXZ> result = new ArrayList<>(1);
 
 		if (geometry instanceof Polygon) {
 			if (geometry.getNumPoints() > 2) {

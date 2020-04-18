@@ -9,7 +9,7 @@ import java.util.Collections;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -72,14 +72,11 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
+	public AxisAlignedRectangleXZ boundingBox() {
 		if (getOutlinePolygonXZ() != null) {
-			return new AxisAlignedBoundingBoxXZ(
-					getOutlinePolygonXZ().getVertexCollection());
+			return getOutlinePolygonXZ().boundingBox();
 		} else {
-			return new AxisAlignedBoundingBoxXZ(
-					node.getPos().x, node.getPos().z,
-					node.getPos().x, node.getPos().z);
+			return node.getPos().boundingBox();
 		}
 	}
 

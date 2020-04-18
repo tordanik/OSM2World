@@ -8,7 +8,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.RenderableToFaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.WorldObject;
@@ -31,21 +30,10 @@ public class FaceDebugView extends DebugView {
 		return map != null;
 	}
 
-	private static class FaceSink
-		extends FaceTarget<RenderableToFaceTarget> {
+	private static class FaceSink extends FaceTarget {
 
 		public final List<List<VectorXYZ>> faces =
 				new ArrayList<List<VectorXYZ>>();
-
-		@Override
-		public Class<RenderableToFaceTarget> getRenderableType() {
-			return RenderableToFaceTarget.class;
-		}
-
-		@Override
-		public void render(RenderableToFaceTarget renderable) {
-			renderable.renderTo(this);
-		}
 
 		@Override
 		public boolean reconstructFaces() {

@@ -75,10 +75,14 @@ public final class GeometryUtil {
 
 	}
 
-	public static final <V> List<V> triangleNormalListFromTriangleStripOrFan(
-			List<? extends V> normals) {
+	/**
+	 * turns the list of normals for a triangle strip/fan into the list of normals for a list of triangles.
+	 * This works for flat shading. For smooth shading, use {@link #triangleVertexListFromTriangleStrip(List)}
+	 * or {@link #triangleVertexListFromTriangleFan(List)}, respectively.
+	 */
+	public static final <V> List<V> triangleNormalListFromTriangleStripOrFan(List<? extends V> normals) {
 
-		List<V> result = new ArrayList<V>((normals.size() - 2) * 3);
+		List<V> result = new ArrayList<>((normals.size() - 2) * 3);
 
 		for (int triangle = 0; triangle + 2 < normals.size(); triangle++) {
 			V normal = normals.get(triangle + 2);
@@ -272,6 +276,13 @@ public final class GeometryUtil {
 	public static final double distanceFromLineSegment(VectorXZ p, LineSegmentXZ s) {
 		LineSegment sJTS = new LineSegment(s.p1.x, s.p1.z, s.p2.x, s.p2.z);
 		return sJTS.distance(new Coordinate(p.x, p.z));
+	}
+
+	/** returns the foot of the perpendicular through the point p onto the line defined by v1 and v2 */
+	public static final VectorXZ projectPerpendicular(VectorXZ p, VectorXZ v1, VectorXZ v2) {
+		LineSegment sJTS = new LineSegment(v1.x, v1.z, v2.x, v2.z);
+		Coordinate resultJTS = sJTS.project(new Coordinate(p.x, p.z));
+		return JTSConversionUtil.vectorXZFromJTSCoordinate(resultJTS);
 	}
 
 	/**
@@ -564,7 +575,7 @@ public final class GeometryUtil {
 
 	/**
 	 * constant used by {@link #distributePointsOn(long, PolygonWithHolesXZ,
-	 *  AxisAlignedBoundingBoxXZ, double, double)}
+	 *  AxisAlignedRectangleXZ, double, double)}
 	 */
 	private static final int POINTS_PER_BOX = 100;
 
@@ -590,22 +601,21 @@ public final class GeometryUtil {
 	 */
 	public static List<VectorXZ> distributePointsOn(
 			long seed, PolygonWithHolesXZ polygonWithHolesXZ,
-			AxisAlignedBoundingBoxXZ boundary,
+			AxisAlignedRectangleXZ boundary,
 			double density,	double minimumDistance) {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>();
 
 		Random rand = new Random(seed);
 
-		AxisAlignedBoundingBoxXZ outerBox = new AxisAlignedBoundingBoxXZ(
-				polygonWithHolesXZ.getOuter().getVertices());
+		AxisAlignedRectangleXZ outerBox = polygonWithHolesXZ.boundingBox();
 
 		double boxSize = sqrt(100 / density);
 
 		for (int boxZ = 0; boxZ <= (int)(outerBox.sizeZ() / boxSize); ++boxZ) {
 			for (int boxX = 0; boxX <= (int)(outerBox.sizeX() / boxSize); ++boxX) {
 
-				AxisAlignedBoundingBoxXZ box = new AxisAlignedBoundingBoxXZ(
+				AxisAlignedRectangleXZ box = new AxisAlignedRectangleXZ(
 						outerBox.minX + boxSize * boxX,
 						outerBox.minZ + boxSize * boxZ,
 						outerBox.minX + boxSize * (boxX + 1),

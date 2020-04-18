@@ -16,27 +16,20 @@ public class RenderOptions {
 	public Camera camera = null;
 	public Projection projection = Defaults.PERSPECTIVE_PROJECTION;
 
-	public Set<DebugView> activeDebugViews = new HashSet<DebugView>();
+	public Set<DebugView> activeDebugViews = new HashSet<>();
 
-	private boolean showGrid = true;
-	private boolean showTerrain = true;
+	private boolean showWorldObjects = true;
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
 
 	Class<? extends TerrainInterpolator> interpolatorClass = ZeroInterpolator.class;
 	Class<? extends EleConstraintEnforcer> enforcerClass = NoneEleConstraintEnforcer.class;
 
-	public boolean isShowGrid() {
-		return showGrid;
+	public boolean isShowWorldObjects() {
+		return showWorldObjects;
 	}
-	public void setShowGrid(boolean showGrid) {
-		this.showGrid = showGrid;
-	}
-	public boolean isShowTerrain() {
-		return showTerrain;
-	}
-	public void setShowTerrain(boolean showTerrain) {
-		this.showTerrain = showTerrain;
+	public void setShowWorldObjects(boolean showWorldObjects) {
+		this.showWorldObjects = showWorldObjects;
 	}
 	public boolean isWireframe() {
 		return wireframe;

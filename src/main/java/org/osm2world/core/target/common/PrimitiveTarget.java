@@ -8,10 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 
@@ -21,8 +19,7 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
  * They convert them all to a list of vertices
  * and represent the primitive type using an enum or flags.
  */
-public abstract class PrimitiveTarget<R extends Renderable>
-		extends AbstractTarget<R> {
+public abstract class PrimitiveTarget extends AbstractTarget {
 
 	/**
 	 * @param vs       vertices that form the primitive
@@ -57,39 +54,22 @@ public abstract class PrimitiveTarget<R extends Renderable>
 			Collection<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
-		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
+		List<? extends TriangleXYZ> triangleList = (triangles instanceof List)
+				? (List<? extends TriangleXYZ>) triangles
+				: new ArrayList<>(triangles);
 
-		for (TriangleXYZ triangle : triangles) {
+		List<VectorXYZ> vectors = new ArrayList<>(triangleList.size() * 3);
+
+		for (TriangleXYZ triangle : triangleList) {
 			vectors.add(triangle.v1);
 			vectors.add(triangle.v2);
 			vectors.add(triangle.v3);
 		}
 
 		drawPrimitive(TRIANGLES, material, vectors,
-				calculateTriangleNormals(vectors,
+				calculateTriangleNormals(triangleList,
 						material.getInterpolation() == Interpolation.SMOOTH),
 						texCoordLists);
-
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		List<VectorXYZ> vectors = new ArrayList<VectorXYZ>(triangles.size()*3);
-		List<VectorXYZ> normals = new ArrayList<VectorXYZ>(triangles.size()*3);
-
-		for (TriangleXYZWithNormals triangle : triangles) {
-			vectors.add(triangle.v1);
-			vectors.add(triangle.v2);
-			vectors.add(triangle.v3);
-			normals.add(triangle.n1);
-			normals.add(triangle.n2);
-			normals.add(triangle.n3);
-		}
-
-		drawPrimitive(TRIANGLES, material, vectors, normals, texCoordLists);
 
 	}
 

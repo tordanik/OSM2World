@@ -6,7 +6,7 @@ import java.util.Observer;
 
 import javax.swing.AbstractAction;
 
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.viewer.model.Data;
@@ -44,7 +44,7 @@ public class OrthoBoundsAction extends AbstractAction implements Observer {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		AxisAlignedBoundingBoxXZ bounds =
+		AxisAlignedRectangleXZ bounds =
 			data.getConversionResults().getMapData().getDataBoundary();
 
 		renderOptions.camera =

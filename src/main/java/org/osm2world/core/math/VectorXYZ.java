@@ -11,10 +11,10 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 
 	public final double x, y, z;
 
-	public VectorXYZ(double x2, double y2, double z2) {
-		this.x = x2;
-		this.y = y2;
-		this.z = z2;
+	public VectorXYZ(double x, double y, double z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 
 	@Override
@@ -234,8 +234,8 @@ public class VectorXYZ implements Vector3D, IntersectionTestObject {
 	}
 
 	@Override
-	public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-		return new AxisAlignedBoundingBoxXZ(x, z, x, z);
+	public AxisAlignedRectangleXZ boundingBox() {
+		return new AxisAlignedRectangleXZ(x, z, x, z);
 	}
 
 	@Override

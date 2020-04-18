@@ -7,7 +7,6 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
@@ -23,7 +22,7 @@ public class TestWorldModule extends AbstractModule {
 		node.addRepresentation(new TestNodeWorldObject(node));
 	}
 
-	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject implements RenderableToAllTargets {
+	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject {
 
 		public TestNodeWorldObject(MapNode node) {
 			super(node);
@@ -35,7 +34,7 @@ public class TestWorldModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			VectorXYZ base = node.getPos().xyz(0);
 

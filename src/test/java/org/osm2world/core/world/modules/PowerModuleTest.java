@@ -1,11 +1,10 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,8 +53,8 @@ public class PowerModuleTest {
 		StatisticsTarget t1 = new StatisticsTarget();
 		StatisticsTarget t2 = new StatisticsTarget();
 
-		List<Target<?>> targets = Arrays.<Target<?>>asList(t1, t2);
-		List<WorldModule> modules = Collections.<WorldModule>singletonList(new PowerModule());
+		List<Target> targets = asList(t1, t2);
+		List<WorldModule> modules = singletonList(new PowerModule());
 
 		cf.createRepresentations(osmData, modules, null, targets);
 

@@ -18,8 +18,8 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
-import org.osm2world.viewer.view.ViewerFrame;
 import org.osm2world.core.util.ConfigUtil;
+import org.osm2world.viewer.view.ViewerFrame;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
@@ -29,9 +29,11 @@ import com.lexicalscope.jewel.cli.CliFactory;
  */
 public class OSM2World {
 
+	private static final File STANDARD_PROPERTIES_FILE = new File("standard.properties");
+
 	public static void main(String[] unparsedArgs) {
 
-		/* assume --gui if no parameters are given */
+		/* assume --gui (and --config with standard properties, if they exist) if no parameters are given */
 
 		if (unparsedArgs.length == 0) {
 
@@ -39,7 +41,9 @@ public class OSM2World {
 					+ "If you want to use the command line, use the --help"
 					+ " parameter for a list of available parameters.");
 
-			unparsedArgs = new String[]{"--gui"};
+			if (STANDARD_PROPERTIES_FILE.isFile()) {
+				unparsedArgs = new String[]{"--gui", "--config", STANDARD_PROPERTIES_FILE.toString()};
+			}
 
 		}
 

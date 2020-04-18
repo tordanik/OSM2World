@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.world.network.NetworkCalculator;
 
 public class WorldCreator {
 
@@ -27,7 +28,7 @@ public class WorldCreator {
 			module.applyTo(mapData);
 		}
 
-		NetworkCalculator.calculateNetworkInformationInGrid(mapData);
+		NetworkCalculator.calculateNetworkInformationInMapData(mapData);
 
 	}
 

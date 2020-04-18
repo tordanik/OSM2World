@@ -1,19 +1,20 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.PI;
+import static java.awt.Color.YELLOW;
 import static java.util.Arrays.asList;
-import static java.util.Collections.min;
+import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.VectorXZ.fromAngle;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.target.common.material.Materials.SAND;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -21,23 +22,26 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.target.RenderableToAllTargets;
+import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.modules.StreetFurnitureModule.Flagpole.StripedFlag;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.core.world.modules.common.AbstractModule;
+
+import com.google.common.collect.Streams;
 
 /**
  * adds golf courses to the map
@@ -57,6 +61,8 @@ public class GolfModule extends AbstractModule {
 			area.addRepresentation(new Tee(area));
 		} else if (area.getTags().contains("golf", "fairway")) {
 			area.addRepresentation(new Fairway(area));
+		} else if (area.getTags().contains("golf", "bunker")) {
+			area.addRepresentation(new Bunker(area));
 		} else if (area.getTags().contains("golf", "green")) {
 			area.addRepresentation(new Green(area));
 		}
@@ -87,8 +93,91 @@ public class GolfModule extends AbstractModule {
 
 	}
 
-	private static class Green extends AbstractAreaWorldObject
-			implements RenderableToAllTargets, TerrainBoundaryWorldObject {
+	private static class Bunker extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+
+		public Bunker(MapArea area) {
+			super(area);
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public void renderTo(Target target) {
+
+			/* draw the bunker as a depression by shrinking the outline polygon and lowering it at each step.
+			 *
+			 * The first step gets special handling and is primarily intended for bunkers in uneven terrain.
+			 * It involves an almost vertical drop towards the lowest point of the bunker outline
+			 * that is textured with ground, not sand. */
+
+			Collection<TriangleXYZ> resultingTriangulation = new ArrayList<>();
+
+			double[] dropSteps = {-0.03, -0.07, -0.05, -0.02};
+
+			List<PolygonWithHolesXZ> currentPolys = asList(area.getPolygon());
+			double currentEle = Streams.stream(getEleConnectors()).mapToDouble(c -> c.getPosXYZ().y).min().getAsDouble();
+
+			for (int i = 0; i < dropSteps.length; i++) {
+
+				List<PolygonWithHolesXZ> newPolys = new ArrayList<>();
+
+				double oldEle = currentEle;
+				double newEle = currentEle + dropSteps[i];
+
+				for (PolygonWithHolesXZ large : currentPolys) {
+
+					List<PolygonWithHolesXZ> small = JTSBufferUtil.bufferPolygon(large, -0.5);
+
+					Function<VectorXZ, VectorXYZ> withEle = v -> {
+
+						if (getEleConnectors().getConnector(v) != null) {
+							return getEleConnectors().getPosXYZ(v);
+						} else if (large.getVertexList().contains(v)
+								|| large.getHoles().stream().anyMatch(h -> h.getVertexList().contains(v))) {
+							return v.xyz(oldEle);
+						} else {
+							return v.xyz(newEle);
+						}
+
+					};
+
+					Collection<TriangleXZ> triangulationXZ = trianguateAreaBetween(large, small);
+
+					triangulationXZ.stream()
+							.map(t -> new TriangleXYZ(withEle.apply(t.v1), withEle.apply(t.v2), withEle.apply(t.v3)))
+							.forEach(resultingTriangulation::add);
+
+					newPolys.addAll(small);
+
+				}
+
+				currentPolys = newPolys;
+				currentEle = newEle;
+
+			}
+
+			/* fill in the rest of the area (if any) with a flat surface at the lowest elevation */
+
+			List<TriangleXZ> triangulationXZ = currentPolys.stream().flatMap(p -> triangulate(p).stream()).collect(toList());
+
+			if (!triangulationXZ.isEmpty()) {
+				double ele = currentEle;
+				triangulationXZ.stream().map(t -> t.xyz(ele)).forEach(resultingTriangulation::add);
+			}
+
+			/* render everything with a sand texture */
+
+			target.drawTriangles(SAND, resultingTriangulation,
+					triangleTexCoordLists(resultingTriangulation, SAND, GLOBAL_X_Z));
+
+		}
+
+	}
+
+	private static class Green extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
 
 		private final VectorXZ pinPosition;
 		private final SimplePolygonXZ pinHoleLoop;
@@ -131,17 +220,7 @@ public class GolfModule extends AbstractModule {
 
 			/* create circle around the hole */
 
-			List<VectorXZ> holeRing = new ArrayList<VectorXZ>(HOLE_CIRCLE_VERTICES);
-
-			for (int i = 0; i < HOLE_CIRCLE_VERTICES; i++) {
-				VectorXZ direction = fromAngle(2 * PI * ((double)i / HOLE_CIRCLE_VERTICES));
-				VectorXZ vertex = pinPosition.add(direction.mult(HOLE_RADIUS));
-				holeRing.add(vertex);
-			}
-
-			holeRing.add(holeRing.get(0));
-
-			pinHoleLoop = new SimplePolygonXZ(holeRing);
+			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).getVertexList(HOLE_CIRCLE_VERTICES));
 
 			pinConnectors = new EleConnectorGroup();
 			pinConnectors.addConnectorsFor(pinHoleLoop.getVertexCollection(), area, GroundState.ON);
@@ -167,7 +246,7 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target<?> target) {
+		public void renderTo(Target target) {
 
 			/* render green surface */
 
@@ -194,20 +273,12 @@ public class GolfModule extends AbstractModule {
 		}
 
 		private List<TriangleXZ> getGreenTriangulation() {
-
-			List<SimplePolygonXZ> holes = area.getPolygon().getHoles();
-
+			List<SimplePolygonXZ> holes = new ArrayList<>(area.getPolygon().getHoles());
 			holes.add(pinHoleLoop);
-
-			return TriangulationUtil.triangulate(
-				area.getPolygon().getOuter(),
-				holes,
-				Collections.<VectorXZ>emptyList());
-
+			return TriangulationUtil.triangulate(area.getPolygon().getOuter(), holes, emptyList());
 		}
 
-		private static void drawPin(Target<?> target,
-				VectorXZ pos, List<VectorXYZ> upperHoleRing) {
+		private static void drawPin(Target target, VectorXZ pos, List<VectorXYZ> upperHoleRing) {
 
 			double minHoleEle = min(upperHoleRing, comparingDouble(v -> v.y)).y;
 
@@ -215,13 +286,9 @@ public class GolfModule extends AbstractModule {
 
 			/* draw hole */
 
-			List<VectorXYZ> lowerHoleRing = new ArrayList<VectorXYZ>();
-			for (VectorXYZ v : upperHoleRing) {
-				lowerHoleRing.add(v.y(holeBottomEle));
-			}
+			List<VectorXYZ> lowerHoleRing = upperHoleRing.stream().map(v -> v.y(holeBottomEle)).collect(toList());
 
-			List<VectorXYZ> vs = createTriangleStripBetween(
-					upperHoleRing, lowerHoleRing);
+			List<VectorXYZ> vs = createTriangleStripBetween(upperHoleRing, lowerHoleRing);
 
 			Material groundMaterial = Materials.EARTH.makeSmooth();
 
@@ -231,21 +298,13 @@ public class GolfModule extends AbstractModule {
 			target.drawConvexPolygon(groundMaterial, lowerHoleRing,
 					texCoordLists(vs, groundMaterial, GLOBAL_X_Z));
 
-			/* draw flag */
+			/* draw pole and flag */
 
 			target.drawColumn(Materials.PLASTIC_GREY.makeSmooth(), null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 
-			ImmutableMaterial flagcloth = new ImmutableMaterial(Interpolation.SMOOTH, Color.YELLOW);
-
-			List<VectorXYZ> flagVertices = asList(
-					new VectorXYZ(pos.x, 1.5, pos.z),
-					new VectorXYZ(pos.x, 1.2, pos.z),
-					new VectorXYZ(pos.x + 0.4, 1.5, pos.z),
-					new VectorXYZ(pos.x + 0.4, 1.2, pos.z));
-
-			target.drawTriangleStrip(flagcloth, flagVertices,
-					texCoordLists(flagVertices, flagcloth, STRIP_WALL));
+			StripedFlag flag = new StripedFlag(3 / 4, asList(YELLOW), true);
+			flag.renderFlag(target, pos.xyz(holeBottomEle + 1.5), 0.3, 0.4);
 
 		}
 

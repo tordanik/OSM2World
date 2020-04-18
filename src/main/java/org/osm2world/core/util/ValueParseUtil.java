@@ -1,18 +1,39 @@
-package org.openstreetmap.josm.plugins.graphview.core.util;
+package org.osm2world.core.util;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osm2world.core.util.ColorNameDefinition;
-
-public final class ValueStringParser {
+/** parses the syntax of typical OSM tag values */
+public final class ValueParseUtil {
 
 	/** prevents instantiation */
-	private ValueStringParser() { }
+	private ValueParseUtil() { }
 
 	/** pattern that splits into a part before and after a decimal point */
 	private static final Pattern DEC_POINT_PATTERN = Pattern.compile("^(\\-?\\d+)\\.(\\d+)$");
+
+	public static final Integer parseUInt(String value) {
+		try {
+			int result = Integer.parseInt(value);
+			if (result >= 0) {
+				return result;
+			} else {
+				return null;
+			}
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/** variant of {@link #parseUInt(String)} with a default value */
+	public static final int parseUInt(String value, int defaultValue) {
+		if (value == null) return defaultValue;
+		Integer result = parseUInt(value);
+		return result == null ? defaultValue : result;
+	}
 
 	public static final Float parseOsmDecimal(String value, boolean allowNegative) {
 
@@ -61,6 +82,14 @@ public final class ValueStringParser {
 		return null;
 	}
 
+	/** variant of {@link #parseOsmDecimal(String, boolean)} with a default value */
+	public static final double parseOsmDecimal(String value, boolean allowNegative, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseOsmDecimal(value, allowNegative);
+		return result == null ? defaultValue : result;
+	}
+
+
 	private static final Pattern KMH_PATTERN = Pattern.compile("^(\\d+)\\s*km/h$");
 	private static final Pattern MPH_PATTERN = Pattern.compile("^(\\d+)\\s*mph$");
 
@@ -104,6 +133,13 @@ public final class ValueStringParser {
 		/* all possibilities failed */
 
 		return null;
+	}
+
+	/** variant of {@link #parseSpeed(String)} with a default value */
+	public static final double parseSpeed(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseSpeed(value);
+		return result == null ? defaultValue : result;
 	}
 
 	private static final Pattern M_PATTERN = Pattern.compile("^([\\d\\.]+)\\s*m$");
@@ -174,6 +210,13 @@ public final class ValueStringParser {
 		return null;
 	}
 
+	/** variant of {@link #parseMeasure(String)} with a default value */
+	public static final double parseMeasure(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseMeasure(value);
+		return result == null ? defaultValue : result;
+	}
+
 	private static final Pattern T_PATTERN = Pattern.compile("^([\\d\\.]+)\\s*t$");
 
 	/**
@@ -204,6 +247,13 @@ public final class ValueStringParser {
 
 	}
 
+	/** variant of {@link #parseWeight(String)} with a default value */
+	public static final double parseWeight(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseWeight(value);
+		return result == null ? defaultValue : result;
+	}
+
 	private static final Pattern INCLINE_PATTERN = Pattern.compile("^(\\-?\\d+(?:\\.\\d+)?)\\s*%$");
 
 	/**
@@ -220,6 +270,13 @@ public final class ValueStringParser {
 		}
 
 		return null;
+	}
+
+	/** variant of {@link #parseIncline(String)} with a default value */
+	public static final double parseIncline(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseIncline(value);
+		return result == null ? defaultValue : result;
 	}
 
 	/**
@@ -261,18 +318,29 @@ public final class ValueStringParser {
 		return null;
 	}
 
+	/** variant of {@link #parseAngle(String)} with a default value */
+	public static final double parseAngle(String value, double defaultValue) {
+		if (value == null) return defaultValue;
+		Float result = parseAngle(value);
+		return result == null ? defaultValue : result;
+	}
+
 	/**
 	 * parses an hexadecimal color value or color name.
+	 * Names following the OSM underscore convention (e.g. light_blue) are normalized by removing the underscores.
 	 *
 	 * @return  color; null if value had syntax errors or was null
 	 */
 	public static final Color parseColor(String value, ColorNameDefinition colorNameDefinition) {
 		if (value == null) {
 			return null;
-		} else if (colorNameDefinition.contains(value)) {
-			return colorNameDefinition.get(value);
 		} else {
-			return parseColor(value);
+			String normalizedValue = value.replaceAll("_", "").toLowerCase();
+			if (colorNameDefinition.contains(normalizedValue)) {
+				return colorNameDefinition.get(normalizedValue);
+			} else {
+				return parseColor(value);
+			}
 		}
 	}
 
@@ -291,4 +359,51 @@ public final class ValueStringParser {
 
 	}
 
+	private static final Pattern LEVEL_RANGE_PATTERN = Pattern.compile("([-]?\\d+)-([-]?\\d+)");
+
+	/**
+	 * parses a Simple Indoor Tagging level value (for keys like level=* and repeat_on).
+	 * Works for integer level values (including negative levels).
+	 * Supports ranges and semicolon-separated values in addition to single values.
+	 *
+	 * @return list of levels, at least one value, ascending. null if value had syntax errors.
+	 */
+	public static final List<Integer> parseLevels(String value) {
+
+		if (value == null) return null;
+
+		List<Integer> result = new ArrayList<>(1);
+
+		for (String levelRange : value.replaceAll("\\s+", "").split(";")) {
+			try {
+
+				Matcher rangePatternMatcher = LEVEL_RANGE_PATTERN.matcher(levelRange);
+
+				if (rangePatternMatcher.matches()) {
+					// range (e.g. "-5-10")
+					int lowerLevel = Integer.parseInt(rangePatternMatcher.group(1));
+					int upperLevel = Integer.parseInt(rangePatternMatcher.group(2));
+					for (int i = lowerLevel; i <= upperLevel; i++) {
+						result.add(i);
+					}
+				} else {
+					// single value (e.g. "3")
+					result.add(Integer.parseInt(levelRange));
+				}
+
+			} catch (NumberFormatException e) {}
+		}
+
+		result.sort(null);
+
+		return result.isEmpty() ? null : result;
+
+	}
+
+	/** variant of {@link #parseLevels(String)} with a default value */
+	public static final List<Integer> parseLevels(String value, List<Integer> defaultValue) {
+		if (value == null) return defaultValue;
+		List<Integer> result = parseLevels(value);
+		return result == null ? defaultValue : result;
+	}
 }

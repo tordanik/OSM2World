@@ -8,16 +8,14 @@ import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import java.awt.Color;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXYZWithNormals;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
@@ -27,7 +25,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WorldObject;
 
-public class ObjTarget extends FaceTarget<RenderableToObj> {
+public class ObjTarget extends FaceTarget {
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
@@ -52,16 +50,6 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
 
-	}
-
-	@Override
-	public Class<RenderableToObj> getRenderableType() {
-		return RenderableToObj.class;
-	}
-
-	@Override
-	public void render(RenderableToObj renderable) {
-		renderable.renderTo(this);
 	}
 
 	@Override
@@ -90,7 +78,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			/* start an object with the object's class
 			 * and the underlying OSM element's name/ref tags */
 
-			TagGroup tags = object.getPrimaryMapElement().getTags();
+			TagSet tags = object.getPrimaryMapElement().getTags();
 
 			if (tags.containsKey("name")) {
 				objStream.println("o " + object.getClass().getSimpleName() + " " + tags.getValue("name"));
@@ -127,35 +115,6 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			writeFace(verticesToIndices((layer == 0)? vs : offsetVertices(vs, nCopies(vs.size(), faceNormal), layer * SMALL_OFFSET)),
 					normalIndices, texCoordIndices);
 		}
-	}
-
-	@Override
-	public void drawTrianglesWithNormals(Material material,
-			Collection<? extends TriangleXYZWithNormals> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		for (int layer = 0; layer < max(1, material.getNumTextureLayers()); layer++) {
-
-			useMaterial(material, layer);
-
-			int triangleNumber = 0;
-			for (TriangleXYZWithNormals t : triangles) {
-
-				int[] texCoordIndices = null;
-				if (texCoordLists != null && !texCoordLists.isEmpty()) {
-					List<VectorXZ> texCoords = texCoordLists.get(layer);
-					texCoordIndices = texCoordsToIndices(
-							texCoords.subList(3*triangleNumber, 3*triangleNumber + 3));
-				}
-
-				writeFace(verticesToIndices((layer == 0)? t.getVertices() : offsetVertices(t.getVertices(), t.getNormals(), layer * SMALL_OFFSET)),
-						normalsToIndices(t.getNormals()), texCoordIndices);
-
-				triangleNumber ++;
-			}
-
-		}
-
 	}
 
 	private void useMaterial(Material material, int layer) {
@@ -277,7 +236,7 @@ public class ObjTarget extends FaceTarget<RenderableToObj> {
 			TextureData textureData = null;
 			if (material.getNumTextureLayers() > 0) {
 				textureData = material.getTextureDataList().get(i);
-				
+
 				//temporarily ignore TextTextureData layers
 				if(textureData instanceof TextTextureData) {
 					continue;

@@ -5,14 +5,14 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
-public interface JOGLTarget extends Target<RenderableToJOGL> {
+public interface JOGLTarget extends Target {
 
 	/**
 	 * discards all accumulated draw calls
@@ -72,6 +72,6 @@ public interface JOGLTarget extends Target<RenderableToJOGL> {
 	 * Set the boundary for the relevant data. All data outside of this boundary may be ignored by the target
 	 * to improve quality and performance.
 	 */
-	public void setXZBoundary(AxisAlignedBoundingBoxXZ boundary);
+	public void setXZBoundary(AxisAlignedRectangleXZ boundary);
 
 }

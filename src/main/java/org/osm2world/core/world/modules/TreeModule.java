@@ -6,44 +6,38 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
-import org.openstreetmap.josm.plugins.graphview.core.data.Tag;
-import org.openstreetmap.josm.plugins.graphview.core.data.TagGroup;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedBoundingBoxXZ;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.RenderableToAllTargets;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.RenderableToFaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.frontend_pbf.ModelTarget;
-import org.osm2world.core.target.frontend_pbf.RenderableToModelTarget;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
-
-import de.topobyte.osm4j.core.model.impl.Node;
 
 /**
  * adds trees, tree rows, tree groups and forests to the world
@@ -64,7 +58,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			this.values = asList(values);
 		}
 
-		public static LeafType getValue(TagGroup tags) {
+		public static LeafType getValue(TagSet tags) {
 			for (LeafType type : values()) {
 				if (tags.containsAny(LEAF_TYPE_KEYS, type.values)) {
 					return type;
@@ -91,7 +85,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			this.values = asList(values);
 		}
 
-		public static LeafCycle getValue(TagGroup tags) {
+		public static LeafCycle getValue(TagSet tags) {
 			for (LeafCycle type : values()) {
 				if (tags.containsAny(LEAF_CYCLE_KEYS, type.values)) {
 					return type;
@@ -112,7 +106,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			this.value = value;
 		}
 
-		public static TreeSpecies getValue(TagGroup tags) {
+		public static TreeSpecies getValue(TagSet tags) {
 
 			String speciesString = tags.getValue("species");
 
@@ -193,7 +187,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private static final float TREE_RADIUS_PER_HEIGHT = 0.2f;
 
-	private void renderTree(Target<?> target, MapElement element, VectorXYZ pos,
+	private void renderTree(Target target, MapElement element, VectorXYZ pos,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
 		// if leaf type is unknown, make "random" decision based on x coord
@@ -229,7 +223,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private static void renderTreeGeometry(Target<?> target,
+	private static void renderTreeGeometry(Target target,
 			VectorXYZ posXYZ, LeafType leafType, double height) {
 
 		boolean coniferous = (leafType == LeafType.NEEDLELEAVED);
@@ -292,7 +286,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 	}
 
-	private void renderTree(POVRayTarget target, MapElement element, VectorXYZ pos,
+	private void renderTreePovrayModel(POVRayTarget target, MapElement element, VectorXYZ pos,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
 		boolean isConiferousTree = (leafType == LeafType.NEEDLELEAVED);
@@ -318,7 +312,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private void renderTreeModel(ModelTarget<?> target, MapElement element, VectorXYZ base,
+	private void renderTreeModel(ModelTarget target, MapElement element, VectorXYZ base,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
 		// if leaf type is unknown, make "random" decision based on x coord
@@ -365,12 +359,10 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(Target<?> target, VectorXYZ position, double direction,
+		public void render(Target target, VectorXYZ position, double direction,
 				Double height, Double width, Double length) {
 
-			Node osmNode = new Node(0, 0, 0);
-			osmNode.setTags(asList(new de.topobyte.osm4j.core.model.impl.Tag("height", "1 m")));
-			MapElement element = new MapNode(position.xz(), osmNode);
+			MapElement element = new MapNode(-1, TagSet.of("height", "1 m"), position.xz());
 
 			renderTree(target, element, position, leafType, leafCycle, species);
 
@@ -380,8 +372,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private final List<TreeModel> existingModels = new ArrayList<>();
 
-	public class Tree extends NoOutlineNodeWorldObject
-		implements RenderableToAllTargets, RenderableToPOVRay, RenderableToModelTarget {
+	public class Tree extends NoOutlineNodeWorldObject implements RenderableToPOVRay {
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -403,13 +394,14 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public AxisAlignedBoundingBoxXZ getAxisAlignedBoundingBoxXZ() {
-			return new AxisAlignedBoundingBoxXZ(Collections.singleton(node.getPos()));
-		}
-
-		@Override
-		public void renderTo(Target<?> target) {
-			renderTree(target, node, getBase(), leafType, leafCycle, species);
+		public void renderTo(Target target) {
+			if (target instanceof POVRayTarget) {
+				renderTreePovrayModel((POVRayTarget)target, node, getBase(), leafType, leafCycle, species);
+			} else if (target instanceof ModelTarget) {
+				renderTreeModel((ModelTarget)target, node, getBase(), leafType, leafCycle, species);
+			} else {
+				renderTree(target, node, getBase(), leafType, leafCycle, species);
+			}
 		}
 
 		@Override
@@ -417,20 +409,9 @@ public class TreeModule extends ConfigurableWorldModule {
 			addTreeDeclarationsTo(target);
 		}
 
-		@Override
-		public void renderTo(POVRayTarget target) {
-			renderTree(target, node, getBase(), leafType, leafCycle, species);
-		}
-
-		@Override
-		public void renderTo(ModelTarget<?> target) {
-			renderTreeModel(target, node, getBase(), leafType, leafCycle, species);
-		}
-
 	}
 
-	public class TreeRow implements WaySegmentWorldObject,
-		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets, RenderableToModelTarget {
+	public class TreeRow implements WaySegmentWorldObject, RenderableToPOVRay {
 
 		private final MapWaySegment segment;
 
@@ -497,41 +478,32 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(POVRayTarget target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, segment, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-			}
-		}
-
-		@Override
 		public void addDeclarationsTo(POVRayTarget target) {
 			addTreeDeclarationsTo(target);
 		}
 
 		@Override
-		public void renderTo(FaceTarget<?> target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, segment, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-				target.flushReconstructedFaces();
-			}
-		}
+		public void renderTo(Target target) {
 
-		@Override
-		public void renderTo(ModelTarget<?> target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTreeModel(target, segment, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-			}
-		}
 
-		@Override
-		public void renderTo(Target<?> target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, segment, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
+				if (target instanceof POVRayTarget) {
+					renderTreePovrayModel((POVRayTarget)target, segment, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				} else if (target instanceof ModelTarget) {
+					renderTreeModel((ModelTarget)target, segment, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				} else {
+					renderTree(target, segment, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				}
+
+				if (target instanceof FaceTarget) {
+					((FaceTarget)target).flushReconstructedFaces();
+				}
+
 			}
+
 		}
 
 		//TODO: there is significant code duplication with Forest...
@@ -539,8 +511,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 
 
-	public class Forest implements AreaWorldObject,
-		RenderableToPOVRay, RenderableToFaceTarget, RenderableToAllTargets, RenderableToModelTarget {
+	public class Forest implements AreaWorldObject, RenderableToPOVRay {
 
 		private final MapArea area;
 		private final MapData mapData;
@@ -566,13 +537,14 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			/* collect other objects that the trees should not be placed on */
 
-			Collection<WorldObject> avoidedObjects = new ArrayList<WorldObject>();
+			Collection<WorldObjectWithOutline> avoidedObjects = new ArrayList<>();
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				for (WorldObject otherRep : overlap.getOther(area).getRepresentations()) {
 
-					if (otherRep.getGroundState() == GroundState.ON) {
-						avoidedObjects.add(otherRep);
+					if (otherRep.getGroundState() == GroundState.ON
+							&& otherRep instanceof WorldObjectWithOutline) {
+						avoidedObjects.add((WorldObjectWithOutline) otherRep);
 					}
 
 				}
@@ -581,11 +553,11 @@ public class TreeModule extends ConfigurableWorldModule {
 			/* place the trees */
 
 			List<VectorXZ> treePositions =
-				GeometryUtil.distributePointsOn(area.getOsmElement().getId(),
+				GeometryUtil.distributePointsOn(area.getId(),
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 
-			filterWorldObjectCollisions(treePositions, avoidedObjects);
+			filterWorldObjectCollisions(treePositions, avoidedObjects, area.boundingBox());
 
 			/* create a terrain connector for each tree */
 
@@ -623,41 +595,32 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(POVRayTarget target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-			}
-		}
-
-		@Override
 		public void addDeclarationsTo(POVRayTarget target) {
 			addTreeDeclarationsTo(target);
 		}
 
 		@Override
-		public void renderTo(FaceTarget<?> target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-				target.flushReconstructedFaces();
-			}
-		}
+		public void renderTo(Target target) {
 
-		@Override
-		public void renderTo(ModelTarget<?> target) {
 			for (EleConnector treeConnector : treeConnectors) {
-				renderTreeModel(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-			}
-		}
 
-		@Override
-		public void renderTo(Target<?> target) {
-			for (EleConnector treeConnector : treeConnectors) {
-				renderTree(target, area, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
+				if (target instanceof POVRayTarget) {
+					renderTreePovrayModel((POVRayTarget)target, area, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				} else if (target instanceof ModelTarget) {
+					renderTreeModel((ModelTarget)target, area, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				} else {
+					renderTree(target, area, treeConnector.getPosXYZ(),
+							leafType, leafCycle, species);
+				}
+
+				if (target instanceof FaceTarget) {
+					((FaceTarget)target).flushReconstructedFaces();
+				}
+
 			}
+
 		}
 
 	}
