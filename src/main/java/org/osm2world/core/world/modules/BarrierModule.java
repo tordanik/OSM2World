@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
@@ -62,6 +63,8 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new Hedge(line));
 		} else if (Railing.fits(tags)) {
 			line.addRepresentation(new Railing(line));
+		} else if (Balustrade.fits(tags)) {
+			line.addRepresentation(new Balustrade(line));
 		} else if (ChainLinkFence.fits(tags)) {
 			line.addRepresentation(new ChainLinkFence(line));
 		} else if (CableBarrier.fits(tags)) {
@@ -317,6 +320,77 @@ public class BarrierModule extends AbstractModule {
 							poleFacingDirections, smallPoleScale, null, null);
 
 				}
+
+			}
+
+		}
+
+	}
+
+	private static class Balustrade extends LinearBarrier {
+
+		private static final SimpleClosedShapeXZ BAR_SHAPE =
+				new AxisAlignedRectangleXZ(-0.5, -0.3, 0.5, 0);
+
+		private static final SimpleClosedShapeXZ COLUMN_SHAPE =
+				new CircleXZ(NULL_VECTOR, 0.5);
+
+		public static boolean fits(TagSet tags) {
+			return tags.contains("barrier", "fence")
+					&& tags.contains("fence_type", "balustrade");
+		}
+
+		public Balustrade(MapWaySegment segment) {
+			super(segment, 1f, 0.25f);
+		}
+
+		@Override
+		public void renderTo(Target target) {
+
+			List<VectorXYZ> polePositions = equallyDistributePointsAlong(1.75 * width, false, getCenterline());
+
+			/* parse material and color */
+
+			Material material = null;
+
+			if (segment.getTags().containsKey("material")) {
+				material = Materials.getMaterial(segment.getTags().getValue("material").toUpperCase());
+				//TODO also look at fence:material
+			}
+
+			if (material == null) {
+				material = CONCRETE;
+			}
+
+			material = material.withColor(parseColor(segment.getTags().getValue("colour"), CSS_COLORS));
+			material = material.makeSmooth();
+
+			/* draw top and bottom bars */
+
+			target.drawExtrudedShape(material, BAR_SHAPE, addYList(getCenterline(), height),
+					nCopies(getCenterline().size(), Y_UNIT),
+					nCopies(getCenterline().size(), (double)width), null, EnumSet.of(START_CAP, END_CAP));
+
+			target.drawExtrudedShape(material, BAR_SHAPE, addYList(getCenterline(), 0.07),
+					nCopies(getCenterline().size(), Y_UNIT),
+					nCopies(getCenterline().size(), (double)width), null, EnumSet.of(START_CAP, END_CAP));
+
+			/* draw columns */
+
+			double poleHeight = 0.99 * height;
+			List<Double> poleScale = asList(0.6, 0.47, 0.45, 0.65, 0.67, 0.65, 0.45, 0.47, 0.6)
+					.stream().map(v -> v * width * 1.5).collect(toList());
+			List<Double> poleRelativeHeights = asList(0.0, 0.2, 0.25, 0.45, 0.5, 0.55, 0.75, 0.8, 1.0);
+			assert poleScale.size() == poleRelativeHeights.size();
+
+			for (VectorXYZ v : polePositions) {
+
+				List<VectorXYZ> extrudePath = poleRelativeHeights.stream()
+						.map(h -> interpolateBetween(v, v.addY(poleHeight), h))
+						.collect(toList());
+
+				target.drawExtrudedShape(material, COLUMN_SHAPE, extrudePath,
+						nCopies(extrudePath.size(), segment.getDirection().xyz(0)), poleScale, null, null);
 
 			}
 
