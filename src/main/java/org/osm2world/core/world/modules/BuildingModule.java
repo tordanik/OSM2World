@@ -14,8 +14,8 @@ import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.*;
-import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
@@ -2227,9 +2228,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/* calculate the lower boundary of the wall */
 
-			List<VectorXYZ> bottomPoints = points.getVertexList().stream()
-					.map(p -> p.xyz(0)) //set to 0 because y is relative height within the wall here
-					.collect(toList());
+			List<VectorXYZ> bottomPoints = listXYZ(points.getVertexList(), floorEle);
 
 			/* calculate the upper boundary of the wall (from roof polygons) */
 
@@ -2270,19 +2269,14 @@ public class BuildingModule extends ConfigurableWorldModule {
 			}
 
 			List<VectorXYZ> topPoints = topPointsXZ.stream()
-					.map(p -> p.xyz(buildingPart.roof.getRoofEleAt(p) - floorEle))
+					.map(p -> p.xyz(buildingPart.roof.getRoofEleAt(p)))
 					.collect(toList());
 
 			/* construct the surface(s) */
 
-			List<VectorXZ> lowerSurfaceBoundary = toPointsOnSurface(bottomPoints);
-			List<VectorXZ> upperSurfaceBoundary = toPointsOnSurface(topPoints);
-
-			List<VectorXYZ> lowerBoundaryXYZ = addYList(bottomPoints, floorEle);
-
 			WallSurface mainSurface, roofSurface;
 
-			double maxHeight = max(upperSurfaceBoundary, comparingDouble(v -> v.z)).z;
+			double maxHeight = max(topPoints, comparingDouble(v -> v.y)).y - floorEle;
 
 			if (windowImplementation != WindowImplementation.FLAT_TEXTURES
 					|| !hasWindows || maxHeight + floorHeight - heightWithoutRoof < 0.01) {
@@ -2290,8 +2284,7 @@ public class BuildingModule extends ConfigurableWorldModule {
 				roofSurface = null;
 
 				try {
-					mainSurface = new WallSurface(material,
-							lowerSurfaceBoundary, upperSurfaceBoundary, lowerBoundaryXYZ);
+					mainSurface = new WallSurface(material, bottomPoints, topPoints);
 				} catch (InvalidGeometryException e) {
 					mainSurface = null;
 				}
@@ -2300,28 +2293,18 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 				// using window textures. Need to separate the bit of wall "in the roof" which should not have windows.
 
-				List<VectorXZ> middleSurfaceBoundary = asList(
-						new VectorXZ(lowerSurfaceBoundary.get(0).x, heightWithoutRoof - floorHeight),
-						new VectorXZ(lowerSurfaceBoundary.get(bottomPoints.size() - 1).x, heightWithoutRoof - floorHeight));
+				List<VectorXYZ> middlePoints = asList(
+						bottomPoints.get(0).addY(heightWithoutRoof - floorHeight),
+						bottomPoints.get(bottomPoints.size() - 1).addY(heightWithoutRoof - floorHeight));
 
 				try {
-					mainSurface = new WallSurface(material,
-							lowerSurfaceBoundary, middleSurfaceBoundary, lowerBoundaryXYZ);
+					mainSurface = new WallSurface(material, bottomPoints, middlePoints);
 				} catch (InvalidGeometryException e) {
 					mainSurface = null;
 				}
 
-				middleSurfaceBoundary = middleSurfaceBoundary.stream()
-						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
-						.collect(toList());
-				upperSurfaceBoundary = upperSurfaceBoundary.stream()
-						.map(v -> v.subtract(new VectorXZ(0, heightWithoutRoof - floorHeight)))
-						.collect(toList());
-
 				try {
-					List<VectorXYZ> roofLowerXYZ = addYList(lowerBoundaryXYZ, heightWithoutRoof - floorHeight);
-					roofSurface = new WallSurface(material,
-							middleSurfaceBoundary, upperSurfaceBoundary, roofLowerXYZ);
+					roofSurface = new WallSurface(material, middlePoints, topPoints);
 				} catch (InvalidGeometryException e) {
 					roofSurface = null;
 				}
@@ -2420,34 +2403,6 @@ public class BuildingModule extends ConfigurableWorldModule {
 			return result;
 		}
 
-
-		/**
-		 * converts a list of 3d points to 2d coordinates on a vertical wall surface.
-		 *
-		 * The surface is defined by the same list of points! That is,
-		 * the wall is assumed to start at the first point's XZ position,
-		 * and continue through the other points' XZ positions.
-		 * Y coordinates are preserved.
-		 */
-		private List<VectorXZ> toPointsOnSurface(List<VectorXYZ> points) {
-
-			//TODO consider using PolylineShapeXZ.offsetOf here
-
-			List<VectorXZ> result = new ArrayList<>(points.size());
-
-			double accumulatedLength = 0;
-			VectorXYZ previousPoint = points.get(0);
-
-			for (VectorXYZ point : points) {
-				accumulatedLength += previousPoint.distanceToXZ(point);
-				result.add(new VectorXZ(accumulatedLength, point.y));
-				previousPoint = point;
-			}
-
-			return result;
-
-		}
-
 		/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
 		private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation) {
 
@@ -2497,6 +2452,10 @@ public class BuildingModule extends ConfigurableWorldModule {
 		 * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
 		 * This streamlines the placement of objects (windows, doors, and similar features) onto the wall.
 		 * Afterwards, positions are converted back into 3D space.
+		 *
+		 * Points on a wall are referenced with its own system of "wall surface coordinates":
+		 * The x coordinate is the position along the wall (starting with 0 for the first point of the wall's
+		 * lower boundary), the z coordinate refers to height.
 		 */
 		static class WallSurface {
 
@@ -2511,34 +2470,46 @@ public class BuildingModule extends ConfigurableWorldModule {
 
 			/**
 			 * Constructs a wall surface from a lower and upper wall boundary.
-			 * The boundaries' x coordinates is the position along the wall (starting with 0 for the first point),
-			 * the z coordinates refer to height.
 			 *
 			 * @param lowerBoundaryXYZ  the lower boundary in global 3D space
+			 * @param upperBoundaryXYZ  the upper boundary in global 3D space. Must be above the lower boundary.
 			 *
 			 * @throws InvalidGeometryException  if the lower and upper boundary do not represent a proper surface.
 			 * This can happen, for example, because the wall has a zero or almost-zero height.
 			 */
-			public WallSurface(Material material, List<VectorXZ> lowerBoundary, List<VectorXZ> upperBoundary,
-					List<VectorXYZ> lowerBoundaryXYZ) throws IllegalArgumentException {
+			public WallSurface(Material material, List<VectorXYZ> lowerBoundaryXYZ,
+					List<VectorXYZ> upperBoundaryXYZ) throws IllegalArgumentException {
 
 				this.material = material;
-				this.lowerBoundary = lowerBoundary;
 				this.lowerBoundaryXYZ = lowerBoundaryXYZ;
 
-				if (lowerBoundary.size() < 2)
-					throw new IllegalArgumentException("need at least two bottom points");
-				if (upperBoundary.size() < 2)
-					throw new IllegalArgumentException("need at least two top points");
 				if (lowerBoundaryXYZ.size() < 2)
-					throw new IllegalArgumentException("need at least two bottom XYZ points");
-				if (lowerBoundary.get(0).x != 0)
-					throw new IllegalArgumentException("origin is in the bottom left corner");
-				if (upperBoundary.get(0).x != 0)
-					throw new IllegalArgumentException("origin is in the bottom left corner");
+					throw new IllegalArgumentException("need at least two points in the lower boundary");
+				if (upperBoundaryXYZ.size() < 2)
+					throw new IllegalArgumentException("need at least two ponts in the upper boundary");
 
 				/* TODO: check for other problems, e.g. intersecting lower and upper boundary,
-				   last points of the boundaries having different x values, ... */
+				   last points of the boundaries having different x values in wall surface coords, ... */
+
+				/* convert the boundaries to wall surface coords */
+
+				PolylineXZ lowerXZ = new PolylineXZ(lowerBoundaryXYZ.stream().map(p -> p.xz()).collect(toList()));
+
+				Function<VectorXYZ, VectorXZ> toWallCoord = p -> new VectorXZ(
+						lowerXZ.offsetOf(p.xz()),
+						p.y - lowerBoundaryXYZ.get(0).y);
+
+				Function<VectorXYZ, VectorXYZ> snapToLowerBoundary = p -> {
+					VectorXZ xz = lowerXZ.closestPoint(p.xz());
+					return xz.xyz(p.y);
+				};
+
+				lowerBoundary = lowerBoundaryXYZ.stream().map(toWallCoord).collect(toList());
+
+				List<VectorXZ> upperBoundary = upperBoundaryXYZ.stream()
+						.map(snapToLowerBoundary)
+						.map(toWallCoord)
+						.collect(toList());
 
 				/* construct an outline polygon from the lower and upper boundary */
 

@@ -70,7 +70,7 @@ public final class JTSTriangulationUtil {
 		}
 
 		for (LineSegmentXZ segment : segments) {
-			constraints.add(lineSegmentXZToJTSLineString(segment));
+			constraints.add(polylineXZToJTSLineString(segment));
 		}
 
 		ArrayList<Point> jtsPoints = new ArrayList<Point>();

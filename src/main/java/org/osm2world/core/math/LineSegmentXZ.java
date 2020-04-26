@@ -2,9 +2,12 @@ package org.osm2world.core.math;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.osm2world.core.math.JTSConversionUtil.*;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineSegment;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 
 public class LineSegmentXZ implements PolylineShapeXZ {
@@ -70,6 +73,14 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	 */
 	public LineSegmentXZ reverse() {
 		return new LineSegmentXZ(p2, p1);
+	}
+
+	/** returns the point on this segment that is closest to the parameter */
+	@Override
+	public VectorXZ closestPoint(VectorXZ p) {
+		LineSegment jtsSegment = JTSConversionUtil.lineSegmentXZToJTSLineSegment(this);
+		Coordinate jtsResult = jtsSegment.closestPoint(vectorXZToJTSCoordinate(p));
+		return vectorXZFromJTSCoordinate(jtsResult);
 	}
 
 	@Override

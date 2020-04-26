@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,11 +10,13 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
@@ -42,15 +46,15 @@ public class JTSConversionUtil {
 		return new VectorXYZ(c.x, c.z, c.y);
 	}
 
-	public static LineString lineSegmentXZToJTSLineString(LineSegmentXZ segment) {
-
-		Coordinate[] points = {
+	public static LineSegment lineSegmentXZToJTSLineSegment(LineSegmentXZ segment) {
+		return new LineSegment(
 				vectorXZToJTSCoordinate(segment.p1),
-				vectorXZToJTSCoordinate(segment.p2)
-		};
+				vectorXZToJTSCoordinate(segment.p2));
+	}
 
-		return new LineString(new CoordinateArraySequence(points), GF);
-
+	public static LineString polylineXZToJTSLineString(PolylineShapeXZ polyline) {
+		List<Coordinate> ps = polyline.getVertexList().stream().map(p -> vectorXZToJTSCoordinate(p)).collect(toList());
+		return new LineString(new CoordinateArraySequence(ps.toArray(new Coordinate[0])), GF);
 	}
 
 	public static final Polygon polygonXZToJTSPolygon(SimplePolygonShapeXZ polygon) {

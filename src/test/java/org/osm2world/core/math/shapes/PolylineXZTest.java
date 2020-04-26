@@ -71,4 +71,24 @@ public class PolylineXZTest {
 
 	}
 
+	@Test
+	public void testClosestPoint() {
+
+		VectorXZ v0 = new VectorXZ(-10, 2);
+		VectorXZ v1 = new VectorXZ(  0, 2);
+		VectorXZ v2 = new VectorXZ(+10, 2);
+
+		PolylineXZ polyline = new PolylineXZ(asList(v0, v1, v2));
+
+		for (VectorXZ v : polyline.getVertexList()) {
+			assertAlmostEquals(v, polyline.closestPoint(v));
+		}
+
+		assertAlmostEquals(new VectorXZ(5, 2), polyline.closestPoint(new VectorXZ(5, 5)));
+		assertAlmostEquals(new VectorXZ(-3, 2), polyline.closestPoint(new VectorXZ(-3, 2)));
+
+		assertAlmostEquals(v2, polyline.closestPoint(new VectorXZ(15, 0)));
+
+	}
+
 }

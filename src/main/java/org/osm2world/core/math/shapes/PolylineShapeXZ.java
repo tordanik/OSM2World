@@ -4,6 +4,7 @@ import static java.lang.Math.max;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.distance;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.osm2world.core.math.LineSegmentXZ;
@@ -30,6 +31,7 @@ public interface PolylineShapeXZ extends ShapeXZ {
 	 * measured along this polyline.
 	 *
 	 * @param point  the point, must lie on this polyline (but does not have to be a vertex)
+	 * @throws IllegalArgumentException  if the point is not on the polyline
 	 */
 	default public double offsetOf(VectorXZ point) {
 
@@ -111,4 +113,11 @@ public interface PolylineShapeXZ extends ShapeXZ {
 
 	}
 
+	/** returns the point on this shape that is closest to the parameter */
+	default public VectorXZ closestPoint(VectorXZ p) {
+		return getSegments().stream()
+				.map(s -> s.closestPoint(p))
+				.min(Comparator.comparing(p::distanceTo))
+				.get();
+	}
 }
