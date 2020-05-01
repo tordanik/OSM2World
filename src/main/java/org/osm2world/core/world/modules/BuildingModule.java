@@ -2240,8 +2240,22 @@ public class BuildingModule extends ConfigurableWorldModule {
 						? rawPolygon.makeClockwise()
 						: rawPolygon.makeCounterclockwise();
 
-				int firstIndex = polygon.getVertices().indexOf(bottomPoints.get(0).xz());
-				int lastIndex = polygon.getVertices().indexOf(bottomPoints.get(bottomPoints.size() - 1).xz());
+				VectorXZ firstBottomPoint = bottomPoints.get(0).xz();
+				VectorXZ lastBottomPoint = bottomPoints.get(bottomPoints.size() - 1).xz();
+
+				for (VectorXZ bottomPoint : asList(firstBottomPoint, lastBottomPoint)) {
+					// insert points that are in the bottom polygon, but not in the top (e.g. with building passage)
+					if (!polygon.getVertices().contains(bottomPoint)
+							&& polygon.getClosestSegment(bottomPoint).closestPoint(bottomPoint).distanceTo(bottomPoint) < 0.1) {
+						PolygonXZ polygonWithAddedPoint = insertIntoPolygon(polygon, bottomPoint, 0);
+						if (polygonWithAddedPoint.isSimple()) {
+							polygon = polygonWithAddedPoint.asSimplePolygon();
+						}
+					}
+				}
+
+				int firstIndex = polygon.getVertices().indexOf(firstBottomPoint);
+				int lastIndex = polygon.getVertices().indexOf(lastBottomPoint);
 
 				if (firstIndex != -1 && lastIndex != -1) {
 
