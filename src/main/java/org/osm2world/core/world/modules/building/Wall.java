@@ -1,18 +1,12 @@
 package org.osm2world.core.world.modules.building;
 
-import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static java.util.Collections.max;
-import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.GeometryUtil.insertIntoPolygon;
 import static org.osm2world.core.math.VectorXZ.*;
-import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
@@ -194,7 +188,7 @@ class Wall implements Renderable {
 		}
 
 		List<VectorXYZ> topPoints = topPointsXZ.stream()
-				.map(p -> p.xyz(buildingPart.roof.getRoofEleAt(p)))
+				.map(p -> p.xyz(baseEle + heightWithoutRoof + buildingPart.roof.getRoofHeightAt(p)))
 				.collect(toList());
 
 		/* construct the surface(s) */

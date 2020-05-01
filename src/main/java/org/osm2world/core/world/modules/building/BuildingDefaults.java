@@ -92,6 +92,12 @@ class BuildingDefaults {
 			hasWindows = false;
 		}
 
+		/* make flat roofs use concrete by default */
+
+		if (tags.contains("roof:shape", "flat") && materialRoof == Materials.ROOF_DEFAULT) {
+			materialRoof = Materials.CONCRETE;
+		}
+
 		/* return an object populated with the results */
 
     	return new BuildingDefaults(levels, heightPerLevel, roofShape,
