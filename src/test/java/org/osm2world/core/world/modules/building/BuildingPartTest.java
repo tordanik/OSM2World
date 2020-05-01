@@ -1,4 +1,4 @@
-package org.osm2world.core.world.modules;
+package org.osm2world.core.world.modules.building;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
@@ -12,10 +12,8 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.test.TestMapDataGenerator;
-import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
-import org.osm2world.core.world.modules.BuildingModule.Wall;
 
-public class BuildingModuleTest {
+public class BuildingPartTest {
 
 	@Test
 	public void testSplitIntoWalls() {

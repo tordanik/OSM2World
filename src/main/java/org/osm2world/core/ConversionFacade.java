@@ -41,7 +41,6 @@ import org.osm2world.core.world.modules.AerowayModule;
 import org.osm2world.core.world.modules.BarrierModule;
 import org.osm2world.core.world.modules.BicycleParkingModule;
 import org.osm2world.core.world.modules.BridgeModule;
-import org.osm2world.core.world.modules.BuildingModule;
 import org.osm2world.core.world.modules.CliffModule;
 import org.osm2world.core.world.modules.GolfModule;
 import org.osm2world.core.world.modules.InvisibleModule;
@@ -57,6 +56,7 @@ import org.osm2world.core.world.modules.TrafficSignModule;
 import org.osm2world.core.world.modules.TreeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 import org.osm2world.core.world.modules.WaterModule;
+import org.osm2world.core.world.modules.building.BuildingModule;
 
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;

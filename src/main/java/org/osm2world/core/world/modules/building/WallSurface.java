@@ -1,0 +1,319 @@
+package org.osm2world.core.world.modules.building;
+
+import static com.google.common.collect.Iterables.getLast;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.round;
+import static java.util.Collections.min;
+import static java.util.Collections.reverse;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.target.common.material.Materials.BUILDING_WINDOWS;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
+
+import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TexCoordFunction;
+
+/**
+ * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
+ * This streamlines the placement of objects (windows, doors, and similar features) onto the wall.
+ * Afterwards, positions are converted back into 3D space.
+ *
+ * Points on a wall are referenced with its own system of "wall surface coordinates":
+ * The x coordinate is the position along the wall (starting with 0 for the first point of the wall's
+ * lower boundary), the z coordinate refers to height.
+ */
+class WallSurface {
+
+	private final Material material;
+
+	private final List<VectorXZ> lowerBoundary;
+	private final SimplePolygonXZ wallOutline;
+
+	private final List<VectorXYZ> lowerBoundaryXYZ;
+
+	private final List<WallElement> elements = new ArrayList<>();
+
+	/**
+	 * Constructs a wall surface from a lower and upper wall boundary.
+	 *
+	 * @param lowerBoundaryXYZ  the lower boundary in global 3D space
+	 * @param upperBoundaryXYZ  the upper boundary in global 3D space. Must be above the lower boundary.
+	 *
+	 * @throws InvalidGeometryException  if the lower and upper boundary do not represent a proper surface.
+	 * This can happen, for example, because the wall has a zero or almost-zero height.
+	 */
+	public WallSurface(Material material, List<VectorXYZ> lowerBoundaryXYZ,
+			List<VectorXYZ> upperBoundaryXYZ) throws IllegalArgumentException {
+
+		this.material = material;
+		this.lowerBoundaryXYZ = lowerBoundaryXYZ;
+
+		if (lowerBoundaryXYZ.size() < 2)
+			throw new IllegalArgumentException("need at least two points in the lower boundary");
+		if (upperBoundaryXYZ.size() < 2)
+			throw new IllegalArgumentException("need at least two ponts in the upper boundary");
+
+		/* TODO: check for other problems, e.g. intersecting lower and upper boundary,
+		   last points of the boundaries having different x values in wall surface coords, ... */
+
+		/* convert the boundaries to wall surface coords */
+
+		PolylineXZ lowerXZ = new PolylineXZ(lowerBoundaryXYZ.stream().map(p -> p.xz()).collect(toList()));
+
+		Function<VectorXYZ, VectorXZ> toWallCoord = p -> new VectorXZ(
+				lowerXZ.offsetOf(p.xz()),
+				p.y - lowerBoundaryXYZ.get(0).y);
+
+		Function<VectorXYZ, VectorXYZ> snapToLowerBoundary = p -> {
+			VectorXZ xz = lowerXZ.closestPoint(p.xz());
+			return xz.xyz(p.y);
+		};
+
+		lowerBoundary = lowerBoundaryXYZ.stream().map(toWallCoord).collect(toList());
+
+		List<VectorXZ> upperBoundary = upperBoundaryXYZ.stream()
+				.map(snapToLowerBoundary)
+				.map(toWallCoord)
+				.collect(toList());
+
+		/* construct an outline polygon from the lower and upper boundary */
+
+		List<VectorXZ> outerLoop = new ArrayList<>(upperBoundary);
+
+		if (upperBoundary.get(0).distanceTo(lowerBoundary.get(0)) < 0.01) {
+			outerLoop.remove(0);
+		}
+		if (getLast(upperBoundary).distanceTo(getLast(lowerBoundary)) < 0.01) {
+			outerLoop.remove(outerLoop.size() - 1);
+		}
+
+		reverse(outerLoop);
+
+		outerLoop.addAll(0, lowerBoundary);
+		outerLoop.add(lowerBoundary.get(0));
+
+		if (outerLoop.size() < 2) {
+			throw new InvalidGeometryException("cannot construct a valid wall surface");
+		}
+
+		wallOutline = new SimplePolygonXZ(outerLoop);
+
+	}
+
+	public double getLength() {
+		return lowerBoundary.get(lowerBoundary.size() - 1).x;
+	}
+
+	public Material getMaterial() {
+		return material;
+	}
+
+	/** adds an element to the wall, unless the necessary space on the wall is already occupied */
+	public void addElementIfSpaceFree(WallElement element) {
+
+		if (!wallOutline.contains(element.outline())) {
+			return;
+		}
+
+		boolean spaceOccupied = elements.stream().anyMatch(e ->
+				e.outline().intersects(element.outline()) || e.outline().contains(element.outline()));
+
+		if (!spaceOccupied) {
+			elements.add(element);
+		}
+
+	}
+
+	/**
+	 * renders the wall
+	 *
+	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
+	 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+	 */
+	public void renderTo(Target target, VectorXZ textureOrigin,
+			boolean applyWindowTexture, double windowHeight) {
+
+		/* render the elements on the wall */
+
+		for (WallElement e : elements) {
+			e.renderTo(target, this);
+		}
+
+		/* triangulate the empty wall surface */
+
+		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
+
+		List<TriangleXZ> triangles = triangulate(wallOutline, holes);
+		List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t)).collect(toList());
+
+		/* determine the material depending on whether a window texture should be applied */
+
+		Material material = applyWindowTexture
+				? this.material.withAddedLayers(BUILDING_WINDOWS.getTextureDataList())
+				: this.material;
+
+		/* calculate texture coordinates */
+
+		List<TextureData> textureDataList = material.getTextureDataList();
+
+		List<List<VectorXZ>> texCoordLists = new ArrayList<>(textureDataList.size());
+
+		for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
+
+			List<VectorXZ> vs = new ArrayList<>();
+
+			for (TriangleXZ triangle : triangles) {
+				vs.add(triangle.v1);
+				vs.add(triangle.v2);
+				vs.add(triangle.v3);
+			}
+
+			texCoordLists.add(texCoords(vs, textureDataList.get(texLayer), textureOrigin, windowHeight));
+
+		}
+
+		/* render the wall */
+
+		target.drawTriangles(material, trianglesXYZ, texCoordLists);
+
+	}
+
+	public VectorXYZ convertTo3D(VectorXZ v) {
+
+		double ratio = v.x / getLength();
+
+		VectorXYZ point = interpolateOn(lowerBoundaryXYZ, ratio);
+
+		return point.addY(v.z);
+
+	}
+
+	public TriangleXYZ convertTo3D(TriangleXZ t) {
+		return new TriangleXYZ(
+				convertTo3D(t.v1),
+				convertTo3D(t.v2),
+				convertTo3D(t.v3));
+	}
+
+	public PolygonXYZ convertTo3D(PolygonShapeXZ polygon) {
+		List<VectorXYZ> outline = new ArrayList<>(polygon.getVertexList().size());
+		polygon.getVertexList().forEach(v -> outline.add(convertTo3D(v)));
+		return new PolygonXYZ(outline);
+	}
+
+	/**
+	 * Projects a point in global 3D space onto the wall,
+	 * then returns the wall surface coordinate of that projection.
+	 * Conceptually the inverse of {@link #convertTo3D(VectorXZ)}
+	 * (except that it also accepts points which are not on the wall).
+	 */
+	public VectorXZ toWallCoord(VectorXYZ v) {
+
+		PolylineXZ wallXZ = new PolylineXZ(lowerBoundaryXYZ.stream().map(VectorXYZ::xz).collect(toList()));
+
+		LineSegmentXZ closestSegment =
+				min(wallXZ.getSegments(), Comparator.comparing(s -> distanceFromLineSegment(v.xz(), s)));
+
+		VectorXZ projectedPointXZ = projectPerpendicular(v.xz(), closestSegment.p1, closestSegment.p2);
+		double relativeLengthProjectedPoint = wallXZ.offsetOf(projectedPointXZ) / wallXZ.getLength();
+
+		return new VectorXZ(
+				relativeLengthProjectedPoint * this.getLength(),
+				v.y - lowerBoundaryXYZ.get(0).y);
+
+	}
+
+	public VectorXYZ normalAt(VectorXZ v) {
+
+		/* calculate the normal by placing 3 points close to each other on the surface,
+		 * and calculating the normal of that triangle */
+
+		double smallXDist = min(0.01, getLength() / 3);
+		double smallZDist = 0.01;
+
+		if (v.x + smallXDist > getLength()) {
+			assert v.x - smallXDist >= 0;
+			v = v.add(-smallXDist, 0);
+		}
+
+		VectorXYZ vXYZ = convertTo3D(v);
+		VectorXYZ vXYZRight = convertTo3D(v.add(smallXDist, 0));
+		VectorXYZ vXYZTop = convertTo3D(v.add(0, smallZDist));
+
+		return vXYZTop.subtract(vXYZ).crossNormalized(vXYZRight.subtract(vXYZ));
+
+	}
+
+	/**
+	 * generates texture coordinates for textures placed on the wall surface.
+	 * One texture coordinate dimension running along the wall, the other running up the wall.
+	 * Input coordinates are surface coordinates.
+	 *
+	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
+	 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+	 */
+	public List<VectorXZ> texCoords(List<VectorXZ> vs, TextureData textureData,
+			VectorXZ textureOrigin, double windowHeight) {
+
+		List<VectorXZ> result = new ArrayList<>(vs.size());
+
+		/* As surface coords, the input coords are already texture coordinates for a hypothetical
+		 * 'unit texture' of width and height 1). We now scale them based on the texture's height and width or,
+		 * for textures with the special height value 0 (windows!), to an integer number of repetitions */
+
+		boolean specialWindowHandling = (textureData.height == 0);
+
+		for (int i = 0; i < vs.size(); i++) {
+
+			double height = textureData.height;
+			double width = textureData.width;
+
+			if (specialWindowHandling) {
+				height = windowHeight;
+				width = getLength() / max(1, round(getLength() / textureData.width));
+			}
+
+			double s = (vs.get(i).x - textureOrigin.x) / width;
+			double t = (vs.get(i).z - textureOrigin.z) / height;
+
+			result.add(new VectorXZ(s, t));
+
+
+		}
+
+		return result;
+
+	}
+
+
+	/**
+	 * generates texture coordinates for textures placed on the wall surface,
+	 * compare {@link #texCoords(List, TextureData, VectorXZ, double)}.
+	 * Input coordinates are global coordinates and will be projected onto the wall.
+	 * Can be used as a {@link TexCoordFunction}.
+	 */
+	public List<VectorXZ> texCoordsGlobal(List<VectorXYZ> vs, TextureData textureData) {
+		List<VectorXZ> wallSurfaceVectors = vs.stream().map(v -> toWallCoord(v)).collect(toList());
+		return texCoords(wallSurfaceVectors, textureData, NULL_VECTOR, 1);
+	}
+
+}

@@ -6,9 +6,9 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.world.modules.BuildingModule.Building;
-import org.osm2world.core.world.modules.BuildingModule.BuildingPart;
-import org.osm2world.core.world.modules.BuildingModule.BuildingPart.HeightfieldRoof;
+import org.osm2world.core.world.modules.building.Building;
+import org.osm2world.core.world.modules.building.BuildingPart;
+import org.osm2world.core.world.modules.building.BuildingPart.HeightfieldRoof;
 
 public class RoofDataDebugView extends DebugView {
 

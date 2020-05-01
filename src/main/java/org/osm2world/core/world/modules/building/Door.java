@@ -1,0 +1,131 @@
+package org.osm2world.core.world.modules.building;
+
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+
+import java.util.List;
+
+import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
+
+class Door implements WallElement {
+
+	/** position on a wall surface */
+	private final VectorXZ position;
+
+	private final DoorParameters parameters;
+
+	public Door(VectorXZ position, DoorParameters params) {
+		this.position = position;
+		this.parameters = params;
+	}
+
+	@Override
+	public SimplePolygonXZ outline() {
+
+		return new SimplePolygonXZ(asList(
+				position.add(new VectorXZ(-parameters.width/2, 0)),
+				position.add(new VectorXZ(+parameters.width/2, 0)),
+				position.add(new VectorXZ(+parameters.width/2, +parameters.height)),
+				position.add(new VectorXZ(-parameters.width/2, +parameters.height)),
+				position.add(new VectorXZ(-parameters.width/2, 0))));
+
+	}
+
+	@Override
+	public void renderTo(Target target, WallSurface surface) {
+
+		Material doorMaterial = ENTRANCE_DEFAULT;
+
+		switch (parameters.type) {
+		case "no":
+			doorMaterial = VOID;
+			break;
+		case "overhead":
+			doorMaterial = GARAGE_DOOR;
+			break;
+		}
+
+		doorMaterial = doorMaterial.withColor(parameters.color);
+
+		double depth = 0.10;
+
+		PolygonXYZ frontOutline = surface.convertTo3D(outline());
+
+		VectorXYZ doorNormal = surface.normalAt(outline().getCentroid());
+		VectorXYZ toBack = doorNormal.mult(-depth);
+		PolygonXYZ backOutline = frontOutline.add(toBack);
+
+		/* draw the door itself */
+
+		VectorXYZ bottomLeft = backOutline.getVertices().get(0);
+		VectorXYZ bottomRight = backOutline.getVertices().get(1);
+		VectorXYZ topLeft = backOutline.getVertices().get(3);
+		VectorXYZ topRight = backOutline.getVertices().get(2);
+
+		if (parameters.numberOfWings == 1 || !"hinged".equals(parameters.type)) {
+
+			List<VectorXYZ> vsDoor = asList(topLeft, bottomLeft, topRight, bottomRight);
+			target.drawTriangleStrip(doorMaterial, vsDoor,
+					texCoordLists(vsDoor, doorMaterial, STRIP_FIT));
+
+		} else {
+
+			if (parameters.numberOfWings > 2) {
+				System.err.println("Warning: Unsupported number of door wings: " + parameters.numberOfWings);
+			}
+
+			VectorXYZ bottomCenter = interpolateBetween(bottomLeft, bottomRight, 0.5);
+			VectorXYZ topCenter = interpolateBetween(topLeft, topRight, 0.5);
+
+			List<VectorXYZ> vsDoorLeft = asList(topLeft, bottomLeft, topCenter, bottomCenter);
+			target.drawTriangleStrip(doorMaterial, vsDoorLeft,
+					texCoordLists(vsDoorLeft, doorMaterial, STRIP_FIT));
+
+			List<VectorXYZ> vsDoorRight = asList(topCenter, bottomCenter, topRight, bottomRight);
+			target.drawTriangleStrip(doorMaterial, vsDoorRight,
+					texCoordLists(vsDoorRight, doorMaterial, (List<VectorXYZ> vs, TextureData textureData) -> {
+						//mirror the door for the right wing
+						//TODO: maybe create a general-purpose function from this?
+						List<VectorXZ> result = STRIP_FIT.apply(vs, textureData);
+						return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).collect(toList());
+					}));
+
+		}
+
+		/* draw the wall around the door */
+
+		List<VectorXYZ> vsWall = createTriangleStripBetween(
+				backOutline.getVertexLoop(), frontOutline.getVertexLoop());
+
+		Material material = surface.getMaterial();
+		material = new ImmutableMaterial(
+				material.getInterpolation(),
+				material.getColor(),
+				0.5f * material.getAmbientFactor(), //coarsely approximate ambient occlusion
+				material.getDiffuseFactor(),
+				material.getSpecularFactor(),
+				material.getShininess(),
+				material.getTransparency(),
+				material.getShadow(),
+				material.getAmbientOcclusion(),
+				material.getTextureDataList());
+
+		target.drawTriangleStrip(material, vsWall,
+				texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+
+	}
+
+}

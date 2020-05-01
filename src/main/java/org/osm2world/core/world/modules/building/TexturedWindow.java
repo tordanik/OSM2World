@@ -1,0 +1,90 @@
+package org.osm2world.core.world.modules.building;
+
+import static java.util.Arrays.asList;
+import static org.osm2world.core.target.common.material.Materials.SINGLE_WINDOW;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+
+import java.util.List;
+
+import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
+
+class TexturedWindow implements Window {
+
+	/** position on a wall surface */
+	private final VectorXZ position;
+
+	private final WindowParameters params;
+
+	public TexturedWindow(VectorXZ position, WindowParameters params) {
+		this.position = position;
+		this.params = params;
+	}
+
+	@Override
+	public SimplePolygonXZ outline() {
+
+		return new SimplePolygonXZ(asList(
+				position.add(new VectorXZ(-params.width/2, 0)),
+				position.add(new VectorXZ(+params.width/2, 0)),
+				position.add(new VectorXZ(+params.width/2, +params.height)),
+				position.add(new VectorXZ(-params.width/2, +params.height)),
+				position.add(new VectorXZ(-params.width/2, 0))));
+
+	}
+
+	@Override
+	public void renderTo(Target target, WallSurface surface) {
+
+		double depth = 0.10;
+
+		PolygonXYZ frontOutline = surface.convertTo3D(outline());
+
+		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
+		VectorXYZ toBack = windowNormal.mult(-depth);
+		PolygonXYZ backOutline = frontOutline.add(toBack);
+
+		/* draw the window itself */
+
+		VectorXYZ bottomLeft = backOutline.getVertices().get(0);
+		VectorXYZ bottomRight = backOutline.getVertices().get(1);
+		VectorXYZ topLeft = backOutline.getVertices().get(3);
+		VectorXYZ topRight = backOutline.getVertices().get(2);
+
+		List<VectorXYZ> vsWindow = asList(topLeft, bottomLeft, topRight, bottomRight);
+
+		target.drawTriangleStrip(SINGLE_WINDOW, vsWindow,
+				texCoordLists(vsWindow, SINGLE_WINDOW, STRIP_FIT));
+
+		/* draw the wall around the window */
+
+		List<VectorXYZ> vsWall = createTriangleStripBetween(
+				backOutline.getVertexLoop(), frontOutline.getVertexLoop());
+
+		Material material = surface.getMaterial();
+		material = new ImmutableMaterial(
+				material.getInterpolation(),
+				material.getColor(),
+				0.5f * material.getAmbientFactor(), //coarsely approximate ambient occlusion
+				material.getDiffuseFactor(),
+				material.getSpecularFactor(),
+				material.getShininess(),
+				material.getTransparency(),
+				material.getShadow(),
+				material.getAmbientOcclusion(),
+				material.getTextureDataList());
+
+		target.drawTriangleStrip(material, vsWall,
+				texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+
+	}
+
+}
