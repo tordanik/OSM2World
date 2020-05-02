@@ -59,44 +59,6 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 		this.pointsBetween = pointsBetween;
 	}
 
-
-
-	//TODO formerly @Override, currently useless
-//	public double getClearingAbove(VectorXZ pos) {
-//		// current solution: maximum of connected segments' clearings.
-//		// Could probably find a more intelligent method.
-//
-//		double max = 0;
-//		for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
-//			WaySegmentWorldObject rep = waySegment.getPrimaryRepresentation();
-//			if (rep != null) {
-//				double clearing = rep.getClearingAbove(node.getPos());
-//				if (clearing > max) {
-//					max = clearing;
-//				}
-//			}
-//		}
-//		return max;
-//	}
-
-	//TODO formerly @Override, currently useless
-//	public double getClearingBelow(VectorXZ pos) {
-//		// current solution: maximum of connected segments' clearings.
-//		// Could probably find a more intelligent method.
-//
-//		double max = 0;
-//		for (MapWaySegment waySegment : node.getConnectedWaySegments()) {
-//			WaySegmentWorldObject rep = waySegment.getPrimaryRepresentation();
-//			if (rep != null) {
-//				double clearing = rep.getClearingBelow(node.getPos());
-//				if (clearing > max) {
-//					max = clearing;
-//				}
-//			}
-//		}
-//		return max;
-//	}
-
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
 
@@ -129,11 +91,7 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 
 		SimplePolygonXZ simplePoly = new SimplePolygonXZ(vectors);
 
-		if (simplePoly.isClockwise()) {
-			return simplePoly.reverse();
-		} else {
-			return simplePoly;
-		}
+		return simplePoly.makeCounterclockwise();
 
 	}
 
