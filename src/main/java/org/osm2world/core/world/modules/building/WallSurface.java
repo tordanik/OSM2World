@@ -11,6 +11,8 @@ import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.BUILDING_WINDOWS;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,7 +31,9 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.target.common.material.TexCoordFunction;
 
 /**
@@ -156,6 +160,36 @@ class WallSurface {
 
 		for (WallElement e : elements) {
 			e.renderTo(target, this);
+		}
+
+		/* draw insets around the elements */
+
+		for (WallElement e : elements) {
+			if (e.insetDistance() != null) {
+
+				PolygonXYZ frontOutline = convertTo3D(e.outline());
+				PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
+
+				List<VectorXYZ> vsWall = createTriangleStripBetween(
+						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
+
+				Material material = this.material;
+				material = new ImmutableMaterial(
+						material.getInterpolation(),
+						material.getColor(),
+						0.5f * material.getAmbientFactor(), //coarsely approximate ambient occlusion
+						material.getDiffuseFactor(),
+						material.getSpecularFactor(),
+						material.getShininess(),
+						material.getTransparency(),
+						material.getShadow(),
+						material.getAmbientOcclusion(),
+						material.getTextureDataList());
+
+				target.drawTriangleStrip(material, vsWall,
+						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+
+			}
 		}
 
 		/* triangulate the empty wall surface */

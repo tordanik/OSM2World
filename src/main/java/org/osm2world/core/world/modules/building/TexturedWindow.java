@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static org.osm2world.core.target.common.material.Materials.SINGLE_WINDOW;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.List;
 
@@ -13,9 +12,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 
 class TexturedWindow implements Window {
 
@@ -42,14 +38,17 @@ class TexturedWindow implements Window {
 	}
 
 	@Override
-	public void renderTo(Target target, WallSurface surface) {
+	public Double insetDistance() {
+		return 0.10;
+	}
 
-		double depth = 0.10;
+	@Override
+	public void renderTo(Target target, WallSurface surface) {
 
 		PolygonXYZ frontOutline = surface.convertTo3D(outline());
 
 		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
-		VectorXYZ toBack = windowNormal.mult(-depth);
+		VectorXYZ toBack = windowNormal.mult(insetDistance());
 		PolygonXYZ backOutline = frontOutline.add(toBack);
 
 		/* draw the window itself */
@@ -63,27 +62,6 @@ class TexturedWindow implements Window {
 
 		target.drawTriangleStrip(SINGLE_WINDOW, vsWindow,
 				texCoordLists(vsWindow, SINGLE_WINDOW, STRIP_FIT));
-
-		/* draw the wall around the window */
-
-		List<VectorXYZ> vsWall = createTriangleStripBetween(
-				backOutline.getVertexLoop(), frontOutline.getVertexLoop());
-
-		Material material = surface.getMaterial();
-		material = new ImmutableMaterial(
-				material.getInterpolation(),
-				material.getColor(),
-				0.5f * material.getAmbientFactor(), //coarsely approximate ambient occlusion
-				material.getDiffuseFactor(),
-				material.getSpecularFactor(),
-				material.getShininess(),
-				material.getTransparency(),
-				material.getShadow(),
-				material.getAmbientOcclusion(),
-				material.getTextureDataList());
-
-		target.drawTriangleStrip(material, vsWall,
-				texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
 
 	}
 

@@ -14,6 +14,12 @@ interface WallElement {
 	 */
 	public SimplePolygonXZ outline();
 
+	/**
+	 * how deep the element is sunk into the wall. Will be used to render the bits of wall around it.
+	 * Can be null if the element is flat on the wall, or handles its own rendering of the inset walls.
+	 */
+	public Double insetDistance();
+
 	public void renderTo(Target target, WallSurface surface);
 
 }

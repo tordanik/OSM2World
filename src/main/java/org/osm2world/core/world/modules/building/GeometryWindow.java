@@ -31,10 +31,10 @@ import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 
 class GeometryWindow implements Window {
 
+	private static final double DEPTH = 0.10;
 	private static final double OUTER_FRAME_WIDTH = 0.1;
 	private static final double INNER_FRAME_WIDTH = 0.05;
 	private static final double OUTER_FRAME_THICKNESS = 0.05;
@@ -110,13 +110,17 @@ class GeometryWindow implements Window {
 	}
 
 	@Override
+	public Double insetDistance() {
+		return DEPTH - OUTER_FRAME_THICKNESS;
+	}
+
+	@Override
 	public void renderTo(Target target, WallSurface surface) {
 
-		double depth = 0.10;
 		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
 
-		VectorXYZ toBack = windowNormal.mult(-depth);
-		VectorXYZ toOuterFrame = windowNormal.mult(-depth + OUTER_FRAME_THICKNESS);
+		VectorXYZ toBack = windowNormal.mult(-DEPTH);
+		VectorXYZ toOuterFrame = windowNormal.mult(-DEPTH + OUTER_FRAME_THICKNESS);
 
 		/* draw the window pane */
 
@@ -172,17 +176,6 @@ class GeometryWindow implements Window {
 					null, null, EnumSet.noneOf(ExtrudeOption.class));
 
 		}
-
-		/* draw the wall around the window */
-
-		PolygonXYZ frontOutline = surface.convertTo3D(outline());
-		PolygonXYZ backOutline = frontOutline.add(toOuterFrame);
-
-		List<VectorXYZ> vsWall = createTriangleStripBetween(
-				backOutline.getVertexLoop(), frontOutline.getVertexLoop());
-
-		target.drawTriangleStrip(surface.getMaterial(), vsWall,
-				texCoordLists(vsWall, surface.getMaterial(), NamedTexCoordFunction.STRIP_WALL));
 
 	}
 
