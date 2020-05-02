@@ -10,6 +10,7 @@ import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -36,22 +37,36 @@ abstract public class SpindleRoof extends Roof {
 		return 0;
 	}
 
-	protected void renderSpindle(Target target, Material material, SimplePolygonXZ polygon,
+	@Override
+	public void renderTo(Target target, double baseEle) {
+
+		List<Double> heights = new ArrayList<>();
+		List<Double> scaleFactors = new ArrayList<>();
+
+		getSpindleSteps().forEach(pair -> {
+			heights.add(baseEle + pair.getKey() * roofHeight);
+			scaleFactors.add(pair.getValue());
+		});
+
+		renderSpindle(target, material, getPolygon().getOuter().makeClockwise(), heights, scaleFactors);
+
+	}
+
+	/**
+	 * defines the spindle. Each step has a height (relative to the total roof height)
+	 * and a scale factor for the polygon.
+	 */
+	abstract protected List<Pair<Double, Double>> getSpindleSteps();
+
+	private void renderSpindle(Target target, Material material, SimplePolygonXZ polygon,
 			List<Double> heights, List<Double> scaleFactors) {
 
 		checkArgument(heights.size() == scaleFactors.size(), "heights and scaleFactors must have same size");
 
-		VectorXZ center = polygon.getCenter();
-
 		/* calculate the polygon relative to the center */
 
-		List<VectorXZ> vertexLoop = new ArrayList<>();
-
-		for (VectorXZ v : polygon.makeCounterclockwise().getVertexList()) {
-			vertexLoop.add(v.subtract(center));
-		}
-
-		ShapeXZ spindleShape = new SimplePolygonXZ(vertexLoop);
+		VectorXZ center = polygon.getCenter();
+		ShapeXZ spindleShape = polygon.makeCounterclockwise().shift(center.invert());
 
 		/* construct a path from the heights */
 
@@ -71,7 +86,7 @@ abstract public class SpindleRoof extends Roof {
 
 	}
 
-	protected List<List<VectorXZ>> spindleTexCoordLists(List<VectorXYZ> path, int shapeVertexCount,
+	private List<List<VectorXZ>> spindleTexCoordLists(List<VectorXYZ> path, int shapeVertexCount,
 			double polygonLength, Material material) {
 
 		List<TextureData> textureDataList = material.getTextureDataList();
@@ -98,7 +113,7 @@ abstract public class SpindleRoof extends Roof {
 
 	}
 
-	protected List<VectorXZ> spindleTexCoordList(List<VectorXYZ> path, int shapeVertexCount,
+	private List<VectorXZ> spindleTexCoordList(List<VectorXYZ> path, int shapeVertexCount,
 			double polygonLength, TextureData textureData) {
 
 		List<VectorXZ> result = new ArrayList<>();

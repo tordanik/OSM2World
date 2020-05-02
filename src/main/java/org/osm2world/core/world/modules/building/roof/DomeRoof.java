@@ -5,9 +5,9 @@ import static java.lang.Math.sqrt;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 
 public class DomeRoof extends SpindleRoof {
@@ -22,20 +22,16 @@ public class DomeRoof extends SpindleRoof {
 	private static final int HEIGHT_RINGS = 10;
 
 	@Override
-	public void renderTo(Target target, double baseEle) {
+	protected List<Pair<Double, Double>> getSpindleSteps() {
 
-		List<Double> heights = new ArrayList<>();
-		List<Double> scales = new ArrayList<>();
+		List<Pair<Double, Double>> steps = new ArrayList<>();
 
 		for (int ring = 0; ring < HEIGHT_RINGS; ++ring) {
-			double relativeHeight = (double)ring / (HEIGHT_RINGS - 1);
-			heights.add(baseEle + relativeHeight * roofHeight);
-			scales.add(sqrt(1.0 - relativeHeight * relativeHeight));
+			double relativeHeight = ((double)ring) / (HEIGHT_RINGS - 1);
+			steps.add(Pair.of(relativeHeight, sqrt(1.0 - relativeHeight * relativeHeight)));
 		}
 
-		renderSpindle(target, material,
-				getPolygon().getOuter().makeClockwise(),
-				heights, scales);
+		return steps;
 
 	}
 

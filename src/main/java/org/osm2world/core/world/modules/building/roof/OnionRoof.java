@@ -2,9 +2,11 @@ package org.osm2world.core.world.modules.building.roof;
 
 import static java.util.Arrays.asList;
 
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 
 public class OnionRoof extends SpindleRoof {
@@ -14,18 +16,14 @@ public class OnionRoof extends SpindleRoof {
 	}
 
 	@Override
-	public void renderTo(Target target, double baseEle) {
-
-		renderSpindle(target, material,
-				getPolygon().getOuter().makeClockwise(),
-				asList(baseEle,
-						baseEle + 0.15 * roofHeight,
-						baseEle + 0.52 * roofHeight,
-						baseEle + 0.72 * roofHeight,
-						baseEle + 0.82 * roofHeight,
-						baseEle + 1.00 * roofHeight),
-				asList(1.0, 0.8, 1.0, 0.7, 0.15, 0.0));
-
+	protected List<Pair<Double, Double>> getSpindleSteps() {
+		return asList(
+				Pair.of(0.0, 1.0),
+				Pair.of(0.15, 0.8),
+				Pair.of(0.52, 1.0),
+				Pair.of(0.72, 0.7),
+				Pair.of(0.82, 0.15),
+				Pair.of(1.00, 0.0));
 	}
 
 }
