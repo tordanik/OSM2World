@@ -1,8 +1,10 @@
 package org.osm2world.core.math;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.min;
-import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +57,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 * The duplicated first/last vertex is <em>not</em> counted twice,
 	 * so the result is equivalent to {@link #getVertices()}.size().
 	 */
+	@Override
 	public int size() {
 		return vertexLoop.size()-1;
 	}
@@ -92,34 +95,6 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 */
 	public List<VectorXZ> getVertexCollection() {
 		return vertexLoop;
-	}
-
-	/**
-	 * returns the vertex at a position in the vertex sequence
-	 */
-	public VectorXZ getVertex(int index) {
-		assert 0 <= index && index < vertexLoop.size()-1;
-		return vertexLoop.get(index);
-	}
-
-	/**
-	 * returns the successor of the vertex at a position in the vertex sequence.
-	 * This wraps around the vertex loop, so the successor of the last vertex
-	 * is the first vertex.
-	 */
-	public VectorXZ getVertexAfter(int index) {
-		assert 0 <= index && index < vertexLoop.size()-1;
-		return getVertex((index + 1) % size());
-	}
-
-	/**
-	 * returns the predecessor of the vertex at a position in the vertex sequence.
-	 * This wraps around the vertex loop, so the predecessor of the first vertex
-	 * is the last vertex.
-	 */
-	public VectorXZ getVertexBefore(int index) {
-		assert 0 <= index && index < vertexLoop.size()-1;
-		return getVertex((index + size() - 1) % size());
 	}
 
 	/**
@@ -394,6 +369,100 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 			} else {
 				result.set(i, result.get(i).makeCounterclockwise());
 			}
+		}
+
+		return result;
+
+	}
+
+	@Override
+	public final SimplePolygonXZ convexHull() {
+
+		List<VectorXZ> vertices = this.makeClockwise().getVertices();
+
+		/* determine points with min/max x value (guaranteed to be in convex hull) */
+
+		VectorXZ minV = min(vertices, comparingDouble(v -> v.x));
+		VectorXZ maxV = max(vertices, comparingDouble(v -> v.x));
+
+		int minI = vertices.indexOf(minV);
+		int maxI = vertices.indexOf(maxV);
+
+		/* split the polygon into an upper and lower "half" at the two points */
+
+		List<VectorXZ> upperHalf = new ArrayList<>();
+		List<VectorXZ> lowerHalf = new ArrayList<>();
+
+		upperHalf.add(minV);
+
+		for (int i = (minI + 1) % vertices.size(); i != maxI; i = (i+1) % vertices.size()) {
+			upperHalf.add(vertices.get(i));
+		}
+
+		upperHalf.add(maxV);
+
+		lowerHalf.add(maxV);
+
+		for (int i = (maxI + 1) % vertices.size(); i != minI; i = (i+1) % vertices.size()) {
+			lowerHalf.add(vertices.get(i));
+		}
+
+		lowerHalf.add(minV);
+
+		/* perform the calculation for each of the two parts */
+
+		List<VectorXZ> upperResult = convexHullPart(upperHalf);
+		List<VectorXZ> lowerResult = convexHullPart(lowerHalf);
+
+		/* combine the results */
+
+		upperResult.addAll(lowerResult.subList(1, lowerResult.size()));
+
+		if (!this.isClockwise()) {
+			Collections.reverse(upperResult);
+		}
+
+		return new SimplePolygonXZ(upperResult);
+
+	}
+
+	/**
+	 * calculates the convex hull partially for the upper or lower "half"
+	 * of a polygon. Used in {@link #convexHull()}.
+	 */
+	private static List<VectorXZ> convexHullPart(List<VectorXZ> vertices) {
+
+		checkArgument(vertices.size() >= 2);
+
+		if (vertices.size() < 3) {
+			return vertices;
+		}
+
+		// preliminary result, vertices can be removed from its end at a later point
+		List<VectorXZ> result = new ArrayList<VectorXZ>();
+
+		result.add(vertices.get(0));
+		result.add(vertices.get(1));
+
+		for (int i = 2; i < vertices.size(); i++) {
+
+			VectorXZ v = vertices.get(i);
+
+			while (result.size() > 1) {
+
+				if (isRightOf(result.get(result.size() - 2), v,
+						result.get(result.size() - 1))) {
+
+					result.remove(result.size() - 1);
+
+				} else {
+					break;
+				}
+
+			}
+
+			result.add(v);
+
 		}
 
 		return result;

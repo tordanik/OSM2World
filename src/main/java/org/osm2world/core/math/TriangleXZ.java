@@ -96,6 +96,11 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
+	public SimplePolygonShapeXZ convexHull() {
+		return this;
+	}
+
+	@Override
 	public Collection<TriangleXZ> getTriangulation() {
 		return singleton(this);
 	}

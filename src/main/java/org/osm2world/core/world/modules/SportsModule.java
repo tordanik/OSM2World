@@ -18,7 +18,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.PolygonUtil;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
@@ -126,7 +125,7 @@ public class SportsModule extends AbstractModule {
 
 			/* approximate a rectangular shape for the pitch */
 
-			SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(polygon);
+			SimplePolygonXZ bbox = polygon.minimumBoundingBox();
 
 			VectorXZ origin = bbox.getVertex(0);
 

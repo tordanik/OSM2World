@@ -78,6 +78,16 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 		return this;
 	}
 
+	@Override
+	public SimplePolygonXZ minimumBoundingBox() {
+		return polygonXZ();
+	}
+
+	@Override
+	public SimplePolygonShapeXZ convexHull() {
+		return this;
+	}
+
 	private SimplePolygonXZ polygonXZ;
 
 	public SimplePolygonXZ polygonXZ() {

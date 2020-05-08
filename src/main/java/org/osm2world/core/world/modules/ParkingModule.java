@@ -15,7 +15,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.PolygonUtil;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
@@ -88,7 +87,7 @@ public class ParkingModule extends AbstractModule {
 
 			for (MapArea parkingSpace : parkingSpaces) {
 
-				SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(parkingSpace.getOuterPolygon());
+				SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumBoundingBox();
 
 				// determine the car's facing direction based on  which side of the box is longer
 				VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));

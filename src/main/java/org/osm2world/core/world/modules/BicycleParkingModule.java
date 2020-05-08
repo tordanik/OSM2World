@@ -16,7 +16,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.PolygonUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
@@ -74,7 +73,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 			if (standConnectors == null) {
 
-				SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(area.getOuterPolygon());
+				SimplePolygonXZ bbox = area.getOuterPolygon().minimumBoundingBox();
 				List<VectorXZ> standLocations;
 				VectorXZ midpoint1, midpoint2;
 
@@ -111,7 +110,7 @@ public class BicycleParkingModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			SimplePolygonXZ bbox = PolygonUtil.minimumBoundingBox(area.getOuterPolygon());
+			SimplePolygonXZ bbox = area.getOuterPolygon().minimumBoundingBox();
 
 			VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
 
