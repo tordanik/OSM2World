@@ -20,13 +20,13 @@ public final class JTSBufferUtil {
 		BufferParameters bufferParams = new BufferParameters();
 		bufferParams.setJoinStyle(BufferParameters.JOIN_MITRE);
 		bufferParams.setMitreLimit(BufferParameters.DEFAULT_MITRE_LIMIT);
-		BufferOp op = new BufferOp(polygonXZToJTSPolygon(polygon), bufferParams);
+		BufferOp op = new BufferOp(toJTS(polygon), bufferParams);
 
 		Geometry result = op.getResultGeometry(distance);
 
 		/* interpret the result as polygons */
 
-		return polygonsXZFromJTSGeometry(result);
+		return polygonsFromJTS(result);
 
 	}
 

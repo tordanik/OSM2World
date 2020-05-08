@@ -36,11 +36,11 @@ public final class CAGUtil {
 			SimplePolygonShapeXZ basePolygon, List<? extends PolygonShapeXZ> subtractPolygons) {
 
 		List<Geometry> remainingGeometry = Collections.singletonList(
-				(Geometry)polygonXZToJTSPolygon(basePolygon));
+				(Geometry)toJTS(basePolygon));
 
 		for (PolygonShapeXZ subtractPolygon : subtractPolygons) {
 
-			Polygon jtsSubtractPolygon = polygonXZToJTSPolygon(subtractPolygon);
+			Polygon jtsSubtractPolygon = toJTS(subtractPolygon);
 
 			if (!jtsSubtractPolygon.isValid()) continue;
 
@@ -68,7 +68,7 @@ public final class CAGUtil {
 			new ArrayList<PolygonWithHolesXZ>();
 
 		for (Geometry g : remainingGeometry) {
-			result.addAll(polygonsXZFromJTSGeometry(g));
+			result.addAll(polygonsFromJTS(g));
 		}
 
 		return result;
@@ -90,7 +90,7 @@ public final class CAGUtil {
 
 		for (SimplePolygonXZ poly : intersectPolygons) {
 
-			Polygon jtsPoly = polygonXZToJTSPolygon(poly);
+			Polygon jtsPoly = toJTS(poly);
 
 			if (remainingGeometry == null) {
 				remainingGeometry = jtsPoly;
@@ -100,7 +100,7 @@ public final class CAGUtil {
 
 		}
 
-		return polygonsXZFromJTSGeometry(remainingGeometry);
+		return polygonsFromJTS(remainingGeometry);
 
 	}
 

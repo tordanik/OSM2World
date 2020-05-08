@@ -63,21 +63,21 @@ public final class JTSTriangulationUtil {
 		List<Geometry> constraints =
 			new ArrayList<Geometry>(1 + holes.size() + segments.size());
 
-		constraints.add(polygonXZToJTSPolygon(polygon));
+		constraints.add(toJTS(polygon));
 
 		for (SimplePolygonXZ hole : holes) {
-			constraints.add(polygonXZToJTSPolygon(hole));
+			constraints.add(toJTS(hole));
 		}
 
 		for (LineSegmentXZ segment : segments) {
-			constraints.add(polylineXZToJTSLineString(segment));
+			constraints.add(toJTSLineString(segment));
 		}
 
 		ArrayList<Point> jtsPoints = new ArrayList<Point>();
 		for (VectorXZ p : points) {
 			CoordinateSequence coordinateSequence =
 				new CoordinateArraySequence(new Coordinate[] {
-						vectorXZToJTSCoordinate(p)});
+						toJTS(p)});
 			jtsPoints.add(new Point(coordinateSequence, GF));
 		}
 
@@ -95,7 +95,7 @@ public final class JTSTriangulationUtil {
 		 * filter out those which are outside the polygon or in a hole */
 
 		Collection<PolygonWithHolesXZ> trianglesAsPolygons =
-			polygonsXZFromJTSGeometry(triangulationResult);
+			polygonsFromJTS(triangulationResult);
 
 		List<TriangleXZ> triangles = new ArrayList<TriangleXZ>();
 

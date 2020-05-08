@@ -78,9 +78,9 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	/** returns the point on this segment that is closest to the parameter */
 	@Override
 	public VectorXZ closestPoint(VectorXZ p) {
-		LineSegment jtsSegment = JTSConversionUtil.lineSegmentXZToJTSLineSegment(this);
-		Coordinate jtsResult = jtsSegment.closestPoint(vectorXZToJTSCoordinate(p));
-		return vectorXZFromJTSCoordinate(jtsResult);
+		LineSegment jtsSegment = JTSConversionUtil.toJTS(this);
+		Coordinate jtsResult = jtsSegment.closestPoint(toJTS(p));
+		return fromJTS(jtsResult);
 	}
 
 	@Override
