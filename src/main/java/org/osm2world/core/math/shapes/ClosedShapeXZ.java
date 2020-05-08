@@ -20,4 +20,7 @@ public interface ClosedShapeXZ extends ShapeXZ {
 	/** returns the inner rings of this shape */
 	public Collection<? extends SimpleClosedShapeXZ> getHoles();
 
+	/** returns the shape's area */
+	public double getArea();
+
 }

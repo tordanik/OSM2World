@@ -31,6 +31,11 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		return radius;
 	}
 
+	@Override
+	public double getArea() {
+		return radius * radius * PI;
+	}
+
 	public List<VectorXZ> getVertexList(int numPoints) {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>(numPoints + 1);

@@ -58,4 +58,29 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 		return new SimplePolygonXZ(getVertexList().stream().map(shiftVector::add).collect(toList()));
 	}
 
+	/** returns this polygon's area */
+	@Override
+	public default double getArea() {
+		return new SimplePolygonXZ(this).getArea();
+	}
+
+	/** returns the centroid (or "barycenter") of the polygon */
+	public default VectorXZ getCentroid() {
+		return new SimplePolygonXZ(this).getCentroid();
+	}
+
+	@Override
+	public default double getDiameter() {
+		double maxDistance = 0;
+		for (int i = 1; i < size(); i++) {
+			for (int j = 0; j < i; j++) {
+				double distance = getVertexList().get(i).distanceTo(getVertexList().get(j));
+				if (distance > maxDistance) {
+					maxDistance = distance;
+				}
+			}
+		}
+		return maxDistance;
+	}
+
 }

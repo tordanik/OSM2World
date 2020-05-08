@@ -54,7 +54,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 		assertNonzeroArea();
 	}
 
-	/** returns the polygon's area */
+	@Override
 	public double getArea() {
 		if (area == null) {
 			calculateArea();
@@ -79,6 +79,7 @@ public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 	}
 
 	/** returns the centroid (or "barycenter") of the polygon */
+	@Override
 	public VectorXZ getCentroid() {
 
 		if (signedArea == null) { calculateArea(); }
@@ -99,23 +100,6 @@ public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 		double areaFactor = 1 / (6 * signedArea);
 		return new VectorXZ(areaFactor * xSum, areaFactor * zSum);
 
-	}
-
-	/**
-	 * returns the largest distance between any pair of vertices
-	 * of this polygon
-	 */
-	public double getDiameter() {
-		double maxDistance = 0;
-		for (int i = 1; i < vertexLoop.size() - 1; i++) {
-			for (int j = 0; j < i; j++) {
-				double distance = vertexLoop.get(i).distanceTo(vertexLoop.get(j));
-				if (distance > maxDistance) {
-					maxDistance = distance;
-				}
-			}
-		}
-		return maxDistance;
 	}
 
 	/** returns true if the polygon has clockwise orientation */

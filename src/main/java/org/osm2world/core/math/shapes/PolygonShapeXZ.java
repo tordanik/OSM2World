@@ -40,6 +40,22 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 		}
 	}
 
+	/** returns this polygon's area */
+	@Override
+	public default double getArea() {
+		//FIXME incorrect for overlapping holes (those should probably be made explicitly illegal)
+		double area = getOuter().getArea();
+		for (SimplePolygonShapeXZ hole : getHoles()) {
+			area -= hole.getArea();
+		}
+		return area;
+	}
+
+	/** returns the largest distance between any pair of vertices of this polygon */
+	public default double getDiameter() {
+		return getOuter().getDiameter();
+	}
+
 	public default boolean contains(VectorXZ v) {
 		if (!getOuter().contains(v)) {
 			return false;

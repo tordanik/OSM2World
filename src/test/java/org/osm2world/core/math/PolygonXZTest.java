@@ -180,15 +180,4 @@ public class PolygonXZTest {
 				new PolygonXZ(Arrays.asList(v1, v2, v6, v3, v4, v5, v1)).isSelfIntersecting());
 	}
 
-	@Test
-	public void testGetVertices() {
-
-		SimplePolygonXZ testee = new SimplePolygonXZ(outlineA);
-
-		assertAlmostEquals(asList(outlineA0), testee.getVertices(0, 0));
-		assertAlmostEquals(asList(outlineA1, outlineA2, outlineA3), testee.getVertices(1, 3));
-		assertAlmostEquals(asList(outlineA3, outlineA0, outlineA1), testee.getVertices(3, 1));
-
-	}
-
 }

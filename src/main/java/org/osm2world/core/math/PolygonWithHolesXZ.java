@@ -120,13 +120,9 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 		return intersectionPositions;
 	}
 
-	public double getArea() {
-		//FIXME incorrect for overlapping holes
-		double area = outerPolygon.getArea();
-		for (SimplePolygonXZ hole : holes) {
-			area -= hole.getArea();
-		}
-		return area;
+	@Override
+	public String toString() {
+		return getPolygons().toString();
 	}
 
 }
