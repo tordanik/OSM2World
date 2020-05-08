@@ -63,14 +63,6 @@ public class PolygonXYZ {
 		return segments;
 	}
 
-	public PolygonXZ getXZPolygon() {
-		List<VectorXZ> verticesXZ = new ArrayList<VectorXZ>(vertexLoop.size());
-		for (VectorXYZ vertex : vertexLoop) {
-			verticesXZ.add(vertex.xz());
-		}
-		return new PolygonXZ(verticesXZ);
-	}
-
 	/**
 	 * caller must check whether flattening will result in a simple planar polygon
 	 */

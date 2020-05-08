@@ -24,7 +24,7 @@ import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.DelaunayT
 import org.osm2world.core.map_elevation.creation.DelaunayTriangulation.NaturalNeighbors;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -216,7 +216,7 @@ public class NNDebugViewer {
 				3);
 	}
 
-		private void draw(Graphics g, PolygonXZ p) {
+		private void draw(Graphics g, SimplePolygonXZ p) {
 
 			for (VectorXZ vertex : p.getVertices()) {
 				drawPoint(g, vertex);

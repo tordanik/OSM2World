@@ -23,7 +23,6 @@ import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -152,10 +151,9 @@ class Wall implements Renderable {
 				// insert points that are in the bottom polygon, but not in the top (e.g. with building passage)
 				if (!polygon.getVertices().contains(bottomPoint)
 						&& polygon.getClosestSegment(bottomPoint).closestPoint(bottomPoint).distanceTo(bottomPoint) < 0.1) {
-					PolygonXZ polygonWithAddedPoint = insertIntoPolygon(polygon, bottomPoint, 0);
-					if (polygonWithAddedPoint.isSimple()) {
-						polygon = polygonWithAddedPoint.asSimplePolygon();
-					}
+					try {
+						polygon = insertIntoPolygon(polygon, bottomPoint, 0);
+					} catch (InvalidGeometryException e) { /* keep the previous polygon */ }
 				}
 			}
 

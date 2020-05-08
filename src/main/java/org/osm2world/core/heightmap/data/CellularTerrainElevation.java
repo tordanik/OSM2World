@@ -1,7 +1,7 @@
 package org.osm2world.core.heightmap.data;
 
 import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.PolygonXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 
 /**
  * Terrain elevation data that consists of
@@ -32,7 +32,7 @@ public interface CellularTerrainElevation extends TerrainElevation {
 	 * returns the boundary created from the first and last rows and columns
 	 * of the grid.
 	 */
-	PolygonXZ getBoundaryPolygonXZ();
+	SimplePolygonXZ getBoundaryPolygonXZ();
 
 	/**
 	 * returns Iterable over cells.

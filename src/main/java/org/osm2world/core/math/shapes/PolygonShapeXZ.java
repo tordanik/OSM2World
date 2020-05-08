@@ -9,14 +9,14 @@ import java.util.List;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /**
  * supertype for polygons, defined as closed 2d shapes with 3 or more vertices.
  *
- * <p>{@link PolygonXZ} is the subclass that can represent any polygon without holes,
+ * <p>{@link SimplePolygonXZ} is the subclass that can represent any polygon without holes,
  * and {@link PolygonWithHolesXZ} allows for polygons with holes.
  * Other subclasses are specialized to a subset, e.g. triangles in the case of {@link TriangleXZ}.
  */

@@ -535,11 +535,9 @@ public final class GeometryUtil {
 	 * @param polygon       original polygon, will not be modified by this method
 	 * @param point         the new point
 	 * @param snapDistance  minimum distance of new point from segment endpoints;
-	 *                      if the new point is closer, the unmodified
-	 *                      original polygon will be returned.
+	 *                      if the new point is closer, the unmodified original polygon will be returned.
 	 */
-	public static PolygonXZ insertIntoPolygon(PolygonXZ polygon,
-			VectorXZ point, double snapDistance) {
+	public static SimplePolygonXZ insertIntoPolygon(SimplePolygonXZ polygon, VectorXZ point, double snapDistance) {
 
 		LineSegmentXZ segment = polygon.getClosestSegment(point);
 
@@ -555,12 +553,11 @@ public final class GeometryUtil {
 
 				} else {
 
-					ArrayList<VectorXZ> vertexLoop =
-						new ArrayList<VectorXZ>(polygon.getVertexLoop());
+					ArrayList<VectorXZ> vertexLoop = new ArrayList<>(polygon.getVertexList());
 
 					vertexLoop.add(i + 1, point);
 
-					return new PolygonXZ(vertexLoop);
+					return new SimplePolygonXZ(vertexLoop);
 
 				}
 
@@ -568,8 +565,7 @@ public final class GeometryUtil {
 
 		}
 
-		throw new IllegalArgumentException("segment " + segment +
-				" was not found in polygon " + polygon);
+		throw new IllegalArgumentException("segment " + segment + " was not found in polygon " + polygon);
 
 	}
 

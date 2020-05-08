@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static org.osm2world.core.test.TestUtil.assertSameCyclicOrder;
 
 import org.junit.Test;
-import org.osm2world.core.math.PolygonXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -27,7 +26,7 @@ public class PolygonUtilTest {
 				new VectorXZ( +5, 0),
 				new VectorXZ( -5, 0)));
 
-		PolygonXZ hull = PolygonUtil.convexHull(p);
+		SimplePolygonXZ hull = PolygonUtil.convexHull(p);
 
 		assertSameCyclicOrder(false, hull.getVertices(),
 				new VectorXZ( -5, 0),
@@ -51,7 +50,7 @@ public class PolygonUtilTest {
 				new VectorXZ(  0.0, -0.5),
 				new VectorXZ( -2.0,  0.0)));
 
-		PolygonXZ hull = PolygonUtil.convexHull(p);
+		SimplePolygonXZ hull = PolygonUtil.convexHull(p);
 
 		assertSameCyclicOrder(false, hull.getVertices(),
 				new VectorXZ( -2.0,  0.0),
@@ -69,7 +68,7 @@ public class PolygonUtilTest {
 				new VectorXZ( 0, 1),
 				new VectorXZ(-1, 0)));
 
-		PolygonXZ hull = PolygonUtil.convexHull(p);
+		SimplePolygonXZ hull = PolygonUtil.convexHull(p);
 
 		assertSameCyclicOrder(false, hull.getVertices(),
 					new VectorXZ(-1, 0),
@@ -89,7 +88,7 @@ public class PolygonUtilTest {
 				new VectorXZ(2, 0),
 				new VectorXZ(0, 0)));
 
-		PolygonXZ hull = PolygonUtil.convexHull(p);
+		SimplePolygonXZ hull = PolygonUtil.convexHull(p);
 
 		assertSameCyclicOrder(false, hull.getVertices(),
 				new VectorXZ(0, 0),
