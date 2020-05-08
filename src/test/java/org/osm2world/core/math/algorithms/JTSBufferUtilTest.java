@@ -2,6 +2,7 @@ package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.algorithms.JTSBufferUtil.bufferPolygon;
 import static org.osm2world.core.test.TestUtil.assertSameCyclicOrder;
 
@@ -19,7 +20,7 @@ public class JTSBufferUtilTest {
 	public void testBufferPolygon_simpleSquare() {
 
 		VectorXZ center = new VectorXZ(20, -3);
-		SimplePolygonXZ input = new SimplePolygonXZ(new AxisAlignedRectangleXZ(center, 10, 10));
+		SimplePolygonXZ input = asSimplePolygon(new AxisAlignedRectangleXZ(center, 10, 10));
 
 		{
 			List<PolygonWithHolesXZ> result0 = bufferPolygon(input, 0);
@@ -42,8 +43,8 @@ public class JTSBufferUtilTest {
 
 		VectorXZ center = new VectorXZ(20, -3);
 
-		SimplePolygonXZ outer = new SimplePolygonXZ(new AxisAlignedRectangleXZ(center, 10, 10));
-		SimplePolygonXZ inner = new SimplePolygonXZ(new AxisAlignedRectangleXZ(center, 3, 3));
+		SimplePolygonXZ outer = asSimplePolygon(new AxisAlignedRectangleXZ(center, 10, 10));
+		SimplePolygonXZ inner = asSimplePolygon(new AxisAlignedRectangleXZ(center, 3, 3));
 		PolygonWithHolesXZ input = new PolygonWithHolesXZ(outer, asList(inner));
 
 

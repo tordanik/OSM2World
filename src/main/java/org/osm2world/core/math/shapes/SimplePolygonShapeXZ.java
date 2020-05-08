@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,12 +93,12 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	/** returns this polygon's area */
 	@Override
 	public default double getArea() {
-		return new SimplePolygonXZ(this).getArea();
+		return asSimplePolygon(this).getArea();
 	}
 
 	/** returns the centroid (or "barycenter") of the polygon */
 	public default VectorXZ getCentroid() {
-		return new SimplePolygonXZ(this).getCentroid();
+		return asSimplePolygon(this).getCentroid();
 	}
 
 	@Override
@@ -120,7 +121,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	 * @return  the convex hull. Its points are ordered as they were in the original polygon.
 	 */
 	public default SimplePolygonShapeXZ convexHull() {
-		return new SimplePolygonXZ(this).convexHull();
+		return asSimplePolygon(this).convexHull();
 	}
 
 	/**

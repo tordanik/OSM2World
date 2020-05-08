@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
@@ -97,11 +98,11 @@ class GeometryWindow implements Window {
 	}
 
 	private SimplePolygonXZ rectangleShape(VectorXZ position, double width, double height) {
-		return new SimplePolygonXZ(new AxisAlignedRectangleXZ(-width/2, 0, +width/2, height).shift(position));
+		return asSimplePolygon(new AxisAlignedRectangleXZ(-width/2, 0, +width/2, height).shift(position));
 	}
 
 	private SimplePolygonXZ circleShape(VectorXZ position, double width, double height) {
-		return new SimplePolygonXZ(new CircleXZ(position.add(0, height / 2), max(height, width)/2));
+		return asSimplePolygon(new CircleXZ(position.add(0, height / 2), max(height, width)/2));
 	}
 
 	@Override

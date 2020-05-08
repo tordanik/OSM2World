@@ -48,8 +48,12 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	}
 
-	public SimplePolygonXZ(SimpleClosedShapeXZ shape) {
-		this(shape.getVertexList());
+	public static final SimplePolygonXZ asSimplePolygon(SimpleClosedShapeXZ shape) {
+		if (shape instanceof SimplePolygonXZ) {
+			return (SimplePolygonXZ) shape;
+		} else {
+			return new SimplePolygonXZ(shape.getVertexList());
+		}
 	}
 
 	/**
