@@ -104,7 +104,7 @@ class Wall implements Renderable {
 
 		} else {
 
-			if (!tags.containsKey("building:levels")
+			if (!tags.containsKey("building:levels") || tags.contains("building:levels", "0")
 					|| points.getLength() < 1.0) {
 				hasWindows = false;
 			}

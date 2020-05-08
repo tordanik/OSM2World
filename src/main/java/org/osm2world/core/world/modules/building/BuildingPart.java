@@ -100,7 +100,7 @@ public class BuildingPart implements Renderable {
 		}
 
 		if (parsedLevels != null) {
-			buildingLevels = (int)(float)parsedLevels;
+			buildingLevels = max(1, (int)(float)parsedLevels);
 		} else if (parseHeight(tags, -1) > 0) {
 			buildingLevels = max(1, (int)(parseHeight(tags, -1) / heightPerLevel));
 		} else {
@@ -114,7 +114,7 @@ public class BuildingPart implements Renderable {
 		}
 
 		if (parsedMinLevel != null) {
-			minLevel = (int)(float)parsedMinLevel;
+			minLevel = max(0, (int)(float)parsedMinLevel);
 		} else {
 			minLevel = 0;
 		}
