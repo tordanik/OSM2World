@@ -243,7 +243,8 @@ class Wall implements Renderable {
 			for (int level : levels) {
 
 				VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
-						buildingPart.getLevelHeightAboveBase(level));
+						buildingPart.getLevelHeightAboveBase(level)
+						- buildingPart.getLevelHeightAboveBase(buildingPart.minLevel));
 
 				if ((node.getTags().contains("building", "entrance")
 						|| node.getTags().containsKey("entrance")

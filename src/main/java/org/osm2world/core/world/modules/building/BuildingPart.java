@@ -60,8 +60,8 @@ public class BuildingPart implements Renderable {
 	/** the tags for this part, including tags inherited from the parent */
 	final TagSet tags;
 
-	int buildingLevels;
-	private int minLevel;
+	final int buildingLevels;
+	final int minLevel;
 
 	double heightWithoutRoof;
 
@@ -80,7 +80,104 @@ public class BuildingPart implements Renderable {
 
 		this.tags = inheritTags(area.getTags(), building.getPrimaryMapElement().getTags());
 
-		setLevelsHeightAndRoof();
+		/*
+		 *  figure out level and height information, plus roofs, based on the building's and building part's tags.
+		 * If available, explicitly tagged data is used, with tags of the building part overriding building tags.
+		 * Otherwise, the values depend on indirect assumptions (level height)
+		 * or ultimately the defaults for this type of building or building part.
+		 */
+
+		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
+
+		double heightPerLevel = defaults.heightPerLevel;
+
+		/* determine levels */
+
+		Float parsedLevels = null;
+
+		if (tags.containsKey("building:levels")) {
+			parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
+		}
+
+		if (parsedLevels != null) {
+			buildingLevels = (int)(float)parsedLevels;
+		} else if (parseHeight(tags, -1) > 0) {
+			buildingLevels = max(1, (int)(parseHeight(tags, -1) / heightPerLevel));
+		} else {
+			buildingLevels = defaults.levels;
+		}
+
+		Float parsedMinLevel = null;
+
+		if (tags.containsKey("building:min_level")) {
+			parsedMinLevel = parseOsmDecimal(tags.getValue("building:min_level"), false);
+		}
+
+		if (parsedMinLevel != null) {
+			minLevel = (int)(float)parsedMinLevel;
+		} else {
+			minLevel = 0;
+		}
+
+		/* determine roof height */
+
+		Float roofHeight = null;
+
+		if (tags.containsKey("roof:height")) {
+			String valueString = tags.getValue("roof:height");
+			roofHeight = parseMeasure(valueString);
+		} else if (tags.containsKey("roof:levels")) {
+			try {
+				roofHeight = (float)defaults.heightPerLevel * Integer.parseInt(tags.getValue("roof:levels"));
+			} catch (NumberFormatException e) {}
+		}
+
+		if (roofHeight == null) {
+			if (tags.contains("roof:shape", "dome")) {
+				roofHeight = (float) polygon.getOuter().getDiameter() / 2;
+			} else if (buildingLevels == 1) {
+				roofHeight = 1.0f;
+			} else {
+				roofHeight = (float) DEFAULT_RIDGE_HEIGHT;
+			}
+		}
+
+		/* build the roof */
+
+		Material materialRoof = createRoofMaterial(tags, config);
+
+		if (!("no".equals(tags.getValue("roof:lines"))) && ComplexRoof.hasComplexRoof(area)) {
+			roof = new ComplexRoof(area, polygon, tags, roofHeight, materialRoof);
+		} else {
+
+			String roofShape = tags.getValue("roof:shape");
+			if (roofShape == null) { roofShape = tags.getValue("building:roof:shape"); }
+			if (roofShape == null) { roofShape = defaults.roofShape; }
+
+			try {
+
+				roof = Roof.createRoofForShape(roofShape, polygon, tags, roofHeight, materialRoof);
+
+			} catch (InvalidGeometryException e) {
+				System.err.println("falling back to FlatRoof for " + area + ": " + e);
+				roof = new FlatRoof(polygon, tags, materialRoof);
+			}
+
+		}
+
+		if (roof instanceof FlatRoof) {
+			roofHeight = 0.0f;
+		}
+
+		/* determine building height */
+
+		double fallbackHeight = buildingLevels * heightPerLevel + roofHeight;
+		double height = parseHeight(tags, (float)fallbackHeight);
+
+		// Make sure buildings have at least some height
+		height = max(height, 0.01);
+
+		heightWithoutRoof = height - roofHeight;
 
 	}
 
@@ -399,106 +496,6 @@ public class BuildingPart implements Renderable {
 		}
 
 		return 0;
-
-	}
-
-	/**
-	 * figures out level and height information, plus roofs, based on the building's and building part's tags.
-	 * If available, explicitly tagged data is used, with tags of the building part overriding building tags.
-	 * Otherwise, the values depend on indirect assumptions (level height)
-	 * or ultimately the building class as determined by the "building" and "building:part" keys.
-	 */
-	private void setLevelsHeightAndRoof() {
-
-		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
-
-		double heightPerLevel = defaults.heightPerLevel;
-
-		/* determine levels */
-
-		buildingLevels = defaults.levels;
-
-		Float parsedLevels = null;
-
-		if (tags.containsKey("building:levels")) {
-			parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
-		}
-
-		if (parsedLevels != null) {
-			buildingLevels = (int)(float)parsedLevels;
-		} else if (parseHeight(tags, -1) > 0) {
-			buildingLevels = max(1, (int)(parseHeight(tags, -1) / heightPerLevel));
-		}
-
-		minLevel = 0;
-
-		if (tags.containsKey("building:min_level")) {
-			Float parsedMinLevel = parseOsmDecimal(tags.getValue("building:min_level"), false);
-			if (parsedMinLevel != null) {
-				minLevel = (int)(float)parsedMinLevel;
-			}
-		}
-
-		/* determine roof height */
-
-		Float roofHeight = null;
-
-		if (tags.containsKey("roof:height")) {
-			String valueString = tags.getValue("roof:height");
-			roofHeight = parseMeasure(valueString);
-		} else if (tags.containsKey("roof:levels")) {
-			try {
-				roofHeight = (float)defaults.heightPerLevel * Integer.parseInt(tags.getValue("roof:levels"));
-			} catch (NumberFormatException e) {}
-		}
-
-		if (roofHeight == null) {
-			if (tags.contains("roof:shape", "dome")) {
-				roofHeight = (float) polygon.getOuter().getDiameter() / 2;
-			} else if (buildingLevels == 1) {
-				roofHeight = 1.0f;
-			} else {
-				roofHeight = (float) DEFAULT_RIDGE_HEIGHT;
-			}
-		}
-
-		/* build the roof */
-
-		Material materialRoof = createRoofMaterial(tags, config);
-
-		if (!("no".equals(tags.getValue("roof:lines"))) && ComplexRoof.hasComplexRoof(area)) {
-			roof = new ComplexRoof(area, polygon, tags, roofHeight, materialRoof);
-		} else {
-
-			String roofShape = tags.getValue("roof:shape");
-			if (roofShape == null) { roofShape = tags.getValue("building:roof:shape"); }
-			if (roofShape == null) { roofShape = defaults.roofShape; }
-
-			try {
-
-				roof = Roof.createRoofForShape(roofShape, polygon, tags, roofHeight, materialRoof);
-
-			} catch (InvalidGeometryException e) {
-				System.err.println("falling back to FlatRoof for " + area + ": " + e);
-				roof = new FlatRoof(polygon, tags, materialRoof);
-			}
-
-		}
-
-		if (roof instanceof FlatRoof) {
-			roofHeight = 0.0f;
-		}
-
-		/* determine building height */
-
-		double fallbackHeight = buildingLevels * heightPerLevel + roofHeight;
-		double height = parseHeight(tags, (float)fallbackHeight);
-
-		// Make sure buildings have at least some height
-		height = max(height, 0.01);
-
-		heightWithoutRoof = height - roofHeight;
-
 
 	}
 
