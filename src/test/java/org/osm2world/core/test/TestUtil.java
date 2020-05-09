@@ -1,5 +1,6 @@
 package org.osm2world.core.test;
 
+import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -33,39 +35,49 @@ public final class TestUtil {
 
 	}
 
-	public static final void assertAlmostEquals(
-			double expected, double actual) {
-		if (Math.abs(expected - actual) > 0.001) {
-			throw new AssertionError("expected " + expected + ", was " + actual);
+	private static final boolean almostEquals(double a, double b) {
+		return abs(a - b) <= 0.001;
+	}
+
+	private static final boolean almostEquals(VectorXZ a, VectorXZ b) {
+		return a.distanceTo(b) <= 0.001;
+	}
+
+	private static final boolean almostEquals(VectorXYZ a, VectorXYZ b) {
+		return a.distanceTo(b) <= 0.001;
+	}
+
+	public static final void assertAlmostEquals(double expected, double actual) {
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
 		}
 	}
 
-	public static final void assertAlmostEquals(
-			VectorXZ expected, VectorXZ actual) {
-		assertAlmostEquals(expected.x, actual.x);
-		assertAlmostEquals(expected.z, actual.z);
+	public static final void assertAlmostEquals(VectorXZ expected, VectorXZ actual) {
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
 	}
 
-	public static void assertAlmostEquals(
-			double expectedX, double expectedZ,
-			VectorXZ actual) {
-		assertAlmostEquals(expectedX, actual.x);
-		assertAlmostEquals(expectedZ, actual.z);
+	public static void assertAlmostEquals(double expectedX, double expectedZ, VectorXZ actual) {
+		VectorXZ expected = new VectorXZ(expectedX, expectedZ);
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
 	}
 
-	public static final void assertAlmostEquals(
-			VectorXYZ expected, VectorXYZ actual) {
-		assertAlmostEquals(expected.x, actual.x);
-		assertAlmostEquals(expected.y, actual.y);
-		assertAlmostEquals(expected.z, actual.z);
+	public static final void assertAlmostEquals(VectorXYZ expected, VectorXYZ actual) {
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
 	}
 
-	public static final void assertAlmostEquals(
-			double expectedX, double expectedY, double expectedZ,
+	public static final void assertAlmostEquals(double expectedX, double expectedY, double expectedZ,
 			VectorXYZ actual) {
-		assertAlmostEquals(expectedX, actual.x);
-		assertAlmostEquals(expectedY, actual.y);
-		assertAlmostEquals(expectedZ, actual.z);
+		VectorXYZ expected = new VectorXYZ(expectedX, expectedY, expectedZ);
+		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
 	}
 
 	public static final void assertAlmostEquals(List<VectorXZ> expected, List<VectorXZ> actual) {
@@ -74,6 +86,22 @@ public final class TestUtil {
 
 		for (int i = 0; i < expected.size(); i++) {
 			assertAlmostEquals(expected.get(i), actual.get(i));
+		}
+
+	}
+
+	/**
+	 * @throws AssertionError unless the two sets contain the "same" vectors
+	 * (by the standards of {@link #assertAlmostEquals(VectorXZ, VectorXZ)})
+	 */
+	public static final void assertAlmostEquals(Set<VectorXZ> expected, Set<VectorXZ> actual) {
+
+		assertSame(expected.size(), actual.size());
+
+		for (VectorXZ expectedV : expected) {
+			if (!actual.stream().anyMatch(actualV -> almostEquals(expectedV, actualV))) {
+				fail("expected vector " + expectedV + " missing from " + actual);
+			}
 		}
 
 	}
@@ -94,11 +122,10 @@ public final class TestUtil {
 			List<VectorXZ> actual, VectorXZ... expected) {
 
 		if (actual.size() != expected.length) {
-			fail("expected size " + expected.length +
-					", found list of size " + actual.size());
+			fail("expected size " + expected.length + ", found list of size " + actual.size());
 		}
 
-		List<VectorXZ> actualModified = new ArrayList<VectorXZ>(actual);
+		List<VectorXZ> actualModified = new ArrayList<>(actual);
 
 		for (boolean reverse : asList(false, true)) {
 
@@ -116,8 +143,7 @@ public final class TestUtil {
 
 				for (int i = 0; i < actualModified.size(); i++) {
 					int iWithOffset = (i + offset) % actualModified.size();
-					if (VectorXZ.distance(expected[i],
-							actualModified.get(iWithOffset)) > 0.0001) {
+					if (VectorXZ.distance(expected[i], actualModified.get(iWithOffset)) > 0.0001) {
 						matches = false;
 						break;
 					}
@@ -135,11 +161,8 @@ public final class TestUtil {
 
 	}
 
-	public static final void assertSameCyclicOrder(boolean reversible,
-			List<VectorXZ> expected, List<VectorXZ> actual) {
-
+	public static final void assertSameCyclicOrder(boolean reversible, List<VectorXZ> expected, List<VectorXZ> actual) {
 		assertSameCyclicOrder(reversible, actual, expected.toArray(new VectorXZ[0]));
-
 	}
 
 }
