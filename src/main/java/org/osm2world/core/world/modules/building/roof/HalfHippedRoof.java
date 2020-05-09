@@ -36,10 +36,10 @@ public class HalfHippedRoof extends RoofWithRidge {
 
 		SimplePolygonXZ newOuter = originalPolygon.getOuter();
 
-		newOuter = insertIntoPolygon(newOuter, cap1part.p1, 0.2);
-		newOuter = insertIntoPolygon(newOuter, cap1part.p2, 0.2);
-		newOuter = insertIntoPolygon(newOuter, cap2part.p1, 0.2);
-		newOuter = insertIntoPolygon(newOuter, cap2part.p2, 0.2);
+		newOuter = insertIntoPolygon(newOuter, cap1part.p1, SNAP_DISTANCE);
+		newOuter = insertIntoPolygon(newOuter, cap1part.p2, SNAP_DISTANCE);
+		newOuter = insertIntoPolygon(newOuter, cap2part.p1, SNAP_DISTANCE);
+		newOuter = insertIntoPolygon(newOuter, cap2part.p2, SNAP_DISTANCE);
 
 		return new PolygonWithHolesXZ(newOuter, originalPolygon.getHoles());
 
@@ -61,16 +61,20 @@ public class HalfHippedRoof extends RoofWithRidge {
 
 	@Override
 	public Double getRoofHeightAt_noInterpolation(VectorXZ pos) {
-		if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) {
+		if (ridge.p1.equals(pos) || ridge.p2.equals(pos)) { // point on the ridge
 			return roofHeight;
-		} else if (getPolygon().getOuter().getVertexCollection().contains(pos)) {
-			if (distanceFromLineSegment(pos, cap1part) < 0.05) {
-				return roofHeight - roofHeight * ridgeOffset / (cap1.getLength()/2);
-			} else if (distanceFromLineSegment(pos, cap2part) < 0.05) {
-				return roofHeight - roofHeight * ridgeOffset / (cap2.getLength()/2);
-			} else {
-				return 0.0;
-			}
+		} else if (distanceFromLineSegment(pos, cap1part) < 0.05) { // point ~on cap1part
+			return roofHeight - roofHeight * ridgeOffset / (cap1.getLength()/2);
+		} else if (distanceFromLineSegment(pos, cap2part) < 0.05) { // point ~on cap2part
+			return roofHeight - roofHeight * ridgeOffset / (cap2.getLength()/2);
+		} else if (distanceFromLineSegment(pos, cap1) < 0.05) { // point ~on cap1
+			double relativeRidgeDist = distanceFromLine(pos, ridge.p1, ridge.p2) / (cap1.getLength() / 2);
+			return roofHeight * (1 - relativeRidgeDist);
+		} else if (distanceFromLineSegment(pos, cap2) < 0.05) { // point ~on cap2
+			double relativeRidgeDist = distanceFromLine(pos, ridge.p1, ridge.p2) / (cap2.getLength() / 2);
+			return roofHeight * (1 - relativeRidgeDist);
+		} else if (getPolygon().getOuter().getVertexCollection().contains(pos)) { // other points on the outline
+			return 0.0;
 		} else {
 			return null;
 		}

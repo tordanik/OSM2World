@@ -27,6 +27,9 @@ import org.osm2world.core.util.exception.TriangulationException;
  */
 abstract public class HeightfieldRoof extends Roof {
 
+	/** if {@link #getPolygon()} has additional roofs inserted, this is the threshold for snapping to existing points */
+	protected static final double SNAP_DISTANCE = 0.01;
+
 	public HeightfieldRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
 		super(originalPolygon, tags, height, material);
 	}

@@ -23,8 +23,8 @@ public class GabledRoof extends RoofWithRidge {
 
 		SimplePolygonXZ newOuter = originalPolygon.getOuter();
 
-		newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
-		newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+		newOuter = insertIntoPolygon(newOuter, ridge.p1, SNAP_DISTANCE);
+		newOuter = insertIntoPolygon(newOuter, ridge.p2, SNAP_DISTANCE);
 
 		return new PolygonWithHolesXZ(newOuter, originalPolygon.getHoles());
 

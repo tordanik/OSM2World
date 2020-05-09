@@ -56,12 +56,12 @@ public class RoundRoof extends RoofWithRidge {
 
 		SimplePolygonXZ newOuter = originalPolygon.getOuter();
 
-		newOuter = insertIntoPolygon(newOuter, ridge.p1, 0.2);
-		newOuter = insertIntoPolygon(newOuter, ridge.p2, 0.2);
+		newOuter = insertIntoPolygon(newOuter, ridge.p1, SNAP_DISTANCE);
+		newOuter = insertIntoPolygon(newOuter, ridge.p2, SNAP_DISTANCE);
 
 		for (LineSegmentXZ capPart : capParts){
-			newOuter = insertIntoPolygon(newOuter, capPart.p1, 0.2);
-			newOuter = insertIntoPolygon(newOuter, capPart.p2, 0.2);
+			newOuter = insertIntoPolygon(newOuter, capPart.p1, SNAP_DISTANCE);
+			newOuter = insertIntoPolygon(newOuter, capPart.p2, SNAP_DISTANCE);
 		}
 
 		//TODO: add intersections of additional edges with outline?
