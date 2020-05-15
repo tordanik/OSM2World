@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.JTSConversionUtil.*;
@@ -15,6 +16,7 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	public final VectorXZ p1, p2;
 
 	public LineSegmentXZ(VectorXZ p1, VectorXZ p2) {
+		//TODO if (p1.equals(p2)) throw new IllegalArgumentException("points need to be different");
 		this.p1 = p1;
 		this.p2 = p2;
 	}
@@ -33,7 +35,12 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	}
 
 	public VectorXZ getCenter() {
-		return GeometryUtil.interpolateBetween(p1, p2, 0.5);
+		return new VectorXZ((p1.x + p2.x) / 2, (p1.z + p2.z) / 2);
+	}
+
+	/** returns a normalized vector indicating the segment's direction */
+	public VectorXZ getDirection() {
+		return p2.subtract(p1).normalize();
 	}
 
 	/**
@@ -64,6 +71,7 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	/**
 	 * returns the distance between this segment's two end nodes
 	 */
+	@Override
 	public double getLength() {
 		return VectorXZ.distance(p1, p2);
 	}
@@ -81,6 +89,16 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 		LineSegment jtsSegment = JTSConversionUtil.toJTS(this);
 		Coordinate jtsResult = jtsSegment.closestPoint(toJTS(p));
 		return fromJTS(jtsResult);
+	}
+
+	/** returns the z value associated with a given x value so that the point (x, z) is on the line */
+	public double evaluateAtX(double x) {
+		double xLength = abs(p2.x - p1.x);
+		if (xLength == 0) {
+			return p1.z;
+		} else {
+			return p1.add((p2.subtract(p1)).mult(abs(x - p1.x) / xLength)).z;
+		}
 	}
 
 	@Override
