@@ -1,5 +1,7 @@
 package org.osm2world.core.math.datastructures;
 
+import static java.util.Collections.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -7,14 +9,13 @@ import java.util.Iterator;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 
 /**
- * a data structure that can be used to speed up intersection tests.
+ * a data structure that can be used to quickly find candidates for intersection tests and similar geometric operations.
  *
- * An IntersectionTestObject is added to all grid cells that are at least
+ * An {@link IntersectionTestObject} is added to all grid cells that are at least
  * partially covered by the object's axis-aligned bounding box.
- * When testing for intersections or inclusions, only elements in the same
- * cell need to be compared.
+ * When testing for intersections or inclusions, only elements in the same cell need to be compared.
  */
-public class IntersectionGrid<T extends IntersectionTestObject> {
+public class IndexGrid<T extends IntersectionTestObject> implements SpatialIndex<T> {
 
 	private final AxisAlignedRectangleXZ gridBounds;
 	private Collection<T>[][] cells;
@@ -23,7 +24,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 	private final double cellSizeX, cellSizeZ;
 
-	public IntersectionGrid(AxisAlignedRectangleXZ gridBounds,
+	public IndexGrid(AxisAlignedRectangleXZ gridBounds,
 			int cellCountX, int cellCountZ) {
 
 		this.gridBounds = gridBounds;
@@ -46,7 +47,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 	 * alternative constructor that uses a target cell size to calculate
 	 * the number of cells
 	 */
-	public IntersectionGrid(AxisAlignedRectangleXZ gridBounds,
+	public IndexGrid(AxisAlignedRectangleXZ gridBounds,
 			double approxCellSizeX, double approxCellSizeZ) {
 		this(gridBounds,
 				((int) (gridBounds.sizeX() / approxCellSizeX)) + 1,
@@ -60,12 +61,9 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 	/**
 	 * returns the content object collections for all non-empty cells
 	 */
-	public Iterable<Collection<T>> getCells() {
-		return new Iterable<Collection<T>>() {
-			@Override public Iterator<Collection<T>> iterator() {
-				return new CellIterator();
-			}
-		};
+	@Override
+	public Iterable<Collection<T>> getLeaves() {
+		return CellIterator::new;
 	}
 
 	/**
@@ -114,44 +112,51 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 	 * Will not modify the intersection grid, and it doesn't matter
 	 * whether the object has been inserted or not.
 	 */
-	public Collection<Collection<T>> cellsFor(
-			IntersectionTestObject object) {
+	@Override
+	public Collection<Collection<T>> probeLeaves(IntersectionTestObject object) {
 
 		assert(gridBounds.contains(object.boundingBox()));
 
 		AxisAlignedRectangleXZ objectAABB = object.boundingBox();
 
-		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
-		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
-		int maxCellX = cellXForCoord(objectAABB.maxX, objectAABB.maxZ);
-		int maxCellZ = cellZForCoord(objectAABB.maxX, objectAABB.maxZ);
+		int minCellX = cellXForCoord(objectAABB.minX);
+		int minCellZ = cellZForCoord(objectAABB.minZ);
+		int maxCellX = cellXForCoord(objectAABB.maxX);
+		int maxCellZ = cellZForCoord(objectAABB.maxZ);
 
-		Collection<Collection<T>> result =
-			new ArrayList<Collection<T>>(
-					(maxCellX - minCellX) * (maxCellZ - minCellZ));
+		if (minCellX == maxCellX && minCellZ == maxCellZ) {
+			// special case for returning a single cell (very common for small objects or points)
+			Collection<T> cell = cells[minCellX][minCellZ];
+			return cell == null ? emptySet() : singleton(cell);
+		} else {
 
-		for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
-			for (int cellZ = minCellZ; cellZ <= maxCellZ; cellZ ++) {
-				if (cells[cellX][cellZ] != null) {
-					result.add(cells[cellX][cellZ]);
+			Collection<Collection<T>> result = new ArrayList<>((maxCellX - minCellX) * (maxCellZ - minCellZ));
+
+			for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
+				for (int cellZ = minCellZ; cellZ <= maxCellZ; cellZ ++) {
+					if (cells[cellX][cellZ] != null) {
+						result.add(cells[cellX][cellZ]);
+					}
 				}
 			}
-		}
 
-		return result;
+			return result;
+
+		}
 
 	}
 
+	@Override
 	public void insert(T object) {
 
 		assert(gridBounds.contains(object.boundingBox()));
 
 		AxisAlignedRectangleXZ objectAABB = object.boundingBox();
 
-		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
-		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
-		int maxCellX = cellXForCoord(objectAABB.maxX, objectAABB.maxZ);
-		int maxCellZ = cellZForCoord(objectAABB.maxX, objectAABB.maxZ);
+		int minCellX = cellXForCoord(objectAABB.minX);
+		int minCellZ = cellZForCoord(objectAABB.minZ);
+		int maxCellX = cellXForCoord(objectAABB.maxX);
+		int maxCellZ = cellZForCoord(objectAABB.maxZ);
 
 		for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
 			for (int cellZ = minCellZ; cellZ <= maxCellZ; cellZ ++) {
@@ -163,7 +168,7 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 	private void addToCell(int cellX, int cellZ, T object) {
 		if (cells[cellX][cellZ] == null) {
-			cells[cellX][cellZ] = new ArrayList<T>();
+			cells[cellX][cellZ] = new ArrayList<>();
 		}
 		cells[cellX][cellZ].add(object);
 	}
@@ -174,10 +179,10 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 
 		AxisAlignedRectangleXZ objectAABB = object.boundingBox();
 
-		int minCellX = cellXForCoord(objectAABB.minX, objectAABB.minZ);
-		int minCellZ = cellZForCoord(objectAABB.minX, objectAABB.minZ);
-		int maxCellX = cellXForCoord(objectAABB.maxX, objectAABB.maxZ);
-		int maxCellZ = cellZForCoord(objectAABB.maxX, objectAABB.maxZ);
+		int minCellX = cellXForCoord(objectAABB.minX);
+		int minCellZ = cellZForCoord(objectAABB.minZ);
+		int maxCellX = cellXForCoord(objectAABB.maxX);
+		int maxCellZ = cellZForCoord(objectAABB.maxZ);
 
 		for (int cellX = minCellX; cellX <= maxCellX; cellX ++) {
 			for (int cellZ = minCellZ; cellZ <= maxCellZ; cellZ ++) {
@@ -192,14 +197,14 @@ public class IntersectionGrid<T extends IntersectionTestObject> {
 	/**
 	 * returns the x index of the cell that contains the coordinate
 	 */
-	public final int cellXForCoord(double x, double z) {
+	public final int cellXForCoord(double x) {
 		return (int) ((x - gridBounds.minX) / cellSizeX);
 	}
 
 	/**
 	 * returns the z index of the cell that contains the coordinate
 	 */
-	public final int cellZForCoord(double x, double z) {
+	public final int cellZForCoord(double z) {
 		return (int) ((z - gridBounds.minZ) / cellSizeZ);
 	}
 

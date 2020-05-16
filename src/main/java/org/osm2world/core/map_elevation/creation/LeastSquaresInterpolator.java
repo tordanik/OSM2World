@@ -22,7 +22,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionGrid;
+import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
@@ -36,7 +36,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 	private static final int SITES_FOR_INTERPOL = 29;
 
 	private Collection<SiteWithPolynomial> sites;
-	private IntersectionGrid<SiteWithPolynomial> siteGrid; //TODO: rename IntersectionGrid to something more generic
+	private IndexGrid<SiteWithPolynomial> siteGrid; //TODO: rename IntersectionGrid to something more generic
 
 	@Override
 	public void setKnownSites(Collection<VectorXYZ> siteVectors) {
@@ -46,7 +46,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 
 		sites = new ArrayList<SiteWithPolynomial>(siteVectors.size());
 
-		siteGrid = new IntersectionGrid<SiteWithPolynomial>(
+		siteGrid = new IndexGrid<SiteWithPolynomial>(
 				bbox(siteVectors).pad(CELL_SIZE/2),
 				CELL_SIZE, CELL_SIZE);
 
@@ -164,8 +164,8 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 				});
 
 		Collection<SiteWithPolynomial>[][] cellArray = siteGrid.getCellArray();
-		int cellX = siteGrid.cellXForCoord(pos.x, pos.z);
-		int cellZ = siteGrid.cellZForCoord(pos.x, pos.z);
+		int cellX = siteGrid.cellXForCoord(pos.x);
+		int cellZ = siteGrid.cellZForCoord(pos.z);
 
 		int cellRange = 0;
 

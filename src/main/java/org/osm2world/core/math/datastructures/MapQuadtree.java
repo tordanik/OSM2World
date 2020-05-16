@@ -1,4 +1,4 @@
-package org.osm2world.core.map_data.creation.index;
+package org.osm2world.core.math.datastructures;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,17 +10,15 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 
 /**
- * a Quadtree managing {@link MapElement}s of a data set
+ * a quadtree managing {@link MapElement}s of a data set
  * according on their coordinates in the XZ plane.
  */
-public class MapQuadtree implements MapDataIndex {
+public class MapQuadtree implements SpatialIndex<MapElement> {
 
 	static final int LEAF_SPLIT_SIZE = 11;
 
@@ -28,29 +26,14 @@ public class MapQuadtree implements MapDataIndex {
 
 	static abstract class QuadNode {
 
-		public final double minX, maxX, minZ, maxZ;
+		public final AxisAlignedRectangleXZ bounds;
 
-		private final SimplePolygonXZ boundary;
-
-		QuadNode(double minX2, double maxX2, double minZ2, double maxZ2) {
-
-			this.minX = minX2;
-			this.maxX = maxX2;
-			this.minZ = minZ2;
-			this.maxZ = maxZ2;
-
-			List<VectorXZ> vertices = new ArrayList<VectorXZ>(5);
-			vertices.add(new VectorXZ(minX2, minZ2));
-			vertices.add(new VectorXZ(maxX2, minZ2));
-			vertices.add(new VectorXZ(maxX2, maxZ2));
-			vertices.add(new VectorXZ(minX2, maxZ2));
-			vertices.add(vertices.get(0));
-			boundary = new SimplePolygonXZ(vertices);
-
+		QuadNode(double minX, double maxX, double minZ, double maxZ) {
+			bounds = new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 		}
 
 		/** returns true if this node's bounds contain at least a part of the element */
-		boolean contains(MapElement element) {
+		boolean contains(IntersectionTestObject element) {
 
 			if (element instanceof MapNode) {
 
@@ -64,13 +47,12 @@ public class MapQuadtree implements MapDataIndex {
 
 				if (contains(lineStart) || contains(lineEnd)) {
 					return true;
-				} else if (boundary.intersects(lineStart, lineEnd)) {
-					//SUGGEST (performance): use that the box is axis-aligned?
+				} else if (bounds.intersects(lineStart, lineEnd)) {
 					return true;
 				}
 				return false;
 
-			} else { // element instanceof MapArea
+			} else if (element instanceof MapArea) {
 				MapArea area = ((MapArea)element);
 
 				for (MapNode node : area.getBoundaryNodes()) {
@@ -79,19 +61,21 @@ public class MapQuadtree implements MapDataIndex {
 					}
 				}
 
-				if (boundary.intersects(area.getPolygon().getOuter())
-						|| area.getPolygon().contains(boundary)) {
-					//SUGGEST (performance): use that the box is axis-aligned?
+				if (bounds.intersects(area.getPolygon().getOuter())
+						|| area.getPolygon().contains(bounds)) {
 					return true;
 				}
 
 				return false;
+			} else {
+
+				return bounds.overlaps(element.boundingBox());
+
 			}
 		}
 
 		boolean contains(VectorXZ pos) {
-			return pos.x >= minX && pos.x <= maxX
-				&& pos.z >= minZ && pos.z <= maxZ;
+			return bounds.contains(pos);
 		}
 
 		abstract void add(MapElement element);
@@ -143,7 +127,7 @@ public class MapQuadtree implements MapDataIndex {
 		void trySplitLeaf(QuadLeaf leaf) {
 
 			QuadInnerNode newChild =
-				new QuadInnerNode(leaf.minX, leaf.maxX, leaf.minZ, leaf.maxZ);
+					new QuadInnerNode(leaf.bounds.minX, leaf.bounds.maxX, leaf.bounds.minZ, leaf.bounds.maxZ);
 
 			/* check whether splitting will reduce the maximum node size */
 
@@ -181,6 +165,7 @@ public class MapQuadtree implements MapDataIndex {
 
 		}
 
+		@Override
 		void collectLeaves(List<QuadLeaf> leaves) {
 			for (int i=0; i<4; i++) {
 				childNodes[i].collectLeaves(leaves);
@@ -255,28 +240,16 @@ public class MapQuadtree implements MapDataIndex {
 	}
 
 	@Override
-	public Collection<? extends Iterable<MapElement>> insertAndProbe(
-			final MapElement e) {
-
-		insert(e);
-
-		return Collections2.<QuadLeaf>filter(getLeaves(), new Predicate<QuadLeaf>() {
-			@Override public boolean apply(QuadLeaf leaf) {
-				return leaf.contains(e);
-			}
-		});
-
+	public Collection<QuadLeaf> probeLeaves(IntersectionTestObject e) {
+		// TODO this seems like a very inefficient implementation that does not utilize the quadtree structure
+		return Collections2.filter(getLeaves(), it -> it.contains(e));
 	}
 
 	@Override
 	public Collection<QuadLeaf> getLeaves() {
-
-		List<QuadLeaf> leaves = new ArrayList<QuadLeaf>();
-
+		List<QuadLeaf> leaves = new ArrayList<>();
 		root.collectLeaves(leaves);
-
 		return leaves;
-
 	}
 
 }

@@ -1,4 +1,4 @@
-package org.osm2world.core.map_data.creation.index;
+package org.osm2world.core.math.datastructures;
 
 import static java.util.Collections.*;
 
@@ -22,7 +22,7 @@ import org.osm2world.core.math.VectorXZ;
  * The inner nodes split the XZ plane along parallels to the Z and X axes,
  * alternatingly.
  */
-public class Map2dTree implements MapDataIndex {
+public class Map2dTree implements SpatialIndex<MapElement> {
 
 	protected static final int LEAF_SPLIT_SIZE = 11;
 
@@ -32,7 +32,7 @@ public class Map2dTree implements MapDataIndex {
 
 		void add(MapElement element, boolean suppressSplits);
 
-		List<Leaf> probe(MapElement element);
+		List<Leaf> probe(IntersectionTestObject element);
 
 		/** adds all leaves in the subtree starting at this node to a list */
 		void collectLeaves(List<Leaf> leaves);
@@ -143,31 +143,49 @@ public class Map2dTree implements MapDataIndex {
 		}
 
 		@Override
-		public List<Leaf> probe(MapElement element) {
+		public List<Leaf> probe(IntersectionTestObject element) {
 
 			boolean addToLowerChild = false;
 			boolean addToUpperChild = false;
 
-			for (MapNode node : getMapNodes(element)) {
+			if (element instanceof MapElement) {
 
-				VectorXZ pos = node.getPos();
+				for (MapNode node : getMapNodes((MapElement) element)) {
+
+					VectorXZ pos = node.getPos();
+
+					if (splitAlongX) {
+
+						addToLowerChild |= pos.x <= splitValue;
+						addToUpperChild |= pos.x >= splitValue;
+
+					} else {
+
+						addToLowerChild |= pos.z <= splitValue;
+						addToUpperChild |= pos.z >= splitValue;
+
+					}
+
+				}
+
+			} else {
 
 				if (splitAlongX) {
 
-					addToLowerChild |= pos.x <= splitValue;
-					addToUpperChild |= pos.x >= splitValue;
+					addToLowerChild |= element.boundingBox().minX <= splitValue;
+					addToUpperChild |= element.boundingBox().maxX >= splitValue;
 
 				} else {
 
-					addToLowerChild |= pos.z <= splitValue;
-					addToUpperChild |= pos.z >= splitValue;
+					addToLowerChild |= element.boundingBox().minZ <= splitValue;
+					addToUpperChild |= element.boundingBox().maxZ >= splitValue;
 
 				}
 
 			}
 
 			if (addToLowerChild && addToUpperChild) {
-				List<Leaf> leaves = new ArrayList<Leaf>();
+				List<Leaf> leaves = new ArrayList<>();
 				leaves.addAll(lowerChild.probe(element));
 				leaves.addAll(upperChild.probe(element));
 				return leaves;
@@ -181,6 +199,7 @@ public class Map2dTree implements MapDataIndex {
 
 		}
 
+		@Override
 		public void collectLeaves(List<Leaf> leaves) {
 			lowerChild.collectLeaves(leaves);
 			upperChild.collectLeaves(leaves);
@@ -221,7 +240,7 @@ public class Map2dTree implements MapDataIndex {
 		}
 
 		@Override
-		public List<Leaf> probe(MapElement element) {
+		public List<Leaf> probe(IntersectionTestObject element) {
 			return singletonList(this);
 		}
 
@@ -244,8 +263,7 @@ public class Map2dTree implements MapDataIndex {
 	}
 
 	@Override
-	public Collection<Leaf> insertAndProbe(MapElement e) {
-		insert(e);
+	public Collection<Leaf> probeLeaves(IntersectionTestObject e) {
 		return root.probe(e);
 	}
 

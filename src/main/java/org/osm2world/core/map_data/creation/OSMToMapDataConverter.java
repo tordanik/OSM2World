@@ -11,15 +11,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringJoiner;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.creation.index.MapDataIndex;
-import org.osm2world.core.map_data.creation.index.MapIntersectionGrid;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapData;
@@ -41,6 +37,8 @@ import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.IndexGrid;
+import org.osm2world.core.math.datastructures.SpatialIndex;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
@@ -324,29 +322,14 @@ public class OSMToMapDataConverter {
 	 */
 	private static void calculateIntersectionsInMapData(MapData mapData) {
 
-		MapDataIndex index = new MapIntersectionGrid(mapData.getDataBoundary());
+		AxisAlignedRectangleXZ bounds = mapData.getDataBoundary().pad(10);
+		SpatialIndex<MapElement> index = new IndexGrid<>(bounds, bounds.sizeX() / 1000, bounds.sizeZ() / 1000);
 
 		for (MapElement e1 : mapData.getMapElements()) {
 
 			/* collect all nearby elements */
 
-			Collection<? extends Iterable<MapElement>> leaves
-					= index.insertAndProbe(e1);
-
-			Iterable<MapElement> nearbyElements;
-
-			if (leaves.size() == 1) {
-				nearbyElements = leaves.iterator().next();
-			} else {
-				// collect and de-duplicate elements from all the leaves
-				Set<MapElement> elementSet = new HashSet<MapElement>();
-				for (Iterable<MapElement> leaf : leaves) {
-					for (MapElement e : leaf) {
-						elementSet.add(e);
-					}
-				}
-				nearbyElements = elementSet;
-			}
+			Iterable<MapElement> nearbyElements = index.insertAndProbe(e1);
 
 			for (MapElement e2 : nearbyElements) {
 

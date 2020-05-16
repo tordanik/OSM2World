@@ -4,16 +4,15 @@ import static java.lang.Math.min;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.awt.Color;
-import java.util.Arrays;
 
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_data.creation.index.MapQuadtree;
-import org.osm2world.core.map_data.creation.index.MapQuadtree.QuadLeaf;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.datastructures.MapQuadtree;
+import org.osm2world.core.math.datastructures.MapQuadtree.QuadLeaf;
 import org.osm2world.core.target.jogl.JOGLTarget;
 
 public class QuadtreeDebugView extends DebugView {
@@ -55,22 +54,13 @@ public class QuadtreeDebugView extends DebugView {
 
 			/* draw leaf boundary */
 
-			VectorXZ[] vs = new VectorXZ[5];
-			vs[0] = new VectorXZ(leaf.minX, leaf.minZ);
-			vs[1] = new VectorXZ(leaf.maxX, leaf.minZ);
-			vs[2] = new VectorXZ(leaf.maxX, leaf.maxZ);
-			vs[3] = new VectorXZ(leaf.minX, leaf.maxZ);
-			vs[4] = vs[0];
-			target.drawLineStrip(LEAF_BORDER_COLOR, 1,
-					listXYZ(Arrays.asList(vs),0));
+			target.drawLineStrip(LEAF_BORDER_COLOR, 1, listXYZ(leaf.bounds.getVertexList(), 0));
 
 			if (arrowsEnabled) {
 
 				/* draw arrows from leaf center to elements */
 
-				VectorXZ leafCenter = new VectorXZ(
-						(leaf.minX + leaf.maxX)/2,
-						(leaf.minZ + leaf.maxZ)/2);
+				VectorXZ leafCenter = leaf.bounds.getCentroid();
 
 				for (MapElement e : leaf) {
 

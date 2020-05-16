@@ -7,7 +7,7 @@ import java.util.Collection;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionGrid;
+import org.osm2world.core.math.datastructures.IndexGrid;
 
 
 public class InverseDistanceWeightingInterpolator implements TerrainInterpolator {
@@ -16,7 +16,7 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 
 	private final double negExp;
 	private Collection<VectorXYZ> sites;
-	private IntersectionGrid<VectorXYZ> siteGrid; //TODO: rename IntersectionGrid to something more generic
+	private IndexGrid<VectorXYZ> siteGrid; //TODO: rename IntersectionGrid to something more generic
 
 	public InverseDistanceWeightingInterpolator() {
 		this(2);
@@ -31,7 +31,7 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 
 		this.sites = sites;
 
-		siteGrid = new IntersectionGrid<VectorXYZ>(
+		siteGrid = new IndexGrid<VectorXYZ>(
 				bbox(sites).pad(CUTOFF/2),
 				CUTOFF, CUTOFF);
 
@@ -48,8 +48,8 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 		double eleSum = 0;
 
 		Collection<VectorXYZ>[][] cellArray = siteGrid.getCellArray();
-		int cellX = siteGrid.cellXForCoord(pos.x, pos.z);
-		int cellZ = siteGrid.cellZForCoord(pos.x, pos.z);
+		int cellX = siteGrid.cellXForCoord(pos.x);
+		int cellZ = siteGrid.cellZForCoord(pos.z);
 
 		for (int i = max(cellX-1, 0); i < min(cellX+2, cellArray.length); i++) {
 			for (int j = max(cellZ-1, 0); j < min(cellZ+2, cellArray[i].length); j++) {
