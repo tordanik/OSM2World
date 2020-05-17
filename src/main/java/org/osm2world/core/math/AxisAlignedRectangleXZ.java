@@ -79,7 +79,7 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public SimplePolygonXZ minimumBoundingBox() {
+	public SimplePolygonXZ minimumRotatedBoundingBox() {
 		return polygonXZ();
 	}
 

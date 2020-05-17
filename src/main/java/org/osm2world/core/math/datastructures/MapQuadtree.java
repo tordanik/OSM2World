@@ -10,6 +10,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXZ;
 
 import com.google.common.collect.Collections2;
@@ -33,7 +34,7 @@ public class MapQuadtree implements SpatialIndex<MapElement> {
 		}
 
 		/** returns true if this node's bounds contain at least a part of the element */
-		boolean contains(IntersectionTestObject element) {
+		boolean contains(BoundedObject element) {
 
 			if (element instanceof MapNode) {
 
@@ -240,7 +241,7 @@ public class MapQuadtree implements SpatialIndex<MapElement> {
 	}
 
 	@Override
-	public Collection<QuadLeaf> probeLeaves(IntersectionTestObject e) {
+	public Collection<QuadLeaf> probeLeaves(BoundedObject e) {
 		// TODO this seems like a very inefficient implementation that does not utilize the quadtree structure
 		return Collections2.filter(getLeaves(), it -> it.contains(e));
 	}

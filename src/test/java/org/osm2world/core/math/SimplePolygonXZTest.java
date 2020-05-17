@@ -353,7 +353,7 @@ public class SimplePolygonXZTest {
 				new VectorXZ(0, 1),
 				new VectorXZ(0, 0)));
 
-		SimplePolygonXZ bbox1 = p1.minimumBoundingBox();
+		SimplePolygonXZ bbox1 = p1.minimumRotatedBoundingBox();
 
 		assertSameCyclicOrder(true, bbox1.getVertices(),
 				new VectorXZ(0, 0),
@@ -370,7 +370,7 @@ public class SimplePolygonXZTest {
 				new VectorXZ(  0, -.5),
 				new VectorXZ(+.5,   0)));
 
-		SimplePolygonXZ bbox2 = p2.minimumBoundingBox();
+		SimplePolygonXZ bbox2 = p2.minimumRotatedBoundingBox();
 
 		assertSameCyclicOrder(true, bbox2.getVertices(),
 				new VectorXZ(+.5,   0),
@@ -390,7 +390,7 @@ public class SimplePolygonXZTest {
 				new VectorXZ(3, 3),
 				new VectorXZ(1, 1)));
 
-		SimplePolygonXZ bbox = p.minimumBoundingBox();
+		SimplePolygonXZ bbox = p.minimumRotatedBoundingBox();
 
 		assertSameCyclicOrder(true, bbox.getVertices(),
 				new VectorXZ(1, 1),

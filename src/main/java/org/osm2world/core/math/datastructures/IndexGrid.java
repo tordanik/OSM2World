@@ -7,15 +7,16 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 
 /**
  * a data structure that can be used to quickly find candidates for intersection tests and similar geometric operations.
  *
- * An {@link IntersectionTestObject} is added to all grid cells that are at least
+ * An {@link BoundedObject} is added to all grid cells that are at least
  * partially covered by the object's axis-aligned bounding box.
  * When testing for intersections or inclusions, only elements in the same cell need to be compared.
  */
-public class IndexGrid<T extends IntersectionTestObject> implements SpatialIndex<T> {
+public class IndexGrid<T extends BoundedObject> implements SpatialIndex<T> {
 
 	private final AxisAlignedRectangleXZ gridBounds;
 	private Collection<T>[][] cells;
@@ -113,7 +114,7 @@ public class IndexGrid<T extends IntersectionTestObject> implements SpatialIndex
 	 * whether the object has been inserted or not.
 	 */
 	@Override
-	public Collection<Collection<T>> probeLeaves(IntersectionTestObject object) {
+	public Collection<Collection<T>> probeLeaves(BoundedObject object) {
 
 		assert(gridBounds.contains(object.boundingBox()));
 

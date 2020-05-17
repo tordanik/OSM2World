@@ -73,7 +73,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 			if (standConnectors == null) {
 
-				SimplePolygonXZ bbox = area.getOuterPolygon().minimumBoundingBox();
+				SimplePolygonXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
 				List<VectorXZ> standLocations;
 				VectorXZ midpoint1, midpoint2;
 
@@ -110,7 +110,7 @@ public class BicycleParkingModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			SimplePolygonXZ bbox = area.getOuterPolygon().minimumBoundingBox();
+			SimplePolygonXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
 
 			VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
 

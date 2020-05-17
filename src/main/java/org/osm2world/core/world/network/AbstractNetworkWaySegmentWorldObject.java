@@ -25,23 +25,21 @@ import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 
 public abstract class AbstractNetworkWaySegmentWorldObject
-	implements NetworkWaySegmentWorldObject, WaySegmentWorldObject,
-	           IntersectionTestObject, WorldObjectWithOutline {
+		implements NetworkWaySegmentWorldObject, BoundedObject, WorldObjectWithOutline {
 
 	private static final double CONNECTOR_SNAP_DIST = 0.001;
 

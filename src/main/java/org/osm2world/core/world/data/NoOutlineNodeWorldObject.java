@@ -6,8 +6,8 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
  * superclass for {@link NodeWorldObject}s that don't have an outline,
@@ -17,7 +17,7 @@ import org.osm2world.core.math.datastructures.IntersectionTestObject;
  *
  * @see OutlineNodeWorldObject
  */
-public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, IntersectionTestObject {
+public abstract class NoOutlineNodeWorldObject implements NodeWorldObject, BoundedObject {
 
 	protected final MapNode node;
 

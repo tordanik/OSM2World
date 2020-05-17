@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.math.shapes.PolylineXZ;
 
 /**
@@ -13,7 +13,7 @@ import org.osm2world.core.math.shapes.PolylineXZ;
  *
  * @See {@link MapData} for context
  */
-public class MapWay extends MapRelation.Element implements IntersectionTestObject {
+public class MapWay extends MapRelation.Element implements BoundedObject {
 
 	private final long id;
 	private final TagSet tags;

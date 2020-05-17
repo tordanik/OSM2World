@@ -15,11 +15,11 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -41,7 +41,7 @@ public class DelaunayTriangulation {
 	 * a triangle which is the dual of a site in the Voronoi Diagram.
 	 * Must be counter-clockwise.
 	 */
-	public static class DelaunayTriangle implements IntersectionTestObject {
+	public static class DelaunayTriangle implements BoundedObject {
 
 		//TODO: use Site class with VectorXZ and other value - avoids all the .xz() calls
 

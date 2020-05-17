@@ -19,12 +19,12 @@ import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
@@ -758,7 +758,7 @@ final class MultipolygonAreaBuilder {
 
 	}
 
-	private static final class Ring implements IntersectionTestObject {
+	private static final class Ring implements BoundedObject {
 
 		private final NodeSequence closedNodeSequence;
 		private final SimplePolygonXZ polygon;

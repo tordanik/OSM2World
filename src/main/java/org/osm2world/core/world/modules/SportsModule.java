@@ -125,7 +125,7 @@ public class SportsModule extends AbstractModule {
 
 			/* approximate a rectangular shape for the pitch */
 
-			SimplePolygonXZ bbox = polygon.minimumBoundingBox();
+			SimplePolygonXZ bbox = polygon.minimumRotatedBoundingBox();
 
 			VectorXZ origin = bbox.getVertex(0);
 

@@ -8,17 +8,16 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
  * superclass for {@link WaySegmentWorldObject}s that don't have an outline,
  * and are not part of a network.
  * Instead, they can be considered infinitely thin.
  */
-public abstract class NoOutlineWaySegmentWorldObject
-		implements WaySegmentWorldObject, IntersectionTestObject {
+public abstract class NoOutlineWaySegmentWorldObject implements WaySegmentWorldObject, BoundedObject {
 
 	protected final MapWaySegment segment;
 

@@ -87,7 +87,7 @@ public class ParkingModule extends AbstractModule {
 
 			for (MapArea parkingSpace : parkingSpaces) {
 
-				SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumBoundingBox();
+				SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
 
 				// determine the car's facing direction based on  which side of the box is longer
 				VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));

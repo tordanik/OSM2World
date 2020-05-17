@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -12,7 +12,7 @@ import org.osm2world.core.world.data.WorldObject;
  *
  * @See {@link MapData} for context
  */
-public interface MapElement extends IntersectionTestObject {
+public interface MapElement extends BoundedObject {
 
 	/**
 	 * returns the visual representations of this element.

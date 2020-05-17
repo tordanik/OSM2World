@@ -2,11 +2,11 @@ package org.osm2world.core.heightmap.data;
 
 import java.util.Collection;
 
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
-public interface TerrainElevationCell extends IntersectionTestObject {
+public interface TerrainElevationCell extends BoundedObject {
 
 	public TerrainPoint getTopLeft();
 	public TerrainPoint getBottomLeft();

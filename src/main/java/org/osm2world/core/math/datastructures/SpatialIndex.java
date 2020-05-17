@@ -4,10 +4,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.osm2world.core.math.BoundedObject;
+
 /**
  * index structure intended to speed up retrieval of candidates for intersection and overlap tests
  */
-public interface SpatialIndex<T extends IntersectionTestObject> {
+public interface SpatialIndex<T extends BoundedObject> {
 
 	/**
 	 * inserts the element into the index structure
@@ -19,13 +21,13 @@ public interface SpatialIndex<T extends IntersectionTestObject> {
 	 *
 	 * @return leaves the element would end up in. A subset of {@link #getLeaves()}.
 	 */
-	public Collection<? extends Iterable<T>> probeLeaves(IntersectionTestObject e);
+	public Collection<? extends Iterable<T>> probeLeaves(BoundedObject e);
 
 	/**
 	 * returns all nearby elements contained in the index structure.
-	 * Amounts to a flattening of {@link #probeLeaves(IntersectionTestObject)}.
+	 * Amounts to a flattening of {@link #probeLeaves(BoundedObject)}.
 	 */
-	public default Iterable<T> probe(IntersectionTestObject e) {
+	public default Iterable<T> probe(BoundedObject e) {
 
 		Collection<? extends Iterable<T>> leaves = probeLeaves(e);
 

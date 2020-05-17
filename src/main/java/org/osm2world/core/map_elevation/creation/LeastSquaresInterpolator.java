@@ -20,10 +20,10 @@ import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.datastructures.IndexGrid;
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
 
 /**
  * uses least squares method to approximate a polynomial at each site,
@@ -271,7 +271,7 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 
 	}
 
-	public static final class SiteWithPolynomial implements IntersectionTestObject {
+	public static final class SiteWithPolynomial implements BoundedObject {
 
 		public final VectorXYZ pos;
 		private Polynomial polynomial;

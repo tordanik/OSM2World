@@ -12,6 +12,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.VectorXZ;
 
 /**
@@ -32,7 +33,7 @@ public class Map2dTree implements SpatialIndex<MapElement> {
 
 		void add(MapElement element, boolean suppressSplits);
 
-		List<Leaf> probe(IntersectionTestObject element);
+		List<Leaf> probe(BoundedObject element);
 
 		/** adds all leaves in the subtree starting at this node to a list */
 		void collectLeaves(List<Leaf> leaves);
@@ -143,7 +144,7 @@ public class Map2dTree implements SpatialIndex<MapElement> {
 		}
 
 		@Override
-		public List<Leaf> probe(IntersectionTestObject element) {
+		public List<Leaf> probe(BoundedObject element) {
 
 			boolean addToLowerChild = false;
 			boolean addToUpperChild = false;
@@ -240,7 +241,7 @@ public class Map2dTree implements SpatialIndex<MapElement> {
 		}
 
 		@Override
-		public List<Leaf> probe(IntersectionTestObject element) {
+		public List<Leaf> probe(BoundedObject element) {
 			return singletonList(this);
 		}
 
@@ -263,7 +264,7 @@ public class Map2dTree implements SpatialIndex<MapElement> {
 	}
 
 	@Override
-	public Collection<Leaf> probeLeaves(IntersectionTestObject e) {
+	public Collection<Leaf> probeLeaves(BoundedObject e) {
 		return root.probe(e);
 	}
 

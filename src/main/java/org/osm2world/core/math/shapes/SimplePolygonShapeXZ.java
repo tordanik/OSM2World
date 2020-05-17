@@ -133,7 +133,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	 *
 	 * @return  a simple polygon with exactly 4 vertices, representing the box
 	 */
-	public default SimplePolygonXZ minimumBoundingBox() {
+	public default SimplePolygonXZ minimumRotatedBoundingBox() {
 
 		/*
 		 * For each side of the polygon, rotate the polygon to make that side

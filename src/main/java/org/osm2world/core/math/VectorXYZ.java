@@ -5,9 +5,7 @@ import static java.lang.Math.sqrt;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.math.datastructures.IntersectionTestObject;
-
-public class VectorXYZ implements Vector3D, IntersectionTestObject {
+public class VectorXYZ implements Vector3D, BoundedObject {
 
 	public final double x, y, z;
 
