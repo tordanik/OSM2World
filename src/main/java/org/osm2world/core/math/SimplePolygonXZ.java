@@ -2,7 +2,7 @@ package org.osm2world.core.math;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.min;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.GeometryUtil.*;
 
@@ -386,8 +386,8 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 		/* determine points with min/max x value (guaranteed to be in convex hull) */
 
-		VectorXZ minV = min(vertices, comparingDouble(v -> v.x));
-		VectorXZ maxV = max(vertices, comparingDouble(v -> v.x));
+		VectorXZ minV = Collections.min(vertices, comparingDouble(v -> v.x));
+		VectorXZ maxV = Collections.max(vertices, comparingDouble(v -> v.x));
 
 		int minI = vertices.indexOf(minV);
 		int maxI = vertices.indexOf(maxV);

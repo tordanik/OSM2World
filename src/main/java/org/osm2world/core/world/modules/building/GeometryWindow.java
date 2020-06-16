@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules.building;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
@@ -13,6 +13,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -79,8 +80,8 @@ class GeometryWindow implements Window {
 					center.add(-paneBbox.sizeX(), 0), center.add(+paneBbox.sizeX(), 0));
 			List<VectorXZ> is = paneOutline.intersectionPositions(intersectionSegment);
 			innerFramePaths.add(asList(
-					min(is, Comparator.comparingDouble(v -> v.x)),
-					max(is, Comparator.comparingDouble(v -> v.x))));
+					Collections.min(is, Comparator.comparingDouble(v -> v.x)),
+					Collections.max(is, Comparator.comparingDouble(v -> v.x))));
 		}
 
 		VectorXZ windowLeft = paneBbox.center().add(-paneBbox.sizeX() / 2, 0);
@@ -91,8 +92,8 @@ class GeometryWindow implements Window {
 					center.add(0, -paneBbox.sizeZ()), center.add(0, +paneBbox.sizeZ()));
 			List<VectorXZ> is = paneOutline.intersectionPositions(intersectionSegment);
 			innerFramePaths.add(asList(
-					min(is, Comparator.comparingDouble(v -> v.z)),
-					max(is, Comparator.comparingDouble(v -> v.z))));
+					Collections.min(is, Comparator.comparingDouble(v -> v.z)),
+					Collections.max(is, Comparator.comparingDouble(v -> v.z))));
 		}
 
 	}
