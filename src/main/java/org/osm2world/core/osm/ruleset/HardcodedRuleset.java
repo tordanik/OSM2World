@@ -37,6 +37,8 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("natural", "scrub"));
 		areaTags.add(new Tag("power", "generator"));
 		areaTags.add(new Tag("waterway", "riverbank"));
+		areaTags.add(new Tag("indoor", "room"));
+		areaTags.add(new Tag("indoor", "area"));
 
 		areaKeys.add("area:highway");
 		areaKeys.add("building");

@@ -35,7 +35,7 @@ import org.osm2world.core.target.common.material.Materials;
 
 import com.google.common.collect.Streams;
 
-class Wall implements Renderable {
+public class Wall implements Renderable {
 
 	final @Nullable MapWay wallWay;
 
@@ -321,6 +321,14 @@ class Wall implements Renderable {
 		}
 		return result;
 	}
+
+	protected BuildingPart getBuildingPart() { return buildingPart; }
+
+	protected double getFloorHeight() { return floorHeight; }
+
+	protected TagSet getTags() { return tags; }
+
+	protected PolylineShapeXZ getPoints() { return points; }
 
 	/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
 	private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation) {

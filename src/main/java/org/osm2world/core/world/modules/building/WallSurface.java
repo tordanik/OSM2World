@@ -45,7 +45,7 @@ import org.osm2world.core.target.common.material.TexCoordFunction;
  * The x coordinate is the position along the wall (starting with 0 for the first point of the wall's
  * lower boundary), the z coordinate refers to height.
  */
-class WallSurface {
+public class WallSurface {
 
 	private final Material material;
 

@@ -21,10 +21,8 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -38,6 +36,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.modules.building.indoor.Indoor;
 import org.osm2world.core.world.modules.building.roof.ComplexRoof;
 import org.osm2world.core.world.modules.building.roof.FlatRoof;
 import org.osm2world.core.world.modules.building.roof.Roof;
@@ -69,6 +68,8 @@ public class BuildingPart implements Renderable {
 
 	private List<Wall> walls = null;
 	private List<Floor> floors = null;
+
+	Indoor indoor;
 
 	public BuildingPart(Building building, MapArea area, Configuration config) {
 
@@ -178,6 +179,23 @@ public class BuildingPart implements Renderable {
 		height = max(height, 0.01);
 
 		heightWithoutRoof = height - roofHeight;
+
+
+		/* collect all indoor elements */
+
+		ArrayList<MapElement> indoorElements = new ArrayList<>();
+
+		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
+			MapElement other = overlap.getOther(area);
+			if (other.getTags().containsKey("indoor")) {
+				indoorElements.add(other);
+			}
+		}
+
+		if(!indoorElements.isEmpty()){
+			indoor = new Indoor(indoorElements, this);
+		}
+
 
 	}
 
@@ -445,6 +463,16 @@ public class BuildingPart implements Renderable {
 		return roof;
 	}
 
+	public Building getBuilding() { return building; }
+
+	public Configuration getConfig() { return config; }
+
+	public TagSet getTags() { return tags; }
+
+	public int getBuildingLevels() { return buildingLevels; }
+
+	public int getMinLevel() { return minLevel; }
+
 	@Override
 	public void renderTo(Target target) {
 
@@ -459,6 +487,10 @@ public class BuildingPart implements Renderable {
 		roof.renderTo(target, building.getGroundLevelEle() + heightWithoutRoof);
 
 		floors.forEach(f -> f.renderTo(target));
+
+		if (indoor != null){
+			indoor.renderTo(target);
+		}
 
 	}
 
@@ -499,7 +531,7 @@ public class BuildingPart implements Renderable {
 
 	}
 
-	static Material createWallMaterial(TagSet tags, Configuration config) {
+	public static Material createWallMaterial(TagSet tags, Configuration config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
