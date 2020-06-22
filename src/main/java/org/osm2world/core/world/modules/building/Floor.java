@@ -15,7 +15,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 
-class Floor implements Renderable {
+public class Floor implements Renderable {
 
 	private final BuildingPart buildingPart;
 	private final Material material;
@@ -32,7 +32,7 @@ class Floor implements Renderable {
 	@Override
 	public void renderTo(Target target) {
 
-		double floorEle = buildingPart.building.getGroundLevelEle() + floorHeight;
+		double floorEle = buildingPart.building.getGroundLevelEle() + floorHeight - 0.01;
 
 		Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 

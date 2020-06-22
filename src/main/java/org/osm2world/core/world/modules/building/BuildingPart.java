@@ -359,7 +359,7 @@ public class BuildingPart implements Renderable {
 	 * @return list of walls, each represented as a list of nodes.
 	 *   The list of nodes is ordered such that the building part's outside is to the right.
 	 */
-	static List<Wall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
+	public static List<Wall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
 
 		List<Wall> result = new ArrayList<>();
 
@@ -504,7 +504,7 @@ public class BuildingPart implements Renderable {
 		return (heightWithoutRoof / buildingLevels) * level;
 	}
 
-	double calculateFloorHeight() {
+	public double calculateFloorHeight() {
 
 		if (tags.containsKey("min_height")) {
 
@@ -564,7 +564,7 @@ public class BuildingPart implements Renderable {
 
 	}
 
-	static Material buildMaterial(String materialString,
+	public static Material buildMaterial(String materialString,
 			String colorString, Material defaultMaterial,
 			boolean roof) {
 

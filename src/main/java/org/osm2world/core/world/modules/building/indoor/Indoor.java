@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.target.Renderable;
@@ -20,6 +21,8 @@ public class Indoor implements Renderable {
 
 
     private List<IndoorWall> walls = new ArrayList<>();
+    private List<IndoorRoom> rooms = new ArrayList<>();
+    private List<IndoorArea> areas = new ArrayList<>();
 
     public Indoor(List<MapElement> indoorElements, BuildingPart buildingPart){
 
@@ -58,10 +61,19 @@ public class Indoor implements Renderable {
 
     private void createComponents(){
 
-        int i = 0;
         for (MapElement element : elements){
             if (element.getTags().contains("indoor", "wall")){
-                walls.add(new IndoorWall(element, buildingPart));
+
+                walls.add(new IndoorWall(buildingPart, element));
+
+            } else if (element.getTags().contains("indoor", "room")){
+
+                rooms.add(new IndoorRoom((MapArea) element, buildingPart));
+
+            } else if (element.getTags().contains("indoor", "area")){
+
+                areas.add(new IndoorArea(buildingPart, (MapArea) element));
+
             }
         }
 
@@ -71,6 +83,10 @@ public class Indoor implements Renderable {
     public void renderTo(Target target) {
 
         walls.forEach(w -> w.renderTo(target));
+
+        rooms.forEach(r -> r.renderTo(target));
+
+        areas.forEach(a -> a.renderTo(target));
 
     }
 }
