@@ -33,8 +33,6 @@ public class IndoorRoom implements Renderable {
 
     public IndoorRoom(MapArea room, BuildingPart buildingPart){
 
-        System.out.println(room.getTags().toString());
-
         this.roomArea = room;
 
         //TODO move this into immutable class

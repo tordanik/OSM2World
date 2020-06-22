@@ -23,6 +23,7 @@ public class Indoor implements Renderable {
     private List<IndoorWall> walls = new ArrayList<>();
     private List<IndoorRoom> rooms = new ArrayList<>();
     private List<IndoorArea> areas = new ArrayList<>();
+    private List<Corridor> corridors = new ArrayList<>();
 
     public Indoor(List<MapElement> indoorElements, BuildingPart buildingPart){
 
@@ -62,19 +63,32 @@ public class Indoor implements Renderable {
     private void createComponents(){
 
         for (MapElement element : elements){
-            if (element.getTags().contains("indoor", "wall")){
 
-                walls.add(new IndoorWall(buildingPart, element));
+            switch (element.getTags().getValue("indoor")){
 
-            } else if (element.getTags().contains("indoor", "room")){
+                case "wall":
 
-                rooms.add(new IndoorRoom((MapArea) element, buildingPart));
+                    walls.add(new IndoorWall(buildingPart, element));
+                    break;
 
-            } else if (element.getTags().contains("indoor", "area")){
+                case "room":
 
-                areas.add(new IndoorArea(buildingPart, (MapArea) element));
+                    rooms.add(new IndoorRoom((MapArea) element, buildingPart));
+                    break;
+
+                case "area":
+
+                    areas.add(new IndoorArea(buildingPart, (MapArea) element));
+                    break;
+
+                case "corridor":
+
+                    corridors.add(new Corridor(buildingPart, (MapArea) element));
+                    break;
 
             }
+
+
         }
 
     }
@@ -87,6 +101,8 @@ public class Indoor implements Renderable {
         rooms.forEach(r -> r.renderTo(target));
 
         areas.forEach(a -> a.renderTo(target));
+
+        corridors.forEach(c -> c.renderTo(target));
 
     }
 }
