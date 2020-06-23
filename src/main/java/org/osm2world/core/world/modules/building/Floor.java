@@ -15,7 +15,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 
-public class Floor implements Renderable {
+class Floor implements Renderable {
 
 	private final BuildingPart buildingPart;
 	private final Material material;

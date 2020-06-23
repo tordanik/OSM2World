@@ -5,11 +5,11 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.modules.building.Floor;
+import org.osm2world.core.world.modules.building.BuildingPart;
 
 public class Corridor implements Renderable {
 
-    private Floor floor;
+    private IndoorFloor floor;
     private Ceiling ceiling;
 
     private final IndoorObjectData data;
@@ -18,12 +18,12 @@ public class Corridor implements Renderable {
 
         this.data = data;
 
-        Material material = data.getMaterial(Materials.WOOD_WALL);
+        Material material = data.getMaterial(BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()));
         PolygonWithHolesXZ polygon = data.getPolygon();
         Double floorHeight = data.getLevelFloorHeight();
 
-        floor = new Floor(data.getBuildingPart(), material, polygon, floorHeight + data.getLevelHeight());
-        ceiling = new Ceiling(data.getBuildingPart(), material, polygon, floorHeight);
+        floor = new IndoorFloor(data.getBuildingPart(), material, polygon, floorHeight);
+        ceiling = new Ceiling(data.getBuildingPart(), material, polygon, floorHeight + data.getLevelHeight());
     }
 
     @Override

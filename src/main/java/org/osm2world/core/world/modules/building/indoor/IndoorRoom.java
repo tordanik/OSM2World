@@ -4,7 +4,6 @@ import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.modules.building.BuildingPart;
-import org.osm2world.core.world.modules.building.Floor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ public class IndoorRoom implements Renderable {
     private final MapArea roomArea;
 
     private final List<IndoorWall> walls;
-    private final Floor floor;
+    private final IndoorFloor floor;
     private final Ceiling ceiling;
 
     private final IndoorObjectData data;
@@ -27,8 +26,8 @@ public class IndoorRoom implements Renderable {
 
         this.walls = splitIntoIndoorWalls();
 
-        floor = new Floor(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(), data.getLevelFloorHeight() + data.getLevelHeight());
-        ceiling = new Ceiling(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(), data.getLevelFloorHeight() + 0.01);
+        floor = new IndoorFloor(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(), data.getLevelFloorHeight() + 0.01);
+        ceiling = new Ceiling(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(), data.getLevelFloorHeight() + data.getLevelHeight());
     }
 
     private List<IndoorWall> splitIntoIndoorWalls(){

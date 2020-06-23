@@ -15,14 +15,14 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
-public class Ceiling {
+public class IndoorFloor {
 
     private final BuildingPart buildingPart;
     private final Material material;
     private final PolygonWithHolesXZ polygon;
     private final double floorHeight;
 
-    public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeight){
+    public IndoorFloor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeight){
         this.buildingPart = buildingPart;
         this.material = material;
         this.polygon = polygon;
@@ -30,12 +30,12 @@ public class Ceiling {
     }
 
     public void renderTo(Target target) {
-        double floorEle = buildingPart.getBuilding().getGroundLevelEle() + floorHeight - 0.01;
+        double floorEle = buildingPart.getBuilding().getGroundLevelEle() + floorHeight + 0.01;
 
         Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
         List<TriangleXYZ> trianglesXYZ = triangles.stream()
-                .map(t -> t.makeClockwise().xyz(floorEle))
+                .map(t -> t.makeCounterclockwise().xyz(floorEle))
                 .collect(toList());
 
         target.drawTriangles(material, trianglesXYZ,

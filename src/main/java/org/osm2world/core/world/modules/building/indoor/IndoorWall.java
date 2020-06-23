@@ -77,13 +77,8 @@ public class IndoorWall implements Renderable {
 
         double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
-        Material material;
+        Material material =  BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK,false);
 
-        if (data.getTags().containsKey("material")){
-            material =  BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK,false);
-        } else {
-            material = Materials.BRICK;// BuildingPart.createWallMaterial(tags, buildingPart.getConfig());
-        }
 
         for (LineSegmentXZ wallSeg : wallSegments){
 
