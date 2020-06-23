@@ -25,64 +25,48 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 public class IndoorWall implements Renderable {
 
     private final Float wallHeight;
-    private final Float bottomOfLevelHeight;
     private final Float floorHeight;
-    private final int level;
 
     private List<LineSegmentXZ> wallSegments = new ArrayList<>();
 
-    private final BuildingPart buildingPart;
-
-    private final TagSet tags;
+    private final IndoorObjectData data;
 
 
     //TODO multilevel
     //TODO underground
-    public IndoorWall(BuildingPart buildingPart, MapElement segment){
+    public IndoorWall(IndoorObjectData objectData){
 
-        this.buildingPart = buildingPart;
+        this.data = objectData;
 
-        this.level =  ((int)((double)parseOsmDecimal(segment.getTags().getValue("level"), false)));
-
-        if (parseHeight(segment.getTags(), -1) > 0){
-            this.wallHeight = parseHeight(segment.getTags(), -1);
+        if (parseHeight(data.getMapElement().getTags(), -1) > 0){
+            this.wallHeight = parseHeight(data.getMapElement().getTags(), -1);
         } else {
-            this.wallHeight = (float) buildingPart.getLevelHeight(level);
+            //TODO change to account for multiple levels
+            this.wallHeight = (float) data.getBuildingPart().getLevelHeight(data.getMinLevel());
         }
 
-        this.bottomOfLevelHeight = (float) buildingPart.getLevelHeightAboveBase(level);
-
-        List<VectorXZ> points = ((MapWaySegment) segment).getWay().getNodes().stream().map(MapNode::getPos).collect(toList());
-
+        List<VectorXZ> points = ((MapWaySegment) data.getMapElement()).getWay().getNodes().stream().map(MapNode::getPos).collect(toList());
 
         for (int i = 0; i < points.size() - 1; i++){
             wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
         }
 
 
-        this.tags = segment.getTags();
-
-        this.floorHeight = buildingPart == null ? 0 : (float) buildingPart.calculateFloorHeight();
+        this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getBuildingPart().calculateFloorHeight();
 
     }
 
     public IndoorWall(BuildingPart buildingPart, MapArea area){
 
-        this.buildingPart = buildingPart;
+        data = new IndoorObjectData(buildingPart, area);
 
         wallSegments = area.getPolygon().getSegments();
-
-        this.level =  ((int)((double)parseOsmDecimal(area.getTags().getValue("level"), false)));
 
         if (parseHeight(area.getTags(), -1) > 0){
             this.wallHeight = parseHeight(area.getTags(), -1);
         } else {
-            this.wallHeight = (float) buildingPart.getLevelHeight(level);
+            this.wallHeight = (float) buildingPart.getLevelHeight(data.getMinLevel());
         }
-
-        this.bottomOfLevelHeight = (float) buildingPart.getLevelHeightAboveBase(level);
-
-        this.tags = area.getTags();
 
         this.floorHeight = (float) buildingPart.calculateFloorHeight();
 
@@ -91,12 +75,12 @@ public class IndoorWall implements Renderable {
     @Override
     public void renderTo(Target target) {
 
-        double baseEle = buildingPart.getBuilding().getGroundLevelEle();
+        double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
         Material material;
 
-        if (tags.containsKey("material")){
-            material =  BuildingPart.buildMaterial(tags.getValue("material"), null, Materials.BRICK,false);
+        if (data.getTags().containsKey("material")){
+            material =  BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK,false);
         } else {
             material = Materials.BRICK;// BuildingPart.createWallMaterial(tags, buildingPart.getConfig());
         }
@@ -107,8 +91,8 @@ public class IndoorWall implements Renderable {
 
             /* front wall surface */
 
-            List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors, baseEle + bottomOfLevelHeight));
-            List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors, baseEle + bottomOfLevelHeight + wallHeight));
+            List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getLevelHeightAboveBase()));
+            List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getLevelHeightAboveBase() + wallHeight));
 
             WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
 

@@ -64,26 +64,28 @@ public class Indoor implements Renderable {
 
         for (MapElement element : elements){
 
+            IndoorObjectData data = new IndoorObjectData(buildingPart, element);
+
             switch (element.getTags().getValue("indoor")){
 
                 case "wall":
 
-                    walls.add(new IndoorWall(buildingPart, element));
+                    walls.add(new IndoorWall(data));
                     break;
 
                 case "room":
 
-                    rooms.add(new IndoorRoom((MapArea) element, buildingPart));
+                    rooms.add(new IndoorRoom(data));
                     break;
 
                 case "area":
 
-                    areas.add(new IndoorArea(buildingPart, (MapArea) element));
+                    areas.add(new IndoorArea(data));
                     break;
 
                 case "corridor":
 
-                    corridors.add(new Corridor(buildingPart, (MapArea) element));
+                    corridors.add(new Corridor(data));
                     break;
 
             }
