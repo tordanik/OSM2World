@@ -41,6 +41,8 @@ import org.osm2world.core.world.modules.building.roof.ComplexRoof;
 import org.osm2world.core.world.modules.building.roof.FlatRoof;
 import org.osm2world.core.world.modules.building.roof.Roof;
 
+import javax.annotation.Nullable;
+
 /**
  * part of a building, as defined by the Simple 3D Buildings standard.
  * Consists of {@link Wall}s, a {@link Roof}, and maybe a {@link Floor}.
@@ -68,6 +70,8 @@ public class BuildingPart implements Renderable {
 
 	private List<Wall> walls = null;
 	private List<Floor> floors = null;
+
+	private HashMap<Integer ,Level> levels = new HashMap<>();
 
 	Indoor indoor;
 
@@ -185,17 +189,71 @@ public class BuildingPart implements Renderable {
 
 		ArrayList<MapElement> indoorElements = new ArrayList<>();
 
+		List<Integer> levelsWithNoObject = new ArrayList<>();
+
+		for (int i = minLevel; i < buildingLevels; i++){
+			levelsWithNoObject.add(i);
+		}
+
+		// Find all overlapping indoor elements
+
 		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
 			MapElement other = overlap.getOther(area);
 			if (other.getTags().containsKey("indoor")) {
-				indoorElements.add(other);
+
+				if (other.getTags().containsKey("level")){
+
+					/* check all elements are within height limits of building part */
+
+					List<Integer> levelList =  parseLevels(other.getTags().getValue("level"));
+
+					if (!levelList.isEmpty()){
+
+						//TODO handle elements that span building parts
+
+						if(levelList.get(0) >= getMinLevel() && levelList.get(levelList.size() - 1) < getBuildingLevels()){
+
+							if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(parseLevels(other.getTags().getValue("level")).get(0))){
+								Level l = new Level(other);
+								levels.put(levelList.get(0),l);
+								levelsWithNoObject.remove((Integer) l.getLevel());
+							} else if (!other.getTags().contains("indoor", "level")) {
+								indoorElements.add(other);
+							}
+
+						}
+					}
+
+				}
+
+				//TODO handle element with no level tag
+
 			}
+		}
+
+		// Instantiate level objects for undefined levels
+
+		for (Integer levelNo : levelsWithNoObject){
+			levels.put(levelNo, new Level(levelNo));
+		}
+
+		// Update levels with no height data
+
+		Float defaultHeight = calculateDefaultHeight();
+
+		Float cumHeightAboveBase = 0f;
+
+		for	(int levelNo = minLevel; levelNo < buildingLevels; levelNo++){
+			Level lev = levels.get(levelNo);
+			lev.updateHeight(defaultHeight);
+
+			lev.setFloorEleAboveBase(cumHeightAboveBase);
+			cumHeightAboveBase += lev.getHeight();
 		}
 
 		if(!indoorElements.isEmpty()){
 			indoor = new Indoor(indoorElements, this);
 		}
-
 
 	}
 
@@ -496,12 +554,15 @@ public class BuildingPart implements Renderable {
 
 	/** returns the distance between the bottom and the top of a level */
 	public double getLevelHeight(int level) {
-		//TODO: in the future, allow levels of different height (e.g. based on indoor=level elements)
-		return heightWithoutRoof / buildingLevels;
+		return levels.get(level).getHeight();
 	}
 
 	public double getLevelHeightAboveBase(int level) {
-		return (heightWithoutRoof / buildingLevels) * level;
+		return levels.get(level) != null ? levels.get(level).getFloorEleAboveBase() : 0;
+	}
+
+	public Double getBuildingPartBaseEle(){
+		return building.getGroundLevelEle() + ((heightWithoutRoof/buildingLevels) * minLevel);
 	}
 
 	public double calculateFloorHeight() {
@@ -517,7 +578,7 @@ public class BuildingPart implements Renderable {
 
 		if (minLevel > 0) {
 
-			return (heightWithoutRoof / buildingLevels) * minLevel;
+			return getLevelHeightAboveBase(minLevel);
 
 		}
 
@@ -529,6 +590,84 @@ public class BuildingPart implements Renderable {
 
 		return 0;
 
+	}
+
+	private Float calculateDefaultHeight(){
+
+		Float cumUndeterminedHeight = (float) heightWithoutRoof - (float) ((heightWithoutRoof/buildingLevels) * minLevel);
+		int noDefaultHeightLevels = 0;
+
+		for (Integer levelNo : levels.keySet()){
+			if (levels.get(levelNo).getHeight() == 0){
+				noDefaultHeightLevels += 1;
+			}
+			cumUndeterminedHeight -= levels.get(levelNo).getHeight();
+		}
+
+		return cumUndeterminedHeight/noDefaultHeightLevels;
+	}
+
+	private final class Level{
+
+		private final String name;
+		private final String ref;
+		private	Float height;
+		private final int level;
+		private Float floorEleAboveBase = 0f;
+
+		private PolygonWithHolesXZ outlineArea;
+
+		Level(MapElement element){
+			TagSet tags = element.getTags();
+
+			this.name = tags.getValue("name");
+			this.ref = tags.getValue("ref");
+			this.level = parseLevels(tags.getValue("level")).get(0);
+
+			// Default heights need to be calculated once all levels are accounted for
+			this.height = parseHeight(tags, 0);
+
+			if (element instanceof MapArea){
+				this.outlineArea = ((MapArea) element).getPolygon();
+			}
+
+		}
+
+		Level(Integer levelNo){
+
+			this.name = null;
+			this.ref = null;
+			this.level = levelNo;
+			this.height = 0f;
+			this.outlineArea = null;
+
+		}
+
+		String getName() { return name; }
+
+		String getRef() { return ref; }
+
+		Float getHeight() { return height; }
+
+		int getLevel() { return level; }
+
+		Float getFloorEleAboveBase() { return floorEleAboveBase; }
+
+		public void setFloorEleAboveBase(Float floorEleAboveBase) { this.floorEleAboveBase = floorEleAboveBase; }
+
+		void updateHeight(Float defaultHeight){
+			if (height == 0){
+				height = defaultHeight;
+			}
+		}
+
+		PolygonWithHolesXZ getOutlineArea() {
+			if (outlineArea == null){
+				return polygon;
+			} else {
+				return outlineArea;
+			}
+		}
 	}
 
 	public static Material createWallMaterial(TagSet tags, Configuration config) {

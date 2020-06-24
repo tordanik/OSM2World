@@ -45,7 +45,6 @@ public class IndoorWall implements Renderable {
             wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
         }
 
-
         this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getLevelHeightAboveBase();
 
     }
@@ -65,10 +64,9 @@ public class IndoorWall implements Renderable {
     @Override
     public void renderTo(Target target) {
 
-        double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
+        double baseEle = data.getBuildingPart().getBuildingPartBaseEle();
 
         Material material =  BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK,false);
-
 
         for (LineSegmentXZ wallSeg : wallSegments){
 

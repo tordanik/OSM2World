@@ -40,7 +40,7 @@ public final class IndoorObjectData {
     public Integer getMaxLevel(){ return levels.get(levels.size() - 1); }
 
     // returns the highest point of an object based on its max level
-    public Double getTopOfTopLevelHeightAboveBase(){ return buildingPart.getLevelHeightAboveBase(getMaxLevel() + 1); }
+    public Double getTopOfTopLevelHeightAboveBase(){ return buildingPart.getLevelHeightAboveBase(getMaxLevel()) + buildingPart.getLevelHeight(getMaxLevel()); }
 
     public MapElement getMapElement() { return mapElement; }
 
