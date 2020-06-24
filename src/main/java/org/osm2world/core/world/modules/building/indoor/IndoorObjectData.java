@@ -26,14 +26,12 @@ public final class IndoorObjectData {
         this.levels = parseLevels(mapElement.getTags().getValue("level"));
         this.tags = mapElement.getTags();
         this.levelHeightAboveBase = (float) buildingPart.getLevelHeightAboveBase(getMinLevel());
-
     }
 
     public BuildingPart getBuildingPart() { return buildingPart; }
 
+    // height of lowest level above base
     public Float getLevelHeightAboveBase() { return levelHeightAboveBase; }
-
-    public Double getLevelFloorHeight() { return buildingPart.calculateFloorHeight() + getLevelHeightAboveBase(); }
 
     public List<Integer> getLevels() { return levels; }
 
@@ -41,11 +39,14 @@ public final class IndoorObjectData {
 
     public Integer getMaxLevel(){ return levels.get(levels.size() - 1); }
 
+    // returns the highest point of an object based on its max level
+    public Double getTopOfTopLevelHeightAboveBase(){ return buildingPart.getLevelHeightAboveBase(getMaxLevel() + 1); }
+
     public MapElement getMapElement() { return mapElement; }
 
     public TagSet getTags() { return tags; }
 
-    // returns height of lowest level
+    // returns height of lowest level e.g. floor to ceiling
     public Double getLevelHeight() { return buildingPart.getLevelHeight(getMinLevel()); }
 
     public PolygonWithHolesXZ getPolygon() {

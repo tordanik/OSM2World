@@ -1,8 +1,6 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.modules.building.BuildingPart;
@@ -11,7 +9,7 @@ import org.osm2world.core.world.modules.building.BuildingPart;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.osm2world.core.util.ValueParseUtil.parseOsmDecimal;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 public class Indoor implements Renderable {
 
@@ -33,15 +31,15 @@ public class Indoor implements Renderable {
 
         for (MapElement element : indoorElements){
 
-            TagSet elementTags = element.getTags();
+            if (element.getTags().containsKey("level")){
 
-            if (elementTags.containsKey("level")){
+                List<Integer> levels =  parseLevels(element.getTags().getValue("level"));
 
-                Float elementLevel = parseOsmDecimal(elementTags.getValue("level"), true);
+                if (!levels.isEmpty()){
 
-                if (elementLevel != null){
+                    //TODO handle elements that span building parts
 
-                    if(elementLevel >= buildingPart.getMinLevel() && elementLevel <= buildingPart.getBuildingLevels()){
+                    if(levels.get(0) >= buildingPart.getMinLevel() && levels.get(levels.size() - 1) < buildingPart.getBuildingLevels()){
                         tempElements.add(element);
                     }
 

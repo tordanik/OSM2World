@@ -22,11 +22,11 @@ public class Ceiling {
     private final PolygonWithHolesXZ polygon;
     private final double floorHeight;
 
-    public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeight){
+    public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase){
         this.buildingPart = buildingPart;
         this.material = material;
         this.polygon = polygon;
-        this.floorHeight = floorHeight;
+        this.floorHeight = floorHeightAboveBase;
     }
 
     public void renderTo(Target target) {
