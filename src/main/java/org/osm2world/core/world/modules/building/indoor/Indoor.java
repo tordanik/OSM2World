@@ -66,6 +66,8 @@ public class Indoor implements Renderable {
     @Override
     public void renderTo(Target target) {
 
+        IndoorWall.allRenderedWallSegments = new ArrayList<>();
+
         walls.forEach(w -> w.renderTo(target));
 
         rooms.forEach(r -> r.renderTo(target));

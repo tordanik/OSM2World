@@ -28,6 +28,7 @@ public class IndoorWall implements Renderable {
     private final Float floorHeight;
 
     private List<LineSegmentXZ> wallSegments = new ArrayList<>();
+    static List<SegmentLevelPair> allRenderedWallSegments = new ArrayList<>();
 
     private final IndoorObjectData data;
 
@@ -61,41 +62,80 @@ public class IndoorWall implements Renderable {
 
     }
 
+    private class SegmentLevelPair {
+
+        LineSegmentXZ segment;
+        Integer level;
+
+        SegmentLevelPair(LineSegmentXZ segment, Integer level){
+            this.segment = segment;
+            this.level = level;
+        }
+
+        private Boolean roughlyEquals(LineSegmentXZ seg){
+            return (seg.p1.subtract(this.segment.p1).lengthSquared() + seg.p2.subtract(this.segment.p2).lengthSquared() < 0.1) || (seg.p2.subtract(this.segment.p1).lengthSquared() + seg.p1.subtract(this.segment.p2).lengthSquared() < 0.1);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            SegmentLevelPair temp = (SegmentLevelPair) o;
+            return roughlyEquals(temp.segment) && this.level.equals(temp.level);
+        }
+
+
+    }
+
     @Override
     public void renderTo(Target target) {
 
         double baseEle = data.getBuildingPart().getBuildingPartBaseEle();
 
-        Material material =  BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK,false);
+        Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
 
-        for (LineSegmentXZ wallSeg : wallSegments){
+        for (Integer level : data.getLevels()) {
 
-            List<VectorXZ> vectors = wallSeg.getVertexList();
+            for (LineSegmentXZ wallSeg : wallSegments) {
 
-            /* front wall surface */
+                SegmentLevelPair pair = new SegmentLevelPair(wallSeg, level);
 
-            List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getLevelHeightAboveBase()));
-            List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors, baseEle + wallHeight));
+                if (!allRenderedWallSegments.contains(pair)) {
 
-            WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
+                    allRenderedWallSegments.add(pair);
 
-            /* back wall surface */
+                    List<VectorXZ> vectors = wallSeg.getVertexList();
 
-            List<VectorXYZ> backBottomPoints = new ArrayList<>(bottomPoints);
-            List<VectorXYZ> backTopPoints = new ArrayList<>(topPoints);
+                    /* front wall surface */
 
-            Collections.reverse(backTopPoints);
-            Collections.reverse(backBottomPoints);
+                    List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
+                    List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level)));
 
-            WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
+                    WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
 
-            /* draw wall */
+                    /* back wall surface */
 
-            if (mainSurface != null) {
-                mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
-                backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+                    List<VectorXYZ> backBottomPoints = new ArrayList<>(bottomPoints);
+                    List<VectorXYZ> backTopPoints = new ArrayList<>(topPoints);
+
+                    Collections.reverse(backTopPoints);
+                    Collections.reverse(backBottomPoints);
+
+                    WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
+
+                    /* draw wall */
+
+                    if (mainSurface != null) {
+                        mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+                        backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+                    }
+                }
+
             }
-
         }
 
     }
