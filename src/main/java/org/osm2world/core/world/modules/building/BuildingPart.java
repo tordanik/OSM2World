@@ -10,6 +10,7 @@ import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
+import java.rmi.activation.ActivationSystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +64,7 @@ public class BuildingPart implements Renderable {
 
 	final int buildingLevels;
 	final int minLevel;
+	final int minLevelWithUnderground;
 
 	double heightWithoutRoof;
 
@@ -118,10 +120,25 @@ public class BuildingPart implements Renderable {
 			parsedMinLevel = parseOsmDecimal(tags.getValue("building:min_level"), false);
 		}
 
-		if (parsedMinLevel != null) {
-			minLevel = max(0, (int)(float)parsedMinLevel);
+
+		Float parsedUnderground = null;
+
+		if (tags.containsKey("building:levels:underground")){
+			parsedUnderground = parseOsmDecimal(tags.getValue("building:levels:underground"), false);
+		}
+
+
+		if (parsedMinLevel != null){
+			if (parsedMinLevel > 0){
+				minLevel = max(0, (int)(float)parsedMinLevel);
+				minLevelWithUnderground = minLevel;
+			} else {
+				minLevel = 0;
+				minLevelWithUnderground = parsedUnderground == null ? 0 : Math.min(0, (int) (float) parsedUnderground * (-1));
+			}
 		} else {
 			minLevel = 0;
+			minLevelWithUnderground = parsedUnderground == null ? 0 : Math.min(0, (int)(float)parsedUnderground * (-1));
 		}
 
 		/* determine roof height */
@@ -191,7 +208,7 @@ public class BuildingPart implements Renderable {
 
 		List<Integer> levelsWithNoObject = new ArrayList<>();
 
-		for (int i = minLevel; i < buildingLevels; i++){
+		for (int i = minLevelWithUnderground; i < buildingLevels; i++){
 			levelsWithNoObject.add(i);
 		}
 
@@ -211,7 +228,9 @@ public class BuildingPart implements Renderable {
 
 						//TODO handle elements that span building parts
 
-						if(levelList.get(0) >= getMinLevel() && levelList.get(levelList.size() - 1) < getBuildingLevels()){
+						if(levelList.get(0) >= minLevelWithUnderground && levelList.get(levelList.size() - 1) < getBuildingLevels()){
+
+							// Handle level elements
 
 							if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(parseLevels(other.getTags().getValue("level")).get(0))){
 								Level l = new Level(other);
@@ -251,6 +270,16 @@ public class BuildingPart implements Renderable {
 			cumHeightAboveBase += lev.getHeight();
 		}
 
+		Float cumHeightBelowBase = 0f;
+
+		for (int levelNo = minLevel - 1; levelNo > minLevelWithUnderground - 1; levelNo--){
+			Level lev = levels.get(levelNo);
+			lev.updateHeight(defaultHeight);
+
+			cumHeightBelowBase -= lev.getHeight();
+			lev.setFloorEleAboveBase(cumHeightBelowBase);
+		}
+
 		if(!indoorElements.isEmpty()){
 			indoor = new Indoor(indoorElements, this);
 		}
@@ -269,13 +298,13 @@ public class BuildingPart implements Renderable {
 		double clearingAbovePassage = 2.5;
 
 		List<TerrainBoundaryWorldObject> buildingPassages = area.getOverlaps().stream()
-			.map(o -> o.getOther(area))
-			.filter(o -> o.getTags().containsAny(asList("tunnel"), asList("building_passage", "passage")))
-			.filter(o -> o.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject)
-			.map(o -> (TerrainBoundaryWorldObject)o.getPrimaryRepresentation())
-			.filter(o -> o.getGroundState() == GroundState.ON)
-			.filter(o -> clearingAbovePassage > floorHeight)
-			.collect(toList());
+				.map(o -> o.getOther(area))
+				.filter(o -> o.getTags().containsAny(asList("tunnel"), asList("building_passage", "passage")))
+				.filter(o -> o.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject)
+				.map(o -> (TerrainBoundaryWorldObject)o.getPrimaryRepresentation())
+				.filter(o -> o.getGroundState() == GroundState.ON)
+				.filter(o -> clearingAbovePassage > floorHeight)
+				.collect(toList());
 
 		if (buildingPassages.isEmpty()) {
 
@@ -339,9 +368,9 @@ public class BuildingPart implements Renderable {
 			subtractPolygons.addAll(roof.getPolygon().getHoles());
 
 			Collection<PolygonWithHolesXZ> buildingPartPolys =
-				CAGUtil.subtractPolygons(
-						roof.getPolygon().getOuter(),
-						subtractPolygons);
+					CAGUtil.subtractPolygons(
+							roof.getPolygon().getOuter(),
+							subtractPolygons);
 
 			for (PolygonWithHolesXZ p : buildingPartPolys) {
 				polygonFloorHeightMap.put(p, floorHeight);
@@ -354,8 +383,8 @@ public class BuildingPart implements Renderable {
 				Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
 
 				Collection<PolygonWithHolesXZ> polysAboveTBWOs =
-					CAGUtil.intersectPolygons(Arrays.asList(
-							polygon.getOuter(), o.getOutlinePolygon().getSimpleXZPolygon()));
+						CAGUtil.intersectPolygons(Arrays.asList(
+								polygon.getOuter(), o.getOutlinePolygon().getSimpleXZPolygon()));
 
 
 				if (polygon.getHoles().isEmpty()) {
@@ -578,7 +607,7 @@ public class BuildingPart implements Renderable {
 
 		if (minLevel > 0) {
 
-			return getLevelHeightAboveBase(minLevel);
+			return (heightWithoutRoof / buildingLevels) * minLevel;
 
 		}
 
@@ -676,14 +705,14 @@ public class BuildingPart implements Renderable {
 
 		if (config.getBoolean("useBuildingColors", true)) {
 
-	    	return buildMaterial(
-	    			tags.getValue("building:material"),
-	    			tags.getValue("building:colour"),
-	    			defaults.materialWall, false);
+			return buildMaterial(
+					tags.getValue("building:material"),
+					tags.getValue("building:colour"),
+					defaults.materialWall, false);
 
-	    } else {
-	    	return defaults.materialWall;
-	    }
+		} else {
+			return defaults.materialWall;
+		}
 
 	}
 
@@ -691,21 +720,21 @@ public class BuildingPart implements Renderable {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
-	    if (config.getBoolean("useBuildingColors", true)) {
+		if (config.getBoolean("useBuildingColors", true)) {
 
-	    	return buildMaterial(
-	    			tags.getValue("roof:material"),
-	    			tags.getValue("roof:colour"),
-	    			defaults.materialRoof, true);
-	    } else {
-	    	return defaults.materialRoof;
-	    }
+			return buildMaterial(
+					tags.getValue("roof:material"),
+					tags.getValue("roof:colour"),
+					defaults.materialRoof, true);
+		} else {
+			return defaults.materialRoof;
+		}
 
 	}
 
 	public static Material buildMaterial(String materialString,
-			String colorString, Material defaultMaterial,
-			boolean roof) {
+										 String colorString, Material defaultMaterial,
+										 boolean roof) {
 
 		Material material = defaultMaterial;
 
