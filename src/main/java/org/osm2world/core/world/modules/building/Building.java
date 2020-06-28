@@ -7,10 +7,13 @@ import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -39,18 +42,40 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 		this.area = area;
 
-		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
-			MapElement other = overlap.getOther(area);
-			if (other instanceof MapArea
-					&& other.getTags().containsKey("building:part")) {
+		Optional<MapRelation> buildingRelation = area.getMemberships().stream()
+				.filter(it -> "outline".equals(it.getRole()))
+				.map(Membership::getRelation)
+				.filter(it -> it.getTags().contains("type", "building"))
+				.findAny();
 
-				MapArea otherArea = (MapArea)other;
+		if (buildingRelation.isPresent()) {
 
-				if (roughlyContains(area.getPolygon(), otherArea.getPolygon().getOuter())) {
-					parts.add(new BuildingPart(this, otherArea, config));
+			/** find building parts based on the relation */
+
+			for (Membership membership : buildingRelation.get().getMemberships()) {
+				if ("part".equals(membership.getRole()) && membership.getElement() instanceof MapArea) {
+					parts.add(new BuildingPart(this, (MapArea) membership.getElement(), config));
 				}
-
 			}
+
+		} else {
+
+			/** find building part areas geometrically contained within the building outline */
+
+			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
+				MapElement other = overlap.getOther(area);
+				if (other instanceof MapArea
+						&& other.getTags().containsKey("building:part")) {
+
+					MapArea otherArea = (MapArea)other;
+
+					if (roughlyContains(area.getPolygon(), otherArea.getPolygon().getOuter())) {
+						parts.add(new BuildingPart(this, otherArea, config));
+					}
+
+				}
+			}
+
 		}
 
 		/* use the building itself as a part if no parts exist,
