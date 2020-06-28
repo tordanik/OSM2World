@@ -1032,7 +1032,9 @@ public class RoadModule extends ConfigurableWorldModule {
 						}
 
 						for (int i = 0; i < values.length; i++) {
-							resultLists[i].add(new Tag(baseKey, values[i].trim()));
+							if (!resultLists[i].stream().anyMatch(t -> t.key.equals(baseKey))) {
+								resultLists[i].add(new Tag(baseKey, values[i].trim()));
+							}
 						}
 
 					}
