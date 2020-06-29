@@ -625,11 +625,15 @@ public class BuildingPart implements Renderable {
 		Float cumUndeterminedHeight = (float) heightWithoutRoof - (float) ((heightWithoutRoof/buildingLevels) * minLevel);
 		int noDefaultHeightLevels = 0;
 
+		// Underground level heights are not taken into account
+
 		for (Integer levelNo : levels.keySet()){
-			if (levels.get(levelNo).getHeight() == 0){
-				noDefaultHeightLevels += 1;
+			if (levelNo >= 0) {
+				if (levels.get(levelNo).getHeight() == 0) {
+					noDefaultHeightLevels += 1;
+				}
+				cumUndeterminedHeight -= levels.get(levelNo).getHeight();
 			}
-			cumUndeterminedHeight -= levels.get(levelNo).getHeight();
 		}
 
 		return cumUndeterminedHeight/noDefaultHeightLevels;
