@@ -740,10 +740,9 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 				try {
 
-					PolygonShapeXZ outline = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject)
-							.getOutlinePolygonXZ();
+					Collection<PolygonShapeXZ> outlines = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject).getTerrainBoundariesXZ();
 
-					if (outline != null) {
+					for (PolygonShapeXZ outline : outlines) {
 						if (outline.getVertexList().stream().anyMatch(v -> bbox.contains(v))
 								|| outline.intersects(bbox.polygonXZ())) {
 

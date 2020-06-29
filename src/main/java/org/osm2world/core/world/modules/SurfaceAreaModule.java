@@ -162,9 +162,9 @@ public class SurfaceAreaModule extends AbstractModule {
 					TerrainBoundaryWorldObject terrainBoundary =
 						(TerrainBoundaryWorldObject)otherWO;
 
-					PolygonShapeXZ outlinePolygon = terrainBoundary.getOutlinePolygonXZ();
+					Collection<PolygonShapeXZ> outlinePolygons = terrainBoundary.getTerrainBoundariesXZ();
 
-					if (outlinePolygon != null) {
+					for (PolygonShapeXZ outlinePolygon : outlinePolygons) {
 
 						subtractPolys.add(outlinePolygon);
 						allPolys.add(outlinePolygon);
@@ -179,6 +179,7 @@ public class SurfaceAreaModule extends AbstractModule {
 						}
 
 					}
+
 
 				} else {
 

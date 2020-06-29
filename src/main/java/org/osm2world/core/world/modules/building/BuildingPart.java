@@ -10,7 +10,6 @@ import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
-import java.rmi.activation.ActivationSystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,8 +40,6 @@ import org.osm2world.core.world.modules.building.indoor.Indoor;
 import org.osm2world.core.world.modules.building.roof.ComplexRoof;
 import org.osm2world.core.world.modules.building.roof.FlatRoof;
 import org.osm2world.core.world.modules.building.roof.Roof;
-
-import javax.annotation.Nullable;
 
 /**
  * part of a building, as defined by the Simple 3D Buildings standard.
@@ -75,7 +72,7 @@ public class BuildingPart implements Renderable {
 
 	private HashMap<Integer ,Level> levels = new HashMap<>();
 
-	Indoor indoor;
+	private Indoor indoor = null;
 
 	public BuildingPart(Building building, MapArea area, Configuration config) {
 
@@ -559,6 +556,8 @@ public class BuildingPart implements Renderable {
 	public int getBuildingLevels() { return buildingLevels; }
 
 	public int getMinLevel() { return minLevel; }
+
+	public Indoor getIndoor(){ return indoor; }
 
 	@Override
 	public void renderTo(Target target) {
