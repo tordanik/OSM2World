@@ -98,7 +98,7 @@ public class IndoorWall implements Renderable {
 
         Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
 
-        for (Integer level : data.getLevels()) {
+        for (Integer level : data.getRenderableLevels()) {
 
             for (LineSegmentXZ wallSeg : wallSegments) {
 

@@ -21,25 +21,31 @@ public class IndoorFloor {
     private final Material material;
     private final PolygonWithHolesXZ polygon;
     private final double floorHeight;
+    private Boolean render;
 
-    public IndoorFloor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase){
+    public IndoorFloor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable){
         this.buildingPart = buildingPart;
         this.material = material;
         this.polygon = polygon;
         this.floorHeight = floorHeightAboveBase;
+        this.render = renderable;
     }
 
     public void renderTo(Target target) {
-        double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight + 0.01;
 
-        Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
+        if (render) {
 
-        List<TriangleXYZ> trianglesXYZ = triangles.stream()
-                .map(t -> t.makeCounterclockwise().xyz(floorEle))
-                .collect(toList());
+            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight + 0.01;
 
-        target.drawTriangles(material, trianglesXYZ,
-                triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+            Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
+            List<TriangleXYZ> trianglesXYZ = triangles.stream()
+                    .map(t -> t.makeCounterclockwise().xyz(floorEle))
+                    .collect(toList());
+
+            target.drawTriangles(material, trianglesXYZ,
+                    triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+
+        }
     }
 }

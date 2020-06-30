@@ -70,7 +70,7 @@ public class BuildingPart implements Renderable {
 	private List<Wall> walls = null;
 	private List<Floor> floors = null;
 
-	private HashMap<Integer ,Level> levels = new HashMap<>();
+	private HashMap<Integer, Level> levels = new HashMap<>();
 
 	private Indoor indoor = null;
 
@@ -568,9 +568,13 @@ public class BuildingPart implements Renderable {
 			createComponents();
 		}
 
-		walls.forEach(w -> w.renderTo(target));
+		if (!config.getBoolean("noOuterWalls", false)){
+			walls.forEach(w -> w.renderTo(target));
+		}
 
-		roof.renderTo(target, building.getGroundLevelEle() + heightWithoutRoof);
+		if (!config.getBoolean("noRoofs", false)) {
+			roof.renderTo(target, building.getGroundLevelEle() + heightWithoutRoof);
+		}
 
 		floors.forEach(f -> f.renderTo(target));
 

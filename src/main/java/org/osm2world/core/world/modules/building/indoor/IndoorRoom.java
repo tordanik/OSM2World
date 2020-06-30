@@ -26,8 +26,8 @@ public class IndoorRoom implements Renderable {
 
         this.walls = splitIntoIndoorWalls();
 
-        floor = new IndoorFloor(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(),  data.getLevelHeightAboveBase());
-        ceiling = new Ceiling(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(),  data.getTopOfTopLevelHeightAboveBase());
+        floor = new IndoorFloor(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(),  data.getLevelHeightAboveBase(), data.getRenderableLevels().contains(data.getMinLevel()));
+        ceiling = new Ceiling(data.getBuildingPart(), BuildingPart.createWallMaterial(data.getBuildingPart().getTags(), data.getBuildingPart().getConfig()), data.getPolygon(),  data.getTopOfTopLevelHeightAboveBase(), data.getRenderableLevels().contains(data.getMaxLevel()));
     }
 
     private List<IndoorWall> splitIntoIndoorWalls(){
