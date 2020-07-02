@@ -5,7 +5,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 
 /** default properties for a particular building or building:part type. Immutable. */
-class BuildingDefaults {
+public class BuildingDefaults {
 
 	public final int levels;
 	public final double heightPerLevel;

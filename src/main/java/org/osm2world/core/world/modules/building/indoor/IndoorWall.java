@@ -32,7 +32,6 @@ public class IndoorWall implements Renderable {
 
     private final IndoorObjectData data;
 
-    //TODO underground
     //TODO account for height of wall
     public IndoorWall(IndoorObjectData objectData){
 
@@ -40,7 +39,9 @@ public class IndoorWall implements Renderable {
 
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
-        List<VectorXZ> points = ((MapWaySegment) data.getMapElement()).getWay().getNodes().stream().map(MapNode::getPos).collect(toList());
+        List<VectorXZ> points = ((MapWaySegment) data.getMapElement()).getWay().getNodes()
+                .stream().map(MapNode::getPos)
+                .collect(toList());
 
         for (int i = 0; i < points.size() - 1; i++){
             wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
@@ -73,7 +74,8 @@ public class IndoorWall implements Renderable {
         }
 
         private Boolean roughlyEquals(LineSegmentXZ seg){
-            return (seg.p1.subtract(this.segment.p1).lengthSquared() + seg.p2.subtract(this.segment.p2).lengthSquared() < 0.1) || (seg.p2.subtract(this.segment.p1).lengthSquared() + seg.p1.subtract(this.segment.p2).lengthSquared() < 0.1);
+            return (seg.p1.subtract(this.segment.p1).lengthSquared() + seg.p2.subtract(this.segment.p2).lengthSquared() < 0.1)
+                    || (seg.p2.subtract(this.segment.p1).lengthSquared() + seg.p1.subtract(this.segment.p2).lengthSquared() < 0.1);
         }
 
         @Override
@@ -110,12 +112,17 @@ public class IndoorWall implements Renderable {
 
                     List<VectorXZ> vectors = wallSeg.getVertexList();
 
+
                     /* front wall surface */
 
-                    List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
-                    List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level)));
+                    List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors,
+                            baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
+
+                    List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors,
+                            baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level)));
 
                     WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
+
 
                     /* back wall surface */
 
@@ -126,6 +133,7 @@ public class IndoorWall implements Renderable {
                     Collections.reverse(backBottomPoints);
 
                     WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
+
 
                     /* draw wall */
 

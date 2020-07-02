@@ -8,11 +8,10 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 public final class IndoorObjectData {
@@ -32,15 +31,20 @@ public final class IndoorObjectData {
         this.levels = parseLevels(mapElement.getTags().getValue("level"));
 
         if (config.getString("renderLevels") != null){
-            List<String> renLevels = new ArrayList<>(Arrays.asList(config.getString("renderLevels").split(",")));
-            this.renderableLevels = parseLevels(mapElement.getTags().getValue("level")).stream().filter(i -> renLevels.contains(Integer.toString(i))).collect(Collectors.toList());
+            List<String> renLevels =asList(config.getString("renderLevels").split(","));
+            this.renderableLevels = parseLevels(mapElement.getTags().getValue("level"))
+                    .stream()
+                    .filter(i -> renLevels.contains(Integer.toString(i)))
+                    .collect(toList());
         } else {
             this.renderableLevels = this.levels;
         }
 
         if(config.getString("notRenderLevels") != null){
-            List<String> notRenLevels = new ArrayList<>(Arrays.asList(config.getString("notRenderLevels").split(",")));
-            this.renderableLevels = renderableLevels.stream().filter(i -> !notRenLevels.contains(Integer.toString(i))).collect(Collectors.toList());
+            List<String> notRenLevels = asList(config.getString("notRenderLevels").split(","));
+            this.renderableLevels = renderableLevels.stream()
+                    .filter(i -> !notRenLevels.contains(Integer.toString(i)))
+                    .collect(toList());
         }
 
         this.tags = mapElement.getTags();
@@ -60,18 +64,19 @@ public final class IndoorObjectData {
 
     public Integer getMaxLevel(){ return levels.get(levels.size() - 1); }
 
-    // returns the highest point of an object based on its max level
-    public Double getTopOfTopLevelHeightAboveBase(){ return buildingPart.getLevelHeightAboveBase(getMaxLevel()) + buildingPart.getLevelHeight(getMaxLevel()); }
+    /**
+     * @return the highest point of an object based on its max level
+     */
+    public Double getTopOfTopLevelHeightAboveBase(){
+        return buildingPart.getLevelHeightAboveBase(getMaxLevel()) + buildingPart.getLevelHeight(getMaxLevel());
+    }
 
     public MapElement getMapElement() { return mapElement; }
 
     public TagSet getTags() { return tags; }
 
-    // returns height of lowest level e.g. floor to ceiling
-    public Double getLevelHeight() { return buildingPart.getLevelHeight(getMinLevel()); }
-
     public PolygonWithHolesXZ getPolygon() {
-        if ( mapElement instanceof MapArea){
+        if (mapElement instanceof MapArea){
             return ((MapArea) mapElement).getPolygon();
         } else {
             return null;

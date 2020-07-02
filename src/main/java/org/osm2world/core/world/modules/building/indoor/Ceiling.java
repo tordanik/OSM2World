@@ -33,7 +33,7 @@ public class Ceiling {
 
     public void renderTo(Target target) {
 
-        if(render && polygon != null) {
+        if (render && polygon != null) {
 
             double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight - 0.01;
 

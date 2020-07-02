@@ -449,7 +449,7 @@ public class BuildingPart implements Renderable {
 	 * @return list of walls, each represented as a list of nodes.
 	 *   The list of nodes is ordered such that the building part's outside is to the right.
 	 */
-	public static List<Wall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
+	static List<Wall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
 
 		List<Wall> result = new ArrayList<>();
 
@@ -559,9 +559,9 @@ public class BuildingPart implements Renderable {
 
 	public TagSet getTags() { return tags; }
 
-	public int getBuildingLevels() { return buildingLevels; }
+	int getBuildingLevels() { return buildingLevels; }
 
-	public int getMinLevel() { return minLevel; }
+	int getMinLevel() { return minLevel; }
 
 	public Indoor getIndoor(){ return indoor; }
 
@@ -695,7 +695,7 @@ public class BuildingPart implements Renderable {
 
 		Float getFloorEleAboveBase() { return floorEleAboveBase; }
 
-		public void setFloorEleAboveBase(Float floorEleAboveBase) { this.floorEleAboveBase = floorEleAboveBase; }
+		void setFloorEleAboveBase(Float floorEleAboveBase) { this.floorEleAboveBase = floorEleAboveBase; }
 
 		void updateHeight(Float defaultHeight){
 			if (height == 0){
@@ -712,7 +712,7 @@ public class BuildingPart implements Renderable {
 		}
 	}
 
-	public static Material createWallMaterial(TagSet tags, Configuration config) {
+	static Material createWallMaterial(TagSet tags, Configuration config) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
