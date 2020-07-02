@@ -245,11 +245,7 @@ public class BuildingPart implements Renderable {
 
 						}
 					}
-
 				}
-
-				//TODO handle element with no level tag
-
 			}
 		}
 

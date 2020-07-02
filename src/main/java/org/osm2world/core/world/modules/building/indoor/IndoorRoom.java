@@ -11,8 +11,6 @@ import java.util.List;
 
 public class IndoorRoom implements Renderable {
 
-    private final MapArea roomArea;
-
     private final List<IndoorWall> walls;
     private final IndoorFloor floor;
     private final Ceiling ceiling;
@@ -22,8 +20,6 @@ public class IndoorRoom implements Renderable {
     public IndoorRoom(IndoorObjectData data){
 
         this.data = data;
-
-        this.roomArea = (MapArea) data.getMapElement();
 
         this.walls = splitIntoIndoorWalls();
 
@@ -44,7 +40,7 @@ public class IndoorRoom implements Renderable {
 
         List<IndoorWall> result = new ArrayList<>();
 
-        result.add(new IndoorWall(data.getBuildingPart(), roomArea));
+        result.add(new IndoorWall(data.getBuildingPart(), data.getMapElement()));
 
         return result;
     }

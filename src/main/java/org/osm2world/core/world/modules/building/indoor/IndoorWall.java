@@ -51,15 +51,15 @@ public class IndoorWall implements Renderable {
 
     }
 
-    public IndoorWall(BuildingPart buildingPart, MapArea area){
+    public IndoorWall(BuildingPart buildingPart, MapElement element){
 
-        data = new IndoorObjectData(buildingPart, area);
-
-        wallSegments = area.getPolygon().getSegments();
-
+        data = new IndoorObjectData(buildingPart, element);
+        this.floorHeight = (float) buildingPart.calculateFloorHeight();
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
-        this.floorHeight = (float) buildingPart.calculateFloorHeight();
+        if (element instanceof MapArea){
+            wallSegments = ((MapArea) element).getPolygon().getSegments();
+        }
 
     }
 
