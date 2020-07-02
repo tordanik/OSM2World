@@ -194,6 +194,12 @@ public class BuildingPart implements Renderable {
 			roofHeight = 0.0f;
 		}
 
+		int roofLevels = 0;
+
+		if (roofHeight > 1) {
+			roofLevels = (int)(float) parseOsmDecimal(tags.getValue("roof:levels"), false, 0);
+		}
+
 		/* determine building height */
 
 		double fallbackHeight = buildingLevels * heightPerLevel + roofHeight;
@@ -204,14 +210,13 @@ public class BuildingPart implements Renderable {
 
 		heightWithoutRoof = height - roofHeight;
 
-
 		/* collect all indoor elements */
 
 		ArrayList<MapElement> indoorElements = new ArrayList<>();
 
 		List<Integer> levelsWithNoObject = new ArrayList<>();
 
-		for (int i = minLevelWithUnderground; i < buildingLevels; i++){
+		for (int i = minLevelWithUnderground; i < buildingLevels + roofLevels; i++){
 			levelsWithNoObject.add(i);
 		}
 
@@ -231,7 +236,7 @@ public class BuildingPart implements Renderable {
 
 						//TODO handle elements that span building parts
 
-						if(levelList.get(0) >= minLevelWithUnderground && levelList.get(levelList.size() - 1) < getBuildingLevels()){
+						if(levelList.get(0) >= minLevelWithUnderground && levelList.get(levelList.size() - 1) < getBuildingLevels() + roofLevels){
 
 							// Handle level elements
 
@@ -258,12 +263,21 @@ public class BuildingPart implements Renderable {
 		// Update levels with no height data
 
 		Float defaultHeight = calculateDefaultHeight();
+		Float roofLevelsDefaultHeight = calculateRoofLevelsDefaultHeight(roofHeight);
 
 		Float cumHeightAboveBase = 0f;
 
 		for	(int levelNo = minLevel; levelNo < buildingLevels; levelNo++){
 			Level lev = levels.get(levelNo);
 			lev.updateHeight(defaultHeight);
+
+			lev.setFloorEleAboveBase(cumHeightAboveBase);
+			cumHeightAboveBase += lev.getHeight();
+		}
+
+		for (int levelNo = buildingLevels; levelNo < buildingLevels + roofLevels; levelNo++){
+			Level lev = levels.get(levelNo);
+			lev.updateHeight(roofLevelsDefaultHeight);
 
 			lev.setFloorEleAboveBase(cumHeightAboveBase);
 			cumHeightAboveBase += lev.getHeight();
@@ -631,10 +645,10 @@ public class BuildingPart implements Renderable {
 		Float cumUndeterminedHeight = (float) heightWithoutRoof - (float) ((heightWithoutRoof/buildingLevels) * minLevel);
 		int noDefaultHeightLevels = 0;
 
-		// Underground level heights are not taken into account
+		// Underground and roof level heights are not taken into account
 
 		for (Integer levelNo : levels.keySet()){
-			if (levelNo >= 0) {
+			if (levelNo >= 0 && levelNo < buildingLevels) {
 				if (levels.get(levelNo).getHeight() == 0) {
 					noDefaultHeightLevels += 1;
 				}
@@ -643,6 +657,27 @@ public class BuildingPart implements Renderable {
 		}
 
 		return cumUndeterminedHeight/noDefaultHeightLevels;
+	}
+
+	private Float calculateRoofLevelsDefaultHeight(Float roofHeight){
+
+		if (roofHeight < 1){
+			return null;
+		} else {
+			Float cumUndeterminedHeight = roofHeight;
+			int noDefaultHeightLevels = 0;
+
+			for (Integer levelNo : levels.keySet()){
+				if (levelNo >= buildingLevels) {
+					if (levels.get(levelNo).getHeight() == 0) {
+						noDefaultHeightLevels += 1;
+					}
+					cumUndeterminedHeight -= levels.get(levelNo).getHeight();
+				}
+			}
+
+			return cumUndeterminedHeight/noDefaultHeightLevels;
+		}
 	}
 
 	private final class Level{
