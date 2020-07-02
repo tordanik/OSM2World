@@ -101,12 +101,14 @@ public class BuildingPart implements Renderable {
 
 		if (tags.containsKey("building:levels")) {
 			parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
+		} else if (tags.containsKey("max_level")) {
+			parsedLevels = (float) parseOsmDecimal(tags.getValue("max_level"), false, defaults.levels - 1) + 1;
 		}
 
 		if (parsedLevels != null) {
 			buildingLevels = max(1, (int)(float)parsedLevels);
 		} else if (parseHeight(tags, -1) > 0) {
-			buildingLevels = max(1, (int)(parseHeight(tags, -1) / heightPerLevel));
+			buildingLevels = max(1, (int) (parseHeight(tags, -1) / heightPerLevel));
 		} else {
 			buildingLevels = defaults.levels;
 		}
@@ -115,23 +117,27 @@ public class BuildingPart implements Renderable {
 
 		if (tags.containsKey("building:min_level")) {
 			parsedMinLevel = parseOsmDecimal(tags.getValue("building:min_level"), false);
+		} else if (tags.containsKey("min_level")) {
+			parsedMinLevel = parseOsmDecimal(tags.getValue("min_level"), true);
 		}
-
 
 		Float parsedUnderground = null;
 
-		if (tags.containsKey("building:levels:underground")){
+		if (tags.containsKey("building:levels:underground")) {
 			parsedUnderground = parseOsmDecimal(tags.getValue("building:levels:underground"), false);
 		}
 
-
-		if (parsedMinLevel != null){
-			if (parsedMinLevel > 0){
-				minLevel = max(0, (int)(float)parsedMinLevel);
+		if (parsedMinLevel != null) {
+			if (parsedMinLevel > 0) {
+				minLevel = (int)(float)parsedMinLevel;
 				minLevelWithUnderground = minLevel;
 			} else {
 				minLevel = 0;
-				minLevelWithUnderground = parsedUnderground == null ? 0 : Math.min(0, (int) (float) parsedUnderground * (-1));
+				if (parsedUnderground == null) {
+					minLevelWithUnderground = (int)(float)parsedMinLevel;
+				} else {
+					minLevelWithUnderground = (int)(float) Math.min(parsedMinLevel, parsedUnderground * (-1));
+				}
 			}
 		} else {
 			minLevel = 0;
