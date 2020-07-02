@@ -33,7 +33,7 @@ public class IndoorFloor {
 
     public void renderTo(Target target) {
 
-        if (render) {
+        if (render && polygon != null) {
 
             double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight + 0.01;
 
