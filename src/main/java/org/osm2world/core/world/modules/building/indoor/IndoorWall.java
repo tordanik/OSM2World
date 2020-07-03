@@ -39,9 +39,13 @@ public class IndoorWall implements Renderable {
 
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
-        List<VectorXZ> points = ((MapWaySegment) data.getMapElement()).getWay().getNodes()
-                .stream().map(MapNode::getPos)
-                .collect(toList());
+        List<VectorXZ> points = new ArrayList<>();
+
+        if (data.getMapElement() instanceof MapWaySegment) {
+             points = ((MapWaySegment) data.getMapElement()).getWay().getNodes()
+                    .stream().map(MapNode::getPos)
+                    .collect(toList());
+        }
 
         for (int i = 0; i < points.size() - 1; i++){
             wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
