@@ -2,9 +2,12 @@ package org.osm2world.core.util;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.Collections.emptyList;
 
 /** parses the syntax of typical OSM tag values */
 public final class ValueParseUtil {
@@ -405,5 +408,30 @@ public final class ValueParseUtil {
 		if (value == null) return defaultValue;
 		List<Integer> result = parseLevels(value);
 		return result == null ? defaultValue : result;
+	}
+
+	/**
+	 * parses a list of integers separated by colons (for keys like non_existent_levels)
+	 *
+	 * @return list of levels, empty list if value is null or no valid values
+	 */
+	public static final List<Integer> parseList(String value) {
+
+		if (value == null) return emptyList();
+
+		List<Integer> result = new ArrayList<>(1);
+
+		for (String level : value.split(";")){
+
+			try {
+
+				result.add(Integer.valueOf(level));
+
+			} catch (NumberFormatException e) {}
+
+		}
+
+		return result.isEmpty() ? emptyList() : result;
+
 	}
 }

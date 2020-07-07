@@ -60,8 +60,12 @@ public class BuildingPart implements Renderable {
 	final TagSet tags;
 
 	final int buildingLevels;
-	final int minLevel;
+	final int buildingMinLevel;
 	final int minLevelWithUnderground;
+
+	final Integer min_level;
+	final Integer max_level;
+	final List<Integer> non_existent_levels;
 
 	double heightWithoutRoof;
 
@@ -101,8 +105,6 @@ public class BuildingPart implements Renderable {
 
 		if (tags.containsKey("building:levels")) {
 			parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
-		} else if (tags.containsKey("max_level")) {
-			parsedLevels = (float) parseOsmDecimal(tags.getValue("max_level"), false, defaults.levels - 1) + 1;
 		}
 
 		if (parsedLevels != null) {
@@ -117,11 +119,9 @@ public class BuildingPart implements Renderable {
 
 		if (tags.containsKey("building:min_level")) {
 			parsedMinLevel = parseOsmDecimal(tags.getValue("building:min_level"), false);
-		} else if (tags.containsKey("min_level")) {
-			parsedMinLevel = parseOsmDecimal(tags.getValue("min_level"), true);
 		}
 
-		Float parsedUnderground = null;
+		Float parsedUnderground = 0f;
 
 		if (tags.containsKey("building:levels:underground")) {
 			parsedUnderground = parseOsmDecimal(tags.getValue("building:levels:underground"), false);
@@ -129,10 +129,10 @@ public class BuildingPart implements Renderable {
 
 		if (parsedMinLevel != null) {
 			if (parsedMinLevel > 0) {
-				minLevel = (int)(float)parsedMinLevel;
-				minLevelWithUnderground = minLevel;
+				buildingMinLevel = (int)(float)parsedMinLevel;
+				minLevelWithUnderground = buildingMinLevel;
 			} else {
-				minLevel = 0;
+				buildingMinLevel = 0;
 				if (parsedUnderground == null) {
 					minLevelWithUnderground = (int)(float)parsedMinLevel;
 				} else {
@@ -140,9 +140,13 @@ public class BuildingPart implements Renderable {
 				}
 			}
 		} else {
-			minLevel = 0;
-			minLevelWithUnderground = parsedUnderground == null ? 0 : Math.min(0, (int)(float)parsedUnderground * (-1));
+			buildingMinLevel = 0;
+			minLevelWithUnderground = Math.min(0, (int)(float)parsedUnderground * (-1));
 		}
+
+		min_level = (int)(float) parseOsmDecimal(tags.getValue("min_level"), true, 0);
+		max_level = (int)(float) parseOsmDecimal(tags.getValue("max_level"), true, 0);
+		non_existent_levels = parseList(tags.getValue("non_existent_levels"));
 
 		/* determine roof height */
 
@@ -212,89 +216,105 @@ public class BuildingPart implements Renderable {
 
 		/* collect all indoor elements */
 
-		ArrayList<MapElement> indoorElements = new ArrayList<>();
+		Boolean renderIndoor = true;
 
-		List<Integer> levelsWithNoObject = new ArrayList<>();
-
-		for (int i = minLevelWithUnderground; i < buildingLevels + roofLevels; i++){
-			levelsWithNoObject.add(i);
+		if (!tags.containsKey("building:levels")){
+			renderIndoor = false;
 		}
 
-		// Find all overlapping indoor elements
+		if (tags.containsKey("min_level") && tags.containsKey("max_level")) {
+			if (roofLevels + buildingLevels + parsedUnderground != (max_level - min_level) + 1 - non_existent_levels.size()) {
+				renderIndoor = false;
+				System.err.println("Warning: min_level, max_level and non_existent_levels do not match building:levels");
+			}
+		}
 
-		for (MapOverlap<?,?> overlap : area.getOverlaps()) {
-			MapElement other = overlap.getOther(area);
-			if (other.getTags().containsKey("indoor")) {
+		if (renderIndoor) {
 
-				if (other.getTags().containsKey("level")){
+			ArrayList<MapElement> indoorElements = new ArrayList<>();
 
-					/* check all elements are within height limits of building part */
+			List<Integer> levelsWithNoObject = new ArrayList<>();
 
-					List<Integer> levelList =  parseLevels(other.getTags().getValue("level"));
+			for (int i = minLevelWithUnderground; i < buildingLevels + roofLevels; i++) {
+				levelsWithNoObject.add(i);
+			}
 
-					if (!levelList.isEmpty()){
+			// Find all overlapping indoor elements
 
-						//TODO handle elements that span building parts
+			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+				MapElement other = overlap.getOther(area);
+				if (other.getTags().containsKey("indoor")) {
 
-						if(levelList.get(0) >= minLevelWithUnderground && levelList.get(levelList.size() - 1) < getBuildingLevels() + roofLevels){
+					if (other.getTags().containsKey("level")) {
 
-							// Handle level elements
+						/* check all elements are within height limits of building part */
 
-							if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(parseLevels(other.getTags().getValue("level")).get(0))){
-								Level l = new Level(other);
-								levels.put(levelList.get(0),l);
-								levelsWithNoObject.remove((Integer) l.getLevel());
-							} else if (!other.getTags().contains("indoor", "level")) {
-								indoorElements.add(other);
+						List<Integer> levelList = parseLevels(other.getTags().getValue("level"));
+
+						if (!levelList.isEmpty()) {
+
+							//TODO handle elements that span building parts
+
+							if (levelConversion(levelList.get(0)) >= minLevelWithUnderground && levelConversion(levelList.get(levelList.size() - 1)) < getBuildingLevels() + roofLevels && !non_existent_levels.contains(levelList.get(0)) && !non_existent_levels.contains(levelList.get(levelList.size() - 1)) ) {
+
+								// Handle level elements
+
+								if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(parseLevels(other.getTags().getValue("level")).get(0))) {
+									Level l = new Level(other);
+									levels.put(l.getLevel(), l);
+									levelsWithNoObject.remove((Integer) l.getLevel());
+								} else if (!other.getTags().contains("indoor", "level")) {
+									indoorElements.add(other);
+								}
+
 							}
-
 						}
 					}
 				}
 			}
-		}
 
-		// Instantiate level objects for undefined levels
+			// Instantiate level objects for undefined levels
 
-		for (Integer levelNo : levelsWithNoObject){
-			levels.put(levelNo, new Level(levelNo));
-		}
+			for (Integer levelNo : levelsWithNoObject) {
+				levels.put(levelNo, new Level(levelNo));
+			}
 
-		// Update levels with no height data
+			// Update levels with no height data
 
-		Float defaultHeight = calculateDefaultHeight();
-		Float roofLevelsDefaultHeight = calculateRoofLevelsDefaultHeight(roofHeight);
+			Float defaultHeight = calculateDefaultHeight();
+			Float roofLevelsDefaultHeight = calculateRoofLevelsDefaultHeight(roofHeight);
 
-		Float cumHeightAboveBase = 0f;
+			Float cumHeightAboveBase = 0f;
 
-		for	(int levelNo = minLevel; levelNo < buildingLevels; levelNo++){
-			Level lev = levels.get(levelNo);
-			lev.updateHeight(defaultHeight);
+			for (int levelNo = buildingMinLevel; levelNo < buildingLevels; levelNo++) {
+				Level lev = levels.get(levelNo);
+				lev.updateHeight(defaultHeight);
 
-			lev.setFloorEleAboveBase(cumHeightAboveBase);
-			cumHeightAboveBase += lev.getHeight();
-		}
+				lev.setFloorEleAboveBase(cumHeightAboveBase);
+				cumHeightAboveBase += lev.getHeight();
+			}
 
-		for (int levelNo = buildingLevels; levelNo < buildingLevels + roofLevels; levelNo++){
-			Level lev = levels.get(levelNo);
-			lev.updateHeight(roofLevelsDefaultHeight);
+			for (int levelNo = buildingLevels; levelNo < buildingLevels + roofLevels; levelNo++) {
+				Level lev = levels.get(levelNo);
+				lev.updateHeight(roofLevelsDefaultHeight);
 
-			lev.setFloorEleAboveBase(cumHeightAboveBase);
-			cumHeightAboveBase += lev.getHeight();
-		}
+				lev.setFloorEleAboveBase(cumHeightAboveBase);
+				cumHeightAboveBase += lev.getHeight();
+			}
 
-		Float cumHeightBelowBase = 0f;
+			Float cumHeightBelowBase = 0f;
 
-		for (int levelNo = minLevel - 1; levelNo > minLevelWithUnderground - 1; levelNo--){
-			Level lev = levels.get(levelNo);
-			lev.updateHeight(defaultHeight);
+			for (int levelNo = buildingMinLevel - 1; levelNo > minLevelWithUnderground - 1; levelNo--) {
+				Level lev = levels.get(levelNo);
+				lev.updateHeight(defaultHeight);
 
-			cumHeightBelowBase -= lev.getHeight();
-			lev.setFloorEleAboveBase(cumHeightBelowBase);
-		}
+				cumHeightBelowBase -= lev.getHeight();
+				lev.setFloorEleAboveBase(cumHeightBelowBase);
+			}
 
-		if(!indoorElements.isEmpty()){
-			indoor = new Indoor(indoorElements, this);
+			if (!indoorElements.isEmpty()) {
+				indoor = new Indoor(indoorElements, this);
+			}
 		}
 
 	}
@@ -571,7 +591,7 @@ public class BuildingPart implements Renderable {
 
 	int getBuildingLevels() { return buildingLevels; }
 
-	int getMinLevel() { return minLevel; }
+	int getMinLevel() { return buildingMinLevel; }
 
 	public Indoor getIndoor(){ return indoor; }
 
@@ -610,7 +630,7 @@ public class BuildingPart implements Renderable {
 	}
 
 	public Double getBuildingPartBaseEle(){
-		return building.getGroundLevelEle() + ((heightWithoutRoof/buildingLevels) * minLevel);
+		return building.getGroundLevelEle() + ((heightWithoutRoof/buildingLevels) * buildingMinLevel);
 	}
 
 	public double calculateFloorHeight() {
@@ -624,9 +644,9 @@ public class BuildingPart implements Renderable {
 
 		}
 
-		if (minLevel > 0) {
+		if (buildingMinLevel > 0) {
 
-			return (heightWithoutRoof / buildingLevels) * minLevel;
+			return (heightWithoutRoof / buildingLevels) * buildingMinLevel;
 
 		}
 
@@ -642,7 +662,7 @@ public class BuildingPart implements Renderable {
 
 	private Float calculateDefaultHeight(){
 
-		Float cumUndeterminedHeight = (float) heightWithoutRoof - (float) ((heightWithoutRoof/buildingLevels) * minLevel);
+		Float cumUndeterminedHeight = (float) heightWithoutRoof - (float) ((heightWithoutRoof/buildingLevels) * buildingMinLevel);
 		int noDefaultHeightLevels = 0;
 
 		// Underground and roof level heights are not taken into account
@@ -680,6 +700,25 @@ public class BuildingPart implements Renderable {
 		}
 	}
 
+	public int levelConversion(Integer level){
+
+		if (tags.containsKey("min_level")) {
+
+			int temp = level - min_level;
+
+			for (Integer noLevel : non_existent_levels) {
+				if (level >= noLevel) {
+					temp -= 1;
+				}
+			}
+
+			return minLevelWithUnderground + temp;
+		}
+
+		return level;
+
+	}
+
 	private final class Level{
 
 		private final String name;
@@ -695,7 +734,7 @@ public class BuildingPart implements Renderable {
 
 			this.name = tags.getValue("name");
 			this.ref = tags.getValue("ref");
-			this.level = parseLevels(tags.getValue("level")).get(0);
+			this.level = levelConversion(parseLevels(tags.getValue("level")).get(0));
 
 			// Default heights need to be calculated once all levels are accounted for
 			this.height = parseHeight(tags, 0);
