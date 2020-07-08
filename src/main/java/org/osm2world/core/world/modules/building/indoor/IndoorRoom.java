@@ -3,6 +3,8 @@ package org.osm2world.core.world.modules.building.indoor;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
@@ -24,7 +26,7 @@ public class IndoorRoom implements Renderable {
         this.walls = splitIntoIndoorWalls();
 
         floor = new IndoorFloor(data.getBuildingPart(),
-                data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall),
+                data.getSurface(),
                 data.getPolygon(),
                 data.getLevelHeightAboveBase(),
                 data.getRenderableLevels().contains(data.getMinLevel()));

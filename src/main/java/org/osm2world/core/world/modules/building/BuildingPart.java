@@ -251,7 +251,7 @@ public class BuildingPart implements Renderable {
 
 						List<Integer> levelList = parseLevels(other.getTags().getValue("level"));
 
-						if (!levelList.isEmpty()) {
+						if (levelList != null) {
 
 							//TODO handle elements that span building parts
 

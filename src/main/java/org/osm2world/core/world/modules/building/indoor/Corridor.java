@@ -21,7 +21,7 @@ public class Corridor implements Renderable {
         PolygonWithHolesXZ polygon = data.getPolygon();
         Double floorHeight = (double) data.getLevelHeightAboveBase();
 
-        floor = new IndoorFloor(data.getBuildingPart(), material, polygon, floorHeight, data.getRenderableLevels().contains(data.getMinLevel()));
+        floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight, data.getRenderableLevels().contains(data.getMinLevel()));
         ceiling = new Ceiling(data.getBuildingPart(), material, polygon, data.getTopOfTopLevelHeightAboveBase(), data.getRenderableLevels().contains(data.getMaxLevel()));
     }
 
