@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules.building;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.osm2world.core.map_data.data.overlaps.MapOverlapType.SHARE_SEGMENT;
+import static org.osm2world.core.test.TestMapDataGenerator.addOverlapAA;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,14 +120,8 @@ public class BuildingPartTest {
 		MapArea level1 = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "6", "height", "1"));
 		MapArea level2 = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "10", "height", "5"));
 
-		MapOverlapAA overlap1 = new MapOverlapAA(buildingPartArea, level1, SHARE_SEGMENT);
-		MapOverlapAA overlap2 = new MapOverlapAA(buildingPartArea, level2, SHARE_SEGMENT);
-
-		buildingPartArea.addOverlap(overlap1);
-		buildingPartArea.addOverlap(overlap2);
-
-		level1.addOverlap(overlap1);
-		level2.addOverlap(overlap2);
+		addOverlapAA(buildingPartArea, level1, SHARE_SEGMENT);
+		addOverlapAA(buildingPartArea, level2, SHARE_SEGMENT);
 
 		building = new Building(buildingPartArea, new BaseConfiguration());
 		buildingPart = building.getParts().get(0);

@@ -11,7 +11,11 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.math.VectorXZ;
+
+import static org.osm2world.core.map_data.data.overlaps.MapOverlapType.SHARE_SEGMENT;
 
 /**
  * creates {@link MapElement}s for tests.
@@ -78,6 +82,15 @@ public class TestMapDataGenerator {
 			list.add(list.get(0));
 		}
 		return list;
+	}
+
+	/**
+	 * creates overlap and adds it to each {@link MapArea}
+	 */
+	public static void addOverlapAA(MapArea area1, MapArea area2, MapOverlapType type) {
+		MapOverlapAA overlap = new MapOverlapAA(area1, area2, type);
+		area1.addOverlap(overlap);
+		area2.addOverlap(overlap);
 	}
 
 }
