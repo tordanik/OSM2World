@@ -1845,7 +1845,13 @@ public class RoadModule extends ConfigurableWorldModule {
 
 
 				if (!roadTags.contains("highway", "motorway")) {
-					surface = addTurnArrows(surface, laneTags);
+
+					// add turn arrows only if the lane section is long enough (rough rule of thumb)
+					double length = leftLaneBorder.get(0).distanceToXZ(leftLaneBorder.get(leftLaneBorder.size() - 1));
+					if (length > 4.0) {
+						surface = addTurnArrows(surface, laneTags);
+					}
+
 				}
 
 				target.drawTriangleStrip(surface, vs,
