@@ -259,7 +259,7 @@ public class BuildingPart implements Renderable {
 
 								// Handle level elements
 
-								if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(parseLevels(other.getTags().getValue("level")).get(0))) {
+								if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(levelConversion(parseLevels(other.getTags().getValue("level")).get(0)))) {
 									Level l = new Level(other);
 									levels.put(l.getLevel(), l);
 									levelsWithNoObject.remove((Integer) l.getLevel());

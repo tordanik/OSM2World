@@ -6,7 +6,6 @@ import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
@@ -24,7 +23,6 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
