@@ -55,12 +55,12 @@ class GeometryWindow implements Window {
 		this.params = params;
 
 		switch (params.windowShape) {
-		case CIRCLE:
+		case ROUND:
 			outline = circleShape(position, params.width, params.height);
 			paneOutline = circleShape(position.add(new VectorXZ(0, OUTER_FRAME_WIDTH / 2)),
 					params.width - OUTER_FRAME_WIDTH, params.height - OUTER_FRAME_WIDTH);
 			break;
-		case RECTANGLE:
+		case RECTANGULAR:
 		default:
 			outline = rectangleShape(position, params.width, params.height);
 			paneOutline = rectangleShape(position.add(new VectorXZ(0, OUTER_FRAME_WIDTH / 2)),
@@ -147,7 +147,7 @@ class GeometryWindow implements Window {
 				triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, surface::texCoordsGlobal));
 
 		Material frameSideMaterial = params.frameMaterial;
-		if (params.windowShape == WindowParameters.WindowShape.CIRCLE) {
+		if (params.windowShape == WindowParameters.WindowShape.ROUND) {
 			frameSideMaterial = frameSideMaterial.makeSmooth();
 		}
 
