@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules.building.indoor;
 
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
@@ -27,6 +28,8 @@ public class IndoorWall implements Renderable {
     private final Float wallHeight;
     private final Float floorHeight;
 
+    private List<MapNode> nodes;
+
     private List<LineSegmentXZ> wallSegments = new ArrayList<>();
     static List<SegmentLevelPair> allRenderedWallSegments = new ArrayList<>();
 
@@ -39,19 +42,23 @@ public class IndoorWall implements Renderable {
 
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
-        List<VectorXZ> points = new ArrayList<>();
+//        List<VectorXZ> points = new ArrayList<>();
+//
+//        if (data.getMapElement() instanceof MapWaySegment) {
+//             points = ((MapWaySegment) data.getMapElement()).getWay().getNodes()
+//                    .stream().map(MapNode::getPos)
+//                    .collect(toList());
+//        }
 
-        if (data.getMapElement() instanceof MapWaySegment) {
-             points = ((MapWaySegment) data.getMapElement()).getWay().getNodes()
-                    .stream().map(MapNode::getPos)
-                    .collect(toList());
-        }
+        nodes = ((MapWaySegment) data.getMapElement()).getWay().getNodes();
 
-        for (int i = 0; i < points.size() - 1; i++){
-            wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
-        }
+//        for (int i = 0; i < points.size() - 1; i++){
+//            wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
+//        }
 
         this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getLevelHeightAboveBase();
+
+        splitIntoWalls();
 
     }
 
@@ -61,8 +68,44 @@ public class IndoorWall implements Renderable {
         this.floorHeight = (float) buildingPart.calculateFloorHeight();
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
-        if (element instanceof MapArea){
-            wallSegments = ((MapArea) element).getPolygon().getSegments();
+        if (element instanceof MapArea) {
+//            wallSegments = ((MapArea) element).getPolygon().getSegments();
+            nodes = ((MapArea) element).getBoundaryNodes();
+            splitIntoWalls();
+        }
+
+
+    }
+
+    private boolean isCornerOrEnd(int index) {
+
+        if (index == 0 || index == nodes.size() - 1) {
+            return true;
+        }
+
+        VectorXZ segmentBefore = nodes.get(index).getPos().subtract(nodes.get(index - 1).getPos());
+        VectorXZ segmentAfter = nodes.get(index + 1).getPos().subtract(nodes.get(index).getPos());
+        double dot = segmentBefore.normalize().dot(segmentAfter.normalize());
+        if (Math.abs(dot - 1) < 0.05) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void splitIntoWalls(){
+
+        MapNode prevNode = nodes.get(0);
+
+        for (int i = 1; i < nodes.size(); i++) {
+
+            MapNode node = nodes.get(i);
+
+            if (isCornerOrEnd(i)) {
+                wallSegments.add(new LineSegmentXZ(prevNode.getPos(), node.getPos()));
+                prevNode = node;
+            }
+
         }
 
     }
