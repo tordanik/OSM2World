@@ -12,7 +12,7 @@ import org.osm2world.core.target.common.material.Materials;
  * data about the window(s) on a wall, door, or for a single window.
  * This object type is immutable after its construction from a set of tags.
  */
-class WindowParameters {
+public class WindowParameters {
 
 	private static enum WindowType {
 		PLAIN, DISPLAY_WINDOW

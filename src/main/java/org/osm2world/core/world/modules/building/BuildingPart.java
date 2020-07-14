@@ -591,7 +591,7 @@ public class BuildingPart implements Renderable {
 
 	int getBuildingLevels() { return buildingLevels; }
 
-	int getMinLevel() { return buildingMinLevel; }
+	public int getMinLevel() { return buildingMinLevel; }
 
 	public Indoor getIndoor(){ return indoor; }
 

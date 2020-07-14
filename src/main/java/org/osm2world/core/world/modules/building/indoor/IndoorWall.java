@@ -2,26 +2,21 @@ package org.osm2world.core.world.modules.building.indoor;
 
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.modules.building.BuildingPart;
-import org.osm2world.core.world.modules.building.Wall;
-import org.osm2world.core.world.modules.building.WallSurface;
+import org.osm2world.core.world.modules.building.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
-import static org.osm2world.core.util.ValueParseUtil.parseOsmDecimal;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 public class IndoorWall implements Renderable {
 
@@ -29,8 +24,8 @@ public class IndoorWall implements Renderable {
     private final Float floorHeight;
 
     private List<MapNode> nodes;
+    private List<SegmentNodes> wallSegmentNodes = new ArrayList<>();
 
-    private List<LineSegmentXZ> wallSegments = new ArrayList<>();
     static List<SegmentLevelPair> allRenderedWallSegments = new ArrayList<>();
 
     private final IndoorObjectData data;
@@ -41,22 +36,9 @@ public class IndoorWall implements Renderable {
         this.data = objectData;
 
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
+		this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getLevelHeightAboveBase();
 
-//        List<VectorXZ> points = new ArrayList<>();
-//
-//        if (data.getMapElement() instanceof MapWaySegment) {
-//             points = ((MapWaySegment) data.getMapElement()).getWay().getNodes()
-//                    .stream().map(MapNode::getPos)
-//                    .collect(toList());
-//        }
-
-        nodes = ((MapWaySegment) data.getMapElement()).getWay().getNodes();
-
-//        for (int i = 0; i < points.size() - 1; i++){
-//            wallSegments.add(new LineSegmentXZ(points.get(i), points.get(i + 1)));
-//        }
-
-        this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getLevelHeightAboveBase();
+		nodes = ((MapWaySegment) data.getMapElement()).getWay().getNodes();
 
         splitIntoWalls();
 
@@ -69,11 +51,9 @@ public class IndoorWall implements Renderable {
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
         if (element instanceof MapArea) {
-//            wallSegments = ((MapArea) element).getPolygon().getSegments();
             nodes = ((MapArea) element).getBoundaryNodes();
             splitIntoWalls();
         }
-
 
     }
 
@@ -96,17 +76,37 @@ public class IndoorWall implements Renderable {
     private void splitIntoWalls(){
 
         MapNode prevNode = nodes.get(0);
+        List<MapNode> intermediateNodes = new ArrayList<>();
 
         for (int i = 1; i < nodes.size(); i++) {
 
             MapNode node = nodes.get(i);
 
             if (isCornerOrEnd(i)) {
-                wallSegments.add(new LineSegmentXZ(prevNode.getPos(), node.getPos()));
+                wallSegmentNodes.add(new SegmentNodes(intermediateNodes, new LineSegmentXZ(prevNode.getPos(), node.getPos())));
                 prevNode = node;
+                intermediateNodes = new ArrayList<>();
+            } else {
+                intermediateNodes.add(node);
             }
 
         }
+
+    }
+
+    private class SegmentNodes {
+
+        private List<MapNode> nodes;
+        private LineSegmentXZ segment;
+
+        SegmentNodes(List<MapNode> allNodes, LineSegmentXZ segment){
+            nodes = allNodes;
+            this.segment = segment;
+        }
+
+        List<MapNode> getNodes() { return nodes; }
+
+        LineSegmentXZ getSegment() { return segment; }
 
     }
 
@@ -149,15 +149,15 @@ public class IndoorWall implements Renderable {
 
         for (Integer level : data.getRenderableLevels()) {
 
-            for (LineSegmentXZ wallSeg : wallSegments) {
+            for (SegmentNodes wallSegData : wallSegmentNodes) {
 
-                SegmentLevelPair pair = new SegmentLevelPair(wallSeg, level);
+                SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level);
 
                 if (!allRenderedWallSegments.contains(pair)) {
 
                     allRenderedWallSegments.add(pair);
 
-                    List<VectorXZ> vectors = wallSeg.getVertexList();
+                    List<VectorXZ> vectors = wallSegData.getSegment().getVertexList();
 
 
                     /* front wall surface */
@@ -181,6 +181,37 @@ public class IndoorWall implements Renderable {
 
                     WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
 
+                    /* add windows that aren't on vertices */
+
+                    for (MapNode node : wallSegData.getNodes()) {
+
+                        if (node.getTags().containsKey("window")
+                                && !node.getTags().contains("window", "no") && (node.getTags().containsKey("level") || node.getTags().containsKey("repeat_on"))) {
+
+							Set<Integer> windowLevels = new HashSet<>();
+							windowLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
+							windowLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
+
+                            windowLevels = windowLevels.stream()
+                                    .map(l -> data.getBuildingPart().levelConversion(l))
+                                    .collect(Collectors.toSet());
+
+                            if (windowLevels.contains(level)) {
+
+                                Double offset = wallSegData.segment.offsetOf(node.getPos());
+
+                                TagSet windowTags = inheritTags(node.getTags(), data.getTags());
+                                WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
+
+                                GeometryWindow windowFront = new GeometryWindow(new VectorXZ(offset, params.breast), params);
+                                GeometryWindow windowBack = new GeometryWindow(new VectorXZ(wallSegData.segment.getLength() - offset, params.breast), params);
+
+                                mainSurface.addElementIfSpaceFree(windowFront);
+                                backSurface.addElementIfSpaceFree(windowBack);
+
+                            }
+                        }
+                    }
 
                     /* draw wall */
 

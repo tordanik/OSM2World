@@ -34,7 +34,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 
-class GeometryWindow implements Window {
+public class GeometryWindow implements Window {
 
 	private static final double DEPTH = 0.10;
 	private static final double OUTER_FRAME_WIDTH = 0.1;
