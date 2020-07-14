@@ -185,20 +185,24 @@ public class IndoorWall implements Renderable {
 
                     for (MapNode node : wallSegData.getNodes()) {
 
-                        if (node.getTags().containsKey("window")
-                                && !node.getTags().contains("window", "no") && (node.getTags().containsKey("level") || node.getTags().containsKey("repeat_on"))) {
+						Set<Integer> objectLevels = new HashSet<>();
+						objectLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
+						objectLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
-							Set<Integer> windowLevels = new HashSet<>();
-							windowLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
-							windowLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
+						objectLevels = objectLevels.stream()
+								.map(l -> data.getBuildingPart().levelConversion(l))
+								.collect(Collectors.toSet());
 
-                            windowLevels = windowLevels.stream()
-                                    .map(l -> data.getBuildingPart().levelConversion(l))
-                                    .collect(Collectors.toSet());
+						Double offset = wallSegData.segment.offsetOf(node.getPos());
+						VectorXZ posFront = new VectorXZ(offset, 0);
+						VectorXZ posback = new VectorXZ(wallSegData.segment.getLength() - offset, 0);
 
-                            if (windowLevels.contains(level)) {
+						if (objectLevels.contains(level)) {
 
-                                Double offset = wallSegData.segment.offsetOf(node.getPos());
+							if (node.getTags().containsKey("window")
+                                && !node.getTags().contains("window", "no")) {
+
+
 
                                 TagSet windowTags = inheritTags(node.getTags(), data.getTags());
                                 WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
@@ -209,7 +213,14 @@ public class IndoorWall implements Renderable {
                                 mainSurface.addElementIfSpaceFree(windowFront);
                                 backSurface.addElementIfSpaceFree(windowBack);
 
-                            }
+                            } else if (node.getTags().containsKey("door")) {
+
+								DoorParameters params = DoorParameters.fromTags(node.getTags(), data.getBuildingPart().getTags());
+
+								mainSurface.addElementIfSpaceFree(new Door(posFront, params));
+								backSurface.addElementIfSpaceFree(new Door(posback, params));
+
+							}
                         }
                     }
 

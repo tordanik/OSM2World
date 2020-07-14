@@ -16,7 +16,7 @@ import org.osm2world.core.map_data.data.TagSet;
  * data about a door.
  * This object type is immutable after its construction from a set of tags.
  */
-class DoorParameters {
+public class DoorParameters {
 
 	public final String type;
 	public final @Nullable String materialName;

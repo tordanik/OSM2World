@@ -17,7 +17,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 
-class Door implements WallElement {
+public class Door implements WallElement {
 
 	/** position on a wall surface */
 	private final VectorXZ position;
