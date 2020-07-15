@@ -193,7 +193,7 @@ public class IndoorWall implements Renderable {
 								.map(l -> data.getBuildingPart().levelConversion(l))
 								.collect(Collectors.toSet());
 
-						Double offset = wallSegData.segment.offsetOf(node.getPos());
+						Double offset = wallSegData.segment.offsetOf(wallSegData.segment.closestPoint(node.getPos()));
 						VectorXZ posFront = new VectorXZ(offset, 0);
 						VectorXZ posback = new VectorXZ(wallSegData.segment.getLength() - offset, 0);
 
@@ -201,8 +201,6 @@ public class IndoorWall implements Renderable {
 
 							if (node.getTags().containsKey("window")
                                 && !node.getTags().contains("window", "no")) {
-
-
 
                                 TagSet windowTags = inheritTags(node.getTags(), data.getTags());
                                 WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));

@@ -38,7 +38,7 @@ public interface PolylineShapeXZ extends ShapeXZ {
 		List<VectorXZ> vertices = getVertexList();
 
 		// how far a point can be from a segment of this polyline and still be considered "on" it
-		final double IS_ON_TOLERANCE = 0.02; //1e-4;
+		final double IS_ON_TOLERANCE = 1e-4;
 
 		/* if the point is a vertex of this polyline ... */
 
