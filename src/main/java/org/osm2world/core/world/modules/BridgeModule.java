@@ -1,22 +1,39 @@
 package org.osm2world.core.world.modules;
 
 
-import static java.lang.Math.max;
+import static java.lang.Math.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
+import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.ClosedShapeXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.ExtrudeOption;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -85,7 +102,7 @@ public class BridgeModule extends AbstractModule {
 
 			drawBridgeUnderside(target);
 
-			drawBridgePillars(target);
+			drawBridgePiers(target);
 
 		}
 
@@ -110,65 +127,126 @@ public class BridgeModule extends AbstractModule {
 
 		}
 
-		private void drawBridgePillars(Target target) {
+		/**
+		 * draws supports for the bridge. These can be explicitly mapped with bridge:support=*.
+		 * If no explicitly mapped supports are found, this method places some at equal distances.
+		 */
+		private void drawBridgePiers(Target target) {
 
-			List<VectorXZ> pillarPositions = equallyDistributePointsAlong(
-					2f, false,
-					primaryRep.getStartPosition(),
-					primaryRep.getEndPosition());
+			/* determine defaults */
 
-			//make sure that the pillars doesn't pierce anything on the ground
+			double defaultWidth = primaryRep.getWidth() * 0.7;
+			double defaultLength = defaultWidth * 0.5;
+			SimplePolygonShapeXZ defaultShape = new AxisAlignedRectangleXZ(NULL_VECTOR, defaultWidth, defaultLength);
+			defaultShape = defaultShape.rotatedCW(primaryRep.getPrimaryMapElement().getDirection().angle());
 
-			Collection<WorldObjectWithOutline> avoidedObjects = new ArrayList<>();
+			Material defaultMaterial = Materials.BRIDGE_PILLAR_DEFAULT;
 
-			for (MapIntersectionWW i : segment.getIntersectionsWW()) {
-				for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
+			/* look for explicitly mapped supports among the way's nodes and overlapping features */
 
-					if (otherRep.getGroundState() == GroundState.ON
-							&& otherRep instanceof WorldObjectWithOutline
-							&& !(otherRep instanceof Water || otherRep instanceof Waterway) //TODO: choose better criterion!
-					) {
-						avoidedObjects.add((WorldObjectWithOutline) otherRep);
-					}
+			Collection<MapElement> explicitlyMappedSupports = new ArrayList<>();
 
+			//note: there is currently no de-duplication of bridge support nodes shared by two bridge segments
+
+			for (MapNode node : primaryRep.segment.getStartEndNodes()) {
+				if (node.getTags().containsKey("bridge:support")) {
+					explicitlyMappedSupports.add(node);
 				}
 			}
 
-			filterWorldObjectCollisions(pillarPositions, avoidedObjects, null);
+			segment.getOverlaps().stream()
+					.filter(overlap -> overlap instanceof MapOverlapWA)
+					.map(overlap -> ((MapOverlapWA)overlap).e2)
+					.filter(area -> area.getTags().containsKey("bridge:support"))
+					.forEach(explicitlyMappedSupports::add);
 
-			//draw the pillars
+			if (!explicitlyMappedSupports.isEmpty()) {
 
-			for (VectorXZ pos : pillarPositions) {
-				drawBridgePillarAt(target, pos);
+				/* draw the piers */
+
+				for (MapElement element : explicitlyMappedSupports) {
+
+					String bridgeSupportValue = element.getTags().getValue("bridge:support");
+					if (asList("pier", "lift_pier", "pivot_pier", "pylon").contains(bridgeSupportValue)) {
+
+						VectorXZ pos = (element instanceof MapArea)
+								? ((MapArea)element).getOuterPolygon().getCenter()
+								: ((MapNode)element).getPos();
+
+						SimplePolygonShapeXZ shape = (element instanceof MapArea)
+								? ((MapArea)element).getOuterPolygon()
+								: defaultShape;
+
+						Material material = null;
+						if (element.getTags().containsKey("material")) {
+							material = Materials.getMaterial(element.getTags().getValue("material").toUpperCase());
+						}
+						if (material == null) {
+							material = Materials.BRIDGE_PILLAR_DEFAULT;
+						}
+						material = material.withColor(parseColor(element.getTags().getValue("colour"), CSS_COLORS));
+
+						drawBridgePierAt(target, pos, shape, material);
+
+					}
+
+				}
+
+			} else {
+
+				/* no explicitly mapped supports found, distribute some equally along the bridge's length */
+
+				double distance = min(50.0, primaryRep.getPrimaryMapElement().getLineSegment().getLength() / 2);
+
+				List<VectorXZ> pierPositions = equallyDistributePointsAlong((float)distance, false,
+						primaryRep.getStartPosition(), primaryRep.getEndPosition());
+
+				/* make sure that the piers don't pierce anything on the ground */
+
+				Collection<WorldObjectWithOutline> avoidedObjects = new ArrayList<>();
+
+				for (MapIntersectionWW i : segment.getIntersectionsWW()) {
+					for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
+
+						if (otherRep.getGroundState() == GroundState.ON
+								&& otherRep instanceof WorldObjectWithOutline
+								&& !(otherRep instanceof Water || otherRep instanceof Waterway) //TODO: choose better criteria!
+						) {
+							avoidedObjects.add((WorldObjectWithOutline) otherRep);
+						}
+
+					}
+				}
+
+				filterWorldObjectCollisions(pierPositions, avoidedObjects, null);
+
+				/* draw the piers */
+
+				for (VectorXZ pos : pierPositions) {
+					drawBridgePierAt(target, pos, defaultShape, defaultMaterial);
+				}
+
 			}
 
 		}
 
-		private void drawBridgePillarAt(Target target, VectorXZ pos) {
+		private void drawBridgePierAt(Target target, VectorXZ pos, ClosedShapeXZ crossSection, Material material) {
 
 			/* determine the bridge elevation at that point */
 
-			VectorXYZ top = null;
+			PolylineXZ centerlineXZ = new PolylineXZ(primaryRep.getCenterlineXZ());
+			double offset = centerlineXZ.offsetOf(centerlineXZ.closestPoint(pos));
+			double ratio = offset / centerlineXZ.getLength();
 
-			List<VectorXYZ> vs = primaryRep.getCenterline();
-
-			for (int i = 0; i + 1 < vs.size(); i++) {
-
-				if (isBetween(pos, vs.get(i).xz(), vs.get(i+1).xz())) {
-					top = interpolateElevation(pos, vs.get(i), vs.get(i+1));
-                                        break;
-				}
-
-			}
+			//note: there's a small inaccuracy because the length along the 3D line is different than in 2D
+			VectorXYZ top = interpolateOn(primaryRep.getCenterline(), ratio);
 
 			/* draw the pillar */
 
 			// TODO: start pillar at ground instead of just x meters below the bridge
 			VectorXYZ base = top.y(max(top.y-20, -3));
-			target.drawColumn(Materials.BRIDGE_PILLAR_DEFAULT, null,
-					base,
-					top.y - base.y,
-					0.2, 0.2, false, false);
+			target.drawExtrudedShape(material, crossSection,
+					asList(base, top), nCopies(2, Z_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
 		}
 

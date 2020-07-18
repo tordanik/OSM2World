@@ -173,4 +173,12 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 	}
 
+	@Override
+	default SimplePolygonShapeXZ rotatedCW(double angleRad) {
+		List<VectorXZ> rotatedVertexList = getVertexList().stream()
+				.map(v -> v.rotate(angleRad))
+				.collect(toList());
+		return new SimplePolygonXZ(rotatedVertexList);
+	}
+
 }
