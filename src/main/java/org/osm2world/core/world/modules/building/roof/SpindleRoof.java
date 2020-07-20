@@ -8,14 +8,12 @@ import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
@@ -35,6 +33,12 @@ abstract public class SpindleRoof extends Roof {
 	@Override
 	public double getRoofHeightAt(VectorXZ pos) {
 		return 0;
+	}
+
+	// TODO needs implementing
+	@Override
+	public Collection<LineSegmentXZ> getInnerSegments(){
+		return emptyList();
 	}
 
 	@Override

@@ -595,6 +595,8 @@ public class BuildingPart implements Renderable {
 
 	public Indoor getIndoor(){ return indoor; }
 
+	public double getHeightWithoutRoof() { return heightWithoutRoof; }
+
 	@Override
 	public void renderTo(Target target) {
 

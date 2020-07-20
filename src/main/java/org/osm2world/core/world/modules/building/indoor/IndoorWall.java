@@ -9,6 +9,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.modules.building.*;
+import org.osm2world.core.world.modules.building.roof.Roof;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,7 +67,10 @@ public class IndoorWall implements Renderable {
         VectorXZ segmentBefore = nodes.get(index).getPos().subtract(nodes.get(index - 1).getPos());
         VectorXZ segmentAfter = nodes.get(index + 1).getPos().subtract(nodes.get(index).getPos());
         double dot = segmentBefore.normalize().dot(segmentAfter.normalize());
-        if (Math.abs(dot - 1) < 0.05) {
+
+        // TODO tolerance may need tweaking, possibly based on length of segment??
+
+        if (Math.abs(dot - 1) < 0.001) {
             return false;
         }
 
@@ -140,6 +144,82 @@ public class IndoorWall implements Renderable {
 
     }
 
+    private List<VectorXYZ> generateTopPoints(Target target, List<VectorXZ> ends, Double heightAboveZero){
+
+        /* quick return if not in roof */
+
+        if (heightAboveZero <= data.getBuildingPart().getHeightWithoutRoof() + data.getBuildingPart().getBuildingPartBaseEle() + 1e-4) {
+            return listXYZ(ends, heightAboveZero);
+        }
+
+        // TODO possibly calculated every time
+
+        Collection<LineSegmentXZ> innerSegments = data.getBuildingPart().getRoof().getInnerSegments();
+
+        List<VectorXZ> intersections = new ArrayList<>();
+        intersections.add(ends.get(0));
+
+        for (LineSegmentXZ roofSegment : innerSegments) {
+            if (roofSegment.intersects(ends.get(0), ends.get(1))) {
+                intersections.add(roofSegment.getIntersection(ends.get(0), ends.get(1)));
+            }
+        }
+
+		intersections.add(ends.get(1));
+
+		intersections.sort((v1, v2) -> Double.compare(v1.subtract(ends.get(0)).length(), v2.subtract(ends.get(0)).length()));
+
+        Roof roof = data.getBuildingPart().getRoof();
+
+        double levelHeightInRoof = heightAboveZero - data.getBuildingPart().getHeightWithoutRoof() - data.getBuildingPart().getBuildingPartBaseEle();
+        List<VectorXZ> levelIntersections = new ArrayList<>();
+
+        for (int i = 0; i < intersections.size() - 1; i++) {
+        	if ((roof.getRoofHeightAt(intersections.get(i)) > levelHeightInRoof
+					&& roof.getRoofHeightAt(intersections.get(i + 1)) < levelHeightInRoof)
+					|| (roof.getRoofHeightAt(intersections.get(i + 1)) > levelHeightInRoof
+					&& roof.getRoofHeightAt(intersections.get(i)) < levelHeightInRoof) ) {
+
+        		double z1 = 0;
+        		double z2 = roof.getRoofHeightAt(intersections.get(i + 1)) - roof.getRoofHeightAt(intersections.get(i));
+
+        		double x1 = 0;
+        		double x2 = intersections.get(i).distanceTo(intersections.get(i + 1));
+
+        		LineSegmentXZ wallSegment = new LineSegmentXZ(new VectorXZ(x1, z1), new VectorXZ(x2, z2));
+
+        		LineSegmentXZ levelSegment = new LineSegmentXZ(
+        				new VectorXZ(x1, levelHeightInRoof - roof.getRoofHeightAt(intersections.get(i))),
+						new VectorXZ(x2, levelHeightInRoof - roof.getRoofHeightAt(intersections.get(i))));
+
+        		VectorXZ wallLevelInt =  wallSegment.getIntersection(levelSegment.p1, levelSegment.p2);
+
+        		if (wallLevelInt != null) {
+
+					VectorXZ inter = intersections.get(i).add(
+							intersections.get(i + 1).subtract(intersections.get(i))
+									.normalize().mult(wallLevelInt.getX()));
+
+					levelIntersections.add(inter);
+
+				}
+			}
+		}
+
+        intersections.addAll(levelIntersections);
+
+        intersections.sort((v1, v2) -> Double.compare(v1.subtract(ends.get(0)).length(), v2.subtract(ends.get(0)).length()));
+
+		List<VectorXYZ> limitedHeights = new ArrayList<>();
+
+        for (VectorXZ intersection : intersections) {
+            limitedHeights.add(intersection.xyz(Math.min(data.getBuildingPart().getBuildingPartBaseEle() + data.getBuildingPart().getHeightWithoutRoof() + data.getBuildingPart().getRoof().getRoofHeightAt(intersection), heightAboveZero)));
+        }
+
+        return limitedHeights;
+
+    }
+
     @Override
     public void renderTo(Target target) {
 
@@ -165,11 +245,17 @@ public class IndoorWall implements Renderable {
                     List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(vectors,
                             baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-                    List<VectorXYZ> topPoints = new ArrayList<>(listXYZ(vectors,
-                            baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level)));
+                    List<VectorXYZ> topPoints = generateTopPoints(target ,vectors,
+                            baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level));
+
+                    // TODO check before generateTopPoints
+
+                    if (topPoints.get(0).y < bottomPoints.get(0).y || topPoints.get(topPoints.size() - 1).y < bottomPoints.get(1).y) {
+                        topPoints =  new ArrayList<>(listXYZ(vectors,
+                                baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level)));
+                    }
 
                     WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
-
 
                     /* back wall surface */
 

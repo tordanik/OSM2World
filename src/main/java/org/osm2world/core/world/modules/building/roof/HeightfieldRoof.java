@@ -34,9 +34,6 @@ abstract public class HeightfieldRoof extends Roof {
 		super(originalPolygon, tags, height, material);
 	}
 
-	/** returns segments within the roof polygon that define ridges or edges of the roof */
-	public abstract Collection<LineSegmentXZ> getInnerSegments();
-
 	/** returns segments within the roof polygon that define apex nodes of the roof */
 	public abstract Collection<VectorXZ> getInnerPoints();
 

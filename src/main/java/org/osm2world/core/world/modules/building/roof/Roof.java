@@ -1,12 +1,15 @@
 package org.osm2world.core.world.modules.building.roof;
 
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.modules.building.BuildingPart;
+
+import java.util.Collection;
 
 /** the roof of a {@link BuildingPart} */
 abstract public class Roof {
@@ -39,6 +42,9 @@ abstract public class Roof {
 	 * returns roof height at a position. Must be non-negative for sensible inputs.
 	 */
 	abstract public double getRoofHeightAt(VectorXZ coord);
+
+	/** returns segments within the roof polygon that define ridges or edges of the roof */
+	public abstract Collection<LineSegmentXZ> getInnerSegments();
 
 	/**
 	 * renders the roof. The same as {@link Renderable#renderTo(Target)},
