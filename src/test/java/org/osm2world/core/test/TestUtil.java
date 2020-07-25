@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 public final class TestUtil {
 
@@ -90,6 +92,16 @@ public final class TestUtil {
 
 	}
 
+	public static final void assertAlmostEqualsXYZ(List<VectorXYZ> expected, List<VectorXYZ> actual) {
+
+		assertSame(expected.size(), actual.size());
+
+		for (int i = 0; i < expected.size(); i++) {
+			assertAlmostEquals(expected.get(i), actual.get(i));
+		}
+
+	}
+
 	/**
 	 * @throws AssertionError unless the two sets contain the "same" vectors
 	 * (by the standards of {@link #assertAlmostEquals(VectorXZ, VectorXZ)})
@@ -104,6 +116,14 @@ public final class TestUtil {
 			}
 		}
 
+	}
+
+	public static final void assertAlmostEquals(SimplePolygonShapeXZ expected, SimplePolygonShapeXZ actual) {
+		assertAlmostEquals(expected.getVertexListNoDup(), actual.getVertexListNoDup());
+	}
+
+	public static final void assertAlmostEquals(PolygonXYZ expected, PolygonXYZ actual) {
+		assertAlmostEqualsXYZ(expected.getVertices(), actual.getVertices());
 	}
 
 	/**

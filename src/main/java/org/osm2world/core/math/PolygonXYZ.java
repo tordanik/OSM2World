@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,10 +10,10 @@ import java.util.List;
 /**
  * a three-dimensional polygon
  */
-public class PolygonXYZ {
+public class PolygonXYZ implements BoundedObject {
 
 	/** polygon vertices; first and last vertex are equal */
-	private final List<VectorXYZ> vertexLoop;
+	protected final List<VectorXYZ> vertexLoop;
 
 	/**
 	 * @param vertexLoop  vertices defining the polygon;
@@ -101,8 +102,18 @@ public class PolygonXYZ {
 		return new PolygonXYZ(newVertexLoop);
 	}
 
+	@Override
+	public AxisAlignedRectangleXZ boundingBox() {
+		return bbox(vertexLoop);
+	}
+
 	public PolygonXYZ add(VectorXYZ v) {
 		return new PolygonXYZ(getVertexLoop().stream().map(v::add).collect(toList()));
+	}
+
+	@Override
+	public String toString() {
+		return vertexLoop.toString();
 	}
 
 }

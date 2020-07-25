@@ -22,6 +22,18 @@ public final class GeometryUtil {
 	/** prevents instantiation */
 	private GeometryUtil() { }
 
+	/**
+	 * returns the list itself if the last element of the list equals the first;
+	 * otherwise, returns a list that's the same except with the first element appended to the end.
+	 */
+	public static final <T> List<T> closeLoop(List<T> list) {
+		if (!list.get(0).equals(list.get(list.size() - 1))) {
+			list = new ArrayList<>(list);
+			list.add(list.get(0));
+		}
+		return list;
+	}
+
 	public static final List<TriangleXYZ> trianglesFromVertexList(
 			List<? extends VectorXYZ> vs) {
 

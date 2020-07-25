@@ -18,6 +18,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -194,6 +196,34 @@ public class BarrierModule extends AbstractModule {
 
 		}
 
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+
+			//TODO avoid copypasted code from renderTo
+
+			List<VectorXYZ> leftBottomOutline = getOutline(false);
+			List<VectorXYZ> leftTopOutline = addYList(leftBottomOutline, height);
+
+			List<VectorXYZ> rightBottomOutline = getOutline(true);
+			List<VectorXYZ> rightTopOutline = addYList(rightBottomOutline, height);
+
+			/* return the sides of the wall as attachment surfaces */
+
+			reverse(leftTopOutline);
+			reverse(leftBottomOutline);
+
+			AttachmentSurface.Builder leftBuilder = new AttachmentSurface.Builder("wall");
+			List<VectorXYZ> leftVs = createTriangleStripBetween(leftTopOutline, leftBottomOutline);
+			leftBuilder.drawTriangleStrip(material, leftVs, texCoordLists(leftVs, material, STRIP_WALL));
+
+			AttachmentSurface.Builder rightBuilder = new AttachmentSurface.Builder("wall");
+			List<VectorXYZ> rightVs = createTriangleStripBetween(rightTopOutline, rightBottomOutline);
+			rightBuilder.drawTriangleStrip(material, rightVs, texCoordLists(rightVs, material, STRIP_WALL));
+
+			return asList(leftBuilder.build(), rightBuilder.build());
+
+		}
+
 	}
 
 	private static class Wall extends ColoredWall {
@@ -253,6 +283,10 @@ public class BarrierModule extends AbstractModule {
 		}
 		public Hedge(MapWaySegment segment) {
 			super(Materials.HEDGE, segment, 1f, 0.5f);
+		}
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			return emptyList();
 		}
 	}
 

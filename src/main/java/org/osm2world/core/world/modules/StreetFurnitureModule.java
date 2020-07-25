@@ -8,7 +8,11 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
@@ -19,6 +23,8 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import java.awt.Color;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +34,11 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
@@ -39,6 +48,9 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -1029,13 +1041,34 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	private static final class WasteBasket extends NoOutlineNodeWorldObject {
 
+		private final AttachmentConnector connector;
+
 		public WasteBasket(MapNode node) {
+
 			super(node);
+
+			if (node.getTags().containsKey("support") &&
+					!node.getTags().contains("support", "ground")) {
+				connector = new AttachmentConnector(singletonList(node.getTags().getValue("support")),
+						node.getPos().xyz(0), this, 0.6, true);
+			} else {
+				connector = null;
+			}
+
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			if (connector == null) {
+				return emptyList();
+			} else {
+				return singleton(connector);
+			}
 		}
 
 		@Override
@@ -1045,26 +1078,64 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			Material material = null;
 
-			//TODO parse color
-
-			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("material"));
+			if (node.getTags().containsKey("material")) {
+				material = Materials.getMaterial(node.getTags().getValue("material").toUpperCase());
 			}
 
 			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), STEEL);
+				material = STEEL;
 			}
 
-			/* draw pole */
-			target.drawColumn(material, null, getBase(),
-					1.2, 0.06, 0.06, false, true);
+			material = material.withColor(parseColor(node.getTags().getValue("colour"), CSS_COLORS));
+
+			/* determine position */
+
+			VectorXYZ pos;
+			VectorXYZ direction = X_UNIT;
+
+			if (connector != null && connector.isAttached()) {
+
+				pos = connector.getAttachedPos();
+				direction = connector.getAttachedSurfaceNormal();
+
+			} else {
+
+				pos = getBase().addY(0.6).add(direction.mult(0.05));
+
+				/* draw pole */
+				target.drawColumn(material, null, getBase(), 1.2, 0.06, 0.06, false, true);
+
+			}
 
 			/* draw basket */
-			target.drawColumn(material, null,
-					getBase().addY(0.5).add(0.25, 0f, 0f),
-					0.5, 0.2, 0.2, true, true);
+			renderBasket(target, material, pos, direction);
+
+		}
+
+		private void renderBasket(Target target, Material material, VectorXYZ pos, VectorXYZ direction) {
+
+			double height = 0.5;
+			double radius = 0.2;
+
+			VectorXYZ bottomCenter = pos.addY(-0.1).add(direction.mult(0.2));
+			VectorXYZ innerBottomCenter = bottomCenter.addY(height * 0.05);
+			VectorXYZ topCenter = bottomCenter.addY(height);
+
+			CircleXZ outerRing = new CircleXZ(NULL_VECTOR, radius);
+
+			SimplePolygonXZ innerRing = asSimplePolygon(new CircleXZ(NULL_VECTOR, radius * 0.95));
+			innerRing = innerRing.reverse();
+
+			PolygonWithHolesXZ upperDonut = new PolygonWithHolesXZ(asSimplePolygon(outerRing), singletonList(innerRing));
+
+			target.drawExtrudedShape(material, outerRing, asList(bottomCenter, topCenter),
+					nCopies(2, Z_UNIT), null, null, EnumSet.of(START_CAP));
+
+			target.drawExtrudedShape(material, innerRing, asList(topCenter, innerBottomCenter),
+					nCopies(2, Z_UNIT), null, null, EnumSet.of(END_CAP));
+
+			triangulate(upperDonut).forEach(it -> target.drawShape(material, it, topCenter, Y_UNIT, Z_UNIT, 1));
+
 		}
 
 	}
@@ -1380,7 +1451,10 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				target.drawColumn(poleMaterial, null,
 						getBase(),
-						height - signHeight, 0.05, 0.05, true, true);
+						height - signHeight, 0.05, 0.05, false, true);
+
+				if (target instanceof AttachmentSurface.Builder) return;
+
 				/* draw sign */
 				target.drawBox(BUS_STOP_SIGN,
 						getBase().addY(height - signHeight),
@@ -1390,8 +1464,14 @@ public class StreetFurnitureModule extends AbstractModule {
 						getBase().addY(1.2f).add(new VectorXYZ(0.055f, 0, 0f).rotateY(directionAngle)),
 						faceVector, 0.31, 0.01, 0.43);
 
-				//TODO Add Shelter and bench
 			}
+		}
+
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			Builder builder = new AttachmentSurface.Builder("bus_stop", "pole");
+			this.renderTo(builder);
+			return singleton(builder.build());
 		}
 
 	}
@@ -1551,6 +1631,8 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase().addY(0.5),
 					poleHeight, 0.08, 0.08, false, false);
 
+			if (target instanceof AttachmentSurface.Builder) return;
+
 			/* draw lamp */
 
 			// lower part
@@ -1574,6 +1656,13 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 
 			target.drawTriangleFan(material, vs, null);
+		}
+
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			Builder builder = new AttachmentSurface.Builder("street_lamp", "pole");
+			this.renderTo(builder);
+			return singleton(builder.build());
 		}
 
 	}

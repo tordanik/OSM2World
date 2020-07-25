@@ -55,6 +55,8 @@ import org.osm2world.viewer.control.navigation.DefaultNavigation;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
+import org.osm2world.viewer.view.debug.AttachmentConnectorDebugView;
+import org.osm2world.viewer.view.debug.AttachmentSurfaceDebugView;
 import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.EleConnectorDebugView;
@@ -185,6 +187,10 @@ public class ViewerFrame extends JFrame {
 
 			initAndAddDebugView(subMenu, -1, false,
 					new TerrainBoundaryAABBDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new AttachmentSurfaceDebugView());
+			initAndAddDebugView(subMenu, -1, false,
+					new AttachmentConnectorDebugView());
 			initAndAddDebugView(subMenu, VK_L, false,
 					new ClearingDebugView());
 			initAndAddDebugView(subMenu, VK_D, false,

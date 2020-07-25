@@ -49,6 +49,26 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 
 	}
 
+	/**
+	 * @param boundedObjects  must contain at least one object
+	 */
+	public static AxisAlignedRectangleXZ bboxUnion(Collection<? extends BoundedObject> boundedObjects) {
+
+		assert (!boundedObjects.isEmpty());
+
+		double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+
+		for (BoundedObject boundedObject : boundedObjects) {
+			AxisAlignedRectangleXZ bbox = boundedObject.boundingBox();
+			minX = min(minX, bbox.minX); minZ = min(minZ, bbox.minZ);
+			maxX = max(maxX, bbox.maxX); maxZ = max(maxZ, bbox.maxZ);
+		}
+
+		return new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
+
+	}
+
 	public double sizeX() { return maxX - minX; }
 	public double sizeZ() { return maxZ - minZ; }
 

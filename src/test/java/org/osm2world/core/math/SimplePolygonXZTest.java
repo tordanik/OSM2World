@@ -82,6 +82,19 @@ public class SimplePolygonXZTest {
 	}
 
 	@Test
+	public void testClosestPoint() {
+
+		// within polygon
+		assertAlmostEquals(new VectorXZ(0.2, 0.2), p1.closestPoint(new VectorXZ(0.2, 0.2)));
+		assertAlmostEquals(new VectorXZ(-1, -1), p1.closestPoint(new VectorXZ(-1, -1)));
+
+		// outside polygon
+		assertAlmostEquals(new VectorXZ(-1, -1), p1.closestPoint(new VectorXZ(-10, -10)));
+		assertAlmostEquals(new VectorXZ(1, 0.5), p1.closestPoint(new VectorXZ(26, 0.5)));
+
+	}
+
+	@Test
 	public void testShift() {
 
 		SimplePolygonShapeXZ shiftP = p1.shift(VectorXZ.X_UNIT);
