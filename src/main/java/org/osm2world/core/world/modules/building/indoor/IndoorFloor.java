@@ -35,7 +35,7 @@ public class IndoorFloor {
 
         if (render && polygon != null) {
 
-            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight;
+            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight + 0.0001;
 
             Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
