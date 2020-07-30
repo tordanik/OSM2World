@@ -1,6 +1,9 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
@@ -13,7 +16,7 @@ import java.util.List;
 
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 

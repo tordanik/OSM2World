@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import com.google.common.collect.Sets;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.ceil;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.math3.util.MathUtils.TWO_PI;
@@ -180,15 +181,24 @@ public class IndoorWall implements Renderable {
 
     }
 
-    private List<VectorXYZ> generateTopPoints(Target target, List<VectorXZ> ends, Double heightAboveZero){
+    private List<VectorXYZ> generateTopPoints(List<VectorXYZ> bottomPoints, Double heightAboveZero){
 
-        /* quick return if not in roof */
+		Roof roof = data.getBuildingPart().getRoof();
+		double heightWithoutRoof = data.getBuildingPart().getHeightWithoutRoof();
 
-        if (heightAboveZero <= data.getBuildingPart().getHeightWithoutRoof() + data.getBuildingPart().getBuildingPartBaseEle() + 1e-4) {
-            return listXYZ(ends, heightAboveZero);
-        }
+		if (roof.getRoofHeightAt(bottomPoints.get(0).xz()) + heightWithoutRoof  < bottomPoints.get(0).y || roof.getRoofHeightAt(bottomPoints.get(1).xz()) + heightWithoutRoof < bottomPoints.get(1).y) {
+			return new ArrayList<>(listXYZ(bottomPoints.stream().map(p -> p.xz()).collect(toList()), heightAboveZero));
+		}
 
-        // TODO possibly calculated every time
+		List<VectorXZ> ends = bottomPoints.stream().map(p -> p.xz()).collect(toList());
+
+		/* quick return if not in roof */
+
+		if (heightAboveZero <= data.getBuildingPart().getHeightWithoutRoof() + data.getBuildingPart().getBuildingPartBaseEle() + 1e-4) {
+			return listXYZ(ends, heightAboveZero);
+		}
+
+		// TODO possibly calculated every time
 
         Collection<LineSegmentXZ> innerSegments = data.getBuildingPart().getRoof().getInnerSegments();
 
@@ -204,8 +214,6 @@ public class IndoorWall implements Renderable {
 		intersections.add(ends.get(1));
 
 		intersections.sort((v1, v2) -> Double.compare(v1.subtract(ends.get(0)).length(), v2.subtract(ends.get(0)).length()));
-
-        Roof roof = data.getBuildingPart().getRoof();
 
         double levelHeightInRoof = heightAboveZero - data.getBuildingPart().getHeightWithoutRoof() - data.getBuildingPart().getBuildingPartBaseEle();
         List<VectorXZ> levelIntersections = new ArrayList<>();
@@ -262,36 +270,121 @@ public class IndoorWall implements Renderable {
 
 	private class TagLineSegPair{
 
-    	private final TagSet tags;
-    	private final LineSegmentXZ lineSeg;
+		// may contain duplicates
+		private List<Tag> tags;
+		private List<Tag> dedupeTags;
+		private final LineSegmentXZ lineSeg;
+		private final MapNode startNode;
+		private final MapNode endNode;
 
-    	TagLineSegPair(TagSet tags, LineSegmentXZ lineSeg){
-    		this.tags = tags;
-    		this.lineSeg = lineSeg;
+		TagLineSegPair(List<Tag> tags, LineSegmentXZ lineSeg, MapNode startNode, MapNode endNode){
+			this.tags = new ArrayList<>(tags);
+			this.dedupeTags = new ArrayList<>(tags);
+			this.lineSeg = lineSeg;
+			this.startNode = startNode;
+			this.endNode = endNode;
 		}
 
-		TagSet getTags() { return tags; }
+		// May not be fully representative of tags list as tags with duplicated keys are removed
+		TagSet getTagSet() {
+				return TagSet.of(Sets.newHashSet(dedupeTags));
+		}
+
+		void addTags(List<Tag> newTags) {
+
+			tags.addAll(newTags);
+
+			List<Tag> temp = new ArrayList<>();
+
+			for (Tag t : newTags) {
+
+				boolean uniqueKey = true;
+
+				for (Tag oldTag : dedupeTags) {
+					if (t.key.equals(oldTag.key)) {
+						uniqueKey = false;
+					}
+				}
+
+				if (uniqueKey) {
+					temp.add(t);
+				}
+			}
+
+			dedupeTags.addAll(temp);
+
+		}
 
 		LineSegmentXZ getLineSegment() { return lineSeg; }
 
+		List<Tag> getTags() { return tags; }
+
+		public MapNode getStartNode() { return startNode; }
+
+		public MapNode getEndNode() { return endNode; }
+
+	}
+
+	private VectorXZ rightNormalIfOnBuildingEdge(SegmentNodes lineSegmentNodes){
+
+		List<VectorXZ> buildingVertices = data.getBuildingPart().getBuilding().getOutlinePolygonXZ().getVertexList();
+		LineSegmentXZ line = lineSegmentNodes.getSegment();
+
+		VectorXZ rightNorm;
+
+		for (int i = 0; i < buildingVertices.size() - 1; i++) {
+			if ((line.p1.equals(buildingVertices.get(i)) && line.p2.equals(buildingVertices.get(i+1)))
+					|| lineSegmentNodes.containsMapSegment(new LineSegmentXZ(buildingVertices.get(i), buildingVertices.get(i + 1)))) {
+
+				rightNorm = new LineSegmentXZ(buildingVertices.get(i), buildingVertices.get(i+1)).getDirection().rightNormal();
+
+				if (data.getBuildingPart().getBuilding().getOutlinePolygonXZ().isClockwise()) {
+					return rightNorm.mult(wallThickness + 0.01);
+				}
+
+				return rightNorm.mult(-1 * (wallThickness + 0.01));
+
+			} else if ((line.p2.equals(buildingVertices.get(i)) && line.p1.equals(buildingVertices.get(i + 1)))
+					|| lineSegmentNodes.containsMapSegment(new LineSegmentXZ(buildingVertices.get(i + 1), buildingVertices.get(i)))) {
+
+				rightNorm = new LineSegmentXZ(buildingVertices.get(i+1), buildingVertices.get(i)).getDirection().rightNormal();
+
+				if (data.getBuildingPart().getBuilding().getOutlinePolygonXZ().isClockwise()) {
+					return rightNorm.mult(-1 * (wallThickness + 0.01));
+				}
+
+				return rightNorm.mult(wallThickness + 0.01);
+
+			}
+		}
+
+		return null;
+
+	}
+
+	private LineSegmentXZ getBuildingEdgeLineSeg(LineSegmentXZ line, VectorXZ rightNorm) {
+    	return new LineSegmentXZ(line.p1.add(rightNorm), line.p2.add(rightNorm));
 	}
 
     private List<VectorXZ> getNewEndPoint(SegmentNodes wallSegData, boolean end, int level){
 
+		MapNode startNode;
 		MapNode endNode;
 		LineSegmentXZ wallSegSegment;
-		List<TagLineSegPair> allPairs = new ArrayList<>();
+		List<TagLineSegPair> allTagLinePairs = new ArrayList<>();
 
 		if (end) {
+			startNode = wallSegData.getStartNode();
 			endNode = wallSegData.getEndNode();
 			wallSegSegment = wallSegData.getSegment();
 		} else {
-    		endNode = wallSegData.getStartNode();
+    		startNode = wallSegData.getEndNode();
+			endNode = wallSegData.getStartNode();
     		wallSegSegment = wallSegData.getSegment().reverse();
 		}
 
 
-		/* collect segments of connected areas */
+		/* collect connected segments of connected areas */
 
 		List<MapArea> areas = new ArrayList<>(endNode.getAdjacentAreas());
 
@@ -302,12 +395,12 @@ public class IndoorWall implements Renderable {
 					.collect(toList());
 
 			for (MapAreaSegment s : allSegments) {
-				allPairs.add(new TagLineSegPair(areas.get(i).getTags(), s.getLineSegment()));
+				allTagLinePairs.add(new TagLineSegPair(areas.get(i).getTags().stream().collect(toList()), s.getLineSegment(), s.getStartNode(), s.getEndNode()));
 			}
 		}
 
 
-		/* collect segments of connected ways */
+		/* collect connected segments of connected ways */
 
 		List<MapWay> ways = new ArrayList<>(endNode.getConnectedWays());
 
@@ -318,53 +411,103 @@ public class IndoorWall implements Renderable {
 					.collect(toList());
 
 			for (MapWaySegment s : allSegments) {
-				allPairs.add(new TagLineSegPair(ways.get(i).getTags(), s.getLineSegment()));
+				allTagLinePairs.add(new TagLineSegPair(ways.get(i).getTags().stream().collect(toList()), s.getLineSegment(), s.getStartNode(), s.getEndNode()));
 			}
 		}
+
+
+		/* deduplicate and filter */
+
+		List<TagLineSegPair> tempPairs = new ArrayList<>();
+
+		for (TagLineSegPair pairData : allTagLinePairs) {
+
+			if (((pairData.getTagSet().contains("indoor", "wall") || pairData.getTagSet().contains("indoor", "room"))
+					&& parseLevels(pairData.getTagSet().getValue("level")).stream().map(l -> data.getBuildingPart().levelConversion(l)).collect(toList()).contains(level))) {
+
+				boolean duplicate = false;
+
+				for (int i = 0; i < tempPairs.size(); i++) {
+
+					TagLineSegPair p = tempPairs.get(i);
+
+					if ((p.getLineSegment().equals(pairData.getLineSegment()) || p.getLineSegment().equals(pairData.getLineSegment().reverse()))) {
+
+						duplicate = true;
+
+						TagLineSegPair l = tempPairs.remove(i);
+						l.addTags(pairData.getTags());
+						tempPairs.add(l);
+
+						break;
+					}
+				}
+
+				if (!duplicate) {
+					tempPairs.add(pairData);
+				}
+			}
+
+		}
+
+		allTagLinePairs = tempPairs;
 
 
 		/* find closest wall clockwise and anticlockwise */
 
 		double maxAngle = 0;
-		LineSegmentXZ maxLineSegment = null;
+		TagLineSegPair maxLineSegment = null;
 
 		double minAngle = 7;
-		LineSegmentXZ minLineSegment = null;
+		TagLineSegPair minLineSegment = null;
 
-		for (TagLineSegPair segmentPair : allPairs) {
+		for (TagLineSegPair segmentPair : allTagLinePairs) {
+
 			LineSegmentXZ segment = segmentPair.getLineSegment();
+			TagSet pairSet = segmentPair.getTagSet();
 
-			if ((segmentPair.getTags().contains("indoor", "wall") || segmentPair.getTags().contains("indoor", "room"))
-					&& parseLevels(segmentPair.getTags().getValue("level")).stream().map(l -> data.getBuildingPart().levelConversion(l)).collect(toList()).contains(level)
-					&& !segment.equals(wallSegSegment)
-					&& !segment.equals(wallSegSegment.reverse())
-					&& !wallSegData.containsMapSegment(segment)
-					&& abs(abs(segment.getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
+			LineSegmentXZ segmentToCheck;
 
-				LineSegmentXZ segmentToCheck;
+			// make sure all connected segments are directed into endNode
 
-				// make sure all connected segments are directed into segment end nodes
+			if (segment.p2 != wallSegSegment.p2) {
+				segmentToCheck = segment.reverse();
+			} else {
+				segmentToCheck = segment;
+			}
 
-				if (segment.p2 != wallSegSegment.p2) {
-					segmentToCheck = segment.reverse();
-				} else {
-					segmentToCheck = segment;
-				}
+			if ((pairSet.contains("indoor", "wall") || pairSet.contains("indoor", "room"))
+					&& !segmentToCheck.equals(wallSegSegment)
+					&& !wallSegData.containsMapSegment(segmentToCheck)
+					&& !wallSegData.containsMapSegment(segmentToCheck.reverse())
+					&& abs(abs(segmentToCheck.getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
 
 				double clockwiseAngleBetween = segmentToCheck.getDirection().angle() - wallSegSegment.getDirection().angle();
-
 				clockwiseAngleBetween = clockwiseAngleBetween <= 0 ? TWO_PI + clockwiseAngleBetween : clockwiseAngleBetween;
 
 				if (maxAngle < clockwiseAngleBetween) {
 					maxAngle = clockwiseAngleBetween;
-					maxLineSegment = segmentToCheck;
+					maxLineSegment = new TagLineSegPair(segmentPair.getTags(), segmentToCheck, segmentPair.getStartNode(), segmentPair.getEndNode());
 				}
 				if (clockwiseAngleBetween < minAngle) {
 					minAngle = clockwiseAngleBetween;
-					minLineSegment = segmentToCheck;
+					minLineSegment = new TagLineSegPair(segmentPair.getTags(), segmentToCheck, segmentPair.getStartNode(), segmentPair.getEndNode());
 				}
-
 			}
+		}
+
+
+		/* move this wall segment if on outer edge of building */
+
+		final VectorXZ thisBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(new SegmentNodes(wallSegData.getNodes(), wallSegSegment, startNode, endNode) );
+
+		final LineSegmentXZ toIntersect;
+
+		if (thisBuildingEdgeRightNorm != null) {
+			wallSegSegment = new LineSegmentXZ(wallSegSegment.p1.add(thisBuildingEdgeRightNorm), wallSegSegment.p2.add(thisBuildingEdgeRightNorm));
+			toIntersect = new LineSegmentXZ(wallSegSegment.p1, wallSegSegment.p2);
+		} else {
+			toIntersect = new LineSegmentXZ(wallSegSegment.p1, wallSegSegment.p2);
 		}
 
 
@@ -373,36 +516,62 @@ public class IndoorWall implements Renderable {
 		List<VectorXZ> result = new ArrayList<>();
 
 		List<VectorXZ> rightOffset = wallSegSegment.getVertexList().stream()
-				.map(v -> v.add(wallSegSegment.getDirection().rightNormal().mult(wallThickness)))
+				.map(v -> v.add(toIntersect.getDirection().rightNormal().mult(wallThickness)))
 				.collect(toList());
 		LineSegmentXZ offsetSegRight = new LineSegmentXZ(rightOffset.get(0), rightOffset.get(1));
 
 		List<VectorXZ> leftOffset = wallSegSegment.getVertexList().stream()
-				.map(v -> v.add(wallSegSegment.getDirection().rightNormal().mult(-wallThickness)))
+				.map(v -> v.add(toIntersect.getDirection().rightNormal().mult(-wallThickness)))
 				.collect(toList());
 		LineSegmentXZ offsetSegLeft = new LineSegmentXZ(leftOffset.get(0), leftOffset.get(1));
+
 
 		VectorXZ tempResult = offsetSegRight.getVertexList().get(1);
 
 		if (maxLineSegment != null) {
+
+			VectorXZ maxOnBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(
+					new SegmentNodes(asList(maxLineSegment.getStartNode(), maxLineSegment.getEndNode()),
+							maxLineSegment.getLineSegment(), maxLineSegment.getStartNode(), maxLineSegment.getEndNode()));
+
+			if (maxOnBuildingEdgeRightNorm != null) {
+				maxLineSegment = new TagLineSegPair(maxLineSegment.getTags(),
+						getBuildingEdgeLineSeg(maxLineSegment.getLineSegment(), maxOnBuildingEdgeRightNorm),
+						maxLineSegment.getStartNode(), maxLineSegment.getEndNode());
+			}
+
 			VectorXZ intersection = GeometryUtil.getLineIntersection(offsetSegRight.p1,
 					offsetSegRight.getDirection(),
-					maxLineSegment.p2.add(maxLineSegment.getDirection().rightNormal().mult(-wallThickness)),
-					maxLineSegment.getDirection());
+					maxLineSegment.getLineSegment().p2.add(maxLineSegment.getLineSegment().getDirection().rightNormal().mult(-wallThickness)),
+					maxLineSegment.getLineSegment().getDirection());
+
 			if (intersection != null) {
 				tempResult = intersection;
 			}
 		}
 
 		result.add(tempResult);
+
 
 		tempResult = offsetSegLeft.getVertexList().get(1);
 
 		if (minLineSegment != null) {
+
+			VectorXZ minOnBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(
+					new SegmentNodes(asList(minLineSegment.getStartNode(), minLineSegment.getEndNode()),
+							minLineSegment.getLineSegment(), minLineSegment.getStartNode(), minLineSegment.getEndNode()));
+
+			if (minOnBuildingEdgeRightNorm != null) {
+				minLineSegment = new TagLineSegPair(minLineSegment.getTags(),
+						getBuildingEdgeLineSeg(minLineSegment.getLineSegment(), minOnBuildingEdgeRightNorm),
+						minLineSegment.getStartNode(), minLineSegment.getEndNode());
+			}
+
 			VectorXZ intersection = GeometryUtil.getLineIntersection(offsetSegLeft.p1,
 					offsetSegLeft.getDirection(),
-					minLineSegment.p2.add(minLineSegment.getDirection().rightNormal().mult(wallThickness)),
-					minLineSegment.getDirection());
+					minLineSegment.getLineSegment().p2.add(minLineSegment.getLineSegment().getDirection().rightNormal().mult(wallThickness)),
+					minLineSegment.getLineSegment().getDirection());
+
 			if (intersection != null) {
 				tempResult = intersection;
 			}
@@ -410,9 +579,10 @@ public class IndoorWall implements Renderable {
 
 		result.add(tempResult);
 
-    	return result;
+		return result;
 
 	}
+
 
     private List<VectorXZ> getNewEndPoints(SegmentNodes wallSegData, int level){
 
@@ -424,6 +594,7 @@ public class IndoorWall implements Renderable {
 		return result;
 
 	}
+
 
     @Override
     public void renderTo(Target target) {
@@ -448,39 +619,25 @@ public class IndoorWall implements Renderable {
 
 					/* front wall surface */
 
-					List<VectorXZ> bottomPointsXZ = new ArrayList<>();
-					bottomPointsXZ.add(endPoints.get(3));
-					bottomPointsXZ.add(endPoints.get(0));
+					List<VectorXZ> bottomPointsXZ = new ArrayList<>(asList(endPoints.get(3), endPoints.get(0)));
 
 					List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(bottomPointsXZ,
 							baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-                    List<VectorXYZ> topPoints = generateTopPoints(target , bottomPointsXZ, ceilingHeight);
-
-                    // TODO check if outside roof before generateTopPoints
-
-                    if (topPoints.get(0).y < bottomPoints.get(0).y || topPoints.get(topPoints.size() - 1).y < bottomPoints.get(1).y) {
-                        topPoints =  new ArrayList<>(listXYZ(bottomPointsXZ, ceilingHeight));
-                    }
+                    List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight);
 
                     WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
 
                     /* back wall surface */
 
-                    List<VectorXZ> backBottomPointsXZ = new ArrayList<>();
-                    backBottomPointsXZ.add(endPoints.get(2));
-                    backBottomPointsXZ.add(endPoints.get(1));
+                    List<VectorXZ> backBottomPointsXZ = new ArrayList<>(asList(endPoints.get(2), endPoints.get(1)));
 
 					Collections.reverse(backBottomPointsXZ);
 
 					List<VectorXYZ> backBottomPoints = new ArrayList<>(listXYZ(backBottomPointsXZ,
 							baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-                    List<VectorXYZ> backTopPoints = generateTopPoints(target , backBottomPointsXZ, ceilingHeight);
-
-					if (backTopPoints.get(0).y < backBottomPoints.get(0).y || backTopPoints.get(backTopPoints.size() - 1).y < backBottomPoints.get(1).y) {
-						backTopPoints =  new ArrayList<>(listXYZ(backBottomPointsXZ, ceilingHeight));
-					}
+                    List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight);
 
                     WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
 
@@ -507,7 +664,7 @@ public class IndoorWall implements Renderable {
 						Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
 								triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 								.stream()
-								.map(t -> t.makeCounterclockwise().xyz(ceilingHeight))
+								.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.01))
 								.collect(toList());
 
 						target.drawTriangles(material, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
@@ -515,12 +672,12 @@ public class IndoorWall implements Renderable {
 
 
 						rightSurface = new WallSurface(material,
-								Arrays.asList(bottomPoints.get(1), backBottomPoints.get(0)),
-								Arrays.asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
+								asList(bottomPoints.get(1), backBottomPoints.get(0)),
+								asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
 
 						leftSurface = new WallSurface(material,
-								Arrays.asList(backBottomPoints.get(1), bottomPoints.get(0)),
-								Arrays.asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
+								asList(backBottomPoints.get(1), bottomPoints.get(0)),
+								asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
 
 					} catch (InvalidGeometryException e) {}
 
@@ -536,7 +693,7 @@ public class IndoorWall implements Renderable {
 								.map(l -> data.getBuildingPart().levelConversion(l))
 								.collect(Collectors.toSet());
 
-						Double offset = wallSegData.segment.offsetOf(wallSegData.segment.closestPoint(node.getPos()));
+						Double offset = wallSegData.getSegment().getLength() - wallSegData.segment.offsetOf(wallSegData.segment.closestPoint(node.getPos()));
 						VectorXZ posFront = new VectorXZ(offset, 0);
 						VectorXZ posback = new VectorXZ(wallSegData.segment.getLength() - offset, 0);
 

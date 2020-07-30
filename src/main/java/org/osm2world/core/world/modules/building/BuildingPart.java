@@ -1,25 +1,5 @@
 package org.osm2world.core.world.modules.building;
 
-import static com.google.common.collect.Iterables.getLast;
-import static java.lang.Math.max;
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.util.ValueParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.IntStream;
-
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -40,6 +20,21 @@ import org.osm2world.core.world.modules.building.indoor.Indoor;
 import org.osm2world.core.world.modules.building.roof.ComplexRoof;
 import org.osm2world.core.world.modules.building.roof.FlatRoof;
 import org.osm2world.core.world.modules.building.roof.Roof;
+
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import static com.google.common.collect.Iterables.getLast;
+import static java.lang.Math.max;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 /**
  * part of a building, as defined by the Simple 3D Buildings standard.
@@ -264,7 +259,39 @@ public class BuildingPart implements Renderable {
 									levels.put(l.getLevel(), l);
 									levelsWithNoObject.remove((Integer) l.getLevel());
 								} else if (!other.getTags().contains("indoor", "level")) {
-									indoorElements.add(other);
+
+									// Ensure all nodes are within the building
+
+									PolygonWithHolesXZ buildingOutline = new PolygonWithHolesXZ(building.getOutlinePolygonXZ(), emptyList());
+
+									boolean toAdd = false;
+									if (other instanceof MapNode) {
+										if (buildingOutline.contains(((MapNode) other).getPos())) {
+											toAdd = true;
+										}
+									}else if (other instanceof MapWay) {
+										toAdd = true;
+										System.out.println("MapWay");
+//										for (LineSegmentXZ lineSegment : ((MapWay) other).getWaySegments().stream().map(w -> w.getLineSegment()).collect(Collectors.toList())) {
+//											if (!buildingOutline.contains(lineSegment)){
+//												toAdd = false;
+//											}
+//										}
+									} else if (other instanceof MapArea) {
+										if (buildingOutline.contains(((MapArea) other).getOuterPolygon())) {
+											toAdd = true;
+										}
+									} else if (other instanceof MapWaySegment) {
+										if (buildingOutline.contains(((MapWaySegment) other).getLineSegment())) {
+											toAdd = true;
+										}
+									} else {
+										System.out.println(other.getClass().toString());
+									}
+
+									if (toAdd) {
+										indoorElements.add(other);
+									}
 								}
 
 							}
