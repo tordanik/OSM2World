@@ -1,5 +1,7 @@
 package org.osm2world.core;
 
+import static java.lang.Math.abs;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
@@ -11,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -336,11 +339,29 @@ public class ConversionFacade {
 					double ele = closestSurface.get().getBaseEle() + connector.preferredHeight;
 					VectorXYZ posAtEle = connector.originalPos.y(ele);
 
-					FaceXYZ closestFace = min(closestSurface.get().getFaces(),
-							comparingDouble(f -> f.distanceTo(posAtEle)));
-					VectorXYZ closestPoint = closestFace.closestPoint(posAtEle);
+					for (boolean requirePreferredHeight : asList(true, false)) {
 
-					connector.attach(closestSurface.get(), closestPoint, closestFace.getNormal());
+						Predicate<FaceXYZ> matchesPreferredHeight = (FaceXYZ f) -> {
+							if (!requirePreferredHeight) {
+								return true;
+							} else {
+								double height = f.closestPoint(posAtEle).y - closestSurface.get().getBaseEle();
+								return abs(height - connector.preferredHeight) < 0.001;
+							}
+						};
+
+						Optional<FaceXYZ> closestFace = closestSurface.get().getFaces().stream()
+								.filter(matchesPreferredHeight)
+								.min(comparingDouble(f -> f.distanceTo(posAtEle)));
+
+						if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height
+
+						VectorXYZ closestPoint = closestFace.get().closestPoint(posAtEle);
+
+						connector.attach(closestSurface.get(), closestPoint, closestFace.get().getNormal());
+						break; // attached, don't try again
+
+					}
 
 				}
 
