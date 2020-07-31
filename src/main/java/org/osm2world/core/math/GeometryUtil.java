@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.sqrt;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
@@ -32,6 +33,12 @@ public final class GeometryUtil {
 			list.add(list.get(0));
 		}
 		return list;
+	}
+
+	/** vararg variant of {@link #closeLoop(List)} */
+	@SafeVarargs
+	public static final <T> List<T> closeLoop(T... list) {
+		return closeLoop(asList(list));
 	}
 
 	public static final List<TriangleXYZ> trianglesFromVertexList(
