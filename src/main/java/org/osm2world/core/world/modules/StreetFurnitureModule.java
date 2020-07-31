@@ -83,7 +83,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		if (node.getTags().contains("highway", "bus_stop")
 				|| node.getTags().contains("public_transport", "platform")
 				&& node.getTags().contains("bus", "yes")) {
-			node.addRepresentation(new BusStop(node));
+			if (!isInHighway(node)) {
+				node.addRepresentation(new BusStop(node));
+			}
 		}
 		if (node.getTags().contains("man_made", "cross")
 				|| node.getTags().contains("summit:cross", "yes")
@@ -1438,33 +1440,32 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public void renderTo(Target target) {
-			if (!isInHighway(node)) {
-				float height = parseHeight(node.getTags(), 3f);
-				float signHeight = 0.7f;
-				float signWidth = 0.4f;
 
-				Material poleMaterial = STEEL;
+			float height = parseHeight(node.getTags(), 3f);
+			float signHeight = 0.7f;
+			float signWidth = 0.4f;
 
-				double directionAngle = parseDirection(node.getTags(), PI);
+			Material poleMaterial = STEEL;
 
-				VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+			double directionAngle = parseDirection(node.getTags(), PI);
 
-				target.drawColumn(poleMaterial, null,
-						getBase(),
-						height - signHeight, 0.05, 0.05, false, true);
+			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-				if (target instanceof AttachmentSurface.Builder) return;
+			target.drawColumn(poleMaterial, null,
+					getBase(),
+					height - signHeight, 0.05, 0.05, false, true);
 
-				/* draw sign */
-				target.drawBox(BUS_STOP_SIGN,
-						getBase().addY(height - signHeight),
-						faceVector, signHeight, signWidth, 0.02);
-				/*  draw timetable */
-				target.drawBox(poleMaterial,
-						getBase().addY(1.2f).add(new VectorXYZ(0.055f, 0, 0f).rotateY(directionAngle)),
-						faceVector, 0.31, 0.01, 0.43);
+			if (target instanceof AttachmentSurface.Builder) return;
 
-			}
+			/* draw sign */
+			target.drawBox(BUS_STOP_SIGN,
+					getBase().addY(height - signHeight),
+					faceVector, signHeight, signWidth, 0.02);
+			/*  draw timetable */
+			target.drawBox(poleMaterial,
+					getBase().addY(1.2f).add(new VectorXYZ(0.055f, 0, 0f).rotateY(directionAngle)),
+					faceVector, 0.31, 0.01, 0.43);
+
 		}
 
 		@Override
