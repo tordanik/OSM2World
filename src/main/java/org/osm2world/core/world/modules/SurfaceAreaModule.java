@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
@@ -145,8 +146,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 				// TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way)
 
-				if (otherWO instanceof TerrainBoundaryWorldObject
-						&& otherWO.getGroundState() == GroundState.ON) {
+				if (otherWO.getGroundState() == GroundState.ON) {
 
 					if (otherWO instanceof SurfaceArea && !isEmptyTerrain) {
 						// empty terrain has lowest priority
@@ -159,27 +159,33 @@ public class SurfaceAreaModule extends AbstractModule {
 						return emptyList();
 					}
 
-					TerrainBoundaryWorldObject terrainBoundary =
-						(TerrainBoundaryWorldObject)otherWO;
+					if (otherWO instanceof TerrainBoundaryWorldObject) {
 
-					Collection<PolygonShapeXZ> outlinePolygons = terrainBoundary.getTerrainBoundariesXZ();
+						TerrainBoundaryWorldObject terrainBoundary = (TerrainBoundaryWorldObject)otherWO;
 
-					for (PolygonShapeXZ outlinePolygon : outlinePolygons) {
+						Collection<PolygonShapeXZ> outlinePolygons = terrainBoundary.getTerrainBoundariesXZ();
 
-						subtractPolys.add(outlinePolygon);
-						allPolys.add(outlinePolygon);
+						for (PolygonShapeXZ outlinePolygon : outlinePolygons) {
 
-						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+							subtractPolys.add(outlinePolygon);
+							allPolys.add(outlinePolygon);
 
-							if (!outlinePolygon.getPolygons().stream().anyMatch(
-									p-> p.getVertexList().contains(eleConnector.pos))) {
-								eleConnectorPoints.add(eleConnector.pos);
+							for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+
+								if (!outlinePolygon.getPolygons().stream().anyMatch(
+										p-> p.getVertexList().contains(eleConnector.pos))) {
+									eleConnectorPoints.add(eleConnector.pos);
+								}
+
 							}
 
 						}
 
+					} else {
+						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+							eleConnectorPoints.add(eleConnector.pos);
+						}
 					}
-
 
 				} else {
 
@@ -260,18 +266,8 @@ public class SurfaceAreaModule extends AbstractModule {
 			triangulationXZ = new ArrayList<TriangleXZ>();
 
 			for (PolygonWithHolesXZ polygon : polygons) {
-
-				List<VectorXZ> points = new ArrayList<VectorXZ>();
-
-				for (VectorXZ point : eleConnectorPoints) {
-					if (polygon.contains(point)) {
-						points.add(point);
-					}
-				}
-
-				triangulationXZ.addAll(TriangulationUtil.triangulate(
-						polygon, points));
-
+				List<VectorXZ> points = eleConnectorPoints.stream().filter(polygon::contains).collect(toList());
+				triangulationXZ.addAll(TriangulationUtil.triangulate(polygon, points));
 			}
 
 			return triangulationXZ;
