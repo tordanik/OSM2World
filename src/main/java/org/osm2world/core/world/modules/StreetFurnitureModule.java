@@ -488,8 +488,30 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	private static final class Billboard extends NoOutlineNodeWorldObject {
 
+		private final double width;
+		/** the height of the billboard itself, i.e. height minus minHeight */
+		private final double trueHeight;
+		private final double minHeight;
+
+		private final AttachmentConnector connector;
+
 		public Billboard(MapNode node) {
+
 			super(node);
+
+			width = parseWidth(node.getTags(), 4);
+
+			double height = parseHeight(node.getTags(), 3.5f);
+			minHeight = height / 5;
+			trueHeight = height - minHeight;
+
+			if (node.getTags().contains("support", "wall")) {
+				connector = new AttachmentConnector(asList("wall"),
+						node.getPos().xyz(0), this, minHeight + trueHeight / 2, true);
+			} else {
+				connector = null;
+			}
+
 		}
 
 		@Override
@@ -498,25 +520,37 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			if (connector == null) {
+				return emptyList();
+			} else {
+				return singleton(connector);
+			}
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
-			float width = parseWidth(node.getTags(), 4);
-			float height = parseHeight(node.getTags(), 3.5f);
-			float minHeight = height / 5;
+			VectorXZ faceVector;
+			VectorXYZ bottomCenter;
 
-			double directionAngle = parseDirection(node.getTags(), PI);
+			if (connector == null || !connector.isAttached()) {
+				faceVector = VectorXZ.fromAngle(parseDirection(node.getTags(), PI));
+				bottomCenter = getBase().addY(minHeight);
+			} else {
+				faceVector = connector.getAttachedSurfaceNormal().xz();
+				bottomCenter = connector.getAttachedPos().addY(-trueHeight/2).add(faceVector.mult(0.01));
+			}
 
-			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
-
 
 			/* draw board */
 
 			VectorXYZ[] vsPoster = {
-					getBase().add(boardVector.mult(width / 2)).addY(height),
-					getBase().add(boardVector.mult(width / 2)).addY(minHeight),
-					getBase().add(boardVector.mult(-width / 2)).addY(height),
-					getBase().add(boardVector.mult(-width / 2)).addY(minHeight)
+					bottomCenter.add(boardVector.mult(width / 2)).addY(trueHeight),
+					bottomCenter.add(boardVector.mult(width / 2)),
+					bottomCenter.add(boardVector.mult(-width / 2)).addY(trueHeight),
+					bottomCenter.add(boardVector.mult(-width / 2))
 			};
 
 			List<VectorXYZ> vsListPoster = asList(vsPoster);
@@ -547,28 +581,32 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw frame */
 
-			target.drawBox(CONCRETE, getBase().addY(height - 0.1),
+			target.drawBox(CONCRETE, bottomCenter.addY(trueHeight - 0.1),
 					faceVector, 0.1, width, 0.1);
 
-			target.drawBox(CONCRETE, getBase().addY(minHeight),
+			target.drawBox(CONCRETE, bottomCenter,
 					faceVector, 0.1, width, 0.1);
 
-			target.drawBox(CONCRETE, getBase().addY(minHeight).add(boardVector.mult(width / 2)),
-					faceVector, height - minHeight, 0.1, 0.1);
+			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(width / 2)),
+					faceVector, trueHeight, 0.1, 0.1);
 
-			target.drawBox(CONCRETE, getBase().addY(minHeight).add(boardVector.mult(-width / 2)),
-					faceVector, height - minHeight, 0.1, 0.1);
+			target.drawBox(CONCRETE, bottomCenter.add(boardVector.mult(-width / 2)),
+					faceVector, trueHeight, 0.1, 0.1);
 
 			/* draw poles */
 
-			VectorXZ[] poles = {
-					node.getPos().add(boardVector.mult(-width / 4)),
-					node.getPos().add(boardVector.mult(+width / 4))
-			};
+			if (connector == null) {
 
-			for (VectorXZ pole : poles) {
-				target.drawBox(CONCRETE, pole.xyz(getBase().y),
-						faceVector, minHeight, 0.2, 0.1);
+				VectorXZ[] poles = {
+						node.getPos().add(boardVector.mult(-width / 4)),
+						node.getPos().add(boardVector.mult(+width / 4))
+				};
+
+				for (VectorXZ pole : poles) {
+					target.drawBox(CONCRETE, pole.xyz(getBase().y),
+							faceVector, minHeight, 0.2, 0.1);
+				}
+
 			}
 
 		}
