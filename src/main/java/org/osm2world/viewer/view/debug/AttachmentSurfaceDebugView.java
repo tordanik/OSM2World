@@ -1,5 +1,6 @@
 package org.osm2world.viewer.view.debug;
 
+import static java.awt.Color.ORANGE;
 import static java.util.Collections.emptyList;
 
 import java.awt.Color;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
@@ -16,6 +18,8 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.WorldObject;
 
 public class AttachmentSurfaceDebugView extends DebugView {
+
+	private static final Color BASE_ELE_COLOR = ORANGE;
 
 	private final Map<String, Color> surfaceTypeColors = new HashMap<>();
 
@@ -48,8 +52,19 @@ public class AttachmentSurfaceDebugView extends DebugView {
 				Color color = getOrCreateColor(type);
 
 				for (PolygonXYZ face : surface.getFaces()) {
+
 					Material material = new ImmutableMaterial(Interpolation.FLAT, color);
 					target.drawConvexPolygon(material, face.getVertexLoop(), emptyList());
+
+					//draw base ele
+					for (int i = 0; i < face.size(); i++) {
+						VectorXYZ v1 = face.getVertexLoop().get(i);
+						VectorXYZ v2 = face.getVertexLoop().get(i + 1);
+						v1 = v1.y(surface.getBaseEleAt(v1.xz()));
+						v2 = v2.y(surface.getBaseEleAt(v2.xz()));
+						target.drawLineStrip(BASE_ELE_COLOR, 2, v1, v2);
+					}
+
 				}
 
 			}

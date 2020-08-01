@@ -3,6 +3,7 @@ package org.osm2world.core.world.attachment;
 import java.util.List;
 
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -26,7 +27,7 @@ public class AttachmentConnector {
 	 */
 	public final double maxDistanceXZ;
 
-	/** preferred height above the surface's {@link AttachmentSurface#getBaseEle()} */
+	/** preferred height above the surface's {@link AttachmentSurface#getBaseEleAt(VectorXZ)} */
 	public final double preferredHeight;
 
 	private boolean isAttached = false;

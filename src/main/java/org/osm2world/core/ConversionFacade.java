@@ -336,7 +336,7 @@ public class ConversionFacade {
 
 				if (closestSurface.isPresent()) {
 
-					double ele = closestSurface.get().getBaseEle() + connector.preferredHeight;
+					double ele = closestSurface.get().getBaseEleAt(connector.originalPos.xz()) + connector.preferredHeight;
 					VectorXYZ posAtEle = connector.originalPos.y(ele);
 
 					for (boolean requirePreferredHeight : asList(true, false)) {
@@ -345,7 +345,8 @@ public class ConversionFacade {
 							if (!requirePreferredHeight) {
 								return true;
 							} else {
-								double height = f.closestPoint(posAtEle).y - closestSurface.get().getBaseEle();
+								VectorXYZ closestPoint = f.closestPoint(posAtEle);
+								double height = closestPoint.y - closestSurface.get().getBaseEleAt(closestPoint.xz());
 								return abs(height - connector.preferredHeight) < 0.001;
 							}
 						};
