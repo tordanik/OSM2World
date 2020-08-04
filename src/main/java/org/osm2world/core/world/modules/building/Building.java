@@ -4,13 +4,12 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -34,6 +33,8 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 	private final List<BuildingPart> parts = new ArrayList<>();
 
 	private final EleConnectorGroup outlineConnectors;
+
+	private Map<NodeLevelPair, Boolean> windowNodes = new HashMap<>();
 
 	public Building(MapArea area, Configuration config) {
 
@@ -143,6 +144,51 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 		}
 
 		return shapes;
+	}
+
+	private class NodeLevelPair{
+
+		private final MapNode node;
+		private final Integer level;
+
+		NodeLevelPair(MapNode node, Integer level) {
+			this.node = node;
+			this.level = level;
+		}
+
+		@Override
+		public boolean equals(Object anObject){
+			if (anObject instanceof NodeLevelPair) {
+				NodeLevelPair temp = (NodeLevelPair) anObject;
+				if (temp.level.equals(this.level) && temp.node.equals(this.node)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return  Long.hashCode(node.getId()) / ((level * 2) + 1);
+		}
+
+	}
+
+	public void addWindowNode(MapNode node, Integer level){
+		if (windowNodes.get(new NodeLevelPair(node, level)) != null) {
+			windowNodes.replace(new NodeLevelPair(node, level), true);
+		} else {
+			windowNodes.put(new NodeLevelPair(node, level), false);
+		}
+	}
+
+	public void addListWindowNodes(List<MapNode> nodes, Integer level) {
+		nodes.forEach(n -> addWindowNode(n, level));
+	}
+
+	public Boolean queryWindowSegments(MapNode node, Integer level){
+		return Boolean.TRUE.equals(windowNodes.get(new NodeLevelPair(node, level)));
 	}
 
 }

@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
@@ -32,6 +33,11 @@ public class IndoorRoom implements Renderable {
                 data.getPolygon(),
                 data.getTopOfTopLevelHeightAboveBase(),
                 data.getRenderableLevels().contains(data.getMaxLevel()));
+
+        if (data.getMapElement() instanceof MapArea) {
+            data.getLevels().forEach(l ->  data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), l));
+        }
+
     }
 
     private List<IndoorWall> splitIntoIndoorWalls(){

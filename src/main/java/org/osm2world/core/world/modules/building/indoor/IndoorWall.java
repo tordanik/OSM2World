@@ -91,7 +91,7 @@ public class IndoorWall implements Renderable {
         MapNode prevNode = nodes.get(0);
         List<MapNode> intermediateNodes = new ArrayList<>();
 
-        for (int i = 1; i < nodes.size(); i++) {
+		for (int i = 1; i < nodes.size(); i++) {
 
             MapNode node = nodes.get(i);
 
@@ -611,7 +611,7 @@ public class IndoorWall implements Renderable {
 
                 SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level);
 
-                if (!allRenderedWallSegments.contains(pair)) {
+				if (!allRenderedWallSegments.contains(pair)) {
 
                     allRenderedWallSegments.add(pair);
 
@@ -702,11 +702,13 @@ public class IndoorWall implements Renderable {
 							if (node.getTags().containsKey("window")
                                 && !node.getTags().contains("window", "no")) {
 
+								boolean transparent = data.getBuildingPart().getBuilding().queryWindowSegments(node, level);
+
                                 TagSet windowTags = inheritTags(node.getTags(), data.getTags());
                                 WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
 
-                                GeometryWindow windowFront = new GeometryWindow(new VectorXZ(offset, params.breast), params);
-                                GeometryWindow windowBack = new GeometryWindow(new VectorXZ(wallSegData.segment.getLength() - offset, params.breast), params);
+                                GeometryWindow windowFront = new GeometryWindow(new VectorXZ(offset, params.breast), params, transparent);
+                                GeometryWindow windowBack = new GeometryWindow(new VectorXZ(wallSegData.segment.getLength() - offset, params.breast), params, transparent);
 
                                 mainSurface.addElementIfSpaceFree(windowFront);
                                 backSurface.addElementIfSpaceFree(windowBack);

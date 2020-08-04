@@ -146,6 +146,9 @@ public final class Materials {
 	public static final ConfMaterial GARAGE_DOOR =
 			new ConfMaterial(Interpolation.FLAT, WHITE);
 
+	public static final ConfMaterial GLASS_TRANSPARENT =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f), Transparency.TRUE, Collections.emptyList());
+
 	public static final ConfMaterial WALL_GABION =
 		new ConfMaterial(Interpolation.FLAT, Color.GRAY);
 

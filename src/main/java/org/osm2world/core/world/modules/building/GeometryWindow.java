@@ -49,10 +49,13 @@ public class GeometryWindow implements Window {
 	private final SimplePolygonXZ paneOutline;
 	private final List<List<VectorXZ>> innerFramePaths;
 
-	public GeometryWindow(VectorXZ position, WindowParameters params) {
+	private final boolean transparent;
+
+	public GeometryWindow(VectorXZ position, WindowParameters params, boolean transparent) {
 
 		this.position = position;
 		this.params = params;
+		this.transparent = transparent;
 
 		switch (params.windowShape) {
 		case CIRCLE:
@@ -126,12 +129,20 @@ public class GeometryWindow implements Window {
 
 		/* draw the window pane */
 
+		String paneType;
+
+		if (transparent) {
+			paneType = "TRANSPARENT";
+		} else {
+			paneType = "OPAQUE";
+		}
+
 		Collection<TriangleXZ> paneTrianglesXZ = paneOutline.getTriangulation();
 		Collection<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
 				.map(t -> surface.convertTo3D(t).shift(toBack))
 				.collect(toList());
-		target.drawTriangles(params.windowMaterial, paneTriangles,
-				triangleTexCoordLists(paneTriangles, params.windowMaterial, surface::texCoordsGlobal));
+		target.drawTriangles(params.windowMaterial.get(paneType), paneTriangles,
+				triangleTexCoordLists(paneTriangles, params.windowMaterial.get(paneType), surface::texCoordsGlobal));
 
 		/* draw outer frame */
 

@@ -256,9 +256,11 @@ public class Wall implements Renderable {
 				} else if (node.getTags().containsKey("window")
 						&& !node.getTags().contains("window", "no")) {
 
+					boolean transparent = buildingPart.getBuilding().queryWindowSegments(node, level);
+
 					TagSet windowTags = inheritTags(node.getTags(), tags);
 					WindowParameters params = new WindowParameters(windowTags, buildingPart.getLevelHeight(level));
-					GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params);
+					GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params, transparent);
 					mainSurface.addElementIfSpaceFree(window);
 
 					individuallyMappedWindows = true;
@@ -350,7 +352,7 @@ public class Wall implements Renderable {
 						heightAboveBase + windowParams.breast);
 
 				Window window = implementation == WindowImplementation.FULL_GEOMETRY
-						? new GeometryWindow(pos, windowParams)
+						? new GeometryWindow(pos, windowParams, false)
 						: new TexturedWindow(pos, windowParams);
 				surface.addElementIfSpaceFree(window);
 

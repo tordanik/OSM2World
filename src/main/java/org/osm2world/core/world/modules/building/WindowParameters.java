@@ -8,6 +8,9 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * data about the window(s) on a wall, door, or for a single window.
  * This object type is immutable after its construction from a set of tags.
@@ -63,7 +66,7 @@ public class WindowParameters {
 
 	public final WindowParameters.WindowShape windowShape;
 
-	public final Material windowMaterial;
+	public Map<String, Material> windowMaterial = new HashMap<>();
 	public final Material frameMaterial;
 	public final Material shutterMaterial;
 
@@ -79,10 +82,13 @@ public class WindowParameters {
 			type = WindowType.PLAIN;
 		}
 
-		windowMaterial = BuildingPart.buildMaterial(
+		windowMaterial.put("OPAQUE", BuildingPart.buildMaterial(
 				tags.getValue("window:material"),
 				tags.getValue("window:colour"),
-				Materials.GLASS, false);
+				Materials.GLASS, false));
+
+		windowMaterial.put("TRANSPARENT", BuildingPart.buildMaterial(null, tags.getValue("window:colour"),
+				Materials.GLASS_TRANSPARENT, false));
 
 		numberWindows = parseUInt(tags.getValue("window:count"));
 		groupSize = parseUInt(tags.getValue("window:group_size"), 1);

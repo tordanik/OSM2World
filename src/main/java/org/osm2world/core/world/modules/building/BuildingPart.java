@@ -344,6 +344,10 @@ public class BuildingPart implements Renderable {
 			}
 		}
 
+		for (int i = getMinLevel(); i < getBuildingLevels() + 1; i++) {
+			getBuilding().addListWindowNodes(area.getBoundaryNodes(), i);
+		}
+
 	}
 
 	/** creates the walls, floors etc. making up this part */
