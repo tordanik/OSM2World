@@ -16,12 +16,14 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
@@ -35,6 +37,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 	private final EleConnectorGroup outlineConnectors;
 
 	private Map<NodeLevelPair, Boolean> windowNodes = new HashMap<>();
+	private Map<NodeLevelPair, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
 	public Building(MapArea area, Configuration config) {
 
@@ -124,6 +127,8 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 		for (BuildingPart part : parts) {
 			part.renderTo(target);
 		}
+
+		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments);
 	}
 
 	@Override
@@ -146,15 +151,23 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 		return shapes;
 	}
 
-	private class NodeLevelPair{
+	public class NodeLevelPair{
 
 		private final MapNode node;
 		private final Integer level;
+		private final double heightAboveGround;
+		private final double ceilingHeightAboveGround;
 
-		NodeLevelPair(MapNode node, Integer level) {
+		NodeLevelPair(MapNode node, Integer level, double heightAboveGround, double ceilingHeightAboveGround) {
 			this.node = node;
 			this.level = level;
+			this.heightAboveGround = heightAboveGround;
+			this.ceilingHeightAboveGround = ceilingHeightAboveGround;
 		}
+
+		public double getHeightAboveGround() { return heightAboveGround; }
+
+		public double getCeilingHeightAboveGround() { return ceilingHeightAboveGround; }
 
 		@Override
 		public boolean equals(Object anObject){
@@ -176,10 +189,10 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 	}
 
 	public void addWindowNode(MapNode node, Integer level){
-		if (windowNodes.get(new NodeLevelPair(node, level)) != null) {
-			windowNodes.replace(new NodeLevelPair(node, level), true);
+		if (windowNodes.get(new NodeLevelPair(node, level, 0, 0)) != null) {
+			windowNodes.replace(new NodeLevelPair(node, level, 0, 0), true);
 		} else {
-			windowNodes.put(new NodeLevelPair(node, level), false);
+			windowNodes.put(new NodeLevelPair(node, level, 0, 0), false);
 		}
 	}
 
@@ -188,7 +201,20 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 	}
 
 	public Boolean queryWindowSegments(MapNode node, Integer level){
-		return Boolean.TRUE.equals(windowNodes.get(new NodeLevelPair(node, level)));
+		return Boolean.TRUE.equals(windowNodes.get(new NodeLevelPair(node, level, 0, 0)));
+	}
+
+
+	public void addLineSegmentToPolygonMap(MapNode node, Integer level, LineSegmentXZ line, double heightAboveGround, double ceilingHeightAboveGround){
+		if (wallNodePolygonSegments.get(new NodeLevelPair(node, level, heightAboveGround, ceilingHeightAboveGround)) != null) {
+			wallNodePolygonSegments.get(new NodeLevelPair(node, level, heightAboveGround, ceilingHeightAboveGround)).add(line);
+		} else {
+			wallNodePolygonSegments.put(new NodeLevelPair(node, level, heightAboveGround, ceilingHeightAboveGround), new ArrayList<>(Arrays.asList(line)));
+		}
+	}
+
+	public List<LineSegmentXZ> queryPolygonMap(MapNode node, Integer level){
+		return wallNodePolygonSegments.get(new NodeLevelPair(node, level, 0, 0));
 	}
 
 }

@@ -9,8 +9,10 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.modules.building.*;
+import org.osm2world.core.world.modules.building.Building.NodeLevelPair;
 import org.osm2world.core.world.modules.building.roof.Roof;
 
+import javax.sound.sampled.Line;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.math3.util.MathUtils.TWO_PI;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
@@ -366,7 +369,7 @@ public class IndoorWall implements Renderable {
     	return new LineSegmentXZ(line.p1.add(rightNorm), line.p2.add(rightNorm));
 	}
 
-    private List<VectorXZ> getNewEndPoint(SegmentNodes wallSegData, boolean end, int level){
+    private List<VectorXZ> getNewEndPoint(SegmentNodes wallSegData, boolean end, int level, double heightAboveGround, double ceilingHeightAboveGround){
 
 		MapNode startNode;
 		MapNode endNode;
@@ -479,8 +482,8 @@ public class IndoorWall implements Renderable {
 			if ((pairSet.contains("indoor", "wall") || pairSet.contains("indoor", "room"))
 					&& !segmentToCheck.equals(wallSegSegment)
 					&& !wallSegData.containsMapSegment(segmentToCheck)
-					&& !wallSegData.containsMapSegment(segmentToCheck.reverse())
-					&& abs(abs(segmentToCheck.getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
+					&& !wallSegData.containsMapSegment(segmentToCheck.reverse()) ){
+//					&& abs(abs(segmentToCheck.getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
 
 				double clockwiseAngleBetween = segmentToCheck.getDirection().angle() - wallSegSegment.getDirection().angle();
 				clockwiseAngleBetween = clockwiseAngleBetween <= 0 ? TWO_PI + clockwiseAngleBetween : clockwiseAngleBetween;
@@ -528,7 +531,8 @@ public class IndoorWall implements Renderable {
 
 		VectorXZ tempResult = offsetSegRight.getVertexList().get(1);
 
-		if (maxLineSegment != null) {
+		if (maxLineSegment != null
+				&& abs(abs(maxLineSegment.getLineSegment().getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
 
 			VectorXZ maxOnBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(
 					new SegmentNodes(asList(maxLineSegment.getStartNode(), maxLineSegment.getEndNode()),
@@ -555,7 +559,8 @@ public class IndoorWall implements Renderable {
 
 		tempResult = offsetSegLeft.getVertexList().get(1);
 
-		if (minLineSegment != null) {
+		if (minLineSegment != null
+				&& abs(abs(minLineSegment.getLineSegment().getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
 
 			VectorXZ minOnBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(
 					new SegmentNodes(asList(minLineSegment.getStartNode(), minLineSegment.getEndNode()),
@@ -579,20 +584,128 @@ public class IndoorWall implements Renderable {
 
 		result.add(tempResult);
 
+		data.getBuildingPart().getBuilding().addLineSegmentToPolygonMap(endNode, level, new LineSegmentXZ(result.get(0), result.get(1)), heightAboveGround, ceilingHeightAboveGround);
+
 		return result;
 
 	}
 
 
-    private List<VectorXZ> getNewEndPoints(SegmentNodes wallSegData, int level){
+    private List<VectorXZ> getNewEndPoints(SegmentNodes wallSegData, int level, double heightAboveGround, double ceilingHeightAboveGround){
 
     	List<VectorXZ> result = new ArrayList<>();
 
-		result.addAll(getNewEndPoint(wallSegData, false, level));
-		result.addAll(getNewEndPoint(wallSegData, true, level));
+		result.addAll(getNewEndPoint(wallSegData, false, level, heightAboveGround, ceilingHeightAboveGround));
+		result.addAll(getNewEndPoint(wallSegData, true, level, heightAboveGround, ceilingHeightAboveGround));
 
 		return result;
 
+	}
+
+	private static boolean roughlyEqual(LineSegmentXZ l1, LineSegmentXZ l2){
+		return (roughlyEqual(l1.p1, l2.p1) && roughlyEqual(l1.p2, l2.p2))
+				|| (roughlyEqual(l1.p1, l2.p2) && roughlyEqual(l1.p2, l2.p1));
+	}
+
+	private static boolean roughlyEqual(VectorXZ v1, VectorXZ v2){
+    	return v1.subtract(v2).lengthSquared() < 0.00001;
+	}
+
+	public static void renderNodePolygons(Target target, Map<NodeLevelPair, List<LineSegmentXZ>> nodeToLineSegments){
+		for (Map.Entry<NodeLevelPair, List<LineSegmentXZ>> entry : nodeToLineSegments.entrySet()) {
+
+			NodeLevelPair nodeAndLevel = entry.getKey();
+			List<LineSegmentXZ> lineSegments = entry.getValue();
+
+			/* deduplicate line segments */
+
+			List<LineSegmentXZ> dedupeLineSegments = new ArrayList<>();
+
+			dedupeLineSegments.add(lineSegments.get(0));
+
+			for (LineSegmentXZ line : lineSegments) {
+				if (dedupeLineSegments.stream().noneMatch(l -> roughlyEqual(l, line))) {
+					dedupeLineSegments.add(line);
+				}
+			}
+
+			/* create polygon */
+
+			List<VectorXZ> vertices = new ArrayList<>();
+
+			LineSegmentXZ initialSeg = dedupeLineSegments.get(0);
+			vertices.add(initialSeg.p1);
+			vertices.add(initialSeg.p2);
+
+			dedupeLineSegments.remove(0);
+
+			int n = 0;
+			int dedupeListSize = dedupeLineSegments.size();
+
+			while (dedupeLineSegments.size() > 0 && !vertices.get(0).equals(vertices.get(vertices.size() - 1)) && n < dedupeListSize) {
+				for (LineSegmentXZ segment : dedupeLineSegments) {
+					if (roughlyEqual(segment.p1, vertices.get(vertices.size() - 1))) {
+						if (roughlyEqual(segment.p2, vertices.get(0))) {
+							vertices.add(vertices.get(0));
+						} else {
+							vertices.add(segment.p2);
+						}
+						dedupeLineSegments.remove(segment);
+						break;
+					} else if (roughlyEqual(segment.p2, vertices.get(vertices.size() - 1))) {
+						if (roughlyEqual(segment.p1, vertices.get(0))) {
+							vertices.add(vertices.get(0));
+						} else {
+							vertices.add(segment.p1);
+						};
+						dedupeLineSegments.remove(segment);
+						break;
+					}
+				}
+				n++;
+			}
+
+			if (!vertices.get(0).equals(vertices.get(vertices.size() - 1))) {
+				vertices.add(vertices.get(0));
+			}
+
+			if (vertices.size() > 3) {
+
+				/* render polygon */
+
+				try {
+
+					SimplePolygonXZ polygon = new SimplePolygonXZ(vertices).makeCounterclockwise();
+
+					Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon, emptyList());
+
+					List<TriangleXYZ> trianglesXYZBottom = triangles.stream()
+							.map(t -> t.makeClockwise().xyz(nodeAndLevel.getHeightAboveGround()))
+							.collect(toList());
+
+					List<TriangleXYZ> trianglesXYZTop = triangles.stream()
+							.map(t -> t.makeCounterclockwise().xyz(nodeAndLevel.getCeilingHeightAboveGround() - 0.01))
+							.collect(toList());
+
+					VectorXYZ bottom = new VectorXYZ(0, nodeAndLevel.getHeightAboveGround(),0);
+					VectorXYZ top = new VectorXYZ(0, nodeAndLevel.getCeilingHeightAboveGround() - 0.01,0);
+
+					List<VectorXYZ> path = new ArrayList<>();
+					path.add(bottom);
+					path.add(top);
+
+					target.drawExtrudedShape(Materials.BRICK, polygon, path, nCopies(2, Z_UNIT), null, null, null);
+
+					target.drawTriangles(Materials.BRICK, trianglesXYZBottom,
+							triangleTexCoordLists(trianglesXYZBottom, Materials.BRICK, GLOBAL_X_Z));
+
+					target.drawTriangles(Materials.BRICK, trianglesXYZTop,
+							triangleTexCoordLists(trianglesXYZTop, Materials.BRICK, GLOBAL_X_Z));
+
+
+				} catch (InvalidGeometryException e) {}
+			}
+		}
 	}
 
 
@@ -615,7 +728,7 @@ public class IndoorWall implements Renderable {
 
                     allRenderedWallSegments.add(pair);
 
-					List<VectorXZ> endPoints = getNewEndPoints(wallSegData, level);
+					List<VectorXZ> endPoints = getNewEndPoints(wallSegData, level, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level), ceilingHeight);
 
 					/* front wall surface */
 
