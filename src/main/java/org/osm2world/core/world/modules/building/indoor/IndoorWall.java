@@ -16,7 +16,7 @@ import javax.sound.sampled.Line;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -796,6 +796,9 @@ public class IndoorWall implements Renderable {
 
                     /* add windows that aren't on vertices */
 
+					LineSegmentXZ frontLineSegment =  new LineSegmentXZ(endPoints.get(3), endPoints.get(0));
+					LineSegmentXZ backLineSegment =  new LineSegmentXZ(endPoints.get(1), endPoints.get(2));
+
                     for (MapNode node : wallSegData.getNodes()) {
 
 						Set<Integer> objectLevels = new HashSet<>();
@@ -806,9 +809,8 @@ public class IndoorWall implements Renderable {
 								.map(l -> data.getBuildingPart().levelConversion(l))
 								.collect(Collectors.toSet());
 
-						Double offset = wallSegData.getSegment().getLength() - wallSegData.segment.offsetOf(wallSegData.segment.closestPoint(node.getPos()));
-						VectorXZ posFront = new VectorXZ(offset, 0);
-						VectorXZ posback = new VectorXZ(wallSegData.segment.getLength() - offset, 0);
+						VectorXZ posFront = new VectorXZ(frontLineSegment.offsetOf(frontLineSegment.closestPoint(node.getPos())), 0);
+						VectorXZ posback = new VectorXZ(backLineSegment.offsetOf(backLineSegment.closestPoint(node.getPos())), 0);
 
 						if (objectLevels.contains(level)) {
 
@@ -820,8 +822,8 @@ public class IndoorWall implements Renderable {
                                 TagSet windowTags = inheritTags(node.getTags(), data.getTags());
                                 WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
 
-                                GeometryWindow windowFront = new GeometryWindow(new VectorXZ(offset, params.breast), params, transparent);
-                                GeometryWindow windowBack = new GeometryWindow(new VectorXZ(wallSegData.segment.getLength() - offset, params.breast), params, transparent);
+                                GeometryWindow windowFront = new GeometryWindow(new VectorXZ(posFront.x, params.breast), params, transparent);
+                                GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posback.x, params.breast), params, transparent);
 
                                 mainSurface.addElementIfSpaceFree(windowFront);
                                 backSurface.addElementIfSpaceFree(windowBack);
