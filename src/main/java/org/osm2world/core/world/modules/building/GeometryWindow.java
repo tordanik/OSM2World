@@ -1,5 +1,16 @@
 package org.osm2world.core.world.modules.building;
 
+import org.osm2world.core.math.*;
+import org.osm2world.core.math.algorithms.JTSBufferUtil;
+import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.ExtrudeOption;
+import org.osm2world.core.target.common.material.Material;
+
+import java.util.*;
+
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
@@ -8,31 +19,9 @@ import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.JTSBufferUtil;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.ExtrudeOption;
-import org.osm2world.core.target.common.material.Material;
 
 public class GeometryWindow implements Window {
 

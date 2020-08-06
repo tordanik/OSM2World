@@ -1,24 +1,21 @@
 package org.osm2world.core.world.modules.building;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.osm2world.core.map_data.data.overlaps.MapOverlapType.SHARE_SEGMENT;
-import static org.osm2world.core.test.TestMapDataGenerator.addOverlapAA;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationFactory;
 import org.junit.Test;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.test.TestMapDataGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.osm2world.core.map_data.data.overlaps.MapOverlapType.SHARE_SEGMENT;
+import static org.osm2world.core.test.TestMapDataGenerator.addOverlapAA;
 
 public class BuildingPartTest {
 

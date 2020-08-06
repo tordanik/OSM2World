@@ -8,15 +8,14 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.modules.building.*;
 import org.osm2world.core.world.modules.building.Building.NodeLevelPair;
+import org.osm2world.core.world.modules.building.*;
 import org.osm2world.core.world.modules.building.roof.Roof;
 
-import javax.sound.sampled.Line;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -70,7 +69,11 @@ public class IndoorWall implements Renderable {
 
     }
 
-    private boolean isCornerOrEnd(int index) {
+	public List<SegmentNodes> getWallSegmentNodes() { return wallSegmentNodes; }
+
+	public double getWallThickness() { return wallThickness; }
+
+	private boolean isCornerOrEnd(int index) {
 
         if (index == 0 || index == nodes.size() - 1) {
             return true;
@@ -110,15 +113,15 @@ public class IndoorWall implements Renderable {
 
     }
 
-    private class SegmentNodes {
+    public class SegmentNodes {
 
         private List<MapNode> nodes;
         private LineSegmentXZ segment;
         private MapNode startNode;
         private MapNode endNode;
 
-        SegmentNodes(List<MapNode> allNodes, LineSegmentXZ segment, MapNode startNode, MapNode endNode){
-            nodes = allNodes;
+        SegmentNodes(List<MapNode> intermediateNodes, LineSegmentXZ segment, MapNode startNode, MapNode endNode){
+            nodes = intermediateNodes;
             this.segment = segment;
             this.startNode = startNode;
             this.endNode = endNode;
@@ -591,7 +594,7 @@ public class IndoorWall implements Renderable {
 	}
 
 
-    private List<VectorXZ> getNewEndPoints(SegmentNodes wallSegData, int level, double heightAboveGround, double ceilingHeightAboveGround){
+    public List<VectorXZ> getNewEndPoints(SegmentNodes wallSegData, int level, double heightAboveGround, double ceilingHeightAboveGround){
 
     	List<VectorXZ> result = new ArrayList<>();
 
