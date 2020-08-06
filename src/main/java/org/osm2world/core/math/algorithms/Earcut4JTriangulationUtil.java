@@ -4,9 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -15,6 +13,8 @@ import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import com.google.common.primitives.Ints;
 
 import earcut4j.Earcut;
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 /**
  * uses the earcut4j library for triangulation.
@@ -70,7 +70,7 @@ public class Earcut4JTriangulationUtil {
 		/* points are simulated as holes with 2 almost identical points which are merged back together later.
 		 * (Single-point holes get a special treatment by earcut4j and may not be contained in the result at all.) */
 
-		Map<Integer, Integer> mergeIndexMap = new HashMap<>();
+		TIntIntMap mergeIndexMap = new TIntIntHashMap(points.size() * 2,  0.75f, -1, -1);
 
 		for (VectorXZ point : points) {
 			holeIndices.add(dataIndex);
@@ -90,9 +90,9 @@ public class Earcut4JTriangulationUtil {
 		 * (this also requires checking triangles for duplicate indices later) */
 
 		for (int i = 0; i < rawResult.size(); i++) {
-			Integer newIndex = mergeIndexMap.get(rawResult.get(i));
-			if (newIndex != null) {
-				rawResult.set(i, newIndex);
+			Integer rawValue = rawResult.get(i);
+			if (mergeIndexMap.containsKey(rawValue)) {
+				rawResult.set(i, mergeIndexMap.get(rawValue));
 			}
 		}
 

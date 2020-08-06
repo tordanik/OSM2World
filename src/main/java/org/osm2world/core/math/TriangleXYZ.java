@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-public class TriangleXYZ {
+public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 
 	public final VectorXYZ v1, v2, v3;
 
@@ -14,15 +14,22 @@ public class TriangleXYZ {
 		this.v3 = v3;
 	}
 
+	@Override
 	public List<VectorXYZ> getVertices() {
 		return ImmutableList.of(v1, v2, v3);
 	}
 
+	@Override
+	public List<VectorXYZ> getVertexLoop() {
+		return ImmutableList.of(v1, v2, v3, v1);
+	}
+
 	/**
-	 * returns the normalized normal vector of this triangle
+	 * returns the normalized normal vector of this triangle.
+	 * Points "up" based on assumption that this is a counterclockwise triangle.
 	 */
+	@Override
 	public VectorXYZ getNormal() {
-		//TODO: account for clockwise vs. counterclockwise
 		return v2.subtract(v1).crossNormalized(v2.subtract(v3));
 	}
 

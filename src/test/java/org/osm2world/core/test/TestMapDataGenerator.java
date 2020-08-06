@@ -1,5 +1,7 @@
 package org.osm2world.core.test;
 
+import static org.osm2world.core.math.GeometryUtil.closeLoop;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +16,6 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.math.VectorXZ;
-
-import static org.osm2world.core.map_data.data.overlaps.MapOverlapType.SHARE_SEGMENT;
 
 /**
  * creates {@link MapElement}s for tests.
@@ -70,18 +70,6 @@ public class TestMapDataGenerator {
 	/** returns a {@link MapData} object containing all the elements created so far */
 	public MapData createMapData() {
 		return new MapData(nodes, ways, areas, relations, null);
-	}
-
-	/**
-	 * returns the list itself if the last element of the list equals the first;
-	 * otherwise, returns a list that's the same except with the first element appended to the end.
-	 */
-	private <T> List<T> closeLoop(List<T> list) {
-		if (!list.get(0).equals(list.get(list.size() - 1))) {
-			list = new ArrayList<>(list);
-			list.add(list.get(0));
-		}
-		return list;
 	}
 
 	/**

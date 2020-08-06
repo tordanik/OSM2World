@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static java.lang.Math.sqrt;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
@@ -21,6 +22,24 @@ public final class GeometryUtil {
 
 	/** prevents instantiation */
 	private GeometryUtil() { }
+
+	/**
+	 * returns the list itself if the last element of the list equals the first;
+	 * otherwise, returns a list that's the same except with the first element appended to the end.
+	 */
+	public static final <T> List<T> closeLoop(List<T> list) {
+		if (!list.get(0).equals(list.get(list.size() - 1))) {
+			list = new ArrayList<>(list);
+			list.add(list.get(0));
+		}
+		return list;
+	}
+
+	/** vararg variant of {@link #closeLoop(List)} */
+	@SafeVarargs
+	public static final <T> List<T> closeLoop(T... list) {
+		return closeLoop(asList(list));
+	}
 
 	public static final List<TriangleXYZ> trianglesFromVertexList(
 			List<? extends VectorXYZ> vs) {

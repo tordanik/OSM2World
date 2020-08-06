@@ -1,6 +1,6 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -184,11 +184,10 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 	}
 
 	/**
-	 * calculates the angle between this vector and other,
-	 * but only if both are normalized!
+	 * calculates the angle between this vector and other
 	 */
 	public double angleTo(VectorXYZ other) {
-		return Math.acos(this.dot(other));
+		return acos(this.normalize().dot(other.normalize()));
 	}
 
 	public double distanceTo(VectorXYZ other) {

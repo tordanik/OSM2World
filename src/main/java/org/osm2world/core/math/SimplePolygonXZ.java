@@ -121,6 +121,18 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	}
 
+	/**
+	 * returns the point on this polygon that is closest to a given point.
+	 * For points within this polygon, this returns the point itself.
+	 */
+	public VectorXZ closestPoint(VectorXZ point) {
+		if (this.contains(point)) {
+			return point;
+		} else {
+			return getClosestSegment(point).closestPoint(point);
+		}
+	}
+
 	private void calculateArea() {
 		this.signedArea = calculateSignedArea(vertexLoop);
 		this.area = Math.abs(signedArea);

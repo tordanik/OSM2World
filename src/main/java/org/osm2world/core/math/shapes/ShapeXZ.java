@@ -1,5 +1,6 @@
 package org.osm2world.core.math.shapes;
 
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.util.ArrayList;
@@ -39,6 +40,18 @@ public interface ShapeXZ extends BoundedObject {
 	@Override
 	default AxisAlignedRectangleXZ boundingBox() {
 		return bbox(getVertexList());
+	}
+
+	/**
+	 * returns a rotated version of this shape. Rotation is around the origin.
+	 *
+	 * @param angleRad  clockwise rotation angle in radians
+	 */
+	public default ShapeXZ rotatedCW(double angleRad) {
+		List<VectorXZ> rotatedVertexList = getVertexList().stream()
+				.map(v -> v.rotate(angleRad))
+				.collect(toList());
+		return () -> rotatedVertexList;
 	}
 
 }

@@ -3,6 +3,7 @@ package org.osm2world.core.map_elevation.creation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -43,7 +44,7 @@ class SRTMTile {
 			ByteBuffer bb = ByteBuffer.allocateDirect((int) fc.size());
 			while (bb.remaining() > 0) fc.read(bb);
 
-			bb.flip();
+			((Buffer)bb).flip();
 
 			// choose the right endianness
 			return bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();

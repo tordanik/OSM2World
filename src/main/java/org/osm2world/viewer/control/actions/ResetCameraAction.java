@@ -46,7 +46,7 @@ public class ResetCameraAction extends AbstractAction implements Observer {
 
 		MapData mapData = data.getConversionResults().getMapData();
 
-		VectorXZ camLookAt = mapData.getCenter();
+		VectorXZ camLookAt = mapData.getBoundary().center();
 
 		renderOptions.camera = new Camera();
 		renderOptions.camera.setCamera(camLookAt.x, 1000, camLookAt.z-1000,

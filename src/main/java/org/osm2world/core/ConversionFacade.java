@@ -1,6 +1,10 @@
 package org.osm2world.core;
 
-import static java.util.Collections.emptyList;
+import static java.lang.Math.abs;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -25,7 +31,10 @@ import org.osm2world.core.map_elevation.creation.TerrainElevationData;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.datastructures.IndexGrid;
+import org.osm2world.core.math.datastructures.SpatialIndex;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
@@ -34,6 +43,8 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.functions.Factory;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
@@ -58,6 +69,8 @@ import org.osm2world.core.world.modules.TreeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 import org.osm2world.core.world.modules.WaterModule;
 import org.osm2world.core.world.modules.building.BuildingModule;
+
+import com.google.common.collect.Streams;
 
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
@@ -275,10 +288,11 @@ public class ConversionFacade {
 			eleData = new SRTMData(new File(srtmDir), mapProjection);
 		}
 
-		calculateElevations(mapData, eleData, config);
+		/* create terrain and attach connectors */
+		updatePhase(Phase.TERRAIN);
 
-		/* create terrain */
-		updatePhase(Phase.TERRAIN); //TODO this phase may be obsolete
+		calculateElevations(mapData, eleData, config);
+		attachConnectors(mapData);
 
 		/* supply results to targets and caller */
 		updatePhase(Phase.FINISHED);
@@ -293,6 +307,68 @@ public class ConversionFacade {
 		}
 
 		return new Results(mapProjection, mapData, eleData);
+
+	}
+
+	private void attachConnectors(MapData mapData) {
+
+		/* collect the surfaces */
+
+		SpatialIndex<AttachmentSurface> attachmentSurfaceIndex =
+				new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
+
+		for (WorldObject object : mapData.getWorldObjects()) {
+			object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
+		}
+
+		/* attach connectors to the surfaces */
+
+		for (WorldObject object : mapData.getWorldObjects()) {
+
+			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
+
+				Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
+						bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ));
+
+				Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
+						.filter(s -> s.getTypes().stream().anyMatch(connector.compatibleSurfaceTypes::contains))
+						.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+
+				if (closestSurface.isPresent()) {
+
+					double ele = closestSurface.get().getBaseEleAt(connector.originalPos.xz()) + connector.preferredHeight;
+					VectorXYZ posAtEle = connector.originalPos.y(ele);
+
+					for (boolean requirePreferredHeight : asList(true, false)) {
+
+						Predicate<FaceXYZ> matchesPreferredHeight = (FaceXYZ f) -> {
+							if (!requirePreferredHeight) {
+								return true;
+							} else {
+								VectorXYZ closestPoint = f.closestPoint(posAtEle);
+								double height = closestPoint.y - closestSurface.get().getBaseEleAt(closestPoint.xz());
+								return abs(height - connector.preferredHeight) < 0.001;
+							}
+						};
+
+						Optional<FaceXYZ> closestFace = closestSurface.get().getFaces().stream()
+								.filter(matchesPreferredHeight)
+								.min(comparingDouble(f -> f.distanceTo(posAtEle)));
+
+						if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height
+
+						VectorXYZ closestPoint = closestFace.get().closestPoint(posAtEle);
+
+						connector.attach(closestSurface.get(), closestPoint, closestFace.get().getNormal());
+						break; // attached, don't try again
+
+					}
+
+				}
+
+			}
+
+		}
 
 	}
 
