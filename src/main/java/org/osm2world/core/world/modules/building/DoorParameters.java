@@ -47,10 +47,12 @@ public class DoorParameters {
 
 		String type = "hinged";
 
-		if (parentTags.containsAny(
-				asList("building", "building:part"),
-				asList("garage", "garages"))) {
-			type = "overhead";
+		if (parentTags != null) {
+			if (parentTags.containsAny(
+					asList("building", "building:part"),
+					asList("garage", "garages"))) {
+				type = "overhead";
+			}
 		}
 
 		if (tags.containsKey("door") && !"yes".equals(tags.getValue("door"))) {
