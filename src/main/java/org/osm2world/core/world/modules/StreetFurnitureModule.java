@@ -21,6 +21,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
+import java.time.LocalTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +33,10 @@ import java.util.Map.Entry;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -40,7 +44,9 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -48,10 +54,12 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -91,6 +99,10 @@ public class StreetFurnitureModule extends AbstractModule {
 				|| node.getTags().contains("summit:cross", "yes")
 				|| node.getTags().contains("historic", "wayside_cross")) {
 			node.addRepresentation(new Cross(node));
+		}
+		if (node.getTags().contains("amenity", "clock")
+				&& node.getTags().contains("support", "wall")) {
+			node.addRepresentation(new Clock(node));
 		}
 		if (node.getTags().contains("amenity", "waste_basket")) {
 			node.addRepresentation(new WasteBasket(node));
@@ -981,6 +993,125 @@ public class StreetFurnitureModule extends AbstractModule {
 					faceVector, thickness, width, thickness);
 
 		}
+
+	}
+
+	/**
+	 * a clock. Currently only clocks attached to walls are supported.
+	 */
+	private static final class Clock implements NodeWorldObject, Renderable {
+
+		private static final LocalTime TIME = LocalTime.parse("12:25");
+
+		private final MapNode node;
+		private final AttachmentConnector connector;
+
+		public Clock(MapNode node) {
+
+			this.node = node;
+
+			double preferredHeight = parseHeight(node.getTags(), 10f);
+			connector = new AttachmentConnector(asList("wall"), node.getPos().xyz(0), this, preferredHeight, true);
+
+		}
+
+		@Override
+		public MapNode getPrimaryMapElement() {
+			return node;
+		}
+
+		@Override
+		public GroundState getGroundState() {
+			return GroundState.ON;
+		}
+
+		@Override
+		public Iterable<EleConnector> getEleConnectors() {
+			return emptyList();
+		}
+
+		@Override
+		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			return singleton(connector);
+		}
+
+		@Override
+		public void renderTo(Target target) {
+
+			if (!connector.isAttached()) return;
+
+			double diameter = parseWidth(node.getTags(), 1f);
+			new ClockFace(TIME).render(target, connector.getAttachedPos(),
+					connector.getAttachedSurfaceNormal().xz().angle(),
+					null, diameter, null);
+
+		}
+
+		private static class ClockFace implements Model {
+
+			private final LocalTime time;
+
+			public ClockFace(LocalTime currentTime) {
+				this.time = currentTime;
+			}
+
+			@Override
+			public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
+					Double length) {
+
+				double diameter = width != null ? width : 1.0;
+				double thickness = length != null ? length : 0.08;
+
+				VectorXZ faceNormal = VectorXZ.fromAngle(direction);
+
+				VectorXYZ backCenter = position.add(faceNormal.mult(thickness * 0.7));
+				VectorXYZ frontCenter = position.add(faceNormal.mult(thickness));
+
+				CircleXZ outerCircle = new CircleXZ(NULL_VECTOR, diameter / 2);
+				CircleXZ innerCircle = new CircleXZ(NULL_VECTOR, diameter / 2.2);
+
+				PolygonWithHolesXZ ring = new PolygonWithHolesXZ(asSimplePolygon(outerCircle),
+						asList(asSimplePolygon(innerCircle).reverse()));
+
+				target.drawExtrudedShape(PLASTIC_BLACK, ring,
+						asList(position, frontCenter),
+						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
+
+				target.drawShape(PLASTIC, innerCircle, backCenter, faceNormal.xyz(0), Y_UNIT, 1);
+
+				drawHand(target, frontCenter, faceNormal, diameter / 20, diameter / 2.5, thickness / 5, angleMinuteHand(time));
+				drawHand(target, frontCenter, faceNormal, diameter / 15, diameter / 4, thickness / 5, angleHourHand(time));
+
+			}
+
+			private final void drawHand(Target target, VectorXYZ origin, VectorXZ faceNormal,
+					double width, double length, double thickness, double angleRad) {
+
+				assert width < length;
+
+				ShapeXZ handShape = new AxisAlignedRectangleXZ(-width/2, -width/2, width/2, length - width/2);
+				handShape = handShape.rotatedCW(angleRad);
+
+				target.drawExtrudedShape(PLASTIC_BLACK, handShape,
+						asList(origin, origin.add(faceNormal.mult(thickness))),
+						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
+
+			}
+
+			/** returns the clockwise angle for the minute hand in radians */
+			private static double angleMinuteHand(LocalTime time) {
+				return time.getMinute() / 60.0 * 2 * PI;
+			}
+
+			/** returns the clockwise angle for the hour hand in radians */
+			private static double angleHourHand(LocalTime time) {
+				return ((time.getHour() % 12) * 60 + time.getMinute()) / (12 * 60.0) * 2 * PI;
+			}
+
+		};
 
 	}
 
