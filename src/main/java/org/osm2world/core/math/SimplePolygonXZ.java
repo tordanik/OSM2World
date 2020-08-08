@@ -225,6 +225,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	}
 
 	/** returns true if the polygon has clockwise orientation */
+	@Override
 	public boolean isClockwise() {
 		if (area == null) {
 			calculateArea();

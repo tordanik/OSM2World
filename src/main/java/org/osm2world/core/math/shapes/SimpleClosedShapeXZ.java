@@ -1,21 +1,14 @@
 package org.osm2world.core.math.shapes;
 
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.Collection;
-
-import org.osm2world.core.math.TriangleXZ;
 
 /**
  * a closed shape, covering a non-zero area, that is not self-intersecting and has no holes.
  */
 public interface SimpleClosedShapeXZ extends ClosedShapeXZ {
-
-	/**
-	 * returns a decomposition of the shape into triangles.
-	 * For some shapes (e.g. circles), this may be an approximation.
-	 */
-	public Collection<TriangleXZ> getTriangulation();
 
 	/** returns the shape's outer ring. As this is already a shape without holes, it just returns the shape itself. */
 	@Override
@@ -27,6 +20,11 @@ public interface SimpleClosedShapeXZ extends ClosedShapeXZ {
 	@Override
 	default Collection<? extends SimpleClosedShapeXZ> getHoles() {
 		return emptyList();
+	}
+
+	/** returns true if the shape has clockwise orientation */
+	default boolean isClockwise() {
+		return asSimplePolygon(this).isClockwise();
 	}
 
 }

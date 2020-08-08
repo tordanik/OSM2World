@@ -1,9 +1,9 @@
 package org.osm2world.core.target.common;
 
-import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -11,6 +11,7 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLis
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Target;
@@ -40,7 +42,7 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,
+	public void drawShape(Material material, ClosedShapeXZ shape, VectorXYZ point,
 			VectorXYZ frontVector, VectorXYZ upVector, double scaleFactor) {
 
 		for (TriangleXZ triangle : shape.getTriangulation()) {
@@ -108,14 +110,6 @@ public abstract class AbstractTarget implements Target {
 			options = DEFAULT_EXTRUDE_OPTIONS;
 		}
 
-		/* obtain the shape's vertices */
-
-		List<VectorXYZ> shapeVertices = new ArrayList<VectorXYZ>();
-
-		for (VectorXZ v : shape.getVertexList()) {
-			shapeVertices.add(new VectorXYZ(-v.x, v.z, 0));
-		}
-
 		/* calculate the forward direction of the shape from the path.
 		 * Special handling for the first and last point,
 		 * where the calculation of the "forward" vector is different. */
@@ -134,77 +128,110 @@ public abstract class AbstractTarget implements Target {
 		int last = path.size() - 1;
 		forwardVectors.add(path.get(last).subtract(path.get(last-1)).normalize());
 
-		/* create an instance of the shape at each point of the path. */
+		/* extrude each ring of the shape */
 
-		@SuppressWarnings("unchecked")
-		List<VectorXYZ>[] shapeVectors = new List[path.size()];
+		Collection<ShapeXZ> rings = singleton(shape);
 
-		for (int pathI = 0; pathI < path.size(); pathI ++) {
+		if (shape instanceof ClosedShapeXZ) {
 
-			shapeVectors[pathI] = transformShape(
-					scaleShapeVectors(shapeVertices, scaleFactors.get(pathI)),
-					path.get(pathI),
-					forwardVectors.get(pathI),
-					upVectors.get(pathI));
+			rings = new ArrayList<>();
+			rings.add(((ClosedShapeXZ) shape).getOuter());
+
+			boolean outerIsClockwise = ((ClosedShapeXZ) shape).getOuter().isClockwise();
+
+			for (SimpleClosedShapeXZ hole : ((ClosedShapeXZ) shape).getHoles()) {
+				// inner rings need to be the opposite winding compared to the outer ring
+				SimplePolygonXZ inner = asSimplePolygon(hole);
+				inner = outerIsClockwise ? inner.makeCounterclockwise() : inner.makeClockwise();
+				rings.add(inner);
+			}
 
 		}
 
-		/* draw triangle strips */
+		for (ShapeXZ ring : rings) {
 
-		for (int i = 0; i+1 < shapeVertices.size(); i++) {
+			List<VectorXYZ> shapeVertices = new ArrayList<>();
 
-			VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
+			for (VectorXZ v : ring.getVertexList()) {
+				shapeVertices.add(new VectorXYZ(-v.x, v.z, 0));
+			}
 
-			List<List<VectorXZ>> stripTexCoords = null;
+			/* create an instance of the ring at each point of the path. */
 
-			if (texCoordLists != null) {
+			@SuppressWarnings("unchecked")
+			List<VectorXYZ>[] shapeVectors = new List[path.size()];
 
-				stripTexCoords = new ArrayList<List<VectorXZ>>();
+			for (int pathI = 0; pathI < path.size(); pathI ++) {
 
-				for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer ++) {
-					stripTexCoords.add(new ArrayList<VectorXZ>());
-				}
+				shapeVectors[pathI] = transformShape(
+						scaleShapeVectors(shapeVertices, scaleFactors.get(pathI)),
+						path.get(pathI),
+						forwardVectors.get(pathI),
+						upVectors.get(pathI));
 
 			}
 
-			for (int j = 0; j < shapeVectors.length; j++) {
+			/* draw triangle strips */
 
-				triangleStripVectors[j*2+0] = shapeVectors[j].get(i);
-				triangleStripVectors[j*2+1] = shapeVectors[j].get(i+1);
+			for (int i = 0; i+1 < shapeVertices.size(); i++) {
+
+				VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
+
+				List<List<VectorXZ>> stripTexCoords = null;
 
 				if (texCoordLists != null) {
 
-					int index = j * shapeVectors[0].size() + i;
+					stripTexCoords = new ArrayList<List<VectorXZ>>();
 
 					for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer ++) {
-						stripTexCoords.get(texLayer).add(texCoordLists.get(texLayer).get(index));
-						stripTexCoords.get(texLayer).add(texCoordLists.get(texLayer).get(index + 1));
+						stripTexCoords.add(new ArrayList<VectorXZ>());
 					}
+
 				}
 
+				for (int j = 0; j < shapeVectors.length; j++) {
+
+					triangleStripVectors[j*2+0] = shapeVectors[j].get(i);
+					triangleStripVectors[j*2+1] = shapeVectors[j].get(i+1);
+
+					if (texCoordLists != null) {
+
+						int index = j * shapeVectors[0].size() + i;
+
+						for (int texLayer = 0; texLayer < texCoordLists.size(); texLayer ++) {
+							stripTexCoords.get(texLayer).add(texCoordLists.get(texLayer).get(index));
+							stripTexCoords.get(texLayer).add(texCoordLists.get(texLayer).get(index + 1));
+						}
+					}
+
+				}
+
+				List<VectorXYZ> strip = asList(triangleStripVectors);
+
+				if (stripTexCoords == null) {
+					stripTexCoords = texCoordLists(strip, material, STRIP_WALL);
+				}
+
+				drawTriangleStrip(material, strip, stripTexCoords);
+
 			}
-
-			List<VectorXYZ> strip = asList(triangleStripVectors);
-
-			if (stripTexCoords == null) {
-				stripTexCoords = texCoordLists(strip, material, STRIP_WALL);
-			}
-
-			drawTriangleStrip(material, strip, stripTexCoords);
 
 		}
 
 		/* draw caps (if requested in the options and possible for this shape) */
 
-		if (shape instanceof SimpleClosedShapeXZ) {
+		if (shape instanceof ClosedShapeXZ) {
 
 			if (options.contains(START_CAP) && scaleFactors.get(0) > 0) {
-				drawShape(material, new SimplePolygonXZ(reverse(shape.getVertexList())), // invert winding
-						path.get(0), forwardVectors.get(0), upVectors.get(0), scaleFactors.get(0));
+				// triangulate the shape here because there's no method (yet) for mirroring or reversing a ClosedShape
+				for (ClosedShapeXZ triangle : ((ClosedShapeXZ)shape).getTriangulation()) {
+					drawShape(material, triangle,
+							path.get(0), forwardVectors.get(0), upVectors.get(0), scaleFactors.get(0));
+				}
 			}
 
 			if (options.contains(END_CAP) && scaleFactors.get(last) > 0) {
-				drawShape(material, (SimpleClosedShapeXZ)shape,
+				drawShape(material, (ClosedShapeXZ)shape,
 						path.get(last), forwardVectors.get(last), upVectors.get(last), scaleFactors.get(last));
 			}
 
