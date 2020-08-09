@@ -5,6 +5,9 @@ import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.FaceXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -67,12 +70,18 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 	 * Most commonly used to texture a rectangle represented as a
 	 * triangle strip with 2 triangles.
 	 */
-	STRIP_FIT;
+	STRIP_FIT,
+
+	/**
+	 * fits an image onto a flat polygon.
+	 * Vertices must represent the vertex loop of a {@link FaceXYZ}
+	 */
+	FACE_FIT;
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
 
-		List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
+		List<VectorXZ> result = new ArrayList<>(vs.size());
 
 		switch (this) {
 
@@ -188,6 +197,19 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 
 				result.add(new VectorXZ(s, t));
 
+			}
+
+			break;
+
+		case FACE_FIT:
+
+			FaceXYZ face = new FaceXYZ(vs);
+			SimplePolygonXZ faceXZ = face.toFacePlane(face);
+			AxisAlignedRectangleXZ faceBbox = faceXZ.boundingBox();
+
+			for (VectorXZ v : faceXZ.getVertexList()) {
+				VectorXZ vRelative = v.subtract(faceBbox.bottomLeft());
+				result.add(new VectorXZ(vRelative.x / faceBbox.sizeX(), vRelative.z / faceBbox.sizeZ()));
 			}
 
 			break;
