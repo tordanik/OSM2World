@@ -18,6 +18,7 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -728,8 +729,18 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	private static final class Bench extends NoOutlineNodeWorldObject {
 
+		private final AttachmentConnector connector;
+
 		public Bench(MapNode node) {
 			super(node);
+
+			if ( node.getTags().containsKey("level")) {
+				connector = new AttachmentConnector(singletonList("floor" +  parseLevels(node.getTags().getValue("level")).get(0).toString()),
+						node.getPos().xyz(0), this, 0.6, false);
+			} else {
+				connector = null;
+			}
+
 		}
 
 		@Override
@@ -739,6 +750,14 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public void renderTo(Target target) {
+
+			/* determine elevation from connector */
+
+			VectorXYZ position = getBase();
+
+			if (connector != null && connector.isAttached()) {
+				position = position.xz().xyz(connector.getAttachedPos().getY());
+			}
 
 			/* determine the width of the bench */
 
@@ -775,13 +794,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw seat and backrest */
 
-			target.drawBox(material, getBase().addY(0.5),
+			target.drawBox(material, position.addY(0.5),
 					faceVector, 0.05, width, 0.5);
 
 			if (!node.getTags().contains("backrest", "no")) {
 
 				target.drawBox(material,
-						getBase().add(faceVector.mult(-0.23)).addY(0.5),
+						position.add(faceVector.mult(-0.23)).addY(0.5),
 						faceVector, 0.5, width, 0.04);
 
 			}
@@ -790,10 +809,15 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			for (VectorXZ cornerOffset : cornerOffsets) {
 				VectorXZ polePos = node.getPos().add(cornerOffset.mult(0.8));
-				target.drawBox(material, polePos.xyz(getBase().y),
+				target.drawBox(material, polePos.xyz(position.y),
 						faceVector, 0.5, 0.08, 0.08);
 			}
 
+		}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			return singleton(connector);
 		}
 
 	}
