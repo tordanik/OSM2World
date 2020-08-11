@@ -8,6 +8,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.Building.NodeLevelPair;
 import org.osm2world.core.world.modules.building.*;
 import org.osm2world.core.world.modules.building.roof.Roof;
@@ -113,7 +114,11 @@ public class IndoorWall implements Renderable {
 
     }
 
-    public class SegmentNodes {
+	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+		return emptyList();
+	}
+
+	public class SegmentNodes {
 
         private List<MapNode> nodes;
         private LineSegmentXZ segment;
@@ -710,7 +715,6 @@ public class IndoorWall implements Renderable {
 			}
 		}
 	}
-
 
     @Override
     public void renderTo(Target target) {

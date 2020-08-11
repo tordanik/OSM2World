@@ -17,6 +17,7 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
@@ -173,6 +174,15 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 		}
 
 		return shapes;
+	}
+
+	@Override
+	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+		List<AttachmentSurface> surfaces = new ArrayList<>();
+		for (BuildingPart part : parts) {
+			surfaces.addAll(part.getAttachmentSurfaces());
+		}
+		return surfaces;
 	}
 
 	public class NodeLevelPair{

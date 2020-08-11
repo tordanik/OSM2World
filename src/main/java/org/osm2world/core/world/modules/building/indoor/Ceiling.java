@@ -1,19 +1,19 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
@@ -27,13 +27,33 @@ public class Ceiling {
     private final PolygonWithHolesXZ polygon;
     private final double floorHeight;
     private Boolean render;
+    private final int level;
 
-    public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable){
+    private AttachmentSurface  attachmentSurface;
+
+    public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
         this.buildingPart = buildingPart;
         this.material = material;
         this.polygon = polygon;
         this.floorHeight = floorHeightAboveBase;
         this.render = renderable;
+        this.level = level;
+    }
+
+    public Collection<AttachmentSurface> getAttachmentSurfaces() {
+
+        if (polygon == null) {
+            return emptyList();
+        }
+
+        if (attachmentSurface == null) {
+            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + this.level);
+            this.renderSurface(builder, buildingPart.getBuildingPartBaseEle() + floorHeight);
+            attachmentSurface = builder.build();
+        }
+
+        return Collections.singleton(attachmentSurface);
+
     }
 
     public void renderTo(Target target) {
@@ -44,24 +64,36 @@ public class Ceiling {
 
             ShapeXZ shape = polygon.getOuter().makeCounterclockwise();
 
-            VectorXYZ bottom = new VectorXYZ(0,floorEle - 0.2,0);
-            VectorXYZ top = new VectorXYZ(0,floorEle,0);
+            renderSides(target, shape, floorEle);
 
-            List<VectorXYZ> path = new ArrayList<>();
-            path.add(bottom);
-            path.add(top);
-
-            target.drawExtrudedShape(material, shape, path, nCopies(2, Z_UNIT), null, null, null);
-
-            Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
-
-            List<TriangleXYZ> trianglesXYZ = triangles.stream()
-                    .map(t -> t.makeClockwise().xyz(floorEle - 0.2))
-                    .collect(toList());
-
-            target.drawTriangles(material, trianglesXYZ,
-                    triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+            renderSurface(target, floorEle);
 
         }
     }
+
+    private void renderSurface(Target target, double floorEle){
+        Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
+
+        List<TriangleXYZ> trianglesXYZ = triangles.stream()
+                .map(t -> t.makeClockwise().xyz(floorEle - 0.2))
+                .collect(toList());
+
+        target.drawTriangles(material, trianglesXYZ,
+                triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+    }
+
+    private void renderSides(Target target, ShapeXZ shape, double floorEle){
+        VectorXYZ bottom = new VectorXYZ(0,floorEle - 0.2,0);
+        VectorXYZ top = new VectorXYZ(0,floorEle,0);
+
+        List<VectorXYZ> path = new ArrayList<>();
+        path.add(bottom);
+        path.add(top);
+
+        target.drawExtrudedShape(material, shape, path, nCopies(2, Z_UNIT), null, null, null);
+    }
+
+
+
+
 }

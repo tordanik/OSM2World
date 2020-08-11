@@ -3,9 +3,11 @@ package org.osm2world.core.world.modules.building.indoor;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Indoor implements Renderable {
@@ -60,6 +62,29 @@ public class Indoor implements Renderable {
 
 
         }
+
+    }
+
+    public Collection<AttachmentSurface> getAttachmentSurfaces() {
+        List<AttachmentSurface> surfaces = new ArrayList<>();
+
+        for (IndoorRoom room : rooms) {
+            surfaces.addAll(room.getAttachmentSurfaces());
+        }
+
+        for (IndoorArea area : areas) {
+            surfaces.addAll(area.getAttachmentSurfaces());
+        }
+
+        for (Corridor corridor : corridors) {
+            surfaces.addAll(corridor.getAttachmentSurfaces());
+        }
+
+        for (IndoorWall wall : walls) {
+            surfaces.addAll(wall.getAttachmentSurfaces());
+        }
+
+        return surfaces;
 
     }
 

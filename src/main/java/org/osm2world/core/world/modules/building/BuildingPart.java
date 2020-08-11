@@ -14,6 +14,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.building.indoor.Indoor;
@@ -606,28 +607,6 @@ public class BuildingPart implements Renderable {
 
 	}
 
-	public PolygonWithHolesXZ getPolygon() {
-		return polygon;
-	}
-
-	public Roof getRoof() {
-		return roof;
-	}
-
-	public Building getBuilding() { return building; }
-
-	public Configuration getConfig() { return config; }
-
-	public TagSet getTags() { return tags; }
-
-	int getBuildingLevels() { return buildingLevels; }
-
-	public int getMinLevel() { return buildingMinLevel; }
-
-	public Indoor getIndoor(){ return indoor; }
-
-	public double getHeightWithoutRoof() { return heightWithoutRoof; }
-
 	@Override
 	public void renderTo(Target target) {
 
@@ -652,6 +631,36 @@ public class BuildingPart implements Renderable {
 		}
 
 	}
+
+	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+		if (indoor != null) {
+			return indoor.getAttachmentSurfaces();
+		} else {
+			return emptyList();
+		}
+	}
+
+	public PolygonWithHolesXZ getPolygon() {
+		return polygon;
+	}
+
+	public Roof getRoof() {
+		return roof;
+	}
+
+	public Building getBuilding() { return building; }
+
+	public Configuration getConfig() { return config; }
+
+	public TagSet getTags() { return tags; }
+
+	int getBuildingLevels() { return buildingLevels; }
+
+	public int getMinLevel() { return buildingMinLevel; }
+
+	public Indoor getIndoor(){ return indoor; }
+
+	public double getHeightWithoutRoof() { return heightWithoutRoof; }
 
 	/** returns the distance between the bottom and the top of a level */
 	public double getLevelHeight(int level) {

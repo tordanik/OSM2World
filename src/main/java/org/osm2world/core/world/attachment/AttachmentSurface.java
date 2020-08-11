@@ -9,11 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.FaceXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 
@@ -112,7 +108,11 @@ public class AttachmentSurface implements BoundedObject {
 		public void drawFace(Material material, List<VectorXYZ> vs, List<VectorXYZ> normals,
 				List<List<VectorXZ>> texCoordLists) {
 			vs = closeLoop(vs);
-			faces.add(new FaceXYZ(vs));
+			try {
+				faces.add(new FaceXYZ(vs));
+			} catch (InvalidGeometryException e) {
+				// catch collinear faces
+			}
 		}
 
 		@Override
