@@ -734,7 +734,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		public Bench(MapNode node) {
 			super(node);
 
-			if ( node.getTags().containsKey("level")) {
+			if (node.getTags().containsKey("level")) {
 				connector = new AttachmentConnector(singletonList("floor" +  parseLevels(node.getTags().getValue("level")).get(0).toString()),
 						node.getPos().xyz(0), this, 0.6, false);
 			} else {

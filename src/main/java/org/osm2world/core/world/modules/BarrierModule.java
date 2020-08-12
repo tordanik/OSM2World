@@ -13,6 +13,7 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.ST
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -41,6 +42,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -509,6 +511,12 @@ public class BarrierModule extends AbstractModule {
 		protected Material defaultPoleMaterial = Materials.WOOD;
 		protected Material poleMaterial;
 
+		private final AttachmentConnector lowerConnector;
+		private final AttachmentConnector upperConnector;
+
+		private final MapNode wayStartNode;
+		private final MapNode wayEndNode;
+
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence");
 		}
@@ -524,6 +532,26 @@ public class BarrierModule extends AbstractModule {
 			this.barGap = 0.2f;
 			this.bars = 10;
 			this.barOffset = barGap/2;
+
+			this.wayStartNode = segment.getWay().getNodes().get(0);
+			this.wayEndNode = segment.getWay().getNodes().get(segment.getWay().getNodes().size() - 1);
+
+			if (segment.getTags().containsKey("level")) {
+				List<Integer> levels = parseLevels(segment.getTags().getValue("level"));
+				lowerConnector = new AttachmentConnector(singletonList("floor" + levels.get(0)),
+						wayStartNode.getPos().xyz(0), this, 0, false);
+				upperConnector = new AttachmentConnector(singletonList("floor" + levels.get(levels.size() - 1)),
+						wayEndNode.getPos().xyz(0), this, 0, false);
+			} else {
+				upperConnector = null;
+				lowerConnector = null;
+			}
+
+		}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			return asList(lowerConnector, upperConnector);
 		}
 
 		@Override
@@ -534,7 +562,31 @@ public class BarrierModule extends AbstractModule {
 				poleMaterial = defaultPoleMaterial;
 			}
 
-			List<VectorXYZ> baseline = getCenterline();
+			List<VectorXYZ> baseline = new ArrayList<>();
+
+			if (upperConnector != null && upperConnector.isAttached() && lowerConnector != null && lowerConnector.isAttached()) {
+
+				Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
+					PolylineXZ centerlineXZ = new PolylineXZ(segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()));
+					double ratio = centerlineXZ.offsetOf(centerlineXZ.closestPoint(point))/centerlineXZ.getLength();
+					double ele = GeometryUtil.interpolateBetween(new VectorXZ(0, lowerConnector.getAttachedPos().getY()),
+							new VectorXZ(1, upperConnector.getAttachedPos().getY()),
+							ratio).getZ();
+
+					return point.xyz(ele);
+				};
+
+				// prevents issues with barriers that cross themselves
+
+				List<VectorXYZ> tempBaseline = getCenterline().stream().map(v -> baseEleFunction.apply(v.xz())).collect(toList());
+
+				baseline.add(tempBaseline.get(0));
+				baseline.add(tempBaseline.get(tempBaseline.size() - 1));
+
+			} else {
+				 baseline = getCenterline();
+			}
+
 
 			/* render fence */
 			for (int i = 0; i < bars; i++) {
@@ -559,7 +611,7 @@ public class BarrierModule extends AbstractModule {
 			/* render poles */
 
 			List<VectorXYZ> polePositions = equallyDistributePointsAlong(
-					2f, false, getCenterline());
+					2f, false, baseline);
 
 			for (VectorXYZ base : polePositions) {
 
