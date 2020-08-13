@@ -46,11 +46,15 @@ public class IndoorRoom implements Renderable {
 
         Collection<AttachmentSurface> floorSurfaces = floor.getAttachmentSurfaces();
         Collection<AttachmentSurface> ceilingSurfaces = ceiling.getAttachmentSurfaces();
+        List<AttachmentSurface> wallSurfaces = new ArrayList<>();
+
+        walls.forEach(w -> wallSurfaces.addAll(w.getAttachmentSurfaces()));
 
         List<AttachmentSurface> surfaces = new ArrayList<>();
 
         surfaces.addAll(floorSurfaces);
         surfaces.addAll(ceilingSurfaces);
+        surfaces.addAll(wallSurfaces);
 
         return surfaces;
 

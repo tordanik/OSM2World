@@ -43,6 +43,8 @@ public class IndoorWall implements Renderable {
 
     private final IndoorObjectData data;
 
+    private List<AttachmentSurface> attachmentSurfacesList;
+
     //TODO account for height of wall
     public IndoorWall(IndoorObjectData objectData){
 
@@ -115,7 +117,13 @@ public class IndoorWall implements Renderable {
     }
 
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-		return emptyList();
+
+		if (attachmentSurfacesList == null) {
+			attachmentSurfacesList = new ArrayList<>();
+			this.renderTo(null, false, true);
+		}
+
+		return attachmentSurfacesList;
 	}
 
 	public class SegmentNodes {
@@ -716,24 +724,32 @@ public class IndoorWall implements Renderable {
 		}
 	}
 
-    @Override
-    public void renderTo(Target target) {
+	private void renderTo(Target target, Boolean renderSides, Boolean attachmentSurfaces) {
 
-        double baseEle = data.getBuildingPart().getBuildingPartBaseEle();
+		double baseEle = data.getBuildingPart().getBuildingPartBaseEle();
 
-        Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
+		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
 
-        for (Integer level : data.getRenderableLevels()) {
+		for (Integer level : data.getRenderableLevels()) {
 
-        	double ceilingHeight = baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level);
+			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + level);
+			boolean somethingRendered = false;
 
-            for (SegmentNodes wallSegData : wallSegmentNodes) {
+			if (attachmentSurfaces) {
+				target = builder;
+			}
 
-                SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level);
+			double ceilingHeight = baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level);
 
-				if (!allRenderedWallSegments.contains(pair)) {
+			for (SegmentNodes wallSegData : wallSegmentNodes) {
 
-                    allRenderedWallSegments.add(pair);
+				SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level);
+
+				if (!allRenderedWallSegments.contains(pair) || attachmentSurfaces) {
+
+					if (!attachmentSurfaces) {
+						allRenderedWallSegments.add(pair);
+					}
 
 					List<VectorXZ> endPoints = getNewEndPoints(wallSegData, level, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level), ceilingHeight);
 
@@ -744,22 +760,22 @@ public class IndoorWall implements Renderable {
 					List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(bottomPointsXZ,
 							baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-                    List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight);
+					List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight);
 
-                    WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
+					WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
 
-                    /* back wall surface */
+					/* back wall surface */
 
-                    List<VectorXZ> backBottomPointsXZ = new ArrayList<>(asList(endPoints.get(2), endPoints.get(1)));
+					List<VectorXZ> backBottomPointsXZ = new ArrayList<>(asList(endPoints.get(2), endPoints.get(1)));
 
 					Collections.reverse(backBottomPointsXZ);
 
 					List<VectorXYZ> backBottomPoints = new ArrayList<>(listXYZ(backBottomPointsXZ,
 							baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-                    List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight);
+					List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight);
 
-                    WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
+					WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
 
 
 					/* generate wall edges */
@@ -767,100 +783,117 @@ public class IndoorWall implements Renderable {
 					WallSurface rightSurface = null;
 					WallSurface leftSurface = null;
 
-					// TODO avoid needing a try
+					if (renderSides) {
 
-					try {
+						// TODO avoid needing a try
 
-						List<VectorXZ> bottomVertexLoop = new ArrayList<>(endPoints);
-						bottomVertexLoop.add(endPoints.get(0));
+						try {
 
-						SimplePolygonXZ bottomPolygonXZ = new SimplePolygonXZ(bottomVertexLoop);
-						Collection<TriangleXYZ> bottomTriangles = TriangulationUtil.
-								triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
-								.stream()
-								.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)))
-								.collect(toList());
+							List<VectorXZ> bottomVertexLoop = new ArrayList<>(endPoints);
+							bottomVertexLoop.add(endPoints.get(0));
 
-						Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
-								triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
-								.stream()
-								.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.01))
-								.collect(toList());
+							SimplePolygonXZ bottomPolygonXZ = new SimplePolygonXZ(bottomVertexLoop);
+							Collection<TriangleXYZ> bottomTriangles = TriangulationUtil.
+									triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
+									.stream()
+									.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)))
+									.collect(toList());
 
-						target.drawTriangles(material, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
-						target.drawTriangles(material, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
+							Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
+									triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
+									.stream()
+									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.01))
+									.collect(toList());
+
+							target.drawTriangles(material, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(material, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
 
 
-						rightSurface = new WallSurface(material,
-								asList(bottomPoints.get(1), backBottomPoints.get(0)),
-								asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
+							rightSurface = new WallSurface(material,
+									asList(bottomPoints.get(1), backBottomPoints.get(0)),
+									asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
 
-						leftSurface = new WallSurface(material,
-								asList(backBottomPoints.get(1), bottomPoints.get(0)),
-								asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
+							leftSurface = new WallSurface(material,
+									asList(backBottomPoints.get(1), bottomPoints.get(0)),
+									asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
 
-					} catch (InvalidGeometryException e) {}
+						} catch (InvalidGeometryException e) {}
 
-                    /* add windows that aren't on vertices */
+					}
 
-					LineSegmentXZ frontLineSegment =  new LineSegmentXZ(endPoints.get(3), endPoints.get(0));
-					LineSegmentXZ backLineSegment =  new LineSegmentXZ(endPoints.get(1), endPoints.get(2));
+					/* add windows that aren't on vertices */
 
-                    for (MapNode node : wallSegData.getNodes()) {
+					if (renderSides) {
 
-						Set<Integer> objectLevels = new HashSet<>();
-						objectLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
-						objectLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
+						LineSegmentXZ frontLineSegment = new LineSegmentXZ(endPoints.get(3), endPoints.get(0));
+						LineSegmentXZ backLineSegment = new LineSegmentXZ(endPoints.get(1), endPoints.get(2));
 
-						objectLevels = objectLevels.stream()
-								.map(l -> data.getBuildingPart().levelConversion(l))
-								.collect(Collectors.toSet());
+						for (MapNode node : wallSegData.getNodes()) {
 
-						VectorXZ posFront = new VectorXZ(frontLineSegment.offsetOf(frontLineSegment.closestPoint(node.getPos())), 0);
-						VectorXZ posback = new VectorXZ(backLineSegment.offsetOf(backLineSegment.closestPoint(node.getPos())), 0);
+							Set<Integer> objectLevels = new HashSet<>();
+							objectLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
+							objectLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
-						if (objectLevels.contains(level)) {
+							objectLevels = objectLevels.stream()
+									.map(l -> data.getBuildingPart().levelConversion(l))
+									.collect(Collectors.toSet());
 
-							if (node.getTags().containsKey("window")
-                                && !node.getTags().contains("window", "no")) {
+							VectorXZ posFront = new VectorXZ(frontLineSegment.offsetOf(frontLineSegment.closestPoint(node.getPos())), 0);
+							VectorXZ posback = new VectorXZ(backLineSegment.offsetOf(backLineSegment.closestPoint(node.getPos())), 0);
 
-								boolean transparent = data.getBuildingPart().getBuilding().queryWindowSegments(node, level);
+							if (objectLevels.contains(level)) {
 
-                                TagSet windowTags = inheritTags(node.getTags(), data.getTags());
-                                WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
+								if (node.getTags().containsKey("window")
+										&& !node.getTags().contains("window", "no")) {
 
-                                GeometryWindow windowFront = new GeometryWindow(new VectorXZ(posFront.x, params.breast), params, transparent);
-                                GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posback.x, params.breast), params, transparent);
+									boolean transparent = data.getBuildingPart().getBuilding().queryWindowSegments(node, level);
 
-                                mainSurface.addElementIfSpaceFree(windowFront);
-                                backSurface.addElementIfSpaceFree(windowBack);
+									TagSet windowTags = inheritTags(node.getTags(), data.getTags());
+									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
 
-                            } else if (node.getTags().containsKey("door")) {
+									GeometryWindow windowFront = new GeometryWindow(new VectorXZ(posFront.x, params.breast), params, transparent);
+									GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posback.x, params.breast), params, transparent);
 
-								DoorParameters params = DoorParameters.fromTags(node.getTags(), data.getBuildingPart().getTags());
+									mainSurface.addElementIfSpaceFree(windowFront);
+									backSurface.addElementIfSpaceFree(windowBack);
 
-								mainSurface.addElementIfSpaceFree(new Door(posFront, params));
-								backSurface.addElementIfSpaceFree(new Door(posback, params));
+								} else if (node.getTags().containsKey("door")) {
 
+									DoorParameters params = DoorParameters.fromTags(node.getTags(), data.getBuildingPart().getTags());
+
+									mainSurface.addElementIfSpaceFree(new Door(posFront, params));
+									backSurface.addElementIfSpaceFree(new Door(posback, params));
+
+								}
 							}
-                        }
-                    }
+						}
+					}
 
-                    /* draw wall */
+					/* draw wall */
 
-                    if (mainSurface != null && backSurface != null) {
-                        mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
-                        backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
-                        if (leftSurface != null && rightSurface != null) {
+					if (mainSurface != null && backSurface != null) {
+						somethingRendered = true;
+						mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+						backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+						if (leftSurface != null && rightSurface != null) {
 							rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
 							leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
 						}
-                    }
-                }
+					}
+				}
 
-            }
-        }
+			}
 
+			if (attachmentSurfaces && somethingRendered) {
+				attachmentSurfacesList.add(builder.build());
+			}
+
+		}
+	}
+
+    @Override
+    public void renderTo(Target target) {
+    	renderTo(target, true, false);
     }
 
 }
