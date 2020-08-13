@@ -551,7 +551,11 @@ public class BarrierModule extends AbstractModule {
 
 		@Override
 		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			return asList(lowerConnector, upperConnector);
+			if (lowerConnector == null || upperConnector == null) {
+				return emptyList();
+			} else {
+				return asList(lowerConnector, upperConnector);
+			}
 		}
 
 		@Override

@@ -817,7 +817,11 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			return singleton(connector);
+			if (connector == null) {
+				return emptyList();
+			} else {
+				return singleton(connector);
+			}
 		}
 
 	}

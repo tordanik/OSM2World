@@ -67,7 +67,7 @@ public class AttachmentConnector {
 		this.attachedSurfaceNormal = attachedSurfaceNormal;
 
 		if (attachedPos.xz().distanceTo(originalPos.xz()) > maxDistanceXZ + 0.001) {
-			throw new IllegalArgumentException("this connector must not be moved horizontally");
+			throw new IllegalArgumentException("this connector must not be moved horizontally more than " + this.maxDistanceXZ);
 		}
 
 	}

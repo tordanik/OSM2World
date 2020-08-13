@@ -327,48 +327,49 @@ public class ConversionFacade {
 
 			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
 
-				if (connector != null) {
+				Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
+						bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ));
 
-					Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
-							bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ));
+				Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
+						.filter(s -> s.getTypes().stream().anyMatch(connector.compatibleSurfaceTypes::contains))
+						.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
 
-					Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
-							.filter(s -> s.getTypes().stream().anyMatch(connector.compatibleSurfaceTypes::contains))
-							.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+				if (closestSurface.isPresent()) {
 
-					if (closestSurface.isPresent()) {
+					double ele = closestSurface.get().getBaseEleAt(connector.originalPos.xz()) + connector.preferredHeight;
+					VectorXYZ posAtEle = connector.originalPos.y(ele);
 
-						double ele = closestSurface.get().getBaseEleAt(connector.originalPos.xz()) + connector.preferredHeight;
-						VectorXYZ posAtEle = connector.originalPos.y(ele);
+					for (boolean requirePreferredHeight : asList(true, false)) {
 
-						for (boolean requirePreferredHeight : asList(true, false)) {
+						Predicate<FaceXYZ> matchesPreferredHeight = (FaceXYZ f) -> {
+							if (!requirePreferredHeight) {
+								return true;
+							} else {
+								VectorXYZ closestPoint = f.closestPoint(posAtEle);
+								double height = closestPoint.y - closestSurface.get().getBaseEleAt(closestPoint.xz());
+								return abs(height - connector.preferredHeight) < 0.001;
+							}
+						};
 
-							Predicate<FaceXYZ> matchesPreferredHeight = (FaceXYZ f) -> {
-								if (!requirePreferredHeight) {
-									return true;
-								} else {
-									VectorXYZ closestPoint = f.closestPoint(posAtEle);
-									double height = closestPoint.y - closestSurface.get().getBaseEleAt(closestPoint.xz());
-									return abs(height - connector.preferredHeight) < 0.001;
-								}
-							};
+						Optional<FaceXYZ> closestFace = closestSurface.get().getFaces().stream()
+								.filter(matchesPreferredHeight)
+								.min(comparingDouble(f -> f.distanceTo(posAtEle)));
 
-							Optional<FaceXYZ> closestFace = closestSurface.get().getFaces().stream()
-									.filter(matchesPreferredHeight)
-									.min(comparingDouble(f -> f.distanceTo(posAtEle)));
+						if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height
 
-							if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height
+						VectorXYZ closestPoint = closestFace.get().closestPoint(posAtEle);
 
-							VectorXYZ closestPoint = closestFace.get().closestPoint(posAtEle);
-
-							connector.attach(closestSurface.get(), closestPoint, closestFace.get().getNormal());
-							break; // attached, don't try again
-
+						if (closestPoint.xz().distanceTo(connector.originalPos.xz()) > connector.maxDistanceXZ + 0.001) {
+							continue;
 						}
+
+						connector.attach(closestSurface.get(), closestPoint, closestFace.get().getNormal());
+						break; // attached, don't try again
 
 					}
 
 				}
+
 			}
 
 		}
