@@ -506,7 +506,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			minHeight = height / 5;
 			trueHeight = height - minHeight;
 
-			if (node.getTags().contains("support", "wall")) {
+			if (node.getTags().contains("support", "wall") && node.getTags().containsKey("level")) {
+				connector = new AttachmentConnector(asList("wall" + parseLevels(node.getTags().getValue("level")).get(0)),
+						node.getPos().xyz(0), this, minHeight + trueHeight / 2, true);
+			} else if (node.getTags().contains("support", "wall")) {
 				connector = new AttachmentConnector(asList("wall"),
 						node.getPos().xyz(0), this, minHeight + trueHeight / 2, true);
 			} else {
