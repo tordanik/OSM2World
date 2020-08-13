@@ -121,6 +121,8 @@ public class BarrierModule extends AbstractModule {
 			height = parseHeight(waySegment.getTags(), defaultHeight);
 			width = parseWidth(waySegment.getTags(), defaultWidth);
 
+			createAttchmentConnectors();
+
 		}
 
 		@Override
@@ -511,12 +513,6 @@ public class BarrierModule extends AbstractModule {
 		protected Material defaultPoleMaterial = Materials.WOOD;
 		protected Material poleMaterial;
 
-		private final AttachmentConnector lowerConnector;
-		private final AttachmentConnector upperConnector;
-
-		private final MapNode wayStartNode;
-		private final MapNode wayEndNode;
-
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence");
 		}
@@ -533,29 +529,6 @@ public class BarrierModule extends AbstractModule {
 			this.bars = 10;
 			this.barOffset = barGap/2;
 
-			this.wayStartNode = segment.getWay().getNodes().get(0);
-			this.wayEndNode = segment.getWay().getNodes().get(segment.getWay().getNodes().size() - 1);
-
-			if (segment.getTags().containsKey("level")) {
-				List<Integer> levels = parseLevels(segment.getTags().getValue("level"));
-				lowerConnector = new AttachmentConnector(singletonList("floor" + levels.get(0)),
-						wayStartNode.getPos().xyz(0), this, 0, false);
-				upperConnector = new AttachmentConnector(singletonList("floor" + levels.get(levels.size() - 1)),
-						wayEndNode.getPos().xyz(0), this, 0, false);
-			} else {
-				upperConnector = null;
-				lowerConnector = null;
-			}
-
-		}
-
-		@Override
-		public Iterable<AttachmentConnector> getAttachmentConnectors() {
-			if (lowerConnector == null || upperConnector == null) {
-				return emptyList();
-			} else {
-				return asList(lowerConnector, upperConnector);
-			}
 		}
 
 		@Override
@@ -566,30 +539,10 @@ public class BarrierModule extends AbstractModule {
 				poleMaterial = defaultPoleMaterial;
 			}
 
-			List<VectorXYZ> baseline = new ArrayList<>();
+			// prevents issues with barriers that cross themselves
 
-			if (upperConnector != null && upperConnector.isAttached() && lowerConnector != null && lowerConnector.isAttached()) {
-
-				Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
-					PolylineXZ centerlineXZ = new PolylineXZ(segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()));
-					double ratio = centerlineXZ.offsetOf(centerlineXZ.closestPoint(point))/centerlineXZ.getLength();
-					double ele = GeometryUtil.interpolateBetween(new VectorXZ(0, lowerConnector.getAttachedPos().getY()),
-							new VectorXZ(1, upperConnector.getAttachedPos().getY()),
-							ratio).getZ();
-
-					return point.xyz(ele);
-				};
-
-				// prevents issues with barriers that cross themselves
-
-				List<VectorXYZ> tempBaseline = getCenterline().stream().map(v -> baseEleFunction.apply(v.xz())).collect(toList());
-
-				baseline.add(tempBaseline.get(0));
-				baseline.add(tempBaseline.get(tempBaseline.size() - 1));
-
-			} else {
-				 baseline = getCenterline();
-			}
+			List<VectorXYZ> centerline = getCenterline();
+			List<VectorXYZ> baseline = new ArrayList<>(asList(centerline.get(0), centerline.get(centerline.size() - 1)));
 
 
 			/* render fence */

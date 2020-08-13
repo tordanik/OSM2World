@@ -44,6 +44,7 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -722,6 +723,8 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (steps) {
 				this.laneLayout = null;
 				this.width = parseWidth(tags, 1.0f);
+
+				createAttchmentConnectors();
 			} else {
 				this.laneLayout = buildBasicLaneLayout();
 				this.width = calculateWidth();

@@ -1,17 +1,23 @@
 package org.osm2world.core.world.network;
 
 import static java.lang.Double.*;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.util.ValueParseUtil.parseIncline;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -32,6 +38,8 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
@@ -54,6 +62,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	private VectorXZ endCutRight = null;
 
 	protected EleConnectorGroup connectors;
+
+	private List<AttachmentConnector> attachmentConnectorList = new ArrayList<>();
 
 	private List<VectorXZ> centerlineXZ = null;
 
@@ -470,7 +480,23 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 	 * Only available after elevation calculation.
 	 */
 	public List<VectorXYZ> getCenterline() {
-		return connectors.getPosXYZ(getCenterlineXZ());
+
+		if (attachmentConnectorList.size() == 2 && attachmentConnectorList.stream().allMatch(c -> c.isAttached())) {
+
+			Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
+				PolylineXZ centerlineXZ = new PolylineXZ(segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()));
+				double ratio = centerlineXZ.offsetOf(centerlineXZ.closestPoint(point))/centerlineXZ.getLength();
+				double ele = GeometryUtil.interpolateBetween(new VectorXZ(0, attachmentConnectorList.get(0).getAttachedPos().getY()),
+						new VectorXZ(1, attachmentConnectorList.get(1).getAttachedPos().getY()),
+						ratio).getZ();
+
+				return point.xyz(ele);
+			};
+
+			return connectors.getPosXYZ(getCenterlineXZ()).stream().map(v -> baseEleFunction.apply(v.xz())).collect(toList());
+		} else {
+			return connectors.getPosXYZ(getCenterlineXZ());
+		}
 	}
 
 	/**
@@ -576,6 +602,34 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			return right;
 		} else {
 			return interpolateBetween(left, right, relativePosFromLeft);
+		}
+
+	}
+
+	@Override
+	public Iterable<AttachmentConnector> getAttachmentConnectors() {
+		return attachmentConnectorList;
+	}
+
+	public void addAttachmentConnectors(Collection<AttachmentConnector> a){
+		attachmentConnectorList.addAll(a);
+	}
+
+	public void createAttchmentConnectors(){
+
+		if (segment.getTags().containsKey("level")) {
+
+			MapNode wayStartNode = segment.getWay().getNodes().get(0);
+			MapNode wayEndNode = segment.getWay().getNodes().get(segment.getWay().getNodes().size() - 1);
+
+			List<Integer> levels = parseLevels(segment.getTags().getValue("level"));
+
+			AttachmentConnector lowerConnector = new AttachmentConnector(singletonList("floor" + levels.get(0)),
+					wayStartNode.getPos().xyz(0), this, 0, false);
+			AttachmentConnector upperConnector = new AttachmentConnector(singletonList("floor" + levels.get(levels.size() - 1)),
+					wayEndNode.getPos().xyz(0), this, 0, false);
+
+			addAttachmentConnectors(asList(lowerConnector, upperConnector));
 		}
 
 	}
