@@ -823,8 +823,6 @@ public class IndoorWall implements Renderable {
 
 					/* add windows that aren't on vertices */
 
-					if (renderSides) {
-
 						LineSegmentXZ frontLineSegment = new LineSegmentXZ(endPoints.get(3), endPoints.get(0));
 						LineSegmentXZ backLineSegment = new LineSegmentXZ(endPoints.get(1), endPoints.get(2));
 
@@ -867,17 +865,16 @@ public class IndoorWall implements Renderable {
 								}
 							}
 						}
-					}
 
 					/* draw wall */
 
 					if (mainSurface != null && backSurface != null) {
 						somethingRendered = true;
-						mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
-						backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+						mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, attachmentSurfaces);
+						backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, attachmentSurfaces);
 						if (leftSurface != null && rightSurface != null) {
-							rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
-							leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0);
+							rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, false);
+							leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, false);
 						}
 					}
 				}

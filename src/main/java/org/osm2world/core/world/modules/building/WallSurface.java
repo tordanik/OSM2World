@@ -154,12 +154,14 @@ public class WallSurface {
 	 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
 	 */
 	public void renderTo(Target target, VectorXZ textureOrigin,
-			boolean applyWindowTexture, double windowHeight) {
+			boolean applyWindowTexture, double windowHeight, boolean attachmentSurface) {
 
 		/* render the elements on the wall */
 
-		for (WallElement e : elements) {
-			e.renderTo(target, this);
+		if (!attachmentSurface) {
+			for (WallElement e : elements) {
+				e.renderTo(target, this);
+			}
 		}
 
 		/* draw insets around the elements */
