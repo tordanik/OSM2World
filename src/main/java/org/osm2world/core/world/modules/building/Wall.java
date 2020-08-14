@@ -240,6 +240,8 @@ public class Wall implements Renderable {
 			levels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
 			levels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
+			levels = levels.stream().map(l -> buildingPart.levelConversion(l)).collect(toSet());
+
 			for (int level : levels) {
 
 				VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
