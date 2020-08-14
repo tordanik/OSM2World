@@ -45,6 +45,8 @@ public class IndoorWall implements Renderable {
 
     private List<AttachmentSurface> attachmentSurfacesList;
 
+    private static final Material defaultInnerMaterial = Materials.CONCRETE;
+
     //TODO account for height of wall
     public IndoorWall(IndoorObjectData objectData){
 
@@ -710,12 +712,12 @@ public class IndoorWall implements Renderable {
 					path.add(bottom);
 					path.add(top);
 
-					target.drawExtrudedShape(Materials.BRICK, polygon, path, nCopies(2, Z_UNIT), null, null, null);
+					target.drawExtrudedShape(defaultInnerMaterial, polygon, path, nCopies(2, Z_UNIT), null, null, null);
 
-					target.drawTriangles(Materials.BRICK, trianglesXYZBottom,
+					target.drawTriangles(defaultInnerMaterial, trianglesXYZBottom,
 							triangleTexCoordLists(trianglesXYZBottom, Materials.BRICK, GLOBAL_X_Z));
 
-					target.drawTriangles(Materials.BRICK, trianglesXYZTop,
+					target.drawTriangles(defaultInnerMaterial, trianglesXYZTop,
 							triangleTexCoordLists(trianglesXYZTop, Materials.BRICK, GLOBAL_X_Z));
 
 
@@ -805,8 +807,8 @@ public class IndoorWall implements Renderable {
 									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.01))
 									.collect(toList());
 
-							target.drawTriangles(material, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
-							target.drawTriangles(material, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(defaultInnerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(defaultInnerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
 
 
 							rightSurface = new WallSurface(material,
