@@ -441,32 +441,32 @@ public class IndoorWall implements Renderable {
 
 		for (TagLineSegPair pairData : allTagLinePairs) {
 
-			if (((pairData.getTagSet().contains("indoor", "wall") || pairData.getTagSet().contains("indoor", "room"))
-					&& parseLevels(pairData.getTagSet().getValue("level")).stream().map(l -> data.getBuildingPart().levelConversion(l)).collect(toList()).contains(level))) {
+			if ((pairData.getTagSet().contains("indoor", "wall") || pairData.getTagSet().contains("indoor", "room")) && pairData.getTagSet().containsKey("level")) {
+				if (parseLevels(pairData.getTagSet().getValue("level")).stream().map(l -> data.getBuildingPart().levelConversion(l)).collect(toList()).contains(level)) {
 
-				boolean duplicate = false;
+					boolean duplicate = false;
 
-				for (int i = 0; i < tempPairs.size(); i++) {
+					for (int i = 0; i < tempPairs.size(); i++) {
 
-					TagLineSegPair p = tempPairs.get(i);
+						TagLineSegPair p = tempPairs.get(i);
 
-					if ((p.getLineSegment().equals(pairData.getLineSegment()) || p.getLineSegment().equals(pairData.getLineSegment().reverse()))) {
+						if ((p.getLineSegment().equals(pairData.getLineSegment()) || p.getLineSegment().equals(pairData.getLineSegment().reverse()))) {
 
-						duplicate = true;
+							duplicate = true;
 
-						TagLineSegPair l = tempPairs.remove(i);
-						l.addTags(pairData.getTags());
-						tempPairs.add(l);
+							TagLineSegPair l = tempPairs.remove(i);
+							l.addTags(pairData.getTags());
+							tempPairs.add(l);
 
-						break;
+							break;
+						}
+					}
+
+					if (!duplicate) {
+						tempPairs.add(pairData);
 					}
 				}
-
-				if (!duplicate) {
-					tempPairs.add(pairData);
-				}
 			}
-
 		}
 
 		allTagLinePairs = tempPairs;
