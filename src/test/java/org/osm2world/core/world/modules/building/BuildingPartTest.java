@@ -132,4 +132,40 @@ public class BuildingPartTest {
 
 	}
 
+	@Test
+	public void testLevelConversion(){
+
+		TestMapDataGenerator generator = new TestMapDataGenerator();
+
+		List<MapNode> nodes = new ArrayList<>(asList(
+				generator.createNode(-10, -5),
+				generator.createNode(  0, -5),
+				generator.createNode(+10, -5),
+				generator.createNode(+10, +5),
+				generator.createNode(-10, +5)));
+
+		nodes.add(nodes.get(0));
+
+		MapArea buildingPartArea = generator.createWayArea(nodes, TagSet.of("building", "yes", "building:levels", "3",
+				"building:levels:underground", "1",
+				"min_level", "7",
+				"non_existent_levels", "8;11"));
+
+		Building building = new Building(buildingPartArea, new BaseConfiguration());
+		BuildingPart buildingPart = building.getParts().get(0);
+
+		/* test normal data */
+
+		assertEquals(-1, buildingPart.levelConversion(7));
+		assertEquals(0, buildingPart.levelConversion(9));
+		assertEquals(1, buildingPart.levelConversion(10));
+		assertEquals(2, buildingPart.levelConversion(12));
+
+		assertEquals(7, buildingPart.levelReversion(buildingPart.levelConversion(7)));
+		assertEquals(9, buildingPart.levelReversion(buildingPart.levelConversion(9)));
+		assertEquals(10, buildingPart.levelReversion(buildingPart.levelConversion(10)));
+		assertEquals(12, buildingPart.levelReversion(buildingPart.levelConversion(12)));
+
+	}
+
 }

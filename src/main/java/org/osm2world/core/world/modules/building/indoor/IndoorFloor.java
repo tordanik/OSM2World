@@ -46,7 +46,7 @@ public class IndoorFloor {
         }
 
         if (attachmentSurface == null) {
-            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + this.level);
+            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + buildingPart.levelReversion(this.level));
             boolean tempRender = this.render;
             this.render = true;
             this.renderTo(builder);

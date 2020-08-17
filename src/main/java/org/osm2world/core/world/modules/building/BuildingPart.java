@@ -761,6 +761,27 @@ public class BuildingPart implements Renderable {
 
 	}
 
+	public int levelReversion(Integer level){
+
+		if (tags.containsKey("min_level")) {
+
+			int temp = level - minLevelWithUnderground;
+
+			temp += min_level;
+
+			for (Integer noLevel : non_existent_levels) {
+				if (level > levelConversion(noLevel)) {
+					temp += 1;
+				}
+			}
+
+			return temp;
+		}
+
+		return level;
+
+	}
+
 	private final class Level{
 
 		private final String name;

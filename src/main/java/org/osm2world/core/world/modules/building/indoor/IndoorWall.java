@@ -734,7 +734,7 @@ public class IndoorWall implements Renderable {
 
 		for (Integer level : data.getRenderableLevels()) {
 
-			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + level);
+			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + data.getBuildingPart().levelReversion(level));
 			boolean somethingRendered = false;
 
 			if (attachmentSurfaces) {
