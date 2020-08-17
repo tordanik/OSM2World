@@ -47,7 +47,7 @@ public class Ceiling {
         }
 
         if (attachmentSurface == null) {
-            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + this.level);
+            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("ceiling" + this.level);
             this.renderSurface(builder, buildingPart.getBuildingPartBaseEle() + floorHeight);
             attachmentSurface = builder.build();
         }
