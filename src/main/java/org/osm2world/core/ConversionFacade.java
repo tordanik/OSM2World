@@ -74,6 +74,7 @@ import com.google.common.collect.Streams;
 
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import org.osm2world.core.world.modules.building.indoor.IndoorModule;
 
 /**
  * provides an easy way to call all steps of the conversion process
@@ -136,7 +137,8 @@ public class ConversionFacade {
 				new BridgeModule(),
 				new TunnelModule(),
 				new SurfaceAreaModule(),
-				new InvisibleModule()
+				new InvisibleModule(),
+				new IndoorModule()
 		);
 
 	}
