@@ -48,7 +48,9 @@ public class AttachmentConnector {
 		this.compatibleSurfaceTypes = compatibleSurfaceTypes;
 		this.originalPos = originalPos;
 		this.object = object;
-		this.maxDistanceXZ = changeXZ ? DEFAULT_MAX_DISTANCE_XZ : 0;
+
+		// allow for small horizontal movement in case of slight position errors
+		this.maxDistanceXZ = changeXZ ? DEFAULT_MAX_DISTANCE_XZ : 0.01;
 		this.preferredHeight = preferredHeight;
 	}
 

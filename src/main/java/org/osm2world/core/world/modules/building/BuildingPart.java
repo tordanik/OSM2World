@@ -624,6 +624,9 @@ public class BuildingPart implements Renderable {
 			roof.renderTo(target, building.getGroundLevelEle() + heightWithoutRoof);
 		}
 
+
+		// TODO don't render floors inside building
+
 		floors.forEach(f -> f.renderTo(target));
 
 		if (indoor != null){

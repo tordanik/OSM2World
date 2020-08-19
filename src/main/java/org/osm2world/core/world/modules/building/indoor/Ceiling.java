@@ -60,7 +60,7 @@ public class Ceiling {
 
         if (render && polygon != null) {
 
-            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight;
+            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight - 0.0001;
 
             ShapeXZ shape = polygon.getOuter().makeCounterclockwise();
 

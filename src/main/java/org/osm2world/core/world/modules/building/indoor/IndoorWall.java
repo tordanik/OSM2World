@@ -30,7 +30,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inher
 
 public class IndoorWall implements Renderable {
 
-	private final double straightnessTolerance = 0.05;
+	private final double straightnessTolerance = 0.001;
 	private final double wallThickness = 0.1;
 
     private final Float wallHeight;
@@ -55,7 +55,14 @@ public class IndoorWall implements Renderable {
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 		this.floorHeight = data.getBuildingPart() == null ? 0 : (float) data.getLevelHeightAboveBase();
 
-		nodes = ((MapWaySegment) data.getMapElement()).getWay().getNodes();
+		if (data.getMapElement() instanceof MapWaySegment) {
+			nodes = waySegmentNodes((MapWaySegment) data.getMapElement());
+		} else if (data.getMapElement() instanceof MapArea) {
+			// for tagging area=yes, indoor=wall
+			nodes = areaNodes((MapArea) data.getMapElement());
+		} else {
+			nodes = new ArrayList<>();
+		}
 
         splitIntoWalls();
 
@@ -68,11 +75,22 @@ public class IndoorWall implements Renderable {
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
         if (element instanceof MapArea) {
-            nodes = ((MapArea) element).getBoundaryNodes();
-            splitIntoWalls();
-        }
+			nodes = areaNodes((MapArea) element);
+		} else {
+        	nodes = new ArrayList<>();
+		}
+
+        splitIntoWalls();
 
     }
+
+    private List<MapNode> areaNodes(MapArea area){
+    	return area.getBoundaryNodes();
+	}
+
+	private List<MapNode> waySegmentNodes(MapWaySegment segment){
+		return segment.getWay().getNodes();
+	}
 
 	public List<SegmentNodes> getWallSegmentNodes() { return wallSegmentNodes; }
 
@@ -99,23 +117,26 @@ public class IndoorWall implements Renderable {
 
     private void splitIntoWalls(){
 
-        MapNode prevNode = nodes.get(0);
-        List<MapNode> intermediateNodes = new ArrayList<>();
+    	if (!nodes.isEmpty()) {
 
-		for (int i = 1; i < nodes.size(); i++) {
+			MapNode prevNode = nodes.get(0);
+			List<MapNode> intermediateNodes = new ArrayList<>();
 
-            MapNode node = nodes.get(i);
+			for (int i = 1; i < nodes.size(); i++) {
 
-            if (isCornerOrEnd(i)) {
-                wallSegmentNodes.add(new SegmentNodes(intermediateNodes, new LineSegmentXZ(prevNode.getPos(), node.getPos()), prevNode, node));
-                prevNode = node;
-                intermediateNodes = new ArrayList<>();
-            } else {
-                intermediateNodes.add(node);
-            }
+				MapNode node = nodes.get(i);
 
-        }
+				if (isCornerOrEnd(i)) {
+					wallSegmentNodes.add(new SegmentNodes(intermediateNodes, new LineSegmentXZ(prevNode.getPos(), node.getPos()), prevNode, node));
+					prevNode = node;
+					intermediateNodes = new ArrayList<>();
+				} else {
+					intermediateNodes.add(node);
+				}
 
+			}
+
+    	}
     }
 
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
@@ -176,15 +197,19 @@ public class IndoorWall implements Renderable {
 
         LineSegmentXZ segment;
         Integer level;
+        MapNode startNode;
+        MapNode endNode;
 
-        SegmentLevelPair(LineSegmentXZ segment, Integer level){
+        SegmentLevelPair(LineSegmentXZ segment, Integer level, MapNode startNode, MapNode endNode){
             this.segment = segment;
             this.level = level;
+            this.startNode = startNode;
+            this.endNode = endNode;
         }
 
         private Boolean roughlyEquals(LineSegmentXZ seg){
-            return (seg.p1.subtract(this.segment.p1).lengthSquared() + seg.p2.subtract(this.segment.p2).lengthSquared() < 0.1)
-                    || (seg.p2.subtract(this.segment.p1).lengthSquared() + seg.p1.subtract(this.segment.p2).lengthSquared() < 0.1);
+            return (seg.p1.subtract(this.segment.p1).lengthSquared() + seg.p2.subtract(this.segment.p2).lengthSquared() < 0.0001)
+                    || (seg.p2.subtract(this.segment.p1).lengthSquared() + seg.p1.subtract(this.segment.p2).lengthSquared() < 0.0001);
         }
 
         @Override
@@ -196,6 +221,12 @@ public class IndoorWall implements Renderable {
                 return false;
             }
             SegmentLevelPair temp = (SegmentLevelPair) o;
+            if ((this.startNode.equals(temp.startNode) && this.endNode.equals(temp.endNode))
+					|| (this.endNode.equals(temp.startNode) && this.startNode.equals(temp.endNode))) {
+            	if (this.level.equals(temp.level)) {
+					return true;
+				}
+			}
             return roughlyEquals(temp.segment) && this.level.equals(temp.level);
         }
 
@@ -702,11 +733,11 @@ public class IndoorWall implements Renderable {
 							.collect(toList());
 
 					List<TriangleXYZ> trianglesXYZTop = triangles.stream()
-							.map(t -> t.makeCounterclockwise().xyz(nodeAndLevel.getCeilingHeightAboveGround() - 0.01))
+							.map(t -> t.makeCounterclockwise().xyz(nodeAndLevel.getCeilingHeightAboveGround() - 0.0001))
 							.collect(toList());
 
 					VectorXYZ bottom = new VectorXYZ(0, nodeAndLevel.getHeightAboveGround(),0);
-					VectorXYZ top = new VectorXYZ(0, nodeAndLevel.getCeilingHeightAboveGround() - 0.01,0);
+					VectorXYZ top = new VectorXYZ(0, nodeAndLevel.getCeilingHeightAboveGround() - 0.0001,0);
 
 					List<VectorXYZ> path = new ArrayList<>();
 					path.add(bottom);
@@ -734,7 +765,7 @@ public class IndoorWall implements Renderable {
 
 		for (Integer level : data.getRenderableLevels()) {
 
-			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + data.getBuildingPart().levelReversion(level));
+			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + data.getBuildingPart().levelReversion(level), "wall");
 			boolean somethingRendered = false;
 
 			if (attachmentSurfaces) {
@@ -745,7 +776,7 @@ public class IndoorWall implements Renderable {
 
 			for (SegmentNodes wallSegData : wallSegmentNodes) {
 
-				SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level);
+				SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level, wallSegData.getStartNode(), wallSegData.getEndNode());
 
 				if (!allRenderedWallSegments.contains(pair) || attachmentSurfaces) {
 
@@ -762,7 +793,7 @@ public class IndoorWall implements Renderable {
 					List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(bottomPointsXZ,
 							baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-					List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight);
+					List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight - 0.0001);
 
 					WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
 
@@ -775,7 +806,7 @@ public class IndoorWall implements Renderable {
 					List<VectorXYZ> backBottomPoints = new ArrayList<>(listXYZ(backBottomPointsXZ,
 							baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-					List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight);
+					List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight - 0.0001);
 
 					WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
 
@@ -804,7 +835,7 @@ public class IndoorWall implements Renderable {
 							Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
 									triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 									.stream()
-									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.01))
+									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.0001))
 									.collect(toList());
 
 							target.drawTriangles(defaultInnerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));

@@ -32,7 +32,7 @@ public final class IndoorObjectData {
         this.levels = parseLevels(mapElement.getTags().getValue("level")).stream().map(l -> buildingPart.levelConversion(l)).collect(toList());
 
         if (config.getString("renderLevels") != null){
-            List<String> renLevels =asList(config.getString("renderLevels").split(","));
+            List<String> renLevels = asList(config.getString("renderLevels").split(","));
             this.renderableLevels = parseLevels(mapElement.getTags().getValue("level"))
                     .stream()
                     .filter(i -> renLevels.contains(Integer.toString(i)))
