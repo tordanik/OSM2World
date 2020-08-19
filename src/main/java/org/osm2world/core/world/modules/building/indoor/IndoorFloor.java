@@ -27,6 +27,7 @@ public class IndoorFloor {
     private final double floorHeight;
     private Boolean render;
     private final int level;
+    private final Ceiling ceiling;
 
     private AttachmentSurface attachmentSurface;
 
@@ -37,6 +38,7 @@ public class IndoorFloor {
         this.floorHeight = floorHeightAboveBase;
         this.render = renderable;
         this.level = level;
+        this.ceiling = new Ceiling(buildingPart, material, polygon, floorHeightAboveBase, renderable, level);
     }
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
@@ -59,6 +61,8 @@ public class IndoorFloor {
     }
 
     public void renderTo(Target target) {
+
+        ceiling.renderTo(target);
 
         if (render && polygon != null) {
 
