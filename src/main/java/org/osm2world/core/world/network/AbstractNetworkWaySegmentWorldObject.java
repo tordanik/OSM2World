@@ -37,7 +37,7 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
 import static org.osm2world.core.util.ValueParseUtil.parseIncline;
@@ -480,17 +480,11 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 		if (attachmentConnectorList.size() == 2 && attachmentConnectorList.stream().allMatch(c -> c.isAttached())) {
 
-			Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
-				PolylineXZ centerlineXZ = new PolylineXZ(segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()));
-				double ratio = centerlineXZ.offsetOf(centerlineXZ.closestPoint(point))/centerlineXZ.getLength();
-				double ele = GeometryUtil.interpolateBetween(new VectorXZ(0, attachmentConnectorList.get(0).getAttachedPos().getY()),
-						new VectorXZ(1, attachmentConnectorList.get(1).getAttachedPos().getY()),
-						ratio).getZ();
+			return interpolateEleOfSegment(getCenterlineXZ(),
+					segment.getWay().getNodes().stream().map(v -> v.getPos().xz()).collect(toList()),
+					attachmentConnectorList.get(0).getAttachedPos().getY(),
+					attachmentConnectorList.get(1).getAttachedPos().getY());
 
-				return point.xyz(ele);
-			};
-
-			return connectors.getPosXYZ(getCenterlineXZ()).stream().map(v -> baseEleFunction.apply(v.xz())).collect(toList());
 		} else {
 			return connectors.getPosXYZ(getCenterlineXZ());
 		}

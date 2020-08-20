@@ -4,7 +4,9 @@ import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.util.Arrays.*;
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
+import static org.osm2world.core.math.GeometryUtil.interpolateEleOfPolyline;
 import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -22,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -1230,12 +1233,19 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		private void renderStepsTo(Target target) {
 
+			List<VectorXYZ> centerline = getCenterline();
+
 			final VectorXZ startWithOffset = getStartPosition();
 			final VectorXZ endWithOffset = getEndPosition();
 
 			List<VectorXYZ> leftOutline = getOutline(false);
 			List<VectorXYZ> rightOutline = getOutline(true);
 
+			final double firstNodeEle = centerline.get(0).getY();
+			final double lastNodeEle = centerline.get(centerline.size() - 1).getY();
+
+			leftOutline = interpolateEleOfPolyline(leftOutline.stream().map(VectorXYZ::xz).collect(toList()), firstNodeEle, lastNodeEle);
+			rightOutline = interpolateEleOfPolyline(rightOutline.stream().map(VectorXYZ::xz).collect(toList()), firstNodeEle, lastNodeEle);
 
 			double lineLength = VectorXZ.distance (
 					segment.getStartNode().getPos(), segment.getEndNode().getPos());
@@ -1266,6 +1276,14 @@ public class RoadModule extends ConfigurableWorldModule {
 			target.drawTriangleStrip(ASPHALT, vs,
 					texCoordLists(vs, ASPHALT, GLOBAL_X_Z));
 
+			// render underside for indoor stairs
+
+			List<VectorXYZ> vsDown = createTriangleStripBetween(
+					rightOutline, leftOutline);
+
+			target.drawTriangleStrip(ASPHALT, vsDown,
+					texCoordLists(vsDown, ASPHALT, GLOBAL_X_Z));
+
 			/* determine the length of each individual step */
 
 			float stepLength = 0.3f;
@@ -1280,8 +1298,6 @@ public class RoadModule extends ConfigurableWorldModule {
 			/* locate the position on the line at the beginning/end of each step
 			 * (positions on the line spaced by step length),
 			 * interpolate heights between adjacent points with elevation */
-
-			List<VectorXYZ> centerline = getCenterline();
 
 			List<VectorXZ> stepBorderPositionsXZ =
 				GeometryUtil.equallyDistributePointsAlong(

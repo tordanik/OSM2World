@@ -3,6 +3,7 @@ package org.osm2world.core.math;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
@@ -11,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
+import org.osm2world.core.math.shapes.PolylineXZ;
 
 /**
  * utility class for some useful calculations
@@ -412,6 +415,35 @@ public final class GeometryUtil {
 		//nothing returned yet; return the end point (to handle possible accumulated floating point errors)
 		return linestring.get(linestring.size() - 1);
 
+	}
+
+	/**
+	 * performs linear interpolation for elevation along a polyline segment within a another polyline
+	 */
+	public static List<VectorXYZ> interpolateEleOfSegment(List<VectorXZ> lineSegmentString, List<VectorXZ> fullLine, double firstPointEle, double secondPointEle){
+
+		assert(fullLine.size() >= lineSegmentString.size());
+
+		Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
+			PolylineXZ lineXZ = new PolylineXZ(fullLine);
+			double ratio = lineXZ.offsetOf(lineXZ.closestPoint(point))/lineXZ.getLength();
+			double ele = interpolateBetween(new VectorXZ(0, firstPointEle),
+					new VectorXZ(1, secondPointEle),
+					ratio)
+					.getZ();
+
+			return point.xyz(ele);
+		};
+
+		return lineSegmentString.stream().map(baseEleFunction).collect(toList());
+
+	}
+
+	/**
+	 * performs linear interpolation for elevation along a polyline
+	 */
+	public static List<VectorXYZ> interpolateEleOfPolyline(List<VectorXZ> lineString, double firstPointEle, double secondPointEle){
+		return interpolateEleOfSegment(lineString, lineString, firstPointEle, secondPointEle);
 	}
 
 	/**
