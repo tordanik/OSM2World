@@ -140,7 +140,7 @@ public class BuildingPart implements Renderable {
 			minLevelWithUnderground = Math.min(0, (int)(float)parsedUnderground * (-1));
 		}
 
-		min_level = (int)(float) parseOsmDecimal(tags.getValue("min_level"), true, 0);
+		min_level = (int)(float) parseOsmDecimal(tags.getValue("min_level"), true, minLevelWithUnderground);
 		max_level = (int)(float) parseOsmDecimal(tags.getValue("max_level"), true, 0);
 		non_existent_levels = parseList(tags.getValue("non_existent_levels"));
 
@@ -251,11 +251,15 @@ public class BuildingPart implements Renderable {
 
 							//TODO handle elements that span building parts
 
-							if (levelConversion(levelList.get(0)) >= minLevelWithUnderground && levelConversion(levelList.get(levelList.size() - 1)) < getBuildingLevels() + roofLevels && !non_existent_levels.contains(levelList.get(0)) && !non_existent_levels.contains(levelList.get(levelList.size() - 1)) ) {
+							if (levelConversion(levelList.get(0)) >= minLevelWithUnderground
+									&& levelConversion(levelList.get(levelList.size() - 1)) < getBuildingLevels() + roofLevels
+									&& !non_existent_levels.contains(levelList.get(0))
+									&& !non_existent_levels.contains(levelList.get(levelList.size() - 1)) ) {
 
 								// Handle level elements
 
-								if (other.getTags().contains("indoor", "level") && levelsWithNoObject.contains(levelConversion(parseLevels(other.getTags().getValue("level")).get(0)))) {
+								if (other.getTags().contains("indoor", "level")
+										&& levelsWithNoObject.contains(levelConversion(parseLevels(other.getTags().getValue("level")).get(0)))) {
 									Level l = new Level(other);
 									levels.put(l.getLevel(), l);
 									levelsWithNoObject.remove((Integer) l.getLevel());
@@ -747,8 +751,6 @@ public class BuildingPart implements Renderable {
 
 	public int levelConversion(Integer level){
 
-		if (tags.containsKey("min_level")) {
-
 			int temp = level - min_level;
 
 			for (Integer noLevel : non_existent_levels) {
@@ -758,15 +760,10 @@ public class BuildingPart implements Renderable {
 			}
 
 			return minLevelWithUnderground + temp;
-		}
-
-		return level;
 
 	}
 
 	public int levelReversion(Integer level){
-
-		if (tags.containsKey("min_level")) {
 
 			int temp = level - minLevelWithUnderground;
 
@@ -779,9 +776,6 @@ public class BuildingPart implements Renderable {
 			}
 
 			return temp;
-		}
-
-		return level;
 
 	}
 

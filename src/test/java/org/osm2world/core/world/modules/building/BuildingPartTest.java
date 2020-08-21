@@ -166,6 +166,27 @@ public class BuildingPartTest {
 		assertEquals(10, buildingPart.levelReversion(buildingPart.levelConversion(10)));
 		assertEquals(12, buildingPart.levelReversion(buildingPart.levelConversion(12)));
 
+		/* test for no min_level tag */
+
+		buildingPartArea = generator.createWayArea(nodes, TagSet.of("building", "yes", "building:levels", "3",
+				"building:levels:underground", "1",
+				"non_existent_levels", "2"));
+
+		building = new Building(buildingPartArea, new BaseConfiguration());
+		buildingPart = building.getParts().get(0);
+
+		assertEquals(-1, buildingPart.levelConversion(-1));
+		assertEquals(0, buildingPart.levelConversion(0));
+		assertEquals(1, buildingPart.levelConversion(1));
+		assertEquals(2, buildingPart.levelConversion(3));
+
+		assertEquals(-1, buildingPart.levelReversion(buildingPart.levelConversion(-1)));
+		assertEquals(0, buildingPart.levelReversion(buildingPart.levelConversion(0)));
+		assertEquals(1, buildingPart.levelReversion(buildingPart.levelConversion(1)));
+		assertEquals(3, buildingPart.levelReversion(buildingPart.levelConversion(3)));
+
+		assertEquals(1, buildingPart.levelReversion(buildingPart.levelConversion(2)));
+
 	}
 
 }
