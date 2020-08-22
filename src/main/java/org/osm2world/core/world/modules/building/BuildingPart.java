@@ -640,11 +640,16 @@ public class BuildingPart implements Renderable {
 	}
 
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+
+		List<AttachmentSurface> surfaces = new ArrayList<>();
+
 		if (indoor != null) {
-			return indoor.getAttachmentSurfaces();
-		} else {
-			return emptyList();
+			surfaces.addAll(indoor.getAttachmentSurfaces());
 		}
+
+		surfaces.addAll(roof.getAttachmentSurfaces(building.getGroundLevelEle() + heightWithoutRoof));
+
+		return surfaces;
 	}
 
 	public PolygonWithHolesXZ getPolygon() {

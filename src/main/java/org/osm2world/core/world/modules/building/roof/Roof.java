@@ -7,9 +7,12 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /** the roof of a {@link BuildingPart} */
 abstract public class Roof {
@@ -23,6 +26,9 @@ abstract public class Roof {
 	protected final TagSet tags;
 	protected final double roofHeight;
 	protected final Material material;
+
+	protected Collection<AttachmentSurface> attachmentSurfaces;
+
 
 	public Roof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
 		this.originalPolygon = originalPolygon;
@@ -45,6 +51,11 @@ abstract public class Roof {
 
 	/** returns segments within the roof polygon that define ridges or edges of the roof */
 	public abstract Collection<LineSegmentXZ> getInnerSegments();
+
+	/** returns the attachment surfaces for the roof */
+	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle){
+		return Collections.emptyList();
+	}
 
 	/**
 	 * renders the roof. The same as {@link Renderable#renderTo(Target)},
