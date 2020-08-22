@@ -350,23 +350,30 @@ public class SportsModule extends AbstractModule {
 
 			//TODO: support this feature when elevation is enabled
 
-			boolean eleZero = true;
+			boolean renderNet = true;
 
 			for (EleConnector connector : getEleConnectors()) {
 				if (abs(connector.getPosXYZ().y) > 0.01) {
-					eleZero = false;
+					renderNet = false;
 					break;
 				}
 			}
 
-			if (texFunction != null && eleZero) {
+			double ele = 0;
+
+			if (getAttachmentConnectorObjectIfAttached() != null) {
+					ele = getAttachmentConnectorObjectIfAttached().getAttachedPos().getY();
+					renderNet = true;
+			}
+
+			if (texFunction != null && renderNet) {
 
 				final double netHeightAtPosts = 1.07;
 				final double netHeightCenter = 0.91;
 				final double postRadius = 0.04;
 
 				VectorXYZ postPositionA = texFunction.getOrigin()
-						.add(texFunction.getLongSide().mult(0.5)).xyz(0);
+						.add(texFunction.getLongSide().mult(0.5)).xyz(ele);
 
 				VectorXYZ postPositionB = postPositionA.add(texFunction.getShortSide());
 

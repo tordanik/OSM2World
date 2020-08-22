@@ -83,6 +83,14 @@ public class ParkingModule extends AbstractModule {
 
 			/* draw cars on the parking spaces */
 
+			double ele = 0;
+
+			if (getAttachmentConnectorObjectIfAttached() != null) {
+				ele = getAttachmentConnectorObjectIfAttached().getAttachedPos().getY();
+			} else {
+				//TODO add elevation support
+			}
+
 			Model carModel = new ExternalResourceModel("car");
 
 			for (MapArea parkingSpace : parkingSpaces) {
@@ -97,10 +105,9 @@ public class ParkingModule extends AbstractModule {
 				direction = direction.normalize();
 
 				if (target instanceof ModelTarget) {
-					((ModelTarget)target).drawModel(carModel, bbox.getCenter().xyz(0), //TODO add elevation support
+					((ModelTarget)target).drawModel(carModel, bbox.getCenter().xyz(ele),
 							direction.angle(), null, null, null);
 				}
-
 			}
 
 		}

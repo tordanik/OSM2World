@@ -12,6 +12,14 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.util.ValueParseUtil;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
+
 
 /**
  * implementation of {@link AreaWorldObject} that offers some basic features:
@@ -25,6 +33,8 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 	protected final MapArea area;
 
 	private final PolygonWithHolesXZ outlinePolygonXZ;
+
+	private final AttachmentConnector attachmentConnector;
 
 	private EleConnectorGroup connectors;
 
@@ -40,6 +50,42 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 					area.getPolygon().getHoles());
 		}
 
+		if (area.getTags().containsKey("level")) {
+			attachmentConnector = new AttachmentConnector(
+					asList("floor" + ValueParseUtil.parseLevels(area.getTags().getValue("level")).get(0)),
+					area.getOuterPolygon().closestPoint(area.getOuterPolygon().getCentroid()).xyz(0),
+					this,
+					0,
+					false);
+		} else if (area.getTags().contains("location", "roof")) {
+			attachmentConnector = new AttachmentConnector(
+					asList("roof"),
+					area.getOuterPolygon().closestPoint(area.getOuterPolygon().getCentroid()).xyz(0),
+					this,
+					0,
+					false);
+		} else {
+			attachmentConnector = null;
+		}
+
+	}
+
+	@Override
+	public Iterable<AttachmentConnector> getAttachmentConnectors() {
+		if (attachmentConnector == null) {
+			return emptyList();
+		} else {
+			return singleton(attachmentConnector);
+		}
+	}
+
+	public AttachmentConnector getAttachmentConnectorObjectIfAttached() {
+		if (attachmentConnector != null) {
+			if (attachmentConnector.isAttached()) {
+				return attachmentConnector;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -68,6 +114,13 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 
 	@Override
 	public PolygonXYZ getOutlinePolygon() {
+
+		if (attachmentConnector != null) {
+			if (attachmentConnector.isAttached()) {
+				return outlinePolygonXZ.getOuter().xyz(attachmentConnector.getAttachedPos().getY());
+			}
+		}
+
 		return connectors.getPosXYZ(outlinePolygonXZ.getOuter());
 	}
 
@@ -93,6 +146,15 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 	 * Only available after elevation calculation.
 	 */
 	protected Collection<TriangleXYZ> getTriangulation() {
+
+		if (attachmentConnector != null) {
+			if (attachmentConnector.isAttached()) {
+				return getTriangulationXZ().stream()
+						.map(t -> t.makeCounterclockwise().xyz(attachmentConnector.getAttachedPos().getY() + 0.001))
+						.collect(toList());
+			}
+		}
+
 		return connectors.getTriangulationXYZ(getTriangulationXZ());
 	}
 

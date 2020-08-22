@@ -10,11 +10,13 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
@@ -51,18 +53,23 @@ public class IndoorFloor {
             AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + buildingPart.levelReversion(this.level));
             boolean tempRender = this.render;
             this.render = true;
-            this.renderTo(builder);
+            this.renderTo(builder, true);
             this.render = tempRender;
             attachmentSurface = builder.build();
         }
 
-        return Collections.singleton(attachmentSurface);
+        List<AttachmentSurface> surfaces = new ArrayList<>(singleton(attachmentSurface));
+        surfaces.addAll(ceiling.getAttachmentSurfaces());
+
+        return surfaces;
 
     }
 
-    public void renderTo(Target target) {
+    private void renderTo(Target target, boolean attachemntSurface) {
 
-        ceiling.renderTo(target);
+        if (!attachemntSurface) {
+            ceiling.renderTo(target);
+        }
 
         if (render && polygon != null) {
 
@@ -78,5 +85,9 @@ public class IndoorFloor {
                     triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
 
         }
+    }
+
+    public void renderTo(Target target) {
+        renderTo(target, false);
     }
 }
