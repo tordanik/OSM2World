@@ -155,12 +155,14 @@ public class IndoorWall implements Renderable {
         private LineSegmentXZ segment;
         private MapNode startNode;
         private MapNode endNode;
+		List<VectorXZ> nodePositions;
 
         SegmentNodes(List<MapNode> intermediateNodes, LineSegmentXZ segment, MapNode startNode, MapNode endNode){
             nodes = intermediateNodes;
             this.segment = segment;
             this.startNode = startNode;
             this.endNode = endNode;
+			this.nodePositions = nodes.stream().map(MapNode::getPos).collect(toList());
         }
 
         List<MapNode> getNodes() { return nodes; }
@@ -172,8 +174,6 @@ public class IndoorWall implements Renderable {
 		public MapNode getEndNode() { return endNode; }
 
 		public boolean containsMapSegment(LineSegmentXZ linSeg){
-
-        	List<VectorXZ> nodePositions = nodes.stream().map(n -> n.getPos()).collect(toList());
 
         	if (linSeg.p1 == startNode.getPos() && nodePositions.contains(linSeg.p2)) {
         		return true;
