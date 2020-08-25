@@ -100,11 +100,6 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void renderTo(Target target) {
 
 			TexCoordFunction localXZTexCoordFunction = (List<VectorXYZ> vs, TextureData textureData) -> {
@@ -145,11 +140,6 @@ public class AerowayModule extends ConfigurableWorldModule {
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
 		}
 
 	}

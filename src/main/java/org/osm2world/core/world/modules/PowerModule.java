@@ -788,11 +788,6 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void renderTo(Target target) {
 
 			/* construct panel geometry */

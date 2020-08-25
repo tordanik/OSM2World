@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
+import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -86,6 +87,15 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public GroundState getGroundState() {
+		if (attachmentConnector != null) {
+			return GroundState.ABOVE;
+		} else {
+			return GroundState.ON;
+		}
 	}
 
 	@Override

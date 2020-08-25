@@ -75,11 +75,6 @@ public class PoolModule extends AbstractModule {
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
 		public void renderTo(Target target) {
 
 			/* render water */

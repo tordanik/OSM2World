@@ -56,10 +56,10 @@ public class BicycleParkingModule extends AbstractModule {
 			height = parseHeight(area.getTags(), STAND_DEFAULT_HEIGHT);
 		}
 
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON; //TODO better ground state calculations
-		}
+//		@Override
+//		public GroundState getGroundState() {
+//			return GroundState.ON; //TODO better ground state calculations
+//		}
 
 		protected Material getStandMaterial() {
 			return STEEL;

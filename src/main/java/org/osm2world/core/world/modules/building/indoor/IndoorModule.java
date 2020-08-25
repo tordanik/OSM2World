@@ -19,9 +19,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
-
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 public class IndoorModule extends AbstractModule {
