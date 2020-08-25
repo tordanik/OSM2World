@@ -65,9 +65,9 @@ public class IndoorFloor {
 
     }
 
-    private void renderTo(Target target, boolean attachemntSurface) {
+    private void renderTo(Target target, boolean attachmentSurfaceBool) {
 
-        if (!attachemntSurface) {
+        if (!attachmentSurfaceBool) {
             ceiling.renderTo(target);
         }
 

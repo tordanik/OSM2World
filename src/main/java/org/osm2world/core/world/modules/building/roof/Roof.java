@@ -53,7 +53,7 @@ abstract public class Roof {
 	public abstract Collection<LineSegmentXZ> getInnerSegments();
 
 	/** returns the attachment surfaces for the roof */
-	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle){
+	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle, int level){
 		return Collections.emptyList();
 	}
 

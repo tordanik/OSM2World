@@ -39,11 +39,11 @@ public class FlatRoof extends HeightfieldRoof {
 	}
 
 	@Override
-	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle) {
+	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle, int level) {
 
 		if (attachmentSurfaces == null) {
 			attachmentSurfaces = new ArrayList<>();
-			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("roof");
+			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("roof" + level, "roof", "floor" + level);
 			this.renderTo(builder, baseEle);
 			attachmentSurfaces.add(builder.build());
 		}

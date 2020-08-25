@@ -141,8 +141,8 @@ public class BuildingPart implements Renderable {
 		}
 
 		min_level = (int)(float) parseOsmDecimal(tags.getValue("min_level"), true, minLevelWithUnderground);
-		max_level = (int)(float) parseOsmDecimal(tags.getValue("max_level"), true, 0);
 		non_existent_levels = parseList(tags.getValue("non_existent_levels"));
+		max_level = (int)(float) parseOsmDecimal(tags.getValue("max_level"), true, levelReversion(buildingLevels - 1));
 
 		/* determine roof height */
 
@@ -219,7 +219,7 @@ public class BuildingPart implements Renderable {
 		}
 
 		if (tags.containsKey("min_level") && tags.containsKey("max_level")) {
-			if (roofLevels + buildingLevels + parsedUnderground != (max_level - min_level) + 1 - non_existent_levels.size()) {
+			if ((roofLevels + buildingLevels) - minLevelWithUnderground != (max_level - min_level) + 1 - non_existent_levels.size()) {
 				renderIndoor = false;
 				System.err.println("Warning: min_level, max_level and non_existent_levels do not match building:levels");
 			}
@@ -265,9 +265,9 @@ public class BuildingPart implements Renderable {
 									levelsWithNoObject.remove((Integer) l.getLevel());
 								} else if (!other.getTags().contains("indoor", "level")) {
 
-									// Ensure all nodes are within the building
+									// Ensure all nodes are within the building part
 
-									PolygonWithHolesXZ buildingOutline = new PolygonWithHolesXZ(building.getOutlinePolygonXZ(), emptyList());
+									PolygonWithHolesXZ buildingOutline = new PolygonWithHolesXZ(this.getPolygon().getOuter(), emptyList());
 
 									boolean toAdd = false;
 									if (other instanceof MapNode) {
@@ -647,7 +647,7 @@ public class BuildingPart implements Renderable {
 			surfaces.addAll(indoor.getAttachmentSurfaces());
 		}
 
-		surfaces.addAll(roof.getAttachmentSurfaces(building.getGroundLevelEle() + heightWithoutRoof));
+		surfaces.addAll(roof.getAttachmentSurfaces(building.getGroundLevelEle() + heightWithoutRoof, max_level + 1));
 
 		return surfaces;
 	}

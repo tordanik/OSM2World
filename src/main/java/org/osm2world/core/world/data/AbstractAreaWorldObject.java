@@ -1,6 +1,8 @@
 package org.osm2world.core.world.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -51,16 +53,21 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 					area.getPolygon().getHoles());
 		}
 
-		if (area.getTags().containsKey("level")) {
+		List<String> types = new ArrayList<>();
+
+		if (area.getTags().contains("location", "roof")) {
+			if (area.getTags().containsKey("level")) {
+				types.add("roof" + ValueParseUtil.parseLevels(area.getTags().getValue("level")).get(0));
+			}
+			types.add("roof");
+		} else if (area.getTags().containsKey("level")) {
+			types.add("floor" + ValueParseUtil.parseLevels(area.getTags().getValue("level")).get(0));
+		}
+
+
+		if (!types.isEmpty()) {
 			attachmentConnector = new AttachmentConnector(
-					asList("floor" + ValueParseUtil.parseLevels(area.getTags().getValue("level")).get(0)),
-					area.getOuterPolygon().closestPoint(area.getOuterPolygon().getCentroid()).xyz(0),
-					this,
-					0,
-					false);
-		} else if (area.getTags().contains("location", "roof")) {
-			attachmentConnector = new AttachmentConnector(
-					asList("roof"),
+					types,
 					area.getOuterPolygon().closestPoint(area.getOuterPolygon().getCentroid()).xyz(0),
 					this,
 					0,
