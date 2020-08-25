@@ -377,40 +377,58 @@ public class IndoorWall implements Renderable {
 
 	}
 
-	private VectorXZ rightNormalIfOnBuildingEdge(SegmentNodes lineSegmentNodes){
+	private VectorXZ NormalIfOnBuildingEdge(SegmentNodes lineSegmentNodes){
 
-		List<VectorXZ> buildingVertices = data.getBuildingPart().getBuilding().getOutlinePolygonXZ().getVertexList();
+//		List<VectorXZ> buildingVertices = data.getBuildingPart().getBuilding().getOutlinePolygonXZ().getVertexList();
+
 		LineSegmentXZ line = lineSegmentNodes.getSegment();
 
-		VectorXZ rightNorm;
+		SimplePolygonXZ outline = data.getBuildingPart().getPolygon().getOuter();
+		VectorXZ rightNorm = line.getDirection().rightNormal().mult(wallThickness + 0.01);
 
-		for (int i = 0; i < buildingVertices.size() - 1; i++) {
-			if ((line.p1.equals(buildingVertices.get(i)) && line.p2.equals(buildingVertices.get(i+1)))
-					|| lineSegmentNodes.containsMapSegment(new LineSegmentXZ(buildingVertices.get(i), buildingVertices.get(i + 1)))) {
+		SimplePolygonXZ roughWallOutline = new SimplePolygonXZ(asList(line.p2.add(rightNorm),
+				line.p2.subtract(rightNorm),
+				line.p1.subtract(rightNorm),
+				line.p1.add(rightNorm),
+				line.p2.add(rightNorm)));
 
-				rightNorm = new LineSegmentXZ(buildingVertices.get(i), buildingVertices.get(i+1)).getDirection().rightNormal();
-
-				if (data.getBuildingPart().getBuilding().getOutlinePolygonXZ().isClockwise()) {
-					return rightNorm.mult(wallThickness + 0.01);
-				}
-
-				return rightNorm.mult(-1 * (wallThickness + 0.01));
-
-			} else if ((line.p2.equals(buildingVertices.get(i)) && line.p1.equals(buildingVertices.get(i + 1)))
-					|| lineSegmentNodes.containsMapSegment(new LineSegmentXZ(buildingVertices.get(i + 1), buildingVertices.get(i)))) {
-
-				rightNorm = new LineSegmentXZ(buildingVertices.get(i+1), buildingVertices.get(i)).getDirection().rightNormal();
-
-				if (data.getBuildingPart().getBuilding().getOutlinePolygonXZ().isClockwise()) {
-					return rightNorm.mult(-1 * (wallThickness + 0.01));
-				}
-
-				return rightNorm.mult(wallThickness + 0.01);
-
+		if (outline.contains(roughWallOutline)) {
+			return null;
+		} else {
+			if (outline.isClockwise()) {
+				return outline.getClosestSegment(line.getCenter()).getDirection().rightNormal().mult(wallThickness + 0.01);
+			} else {
+				return outline.getClosestSegment(line.getCenter()).getDirection().rightNormal().mult(-1 * (wallThickness + 0.01));
 			}
 		}
 
-		return null;
+//		for (int i = 0; i < buildingVertices.size() - 1; i++) {
+//			if ((line.p1.equals(buildingVertices.get(i)) && line.p2.equals(buildingVertices.get(i+1)))
+//					|| lineSegmentNodes.containsMapSegment(new LineSegmentXZ(buildingVertices.get(i), buildingVertices.get(i + 1)))) {
+//
+//				rightNorm = new LineSegmentXZ(buildingVertices.get(i), buildingVertices.get(i+1)).getDirection().rightNormal();
+//
+//				if (data.getBuildingPart().getBuilding().getOutlinePolygonXZ().isClockwise()) {
+//					return rightNorm.mult(wallThickness + 0.01);
+//				}
+//
+//				return rightNorm.mult(-1 * (wallThickness + 0.01));
+//
+//			} else if ((line.p2.equals(buildingVertices.get(i)) && line.p1.equals(buildingVertices.get(i + 1)))
+//					|| lineSegmentNodes.containsMapSegment(new LineSegmentXZ(buildingVertices.get(i + 1), buildingVertices.get(i)))) {
+//
+//				rightNorm = new LineSegmentXZ(buildingVertices.get(i+1), buildingVertices.get(i)).getDirection().rightNormal();
+//
+//				if (data.getBuildingPart().getBuilding().getOutlinePolygonXZ().isClockwise()) {
+//					return rightNorm.mult(-1 * (wallThickness + 0.01));
+//				}
+//
+//				return rightNorm.mult(wallThickness + 0.01);
+//
+//			}
+//		}
+//
+//		return null;
 
 	}
 
@@ -551,15 +569,10 @@ public class IndoorWall implements Renderable {
 
 		/* move this wall segment if on outer edge of building */
 
-		final VectorXZ thisBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(new SegmentNodes(wallSegData.getNodes(), wallSegSegment, startNode, endNode) );
-
-		final LineSegmentXZ toIntersect;
+		final VectorXZ thisBuildingEdgeRightNorm = NormalIfOnBuildingEdge(new SegmentNodes(wallSegData.getNodes(), wallSegSegment, startNode, endNode) );
 
 		if (thisBuildingEdgeRightNorm != null) {
 			wallSegSegment = new LineSegmentXZ(wallSegSegment.p1.add(thisBuildingEdgeRightNorm), wallSegSegment.p2.add(thisBuildingEdgeRightNorm));
-			toIntersect = new LineSegmentXZ(wallSegSegment.p1, wallSegSegment.p2);
-		} else {
-			toIntersect = new LineSegmentXZ(wallSegSegment.p1, wallSegSegment.p2);
 		}
 
 
@@ -567,13 +580,16 @@ public class IndoorWall implements Renderable {
 
 		List<VectorXZ> result = new ArrayList<>();
 
+		// lambda needs final
+		final LineSegmentXZ finalSegSegment = new LineSegmentXZ(wallSegSegment.p1, wallSegSegment.p2);
+
 		List<VectorXZ> rightOffset = wallSegSegment.getVertexList().stream()
-				.map(v -> v.add(toIntersect.getDirection().rightNormal().mult(wallThickness)))
+				.map(v -> v.add(finalSegSegment.getDirection().rightNormal().mult(wallThickness)))
 				.collect(toList());
 		LineSegmentXZ offsetSegRight = new LineSegmentXZ(rightOffset.get(0), rightOffset.get(1));
 
 		List<VectorXZ> leftOffset = wallSegSegment.getVertexList().stream()
-				.map(v -> v.add(toIntersect.getDirection().rightNormal().mult(-wallThickness)))
+				.map(v -> v.add(finalSegSegment.getDirection().rightNormal().mult(-wallThickness)))
 				.collect(toList());
 		LineSegmentXZ offsetSegLeft = new LineSegmentXZ(leftOffset.get(0), leftOffset.get(1));
 
@@ -583,7 +599,7 @@ public class IndoorWall implements Renderable {
 		if (maxLineSegment != null
 				&& abs(abs(maxLineSegment.getLineSegment().getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
 
-			VectorXZ maxOnBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(
+			VectorXZ maxOnBuildingEdgeRightNorm = NormalIfOnBuildingEdge(
 					new SegmentNodes(asList(maxLineSegment.getStartNode(), maxLineSegment.getEndNode()),
 							maxLineSegment.getLineSegment(), maxLineSegment.getStartNode(), maxLineSegment.getEndNode()));
 
@@ -611,7 +627,7 @@ public class IndoorWall implements Renderable {
 		if (minLineSegment != null
 				&& abs(abs(minLineSegment.getLineSegment().getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
 
-			VectorXZ minOnBuildingEdgeRightNorm = rightNormalIfOnBuildingEdge(
+			VectorXZ minOnBuildingEdgeRightNorm = NormalIfOnBuildingEdge(
 					new SegmentNodes(asList(minLineSegment.getStartNode(), minLineSegment.getEndNode()),
 							minLineSegment.getLineSegment(), minLineSegment.getStartNode(), minLineSegment.getEndNode()));
 
