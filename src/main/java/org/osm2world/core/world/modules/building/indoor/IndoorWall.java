@@ -393,6 +393,18 @@ public class IndoorWall implements Renderable {
 				line.p2.add(rightNorm)));
 
 		if (outline.contains(roughWallOutline)) {
+			List<SimplePolygonXZ> holes = data.getBuildingPart().getPolygon().getHoles();
+
+			for (SimplePolygonXZ hole : holes) {
+				if (hole.intersects(roughWallOutline)) {
+					if (!hole.isClockwise()) {
+						return hole.getClosestSegment(line.getCenter()).getDirection().rightNormal().mult(wallThickness + 0.01);
+					} else {
+						return hole.getClosestSegment(line.getCenter()).getDirection().rightNormal().mult(-1 * (wallThickness + 0.01));
+					}
+				}
+			}
+
 			return null;
 		} else {
 			if (outline.isClockwise()) {
