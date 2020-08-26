@@ -55,13 +55,20 @@ public class IndoorModule extends AbstractModule {
 
 				List<Integer> levels = parseLevels(area.getTags().getValue("level"));
 
-				topConnector = new AttachmentConnector(asList("ceiling" + levels.get(levels.size() - 1).toString()),
-						centroid.xyz(0), this, 0, false);
+				if (levels != null) {
+					topConnector = new AttachmentConnector(asList("ceiling" + levels.get(levels.size() - 1).toString()),
+							centroid.xyz(0), this, 0, false);
 
-				bottomConnector = new AttachmentConnector(asList("floor" + levels.get(0).toString()),
-						centroid.xyz(0), this, 0, false);
+					bottomConnector = new AttachmentConnector(asList("floor" + levels.get(0).toString()),
+							centroid.xyz(0), this, 0, false);
 
-				noLevels = levels.get(levels.size() - 1) - levels.get(0) + 1;
+					noLevels = levels.get(levels.size() - 1) - levels.get(0) + 1;
+				} else {
+					topConnector = null;
+					bottomConnector = null;
+
+					noLevels = 3;
+				}
 
 			} else {
 				topConnector = null;

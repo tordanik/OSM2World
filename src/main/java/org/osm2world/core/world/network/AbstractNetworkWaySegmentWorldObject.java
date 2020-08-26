@@ -625,8 +625,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		for (TagSet tags : startNodeConnectedElements) {
 			if (tags.containsKey("level")) {
 				List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
-				if (firstNodeLevel == null || parsedLevels.get(0) < firstNodeLevel) {
-					firstNodeLevel = parsedLevels.get(0);
+				if (parsedLevels != null) {
+					if (firstNodeLevel == null || parsedLevels.get(0) < firstNodeLevel) {
+						firstNodeLevel = parsedLevels.get(0);
+					}
 				}
 			}
 		}
@@ -634,8 +636,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		for (TagSet tags : endNodeConnectedElements) {
 			if (tags.containsKey("level")) {
 				List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
-				if (lastNodeLevel == null || parsedLevels.get(parsedLevels.size() - 1) > lastNodeLevel) {
-					lastNodeLevel = parsedLevels.get(parsedLevels.size() - 1);
+				if (parsedLevels != null) {
+					if (lastNodeLevel == null || parsedLevels.get(parsedLevels.size() - 1) > lastNodeLevel) {
+						lastNodeLevel = parsedLevels.get(parsedLevels.size() - 1);
+					}
 				}
 			}
 		}
@@ -644,11 +648,17 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		/* use node tags */
 
 		if (wayStartNode.getTags().containsKey("level")) {
-			firstNodeLevel = parseLevels(wayStartNode.getTags().getValue("level")).get(0);
+			List<Integer> parsedLevels = parseLevels(wayStartNode.getTags().getValue("level"));
+			if (parsedLevels != null) {
+				firstNodeLevel = parsedLevels.get(0);
+			}
 		}
 
 		if (wayEndNode.getTags().containsKey("level")) {
-			lastNodeLevel = parseLevels(wayEndNode.getTags().getValue("level")).get(parseLevels(wayEndNode.getTags().getValue("level")).size() - 1);
+			List<Integer> parsedLevels = parseLevels(wayEndNode.getTags().getValue("level"));
+			if (parsedLevels != null) {
+				lastNodeLevel = parsedLevels.get(parsedLevels.size() - 1);
+			}
 		}
 
 
@@ -658,14 +668,15 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 			List<Integer> levels = parseLevels(segment.getTags().getValue("level"));
 
-			if (segment.getTags().contains("incline", "down")) {
-				firstNodeLevel = levels.get(levels.size() - 1);
-				lastNodeLevel = levels.get(0);
-			} else {
-				firstNodeLevel = levels.get(0);
-				lastNodeLevel = levels.get(levels.size() - 1);
+			if (levels != null) {
+				if (segment.getTags().contains("incline", "down")) {
+					firstNodeLevel = levels.get(levels.size() - 1);
+					lastNodeLevel = levels.get(0);
+				} else {
+					firstNodeLevel = levels.get(0);
+					lastNodeLevel = levels.get(levels.size() - 1);
+				}
 			}
-
 		}
 
 

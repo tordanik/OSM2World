@@ -57,11 +57,17 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 
 		if (area.getTags().contains("location", "roof")) {
 			if (area.getTags().containsKey("level")) {
-				types.add("roof" + ValueParseUtil.parseLevels(area.getTags().getValue("level")).get(0));
+				List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
+				if (levels != null) {
+					types.add("roof" + levels.get(0));
+				}
 			}
 			types.add("roof");
 		} else if (area.getTags().containsKey("level")) {
-			types.add("floor" + ValueParseUtil.parseLevels(area.getTags().getValue("level")).get(0));
+			List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
+			if (levels != null) {
+				types.add("floor" + levels.get(0));
+			}
 		}
 
 
