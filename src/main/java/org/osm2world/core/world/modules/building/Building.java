@@ -168,7 +168,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 		for (BuildingPart part : parts) {
 
 			if (part.getMinLevel() < 1 && part.getIndoor() != null){
-				shapes.add(part.getPolygon().getOuter());
+				shapes.add(part.getPolygon());
 			}
 
 		}
