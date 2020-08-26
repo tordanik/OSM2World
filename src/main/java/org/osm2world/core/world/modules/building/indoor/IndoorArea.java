@@ -13,7 +13,6 @@ import java.util.*;
 public class IndoorArea implements Renderable {
 
     private final IndoorFloor floor;
-    private final Ceiling ceiling;
 
     private final IndoorObjectData data;
 
@@ -21,37 +20,22 @@ public class IndoorArea implements Renderable {
 
         this.data = data;
 
-        Material material = data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall);
         PolygonWithHolesXZ polygon = data.getPolygon();
-        Double floorHeight = (double) data.getLevelHeightAboveBase();
+        double floorHeight = (double) data.getLevelHeightAboveBase();
 
         if (data.getMapElement() instanceof MapArea) {
             data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), data.getMinLevel());
         }
 
         floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight, data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
-        ceiling = new Ceiling(data.getBuildingPart(), material, polygon, floorHeight, data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel() - 1);
     }
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
-
-        Collection<AttachmentSurface> floorSurfaces = floor.getAttachmentSurfaces();
-        Collection<AttachmentSurface> ceilingSurfaces = ceiling.getAttachmentSurfaces();
-
-        List<AttachmentSurface> surfaces = new ArrayList<>();
-
-        surfaces.addAll(floorSurfaces);
-        surfaces.addAll(ceilingSurfaces);
-
-        return surfaces;
-
+        return floor.getAttachmentSurfaces();
     }
 
     @Override
     public void renderTo(Target target) {
-
         floor.renderTo(target);
-        ceiling.renderTo(target);
-
     }
 }

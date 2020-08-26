@@ -937,7 +937,7 @@ public class IndoorWall implements Renderable {
 							}
 						}
 					} else {
-						System.err.println("Warning: Zero height level");
+						System.err.println("Warning: Zero height level for level" + level);
 					}
 				}
 			}

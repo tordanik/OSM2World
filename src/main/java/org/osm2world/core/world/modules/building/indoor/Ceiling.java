@@ -13,8 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -29,7 +28,7 @@ public class Ceiling {
     private Boolean render;
     private final int level;
 
-    private AttachmentSurface  attachmentSurface;
+    private AttachmentSurface attachmentSurface;
 
     public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
         this.buildingPart = buildingPart;
@@ -62,9 +61,10 @@ public class Ceiling {
 
             double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight - 0.0001;
 
-            ShapeXZ shape = polygon.getOuter().makeCounterclockwise();
+            List<ShapeXZ> sides  = new ArrayList<>(singleton(polygon.getOuter().makeCounterclockwise()));
+            sides.addAll(polygon.getHoles().stream().map(SimplePolygonXZ::makeClockwise).collect(toList()));
 
-            renderSides(target, shape, floorEle);
+            renderSides(target, sides, floorEle);
 
             renderSurface(target, floorEle);
 
@@ -82,18 +82,16 @@ public class Ceiling {
                 triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
     }
 
-    private void renderSides(Target target, ShapeXZ shape, double floorEle){
-        VectorXYZ bottom = new VectorXYZ(0,floorEle - 0.2,0);
-        VectorXYZ top = new VectorXYZ(0,floorEle,0);
+    private void renderSides(Target target, List<ShapeXZ> sides, double floorEle) {
+        VectorXYZ bottom = new VectorXYZ(0, floorEle - 0.2, 0);
+        VectorXYZ top = new VectorXYZ(0, floorEle, 0);
 
         List<VectorXYZ> path = new ArrayList<>();
         path.add(bottom);
         path.add(top);
 
-        target.drawExtrudedShape(material, shape, path, nCopies(2, Z_UNIT), null, null, null);
+        for (ShapeXZ side : sides) {
+            target.drawExtrudedShape(material, side, path, nCopies(2, Z_UNIT), null, null, null);
+        }
     }
-
-
-
-
 }

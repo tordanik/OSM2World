@@ -1,6 +1,5 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -12,11 +11,10 @@ import org.osm2world.core.world.modules.building.BuildingPart;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
@@ -40,7 +38,7 @@ public class IndoorFloor {
         this.floorHeight = floorHeightAboveBase;
         this.render = renderable;
         this.level = level;
-        this.ceiling = new Ceiling(buildingPart, material, polygon, floorHeightAboveBase, renderable, level);
+        this.ceiling = new Ceiling(buildingPart, material, polygon, floorHeightAboveBase, renderable, level - 1);
     }
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
