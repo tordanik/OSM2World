@@ -8,12 +8,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
@@ -72,9 +67,15 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 
 
 		if (!types.isEmpty()) {
+			VectorXYZ pos;
+			if (area.getPolygon().contains(area.getOuterPolygon().getCentroid())) {
+				pos = area.getOuterPolygon().getCentroid().xyz(0);
+			} else {
+				pos = area.getOuterPolygon().getClosestSegment(area.getOuterPolygon().getCentroid()).getCenter().xyz(0);
+			}
 			attachmentConnector = new AttachmentConnector(
 					types,
-					area.getOuterPolygon().closestPoint(area.getOuterPolygon().getCentroid()).xyz(0),
+					pos,
 					this,
 					0,
 					false);

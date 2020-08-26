@@ -24,7 +24,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 public class DefaultNavigation extends MouseAdapter implements KeyListener, MouseInputListener {
 
 	private final static double ANGLE_INCREMENT = Math.PI/200;
-	private final static double MOVEMENT_INCREMENT = 2.0;
+	private final static double MOVEMENT_INCREMENT = 0.1;
 
 	private final RenderOptions renderOptions;
 	private final ViewerFrame viewerFrame;
