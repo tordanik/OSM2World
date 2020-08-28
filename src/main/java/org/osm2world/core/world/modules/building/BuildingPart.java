@@ -676,7 +676,11 @@ public class BuildingPart implements Renderable {
 
 	/** returns the distance between the bottom and the top of a level */
 	public double getLevelHeight(int level) {
-		return levels.get(level).getHeight();
+		if (levels.containsKey(level)) {
+			return levels.get(level).getHeight();
+		} else {
+			return 2.5;
+		}
 	}
 
 	public double getLevelHeightAboveBase(int level) {
