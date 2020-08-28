@@ -21,6 +21,8 @@ public class Indoor implements Renderable {
     private List<IndoorArea> areas = new ArrayList<>();
     private List<Corridor> corridors = new ArrayList<>();
 
+    List<AttachmentSurface> surfaces = null;
+
     public Indoor(List<MapElement> indoorElements, BuildingPart buildingPart){
 
         this.elements = indoorElements;
@@ -66,22 +68,27 @@ public class Indoor implements Renderable {
     }
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
-        List<AttachmentSurface> surfaces = new ArrayList<>();
 
-        for (IndoorRoom room : rooms) {
-            surfaces.addAll(room.getAttachmentSurfaces());
-        }
+        if (surfaces == null) {
 
-        for (IndoorArea area : areas) {
-            surfaces.addAll(area.getAttachmentSurfaces());
-        }
+            surfaces = new ArrayList<>();
 
-        for (Corridor corridor : corridors) {
-            surfaces.addAll(corridor.getAttachmentSurfaces());
-        }
+            for (IndoorRoom room : rooms) {
+                surfaces.addAll(room.getAttachmentSurfaces());
+            }
 
-        for (IndoorWall wall : walls) {
-            surfaces.addAll(wall.getAttachmentSurfaces());
+            for (IndoorArea area : areas) {
+                surfaces.addAll(area.getAttachmentSurfaces());
+            }
+
+            for (Corridor corridor : corridors) {
+                surfaces.addAll(corridor.getAttachmentSurfaces());
+            }
+
+            for (IndoorWall wall : walls) {
+                surfaces.addAll(wall.getAttachmentSurfaces());
+            }
+
         }
 
         return surfaces;

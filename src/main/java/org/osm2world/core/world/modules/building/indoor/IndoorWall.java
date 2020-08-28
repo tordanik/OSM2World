@@ -32,6 +32,7 @@ public class IndoorWall implements Renderable {
 
 	private final double straightnessTolerance = 0.001;
 	private final double wallThickness = 0.1;
+	private final double topOffset = 0.001;
 
     private final Float wallHeight;
     private final Float floorHeight;
@@ -830,7 +831,7 @@ public class IndoorWall implements Renderable {
 						List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(bottomPointsXZ,
 								baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-						List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight - 0.0001);
+						List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight - topOffset);
 
 						WallSurface mainSurface = new WallSurface(material, bottomPoints, topPoints);
 
@@ -843,7 +844,7 @@ public class IndoorWall implements Renderable {
 						List<VectorXYZ> backBottomPoints = new ArrayList<>(listXYZ(backBottomPointsXZ,
 								baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
 
-						List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight - 0.0001);
+						List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight - topOffset);
 
 						WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
 
@@ -872,7 +873,7 @@ public class IndoorWall implements Renderable {
 								Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
 										triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 										.stream()
-										.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - 0.0001))
+										.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - topOffset))
 										.collect(toList());
 
 								target.drawTriangles(defaultInnerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));

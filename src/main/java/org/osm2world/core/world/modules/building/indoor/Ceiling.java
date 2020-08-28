@@ -30,7 +30,7 @@ public class Ceiling {
 
     private AttachmentSurface attachmentSurface;
 
-    public Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
+    Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
         this.buildingPart = buildingPart;
         this.material = material;
         this.polygon = polygon;
@@ -59,7 +59,7 @@ public class Ceiling {
 
         if (render && polygon != null) {
 
-            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight - 0.0001;
+            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight - 0.001;
 
             List<ShapeXZ> sides  = new ArrayList<>(singleton(polygon.getOuter().makeCounterclockwise()));
             sides.addAll(polygon.getHoles().stream().map(SimplePolygonXZ::makeClockwise).collect(toList()));

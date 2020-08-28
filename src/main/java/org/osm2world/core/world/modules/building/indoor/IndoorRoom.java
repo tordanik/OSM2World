@@ -12,17 +12,17 @@ import java.util.List;
 
 public class IndoorRoom implements Renderable {
 
-    private final List<IndoorWall> walls;
+    private final IndoorWall wall;
     private final IndoorFloor floor;
     private final Ceiling ceiling;
 
     private final IndoorObjectData data;
 
-    public IndoorRoom(IndoorObjectData data){
+    IndoorRoom(IndoorObjectData data){
 
         this.data = data;
 
-        this.walls = splitIntoIndoorWalls();
+        this.wall = new IndoorWall(data.getBuildingPart(), data.getMapElement());
 
         floor = new IndoorFloor(data.getBuildingPart(),
                 data.getSurface(),
@@ -46,9 +46,7 @@ public class IndoorRoom implements Renderable {
 
         Collection<AttachmentSurface> floorSurfaces = floor.getAttachmentSurfaces();
         Collection<AttachmentSurface> ceilingSurfaces = ceiling.getAttachmentSurfaces();
-        List<AttachmentSurface> wallSurfaces = new ArrayList<>();
-
-        walls.forEach(w -> wallSurfaces.addAll(w.getAttachmentSurfaces()));
+        Collection<AttachmentSurface> wallSurfaces = wall.getAttachmentSurfaces();
 
         List<AttachmentSurface> surfaces = new ArrayList<>();
 
@@ -60,21 +58,10 @@ public class IndoorRoom implements Renderable {
 
     }
 
-    private List<IndoorWall> splitIntoIndoorWalls(){
-
-        List<IndoorWall> result = new ArrayList<>();
-
-        result.add(new IndoorWall(data.getBuildingPart(), data.getMapElement()));
-
-        return result;
-    }
-
-
-
     @Override
     public void renderTo(Target target) {
 
-        walls.forEach(w -> w.renderTo(target));
+        wall.renderTo(target);
 
         floor.renderTo(target);
 

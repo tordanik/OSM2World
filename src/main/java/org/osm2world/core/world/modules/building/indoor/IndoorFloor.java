@@ -31,7 +31,7 @@ public class IndoorFloor {
 
     private AttachmentSurface attachmentSurface;
 
-    public IndoorFloor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
+    IndoorFloor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
         this.buildingPart = buildingPart;
         this.material = material;
         this.polygon = polygon;

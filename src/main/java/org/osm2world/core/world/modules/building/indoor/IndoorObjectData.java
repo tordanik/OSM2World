@@ -12,6 +12,7 @@ import org.osm2world.core.world.modules.building.BuildingPart;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
@@ -28,13 +29,15 @@ public final class IndoorObjectData {
 
         this.buildingPart = buildingPart;
         this.mapElement = mapElement;
+
+        List<Integer> parsedLevels = parseLevels(mapElement.getTags().getValue("level"));
+        this.levels = parsedLevels == null ? emptyList() : parsedLevels.stream().map(buildingPart::levelConversion).collect(toList());
+
         Configuration config = buildingPart.getConfig();
-        this.levels = parseLevels(mapElement.getTags().getValue("level")).stream().map(l -> buildingPart.levelConversion(l)).collect(toList());
 
         if (config.getString("renderLevels") != null){
             List<String> renLevels = asList(config.getString("renderLevels").split(","));
-            this.renderableLevels = parseLevels(mapElement.getTags().getValue("level"))
-                    .stream()
+            this.renderableLevels = levels.stream()
                     .filter(i -> renLevels.contains(Integer.toString(i)))
                     .collect(toList());
         } else {
@@ -54,7 +57,9 @@ public final class IndoorObjectData {
 
     public BuildingPart getBuildingPart() { return buildingPart; }
 
-    // height of lowest level above base
+    /**
+     * @return height of lowest level above base
+     */
     public Float getLevelHeightAboveBase() { return levelHeightAboveBase; }
 
     public List<Integer> getLevels() { return levels; }

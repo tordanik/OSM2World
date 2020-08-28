@@ -31,7 +31,6 @@ public class IndoorModule extends AbstractModule {
 		}
 	}
 
-
 	private static class Elevator extends AbstractAreaWorldObject {
 
 		private final double carHeight = 2.2;
@@ -246,7 +245,7 @@ public class IndoorModule extends AbstractModule {
 
 				/* draw cable */
 
-				//TODO align to parallel to door walls?
+				//TODO align to be parallel to door walls?
 
 				VectorXZ sideDirection = carPolygon.getSegments().get(0).getDirection();
 

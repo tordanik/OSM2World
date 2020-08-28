@@ -19,20 +19,23 @@ public class Corridor implements Renderable {
 
     private final IndoorObjectData data;
 
-    public Corridor(IndoorObjectData data){
+    Corridor(IndoorObjectData data){
 
         this.data = data;
 
         Material material = data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall);
         PolygonWithHolesXZ polygon = data.getPolygon();
-        Double floorHeight = (double) data.getLevelHeightAboveBase();
+        double floorHeight = (double) data.getLevelHeightAboveBase();
 
+        /* allow for transparent windows for adjacent objects */
         if (data.getMapElement() instanceof MapArea) {
-            data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), data.getMinLevel());
+            data.getLevels().forEach(l -> data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), l));
         }
 
-        floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight, data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
-        ceiling = new Ceiling(data.getBuildingPart(), material, polygon, data.getTopOfTopLevelHeightAboveBase(), data.getRenderableLevels().contains(data.getMaxLevel()), data.getMaxLevel());
+        floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight,
+                data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
+        ceiling = new Ceiling(data.getBuildingPart(), material, polygon, data.getTopOfTopLevelHeightAboveBase(),
+                data.getRenderableLevels().contains(data.getMaxLevel()), data.getMaxLevel());
     }
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
