@@ -14,7 +14,7 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
 import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 
 /**
- * DataSource providing information from a single .osm file. The file is read
+ * {@link OSMDataReader} providing information from a single .osm file. The file is read
  * during the {@link #getData()} call, there will be no updates when the file is
  * changed later. This class internally uses osm4j to read the file.
  *

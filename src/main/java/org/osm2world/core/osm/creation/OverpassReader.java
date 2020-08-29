@@ -14,6 +14,9 @@ import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
 import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
 import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 
+/**
+ * {@link OSMDataReader} fetching information from Overpass API.
+ */
 public class OverpassReader implements OSMDataReader {
 
 	public static final String DEFAULT_API_URL = "http://www.overpass-api.de/api/interpreter";

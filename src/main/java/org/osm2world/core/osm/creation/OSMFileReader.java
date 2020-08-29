@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.osm2world.core.osm.data.OSMData;
 
 /**
- * DataSource providing information from a single .osm file, including common
+ * {@link OSMDataReader} providing information from a single .osm file, including common
  * non-standard variants such as those files produced by JOSM. The file is read
  * during the {@link #getData()} call, there will be no updates when the file is
  * changed later. This class internally uses osm4j to read the file.

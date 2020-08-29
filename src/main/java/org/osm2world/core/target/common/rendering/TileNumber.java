@@ -4,7 +4,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * immutable tile number with zoom level
+ * immutable tile number with zoom level.
+ * Tile coords follow the common XYZ convention, with an Y axis that points northward.
  */
 public class TileNumber {
 
@@ -52,6 +53,11 @@ public class TileNumber {
 			//TODO (robustness): more validation
 			throw new IllegalArgumentException("not positive: " + x + ", " + y);
 		}
+	}
+
+	/** returns a flipped y coordinate for use with TMS tile coords (with an Y axis pointing southward) */
+	public int flippedY() {
+		return (1 << zoom) - 1 - y;
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.creation.OverpassReader;
@@ -54,7 +55,12 @@ public final class Output {
 		switch (argumentsGroup.getRepresentative().getInputMode()) {
 
 		case FILE:
-			dataReader = new OSMFileReader(argumentsGroup.getRepresentative().getInput());
+			File inputFile = argumentsGroup.getRepresentative().getInput();
+			if (inputFile.getName().endsWith(".mbtiles")) {
+				dataReader = new MbtilesReader(inputFile, argumentsGroup.getRepresentative().getTile());
+			} else {
+				dataReader = new OSMFileReader(inputFile);
+			}
 			break;
 
 		case OVERPASS:

@@ -79,6 +79,10 @@ public class CLIArgumentsGroup {
 				? args2.isInputBoundingBox() && args1.getInputBoundingBox().equals(args2.getInputBoundingBox())
 				: !args2.isInputBoundingBox())
 
+			&& (args1.isTile()
+					? args2.isTile() && args1.getTile().equals(args2.getTile())
+					: !args2.isTile())
+
 			&& (args1.isOverpassURL()
 				? args2.isOverpassURL() && args1.getOverpassURL().equals(args2.getOverpassURL())
 				: !args2.isOverpassURL())

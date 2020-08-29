@@ -44,6 +44,10 @@ public interface CLIArguments {
 	List<LatLonEle> getInputBoundingBox();
 	boolean isInputBoundingBox();
 
+	@Option(description="zoom,x,y defining an input tile (used for mbtiles sqlite input)", pattern=TileNumber.PATTERN)
+	TileNumber getTile();
+	boolean isTile();
+
 	@Option(description="overpass query string", longName="input_query")
 	String getInputQuery();
 	boolean isInputQuery();

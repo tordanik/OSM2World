@@ -164,6 +164,12 @@
     		<version>1.11</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.imintel</groupId>
+			<artifactId>mbtiles4j</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

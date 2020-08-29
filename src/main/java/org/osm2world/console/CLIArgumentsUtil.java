@@ -32,6 +32,8 @@ public final class CLIArgumentsUtil {
 			case FILE:
 				if (!args.isInput()) {
 					return "input file parameter is required (or choose a different input mode)";
+				} else if (args.getInput().getName().endsWith(".mbtiles") && !args.isTile()) {
+					return "the --tile parameter is required for .mbtiles input files";
 				}
 				break;
 
