@@ -65,7 +65,7 @@ public class IndoorFloor {
 
     private void renderTo(Target target, boolean attachmentSurfaceBool) {
 
-        if (!attachmentSurfaceBool) {
+        if (!attachmentSurfaceBool && level != buildingPart.getMinLevel()) {
             ceiling.renderTo(target);
         }
 
