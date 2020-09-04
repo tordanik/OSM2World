@@ -24,7 +24,8 @@ import org.osm2world.viewer.view.ViewerFrame;
 public class DefaultNavigation extends MouseAdapter implements KeyListener, MouseInputListener {
 
 	private final static double ANGLE_INCREMENT = Math.PI/200;
-	private final static double MOVEMENT_INCREMENT = 0.1;
+	private final static double MOVEMENT_INCREMENT = 2.0;
+	private final static double SLOW_MOVEMENT_INCREMENT = 0.1;
 
 	private final RenderOptions renderOptions;
 	private final ViewerFrame viewerFrame;
@@ -155,6 +156,9 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 
 			Camera c = renderOptions.camera;
 
+			boolean shiftDown = pressedKeys.contains(KeyEvent.VK_SHIFT);
+			double movementIncrement = shiftDown ? SLOW_MOVEMENT_INCREMENT :  MOVEMENT_INCREMENT;
+
 			if (c != null) {
 
 				synchronized (pressedKeys) {
@@ -169,22 +173,22 @@ public class DefaultNavigation extends MouseAdapter implements KeyListener, Mous
 							c.roll(-ANGLE_INCREMENT);
 							break;
 						case KeyEvent.VK_W:
-							c.moveForward(MOVEMENT_INCREMENT);
+							c.moveForward(movementIncrement);
 							break;
 						case KeyEvent.VK_S:
-							c.moveForward(-MOVEMENT_INCREMENT);
+							c.moveForward(-movementIncrement);
 							break;
 						case KeyEvent.VK_A:
-							c.moveRight(MOVEMENT_INCREMENT);
+							c.moveRight(movementIncrement);
 							break;
 						case KeyEvent.VK_D:
-							c.moveRight(-MOVEMENT_INCREMENT);
+							c.moveRight(-movementIncrement);
 							break;
 						case KeyEvent.VK_PAGE_UP:
-							c.moveUp(MOVEMENT_INCREMENT);
+							c.moveUp(movementIncrement);
 							break;
 						case KeyEvent.VK_PAGE_DOWN:
-							c.moveUp(-MOVEMENT_INCREMENT);
+							c.moveUp(-movementIncrement);
 							break;
 						case KeyEvent.VK_UP:
 							c.pitch(ANGLE_INCREMENT);
