@@ -244,29 +244,32 @@ public class Wall implements Renderable {
 
 			for (int level : levels) {
 
-				VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
-						buildingPart.getLevelHeightAboveBase(level)
-						- buildingPart.getLevelHeightAboveBase(buildingPart.buildingMinLevel));
+				if (getBuildingPart().containsLevel(level)) {
 
-				if ((node.getTags().contains("building", "entrance")
-						|| node.getTags().containsKey("entrance")
-						|| node.getTags().containsKey("door"))) {
+					VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
+							buildingPart.getLevelHeightAboveBase(level)
+									- buildingPart.getLevelHeightAboveBase(buildingPart.buildingMinLevel));
 
-					DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
-					mainSurface.addElementIfSpaceFree(new Door(pos, params));
+					if ((node.getTags().contains("building", "entrance")
+							|| node.getTags().containsKey("entrance")
+							|| node.getTags().containsKey("door"))) {
 
-				} else if (node.getTags().containsKey("window")
-						&& !node.getTags().contains("window", "no")) {
+						DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
+						mainSurface.addElementIfSpaceFree(new Door(pos, params));
 
-					boolean transparent = buildingPart.getBuilding().queryWindowSegments(node, level);
+					} else if (node.getTags().containsKey("window")
+							&& !node.getTags().contains("window", "no")) {
 
-					TagSet windowTags = inheritTags(node.getTags(), tags);
-					WindowParameters params = new WindowParameters(windowTags, buildingPart.getLevelHeight(level));
-					GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params, transparent);
-					mainSurface.addElementIfSpaceFree(window);
+						boolean transparent = buildingPart.getBuilding().queryWindowSegments(node, level);
 
-					individuallyMappedWindows = true;
+						TagSet windowTags = inheritTags(node.getTags(), tags);
+						WindowParameters params = new WindowParameters(windowTags, buildingPart.getLevelHeight(level));
+						GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params, transparent);
+						mainSurface.addElementIfSpaceFree(window);
 
+						individuallyMappedWindows = true;
+
+					}
 				}
 			}
 		}

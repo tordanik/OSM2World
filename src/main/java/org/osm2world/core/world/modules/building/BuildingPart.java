@@ -758,6 +758,10 @@ public class BuildingPart implements Renderable {
 		}
 	}
 
+	public boolean containsLevel(int level){
+		return levels.containsKey(level);
+	}
+
 	public int levelConversion(Integer level){
 
 			int temp = level - min_level;
