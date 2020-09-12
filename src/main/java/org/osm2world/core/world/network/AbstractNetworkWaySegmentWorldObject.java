@@ -1,5 +1,21 @@
 package org.osm2world.core.world.network;
 
+import static java.lang.Double.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
+import static org.osm2world.core.map_elevation.data.GroundState.*;
+import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.util.ValueParseUtil.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
@@ -12,36 +28,20 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
-
-import static java.lang.Double.NaN;
-import static java.lang.Double.isNaN;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXZ.distance;
-import static org.osm2world.core.math.VectorXZ.distanceSquared;
-import static org.osm2world.core.util.ValueParseUtil.parseIncline;
-import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 public abstract class AbstractNetworkWaySegmentWorldObject
 		implements NetworkWaySegmentWorldObject, BoundedObject, WorldObjectWithOutline {
@@ -60,7 +60,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 	protected EleConnectorGroup connectors;
 
-	private List<AttachmentConnector> attachmentConnectorList = new ArrayList<>();
+	private List<AttachmentConnector> attachmentConnectorList = emptyList();
 
 	private List<VectorXZ> centerlineXZ = null;
 
@@ -602,11 +602,8 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		return attachmentConnectorList;
 	}
 
-	public void addAttachmentConnectors(Collection<AttachmentConnector> a){
-		attachmentConnectorList.addAll(a);
-	}
-
-	public void createAttchmentConnectors(){
+	/** to be used in the constructors of subclasses that wish to be attachable to indoor surfaces */
+	protected void createAttachmentConnectors() {
 
 		MapNode wayStartNode = segment.getWay().getNodes().get(0);
 		MapNode wayEndNode = segment.getWay().getNodes().get(segment.getWay().getNodes().size() - 1);
@@ -614,53 +611,10 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 		Integer firstNodeLevel = null;
 		Integer lastNodeLevel = null;
 
-		/* find level tags of connected map elements */
+		/* use level tags on the node or connected elements */
 
-		List<TagSet> startNodeConnectedElements = wayStartNode.getConnectedWaySegments().stream().map(w -> w.getTags()).collect(toList());
-		startNodeConnectedElements.addAll(wayStartNode.getAdjacentAreas().stream().map(a -> a.getTags()).collect(toList()));
-
-		List<TagSet> endNodeConnectedElements = wayEndNode.getConnectedWaySegments().stream().map(w -> w.getTags()).collect(toList());
-		endNodeConnectedElements.addAll(wayEndNode.getAdjacentAreas().stream().map(a -> a.getTags()).collect(toList()));
-
-		for (TagSet tags : startNodeConnectedElements) {
-			if (tags.containsKey("level")) {
-				List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
-				if (parsedLevels != null) {
-					if (firstNodeLevel == null || parsedLevels.get(0) < firstNodeLevel) {
-						firstNodeLevel = parsedLevels.get(0);
-					}
-				}
-			}
-		}
-
-		for (TagSet tags : endNodeConnectedElements) {
-			if (tags.containsKey("level")) {
-				List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
-				if (parsedLevels != null) {
-					if (lastNodeLevel == null || parsedLevels.get(parsedLevels.size() - 1) > lastNodeLevel) {
-						lastNodeLevel = parsedLevels.get(parsedLevels.size() - 1);
-					}
-				}
-			}
-		}
-
-
-		/* use node tags */
-
-		if (wayStartNode.getTags().containsKey("level")) {
-			List<Integer> parsedLevels = parseLevels(wayStartNode.getTags().getValue("level"));
-			if (parsedLevels != null) {
-				firstNodeLevel = parsedLevels.get(0);
-			}
-		}
-
-		if (wayEndNode.getTags().containsKey("level")) {
-			List<Integer> parsedLevels = parseLevels(wayEndNode.getTags().getValue("level"));
-			if (parsedLevels != null) {
-				lastNodeLevel = parsedLevels.get(parsedLevels.size() - 1);
-			}
-		}
-
+		firstNodeLevel = determineLevelOfNode(wayStartNode);
+		lastNodeLevel = determineLevelOfNode(wayEndNode);
 
 		/* use segment tags */
 
@@ -689,8 +643,45 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 			AttachmentConnector lastConnector = new AttachmentConnector(singletonList("floor" + lastNodeLevel),
 					wayEndNode.getPos().xyz(0), this, 0, false);
 
-			addAttachmentConnectors(asList(firstConnector, lastConnector));
+			attachmentConnectorList = asList(firstConnector, lastConnector);
 		}
+
+	}
+
+	/**
+	 * tries to find out which level a node is on.
+	 * Considers level=* tags on the node itself as well as on connected elements.
+	 *
+	 * @return  the level value, or null if it could not be determined
+	 */
+	private static final Integer determineLevelOfNode(MapNode node) {
+
+		/* use node tags */
+
+		if (node.getTags().containsKey("level")) {
+			List<Integer> parsedLevels = parseLevels(node.getTags().getValue("level"));
+			if (parsedLevels != null) {
+				return parsedLevels.get(0);
+			}
+		}
+
+		/* as a fallback, find level tags of connected map elements */
+
+		Integer result = null;
+
+		for (MapElement connectedElement : node.getAdjacentAreas()) {
+			TagSet tags = connectedElement.getTags();
+			if (asList("room", "area", "corridor").contains(tags.getValue("indoor"))) {
+				List<Integer> parsedLevels = parseLevels(tags.getValue("level"));
+				if (parsedLevels != null) {
+					if (result == null || parsedLevels.get(0) < result) {
+						result = parsedLevels.get(0);
+					}
+				}
+			}
+		}
+
+		return result;
 
 	}
 

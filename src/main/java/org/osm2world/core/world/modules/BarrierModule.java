@@ -121,7 +121,7 @@ public class BarrierModule extends AbstractModule {
 			height = parseHeight(waySegment.getTags(), defaultHeight);
 			width = parseWidth(waySegment.getTags(), defaultWidth);
 
-			createAttchmentConnectors();
+			createAttachmentConnectors();
 
 		}
 

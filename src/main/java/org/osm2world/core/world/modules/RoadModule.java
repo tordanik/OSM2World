@@ -728,7 +728,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				this.laneLayout = null;
 				this.width = parseWidth(tags, 1.0f);
 
-				createAttchmentConnectors();
+				createAttachmentConnectors();
 			} else {
 				this.laneLayout = buildBasicLaneLayout();
 				this.width = calculateWidth();
