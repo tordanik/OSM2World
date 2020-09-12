@@ -80,8 +80,8 @@ public class ParkingModule extends AbstractModule {
 
 			double ele = 0;
 
-			if (getAttachmentConnectorObjectIfAttached() != null) {
-				ele = getAttachmentConnectorObjectIfAttached().getAttachedPos().getY();
+			if (getConnectorIfAttached() != null) {
+				ele = getConnectorIfAttached().getAttachedPos().getY();
 			} else {
 				//TODO add elevation support
 			}
