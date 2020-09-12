@@ -9,8 +9,8 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
@@ -81,7 +81,7 @@ public interface Target {
 	 *                     Defines the shape's rotation along with frontVector; != null
 	 * @param scaleFactor  a factor to scale the shape by, 1.0 leaves the shape unscaled.
 	 */
-	void drawShape(Material material, SimpleClosedShapeXZ shape, VectorXYZ point,
+	void drawShape(Material material, ClosedShapeXZ shape, VectorXYZ point,
 			VectorXYZ frontVector, VectorXYZ upVector, double scaleFactor);
 
 	/**

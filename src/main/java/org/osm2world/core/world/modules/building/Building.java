@@ -73,6 +73,11 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 					MapArea otherArea = (MapArea)other;
 
+					if (otherArea.getMemberships().stream().anyMatch(m -> "part".equals(m.getRole())
+							&& m.getRelation().getTags().contains("type", "building"))) {
+						continue; // belongs to another building's relation
+					}
+
 					if (roughlyContains(area.getPolygon(), otherArea.getPolygon().getOuter())) {
 						parts.add(new BuildingPart(this, otherArea, config));
 					}

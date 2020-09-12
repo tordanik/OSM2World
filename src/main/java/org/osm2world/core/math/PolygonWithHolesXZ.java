@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 
 public class PolygonWithHolesXZ implements PolygonShapeXZ {
@@ -32,6 +33,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 		return outerPolygon.getVertexList();
 	}
 
+	@Override
 	public SimplePolygonXZ getOuter() {
 		return outerPolygon;
 	}
@@ -42,7 +44,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 	}
 
 	@Override
-	public List<SimplePolygonXZ> getPolygons() {
+	public List<SimplePolygonXZ> getRings() {
 		if (getHoles().isEmpty()) {
 			return singletonList(getOuter());
 		} else {
@@ -51,6 +53,12 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 			result.addAll(getHoles());
 			return result;
 		}
+	}
+
+	/** @deprecated  Use {@link #getRings()} instead */
+	@Override
+	public List<SimplePolygonXZ> getPolygons() {
+		return getRings();
 	}
 
 	public TriangleXZ asTriangleXZ() {
@@ -82,6 +90,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 
 	//TODO (duplicate code): do something like intersects(geometricObject)
 
+	@Override
 	public boolean intersects(LineSegmentXZ lineSegment) {
 		for (SimplePolygonXZ hole : holes) {
 			if (hole.intersects(lineSegment)) {
@@ -100,6 +109,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 		return outerPolygon.intersects(other);
 	}
 
+	@Override
 	public List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
 		for (SimplePolygonXZ hole : holes) {
@@ -111,7 +121,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 
 	public Collection<VectorXZ> intersectionPositions(PolygonWithHolesXZ p2) {
 		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
-		for (SimplePolygonXZ simplePoly : p2.getPolygons()) {
+		for (SimplePolygonXZ simplePoly : p2.getRings()) {
 			for (LineSegmentXZ lineSegment : simplePoly.getSegments()) {
 				intersectionPositions.addAll(
 						intersectionPositions(lineSegment));
@@ -120,9 +130,15 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 		return intersectionPositions;
 	}
 
+
+	@Override
+	public Collection<TriangleXZ> getTriangulation() {
+		return TriangulationUtil.triangulate(this);
+	}
+
 	@Override
 	public String toString() {
-		return getPolygons().toString();
+		return getRings().toString();
 	}
 
 }

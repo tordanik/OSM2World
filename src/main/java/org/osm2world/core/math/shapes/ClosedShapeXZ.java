@@ -1,8 +1,12 @@
 package org.osm2world.core.math.shapes;
 
+import static java.util.Collections.singletonList;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
 /** a closed shape. For this kind of shape, the vertices describe an area's boundary. Can have holes. */
@@ -20,7 +24,25 @@ public interface ClosedShapeXZ extends ShapeXZ {
 	/** returns the inner rings of this shape */
 	public Collection<? extends SimpleClosedShapeXZ> getHoles();
 
+	/** returns both the outer ring and holes */
+	public default Collection<? extends SimpleClosedShapeXZ> getRings() {
+		if (getHoles().isEmpty()) {
+			return singletonList(getOuter());
+		} else {
+			List<SimpleClosedShapeXZ> result = new ArrayList<>(getHoles().size() + 1);
+			result.add(getOuter());
+			result.addAll(getHoles());
+			return result;
+		}
+	}
+
 	/** returns the shape's area */
 	public double getArea();
+
+	/**
+	 * returns a decomposition of the shape into triangles.
+	 * For some shapes (e.g. circles), this may be an approximation.
+	 */
+	public Collection<TriangleXZ> getTriangulation();
 
 }
