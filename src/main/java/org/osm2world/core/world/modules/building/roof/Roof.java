@@ -1,5 +1,8 @@
 package org.osm2world.core.world.modules.building.roof;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -9,10 +12,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 
 /** the roof of a {@link BuildingPart} */
 abstract public class Roof {
@@ -26,9 +25,6 @@ abstract public class Roof {
 	protected final TagSet tags;
 	protected final double roofHeight;
 	protected final Material material;
-
-	protected Collection<AttachmentSurface> attachmentSurfaces;
-
 
 	public Roof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
 		this.originalPolygon = originalPolygon;
@@ -52,8 +48,14 @@ abstract public class Roof {
 	/** returns segments within the roof polygon that define ridges or edges of the roof */
 	public abstract Collection<LineSegmentXZ> getInnerSegments();
 
-	/** returns the attachment surfaces for the roof */
-	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle, int level){
+	/**
+	 * returns the attachment surfaces for this roof
+	 *
+	 * @param baseEle  the lower elevation of the roof, as in {@link #renderTo(Target, double)}
+	 * @param level  the roof's level number. This allows distinction between multiple vertically stacked roofs
+	 * when attaching objects to the roofs' {@link AttachmentSurface}s.
+	 */
+	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle, int level) {
 		return Collections.emptyList();
 	}
 
