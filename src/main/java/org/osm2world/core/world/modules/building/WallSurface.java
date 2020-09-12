@@ -152,13 +152,14 @@ public class WallSurface {
 	 *
 	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
 	 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+	 * @param renderElements  whether the {@link WallElement}s inserted into this surface should also be rendered
 	 */
 	public void renderTo(Target target, VectorXZ textureOrigin,
-			boolean applyWindowTexture, double windowHeight, boolean attachmentSurface) {
+			boolean applyWindowTexture, double windowHeight, boolean renderElements) {
 
 		/* render the elements on the wall */
 
-		if (!attachmentSurface) {
+		if (renderElements) {
 			for (WallElement e : elements) {
 				e.renderTo(target, this);
 			}

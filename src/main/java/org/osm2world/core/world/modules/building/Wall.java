@@ -297,11 +297,11 @@ public class Wall implements Renderable {
 			mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
 					hasWindows && !individuallyMappedWindows
 						&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
-					windowHeight, false);
+					windowHeight, true);
 		}
 
 		if (roofSurface != null) {
-			roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight, false);
+			roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight, true);
 		}
 
 	}

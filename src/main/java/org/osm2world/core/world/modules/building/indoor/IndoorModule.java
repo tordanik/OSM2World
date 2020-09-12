@@ -1,10 +1,28 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
@@ -14,13 +32,6 @@ import org.osm2world.core.world.modules.building.Door;
 import org.osm2world.core.world.modules.building.DoorParameters;
 import org.osm2world.core.world.modules.building.WallSurface;
 import org.osm2world.core.world.modules.common.AbstractModule;
-
-import java.util.*;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 public class IndoorModule extends AbstractModule {
 
@@ -211,8 +222,8 @@ public class IndoorModule extends AbstractModule {
 						}
 					}
 
-					frontSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, 0, false);
-					backSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, 0, false);
+					frontSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, 0, true);
+					backSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, 0, true);
 
 				}
 
