@@ -3,6 +3,8 @@ package org.osm2world.core.osm.creation;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
@@ -20,6 +22,22 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
  */
 public class MbtilesReader implements OSMDataReader {
 
+	/**
+	 * map of existing readers.
+	 * Necessary to avoid more than one reader (and thus connection) to be created by separate threads.
+	 * Access through {@link #getReader(File)}!
+	 * //TODO move into a separate MbtilesReaderPool class so I can enforce access restrictions?
+	 */
+	private static Map<File, MBTilesReader> readerMap = new HashMap<>();
+	//TODO reference counter, closing it
+
+	private static synchronized MBTilesReader getReader(File mbtilesFile) throws MBTilesReadException {
+		if (!readerMap.containsKey(mbtilesFile)) {
+			readerMap.put(mbtilesFile, new MBTilesReader(mbtilesFile));
+		}
+		return readerMap.get(mbtilesFile);
+	}
+
 	private final File mbtilesFile;
 	private final TileNumber tile;
 
@@ -35,7 +53,7 @@ public class MbtilesReader implements OSMDataReader {
 
 		try {
 
-			r = new MBTilesReader(mbtilesFile);
+			r = getReader(mbtilesFile);
 
 			// get the tile; note that mbtiles is using TMS tile coords, which have a flipped y axis
 			Tile t = r.getTile(tile.zoom, tile.x, tile.flippedY());
@@ -51,10 +69,6 @@ public class MbtilesReader implements OSMDataReader {
 
 		} catch (MBTilesReadException e) {
 			throw new IOException(e);
-		} finally {
-			if (r != null) {
-				r.close();
-			}
 		}
 
 	}
