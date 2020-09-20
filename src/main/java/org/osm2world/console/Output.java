@@ -2,14 +2,13 @@ package org.osm2world.console;
 
 import static java.lang.Double.*;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
@@ -127,37 +125,14 @@ public final class Output {
 
 		for (CLIArguments args : argumentsGroup.getCLIArgumentsList()) {
 
+			/* set camera and projection */
+
 			Camera camera = null;
 			Projection projection = null;
 
-			if (args.isOviewTiles()) {
+			if (args.isPviewPos()) {
 
-				camera = OrthoTilesUtil.cameraForTiles(
-						results.getMapProjection(),
-						args.getOviewTiles(),
-						args.getOviewAngle(),
-						args.getOviewFrom());
-				projection = OrthoTilesUtil.projectionForTiles(
-						results.getMapProjection(),
-						args.getOviewTiles(),
-						args.getOviewAngle(),
-						args.getOviewFrom());
-
-			} else if (args.isOviewBoundingBox()) {
-
-				double angle = args.getOviewAngle();
-				CardinalDirection from = args.getOviewFrom();
-
-				Collection<VectorXZ> pointsXZ = new ArrayList<VectorXZ>();
-				for (LatLonEle l : args.getOviewBoundingBox()) {
-					pointsXZ.add(results.getMapProjection().calcPos(l.lat, l.lon));
-				}
-				AxisAlignedRectangleXZ bounds = bbox(pointsXZ);
-
-				camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
-				projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
-
-			} else if (args.isPviewPos()) {
+				/* perspective projection */
 
 				MapProjection proj = results.getMapProjection();
 
@@ -176,12 +151,38 @@ public final class Output {
 						0,
 						1, 50000);
 
+			} else {
+
+				/* orthographic projection */
+
+				double angle = args.getOviewAngle();
+				CardinalDirection from = args.getOviewFrom();
+
+				AxisAlignedRectangleXZ bounds;
+
+				if (args.isOviewBoundingBox()) {
+					bounds = bbox(args.getOviewBoundingBox().stream()
+							.map(LatLonEle::latLon)
+							.map(results.getMapProjection()::calcPos)
+							.collect(toList()));
+				} else if (args.isOviewTiles()) {
+					bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
+				} else if (args.isTile()) {
+					bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+				} else {
+					bounds = results.getMapData().getBoundary();
+				}
+
+				camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
+				projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
+
 			}
+
+			/* perform the actual output */
 
 			for (File outputFile : args.getOutput()) {
 
-				OutputMode outputMode =
-					CLIArgumentsUtil.getOutputMode(outputFile);
+				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
 
 				switch (outputMode) {
 

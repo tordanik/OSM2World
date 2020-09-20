@@ -3,6 +3,8 @@ package org.osm2world.console;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osm2world.core.map_data.creation.LatLon;
+
 /**
  * immutable latitude/longitude/elevation coordinate triple
  */
@@ -71,6 +73,11 @@ public class LatLonEle {
 		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
 			throw new IllegalArgumentException("not valid: " + lat + ", " + lon);
 		}
+	}
+
+	/** returns just the {@link LatLon} components */
+	public LatLon latLon() {
+		return new LatLon(lat, lon);
 	}
 
 	@Override
