@@ -1,6 +1,7 @@
 package org.osm2world.console;
 
 import static java.lang.Double.*;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
@@ -207,9 +208,8 @@ public final class Output {
 
 				case WEB_PBF:
 					AxisAlignedRectangleXZ bbox = null;
-					if (args.isOviewTiles()) {
-						// TODO define a more generic --tiles parameter (as well as --bbox)
-						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
+					if (args.isTile()) {
+						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
 					}
 					FrontendPbfTarget.writePbfFile(
 							outputFile, results.getMapData(), bbox, results.getMapProjection());
