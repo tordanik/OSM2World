@@ -182,6 +182,8 @@ public final class Output {
 
 			for (File outputFile : args.getOutput()) {
 
+				outputFile.getParentFile().mkdirs();
+
 				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
 
 				switch (outputMode) {
