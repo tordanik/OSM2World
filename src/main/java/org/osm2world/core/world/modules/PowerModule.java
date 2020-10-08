@@ -35,6 +35,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.frontend_pbf.ModelTarget;
+import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -246,8 +247,18 @@ public final class PowerModule extends AbstractModule {
 
 		};
 
+		private final AttachmentConnector connector;
+
 		public WindTurbine(MapNode node) {
+
 			super(node);
+
+			if (node.getTags().contains("location", "roof") || node.getTags().contains("location", "rooftop")) {
+				connector = new AttachmentConnector(singletonList("roof"), node.getPos().xyz(0), this, 0, false);
+			} else {
+				connector = null;
+			}
+
 		}
 
 		@Override
@@ -258,12 +269,14 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float poleHeight = parseHeight(node.getTags(), 100f);
-			float poleRadiusBottom = parseWidth(node.getTags(), 5) / 2;
+			float poleHeight = parseHeight(node.getTags(),
+					(float)parseMeasure(node.getTags().getValue("height:hub"), 100.0));
+			float poleRadiusBottom = parseWidth(node.getTags(), poleHeight / 20) / 2;
 			float poleRadiusTop = poleRadiusBottom / 2;
 			float nacelleHeight = poleHeight * 0.05f;
 			float nacelleDepth = poleHeight * 0.1f;
 			double rotorDiameter = parseMeasure(node.getTags().getValue("rotor:diameter"), poleHeight);
+
 
 			/* determine material */
 
@@ -282,16 +295,22 @@ public final class PowerModule extends AbstractModule {
 						node.getTags().getValue("surface"), Materials.STEEL);
 			}
 
+			/* determine position with elevation */
+			VectorXYZ position = getBase();
+			if (connector != null && connector.isAttached()) {
+				position = position.xz().xyz(connector.getAttachedPos().getY());
+			}
+
 			/* draw pole */
 			target.drawColumn(poleMaterial, null,
-					getBase(),
+					position,
 					poleHeight,
 					poleRadiusBottom, poleRadiusTop, false, false);
 
 			/* draw nacelle */
 			VectorXZ nacelleVector = VectorXZ.X_UNIT;
 			target.drawBox(nacelleMaterial,
-					getBase().addY(poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
+					position.addY(poleHeight).add(nacelleDepth/2 - poleRadiusTop*2, 0f, 0f),
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
 			/* draw rotor blades */
@@ -299,17 +318,26 @@ public final class PowerModule extends AbstractModule {
 			if (target instanceof ModelTarget) {
 
 				((ModelTarget) target).drawModel(ROTOR,
-						getBase().addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
+						position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 						0, rotorDiameter, rotorDiameter, rotorDiameter);
 
 			} else {
 
 				ROTOR.render(target,
-						getBase().addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
+						position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
 						0, rotorDiameter, rotorDiameter, rotorDiameter);
 
 			}
 
+		}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			if (connector == null) {
+				return emptyList();
+			} else {
+				return singleton(connector);
+			}
 		}
 
 	}
