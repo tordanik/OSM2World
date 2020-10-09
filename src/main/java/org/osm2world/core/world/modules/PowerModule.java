@@ -4,10 +4,12 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
@@ -21,6 +23,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
@@ -806,24 +809,27 @@ public final class PowerModule extends AbstractModule {
 
 	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject {
 
-		//TODO create individual EleConnector for panels
-
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = comparingDouble(v -> v.x);
 
-		protected PhotovoltaicPlant(MapArea area) {
-			super(area);
-		}
+		private final VectorXYZ panelUpVector;
 
-		@Override
-		public void renderTo(Target target) {
+		/** locations of the rows of panels */
+		private final List<PolylineXZ> panelRows = new ArrayList<>();
+
+		/** connectors for every point in of the {@link #panelRows} */
+		private final EleConnectorGroup eleConnectors = new EleConnectorGroup();
+
+		protected PhotovoltaicPlant(MapArea area) {
+
+			super(area);
 
 			/* construct panel geometry */
 
 			double panelAngle = PI / 4;
 			double panelHeight = 5;
 
-			VectorXYZ upVector = Z_UNIT.mult(panelHeight).rotateX(-panelAngle);
+			panelUpVector = Z_UNIT.mult(panelHeight).rotateX(-panelAngle);
 
 			/* place and draw rows of panels */
 
@@ -833,7 +839,7 @@ public final class PowerModule extends AbstractModule {
 
 			double posZ = box.minZ;
 
-			while (posZ + upVector.z < box.maxZ) {
+			while (posZ + panelUpVector.z < box.maxZ) {
 
 				LineSegmentXZ rowLine = new LineSegmentXZ(
 						 new VectorXZ(box.minX - 10, posZ),
@@ -879,26 +885,43 @@ public final class PowerModule extends AbstractModule {
 
 				}
 
-				// draw row of panels between each start/end pair
+				// define a row of panels between each start/end pair
 
 				assert intersections.size() % 2 == 0;
 
 				for (int i = 0; i + 1 < intersections.size(); i += 2) {
-
-					// TODO: take elevation into account
-					// Might necessitate individual panels or shorter strips.
-
-//					renderPanelsTo(target,
-//							eleProfile.getWithEle(intersections.get(i)),
-//							eleProfile.getWithEle(intersections.get(i+1)),
-//							upVector);
-
+					VectorXZ start = intersections.get(i);
+					VectorXZ end = intersections.get(i + 1);
+					PolylineXZ polyline = new PolylineXZ(equallyDistributePointsAlong(20, true,start, end));
+					panelRows.add(polyline);
+					eleConnectors.addConnectorsFor(polyline.getVertexList(), this, ON);
 				}
 
-				posZ += upVector.z * 1.5;
+				posZ += panelUpVector.z * 1.5;
 
 			}
 
+		}
+
+		@Override
+		public void renderTo(Target target) {
+
+			for (PolylineXZ panelRow : panelRows) {
+
+				for (int i = 0; i + 1 < panelRow.getVertexList().size(); i++)
+
+				renderPanelsTo(target,
+						eleConnectors.getPosXYZ(panelRow.getVertexList().get(i)),
+						eleConnectors.getPosXYZ(panelRow.getVertexList().get(i+1)),
+						panelUpVector);
+
+			}
+
+		}
+
+		@Override
+		public EleConnectorGroup getEleConnectors() {
+			return eleConnectors;
 		}
 
 		/**
@@ -940,7 +963,7 @@ public final class PowerModule extends AbstractModule {
 					bottomRight);
 
 			target.drawTriangleStrip(Materials.SOLAR_PANEL, vs,
-					texCoordLists(vs, Materials.SOLAR_PANEL, STRIP_WALL));
+					texCoordLists(vs, Materials.SOLAR_PANEL, STRIP_FIT_HEIGHT));
 
 			/* draw back */
 
@@ -950,7 +973,6 @@ public final class PowerModule extends AbstractModule {
 					texCoordLists(vs, Materials.PLASTIC_GREY, STRIP_WALL));
 
 		}
-
 
 	}
 
