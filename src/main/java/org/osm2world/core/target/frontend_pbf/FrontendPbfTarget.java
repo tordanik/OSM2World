@@ -510,7 +510,8 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 			if (worldObject != null) {
 
 				if (element != null) {
-					objectBuilder.setOsmId(element.toString());
+					Object elementWithId = element instanceof MapWaySegment ? ((MapWaySegment)element).getWay() : element;
+					objectBuilder.setOsmId(elementWithId.toString());
 				}
 
 				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));
