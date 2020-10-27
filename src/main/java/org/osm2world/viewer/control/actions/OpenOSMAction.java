@@ -10,7 +10,9 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
+import org.osm2world.core.target.common.rendering.TileNumber;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.RecentFilesUpdater;
@@ -43,7 +45,22 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 		if (osmFile != null) {
 
-			openOSMFile(osmFile, true);
+			if (!osmFile.getName().endsWith(".mbtiles")) {
+				openOSMFile(osmFile, true);
+			} else {
+
+				try {
+
+					String tileString = JOptionPane.showInputDialog("Enter a tile number (such as \"13,1234,4321\")");
+					TileNumber tileNumber = new TileNumber(tileString);
+					loadOSMData(new MbtilesReader(osmFile, tileNumber), true);
+
+				} catch (IllegalArgumentException e) {
+					JOptionPane.showMessageDialog(viewerFrame, "Invalid input: " + e.getMessage(),
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
+
+			}
 
 		}
 
@@ -87,7 +104,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		JFileChooser chooser = new JFileChooser(lastPath);
 		chooser.setDialogTitle("Open OSM file");
 		chooser.setFileFilter(new FileNameExtensionFilter(
-				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf"));
+				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf", "mbtiles"));
 
 		int returnVal = chooser.showOpenDialog(null);
 
