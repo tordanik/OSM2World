@@ -163,4 +163,14 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 
 	}
 
+	/** returns a point contained inside the shape, i.e. a point for which {@link #contains(VectorXZ)} is true */
+	public default VectorXZ getPointInside() {
+		VectorXZ center = getOuter().getCentroid();
+		if (this.contains(center)) {
+			return center;
+		} else {
+			return getTriangulation().iterator().next().getCenter();
+		}
+	}
+
 }
