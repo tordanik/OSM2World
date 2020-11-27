@@ -4,7 +4,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
-import static org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.findAllIntersections;
+import static org.osm2world.core.math.algorithms.SimpleLineSegmentIntersectionFinder.findAllIntersections;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.util.ArrayList;
@@ -16,9 +16,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
 
-public class LineSegmentIntersectionFinderTest {
+//TODO deduplicate with LineSegmentIntersectionFinderTest (or remove this test along with the SimpleLSIF implementation)
+public class SimpleLineSegmentIntersectionFinderTest {
 
 	@Test
 	public void testFindAllIntersections1() {
@@ -72,28 +72,6 @@ public class LineSegmentIntersectionFinderTest {
 	}
 
 	@Test
-	public void testFindAllIntersections_duplicates() {
-
-		// like the first test case, but with duplicates
-
-		List<LineSegmentXZ> testData = asList(
-				new LineSegmentXZ(new VectorXZ(0, 0), new VectorXZ(10, 0)),
-				new LineSegmentXZ(new VectorXZ(0, 0), new VectorXZ(10, 0)),
-				new LineSegmentXZ(new VectorXZ(10, 0), new VectorXZ(0, 0)),
-				new LineSegmentXZ(new VectorXZ(0, -5), new VectorXZ(10, +5))
-		);
-
-		List<Intersection<Integer>> result = findAllIntersections(asList(0, 1, 2, 3), testData::get);
-
-		assertEquals(3, result.size());
-
-		Set<VectorXZ> resultSet = new HashSet<>();
-		result.forEach(it -> resultSet.add(it.pos));
-		assertAlmostEquals(newHashSet(new VectorXZ(5, 0)), resultSet);
-
-	}
-
-	@Test
 	public void testFindAllIntersections_vertical() {
 
 		// has vertical segments
@@ -124,7 +102,6 @@ public class LineSegmentIntersectionFinderTest {
 
 	}
 
-	@Ignore //known bug
 	@Test
 	public void testFindAllIntersections_3horiz1vert() {
 
