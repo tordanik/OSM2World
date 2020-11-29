@@ -4,21 +4,22 @@ import static com.google.common.collect.Iterables.getLast;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
+import static java.util.Collections.*;
 import static java.util.Collections.min;
-import static java.util.Collections.reverse;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.BUILDING_WINDOWS;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -27,8 +28,10 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -195,11 +198,30 @@ public class WallSurface {
 			}
 		}
 
-		/* triangulate the empty wall surface */
+		/* decompose and triangulate the empty wall surface */
 
 		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
 
-		List<TriangleXZ> triangles = triangulate(wallOutline, holes);
+		AxisAlignedRectangleXZ bbox = wallOutline.boundingBox();
+		double minZ = bbox.minZ;
+		double maxZ = bbox.maxZ;
+		List<LineSegmentXZ> verticalLines = lowerBoundary.stream()
+				.limit(lowerBoundary.size() - 1).skip(1) // omit first and last point
+				.map(p -> new LineSegmentXZ(new VectorXZ(p.x, minZ - 1.0), new VectorXZ(p.x, maxZ + 1.0)))
+				.collect(toList());
+
+		List<ShapeXZ> shapes = new ArrayList<>(holes);
+		shapes.addAll(verticalLines);
+
+		Collection<? extends PolygonShapeXZ> faces = shapes.isEmpty()
+				? singletonList(wallOutline)
+				: FaceDecompositionUtil.splitPolygonIntoFaces(wallOutline, shapes);
+
+		if (!holes.isEmpty()) {
+			faces.removeIf(f -> holes.stream().anyMatch(hole -> hole.contains(f.getPointInside())));
+		}
+
+		List<TriangleXZ> triangles = faces.stream().flatMap(f -> f.getTriangulation().stream()).collect(toList());
 		List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t)).collect(toList());
 
 		/* determine the material depending on whether a window texture should be applied */
