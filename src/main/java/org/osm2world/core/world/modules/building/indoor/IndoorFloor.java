@@ -1,23 +1,24 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.modules.building.BuildingPart;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.algorithms.CAGUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.modules.building.BuildingPart;
 
 public class IndoorFloor {
 
@@ -73,10 +74,32 @@ public class IndoorFloor {
 
             double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight + 0.0001;
 
-            Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
+    		/* subtract attached areas from the floor polygon */
 
-            List<TriangleXYZ> trianglesXYZ = triangles.stream()
-                    .map(t -> t.makeCounterclockwise().xyz(floorEle))
+    		List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
+
+    		if (!attachmentSurfaceBool && attachmentSurface != null) {
+    			for (AttachmentConnector connector : attachmentSurface.getAttachedConnectors()) {
+    				if (connector.object instanceof TerrainBoundaryWorldObject) {
+    					subtractPolys.addAll(((TerrainBoundaryWorldObject)connector.object).getTerrainBoundariesXZ());
+    				}
+    			}
+    		}
+
+    		Collection<? extends PolygonShapeXZ> polygons;
+
+    		if (subtractPolys.isEmpty()) {
+    			polygons = singleton(polygon);
+    		} else {
+    			subtractPolys.addAll(polygon.getHoles());
+    			polygons = CAGUtil.subtractPolygons(polygon.getOuter(), subtractPolys);
+    		}
+
+    		/* triangulate and render the (remaining) floor polygons */
+
+    		List<TriangleXYZ> trianglesXYZ = polygons.stream()
+    				.flatMap(p -> p.getTriangulation().stream())
+    				.map(t -> t.makeCounterclockwise().xyz(floorEle))
                     .collect(toList());
 
             target.drawTriangles(material, trianglesXYZ,

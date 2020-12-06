@@ -6,8 +6,7 @@ import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.math.GeometryUtil.interpolateEleOfPolyline;
-import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
@@ -24,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -39,6 +37,7 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Renderable;
@@ -47,7 +46,6 @@ import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -1230,6 +1228,18 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		public LaneLayout getLaneLayout() {
 			return laneLayout;
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+			if (isBroken() || getOutlinePolygonXZ() == null) {
+				return emptyList();
+			} else if (steps && attachmentConnectorList.stream().allMatch(c -> c.isAttached())) {
+				// do not cut out the floor below indoor steps
+				return emptyList();
+			} else {
+				return singletonList(getOutlinePolygonXZ());
+			}
 		}
 
 		private void renderStepsTo(Target target) {

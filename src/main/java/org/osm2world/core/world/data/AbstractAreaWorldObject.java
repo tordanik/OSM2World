@@ -179,7 +179,7 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 	protected Collection<TriangleXYZ> getTriangulation() {
 		if (getConnectorIfAttached() != null) {
 			return getTriangulationXZ().stream()
-					.map(t -> t.makeCounterclockwise().xyz(attachmentConnector.getAttachedPos().getY() + 0.001))
+					.map(t -> t.makeCounterclockwise().xyz(attachmentConnector.getAttachedPos().getY()))
 					.collect(toList());
 		} else {
 			return connectors.getTriangulationXYZ(getTriangulationXZ());

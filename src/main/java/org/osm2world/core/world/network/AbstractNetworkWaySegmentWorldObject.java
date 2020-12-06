@@ -60,7 +60,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 	protected EleConnectorGroup connectors;
 
-	private List<AttachmentConnector> attachmentConnectorList = emptyList();
+	protected List<AttachmentConnector> attachmentConnectorList = emptyList();
 
 	private List<VectorXZ> centerlineXZ = null;
 
