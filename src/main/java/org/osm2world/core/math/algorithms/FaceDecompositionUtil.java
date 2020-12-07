@@ -201,11 +201,11 @@ public final class FaceDecompositionUtil {
 			List<SimplePolygonXZ> holes = new ArrayList<>();
 
 			for (SimplePolygonXZ innerRing : innerRings) {
-				if (outerRing.getArea() > innerRing.getArea() //TODO: better solution? This is because outer and inner are identical for simple closed shapes.
+				if (outerRing.getArea() > innerRing.getArea() + 1e-7 //TODO: better solution? This is because outer and inner are identical for simple closed shapes.
 						&& outerRing.contains(innerRing)) {
 					boolean containedInSmallerOuterRings = outerRings.stream().anyMatch(
 							o -> o.contains(innerRing)
-							&& o.getArea() > innerRing.getArea() //TODO: better solution? This is because outer and inner are identical for simple closed shapes.
+							&& o.getArea() > innerRing.getArea() + 1e-7 //TODO: better solution? This is because outer and inner are identical for simple closed shapes.
 							&& outerRing.contains(o));
 					if (!containedInSmallerOuterRings) {
 						holes.add(innerRing);

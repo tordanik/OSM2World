@@ -1,7 +1,7 @@
 package org.osm2world.core.math.algorithms;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
@@ -20,6 +20,7 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 public class FaceDecompositionUtilTest {
@@ -134,6 +135,27 @@ public class FaceDecompositionUtilTest {
 				fail("wrong result poly: " + outer);
 			}
 		}
+
+	}
+
+	@Test
+	public void testAccuracy() { // with this data, the area for the otherShape is very slightly off when it's reversed
+
+		PolygonShapeXZ polygon = new SimplePolygonXZ(closeLoop(
+				new VectorXZ(0.0, 0.0),
+				new VectorXZ(2.0, 0.0),
+				new VectorXZ(2.0, 3.0),
+				new VectorXZ(0.0, 3.0)));
+
+		Iterable<? extends ShapeXZ> otherShapes = singletonList(new SimplePolygonXZ(closeLoop(
+				new VectorXZ(0.1, 0.75),
+				new VectorXZ(1.167323103354597, 0.75),
+				new VectorXZ(1.167323103354597, 2.0000000298023224),
+				new VectorXZ(0.1, 2.0000000298023224))));
+
+		Collection<PolygonWithHolesXZ> result = splitPolygonIntoFaces(polygon, otherShapes);
+
+		assertEquals(2, result.size());
 
 	}
 
