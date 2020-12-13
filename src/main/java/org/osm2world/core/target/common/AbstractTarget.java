@@ -224,8 +224,8 @@ public abstract class AbstractTarget implements Target {
 
 			if (options.contains(START_CAP) && scaleFactors.get(0) > 0) {
 				// triangulate the shape here because there's no method (yet) for mirroring or reversing a ClosedShape
-				for (ClosedShapeXZ triangle : ((ClosedShapeXZ)shape).getTriangulation()) {
-					drawShape(material, triangle,
+				for (TriangleXZ triangle : ((ClosedShapeXZ)shape).getTriangulation()) {
+					drawShape(material, triangle.reverse(), // invert winding
 							path.get(0), forwardVectors.get(0), upVectors.get(0), scaleFactors.get(0));
 				}
 			}
