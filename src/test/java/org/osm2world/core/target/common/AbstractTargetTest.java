@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.junit.Assert.*;
+import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -50,12 +51,11 @@ public class AbstractTargetTest {
 	@Test
 	public void testDrawShape() {
 
-		SimpleClosedShapeXZ shape = new SimplePolygonXZ(asList(
+		SimpleClosedShapeXZ shape = new SimplePolygonXZ(closeLoop(
 				new VectorXZ(-1, -1),
 				new VectorXZ( 1, -1),
 				new VectorXZ( 2,  1),
-				new VectorXZ( 1,  1),
-				new VectorXZ(-1, -1)));
+				new VectorXZ( 1,  1)));
 
 		TestTarget target = new TestTarget();
 
@@ -68,11 +68,8 @@ public class AbstractTargetTest {
 
 	}
 
-	/**
-	 * tests extruding a line segment
-	 */
 	@Test
-	public void testDrawExtrudedShape0() {
+	public void testExtrudeLineSegment() {
 
 		ShapeXZ shape = new LineSegmentXZ(new VectorXZ(2, 0), new VectorXZ(-1, 0));
 
@@ -96,11 +93,8 @@ public class AbstractTargetTest {
 
 	}
 
-	/**
-	 * tests extruding a triangle into a pyramid
-	 */
 	@Test
-	public void testDrawExtrudedShape1() {
+	public void testExtrudeTriangleIntoPyramid() {
 
 		ShapeXZ shape = new TriangleXZ(new VectorXZ(-1, 0), new VectorXZ(1, 0), new VectorXZ(0, 2));
 
@@ -108,7 +102,7 @@ public class AbstractTargetTest {
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 1, 0));
 
-		List<List<TriangleXYZ>> results = new ArrayList<List<TriangleXYZ>>();
+		List<List<TriangleXYZ>> results = new ArrayList<>();
 
 		{ /* path from bottom to top */
 
@@ -134,8 +128,10 @@ public class AbstractTargetTest {
 
 		for (List<TriangleXYZ> result : results) {
 
-			//TODO change to 4 once extrudeShape no longer necessarily uses strips
-			assertEquals(7, result.size());
+			//TODO remove this line once extrudeShape no longer necessarily uses strips
+			result.removeIf(TriangleXYZ::isDegenerate);
+
+			assertEquals(4, result.size());
 
 			assertTrue(containsTriangle(result,
 					new VectorXYZ(-1, 0, 0),
@@ -159,14 +155,15 @@ public class AbstractTargetTest {
 
 	}
 
-	/**
-	 * tests extruding a rectangle into a (slanted) wall with caps at both ends
-	 */
+	/** tests extruding a rectangle into a (slanted) wall with caps at both ends */
 	@Test
-	public void testDrawExtrudedShape2() {
+	public void testExtrudeRectangleWithTwoCaps() {
 
-		ShapeXZ shape = new SimplePolygonXZ(asList(NULL_VECTOR, new VectorXZ(1, 0),
-				new VectorXZ(1, 2), new VectorXZ(0, 1.5), NULL_VECTOR));
+		ShapeXZ shape = new SimplePolygonXZ(closeLoop(
+				NULL_VECTOR,
+				new VectorXZ(1, 0),
+				new VectorXZ(1, 2),
+				new VectorXZ(0, 1.5)));
 
 		List<VectorXYZ> path = asList(
 				new VectorXYZ(5, 0, 0),
