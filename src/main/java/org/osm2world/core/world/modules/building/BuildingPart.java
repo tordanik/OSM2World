@@ -1,7 +1,32 @@
 package org.osm2world.core.world.modules.building;
 
+import static com.google.common.collect.Iterables.getLast;
+import static java.lang.Math.max;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
+import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.IntStream;
+
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.data.*;
+import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
@@ -21,21 +46,6 @@ import org.osm2world.core.world.modules.building.indoor.Indoor;
 import org.osm2world.core.world.modules.building.roof.ComplexRoof;
 import org.osm2world.core.world.modules.building.roof.FlatRoof;
 import org.osm2world.core.world.modules.building.roof.Roof;
-
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-import java.util.stream.IntStream;
-
-import static com.google.common.collect.Iterables.getLast;
-import static java.lang.Math.max;
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.util.ValueParseUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
 /**
  * part of a building, as defined by the Simple 3D Buildings standard.
@@ -415,7 +425,7 @@ public class BuildingPart implements Renderable {
 					boolean startCommonNode = false;
 					boolean endCommonNode = false;
 
-					for (SimplePolygonXZ p : polygon.getPolygons()) {
+					for (SimplePolygonXZ p : polygon.getRings()) {
 						startCommonNode |= p.getVertexCollection().contains(start);
 						endCommonNode |= p.getVertexCollection().contains(end);
 					}
@@ -488,7 +498,7 @@ public class BuildingPart implements Renderable {
 
 				floors.add(new Floor(this, materialWall, polygon, polygonFloorHeightMap.get(polygon)));
 
-				for (SimplePolygonXZ ring : polygon.getPolygons()) {
+				for (SimplePolygonXZ ring : polygon.getRings()) {
 					ring = polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise();
 					ring = ring.getSimplifiedPolygon();
 					for (int i = 0; i < ring.size(); i++) {

@@ -2,7 +2,7 @@ package org.osm2world.core.math.shapes;
 
 import static java.lang.Double.NaN;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
@@ -12,6 +12,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.GeometryUtil;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -27,6 +29,11 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	@Override
 	default Collection<? extends SimplePolygonShapeXZ> getHoles() {
 		return emptyList();
+	}
+
+	@Override
+	public default List<SimplePolygonShapeXZ> getRings() {
+		return singletonList(this);
 	}
 
 	/**
@@ -83,6 +90,64 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 		return c;
 
+	}
+
+	public default boolean intersects(VectorXZ segmentP1, VectorXZ segmentP2) {
+
+		List<VectorXZ> vertexList = getVertexList();
+
+		for (int i = 0; i + 1 < vertexList.size(); i++) {
+
+			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
+					segmentP1, segmentP2,
+					vertexList.get(i), vertexList.get(i+1));
+
+			if (intersection != null) {
+				return true;
+			}
+
+		}
+
+		return false;
+
+	}
+
+	/** @see #intersects(VectorXZ, VectorXZ) */
+	public default boolean intersects(LineSegmentXZ lineSegment) {
+		return intersects(lineSegment.p1, lineSegment.p2);
+	}
+
+	@Override
+	public default List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
+
+		List<VectorXZ> result = new ArrayList<>();
+		List<VectorXZ> vertexLoop = getVertexList();
+
+		for (int i = 0; i + 1 < vertexLoop.size(); i++) {
+
+			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
+					lineSegment.p1, lineSegment.p2,
+					vertexLoop.get(i), vertexLoop.get(i+1));
+
+			if (intersection != null) {
+				result.add(intersection);
+			}
+
+		}
+
+		return result;
+
+	}
+
+	@Override
+	public default Collection<VectorXZ> intersectionPositions(PolygonShapeXZ p2) {
+		List<VectorXZ> intersectionPositions = new ArrayList<>();
+		for (SimplePolygonShapeXZ ring : p2.getRings()) {
+			for (LineSegmentXZ lineSegment : ring.getSegments()) {
+				intersectionPositions.addAll(this.intersectionPositions(lineSegment));
+			}
+		}
+		return intersectionPositions;
 	}
 
 	/** creates a new polygon by adding a shift vector to each vector of this */

@@ -1,7 +1,5 @@
 package org.osm2world.core.math;
 
-import static java.util.Collections.singletonList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,20 +43,10 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 
 	@Override
 	public List<SimplePolygonXZ> getRings() {
-		if (getHoles().isEmpty()) {
-			return singletonList(getOuter());
-		} else {
-			List<SimplePolygonXZ> result = new ArrayList<>(getHoles().size() + 1);
-			result.add(getOuter());
-			result.addAll(getHoles());
-			return result;
-		}
-	}
-
-	/** @deprecated  Use {@link #getRings()} instead */
-	@Override
-	public List<SimplePolygonXZ> getPolygons() {
-		return getRings();
+		List<SimplePolygonXZ> result = new ArrayList<>(getHoles().size() + 1);
+		result.add(getOuter());
+		result.addAll(getHoles());
+		return result;
 	}
 
 	public TriangleXZ asTriangleXZ() {
@@ -67,69 +55,6 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 		}
 		return outerPolygon.asTriangleXZ();
 	}
-
-
-	@Override
-	public AxisAlignedRectangleXZ boundingBox() {
-		return getOuter().boundingBox();
-	}
-
-	public boolean contains(LineSegmentXZ lineSegment) {
-		if (!this.contains(lineSegment.p1)
-				|| !this.contains(lineSegment.p2)) {
-			return false;
-		} else {
-			for (SimplePolygonXZ hole : holes) {
-				if (hole.intersects(lineSegment.p1, lineSegment.p2)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	//TODO (duplicate code): do something like intersects(geometricObject)
-
-	@Override
-	public boolean intersects(LineSegmentXZ lineSegment) {
-		for (SimplePolygonXZ hole : holes) {
-			if (hole.intersects(lineSegment)) {
-				return true;
-			}
-		}
-		return outerPolygon.intersects(lineSegment);
-	}
-
-	public boolean intersects(SimplePolygonXZ other) {
-		for (SimplePolygonXZ hole : holes) {
-			if (hole.intersects(other)) {
-				return true;
-			}
-		}
-		return outerPolygon.intersects(other);
-	}
-
-	@Override
-	public List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
-		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
-		for (SimplePolygonXZ hole : holes) {
-			intersectionPositions.addAll(hole.intersectionPositions(lineSegment));
-		}
-		intersectionPositions.addAll(outerPolygon.intersectionPositions(lineSegment));
-		return intersectionPositions;
-	}
-
-	public Collection<VectorXZ> intersectionPositions(PolygonWithHolesXZ p2) {
-		List<VectorXZ> intersectionPositions = new ArrayList<VectorXZ>();
-		for (SimplePolygonXZ simplePoly : p2.getRings()) {
-			for (LineSegmentXZ lineSegment : simplePoly.getSegments()) {
-				intersectionPositions.addAll(
-						intersectionPositions(lineSegment));
-			}
-		}
-		return intersectionPositions;
-	}
-
 
 	@Override
 	public Collection<TriangleXZ> getTriangulation() {

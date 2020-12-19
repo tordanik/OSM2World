@@ -138,7 +138,7 @@ public class Wall implements Renderable {
 
 		List<VectorXZ> topPointsXZ = null;
 
-		for (SimplePolygonXZ rawPolygon : buildingPart.roof.getPolygon().getPolygons()) {
+		for (SimplePolygonXZ rawPolygon : buildingPart.roof.getPolygon().getRings()) {
 
 			SimplePolygonXZ polygon = buildingPart.roof.getPolygon().getHoles().contains(rawPolygon)
 					? rawPolygon.makeClockwise()

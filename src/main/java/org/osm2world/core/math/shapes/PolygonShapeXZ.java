@@ -1,6 +1,7 @@
 package org.osm2world.core.math.shapes;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +30,8 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 	public Collection<? extends SimplePolygonShapeXZ> getHoles();
 
 	/** returns a collection that contains the outer polygon and all holes */
-	public default Collection<? extends SimplePolygonShapeXZ> getPolygons() {
+	@Override
+	public default List<? extends SimplePolygonShapeXZ> getRings() {
 		if (getHoles().isEmpty()) {
 			return singletonList(getOuter());
 		} else {
@@ -67,6 +69,19 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 			}
 			return true;
 		}
+	}
+
+	public default boolean contains(LineSegmentXZ lineSegment) {
+		if (!this.contains(lineSegment.p1) || !this.contains(lineSegment.p2)) {
+			return false;
+		} else {
+			for (SimplePolygonShapeXZ ring : getRings()) {
+				if (ring.intersects(lineSegment.p1, lineSegment.p2)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	/** returns true if this polygon contains the parameter polygon */
@@ -124,7 +139,7 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 
 	public default Collection<LineSegmentXZ> intersectionSegments(LineSegmentXZ lineSegment) {
 
-		List<LineSegmentXZ> intersectionSegments = new ArrayList<LineSegmentXZ>();
+		List<LineSegmentXZ> result = new ArrayList<>();
 
 		for (LineSegmentXZ polygonSegment : getSegments()) {
 
@@ -133,34 +148,21 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 					polygonSegment.p1, polygonSegment.p2);
 
 			if (intersection != null) {
-				intersectionSegments.add(polygonSegment);
-			}
-
-		}
-
-		return intersectionSegments;
-
-	}
-
-	public default List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
-
-		List<VectorXZ> result = new ArrayList<>();
-		List<VectorXZ> vertexLoop = getVertexList();
-
-		for (int i = 0; i + 1 < vertexLoop.size(); i++) {
-
-			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
-					lineSegment.p1, lineSegment.p2,
-					vertexLoop.get(i), vertexLoop.get(i+1));
-
-			if (intersection != null) {
-				result.add(intersection);
+				result.add(polygonSegment);
 			}
 
 		}
 
 		return result;
 
+	}
+
+	public default List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
+		return getRings().stream().flatMap(p -> p.intersectionPositions(lineSegment).stream()).collect(toList());
+	}
+
+	public default Collection<VectorXZ> intersectionPositions(PolygonShapeXZ p2) {
+		return getRings().stream().flatMap(p -> p.intersectionPositions(p2).stream()).collect(toList());
 	}
 
 	/** returns a point contained inside the shape, i.e. a point for which {@link #contains(VectorXZ)} is true */

@@ -3,8 +3,8 @@ package org.osm2world.viewer.view.debug;
 import java.awt.Color;
 
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.modules.building.Building;
 import org.osm2world.core.world.modules.building.BuildingPart;
@@ -31,8 +31,8 @@ public class RoofDataDebugView extends DebugView {
 
 				HeightfieldRoof roofData = (HeightfieldRoof)part.getRoof();
 
-				for (SimplePolygonXZ polygon : roofData.getPolygon().getPolygons()) {
-					for (VectorXZ v : polygon.getVertices()) {
+				for (SimplePolygonShapeXZ polygon : roofData.getPolygon().getRings()) {
+					for (VectorXZ v : polygon.getVertexListNoDup()) {
 						drawBoxAround(target, v, POLYGON_COLOR, 0.3f);
 					}
 					for (LineSegmentXZ s : polygon.getSegments()) {
