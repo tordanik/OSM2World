@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -42,7 +44,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
-import org.osm2world.core.world.modules.building.indoor.Indoor;
+import org.osm2world.core.world.modules.building.indoor.BuildingPartInterior;
 import org.osm2world.core.world.modules.building.roof.ComplexRoof;
 import org.osm2world.core.world.modules.building.roof.FlatRoof;
 import org.osm2world.core.world.modules.building.roof.Roof;
@@ -80,9 +82,9 @@ public class BuildingPart implements Renderable {
 	private List<Wall> walls = null;
 	private List<Floor> floors = null;
 
-	private HashMap<Integer, Level> levels = new HashMap<>();
+	private final HashMap<Integer, Level> levels = new HashMap<>();
 
-	private Indoor indoor = null;
+	private final @Nullable BuildingPartInterior buildingPartInterior;
 
 	public BuildingPart(Building building, MapArea area, Configuration config) {
 
@@ -220,7 +222,7 @@ public class BuildingPart implements Renderable {
 
 		heightWithoutRoof = height - roofHeight;
 
-		/* collect all indoor elements */
+		/* get additional level information from indoor=level elements */
 
 		Boolean renderIndoor = true;
 
@@ -235,9 +237,7 @@ public class BuildingPart implements Renderable {
 			}
 		}
 
-		if (renderIndoor) {
-
-			ArrayList<MapElement> indoorElements = new ArrayList<>();
+		if (renderIndoor) { //TODO: indoor=level is useful even if no indoor rendering is active. Maybe just rename.
 
 			List<Integer> levelsWithNoObject = new ArrayList<>();
 
@@ -245,72 +245,29 @@ public class BuildingPart implements Renderable {
 				levelsWithNoObject.add(i);
 			}
 
-			// Find all overlapping indoor elements
+			// use level elements for additional level info
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+
 				MapElement other = overlap.getOther(area);
-				if (other.getTags().containsKey("indoor")) {
 
-					if (other.getTags().containsKey("level")) {
+				if (other.getTags().contains("indoor", "level")) {
 
-						/* check all elements are within height limits of building part */
+					List<Integer> levelList = parseLevels(other.getTags().getValue("level"));
 
-						List<Integer> levelList = parseLevels(other.getTags().getValue("level"));
+					if (levelList != null
+							&& levelConversion(levelList.get(0)) >= minLevelWithUnderground
+							&& levelConversion(levelList.get(levelList.size() - 1)) < getBuildingLevels() + roofLevels
+							&& !non_existent_levels.contains(levelList.get(0))
+							&& !non_existent_levels.contains(levelList.get(levelList.size() - 1)) ) {
 
-						if (levelList != null) {
-
-							//TODO handle elements that span building parts
-
-							if (levelConversion(levelList.get(0)) >= minLevelWithUnderground
-									&& levelConversion(levelList.get(levelList.size() - 1)) < getBuildingLevels() + roofLevels
-									&& !non_existent_levels.contains(levelList.get(0))
-									&& !non_existent_levels.contains(levelList.get(levelList.size() - 1)) ) {
-
-								// Handle level elements
-
-								if (other.getTags().contains("indoor", "level")
-										&& levelsWithNoObject.contains(levelConversion(parseLevels(other.getTags().getValue("level")).get(0)))) {
-									Level l = new Level(other);
-									levels.put(l.getLevel(), l);
-									levelsWithNoObject.remove((Integer) l.getLevel());
-								} else if (!other.getTags().contains("indoor", "level")) {
-
-									// Ensure all nodes are within the building part
-
-									PolygonWithHolesXZ buildingOutline = new PolygonWithHolesXZ(this.getPolygon().getOuter(), emptyList());
-
-									boolean toAdd = false;
-									if (other instanceof MapNode) {
-										if (buildingOutline.contains(((MapNode) other).getPos())) {
-											toAdd = true;
-										}
-									}else if (other instanceof MapWay) {
-										toAdd = true;
-										System.out.println("MapWay");
-//										for (LineSegmentXZ lineSegment : ((MapWay) other).getWaySegments().stream().map(w -> w.getLineSegment()).collect(Collectors.toList())) {
-//											if (!buildingOutline.contains(lineSegment)){
-//												toAdd = false;
-//											}
-//										}
-									} else if (other instanceof MapArea) {
-										if (buildingOutline.contains(((MapArea) other).getOuterPolygon())) {
-											toAdd = true;
-										}
-									} else if (other instanceof MapWaySegment) {
-										if (buildingOutline.contains(((MapWaySegment) other).getLineSegment())) {
-											toAdd = true;
-										}
-									} else {
-										System.out.println(other.getClass().toString());
-									}
-
-									if (toAdd) {
-										indoorElements.add(other);
-									}
-								}
-
-							}
+						if (other.getTags().contains("indoor", "level")
+								&& levelsWithNoObject.contains(levelConversion(parseLevels(other.getTags().getValue("level")).get(0)))) {
+							Level l = new Level(other);
+							levels.put(l.getLevel(), l);
+							levelsWithNoObject.remove((Integer) l.getLevel());
 						}
+
 					}
 				}
 			}
@@ -354,9 +311,12 @@ public class BuildingPart implements Renderable {
 				lev.setFloorEleAboveBase(cumHeightBelowBase);
 			}
 
-			if (!indoorElements.isEmpty()) {
-				indoor = new Indoor(indoorElements, this);
-			}
+		}
+
+		if (renderIndoor) {
+			buildingPartInterior = createInteriorComponents(roofLevels);
+		} else {
+			buildingPartInterior = null;
 		}
 
 		for (int i = getMinLevel(); i < getBuildingLevels() + 1; i++) {
@@ -514,6 +474,47 @@ public class BuildingPart implements Renderable {
 		}
 	}
 
+	/** creates indoor components like rooms and interior walls */
+	private @Nullable BuildingPartInterior createInteriorComponents(int roofLevels) {
+
+		ArrayList<MapElement> indoorElements = new ArrayList<>();
+
+		for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+			MapElement other = overlap.getOther(this.area);
+			if (other.getTags().containsKey("indoor") && !other.getTags().contains("indoor", "level")) {
+
+				/* check all elements are within height limits of building part */
+				List<Integer> levelList = parseLevels(other.getTags().getValue("level"));
+				if (levelList != null
+						&& levelConversion(levelList.get(0)) >= minLevelWithUnderground
+						&& levelConversion(levelList.get(levelList.size() - 1)) < getBuildingLevels() + roofLevels
+						&& !non_existent_levels.contains(levelList.get(0))
+						&& !non_existent_levels.contains(levelList.get(levelList.size() - 1)) ) {
+
+					// Ensure all nodes are within this building part
+					//TODO handle elements that span building parts
+
+					if ((other instanceof MapNode
+									&& polygon.contains(((MapNode) other).getPos()))
+							|| (other instanceof MapArea
+									&& polygon.contains(((MapArea) other).getOuterPolygon()))
+							|| (other instanceof MapWaySegment
+									&& polygon.contains(((MapWaySegment) other).getLineSegment()))) {
+						indoorElements.add(other);
+					}
+				}
+			}
+
+		}
+
+		if (!indoorElements.isEmpty()) {
+			return new BuildingPartInterior(indoorElements, this);
+		} else {
+			return null;
+		}
+
+	}
+
 	/**
 	 * splits the outer and inner boundaries of a building into separate walls.
 	 * The boundaries are split at the beginning and end of building:wall=* ways belonging to this building part,
@@ -643,8 +644,8 @@ public class BuildingPart implements Renderable {
 
 		floors.forEach(f -> f.renderTo(target));
 
-		if (indoor != null){
-			indoor.renderTo(target);
+		if (buildingPartInterior != null){
+			buildingPartInterior.renderTo(target);
 		}
 
 	}
@@ -653,8 +654,8 @@ public class BuildingPart implements Renderable {
 
 		List<AttachmentSurface> surfaces = new ArrayList<>();
 
-		if (indoor != null) {
-			surfaces.addAll(indoor.getAttachmentSurfaces());
+		if (buildingPartInterior != null) {
+			surfaces.addAll(buildingPartInterior.getAttachmentSurfaces());
 		}
 
 		surfaces.addAll(roof.getAttachmentSurfaces(building.getGroundLevelEle() + heightWithoutRoof, max_level + 1));
@@ -680,7 +681,7 @@ public class BuildingPart implements Renderable {
 
 	public int getMinLevel() { return buildingMinLevel; }
 
-	public Indoor getIndoor(){ return indoor; }
+	public BuildingPartInterior getIndoor(){ return buildingPartInterior; }
 
 	public double getHeightWithoutRoof() { return heightWithoutRoof; }
 
