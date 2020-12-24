@@ -1,5 +1,17 @@
 package org.osm2world.core.world.modules.building;
 
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.math.GeometryUtil.roughlyContains;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -17,16 +29,11 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
-
-import java.util.*;
-
-import static java.lang.Double.POSITIVE_INFINITY;
-import static org.osm2world.core.map_elevation.data.GroundState.ON;
-import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
@@ -66,7 +73,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 			/** find building part areas geometrically contained within the building outline */
 
-			for (MapOverlap<?,?> overlap : area.getOverlaps()) {
+			FaultTolerantIterationUtil.forEach(area.getOverlaps(), (MapOverlap<?,?> overlap) -> {
 				MapElement other = overlap.getOther(area);
 				if (other instanceof MapArea
 						&& other.getTags().containsKey("building:part")) {
@@ -75,7 +82,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 					if (otherArea.getMemberships().stream().anyMatch(m -> "part".equals(m.getRole())
 							&& m.getRelation().getTags().contains("type", "building"))) {
-						continue; // belongs to another building's relation
+						return; // belongs to another building's relation
 					}
 
 					if (roughlyContains(area.getPolygon(), otherArea.getPolygon().getOuter())) {
@@ -83,7 +90,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 					}
 
 				}
-			}
+			});
 
 		}
 
@@ -154,10 +161,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 	@Override
 	public void renderTo(Target target) {
-		for (BuildingPart part : parts) {
-			part.renderTo(target);
-		}
-
+		FaultTolerantIterationUtil.forEach(parts, part -> part.renderTo(target));
 		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments);
 	}
 
@@ -172,7 +176,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 		for (BuildingPart part : parts) {
 
-			if (part.getMinLevel() < 1 && part.getIndoor() != null){
+			if (part.levelStructure.bottomHeight() <= 0 && part.getIndoor() != null) {
 				shapes.add(part.getPolygon());
 			}
 

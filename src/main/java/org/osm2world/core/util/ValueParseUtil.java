@@ -42,6 +42,25 @@ public final class ValueParseUtil {
 		return result == null ? defaultValue : result;
 	}
 
+	/**
+	 * parses an integer value (e.g. "15", "0", "-77" or "910")
+	 *
+	 * @return  the parsed value as an integer; null if value is null, negative or has syntax errors.
+	 */
+	public static final Integer parseInt(@Nullable String value) {
+		if (value == null) return null;
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/** variant of {@link #parseInt(String)} with a default value */
+	public static final int parseInt(@Nullable String value, int defaultValue) {
+		Integer result = parseInt(value);
+		return result == null ? defaultValue : result;
+	}
 
 	/**
 	 * parses a decimal value (e.g. "5", "0", "3.56" or "-12.30")

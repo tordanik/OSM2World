@@ -1,23 +1,27 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.modules.building.BuildingPart;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.modules.building.BuildingPart;
 
 public class Ceiling {
 
@@ -46,8 +50,8 @@ public class Ceiling {
         }
 
         if (attachmentSurface == null) {
-            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("ceiling" + buildingPart.levelReversion(this.level));
-            this.renderSurface(builder, buildingPart.getBuildingPartBaseEle() + floorHeight);
+            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("ceiling" + this.level);
+            this.renderSurface(builder, buildingPart.getBuilding().getGroundLevelEle() + floorHeight);
             attachmentSurface = builder.build();
         }
 
@@ -59,7 +63,7 @@ public class Ceiling {
 
         if (render && polygon != null) {
 
-            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight - 0.001;
+            double floorEle = buildingPart.getBuilding().getGroundLevelEle() + floorHeight - 0.001;
 
             List<ShapeXZ> sides  = new ArrayList<>(singleton(polygon.getOuter().makeCounterclockwise()));
             sides.addAll(polygon.getHoles().stream().map(SimplePolygonXZ::makeClockwise).collect(toList()));

@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules.building.roof;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -68,7 +69,7 @@ abstract public class Roof {
 	/**
 	 * creates the correct roof for the given roof:shape value
 	 */
-	public static final Roof createRoofForShape(String roofShape, PolygonWithHolesXZ originalPolygon,
+	public static final Roof createRoofForShape(String roofShape, MapArea area, PolygonWithHolesXZ originalPolygon,
 			TagSet tags, double height, Material material) {
 
 		switch (roofShape) {
@@ -82,6 +83,7 @@ abstract public class Roof {
 		case "mansard": return new MansardRoof(originalPolygon, tags, height, material);
 		case "dome": return new DomeRoof(originalPolygon, tags, height, material);
 		case "round": return new RoundRoof(originalPolygon, tags, height, material);
+		case "complex": return new ComplexRoof(area, originalPolygon, tags, height, material);
 		default: return new FlatRoof(originalPolygon, tags, material);
 		}
 

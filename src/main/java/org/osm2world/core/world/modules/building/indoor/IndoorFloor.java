@@ -49,7 +49,7 @@ public class IndoorFloor {
         }
 
         if (attachmentSurface == null) {
-            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + buildingPart.levelReversion(this.level));
+            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("floor" + this.level);
             boolean tempRender = this.render;
             this.render = true;
             this.renderTo(builder, true);
@@ -66,13 +66,13 @@ public class IndoorFloor {
 
     private void renderTo(Target target, boolean attachmentSurfaceBool) {
 
-        if (!attachmentSurfaceBool && level != buildingPart.getMinLevel()) {
+        if (!attachmentSurfaceBool && level != buildingPart.levelStructure.levels.get(0).level) {
             ceiling.renderTo(target);
         }
 
         if (render && polygon != null) {
 
-            double floorEle = buildingPart.getBuildingPartBaseEle() + floorHeight + 0.0001;
+            double floorEle = buildingPart.getBuilding().getGroundLevelEle() + floorHeight + 0.0001;
 
     		/* subtract attached areas from the floor polygon */
 

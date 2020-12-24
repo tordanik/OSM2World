@@ -11,6 +11,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
+import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
 
 import com.google.common.collect.Streams;
 
@@ -75,7 +78,7 @@ public class Wall implements Renderable {
 		this(wallWay, buildingPart,
 				nodes.stream().map(MapNode::getPos).collect(toList()),
 				nodes.stream().collect(toMap(MapNode::getPos, n -> n)),
-				buildingPart == null ? 0 : buildingPart.calculateFloorHeight());
+				buildingPart == null ? 0 : buildingPart.levelStructure.bottomHeight());
 	}
 
 	@Override
@@ -85,7 +88,7 @@ public class Wall implements Renderable {
 
 		double baseEle = buildingPart.building.getGroundLevelEle();
 		double floorEle = baseEle + floorHeight;
-		double heightWithoutRoof = buildingPart.heightWithoutRoof;
+		double heightWithoutRoof = buildingPart.levelStructure.heightWithoutRoof();
 
 		Material material = BuildingPart.createWallMaterial(tags, buildingPart.config);
 
@@ -240,15 +243,13 @@ public class Wall implements Renderable {
 			levels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
 			levels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
-			levels = levels.stream().map(l -> buildingPart.levelConversion(l)).collect(toSet());
-
 			for (int level : levels) {
 
-				if (getBuildingPart().containsLevel(level)) {
+				if (getBuildingPart().levelStructure.hasLevel(level)) {
 
 					VectorXZ pos = new VectorXZ(points.offsetOf(node.getPos()),
-							buildingPart.getLevelHeightAboveBase(level)
-									- buildingPart.getLevelHeightAboveBase(buildingPart.buildingMinLevel));
+							buildingPart.levelStructure.level(level).relativeEle
+									- buildingPart.levelStructure.bottomHeight());
 
 					if ((node.getTags().contains("building", "entrance")
 							|| node.getTags().containsKey("entrance")
@@ -263,7 +264,7 @@ public class Wall implements Renderable {
 						boolean transparent = buildingPart.getBuilding().queryWindowSegments(node, level);
 
 						TagSet windowTags = inheritTags(node.getTags(), tags);
-						WindowParameters params = new WindowParameters(windowTags, buildingPart.getLevelHeight(level));
+						WindowParameters params = new WindowParameters(windowTags, buildingPart.levelStructure.level(level).height);
 						GeometryWindow window = new GeometryWindow(new VectorXZ(pos.x, pos.z + params.breast), params, transparent);
 						mainSurface.addElementIfSpaceFree(window);
 
@@ -291,7 +292,8 @@ public class Wall implements Renderable {
 
 		/* draw the wall */
 
-		double windowHeight = buildingPart.heightWithoutRoof / buildingPart.buildingLevels;
+		int levelCount = buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size();
+		double windowHeight = heightWithoutRoof / levelCount;
 
 		if (mainSurface != null) {
 			mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
@@ -340,12 +342,9 @@ public class Wall implements Renderable {
 	/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
 	private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation) {
 
-		for (int level = 0; level < buildingPart.buildingLevels; level++) {
+		for (Level level : buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND))) {
 
-			double levelHeight = buildingPart.getLevelHeight(level);
-			double heightAboveBase = buildingPart.getLevelHeightAboveBase(level);
-
-			WindowParameters windowParams = new WindowParameters(tags, levelHeight);
+			WindowParameters windowParams = new WindowParameters(tags, level.height);
 
 			int numColums = windowParams.numberWindows != null
 					? windowParams.numberWindows
@@ -354,7 +353,7 @@ public class Wall implements Renderable {
 			for (int i = 0; i < numColums; i++) {
 
 				VectorXZ pos = new VectorXZ((i + 0.5) * surface.getLength() / numColums,
-						heightAboveBase + windowParams.breast);
+						level.relativeEle + windowParams.breast);
 
 				Window window = implementation == WindowImplementation.FULL_GEOMETRY
 						? new GeometryWindow(pos, windowParams, false)

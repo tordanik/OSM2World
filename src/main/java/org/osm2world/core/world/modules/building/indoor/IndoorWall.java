@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
@@ -98,7 +97,7 @@ public class IndoorWall implements Renderable {
     public IndoorWall(BuildingPart buildingPart, MapElement element){
 
         data = new IndoorObjectData(buildingPart, element);
-        this.floorHeight = (float) buildingPart.calculateFloorHeight();
+        this.floorHeight = (float) buildingPart.levelStructure.bottomHeight();
         this.wallHeight = data.getTopOfTopLevelHeightAboveBase().floatValue();
 
         if (element instanceof MapArea) {
@@ -263,7 +262,7 @@ public class IndoorWall implements Renderable {
     private List<VectorXYZ> generateTopPoints(List<VectorXYZ> bottomPoints, Double heightAboveZero){
 
 		Roof roof = data.getBuildingPart().getRoof();
-		double heightWithoutRoof = data.getBuildingPart().getHeightWithoutRoof();
+		double heightWithoutRoof = data.getBuildingPart().levelStructure.heightWithoutRoof();
 
 		if (roof.getRoofHeightAt(bottomPoints.get(0).xz()) + heightWithoutRoof  < bottomPoints.get(0).y || roof.getRoofHeightAt(bottomPoints.get(1).xz()) + heightWithoutRoof < bottomPoints.get(1).y) {
 			return new ArrayList<>(listXYZ(bottomPoints.stream().map(p -> p.xz()).collect(toList()), heightAboveZero));
@@ -273,7 +272,8 @@ public class IndoorWall implements Renderable {
 
 		/* quick return if not in roof */
 
-		if (heightAboveZero <= data.getBuildingPart().getHeightWithoutRoof() + data.getBuildingPart().getBuildingPartBaseEle() + 1e-4) {
+		if (heightAboveZero <= data.getBuildingPart().levelStructure.heightWithoutRoof()
+				+ data.getBuildingPart().getBuilding().getGroundLevelEle() + 1e-4) {
 			return listXYZ(ends, heightAboveZero);
 		}
 
@@ -294,7 +294,8 @@ public class IndoorWall implements Renderable {
 
 		intersections.sort((v1, v2) -> Double.compare(v1.subtract(ends.get(0)).length(), v2.subtract(ends.get(0)).length()));
 
-        double levelHeightInRoof = heightAboveZero - data.getBuildingPart().getHeightWithoutRoof() - data.getBuildingPart().getBuildingPartBaseEle();
+        double levelHeightInRoof = heightAboveZero - data.getBuildingPart().levelStructure.heightWithoutRoof()
+        		- data.getBuildingPart().getBuilding().getGroundLevelEle();
         List<VectorXZ> levelIntersections = new ArrayList<>();
 
         for (int i = 0; i < intersections.size() - 1; i++) {
@@ -337,8 +338,8 @@ public class IndoorWall implements Renderable {
 
         for (VectorXZ intersection : intersections) {
             limitedHeights.add(
-            		intersection.xyz(Math.min(data.getBuildingPart().getBuildingPartBaseEle()
-							+ data.getBuildingPart().getHeightWithoutRoof()
+            		intersection.xyz(Math.min(data.getBuildingPart().getBuilding().getGroundLevelEle()
+							+ data.getBuildingPart().levelStructure.heightWithoutRoof()
 							+ data.getBuildingPart().getRoof().getRoofHeightAt(intersection),
 							heightAboveZero)));
         }
@@ -537,7 +538,7 @@ public class IndoorWall implements Renderable {
 
 				if (parsedLevels != null) {
 
-					if (parsedLevels.stream().map(l -> data.getBuildingPart().levelConversion(l)).collect(toList()).contains(level)) {
+					if (parsedLevels.contains(level)) {
 
 						boolean duplicate = false;
 
@@ -820,21 +821,21 @@ public class IndoorWall implements Renderable {
 
 	private void renderTo(Target target, Boolean renderSides, Boolean attachmentSurfaces) {
 
-		double baseEle = data.getBuildingPart().getBuildingPartBaseEle();
+		double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
 		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
 
 		for (Integer level : data.getRenderableLevels()) {
 
-			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + data.getBuildingPart().levelReversion(level), "wall");
+			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + level, "wall");
 			boolean somethingRendered = false;
 
 			if (attachmentSurfaces) {
 				target = builder;
 			}
 
-			double ceilingHeight = baseEle + data.getBuildingPart().getLevelHeightAboveBase(level) + data.getBuildingPart().getLevelHeight(level);
-			double floorHeight = baseEle + data.getBuildingPart().getLevelHeightAboveBase(level);
+			double ceilingHeight = baseEle + data.getBuildingPart().levelStructure.level(level).relativeEleTop();
+			double floorHeight = baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle;
 
 			for (SegmentNodes wallSegData : wallSegmentNodes) {
 
@@ -848,14 +849,15 @@ public class IndoorWall implements Renderable {
 							allRenderedWallSegments.add(pair);
 						}
 
-						List<VectorXZ> endPoints = getNewEndPoints(wallSegData, level, baseEle + data.getBuildingPart().getLevelHeightAboveBase(level), ceilingHeight);
+						List<VectorXZ> endPoints = getNewEndPoints(wallSegData, level, baseEle
+								+ data.getBuildingPart().levelStructure.level(level).relativeEle, ceilingHeight);
 
 						/* front wall surface */
 
 						List<VectorXZ> bottomPointsXZ = new ArrayList<>(asList(endPoints.get(3), endPoints.get(0)));
 
 						List<VectorXYZ> bottomPoints = new ArrayList<>(listXYZ(bottomPointsXZ,
-								baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
+								baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle));
 
 						List<VectorXYZ> topPoints = generateTopPoints(bottomPoints, ceilingHeight - topOffset);
 
@@ -868,7 +870,7 @@ public class IndoorWall implements Renderable {
 						Collections.reverse(backBottomPointsXZ);
 
 						List<VectorXYZ> backBottomPoints = new ArrayList<>(listXYZ(backBottomPointsXZ,
-								baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)));
+								baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle));
 
 						List<VectorXYZ> backTopPoints = generateTopPoints(backBottomPoints, ceilingHeight - topOffset);
 
@@ -893,7 +895,7 @@ public class IndoorWall implements Renderable {
 								Collection<TriangleXYZ> bottomTriangles = TriangulationUtil.
 										triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 										.stream()
-										.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().getLevelHeightAboveBase(level)))
+										.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle))
 										.collect(toList());
 
 								Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
@@ -930,10 +932,6 @@ public class IndoorWall implements Renderable {
 							objectLevels.add(min(parseLevels(node.getTags().getValue("level"), singletonList(0))));
 							objectLevels.addAll(parseLevels(node.getTags().getValue("repeat_on"), emptyList()));
 
-							objectLevels = objectLevels.stream()
-									.map(l -> data.getBuildingPart().levelConversion(l))
-									.collect(Collectors.toSet());
-
 							VectorXZ posFront = new VectorXZ(frontLineSegment.offsetOf(frontLineSegment.closestPoint(node.getPos())), 0);
 							VectorXZ posback = new VectorXZ(backLineSegment.offsetOf(backLineSegment.closestPoint(node.getPos())), 0);
 
@@ -945,7 +943,7 @@ public class IndoorWall implements Renderable {
 									boolean transparent = data.getBuildingPart().getBuilding().queryWindowSegments(node, level);
 
 									TagSet windowTags = inheritTags(node.getTags(), data.getTags());
-									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().getLevelHeight(level));
+									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().levelStructure.level(level).height);
 
 									GeometryWindow windowFront = new GeometryWindow(new VectorXZ(posFront.x, params.breast), params, transparent);
 									GeometryWindow windowBack = new GeometryWindow(new VectorXZ(posback.x, params.breast), params, transparent);

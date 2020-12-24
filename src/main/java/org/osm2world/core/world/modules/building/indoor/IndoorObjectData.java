@@ -1,5 +1,12 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
+
+import java.util.List;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -9,13 +16,6 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.util.ValueParseUtil.parseLevels;
-
 public final class IndoorObjectData {
 
     private final BuildingPart buildingPart;
@@ -23,15 +23,14 @@ public final class IndoorObjectData {
     private final List<Integer> levels;
     private List<Integer> renderableLevels;
     private final TagSet tags;
-    private final Float levelHeightAboveBase;
+    private final double levelHeightAboveBase;
 
     public IndoorObjectData(BuildingPart buildingPart, MapElement mapElement){
 
         this.buildingPart = buildingPart;
         this.mapElement = mapElement;
 
-        List<Integer> parsedLevels = parseLevels(mapElement.getTags().getValue("level"));
-        this.levels = parsedLevels == null ? emptyList() : parsedLevels.stream().map(buildingPart::levelConversion).collect(toList());
+        this.levels = parseLevels(mapElement.getTags().getValue("level"), emptyList());
 
         Configuration config = buildingPart.getConfig();
 
@@ -52,7 +51,8 @@ public final class IndoorObjectData {
         }
 
         this.tags = mapElement.getTags();
-        this.levelHeightAboveBase = (float) buildingPart.getLevelHeightAboveBase(getMinLevel());
+        this.levelHeightAboveBase = (float) buildingPart.levelStructure.level(getMinLevel()).relativeEle;
+
     }
 
     public BuildingPart getBuildingPart() { return buildingPart; }
@@ -60,7 +60,7 @@ public final class IndoorObjectData {
     /**
      * @return height of lowest level above base
      */
-    public Float getLevelHeightAboveBase() { return levelHeightAboveBase; }
+    public double getLevelHeightAboveBase() { return levelHeightAboveBase; }
 
     public List<Integer> getLevels() { return levels; }
 
@@ -74,7 +74,7 @@ public final class IndoorObjectData {
      * @return the highest point of an object based on its max level
      */
     public Double getTopOfTopLevelHeightAboveBase(){
-        return buildingPart.getLevelHeightAboveBase(getMaxLevel()) + buildingPart.getLevelHeight(getMaxLevel());
+        return buildingPart.levelStructure.level(getMaxLevel()).relativeEleTop();
     }
 
     public MapElement getMapElement() { return mapElement; }
