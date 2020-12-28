@@ -153,7 +153,7 @@ public class BuildingPart implements Renderable {
 		}
 
 		min_level = (int)(float) parseOsmDecimal(tags.getValue("min_level"), true, minLevelWithUnderground);
-		non_existent_levels = parseList(tags.getValue("non_existent_levels"));
+		non_existent_levels = parseLevels(tags.getValue("non_existent_levels"), emptyList());
 		max_level = (int)(float) parseOsmDecimal(tags.getValue("max_level"), true, levelReversion(buildingLevels - 1));
 
 		/* determine roof height */

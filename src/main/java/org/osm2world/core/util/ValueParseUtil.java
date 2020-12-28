@@ -2,12 +2,11 @@ package org.osm2world.core.util;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.Collections.emptyList;
+import javax.annotation.Nullable;
 
 /** parses the syntax of typical OSM tag values */
 public final class ValueParseUtil {
@@ -18,7 +17,13 @@ public final class ValueParseUtil {
 	/** pattern that splits into a part before and after a decimal point */
 	private static final Pattern DEC_POINT_PATTERN = Pattern.compile("^(\\-?\\d+)\\.(\\d+)$");
 
-	public static final Integer parseUInt(String value) {
+	/**
+	 * parses a non-negative integer value (e.g. "15", "0" or "910")
+	 *
+	 * @return  the parsed value as an integer; null if value is null, negative or has syntax errors.
+	 */
+	public static final Integer parseUInt(@Nullable String value) {
+		if (value == null) return null;
 		try {
 			int result = Integer.parseInt(value);
 			if (result >= 0) {
@@ -32,13 +37,20 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseUInt(String)} with a default value */
-	public static final int parseUInt(String value, int defaultValue) {
-		if (value == null) return defaultValue;
+	public static final int parseUInt(@Nullable String value, int defaultValue) {
 		Integer result = parseUInt(value);
 		return result == null ? defaultValue : result;
 	}
 
-	public static final Float parseOsmDecimal(String value, boolean allowNegative) {
+
+	/**
+	 * parses a decimal value (e.g. "5", "0", "3.56" or "-12.30")
+	 *
+	 * @return  the parsed value as a floating point number; null if value is null or has syntax errors.
+	 */
+	public static final @Nullable Float parseOsmDecimal(@Nullable String value, boolean allowNegative) {
+
+		if (value == null) return null;
 
 		/* positive integer */
 
@@ -86,8 +98,7 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseOsmDecimal(String, boolean)} with a default value */
-	public static final double parseOsmDecimal(String value, boolean allowNegative, double defaultValue) {
-		if (value == null) return defaultValue;
+	public static final double parseOsmDecimal(@Nullable String value, boolean allowNegative, double defaultValue) {
 		Float result = parseOsmDecimal(value, allowNegative);
 		return result == null ? defaultValue : result;
 	}
@@ -101,9 +112,11 @@ public final class ValueParseUtil {
 	/**
 	 * parses a speed value given e.g. for the "maxspeed" key.
 	 *
-	 * @return  speed in km/h; null if value had syntax errors
+	 * @return  speed in km/h; null if value is null or has syntax errors.
 	 */
-	public static final Float parseSpeed(String value) {
+	public static final @Nullable Float parseSpeed(@Nullable String value) {
+
+		if (value == null) return null;
 
 		/* try numeric speed (implied km/h) */
 
@@ -139,8 +152,7 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseSpeed(String)} with a default value */
-	public static final double parseSpeed(String value, double defaultValue) {
-		if (value == null) return defaultValue;
+	public static final double parseSpeed(@Nullable String value, double defaultValue) {
 		Float result = parseSpeed(value);
 		return result == null ? defaultValue : result;
 	}
@@ -156,9 +168,11 @@ public final class ValueParseUtil {
 	/**
 	 * parses a measure value given e.g. for the "width" or "length" key.
 	 *
-	 * @return  measure in m; null if value had syntax errors
+	 * @return  measure in m; null if value is null or has syntax errors.
 	 */
-	public static final Float parseMeasure(String value) {
+	public static final @Nullable Float parseMeasure(@Nullable String value) {
+
+		if (value == null) return null;
 
 		/* try numeric measure (implied m) */
 
@@ -214,8 +228,7 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseMeasure(String)} with a default value */
-	public static final double parseMeasure(String value, double defaultValue) {
-		if (value == null) return defaultValue;
+	public static final double parseMeasure(@Nullable String value, double defaultValue) {
 		Float result = parseMeasure(value);
 		return result == null ? defaultValue : result;
 	}
@@ -225,9 +238,11 @@ public final class ValueParseUtil {
 	/**
 	 * parses a weight value given e.g. for the "maxweight" or "maxaxleload" key.
 	 *
-	 * @return  weight in t; null if value had syntax errors
+	 * @return  weight in t; null if value is null or has syntax errors.
 	 */
-	public static Float parseWeight(String value) {
+	public static @Nullable Float parseWeight(@Nullable String value) {
+
+		if (value == null) return null;
 
 		/* try numeric weight (implied t) */
 
@@ -251,8 +266,7 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseWeight(String)} with a default value */
-	public static final double parseWeight(String value, double defaultValue) {
-		if (value == null) return defaultValue;
+	public static final double parseWeight(@Nullable String value, double defaultValue) {
 		Float result = parseWeight(value);
 		return result == null ? defaultValue : result;
 	}
@@ -262,9 +276,11 @@ public final class ValueParseUtil {
 	/**
 	 * parses an incline value as given for the "incline" key.
 	 *
-	 * @return  incline in percents; null if value had syntax errors
+	 * @return  incline in percents; null if value is null or has syntax errors.
 	 */
-	public static final Float parseIncline(String value) {
+	public static final @Nullable Float parseIncline(@Nullable String value) {
+
+		if (value == null) return null;
 
 		Matcher inclineMatcher = INCLINE_PATTERN.matcher(value);
 		if (inclineMatcher.matches()) {
@@ -276,8 +292,7 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseIncline(String)} with a default value */
-	public static final double parseIncline(String value, double defaultValue) {
-		if (value == null) return defaultValue;
+	public static final double parseIncline(@Nullable String value, double defaultValue) {
 		Float result = parseIncline(value);
 		return result == null ? defaultValue : result;
 	}
@@ -286,9 +301,11 @@ public final class ValueParseUtil {
 	 * parses an angular value as given for the "direction" key.
 	 *
 	 * @return  angle in degrees measured from north, range [0, 360[;
-	 *          null if value had syntax errors
+	 *          null if value is null or has syntax errors.
 	 */
-	public static final Float parseAngle(String value) {
+	public static final @Nullable Float parseAngle(@Nullable String value) {
+
+		if (value == null) return null;
 
 		/* try numeric angle */
 
@@ -322,8 +339,7 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseAngle(String)} with a default value */
-	public static final double parseAngle(String value, double defaultValue) {
-		if (value == null) return defaultValue;
+	public static final double parseAngle(@Nullable String value, double defaultValue) {
 		Float result = parseAngle(value);
 		return result == null ? defaultValue : result;
 	}
@@ -332,9 +348,9 @@ public final class ValueParseUtil {
 	 * parses an hexadecimal color value or color name.
 	 * Names following the OSM underscore convention (e.g. light_blue) are normalized by removing the underscores.
 	 *
-	 * @return  color; null if value had syntax errors or was null
+	 * @return  color; null if value is null or has syntax errors.
 	 */
-	public static final Color parseColor(String value, ColorNameDefinition colorNameDefinition) {
+	public static final @Nullable Color parseColor(@Nullable String value, ColorNameDefinition colorNameDefinition) {
 		if (value == null) {
 			return null;
 		} else {
@@ -350,16 +366,15 @@ public final class ValueParseUtil {
 	/**
 	 * parses an hexadecimal color value
 	 *
-	 * @return  color; null if value had syntax errors
+	 * @return  color; null if value is null or has syntax errors.
 	 */
-	public static final Color parseColor(String value) {
-
+	public static final @Nullable Color parseColor(@Nullable String value) {
+		if (value == null) return null;
 		try {
 			return Color.decode(value);
 		} catch (NumberFormatException e) {
 			return null;
 		}
-
 	}
 
 	private static final Pattern LEVEL_RANGE_PATTERN = Pattern.compile("([-]?\\d+)-([-]?\\d+)");
@@ -369,9 +384,9 @@ public final class ValueParseUtil {
 	 * Works for integer level values (including negative levels).
 	 * Supports ranges and semicolon-separated values in addition to single values.
 	 *
-	 * @return list of levels, at least one value, ascending. null if value had syntax errors.
+	 * @return list of levels, at least one value, ascending. null if value is null or has syntax errors.
 	 */
-	public static final List<Integer> parseLevels(String value) {
+	public static final @Nullable List<Integer> parseLevels(@Nullable String value) {
 
 		if (value == null) return null;
 
@@ -404,34 +419,9 @@ public final class ValueParseUtil {
 	}
 
 	/** variant of {@link #parseLevels(String)} with a default value */
-	public static final List<Integer> parseLevels(String value, List<Integer> defaultValue) {
-		if (value == null) return defaultValue;
+	public static final List<Integer> parseLevels(@Nullable String value, List<Integer> defaultValue) {
 		List<Integer> result = parseLevels(value);
 		return result == null ? defaultValue : result;
 	}
 
-	/**
-	 * parses a list of integers separated by colons (for keys like non_existent_levels)
-	 *
-	 * @return list of levels, empty list if value is null or no valid values
-	 */
-	public static final List<Integer> parseList(String value) {
-
-		if (value == null) return emptyList();
-
-		List<Integer> result = new ArrayList<>(1);
-
-		for (String level : value.split(";")){
-
-			try {
-
-				result.add(Integer.valueOf(level));
-
-			} catch (NumberFormatException e) {}
-
-		}
-
-		return result.isEmpty() ? emptyList() : result;
-
-	}
 }

@@ -41,6 +41,12 @@ public class ValueParseUtilTest {
     }
 
     @Test
+    public void testParseSpeedNull() {
+        assertNull(parseSpeed(null));
+        assertEquals(123, parseSpeed(null, 123), 0);
+    }
+
+    @Test
     public void testParseSpeedInvalid() {
         assertNull(parseSpeed("lightspeed"));
     }
@@ -76,6 +82,12 @@ public class ValueParseUtilTest {
     }
 
     @Test
+    public void testParseMeasureNull() {
+        assertNull(parseMeasure(null));
+        assertEquals(123, parseMeasure(null, 123), 0);
+    }
+
+    @Test
     public void testParseMeasureInvalid() {
         assertNull(parseMeasure("very long"));
         assertNull(parseMeasure("6' 16\""));
@@ -92,6 +104,12 @@ public class ValueParseUtilTest {
     public void testParseWeightT() {
         assertClose(30, parseWeight("30t"));
         assertClose(3.5f, parseWeight("3.5 t"));
+    }
+
+    @Test
+    public void testParseWeightNull() {
+        assertNull(parseWeight(null));
+        assertEquals(123, parseWeight(null, 123), 0);
     }
 
     @Test
@@ -115,6 +133,12 @@ public class ValueParseUtilTest {
     }
 
     @Test
+    public void testParseAngleNull() {
+        assertNull(parseAngle(null));
+        assertEquals(123, parseAngle(null, 123), 0);
+    }
+
+    @Test
     public void testParseAngleInvalid() {
         assertNull(parseAngle("forward"));
         assertNull(parseAngle("-90"));
@@ -129,6 +153,11 @@ public class ValueParseUtilTest {
     @Test
     public void testParseColorNamed() {
     	assertEquals(new Color(255, 0, 0), parseColor("red", CSS_COLORS));
+    }
+
+    @Test
+    public void testParseColorNull() {
+        assertNull(parseColor(null));
     }
 
     @Test
@@ -148,6 +177,12 @@ public class ValueParseUtilTest {
     	assertEquals(asList(-4, -3), parseLevels("-4--3"));
     	assertEquals(asList(5, 6, 7), parseLevels("6;5 ; 7"));
     	assertEquals(asList(-3, 0, 1, 2, 3), parseLevels(" -3; 0-2 ;3"));
+    }
+
+    @Test
+    public void testParseLevelsNull() {
+        assertNull(parseLevels(null));
+        assertEquals(asList(1, 2, 3), parseLevels(null, asList(1, 2, 3)));
     }
 
     @Test
