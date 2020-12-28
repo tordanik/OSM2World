@@ -13,7 +13,6 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.ST
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
-import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -42,7 +41,6 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -110,11 +108,10 @@ public class BarrierModule extends AbstractModule {
 
 	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject {
 
-		protected final float height;
-		protected final float width;
+		protected final double height;
+		protected final double width;
 
-		public LinearBarrier(MapWaySegment waySegment,
-				float defaultHeight, float defaultWidth) {
+		public LinearBarrier(MapWaySegment waySegment, double defaultHeight, double defaultWidth) {
 
 			super(waySegment);
 
@@ -126,7 +123,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public float getWidth() {
+		public double getWidth() {
 			return width;
 		}
 
@@ -334,16 +331,16 @@ public class BarrierModule extends AbstractModule {
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(polePositions, height),
 					nCopies(polePositions.size(), Y_UNIT),
-					nCopies(polePositions.size(), (double)width), null, null);
+					nCopies(polePositions.size(), width), null, null);
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(polePositions, 0.15 * height),
 					nCopies(polePositions.size(), Y_UNIT),
-					nCopies(polePositions.size(), (double)width), null, null);
+					nCopies(polePositions.size(), width), null, null);
 
 			/* draw poles and the smaller vertical bars */
 
 			List<VectorXYZ> poleFacingDirections = nCopies(2, segment.getDirection().xyz(0));
-			List<Double> poleScale = nCopies(2, (double)width);
+			List<Double> poleScale = nCopies(2, width);
 			List<Double> smallPoleScale = nCopies(2, width * 0.2);
 
 			for (VectorXYZ v : polePositions) {
@@ -419,11 +416,11 @@ public class BarrierModule extends AbstractModule {
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(getCenterline(), height),
 					nCopies(getCenterline().size(), Y_UNIT),
-					nCopies(getCenterline().size(), (double)width), null, EnumSet.of(START_CAP, END_CAP));
+					nCopies(getCenterline().size(), width), null, EnumSet.of(START_CAP, END_CAP));
 
 			target.drawExtrudedShape(material, BAR_SHAPE, addYList(getCenterline(), 0.07),
 					nCopies(getCenterline().size(), Y_UNIT),
-					nCopies(getCenterline().size(), (double)width), null, EnumSet.of(START_CAP, END_CAP));
+					nCopies(getCenterline().size(), width), null, EnumSet.of(START_CAP, END_CAP));
 
 			/* draw columns */
 
@@ -466,10 +463,8 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> pointsWithEle = getCenterline();
 
-			List<VectorXYZ> vsFence = createVerticalTriangleStrip(
-					pointsWithEle, 0, height);
-			List<List<VectorXZ>> texCoordListsFence = texCoordLists(
-					vsFence, CHAIN_LINK_FENCE, STRIP_WALL);
+			List<VectorXYZ> vsFence = createVerticalTriangleStrip(pointsWithEle, 0, height);
+			List<List<VectorXZ>> texCoordListsFence = texCoordLists(vsFence, CHAIN_LINK_FENCE, STRIP_WALL);
 
 			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence, texCoordListsFence);
 
@@ -547,8 +542,8 @@ public class BarrierModule extends AbstractModule {
 
 			/* render fence */
 			for (int i = 0; i < bars; i++) {
-				float barEndHeight = height - (i * barGap) - barOffset;
-				float barStartHeight = barEndHeight - barWidth;
+				double barEndHeight = height - (i * barGap) - barOffset;
+				double barStartHeight = barEndHeight - barWidth;
 
 				if (barStartHeight > 0) {
 					List<VectorXYZ> vsLowFront = createVerticalTriangleStrip(baseline, barStartHeight, barEndHeight);
@@ -948,8 +943,8 @@ public class BarrierModule extends AbstractModule {
 
 	private static class Bollard extends NoOutlineNodeWorldObject {
 
-		private static final float DEFAULT_HEIGHT = 1;
-		private final float height;
+		private static final double DEFAULT_HEIGHT = 1;
+		private final double height;
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "bollard");
@@ -978,10 +973,10 @@ public class BarrierModule extends AbstractModule {
 
 	private static class Chain extends NoOutlineNodeWorldObject implements Renderable {
 
-		private static final float DEFAULT_HEIGHT = 1;
-		private final float height;
+		private static final double DEFAULT_HEIGHT = 1;
+		private final double height;
 		private static final Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
-		private static final float DEFAULT_BAR_WIDTH = 0.05f;
+		private static final double DEFAULT_BAR_WIDTH = 0.05f;
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE = new AxisAlignedRectangleXZ(-0.03, -0.03, 0.03, 0);
 

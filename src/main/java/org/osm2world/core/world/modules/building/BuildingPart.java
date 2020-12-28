@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules.building;
 
 import static com.google.common.collect.Iterables.getLast;
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -144,7 +145,7 @@ public class BuildingPart implements Renderable {
 				if (parsedUnderground == null) {
 					minLevelWithUnderground = (int)(double)parsedMinLevel;
 				} else {
-					minLevelWithUnderground = (int)(double) Math.min(parsedMinLevel, parsedUnderground * (-1));
+					minLevelWithUnderground = (int)min(parsedMinLevel, parsedUnderground * (-1));
 				}
 			}
 		} else {

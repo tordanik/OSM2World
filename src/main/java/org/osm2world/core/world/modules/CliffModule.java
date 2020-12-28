@@ -64,12 +64,12 @@ public class CliffModule extends ConfigurableWorldModule {
 			super(segment);
 		}
 
-		protected abstract float getDefaultWidth();
+		protected abstract double getDefaultWidth();
 
 		protected abstract Material getMaterial();
 
 		@Override
-		public float getWidth() {
+		public double getWidth() {
 			return parseWidth(segment.getTags(), getDefaultWidth());
 		}
 
@@ -126,8 +126,8 @@ public class CliffModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		protected float getDefaultWidth() {
-			return 1.0f;
+		protected double getDefaultWidth() {
+			return 1.0;
 		}
 
 		@Override
@@ -144,8 +144,8 @@ public class CliffModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		protected float getDefaultWidth() {
-			return 1.0f;
+		protected double getDefaultWidth() {
+			return 1.0;
 		}
 
 		@Override

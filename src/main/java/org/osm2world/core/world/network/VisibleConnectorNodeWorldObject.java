@@ -14,8 +14,8 @@ public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmen
 	protected VectorXZ cutVector;
 	protected VectorXZ startPos;
 	protected VectorXZ endPos;
-	protected float startWidth;
-	protected float endWidth;
+	protected double startWidth;
+	protected double endWidth;
 
 	/**
 	 * returns the length required by this node representation.
@@ -29,7 +29,7 @@ public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmen
 	 * Needs to be provided by the implementing class before the
 	 * calculation in {@link NetworkCalculator} starts.
 	 */
-	abstract public float getLength();
+	abstract public double getLength();
 
 	/**
 	 * sets the results of {@link NetworkCalculator}'s calculations.
@@ -38,7 +38,7 @@ public abstract class VisibleConnectorNodeWorldObject<S extends NetworkWaySegmen
 	 */
 	void setInformation(VectorXZ cutVector,
 			VectorXZ startPos, VectorXZ endPos,
-			float startWidth, float endWidth) {
+			double startWidth, double endWidth) {
 
 		this.informationProvided = true;
 

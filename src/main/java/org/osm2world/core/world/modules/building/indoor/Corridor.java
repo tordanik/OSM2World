@@ -1,5 +1,9 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.target.Renderable;
@@ -7,10 +11,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class Corridor implements Renderable {
 
@@ -25,7 +25,7 @@ public class Corridor implements Renderable {
 
         Material material = data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall);
         PolygonWithHolesXZ polygon = data.getPolygon();
-        double floorHeight = (double) data.getLevelHeightAboveBase();
+        double floorHeight = data.getLevelHeightAboveBase();
 
         /* allow for transparent windows for adjacent objects */
         if (data.getMapElement() instanceof MapArea) {

@@ -17,7 +17,6 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -162,7 +161,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 			List<VectorXYZ> rightOuter = getOutline(true);
 
 			// create geometry for the central marking
-			float relativeMarkingWidth = min(centerlineWidthMeters / getWidth(), 0.2f);
+			double relativeMarkingWidth = min(centerlineWidthMeters / getWidth(), 0.2f);
 			List<VectorXYZ> leftInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 - relativeMarkingWidth));
 			List<VectorXYZ> rightInner = createLineBetween(leftOuter, rightOuter, 0.5f * (1 + relativeMarkingWidth));
 
@@ -197,8 +196,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public float getWidth() {
-			return parseWidth(segment.getTags(), 20.0f);
+		public double getWidth() {
+			return parseWidth(segment.getTags(), 20.0);
 		}
 
 		@Override
@@ -219,8 +218,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public float getWidth() {
-			return parseWidth(segment.getTags(), 5.0f);
+		public double getWidth() {
+			return parseWidth(segment.getTags(), 5.0);
 		}
 
 		@Override
@@ -262,9 +261,9 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public float getLength() {
+		public double getLength() {
 			// length is at most a third of the shorter segment's length
-			return (float)min(
+			return min(
 					getConnectedNetworkSegments().get(0).segment.getLineSegment().getLength() / 3,
 					getConnectedNetworkSegments().get(1).segment.getLineSegment().getLength() / 3);
 		}

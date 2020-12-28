@@ -272,12 +272,12 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float poleHeight = parseHeight(node.getTags(),
-					(float)parseMeasure(node.getTags().getValue("height:hub"), 100.0));
-			float poleRadiusBottom = parseWidth(node.getTags(), poleHeight / 20) / 2;
-			float poleRadiusTop = poleRadiusBottom / 2;
-			float nacelleHeight = poleHeight * 0.05f;
-			float nacelleDepth = poleHeight * 0.1f;
+			double poleHeight = parseHeight(node.getTags(),
+					parseMeasure(node.getTags().getValue("height:hub"), 100.0));
+			double poleRadiusBottom = parseWidth(node.getTags(), poleHeight / 20) / 2;
+			double poleRadiusTop = poleRadiusBottom / 2;
+			double nacelleHeight = poleHeight * 0.05;
+			double nacelleDepth = poleHeight * 0.1;
 			double rotorDiameter = parseMeasure(node.getTags().getValue("rotor:diameter"), poleHeight);
 
 

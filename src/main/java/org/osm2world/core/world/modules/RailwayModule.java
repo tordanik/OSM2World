@@ -222,8 +222,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public float getWidth() {
-			return (float)groundWidth;
+		public double getWidth() {
+			return groundWidth;
 		}
 
 	}

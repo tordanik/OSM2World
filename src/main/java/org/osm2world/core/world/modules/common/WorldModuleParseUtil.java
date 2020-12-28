@@ -23,8 +23,7 @@ public class WorldModuleParseUtil {
 	 * returns the value of the first key that exists,
 	 * or the fallback value if none of the keys exists
 	 */
-	public static final String getValueWithFallback(String fallback,
-			TagSet tags, String... keys) {
+	public static final String getValueWithFallback(String fallback, TagSet tags, String... keys) {
 		for (String key : keys) {
 			if (tags.containsKey(key)) {
 				return tags.getValue(key);
@@ -37,7 +36,7 @@ public class WorldModuleParseUtil {
 	 * retrieves width using (in this priority order)
 	 * width tag, est_width tag, defaultValue parameter
 	 */
-	public static final float parseWidth(TagSet tags, float defaultValue) {
+	public static final double parseWidth(TagSet tags, double defaultValue) {
 		return parseMeasure(tags, defaultValue, "width", "est_width");
 	}
 
@@ -45,7 +44,7 @@ public class WorldModuleParseUtil {
 	 * retrieves length using (in this priority order)
 	 * length tag, defaultValue parameter
 	 */
-	public static final float parseLength(TagSet tags, float defaultValue) {
+	public static final double parseLength(TagSet tags, double defaultValue) {
 		return parseMeasure(tags, defaultValue, "length");
 	}
 
@@ -53,7 +52,7 @@ public class WorldModuleParseUtil {
 	 * retrieves height using (in this priority order)
 	 * height tag, building:height tag, est_height tag, defaultValue parameter
 	 */
-	public static final float parseHeight(TagSet tags, float defaultValue) {
+	public static final double parseHeight(TagSet tags, double defaultValue) {
 		return parseMeasure(tags, defaultValue, "height", "building:height", "est_height");
 	}
 
@@ -61,7 +60,7 @@ public class WorldModuleParseUtil {
 	 * retrieves clearing using (in this priority order)
 	 * practical:maxheight tag, maxheight tag, defaultValue parameter
 	 */
-	public static final float parseClearing(TagSet tags, float defaultValue) {
+	public static final double parseClearing(TagSet tags, double defaultValue) {
 		return parseMeasure(tags, defaultValue, "maxheight:physical", "maxheight");
 	}
 
@@ -95,14 +94,13 @@ public class WorldModuleParseUtil {
 		return defaultValue;
 	}
 
-	private static final float parseMeasure(TagSet tags, float defaultValue,
-			String... keys) {
+	private static final double parseMeasure(TagSet tags, double defaultValue, String... keys) {
 
 		for (String key : keys) {
 			if (tags.containsKey(key)) {
 				Double value = ValueParseUtil.parseMeasure(tags.getValue(key));
 				if (value != null) {
-					return (float)(double)value;
+					return value;
 				}
 			}
 		}

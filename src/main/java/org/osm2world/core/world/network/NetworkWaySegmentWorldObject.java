@@ -19,7 +19,7 @@ public interface NetworkWaySegmentWorldObject extends WaySegmentWorldObject {
 	/**
 	 * returns the line's width
 	 */
-	public float getWidth();
+	public double getWidth();
 
 	/**
 	 * Sets the calculated start of this network segment.

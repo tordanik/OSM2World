@@ -1,12 +1,12 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import java.util.Collection;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-
-import java.util.Collection;
 
 public class IndoorArea implements Renderable {
 
@@ -19,7 +19,7 @@ public class IndoorArea implements Renderable {
         this.data = data;
 
         PolygonWithHolesXZ polygon = data.getPolygon();
-        double floorHeight = (double) data.getLevelHeightAboveBase();
+        double floorHeight = data.getLevelHeightAboveBase();
 
         /* allow for transparent windows for adjacent objects */
         if (data.getMapElement() instanceof MapArea) {

@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.*;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -568,13 +569,13 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public float getLength() {
+		public double getLength() {
 
 			// length is at most a third of the shorter road segment's length
 
 			List<Road> roads = getConnectedRoads(node, false);
 
-			return (float)Math.min(Math.min(
+			return min(min(
 					roads.get(0).segment.getLineSegment().getLength() / 3,
 					roads.get(1).segment.getLineSegment().getLength() / 3),
 					MAX_CONNECTOR_LENGTH);
@@ -615,14 +616,14 @@ public class RoadModule extends ConfigurableWorldModule {
 		extends VisibleConnectorNodeWorldObject<Road>
 		implements TerrainBoundaryWorldObject {
 
-		private static final float CROSSING_WIDTH = 3f;
+		private static final double CROSSING_WIDTH = 3.0;
 
 		public RoadCrossingAtConnector(MapNode node) {
 			super(node, Road.class);
 		}
 
 		@Override
-		public float getLength() {
+		public double getLength() {
 			return parseWidth(node.getTags(), CROSSING_WIDTH);
 		}
 
@@ -679,10 +680,10 @@ public class RoadModule extends ConfigurableWorldModule {
 	/** representation of a road */
 	public static class Road extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
 
-		protected static final float DEFAULT_LANE_WIDTH = 3.5f;
+		protected static final double DEFAULT_LANE_WIDTH = 3.5f;
 
-		protected static final float DEFAULT_ROAD_CLEARING = 5;
-		protected static final float DEFAULT_PATH_CLEARING = 2;
+		protected static final double DEFAULT_ROAD_CLEARING = 5;
+		protected static final double DEFAULT_PATH_CLEARING = 2;
 
 		protected static final ShapeXZ HANDRAIL_SHAPE = new PolylineXZ(
 			new VectorXZ(+0.02, -0.05), new VectorXZ(+0.02,     0),
@@ -691,7 +692,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public final boolean rightHandTraffic;
 
 		public final LaneLayout laneLayout;
-		public final float width;
+		public final double width;
 
 		final private TagSet tags;
 		final public VectorXZ startCoord, endCoord;
@@ -724,7 +725,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			if (steps) {
 				this.laneLayout = null;
-				this.width = parseWidth(tags, 1.0f);
+				this.width = parseWidth(tags, 1.0);
 
 				createAttachmentConnectors();
 			} else {
@@ -1091,7 +1092,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		private float calculateWidth() {
+		private double calculateWidth() {
 
 			// if the width of all lanes is known, use the sum as the road's width
 
@@ -1103,7 +1104,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			// (note that this has lower priority than the sum of lane widths,
 			// to avoid errors when the two values don't match)
 
-			float explicitWidth = parseWidth(tags, -1);
+			double explicitWidth = parseWidth(tags, -1);
 
 			if (explicitWidth != -1) return explicitWidth;
 
@@ -1162,11 +1163,11 @@ public class RoadModule extends ConfigurableWorldModule {
 		 * calculates a rough estimate of the road's vehicle lanes' total width
 		 * based on road type and oneway
 		 */
-		private float estimateVehicleLanesWidth() {
+		private double estimateVehicleLanesWidth() {
 
 			String highwayValue = tags.getValue("highway");
 
-			float width = 0;
+			double width = 0;
 
 			/* guess the combined width of all vehicle lanes */
 
@@ -1179,7 +1180,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				else if ("service".equals(highwayValue)
 						|| "track".equals(highwayValue)) {
 					if (tags.contains("service", "parking_aisle")) {
-						width = DEFAULT_LANE_WIDTH * 0.8f;
+						width = DEFAULT_LANE_WIDTH * 0.8;
 					} else {
 						width = DEFAULT_LANE_WIDTH;
 					}
@@ -1218,7 +1219,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public float getWidth() {
+		public double getWidth() {
 			return width;
 		}
 

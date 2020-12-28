@@ -49,15 +49,15 @@ public class WaterModule extends ConfigurableWorldModule {
 	private static final Tag WATER_TAG = new Tag("natural", "water");
 	private static final Tag RIVERBANK_TAG = new Tag("waterway", "riverbank");
 
-	private static final Map<String, Float> WATERWAY_WIDTHS;
+	private static final Map<String, Double> WATERWAY_WIDTHS;
 
 	static {
-		WATERWAY_WIDTHS = new HashMap<String, Float>();
-		WATERWAY_WIDTHS.put("river", 3f);
-		WATERWAY_WIDTHS.put("stream", 0.5f);
-		WATERWAY_WIDTHS.put("canal", 2f);
-		WATERWAY_WIDTHS.put("ditch", 1f);
-		WATERWAY_WIDTHS.put("drain", 1f);
+		WATERWAY_WIDTHS = new HashMap<>();
+		WATERWAY_WIDTHS.put("river", 3.0);
+		WATERWAY_WIDTHS.put("stream", 0.5);
+		WATERWAY_WIDTHS.put("canal", 2.0);
+		WATERWAY_WIDTHS.put("ditch", 1.0);
+		WATERWAY_WIDTHS.put("drain", 1.0);
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		}
 
-		public float getWidth() {
+		public double getWidth() {
 			return WorldModuleParseUtil.parseWidth(segment.getTags(),
 					WATERWAY_WIDTHS.get(segment.getTags().getValue("waterway")));
 		}

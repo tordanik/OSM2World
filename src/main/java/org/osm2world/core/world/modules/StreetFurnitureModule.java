@@ -17,8 +17,7 @@ import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.util.ValueParseUtil.parseColor;
-import static org.osm2world.core.util.ValueParseUtil.parseLevels;
+import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -180,7 +179,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw the pole */
 
-			float poleHeight = parseHeight(node.getTags(), 10f);
+			double poleHeight = parseHeight(node.getTags(), 10.0);
 			double poleRadius = 0.15;
 
 			VectorXYZ poleBase = getBase();
@@ -476,7 +475,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float height = parseHeight(node.getTags(), 3f);
+			double height = parseHeight(node.getTags(), 3.0);
 
 			/* draw socket, poster and cap */
 
@@ -644,11 +643,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		public void renderTo(Target target) {
 
 			// determine width and height of the swing structure
-			final float swingHeight = parseHeight(node.getTags(),1.5f);
+			final double swingHeight = parseHeight(node.getTags(), 1.5);
 			final double boxHeight = 0.05;
 
-			final float defaultWidth = 0.5f * parseInt(node.getTags(), 4, "capacity");
-			final float width = parseWidth(node.getTags(), defaultWidth);
+			final double defaultWidth = 0.5f * parseInt(node.getTags(), 4, "capacity");
+			final double width = parseWidth(node.getTags(), defaultWidth);
 
 			final int capacity = parseInt(node.getTags(), 4, "capacity");
 
@@ -776,9 +775,9 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* determine the width of the bench */
 
-			float defaultWidth = 0.5f * parseInt(node.getTags(), 4, "seats");
+			double defaultWidth = 0.5f * parseInt(node.getTags(), 4, "seats");
 
-			float width = parseWidth(node.getTags(), defaultWidth);
+			double width = parseWidth(node.getTags(), defaultWidth);
 
 			/* determine material and color */
 
@@ -867,11 +866,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			int seats = parseInt(node.getTags(), 4, "seats");
 
 			// All default values are bound to the hight value. This allows to chose any table size.
-			float height = parseHeight(node.getTags(), 0.75f);
-			float width = parseWidth(node.getTags(), height * 1.2f);
-			float length = parseLength(node.getTags(), ((seats + 1) / 2) * height / 1.25f);
+			double height = parseHeight(node.getTags(), 0.75f);
+			double width = parseWidth(node.getTags(), height * 1.2f);
+			double length = parseLength(node.getTags(), ((seats + 1) / 2) * height / 1.25f);
 
-			float seatHeight = height / 1.5f;
+			double seatHeight = height / 1.5;
 
 			/* determine material */
 
@@ -896,9 +895,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 			VectorXZ boardVector = faceVector.rightNormal();
 
-			float poleCenterOffset = height / 15f;
+			double poleCenterOffset = height / 15.0;
 
-			List<VectorXZ> cornerOffsets = new ArrayList<VectorXZ>(4);
+			List<VectorXZ> cornerOffsets = new ArrayList<>(4);
 			cornerOffsets.add(faceVector.mult(+length / 2 - poleCenterOffset).add(boardVector.mult(+width / 2 - poleCenterOffset)));
 			cornerOffsets.add(faceVector.mult(+length / 2 - poleCenterOffset).add(boardVector.mult(-width / 2 + poleCenterOffset)));
 			cornerOffsets.add(faceVector.mult(-length / 2 + poleCenterOffset).add(boardVector.mult(+width / 2 - poleCenterOffset)));
@@ -906,7 +905,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw poles */
 
-			float poleThickness = poleCenterOffset * 1.6f;
+			double poleThickness = poleCenterOffset * 1.6;
 
 			for (VectorXZ cornerOffset : cornerOffsets) {
 				VectorXZ polePos = node.getPos().add(cornerOffset);
@@ -927,17 +926,17 @@ public class StreetFurnitureModule extends AbstractModule {
 			renderSeatSide(target, material, boardVector.mult(-width / 2 - seatHeight / 2.5f), length, rightSeats, seatHeight);
 		}
 
-		private void renderSeatSide(Target target, Material material, VectorXZ rowPos, float length, int seats, float seatHeight) {
+		private void renderSeatSide(Target target, Material material, VectorXZ rowPos, double length, int seats, double seatHeight) {
 			VectorXZ boardVector = rowPos.rightNormal();
 			VectorXZ faceVector = rowPos.normalize();
 
-			float seatWidth = seatHeight / 1.25f;
-			float seatLength = seatHeight / 1.25f;
+			double seatWidth = seatHeight / 1.25f;
+			double seatLength = seatHeight / 1.25f;
 			VectorXYZ seatBase = getBase().add(rowPos).addY(seatHeight * 0.94f);
 			VectorXYZ backrestBase = getBase().add(rowPos).add(faceVector.mult(seatLength * 0.45f)).addY(seatHeight);
 
 			for (int i = 0; i < seats; i++) {
-				float seatBoardPos = length / seats * ((seats - 1) / 2.0f - i);
+				double seatBoardPos = length / seats * ((seats - 1) / 2.0f - i);
 
 				VectorXZ seatPos = rowPos.add(boardVector.mult(seatBoardPos));
 
@@ -991,8 +990,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			boolean summit = node.getTags().containsKey("summit:cross")
 					|| node.getTags().contains("natural", "peak");
 
-			float height = parseHeight(node.getTags(), summit ? 4f : 2f);
-			float width = parseHeight(node.getTags(), height * 2 / 3);
+			double height = parseHeight(node.getTags(), summit ? 4f : 2f);
+			double width = parseHeight(node.getTags(), height * 2 / 3);
 
 			double thickness = min(height, width) / 8;
 
@@ -1356,9 +1355,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float height = parseHeight(node.getTags(), 0.5f);
-			float width = parseWidth(node.getTags(), 1);
-			float depth = width / 2f;
+			double height = parseHeight(node.getTags(), 0.5f);
+			double width = parseWidth(node.getTags(), 1);
+			double depth = width / 2f;
 
 			/* determine material */
 
@@ -1444,8 +1443,8 @@ public class StreetFurnitureModule extends AbstractModule {
 
 
 			// default dimensions may differ depending on the phone type
-			float height = 0f;
-			float width = 0f;
+			double height = 0f;
+			double width = 0f;
 
 			switch (type) {
 				case WALL:
@@ -1522,7 +1521,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			// default dimensions will differ depending on the post box type
-			float height = 0f;
+			double height = 0f;
 
 			switch (type) {
 				case WALL:
@@ -1587,8 +1586,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			assert (type != Type.WALL || poleMaterial != null) : "post box of type wall requires a pole material";
 
 			// default dimensions will differ depending on the post box type
-			float height = 0f;
-			float width = 0f;
+			double height = 0f;
+			double width = 0f;
 
 			switch (type) {
 				case WALL:
@@ -1641,9 +1640,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float height = parseHeight(node.getTags(), 3f);
-			float signHeight = 0.7f;
-			float signWidth = 0.4f;
+			double height = parseHeight(node.getTags(), 3.0);
+			double signHeight = 0.7;
+			double signWidth = 0.4;
 
 			Material poleMaterial = STEEL;
 
@@ -1705,11 +1704,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			// shape depends on type
 			if (node.getTags().contains("type", "Rondell")) {
 
-				float height = parseHeight(node.getTags(), 2.2f);
-				float width = parseWidth(node.getTags(), 3f);
-				float rondelWidth = width * 2 / 3;
-				float boxWidth = width * 1 / 3;
-				float roofOverhang = 0.3f;
+				double height = parseHeight(node.getTags(), 2.2f);
+				double width = parseWidth(node.getTags(), 3f);
+				double rondelWidth = width * 2 / 3;
+				double boxWidth = width * 1 / 3;
+				double roofOverhang = 0.3f;
 
 				/* draw rondel */
 				target.drawColumn(boxMaterial, null,
@@ -1726,19 +1725,19 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			} else if (node.getTags().contains("type", "Paketbox")) {
 
-				float height = parseHeight(node.getTags(), 1.5f);
-				float width = parseHeight(node.getTags(), 1.0f);
-				float depth = width;
+				double height = parseHeight(node.getTags(), 1.5);
+				double width = parseHeight(node.getTags(), 1.0);
+				double depth = width;
 
 				target.drawBox(boxMaterial, getBase(),
 						faceVector, height, width * 2, depth * 2);
 
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
 
-				float height = parseHeight(node.getTags(), 2.2f);
-				float width = parseWidth(node.getTags(), 3.5f);
-				float depth = width / 3;
-				float roofOverhang = 0.3f;
+				double height = parseHeight(node.getTags(), 2.2);
+				double width = parseWidth(node.getTags(), 3.5);
+				double depth = width / 3;
+				double roofOverhang = 0.3f;
 
 				/* draw box */
 				target.drawBox(boxMaterial,
@@ -1769,7 +1768,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float height = parseHeight(node.getTags(), 1f);
+			double height = parseHeight(node.getTags(), 1.0);
 
 			/* draw main pole */
 			target.drawColumn(FIREHYDRANT, null,
@@ -1806,9 +1805,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			float lampHeight = 0.8f;
-			float lampHalfWidth = 0.4f;
-			float poleHeight = parseHeight(node.getTags(), 5f) - lampHeight;
+			double lampHeight = 0.8;
+			double lampHalfWidth = 0.4;
+			double poleHeight = parseHeight(node.getTags(), 5.0) - lampHeight;
 
 			/* determine material */
 

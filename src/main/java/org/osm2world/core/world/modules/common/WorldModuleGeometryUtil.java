@@ -33,7 +33,7 @@ public final class WorldModuleGeometryUtil {
 	 * at a given elevation above a line of points
 	 */
 	public static final List<VectorXYZ> createVerticalTriangleStrip(
-			List<? extends VectorXYZ> baseLine, float stripLowerYBound, float stripUpperYBound) {
+			List<? extends VectorXYZ> baseLine, double stripLowerYBound, double stripUpperYBound) {
 
 		VectorXYZ[] result = new VectorXYZ[baseLine.size() * 2];
 
@@ -81,7 +81,7 @@ public final class WorldModuleGeometryUtil {
 	 * @param ratio  0 is at left outline, 1 at right outline
 	 */
 	public static final List<VectorXYZ> createLineBetween(
-			List<VectorXYZ> leftOutline, List<VectorXYZ> rightOutline, float ratio) {
+			List<VectorXYZ> leftOutline, List<VectorXYZ> rightOutline, double ratio) {
 
 		assert leftOutline.size() == rightOutline.size();
 
