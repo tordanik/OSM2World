@@ -194,7 +194,7 @@ public class ValueParseUtilTest {
 
     /* utility methods for testing */
 
-    private static final void assertClose(float expected, float actual) {
+    private static final void assertClose(double expected, double actual) {
         if (Math.abs(expected - actual) > 0.001) {
             throw new AssertionError("expected " + expected + ", was " + actual);
         }

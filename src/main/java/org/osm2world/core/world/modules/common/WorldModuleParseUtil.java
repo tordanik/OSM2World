@@ -71,7 +71,7 @@ public class WorldModuleParseUtil {
 	 */
 	public static final double parseDirection(TagSet tags, double defaultValue) {
 
-		Float directionAngle = null;
+		Double directionAngle = null;
 
 		if (tags.containsKey("direction")) {
 			directionAngle = parseAngle(tags.getValue("direction"));
@@ -87,9 +87,9 @@ public class WorldModuleParseUtil {
 
 	public static final int parseInt(TagSet tags, int defaultValue, String key) {
 		if(tags.containsKey(key)) {
-			Float value = parseOsmDecimal(tags.getValue(key), false);
+			Double value = parseOsmDecimal(tags.getValue(key), false);
 			if (value != null) {
-				return(int) (float) value;
+				return(int) (double) value;
 			}
 		}
 		return defaultValue;
@@ -100,9 +100,9 @@ public class WorldModuleParseUtil {
 
 		for (String key : keys) {
 			if (tags.containsKey(key)) {
-				Float value = ValueParseUtil.parseMeasure(tags.getValue(key));
+				Double value = ValueParseUtil.parseMeasure(tags.getValue(key));
 				if (value != null) {
-					return value;
+					return (float)(double)value;
 				}
 			}
 		}

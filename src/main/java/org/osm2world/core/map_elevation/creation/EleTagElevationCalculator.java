@@ -11,19 +11,11 @@ public class EleTagElevationCalculator extends TagElevationCalculator {
 
 	@Override
 	protected Double getEleForTags(TagSet tags) {
-
-		Float value = null;
-
 		if (tags.containsKey("ele")) {
-			value = parseOsmDecimal(tags.getValue("ele"), true);
-		}
-
-		if (value == null) {
-			return null;
+			return parseOsmDecimal(tags.getValue("ele"), true);
 		} else {
-			return (double) value;
+			return null;
 		}
-
 	}
 
 }

@@ -29,7 +29,7 @@ public class SkillionRoof extends HeightfieldRoof {
 		VectorXZ slopeDirection = null;
 
 		if (tags.containsKey("roof:direction")) {
-			Float angle = parseAngle(tags.getValue("roof:direction"));
+			Double angle = parseAngle(tags.getValue("roof:direction"));
 			if (angle != null) {
 				slopeDirection = VectorXZ.fromAngle(toRadians(angle));
 			}

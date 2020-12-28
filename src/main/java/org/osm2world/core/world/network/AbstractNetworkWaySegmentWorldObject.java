@@ -366,7 +366,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 			} else {
 
-				Float incline = parseIncline(inclineValue);
+				Double incline = parseIncline(inclineValue);
 
 				if (incline != null) {
 					if (incline > 0) {

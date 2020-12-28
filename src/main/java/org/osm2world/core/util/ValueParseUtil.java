@@ -48,7 +48,7 @@ public final class ValueParseUtil {
 	 *
 	 * @return  the parsed value as a floating point number; null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Float parseOsmDecimal(@Nullable String value, boolean allowNegative) {
+	public static final @Nullable Double parseOsmDecimal(@Nullable String value, boolean allowNegative) {
 
 		if (value == null) return null;
 
@@ -58,7 +58,7 @@ public final class ValueParseUtil {
 
 			int weight = Integer.parseInt(value);
 			if (weight >= 0 || allowNegative) {
-				return (float)weight;
+				return (double)weight;
 			}
 
 		} catch (NumberFormatException nfe) {}
@@ -78,15 +78,15 @@ public final class ValueParseUtil {
 
 					boolean negative = stringBeforePoint.startsWith("-");
 
-					float beforePoint = Integer.parseInt(stringBeforePoint);
-					float afterPoint = Integer.parseInt(stringAfterPoint);
+					double beforePoint = Integer.parseInt(stringBeforePoint);
+					double afterPoint = Integer.parseInt(stringAfterPoint);
 
 					double result = Math.abs(beforePoint)
 							+ Math.pow(10, -stringAfterPoint.length()) * afterPoint;
 					if (negative) { result = - result; }
 
 					if (result >= 0 || allowNegative) {
-						return (float)result;
+						return result;
 					}
 
 				} catch (NumberFormatException nfe) {}
@@ -99,7 +99,7 @@ public final class ValueParseUtil {
 
 	/** variant of {@link #parseOsmDecimal(String, boolean)} with a default value */
 	public static final double parseOsmDecimal(@Nullable String value, boolean allowNegative, double defaultValue) {
-		Float result = parseOsmDecimal(value, allowNegative);
+		Double result = parseOsmDecimal(value, allowNegative);
 		return result == null ? defaultValue : result;
 	}
 
@@ -107,20 +107,20 @@ public final class ValueParseUtil {
 	private static final Pattern KMH_PATTERN = Pattern.compile("^(\\d+)\\s*km/h$");
 	private static final Pattern MPH_PATTERN = Pattern.compile("^(\\d+)\\s*mph$");
 
-	private static final float KM_PER_MILE = 1.609344f;
+	private static final double KM_PER_MILE = 1.609344f;
 
 	/**
 	 * parses a speed value given e.g. for the "maxspeed" key.
 	 *
 	 * @return  speed in km/h; null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Float parseSpeed(@Nullable String value) {
+	public static final @Nullable Double parseSpeed(@Nullable String value) {
 
 		if (value == null) return null;
 
 		/* try numeric speed (implied km/h) */
 
-		Float speed = parseOsmDecimal(value, false);
+		Double speed = parseOsmDecimal(value, false);
 		if (speed != null) {
 			return speed;
 		}
@@ -131,7 +131,7 @@ public final class ValueParseUtil {
 		if (kmhMatcher.matches()) {
 			String kmhString = kmhMatcher.group(1);
 			try {
-				return (float)Integer.parseInt(kmhString);
+				return (double)Integer.parseInt(kmhString);
 			} catch (NumberFormatException nfe) {}
 		}
 
@@ -153,7 +153,7 @@ public final class ValueParseUtil {
 
 	/** variant of {@link #parseSpeed(String)} with a default value */
 	public static final double parseSpeed(@Nullable String value, double defaultValue) {
-		Float result = parseSpeed(value);
+		Double result = parseSpeed(value);
 		return result == null ? defaultValue : result;
 	}
 
@@ -170,13 +170,13 @@ public final class ValueParseUtil {
 	 *
 	 * @return  measure in m; null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Float parseMeasure(@Nullable String value) {
+	public static final @Nullable Double parseMeasure(@Nullable String value) {
 
 		if (value == null) return null;
 
 		/* try numeric measure (implied m) */
 
-		Float measure = parseOsmDecimal(value, false);
+		Double measure = parseOsmDecimal(value, false);
 		if (measure != null) {
 			return measure;
 		}
@@ -194,7 +194,7 @@ public final class ValueParseUtil {
 		Matcher kmMatcher = KM_PATTERN.matcher(value);
 		if (kmMatcher.matches()) {
 			String kmString = kmMatcher.group(1);
-			float km = parseOsmDecimal(kmString, false);
+			double km = parseOsmDecimal(kmString, false);
 			return 1000 * km;
 		}
 
@@ -203,8 +203,8 @@ public final class ValueParseUtil {
 		Matcher miMatcher = MI_PATTERN.matcher(value);
 		if (miMatcher.matches()) {
 			String miString = miMatcher.group(1);
-			float mi = parseOsmDecimal(miString, false);
-			return (float)(M_PER_MI * mi);
+			double mi = parseOsmDecimal(miString, false);
+			return M_PER_MI * mi;
 		}
 
 		/* try feet/inches measure */
@@ -217,7 +217,7 @@ public final class ValueParseUtil {
 				int feet = Integer.parseInt(feetString);
 				int inches = Integer.parseInt(inchesString);
 				if (feet >= 0 && inches >= 0 && inches < 12) {
-					return (float)(M_PER_INCH * (12 * feet + inches));
+					return M_PER_INCH * (12 * feet + inches);
 				}
 			} catch (NumberFormatException nfe) {}
 		}
@@ -229,7 +229,7 @@ public final class ValueParseUtil {
 
 	/** variant of {@link #parseMeasure(String)} with a default value */
 	public static final double parseMeasure(@Nullable String value, double defaultValue) {
-		Float result = parseMeasure(value);
+		Double result = parseMeasure(value);
 		return result == null ? defaultValue : result;
 	}
 
@@ -240,13 +240,13 @@ public final class ValueParseUtil {
 	 *
 	 * @return  weight in t; null if value is null or has syntax errors.
 	 */
-	public static @Nullable Float parseWeight(@Nullable String value) {
+	public static @Nullable Double parseWeight(@Nullable String value) {
 
 		if (value == null) return null;
 
 		/* try numeric weight (implied t) */
 
-		Float weight = parseOsmDecimal(value, false);
+		Double weight = parseOsmDecimal(value, false);
 		if (weight != null) {
 			return weight;
 		}
@@ -267,7 +267,7 @@ public final class ValueParseUtil {
 
 	/** variant of {@link #parseWeight(String)} with a default value */
 	public static final double parseWeight(@Nullable String value, double defaultValue) {
-		Float result = parseWeight(value);
+		Double result = parseWeight(value);
 		return result == null ? defaultValue : result;
 	}
 
@@ -278,7 +278,7 @@ public final class ValueParseUtil {
 	 *
 	 * @return  incline in percents; null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Float parseIncline(@Nullable String value) {
+	public static final @Nullable Double parseIncline(@Nullable String value) {
 
 		if (value == null) return null;
 
@@ -293,7 +293,7 @@ public final class ValueParseUtil {
 
 	/** variant of {@link #parseIncline(String)} with a default value */
 	public static final double parseIncline(@Nullable String value, double defaultValue) {
-		Float result = parseIncline(value);
+		Double result = parseIncline(value);
 		return result == null ? defaultValue : result;
 	}
 
@@ -303,13 +303,13 @@ public final class ValueParseUtil {
 	 * @return  angle in degrees measured from north, range [0, 360[;
 	 *          null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Float parseAngle(@Nullable String value) {
+	public static final @Nullable Double parseAngle(@Nullable String value) {
 
 		if (value == null) return null;
 
 		/* try numeric angle */
 
-		Float measure = parseOsmDecimal(value, false);
+		Double measure = parseOsmDecimal(value, false);
 		if (measure != null) {
 			return measure % 360;
 		}
@@ -317,22 +317,22 @@ public final class ValueParseUtil {
 		/* try cardinal directions (represented by letters) */
 
 		switch (value) {
-		case "N"  : return   0.0f;
-		case "NNE": return  22.5f;
-		case "NE" : return  45.0f;
-		case "ENE": return  67.5f;
-		case "E"  : return  90.0f;
-		case "ESE": return 112.5f;
-		case "SE" : return 135.0f;
-		case "SSE": return 157.5f;
-		case "S"  : return 180.0f;
-		case "SSW": return 202.5f;
-		case "SW" : return 225.0f;
-		case "WSW": return 247.5f;
-		case "W"  : return 270.0f;
-		case "WNW": return 292.5f;
-		case "NW" : return 315.0f;
-		case "NNW": return 337.5f;
+		case "N"  : return   0.0;
+		case "NNE": return  22.5;
+		case "NE" : return  45.0;
+		case "ENE": return  67.5;
+		case "E"  : return  90.0;
+		case "ESE": return 112.5;
+		case "SE" : return 135.0;
+		case "SSE": return 157.5;
+		case "S"  : return 180.0;
+		case "SSW": return 202.5;
+		case "SW" : return 225.0;
+		case "WSW": return 247.5;
+		case "W"  : return 270.0;
+		case "WNW": return 292.5;
+		case "NW" : return 315.0;
+		case "NNW": return 337.5;
 		}
 
 		return null;
@@ -340,7 +340,7 @@ public final class ValueParseUtil {
 
 	/** variant of {@link #parseAngle(String)} with a default value */
 	public static final double parseAngle(@Nullable String value, double defaultValue) {
-		Float result = parseAngle(value);
+		Double result = parseAngle(value);
 		return result == null ? defaultValue : result;
 	}
 

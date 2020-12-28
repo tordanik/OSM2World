@@ -58,14 +58,14 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 		VectorXZ ridgeDirection = null;
 
 		if (tags.containsKey("roof:direction")) {
-			Float angle = parseAngle(tags.getValue("roof:direction"));
+			Double angle = parseAngle(tags.getValue("roof:direction"));
 			if (angle != null) {
 				ridgeDirection = VectorXZ.fromAngle(toRadians(angle)).rightNormal();
 			}
 		}
 
 		if (ridgeDirection == null && tags.containsKey("roof:ridge:direction")) {
-			Float angle = parseAngle(tags.getValue("roof:ridge:direction"));
+			Double angle = parseAngle(tags.getValue("roof:ridge:direction"));
 			if (angle != null) {
 				ridgeDirection = VectorXZ.fromAngle(toRadians(angle));
 			}

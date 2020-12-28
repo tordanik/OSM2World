@@ -23,7 +23,7 @@ public class LevelTagElevationCalculator extends TagElevationCalculator {
 	@Override
 	protected Double getEleForTags(TagSet tags) {
 
-		Float value = null;
+		Double value = null;
 
 		if (tags.containsKey("level")) {
 			value = parseOsmDecimal(tags.getValue("level"), true);

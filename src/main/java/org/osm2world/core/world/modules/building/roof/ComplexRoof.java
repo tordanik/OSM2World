@@ -88,7 +88,7 @@ public class ComplexRoof extends HeightfieldRoof {
 			for (MapNode node : waySegment.getStartEndNodes()) {
 
 				// height of node (above roof base)
-				Float nodeHeight = null;
+				Double nodeHeight = null;
 
 				if (node.getTags().containsKey("roof:height")) {
 					nodeHeight = parseMeasure(node.getTags().getValue("roof:height"));
@@ -96,7 +96,7 @@ public class ComplexRoof extends HeightfieldRoof {
 				} else if (waySegment.getTags().containsKey("roof:height")) {
 					nodeHeight = parseMeasure(waySegment.getTags().getValue("roof:height"));
 				} else if (node.getTags().contains("roof:apex",	"yes")) {
-					nodeHeight = (float)roofHeight;
+					nodeHeight = roofHeight;
 				}
 
 				if (nodeHeight == null) {
@@ -112,12 +112,12 @@ public class ComplexRoof extends HeightfieldRoof {
 		for (MapWaySegment waySegment : ridges) {
 
 			// height of node (above roof base)
-			Float nodeHeight = null;
+			Double nodeHeight = null;
 
 			if (waySegment.getTags().containsKey("roof:height")) {
 				nodeHeight = parseMeasure(waySegment.getTags().getValue("roof:height"));
 			} else {
-				nodeHeight = (float) roofHeight;
+				nodeHeight = roofHeight;
 			}
 
 			for (MapNode node : waySegment.getStartEndNodes()) {

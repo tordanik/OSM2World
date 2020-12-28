@@ -109,27 +109,27 @@ public class BuildingPart implements Renderable {
 
 		/* determine levels */
 
-		Float parsedLevels = null;
+		Double parsedLevels = null;
 
 		if (tags.containsKey("building:levels")) {
 			parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
 		}
 
 		if (parsedLevels != null) {
-			buildingLevels = max(1, (int)(float)parsedLevels);
+			buildingLevels = max(1, (int)(double)parsedLevels);
 		} else if (parseHeight(tags, -1) > 0) {
 			buildingLevels = max(1, (int) (parseHeight(tags, -1) / heightPerLevel));
 		} else {
 			buildingLevels = defaults.levels;
 		}
 
-		Float parsedMinLevel = null;
+		Double parsedMinLevel = null;
 
 		if (tags.containsKey("building:min_level")) {
 			parsedMinLevel = parseOsmDecimal(tags.getValue("building:min_level"), false);
 		}
 
-		Float parsedUnderground = 0f;
+		Double parsedUnderground = 0.0;
 
 		if (tags.containsKey("building:levels:underground")) {
 			parsedUnderground = parseOsmDecimal(tags.getValue("building:levels:underground"), false);
@@ -137,45 +137,45 @@ public class BuildingPart implements Renderable {
 
 		if (parsedMinLevel != null) {
 			if (parsedMinLevel > 0) {
-				buildingMinLevel = (int)(float)parsedMinLevel;
+				buildingMinLevel = (int)(double)parsedMinLevel;
 				minLevelWithUnderground = buildingMinLevel;
 			} else {
 				buildingMinLevel = 0;
 				if (parsedUnderground == null) {
-					minLevelWithUnderground = (int)(float)parsedMinLevel;
+					minLevelWithUnderground = (int)(double)parsedMinLevel;
 				} else {
-					minLevelWithUnderground = (int)(float) Math.min(parsedMinLevel, parsedUnderground * (-1));
+					minLevelWithUnderground = (int)(double) Math.min(parsedMinLevel, parsedUnderground * (-1));
 				}
 			}
 		} else {
 			buildingMinLevel = 0;
-			minLevelWithUnderground = Math.min(0, (int)(float)parsedUnderground * (-1));
+			minLevelWithUnderground = Math.min(0, (int)(double)parsedUnderground * (-1));
 		}
 
-		min_level = (int)(float) parseOsmDecimal(tags.getValue("min_level"), true, minLevelWithUnderground);
+		min_level = (int)parseOsmDecimal(tags.getValue("min_level"), true, minLevelWithUnderground);
 		non_existent_levels = parseLevels(tags.getValue("non_existent_levels"), emptyList());
-		max_level = (int)(float) parseOsmDecimal(tags.getValue("max_level"), true, levelReversion(buildingLevels - 1));
+		max_level = (int)parseOsmDecimal(tags.getValue("max_level"), true, levelReversion(buildingLevels - 1));
 
 		/* determine roof height */
 
-		Float roofHeight = null;
+		Double roofHeight = null;
 
 		if (tags.containsKey("roof:height")) {
 			String valueString = tags.getValue("roof:height");
 			roofHeight = parseMeasure(valueString);
 		} else if (tags.containsKey("roof:levels")) {
 			try {
-				roofHeight = (float)defaults.heightPerLevel * Integer.parseInt(tags.getValue("roof:levels"));
+				roofHeight = defaults.heightPerLevel * Integer.parseInt(tags.getValue("roof:levels"));
 			} catch (NumberFormatException e) {}
 		}
 
 		if (roofHeight == null) {
 			if (tags.contains("roof:shape", "dome")) {
-				roofHeight = (float) polygon.getOuter().getDiameter() / 2;
+				roofHeight = polygon.getOuter().getDiameter() / 2;
 			} else if (buildingLevels == 1) {
-				roofHeight = 1.0f;
+				roofHeight = 1.0;
 			} else {
-				roofHeight = (float) DEFAULT_RIDGE_HEIGHT;
+				roofHeight = DEFAULT_RIDGE_HEIGHT;
 			}
 		}
 
@@ -203,7 +203,7 @@ public class BuildingPart implements Renderable {
 		}
 
 		if (roof instanceof FlatRoof) {
-			roofHeight = 0.0f;
+			roofHeight = 0.0;
 		}
 
 		int roofLevels = 0;
@@ -280,10 +280,10 @@ public class BuildingPart implements Renderable {
 
 			// Update levels with no height data
 
-			Float defaultHeight = calculateDefaultHeight();
-			Float roofLevelsDefaultHeight = calculateRoofLevelsDefaultHeight(roofHeight);
+			Double defaultHeight = calculateDefaultHeight();
+			Double roofLevelsDefaultHeight = calculateRoofLevelsDefaultHeight(roofHeight);
 
-			Float cumHeightAboveBase = 0f;
+			Double cumHeightAboveBase = 0.0;
 
 			for (int levelNo = buildingMinLevel; levelNo < buildingLevels; levelNo++) {
 				Level lev = levels.get(levelNo);
@@ -301,7 +301,7 @@ public class BuildingPart implements Renderable {
 				cumHeightAboveBase += lev.getHeight();
 			}
 
-			Float cumHeightBelowBase = 0f;
+			Double cumHeightBelowBase = 0.0;
 
 			for (int levelNo = buildingMinLevel - 1; levelNo > minLevelWithUnderground - 1; levelNo--) {
 				Level lev = levels.get(levelNo);
@@ -706,7 +706,7 @@ public class BuildingPart implements Renderable {
 
 		if (tags.containsKey("min_height")) {
 
-			Float minHeight = parseMeasure(tags.getValue("min_height"));
+			Double minHeight = parseMeasure(tags.getValue("min_height"));
 			if (minHeight != null) {
 				return minHeight;
 			}
@@ -729,9 +729,9 @@ public class BuildingPart implements Renderable {
 
 	}
 
-	private Float calculateDefaultHeight(){
+	private Double calculateDefaultHeight(){
 
-		Float cumUndeterminedHeight = (float) heightWithoutRoof - (float) ((heightWithoutRoof/buildingLevels) * buildingMinLevel);
+		Double cumUndeterminedHeight = heightWithoutRoof - ((heightWithoutRoof/buildingLevels) * buildingMinLevel);
 		int noDefaultHeightLevels = 0;
 
 		// Underground and roof level heights are not taken into account
@@ -748,12 +748,12 @@ public class BuildingPart implements Renderable {
 		return cumUndeterminedHeight/noDefaultHeightLevels;
 	}
 
-	private Float calculateRoofLevelsDefaultHeight(Float roofHeight){
+	private Double calculateRoofLevelsDefaultHeight(Double roofHeight){
 
 		if (roofHeight < 1){
 			return null;
 		} else {
-			Float cumUndeterminedHeight = roofHeight;
+			Double cumUndeterminedHeight = roofHeight;
 			int noDefaultHeightLevels = 0;
 
 			for (Integer levelNo : levels.keySet()){
@@ -807,9 +807,9 @@ public class BuildingPart implements Renderable {
 
 		private final String name;
 		private final String ref;
-		private	Float height;
+		private	Double height;
 		private final int level;
-		private Float floorEleAboveBase = 0f;
+		private Double floorEleAboveBase = 0.0;
 
 		private PolygonWithHolesXZ outlineArea;
 
@@ -821,7 +821,7 @@ public class BuildingPart implements Renderable {
 			this.level = levelConversion(parseLevels(tags.getValue("level")).get(0));
 
 			// Default heights need to be calculated once all levels are accounted for
-			this.height = parseHeight(tags, 0);
+			this.height = (double)parseHeight(tags, 0);
 
 			if (element instanceof MapArea){
 				this.outlineArea = ((MapArea) element).getPolygon();
@@ -834,7 +834,7 @@ public class BuildingPart implements Renderable {
 			this.name = null;
 			this.ref = null;
 			this.level = levelNo;
-			this.height = 0f;
+			this.height = 0.0;
 			this.outlineArea = null;
 
 		}
@@ -843,15 +843,15 @@ public class BuildingPart implements Renderable {
 
 		String getRef() { return ref; }
 
-		Float getHeight() { return height; }
+		Double getHeight() { return height; }
 
 		int getLevel() { return level; }
 
-		Float getFloorEleAboveBase() { return floorEleAboveBase; }
+		Double getFloorEleAboveBase() { return floorEleAboveBase; }
 
-		void setFloorEleAboveBase(Float floorEleAboveBase) { this.floorEleAboveBase = floorEleAboveBase; }
+		void setFloorEleAboveBase(Double floorEleAboveBase) { this.floorEleAboveBase = floorEleAboveBase; }
 
-		void updateHeight(Float defaultHeight){
+		void updateHeight(Double defaultHeight){
 			if (height == 0){
 				height = defaultHeight;
 			}

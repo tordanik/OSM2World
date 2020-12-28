@@ -768,21 +768,21 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* determine the number of lanes */
 
-			Float lanes = null;
+			Double lanes = null;
 
 			if (tags.containsKey("lanes")) {
 				lanes = parseOsmDecimal(tags.getValue("lanes"), false);
 			}
 
-			Float lanesRight = null;
-			Float lanesLeft = null;
+			Double lanesRight = null;
+			Double lanesLeft = null;
 
 			//TODO handle oneway case
 
 			String rightKey = rightHandTraffic ? "lanes:forward" : "lanes:backward";
 
 			if (laneTagsRight != null) {
-				lanesRight = (float)laneTagsRight.length;
+				lanesRight = (double)laneTagsRight.length;
 			} else if (tags.containsKey(rightKey)) {
 				lanesRight = parseOsmDecimal(tags.getValue(rightKey), false);
 			}
@@ -790,7 +790,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			String leftKey = rightHandTraffic ? "lanes:backward" : "lanes:forward";
 
 			if (laneTagsLeft != null) {
-				lanesLeft = (float)laneTagsLeft.length;
+				lanesLeft = (double)laneTagsLeft.length;
 			} else if (tags.containsKey(leftKey)) {
 				lanesLeft = parseOsmDecimal(tags.getValue(leftKey), false);
 			}
@@ -801,8 +801,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			if (lanesRight != null && lanesLeft != null) {
 
-				vehicleLaneCountRight = (int)(float)lanesRight;
-				vehicleLaneCountLeft = (int)(float)lanesLeft;
+				vehicleLaneCountRight = (int)(double)lanesRight;
+				vehicleLaneCountLeft = (int)(double)lanesLeft;
 
 				vehicleLaneCount = vehicleLaneCountRight + vehicleLaneCountLeft;
 
@@ -813,18 +813,18 @@ public class RoadModule extends ConfigurableWorldModule {
 				if (lanes == null) {
 					vehicleLaneCount = getDefaultLanes(tags);
 				} else {
-					vehicleLaneCount = (int)(float) lanes;
+					vehicleLaneCount = (int)(double) lanes;
 				}
 
 				if (lanesRight != null) {
 
-					vehicleLaneCountRight = (int)(float)lanesRight;
+					vehicleLaneCountRight = (int)(double)lanesRight;
 					vehicleLaneCount = max(vehicleLaneCount, vehicleLaneCountRight);
 					vehicleLaneCountLeft = vehicleLaneCount - vehicleLaneCountRight;
 
 				} else if (lanesLeft != null) {
 
-					vehicleLaneCountLeft = (int)(float)lanesLeft;
+					vehicleLaneCountLeft = (int)(double)lanesLeft;
 					vehicleLaneCount = max(vehicleLaneCount, vehicleLaneCountLeft);
 					vehicleLaneCountRight = vehicleLaneCount - vehicleLaneCountLeft;
 
