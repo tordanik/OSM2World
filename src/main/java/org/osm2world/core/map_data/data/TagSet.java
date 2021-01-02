@@ -31,7 +31,7 @@ public final class TagSet implements Iterable<Tag> {
 		// validate uniqueness of keys (relies on sort order)
 		for (int i = 0; i + 1 < tags.length; i++) {
 			if (tags[i].key.equals(tags[i + 1].key)) {
-				throw new IllegalArgumentException("duplicate key: " + tags);
+				throw new IllegalArgumentException("duplicate key '" + tags[i].key + "' in: " + Arrays.toString(tags));
 			}
 		}
 
