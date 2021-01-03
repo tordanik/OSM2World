@@ -180,6 +180,12 @@ public class ValueParseUtilTest {
     }
 
     @Test
+    public void testParseLevelsDuplicate() {
+    	assertEquals(asList(-2, -1, 0, 1, 2), parseLevels("-2-2; -1"));
+    	assertEquals(asList(0, 1, 2, 3, 4), parseLevels("0-2;1-4"));
+    }
+
+    @Test
     public void testParseLevelsNull() {
         assertNull(parseLevels(null));
         assertEquals(asList(1, 2, 3), parseLevels(null, asList(1, 2, 3)));

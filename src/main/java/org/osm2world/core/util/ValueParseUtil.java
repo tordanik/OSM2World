@@ -384,7 +384,7 @@ public final class ValueParseUtil {
 	 * Works for integer level values (including negative levels).
 	 * Supports ranges and semicolon-separated values in addition to single values.
 	 *
-	 * @return list of levels, at least one value, ascending. null if value is null or has syntax errors.
+	 * @return duplicate-free list of levels, at least one value, ascending. null if value is null or has syntax errors.
 	 */
 	public static final @Nullable List<Integer> parseLevels(@Nullable String value) {
 
@@ -413,6 +413,13 @@ public final class ValueParseUtil {
 		}
 
 		result.sort(null);
+
+		for (int i = result.size() - 1; i >= 1; i--) {
+			// remove duplicates (relies on sorted list)
+			if (result.get(i) == result.get(i - 1)) {
+				result.remove(i);
+			}
+		}
 
 		return result.isEmpty() ? null : result;
 
