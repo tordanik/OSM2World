@@ -16,7 +16,7 @@
 		<license>
 			<name>GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1, February 1999</name>
 			<url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
-		</license> 
+		</license>
 	</licenses>
 
 	<issueManagement>
@@ -32,12 +32,12 @@
 
 	<repositories>
 		<repository>
-		    <id>topobyte-repo</id>
-		    <url>http://mvn.topobyte.de</url>
+			<id>topobyte-repo</id>
+			<url>http://mvn.topobyte.de</url>
 		</repository>
 		<repository>
-		    <id>slimjars-repo</id>
-		    <url>http://mvn.slimjars.com</url>
+			<id>slimjars-repo</id>
+			<url>http://mvn.slimjars.com</url>
 		</repository>
 		<repository>
 			<id>jitpack.io</id>
@@ -153,15 +153,15 @@
 		</dependency>
 
 		<dependency>
-    		<groupId>org.apache.xmlgraphics</groupId>
-    		<artifactId>batik-transcoder</artifactId>
-    		<version>1.11</version>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-transcoder</artifactId>
+			<version>1.11</version>
 		</dependency>
 
 		<dependency>
-    		<groupId>org.apache.xmlgraphics</groupId>
-    		<artifactId>batik-rasterizer</artifactId>
-    		<version>1.11</version>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-rasterizer</artifactId>
+			<version>1.11</version>
 		</dependency>
 
 		<dependency>
@@ -207,6 +207,33 @@
 					</archive>
 				</configuration>
 			</plugin>
+
+			<plugin>  <!-- Create sources.jar -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>  <!-- Create javadoc.jar -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
