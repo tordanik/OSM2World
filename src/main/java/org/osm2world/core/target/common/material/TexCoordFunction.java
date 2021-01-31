@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.TextureData;
 
 /**
  * the function used to calculate texture coordinates for each vertex from

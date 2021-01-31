@@ -1,4 +1,4 @@
-package org.osm2world.core.target.common;
+package org.osm2world.core.target.common.material;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -12,15 +12,13 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.osm2world.core.target.common.material.TexCoordFunction;
-
-public class TextTextureData extends TextureData {
+public class TextTexture extends TextureData {
 
 	/**
 	 * File generated based on {@link #text}
 	 * and temporarily saved until application termination
 	 */
-	private File file;
+	private File file = null;
 
 	public final String text;
 	public Font font;
@@ -34,10 +32,10 @@ public class TextTextureData extends TextureData {
 	 */
 	public final double relativeFontSize;
 
-	public TextTextureData(String t, Font font, double w, double h, double topOffset, double leftOffset, Color textColor, double relativeFontSize,
-			Wrap wrap, TexCoordFunction texCoordFunction, boolean colorable, boolean isBumpMap) {
+	public TextTexture(String t, Font font, double w, double h, double topOffset, double leftOffset, Color textColor, double relativeFontSize,
+			Wrap wrap, TexCoordFunction texCoordFunction) {
 
-		super(w, h, wrap, texCoordFunction, colorable, isBumpMap);
+		super(w, h, wrap, texCoordFunction);
 
 		this.text = t;
 		this.font = font;
@@ -45,7 +43,7 @@ public class TextTextureData extends TextureData {
 		this.leftOffset = leftOffset;
 		this.textColor = textColor;
 		this.relativeFontSize = relativeFontSize;
-		this.file = null;
+
 	}
 
 	@Override
@@ -161,11 +159,9 @@ public class TextTextureData extends TextureData {
 		}
 	}
 
-	//auto-generated
 	@Override
 	public String toString() {
-		return "TextTextureData [text=" + text + ", file=" + file + ", font=" + font + ", topOffset=" + topOffset
-				+ ", leftOffset=" + leftOffset + "]";
+		return text;
 	}
 
 	//auto-generated
@@ -193,12 +189,7 @@ public class TextTextureData extends TextureData {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TextTextureData other = (TextTextureData) obj;
-		if (file == null) {
-			if (other.file != null)
-				return false;
-		} else if (!file.equals(other.file))
-			return false;
+		TextTexture other = (TextTexture) obj;
 		if (font == null) {
 			if (other.font != null)
 				return false;

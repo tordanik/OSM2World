@@ -64,10 +64,10 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 
 		int numValues = 6; // vertex coordinates and normals
 
-		if (material.getTextureDataList() != null) {
-			numValues += 2 * material.getTextureDataList().size();
+		if (material.getTextureLayers() != null) {
+			numValues += 2 * material.getTextureLayers().size();
 		}
-		if (material.hasBumpMap()) {
+		if (false /*material.hasBumpMap()*/) {
 			numValues += 4; // tangent vectors are 4D
 		}
 

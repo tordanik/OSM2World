@@ -9,7 +9,6 @@ import java.util.List;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.TextureData;
 
 /**
  * utility class for texture coordinate calculation
@@ -21,21 +20,21 @@ public final class TexCoordUtil {
 
 	/**
 	 * calculates the texture coordinate lists based on the
-	 * {@link TexCoordFunction} associated with each {@link TextureData} layer
+	 * {@link TexCoordFunction} associated with each {@link TextureLayer}
 	 */
 	public static final List<List<VectorXZ>> texCoordLists(
 			List<VectorXYZ> vs, Material material,
 			TexCoordFunction defaultCoordFunction) {
 
-		List<TextureData> textureDataList = material.getTextureDataList();
+		List<TextureLayer> textureLayers = material.getTextureLayers();
 
-		if (textureDataList.size() == 0) {
+		if (textureLayers.size() == 0) {
 
 			return emptyList();
 
-		} else if (textureDataList.size() == 1) {
+		} else if (textureLayers.size() == 1) {
 
-			TextureData textureData = textureDataList.get(0);
+			TextureData textureData = textureLayers.get(0).baseColorTexture;
 			TexCoordFunction coordFunction = textureData.coordFunction;
 			if (coordFunction == null) { coordFunction = defaultCoordFunction; }
 
@@ -43,9 +42,11 @@ public final class TexCoordUtil {
 
 		} else {
 
-			List<List<VectorXZ>> result = new ArrayList<List<VectorXZ>>();
+			List<List<VectorXZ>> result = new ArrayList<>();
 
-			for (TextureData textureData : textureDataList) {
+			for (TextureLayer textureLayer : textureLayers) {
+
+				TextureData textureData = textureLayer.baseColorTexture;
 
 				TexCoordFunction coordFunction = textureData.coordFunction;
 				if (coordFunction == null) { coordFunction = defaultCoordFunction; }

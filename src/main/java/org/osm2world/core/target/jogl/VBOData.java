@@ -180,13 +180,14 @@ public abstract class VBOData<BufferT extends Buffer> {
 					&& primTexCoordLists.size() == material.getNumTextureLayers())
 				: "WorldModules need to provide the correct number of tex coords";
 
-			if (primTexCoordLists == null && material.getNumTextureLayers() > 0) {
-				System.out.println(material);
-			}
-
 			for (int t = 0; t < material.getNumTextureLayers(); t++) {
-				VectorXZ textureCoord =	primTexCoordLists.get(t).get(i);
-				put(buffer, textureCoord);
+				if (primTexCoordLists == null || primTexCoordLists.get(t) == null) {
+					put(buffer, VectorXZ.NULL_VECTOR);
+					//TODO print some kind of warning (or do it earlier, in AbstractJoglTarget.drawPrimitive)
+				} else {
+					VectorXZ textureCoord = primTexCoordLists.get(t).get(i);
+					put(buffer, textureCoord);
+				}
 			}
 
 			put(buffer, primNormals.get(i));

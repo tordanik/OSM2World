@@ -305,9 +305,9 @@ public abstract class AbstractTarget implements Target {
 
 		List<List<VectorXZ>> texCoords1 = null, texCoords2 = null;
 
-		if (material.getTextureDataList() != null) {
-			texCoords1 = nCopies(material.getTextureDataList().size(), BOX_TEX_COORDS_1);
-			texCoords2 = nCopies(material.getTextureDataList().size(), BOX_TEX_COORDS_2);
+		if (material.getTextureLayers() != null) {
+			texCoords1 = nCopies(material.getTextureLayers().size(), BOX_TEX_COORDS_1);
+			texCoords2 = nCopies(material.getTextureLayers().size(), BOX_TEX_COORDS_2);
 		}
 
 		drawTriangleStrip(material, vsStrip1, texCoords1);

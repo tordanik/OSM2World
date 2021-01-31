@@ -17,9 +17,9 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
@@ -27,6 +27,11 @@ import org.osm2world.core.target.common.rendering.Projection;
  * Common implementation base for the new shader based {@link JOGLTargetShader} and the old {@link JOGLTargetFixedFunction}
  */
 public abstract class AbstractJOGLTarget extends PrimitiveTarget implements JOGLTarget {
+
+	protected static final float AMBIENT_FACTOR = 0.5f;
+	protected static final float SPECULAR_FACTOR = 0.0f;
+	protected static final int SHININESS = 1;
+
 	protected PrimitiveBuffer primitiveBuffer;
 	protected List<NonAreaPrimitive> nonAreaPrimitives;
 	protected JOGLRenderer renderer;
@@ -56,8 +61,8 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget implements JOGL
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
 		if (material.getNumTextureLayers() > 0) {
-			for (TextureData t : material.getTextureDataList()) {
-				textureManager.getTextureForTextureData(t);
+			for (TextureLayer layer : material.getTextureLayers()) {
+				textureManager.getTextureForTextureData(layer.baseColorTexture);
 			}
 		}
 

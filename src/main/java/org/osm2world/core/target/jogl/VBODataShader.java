@@ -94,8 +94,8 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		}
 
 		List<VectorXYZW> primTangents = null;
-		if (material.hasBumpMap()) {
-			primTangents = calculateTangentVectorsForTexLayer(primVertices, primNormals, primTexCoordLists.get(material.getBumpMapInd()));
+		if (false /* material.hasBumpMap() */) {
+			//primTangents = calculateTangentVectorsForTexLayer(primVertices, primNormals, primTexCoordLists.get(material.getBumpMapInd()));
 		}
 
 		/* put the values into the buffer, in the right order */
@@ -114,7 +114,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 			}
 
 			for (int t = 0; t < material.getNumTextureLayers(); t++) {
-				if (!material.hasBumpMap() || t != material.getBumpMapInd()) {
+				if (true /* TODO layer has color */) {
 					VectorXZ textureCoord =	primTexCoordLists.get(t).get(i);
 					put(buffer, textureCoord);
 					//System.out.println("put tex coord");
@@ -124,11 +124,11 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 			put(buffer, primNormals.get(i));
 			count += 3;
-			if (material.hasBumpMap()) {
-				put(buffer, primTangents.get(i));
-				count += 4;
-				put(buffer, primTexCoordLists.get(material.getBumpMapInd()).get(i));
-				count += 2;
+			if (false /* material.hasBumpMap() */) {
+//				put(buffer, primTangents.get(i));
+//				count += 4;
+//				put(buffer, primTexCoordLists.get(material.getBumpMapInd()).get(i));
+//				count += 2;
 			}
 			put(buffer, primVertices.get(i));
 			count += 3;
@@ -163,7 +163,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 		for (int i = 0; i < material.getNumTextureLayers(); i++) {
 
-			if (!material.hasBumpMap() || i != material.getBumpMapInd()) {
+			if (true /* TODO layer has base colour texture */) {
 				shader.glEnableVertexAttribArray(shader.getVertexTexCoordID(i));
 				shader.glVertexAttribPointer(shader.getVertexTexCoordID(i), 2, glValueType(), false, stride, offset);
 				offset += 2 * valueTypeSize;
@@ -174,7 +174,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 		shader.glVertexAttribPointer(shader.getVertexNormalID(), 3, glValueType(), false, stride, offset);
 		offset += valueTypeSize() * 3;
 
-		if (material.hasBumpMap()) {
+		if (false /*material.hasBumpMap()*/) {
 			shader.glEnableVertexAttribArray(shader.getVertexTangentID());
 			shader.glVertexAttribPointer(shader.getVertexTangentID(), 4, glValueType(), false, stride, offset);
 			offset += valueTypeSize() * 4;

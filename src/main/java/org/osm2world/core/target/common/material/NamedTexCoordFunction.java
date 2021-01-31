@@ -12,7 +12,6 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.TextureData;
 
 /**
  * several useful {@link TexCoordFunction} implementations.

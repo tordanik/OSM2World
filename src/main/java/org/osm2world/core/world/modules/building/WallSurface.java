@@ -33,11 +33,11 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
 
 /**
  * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
@@ -180,17 +180,7 @@ public class WallSurface {
 						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
 
 				Material material = this.material;
-				material = new ImmutableMaterial(
-						material.getInterpolation(),
-						material.getColor(),
-						0.5f * material.getAmbientFactor(), //coarsely approximate ambient occlusion
-						material.getDiffuseFactor(),
-						material.getSpecularFactor(),
-						material.getShininess(),
-						material.getTransparency(),
-						material.getShadow(),
-						material.getAmbientOcclusion(),
-						material.getTextureDataList());
+				// TODO attempt to simulate ambient occlusion with a different baked ao texture?
 
 				target.drawTriangleStrip(material, vsWall,
 						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
@@ -227,16 +217,16 @@ public class WallSurface {
 		/* determine the material depending on whether a window texture should be applied */
 
 		Material material = applyWindowTexture
-				? this.material.withAddedLayers(BUILDING_WINDOWS.getTextureDataList())
+				? this.material.withAddedLayers(BUILDING_WINDOWS.getTextureLayers())
 				: this.material;
 
 		/* calculate texture coordinates */
 
-		List<TextureData> textureDataList = material.getTextureDataList();
+		List<TextureLayer> textureLayers = material.getTextureLayers();
 
-		List<List<VectorXZ>> texCoordLists = new ArrayList<>(textureDataList.size());
+		List<List<VectorXZ>> texCoordLists = new ArrayList<>(textureLayers.size());
 
-		for (int texLayer = 0; texLayer < textureDataList.size(); texLayer ++) {
+		for (int texLayer = 0; texLayer < textureLayers.size(); texLayer ++) {
 
 			List<VectorXZ> vs = new ArrayList<>();
 
@@ -246,7 +236,7 @@ public class WallSurface {
 				vs.add(triangle.v3);
 			}
 
-			texCoordLists.add(texCoords(vs, textureDataList.get(texLayer), textureOrigin, windowHeight));
+			texCoordLists.add(texCoords(vs, textureLayers.get(texLayer).baseColorTexture, textureOrigin, windowHeight));
 
 		}
 

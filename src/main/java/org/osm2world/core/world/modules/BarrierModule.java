@@ -265,7 +265,7 @@ public class BarrierModule extends AbstractModule {
 
 			String colorString = tags.getValue("colour");
 			boolean colorable = material.getNumTextureLayers() == 0
-					|| material.getTextureDataList().get(0).colorable;
+					|| material.getTextureLayers().get(0).colorable;
 
 			if (colorString != null && colorable) {
 				material = material.withColor(parseColor(colorString, CSS_COLORS));

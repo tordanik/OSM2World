@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
+import static java.util.Collections.emptyList;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -16,19 +17,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.target.common.ImageTextureData;
-import org.osm2world.core.target.common.TextTextureData;
-import org.osm2world.core.target.common.TextTextureData.FontStyle;
-import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.target.common.material.TextTexture.FontStyle;
+import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
+
+import com.google.common.collect.Streams;
 
 /**
  * this class defines materials that can be used by all {@link WorldModule}s
@@ -172,29 +175,25 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, Color.GRAY);
 
 	public static final ConfMaterial TUNNEL_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, Color.GRAY, 0.2f, 0.5f,
-				Transparency.FALSE, Collections.<TextureData>emptyList());
+		new ConfMaterial(Interpolation.FLAT, Color.GRAY);
 
 	public static final ConfMaterial TREE_TRUNK =
 		new ConfMaterial(Interpolation.SMOOTH, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial TREE_CROWN =
 		new ConfMaterial(Interpolation.SMOOTH, new Color(0, 0.5f, 0));
 	public static final ConfMaterial TREE_BILLBOARD_BROAD_LEAVED =
-		new ConfMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
-				Transparency.FALSE, Collections.<TextureData>emptyList());
+		new ConfMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0));
 	public static final ConfMaterial TREE_BILLBOARD_BROAD_LEAVED_FRUIT =
-		new ConfMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
-				Transparency.FALSE, Collections.<TextureData>emptyList());
+		new ConfMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0));
 	public static final ConfMaterial TREE_BILLBOARD_CONIFEROUS =
-		new ConfMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0), 1f, 0f,
-				Transparency.FALSE, Collections.<TextureData>emptyList());
+		new ConfMaterial(Interpolation.FLAT, new Color(0, 0.5f, 0));
 
 	public static final ConfMaterial POWER_TOWER_VERTICAL =
-		new ConfMaterial(Interpolation.FLAT, new Color(.7f, .7f, .7f), 1f, 0f,
-				Transparency.BINARY, Collections.<TextureData>emptyList());
+		new ConfMaterial(Interpolation.FLAT, new Color(.7f, .7f, .7f),
+				Transparency.BINARY, emptyList());
 	public static final ConfMaterial POWER_TOWER_HORIZONTAL =
-			new ConfMaterial(Interpolation.FLAT, new Color(.7f, .7f, .7f), 1f, 0f,
-					Transparency.BINARY, Collections.<TextureData>emptyList());
+			new ConfMaterial(Interpolation.FLAT, new Color(.7f, .7f, .7f),
+					Transparency.BINARY, emptyList());
 
 	public static final ConfMaterial ADVERTISING_POSTER =
 		new ConfMaterial(Interpolation.FLAT, new Color(1, 1, 0.8f));
@@ -242,8 +241,7 @@ public final class Materials {
 			new ConfMaterial(Interpolation.SMOOTH, Color.WHITE);
 
 	public static final ConfMaterial SKYBOX =
-		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1),
-				1, 0, Transparency.FALSE, null);
+		new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 1));
 
 	/** material for "nothingness" which reflects no light. Used e.g. for openings into buildings without indoor. */
 	public static final ConfMaterial VOID = new ConfMaterial(Interpolation.FLAT, BLACK);
@@ -342,13 +340,15 @@ public final class Materials {
 	}
 
 	private static final String CONF_KEY_REGEX =
-					"material_(.+)_(diffuseFactor|ambientFactor|interpolation|color|specular|shininess|shadow|ssao|transparency|texture\\d*_(?:file|width|height|bumpmap|colorable|type|text|font|topOffset|leftOffset|textColor|relative_font_size))";
+					"material_(.+)_(interpolation|color|doubleSided|shadow|ssao|transparency|texture\\d*_.+)";
 
 	/**
 	 * configures the attributes of the materials within this class
 	 * based on external configuration settings
 	 */
 	public static final void configureMaterials(Configuration config) {
+
+		Map<String, ConfMaterial> texturePrefixMap = new HashMap<>();
 
 		// unchecked type parameter necessary due to Apache libs' old interface
 		@SuppressWarnings("unchecked")
@@ -365,8 +365,8 @@ public final class Materials {
 				String materialName = matcher.group(1);
 				ConfMaterial material = getMaterial(materialName);
 
-			/* If material is not defined in Materials.java, create new material
-			   and add it to externalMaterials map */
+				/* If material is not defined in Materials.java, create new material
+				 * and add it to externalMaterials map */
 				if (material == null) {
 					material = new ConfMaterial(Interpolation.FLAT, Color.white);
 					externalMaterials.put(materialName, material);
@@ -374,7 +374,7 @@ public final class Materials {
 
 				String attribute = matcher.group(2);
 
-				if("interpolation".equals(attribute)) {
+				if ("interpolation".equals(attribute)) {
 
 					String value = config.getString(key).toUpperCase();
 					Interpolation interpolation = Interpolation.valueOf(value);
@@ -382,16 +382,6 @@ public final class Materials {
 					if (interpolation != null) {
 						material.setInterpolation(interpolation);
 					}
-
-				} else if("ambientFactor".equals(attribute)) {
-
-					float ambient = config.getFloat(key);
-					material.setAmbientFactor(ambient);
-
-				} else if("diffuseFactor".equals(attribute)) {
-
-					float diffuse = config.getFloat(key);
-					material.setDiffuseFactor(diffuse);
 
 				} else if ("color".equals(attribute)) {
 
@@ -405,15 +395,10 @@ public final class Materials {
 								+ config.getString(key));
 					}
 
-				} else if ("specular".equals(attribute)) {
+				} else if ("doubleSided".equals(attribute)) {
 
-					float specular = config.getFloat(key);
-					material.setSpecularFactor(specular);
-
-				} else if ("shininess".equals(attribute)) {
-
-					int shininess = config.getInt(key);
-					material.setShininess(shininess);
+					boolean doubleSided = config.getBoolean(key);
+					material.setDoubleSided(doubleSided);
 
 				} else if ("shadow".equals(attribute)) {
 
@@ -444,152 +429,215 @@ public final class Materials {
 
 				} else if (attribute.startsWith("texture")) {
 
-					List<TextureData> textureDataList =
-						new ArrayList<TextureData>();
-
-					for (int i = 0; i < 32; i++) {
-
-						String widthKey = "material_" + materialName + "_texture" + i + "_width";
-						String heightKey = "material_" + materialName + "_texture" + i + "_height";
-						String wrapKey = "material_" + materialName + "_texture" + i + "_wrap";
-						String coordFunctionKey = "material_" + materialName + "_texture" + i + "_coord_function";
-						String colorableKey = "material_" + materialName + "_texture" + i + "_colorable";
-						String bumpmapKey = "material_" + materialName + "_texture" + i + "_bumpmap";
-
-						//get texture layer type
-						String typeKey = "material_" + materialName + "_texture" + i + "_type";
-						String type = config.getString(typeKey, "image");
-
-							if("text".equals(type)) {
-
-								double defaultWidth = 0.5;
-								double defaultHeight = 0.5;
-
-								String fontKey = "material_" + materialName + "_texture" + i + "_font";
-								String textKey = "material_" + materialName + "_texture" + i + "_text";
-								String topOffsetKey = "material_" + materialName + "_texture" + i + "_topOffset";
-								String leftOffsetKey = "material_" + materialName + "_texture" + i + "_leftOffset";
-								String relativeFontSizeKey = "material_" + materialName + "_texture" + i + "_relative_font_size";
-								String textColorKey = "material_" + materialName + "_texture" + i + "_textColor";
-
-								String text = "";
-
-								//get text configuration
-								if(config.getString(textKey) != null) {
-									text = config.getString(textKey);
-								}
-
-								//get font configuration
-								Font font = null;
-								if(config.getString(fontKey) == null) {
-
-									font = new Font("Dialog", Font.PLAIN, 100);
-
-								} else {
-
-									String[] values = config.getString(fontKey).split(",", 2);
-
-									if(values.length == 2) {
-
-										int fontStyle = FontStyle.getStyle(values[1].toUpperCase());
-
-										font = new Font(values[0], fontStyle, 100);
-
-									}else {
-										font = new Font("Dialog", Font.PLAIN, 100);
-									}
-								}
-
-								double width = config.getDouble(widthKey, defaultWidth);
-								double height = config.getDouble(heightKey, defaultHeight);
-								boolean colorable = config.getBoolean(colorableKey, false);
-								boolean isBumpMap = config.getBoolean(bumpmapKey, false);
-
-								String wrapString = config.getString(wrapKey);
-								Wrap wrap = getWrap(wrapString);
-
-								String coordFunctionString = config.getString(coordFunctionKey);
-								TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
-
-								//get top/left offset configuration
-								String topOffset = config.getString(topOffsetKey);
-								if(topOffset!=null) {
-									if(topOffset.endsWith("%")) {
-										topOffset = topOffset.substring(0, topOffset.length() - 1);
-									}
-								}else {
-									topOffset = Integer.toString(50);
-								}
-
-								String leftOffset = config.getString(leftOffsetKey);
-								if(leftOffset!=null) {
-									if(leftOffset.endsWith("%")) {
-										leftOffset = leftOffset.substring(0, leftOffset.length() - 1);
-									}
-								}else {
-									leftOffset = Integer.toString(50);
-								}
-
-								//get text color configuration
-								Color color = Color.BLACK;
-								String colorString = config.getString(textColorKey);
-								if(colorString!=null) {
-									color = ConfigUtil.parseColor(colorString);
-									if(color==null) {
-										System.err.println("Incorrect color value: "+colorString+". Defaulting to black.");
-										color = Color.BLACK;
-									}
-								}
-
-								//get relative font size
-								double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
-
-								TextTextureData textTextureData = new TextTextureData(text, font, width, height,
-										Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
-										relativeFontSize, wrap, coordFunction, colorable, isBumpMap);
-
-								textureDataList.add(textTextureData);
-
-							} else if("image".equals(type)) {
-
-								String fileKey = "material_" + materialName + "_texture" + i + "_file";
-
-								if (config.getString(fileKey) == null) break;
-
-								File file = new File(config.getString(fileKey));
-
-								double width = config.getDouble(widthKey, 1);
-								double height = config.getDouble(heightKey, 1);
-								boolean colorable = config.getBoolean(colorableKey, false);
-								boolean isBumpMap = config.getBoolean(bumpmapKey, false);
-
-								String wrapString = config.getString(wrapKey);
-								Wrap wrap = getWrap(wrapString);
-
-								String coordFunctionString = config.getString(coordFunctionKey);
-								TexCoordFunction coordFunction = getCoordFunction(coordFunctionString);
-
-								// bumpmaps are only supported in the shader implementation, skip for others
-								if (!isBumpMap || "shader".equals(config.getString("joglImplementation"))) {
-
-									TextureData textureData = new ImageTextureData(
-											file, width, height, wrap, coordFunction, colorable, isBumpMap);
-									textureDataList.add(textureData);
-								}
-							} else System.err.println("unknown type value: " + type);
-					}
-
-					material.setTextureDataList(textureDataList);
+					texturePrefixMap.put("material_" + materialName + "_texture", material);
 
 				} else {
-					System.err.println("unknown material attribute: "
-							+ attribute);
+					System.err.println("unknown material attribute: " + attribute);
 				}
 			}
 		}
+
+		/* configure texture layers */
+
+		for (String texturePrefix : texturePrefixMap.keySet()) {
+
+			List<TextureLayer> textureLayers = new ArrayList<>();
+
+			for (int i = 0; i < Material.MAX_TEXTURE_LAYERS; i++) {
+				String keyPrefix = texturePrefix + i;
+				@SuppressWarnings("unchecked") // work around common-configuration's pre-generic API
+				Stream<String> keyStream = Streams.stream((Iterator<String>)config.getKeys());
+				if (keyStream.anyMatch(k -> k.startsWith(keyPrefix))) {
+					TextureLayer textureLayer = createTextureLayer(config, keyPrefix);
+					if (textureLayer != null) {
+						textureLayers.add(textureLayer);
+					}
+				} else {
+					break;
+				}
+			}
+
+			texturePrefixMap.get(texturePrefix).setTextureLayers(textureLayers);
+
+		}
+
 	}
 
+	private static @Nullable TextureLayer createTextureLayer(Configuration config, String keyPrefix) {
 
+		File baseColorTexture = null;
+		File ormTexture = null;
+		File normalTexture = null;
+		File displacementTexture = null;
+
+		if (config.containsKey(keyPrefix + "_dir")) {
+			File textureDir = new File(config.getString(keyPrefix + "_dir"));
+			if (textureDir.exists() && textureDir.isDirectory()) {
+				for (File file : textureDir.listFiles()) {
+					if (file.getName().contains("_Color.")) {
+						baseColorTexture = file;
+					} else if (file.getName().contains("_ORM.")) {
+						ormTexture = file;
+					} else if (file.getName().contains("_Normal.")) {
+						normalTexture = file;
+					} else if (file.getName().contains("_Displacement.")) {
+						displacementTexture = file;
+					}
+				}
+			} else {
+				System.err.println("Not a directory: " + textureDir);
+			}
+		}
+
+		TextureData baseColorTextureData;
+
+		@SuppressWarnings("unchecked") // work around common-configuration's pre-generic API
+		Stream<String> keyStream = Streams.stream((Iterator<String>)config.getKeys());
+		if (keyStream.anyMatch(k -> k.startsWith(keyPrefix + "_color_"))) {
+			baseColorTextureData = createTextureData(config, keyPrefix + "_color", baseColorTexture);
+		} else {
+			// allow omitting _color for backwards compatibility
+			baseColorTextureData = createTextureData(config, keyPrefix, baseColorTexture);
+		}
+
+		if (baseColorTextureData == null) {
+			System.err.println("Config is missing base color texture for " + keyPrefix);
+			return null;
+		} else {
+			return new TextureLayer(
+					baseColorTextureData,
+					createTextureData(config, keyPrefix + "_normal", normalTexture),
+					createTextureData(config, keyPrefix + "_orm", ormTexture),
+					createTextureData(config, keyPrefix + "_displacement", displacementTexture),
+					config.getBoolean(keyPrefix + "_colorable", false));
+		}
+
+	}
+
+	/**
+	 * @param defaultFile  texture file to use if there's no _file attribute
+	 * @return  valid {@link TextureData} extracted from the config file, or null
+	 */
+	private static @Nullable TextureData createTextureData(Configuration config, String keyPrefix,
+			@Nullable File defaultFile) {
+
+		String widthKey = keyPrefix + "_width";
+		String heightKey = keyPrefix + "_height";
+		String wrapKey = keyPrefix + "_wrap";
+		String coordFunctionKey = keyPrefix + "_coord_function";
+
+		//get texture layer type
+		String typeKey = keyPrefix + "_type";
+		String type = config.getString(typeKey, "image");
+
+		if ("text".equals(type)) {
+
+			double defaultWidth = 0.5;
+			double defaultHeight = 0.5;
+
+			String fontKey = keyPrefix + "_font";
+			String textKey = keyPrefix + "_text";
+			String topOffsetKey = keyPrefix + "_topOffset";
+			String leftOffsetKey = keyPrefix + "_leftOffset";
+			String relativeFontSizeKey = keyPrefix + "_relative_font_size";
+			String textColorKey = keyPrefix + "_textColor";
+
+			String text = "";
+
+			//get text configuration
+			if (config.getString(textKey) != null) {
+				text = config.getString(textKey);
+			}
+
+			//get font configuration
+			Font font = null;
+			if (config.getString(fontKey) == null) {
+
+				font = new Font("Dialog", Font.PLAIN, 100);
+
+			} else {
+
+				String[] values = config.getString(fontKey).split(",", 2);
+
+				if (values.length == 2) {
+					int fontStyle = FontStyle.getStyle(values[1].toUpperCase());
+					font = new Font(values[0], fontStyle, 100);
+				} else {
+					font = new Font("Dialog", Font.PLAIN, 100);
+				}
+			}
+
+			double width = config.getDouble(widthKey, defaultWidth);
+			double height = config.getDouble(heightKey, defaultHeight);
+			Wrap wrap = getWrap(config.getString(wrapKey));
+			TexCoordFunction coordFunction = getCoordFunction(config.getString(coordFunctionKey));
+
+			//get top/left offset configuration
+			String topOffset = config.getString(topOffsetKey);
+			if (topOffset != null) {
+				if (topOffset.endsWith("%")) {
+					topOffset = topOffset.substring(0, topOffset.length() - 1);
+				}
+			} else {
+				topOffset = Integer.toString(50);
+			}
+
+			String leftOffset = config.getString(leftOffsetKey);
+			if (leftOffset != null) {
+				if (leftOffset.endsWith("%")) {
+					leftOffset = leftOffset.substring(0, leftOffset.length() - 1);
+				}
+			} else {
+				leftOffset = Integer.toString(50);
+			}
+
+			//get text color configuration
+			Color color = Color.BLACK;
+			String colorString = config.getString(textColorKey);
+			if (colorString != null) {
+				color = ConfigUtil.parseColor(colorString);
+				if (color == null) {
+					System.err.println("Incorrect color value: "+colorString+". Defaulting to black.");
+					color = Color.BLACK;
+				}
+			}
+
+			//get relative font size
+			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
+
+			return new TextTexture(text, font, width, height,
+					Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
+					relativeFontSize, wrap, coordFunction);
+
+		} else if ("image".equals(type)) {
+
+			File file = null;
+
+			String fileName = config.getString(keyPrefix + "_file");
+			if (fileName != null) {
+				file = new File(fileName);
+				if (!file.exists() || file.isDirectory()) {
+					System.err.println("File referenced in config does not exist: " + file);
+					file = null;
+				}
+			}
+
+			if (file == null) { file = defaultFile; }
+			if (file == null) { return null; }
+
+			double width = config.getDouble(widthKey, 1);
+			double height = config.getDouble(heightKey, 1);
+			Wrap wrap = getWrap(config.getString(wrapKey));
+			TexCoordFunction coordFunction = getCoordFunction(config.getString(coordFunctionKey));
+
+			return new ImageTexture(file, width, height, wrap, coordFunction);
+
+		} else {
+			System.err.println("unknown type value: " + type);
+			return null;
+		}
+
+	}
 
 	private static Wrap getWrap(String wrapString) {
 

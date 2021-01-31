@@ -556,7 +556,7 @@ public class BuildingPart implements Renderable {
 		}
 
 		boolean colorable = material.getNumTextureLayers() == 0
-				|| material.getTextureDataList().get(0).colorable;
+				|| material.getTextureLayers().get(0).colorable;
 
 		if (colorString != null && colorable) {
 

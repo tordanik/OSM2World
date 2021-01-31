@@ -1,17 +1,18 @@
 package org.osm2world.core.target.common.material;
 
+import static java.util.Collections.emptyList;
+
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import org.osm2world.core.target.common.TextTextureData;
-import org.osm2world.core.target.common.TextureData;
 
 /**
  * describes the material/surface properties of an object for lighting
  */
 public abstract class Material {
+
+	/** maximum number of {@link TextureLayer}s any material can use */
+	public static final int MAX_TEXTURE_LAYERS = 32;
 
 	public static enum Interpolation {FLAT, SMOOTH}
 
@@ -43,59 +44,38 @@ public abstract class Material {
 	 */
 	protected Interpolation interpolation;
 	protected Color color;
-	protected float ambientFactor;
-	protected float diffuseFactor;
-	protected float specularFactor;
-	protected int shininess;
+	protected boolean doubleSided;
 	protected Transparency transparency;
 	protected Shadow shadow;
 	protected AmbientOcclusion ambientOcclusion;
 
-	protected List<TextureData> textureDataList;
-	protected TextureData bumpMap;
-	protected int bumpMapInd;
+	protected List<TextureLayer> textureLayers;
 
-	public Material(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
-			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
+	public Material(Interpolation interpolation, Color color, boolean doubleSided,
+			Transparency transparency, Shadow shadow, AmbientOcclusion ambientOcclusion,
+			List<TextureLayer> textureLayers) {
+
+		if (textureLayers != null && textureLayers.size() > MAX_TEXTURE_LAYERS) {
+			throw new IllegalArgumentException("too many texture layers: " + textureLayers.size());
+		}
+
 		this.interpolation = interpolation;
 		this.color = color;
-		this.ambientFactor = ambientFactor;
-		this.diffuseFactor = diffuseFactor;
-		this.specularFactor = specularFactor;
-		this.shininess = shininess;
+		this.doubleSided = doubleSided;
 		this.transparency = transparency;
 		this.shadow = shadow;
-		this.ambientOcclusion = ao;
-		this.textureDataList = textureDataList;
-		updateBumpMap();
-	}
+		this.ambientOcclusion = ambientOcclusion;
+		this.textureLayers = textureLayers;
 
-	protected void updateBumpMap() {
-		this.bumpMap = null;
-		this.bumpMapInd = -1;
-		if (textureDataList == null) {
-			return;
-		}
-		int i = 0;
-		for (TextureData t : textureDataList) {
-			if (t.isBumpMap) {
-				this.bumpMap = t;
-				this.bumpMapInd = i;
-			}
-			i++;
-		}
 	}
 
 	public Material(Interpolation interpolation, Color color,
-			Transparency transparency, List<TextureData> textureDataList) {
-		this(interpolation, color, 0.5f, 0.5f, 0.0f, 1, transparency,
-				Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
+			Transparency transparency, List<TextureLayer> textureLayers) {
+		this(interpolation, color, false, transparency, Shadow.TRUE, AmbientOcclusion.TRUE, textureLayers);
 	}
 
 	public Material(Interpolation interpolation, Color color) {
-		this(interpolation, color, Transparency.FALSE,
-				Collections.<TextureData>emptyList());
+		this(interpolation, color, Transparency.FALSE, emptyList());
 	}
 
 	public Interpolation getInterpolation() {
@@ -106,40 +86,8 @@ public abstract class Material {
 		return color;
 	}
 
-	public float getAmbientFactor() {
-		return ambientFactor;
-	}
-
-	public float getDiffuseFactor() {
-		return diffuseFactor;
-	}
-
-	public float getSpecularFactor() {
-		return specularFactor;
-	}
-
-	public int getShininess() {
-		return shininess;
-	}
-
-	public Color ambientColor() {
-		return multiplyColor(getColor(), getAmbientFactor());
-	}
-
-	public Color diffuseColor() {
-		return multiplyColor(getColor(), getDiffuseFactor());
-	}
-
-	public Material brighter() {
-		return new ImmutableMaterial(interpolation, getColor().brighter(),
-				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
-	}
-
-	public Material darker() {
-		return new ImmutableMaterial(interpolation, getColor().darker(),
-				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+	public boolean isDoubleSided() {
+		return doubleSided;
 	}
 
 	public static final Color multiplyColor(Color c, float factor) {
@@ -153,26 +101,23 @@ public abstract class Material {
 	}
 
 	public Material makeSmooth() {
-		return new ImmutableMaterial(Interpolation.SMOOTH, getColor(),
-				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+		return new ImmutableMaterial(Interpolation.SMOOTH, getColor(), isDoubleSided(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
 	}
 
 	/**
 	 * returns a material that is the same as this one,
 	 * except with additional texture data layers stacked on top
 	 */
-	public Material withAddedLayers(List<TextureData> textureLayers) {
+	public Material withAddedLayers(List<TextureLayer> textureLayers) {
 
 		if (textureLayers.isEmpty()) return this;
 
-		List<TextureData> textureDataList =
-				new ArrayList<TextureData>(getTextureDataList());
+		List<TextureLayer> textureDataList = new ArrayList<>(getTextureLayers());
 
 		textureDataList.addAll(textureLayers);
 
-	    return new ImmutableMaterial(getInterpolation(), getColor(),
-	    		getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
+	    return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
 	    		getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
 
 	}
@@ -185,45 +130,45 @@ public abstract class Material {
 
 		if (color == null) return this;
 
-		return new ImmutableMaterial(getInterpolation(), color,
-				getAmbientFactor(), getDiffuseFactor(), getSpecularFactor(), getShininess(),
-				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureDataList());
+		return new ImmutableMaterial(getInterpolation(), color, isDoubleSided(),
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
 
 	}
 
 	/**
-	 * returns a copy of {@code material} with its {@link TextTextureData} layer
+	 * returns a copy of {@code material} with its {@link TextTexture} layer
 	 * No. {@code numberOfTextLayer} changed with a replica with textColor={@code color}
 	 */
-	public Material withTextColor(Color color, int numberOfTextLayer){
+	public Material withTextColor(Color color, int numberOfTextLayer) {
 
-		if(getTextureDataList().isEmpty()) return this;
+		if (getTextureLayers().isEmpty()) return this;
 
 		//copy of the material textureDataList
-		List<TextureData> textureDataList =
-				new ArrayList<TextureData>(getTextureDataList());
+		List<TextureLayer> textureDataList = new ArrayList<>(getTextureLayers());
 
 		int counter = 0;
 
-		for(TextureData layer : getTextureDataList()) {
+		for (TextureLayer layer : getTextureLayers()) {
 
-			if(layer instanceof TextTextureData) {
+			if (layer.baseColorTexture instanceof TextTexture) {
+
+				TextTexture texture = (TextTexture)layer.baseColorTexture;
 
 				if(counter==numberOfTextLayer) {
 
 					//create a new TextTextureData instance with different textColor
-					TextTextureData textData = new TextTextureData(((TextTextureData) layer).text, ((TextTextureData)layer).font, layer.width,
-							layer.height, ((TextTextureData)layer).topOffset, ((TextTextureData)layer).leftOffset,
-							color, ((TextTextureData) layer).relativeFontSize,
-							layer.wrap, layer.coordFunction, layer.colorable, layer.isBumpMap);
+					TextTexture newTextTexture = new TextTexture(texture.text, texture.font, texture.width,
+							texture.height, texture.topOffset, texture.leftOffset,
+							color, texture.relativeFontSize,
+							texture.wrap, texture.coordFunction);
 
-					textureDataList.set(numberOfTextLayer, textData);
+					textureDataList.set(numberOfTextLayer, new TextureLayer(newTextTexture,
+							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
 
 					//return a copy of the material with the new textureDataList
-					return new ConfMaterial(getInterpolation(),getColor(),
-							getAmbientFactor(),getDiffuseFactor(),getSpecularFactor(),
-							getShininess(),getTransparency(),getShadow(),
-							getAmbientOcclusion(),textureDataList);
+					return new ImmutableMaterial(getInterpolation(),getColor(), isDoubleSided(),
+							getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
+
 				}
 
 				counter++;
@@ -245,34 +190,22 @@ public abstract class Material {
 		return ambientOcclusion;
 	}
 
-	public List<TextureData> getTextureDataList() {
-		return textureDataList;
+	public List<TextureLayer> getTextureLayers() {
+		return textureLayers;
 	}
 
 	public int getNumTextureLayers() {
-		if (textureDataList == null) {
+		if (textureLayers == null) {
 			return 0;
 		} else {
-			return textureDataList.size();
+			return textureLayers.size();
 		}
 	}
 
-	public boolean hasBumpMap() {
-		return this.bumpMap != null;
-	}
-
-	public TextureData getBumpMap() {
-		return this.bumpMap;
-	}
-
-	public int getBumpMapInd() {
-		return this.bumpMapInd;
-	}
-
+	@Override
 	public String toString() {
 		return String.format("{%s, #%06x, a%3f, d%3f, s%3f, sh%d, %d tex, ",
-				interpolation, color.getRGB() & 0x00ffffff, ambientFactor,
-				diffuseFactor, specularFactor, shininess, textureDataList.size())
+				interpolation, color.getRGB() & 0x00ffffff, textureLayers.size())
 				+ transparency + shadow + ambientOcclusion
 				+ "}";
 	}

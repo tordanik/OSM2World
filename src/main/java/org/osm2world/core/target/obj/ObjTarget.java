@@ -19,13 +19,15 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.TextTextureData;
-import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.material.ImageTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.WorldObject;
 
 public class ObjTarget extends FaceTarget {
+
+	protected static final float AMBIENT_FACTOR = 0.5f;
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
@@ -233,12 +235,12 @@ public class ObjTarget extends FaceTarget {
 
 		for (int i = 0; i < max(1, material.getNumTextureLayers()); i++) {
 
-			TextureData textureData = null;
+			TextureLayer textureLayer = null;
 			if (material.getNumTextureLayers() > 0) {
-				textureData = material.getTextureDataList().get(i);
+				textureLayer = material.getTextureLayers().get(i);
 
-				//temporarily ignore TextTextureData layers
-				if(textureData instanceof TextTextureData) {
+				// ignore TextTextureData layers
+				if (!(textureLayer.baseColorTexture instanceof ImageTexture)) {
 					continue;
 				}
 			}
@@ -246,23 +248,26 @@ public class ObjTarget extends FaceTarget {
 			mtlStream.println("newmtl " + name + "_" + i);
 			mtlStream.println("Ns 92.156863");
 
-			if (textureData == null || textureData.colorable) {
-				writeColorLine("Ka", material.ambientColor());
-				writeColorLine("Kd", material.diffuseColor());
+			if (textureLayer == null || textureLayer.colorable) {
+				writeColorLine("Ka", multiplyColor(material.getColor(), AMBIENT_FACTOR));
+				writeColorLine("Kd", multiplyColor(material.getColor(), 1 - AMBIENT_FACTOR));
 			} else {
-				writeColorLine("Ka", multiplyColor(WHITE, material.getAmbientFactor()));
-				writeColorLine("Kd", multiplyColor(WHITE, 1 - material.getAmbientFactor()));
+				writeColorLine("Ka", multiplyColor(WHITE, AMBIENT_FACTOR));
+				writeColorLine("Kd", multiplyColor(WHITE, 1 - AMBIENT_FACTOR));
 			}
 
-			mtlStream.println(String.format(Locale.US ,"Ks %f %f %f", material.getSpecularFactor(), material.getSpecularFactor(), material.getSpecularFactor()));
+			float specularFactor = 0f;
+			mtlStream.println(String.format(Locale.US ,"Ks %f %f %f", specularFactor, specularFactor, specularFactor));
 			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 
-			if (textureData != null) {
-				mtlStream.println("map_Ka " + textureData.getRasterImage().getName());
-				mtlStream.println("map_Kd " + textureData.getRasterImage().getName());
+			if (textureLayer != null) {
+				// TODO deal with SVG textures
+				mtlStream.println("map_Ka " + textureLayer.baseColorTexture.getRasterImage().getName());
+				mtlStream.println("map_Kd " + textureLayer.baseColorTexture.getRasterImage().getName());
 			}
 
-			mtlStream.println(String.format("Ni %d", material.getShininess()));
+			int shininess = 1;
+			mtlStream.println(String.format("Ni %d", shininess));
 			mtlStream.println("illum 2");
 
 			mtlStream.println();

@@ -14,8 +14,8 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TextureData;
 
 public class Door implements WallElement {
 

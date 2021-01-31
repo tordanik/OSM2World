@@ -13,11 +13,16 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
 
 abstract public class SpindleRoof extends Roof {
 
@@ -93,22 +98,22 @@ abstract public class SpindleRoof extends Roof {
 	private List<List<VectorXZ>> spindleTexCoordLists(List<VectorXYZ> path, int shapeVertexCount,
 			double polygonLength, Material material) {
 
-		List<TextureData> textureDataList = material.getTextureDataList();
+		List<TextureLayer> textureLayers = material.getTextureLayers();
 
-		switch (textureDataList.size()) {
+		switch (textureLayers.size()) {
 
 		case 0: return emptyList();
 
 		case 1: return singletonList(spindleTexCoordList(path,
-				shapeVertexCount, polygonLength, textureDataList.get(0)));
+				shapeVertexCount, polygonLength, textureLayers.get(0)));
 
 		default:
 
 			List<List<VectorXZ>> result = new ArrayList<>();
 
-			for (TextureData textureData : textureDataList) {
+			for (TextureLayer textureLayer : textureLayers) {
 				result.add(spindleTexCoordList(path,
-						shapeVertexCount, polygonLength, textureData));
+						shapeVertexCount, polygonLength, textureLayer));
 			}
 
 			return result;
@@ -118,7 +123,7 @@ abstract public class SpindleRoof extends Roof {
 	}
 
 	private List<VectorXZ> spindleTexCoordList(List<VectorXYZ> path, int shapeVertexCount,
-			double polygonLength, TextureData textureData) {
+			double polygonLength, TextureLayer textureLayer) {
 
 		List<VectorXZ> result = new ArrayList<>();
 
@@ -135,7 +140,7 @@ abstract public class SpindleRoof extends Roof {
 			}
 
 			result.addAll(spindleTexCoordListForRing(shapeVertexCount,
-					polygonLength, accumulatedTexHeight, textureData));
+					polygonLength, accumulatedTexHeight, textureLayer.baseColorTexture));
 
 		}
 

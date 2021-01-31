@@ -22,10 +22,10 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
@@ -310,8 +310,8 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			JOGLTextureManager textureManager) {
 
 		int numTexLayers = 0;
-		if (material.getTextureDataList() != null) {
-			numTexLayers = material.getTextureDataList().size();
+		if (material.getTextureLayers() != null) {
+			numTexLayers = material.getTextureLayers().size();
 		}
 
 		/* set lighting */
@@ -326,32 +326,32 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 		/* set color */
 
-		if (numTexLayers == 0 || material.getTextureDataList().get(0).colorable) {
+		if (numTexLayers == 0 || material.getTextureLayers().get(0).colorable) {
 
 			//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
 			Color c = material.getColor();
 			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
 
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
-					getFloatBuffer(material.ambientColor()));
+					getFloatBuffer(multiplyColor(material.getColor(), AMBIENT_FACTOR)));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
-					getFloatBuffer(material.diffuseColor()));
+					getFloatBuffer(multiplyColor(material.getColor(), 1 - AMBIENT_FACTOR)));
 
 		} else {
 
 			gl.glColor3f(1, 1, 1);
 
 			gl.glMaterialfv(GL_FRONT, GL_AMBIENT, getFloatBuffer(
-					multiplyColor(Color.WHITE, material.getAmbientFactor())));
+					multiplyColor(Color.WHITE, AMBIENT_FACTOR)));
 			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE, getFloatBuffer(
-					multiplyColor(Color.WHITE, material.getDiffuseFactor())));
+					multiplyColor(Color.WHITE, 1 - AMBIENT_FACTOR)));
 
 		}
 
 		// specular lighting
 		gl.glMaterialfv(GL.GL_FRONT, GL2.GL_SPECULAR, getFloatBuffer(
-				multiplyColor(Color.WHITE, material.getSpecularFactor())));
-		gl.glMateriali(GL.GL_FRONT, GL2.GL_SHININESS, material.getShininess());
+				multiplyColor(Color.WHITE, SPECULAR_FACTOR)));
+		gl.glMateriali(GL.GL_FRONT, GL2.GL_SHININESS, SHININESS);
 
 		/* set textures and associated parameters */
 
@@ -381,7 +381,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 					gl.glDisable(GL_ALPHA_TEST);
 				}
 
-				TextureData textureData = material.getTextureDataList().get(i);
+				TextureData textureData = material.getTextureLayers().get(i).baseColorTexture;
 
 				Texture texture = textureManager.getTextureForTextureData(textureData);
 				texture.enable(gl); //TODO: should this be called every time?

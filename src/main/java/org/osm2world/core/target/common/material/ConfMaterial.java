@@ -3,31 +3,22 @@ package org.osm2world.core.target.common.material;
 import java.awt.Color;
 import java.util.List;
 
-import org.osm2world.core.target.common.TextureData;
-
 
 /**
  * a material whose attributes can be configured at runtime.
  */
 public class ConfMaterial extends Material {
 
-	public ConfMaterial(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor, float specularFactor, int shininess,
-			Transparency transparency, Shadow shadow, AmbientOcclusion ao, List<TextureData> textureDataList) {
-		super(interpolation, color, ambientFactor, diffuseFactor, specularFactor, shininess,
-				transparency, shadow, ao, textureDataList);
+	public ConfMaterial(Interpolation interpolation, Color color, boolean doubleSided,
+			Transparency transparency, Shadow shadow, AmbientOcclusion ambientOcclusion,
+			List<TextureLayer> textureLayers) {
+		super(interpolation, color, doubleSided,
+				transparency, shadow, ambientOcclusion, textureLayers);
 	}
 
 	public ConfMaterial(Interpolation interpolation, Color color,
-			float ambientFactor, float diffuseFactor,
-			Transparency transparency, List<TextureData> textureDataList) {
-		super(interpolation, color, ambientFactor, diffuseFactor, 0.0f, 1,
-				transparency, Shadow.TRUE, AmbientOcclusion.TRUE, textureDataList);
-	}
-
-	public ConfMaterial(Interpolation interpolation, Color color,
-			Transparency transparency, List<TextureData> textureDataList) {
-		super(interpolation, color, transparency, textureDataList);
+			Transparency transparency, List<TextureLayer> textureLayers) {
+		super(interpolation, color, transparency, textureLayers);
 	}
 
 	public ConfMaterial(Interpolation interpolation, Color color) {
@@ -42,20 +33,8 @@ public class ConfMaterial extends Material {
 		this.color = color;
 	}
 
-	public void setAmbientFactor(float ambientFactor) {
-		this.ambientFactor = ambientFactor;
-	}
-
-	public void setDiffuseFactor(float diffuseFactor) {
-		this.diffuseFactor = diffuseFactor;
-	}
-
-	public void setSpecularFactor(float specularFactor) {
-		this.specularFactor = specularFactor;
-	}
-
-	public void setShininess(int shininess) {
-		this.shininess = shininess;
+	public void setDoubleSided(boolean doubleSided) {
+		this.doubleSided = doubleSided;
 	}
 
 	public void setTransparency(Transparency transparency) {
@@ -66,13 +45,15 @@ public class ConfMaterial extends Material {
 		this.shadow = shadow;
 	}
 
-	public void setAmbientOcclusion(AmbientOcclusion ao) {
-		this.ambientOcclusion = ao;
+	public void setAmbientOcclusion(AmbientOcclusion ambientOcclusion) {
+		this.ambientOcclusion = ambientOcclusion;
 	}
 
-	public void setTextureDataList(List<TextureData> textureDataList) {
-		this.textureDataList = textureDataList;
-		this.updateBumpMap();
+	public void setTextureLayers(List<TextureLayer> textureLayers) {
+		if (textureLayers.size() > MAX_TEXTURE_LAYERS) {
+			throw new IllegalArgumentException("too many texture layers: " + textureLayers.size());
+		}
+		this.textureLayers = textureLayers;
 	}
 
 	/*

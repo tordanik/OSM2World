@@ -12,12 +12,15 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
-import org.osm2world.core.target.common.TextTextureData;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextTexture;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
 
 public class POVRayTarget extends AbstractTarget {
+
+	protected static final float AMBIENT_FACTOR = 0.5f;
 
 	private static final String INDENT = "  ";
 
@@ -118,9 +121,10 @@ public class POVRayTarget extends AbstractTarget {
 
 			if (material.getNumTextureLayers() == 1) {
 
-				TextureData td = material.getTextureDataList().get(0);
+				TextureLayer layer = material.getTextureLayers().get(0);
+				TextureData td = layer.baseColorTexture;
 
-				if (!td.colorable) {
+				if (!layer.colorable) {
 					textureNames.put(td, uniqueName);
 				}
 
@@ -146,15 +150,15 @@ public class POVRayTarget extends AbstractTarget {
 
 			int count = 0;
 
-			for (TextureData textureData : material.getTextureDataList()) {
+			for (TextureLayer textureLayer : material.getTextureLayers()) {
 
-				if(!(textureData instanceof TextTextureData)) { //temporarily ignore TextTextureData layers
+				if(!(textureLayer.baseColorTexture instanceof TextTexture)) { //temporarily ignore TextTextureData layers
 					append("mesh {\n");
 
 					drawTriangleMesh(triangles, texCoordLists.get(count), count);
 
 					append("  uv_mapping ");
-					appendMaterial(material, textureData);
+					appendMaterial(material, textureLayer.baseColorTexture, textureLayer.colorable);
 
 					if (count > 0)
 						append("  no_shadow");
@@ -521,45 +525,45 @@ public class POVRayTarget extends AbstractTarget {
 			append("    pigment { ");
 			appendRGBColor(material.getColor());
 			append(" }\n    finish {\n");
-			append("      ambient " + material.getAmbientFactor() + "\n");
-			append("      diffuse " + material.getDiffuseFactor() + "\n");
+			append("      ambient " + AMBIENT_FACTOR + "\n");
+			append("      diffuse " + (1 - AMBIENT_FACTOR) + "\n");
 			append("    }\n");
 			append("  }\n");
 
 		} else {
 
-			for (TextureData textureData : material.getTextureDataList()) {
-				if(!(textureData instanceof TextTextureData)) { //temporarily ignore TextTextureData layers
-					appendMaterial(material, textureData);
+			for (TextureLayer textureLayer : material.getTextureLayers()) {
+				if(!(textureLayer.baseColorTexture instanceof TextTexture)) { //temporarily ignore TextTextureData layers
+					appendMaterial(material, textureLayer.baseColorTexture, textureLayer.colorable);
 				}
 			}
 		}
 	}
 
 
-	private void appendMaterial(Material material, TextureData textureData) {
+	private void appendMaterial(Material material, TextureData textureData, boolean colorable) {
 
 			String textureName = textureNames.get(textureData);
 
 			if (textureName == null) {
 
-				if (textureData.colorable) {
+				if (colorable) {
 					append("  texture {\n");
 					append("    pigment { ");
 					appendRGBColor(material.getColor());
 					append(" }\n    finish {\n");
-					append("      ambient " + material.getAmbientFactor() + "\n");
-					append("      diffuse " + material.getDiffuseFactor() + "\n");
+					append("      ambient " + AMBIENT_FACTOR + "\n");
+					append("      diffuse " + (1 - AMBIENT_FACTOR) + "\n");
 					append("    }\n");
 					append("  }\n");
 				}
 
 				append("  texture {\n");
 				append("    pigment { ");
-				appendImageMap(textureData);
+				appendImageMap(textureData, colorable);
 				append(" }\n    finish {\n");
-				append("      ambient " + material.getAmbientFactor() + "\n");
-				append("      diffuse " + material.getDiffuseFactor() + "\n");
+				append("      ambient " + AMBIENT_FACTOR + "\n");
+				append("      diffuse " + (1 - AMBIENT_FACTOR) + "\n");
 				append("    }\n");
 				append("  }\n");
 
@@ -570,7 +574,7 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 
-	private void appendImageMap(TextureData textureData) {
+	private void appendImageMap(TextureData textureData, boolean colorable) {
 
 			append("        image_map {\n");
 
@@ -580,7 +584,7 @@ public class POVRayTarget extends AbstractTarget {
 				append("             jpeg \"" + textureData.getRasterImage() + "\"\n");
 			}
 
-			if (textureData.colorable) {
+			if (colorable) {
 				append("             filter all 1.0\n");
 			}
 			append("\n          }");

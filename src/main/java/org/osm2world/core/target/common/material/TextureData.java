@@ -1,12 +1,10 @@
-package org.osm2world.core.target.common;
+package org.osm2world.core.target.common.material;
 
 import java.io.File;
 
-import org.osm2world.core.target.common.material.TexCoordFunction;
-
 /**
- * a texture with all information necessary for applying it to an object
- * that has texture coordinates
+ * a texture with metadata necessary for calculating tile coordinates.
+ *
  */
 public abstract class TextureData {
 
@@ -24,25 +22,12 @@ public abstract class TextureData {
 	/** calculation rule for texture coordinates */
 	public final TexCoordFunction coordFunction;
 
-	/**
-	 * whether the texture is modulated with the material color.
-	 * Otherwise, a plain white base color is used, resulting in the texture's
-	 * colors appearing unaltered (except for lighting)
-	 */
-	public final boolean colorable;
-
-	public final boolean isBumpMap;
-
 	public TextureData(double width, double height, Wrap wrap,
-			TexCoordFunction texCoordFunction, boolean colorable, boolean isBumpMap) {
-
+			TexCoordFunction texCoordFunction) {
 		this.width = width;
 		this.height = height;
 		this.wrap = wrap;
 		this.coordFunction = texCoordFunction;
-		this.colorable = colorable;
-		this.isBumpMap = isBumpMap;
-
 	}
 
 	/**
@@ -50,13 +35,6 @@ public abstract class TextureData {
 	 * If the texture is originally defined as a procedural texture or vector graphics, a temporary file is provided.
 	 */
 	public abstract File getRasterImage();
-
-	//auto-generated
-	@Override
-	public String toString() {
-		return "TextureData [width=" + width + ", height=" + height + ", wrap=" + wrap
-				+ ", texCoordFunction=" + coordFunction + ", colorable=" + colorable + ", isBumpMap=" + isBumpMap + "]";
-	}
 
 	@Override
 	public abstract int hashCode();

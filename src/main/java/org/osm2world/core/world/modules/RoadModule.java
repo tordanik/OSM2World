@@ -43,10 +43,10 @@ import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -648,12 +648,12 @@ public class RoadModule extends ConfigurableWorldModule {
 					|| node.getTags().contains("crossing_ref", "zebra")) {
 
 				surface = surface.withAddedLayers(
-						ROAD_MARKING_ZEBRA.getTextureDataList());
+						ROAD_MARKING_ZEBRA.getTextureLayers());
 
 			} else if (!node.getTags().contains("crossing", "unmarked")) {
 
 				surface = surface.withAddedLayers(
-						ROAD_MARKING_CROSSING.getTextureDataList());
+						ROAD_MARKING_CROSSING.getTextureLayers());
 
 			}
 
@@ -2134,7 +2134,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		/* apply the results */
 
 		if (arrowMaterial != null) {
-			material = material.withAddedLayers(arrowMaterial.getTextureDataList());
+			material = material.withAddedLayers(arrowMaterial.getTextureLayers());
 		}
 
 		return material;

@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 
-import org.osm2world.core.target.common.TextureData;
+import org.osm2world.core.target.common.material.TextureData;
 
 import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;

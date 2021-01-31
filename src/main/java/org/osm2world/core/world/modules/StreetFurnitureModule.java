@@ -19,6 +19,7 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLis
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
 
 import java.awt.Color;
 import java.time.LocalTime;
@@ -47,13 +48,13 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -411,12 +412,12 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			/**
-			 * alternative constructor that uses the aspect ratio of the first texture layer
+			 * alternative constructor that uses the aspect ratio of the first texture layer's color texture
 			 * instead of an explicit heightWidthRatio parameter. Only works for textured materials.
 			 */
 			public TexturedFlag(Material material) {
-				this(material.getTextureDataList().get(0).height
-						/ material.getTextureDataList().get(0).width, material);
+				this(material.getTextureLayers().get(0).baseColorTexture.height
+						/ material.getTextureLayers().get(0).baseColorTexture.width, material);
 			}
 
 		}
@@ -1393,7 +1394,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(-depth / 2)).addY(height));
 			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
 
-			target.drawTriangleFan(material.brighter(), vs, null);
+			target.drawTriangleFan(material.withColor(material.getColor().brighter()), vs, null);
 
 		}
 

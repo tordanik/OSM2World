@@ -1,4 +1,4 @@
-package org.osm2world.core.target.common;
+package org.osm2world.core.target.common.material;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,27 +9,22 @@ import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.osm2world.core.target.common.material.TexCoordFunction;
 
-public class ImageTextureData extends TextureData {
+public class ImageTexture extends TextureData {
 
 	/**
 	 * Path to the texture file.
 	 * Represents a permanent, already saved
 	 * image file in contrast to the file
-	 * field in {@link TextTextureData}
+	 * field in {@link TextTexture}
 	 */
 	private final File file;
 
-	private File convertedToPng;
+	private File convertedToPng = null;
 
-	public ImageTextureData(File file, double width, double height, Wrap wrap, TexCoordFunction texCoordFunction,
-			boolean colorable, boolean isBumpMap) {
-
-		super(width, height, wrap, texCoordFunction, colorable, isBumpMap);
-
+	public ImageTexture(File file, double width, double height, Wrap wrap, TexCoordFunction texCoordFunction) {
+		super(width, height, wrap, texCoordFunction);
 		this.file = file;
-		this.convertedToPng = null;
 	}
 
 	public File getFile() {
@@ -39,10 +34,9 @@ public class ImageTextureData extends TextureData {
 	@Override
 	public File getRasterImage() {
 
-		if(this.file.getName().endsWith(".svg")) {
+		if (this.file.getName().endsWith(".svg")) {
 
-			if(this.convertedToPng==null) {
-
+			if (this.convertedToPng == null) {
 				convertedToPng = SVG2PNG(this.file);
 			}
 
@@ -53,11 +47,11 @@ public class ImageTextureData extends TextureData {
 
 	}
 
-
 	/**
 	 * Converts an .svg image file into a (temporary) .png
 	 *
-	 * @param svg The svg file to be converted
+	 * @param svg
+	 * The svg file to be converted
 	 * @return a File object representation of the generated png
 	 */
 	private File SVG2PNG(File svg) {
@@ -78,7 +72,7 @@ public class ImageTextureData extends TextureData {
 			outputFile = File.createTempFile(prefix, ".png");
 			outputFile.deleteOnExit();
 
-			try(OutputStream ostream = new FileOutputStream(outputFile)) {
+			try (OutputStream ostream = new FileOutputStream(outputFile)) {
 
 				TranscoderOutput output = new TranscoderOutput(ostream);
 
@@ -91,15 +85,13 @@ public class ImageTextureData extends TextureData {
 			return outputFile;
 
 		} catch (IOException | TranscoderException e) {
-
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
 	public String toString() {
-		return "ImageTextureData [file=" + file + ", width=" + width + ", height=" + height + ", wrap=" + wrap
-				+ ", texCoordFunction=" + coordFunction + ", colorable=" + colorable + ", isBumpMap=" + isBumpMap + "]";
+		return file.getName();
 	}
 
 	//auto-generated
@@ -120,7 +112,7 @@ public class ImageTextureData extends TextureData {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ImageTextureData other = (ImageTextureData) obj;
+		ImageTexture other = (ImageTexture) obj;
 		if (file == null) {
 			if (other.file != null)
 				return false;

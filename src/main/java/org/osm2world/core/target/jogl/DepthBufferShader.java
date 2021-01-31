@@ -1,11 +1,7 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_REPEAT;
-import static javax.media.opengl.GL.GL_TEXTURE_2D;
-import static javax.media.opengl.GL.GL_TEXTURE_WRAP_S;
-import static javax.media.opengl.GL.GL_TEXTURE_WRAP_T;
-import static javax.media.opengl.GL2GL3.GL_CLAMP_TO_BORDER;
-import static javax.media.opengl.GL2GL3.GL_TEXTURE_BORDER_COLOR;
+import static javax.media.opengl.GL.*;
+import static javax.media.opengl.GL2GL3.*;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
@@ -14,10 +10,10 @@ import java.nio.FloatBuffer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
-import org.osm2world.core.target.common.TextureData;
-import org.osm2world.core.target.common.TextureData.Wrap;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureData.Wrap;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
@@ -81,8 +77,8 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 		 * only set textures (needed for transparency)
 		 */
 		int numTexLayers = 0;
-		if (material.getTextureDataList() != null) {
-			numTexLayers = material.getTextureDataList().size();
+		if (material.getTextureLayers() != null) {
+			numTexLayers = material.getTextureLayers().size();
 		}
 
 		/* set textures and associated parameters */
@@ -94,14 +90,14 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 	    for (int i = 0; i < DefaultShader.MAX_TEXTURE_LAYERS; i++) {
 	    	if (i < numTexLayers) {
 				gl.glActiveTexture(getGLTextureConstant(i));
-				TextureData textureData = material.getTextureDataList().get(i);
-				if (textureData.isBumpMap) {
+				TextureData textureData = material.getTextureLayers().get(i).baseColorTexture;
+				if (false /*textureData.isBumpMap*/) {
 		    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 0);
 		    		continue;
 				} else {
 		    		gl.glUniform1i(gl.glGetUniformLocation(shaderProgram, "useTexture["+i+"]"), 1);
 				}
-				
+
  				Texture texture = textureManager.getTextureForFile(textureData.getRasterImage());
 
 				texture.bind(gl);

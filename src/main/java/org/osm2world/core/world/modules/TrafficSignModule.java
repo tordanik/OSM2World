@@ -30,11 +30,12 @@ import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.TextTextureData;
-import org.osm2world.core.target.common.TextureData;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.TextTexture;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.TrafficSignType;
@@ -256,7 +257,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * Creates a replica of originalMaterial with a new textureDataList.
 	 * The new list is a copy of the old one with its TextTextureData layers
 	 * replaced by a new TextTextureData instance of different text.
-	 * Returns the new ConfMaterial created.
+	 * Returns the new Material created.
 	 *
 	 * @param originalMaterial The ConfMaterial to replicate
 	 * @param map A HashMap used to map each of traffic_sign.subtype / traffic_sign.brackettext
@@ -269,22 +270,24 @@ public class TrafficSignModule extends AbstractModule {
 		if(originalMaterial == null) return null;
 
 		Material newMaterial = null;
-		List<TextureData> newList = new ArrayList<TextureData>(originalMaterial.getTextureDataList());
+		List<TextureLayer> newList = new ArrayList<>(originalMaterial.getTextureLayers());
 
 		String regex = ".*(%\\{(.+)\\}).*";
 		Pattern pattern = Pattern.compile(regex);
 
-		for(TextureData layer : originalMaterial.getTextureDataList()) {
+		for(TextureLayer layer : originalMaterial.getTextureLayers()) {
 
-			if(layer instanceof TextTextureData) {
+			if(layer.baseColorTexture instanceof TextTexture) {
+
+				TextTexture textTexture = (TextTexture) layer.baseColorTexture;
 
 				String newText = "";
-				Matcher matcher = pattern.matcher(((TextTextureData) layer).text);
-				int index = originalMaterial.getTextureDataList().indexOf(layer);
+				Matcher matcher = pattern.matcher(textTexture.text);
+				int index = originalMaterial.getTextureLayers().indexOf(layer);
 
 				if( matcher.matches() ) {
 
-					newText = ((TextTextureData)layer).text;
+					newText = textTexture.text;
 
 					while(matcher.matches()) {
 
@@ -314,20 +317,20 @@ public class TrafficSignModule extends AbstractModule {
 						matcher = pattern.matcher(newText);
 					}
 
-					TextTextureData textData = new TextTextureData(newText, ((TextTextureData)layer).font, layer.width,
-							layer.height, ((TextTextureData)layer).topOffset, ((TextTextureData)layer).leftOffset,
-							((TextTextureData)layer).textColor, ((TextTextureData) layer).relativeFontSize,
-							layer.wrap, layer.coordFunction, layer.colorable, layer.isBumpMap);
+					TextTexture newTextTexture = new TextTexture(newText, textTexture.font, textTexture.width,
+							textTexture.height, textTexture.topOffset, textTexture.leftOffset,
+							textTexture.textColor, textTexture.relativeFontSize,
+							textTexture.wrap, textTexture.coordFunction);
 
-					newList.set(index, textData);
+					newList.set(index, new TextureLayer(newTextTexture,
+							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
 				}
 			}
 		}
 
 		newMaterial = new ConfMaterial(originalMaterial.getInterpolation(),originalMaterial.getColor(),
-						originalMaterial.getAmbientFactor(),originalMaterial.getDiffuseFactor(),originalMaterial.getSpecularFactor(),
-						originalMaterial.getShininess(),originalMaterial.getTransparency(),originalMaterial.getShadow(),
-						originalMaterial.getAmbientOcclusion(),newList);
+						originalMaterial.isDoubleSided(), originalMaterial.getTransparency(),
+						originalMaterial.getShadow(), originalMaterial.getAmbientOcclusion(), newList);
 
 		return newMaterial;
 	}
@@ -604,7 +607,7 @@ public class TrafficSignModule extends AbstractModule {
 				TextureData textureData = null;
 
 				if (types.get(sign).material.getNumTextureLayers() != 0) {
-					textureData = types.get(sign).material.getTextureDataList().get(0);
+					textureData = types.get(sign).material.getTextureLayers().get(0).baseColorTexture;
 				}
 
 				if (textureData == null) {
@@ -736,7 +739,7 @@ public class TrafficSignModule extends AbstractModule {
 				TextureData textureData = null;
 
 				if (types.get(sign).material.getNumTextureLayers() != 0) {
-					textureData = types.get(sign).material.getTextureDataList().get(0);
+					textureData = types.get(sign).material.getTextureLayers().get(0).baseColorTexture;
 				}
 
 				if (textureData == null) {
