@@ -21,7 +21,9 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.ImageTexture;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -261,9 +263,18 @@ public class ObjTarget extends FaceTarget {
 			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 
 			if (textureLayer != null) {
+
 				// TODO deal with SVG textures
-				mtlStream.println("map_Ka " + textureLayer.baseColorTexture.getRasterImage().getName());
-				mtlStream.println("map_Kd " + textureLayer.baseColorTexture.getRasterImage().getName());
+
+				String clamp = (textureLayer.baseColorTexture.wrap == Wrap.REPEAT) ? "" : "-clamp on ";
+
+				mtlStream.println("map_Ka " + clamp + textureLayer.baseColorTexture.getRasterImage().getName());
+				mtlStream.println("map_Kd " + clamp + textureLayer.baseColorTexture.getRasterImage().getName());
+
+				if (material.getTransparency() != Transparency.FALSE) {
+					mtlStream.println("map_d " + clamp + textureLayer.baseColorTexture.getRasterImage().getName());
+				}
+
 			}
 
 			int shininess = 1;
