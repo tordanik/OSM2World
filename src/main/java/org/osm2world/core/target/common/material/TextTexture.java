@@ -49,60 +49,66 @@ public class TextTexture extends TextureData {
 	@Override
 	public File getRasterImage() {
 
-		if(file == null) {
-
-			if(!(text.equals(""))) {
-
-				//temporary BufferedImage to extract font metrics
-				BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-				Graphics2D g2d = image.createGraphics();
-
-				Font font = this.font == null ? new Font("Interstate", Font.BOLD, 100) : this.font ;
-
-				//extract font metrics
-				FontMetrics fm = g2d.getFontMetrics(font);
-				int stringWidth = fm.stringWidth(this.text);
-				int stringHeight = fm.getHeight();
-				g2d.dispose();
-
-				//image with actual size and text
-				int imageHeight = (int) (stringHeight/(relativeFontSize/100));
-
-				double signAspectRatio = this.width/this.height;
-				int imageWidth = (int) (imageHeight*signAspectRatio);
-
-				image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-				g2d = image.createGraphics();
-				g2d.setFont(font);
-				g2d.setPaint(textColor);
-
-				//place text
-				int xCoord = (int)(imageWidth*leftOffset/100 - stringWidth/2);
-				int yCoord = (int)(imageHeight*topOffset/100 + stringHeight/3 );
-
-				g2d.drawString(this.text, xCoord, yCoord);
-
-				g2d.dispose();
-
-				String prefix = text+"osm2world";
-
-				this.file = createPng(prefix, image);
-				return this.file;
-
-			} else {
-
-				//create blank texture
-
-				BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-
-				String prefix = "osm2world";
-
-				this.file = createPng(prefix, image);
-				return this.file;
-			}
+		if (file == null) {
+			BufferedImage image = createBufferedImage();
+			String prefix = text+"osm2world";
+			this.file = createPng(prefix, image);
 		}
 
 		return this.file;
+
+	}
+
+	@Override
+	public String getDataUri() {
+		return imageToDataUri(createBufferedImage(), "png");
+	}
+
+	private BufferedImage createBufferedImage() {
+
+		if (!text.isEmpty()) {
+
+			//temporary BufferedImage to extract font metrics
+			BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+			Graphics2D g2d = image.createGraphics();
+
+			Font font = this.font == null ? new Font("Interstate", Font.BOLD, 100) : this.font ;
+
+			//extract font metrics
+			FontMetrics fm = g2d.getFontMetrics(font);
+			int stringWidth = fm.stringWidth(this.text);
+			int stringHeight = fm.getHeight();
+			g2d.dispose();
+
+			//image with actual size and text
+			int imageHeight = (int) (stringHeight/(relativeFontSize/100));
+
+			double signAspectRatio = this.width/this.height;
+			int imageWidth = (int) (imageHeight*signAspectRatio);
+
+			image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+			g2d = image.createGraphics();
+			g2d.setFont(font);
+			g2d.setPaint(textColor);
+
+			//place text
+			int xCoord = (int)(imageWidth*leftOffset/100 - stringWidth/2);
+			int yCoord = (int)(imageHeight*topOffset/100 + stringHeight/3 );
+
+			g2d.drawString(this.text, xCoord, yCoord);
+
+			g2d.dispose();
+
+			return image;
+
+		} else {
+
+			//create blank texture
+			return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+		}
+
 	}
 
 	private File createPng(String prefix, BufferedImage image) {
@@ -113,8 +119,8 @@ public class TextTexture extends TextureData {
 			outputFile = File.createTempFile(prefix, ".png");
 			outputFile.deleteOnExit();
 			ImageIO.write(image, "png", outputFile);
-		}catch(IOException e) {
-			System.err.println("Exception in createPng: "+prefix);
+		} catch(IOException e) {
+			System.err.println("Exception in createPng: " + prefix);
 			e.printStackTrace();
 		}
 

@@ -1,6 +1,14 @@
 package org.osm2world.core.target.common.material;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.xml.bind.DatatypeConverter;
+
+import com.jogamp.opengl.util.awt.ImageUtil;
 
 /**
  * a texture with metadata necessary for calculating tile coordinates.
@@ -35,6 +43,34 @@ public abstract class TextureData {
 	 * If the texture is originally defined as a procedural texture or vector graphics, a temporary file is provided.
 	 */
 	public abstract File getRasterImage();
+
+	/**
+	 * returns the texture as a data URI containing a raster image.
+	 */
+	public String getDataUri() {
+		try {
+			File file = getRasterImage();
+			String format = file.getName().endsWith(".png") ? "png" : "jpeg";
+			BufferedImage image = ImageIO.read(file);
+			if ("png".equals(format)) {
+				ImageUtil.flipImageVertically(image); //flip to ensure consistent tex coords with png images
+			}
+			return imageToDataUri(image, format);
+		} catch (IOException e) {
+			throw new Error(e);
+		}
+	}
+
+	protected static final String imageToDataUri(BufferedImage image, String format) {
+		try {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		    ImageIO.write(image, format, byteArrayOutputStream);
+		    return "data:image/" + format + ";base64,"
+		    		+ DatatypeConverter.printBase64Binary(byteArrayOutputStream.toByteArray());
+		} catch (IOException e) {
+		    throw new Error(e);
+		}
+	}
 
 	@Override
 	public abstract int hashCode();
