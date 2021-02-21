@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.world.modules.SurfaceAreaModule;
 
 import de.topobyte.osm4j.core.model.iface.OsmTag;
 
@@ -40,6 +41,8 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("indoor", "room"));
 		areaTags.add(new Tag("indoor", "area"));
 		areaTags.add(new Tag("indoor", "corridor"));
+
+		areaTags.addAll(SurfaceAreaModule.defaultSurfaceMap.keySet());
 
 		areaKeys.add("area:highway");
 		areaKeys.add("bridge:support");

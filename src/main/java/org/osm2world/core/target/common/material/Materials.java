@@ -54,10 +54,10 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial BRICK =
 		new ConfMaterial(Interpolation.FLAT, new Color(1.0f, 0.5f, 0.25f));
-	public static final ConfMaterial COBBLESTONE =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial CONCRETE =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.55f, 0.55f, 0.55f));
+	public static final ConfMaterial CORRUGATED_STEEL =
+			new ConfMaterial(Interpolation.FLAT, new Color(200, 200, 200));
 	public static final ConfMaterial EARTH =
 		new ConfMaterial(Interpolation.SMOOTH, new Color(0.3f, 0, 0));
 	public static final ConfMaterial GLASS =
@@ -66,12 +66,16 @@ public final class Materials {
 		new ConfMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial GRASS_PAVER =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.3f));
+	public static final ConfMaterial GRAVEL =
+		new ConfMaterial(Interpolation.SMOOTH, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial ICE =
+			new ConfMaterial(Interpolation.SMOOTH, WHITE);
 	public static final ConfMaterial SCRUB =
 		new ConfMaterial(Interpolation.SMOOTH, new Color(0.0f, 0.8f, 0.0f));
 	public static final ConfMaterial SETT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
-	public static final ConfMaterial GRAVEL =
-		new ConfMaterial(Interpolation.SMOOTH, new Color(0.4f, 0.4f, 0.4f));
+	public static final ConfMaterial SLATE =
+			new ConfMaterial(Interpolation.FLAT, new Color(0.1f, 0.1f, 0.1f));
 	public static final ConfMaterial PAVING_STONE =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PEBBLESTONE =
@@ -82,10 +86,20 @@ public final class Materials {
 			new ConfMaterial(Interpolation.FLAT, new Color(184, 184, 184));
 	public static final ConfMaterial PLASTIC_BLACK =
 			new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 0));
+	public static final ConfMaterial ROCK =
+			new ConfMaterial(Interpolation.FLAT, new Color(160, 166, 155));
 	public static final ConfMaterial SAND =
 		new ConfMaterial(Interpolation.SMOOTH, new Color(241, 233, 80));
+	public static final ConfMaterial SANDSTONE =
+			new ConfMaterial(Interpolation.FLAT, new Color(241, 233, 80));
+	public static final ConfMaterial SCREE =
+			new ConfMaterial(Interpolation.FLAT, new Color(160, 166, 155));
+	public static final ConfMaterial SNOW =
+			new ConfMaterial(Interpolation.SMOOTH, WHITE);
 	public static final ConfMaterial STEEL =
 		new ConfMaterial(Interpolation.FLAT, new Color(200, 200, 200));
+	public static final ConfMaterial STONE =
+			new ConfMaterial(Interpolation.FLAT, new Color(160, 166, 155));
 	public static final ConfMaterial UNHEWN_COBBLESTONE =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
 	public static final ConfMaterial WOOD =
@@ -94,6 +108,12 @@ public final class Materials {
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
 	public static final ConfMaterial TARTAN =
 		new ConfMaterial(Interpolation.SMOOTH, new Color(206, 109, 90));
+	public static final ConfMaterial TILES =
+			new ConfMaterial(Interpolation.FLAT, WHITE);
+	public static final ConfMaterial MARBLE =
+			new ConfMaterial(Interpolation.SMOOTH, WHITE);
+	public static final ConfMaterial CARPET =
+			new ConfMaterial(Interpolation.SMOOTH, new Color(0.5f, 0.5f, 1.0f));
 
 	public static final ConfMaterial ROAD_MARKING =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
@@ -256,20 +276,27 @@ public final class Materials {
 	static {
 
 		surfaceMaterialMap.put("asphalt", ASPHALT);
-		surfaceMaterialMap.put("cobblestone", COBBLESTONE);
+		surfaceMaterialMap.put("carpet", CARPET);
+		surfaceMaterialMap.put("cobblestone", SETT);
 		surfaceMaterialMap.put("compacted", GRAVEL);
 		surfaceMaterialMap.put("concrete", CONCRETE);
 		surfaceMaterialMap.put("grass", GRASS);
 		surfaceMaterialMap.put("gravel", GRAVEL);
 		surfaceMaterialMap.put("grass_paver", GRASS_PAVER);
 		surfaceMaterialMap.put("ground", EARTH);
+		surfaceMaterialMap.put("ice", ICE);
+		surfaceMaterialMap.put("marble", MARBLE);
 		surfaceMaterialMap.put("paved", ASPHALT);
 		surfaceMaterialMap.put("paving_stones", PAVING_STONE);
 		surfaceMaterialMap.put("pebblestone", PEBBLESTONE);
+		surfaceMaterialMap.put("rock", ROCK);
 		surfaceMaterialMap.put("sand", SAND);
+		surfaceMaterialMap.put("scree", SCREE);
 		surfaceMaterialMap.put("sett", SETT);
+		surfaceMaterialMap.put("snow", SNOW);
 		surfaceMaterialMap.put("steel", STEEL);
 		surfaceMaterialMap.put("tartan", TARTAN);
+		surfaceMaterialMap.put("tiles", TILES);
 		surfaceMaterialMap.put("unpaved", EARTH);
 		surfaceMaterialMap.put("unhewn_cobblestone", UNHEWN_COBBLESTONE);
 		surfaceMaterialMap.put("wood", WOOD);

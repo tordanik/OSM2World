@@ -113,7 +113,7 @@ public class CliffModule extends ConfigurableWorldModule {
 					getOutline(false), getOutline(true));
 
 			target.drawTriangleStrip(getMaterial(), groundVs,
-					texCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, GLOBAL_X_Z));
+					texCoordLists(groundVs, getMaterial(), GLOBAL_X_Z));
 
 		}
 
@@ -132,7 +132,7 @@ public class CliffModule extends ConfigurableWorldModule {
 
 		@Override
 		protected Material getMaterial() {
-			return Materials.EARTH;
+			return Materials.ROCK;
 		}
 
 	}

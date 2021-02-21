@@ -546,12 +546,16 @@ public class BuildingPart implements Renderable {
 		if (materialString != null) {
 			if ("brick".equals(materialString)) {
 				material = Materials.BRICK;
-			} else if ("glass".equals(materialString)) {
+			} else if ("glass".equals(materialString)
+					|| "mirror".equals(materialString)) {
 				material = roof ? Materials.GLASS_ROOF : Materials.GLASS_WALL;
-			} else if ("wood".equals(materialString)) {
+			} else if ("wood".equals(materialString)
+					|| "bamboo".equals(materialString)) {
 				material = Materials.WOOD_WALL;
 			} else if (Materials.getSurfaceMaterial(materialString) != null) {
 				material = Materials.getSurfaceMaterial(materialString);
+			} else if (Materials.getMaterial(materialString) != null) {
+				material = Materials.getMaterial(materialString);
 			}
 		}
 

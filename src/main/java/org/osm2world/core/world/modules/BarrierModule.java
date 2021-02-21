@@ -241,7 +241,7 @@ public class BarrierModule extends AbstractModule {
 
 	private static class Wall extends ColoredWall {
 
-		private final static Material DEFAULT_MATERIAL = Materials.CONCRETE;
+		private final static Material DEFAULT_MATERIAL = Materials.STONE;
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "wall");
