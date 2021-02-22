@@ -4,7 +4,6 @@ import static org.osm2world.core.math.algorithms.NormalCalculationUtil.*;
 import static org.osm2world.core.target.common.Primitive.Type.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.TriangleXYZ;
@@ -51,7 +50,7 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 
 	@Override
 	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
+			List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
 		List<? extends TriangleXYZ> triangleList = (triangles instanceof List)

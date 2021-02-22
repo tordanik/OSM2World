@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -232,10 +231,10 @@ public class IndoorModule extends AbstractModule {
 
 				PolygonWithHolesXZ carPolygon = new PolygonWithHolesXZ(new SimplePolygonXZ(carOuterPoints), emptyList());
 
-				Collection<TriangleXYZ> trianglesBottomDown = TriangulationUtil.triangulate(carPolygon, emptyList())
+				List<TriangleXYZ> trianglesBottomDown = TriangulationUtil.triangulate(carPolygon, emptyList())
 						.stream().map(t -> t.makeClockwise().xyz(carBaseEle - 0.0001)).collect(toList());
 
-				Collection<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon, emptyList())
+				List<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon, emptyList())
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle - 0.0001)).collect(toList());
 
 				target.drawTriangles(Materials.STEEL, trianglesBottomDown, null);
@@ -244,10 +243,10 @@ public class IndoorModule extends AbstractModule {
 
 				/* draw ceiling */
 
-				Collection<TriangleXYZ> trianglesTopDown = TriangulationUtil.triangulate(carPolygon, emptyList())
+				List<TriangleXYZ> trianglesTopDown = TriangulationUtil.triangulate(carPolygon, emptyList())
 						.stream().map(t -> t.makeClockwise().xyz(carBaseEle + carHeight)).collect(toList());
 
-				Collection<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon, emptyList())
+				List<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon, emptyList())
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle + carHeight)).collect(toList());
 
 				target.drawTriangles(Materials.STEEL, trianglesTopDown, null);

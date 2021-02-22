@@ -149,11 +149,9 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 		return new PolygonXYZ(getPosXYZ(polygon.getVertexLoop()));
 	}
 
-	public Collection<TriangleXYZ> getTriangulationXYZ(
-			Collection<? extends TriangleXZ> trianglesXZ) {
+	public List<TriangleXYZ> getTriangulationXYZ(List<? extends TriangleXZ> trianglesXZ) {
 
-		Collection<TriangleXYZ> trianglesXYZ =
-				new ArrayList<TriangleXYZ>(trianglesXZ.size());
+		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(trianglesXZ.size());
 
 		for (TriangleXZ triangleXZ : trianglesXZ) {
 

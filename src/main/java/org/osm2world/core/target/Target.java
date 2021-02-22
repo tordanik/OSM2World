@@ -1,6 +1,5 @@
 package org.osm2world.core.target;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -39,7 +38,7 @@ public interface Target {
 	 *          Can be null if no texturing information is available.
 	 */
 	void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
+			List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists);
 
 	/**

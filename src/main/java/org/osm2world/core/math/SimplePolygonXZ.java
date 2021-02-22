@@ -8,7 +8,6 @@ import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
@@ -375,7 +374,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public Collection<TriangleXZ> getTriangulation() {
+	public List<TriangleXZ> getTriangulation() {
 
 		List<TriangleXZ> result = TriangulationUtil.triangulate(this, emptyList());
 

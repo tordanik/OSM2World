@@ -267,7 +267,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 		}
 
 		@Override
-		public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
+		public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
 				List<List<VectorXZ>> texCoordLists) {
 
 			TriangleData triangleData = currentTriangles.get(material);
@@ -277,26 +277,19 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 				currentTriangles.put(material, triangleData);
 			}
 
-			/* ensure an index-addressable order for the triangles */
-
-			List<? extends TriangleXYZ> triangleList =
-					triangles instanceof List
-					? (List<? extends TriangleXYZ>) triangles
-					: new ArrayList<TriangleXYZ>(triangles);
-
 			/* create a vertex list from the triangles */
 
-			List<VectorXYZ> vertices = new ArrayList<VectorXYZ>(triangleList.size() * 3);
+			List<VectorXYZ> vertices = new ArrayList<>(triangles.size() * 3);
 
-			for (TriangleXYZ triangle : triangleList) {
+			for (TriangleXYZ triangle : triangles) {
 				vertices.addAll(triangle.getVertices());
 			}
 
 			/* remove degenerate triangles */
 
-			for (int i = triangleList.size() - 1; i >= 0; i--) { //go backwards because we're doing index-based deletion
+			for (int i = triangles.size() - 1; i >= 0; i--) { //go backwards because we're doing index-based deletion
 
-				if (triangleList.get(i).isDegenerate()) { // filter degenerate triangles
+				if (triangles.get(i).isDegenerate()) { // filter degenerate triangles
 
 					vertices.remove(3 * i + 2);
 					vertices.remove(3 * i + 1);
@@ -593,7 +586,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	}
 
 	@Override
-	public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
+	public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 		currentObjectBuilder.drawTriangles(material, triangles, texCoordLists);
 	}

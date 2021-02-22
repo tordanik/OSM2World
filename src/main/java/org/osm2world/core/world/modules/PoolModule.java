@@ -13,7 +13,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -79,7 +78,7 @@ public class PoolModule extends AbstractModule {
 
 			/* render water */
 
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 
 			target.drawTriangles(PURIFIED_WATER, triangles,
 					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));

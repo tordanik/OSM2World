@@ -5,13 +5,11 @@ import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GL
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -71,7 +69,7 @@ public class ParkingModule extends AbstractModule {
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);
 
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));

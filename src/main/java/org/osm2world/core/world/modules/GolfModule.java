@@ -113,7 +113,7 @@ public class GolfModule extends AbstractModule {
 			 * It involves an almost vertical drop towards the lowest point of the bunker outline
 			 * that is textured with ground, not sand. */
 
-			Collection<TriangleXYZ> resultingTriangulation = new ArrayList<>();
+			List<TriangleXYZ> resultingTriangulation = new ArrayList<>();
 
 			double[] dropSteps = {-0.03, -0.07, -0.05, -0.02};
 
@@ -258,8 +258,8 @@ public class GolfModule extends AbstractModule {
 				material = Materials.getSurfaceMaterial(surfaceValue, material);
 			}
 
-			Collection<TriangleXZ> trianglesXZ = getGreenTriangulation();
-			Collection<TriangleXYZ> triangles = getEleConnectors().getTriangulationXYZ(trianglesXZ);
+			List<TriangleXZ> trianglesXZ = getGreenTriangulation();
+			List<TriangleXYZ> triangles = getEleConnectors().getTriangulationXYZ(trianglesXZ);
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles , material, GLOBAL_X_Z));

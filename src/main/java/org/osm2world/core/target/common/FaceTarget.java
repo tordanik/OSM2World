@@ -231,7 +231,7 @@ public abstract class FaceTarget extends AbstractTarget {
 
 	@Override
 	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
+			List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
 		int i = 0;

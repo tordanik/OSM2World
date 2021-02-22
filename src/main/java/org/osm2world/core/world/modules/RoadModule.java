@@ -531,7 +531,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		public void renderTo(Target target) {
 
 			Material material = getSurfaceForNode(node);
-			Collection<TriangleXYZ> triangles = super.getTriangulation();
+			List<TriangleXYZ> triangles = super.getTriangulation();
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
@@ -600,7 +600,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			Material material = getSurfaceForNode(node);
 
-			Collection<TriangleXYZ> trianglesXYZ = getTriangulation();
+			List<TriangleXYZ> trianglesXYZ = getTriangulation();
 
 			target.drawTriangles(material, trianglesXYZ,
 					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
@@ -1486,7 +1486,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));

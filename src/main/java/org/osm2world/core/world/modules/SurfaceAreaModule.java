@@ -96,7 +96,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 		private final String surface;
 
-		private Collection<TriangleXZ> triangulationXZ;
+		private List<TriangleXZ> triangulationXZ;
 
 		public SurfaceArea(MapArea area, String surface) {
 			super(area);
@@ -116,7 +116,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			if (material != null) {
 
-				Collection<TriangleXYZ> triangles = getTriangulation();
+				List<TriangleXYZ> triangles = getTriangulation();
 				target.drawTriangles(material, triangles,
 						triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 
@@ -130,7 +130,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		 * into counterclockwise triangles.
 		 */
 		@Override
-		protected Collection<TriangleXZ> getTriangulationXZ() {
+		protected List<TriangleXZ> getTriangulationXZ() {
 
 			if (triangulationXZ != null) {
 				return triangulationXZ;

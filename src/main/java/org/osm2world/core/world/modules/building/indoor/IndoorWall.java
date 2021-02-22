@@ -892,13 +892,13 @@ public class IndoorWall implements Renderable {
 								bottomVertexLoop.add(endPoints.get(0));
 
 								SimplePolygonXZ bottomPolygonXZ = new SimplePolygonXZ(bottomVertexLoop);
-								Collection<TriangleXYZ> bottomTriangles = TriangulationUtil.
+								List<TriangleXYZ> bottomTriangles = TriangulationUtil.
 										triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 										.stream()
 										.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle))
 										.collect(toList());
 
-								Collection<TriangleXYZ> tempTopTriangles = TriangulationUtil.
+								List<TriangleXYZ> tempTopTriangles = TriangulationUtil.
 										triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
 										.stream()
 										.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - topOffset))

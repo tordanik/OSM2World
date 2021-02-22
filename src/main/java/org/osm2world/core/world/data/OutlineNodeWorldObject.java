@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
@@ -93,7 +94,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 	/**
 	 * @return  a triangulation of the area covered by this junction
 	 */
-	protected Collection<TriangleXYZ> getTriangulation() {
+	protected List<TriangleXYZ> getTriangulation() {
 
 		if (getOutlinePolygonXZ() == null) return emptyList();
 
@@ -101,8 +102,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 				getOutlinePolygonXZ(),
 				Collections.<SimplePolygonXZ>emptyList());
 
-		Collection<TriangleXYZ> trianglesXYZ =
-			new ArrayList<TriangleXYZ>(trianglesXZ.size());
+		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(trianglesXZ.size());
 
 		for (TriangleXZ triangleXZ : trianglesXZ) {
 			VectorXYZ v1 = connectors.getPosXYZ(triangleXZ.v1);

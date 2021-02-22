@@ -4,7 +4,6 @@ import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -168,7 +167,7 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 	/**
 	 * decompose this area into counterclockwise triangles.
 	 */
-	protected Collection<TriangleXZ> getTriangulationXZ() {
+	protected List<TriangleXZ> getTriangulationXZ() {
 		return TriangulationUtil.triangulate(area.getPolygon());
 	}
 
@@ -176,7 +175,7 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 	 * decompose this area into counterclockwise 3d triangles.
 	 * Only available after elevation calculation.
 	 */
-	protected Collection<TriangleXYZ> getTriangulation() {
+	protected List<TriangleXYZ> getTriangulation() {
 		if (getConnectorIfAttached() != null) {
 			return getTriangulationXZ().stream()
 					.map(t -> t.makeCounterclockwise().xyz(attachmentConnector.getAttachedPos().getY()))

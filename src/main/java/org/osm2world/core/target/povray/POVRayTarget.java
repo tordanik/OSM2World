@@ -136,7 +136,7 @@ public class POVRayTarget extends AbstractTarget {
 
 	@Override
 	public void drawTriangles(Material material,
-			Collection<? extends TriangleXYZ> triangles,
+			List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
 		if (!checkMeshValidity(triangles))

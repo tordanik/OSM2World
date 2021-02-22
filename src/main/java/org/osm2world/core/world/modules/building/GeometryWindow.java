@@ -12,7 +12,6 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -131,8 +130,8 @@ public class GeometryWindow implements Window {
 
 		Material paneMaterial = transparent ? params.transparentWindowMaterial : params.opaqueWindowMaterial;
 
-		Collection<TriangleXZ> paneTrianglesXZ = paneOutline.getTriangulation();
-		Collection<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
+		List<TriangleXZ> paneTrianglesXZ = paneOutline.getTriangulation();
+		List<TriangleXYZ> paneTriangles = paneTrianglesXZ.stream()
 				.map(t -> surface.convertTo3D(t).shift(toBack))
 				.collect(toList());
 		target.drawTriangles(paneMaterial, paneTriangles,

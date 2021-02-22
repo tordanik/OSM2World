@@ -10,7 +10,6 @@ import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -284,7 +283,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 		@Override
 		public void renderTo(Target target) {
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(WATER, triangles,
 					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
 		}
@@ -307,7 +306,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			/* render water */
 
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(PURIFIED_WATER, triangles,
 					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));
 

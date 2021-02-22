@@ -10,7 +10,6 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -108,7 +107,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 				return result.stream().map(v -> v.add(new VectorXZ(0.5, 0.5))).collect(toList());
 			};
 
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 
 			Material baseMaterial = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
 			List<List<VectorXZ>> baseTexCoords = triangleTexCoordLists(triangles, baseMaterial, GLOBAL_X_Z);
@@ -135,7 +134,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 			Material material = getSurfaceMaterial(area.getTags().getValue("surface"), ASPHALT);
 
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 
@@ -244,7 +243,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 		public void renderTo(Target target) {
 
 			Material material = getSurfaceForNode(node);
-			Collection<TriangleXYZ> triangles = super.getTriangulation();
+			List<TriangleXYZ> triangles = super.getTriangulation();
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
@@ -273,7 +272,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 			Material material = getSurfaceForNode(node);
 
-			Collection<TriangleXYZ> trianglesXYZ = getTriangulation();
+			List<TriangleXYZ> trianglesXYZ = getTriangulation();
 
 			target.drawTriangles(material, trianglesXYZ,
 					triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));

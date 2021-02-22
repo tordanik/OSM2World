@@ -1,5 +1,15 @@
 package org.osm2world.core.world.modules;
 
+import static java.lang.Math.*;
+import static java.util.Arrays.asList;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -14,19 +24,6 @@ import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.cos;
-import static java.util.Arrays.asList;
-import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
-import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
 /**
  * adds pitches for various sports to the map
@@ -88,7 +85,7 @@ public class SportsModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			Collection<TriangleXYZ> triangles = getTriangulation();
+			List<TriangleXYZ> triangles = getTriangulation();
 
 			TexCoordFunction texFunction = configureTexFunction(area.getOuterPolygon());
 

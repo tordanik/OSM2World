@@ -10,7 +10,6 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class AbstractTargetTest {
 		}
 
 		@Override
-		public void drawTriangles(Material material, Collection<? extends TriangleXYZ> triangles,
+		public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
 				List<List<VectorXZ>> texCoordLists) {
 			drawnTriangles.addAll(triangles);
 		}
