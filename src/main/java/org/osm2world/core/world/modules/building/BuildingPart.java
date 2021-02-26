@@ -4,13 +4,13 @@ import static com.google.common.collect.Iterables.getLast;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -36,6 +36,7 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
@@ -238,35 +239,35 @@ public class BuildingPart implements Renderable {
 			/* construct the polygons directly above the passages */
 
 			for (TerrainBoundaryWorldObject o : buildingPassages) {
+				for (PolygonShapeXZ b : o.getTerrainBoundariesXZ()) {
 
-				Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
+					Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
 
-				Collection<PolygonWithHolesXZ> polysAboveTBWOs =
-						CAGUtil.intersectPolygons(Arrays.asList(
-								polygon.getOuter(), o.getOutlinePolygon().getSimpleXZPolygon()));
+					Collection<PolygonWithHolesXZ> polysAboveTBWOs =
+							CAGUtil.intersectPolygons(asList(polygon.getOuter(), asSimplePolygon(b.getOuter())));
 
-
-				if (polygon.getHoles().isEmpty()) {
-					raisedBuildingPartPolys = polysAboveTBWOs;
-				} else {
-					raisedBuildingPartPolys = new ArrayList<>();
-					for (PolygonWithHolesXZ p : polysAboveTBWOs) {
-						List<SimplePolygonXZ> subPolys = new ArrayList<>();
-						subPolys.addAll(polygon.getHoles());
-						subPolys.addAll(p.getHoles());
-						raisedBuildingPartPolys.addAll(
-								CAGUtil.subtractPolygons(p.getOuter(), subPolys));
+					if (polygon.getHoles().isEmpty()) {
+						raisedBuildingPartPolys = polysAboveTBWOs;
+					} else {
+						raisedBuildingPartPolys = new ArrayList<>();
+						for (PolygonWithHolesXZ p : polysAboveTBWOs) {
+							List<SimplePolygonXZ> subPolys = new ArrayList<>();
+							subPolys.addAll(polygon.getHoles());
+							subPolys.addAll(p.getHoles());
+							raisedBuildingPartPolys.addAll(
+									CAGUtil.subtractPolygons(p.getOuter(), subPolys));
+						}
 					}
-				}
 
-				for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
-					double newFloorHeight = clearingAbovePassage;
-					if (newFloorHeight < floorHeight) {
-						newFloorHeight = floorHeight;
+					for (PolygonWithHolesXZ p : raisedBuildingPartPolys) {
+						double newFloorHeight = clearingAbovePassage;
+						if (newFloorHeight < floorHeight) {
+							newFloorHeight = floorHeight;
+						}
+						polygonFloorHeightMap.put(p, newFloorHeight);
 					}
-					polygonFloorHeightMap.put(p, newFloorHeight);
-				}
 
+				}
 			}
 
 			/* create the walls and floors */

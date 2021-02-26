@@ -38,7 +38,6 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -207,14 +206,8 @@ public class SurfaceAreaModule extends AbstractModule {
 						eleConnectorPoints.add(eleConnector.pos);
 					}
 
-					if (otherWO instanceof WorldObjectWithOutline) {
-
-						PolygonShapeXZ outlinePolygon = ((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ();
-
-						if (outlinePolygon != null) {
-							allPolys.add(outlinePolygon);
-						}
-
+					if (otherWO.getOutlinePolygonXZ() != null) {
+						allPolys.add(otherWO.getOutlinePolygonXZ());
 					}
 
 				}

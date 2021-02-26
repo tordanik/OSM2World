@@ -37,7 +37,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
+import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.core.world.modules.WaterModule.Water;
 import org.osm2world.core.world.modules.WaterModule.Waterway;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -203,22 +203,23 @@ public class BridgeModule extends AbstractModule {
 
 				/* make sure that the piers don't pierce anything on the ground */
 
-				Collection<WorldObjectWithOutline> avoidedObjects = new ArrayList<>();
+				Collection<WorldObject> avoidedObjects = new ArrayList<>();
 
 				for (MapIntersectionWW i : segment.getIntersectionsWW()) {
 					for (WorldObject otherRep : i.getOther(segment).getRepresentations()) {
 
 						if (otherRep.getGroundState() == GroundState.ON
-								&& otherRep instanceof WorldObjectWithOutline
-								&& !(otherRep instanceof Water || otherRep instanceof Waterway) //TODO: choose better criteria!
+								&& !(otherRep instanceof Water
+										|| otherRep instanceof Waterway
+										|| otherRep instanceof SurfaceArea) //TODO: choose better criteria!
 						) {
-							avoidedObjects.add((WorldObjectWithOutline) otherRep);
+							avoidedObjects.add(otherRep);
 						}
 
 					}
 				}
 
-				filterWorldObjectCollisions(pierPositions, avoidedObjects, null);
+				filterWorldObjectCollisions(pierPositions, avoidedObjects);
 
 				/* draw the piers */
 

@@ -32,7 +32,7 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
  * </li><li> calculating a triangulation of the surface for rendering
  * </ul>
  */
-public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline, AreaWorldObject, BoundedObject {
+public abstract class AbstractAreaWorldObject implements AreaWorldObject, BoundedObject {
 
 	protected final MapArea area;
 
@@ -145,7 +145,6 @@ public abstract class AbstractAreaWorldObject implements WorldObjectWithOutline,
 		return outlinePolygonXZ;
 	}
 
-	@Override
 	public PolygonXYZ getOutlinePolygon() {
 		if (getConnectorIfAttached() != null) {
 			return outlinePolygonXZ.getOuter().xyz(attachmentConnector.getAttachedPos().getY());

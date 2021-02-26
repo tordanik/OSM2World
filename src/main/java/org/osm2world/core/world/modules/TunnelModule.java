@@ -18,8 +18,6 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -286,29 +284,11 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public AxisAlignedRectangleXZ boundingBox() {
-
-			calculateOutlineIfNecessary();
-
-			return getOutlinePolygonXZ().boundingBox();
-
-		}
-
-		@Override
 		public SimplePolygonXZ getOutlinePolygonXZ() {
 
 			calculateOutlineIfNecessary();
 
 			return outline;
-
-		}
-
-		@Override
-		public PolygonXYZ getOutlinePolygon() {
-
-			calculateOutlineIfNecessary();
-
-			return connectors.getPosXYZ(getOutlinePolygonXZ());
 
 		}
 

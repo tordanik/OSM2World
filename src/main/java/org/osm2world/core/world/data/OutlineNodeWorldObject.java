@@ -25,8 +25,7 @@ import org.osm2world.core.math.algorithms.TriangulationUtil;
  *
  * @see NoOutlineNodeWorldObject
  */
-public abstract class OutlineNodeWorldObject implements NodeWorldObject,
-		BoundedObject, WorldObjectWithOutline {
+public abstract class OutlineNodeWorldObject implements NodeWorldObject, BoundedObject {
 
 	protected final MapNode node;
 
@@ -81,7 +80,6 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 		}
 	}
 
-	@Override
 	public PolygonXYZ getOutlinePolygon() {
 		return connectors.getPosXYZ(getOutlinePolygonXZ());
 	}
@@ -92,7 +90,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject,
 	}
 
 	/**
-	 * @return  a triangulation of the area covered by this junction
+	 * @return  a triangulation of the area covered by this
 	 */
 	protected List<TriangleXYZ> getTriangulation() {
 

@@ -35,7 +35,6 @@ import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
 
@@ -537,16 +536,13 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			/* collect other objects that the trees should not be placed on */
 
-			Collection<WorldObjectWithOutline> avoidedObjects = new ArrayList<>();
+			Collection<WorldObject> avoidedObjects = new ArrayList<>();
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				for (WorldObject otherRep : overlap.getOther(area).getRepresentations()) {
-
-					if (otherRep.getGroundState() == GroundState.ON
-							&& otherRep instanceof WorldObjectWithOutline) {
-						avoidedObjects.add((WorldObjectWithOutline) otherRep);
+					if (otherRep.getGroundState() == GroundState.ON) {
+						avoidedObjects.add(otherRep);
 					}
-
 				}
 			}
 
@@ -557,7 +553,7 @@ public class TreeModule extends ConfigurableWorldModule {
 						area.getPolygon(), mapData.getBoundary(),
 						density, 0.3f);
 
-			filterWorldObjectCollisions(treePositions, avoidedObjects, area.boundingBox());
+			filterWorldObjectCollisions(treePositions, avoidedObjects);
 
 			/* create a terrain connector for each tree */
 

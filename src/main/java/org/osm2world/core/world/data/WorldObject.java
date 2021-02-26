@@ -4,10 +4,13 @@ import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -55,6 +58,16 @@ public interface WorldObject extends Renderable {
 	 */
 	public default Iterable<AttachmentConnector> getAttachmentConnectors() {
 		return emptyList();
+	}
+
+	/**
+	 * returns a counterclockwise polygon defining the object's ground footprint in the XZ plane.
+	 * Can be used for purposes such as preventing bridge pillars from piercing through this WorldObject.
+	 *
+	 * @return outline polygon; null if this world object doesn't cover any area
+	 */
+	public default @Nullable PolygonShapeXZ getOutlinePolygonXZ() {
+		return null;
 	}
 
 }

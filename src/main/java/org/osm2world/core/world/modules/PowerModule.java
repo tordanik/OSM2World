@@ -43,7 +43,6 @@ import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -935,13 +934,8 @@ public final class PowerModule extends AbstractModule {
 				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
 
 					if (otherWO.getGroundState() == GroundState.ON
-							&& otherWO instanceof WorldObjectWithOutline) {
-
-						PolygonShapeXZ obstaclePolygon = ((WorldObjectWithOutline)otherWO).getOutlinePolygonXZ();
-						if (obstaclePolygon != null) {
-							obstacles.add(obstaclePolygon);
-						}
-
+							&& otherWO.getOutlinePolygonXZ() != null) {
+						obstacles.add(otherWO.getOutlinePolygonXZ());
 					}
 
 				}

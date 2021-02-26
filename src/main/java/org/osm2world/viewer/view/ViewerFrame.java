@@ -77,7 +77,6 @@ import org.osm2world.viewer.view.debug.QuadtreeDebugView;
 import org.osm2world.viewer.view.debug.RoofDataDebugView;
 import org.osm2world.viewer.view.debug.ShadowView;
 import org.osm2world.viewer.view.debug.SkyboxView;
-import org.osm2world.viewer.view.debug.TerrainBoundaryAABBDebugView;
 import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
@@ -185,8 +184,6 @@ public class ViewerFrame extends JFrame {
 
 			subMenu.addSeparator();
 
-			initAndAddDebugView(subMenu, -1, false,
-					new TerrainBoundaryAABBDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new AttachmentSurfaceDebugView());
 			initAndAddDebugView(subMenu, -1, false,

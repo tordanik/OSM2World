@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -39,12 +41,10 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 
-public abstract class AbstractNetworkWaySegmentWorldObject
-		implements NetworkWaySegmentWorldObject, BoundedObject, WorldObjectWithOutline {
+public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWaySegmentWorldObject, BoundedObject {
 
 	private static final double CONNECTOR_SNAP_DIST = 0.001;
 
@@ -546,8 +546,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject
 
 	}
 
-	@Override
-	public PolygonXYZ getOutlinePolygon() {
+	public @Nullable PolygonXYZ getOutlinePolygon() {
 
 		if (isBroken()) {
 			return null;

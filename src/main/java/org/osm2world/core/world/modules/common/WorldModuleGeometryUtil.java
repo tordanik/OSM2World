@@ -19,7 +19,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.world.creation.WorldModule;
-import org.osm2world.core.world.data.WorldObjectWithOutline;
+import org.osm2world.core.world.data.WorldObject;
 
 /**
  * offers some geometry-related utility functions for {@link WorldModule}s
@@ -166,7 +166,7 @@ public final class WorldModuleGeometryUtil {
 
 	/**
 	 * removes positions from a collection if they are on the area
-	 * which is already covered by some {@link WorldObjectWithOutline}.
+	 * which is already covered by some {@link WorldObject}'s outline.
 	 *
 	 * This can be used to avoid placing trees, bridge pillars
 	 * and other randomly distributed features on roads, rails
@@ -174,8 +174,7 @@ public final class WorldModuleGeometryUtil {
 	 */
 	public static final void filterWorldObjectCollisions(
 			Collection<VectorXZ> positions,
-			Collection<WorldObjectWithOutline> avoidedObjects,
-			AxisAlignedRectangleXZ positionBbox) {
+			Collection<WorldObject> avoidedObjects) {
 
 		//TODO: add support for avoiding a radius around the position, too.
 		//this is easily possible once "inflating"/"shrinking" polygons is supported [would also be useful for water bodies etc.]
@@ -188,7 +187,7 @@ public final class WorldModuleGeometryUtil {
 
 		List<PolygonShapeXZ> filterPolygons = new ArrayList<>();
 
-		for (WorldObjectWithOutline avoidedObject : avoidedObjects) {
+		for (WorldObject avoidedObject : avoidedObjects) {
 			try {
 				PolygonShapeXZ outlinePolygonXZ = avoidedObject.getOutlinePolygonXZ();
 				if (outlinePolygonXZ != null) {

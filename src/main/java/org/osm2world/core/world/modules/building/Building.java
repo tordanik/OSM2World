@@ -23,9 +23,7 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
@@ -155,19 +153,9 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 	}
 
 	@Override
-	public PolygonXYZ getOutlinePolygon() {
-		return getOutlinePolygonXZ().xyz(getGroundLevelEle());
-	}
-
-	@Override
 	public void renderTo(Target target) {
 		FaultTolerantIterationUtil.forEach(parts, part -> part.renderTo(target));
 		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments);
-	}
-
-	@Override
-	public AxisAlignedRectangleXZ boundingBox(){
-		return getOutlinePolygonXZ().boundingBox();
 	}
 
 	@Override
