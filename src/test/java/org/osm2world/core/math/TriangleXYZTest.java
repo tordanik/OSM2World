@@ -48,21 +48,21 @@ public class TriangleXYZTest {
 				new VectorXYZ(0, 1, 0),
 				new VectorXYZ(0, 1, 1));
 
-		assertFalse(t1.isDegenerate());
+		assertFalse(t1.isDegenerateOrNaN());
 
 		TriangleXYZ t2 = new TriangleXYZ(
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 0.5, 0),
 				new VectorXYZ(0, 1.0, 0));
 
-		assertTrue(t2.isDegenerate());
+		assertTrue(t2.isDegenerateOrNaN());
 
 		TriangleXYZ t3 = new TriangleXYZ(
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(1, 2, 3));
 
-		assertTrue(t3.isDegenerate());
+		assertTrue(t3.isDegenerateOrNaN());
 
 	}
 }

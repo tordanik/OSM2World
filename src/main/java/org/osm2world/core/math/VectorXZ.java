@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import static java.lang.Double.isFinite;
 import static java.lang.Math.*;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class VectorXZ implements Vector3D {
 	public VectorXZ(double x, double z) {
 		this.x = x;
 		this.z = z;
+		assert isFinite(x) && isFinite(z);
 	}
 
 	@Override

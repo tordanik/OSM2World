@@ -289,7 +289,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 			for (int i = triangles.size() - 1; i >= 0; i--) { //go backwards because we're doing index-based deletion
 
-				if (triangles.get(i).isDegenerate()) { // filter degenerate triangles
+				if (triangles.get(i).isDegenerateOrNaN()) { // filter degenerate triangles
 
 					vertices.remove(3 * i + 2);
 					vertices.remove(3 * i + 1);

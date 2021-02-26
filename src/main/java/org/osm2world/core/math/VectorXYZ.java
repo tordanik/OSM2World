@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import static java.lang.Double.isFinite;
 import static java.lang.Math.*;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		assert isFinite(x) && isFinite(y) && isFinite(z);
 	}
 
 	@Override

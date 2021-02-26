@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static java.lang.Double.isFinite;
+
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -70,11 +72,14 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 	}
 
 	/**
-	 * checks if the triangle is degenerate. That is, all three points are
+	 * checks if the triangle contains NaN/Infinity values or is degenerate. That is, all three points are
 	 * (almost, to account for floating point arithmetic) in a line.
 	 */
-	public boolean isDegenerate() {
-		return getArea() < 0.0001;
+	public boolean isDegenerateOrNaN() {
+		return getArea() < 1e-5
+				|| !isFinite(v1.x) || !isFinite(v1.y) || !isFinite(v1.z)
+				|| !isFinite(v2.x) || !isFinite(v2.y) || !isFinite(v2.z)
+				|| !isFinite(v3.x) || !isFinite(v3.y) || !isFinite(v3.z);
 	}
 
 	/** creates a new triangle by adding a shift vector to each vertex of this triangle */

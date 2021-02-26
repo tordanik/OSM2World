@@ -128,7 +128,7 @@ public class AbstractTargetTest {
 		for (List<TriangleXYZ> result : results) {
 
 			//TODO remove this line once extrudeShape no longer necessarily uses strips
-			result.removeIf(TriangleXYZ::isDegenerate);
+			result.removeIf(TriangleXYZ::isDegenerateOrNaN);
 
 			assertEquals(4, result.size());
 
