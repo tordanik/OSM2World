@@ -657,6 +657,16 @@ public final class Materials {
 			Wrap wrap = getWrap(config.getString(wrapKey));
 			TexCoordFunction coordFunction = getCoordFunction(config.getString(coordFunctionKey));
 
+			if (width <= 0) {
+				System.err.println("Error: illegal width for texture " + keyPrefix);
+				width = 1;
+			}
+
+			if (height <= 0) {
+				System.err.println("Error: illegal height for texture " + keyPrefix);
+				height = 1;
+			}
+
 			return new ImageTexture(file, width, height, wrap, coordFunction);
 
 		} else {

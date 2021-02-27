@@ -18,10 +18,10 @@ public abstract class TextureData {
 
 	public static enum Wrap { REPEAT, CLAMP, CLAMP_TO_BORDER }
 
-	/** width of a single tile of the texture */
+	/** width of a single tile of the texture in meters, > 0 */
 	public final double width;
 
-	/** height of a single tile of the texture */
+	/** height of a single tile of the texture in meters, > 0 */
 	public final double height;
 
 	/** wrap style of the texture */
@@ -30,12 +30,17 @@ public abstract class TextureData {
 	/** calculation rule for texture coordinates */
 	public final TexCoordFunction coordFunction;
 
-	public TextureData(double width, double height, Wrap wrap,
-			TexCoordFunction texCoordFunction) {
+	public TextureData(double width, double height, Wrap wrap, TexCoordFunction texCoordFunction) {
+
+		if (width <= 0 || height <= 0) {
+			throw new IllegalArgumentException("Illegal texture dimensions. Width: " + width + ", height: " + height);
+		}
+
 		this.width = width;
 		this.height = height;
 		this.wrap = wrap;
 		this.coordFunction = texCoordFunction;
+
 	}
 
 	/**
