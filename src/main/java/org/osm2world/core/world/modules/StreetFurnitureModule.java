@@ -1394,7 +1394,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(-depth / 2)).addY(height));
 			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
 
-			target.drawTriangleFan(material.withColor(material.getColor().brighter()), vs, null);
+			Material lidMaterial = material.withColor(material.getColor().brighter());
+			target.drawTriangleFan(lidMaterial, vs, texCoordLists(vs, lidMaterial, SLOPED_TRIANGLES));
 
 		}
 
@@ -1845,7 +1846,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(-lampHalfWidth, 0, lampHalfWidth));
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 
-			target.drawTriangleFan(material, vs, null);
+			target.drawTriangleFan(material, vs, texCoordLists(vs, material, GLOBAL_X_Z));
 
 			// upper part
 			vs = new ArrayList<VectorXYZ>();
@@ -1856,7 +1857,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, -lampHalfWidth));
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 
-			target.drawTriangleFan(material, vs, null);
+			target.drawTriangleFan(material, vs, texCoordLists(vs, material, GLOBAL_X_Z));
 		}
 
 		@Override
