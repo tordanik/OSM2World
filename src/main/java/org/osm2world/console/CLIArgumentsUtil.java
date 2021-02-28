@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
-	public static enum OutputMode {OBJ, POV, WEB_PBF, PNG, PPM, GD}
+	public static enum OutputMode {OBJ, GLTF, POV, WEB_PBF, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
 
 	private CLIArgumentsUtil() { }
@@ -109,6 +109,8 @@ public final class CLIArgumentsUtil {
 	public static final OutputMode getOutputMode(File outputFile) {
 		if (outputFile.getName().toLowerCase().endsWith(".obj")) {
 			return OutputMode.OBJ;
+		} else if (outputFile.getName().toLowerCase().endsWith(".gltf")) {
+			return OutputMode.GLTF;
 		} else if (outputFile.getName().toLowerCase().endsWith(".pov")) {
 			return OutputMode.POV;
 		} else if (outputFile.getName().toLowerCase().endsWith(".o2w.pbf")) {

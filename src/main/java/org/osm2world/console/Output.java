@@ -31,11 +31,13 @@ import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.creation.OverpassReader;
+import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
+import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
@@ -202,6 +204,13 @@ public final class Output {
 								results.getMapData(), results.getMapProjection(),
 								camera, projection, primitiveThresholdOBJ);
 					}
+					break;
+
+				case GLTF:
+					GltfTarget gltfTarget = new GltfTarget(outputFile);
+					boolean underground = config.getBoolean("renderUnderground", true);
+					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
+					gltfTarget.finish();
 					break;
 
 				case POV:
