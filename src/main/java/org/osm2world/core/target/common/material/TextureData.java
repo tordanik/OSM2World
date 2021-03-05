@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
@@ -24,20 +25,34 @@ public abstract class TextureData {
 	/** height of a single tile of the texture in meters, > 0 */
 	public final double height;
 
+	/**
+	 * for textures that contain distinct, repeating objects (e.g. tiles), this describes the width of one such object.
+	 * Some calculations for texture coords will use this to fit an integer number of such objects onto a surface.
+	 */
+	public final @Nullable Double widthPerEntity;
+
+	/** see {@link #widthPerEntity} */
+	public final @Nullable Double heightPerEntity;
+
 	/** wrap style of the texture */
 	public final Wrap wrap;
 
 	/** calculation rule for texture coordinates */
 	public final TexCoordFunction coordFunction;
 
-	public TextureData(double width, double height, Wrap wrap, TexCoordFunction texCoordFunction) {
+	public TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+			Wrap wrap, TexCoordFunction texCoordFunction) {
 
 		if (width <= 0 || height <= 0) {
 			throw new IllegalArgumentException("Illegal texture dimensions. Width: " + width + ", height: " + height);
+		} else if (widthPerEntity != null && widthPerEntity <= 0 || heightPerEntity != null && heightPerEntity <= 0) {
+			throw new IllegalArgumentException("Illegal per-entity texture dimensions.");
 		}
 
 		this.width = width;
 		this.height = height;
+		this.widthPerEntity = widthPerEntity;
+		this.heightPerEntity = heightPerEntity;
 		this.wrap = wrap;
 		this.coordFunction = texCoordFunction;
 

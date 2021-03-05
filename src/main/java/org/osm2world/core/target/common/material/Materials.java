@@ -548,6 +548,9 @@ public final class Materials {
 	private static @Nullable TextureData createTextureData(Configuration config, String keyPrefix,
 			@Nullable File defaultFile) {
 
+		Double widthPerEntity = config.getDouble(keyPrefix + "_widthPerEntity", null);
+		Double heightPerEntity = config.getDouble(keyPrefix + "_heightPerEntity", null);
+
 		String widthKey = keyPrefix + "_width";
 		String heightKey = keyPrefix + "_height";
 		String wrapKey = keyPrefix + "_wrap";
@@ -632,7 +635,7 @@ public final class Materials {
 			//get relative font size
 			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
 
-			return new TextTexture(text, font, width, height,
+			return new TextTexture(text, font, width, height, widthPerEntity, heightPerEntity,
 					Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
 					relativeFontSize, wrap, coordFunction);
 
@@ -667,7 +670,7 @@ public final class Materials {
 				height = 1;
 			}
 
-			return new ImageTexture(file, width, height, wrap, coordFunction);
+			return new ImageTexture(file, width, height, widthPerEntity, heightPerEntity, wrap, coordFunction);
 
 		} else {
 			System.err.println("unknown type value: " + type);

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 public class TextTexture extends TextureData {
@@ -32,12 +33,14 @@ public class TextTexture extends TextureData {
 	 */
 	public final double relativeFontSize;
 
-	public TextTexture(String t, Font font, double w, double h, double topOffset, double leftOffset, Color textColor, double relativeFontSize,
+	public TextTexture(String text, Font font, double width, double height,
+			@Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+			double topOffset, double leftOffset, Color textColor, double relativeFontSize,
 			Wrap wrap, TexCoordFunction texCoordFunction) {
 
-		super(w, h, wrap, texCoordFunction);
+		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
 
-		this.text = t;
+		this.text = text;
 		this.font = font;
 		this.topOffset = topOffset;
 		this.leftOffset = leftOffset;

@@ -318,7 +318,8 @@ public class TrafficSignModule extends AbstractModule {
 					}
 
 					TextTexture newTextTexture = new TextTexture(newText, textTexture.font, textTexture.width,
-							textTexture.height, textTexture.topOffset, textTexture.leftOffset,
+							textTexture.height, textTexture.widthPerEntity, textTexture.heightPerEntity,
+							textTexture.topOffset, textTexture.leftOffset,
 							textTexture.textColor, textTexture.relativeFontSize,
 							textTexture.wrap, textTexture.coordFunction);
 

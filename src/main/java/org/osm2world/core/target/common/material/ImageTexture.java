@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.annotation.Nullable;
+
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -22,8 +24,9 @@ public class ImageTexture extends TextureData {
 
 	private File convertedToPng = null;
 
-	public ImageTexture(File file, double width, double height, Wrap wrap, TexCoordFunction texCoordFunction) {
-		super(width, height, wrap, texCoordFunction);
+	public ImageTexture(File file, double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+			Wrap wrap, TexCoordFunction texCoordFunction) {
+		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
 		this.file = file;
 	}
 

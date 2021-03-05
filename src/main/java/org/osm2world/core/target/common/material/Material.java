@@ -158,7 +158,8 @@ public abstract class Material {
 
 					//create a new TextTextureData instance with different textColor
 					TextTexture newTextTexture = new TextTexture(texture.text, texture.font, texture.width,
-							texture.height, texture.topOffset, texture.leftOffset,
+							texture.height, texture.widthPerEntity, texture.heightPerEntity,
+							texture.topOffset, texture.leftOffset,
 							color, texture.relativeFontSize,
 							texture.wrap, texture.coordFunction);
 
