@@ -30,6 +30,7 @@ import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -38,13 +39,14 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
 import org.osm2world.core.world.modules.building.indoor.BuildingPartInterior;
@@ -56,7 +58,7 @@ import org.osm2world.core.world.modules.building.roof.Roof;
  * Consists of {@link Wall}s, a {@link Roof}, and maybe a {@link Floor}.
  * This is the core class of the {@link BuildingModule}.
  */
-public class BuildingPart implements Renderable {
+public class BuildingPart implements AreaWorldObject {
 
 	static final double DEFAULT_RIDGE_HEIGHT = 5;
 
@@ -79,6 +81,8 @@ public class BuildingPart implements Renderable {
 	private final @Nullable BuildingPartInterior buildingPartInterior;
 
 	public BuildingPart(Building building, MapArea area, Configuration config) {
+
+		area.addRepresentation(this);
 
 		this.building = building;
 		this.area = area;
@@ -500,6 +504,20 @@ public class BuildingPart implements Renderable {
 
 	public TagSet getTags() { return tags; }
 
+	@Override
+	public MapArea getPrimaryMapElement() {
+		return area;
+	}
+
+	@Override
+	public WorldObject getParent() {
+		return building;
+	}
+
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		return emptySet();
+	}
 
 	BuildingPartInterior getIndoor() {
 		return buildingPartInterior;

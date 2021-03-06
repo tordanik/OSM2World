@@ -25,6 +25,13 @@ public interface WorldObject extends Renderable {
 	public MapElement getPrimaryMapElement();
 
 	/**
+	 * returns another world object this is part of, if any (e.g. a room is part of a building).
+	 * Parents are responsible for rendering their children, so only root objects (those returning null here)
+	 * will have their {@link Renderable#renderTo(org.osm2world.core.target.Target)} methods called.
+	 */
+	public default @Nullable WorldObject getParent() { return null; }
+
+	/**
 	 * returns whether this feature is on, above or below the ground.
 	 * This is relevant for elevation calculations,
 	 * because the elevation of features o.t.g. is directly
@@ -32,7 +39,13 @@ public interface WorldObject extends Renderable {
 	 * Elevation of features above/below t.g. depends on elevation of
 	 * features o.t.g. as well as other features above/below t.g.
 	 */
-	public GroundState getGroundState();
+	public default GroundState getGroundState() {
+		if (getParent() != null) {
+			return getParent().getGroundState();
+		} else {
+			return GroundState.ON;
+		}
+	}
 
 	/**
 	 * returns all {@link EleConnector}s used by this WorldObject
@@ -43,7 +56,7 @@ public interface WorldObject extends Renderable {
 	 * lets this object add constraints for the relative elevations of its
 	 * {@link EleConnector}s. Called after {@link #getEleConnectors()}.
 	 */
-	public void defineEleConstraints(EleConstraintEnforcer enforcer);
+	public default void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 	/**
 	 * returns this object's surfaces that other objects can attach themselves to

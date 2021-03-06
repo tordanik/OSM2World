@@ -1,16 +1,20 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.modules.building.BuildingDefaults;
+import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class IndoorRoom implements Renderable {
+import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.modules.building.BuildingDefaults;
+
+public class IndoorRoom implements AreaWorldObject {
 
     private final IndoorWall wall;
     private final IndoorFloor floor;
@@ -19,6 +23,8 @@ public class IndoorRoom implements Renderable {
     private final IndoorObjectData data;
 
     IndoorRoom(IndoorObjectData data){
+
+    	((MapArea) data.getMapElement()).addRepresentation(this);
 
         this.data = data;
 
@@ -68,5 +74,21 @@ public class IndoorRoom implements Renderable {
         ceiling.renderTo(target);
 
     }
+
+	@Override
+	public MapArea getPrimaryMapElement() {
+		return (MapArea) data.getMapElement();
+	}
+
+	@Override
+	public WorldObject getParent() {
+		return data.getBuildingPart();
+	}
+
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		return emptyList();
+	}
+
 }
 

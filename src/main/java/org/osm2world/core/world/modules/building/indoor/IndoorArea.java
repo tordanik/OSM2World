@@ -1,20 +1,26 @@
 package org.osm2world.core.world.modules.building.indoor;
 
+import static java.util.Collections.emptyList;
+
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.WorldObject;
 
-public class IndoorArea implements Renderable {
+public class IndoorArea implements AreaWorldObject {
 
     private final IndoorFloor floor;
 
     private final IndoorObjectData data;
 
     IndoorArea(IndoorObjectData data){
+
+    	((MapArea) data.getMapElement()).addRepresentation(this);
 
         this.data = data;
 
@@ -38,4 +44,20 @@ public class IndoorArea implements Renderable {
     public void renderTo(Target target) {
         floor.renderTo(target);
     }
+
+	@Override
+	public MapArea getPrimaryMapElement() {
+		return (MapArea) data.getMapElement();
+	}
+
+	@Override
+	public WorldObject getParent() {
+		return data.getBuildingPart();
+	}
+
+	@Override
+	public Iterable<EleConnector> getEleConnectors() {
+		return emptyList();
+	}
+
 }

@@ -24,8 +24,10 @@ public final class TargetUtil {
 
 		for (MapElement mapElement : mapData.getMapElements()) {
 			forEach(mapElement.getRepresentations(), (WorldObject r) -> {
-				if (renderUnderground || r.getGroundState() != GroundState.BELOW) {
-					renderObject(target, r);
+				if (r.getParent() == null) {
+					if (renderUnderground || r.getGroundState() != GroundState.BELOW) {
+						renderObject(target, r);
+					}
 				}
 			}, (e, r) -> DEFAULT_EXCEPTION_HANDLER.accept(e, r.getPrimaryMapElement()));
 		}

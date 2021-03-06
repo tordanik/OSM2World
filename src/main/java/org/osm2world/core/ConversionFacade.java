@@ -69,12 +69,12 @@ import org.osm2world.core.world.modules.TreeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 import org.osm2world.core.world.modules.WaterModule;
 import org.osm2world.core.world.modules.building.BuildingModule;
+import org.osm2world.core.world.modules.building.indoor.IndoorModule;
 
 import com.google.common.collect.Streams;
 
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
-import org.osm2world.core.world.modules.building.indoor.IndoorModule;
 
 /**
  * provides an easy way to call all steps of the conversion process
@@ -320,12 +320,15 @@ public class ConversionFacade {
 				new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
 
 		for (WorldObject object : mapData.getWorldObjects()) {
+			if (object.getParent() != null) continue;
 			object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
 		}
 
 		/* attach connectors to the surfaces */
 
 		for (WorldObject object : mapData.getWorldObjects()) {
+
+			if (object.getParent() != null) continue;
 
 			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
 
