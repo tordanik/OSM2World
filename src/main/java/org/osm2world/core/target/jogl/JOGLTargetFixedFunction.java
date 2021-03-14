@@ -1,5 +1,6 @@
 package org.osm2world.core.target.jogl;
 
+import static java.awt.Color.WHITE;
 import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.*;
 import static javax.media.opengl.GL2ES1.*;
@@ -13,6 +14,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
@@ -28,6 +30,7 @@ import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding;
 
 import com.jogamp.opengl.util.texture.Texture;
 
@@ -45,6 +48,8 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	private final GL2 gl;
 
 	private Configuration config = new BaseConfiguration();
+
+	private static @Nullable Winding frontFaceWinding = Winding.CCW;
 
 	/**
 	 * creates a new JOGLTarget for a given {@link GL2} interface. It is
@@ -235,14 +240,16 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	static final void applyRenderingParameters(GL2 gl,
 			JOGLRenderingParameters parameters) {
 
-		/* backface culling */
+		/* back-face culling */
 
-		if (parameters.frontFace == null) {
+		frontFaceWinding = parameters.frontFace;
+
+		if (frontFaceWinding == null) {
 			gl.glDisable(GL_CULL_FACE);
 		} else {
-			gl.glFrontFace(GL_CCW);
+			gl.glFrontFace(frontFaceWinding.glConstant);
 			gl.glCullFace(GL_BACK);
-			gl.glEnable (GL_CULL_FACE);
+			gl.glEnable(GL_CULL_FACE);
 		}
 
 		/* wireframe mode */
@@ -308,6 +315,22 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 			numTexLayers = material.getTextureLayers().size();
 		}
 
+		/* handle back-face culling and double-sided materials */
+
+		if (frontFaceWinding == null || material.isDoubleSided()) {
+			gl.glDisable(GL_CULL_FACE);
+		} else {
+			gl.glFrontFace(frontFaceWinding.glConstant);
+			gl.glCullFace(GL_BACK);
+			gl.glEnable(GL_CULL_FACE);
+		}
+
+		if (material.isDoubleSided()) {
+			gl.glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+		} else if (material.isDoubleSided()) {
+			gl.glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+		}
+
 		/* set lighting */
 		// wrong as interpolation is meant for normals? light shading should always be smooth
 		/*
@@ -320,26 +343,25 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 		/* set color */
 
+		Color c = WHITE;
+
 		if (numTexLayers == 0 || material.getTextureLayers().get(0).colorable) {
+			c = material.getColor();
+		}
 
-			//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
-			Color c = material.getColor();
-			gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
+		//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
+		gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
 
-			gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
-					getFloatBuffer(multiplyColor(material.getColor(), AMBIENT_FACTOR)));
-			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
-					getFloatBuffer(multiplyColor(material.getColor(), 1 - AMBIENT_FACTOR)));
+		gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
+				getFloatBuffer(multiplyColor(c, AMBIENT_FACTOR)));
+		gl.glMaterialfv(GL_FRONT, GL_DIFFUSE,
+				getFloatBuffer(multiplyColor(c, 1 - AMBIENT_FACTOR)));
 
-		} else {
-
-			gl.glColor3f(1, 1, 1);
-
-			gl.glMaterialfv(GL_FRONT, GL_AMBIENT, getFloatBuffer(
-					multiplyColor(Color.WHITE, AMBIENT_FACTOR)));
-			gl.glMaterialfv(GL_FRONT, GL_DIFFUSE, getFloatBuffer(
-					multiplyColor(Color.WHITE, 1 - AMBIENT_FACTOR)));
-
+		if (material.isDoubleSided()) {
+			gl.glMaterialfv(GL_BACK, GL_AMBIENT,
+					getFloatBuffer(multiplyColor(c, AMBIENT_FACTOR)));
+			gl.glMaterialfv(GL_BACK, GL_DIFFUSE,
+					getFloatBuffer(multiplyColor(c, 1 - AMBIENT_FACTOR)));
 		}
 
 		// specular lighting
