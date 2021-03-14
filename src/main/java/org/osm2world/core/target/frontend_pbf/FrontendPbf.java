@@ -3673,94 +3673,31 @@ public final class FrontendPbf {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required uint32 ambientR = 1;</code>
+     * <code>required uint32 baseColorR = 1;</code>
      */
-    boolean hasAmbientR();
+    boolean hasBaseColorR();
     /**
-     * <code>required uint32 ambientR = 1;</code>
+     * <code>required uint32 baseColorR = 1;</code>
      */
-    int getAmbientR();
+    int getBaseColorR();
 
     /**
-     * <code>required uint32 ambientG = 2;</code>
+     * <code>required uint32 baseColorG = 2;</code>
      */
-    boolean hasAmbientG();
+    boolean hasBaseColorG();
     /**
-     * <code>required uint32 ambientG = 2;</code>
+     * <code>required uint32 baseColorG = 2;</code>
      */
-    int getAmbientG();
+    int getBaseColorG();
 
     /**
-     * <code>required uint32 ambientB = 3;</code>
+     * <code>required uint32 baseColorB = 3;</code>
      */
-    boolean hasAmbientB();
+    boolean hasBaseColorB();
     /**
-     * <code>required uint32 ambientB = 3;</code>
+     * <code>required uint32 baseColorB = 3;</code>
      */
-    int getAmbientB();
-
-    /**
-     * <code>required uint32 diffuseR = 4;</code>
-     */
-    boolean hasDiffuseR();
-    /**
-     * <code>required uint32 diffuseR = 4;</code>
-     */
-    int getDiffuseR();
-
-    /**
-     * <code>required uint32 diffuseG = 5;</code>
-     */
-    boolean hasDiffuseG();
-    /**
-     * <code>required uint32 diffuseG = 5;</code>
-     */
-    int getDiffuseG();
-
-    /**
-     * <code>required uint32 diffuseB = 6;</code>
-     */
-    boolean hasDiffuseB();
-    /**
-     * <code>required uint32 diffuseB = 6;</code>
-     */
-    int getDiffuseB();
-
-    /**
-     * <code>required uint32 specularR = 7;</code>
-     */
-    boolean hasSpecularR();
-    /**
-     * <code>required uint32 specularR = 7;</code>
-     */
-    int getSpecularR();
-
-    /**
-     * <code>required uint32 specularG = 8;</code>
-     */
-    boolean hasSpecularG();
-    /**
-     * <code>required uint32 specularG = 8;</code>
-     */
-    int getSpecularG();
-
-    /**
-     * <code>required uint32 specularB = 9;</code>
-     */
-    boolean hasSpecularB();
-    /**
-     * <code>required uint32 specularB = 9;</code>
-     */
-    int getSpecularB();
-
-    /**
-     * <code>required uint32 shininess = 10;</code>
-     */
-    boolean hasShininess();
-    /**
-     * <code>required uint32 shininess = 10;</code>
-     */
-    int getShininess();
+    int getBaseColorB();
 
     /**
      * <code>repeated .frontend_pbf.Material.TextureLayer textureLayer = 11;</code>
@@ -3839,6 +3776,27 @@ public final class FrontendPbf {
      * </pre>
      */
     boolean getCastShadow();
+
+    /**
+     * <code>optional bool doubleSided = 18 [default = false];</code>
+     *
+     * <pre>
+     * whether this material is double-sided.
+     * If true, backface culling should be disabled,
+     * and two-sided lighting should be enabled. 
+     * </pre>
+     */
+    boolean hasDoubleSided();
+    /**
+     * <code>optional bool doubleSided = 18 [default = false];</code>
+     *
+     * <pre>
+     * whether this material is double-sided.
+     * If true, backface culling should be disabled,
+     * and two-sided lighting should be enabled. 
+     * </pre>
+     */
+    boolean getDoubleSided();
   }
   /**
    * Protobuf type {@code frontend_pbf.Material}
@@ -3899,58 +3857,23 @@ public final class FrontendPbf {
             }
             case 8: {
               bitField0_ |= 0x00000001;
-              ambientR_ = input.readUInt32();
+              baseColorR_ = input.readUInt32();
               break;
             }
             case 16: {
               bitField0_ |= 0x00000002;
-              ambientG_ = input.readUInt32();
+              baseColorG_ = input.readUInt32();
               break;
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              ambientB_ = input.readUInt32();
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              diffuseR_ = input.readUInt32();
-              break;
-            }
-            case 40: {
-              bitField0_ |= 0x00000010;
-              diffuseG_ = input.readUInt32();
-              break;
-            }
-            case 48: {
-              bitField0_ |= 0x00000020;
-              diffuseB_ = input.readUInt32();
-              break;
-            }
-            case 56: {
-              bitField0_ |= 0x00000040;
-              specularR_ = input.readUInt32();
-              break;
-            }
-            case 64: {
-              bitField0_ |= 0x00000080;
-              specularG_ = input.readUInt32();
-              break;
-            }
-            case 72: {
-              bitField0_ |= 0x00000100;
-              specularB_ = input.readUInt32();
-              break;
-            }
-            case 80: {
-              bitField0_ |= 0x00000200;
-              shininess_ = input.readUInt32();
+              baseColorB_ = input.readUInt32();
               break;
             }
             case 90: {
-              if (!((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 textureLayer_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer>();
-                mutable_bitField0_ |= 0x00000400;
+                mutable_bitField0_ |= 0x00000008;
               }
               textureLayer_.add(input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.PARSER, extensionRegistry));
               break;
@@ -3961,14 +3884,19 @@ public final class FrontendPbf {
               if (value == null) {
                 unknownFields.mergeVarintField(16, rawValue);
               } else {
-                bitField0_ |= 0x00000400;
+                bitField0_ |= 0x00000008;
                 transparency_ = value;
               }
               break;
             }
             case 136: {
-              bitField0_ |= 0x00000800;
+              bitField0_ |= 0x00000010;
               castShadow_ = input.readBool();
+              break;
+            }
+            case 144: {
+              bitField0_ |= 0x00000020;
+              doubleSided_ = input.readBool();
               break;
             }
           }
@@ -3979,7 +3907,7 @@ public final class FrontendPbf {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           textureLayer_ = java.util.Collections.unmodifiableList(textureLayer_);
         }
         this.unknownFields = unknownFields.build();
@@ -4133,30 +4061,160 @@ public final class FrontendPbf {
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>required string textureURL = 1;</code>
+       * <code>optional string baseColorTextureURI = 1;</code>
        *
        * <pre>
-       * url of the texture image, can be relative 
+       * URI of the base color + alpha texture image, can be relative, can be a data URI 
        * </pre>
        */
-      boolean hasTextureURL();
+      boolean hasBaseColorTextureURI();
       /**
-       * <code>required string textureURL = 1;</code>
+       * <code>optional string baseColorTextureURI = 1;</code>
        *
        * <pre>
-       * url of the texture image, can be relative 
+       * URI of the base color + alpha texture image, can be relative, can be a data URI 
        * </pre>
        */
-      java.lang.String getTextureURL();
+      java.lang.String getBaseColorTextureURI();
       /**
-       * <code>required string textureURL = 1;</code>
+       * <code>optional string baseColorTextureURI = 1;</code>
        *
        * <pre>
-       * url of the texture image, can be relative 
+       * URI of the base color + alpha texture image, can be relative, can be a data URI 
        * </pre>
        */
       com.google.protobuf.ByteString
-          getTextureURLBytes();
+          getBaseColorTextureURIBytes();
+
+      /**
+       * <code>optional string ormTextureURI = 7;</code>
+       *
+       * <pre>
+       * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      boolean hasOrmTextureURI();
+      /**
+       * <code>optional string ormTextureURI = 7;</code>
+       *
+       * <pre>
+       * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      java.lang.String getOrmTextureURI();
+      /**
+       * <code>optional string ormTextureURI = 7;</code>
+       *
+       * <pre>
+       * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      com.google.protobuf.ByteString
+          getOrmTextureURIBytes();
+
+      /**
+       * <code>optional string normalTextureURI = 8;</code>
+       *
+       * <pre>
+       * URI of the normal map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      boolean hasNormalTextureURI();
+      /**
+       * <code>optional string normalTextureURI = 8;</code>
+       *
+       * <pre>
+       * URI of the normal map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      java.lang.String getNormalTextureURI();
+      /**
+       * <code>optional string normalTextureURI = 8;</code>
+       *
+       * <pre>
+       * URI of the normal map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      com.google.protobuf.ByteString
+          getNormalTextureURIBytes();
+
+      /**
+       * <code>optional string displacementTextureURI = 9;</code>
+       *
+       * <pre>
+       * URI of the displacement map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      boolean hasDisplacementTextureURI();
+      /**
+       * <code>optional string displacementTextureURI = 9;</code>
+       *
+       * <pre>
+       * URI of the displacement map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      java.lang.String getDisplacementTextureURI();
+      /**
+       * <code>optional string displacementTextureURI = 9;</code>
+       *
+       * <pre>
+       * URI of the displacement map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      com.google.protobuf.ByteString
+          getDisplacementTextureURIBytes();
+
+      /**
+       * <code>optional string emissiveTextureURI = 10;</code>
+       *
+       * <pre>
+       * URI of the emissive texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      boolean hasEmissiveTextureURI();
+      /**
+       * <code>optional string emissiveTextureURI = 10;</code>
+       *
+       * <pre>
+       * URI of the emissive texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      java.lang.String getEmissiveTextureURI();
+      /**
+       * <code>optional string emissiveTextureURI = 10;</code>
+       *
+       * <pre>
+       * URI of the emissive texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      com.google.protobuf.ByteString
+          getEmissiveTextureURIBytes();
+
+      /**
+       * <code>optional string reflectivityTextureURI = 11;</code>
+       *
+       * <pre>
+       * URI of the reflectivity texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      boolean hasReflectivityTextureURI();
+      /**
+       * <code>optional string reflectivityTextureURI = 11;</code>
+       *
+       * <pre>
+       * URI of the reflectivity texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      java.lang.String getReflectivityTextureURI();
+      /**
+       * <code>optional string reflectivityTextureURI = 11;</code>
+       *
+       * <pre>
+       * URI of the reflectivity texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      com.google.protobuf.ByteString
+          getReflectivityTextureURIBytes();
 
       /**
        * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -4181,7 +4239,7 @@ public final class FrontendPbf {
        * <code>required bool colorable = 3;</code>
        *
        * <pre>
-       * whether the texture should be multiplied with the material's base color 
+       * whether the base color texture should be multiplied with the material's base color value 
        * </pre>
        */
       boolean hasColorable();
@@ -4189,7 +4247,7 @@ public final class FrontendPbf {
        * <code>required bool colorable = 3;</code>
        *
        * <pre>
-       * whether the texture should be multiplied with the material's base color 
+       * whether the base color texture should be multiplied with the material's base color value 
        * </pre>
        */
       boolean getColorable();
@@ -4239,6 +4297,10 @@ public final class FrontendPbf {
     }
     /**
      * Protobuf type {@code frontend_pbf.Material.TextureLayer}
+     *
+     * <pre>
+     ** a set of PBR textures representing one layer of the material. All textures in the layer use the same texture coordinates. 
+     * </pre>
      */
     public static final class TextureLayer extends
         com.google.protobuf.GeneratedMessage implements
@@ -4292,7 +4354,7 @@ public final class FrontendPbf {
               case 10: {
                 com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000001;
-                textureURL_ = bs;
+                baseColorTextureURI_ = bs;
                 break;
               }
               case 16: {
@@ -4301,23 +4363,23 @@ public final class FrontendPbf {
                 if (value == null) {
                   unknownFields.mergeVarintField(2, rawValue);
                 } else {
-                  bitField0_ |= 0x00000002;
+                  bitField0_ |= 0x00000040;
                   wrap_ = value;
                 }
                 break;
               }
               case 24: {
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000080;
                 colorable_ = input.readBool();
                 break;
               }
               case 32: {
-                bitField0_ |= 0x00000008;
+                bitField0_ |= 0x00000100;
                 textureWidth_ = input.readUInt32();
                 break;
               }
               case 40: {
-                bitField0_ |= 0x00000010;
+                bitField0_ |= 0x00000200;
                 textureHeight_ = input.readUInt32();
                 break;
               }
@@ -4327,9 +4389,39 @@ public final class FrontendPbf {
                 if (value == null) {
                   unknownFields.mergeVarintField(6, rawValue);
                 } else {
-                  bitField0_ |= 0x00000020;
+                  bitField0_ |= 0x00000400;
                   texCoordFunction_ = value;
                 }
+                break;
+              }
+              case 58: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000002;
+                ormTextureURI_ = bs;
+                break;
+              }
+              case 66: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000004;
+                normalTextureURI_ = bs;
+                break;
+              }
+              case 74: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000008;
+                displacementTextureURI_ = bs;
+                break;
+              }
+              case 82: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000010;
+                emissiveTextureURI_ = bs;
+                break;
+              }
+              case 90: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000020;
+                reflectivityTextureURI_ = bs;
                 break;
               }
             }
@@ -4552,27 +4644,27 @@ public final class FrontendPbf {
       }
 
       private int bitField0_;
-      public static final int TEXTUREURL_FIELD_NUMBER = 1;
-      private java.lang.Object textureURL_;
+      public static final int BASECOLORTEXTUREURI_FIELD_NUMBER = 1;
+      private java.lang.Object baseColorTextureURI_;
       /**
-       * <code>required string textureURL = 1;</code>
+       * <code>optional string baseColorTextureURI = 1;</code>
        *
        * <pre>
-       * url of the texture image, can be relative 
+       * URI of the base color + alpha texture image, can be relative, can be a data URI 
        * </pre>
        */
-      public boolean hasTextureURL() {
+      public boolean hasBaseColorTextureURI() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string textureURL = 1;</code>
+       * <code>optional string baseColorTextureURI = 1;</code>
        *
        * <pre>
-       * url of the texture image, can be relative 
+       * URI of the base color + alpha texture image, can be relative, can be a data URI 
        * </pre>
        */
-      public java.lang.String getTextureURL() {
-        java.lang.Object ref = textureURL_;
+      public java.lang.String getBaseColorTextureURI() {
+        java.lang.Object ref = baseColorTextureURI_;
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
@@ -4580,26 +4672,296 @@ public final class FrontendPbf {
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            textureURL_ = s;
+            baseColorTextureURI_ = s;
           }
           return s;
         }
       }
       /**
-       * <code>required string textureURL = 1;</code>
+       * <code>optional string baseColorTextureURI = 1;</code>
        *
        * <pre>
-       * url of the texture image, can be relative 
+       * URI of the base color + alpha texture image, can be relative, can be a data URI 
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getTextureURLBytes() {
-        java.lang.Object ref = textureURL_;
+          getBaseColorTextureURIBytes() {
+        java.lang.Object ref = baseColorTextureURI_;
         if (ref instanceof java.lang.String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          textureURL_ = b;
+          baseColorTextureURI_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int ORMTEXTUREURI_FIELD_NUMBER = 7;
+      private java.lang.Object ormTextureURI_;
+      /**
+       * <code>optional string ormTextureURI = 7;</code>
+       *
+       * <pre>
+       * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public boolean hasOrmTextureURI() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string ormTextureURI = 7;</code>
+       *
+       * <pre>
+       * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public java.lang.String getOrmTextureURI() {
+        java.lang.Object ref = ormTextureURI_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            ormTextureURI_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string ormTextureURI = 7;</code>
+       *
+       * <pre>
+       * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getOrmTextureURIBytes() {
+        java.lang.Object ref = ormTextureURI_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          ormTextureURI_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int NORMALTEXTUREURI_FIELD_NUMBER = 8;
+      private java.lang.Object normalTextureURI_;
+      /**
+       * <code>optional string normalTextureURI = 8;</code>
+       *
+       * <pre>
+       * URI of the normal map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public boolean hasNormalTextureURI() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string normalTextureURI = 8;</code>
+       *
+       * <pre>
+       * URI of the normal map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public java.lang.String getNormalTextureURI() {
+        java.lang.Object ref = normalTextureURI_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            normalTextureURI_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string normalTextureURI = 8;</code>
+       *
+       * <pre>
+       * URI of the normal map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getNormalTextureURIBytes() {
+        java.lang.Object ref = normalTextureURI_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          normalTextureURI_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int DISPLACEMENTTEXTUREURI_FIELD_NUMBER = 9;
+      private java.lang.Object displacementTextureURI_;
+      /**
+       * <code>optional string displacementTextureURI = 9;</code>
+       *
+       * <pre>
+       * URI of the displacement map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public boolean hasDisplacementTextureURI() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string displacementTextureURI = 9;</code>
+       *
+       * <pre>
+       * URI of the displacement map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public java.lang.String getDisplacementTextureURI() {
+        java.lang.Object ref = displacementTextureURI_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            displacementTextureURI_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string displacementTextureURI = 9;</code>
+       *
+       * <pre>
+       * URI of the displacement map texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getDisplacementTextureURIBytes() {
+        java.lang.Object ref = displacementTextureURI_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          displacementTextureURI_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int EMISSIVETEXTUREURI_FIELD_NUMBER = 10;
+      private java.lang.Object emissiveTextureURI_;
+      /**
+       * <code>optional string emissiveTextureURI = 10;</code>
+       *
+       * <pre>
+       * URI of the emissive texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public boolean hasEmissiveTextureURI() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string emissiveTextureURI = 10;</code>
+       *
+       * <pre>
+       * URI of the emissive texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public java.lang.String getEmissiveTextureURI() {
+        java.lang.Object ref = emissiveTextureURI_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            emissiveTextureURI_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string emissiveTextureURI = 10;</code>
+       *
+       * <pre>
+       * URI of the emissive texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getEmissiveTextureURIBytes() {
+        java.lang.Object ref = emissiveTextureURI_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          emissiveTextureURI_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int REFLECTIVITYTEXTUREURI_FIELD_NUMBER = 11;
+      private java.lang.Object reflectivityTextureURI_;
+      /**
+       * <code>optional string reflectivityTextureURI = 11;</code>
+       *
+       * <pre>
+       * URI of the reflectivity texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public boolean hasReflectivityTextureURI() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional string reflectivityTextureURI = 11;</code>
+       *
+       * <pre>
+       * URI of the reflectivity texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public java.lang.String getReflectivityTextureURI() {
+        java.lang.Object ref = reflectivityTextureURI_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            reflectivityTextureURI_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string reflectivityTextureURI = 11;</code>
+       *
+       * <pre>
+       * URI of the reflectivity texture image, can be relative, can be a data URI 
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getReflectivityTextureURIBytes() {
+        java.lang.Object ref = reflectivityTextureURI_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          reflectivityTextureURI_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
@@ -4617,7 +4979,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public boolean hasWrap() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
        * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -4637,17 +4999,17 @@ public final class FrontendPbf {
        * <code>required bool colorable = 3;</code>
        *
        * <pre>
-       * whether the texture should be multiplied with the material's base color 
+       * whether the base color texture should be multiplied with the material's base color value 
        * </pre>
        */
       public boolean hasColorable() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
        * <code>required bool colorable = 3;</code>
        *
        * <pre>
-       * whether the texture should be multiplied with the material's base color 
+       * whether the base color texture should be multiplied with the material's base color value 
        * </pre>
        */
       public boolean getColorable() {
@@ -4664,7 +5026,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public boolean hasTextureWidth() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
        * <code>required uint32 textureWidth = 4;</code>
@@ -4687,7 +5049,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public boolean hasTextureHeight() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
        * <code>required uint32 textureHeight = 5;</code>
@@ -4706,7 +5068,7 @@ public final class FrontendPbf {
        * <code>optional .frontend_pbf.Material.TextureLayer.TexCoordFunction texCoordFunction = 6 [default = CUSTOM];</code>
        */
       public boolean hasTexCoordFunction() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
        * <code>optional .frontend_pbf.Material.TextureLayer.TexCoordFunction texCoordFunction = 6 [default = CUSTOM];</code>
@@ -4716,7 +5078,12 @@ public final class FrontendPbf {
       }
 
       private void initFields() {
-        textureURL_ = "";
+        baseColorTextureURI_ = "";
+        ormTextureURI_ = "";
+        normalTextureURI_ = "";
+        displacementTextureURI_ = "";
+        emissiveTextureURI_ = "";
+        reflectivityTextureURI_ = "";
         wrap_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.REPEAT;
         colorable_ = false;
         textureWidth_ = 0;
@@ -4729,10 +5096,6 @@ public final class FrontendPbf {
         if (isInitialized == 1) return true;
         if (isInitialized == 0) return false;
 
-        if (!hasTextureURL()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
         if (!hasColorable()) {
           memoizedIsInitialized = 0;
           return false;
@@ -4753,22 +5116,37 @@ public final class FrontendPbf {
                           throws java.io.IOException {
         getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeBytes(1, getTextureURLBytes());
+          output.writeBytes(1, getBaseColorTextureURIBytes());
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
           output.writeEnum(2, wrap_.getNumber());
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
           output.writeBool(3, colorable_);
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
           output.writeUInt32(4, textureWidth_);
         }
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000200) == 0x00000200)) {
           output.writeUInt32(5, textureHeight_);
         }
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((bitField0_ & 0x00000400) == 0x00000400)) {
           output.writeEnum(6, texCoordFunction_.getNumber());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBytes(7, getOrmTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBytes(8, getNormalTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeBytes(9, getDisplacementTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          output.writeBytes(10, getEmissiveTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          output.writeBytes(11, getReflectivityTextureURIBytes());
         }
         getUnknownFields().writeTo(output);
       }
@@ -4781,27 +5159,47 @@ public final class FrontendPbf {
         size = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(1, getTextureURLBytes());
+            .computeBytesSize(1, getBaseColorTextureURIBytes());
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(2, wrap_.getNumber());
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
           size += com.google.protobuf.CodedOutputStream
             .computeBoolSize(3, colorable_);
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
           size += com.google.protobuf.CodedOutputStream
             .computeUInt32Size(4, textureWidth_);
         }
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000200) == 0x00000200)) {
           size += com.google.protobuf.CodedOutputStream
             .computeUInt32Size(5, textureHeight_);
         }
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((bitField0_ & 0x00000400) == 0x00000400)) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(6, texCoordFunction_.getNumber());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(7, getOrmTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(8, getNormalTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(9, getDisplacementTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(10, getEmissiveTextureURIBytes());
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(11, getReflectivityTextureURIBytes());
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -4883,6 +5281,10 @@ public final class FrontendPbf {
       }
       /**
        * Protobuf type {@code frontend_pbf.Material.TextureLayer}
+       *
+       * <pre>
+       ** a set of PBR textures representing one layer of the material. All textures in the layer use the same texture coordinates. 
+       * </pre>
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessage.Builder<Builder> implements
@@ -4920,18 +5322,28 @@ public final class FrontendPbf {
 
         public Builder clear() {
           super.clear();
-          textureURL_ = "";
+          baseColorTextureURI_ = "";
           bitField0_ = (bitField0_ & ~0x00000001);
-          wrap_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.REPEAT;
+          ormTextureURI_ = "";
           bitField0_ = (bitField0_ & ~0x00000002);
-          colorable_ = false;
+          normalTextureURI_ = "";
           bitField0_ = (bitField0_ & ~0x00000004);
-          textureWidth_ = 0;
+          displacementTextureURI_ = "";
           bitField0_ = (bitField0_ & ~0x00000008);
-          textureHeight_ = 0;
+          emissiveTextureURI_ = "";
           bitField0_ = (bitField0_ & ~0x00000010);
-          texCoordFunction_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCoordFunction.CUSTOM;
+          reflectivityTextureURI_ = "";
           bitField0_ = (bitField0_ & ~0x00000020);
+          wrap_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.REPEAT;
+          bitField0_ = (bitField0_ & ~0x00000040);
+          colorable_ = false;
+          bitField0_ = (bitField0_ & ~0x00000080);
+          textureWidth_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000100);
+          textureHeight_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000200);
+          texCoordFunction_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCoordFunction.CUSTOM;
+          bitField0_ = (bitField0_ & ~0x00000400);
           return this;
         }
 
@@ -4963,25 +5375,45 @@ public final class FrontendPbf {
           if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
             to_bitField0_ |= 0x00000001;
           }
-          result.textureURL_ = textureURL_;
+          result.baseColorTextureURI_ = baseColorTextureURI_;
           if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
             to_bitField0_ |= 0x00000002;
           }
-          result.wrap_ = wrap_;
+          result.ormTextureURI_ = ormTextureURI_;
           if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
             to_bitField0_ |= 0x00000004;
           }
-          result.colorable_ = colorable_;
+          result.normalTextureURI_ = normalTextureURI_;
           if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
             to_bitField0_ |= 0x00000008;
           }
-          result.textureWidth_ = textureWidth_;
+          result.displacementTextureURI_ = displacementTextureURI_;
           if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
             to_bitField0_ |= 0x00000010;
           }
-          result.textureHeight_ = textureHeight_;
+          result.emissiveTextureURI_ = emissiveTextureURI_;
           if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
             to_bitField0_ |= 0x00000020;
+          }
+          result.reflectivityTextureURI_ = reflectivityTextureURI_;
+          if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+            to_bitField0_ |= 0x00000040;
+          }
+          result.wrap_ = wrap_;
+          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+            to_bitField0_ |= 0x00000080;
+          }
+          result.colorable_ = colorable_;
+          if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+            to_bitField0_ |= 0x00000100;
+          }
+          result.textureWidth_ = textureWidth_;
+          if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+            to_bitField0_ |= 0x00000200;
+          }
+          result.textureHeight_ = textureHeight_;
+          if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+            to_bitField0_ |= 0x00000400;
           }
           result.texCoordFunction_ = texCoordFunction_;
           result.bitField0_ = to_bitField0_;
@@ -5000,9 +5432,34 @@ public final class FrontendPbf {
 
         public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer other) {
           if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.getDefaultInstance()) return this;
-          if (other.hasTextureURL()) {
+          if (other.hasBaseColorTextureURI()) {
             bitField0_ |= 0x00000001;
-            textureURL_ = other.textureURL_;
+            baseColorTextureURI_ = other.baseColorTextureURI_;
+            onChanged();
+          }
+          if (other.hasOrmTextureURI()) {
+            bitField0_ |= 0x00000002;
+            ormTextureURI_ = other.ormTextureURI_;
+            onChanged();
+          }
+          if (other.hasNormalTextureURI()) {
+            bitField0_ |= 0x00000004;
+            normalTextureURI_ = other.normalTextureURI_;
+            onChanged();
+          }
+          if (other.hasDisplacementTextureURI()) {
+            bitField0_ |= 0x00000008;
+            displacementTextureURI_ = other.displacementTextureURI_;
+            onChanged();
+          }
+          if (other.hasEmissiveTextureURI()) {
+            bitField0_ |= 0x00000010;
+            emissiveTextureURI_ = other.emissiveTextureURI_;
+            onChanged();
+          }
+          if (other.hasReflectivityTextureURI()) {
+            bitField0_ |= 0x00000020;
+            reflectivityTextureURI_ = other.reflectivityTextureURI_;
             onChanged();
           }
           if (other.hasWrap()) {
@@ -5025,10 +5482,6 @@ public final class FrontendPbf {
         }
 
         public final boolean isInitialized() {
-          if (!hasTextureURL()) {
-            
-            return false;
-          }
           if (!hasColorable()) {
             
             return false;
@@ -5063,32 +5516,32 @@ public final class FrontendPbf {
         }
         private int bitField0_;
 
-        private java.lang.Object textureURL_ = "";
+        private java.lang.Object baseColorTextureURI_ = "";
         /**
-         * <code>required string textureURL = 1;</code>
+         * <code>optional string baseColorTextureURI = 1;</code>
          *
          * <pre>
-         * url of the texture image, can be relative 
+         * URI of the base color + alpha texture image, can be relative, can be a data URI 
          * </pre>
          */
-        public boolean hasTextureURL() {
+        public boolean hasBaseColorTextureURI() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>required string textureURL = 1;</code>
+         * <code>optional string baseColorTextureURI = 1;</code>
          *
          * <pre>
-         * url of the texture image, can be relative 
+         * URI of the base color + alpha texture image, can be relative, can be a data URI 
          * </pre>
          */
-        public java.lang.String getTextureURL() {
-          java.lang.Object ref = textureURL_;
+        public java.lang.String getBaseColorTextureURI() {
+          java.lang.Object ref = baseColorTextureURI_;
           if (!(ref instanceof java.lang.String)) {
             com.google.protobuf.ByteString bs =
                 (com.google.protobuf.ByteString) ref;
             java.lang.String s = bs.toStringUtf8();
             if (bs.isValidUtf8()) {
-              textureURL_ = s;
+              baseColorTextureURI_ = s;
             }
             return s;
           } else {
@@ -5096,69 +5549,569 @@ public final class FrontendPbf {
           }
         }
         /**
-         * <code>required string textureURL = 1;</code>
+         * <code>optional string baseColorTextureURI = 1;</code>
          *
          * <pre>
-         * url of the texture image, can be relative 
+         * URI of the base color + alpha texture image, can be relative, can be a data URI 
          * </pre>
          */
         public com.google.protobuf.ByteString
-            getTextureURLBytes() {
-          java.lang.Object ref = textureURL_;
+            getBaseColorTextureURIBytes() {
+          java.lang.Object ref = baseColorTextureURI_;
           if (ref instanceof String) {
             com.google.protobuf.ByteString b = 
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
-            textureURL_ = b;
+            baseColorTextureURI_ = b;
             return b;
           } else {
             return (com.google.protobuf.ByteString) ref;
           }
         }
         /**
-         * <code>required string textureURL = 1;</code>
+         * <code>optional string baseColorTextureURI = 1;</code>
          *
          * <pre>
-         * url of the texture image, can be relative 
+         * URI of the base color + alpha texture image, can be relative, can be a data URI 
          * </pre>
          */
-        public Builder setTextureURL(
+        public Builder setBaseColorTextureURI(
             java.lang.String value) {
           if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-          textureURL_ = value;
+          baseColorTextureURI_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>required string textureURL = 1;</code>
+         * <code>optional string baseColorTextureURI = 1;</code>
          *
          * <pre>
-         * url of the texture image, can be relative 
+         * URI of the base color + alpha texture image, can be relative, can be a data URI 
          * </pre>
          */
-        public Builder clearTextureURL() {
+        public Builder clearBaseColorTextureURI() {
           bitField0_ = (bitField0_ & ~0x00000001);
-          textureURL_ = getDefaultInstance().getTextureURL();
+          baseColorTextureURI_ = getDefaultInstance().getBaseColorTextureURI();
           onChanged();
           return this;
         }
         /**
-         * <code>required string textureURL = 1;</code>
+         * <code>optional string baseColorTextureURI = 1;</code>
          *
          * <pre>
-         * url of the texture image, can be relative 
+         * URI of the base color + alpha texture image, can be relative, can be a data URI 
          * </pre>
          */
-        public Builder setTextureURLBytes(
+        public Builder setBaseColorTextureURIBytes(
             com.google.protobuf.ByteString value) {
           if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-          textureURL_ = value;
+          baseColorTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object ormTextureURI_ = "";
+        /**
+         * <code>optional string ormTextureURI = 7;</code>
+         *
+         * <pre>
+         * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public boolean hasOrmTextureURI() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>optional string ormTextureURI = 7;</code>
+         *
+         * <pre>
+         * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public java.lang.String getOrmTextureURI() {
+          java.lang.Object ref = ormTextureURI_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              ormTextureURI_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string ormTextureURI = 7;</code>
+         *
+         * <pre>
+         * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public com.google.protobuf.ByteString
+            getOrmTextureURIBytes() {
+          java.lang.Object ref = ormTextureURI_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            ormTextureURI_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string ormTextureURI = 7;</code>
+         *
+         * <pre>
+         * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setOrmTextureURI(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          ormTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string ormTextureURI = 7;</code>
+         *
+         * <pre>
+         * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder clearOrmTextureURI() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          ormTextureURI_ = getDefaultInstance().getOrmTextureURI();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string ormTextureURI = 7;</code>
+         *
+         * <pre>
+         * URI of the occlusion/roughness/metalness texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setOrmTextureURIBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          ormTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object normalTextureURI_ = "";
+        /**
+         * <code>optional string normalTextureURI = 8;</code>
+         *
+         * <pre>
+         * URI of the normal map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public boolean hasNormalTextureURI() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional string normalTextureURI = 8;</code>
+         *
+         * <pre>
+         * URI of the normal map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public java.lang.String getNormalTextureURI() {
+          java.lang.Object ref = normalTextureURI_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              normalTextureURI_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string normalTextureURI = 8;</code>
+         *
+         * <pre>
+         * URI of the normal map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public com.google.protobuf.ByteString
+            getNormalTextureURIBytes() {
+          java.lang.Object ref = normalTextureURI_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            normalTextureURI_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string normalTextureURI = 8;</code>
+         *
+         * <pre>
+         * URI of the normal map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setNormalTextureURI(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          normalTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string normalTextureURI = 8;</code>
+         *
+         * <pre>
+         * URI of the normal map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder clearNormalTextureURI() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          normalTextureURI_ = getDefaultInstance().getNormalTextureURI();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string normalTextureURI = 8;</code>
+         *
+         * <pre>
+         * URI of the normal map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setNormalTextureURIBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          normalTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object displacementTextureURI_ = "";
+        /**
+         * <code>optional string displacementTextureURI = 9;</code>
+         *
+         * <pre>
+         * URI of the displacement map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public boolean hasDisplacementTextureURI() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional string displacementTextureURI = 9;</code>
+         *
+         * <pre>
+         * URI of the displacement map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public java.lang.String getDisplacementTextureURI() {
+          java.lang.Object ref = displacementTextureURI_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              displacementTextureURI_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string displacementTextureURI = 9;</code>
+         *
+         * <pre>
+         * URI of the displacement map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public com.google.protobuf.ByteString
+            getDisplacementTextureURIBytes() {
+          java.lang.Object ref = displacementTextureURI_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            displacementTextureURI_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string displacementTextureURI = 9;</code>
+         *
+         * <pre>
+         * URI of the displacement map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setDisplacementTextureURI(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+          displacementTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string displacementTextureURI = 9;</code>
+         *
+         * <pre>
+         * URI of the displacement map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder clearDisplacementTextureURI() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          displacementTextureURI_ = getDefaultInstance().getDisplacementTextureURI();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string displacementTextureURI = 9;</code>
+         *
+         * <pre>
+         * URI of the displacement map texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setDisplacementTextureURIBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+          displacementTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object emissiveTextureURI_ = "";
+        /**
+         * <code>optional string emissiveTextureURI = 10;</code>
+         *
+         * <pre>
+         * URI of the emissive texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public boolean hasEmissiveTextureURI() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional string emissiveTextureURI = 10;</code>
+         *
+         * <pre>
+         * URI of the emissive texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public java.lang.String getEmissiveTextureURI() {
+          java.lang.Object ref = emissiveTextureURI_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              emissiveTextureURI_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string emissiveTextureURI = 10;</code>
+         *
+         * <pre>
+         * URI of the emissive texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public com.google.protobuf.ByteString
+            getEmissiveTextureURIBytes() {
+          java.lang.Object ref = emissiveTextureURI_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            emissiveTextureURI_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string emissiveTextureURI = 10;</code>
+         *
+         * <pre>
+         * URI of the emissive texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setEmissiveTextureURI(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+          emissiveTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string emissiveTextureURI = 10;</code>
+         *
+         * <pre>
+         * URI of the emissive texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder clearEmissiveTextureURI() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          emissiveTextureURI_ = getDefaultInstance().getEmissiveTextureURI();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string emissiveTextureURI = 10;</code>
+         *
+         * <pre>
+         * URI of the emissive texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setEmissiveTextureURIBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+          emissiveTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object reflectivityTextureURI_ = "";
+        /**
+         * <code>optional string reflectivityTextureURI = 11;</code>
+         *
+         * <pre>
+         * URI of the reflectivity texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public boolean hasReflectivityTextureURI() {
+          return ((bitField0_ & 0x00000020) == 0x00000020);
+        }
+        /**
+         * <code>optional string reflectivityTextureURI = 11;</code>
+         *
+         * <pre>
+         * URI of the reflectivity texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public java.lang.String getReflectivityTextureURI() {
+          java.lang.Object ref = reflectivityTextureURI_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              reflectivityTextureURI_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string reflectivityTextureURI = 11;</code>
+         *
+         * <pre>
+         * URI of the reflectivity texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public com.google.protobuf.ByteString
+            getReflectivityTextureURIBytes() {
+          java.lang.Object ref = reflectivityTextureURI_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            reflectivityTextureURI_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string reflectivityTextureURI = 11;</code>
+         *
+         * <pre>
+         * URI of the reflectivity texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setReflectivityTextureURI(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+          reflectivityTextureURI_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string reflectivityTextureURI = 11;</code>
+         *
+         * <pre>
+         * URI of the reflectivity texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder clearReflectivityTextureURI() {
+          bitField0_ = (bitField0_ & ~0x00000020);
+          reflectivityTextureURI_ = getDefaultInstance().getReflectivityTextureURI();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string reflectivityTextureURI = 11;</code>
+         *
+         * <pre>
+         * URI of the reflectivity texture image, can be relative, can be a data URI 
+         * </pre>
+         */
+        public Builder setReflectivityTextureURIBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+          reflectivityTextureURI_ = value;
           onChanged();
           return this;
         }
@@ -5173,7 +6126,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public boolean hasWrap() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000040) == 0x00000040);
         }
         /**
          * <code>optional .frontend_pbf.Material.TextureLayer.Wrap wrap = 2 [default = REPEAT];</code>
@@ -5198,7 +6151,7 @@ public final class FrontendPbf {
           if (value == null) {
             throw new NullPointerException();
           }
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000040;
           wrap_ = value;
           onChanged();
           return this;
@@ -5212,7 +6165,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public Builder clearWrap() {
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000040);
           wrap_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap.REPEAT;
           onChanged();
           return this;
@@ -5223,17 +6176,17 @@ public final class FrontendPbf {
          * <code>required bool colorable = 3;</code>
          *
          * <pre>
-         * whether the texture should be multiplied with the material's base color 
+         * whether the base color texture should be multiplied with the material's base color value 
          * </pre>
          */
         public boolean hasColorable() {
-          return ((bitField0_ & 0x00000004) == 0x00000004);
+          return ((bitField0_ & 0x00000080) == 0x00000080);
         }
         /**
          * <code>required bool colorable = 3;</code>
          *
          * <pre>
-         * whether the texture should be multiplied with the material's base color 
+         * whether the base color texture should be multiplied with the material's base color value 
          * </pre>
          */
         public boolean getColorable() {
@@ -5243,11 +6196,11 @@ public final class FrontendPbf {
          * <code>required bool colorable = 3;</code>
          *
          * <pre>
-         * whether the texture should be multiplied with the material's base color 
+         * whether the base color texture should be multiplied with the material's base color value 
          * </pre>
          */
         public Builder setColorable(boolean value) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000080;
           colorable_ = value;
           onChanged();
           return this;
@@ -5256,11 +6209,11 @@ public final class FrontendPbf {
          * <code>required bool colorable = 3;</code>
          *
          * <pre>
-         * whether the texture should be multiplied with the material's base color 
+         * whether the base color texture should be multiplied with the material's base color value 
          * </pre>
          */
         public Builder clearColorable() {
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000080);
           colorable_ = false;
           onChanged();
           return this;
@@ -5275,7 +6228,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public boolean hasTextureWidth() {
-          return ((bitField0_ & 0x00000008) == 0x00000008);
+          return ((bitField0_ & 0x00000100) == 0x00000100);
         }
         /**
          * <code>required uint32 textureWidth = 4;</code>
@@ -5295,7 +6248,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public Builder setTextureWidth(int value) {
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000100;
           textureWidth_ = value;
           onChanged();
           return this;
@@ -5308,7 +6261,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public Builder clearTextureWidth() {
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000100);
           textureWidth_ = 0;
           onChanged();
           return this;
@@ -5323,7 +6276,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public boolean hasTextureHeight() {
-          return ((bitField0_ & 0x00000010) == 0x00000010);
+          return ((bitField0_ & 0x00000200) == 0x00000200);
         }
         /**
          * <code>required uint32 textureHeight = 5;</code>
@@ -5343,7 +6296,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public Builder setTextureHeight(int value) {
-          bitField0_ |= 0x00000010;
+          bitField0_ |= 0x00000200;
           textureHeight_ = value;
           onChanged();
           return this;
@@ -5356,7 +6309,7 @@ public final class FrontendPbf {
          * </pre>
          */
         public Builder clearTextureHeight() {
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000200);
           textureHeight_ = 0;
           onChanged();
           return this;
@@ -5367,7 +6320,7 @@ public final class FrontendPbf {
          * <code>optional .frontend_pbf.Material.TextureLayer.TexCoordFunction texCoordFunction = 6 [default = CUSTOM];</code>
          */
         public boolean hasTexCoordFunction() {
-          return ((bitField0_ & 0x00000020) == 0x00000020);
+          return ((bitField0_ & 0x00000400) == 0x00000400);
         }
         /**
          * <code>optional .frontend_pbf.Material.TextureLayer.TexCoordFunction texCoordFunction = 6 [default = CUSTOM];</code>
@@ -5382,7 +6335,7 @@ public final class FrontendPbf {
           if (value == null) {
             throw new NullPointerException();
           }
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000400;
           texCoordFunction_ = value;
           onChanged();
           return this;
@@ -5391,7 +6344,7 @@ public final class FrontendPbf {
          * <code>optional .frontend_pbf.Material.TextureLayer.TexCoordFunction texCoordFunction = 6 [default = CUSTOM];</code>
          */
         public Builder clearTexCoordFunction() {
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000400);
           texCoordFunction_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCoordFunction.CUSTOM;
           onChanged();
           return this;
@@ -5409,154 +6362,49 @@ public final class FrontendPbf {
     }
 
     private int bitField0_;
-    public static final int AMBIENTR_FIELD_NUMBER = 1;
-    private int ambientR_;
+    public static final int BASECOLORR_FIELD_NUMBER = 1;
+    private int baseColorR_;
     /**
-     * <code>required uint32 ambientR = 1;</code>
+     * <code>required uint32 baseColorR = 1;</code>
      */
-    public boolean hasAmbientR() {
+    public boolean hasBaseColorR() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required uint32 ambientR = 1;</code>
+     * <code>required uint32 baseColorR = 1;</code>
      */
-    public int getAmbientR() {
-      return ambientR_;
+    public int getBaseColorR() {
+      return baseColorR_;
     }
 
-    public static final int AMBIENTG_FIELD_NUMBER = 2;
-    private int ambientG_;
+    public static final int BASECOLORG_FIELD_NUMBER = 2;
+    private int baseColorG_;
     /**
-     * <code>required uint32 ambientG = 2;</code>
+     * <code>required uint32 baseColorG = 2;</code>
      */
-    public boolean hasAmbientG() {
+    public boolean hasBaseColorG() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required uint32 ambientG = 2;</code>
+     * <code>required uint32 baseColorG = 2;</code>
      */
-    public int getAmbientG() {
-      return ambientG_;
+    public int getBaseColorG() {
+      return baseColorG_;
     }
 
-    public static final int AMBIENTB_FIELD_NUMBER = 3;
-    private int ambientB_;
+    public static final int BASECOLORB_FIELD_NUMBER = 3;
+    private int baseColorB_;
     /**
-     * <code>required uint32 ambientB = 3;</code>
+     * <code>required uint32 baseColorB = 3;</code>
      */
-    public boolean hasAmbientB() {
+    public boolean hasBaseColorB() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required uint32 ambientB = 3;</code>
+     * <code>required uint32 baseColorB = 3;</code>
      */
-    public int getAmbientB() {
-      return ambientB_;
-    }
-
-    public static final int DIFFUSER_FIELD_NUMBER = 4;
-    private int diffuseR_;
-    /**
-     * <code>required uint32 diffuseR = 4;</code>
-     */
-    public boolean hasDiffuseR() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>required uint32 diffuseR = 4;</code>
-     */
-    public int getDiffuseR() {
-      return diffuseR_;
-    }
-
-    public static final int DIFFUSEG_FIELD_NUMBER = 5;
-    private int diffuseG_;
-    /**
-     * <code>required uint32 diffuseG = 5;</code>
-     */
-    public boolean hasDiffuseG() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    /**
-     * <code>required uint32 diffuseG = 5;</code>
-     */
-    public int getDiffuseG() {
-      return diffuseG_;
-    }
-
-    public static final int DIFFUSEB_FIELD_NUMBER = 6;
-    private int diffuseB_;
-    /**
-     * <code>required uint32 diffuseB = 6;</code>
-     */
-    public boolean hasDiffuseB() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
-    }
-    /**
-     * <code>required uint32 diffuseB = 6;</code>
-     */
-    public int getDiffuseB() {
-      return diffuseB_;
-    }
-
-    public static final int SPECULARR_FIELD_NUMBER = 7;
-    private int specularR_;
-    /**
-     * <code>required uint32 specularR = 7;</code>
-     */
-    public boolean hasSpecularR() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
-    }
-    /**
-     * <code>required uint32 specularR = 7;</code>
-     */
-    public int getSpecularR() {
-      return specularR_;
-    }
-
-    public static final int SPECULARG_FIELD_NUMBER = 8;
-    private int specularG_;
-    /**
-     * <code>required uint32 specularG = 8;</code>
-     */
-    public boolean hasSpecularG() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
-    }
-    /**
-     * <code>required uint32 specularG = 8;</code>
-     */
-    public int getSpecularG() {
-      return specularG_;
-    }
-
-    public static final int SPECULARB_FIELD_NUMBER = 9;
-    private int specularB_;
-    /**
-     * <code>required uint32 specularB = 9;</code>
-     */
-    public boolean hasSpecularB() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
-    }
-    /**
-     * <code>required uint32 specularB = 9;</code>
-     */
-    public int getSpecularB() {
-      return specularB_;
-    }
-
-    public static final int SHININESS_FIELD_NUMBER = 10;
-    private int shininess_;
-    /**
-     * <code>required uint32 shininess = 10;</code>
-     */
-    public boolean hasShininess() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
-    }
-    /**
-     * <code>required uint32 shininess = 10;</code>
-     */
-    public int getShininess() {
-      return shininess_;
+    public int getBaseColorB() {
+      return baseColorB_;
     }
 
     public static final int TEXTURELAYER_FIELD_NUMBER = 11;
@@ -5624,7 +6472,7 @@ public final class FrontendPbf {
      * </pre>
      */
     public boolean hasTransparency() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
      * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -5647,7 +6495,7 @@ public final class FrontendPbf {
      * </pre>
      */
     public boolean hasCastShadow() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
      * <code>optional bool castShadow = 17 [default = true];</code>
@@ -5660,20 +6508,41 @@ public final class FrontendPbf {
       return castShadow_;
     }
 
+    public static final int DOUBLESIDED_FIELD_NUMBER = 18;
+    private boolean doubleSided_;
+    /**
+     * <code>optional bool doubleSided = 18 [default = false];</code>
+     *
+     * <pre>
+     * whether this material is double-sided.
+     * If true, backface culling should be disabled,
+     * and two-sided lighting should be enabled. 
+     * </pre>
+     */
+    public boolean hasDoubleSided() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional bool doubleSided = 18 [default = false];</code>
+     *
+     * <pre>
+     * whether this material is double-sided.
+     * If true, backface culling should be disabled,
+     * and two-sided lighting should be enabled. 
+     * </pre>
+     */
+    public boolean getDoubleSided() {
+      return doubleSided_;
+    }
+
     private void initFields() {
-      ambientR_ = 0;
-      ambientG_ = 0;
-      ambientB_ = 0;
-      diffuseR_ = 0;
-      diffuseG_ = 0;
-      diffuseB_ = 0;
-      specularR_ = 0;
-      specularG_ = 0;
-      specularB_ = 0;
-      shininess_ = 0;
+      baseColorR_ = 0;
+      baseColorG_ = 0;
+      baseColorB_ = 0;
       textureLayer_ = java.util.Collections.emptyList();
       transparency_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.FALSE;
       castShadow_ = true;
+      doubleSided_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -5681,43 +6550,15 @@ public final class FrontendPbf {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasAmbientR()) {
+      if (!hasBaseColorR()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasAmbientG()) {
+      if (!hasBaseColorG()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasAmbientB()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasDiffuseR()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasDiffuseG()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasDiffuseB()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasSpecularR()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasSpecularG()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasSpecularB()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasShininess()) {
+      if (!hasBaseColorB()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -5735,43 +6576,25 @@ public final class FrontendPbf {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeUInt32(1, ambientR_);
+        output.writeUInt32(1, baseColorR_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeUInt32(2, ambientG_);
+        output.writeUInt32(2, baseColorG_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeUInt32(3, ambientB_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeUInt32(4, diffuseR_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeUInt32(5, diffuseG_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeUInt32(6, diffuseB_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeUInt32(7, specularR_);
-      }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeUInt32(8, specularG_);
-      }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeUInt32(9, specularB_);
-      }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        output.writeUInt32(10, shininess_);
+        output.writeUInt32(3, baseColorB_);
       }
       for (int i = 0; i < textureLayer_.size(); i++) {
         output.writeMessage(11, textureLayer_.get(i));
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeEnum(16, transparency_.getNumber());
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBool(17, castShadow_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBool(18, doubleSided_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5784,55 +6607,31 @@ public final class FrontendPbf {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(1, ambientR_);
+          .computeUInt32Size(1, baseColorR_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(2, ambientG_);
+          .computeUInt32Size(2, baseColorG_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(3, ambientB_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(4, diffuseR_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(5, diffuseG_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(6, diffuseB_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(7, specularR_);
-      }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(8, specularG_);
-      }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(9, specularB_);
-      }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(10, shininess_);
+          .computeUInt32Size(3, baseColorB_);
       }
       for (int i = 0; i < textureLayer_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, textureLayer_.get(i));
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(16, transparency_.getNumber());
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(17, castShadow_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(18, doubleSided_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5957,36 +6756,24 @@ public final class FrontendPbf {
 
       public Builder clear() {
         super.clear();
-        ambientR_ = 0;
+        baseColorR_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        ambientG_ = 0;
+        baseColorG_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
-        ambientB_ = 0;
+        baseColorB_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
-        diffuseR_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000008);
-        diffuseG_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000010);
-        diffuseB_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000020);
-        specularR_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000040);
-        specularG_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000080);
-        specularB_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000100);
-        shininess_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000200);
         if (textureLayerBuilder_ == null) {
           textureLayer_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           textureLayerBuilder_.clear();
         }
         transparency_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.FALSE;
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000010);
         castShadow_ = true;
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00000020);
+        doubleSided_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -6018,60 +6805,36 @@ public final class FrontendPbf {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.ambientR_ = ambientR_;
+        result.baseColorR_ = baseColorR_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.ambientG_ = ambientG_;
+        result.baseColorG_ = baseColorG_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.ambientB_ = ambientB_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.diffuseR_ = diffuseR_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.diffuseG_ = diffuseG_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
-        }
-        result.diffuseB_ = diffuseB_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
-          to_bitField0_ |= 0x00000040;
-        }
-        result.specularR_ = specularR_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000080;
-        }
-        result.specularG_ = specularG_;
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
-          to_bitField0_ |= 0x00000100;
-        }
-        result.specularB_ = specularB_;
-        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
-          to_bitField0_ |= 0x00000200;
-        }
-        result.shininess_ = shininess_;
+        result.baseColorB_ = baseColorB_;
         if (textureLayerBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
             textureLayer_ = java.util.Collections.unmodifiableList(textureLayer_);
-            bitField0_ = (bitField0_ & ~0x00000400);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.textureLayer_ = textureLayer_;
         } else {
           result.textureLayer_ = textureLayerBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
-          to_bitField0_ |= 0x00000400;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
         }
         result.transparency_ = transparency_;
-        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
-          to_bitField0_ |= 0x00000800;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000010;
         }
         result.castShadow_ = castShadow_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.doubleSided_ = doubleSided_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6088,41 +6851,20 @@ public final class FrontendPbf {
 
       public Builder mergeFrom(org.osm2world.core.target.frontend_pbf.FrontendPbf.Material other) {
         if (other == org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.getDefaultInstance()) return this;
-        if (other.hasAmbientR()) {
-          setAmbientR(other.getAmbientR());
+        if (other.hasBaseColorR()) {
+          setBaseColorR(other.getBaseColorR());
         }
-        if (other.hasAmbientG()) {
-          setAmbientG(other.getAmbientG());
+        if (other.hasBaseColorG()) {
+          setBaseColorG(other.getBaseColorG());
         }
-        if (other.hasAmbientB()) {
-          setAmbientB(other.getAmbientB());
-        }
-        if (other.hasDiffuseR()) {
-          setDiffuseR(other.getDiffuseR());
-        }
-        if (other.hasDiffuseG()) {
-          setDiffuseG(other.getDiffuseG());
-        }
-        if (other.hasDiffuseB()) {
-          setDiffuseB(other.getDiffuseB());
-        }
-        if (other.hasSpecularR()) {
-          setSpecularR(other.getSpecularR());
-        }
-        if (other.hasSpecularG()) {
-          setSpecularG(other.getSpecularG());
-        }
-        if (other.hasSpecularB()) {
-          setSpecularB(other.getSpecularB());
-        }
-        if (other.hasShininess()) {
-          setShininess(other.getShininess());
+        if (other.hasBaseColorB()) {
+          setBaseColorB(other.getBaseColorB());
         }
         if (textureLayerBuilder_ == null) {
           if (!other.textureLayer_.isEmpty()) {
             if (textureLayer_.isEmpty()) {
               textureLayer_ = other.textureLayer_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureTextureLayerIsMutable();
               textureLayer_.addAll(other.textureLayer_);
@@ -6135,7 +6877,7 @@ public final class FrontendPbf {
               textureLayerBuilder_.dispose();
               textureLayerBuilder_ = null;
               textureLayer_ = other.textureLayer_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00000008);
               textureLayerBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getTextureLayerFieldBuilder() : null;
@@ -6150,48 +6892,23 @@ public final class FrontendPbf {
         if (other.hasCastShadow()) {
           setCastShadow(other.getCastShadow());
         }
+        if (other.hasDoubleSided()) {
+          setDoubleSided(other.getDoubleSided());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasAmbientR()) {
+        if (!hasBaseColorR()) {
           
           return false;
         }
-        if (!hasAmbientG()) {
+        if (!hasBaseColorG()) {
           
           return false;
         }
-        if (!hasAmbientB()) {
-          
-          return false;
-        }
-        if (!hasDiffuseR()) {
-          
-          return false;
-        }
-        if (!hasDiffuseG()) {
-          
-          return false;
-        }
-        if (!hasDiffuseB()) {
-          
-          return false;
-        }
-        if (!hasSpecularR()) {
-          
-          return false;
-        }
-        if (!hasSpecularG()) {
-          
-          return false;
-        }
-        if (!hasSpecularB()) {
-          
-          return false;
-        }
-        if (!hasShininess()) {
+        if (!hasBaseColorB()) {
           
           return false;
         }
@@ -6223,322 +6940,98 @@ public final class FrontendPbf {
       }
       private int bitField0_;
 
-      private int ambientR_ ;
+      private int baseColorR_ ;
       /**
-       * <code>required uint32 ambientR = 1;</code>
+       * <code>required uint32 baseColorR = 1;</code>
        */
-      public boolean hasAmbientR() {
+      public boolean hasBaseColorR() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required uint32 ambientR = 1;</code>
+       * <code>required uint32 baseColorR = 1;</code>
        */
-      public int getAmbientR() {
-        return ambientR_;
+      public int getBaseColorR() {
+        return baseColorR_;
       }
       /**
-       * <code>required uint32 ambientR = 1;</code>
+       * <code>required uint32 baseColorR = 1;</code>
        */
-      public Builder setAmbientR(int value) {
+      public Builder setBaseColorR(int value) {
         bitField0_ |= 0x00000001;
-        ambientR_ = value;
+        baseColorR_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 ambientR = 1;</code>
+       * <code>required uint32 baseColorR = 1;</code>
        */
-      public Builder clearAmbientR() {
+      public Builder clearBaseColorR() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        ambientR_ = 0;
+        baseColorR_ = 0;
         onChanged();
         return this;
       }
 
-      private int ambientG_ ;
+      private int baseColorG_ ;
       /**
-       * <code>required uint32 ambientG = 2;</code>
+       * <code>required uint32 baseColorG = 2;</code>
        */
-      public boolean hasAmbientG() {
+      public boolean hasBaseColorG() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required uint32 ambientG = 2;</code>
+       * <code>required uint32 baseColorG = 2;</code>
        */
-      public int getAmbientG() {
-        return ambientG_;
+      public int getBaseColorG() {
+        return baseColorG_;
       }
       /**
-       * <code>required uint32 ambientG = 2;</code>
+       * <code>required uint32 baseColorG = 2;</code>
        */
-      public Builder setAmbientG(int value) {
+      public Builder setBaseColorG(int value) {
         bitField0_ |= 0x00000002;
-        ambientG_ = value;
+        baseColorG_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 ambientG = 2;</code>
+       * <code>required uint32 baseColorG = 2;</code>
        */
-      public Builder clearAmbientG() {
+      public Builder clearBaseColorG() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        ambientG_ = 0;
+        baseColorG_ = 0;
         onChanged();
         return this;
       }
 
-      private int ambientB_ ;
+      private int baseColorB_ ;
       /**
-       * <code>required uint32 ambientB = 3;</code>
+       * <code>required uint32 baseColorB = 3;</code>
        */
-      public boolean hasAmbientB() {
+      public boolean hasBaseColorB() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required uint32 ambientB = 3;</code>
+       * <code>required uint32 baseColorB = 3;</code>
        */
-      public int getAmbientB() {
-        return ambientB_;
+      public int getBaseColorB() {
+        return baseColorB_;
       }
       /**
-       * <code>required uint32 ambientB = 3;</code>
+       * <code>required uint32 baseColorB = 3;</code>
        */
-      public Builder setAmbientB(int value) {
+      public Builder setBaseColorB(int value) {
         bitField0_ |= 0x00000004;
-        ambientB_ = value;
+        baseColorB_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 ambientB = 3;</code>
+       * <code>required uint32 baseColorB = 3;</code>
        */
-      public Builder clearAmbientB() {
+      public Builder clearBaseColorB() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        ambientB_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int diffuseR_ ;
-      /**
-       * <code>required uint32 diffuseR = 4;</code>
-       */
-      public boolean hasDiffuseR() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>required uint32 diffuseR = 4;</code>
-       */
-      public int getDiffuseR() {
-        return diffuseR_;
-      }
-      /**
-       * <code>required uint32 diffuseR = 4;</code>
-       */
-      public Builder setDiffuseR(int value) {
-        bitField0_ |= 0x00000008;
-        diffuseR_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 diffuseR = 4;</code>
-       */
-      public Builder clearDiffuseR() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        diffuseR_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int diffuseG_ ;
-      /**
-       * <code>required uint32 diffuseG = 5;</code>
-       */
-      public boolean hasDiffuseG() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>required uint32 diffuseG = 5;</code>
-       */
-      public int getDiffuseG() {
-        return diffuseG_;
-      }
-      /**
-       * <code>required uint32 diffuseG = 5;</code>
-       */
-      public Builder setDiffuseG(int value) {
-        bitField0_ |= 0x00000010;
-        diffuseG_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 diffuseG = 5;</code>
-       */
-      public Builder clearDiffuseG() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        diffuseG_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int diffuseB_ ;
-      /**
-       * <code>required uint32 diffuseB = 6;</code>
-       */
-      public boolean hasDiffuseB() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
-      }
-      /**
-       * <code>required uint32 diffuseB = 6;</code>
-       */
-      public int getDiffuseB() {
-        return diffuseB_;
-      }
-      /**
-       * <code>required uint32 diffuseB = 6;</code>
-       */
-      public Builder setDiffuseB(int value) {
-        bitField0_ |= 0x00000020;
-        diffuseB_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 diffuseB = 6;</code>
-       */
-      public Builder clearDiffuseB() {
-        bitField0_ = (bitField0_ & ~0x00000020);
-        diffuseB_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int specularR_ ;
-      /**
-       * <code>required uint32 specularR = 7;</code>
-       */
-      public boolean hasSpecularR() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
-      }
-      /**
-       * <code>required uint32 specularR = 7;</code>
-       */
-      public int getSpecularR() {
-        return specularR_;
-      }
-      /**
-       * <code>required uint32 specularR = 7;</code>
-       */
-      public Builder setSpecularR(int value) {
-        bitField0_ |= 0x00000040;
-        specularR_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 specularR = 7;</code>
-       */
-      public Builder clearSpecularR() {
-        bitField0_ = (bitField0_ & ~0x00000040);
-        specularR_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int specularG_ ;
-      /**
-       * <code>required uint32 specularG = 8;</code>
-       */
-      public boolean hasSpecularG() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
-      }
-      /**
-       * <code>required uint32 specularG = 8;</code>
-       */
-      public int getSpecularG() {
-        return specularG_;
-      }
-      /**
-       * <code>required uint32 specularG = 8;</code>
-       */
-      public Builder setSpecularG(int value) {
-        bitField0_ |= 0x00000080;
-        specularG_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 specularG = 8;</code>
-       */
-      public Builder clearSpecularG() {
-        bitField0_ = (bitField0_ & ~0x00000080);
-        specularG_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int specularB_ ;
-      /**
-       * <code>required uint32 specularB = 9;</code>
-       */
-      public boolean hasSpecularB() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
-      }
-      /**
-       * <code>required uint32 specularB = 9;</code>
-       */
-      public int getSpecularB() {
-        return specularB_;
-      }
-      /**
-       * <code>required uint32 specularB = 9;</code>
-       */
-      public Builder setSpecularB(int value) {
-        bitField0_ |= 0x00000100;
-        specularB_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 specularB = 9;</code>
-       */
-      public Builder clearSpecularB() {
-        bitField0_ = (bitField0_ & ~0x00000100);
-        specularB_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int shininess_ ;
-      /**
-       * <code>required uint32 shininess = 10;</code>
-       */
-      public boolean hasShininess() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
-      }
-      /**
-       * <code>required uint32 shininess = 10;</code>
-       */
-      public int getShininess() {
-        return shininess_;
-      }
-      /**
-       * <code>required uint32 shininess = 10;</code>
-       */
-      public Builder setShininess(int value) {
-        bitField0_ |= 0x00000200;
-        shininess_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required uint32 shininess = 10;</code>
-       */
-      public Builder clearShininess() {
-        bitField0_ = (bitField0_ & ~0x00000200);
-        shininess_ = 0;
+        baseColorB_ = 0;
         onChanged();
         return this;
       }
@@ -6546,9 +7039,9 @@ public final class FrontendPbf {
       private java.util.List<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer> textureLayer_ =
         java.util.Collections.emptyList();
       private void ensureTextureLayerIsMutable() {
-        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           textureLayer_ = new java.util.ArrayList<org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer>(textureLayer_);
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -6742,7 +7235,7 @@ public final class FrontendPbf {
       public Builder clearTextureLayer() {
         if (textureLayerBuilder_ == null) {
           textureLayer_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           textureLayerBuilder_.clear();
@@ -6847,7 +7340,7 @@ public final class FrontendPbf {
           textureLayerBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Builder, org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayerOrBuilder>(
                   textureLayer_,
-                  ((bitField0_ & 0x00000400) == 0x00000400),
+                  ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
                   isClean());
           textureLayer_ = null;
@@ -6864,7 +7357,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public boolean hasTransparency() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional .frontend_pbf.Material.Transparency transparency = 16 [default = FALSE];</code>
@@ -6887,7 +7380,7 @@ public final class FrontendPbf {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00000010;
         transparency_ = value;
         onChanged();
         return this;
@@ -6900,7 +7393,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public Builder clearTransparency() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000010);
         transparency_ = org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency.FALSE;
         onChanged();
         return this;
@@ -6915,7 +7408,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public boolean hasCastShadow() {
-        return ((bitField0_ & 0x00001000) == 0x00001000);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
        * <code>optional bool castShadow = 17 [default = true];</code>
@@ -6935,7 +7428,7 @@ public final class FrontendPbf {
        * </pre>
        */
       public Builder setCastShadow(boolean value) {
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00000020;
         castShadow_ = value;
         onChanged();
         return this;
@@ -6948,8 +7441,64 @@ public final class FrontendPbf {
        * </pre>
        */
       public Builder clearCastShadow() {
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00000020);
         castShadow_ = true;
+        onChanged();
+        return this;
+      }
+
+      private boolean doubleSided_ ;
+      /**
+       * <code>optional bool doubleSided = 18 [default = false];</code>
+       *
+       * <pre>
+       * whether this material is double-sided.
+       * If true, backface culling should be disabled,
+       * and two-sided lighting should be enabled. 
+       * </pre>
+       */
+      public boolean hasDoubleSided() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool doubleSided = 18 [default = false];</code>
+       *
+       * <pre>
+       * whether this material is double-sided.
+       * If true, backface culling should be disabled,
+       * and two-sided lighting should be enabled. 
+       * </pre>
+       */
+      public boolean getDoubleSided() {
+        return doubleSided_;
+      }
+      /**
+       * <code>optional bool doubleSided = 18 [default = false];</code>
+       *
+       * <pre>
+       * whether this material is double-sided.
+       * If true, backface culling should be disabled,
+       * and two-sided lighting should be enabled. 
+       * </pre>
+       */
+      public Builder setDoubleSided(boolean value) {
+        bitField0_ |= 0x00000040;
+        doubleSided_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool doubleSided = 18 [default = false];</code>
+       *
+       * <pre>
+       * whether this material is double-sided.
+       * If true, backface culling should be disabled,
+       * and two-sided lighting should be enabled. 
+       * </pre>
+       */
+      public Builder clearDoubleSided() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        doubleSided_ = false;
         onChanged();
         return this;
       }
@@ -8827,7 +9376,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 upVectors = 4;</code>
      *
      * <pre>
-     * referencing vector3dBlock. Same length as path. 
+     * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
      * </pre>
      */
     java.util.List<java.lang.Long> getUpVectorsList();
@@ -8835,7 +9384,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 upVectors = 4;</code>
      *
      * <pre>
-     * referencing vector3dBlock. Same length as path. 
+     * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
      * </pre>
      */
     int getUpVectorsCount();
@@ -8843,7 +9392,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 upVectors = 4;</code>
      *
      * <pre>
-     * referencing vector3dBlock. Same length as path. 
+     * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
      * </pre>
      */
     long getUpVectors(int index);
@@ -8852,7 +9401,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 scaleFactors = 5;</code>
      *
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
      * </pre>
      */
     java.util.List<java.lang.Long> getScaleFactorsList();
@@ -8860,7 +9409,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 scaleFactors = 5;</code>
      *
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
      * </pre>
      */
     int getScaleFactorsCount();
@@ -8868,7 +9417,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 scaleFactors = 5;</code>
      *
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
      * </pre>
      */
     long getScaleFactors(int index);
@@ -9166,7 +9715,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 upVectors = 4;</code>
      *
      * <pre>
-     * referencing vector3dBlock. Same length as path. 
+     * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
      * </pre>
      */
     public java.util.List<java.lang.Long>
@@ -9177,7 +9726,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 upVectors = 4;</code>
      *
      * <pre>
-     * referencing vector3dBlock. Same length as path. 
+     * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
      * </pre>
      */
     public int getUpVectorsCount() {
@@ -9187,7 +9736,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 upVectors = 4;</code>
      *
      * <pre>
-     * referencing vector3dBlock. Same length as path. 
+     * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
      * </pre>
      */
     public long getUpVectors(int index) {
@@ -9200,7 +9749,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 scaleFactors = 5;</code>
      *
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
      * </pre>
      */
     public java.util.List<java.lang.Long>
@@ -9211,7 +9760,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 scaleFactors = 5;</code>
      *
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
      * </pre>
      */
     public int getScaleFactorsCount() {
@@ -9221,7 +9770,7 @@ public final class FrontendPbf {
      * <code>repeated uint64 scaleFactors = 5;</code>
      *
      * <pre>
-     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+     * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
      * </pre>
      */
     public long getScaleFactors(int index) {
@@ -9850,7 +10399,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public java.util.List<java.lang.Long>
@@ -9861,7 +10410,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public int getUpVectorsCount() {
@@ -9871,7 +10420,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public long getUpVectors(int index) {
@@ -9881,7 +10430,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public Builder setUpVectors(
@@ -9895,7 +10444,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public Builder addUpVectors(long value) {
@@ -9908,7 +10457,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public Builder addAllUpVectors(
@@ -9923,7 +10472,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 upVectors = 4;</code>
        *
        * <pre>
-       * referencing vector3dBlock. Same length as path. 
+       * referencing vector3dBlock. Same length as path. Can be omitted, defaults to z unit vector. 
        * </pre>
        */
       public Builder clearUpVectors() {
@@ -9944,7 +10493,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public java.util.List<java.lang.Long>
@@ -9955,7 +10504,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public int getScaleFactorsCount() {
@@ -9965,7 +10514,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public long getScaleFactors(int index) {
@@ -9975,7 +10524,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public Builder setScaleFactors(
@@ -9989,7 +10538,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public Builder addScaleFactors(long value) {
@@ -10002,7 +10551,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public Builder addAllScaleFactors(
@@ -10017,7 +10566,7 @@ public final class FrontendPbf {
        * <code>repeated uint64 scaleFactors = 5;</code>
        *
        * <pre>
-       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or sam length as path. 
+       * multiplicative factor, times 1000. Either omitted (if no scaling is applied) or same length as path. 
        * </pre>
        */
       public Builder clearScaleFactors() {
@@ -12889,6 +13438,40 @@ public final class FrontendPbf {
      */
     org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometryOrBuilder getInstanceGeometriesOrBuilder(
         int index);
+
+    /**
+     * <code>optional uint32 minLod = 6 [default = 0];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+     * </pre>
+     */
+    boolean hasMinLod();
+    /**
+     * <code>optional uint32 minLod = 6 [default = 0];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+     * </pre>
+     */
+    int getMinLod();
+
+    /**
+     * <code>optional uint32 maxLod = 7 [default = 4];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+     * </pre>
+     */
+    boolean hasMaxLod();
+    /**
+     * <code>optional uint32 maxLod = 7 [default = 4];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+     * </pre>
+     */
+    int getMaxLod();
   }
   /**
    * Protobuf type {@code frontend_pbf.WorldObject}
@@ -12979,6 +13562,16 @@ public final class FrontendPbf {
                 mutable_bitField0_ |= 0x00000010;
               }
               instanceGeometries_.add(input.readMessage(org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry.PARSER, extensionRegistry));
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000004;
+              minLod_ = input.readUInt32();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000008;
+              maxLod_ = input.readUInt32();
               break;
             }
           }
@@ -13272,12 +13865,60 @@ public final class FrontendPbf {
       return instanceGeometries_.get(index);
     }
 
+    public static final int MINLOD_FIELD_NUMBER = 6;
+    private int minLod_;
+    /**
+     * <code>optional uint32 minLod = 6 [default = 0];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+     * </pre>
+     */
+    public boolean hasMinLod() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional uint32 minLod = 6 [default = 0];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+     * </pre>
+     */
+    public int getMinLod() {
+      return minLod_;
+    }
+
+    public static final int MAXLOD_FIELD_NUMBER = 7;
+    private int maxLod_;
+    /**
+     * <code>optional uint32 maxLod = 7 [default = 4];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+     * </pre>
+     */
+    public boolean hasMaxLod() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional uint32 maxLod = 7 [default = 4];</code>
+     *
+     * <pre>
+     ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+     * </pre>
+     */
+    public int getMaxLod() {
+      return maxLod_;
+    }
+
     private void initFields() {
       osmId_ = "";
       typeName_ = 0;
       triangleGeometries_ = java.util.Collections.emptyList();
       extrusionGeometries_ = java.util.Collections.emptyList();
       instanceGeometries_ = java.util.Collections.emptyList();
+      minLod_ = 0;
+      maxLod_ = 4;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -13325,6 +13966,12 @@ public final class FrontendPbf {
       for (int i = 0; i < instanceGeometries_.size(); i++) {
         output.writeMessage(5, instanceGeometries_.get(i));
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeUInt32(6, minLod_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt32(7, maxLod_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -13353,6 +14000,14 @@ public final class FrontendPbf {
       for (int i = 0; i < instanceGeometries_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, instanceGeometries_.get(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(6, minLod_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(7, maxLod_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -13500,6 +14155,10 @@ public final class FrontendPbf {
         } else {
           instanceGeometriesBuilder_.clear();
         }
+        minLod_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        maxLod_ = 4;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -13563,6 +14222,14 @@ public final class FrontendPbf {
         } else {
           result.instanceGeometries_ = instanceGeometriesBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.minLod_ = minLod_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.maxLod_ = maxLod_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -13664,6 +14331,12 @@ public final class FrontendPbf {
               instanceGeometriesBuilder_.addAllMessages(other.instanceGeometries_);
             }
           }
+        }
+        if (other.hasMinLod()) {
+          setMinLod(other.getMinLod());
+        }
+        if (other.hasMaxLod()) {
+          setMaxLod(other.getMaxLod());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -14792,6 +15465,102 @@ public final class FrontendPbf {
           instanceGeometries_ = null;
         }
         return instanceGeometriesBuilder_;
+      }
+
+      private int minLod_ ;
+      /**
+       * <code>optional uint32 minLod = 6 [default = 0];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+       * </pre>
+       */
+      public boolean hasMinLod() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional uint32 minLod = 6 [default = 0];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+       * </pre>
+       */
+      public int getMinLod() {
+        return minLod_;
+      }
+      /**
+       * <code>optional uint32 minLod = 6 [default = 0];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+       * </pre>
+       */
+      public Builder setMinLod(int value) {
+        bitField0_ |= 0x00000020;
+        minLod_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 minLod = 6 [default = 0];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the lower end of the range where this is visible 
+       * </pre>
+       */
+      public Builder clearMinLod() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        minLod_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int maxLod_ = 4;
+      /**
+       * <code>optional uint32 maxLod = 7 [default = 4];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+       * </pre>
+       */
+      public boolean hasMaxLod() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional uint32 maxLod = 7 [default = 4];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+       * </pre>
+       */
+      public int getMaxLod() {
+        return maxLod_;
+      }
+      /**
+       * <code>optional uint32 maxLod = 7 [default = 4];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+       * </pre>
+       */
+      public Builder setMaxLod(int value) {
+        bitField0_ |= 0x00000040;
+        maxLod_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 maxLod = 7 [default = 4];</code>
+       *
+       * <pre>
+       ** defines a level of detail (0 to 4) as the upper end of the range where this is visible 
+       * </pre>
+       */
+      public Builder clearMaxLod() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        maxLod_ = 4;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:frontend_pbf.WorldObject)
@@ -16803,60 +17572,63 @@ public final class FrontendPbf {
       "pe\022\026\n\nparameters\030\002 \003(\022B\002\020\001\"2\n\tShapeType\022" +
       "\n\n\006CIRCLE\020\001\022\013\n\007POLYGON\020\002\022\014\n\010POLYLINE\020\003\":" +
       "\n\rMaterialBlock\022)\n\tmaterials\030\001 \003(\0132\026.fro" +
-      "ntend_pbf.Material\"\326\005\n\010Material\022\020\n\010ambie",
-      "ntR\030\001 \002(\r\022\020\n\010ambientG\030\002 \002(\r\022\020\n\010ambientB\030" +
-      "\003 \002(\r\022\020\n\010diffuseR\030\004 \002(\r\022\020\n\010diffuseG\030\005 \002(" +
-      "\r\022\020\n\010diffuseB\030\006 \002(\r\022\021\n\tspecularR\030\007 \002(\r\022\021" +
-      "\n\tspecularG\030\010 \002(\r\022\021\n\tspecularB\030\t \002(\r\022\021\n\t" +
-      "shininess\030\n \002(\r\0229\n\014textureLayer\030\013 \003(\0132#." +
-      "frontend_pbf.Material.TextureLayer\022@\n\014tr" +
-      "ansparency\030\020 \001(\0162#.frontend_pbf.Material" +
-      ".Transparency:\005FALSE\022\030\n\ncastShadow\030\021 \001(\010" +
-      ":\004true\032\311\002\n\014TextureLayer\022\022\n\ntextureURL\030\001 " +
-      "\002(\t\022>\n\004wrap\030\002 \001(\0162(.frontend_pbf.Materia",
-      "l.TextureLayer.Wrap:\006REPEAT\022\021\n\tcolorable" +
-      "\030\003 \002(\010\022\024\n\014textureWidth\030\004 \002(\r\022\025\n\rtextureH" +
-      "eight\030\005 \002(\r\022V\n\020texCoordFunction\030\006 \001(\01624." +
-      "frontend_pbf.Material.TextureLayer.TexCo" +
-      "ordFunction:\006CUSTOM\"\035\n\004Wrap\022\n\n\006REPEAT\020\001\022" +
-      "\t\n\005CLAMP\020\002\".\n\020TexCoordFunction\022\n\n\006CUSTOM" +
-      "\020\001\022\016\n\nGLOBAL_X_Z\020\002\"/\n\014Transparency\022\010\n\004TR" +
-      "UE\020\001\022\n\n\006BINARY\020\002\022\t\n\005FALSE\020\003\"7\n\nModelBloc" +
-      "k\022)\n\006models\030\001 \003(\0132\031.frontend_pbf.WorldOb" +
-      "ject\"Q\n\020TriangleGeometry\022\020\n\010material\030\001 \002",
-      "(\r\022\024\n\010vertices\030\002 \003(\004B\002\020\001\022\025\n\ttexCoords\030\003 " +
-      "\003(\004B\002\020\001\"\233\001\n\021ExtrusionGeometry\022\020\n\010materia" +
-      "l\030\001 \002(\r\022\r\n\005shape\030\002 \002(\r\022\014\n\004path\030\003 \003(\004\022\021\n\t" +
-      "upVectors\030\004 \003(\004\022\024\n\014scaleFactors\030\005 \003(\004\022\027\n" +
-      "\010startCap\030\007 \001(\010:\005false\022\025\n\006endCap\030\010 \001(\010:\005" +
-      "false\"\251\001\n\020InstanceGeometry\022\r\n\005model\030\001 \001(" +
-      "\r\022\032\n\022resourceIdentifier\030\005 \001(\t\022\024\n\010positio" +
-      "n\030\002 \003(\022B\002\020\001\022\025\n\tdirection\030\003 \003(\005B\002\020\001\022\021\n\005sc" +
-      "ale\030\004 \003(\rB\002\020\001\022*\n\tanimation\030\006 \001(\0132\027.front" +
-      "end_pbf.Animation\"\251\002\n\tAnimation\0223\n\004type\030",
-      "\001 \002(\0162%.frontend_pbf.Animation.Animation" +
-      "Type\0229\n\010loopMode\030\002 \001(\0162 .frontend_pbf.An" +
-      "imation.LoopMode:\005CYCLE\022@\n\ttimerType\030\003 \001" +
-      "(\0162!.frontend_pbf.Animation.TimerType:\nM" +
-      "ODEL_TIME\022\025\n\rrunsPerSecond\030\004 \002(\001\"\037\n\rAnim" +
-      "ationType\022\016\n\nROTATION_X\020\001\"\025\n\010LoopMode\022\t\n" +
-      "\005CYCLE\020\001\"\033\n\tTimerType\022\016\n\nMODEL_TIME\020\001\"\344\001" +
-      "\n\013WorldObject\022\r\n\005osmId\030\001 \001(\t\022\020\n\010typeName" +
-      "\030\002 \001(\r\022:\n\022triangleGeometries\030\003 \003(\0132\036.fro" +
-      "ntend_pbf.TriangleGeometry\022<\n\023extrusionG",
-      "eometries\030\004 \003(\0132\037.frontend_pbf.Extrusion" +
-      "Geometry\022:\n\022instanceGeometries\030\005 \003(\0132\036.f" +
-      "rontend_pbf.InstanceGeometry\"\332\002\n\004Tile\0222\n" +
-      "\rvector3dBlock\030\001 \002(\0132\033.frontend_pbf.Vect" +
-      "or3dBlock\0222\n\rvector2dBlock\030\002 \002(\0132\033.front" +
-      "end_pbf.Vector2dBlock\022.\n\013stringBlock\030\003 \002" +
-      "(\0132\031.frontend_pbf.StringBlock\022,\n\nshapeBl" +
-      "ock\030\004 \002(\0132\030.frontend_pbf.ShapeBlock\0222\n\rm" +
-      "aterialBlock\030\005 \002(\0132\033.frontend_pbf.Materi" +
-      "alBlock\022,\n\nmodelBlock\030\006 \002(\0132\030.frontend_p",
-      "bf.ModelBlock\022*\n\007objects\030\007 \003(\0132\031.fronten" +
-      "d_pbf.WorldObjectB5\n&org.osm2world.core." +
-      "target.frontend_pbfB\013FrontendPbf"
+      "ntend_pbf.Material\"\214\006\n\010Material\022\022\n\nbaseC",
+      "olorR\030\001 \002(\r\022\022\n\nbaseColorG\030\002 \002(\r\022\022\n\nbaseC" +
+      "olorB\030\003 \002(\r\0229\n\014textureLayer\030\013 \003(\0132#.fron" +
+      "tend_pbf.Material.TextureLayer\022@\n\014transp" +
+      "arency\030\020 \001(\0162#.frontend_pbf.Material.Tra" +
+      "nsparency:\005FALSE\022\030\n\ncastShadow\030\021 \001(\010:\004tr" +
+      "ue\022\032\n\013doubleSided\030\022 \001(\010:\005false\032\337\003\n\014Textu" +
+      "reLayer\022\033\n\023baseColorTextureURI\030\001 \001(\t\022\025\n\r" +
+      "ormTextureURI\030\007 \001(\t\022\030\n\020normalTextureURI\030" +
+      "\010 \001(\t\022\036\n\026displacementTextureURI\030\t \001(\t\022\032\n" +
+      "\022emissiveTextureURI\030\n \001(\t\022\036\n\026reflectivit",
+      "yTextureURI\030\013 \001(\t\022>\n\004wrap\030\002 \001(\0162(.fronte" +
+      "nd_pbf.Material.TextureLayer.Wrap:\006REPEA" +
+      "T\022\021\n\tcolorable\030\003 \002(\010\022\024\n\014textureWidth\030\004 \002" +
+      "(\r\022\025\n\rtextureHeight\030\005 \002(\r\022V\n\020texCoordFun" +
+      "ction\030\006 \001(\01624.frontend_pbf.Material.Text" +
+      "ureLayer.TexCoordFunction:\006CUSTOM\"\035\n\004Wra" +
+      "p\022\n\n\006REPEAT\020\001\022\t\n\005CLAMP\020\002\".\n\020TexCoordFunc" +
+      "tion\022\n\n\006CUSTOM\020\001\022\016\n\nGLOBAL_X_Z\020\002\"/\n\014Tran" +
+      "sparency\022\010\n\004TRUE\020\001\022\n\n\006BINARY\020\002\022\t\n\005FALSE\020" +
+      "\003\"7\n\nModelBlock\022)\n\006models\030\001 \003(\0132\031.fronte",
+      "nd_pbf.WorldObject\"Q\n\020TriangleGeometry\022\020" +
+      "\n\010material\030\001 \002(\r\022\024\n\010vertices\030\002 \003(\004B\002\020\001\022\025" +
+      "\n\ttexCoords\030\003 \003(\004B\002\020\001\"\233\001\n\021ExtrusionGeome" +
+      "try\022\020\n\010material\030\001 \002(\r\022\r\n\005shape\030\002 \002(\r\022\014\n\004" +
+      "path\030\003 \003(\004\022\021\n\tupVectors\030\004 \003(\004\022\024\n\014scaleFa" +
+      "ctors\030\005 \003(\004\022\027\n\010startCap\030\007 \001(\010:\005false\022\025\n\006" +
+      "endCap\030\010 \001(\010:\005false\"\251\001\n\020InstanceGeometry" +
+      "\022\r\n\005model\030\001 \001(\r\022\032\n\022resourceIdentifier\030\005 " +
+      "\001(\t\022\024\n\010position\030\002 \003(\022B\002\020\001\022\025\n\tdirection\030\003" +
+      " \003(\005B\002\020\001\022\021\n\005scale\030\004 \003(\rB\002\020\001\022*\n\tanimation",
+      "\030\006 \001(\0132\027.frontend_pbf.Animation\"\251\002\n\tAnim" +
+      "ation\0223\n\004type\030\001 \002(\0162%.frontend_pbf.Anima" +
+      "tion.AnimationType\0229\n\010loopMode\030\002 \001(\0162 .f" +
+      "rontend_pbf.Animation.LoopMode:\005CYCLE\022@\n" +
+      "\ttimerType\030\003 \001(\0162!.frontend_pbf.Animatio" +
+      "n.TimerType:\nMODEL_TIME\022\025\n\rrunsPerSecond" +
+      "\030\004 \002(\001\"\037\n\rAnimationType\022\016\n\nROTATION_X\020\001\"" +
+      "\025\n\010LoopMode\022\t\n\005CYCLE\020\001\"\033\n\tTimerType\022\016\n\nM" +
+      "ODEL_TIME\020\001\"\212\002\n\013WorldObject\022\r\n\005osmId\030\001 \001" +
+      "(\t\022\020\n\010typeName\030\002 \001(\r\022:\n\022triangleGeometri",
+      "es\030\003 \003(\0132\036.frontend_pbf.TriangleGeometry" +
+      "\022<\n\023extrusionGeometries\030\004 \003(\0132\037.frontend" +
+      "_pbf.ExtrusionGeometry\022:\n\022instanceGeomet" +
+      "ries\030\005 \003(\0132\036.frontend_pbf.InstanceGeomet" +
+      "ry\022\021\n\006minLod\030\006 \001(\r:\0010\022\021\n\006maxLod\030\007 \001(\r:\0014" +
+      "\"\332\002\n\004Tile\0222\n\rvector3dBlock\030\001 \002(\0132\033.front" +
+      "end_pbf.Vector3dBlock\0222\n\rvector2dBlock\030\002" +
+      " \002(\0132\033.frontend_pbf.Vector2dBlock\022.\n\013str" +
+      "ingBlock\030\003 \002(\0132\031.frontend_pbf.StringBloc" +
+      "k\022,\n\nshapeBlock\030\004 \002(\0132\030.frontend_pbf.Sha",
+      "peBlock\0222\n\rmaterialBlock\030\005 \002(\0132\033.fronten" +
+      "d_pbf.MaterialBlock\022,\n\nmodelBlock\030\006 \002(\0132" +
+      "\030.frontend_pbf.ModelBlock\022*\n\007objects\030\007 \003" +
+      "(\0132\031.frontend_pbf.WorldObjectB5\n&org.osm" +
+      "2world.core.target.frontend_pbfB\013Fronten" +
+      "dPbf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -16911,13 +17683,13 @@ public final class FrontendPbf {
     internal_static_frontend_pbf_Material_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_frontend_pbf_Material_descriptor,
-        new java.lang.String[] { "AmbientR", "AmbientG", "AmbientB", "DiffuseR", "DiffuseG", "DiffuseB", "SpecularR", "SpecularG", "SpecularB", "Shininess", "TextureLayer", "Transparency", "CastShadow", });
+        new java.lang.String[] { "BaseColorR", "BaseColorG", "BaseColorB", "TextureLayer", "Transparency", "CastShadow", "DoubleSided", });
     internal_static_frontend_pbf_Material_TextureLayer_descriptor =
       internal_static_frontend_pbf_Material_descriptor.getNestedTypes().get(0);
     internal_static_frontend_pbf_Material_TextureLayer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_frontend_pbf_Material_TextureLayer_descriptor,
-        new java.lang.String[] { "TextureURL", "Wrap", "Colorable", "TextureWidth", "TextureHeight", "TexCoordFunction", });
+        new java.lang.String[] { "BaseColorTextureURI", "OrmTextureURI", "NormalTextureURI", "DisplacementTextureURI", "EmissiveTextureURI", "ReflectivityTextureURI", "Wrap", "Colorable", "TextureWidth", "TextureHeight", "TexCoordFunction", });
     internal_static_frontend_pbf_ModelBlock_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_frontend_pbf_ModelBlock_fieldAccessorTable = new
@@ -16953,7 +17725,7 @@ public final class FrontendPbf {
     internal_static_frontend_pbf_WorldObject_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_frontend_pbf_WorldObject_descriptor,
-        new java.lang.String[] { "OsmId", "TypeName", "TriangleGeometries", "ExtrusionGeometries", "InstanceGeometries", });
+        new java.lang.String[] { "OsmId", "TypeName", "TriangleGeometries", "ExtrusionGeometries", "InstanceGeometries", "MinLod", "MaxLod", });
     internal_static_frontend_pbf_Tile_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_frontend_pbf_Tile_fieldAccessorTable = new

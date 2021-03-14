@@ -50,6 +50,7 @@ import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.ImageTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
@@ -537,14 +538,14 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	private final AxisAlignedRectangleXZ bbox;
 	private final MapProjection projection;
 
-	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<VectorXYZ>();
-	private final Block<VectorXZ> vector2dBlock = new VectorBlock<VectorXZ>();
-	private final Block<String> stringBlock = new SimpleBlock<String>();
-	private final Block<ShapeXZ> shapeBlock = new SimpleBlock<ShapeXZ>();
-	private final Block<Material> materialBlock = new SimpleBlock<Material>();
-	private final Block<Model> modelBlock = new SimpleBlock<Model>();
+	private final Block<VectorXYZ> vector3dBlock = new VectorBlock<>();
+	private final Block<VectorXZ> vector2dBlock = new VectorBlock<>();
+	private final Block<String> stringBlock = new SimpleBlock<>();
+	private final Block<ShapeXZ> shapeBlock = new SimpleBlock<>();
+	private final Block<Material> materialBlock = new SimpleBlock<>();
+	private final Block<Model> modelBlock = new SimpleBlock<>();
 
-	private final List<FrontendPbf.WorldObject> objects = new ArrayList<FrontendPbf.WorldObject>();
+	private final List<FrontendPbf.WorldObject> objects = new ArrayList<>();
 
 	private final List<PolygonShapeXZ> waterAreas = new ArrayList<>();
 
@@ -644,19 +645,9 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 		FrontendPbf.Material.Builder materialBuilder = FrontendPbf.Material.newBuilder();
 
-		// TODO replace ambient/diffuse/specular color and shininess with a single color
-		materialBuilder.setAmbientR(material.getColor().getRed() / 2);
-		materialBuilder.setAmbientG(material.getColor().getGreen() / 2);
-		materialBuilder.setAmbientB(material.getColor().getBlue() / 2);
-
-		materialBuilder.setDiffuseR(material.getColor().getRed() / 2);
-		materialBuilder.setDiffuseG(material.getColor().getGreen() / 2);
-		materialBuilder.setDiffuseB(material.getColor().getBlue() / 2);
-
-		materialBuilder.setSpecularR(0);
-		materialBuilder.setSpecularG(0);
-		materialBuilder.setSpecularB(0);
-		materialBuilder.setShininess(1);
+		materialBuilder.setBaseColorR(material.getColor().getRed());
+		materialBuilder.setBaseColorG(material.getColor().getGreen());
+		materialBuilder.setBaseColorB(material.getColor().getBlue());
 
 		switch (material.getTransparency()) {
 			case TRUE: materialBuilder.setTransparency(Transparency.TRUE); break;
@@ -669,10 +660,12 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 			materialBuilder.setCastShadow(false);
 		}
 
+		if (material.isDoubleSided()) {
+			materialBuilder.setDoubleSided(true);
+		}
+
 		for (org.osm2world.core.target.common.material.TextureLayer textureLayer : material.getTextureLayers()) {
-			if (textureLayer.textures().stream().allMatch(it -> it instanceof ImageTexture)) {
-				materialBuilder.addTextureLayer(convertTextureLayer(textureLayer));
-			}
+			materialBuilder.addTextureLayer(convertTextureLayer(textureLayer));
 		}
 
 		return materialBuilder.build();
@@ -681,14 +674,35 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	private TextureLayer convertTextureLayer(org.osm2world.core.target.common.material.TextureLayer textureLayer) {
 
-		//TODO other textures
-		ImageTexture baseColorTexture = (ImageTexture) textureLayer.baseColorTexture;
-
 		TextureLayer.Builder layerBuilder = TextureLayer.newBuilder();
 
-		layerBuilder.setTextureURL(TEXTURE_BASE_URL + baseColorTexture.getFile().getName());
+		TextureData baseColorTexture = textureLayer.baseColorTexture;
 
-		switch (baseColorTexture.wrap) {
+		if (baseColorTexture instanceof ImageTexture) {
+			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)baseColorTexture).getFile().getName());
+		} else {
+			layerBuilder.setBaseColorTextureURI(baseColorTexture.getDataUri());
+		}
+
+		if (textureLayer.ormTexture instanceof ImageTexture) {
+			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.ormTexture).getFile().getName());
+		} else if (textureLayer.ormTexture != null) {
+			layerBuilder.setBaseColorTextureURI(textureLayer.ormTexture.getDataUri());
+		}
+
+		if (textureLayer.normalTexture instanceof ImageTexture) {
+			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.normalTexture).getFile().getName());
+		} else if (textureLayer.normalTexture != null) {
+			layerBuilder.setBaseColorTextureURI(textureLayer.normalTexture.getDataUri());
+		}
+
+		if (textureLayer.displacementTexture instanceof ImageTexture) {
+			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.displacementTexture).getFile().getName());
+		} else if (textureLayer.displacementTexture != null) {
+			layerBuilder.setBaseColorTextureURI(textureLayer.displacementTexture.getDataUri());
+		}
+
+		switch (textureLayer.baseColorTexture.wrap) {
 			case CLAMP:
 			case CLAMP_TO_BORDER: layerBuilder.setWrap(Wrap.CLAMP); break;
 			case REPEAT: break; //default value – not setting it saves bandwidth in proto2
@@ -697,10 +711,10 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 		layerBuilder.setColorable(textureLayer.colorable);
 
-		layerBuilder.setTextureHeight((int)round(baseColorTexture.height * 1000));
-		layerBuilder.setTextureWidth((int)round(baseColorTexture.width * 1000));
+		layerBuilder.setTextureHeight((int)round(textureLayer.baseColorTexture.height * 1000));
+		layerBuilder.setTextureWidth((int)round(textureLayer.baseColorTexture.width * 1000));
 
-		if (baseColorTexture.coordFunction == GLOBAL_X_Z) {
+		if (textureLayer.baseColorTexture.coordFunction == GLOBAL_X_Z) {
 			//TODO: GLOBAL_X_Z could also be the module's default rather than a config setting
 			layerBuilder.setTexCoordFunction(TexCoordFunction.GLOBAL_X_Z);
 		}
