@@ -20,14 +20,16 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.Projection;
 
 /**
- * Base class for renderer that use vertex buffer objects (VBO) to speed up the process.
+ * Base class for renderer that use vertex buffer objects (VBO).
  *
  * If you don't need the renderer anymore, it's recommended to manually call
  * {@link #freeResources()} to delete the VBOs and other resources.
  */
-public abstract class JOGLRendererVBO extends JOGLRenderer {
+public abstract class JOGLRendererVBO {
 
 	protected static final boolean DOUBLE_PRECISION_RENDERING = false;
+
+	protected JOGLTextureManager textureManager;
 
 	/** VBOs with static, non-alphablended geometry for each material */
 	protected List<VBOData<?>> vbos = new ArrayList<VBOData<?>>();
@@ -57,6 +59,12 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	}
 
 	/**
+	 * Render all primitives. Transparent objects need to get sorted first back to front
+	 * relative to the given camera and projection.
+	 */
+	public abstract void render(final Camera camera, final Projection projection);
+
+	/**
 	 * returns the number of values for each vertex
 	 * in the vertex buffer layout appropriate for a given material.
 	 */
@@ -76,7 +84,7 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	}
 
 	JOGLRendererVBO(JOGLTextureManager textureManager) {
-		super(textureManager);
+		this.textureManager = textureManager;
 	}
 
 	/**
@@ -208,7 +216,13 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 	}
 
 	@Override
+	protected void finalize() {
+		freeResources();
+	}
+
 	public void freeResources() {
+
+		textureManager = null;
 
 		if (vbos != null) {
 			for (VBOData<?> vbo : vbos) {
@@ -216,8 +230,6 @@ public abstract class JOGLRendererVBO extends JOGLRenderer {
 			}
 			vbos = null;
 		}
-
-		super.freeResources();
 
 	}
 

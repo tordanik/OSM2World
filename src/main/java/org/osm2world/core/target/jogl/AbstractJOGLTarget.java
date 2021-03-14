@@ -34,7 +34,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget implements JOGL
 
 	protected PrimitiveBuffer primitiveBuffer;
 	protected List<NonAreaPrimitive> nonAreaPrimitives;
-	protected JOGLRenderer renderer;
+	protected JOGLRendererVBO renderer;
 	protected JOGLTextureManager textureManager;
 	protected JOGLRenderingParameters renderingParameters;
 	protected GlobalLightingParameters globalLightingParameters;

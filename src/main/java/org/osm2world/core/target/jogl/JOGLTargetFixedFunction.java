@@ -103,13 +103,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 		if (isFinished()) return;
 
-		if ("DisplayList".equals(config.getString("joglImplementation"))) {
-			renderer = new JOGLRendererDisplayList(
-					gl, textureManager, primitiveBuffer);
-		} else {
-			renderer = new JOGLRendererVBOFixedFunction(
-					gl, textureManager, primitiveBuffer);
-		}
+		renderer = new JOGLRendererVBOFixedFunction(gl, textureManager, primitiveBuffer);
 
 	}
 

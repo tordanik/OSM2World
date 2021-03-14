@@ -1,11 +1,8 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
-import static javax.media.opengl.GL.GL_FLOAT;
+import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2GL3.GL_DOUBLE;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.GL_NORMAL_ARRAY;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.GL_TEXTURE_COORD_ARRAY;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.GL_VERTEX_ARRAY;
+import static javax.media.opengl.fixedfunc.GLPointerFunc.*;
 import static org.osm2world.core.target.jogl.JOGLTargetFixedFunction.drawPrimitive;
 
 import java.nio.DoubleBuffer;
