@@ -270,7 +270,7 @@ public abstract class AbstractTarget implements Target {
 
 	private static final EnumSet<ExtrudeOption> DEFAULT_EXTRUDE_OPTIONS = EnumSet.noneOf(ExtrudeOption.class);
 
-	private static final List<VectorXYZ> scaleShapeVectors(List<VectorXYZ> vs, double scale) {
+	public static final List<VectorXYZ> scaleShapeVectors(List<VectorXYZ> vs, double scale) {
 
 		if (scale == 1) {
 
