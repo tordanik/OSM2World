@@ -32,14 +32,11 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.CAGUtil;
-import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
@@ -72,15 +69,9 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.PoolModule.Pool;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
 import org.osm2world.core.world.modules.TreeModule.Forest;
-import org.osm2world.core.world.modules.WaterModule.AreaFountain;
-import org.osm2world.core.world.modules.WaterModule.RiverJunction;
-import org.osm2world.core.world.modules.WaterModule.Water;
-import org.osm2world.core.world.modules.WaterModule.Waterway;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
@@ -89,9 +80,8 @@ import com.google.common.collect.Multimap;
 public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	/**
-	 * whether empty terrain should be faked as a big rectangle slightly below
-	 * other ground-level geometries. This reduces the number of triangles used
-	 * for empty terrain. Waterbodies are still subtracted from this rectangle.
+	 * whether empty terrain should be faked as a big rectangle slightly below other ground-level geometries.
+	 * This reduces the number of triangles used for empty terrain.
 	 */
 	private final boolean USE_FLOOR_PLATE = true;
 
@@ -547,8 +537,6 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	private final List<FrontendPbf.WorldObject> objects = new ArrayList<>();
 
-	private final List<PolygonShapeXZ> waterAreas = new ArrayList<>();
-
 	private WorldObjectBuilder currentObjectBuilder = new WorldObjectBuilder(null);
 
 	/**
@@ -739,33 +727,6 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	 */
 	private void finishCurrentObject() {
 
-		/* special handling for water areas */
-
-		if (USE_FLOOR_PLATE) {
-			if (isWater(currentObjectBuilder.worldObject)) {
-
-				try {
-
-					Collection<PolygonShapeXZ> outlines = ((TerrainBoundaryWorldObject) currentObjectBuilder.worldObject).getTerrainBoundariesXZ();
-
-					for (PolygonShapeXZ outline : outlines) {
-						if (outline.getVertexList().stream().anyMatch(v -> bbox.contains(v))
-								|| outline.intersects(bbox.polygonXZ())) {
-
-							waterAreas.add(outline);
-
-						}
-					}
-
-					return;
-
-				} catch (IllegalStateException e) {
-					e.printStackTrace();
-				}
-
-			}
-		}
-
 		/* check for reasons not to build the object */
 
 		boolean ignoreCurrentObject = currentObjectBuilder.isEmpty();
@@ -791,8 +752,6 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 			ignoreCurrentObject |= USE_FLOOR_PLATE
 					&& mapElement.getTags().contains(EMPTY_SURFACE_TAG);
 
-			ignoreCurrentObject |= USE_FLOOR_PLATE && isWater(currentObjectBuilder.worldObject);
-
 		}
 
 		/* build the current object */
@@ -804,39 +763,25 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	}
 
 	/**
-	 * implements the #USE_FLOOR_PLATE option
+	 * implements the {@link #USE_FLOOR_PLATE} option
 	 */
 	private FrontendPbf.WorldObject buildFloorPlate() throws InvalidGeometryException {
 
 		WorldObjectBuilder builder = new WorldObjectBuilder(null);
 
-		for (PolygonWithHolesXZ poly : CAGUtil.subtractPolygons(bbox.polygonXZ(), waterAreas)) {
+		Collection<TriangleXZ> triangles = bbox.getTriangulation();
 
-			List<TriangleXZ> triangles = TriangulationUtil.triangulate(poly);
+		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(triangles.size());
 
-			List<TriangleXYZ> trianglesXYZ = new ArrayList<TriangleXYZ>(triangles.size());
-
-			for (TriangleXZ triangle : triangles) {
-				trianglesXYZ.add(triangle.xyz(FLOOR_PLATE_Y));
-
-			}
-
-			builder.drawTriangles(TERRAIN_DEFAULT, trianglesXYZ,
-					triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
+		for (TriangleXZ triangle : triangles) {
+			trianglesXYZ.add(triangle.xyz(FLOOR_PLATE_Y));
 
 		}
 
+		builder.drawTriangles(TERRAIN_DEFAULT, trianglesXYZ,
+				triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
+
 		return builder.build();
-
-	}
-
-	private static final boolean isWater(WorldObject object) {
-
-		return object instanceof Water
-			|| object instanceof AreaFountain
-			|| object instanceof RiverJunction
-			|| object instanceof Waterway
-			|| object instanceof Pool;
 
 	}
 
