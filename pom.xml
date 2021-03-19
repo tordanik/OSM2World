@@ -92,11 +92,47 @@
 			<groupId>de.topobyte</groupId>
 			<artifactId>osm4j-core</artifactId>
 			<version>0.1.0</version>
+			<exclusions>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-object-procedure</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-object-function</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-long-function</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-long-procedure</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-iterator</artifactId>
+				</exclusion>
+		   	</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.topobyte</groupId>
 			<artifactId>osm4j-pbf</artifactId>
 			<version>0.1.1</version>
+			<exclusions>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-object-int-map</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-object-procedure</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>com.slimjars.trove4j</groupId>
+				    <artifactId>trove4j-advancing-iterator</artifactId>
+				</exclusion>
+            		</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.topobyte</groupId>
@@ -156,12 +192,20 @@
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-transcoder</artifactId>
 			<version>1.11</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-rasterizer</artifactId>
-			<version>1.11</version>
+			<exclusions>
+				<exclusion>
+				    <groupId>org.apache.xmlgraphics</groupId>
+				    <artifactId>batik-ext</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>xml-apis</groupId>
+				    <artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>org.apache.xmlgraphics</groupId>
+				    <artifactId>batik-constants</artifactId>
+				</exclusion>
+            		</exclusions>
 		</dependency>
 
 		<dependency>
