@@ -23,14 +23,12 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.awt.Color;
 import java.time.LocalTime;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -230,54 +228,15 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		/**
-		 * creates a grid of vertices as the geometry of the flag.
-		 * The grid is deformed to give the appearance of cloth.
-		 *
-		 * @return a pair consisting of the grid of vertices and the matching texture coordinates
-		 */
-		private static final Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> createFlagMesh(
-				VectorXYZ origin, double height, double width) {
-
-			int numCols = 120;
-			int numRows = max(2, (int)round(numCols * height/width));
-
-			VectorXYZ[][] result = new VectorXYZ[numCols][numRows];
-			Map<VectorXYZ, VectorXZ> texCoordMap = new HashMap<VectorXYZ, VectorXZ>(numCols * numRows);
-
-			for (int x = 0; x < numCols; x++) {
-				for (int y = 0; y < numRows; y++) {
-
-					double xRatio = x / (double)(numCols - 1);
-					double yRatio = y / (double)(numRows - 1);
-
-					result[x][y] = new VectorXYZ(
-							xRatio * width,
-							yRatio * -height,
-							0).add(origin);
-
-					// use a sinus function for basic wavyness
-					result[x][y] = result[x][y].add(0, 0,
-							sin(6 * xRatio) * 0.1);
-
-					// have the flag drop down the further it gets from the pole
-					result[x][y] = result[x][y].add(0, height * -0.2 * xRatio * sqrt(xRatio), 0);
-
-					// have the top of the flag drop backwards and down a bit
-					double factor = sqrt(xRatio) * max(0.7 - yRatio, 0);
-					result[x][y] = result[x][y].add(0,
-							factor * factor * -0.25 * height,
-							factor * factor * 0.35 * height);
-
-					texCoordMap.put(result[x][y], new VectorXZ(
-							xRatio,
-							yRatio));
-
-				}
+		static class FlagMesh {
+			VectorXYZ[][] vertices;
+			VectorXYZ[][] normals;
+			Map<VectorXYZ, VectorXZ> texCoordMap;
+			public FlagMesh(VectorXYZ[][] vertices, VectorXYZ[][] normals, Map<VectorXYZ, VectorXZ> texCoordMap) {
+				this.vertices = vertices;
+				this.normals = normals;
+				this.texCoordMap = texCoordMap;
 			}
-
-			return new AbstractMap.SimpleEntry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>>(result, texCoordMap);
-
 		}
 
 		static abstract class Flag {
@@ -313,25 +272,14 @@ public class StreetFurnitureModule extends AbstractModule {
 			 */
 			public void renderFlag(Target target, VectorXYZ origin, double height, double width) {
 
-				Entry<VectorXYZ[][], Map<VectorXYZ, VectorXZ>> flagMesh = createFlagMesh(origin, height, width);
-				VectorXYZ[][] mesh = flagMesh.getKey();
-				final Map<VectorXYZ, VectorXZ> texCoordMap = flagMesh.getValue();
+				FlagMesh flagMesh = createFlagMesh(origin, height, width);
+				VectorXYZ[][] mesh = flagMesh.vertices;
+				final Map<VectorXYZ, VectorXZ> texCoordMap = flagMesh.texCoordMap;
 
 				/* define a function that looks the texture coordinate up in the map  */
 
-				TexCoordFunction texCoordFunction = new TexCoordFunction() {
-					@Override public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
-
-						List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
-
-						for (VectorXYZ v : vs) {
-							result.add(texCoordMap.get(v));
-						}
-
-						return result;
-
-					}
-				};
+				TexCoordFunction texCoordFunction = (List<VectorXYZ> vs, TextureData textureData) ->
+					vs.stream().map(texCoordMap::get).collect(toList());
 
 				/* flip the mesh array in case of vertically striped flags */
 
@@ -351,10 +299,12 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				/* draw the mesh */
 
+				// TODO use the calculated normals
+
 				for (int row = 0; row < mesh[0].length - 1; row ++) {
 
-					List<VectorXYZ> vsFront = new ArrayList<VectorXYZ>(mesh.length * 2);
-					List<VectorXYZ> vsBack = new ArrayList<VectorXYZ>(mesh.length * 2);
+					List<VectorXYZ> vsFront = new ArrayList<>(mesh.length * 2);
+					List<VectorXYZ> vsBack = new ArrayList<>(mesh.length * 2);
 
 					for (int col = 0; col < mesh.length; col++) {
 
@@ -370,15 +320,107 @@ public class StreetFurnitureModule extends AbstractModule {
 					}
 
 					// determine which stripe we're in and pick the right material
-					int materialIndex = (int) floor(stripeMaterials.size() * (double)row / mesh[0].length);
+					int materialIndex = (int) floor(stripeMaterials.size() * (row + 0.5) / (mesh[0].length - 1));
 					Material material = stripeMaterials.get(materialIndex);
 
 					target.drawTriangleStrip(material, vsFront, texCoordLists(
 							vsFront, material, texCoordFunction));
-					target.drawTriangleStrip(material, vsBack, texCoordLists(
-							vsBack, material, texCoordFunction));
+
+					if (!material.isDoubleSided()) {
+						target.drawTriangleStrip(material, vsBack, texCoordLists(
+								vsBack, material, texCoordFunction));
+					}
 
 				}
+
+			}
+
+			/**
+			 * creates a grid of vertices as the geometry of the flag.
+			 * The grid is deformed to give the appearance of cloth.
+			 *
+			 * @return the grid of vertices, normals and the matching texture coordinates
+			 */
+			private final FlagMesh createFlagMesh(VectorXYZ origin, double height, double width) {
+
+				/* set the minimum columns and rows to achieve a reasonable "wavy cloth" appearance */
+
+				int minCols = 6;
+				int minRows = max(2, (int)round(minCols * height/width));
+
+				/* set the actual number of columns and rows so that they're a multiple of the number of stripes */
+
+				int stripeCols = verticalStripes ? stripeMaterials.size() : 1;
+				int stripeRows = verticalStripes ? 1 : stripeMaterials.size();
+
+				int numCols = stripeCols;
+				while (numCols < minCols) {
+					numCols += stripeCols;
+				}
+
+				int numRows = stripeRows;
+				while (numRows < minRows) {
+					numRows += stripeRows;
+				}
+
+				// number of vertices per row/column is 1 higher than number of rectangles
+				numCols += 1;
+				numRows += 1;
+
+				/* create the vertices and texture coordinates */
+
+				VectorXYZ[][] vertices = new VectorXYZ[numCols][numRows];
+				Map<VectorXYZ, VectorXZ> texCoordMap = new HashMap<>(numCols * numRows);
+
+				for (int x = 0; x < numCols; x++) {
+					for (int y = 0; y < numRows; y++) {
+
+						double xRatio = x / (double)(numCols - 1);
+						double yRatio = y / (double)(numRows - 1);
+
+						vertices[x][y] = new VectorXYZ(
+								xRatio * width,
+								yRatio * -height,
+								0).add(origin);
+
+						// use a sinus function for basic wavyness
+						vertices[x][y] = vertices[x][y].add(0, 0, sin(6 * xRatio) * 0.1);
+
+						// have the flag drop down the further it gets from the pole
+						vertices[x][y] = vertices[x][y].add(0, height * -0.2 * xRatio * sqrt(xRatio), 0);
+
+						// have the top of the flag drop backwards and down a bit
+						double factor = sqrt(xRatio) * max(0.7 - yRatio, 0);
+						vertices[x][y] = vertices[x][y].add(0,
+								factor * factor * -0.25 * height,
+								factor * factor * 0.35 * height);
+
+						texCoordMap.put(vertices[x][y], new VectorXZ(xRatio, yRatio));
+
+					}
+				}
+
+				/* create the normals based on the vertices */
+
+				VectorXYZ[][] normals = new VectorXYZ[numCols][numRows];
+
+				for (int x = 0; x < numCols; x++) {
+					for (int y = 0; y < numRows; y++) {
+
+						int colNext = min(x + 1, numCols - 1);
+						int colPrev = max(x - 1, 0);
+						int rowNext = min(y + 1, numRows - 1);
+						int rowPrev = max(y - 1, 0);
+
+						VectorXYZ colVec = vertices[x][rowNext].subtract(vertices[x][rowPrev]);
+						VectorXYZ rowVec = vertices[colNext][y].subtract(vertices[colPrev][y]);
+
+						normals[x][y] = colVec.cross(rowVec);
+
+					}
+				}
+
+				return new FlagMesh(vertices, normals, texCoordMap);
 
 			}
 
