@@ -1,7 +1,8 @@
 package org.osm2world.core.world.modules.common;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
+import static org.osm2world.core.world.modules.common.WorldModuleBillboardUtil.LeftRightBoth.*;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Transparency;
 
 /**
  * utility class for drawing billboards, particularly "cross tree" shapes
@@ -16,6 +18,10 @@ import org.osm2world.core.target.common.material.Material;
 public final class WorldModuleBillboardUtil {
 
 	private WorldModuleBillboardUtil() { }
+
+	enum LeftRightBoth {
+		LEFT, RIGHT, BOTH
+	}
 
 	/**
 	 * renders a "cross tree" shape.
@@ -28,6 +34,10 @@ public final class WorldModuleBillboardUtil {
 	public static final void renderCrosstree(Target target, Material material, VectorXYZ pos,
 			double width, double height, boolean mirroredTextures) {
 
+		/* With alpha blending, each billboard needs to consist of two halves,
+		 * separated at the billboards' line of intersection, to allow sorting of primitives. */
+		boolean centerSplit = material.getTransparency() == Transparency.TRUE;
+
 		double halfWidth = 0.5 * width;
 
 		VectorXYZ xPosBottom = pos.add(halfWidth, 0, 0);
@@ -35,127 +45,119 @@ public final class WorldModuleBillboardUtil {
 		VectorXYZ zPosBottom = pos.add(0, 0, halfWidth);
 		VectorXYZ zNegBottom = pos.add(0, 0, -halfWidth);
 
-		VectorXYZ xPosTop = xPosBottom.add(0, height, 0);
-		VectorXYZ xNegTop = xNegBottom.add(0, height, 0);
-		VectorXYZ zPosTop = zPosBottom.add(0, height, 0);
-		VectorXYZ zNegTop = zNegBottom.add(0, height, 0);
-		VectorXYZ posTop = pos.add(0, height, 0);
+		VectorXYZ xPosTop = xPosBottom.addY(height);
+		VectorXYZ xNegTop = xNegBottom.addY(height);
+		VectorXYZ zPosTop = zPosBottom.addY(height);
+		VectorXYZ zNegTop = zNegBottom.addY(height);
 
-		target.drawTriangleStrip(material, asList(
-				xNegTop, xNegBottom, posTop, pos),
-				buildBillboardTexCoordLists(false, mirroredTextures,
-						material.getTextureLayers().size()));
+		if (centerSplit) {
 
-		target.drawTriangleStrip(material, asList(
-				xPosBottom, xPosTop, pos, posTop),
-				buildBillboardTexCoordLists(true, mirroredTextures,
-						material.getTextureLayers().size()));
+			VectorXYZ posTop = pos.addY(height);
 
-		target.drawTriangleStrip(material, asList(
-				zNegTop, zNegBottom, posTop, pos),
-				buildBillboardTexCoordLists(false, mirroredTextures,
-						material.getTextureLayers().size()));
+			target.drawTriangleStrip(material, asList(xNegTop, xNegBottom, posTop, pos),
+					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
 
-		target.drawTriangleStrip(material, asList(
-				zPosBottom, zPosTop, pos, posTop),
-				buildBillboardTexCoordLists(true, mirroredTextures,
-						material.getTextureLayers().size()));
+			target.drawTriangleStrip(material, asList(xPosBottom, xPosTop, pos, posTop),
+					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
 
-		target.drawTriangleStrip(material, asList(
-				xPosTop, xPosBottom, posTop, pos),
-				buildBillboardTexCoordLists(false, mirroredTextures,
-						material.getTextureLayers().size()));
+			target.drawTriangleStrip(material, asList(zNegTop, zNegBottom, posTop, pos),
+					buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
 
-		target.drawTriangleStrip(material, asList(
-				xNegBottom, xNegTop, pos, posTop),
-				buildBillboardTexCoordLists(true, mirroredTextures,
-						material.getTextureLayers().size()));
+			target.drawTriangleStrip(material, asList(zPosBottom, zPosTop, pos, posTop),
+					buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
 
-		target.drawTriangleStrip(material, asList(
-				zPosTop, zPosBottom, posTop, pos),
-				buildBillboardTexCoordLists(false, mirroredTextures,
-						material.getTextureLayers().size()));
+			if (!material.isDoubleSided()) {
 
-		target.drawTriangleStrip(material, asList(
-				zNegBottom, zNegTop, pos, posTop),
-				buildBillboardTexCoordLists(true, mirroredTextures,
-						material.getTextureLayers().size()));
+				target.drawTriangleStrip(material, asList(xPosTop, xPosBottom, posTop, pos),
+						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
 
-	}
+				target.drawTriangleStrip(material, asList(xNegBottom, xNegTop, pos, posTop),
+						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
 
-	private static final List<List<VectorXZ>> buildBillboardTexCoordLists(
-			boolean right, boolean mirrored, int copies) {
+				target.drawTriangleStrip(material, asList(zPosTop, zPosBottom, posTop, pos),
+						buildBillboardTexCoordLists(LEFT, mirroredTextures, material.getTextureLayers().size()));
 
-		if (right) {
+				target.drawTriangleStrip(material, asList(zNegBottom, zNegTop, pos, posTop),
+						buildBillboardTexCoordLists(RIGHT, mirroredTextures, material.getTextureLayers().size()));
 
-			if (mirrored) {
-				if (copies <= 3) { return BILLBOARD_RIGHT_TEX_COORDS_MIRRORED_COPIES[copies]; }
-				else { return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED); }
-			} else {
-				if (copies <= 3) { return BILLBOARD_RIGHT_TEX_COORDS_COPIES[copies]; }
-				else { return nCopies(copies, BILLBOARD_RIGHT_TEX_COORDS); }
 			}
 
 		} else {
 
-			if (mirrored) {
-				if (copies <= 3) { return BILLBOARD_LEFT_TEX_COORDS_MIRRORED_COPIES[copies]; }
-				else { return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS_MIRRORED); }
-			} else {
-				if (copies <= 3) { return BILLBOARD_LEFT_TEX_COORDS_COPIES[copies]; }
-				else { return nCopies(copies, BILLBOARD_LEFT_TEX_COORDS); }
+			target.drawTriangleStrip(material, asList(xNegTop, xNegBottom, xPosTop, xPosBottom),
+					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+
+			target.drawTriangleStrip(material, asList(zNegTop, zNegBottom, zPosTop, zPosBottom),
+					buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+
+			if (!material.isDoubleSided()) {
+
+				target.drawTriangleStrip(material, asList(xPosTop, xPosBottom, xNegTop, xNegBottom),
+						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
+
+				target.drawTriangleStrip(material, asList(zPosTop, zPosBottom, zNegTop, zNegBottom),
+						buildBillboardTexCoordLists(BOTH, mirroredTextures, material.getTextureLayers().size()));
 			}
 
 		}
 
 	}
 
-	private static final List<VectorXZ> BILLBOARD_LEFT_TEX_COORDS = asList(
+	private static final List<List<VectorXZ>> buildBillboardTexCoordLists(
+			LeftRightBoth side, boolean mirrored, int copies) {
+
+		List<List<VectorXZ>> texCoordConstant;
+
+		if (side == RIGHT) {
+			if (mirrored) {
+				texCoordConstant = BILLBOARD_RIGHT_TEX_COORDS_MIRRORED;
+			} else {
+				texCoordConstant = BILLBOARD_RIGHT_TEX_COORDS;
+			}
+		} else if (side == LEFT) {
+			if (mirrored) {
+				texCoordConstant = BILLBOARD_LEFT_TEX_COORDS_MIRRORED;
+			} else {
+				texCoordConstant = BILLBOARD_LEFT_TEX_COORDS;
+			}
+		} else {
+			if (mirrored) {
+				texCoordConstant = BILLBOARD_BOTH_TEX_COORDS_MIRRORED;
+			} else {
+				texCoordConstant = BILLBOARD_BOTH_TEX_COORDS;
+			}
+		}
+
+		switch (copies) {
+		case 0: return emptyList();
+		case 1: return texCoordConstant;
+		default: return nCopies(copies, texCoordConstant.get(0));
+		}
+
+	}
+
+	private static final List<List<VectorXZ>> BILLBOARD_LEFT_TEX_COORDS = asList(asList(
 			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
-			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0));
+			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0)));
 
-	private static final List<VectorXZ> BILLBOARD_LEFT_TEX_COORDS_MIRRORED = asList(
+	private static final List<List<VectorXZ>> BILLBOARD_LEFT_TEX_COORDS_MIRRORED = asList(asList(
 			new VectorXZ(1, 1), VectorXZ.X_UNIT,
-			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0));
+			new VectorXZ(0.5, 1), new VectorXZ(0.5, 0)));
 
-	private static final List<VectorXZ> BILLBOARD_RIGHT_TEX_COORDS = asList(
+	private static final List<List<VectorXZ>> BILLBOARD_RIGHT_TEX_COORDS = asList(asList(
 			VectorXZ.X_UNIT, new VectorXZ(1, 1),
-			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
+			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1)));
 
-	private static final List<VectorXZ> BILLBOARD_RIGHT_TEX_COORDS_MIRRORED = asList(
+	private static final List<List<VectorXZ>> BILLBOARD_RIGHT_TEX_COORDS_MIRRORED = asList(asList(
 			VectorXZ.NULL_VECTOR, VectorXZ.Z_UNIT,
-			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1));
+			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1)));
 
-	@SuppressWarnings("unchecked")
-	private static final List<List<VectorXZ>>[] BILLBOARD_LEFT_TEX_COORDS_COPIES = new List[]{
-		nCopies(0, BILLBOARD_LEFT_TEX_COORDS),
-		nCopies(1, BILLBOARD_LEFT_TEX_COORDS),
-		nCopies(2, BILLBOARD_LEFT_TEX_COORDS),
-		nCopies(3, BILLBOARD_LEFT_TEX_COORDS)
-	};
+	private static final List<List<VectorXZ>> BILLBOARD_BOTH_TEX_COORDS = asList(asList(
+			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
+			new VectorXZ(1, 1), new VectorXZ(1, 0)));
 
-	@SuppressWarnings("unchecked")
-	private static final List<List<VectorXZ>>[] BILLBOARD_LEFT_TEX_COORDS_MIRRORED_COPIES = new List[]{
-		nCopies(0, BILLBOARD_LEFT_TEX_COORDS_MIRRORED),
-		nCopies(1, BILLBOARD_LEFT_TEX_COORDS_MIRRORED),
-		nCopies(2, BILLBOARD_LEFT_TEX_COORDS_MIRRORED),
-		nCopies(3, BILLBOARD_LEFT_TEX_COORDS_MIRRORED)
-	};
-
-	@SuppressWarnings("unchecked")
-	private static final List<List<VectorXZ>>[] BILLBOARD_RIGHT_TEX_COORDS_COPIES = new List[]{
-		nCopies(0, BILLBOARD_RIGHT_TEX_COORDS),
-		nCopies(1, BILLBOARD_RIGHT_TEX_COORDS),
-		nCopies(2, BILLBOARD_RIGHT_TEX_COORDS),
-		nCopies(3, BILLBOARD_RIGHT_TEX_COORDS)
-	};
-
-	@SuppressWarnings("unchecked")
-	private static final List<List<VectorXZ>>[] BILLBOARD_RIGHT_TEX_COORDS_MIRRORED_COPIES = new List[]{
-		nCopies(0, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED),
-		nCopies(1, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED),
-		nCopies(2, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED),
-		nCopies(3, BILLBOARD_RIGHT_TEX_COORDS_MIRRORED)
-	};
+	private static final List<List<VectorXZ>> BILLBOARD_BOTH_TEX_COORDS_MIRRORED = asList(asList(
+			new VectorXZ(1, 1), VectorXZ.X_UNIT,
+			new VectorXZ(1, 1), new VectorXZ(1, 0)));
 
 }
