@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang.StringUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -69,9 +70,24 @@ public class TextureLayer {
 
 	@Override
 	public String toString() {
-		return "TextureLayer [baseColorTexture=" + baseColorTexture + ", normalTexture=" + normalTexture
-				+ ", ormTexture=" + ormTexture + ", displacementTexture=" + displacementTexture
-				+ ", colorable=" + colorable + "]";
+
+		String[] textureNames = textures().stream().map(it -> it.toString()).toArray(String[]::new);
+
+		String commonPrefix = StringUtils.getCommonPrefix(textureNames);
+		int index = commonPrefix.lastIndexOf("_");
+
+		if (textureNames.length == 1) {
+			return textureNames[0].replaceAll("\\.(png|jpg|svg)", "");
+		} else if (index > 0) {
+			return commonPrefix.subSequence(0, index).toString();
+		} else {
+			return "TextureLayer [baseColorTexture=" + baseColorTexture
+					+ ", normalTexture=" + normalTexture
+					+ ", ormTexture=" + ormTexture
+					+ ", displacementTexture=" + displacementTexture
+					+ ", colorable=" + colorable + "]";
+		}
+
 	}
 
 	@Override

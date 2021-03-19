@@ -56,6 +56,16 @@ public class ConfMaterial extends Material {
 		this.textureLayers = textureLayers;
 	}
 
+	@Override
+	public String toString() {
+		String name = Materials.getUniqueName(this);
+		if (name != null) {
+			return name;
+		} else {
+			return super.toString();
+		}
+	}
+
 	/*
 	 * unlike ImmutableMaterial, this has no equals method.
 	 * It should not equal another material just because that one currently (!)

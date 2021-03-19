@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -205,10 +206,12 @@ public abstract class Material {
 
 	@Override
 	public String toString() {
-		return String.format("{%s, #%06x, a%3f, d%3f, s%3f, sh%d, %d tex, ",
-				interpolation, color.getRGB() & 0x00ffffff, textureLayers.size())
-				+ transparency + shadow + ambientOcclusion
-				+ "}";
+		String colorString = String.format(Locale.ROOT, "#%06x", color.getRGB() & 0x00ffffff);
+		if (textureLayers.isEmpty() || textureLayers.stream().anyMatch(it -> it.colorable)) {
+			return colorString + ", " + textureLayers;
+		} else {
+			return textureLayers.toString();
+		}
 	}
 
 	/*
