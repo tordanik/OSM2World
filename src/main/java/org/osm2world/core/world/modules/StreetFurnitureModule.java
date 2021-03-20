@@ -162,7 +162,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		return false;
 	}
 
-	static final class Flagpole extends NoOutlineNodeWorldObject {
+	public static final class Flagpole extends NoOutlineNodeWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -504,7 +504,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class AdvertisingColumn extends NoOutlineNodeWorldObject {
+	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject {
 
 		public AdvertisingColumn(MapNode node) {
 			super(node);
@@ -541,7 +541,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Billboard extends NoOutlineNodeWorldObject {
+	public static final class Billboard extends NoOutlineNodeWorldObject {
 
 		private final double width;
 		/** the height of the billboard itself, i.e. height minus minHeight */
@@ -671,7 +671,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Swing extends NoOutlineNodeWorldObject {
+	public static final class Swing extends NoOutlineNodeWorldObject {
 
 		public Swing(MapNode node) {
 			super(node);
@@ -784,7 +784,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 	}
 
-	private static final class Bench extends NoOutlineNodeWorldObject {
+	public static final class Bench extends NoOutlineNodeWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -884,7 +884,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	private static final class Table extends NoOutlineNodeWorldObject {
+	public static final class Table extends NoOutlineNodeWorldObject {
 
 		private final ConfMaterial defaultMaterial;
 
@@ -1016,7 +1016,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a summit cross or wayside cross
 	 */
-	private static final class Cross extends NoOutlineNodeWorldObject {
+	public static final class Cross extends NoOutlineNodeWorldObject {
 
 		public Cross(MapNode node) {
 			super(node);
@@ -1072,7 +1072,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a clock. Currently only clocks attached to walls are supported.
 	 */
-	private static final class Clock implements NodeWorldObject, Renderable {
+	public static final class Clock implements NodeWorldObject, Renderable {
 
 		private static final LocalTime TIME = LocalTime.parse("12:25");
 
@@ -1188,7 +1188,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class RecyclingContainer extends NoOutlineNodeWorldObject {
+	public static final class RecyclingContainer extends NoOutlineNodeWorldObject {
 
 		double directionAngle = parseDirection(node.getTags(), PI);
 		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1283,7 +1283,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class WasteBasket extends NoOutlineNodeWorldObject {
+	public static final class WasteBasket extends NoOutlineNodeWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -1383,7 +1383,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class GritBin extends NoOutlineNodeWorldObject {
+	public static final class GritBin extends NoOutlineNodeWorldObject {
 
 		public GritBin(MapNode node) {
 			super(node);
@@ -1442,7 +1442,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Phone extends NoOutlineNodeWorldObject {
+	public static final class Phone extends NoOutlineNodeWorldObject {
 
 		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 
@@ -1522,7 +1522,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class VendingMachineVice extends NoOutlineNodeWorldObject {
+	public static final class VendingMachineVice extends NoOutlineNodeWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1589,7 +1589,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class PostBox extends NoOutlineNodeWorldObject {
+	public static final class PostBox extends NoOutlineNodeWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1664,7 +1664,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class BusStop extends NoOutlineNodeWorldObject {
+	public static final class BusStop extends NoOutlineNodeWorldObject {
 
 		public BusStop(MapNode node) {
 			super(node);
@@ -1720,7 +1720,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	private static final class ParcelMachine extends NoOutlineNodeWorldObject {
+	public static final class ParcelMachine extends NoOutlineNodeWorldObject {
 
 		public ParcelMachine(MapNode node) {
 			super(node);
@@ -1797,7 +1797,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class FireHydrant extends NoOutlineNodeWorldObject {
+	public static final class FireHydrant extends NoOutlineNodeWorldObject {
 
 		public FireHydrant(MapNode node) {
 			super(node);
@@ -1834,7 +1834,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class StreetLamp extends NoOutlineNodeWorldObject {
+	public static final class StreetLamp extends NoOutlineNodeWorldObject {
 
 		public StreetLamp(MapNode node) {
 			super(node);
@@ -1908,7 +1908,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	private static final class Board extends NoOutlineNodeWorldObject {
+	public static final class Board extends NoOutlineNodeWorldObject {
 
 		public Board(MapNode node) {
 			super(node);

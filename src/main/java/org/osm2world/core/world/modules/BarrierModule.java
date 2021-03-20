@@ -239,7 +239,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class Wall extends ColoredWall {
+	public static class Wall extends ColoredWall {
 
 		private final static Material DEFAULT_MATERIAL = Materials.STONE;
 
@@ -281,7 +281,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class CityWall extends ColoredWall {
+	public static class CityWall extends ColoredWall {
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "city_wall");
 		}
@@ -290,7 +290,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class Hedge extends ColoredWall {
+	public static class Hedge extends ColoredWall {
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "hedge");
 		}
@@ -303,7 +303,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class Railing extends LinearBarrier {
+	public static class Railing extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE =
 				new AxisAlignedRectangleXZ(-0.5, -0.3, 0.5, 0);
@@ -374,7 +374,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class Balustrade extends LinearBarrier {
+	public static class Balustrade extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ BAR_SHAPE =
 				new AxisAlignedRectangleXZ(-0.5, -0.3, 0.5, 0);
@@ -445,7 +445,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class ChainLinkFence extends LinearBarrier {
+	public static class ChainLinkFence extends LinearBarrier {
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "fence")
@@ -495,7 +495,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class PoleFence extends LinearBarrier {
+	public static class PoleFence extends LinearBarrier {
 
 		private Material material;
 		protected float barWidth;
@@ -573,7 +573,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class TrellisWorkFence extends LinearBarrier {
+	public static class TrellisWorkFence extends LinearBarrier {
 
 		private static final SimpleClosedShapeXZ PLANK_SHAPE;
 
@@ -639,7 +639,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class CableBarrier extends PoleFence {
+	public static class CableBarrier extends PoleFence {
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "cable_barrier");
@@ -658,7 +658,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class HandRail extends PoleFence {
+	public static class HandRail extends PoleFence {
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "handrail");
@@ -678,7 +678,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class Guardrail extends LinearBarrier {
+	public static class Guardrail extends LinearBarrier {
 
 		private static final float DEFAULT_HEIGHT = 0.75f;
 
@@ -786,7 +786,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class JerseyBarrier extends LinearBarrier {
+	public static class JerseyBarrier extends LinearBarrier {
 
 		private static final float DEFAULT_HEIGHT = 1.145f;
 		private static final float DEFAULT_WIDTH = 0.82f;
@@ -841,7 +841,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class BollardRow extends PoleFence{
+	public static class BollardRow extends PoleFence{
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "bollard");
@@ -880,7 +880,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class ChainRow extends PoleFence{
+	public static class ChainRow extends PoleFence{
 
 		private static final Integer DEFAULT_NO_CHAIN_SEGMENTS = 8;
 
@@ -939,7 +939,7 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static class Bollard extends NoOutlineNodeWorldObject {
+	public static class Bollard extends NoOutlineNodeWorldObject {
 
 		private static final double DEFAULT_HEIGHT = 1;
 		private final double height;
@@ -969,7 +969,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	private static class Chain extends NoOutlineNodeWorldObject implements Renderable {
+	public static class Chain extends NoOutlineNodeWorldObject implements Renderable {
 
 		private static final double DEFAULT_HEIGHT = 1;
 		private final double height;

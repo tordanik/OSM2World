@@ -1,6 +1,7 @@
 package org.osm2world.core.target.frontend_pbf;
 
 import static java.lang.Math.round;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -70,8 +71,17 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.modules.BarrierModule.Bollard;
+import org.osm2world.core.world.modules.BarrierModule.BollardRow;
+import org.osm2world.core.world.modules.BarrierModule.HandRail;
+import org.osm2world.core.world.modules.BicycleParkingModule.BicycleStands;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
 import org.osm2world.core.world.modules.RailwayModule.Rail;
+import org.osm2world.core.world.modules.StreetFurnitureModule.Bench;
+import org.osm2world.core.world.modules.StreetFurnitureModule.GritBin;
+import org.osm2world.core.world.modules.StreetFurnitureModule.PostBox;
+import org.osm2world.core.world.modules.StreetFurnitureModule.VendingMachineVice;
+import org.osm2world.core.world.modules.StreetFurnitureModule.WasteBasket;
 import org.osm2world.core.world.modules.TreeModule.Forest;
 
 import com.google.common.collect.ComparisonChain;
@@ -87,6 +97,10 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	private final boolean USE_FLOOR_PLATE = true;
 
 	private final double FLOOR_PLATE_Y = -0.03;
+
+	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, BicycleStands.class,
+			WasteBasket.class, VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, Bollard.class,
+			BollardRow.class);
 
 	/**
 	 * a block containing all elements of a particular type.
@@ -498,6 +512,10 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 				}
 
 				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));
+
+				if (LOD_2_FEATURES.contains(worldObject.getClass())) {
+					objectBuilder.setMinLod(2);
+				}
 
 				if (worldObject instanceof Rail) {
 					if (currentExtrusionGeometries.isEmpty()) {

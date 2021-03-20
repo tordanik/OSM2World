@@ -12,7 +12,6 @@ import java.util.List;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -40,7 +39,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	private static final class BicycleStands extends AbstractAreaWorldObject {
+	public static final class BicycleStands extends AbstractAreaWorldObject {
 
 		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
