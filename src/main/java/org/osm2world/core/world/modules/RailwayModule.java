@@ -3,13 +3,17 @@ package org.osm2world.core.world.modules;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.core.target.common.material.Materials.RAIL_DEFAULT;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +22,12 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -92,11 +98,13 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			if (height == null) { height = SLEEPER_HEIGHT; }
 			if (length == null) { length = SLEEPER_LENGTH; }
-			if (width == null) {width = sleeperWidth; }
+			if (width == null) { width = sleeperWidth; }
 
-			target.drawBox(Materials.RAIL_SLEEPER_DEFAULT,
-					position, VectorXZ.fromAngle(direction),
-					height, width, length);
+			SimplePolygonShapeXZ box = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
+			box = box.rotatedCW(direction);
+
+			target.drawExtrudedShape(WOOD, box, asList(position, position.addY(height)),
+					nCopies(2, Z_UNIT), null, null, EnumSet.of(END_CAP));
 
 		}
 	}
@@ -121,7 +129,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	private class Rail extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
+	public class Rail extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
 
 		final double gaugeMeters;
 		final double railDist;
@@ -163,57 +171,64 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 		@Override
 		public void renderTo(Target target) {
+			renderTo(target, 3);
+		}
+
+		public void renderTo(Target target, int lod) {
 
 			/* draw ground */
 
 			List<VectorXYZ> groundVs = WorldModuleGeometryUtil.createTriangleStripBetween(
 					getOutline(false), getOutline(true));
 
-			target.drawTriangleStrip(Materials.RAIL_BALLAST_DEFAULT, groundVs,
-					texCoordLists(groundVs, Materials.RAIL_BALLAST_DEFAULT, GLOBAL_X_Z));
-
+			if (lod >= 4) {
+				// just render the ballast (sleepers will be rendered as separate geometry)
+				target.drawTriangleStrip(RAIL_BALLAST, groundVs,
+						texCoordLists(groundVs, RAIL_BALLAST, GLOBAL_X_Z));
+			} else {
+				// use a repeating texture containing ballast, sleepers and rails
+				target.drawTriangleStrip(RAILWAY, groundVs,
+						texCoordLists(groundVs, RAILWAY, STRIP_FIT_HEIGHT));
+			}
 
 			/* draw rails */
 
-			@SuppressWarnings("unchecked")
-			List<VectorXYZ>[] railLines = new List[2];
+			if (lod >= 3) {
 
-			railLines[0] = WorldModuleGeometryUtil.createLineBetween(
-					getOutline(false), getOutline(true),
-					(float) ((groundWidth - railDist) / groundWidth) / 2);
-
-			railLines[1] = WorldModuleGeometryUtil.createLineBetween(
-					getOutline(false), getOutline(true),
-					(float) (1 - ((groundWidth - railDist) / groundWidth) / 2));
-
-			for (List<VectorXYZ> railLine : railLines) {
-
-				target.drawExtrudedShape(RAIL_DEFAULT, RAIL_SHAPE, railLine,
-						nCopies(railLine.size(), Y_UNIT), null, null, null);
+				for (List<VectorXYZ> railLine : asList(
+						createLineBetween(getOutline(false), getOutline(true), ((groundWidth - railDist) / groundWidth) / 2),
+						createLineBetween(getOutline(false), getOutline(true), 1 - (groundWidth - railDist) / groundWidth / 2)
+				)) {
+					target.drawExtrudedShape(STEEL, RAIL_SHAPE, railLine,
+							nCopies(railLine.size(), Y_UNIT), null, null, null);
+				}
 
 			}
 
-
 			/* draw railway ties/sleepers */
 
-			List<VectorXYZ> sleeperPositions = equallyDistributePointsAlong(
-					SLEEPER_DISTANCE, false, getCenterline());
+			if (lod >= 4) {
 
-			for (VectorXYZ sleeperPosition : sleeperPositions) {
+				List<VectorXYZ> sleeperPositions = equallyDistributePointsAlong(
+						SLEEPER_DISTANCE, false, getCenterline());
 
-				SleeperModel sleeperModel = sleeperModelByWidth.get(sleeperWidth);
+				for (VectorXYZ sleeperPosition : sleeperPositions) {
 
-				if (target instanceof ModelTarget) {
+					SleeperModel sleeperModel = sleeperModelByWidth.get(sleeperWidth);
 
-					((ModelTarget)target).drawModel(sleeperModel,
-							sleeperPosition, segment.getDirection().angle(),
-							null, sleeperWidth, null);
+					if (target instanceof ModelTarget) {
 
-				} else {
+						((ModelTarget)target).drawModel(sleeperModel,
+								sleeperPosition, segment.getDirection().angle(),
+								null, sleeperWidth, null);
 
-					sleeperModel.render(target,
-							sleeperPosition, segment.getDirection().angle(),
-							null, sleeperWidth, null);
+					} else {
+
+						sleeperModel.render(target,
+								sleeperPosition, segment.getDirection().angle(),
+								null, sleeperWidth, null);
+
+					}
 
 				}
 
@@ -243,7 +258,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			List<VectorXYZ> vectors = getOutlinePolygon().getVertexLoop();
 
-			Material material = Materials.RAIL_BALLAST_DEFAULT;
+			Material material = Materials.RAIL_BALLAST;
 
 			target.drawConvexPolygon(material, vectors,
 					texCoordLists(vectors, material, GLOBAL_X_Z));

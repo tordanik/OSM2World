@@ -71,6 +71,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
+import org.osm2world.core.world.modules.RailwayModule.Rail;
 import org.osm2world.core.world.modules.TreeModule.Forest;
 
 import com.google.common.collect.ComparisonChain;
@@ -498,6 +499,14 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));
 
+				if (worldObject instanceof Rail) {
+					if (currentExtrusionGeometries.isEmpty()) {
+						objectBuilder.setMaxLod(2);
+					} else {
+						objectBuilder.setMinLod(3);
+					}
+				}
+
 			}
 
 			objectBuilder.addAllTriangleGeometries(triangleGeometries);
@@ -571,6 +580,14 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 		/* start a new object */
 
 		currentObjectBuilder = new WorldObjectBuilder(object);
+
+		/* give special treatment for railways (multiple levels of detail) */
+
+		if (object instanceof Rail) {
+			((Rail)object).renderTo(this, 2);
+			finishCurrentObject();
+			currentObjectBuilder = new WorldObjectBuilder(object);
+		}
 
 	}
 

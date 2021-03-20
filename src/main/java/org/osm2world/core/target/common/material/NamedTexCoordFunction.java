@@ -1,6 +1,10 @@
 package org.osm2world.core.target.common.material;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.util.Collections.max;
+import static java.util.Collections.min;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,10 +162,34 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 
 			double totalLength = 0;
 
-			if (this == STRIP_FIT) {
+			if (this == STRIP_FIT || textureData.widthPerEntity != null) {
 				for (int i = 0; i+1 < vs.size(); i++) {
 					totalLength += vs.get(i).distanceToXZ(vs.get(i+1));
 				}
+			}
+
+			/* calculate number of repetitions in each dimension */
+
+			double width, height;
+
+			if (this == STRIP_FIT) {
+				width = totalLength;
+			} else if (textureData.widthPerEntity != null) {
+				long entities = max(1, round(totalLength / textureData.widthPerEntity));
+				double textureRepeats = entities / (textureData.width / textureData.widthPerEntity);
+				width = totalLength / textureRepeats;
+			} else {
+				width = textureData.width;
+			}
+
+			if (textureData.heightPerEntity != null) {
+				List<Double> yValues = vs.stream().map(v -> v.y).collect(toList());
+				double totalHeight = max(yValues) - min(yValues);
+				long entities = max(1, round(totalHeight / textureData.heightPerEntity));
+				double textureRepeats = entities / (textureData.height / textureData.heightPerEntity);
+				height = totalHeight / textureRepeats;
+			} else {
+				height = textureData.height;
 			}
 
 			/* calculate texture coordinate list */
@@ -182,14 +210,10 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 
 				double s, t;
 
-				if (this != STRIP_FIT) {
-					s = accumulatedLength / textureData.width;
-				} else {
-					s = accumulatedLength / totalLength;
-				}
+				s = accumulatedLength / width;
 
 				if (this == STRIP_WALL) {
-					t = (i % 2 == 0) ? (v.distanceTo(vs.get(i+1))) / textureData.height : 0;
+					t = (i % 2 == 0) ? (v.distanceTo(vs.get(i+1))) / height : 0;
 				} else {
 					t = (i % 2 == 0) ? 1 : 0;
 				}

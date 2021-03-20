@@ -138,12 +138,10 @@ public final class Materials {
 	public static final ConfMaterial HANDRAIL_DEFAULT =
 		new ConfMaterial(Interpolation.FLAT, Color.LIGHT_GRAY);
 
-	public static final ConfMaterial RAIL_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, Color.LIGHT_GRAY);
-	public static final ConfMaterial RAIL_SLEEPER_DEFAULT =
-		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.2f, 0.2f));
-	public static final ConfMaterial RAIL_BALLAST_DEFAULT =
+	public static final ConfMaterial RAIL_BALLAST =
 		new ConfMaterial(Interpolation.SMOOTH, Color.DARK_GRAY);
+	public static final ConfMaterial RAILWAY =
+			new ConfMaterial(Interpolation.SMOOTH, Color.DARK_GRAY);
 
 	public static final ConfMaterial RUNWAY_CENTER_MARKING =
 			new ConfMaterial(Interpolation.FLAT, new Color(0.9f, 0.9f, 0.9f));
