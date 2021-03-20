@@ -1,7 +1,9 @@
 package org.osm2world.core.target.common;
 
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Collections.max;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -133,6 +135,24 @@ public abstract class AbstractTarget implements Target {
 
 		int last = path.size() - 1;
 		forwardVectors.add(path.get(last).subtract(path.get(last-1)).normalize());
+
+		/* if the shape is a circle, approximate it with a polygon */
+
+		if (shape instanceof CircleXZ) {
+
+			double desiredMinDetail = 0.03;
+			CircleXZ circle = (CircleXZ)shape;
+			double maxCircumference = max(scaleFactors) * 2 * circle.getRadius() * PI;
+			int numPoints = Integer.max(4, (int) ceil(maxCircumference / desiredMinDetail));
+
+			if (!options.contains(START_CAP) && !options.contains(END_CAP)) {
+				// if the ends aren't visible, it's a lot easier to fake roundness with smooth shading
+				numPoints = Integer.max(4, numPoints / 2);
+			}
+
+			shape = new SimplePolygonXZ(circle.getVertexList(numPoints));
+
+		}
 
 		/* extrude each ring of the shape */
 

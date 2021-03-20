@@ -1365,8 +1365,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXYZ innerBottomCenter = bottomCenter.addY(height * 0.05);
 			VectorXYZ topCenter = bottomCenter.addY(height);
 
-			CircleXZ outerRing = new CircleXZ(NULL_VECTOR, radius);
-
+			SimplePolygonXZ outerRing = asSimplePolygon(new CircleXZ(NULL_VECTOR, radius));
 			SimplePolygonXZ innerRing = asSimplePolygon(new CircleXZ(NULL_VECTOR, radius * 0.95));
 			innerRing = innerRing.reverse();
 
@@ -1868,12 +1867,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			/* draw pole */
-			target.drawColumn(material, null,
-					getBase(),
-					0.5, 0.16, 0.08, false, false);
-			target.drawColumn(material, null,
-					getBase().addY(0.5),
-					poleHeight, 0.08, 0.08, false, false);
+
+			target.drawExtrudedShape(material, new CircleXZ(NULL_VECTOR, 1),
+					asList(getBase(), getBase().addY(0.5), getBase().addY(0.5 + poleHeight)),
+					null, asList(0.16, 0.08, 0.08), null, null);
 
 			if (target instanceof AttachmentSurface.Builder) return;
 
