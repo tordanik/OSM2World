@@ -5,7 +5,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.math3.util.MathUtils.TWO_PI;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
@@ -805,7 +804,7 @@ public class IndoorWall implements Renderable {
 					path.add(bottom);
 					path.add(top);
 
-					target.drawExtrudedShape(defaultInnerMaterial, polygon, path, nCopies(2, Z_UNIT), null, null, null);
+					target.drawExtrudedShape(defaultInnerMaterial, polygon, path, null, null, null, null);
 
 					target.drawTriangles(defaultInnerMaterial, trianglesXYZBottom,
 							triangleTexCoordLists(trianglesXYZBottom, Materials.BRICK, GLOBAL_X_Z));

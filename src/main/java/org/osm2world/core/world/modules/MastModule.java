@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -54,7 +54,7 @@ public class MastModule extends AbstractModule {
 			double radiusTop = radiusBottom * 0.8;
 
 			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, 1), asList(getBase(), getBase().addY(height)),
-					nCopies(2, Z_UNIT), asList(radiusBottom, radiusTop), null, EnumSet.of(END_CAP));
+					null, asList(radiusBottom, radiusTop), null, EnumSet.of(END_CAP));
 
 			//TODO: proper ModelTarget/instancing support
 

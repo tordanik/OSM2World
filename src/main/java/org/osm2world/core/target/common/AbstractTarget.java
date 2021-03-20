@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -88,8 +89,9 @@ public abstract class AbstractTarget implements Target {
 			throw new IllegalArgumentException("path and scaleFactors must have same size");
 		}
 
-		if (upVectors == null) {
-			throw new NullPointerException("upVectors must not be null");
+		if (upVectors == null && !IntStream.range(0, path.size() - 1).allMatch(
+				i -> path.get(i + 1).distanceToXZ(path.get(i)) < 1e-3)) {
+			throw new NullPointerException("upVectors must not be null for non-vertical paths");
 		}
 
 		if (texCoordLists != null) {
@@ -104,6 +106,10 @@ public abstract class AbstractTarget implements Target {
 
 		if (scaleFactors == null) {
 			scaleFactors = nCopies(path.size(), DEFAULT_SCALE_FACTOR);
+		}
+
+		if (upVectors == null) {
+			upVectors = nCopies(path.size(), Z_UNIT);
 		}
 
 		if (options == null) {
@@ -358,7 +364,7 @@ public abstract class AbstractTarget implements Target {
 		if (drawTop) { options.add(END_CAP); }
 
 		drawExtrudedShape(material, bottomShape, asList(base, base.addY(height)),
-				nCopies(2, Z_UNIT), asList(1.0, radiusTop/radiusBottom), null, options);
+				null, asList(1.0, radiusTop/radiusBottom), null, options);
 
 	}
 

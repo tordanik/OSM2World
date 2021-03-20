@@ -3,7 +3,7 @@ package org.osm2world.core.world.modules;
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -104,7 +104,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 			box = box.rotatedCW(direction);
 
 			target.drawExtrudedShape(WOOD, box, asList(position, position.addY(height)),
-					nCopies(2, Z_UNIT), null, null, EnumSet.of(END_CAP));
+					null, null, null, EnumSet.of(END_CAP));
 
 		}
 	}

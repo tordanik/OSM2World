@@ -95,8 +95,9 @@ public interface Target {
 	 *                        this also defines a rotation for the shape at each point.
 	 *                        Must have at least two points; != null.
 	 * @param  upVectors      defines the rotation (along with the path) at each point.
-	 *                        Must have the same number of elements as path; != null.
-	 *                        You can use {@link Collections#nCopies(int, Object)}
+	 *                        Must have the same number of elements as path.
+	 *                        You can use {@link Collections#nCopies(int, Object)}.
+	 *                        Can be null if the path is vertical (defaults to z unit vector).
 	 *                        if you want the same up vector for all points of the path.
 	 * @param  scaleFactors   optionally allows the shape to be scaled at each point.
 	 *                        Must have the same number of elements as path.

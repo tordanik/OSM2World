@@ -2,7 +2,6 @@ package org.osm2world.core.world.modules.building.indoor;
 
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
@@ -95,7 +94,7 @@ public class Ceiling {
         path.add(top);
 
         for (ShapeXZ side : sides) {
-            target.drawExtrudedShape(material, side, path, nCopies(2, Z_UNIT), null, null, null);
+            target.drawExtrudedShape(material, side, path, null, null, null, null);
         }
     }
 }

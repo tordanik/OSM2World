@@ -5,7 +5,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,7 +87,7 @@ abstract public class SpindleRoof extends Roof {
 		/* render the roof using shape extrusion */
 
 		target.drawExtrudedShape(material, spindleShape, path,
-				nCopies(path.size(), Z_UNIT), scaleFactors,
+				null, scaleFactors,
 				spindleTexCoordLists(path, spindleShape.getVertexList().size(),
 						polygon.getOutlineLength(), material),
 				null);

@@ -3,9 +3,7 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
@@ -247,7 +245,7 @@ public class BridgeModule extends AbstractModule {
 			// TODO: start pillar at ground instead of just x meters below the bridge
 			VectorXYZ base = top.y(max(top.y-20, -3));
 			target.drawExtrudedShape(material, crossSection,
-					asList(base, top), nCopies(2, Z_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
+					asList(base, top), null, null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
 		}
 

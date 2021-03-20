@@ -1373,10 +1373,10 @@ public class StreetFurnitureModule extends AbstractModule {
 			PolygonWithHolesXZ upperDonut = new PolygonWithHolesXZ(asSimplePolygon(outerRing), singletonList(innerRing));
 
 			target.drawExtrudedShape(material, outerRing, asList(bottomCenter, topCenter),
-					nCopies(2, Z_UNIT), null, null, EnumSet.of(START_CAP));
+					null, null, null, EnumSet.of(START_CAP));
 
 			target.drawExtrudedShape(material, innerRing, asList(topCenter, innerBottomCenter),
-					nCopies(2, Z_UNIT), null, null, EnumSet.of(END_CAP));
+					null, null, null, EnumSet.of(END_CAP));
 
 			triangulate(upperDonut).forEach(it -> target.drawShape(material, it, topCenter, Y_UNIT, Z_UNIT, 1));
 
