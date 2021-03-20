@@ -419,8 +419,10 @@ public class SportsModule extends AbstractModule {
 				target.drawTriangleStrip(TENNIS_NET, verticesNet,
 						texCoordLists(verticesNet, TENNIS_NET, STRIP_FIT_HEIGHT));
 
-				target.drawTriangleStrip(TENNIS_NET, verticesNetBack,
-						texCoordLists(verticesNetBack, TENNIS_NET, STRIP_FIT_HEIGHT));
+				if (!TENNIS_NET.isDoubleSided()) {
+					target.drawTriangleStrip(TENNIS_NET, verticesNetBack,
+							texCoordLists(verticesNetBack, TENNIS_NET, STRIP_FIT_HEIGHT));
+				}
 
 			}
 

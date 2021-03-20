@@ -626,29 +626,19 @@ public final class PowerModule extends AbstractModule {
 			return height;
 		}
 
-		private VectorXZ[][] getCorners(VectorXZ center, double diameter) {
+		private VectorXZ[] getCorners(VectorXZ center, double diameter) {
 			double half = diameter/2;
 			VectorXZ ortho = direction.rightNormal();
 
-			VectorXZ right_in = center.add(direction.mult(half));
-			VectorXZ left_in = center.add(direction.mult(-half));
-			VectorXZ right_out = center.add(direction.mult(half));
-			VectorXZ left_out = center.add(direction.mult(-half));
+			VectorXZ right = center.add(direction.mult(half));
+			VectorXZ left = center.add(direction.mult(-half));
 
-			// TODO: if we can switch off backface culling we'd only need one face here
-			return new VectorXZ[][]{
-					new VectorXZ[]{
-							right_in.add(ortho.mult(-half)),
-							right_in.add(ortho.mult(half)),
-							left_in.add(ortho.mult(half)),
-							left_in.add(ortho.mult(-half))
-					},
-					new VectorXZ[]{
-							right_out.add(ortho.mult(half)),
-							right_out.add(ortho.mult(-half)),
-							left_out.add(ortho.mult(-half)),
-							left_out.add(ortho.mult(half))
-					}};
+			return new VectorXZ[] {
+					right.add(ortho.mult(-half)),
+					right.add(ortho.mult(half)),
+					left.add(ortho.mult(half)),
+					left.add(ortho.mult(-half))
+			};
 		}
 
 		private void drawSegment(Target target,
@@ -695,7 +685,7 @@ public final class PowerModule extends AbstractModule {
 			target.drawTriangleStrip(Materials.POWER_TOWER_HORIZONTAL, vs, texList);
 		}
 
-		private void drawHorizontalTop(Target target, VectorXZ[][] points,
+		private void drawHorizontalTop(Target target, VectorXZ[] frontPoints, VectorXZ[] backPoints,
 				double base, double border, double middle, double center) {
 
 			double[] height = new double[]{border, middle, center, center, middle, border};
@@ -709,8 +699,8 @@ public final class PowerModule extends AbstractModule {
 						nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
 
 				for (int i = 0; i < 2; i++) {
-					vs.add(points[1][a+i].xyz(base + height[a+i]));
-					vs.add(points[2][a+i].xyz(base + height[a+i]));
+					vs.add(frontPoints[a+i].xyz(base + height[a+i]));
+					vs.add(backPoints[a+i].xyz(base + height[a+i]));
 					tex.add(new VectorXZ(0, i));
 					tex.add(new VectorXZ(1, i));
 				}
@@ -728,11 +718,10 @@ public final class PowerModule extends AbstractModule {
 				double bottom = ground_size + i * (top_size - ground_size) / nr_segments;
 				double top = ground_size + (i + 1) * (top_size - ground_size) / nr_segments;
 
-				VectorXZ[][] low = getCorners(node.getPos(), bottom);
-				VectorXZ[][] high = getCorners(node.getPos(), top);
+				VectorXZ[] low = getCorners(node.getPos(), bottom);
+				VectorXZ[] high = getCorners(node.getPos(), top);
 
-				drawSegment(target, low[0], high[0], elevation, elevation + segment_height);
-				drawSegment(target, low[1], high[1], elevation, elevation + segment_height);
+				drawSegment(target, low, high, elevation, elevation + segment_height);
 
 				elevation += segment_height;
 			}
@@ -757,25 +746,20 @@ public final class PowerModule extends AbstractModule {
 				double diameter, double width) {
 
 			double half = diameter / 2;
-			VectorXZ ortho = direction.rightNormal();
+			VectorXZ ortho = direction.rightNormal().invert();
 
-			// TODO: if we can switch off backface culling we'd only need one face here
-			VectorXZ[][] draw = new VectorXZ[][] {
-					getPoleCoordinates(node.getPos().add(direction.mult(-half)), ortho, width, half),
-					getPoleCoordinates(node.getPos().add(direction.mult(-half)), ortho.invert(), width, half),
-					getPoleCoordinates(node.getPos().add(direction.mult(half)), ortho.invert(), width, half),
-					getPoleCoordinates(node.getPos().add(direction.mult(half)), ortho, width, half)
-			};
+			VectorXZ[] frontPoints = getPoleCoordinates(node.getPos().add(direction.mult(half)), ortho, width, half);
+			VectorXZ[] backPoints = getPoleCoordinates(node.getPos().add(direction.mult(-half)), ortho, width, half);
 
-			for (int i = 0; i < 4; i++) {
-				drawHorizontalSegment(target, draw[i][0], draw[i][1], elevation, 0.1, diameter/2);
-				drawHorizontalSegment(target, draw[i][1], draw[i][2], elevation, diameter/2, diameter);
-				drawHorizontalSegment(target, draw[i][2], draw[i][3], elevation, diameter, diameter);
-				drawHorizontalSegment(target, draw[i][3], draw[i][4], elevation, diameter, diameter/2);
-				drawHorizontalSegment(target, draw[i][4], draw[i][5], elevation, diameter/2, 0.1);
+			for (VectorXZ[] points : asList(frontPoints, backPoints)) {
+				drawHorizontalSegment(target, points[0], points[1], elevation, 0.1, diameter/2);
+				drawHorizontalSegment(target, points[1], points[2], elevation, diameter/2, diameter);
+				drawHorizontalSegment(target, points[2], points[3], elevation, diameter, diameter);
+				drawHorizontalSegment(target, points[3], points[4], elevation, diameter, diameter/2);
+				drawHorizontalSegment(target, points[4], points[5], elevation, diameter/2, 0.1);
 			}
 
-			drawHorizontalTop(target, draw, elevation, 0.1, diameter/2, diameter);
+			drawHorizontalTop(target, frontPoints, backPoints, elevation, 0.1, diameter/2, diameter);
 		}
 
 		// TODO we're missing the ceramics to hold the power lines

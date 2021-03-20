@@ -464,21 +464,19 @@ public class BarrierModule extends AbstractModule {
 			List<VectorXYZ> pointsWithEle = getCenterline();
 
 			List<VectorXYZ> vsFence = createVerticalTriangleStrip(pointsWithEle, 0, height);
-			List<List<VectorXZ>> texCoordListsFence = texCoordLists(vsFence, CHAIN_LINK_FENCE, STRIP_WALL);
+			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence,
+					texCoordLists(vsFence, CHAIN_LINK_FENCE, STRIP_WALL));
 
-			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFence, texCoordListsFence);
+			if (!CHAIN_LINK_FENCE.isDoubleSided()) {
 
-			List<VectorXYZ> pointsWithEleBack =
-					new ArrayList<VectorXYZ>(pointsWithEle);
-			Collections.reverse(pointsWithEleBack);
+				List<VectorXYZ> pointsWithEleBack = new ArrayList<>(pointsWithEle);
+				Collections.reverse(pointsWithEleBack);
 
-			List<VectorXYZ> vsFenceBack = createVerticalTriangleStrip(
-					pointsWithEleBack, 0, height);
-			List<List<VectorXZ>> texCoordListsFenceBack = texCoordLists(
-					vsFenceBack, CHAIN_LINK_FENCE, STRIP_WALL);
+				List<VectorXYZ> vsFenceBack = createVerticalTriangleStrip(pointsWithEleBack, 0, height);
+				target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
+						texCoordLists(vsFenceBack, CHAIN_LINK_FENCE, STRIP_WALL));
 
-			target.drawTriangleStrip(CHAIN_LINK_FENCE, vsFenceBack,
-					texCoordListsFenceBack);
+			}
 
 			/* render poles */
 
