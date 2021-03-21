@@ -7,9 +7,10 @@ import java.io.IOException;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
 
 import com.jogamp.opengl.util.awt.ImageUtil;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * a texture with metadata necessary for calculating tile coordinates.
