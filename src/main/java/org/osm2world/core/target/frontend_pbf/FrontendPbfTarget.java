@@ -708,21 +708,21 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 		}
 
 		if (textureLayer.ormTexture instanceof ImageTexture) {
-			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.ormTexture).getFile().getName());
+			layerBuilder.setOrmTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.ormTexture).getFile().getName());
 		} else if (textureLayer.ormTexture != null) {
-			layerBuilder.setBaseColorTextureURI(textureLayer.ormTexture.getDataUri());
+			layerBuilder.setOrmTextureURI(textureLayer.ormTexture.getDataUri());
 		}
 
 		if (textureLayer.normalTexture instanceof ImageTexture) {
-			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.normalTexture).getFile().getName());
+			layerBuilder.setNormalTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.normalTexture).getFile().getName());
 		} else if (textureLayer.normalTexture != null) {
-			layerBuilder.setBaseColorTextureURI(textureLayer.normalTexture.getDataUri());
+			layerBuilder.setNormalTextureURI(textureLayer.normalTexture.getDataUri());
 		}
 
 		if (textureLayer.displacementTexture instanceof ImageTexture) {
-			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.displacementTexture).getFile().getName());
+			layerBuilder.setDisplacementTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.displacementTexture).getFile().getName());
 		} else if (textureLayer.displacementTexture != null) {
-			layerBuilder.setBaseColorTextureURI(textureLayer.displacementTexture.getDataUri());
+			layerBuilder.setDisplacementTextureURI(textureLayer.displacementTexture.getDataUri());
 		}
 
 		switch (textureLayer.baseColorTexture.wrap) {
