@@ -1,7 +1,8 @@
 package org.osm2world.core.math.shapes;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+import static org.osm2world.core.math.VectorXZ.Z_UNIT;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
@@ -88,6 +89,25 @@ public class PolylineXZTest {
 		assertAlmostEquals(new VectorXZ(-3, 2), polyline.closestPoint(new VectorXZ(-3, 2)));
 
 		assertAlmostEquals(v2, polyline.closestPoint(new VectorXZ(15, 0)));
+
+	}
+
+	@Test
+	public void testEquals() {
+
+		PolylineXZ polyline1 = new PolylineXZ(new VectorXZ(0, 0), new VectorXZ(1, 0));
+		PolylineXZ polyline2 = new PolylineXZ(new VectorXZ(0, 1), new VectorXZ(1, 1));
+
+		assertEquals(polyline1, polyline1);
+		assertEquals(polyline2, polyline2);
+		assertNotEquals(polyline1, polyline2);
+
+		assertEquals(polyline1, new PolylineXZ(polyline1.getVertexList()));
+		assertEquals(polyline1, polyline1.reverse().reverse());
+		assertNotEquals(polyline1, polyline1.reverse());
+
+		assertEquals(polyline1.shift(Z_UNIT), polyline1.shift(Z_UNIT));
+		assertEquals(polyline2, polyline1.shift(Z_UNIT));
 
 	}
 

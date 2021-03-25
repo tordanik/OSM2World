@@ -10,6 +10,7 @@ import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
+import org.osm2world.core.math.shapes.ShapeXZ;
 
 public class LineSegmentXZ implements PolylineShapeXZ {
 
@@ -76,11 +77,15 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 		return VectorXZ.distance(p1, p2);
 	}
 
-	/**
-	 * produces the flipped version of this segment
-	 */
+	/** returns the flipped version of this segment */
+	@Override
 	public LineSegmentXZ reverse() {
 		return new LineSegmentXZ(p2, p1);
+	}
+
+	@Override
+	public ShapeXZ shift(VectorXZ moveVector) {
+		return new LineSegmentXZ(p1.add(moveVector), p2.add(moveVector));
 	}
 
 	/** returns the point on this segment that is closest to the parameter */

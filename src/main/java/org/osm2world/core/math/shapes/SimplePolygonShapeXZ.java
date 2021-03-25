@@ -150,11 +150,6 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 		return intersectionPositions;
 	}
 
-	/** creates a new polygon by adding a shift vector to each vector of this */
-	public default SimplePolygonShapeXZ shift(VectorXZ shiftVector) {
-		return new SimplePolygonXZ(getVertexList().stream().map(shiftVector::add).collect(toList()));
-	}
-
 	/** returns this polygon's area */
 	@Override
 	public default double getArea() {
@@ -244,6 +239,12 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 				.map(v -> v.rotate(angleRad))
 				.collect(toList());
 		return new SimplePolygonXZ(rotatedVertexList);
+	}
+
+	/** creates a new polygon by adding a shift vector to each vector of this */
+	@Override
+	public default SimplePolygonShapeXZ shift(VectorXZ moveVector) {
+		return new SimplePolygonXZ(getVertexList().stream().map(moveVector::add).collect(toList()));
 	}
 
 }

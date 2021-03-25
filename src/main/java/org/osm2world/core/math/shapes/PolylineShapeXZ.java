@@ -4,6 +4,8 @@ import static java.lang.Math.max;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.distance;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -120,4 +122,12 @@ public interface PolylineShapeXZ extends ShapeXZ {
 				.min(Comparator.comparing(p::distanceTo))
 				.get();
 	}
+
+	/** returns the flipped version of this polyline */
+	public default PolylineShapeXZ reverse() {
+		List<VectorXZ> vertices = new ArrayList<>(this.getVertexList());
+		Collections.reverse(vertices);
+		return new PolylineXZ(vertices);
+	}
+
 }

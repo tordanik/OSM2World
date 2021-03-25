@@ -86,6 +86,16 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 	}
 
 	@Override
+	public ShapeXZ rotatedCW(double angleRad) {
+		return this;
+	}
+
+	@Override
+	public ShapeXZ shift(VectorXZ moveVector) {
+		return new CircleXZ(center.add(moveVector), radius);
+	}
+
+	@Override
 	public boolean equals(Object other) {
 
 		if (other instanceof CircleXZ) {

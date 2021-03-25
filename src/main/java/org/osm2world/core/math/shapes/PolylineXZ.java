@@ -1,6 +1,7 @@
 package org.osm2world.core.math.shapes;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXZ.distance;
 
 import java.util.ArrayList;
@@ -53,6 +54,11 @@ public class PolylineXZ implements PolylineShapeXZ {
 
 		return length;
 
+	}
+
+	@Override
+	public PolylineXZ shift(VectorXZ moveVector) {
+		return new PolylineXZ(vertices.stream().map(v -> v.add(moveVector)).collect(toList()));
 	}
 
 	@Override

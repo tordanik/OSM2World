@@ -54,4 +54,14 @@ public interface ShapeXZ extends BoundedObject {
 		return () -> rotatedVertexList;
 	}
 
+	/**
+	 * returns a moved version of this shape
+	 */
+	public default ShapeXZ shift(VectorXZ moveVector) {
+		List<VectorXZ> newVertexList = getVertexList().stream()
+				.map(v -> v.add(moveVector))
+				.collect(toList());
+		return () -> newVertexList;
+	}
+
 }
