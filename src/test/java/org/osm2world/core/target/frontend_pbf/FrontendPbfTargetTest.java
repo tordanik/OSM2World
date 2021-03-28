@@ -6,8 +6,10 @@ import static org.junit.Assert.*;
 import static org.osm2world.core.math.VectorXZ.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
@@ -17,6 +19,8 @@ import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.Block;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.SimpleBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget.VectorBlock;
@@ -58,7 +62,7 @@ public class FrontendPbfTargetTest {
 	}
 
 	@Test
-	public void testWritePbfFile() throws BoundingBoxSizeException, IOException {
+	public void testWritePbfFile_empty() throws BoundingBoxSizeException, IOException {
 
 		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
 
@@ -71,6 +75,34 @@ public class FrontendPbfTargetTest {
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
 		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null);
+
+	}
+
+	@Test
+	public void testWritePbfFile_extrusion() throws BoundingBoxSizeException, IOException {
+
+		AxisAlignedRectangleXZ bbox = new AxisAlignedRectangleXZ(-1, -1, +1, +1);
+
+		OsmNode node = new Node(0, 0, 0, asList(new de.topobyte.osm4j.core.model.impl.Tag("highway", "street_lamp")));
+		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());
+
+		ConversionFacade cf = new ConversionFacade();
+		Results results = cf.createRepresentations(osmData, null, null, null);
+
+		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
+		outputFile.deleteOnExit();
+		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null);
+
+		try (FileInputStream is = new FileInputStream(outputFile)) {
+
+			Tile tile = Tile.parseFrom(is, null);
+
+			Optional<WorldObject> lampObject = tile.getObjectsList().stream()
+					.filter(o -> "n0".equals(o.getOsmId())).findAny();
+			assertTrue(lampObject.isPresent());
+			assertTrue(lampObject.get().getExtrusionGeometriesCount() > 0);
+
+		}
 
 	}
 

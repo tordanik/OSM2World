@@ -331,8 +331,10 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 				geometryBuilder.addPath(vector3dBlock.toIndex(v));
 			}
 
-			for (VectorXYZ v : upVectors) {
-				geometryBuilder.addUpVectors(vector3dBlock.toIndex(v));
+			if (upVectors != null) {
+				for (VectorXYZ v : upVectors) {
+					geometryBuilder.addUpVectors(vector3dBlock.toIndex(v));
+				}
 			}
 
 			if (scaleFactors != null) {
