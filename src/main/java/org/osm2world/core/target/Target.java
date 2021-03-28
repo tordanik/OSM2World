@@ -3,6 +3,7 @@ package org.osm2world.core.target;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.TriangleXYZ;
@@ -107,6 +108,7 @@ public interface Target {
 	 *                        vertices of the shape, multiplied by the length of the path.
 	 *                        Can be null, in which case it falls back to a default.
 	 * @param  options        flags setting additional options; can be null for no options.
+	 *                        Usually an {@link EnumSet}.
 	 *
 	 * @throws IllegalArgumentException  if upVectors are null and cannot be inferred
 	 *                                   from the path. This happens for completely vertical
@@ -114,7 +116,7 @@ public interface Target {
 	 */
 	void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
 			List<VectorXYZ> upVectors, List<Double> scaleFactors,
-			List<List<VectorXZ>> texCoordLists, EnumSet<ExtrudeOption> options);
+			List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options);
 
 	/**
 	 * draws a box with outward-facing polygons.

@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common;
 
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
@@ -9,7 +9,7 @@ import org.osm2world.core.target.common.material.Material;
 
 /**
  * Flags describing available options for
- * {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, EnumSet)}.
+ * {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, Set)}.
  */
 public enum ExtrudeOption {
 

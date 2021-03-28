@@ -17,10 +17,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
@@ -319,7 +319,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 		@Override
 		public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path, List<VectorXYZ> upVectors,
-				List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, EnumSet<ExtrudeOption> options) {
+				List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
 
 			ExtrusionGeometry.Builder geometryBuilder = ExtrusionGeometry.newBuilder();
 
@@ -617,7 +617,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 	@Override
 	public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path, List<VectorXYZ> upVectors,
-			List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, EnumSet<ExtrudeOption> options) {
+			List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
 		currentObjectBuilder.drawExtrudedShape(material, shape, path, upVectors, scaleFactors, texCoordLists, options);
 	}
 

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.apache.commons.configuration.Configuration;
@@ -73,13 +74,13 @@ public abstract class AbstractTarget implements Target {
 
 	/**
 	 * draws an extruded shape using {@link #drawTriangleStrip(Material, List, List)} calls.
-	 * See {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, EnumSet)}
+	 * See {@link Target#drawExtrudedShape(Material, ShapeXZ, List, List, List, List, Set)}
 	 * for documentation of the implemented interface method.
 	 */
 	@Override
 	public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
 			List<VectorXYZ> upVectors, List<Double> scaleFactors,
-			List<List<VectorXZ>> texCoordLists, EnumSet<ExtrudeOption> options) {
+			List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
 
 		/* validate arguments */
 
@@ -357,7 +358,7 @@ public abstract class AbstractTarget implements Target {
 
 	/**
 	 * See {@link Target#drawColumn(Material, Integer, VectorXYZ, double, double, double, boolean, boolean)}.
-	 * Implemented using {@link #drawExtrudedShape(Material, ShapeXZ, List, List, List, List, EnumSet)}.
+	 * Implemented using {@link #drawExtrudedShape(Material, ShapeXZ, List, List, List, List, Set)}.
 	 */
 	@Override
 	public void drawColumn(Material material, Integer corners, VectorXYZ base,

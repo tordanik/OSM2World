@@ -2,8 +2,8 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -15,20 +15,24 @@ import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSe
 
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
@@ -63,24 +67,25 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	private static final float RAIL_HEAD_WIDTH = 0.067f; //must match RAIL_SHAPE
 	private static final ShapeXZ RAIL_SHAPE;
+	private static final ShapeXZ CLOSED_RAIL_SHAPE;
 
 	static {
 
 		List<VectorXZ> railShape = asList(
-				new VectorXZ(-0.45, 0), new VectorXZ(-0.1, 0.1),
-				new VectorXZ(-0.1, 0.5), new VectorXZ(-0.25, 0.55),
-				new VectorXZ(-0.25, 0.75), new VectorXZ(+0.25, 0.75),
-				new VectorXZ(+0.25, 0.55), new VectorXZ(+0.1, 0.5),
-				new VectorXZ(+0.1, 0.1), new VectorXZ(+0.45, 0));
+				new VectorXZ(0.45, 0), new VectorXZ(0.1, 0.1),
+				new VectorXZ(0.1, 0.5), new VectorXZ(0.25, 0.55),
+				new VectorXZ(0.25, 0.75), new VectorXZ(-0.25, 0.75),
+				new VectorXZ(-0.25, 0.55), new VectorXZ(-0.1, 0.5),
+				new VectorXZ(-0.1, 0.1), new VectorXZ(-0.45, 0));
 
 		for (int i=0; i < railShape.size(); i++) {
 			VectorXZ v = railShape.get(i);
 			v = v.mult(0.1117f);
-			v = new VectorXZ(-v.x, v.z + SLEEPER_HEIGHT);
 			railShape.set(i, v);
 		}
 
 		RAIL_SHAPE = new PolylineXZ(railShape);
+		CLOSED_RAIL_SHAPE = new SimplePolygonXZ(closeLoop(railShape));
 
 	}
 
@@ -195,12 +200,26 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			if (lod >= 3) {
 
+				double yOffset = (lod == 4) ? SLEEPER_HEIGHT : 0;
+
+				ShapeXZ shape = RAIL_SHAPE;
+
+				Set<ExtrudeOption> extrudeOptions = new HashSet<>(2);
+				if (countConnectedRailSegments(segment.getStartNode()) == 1) {
+					extrudeOptions.add(ExtrudeOption.START_CAP);
+					shape = CLOSED_RAIL_SHAPE;
+				}
+				if (countConnectedRailSegments(segment.getEndNode()) == 1) {
+					extrudeOptions.add(ExtrudeOption.END_CAP);
+					shape = CLOSED_RAIL_SHAPE;
+				}
+
 				for (List<VectorXYZ> railLine : asList(
 						createLineBetween(getOutline(false), getOutline(true), ((groundWidth - railDist) / groundWidth) / 2),
 						createLineBetween(getOutline(false), getOutline(true), 1 - (groundWidth - railDist) / groundWidth / 2)
 				)) {
-					target.drawExtrudedShape(STEEL, RAIL_SHAPE, railLine,
-							nCopies(railLine.size(), Y_UNIT), null, null, null);
+					target.drawExtrudedShape(STEEL, shape, addYList(railLine, yOffset),
+							nCopies(railLine.size(), Y_UNIT), null, null, extrudeOptions);
 				}
 
 			}
@@ -239,6 +258,12 @@ public class RailwayModule extends ConfigurableWorldModule {
 		@Override
 		public double getWidth() {
 			return groundWidth;
+		}
+
+		private long countConnectedRailSegments(MapNode node) {
+			return node.getConnectedWaySegments().stream()
+					.filter(it -> it.getPrimaryRepresentation() instanceof Rail)
+					.count();
 		}
 
 	}
