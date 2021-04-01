@@ -153,11 +153,11 @@ public final class WorldModuleBillboardUtil {
 			new VectorXZ(0.5, 0), new VectorXZ(0.5, 1)));
 
 	private static final List<List<VectorXZ>> BILLBOARD_BOTH_TEX_COORDS = asList(asList(
-			VectorXZ.Z_UNIT, VectorXZ.NULL_VECTOR,
+			new VectorXZ(0, 1), new VectorXZ(0, 0),
 			new VectorXZ(1, 1), new VectorXZ(1, 0)));
 
 	private static final List<List<VectorXZ>> BILLBOARD_BOTH_TEX_COORDS_MIRRORED = asList(asList(
-			new VectorXZ(1, 1), VectorXZ.X_UNIT,
-			new VectorXZ(1, 1), new VectorXZ(1, 0)));
+			new VectorXZ(1, 1), new VectorXZ(1, 0),
+			new VectorXZ(0, 1), new VectorXZ(0, 0)));
 
 }
