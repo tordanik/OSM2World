@@ -6,7 +6,7 @@ import static java.util.Collections.*;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
-import static org.osm2world.core.target.common.material.Materials.TERRAIN_DEFAULT;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
@@ -101,6 +101,22 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, BicycleStands.class,
 			WasteBasket.class, VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, Bollard.class,
 			BollardRow.class);
+
+	/**
+	 * materials which default to being shadowless
+	 *
+	 * These can only be treated as shadowless because the disabled terrain makes them (almost) always face straight up,
+	 * i.e. triangle's normal is roughly equal to Y_UNIT. With terrain enabled, this wouldn't necessarily be the case.
+	 * TODO: find a solution (e.g. check triangle normal) that works with terrain and can be used for all targets
+	 */
+	private static final List<Material> DEFAULT_SHADOWLESS_MATERIALS = asList(ASPHALT, CARPET, EARTH, GRASS,
+			GRASS_PAVER, GRAVEL, HELIPAD_MARKING, ICE, PAVING_STONE, PEBBLESTONE, PITCH_BEACHVOLLEYBALL, PITCH_SOCCER,
+			PITCH_TENNIS_ASPHALT, PITCH_TENNIS_CLAY, PITCH_TENNIS_GRASS, PITCH_TENNIS_SINGLES_ASPHALT,
+			PITCH_TENNIS_SINGLES_CLAY, PITCH_TENNIS_SINGLES_GRASS, RAILWAY, RAIL_BALLAST, RED_ROAD_MARKING,
+			ROAD_MARKING, ROAD_MARKING_ARROW_RIGHT, ROAD_MARKING_ARROW_RIGHT_LEFT, ROAD_MARKING_ARROW_THROUGH,
+			ROAD_MARKING_ARROW_THROUGH_RIGHT, ROAD_MARKING_CROSSING, ROAD_MARKING_DASHED, ROAD_MARKING_ZEBRA, ROCK,
+			ROOF_DEFAULT, RUNWAY_CENTER_MARKING, SAND, SCREE, SCRUB, SETT, SKYBOX, SNOW, SOLAR_PANEL, TARTAN,
+			TAXIWAY_CENTER_MARKING, TERRAIN_DEFAULT, UNHEWN_COBBLESTONE, WATER);
 
 	/**
 	 * a block containing all elements of a particular type.
@@ -681,7 +697,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 			default: throw new Error("unsupported transparency: " + material.getTransparency());
 		}
 
-		if (material.getShadow() == Shadow.FALSE) {
+		if (material.getShadow() == Shadow.FALSE || DEFAULT_SHADOWLESS_MATERIALS.contains(material)) {
 			materialBuilder.setCastShadow(false);
 		}
 

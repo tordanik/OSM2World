@@ -264,12 +264,9 @@ public final class Materials {
 	/** material for "nothingness" which reflects no light. Used e.g. for openings into buildings without indoor. */
 	public static final ConfMaterial VOID = new ConfMaterial(Interpolation.FLAT, BLACK);
 
-	private static final Map<String, ConfMaterial> surfaceMaterialMap =
-		new HashMap<String, ConfMaterial>();
-	private static final Map<ConfMaterial, String> fieldNameMap =
-		new HashMap<ConfMaterial, String>();
-	private static final Map<String, ConfMaterial> externalMaterials =
-		new HashMap<String, ConfMaterial>();
+	private static final Map<String, ConfMaterial> surfaceMaterialMap = new HashMap<>();
+	private static final Map<ConfMaterial, String> fieldNameMap = new HashMap<>();
+	private static final Map<String, ConfMaterial> externalMaterials = new HashMap<>();
 
 	static {
 
