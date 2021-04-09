@@ -293,7 +293,7 @@ public class Wall implements Renderable {
 		/* draw the wall */
 
 		int levelCount = buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size();
-		double windowHeight = heightWithoutRoof / levelCount;
+		double windowHeight = (heightWithoutRoof - buildingPart.levelStructure.bottomHeight()) / levelCount;
 
 		if (mainSurface != null) {
 			mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
