@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * connection between two {@link MapNode}s that's part of a polyline or polygon.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public abstract class MapSegment {
 

@@ -60,7 +60,7 @@ public interface WorldObject extends Renderable {
 
 	/**
 	 * returns this object's surfaces that other objects can attach themselves to
-	 * @See {@link AttachmentSurface}
+	 * @see AttachmentSurface
 	 */
 	public default Collection<AttachmentSurface> getAttachmentSurfaces() {
 		return emptyList();

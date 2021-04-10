@@ -41,7 +41,6 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 	 *
 	 * @param relativeRoofOffset  distance of ridge to outline
 	 *    relative to length of roof cap; 0 if ridge ends at outline
-	 * @param tags
 	 */
 	public RoofWithRidge(double relativeRoofOffset, PolygonWithHolesXZ originalPolygon,
 			TagSet tags, double height, Material material) {

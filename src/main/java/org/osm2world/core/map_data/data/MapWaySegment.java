@@ -19,7 +19,7 @@ import com.google.common.collect.Iterables;
 /**
  * Segment (the straight line between two successive nodes) of a way from an OSM dataset.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public class MapWaySegment extends MapSegment implements MapElement {
 

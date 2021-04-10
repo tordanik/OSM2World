@@ -1,12 +1,7 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_CCW;
-import static javax.media.opengl.GL.GL_COLOR_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_CULL_FACE;
-import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_DEPTH_TEST;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
+import static javax.media.opengl.GL.*;
+import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -14,11 +9,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
-
-import jogamp.opengl.ProjectFloat;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -31,6 +25,8 @@ import org.osm2world.viewer.model.Defaults;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
+
+import jogamp.opengl.ProjectFloat;
 
 /**
  * Shader to render the depth buffer into a texture that can be used to implement shadow maps later.
@@ -303,7 +299,6 @@ public class ShadowMapShader extends DepthBufferShader {
 	/**
 	 * prepare and use PMVMatrix for rendering shadows from global lighting perspective using "Perspective Shadow Maps"
 	 * (see http://www-sop.inria.fr/reves/Marc.Stamminger/psm/)
-	 * @param lighting
 	 */
 	public void preparePMVMatrixPSM(GlobalLightingParameters lighting, PMVMatrix cameraPMV, AxisAlignedBoundingBoxXYZ primitivesBoundingBox) {
 

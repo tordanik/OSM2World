@@ -269,7 +269,7 @@ public final class GeometryUtil {
 	}
 
 	/**
-	 * returns true if the second polygon is entirely or almost (> 99%) contained within the first.
+	 * returns true if the second polygon is entirely or almost (over 99%) contained within the first.
 	 * This can be used to prevent small mapping inaccuracies from causing problems,
 	 * e.g. when checking if building parts are contained in a building outline.
 	 */

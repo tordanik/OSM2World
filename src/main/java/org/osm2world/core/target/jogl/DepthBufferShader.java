@@ -46,7 +46,6 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
-	 * @param pmvMatrix
 	 */
 	public void setPMVMatrix(PMVMatrix pmvMatrix) {
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);

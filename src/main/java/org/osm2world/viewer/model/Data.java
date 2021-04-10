@@ -36,11 +36,6 @@ public class Data extends Observable {
 
 	}
 
-	/**
-	 * @param interpolatorFactory
-	 * @param enforcerFactory
-	 *
-	 */
 	public void loadOSMData(OSMDataReader reader, boolean failOnLargeBBox,
 			Factory<? extends TerrainInterpolator> interpolatorFactory,
 			Factory<? extends EleConstraintEnforcer> enforcerFactory,

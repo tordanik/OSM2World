@@ -16,7 +16,7 @@ import org.osm2world.core.world.data.NodeWorldObject;
 /**
  * A node from an OSM dataset.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public class MapNode extends MapRelation.Element implements MapElement {
 
@@ -135,7 +135,7 @@ public class MapNode extends MapRelation.Element implements MapElement {
 	 * returns all way segments connected with this node.
 	 * They will be sorted according to the clockwise
 	 * (seen from above) angle between the vector
-	 * "this node -> other node of the segment"
+	 * "this node → other node of the segment"
 	 * and the positive x direction.
 	 */
 	public List<MapWaySegment> getConnectedWaySegments() {

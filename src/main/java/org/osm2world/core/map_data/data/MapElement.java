@@ -10,7 +10,7 @@ import org.osm2world.core.world.data.WorldObject;
 /**
  * An element from an OSM dataset.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public interface MapElement extends BoundedObject {
 

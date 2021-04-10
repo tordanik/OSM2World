@@ -20,10 +20,10 @@ public abstract class TextureData {
 
 	public static enum Wrap { REPEAT, CLAMP, CLAMP_TO_BORDER }
 
-	/** width of a single tile of the texture in meters, > 0 */
+	/** width of a single tile of the texture in meters, greater than 0 */
 	public final double width;
 
-	/** height of a single tile of the texture in meters, > 0 */
+	/** height of a single tile of the texture in meters, greater than 0 */
 	public final double height;
 
 	/**

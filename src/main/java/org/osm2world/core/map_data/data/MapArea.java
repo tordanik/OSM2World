@@ -19,7 +19,7 @@ import org.osm2world.core.world.data.AreaWorldObject;
 /**
  * An area (closed way or multipolygon relation) from an OSM dataset.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public class MapArea extends MapRelation.Element implements MapElement {
 

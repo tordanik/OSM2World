@@ -27,7 +27,7 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
 
 /**
  * implementation of {@link AreaWorldObject} that offers some basic features:
- * < ul><li> providing the object outline based on the {@link MapArea}
+ * <ul><li> providing the object outline based on the {@link MapArea}
  * </li><li> providing bounding geometry for intersection tests
  * </li><li> calculating a triangulation of the surface for rendering
  * </ul>

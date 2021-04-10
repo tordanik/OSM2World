@@ -98,7 +98,6 @@ public class LevelAndHeightData {
 	/**
 	 * figures out level and height information based on the building's and building part's tags.
 	 * If available, explicitly tagged data is used, with tags on indoor=level elements having the highest priority.
-	 * @param roofShape
 	 */
 	public LevelAndHeightData(TagSet buildingTags, TagSet buildingPartTags, Map<Integer, TagSet> levelTagSets,
 			String roofShape, PolygonShapeXZ outline) {

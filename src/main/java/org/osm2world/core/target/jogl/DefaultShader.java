@@ -132,7 +132,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 	/**
 	 * Send uniform matrices "ProjectionMatrix, ModelViewMatrix and ModelViewProjectionMatrix" to vertex shader
-	 * @param pmvMatrix
 	 */
 	public void setPMVMatrix(PMVMatrix pmvMatrix) {
 		gl.glUniformMatrix4fv(this.getProjectionMatrixID(), 1, false, pmvMatrix.glGetPMatrixf());
@@ -460,7 +459,6 @@ public class DefaultShader extends AbstractPrimitiveShader {
 	/**
 	 * Sets the PMVMatrix that was used to render the shadow map set with {@link #bindShadowMap(int)}.
 	 * This is needed to correctly compare the shadow map depth values with the fragment depth value.
-	 * @param pmvMatrix
 	 */
 	public void setShadowMatrix(PMVMatrix pmvMatrix) {
 		// S = B*MPV

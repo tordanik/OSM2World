@@ -230,6 +230,9 @@
 			<plugin>  <!-- Create javadoc.jar -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<doclint>all,-missing</doclint>
+				</configuration>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>

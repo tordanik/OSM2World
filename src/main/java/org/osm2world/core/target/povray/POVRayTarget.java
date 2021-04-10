@@ -493,7 +493,7 @@ public class POVRayTarget extends AbstractTarget {
 
 
 	/**
-	 * adds a color. Syntax is "color rgb <x, y, z>".
+	 * adds a color. Syntax is "color rgb &lt;x, y, z&gt;".
 	 */
 	public void appendRGBColor(Color color) {
 
@@ -592,7 +592,7 @@ public class POVRayTarget extends AbstractTarget {
 
 	/**
 	 * adds a vector to the String built by a StringBuilder.
-	 * Syntax is "<x, y, z>".
+	 * Syntax is "&lt;x, y, z&gt;".
 	 */
 	public void appendVector(float x, float y, float z) {
 
@@ -636,7 +636,7 @@ public class POVRayTarget extends AbstractTarget {
 
 	/**
 	 * adds a vector to the String built by a StringBuilder.
-	 * Syntax is "<v1, v2>".
+	 * Syntax is "&lt;v1, v2&gt;".
 	 */
 	public void appendVector(double x, double z) {
 

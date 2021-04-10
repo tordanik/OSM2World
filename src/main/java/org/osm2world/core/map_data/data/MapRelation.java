@@ -10,7 +10,7 @@ import java.util.List;
  * A relation from an OSM dataset.
  * Multipolygon relations will have been turned into {@link MapArea}s instead.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public class MapRelation {
 

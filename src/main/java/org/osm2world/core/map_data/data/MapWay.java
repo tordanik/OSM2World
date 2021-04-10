@@ -11,7 +11,7 @@ import org.osm2world.core.math.shapes.PolylineXZ;
 /**
  * A way from an OSM dataset.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public class MapWay extends MapRelation.Element implements BoundedObject {
 

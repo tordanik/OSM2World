@@ -323,7 +323,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	/**
 	 * returns the distance of a point to the segments this polygon.
-	 * Note that the distance can be > 0 even if the polygon contains the point
+	 * Note that the distance can be greater than 0 even if the polygon contains the point
 	 */
 	public double distanceToSegments(VectorXZ p) {
 		double minDistance = Double.MAX_VALUE;
@@ -492,7 +492,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	/**
 	 * returns true if the polygon defined by the polygonVertexLoop parameter
-	 * is self-intersecting.<br/>
+	 * is self-intersecting.<br>
 	 * The Code is based on Shamos-Hoey's algorithm
 	 *
 	 * TODO: if the end vertex of two line segments are the same the

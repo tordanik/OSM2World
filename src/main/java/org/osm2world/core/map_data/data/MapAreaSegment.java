@@ -5,7 +5,7 @@ package org.osm2world.core.map_data.data;
  * itself (for example, it has no individual representation).
  * Instead, it's simply a different way to access an area's data.
  *
- * @See {@link MapData} for context
+ * @see MapData
  */
 public class MapAreaSegment extends MapSegment {
 

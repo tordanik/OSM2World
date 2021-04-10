@@ -569,11 +569,11 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	private WorldObjectBuilder currentObjectBuilder = new WorldObjectBuilder(null);
 
 	/**
+	 * Creates a {@link FrontendPbfTarget}. Writing only completes once {@link #finish()} is called.
 	 *
-	 * @param outputStream
+	 * @param outputStream  the stream to write protobuf data to
 	 * @param bbox  the desired bounding box for the output.
 	 *              Objects are part of the output if their center is inside this box.
-	 * @param projection
 	 */
 	public FrontendPbfTarget(OutputStream outputStream, AxisAlignedRectangleXZ bbox, MapProjection projection) {
 
