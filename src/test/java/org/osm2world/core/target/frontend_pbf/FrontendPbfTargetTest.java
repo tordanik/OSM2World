@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;

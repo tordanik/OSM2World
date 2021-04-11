@@ -372,8 +372,6 @@ public final class Materials {
 
 		Map<String, ConfMaterial> texturePrefixMap = new HashMap<>();
 
-		// unchecked type parameter necessary due to Apache libs' old interface
-		@SuppressWarnings("unchecked")
 		Iterator<String> keyIterator = config.getKeys();
 
 		while (keyIterator.hasNext()) {
@@ -467,8 +465,7 @@ public final class Materials {
 
 			for (int i = 0; i < Material.MAX_TEXTURE_LAYERS; i++) {
 				String keyPrefix = texturePrefix + i;
-				@SuppressWarnings("unchecked") // work around common-configuration's pre-generic API
-				Stream<String> keyStream = Streams.stream((Iterator<String>)config.getKeys());
+				Stream<String> keyStream = Streams.stream(config.getKeys());
 				if (keyStream.anyMatch(k -> k.startsWith(keyPrefix))) {
 					TextureLayer textureLayer = createTextureLayer(config, keyPrefix);
 					if (textureLayer != null) {
@@ -513,8 +510,7 @@ public final class Materials {
 
 		TextureData baseColorTextureData;
 
-		@SuppressWarnings("unchecked") // work around common-configuration's pre-generic API
-		Stream<String> keyStream = Streams.stream((Iterator<String>)config.getKeys());
+		Stream<String> keyStream = Streams.stream(config.getKeys());
 		if (keyStream.anyMatch(k -> k.startsWith(keyPrefix + "_color_"))) {
 			baseColorTextureData = createTextureData(config, keyPrefix + "_color", baseColorTexture);
 		} else {

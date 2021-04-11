@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.collections.iterators.ArrayIterator;
-import org.apache.commons.collections.iterators.IteratorChain;
+import org.apache.commons.collections4.iterators.ArrayIterator;
+import org.apache.commons.collections4.iterators.IteratorChain;
 
 /**
  * regular grid of {@link VectorXZ}.
@@ -87,8 +87,7 @@ public class VectorGridXZ implements Iterable<VectorXZ> {
 		    return Collections.EMPTY_LIST.iterator();
 		} else {
 
-			List<Iterator<VectorXZ>> columnIterators =
-					new ArrayList<Iterator<VectorXZ>>(sizeX());
+			List<Iterator<? extends VectorXZ>> columnIterators = new ArrayList<>(sizeX());
 
 			for (int x = 0; x < sizeX(); x++) {
 
@@ -96,11 +95,11 @@ public class VectorGridXZ implements Iterable<VectorXZ> {
 					createIfNecessary(x, z);
 				}
 
-				columnIterators.add(new ArrayIterator(grid[x]));
+				columnIterators.add(new ArrayIterator<VectorXZ>(grid[x]));
 
 			}
 
-			return new IteratorChain(columnIterators);
+			return new IteratorChain<VectorXZ>(columnIterators);
 
 		}
 

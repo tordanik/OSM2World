@@ -222,7 +222,6 @@ public class TrafficSignModule extends AbstractModule {
 
 		Matcher matcher = null;
 
-		@SuppressWarnings("unchecked")
 		Iterator<String> keyIterator = config.getKeys();
 
 		//parse traffic sign specific configuration values
