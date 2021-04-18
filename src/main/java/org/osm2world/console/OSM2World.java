@@ -215,6 +215,10 @@ public class OSM2World {
 			}
 			break;
 
+		case PARAMFILE:
+		case PARAMFILEDIR:
+			throw new Error("Cannot recursively execute parameter files. Program mode was: " + programMode);
+
 		}
 	}
 

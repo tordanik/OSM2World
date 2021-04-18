@@ -24,6 +24,8 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public abstract class AbstractLoadOSMAction extends AbstractAction {
 
+	private static final long serialVersionUID = 1L;
+
 	protected ViewerFrame viewerFrame;
 	protected Data data;
 	protected RenderOptions renderOptions;

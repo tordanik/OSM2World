@@ -14,6 +14,8 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class DownloadOverpassAction extends AbstractLoadOSMAction {
 
+	private static final long serialVersionUID = 1L;
+
 	ViewerFrame viewerFrame;
 	Data data;
 	RenderOptions renderOptions;

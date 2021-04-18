@@ -767,7 +767,7 @@ public class IndoorWall implements Renderable {
 							vertices.add(vertices.get(0));
 						} else {
 							vertices.add(segment.p1);
-						};
+						}
 						dedupeLineSegments.remove(segment);
 						break;
 					}

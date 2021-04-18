@@ -1184,7 +1184,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				return ((time.getHour() % 12) * 60 + time.getMinute()) / (12 * 60.0) * 2 * PI;
 			}
 
-		};
+		}
 
 	}
 

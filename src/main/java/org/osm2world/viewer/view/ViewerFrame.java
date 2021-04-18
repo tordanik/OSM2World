@@ -57,11 +57,9 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.AttachmentConnectorDebugView;
 import org.osm2world.viewer.view.debug.AttachmentSurfaceDebugView;
-import org.osm2world.viewer.view.debug.ClearingDebugView;
 import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.EleConnectorDebugView;
 import org.osm2world.viewer.view.debug.EleConstraintDebugView;
-import org.osm2world.viewer.view.debug.EleDebugView;
 import org.osm2world.viewer.view.debug.FaceDebugView;
 import org.osm2world.viewer.view.debug.InternalCoordsDebugView;
 import org.osm2world.viewer.view.debug.InverseDistanceWeightingInterpolatorDebugView;
@@ -188,8 +186,6 @@ public class ViewerFrame extends JFrame {
 					new AttachmentSurfaceDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new AttachmentConnectorDebugView());
-			initAndAddDebugView(subMenu, VK_L, false,
-					new ClearingDebugView());
 			initAndAddDebugView(subMenu, VK_D, false,
 					new MapDataDebugView());
 			initAndAddDebugView(subMenu, VK_E, false,
@@ -218,8 +214,6 @@ public class ViewerFrame extends JFrame {
 			subMenu.add(new JCheckBoxMenuItem(new ToggleDebugViewAction(
 					new LatLonDebugView(), -1, false,
 					this, data, renderOptions)));
-			initAndAddDebugView(subMenu, -1, false,
-					new EleDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new NaturalNeighborInterpolatorDebugView(renderOptions));
 			initAndAddDebugView(subMenu, -1, false,

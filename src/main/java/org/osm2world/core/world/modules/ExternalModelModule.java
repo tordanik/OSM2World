@@ -53,18 +53,20 @@ public class ExternalModelModule implements WorldModule {
 			this.primaryMapElement = primaryMapElement;
 		}
 
-		public void setConfiguration(Configuration config) {}
-
+		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 
+		@Override
 		public Iterable<EleConnector> getEleConnectors() {
 			return emptyList();
 		}
 
+		@Override
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
+		@Override
 		public T getPrimaryMapElement() {
 			return primaryMapElement;
 		}
