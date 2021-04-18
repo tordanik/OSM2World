@@ -27,10 +27,10 @@ public class MapDataBoundsDebugView extends DebugView {
 	@Override
 	protected void fillTarget(JOGLTarget target) {
 
-		List<VectorXZ> vs = map.getDataBoundary().polygonXZ().getVertexLoop();
+		List<VectorXZ> vs = map.getDataBoundary().polygonXZ().vertices();
 		target.drawLineLoop(DATA_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
 
-		vs = map.getBoundary().polygonXZ().getVertexLoop();
+		vs = map.getBoundary().polygonXZ().vertices();
 		target.drawLineLoop(FILE_BB_COLOR, 1, VectorXZ.listXYZ(vs, 0));
 
 	}

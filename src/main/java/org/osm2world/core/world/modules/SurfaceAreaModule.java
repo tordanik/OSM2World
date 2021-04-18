@@ -177,7 +177,7 @@ public class SurfaceAreaModule extends AbstractModule {
 							for (EleConnector eleConnector : otherWO.getEleConnectors()) {
 
 								if (!outlinePolygon.getRings().stream().anyMatch(
-										p-> p.getVertexList().contains(eleConnector.pos))) {
+										p-> p.vertices().contains(eleConnector.pos))) {
 									eleConnectorPoints.add(eleConnector.pos);
 								}
 

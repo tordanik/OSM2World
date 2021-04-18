@@ -37,7 +37,7 @@ public class OrthoBoundsDebugView extends DebugView {
 		Camera orthoCam = OrthoTilesUtil.cameraForBounds(
 				map.getDataBoundary(), 30, CardinalDirection.S);
 
-		List<VectorXYZ> boundVertices = map.getDataBoundary().polygonXZ().xyz(0).getVertices();
+		List<VectorXYZ> boundVertices = map.getDataBoundary().polygonXZ().xyz(0).verticesNoDup();
 		target.drawLineLoop(LINE_COLOR, 1, boundVertices);
 		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(0), boundVertices.get(2));
 		target.drawLineStrip(LINE_COLOR, 1, boundVertices.get(1), boundVertices.get(3));

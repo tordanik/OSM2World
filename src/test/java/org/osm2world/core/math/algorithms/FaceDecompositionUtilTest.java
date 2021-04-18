@@ -57,7 +57,7 @@ public class FaceDecompositionUtilTest {
 
 		assertEquals(1, result.size());
 		PolygonShapeXZ resultPoly = result.iterator().next();
-		assertSameCyclicOrder(true, vs, resultPoly.getVertexListNoDup());
+		assertSameCyclicOrder(true, vs, resultPoly.verticesNoDup());
 
 	}
 
@@ -76,7 +76,7 @@ public class FaceDecompositionUtilTest {
 
 			assertEquals("shape: " + polygon, 1, result.size());
 			PolygonShapeXZ resultPoly = result.iterator().next();
-			assertSameCyclicOrder(true, polygon.getVertexListNoDup(), resultPoly.getVertexListNoDup());
+			assertSameCyclicOrder(true, polygon.verticesNoDup(), resultPoly.verticesNoDup());
 			assertEquals(polygon.getHoles().size(), resultPoly.getHoles().size());
 
 		}
@@ -124,13 +124,13 @@ public class FaceDecompositionUtilTest {
 		for (PolygonShapeXZ resultPoly : result) {
 			SimplePolygonShapeXZ outer = resultPoly.getOuter();
 			if (outer.getCentroid().x > 0 && outer.getCentroid().z > 0) {
-				assertSameCyclicOrder(true, asList(topInner, topOuter, rightOuter, rightInner), outer.getVertexListNoDup());
+				assertSameCyclicOrder(true, asList(topInner, topOuter, rightOuter, rightInner), outer.verticesNoDup());
 			} else if (outer.getCentroid().x < 0 && outer.getCentroid().z > 0) {
-				assertSameCyclicOrder(true, asList(topInner, topOuter, leftOuter, leftInner), outer.getVertexListNoDup());
+				assertSameCyclicOrder(true, asList(topInner, topOuter, leftOuter, leftInner), outer.verticesNoDup());
 			} else if (outer.getCentroid().x > 0 && outer.getCentroid().z < 0) {
-				assertSameCyclicOrder(true, asList(bottomInner, bottomOuter, rightOuter, rightInner), outer.getVertexListNoDup());
+				assertSameCyclicOrder(true, asList(bottomInner, bottomOuter, rightOuter, rightInner), outer.verticesNoDup());
 			} else if (outer.getCentroid().x < 0 && outer.getCentroid().z < 0) {
-				assertSameCyclicOrder(true, asList(bottomInner, bottomOuter, leftOuter, leftInner), outer.getVertexListNoDup());
+				assertSameCyclicOrder(true, asList(bottomInner, bottomOuter, leftOuter, leftInner), outer.verticesNoDup());
 			} else {
 				fail("wrong result poly: " + outer);
 			}

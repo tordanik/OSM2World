@@ -53,10 +53,10 @@ class TexturedWindow implements Window {
 
 		/* draw the window itself */
 
-		VectorXYZ bottomLeft = backOutline.getVertices().get(0);
-		VectorXYZ bottomRight = backOutline.getVertices().get(1);
-		VectorXYZ topLeft = backOutline.getVertices().get(3);
-		VectorXYZ topRight = backOutline.getVertices().get(2);
+		VectorXYZ bottomLeft = backOutline.verticesNoDup().get(0);
+		VectorXYZ bottomRight = backOutline.verticesNoDup().get(1);
+		VectorXYZ topLeft = backOutline.verticesNoDup().get(3);
+		VectorXYZ topRight = backOutline.verticesNoDup().get(2);
 
 		List<VectorXYZ> vsWindow = asList(topLeft, bottomLeft, topRight, bottomRight);
 

@@ -45,7 +45,7 @@ public class AttachmentSurface implements BoundedObject {
 
 	public AttachmentSurface(Collection<String> types, Collection<FaceXYZ> faces) {
 		this(types, faces, pos ->
-				faces.stream().flatMap(f -> f.getVertices().stream()).mapToDouble(v -> v.y).min().orElseGet(() -> 0));
+				faces.stream().flatMap(f -> f.verticesNoDup().stream()).mapToDouble(v -> v.y).min().orElseGet(() -> 0));
 	}
 
 	public Collection<String> getTypes() {

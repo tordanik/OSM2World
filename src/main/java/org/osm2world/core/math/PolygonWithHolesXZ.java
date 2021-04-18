@@ -27,8 +27,8 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 	}
 
 	@Override
-	public List<VectorXZ> getVertexList() {
-		return outerPolygon.getVertexList();
+	public List<VectorXZ> vertices() {
+		return outerPolygon.vertices();
 	}
 
 	@Override

@@ -183,7 +183,7 @@ public class WallSurface {
 				PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
 
 				List<VectorXYZ> vsWall = createTriangleStripBetween(
-						backOutline.getVertexLoop(), frontOutline.getVertexLoop());
+						backOutline.vertices(), frontOutline.vertices());
 
 				Material material = this.material;
 				// TODO attempt to simulate ambient occlusion with a different baked ao texture?
@@ -278,8 +278,8 @@ public class WallSurface {
 	}
 
 	public PolygonXYZ convertTo3D(PolygonShapeXZ polygon) {
-		List<VectorXYZ> outline = new ArrayList<>(polygon.getVertexList().size());
-		polygon.getVertexList().forEach(v -> outline.add(convertTo3D(v)));
+		List<VectorXYZ> outline = new ArrayList<>(polygon.vertices().size());
+		polygon.vertices().forEach(v -> outline.add(convertTo3D(v)));
 		return new PolygonXYZ(outline);
 	}
 

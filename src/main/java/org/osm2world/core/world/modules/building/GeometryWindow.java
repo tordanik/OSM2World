@@ -158,8 +158,8 @@ public class GeometryWindow implements Window {
 		for (SimplePolygonShapeXZ innerOutline : innerOutlines) {
 			PolygonXYZ innerOutlineXYZ = surface.convertTo3D(innerOutline);
 			List<VectorXYZ> vsFrameSideStrip = createTriangleStripBetween(
-					innerOutlineXYZ.add(toOuterFrame).getVertexLoop(),
-					innerOutlineXYZ.add(toBack).getVertexLoop());
+					innerOutlineXYZ.add(toOuterFrame).vertices(),
+					innerOutlineXYZ.add(toBack).vertices());
 			target.drawTriangleStrip(frameSideMaterial, vsFrameSideStrip,
 					texCoordLists(vsFrameSideStrip, frameSideMaterial, STRIP_WALL));
 		}

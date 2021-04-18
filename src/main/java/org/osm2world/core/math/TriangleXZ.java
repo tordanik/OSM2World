@@ -24,7 +24,7 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public List<VectorXZ> getVertexList() {
+	public List<VectorXZ> vertices() {
 		return ImmutableList.of(v1, v2, v3, v1);
 	}
 

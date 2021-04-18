@@ -139,7 +139,7 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 
 				}
 
-				for (VectorXYZ v : triangle.getVertices()) {
+				for (VectorXYZ v : triangle.verticesNoDup()) {
 					VectorXZ baseTexCoord = v.rotateY(-downAngle).xz();
 					result.add(new VectorXZ(
 							-baseTexCoord.x / textureData.width,
@@ -230,7 +230,7 @@ public enum NamedTexCoordFunction implements TexCoordFunction {
 			SimplePolygonXZ faceXZ = face.toFacePlane(face);
 			AxisAlignedRectangleXZ faceBbox = faceXZ.boundingBox();
 
-			for (VectorXZ v : faceXZ.getVertexList()) {
+			for (VectorXZ v : faceXZ.vertices()) {
 				VectorXZ vRelative = v.subtract(faceBbox.bottomLeft());
 				result.add(new VectorXZ(vRelative.x / faceBbox.sizeX(), vRelative.z / faceBbox.sizeZ()));
 			}

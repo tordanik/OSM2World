@@ -88,7 +88,7 @@ abstract public class SpindleRoof extends Roof {
 
 		target.drawExtrudedShape(material, spindleShape, path,
 				null, scaleFactors,
-				spindleTexCoordLists(path, spindleShape.getVertexList().size(),
+				spindleTexCoordLists(path, spindleShape.vertices().size(),
 						polygon.getOutlineLength(), material),
 				null);
 

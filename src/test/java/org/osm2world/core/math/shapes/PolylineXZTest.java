@@ -81,7 +81,7 @@ public class PolylineXZTest {
 
 		PolylineXZ polyline = new PolylineXZ(asList(v0, v1, v2));
 
-		for (VectorXZ v : polyline.getVertexList()) {
+		for (VectorXZ v : polyline.vertices()) {
 			assertAlmostEquals(v, polyline.closestPoint(v));
 		}
 
@@ -102,7 +102,7 @@ public class PolylineXZTest {
 		assertEquals(polyline2, polyline2);
 		assertNotEquals(polyline1, polyline2);
 
-		assertEquals(polyline1, new PolylineXZ(polyline1.getVertexList()));
+		assertEquals(polyline1, new PolylineXZ(polyline1.vertices()));
 		assertEquals(polyline1, polyline1.reverse().reverse());
 		assertNotEquals(polyline1, polyline1.reverse());
 

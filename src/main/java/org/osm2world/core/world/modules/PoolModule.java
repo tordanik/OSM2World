@@ -95,7 +95,7 @@ public class PoolModule extends AbstractModule {
 					new VectorXZ(-width/2, 0)
 			);
 
-			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
+			List<VectorXYZ> path = getOutlinePolygon().vertices();
 
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
 					nCopies(path.size(), Y_UNIT), null, null, null);
@@ -125,7 +125,7 @@ public class PoolModule extends AbstractModule {
 
 			List<VectorXZ> crossSection = new ArrayList<VectorXZ>();
 
-			for (VectorXZ v : pipeCircle.getVertexList()) {
+			for (VectorXZ v : pipeCircle.vertices()) {
 				crossSection.add(new VectorXZ(v.x, v.z <= height ? v.z : height - (v.z - height)));
 			}
 
@@ -135,7 +135,7 @@ public class PoolModule extends AbstractModule {
 
 			VectorXZ lowestRightVertexAboveWater = null;
 
-			for (VectorXZ v : pipeCircle.getVertexList()) {
+			for (VectorXZ v : pipeCircle.vertices()) {
 				if (v.x > 0 && v.z >= waterHeight) {
 					if (lowestRightVertexAboveWater == null || v.z < lowestRightVertexAboveWater.z) {
 						lowestRightVertexAboveWater = v;

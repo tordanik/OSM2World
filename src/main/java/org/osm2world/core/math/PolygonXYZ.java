@@ -30,36 +30,33 @@ public class PolygonXYZ implements BoundedObject {
 	}
 
 	/**
-	 * returns the polygon's vertices.
-	 * Unlike {@link #getVertexLoop()}, there is no duplication
-	 * of the first/last vertex.
+	 * returns the polygon's vertices. First and last vertex are equal.
 	 */
-	public List<VectorXYZ> getVertices() {
-		return vertexLoop.subList(0, vertexLoop.size()-1);
+	public List<VectorXYZ> vertices() {
+		return vertexLoop;
 	}
 
 	/**
-	 * returns the polygon's vertices. First and last vertex are equal.
+	 * returns the polygon's vertices.
+	 * Unlike {@link #vertices()}, there is no duplication of the first/last vertex.
 	 */
-	public List<VectorXYZ> getVertexLoop() {
-		return vertexLoop;
+	public List<VectorXYZ> verticesNoDup() {
+		return vertexLoop.subList(0, vertexLoop.size() - 1);
 	}
 
 	/**
 	 * returns the number of vertices in this polygon.
 	 * The duplicated first/last vertex is <em>not</em> counted twice,
-	 * so the result is equivalent to {@link #getVertices()}.size().
+	 * so the result is equivalent to {@link #verticesNoDup()}.size().
 	 */
 	public int size() {
 		return vertexLoop.size()-1;
 	}
 
-	//TODO (code duplication): common polygon supertype?
 	public List<LineSegmentXYZ> getSegments() {
-		List<LineSegmentXYZ> segments =
-			new ArrayList<LineSegmentXYZ>(vertexLoop.size());
-		for (int i=0; i+1 < vertexLoop.size(); i++) {
-			segments.add(new LineSegmentXYZ(vertexLoop.get(i), vertexLoop.get(i+1)));
+		List<LineSegmentXYZ> segments = new ArrayList<>(vertexLoop.size());
+		for (int i = 0; i + 1 < vertexLoop.size(); i++) {
+			segments.add(new LineSegmentXYZ(vertexLoop.get(i), vertexLoop.get(i + 1)));
 		}
 		return segments;
 	}
@@ -68,28 +65,8 @@ public class PolygonXYZ implements BoundedObject {
 	 * caller must check whether flattening will result in a simple planar polygon
 	 */
 	public SimplePolygonXZ getSimpleXZPolygon() {
-		List<VectorXZ> verticesXZ = new ArrayList<VectorXZ>(vertexLoop.size());
-		for (VectorXYZ vertex : vertexLoop) {
-			verticesXZ.add(vertex.xz());
-		}
+		List<VectorXZ> verticesXZ = vertexLoop.stream().map(it -> it.xz()).collect(toList());
 		return new SimplePolygonXZ(verticesXZ);
-	}
-
-	/**
-	 * returns a triangle with the same vertices as this polygon.
-	 * Requires that the polygon is triangular!
-	 */
-	public TriangleXYZ asTriangleXYZ() {
-		if (vertexLoop.size() != 4) {
-			throw new InvalidGeometryException("attempted creation of triangle " +
-					"from polygon with vertex loop of size " + vertexLoop.size() +
-					": " + vertexLoop);
-		} else {
-			return new TriangleXYZ(
-					vertexLoop.get(0),
-					vertexLoop.get(1),
-					vertexLoop.get(2));
-		}
 	}
 
 	/**
@@ -97,7 +74,7 @@ public class PolygonXYZ implements BoundedObject {
 	 * It consists of the same vertices, but has the other direction.
 	 */
 	public PolygonXYZ reverse() {
-		List<VectorXYZ> newVertexLoop = new ArrayList<VectorXYZ>(vertexLoop);
+		List<VectorXYZ> newVertexLoop = new ArrayList<>(vertexLoop);
 		Collections.reverse(newVertexLoop);
 		return new PolygonXYZ(newVertexLoop);
 	}
@@ -108,7 +85,7 @@ public class PolygonXYZ implements BoundedObject {
 	}
 
 	public PolygonXYZ add(VectorXYZ v) {
-		return new PolygonXYZ(getVertexLoop().stream().map(v::add).collect(toList()));
+		return new PolygonXYZ(vertices().stream().map(v::add).collect(toList()));
 	}
 
 	@Override

@@ -41,7 +41,7 @@ public final class NormalCalculationUtil {
 			Multimap<VectorXYZ, VectorXYZ> adjacentNormals = calculateAdjacentNormals(triangles);
 
 			for (TriangleXYZ t : triangles) {
-				for (VectorXYZ v : t.getVertices()) {
+				for (VectorXYZ v : t.verticesNoDup()) {
 					result.add(averageNormal(adjacentNormals.get(v)));
 				}
 			}
@@ -150,7 +150,7 @@ public final class NormalCalculationUtil {
 		Multimap<VectorXYZ, VectorXYZ> result = HashMultimap.create();
 
 		for (TriangleXYZ triangle : triangles) {
-			for (VectorXYZ vertex : triangle.getVertices()) {
+			for (VectorXYZ vertex : triangle.verticesNoDup()) {
 				result.put(vertex, triangle.getNormal());
 			}
 		}

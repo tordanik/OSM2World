@@ -604,7 +604,7 @@ public final class GeometryUtil {
 
 				} else {
 
-					ArrayList<VectorXZ> vertexLoop = new ArrayList<>(polygon.getVertexList());
+					ArrayList<VectorXZ> vertexLoop = new ArrayList<>(polygon.vertices());
 
 					vertexLoop.add(i + 1, point);
 

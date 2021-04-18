@@ -50,7 +50,7 @@ public class Earcut4JTriangulationUtil {
 
 		int dataIndex = 0;
 
-		for (VectorXZ v : polygon.getVertexListNoDup()) {
+		for (VectorXZ v : polygon.verticesNoDup()) {
 			data[2 * dataIndex] = v.x;
 			data[2 * dataIndex + 1] = v.z;
 			dataIndex ++;
@@ -60,7 +60,7 @@ public class Earcut4JTriangulationUtil {
 
 			holeIndices.add(dataIndex);
 
-			for (VectorXZ v : hole.getVertexListNoDup()) {
+			for (VectorXZ v : hole.verticesNoDup()) {
 				data[2 * dataIndex] = v.x;
 				data[2 * dataIndex + 1] = v.z;
 				dataIndex ++;

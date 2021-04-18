@@ -61,7 +61,7 @@ public final class FaceDecompositionUtil {
 
 		/* snap intersection points to nearby segment endpoints */
 
-		Set<VectorXZ> knownPoints = segments.stream().flatMap(s -> s.getVertexList().stream()).collect(toSet());
+		Set<VectorXZ> knownPoints = segments.stream().flatMap(s -> s.vertices().stream()).collect(toSet());
 		List<Intersection<LineSegmentXZ>> newIntersections = new ArrayList<>();
 		for (Iterator<Intersection<LineSegmentXZ>> iterator = intersections.iterator(); iterator.hasNext();) {
 			Intersection<LineSegmentXZ> intersection = iterator.next();
@@ -81,14 +81,14 @@ public final class FaceDecompositionUtil {
 			intersectionPointsPerSegment.put(intersection.segmentB, intersection.pos);
 		}
 		for (LineSegmentXZ segment : segments) {
-			intersectionPointsPerSegment.putAll(segment, segment.getVertexList());
+			intersectionPointsPerSegment.putAll(segment, segment.vertices());
 		}
 
 		for (LineSegmentXZ segment : intersectionPointsPerSegment.keys()) {
 
 			List<VectorXZ> points = new ArrayList<>(intersectionPointsPerSegment.get(segment));
 
-			VectorXZ start = min(segment.getVertexList(), X_Y_COMPARATOR);
+			VectorXZ start = min(segment.vertices(), X_Y_COMPARATOR);
 			points.sort(Comparator.comparingDouble(p -> p.distanceTo(start)));
 
 			for (int i = 0; i + 1 < points.size(); i++) {
@@ -99,7 +99,7 @@ public final class FaceDecompositionUtil {
 
 		/* create a set of Nodes from the segments' end points */
 
-		Set<VectorXZ> nodes = edges.stream().flatMap(e -> e.getVertexList().stream()).collect(toSet());
+		Set<VectorXZ> nodes = edges.stream().flatMap(e -> e.vertices().stream()).collect(toSet());
 
 		/* calculate and return the result */
 

@@ -26,7 +26,7 @@ public class PolylineXZ implements PolylineShapeXZ {
 	}
 
 	@Override
-	public List<VectorXZ> getVertexList() {
+	public List<VectorXZ> vertices() {
 		return vertices;
 	}
 

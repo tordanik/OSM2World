@@ -877,7 +877,7 @@ public final class PowerModule extends AbstractModule {
 					VectorXZ end = intersections.get(i + 1);
 					PolylineXZ polyline = new PolylineXZ(equallyDistributePointsAlong(20, true,start, end));
 					panelRows.add(polyline);
-					eleConnectors.addConnectorsFor(polyline.getVertexList(), this, ON);
+					eleConnectors.addConnectorsFor(polyline.vertices(), this, ON);
 				}
 
 				posZ += panelUpVector.z * 1.5;
@@ -891,11 +891,11 @@ public final class PowerModule extends AbstractModule {
 
 			for (PolylineXZ panelRow : panelRows) {
 
-				for (int i = 0; i + 1 < panelRow.getVertexList().size(); i++)
+				for (int i = 0; i + 1 < panelRow.vertices().size(); i++)
 
 				renderPanelsTo(target,
-						eleConnectors.getPosXYZ(panelRow.getVertexList().get(i)),
-						eleConnectors.getPosXYZ(panelRow.getVertexList().get(i+1)),
+						eleConnectors.getPosXYZ(panelRow.vertices().get(i)),
+						eleConnectors.getPosXYZ(panelRow.vertices().get(i+1)),
 						panelUpVector);
 
 			}

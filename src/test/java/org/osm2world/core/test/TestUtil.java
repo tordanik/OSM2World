@@ -119,11 +119,11 @@ public final class TestUtil {
 	}
 
 	public static final void assertAlmostEquals(SimplePolygonShapeXZ expected, SimplePolygonShapeXZ actual) {
-		assertAlmostEquals(expected.getVertexListNoDup(), actual.getVertexListNoDup());
+		assertAlmostEquals(expected.verticesNoDup(), actual.verticesNoDup());
 	}
 
 	public static final void assertAlmostEquals(PolygonXYZ expected, PolygonXYZ actual) {
-		assertAlmostEqualsXYZ(expected.getVertices(), actual.getVertices());
+		assertAlmostEqualsXYZ(expected.verticesNoDup(), actual.verticesNoDup());
 	}
 
 	/**

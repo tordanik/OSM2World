@@ -135,8 +135,8 @@ public class GolfModule extends AbstractModule {
 
 						if (getEleConnectors().getConnector(v) != null) {
 							return getEleConnectors().getPosXYZ(v);
-						} else if (large.getVertexList().contains(v)
-								|| large.getHoles().stream().anyMatch(h -> h.getVertexList().contains(v))) {
+						} else if (large.vertices().contains(v)
+								|| large.getHoles().stream().anyMatch(h -> h.vertices().contains(v))) {
 							return v.xyz(oldEle);
 						} else {
 							return v.xyz(newEle);
@@ -220,7 +220,7 @@ public class GolfModule extends AbstractModule {
 
 			/* create circle around the hole */
 
-			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).getVertexList(HOLE_CIRCLE_VERTICES));
+			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).getVertices(HOLE_CIRCLE_VERTICES));
 
 			pinConnectors = new EleConnectorGroup();
 			pinConnectors.addConnectorsFor(pinHoleLoop.getVertexCollection(), area, GroundState.ON);
@@ -268,7 +268,7 @@ public class GolfModule extends AbstractModule {
 
 			PolygonXYZ upperHoleRing = pinConnectors.getPosXYZ(pinHoleLoop);
 
-			drawPin(target, pinPosition, upperHoleRing.getVertexLoop());
+			drawPin(target, pinPosition, upperHoleRing.vertices());
 
 		}
 

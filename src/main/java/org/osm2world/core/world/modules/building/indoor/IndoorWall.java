@@ -628,18 +628,18 @@ public class IndoorWall implements Renderable {
 		// lambda needs final
 		final LineSegmentXZ finalSegSegment = new LineSegmentXZ(wallSegSegment.p1, wallSegSegment.p2);
 
-		List<VectorXZ> rightOffset = wallSegSegment.getVertexList().stream()
+		List<VectorXZ> rightOffset = wallSegSegment.vertices().stream()
 				.map(v -> v.add(finalSegSegment.getDirection().rightNormal().mult(wallThickness)))
 				.collect(toList());
 		LineSegmentXZ offsetSegRight = new LineSegmentXZ(rightOffset.get(0), rightOffset.get(1));
 
-		List<VectorXZ> leftOffset = wallSegSegment.getVertexList().stream()
+		List<VectorXZ> leftOffset = wallSegSegment.vertices().stream()
 				.map(v -> v.add(finalSegSegment.getDirection().rightNormal().mult(-wallThickness)))
 				.collect(toList());
 		LineSegmentXZ offsetSegLeft = new LineSegmentXZ(leftOffset.get(0), leftOffset.get(1));
 
 
-		VectorXZ tempResult = offsetSegRight.getVertexList().get(1);
+		VectorXZ tempResult = offsetSegRight.vertices().get(1);
 
 		if (maxLineSegment != null
 				&& abs(abs(maxLineSegment.getLineSegment().getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {
@@ -667,7 +667,7 @@ public class IndoorWall implements Renderable {
 		result.add(tempResult);
 
 
-		tempResult = offsetSegLeft.getVertexList().get(1);
+		tempResult = offsetSegLeft.vertices().get(1);
 
 		if (minLineSegment != null
 				&& abs(abs(minLineSegment.getLineSegment().getDirection().normalize().dot(wallSegSegment.getDirection().normalize())) - 1) >= straightnessTolerance) {

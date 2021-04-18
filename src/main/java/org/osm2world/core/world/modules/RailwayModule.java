@@ -281,7 +281,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			/* draw ground */
 
-			List<VectorXYZ> vectors = getOutlinePolygon().getVertexLoop();
+			List<VectorXYZ> vectors = getOutlinePolygon().vertices();
 
 			Material material = Materials.RAIL_BALLAST;
 

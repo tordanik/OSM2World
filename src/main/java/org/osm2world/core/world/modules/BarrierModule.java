@@ -583,7 +583,7 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXZ> vertexLoop = new ArrayList<VectorXZ>();
 
-			for (VectorXZ v : new CircleXZ(NULL_VECTOR, 0.05).getVertexList()) {
+			for (VectorXZ v : new CircleXZ(NULL_VECTOR, 0.05).vertices()) {
 				if (v.x <= 0) {
 					vertexLoop.add(v);
 				}
@@ -740,7 +740,7 @@ public class BarrierModule extends AbstractModule {
 					path, nCopies(path.size(), Y_UNIT), null, null, null);
 
 			//back
-			target.drawExtrudedShape(material, new PolylineXZ(Lists.reverse(SHAPE_GERMAN_B.getVertexList())),
+			target.drawExtrudedShape(material, new PolylineXZ(Lists.reverse(SHAPE_GERMAN_B.vertices())),
 					path, nCopies(path.size(), Y_UNIT), null, null, null);
 
 			/* add posts */

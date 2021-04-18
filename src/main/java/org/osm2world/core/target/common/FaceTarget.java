@@ -256,7 +256,7 @@ public abstract class FaceTarget extends AbstractTarget {
 					subLists.add(list.subList(3*i, 3*(i+1)));
 				}
 
-				drawFace(material, triangle.getVertices(), null, subLists);
+				drawFace(material, triangle.verticesNoDup(), null, subLists);
 			}
 
 			i++;
@@ -378,7 +378,7 @@ public abstract class FaceTarget extends AbstractTarget {
 	protected static Face createFaceFromTriangle(IsolatedTriangle t) {
 
 		List<VectorXYZ> newFaceVs =
-				new ArrayList<VectorXYZ>(t.triangle.getVertices());
+				new ArrayList<VectorXYZ>(t.triangle.verticesNoDup());
 
 		List<List<VectorXZ>> newFaceTCLists = new ArrayList<List<VectorXZ>>();
 

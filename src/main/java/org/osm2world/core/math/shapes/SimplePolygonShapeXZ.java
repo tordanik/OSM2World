@@ -39,16 +39,16 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	/**
 	 * returns the number of vertices in this polygon.
 	 * The duplicated first/last vertex is <em>not</em> counted twice,
-	 * so the result is equivalent to {@link #getVertexListNoDup()}.size().
+	 * so the result is equivalent to {@link #verticesNoDup()}.size().
 	 */
 	public default int size() {
-		return getVertexList().size() - 1;
+		return vertices().size() - 1;
 	}
 
 	/** returns the vertex at a position in the vertex sequence */
 	public default VectorXZ getVertex(int index) {
 		assert 0 <= index && index < size();
-		return getVertexList().get(index);
+		return vertices().get(index);
 	}
 
 	/**
@@ -75,7 +75,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	@Override
 	public default boolean contains(VectorXZ v) {
 
-		List<VectorXZ> vertexLoop = getVertexList();
+		List<VectorXZ> vertexLoop = vertices();
 
 		int i, j;
 		boolean c = false;
@@ -94,7 +94,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 	public default boolean intersects(VectorXZ segmentP1, VectorXZ segmentP2) {
 
-		List<VectorXZ> vertexList = getVertexList();
+		List<VectorXZ> vertexList = vertices();
 
 		for (int i = 0; i + 1 < vertexList.size(); i++) {
 
@@ -121,7 +121,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	public default List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
 
 		List<VectorXZ> result = new ArrayList<>();
-		List<VectorXZ> vertexLoop = getVertexList();
+		List<VectorXZ> vertexLoop = vertices();
 
 		for (int i = 0; i + 1 < vertexLoop.size(); i++) {
 
@@ -209,7 +209,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 			double angle = getVertex(i).angleTo(this.getVertexAfter(i));
 
 			List<VectorXZ> rotatedVertices = new ArrayList<VectorXZ>();
-			for (VectorXZ v : getVertexList()) {
+			for (VectorXZ v : vertices()) {
 				rotatedVertices.add(v.rotate(-angle));
 			}
 
@@ -235,7 +235,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 	@Override
 	default SimplePolygonShapeXZ rotatedCW(double angleRad) {
-		List<VectorXZ> rotatedVertexList = getVertexList().stream()
+		List<VectorXZ> rotatedVertexList = vertices().stream()
 				.map(v -> v.rotate(angleRad))
 				.collect(toList());
 		return new SimplePolygonXZ(rotatedVertexList);
@@ -244,7 +244,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	/** creates a new polygon by adding a shift vector to each vector of this */
 	@Override
 	public default SimplePolygonShapeXZ shift(VectorXZ moveVector) {
-		return new SimplePolygonXZ(getVertexList().stream().map(moveVector::add).collect(toList()));
+		return new SimplePolygonXZ(vertices().stream().map(moveVector::add).collect(toList()));
 	}
 
 }

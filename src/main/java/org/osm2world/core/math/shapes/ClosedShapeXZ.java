@@ -12,9 +12,9 @@ import org.osm2world.core.math.VectorXZ;
 /** a closed shape. For this kind of shape, the vertices describe an area's boundary. Can have holes. */
 public interface ClosedShapeXZ extends ShapeXZ {
 
-	/** returns the shape's vertices like {@link #getVertexList()}, but with no duplication of the first/last vertex */
-	public default List<VectorXZ> getVertexListNoDup() {
-		List<VectorXZ> vertexLoop = getVertexList();
+	/** returns the shape's vertices like {@link #vertices()}, but with no duplication of the first/last vertex */
+	public default List<VectorXZ> verticesNoDup() {
+		List<VectorXZ> vertexLoop = vertices();
 		return vertexLoop.subList(0, vertexLoop.size() - 1);
 	}
 

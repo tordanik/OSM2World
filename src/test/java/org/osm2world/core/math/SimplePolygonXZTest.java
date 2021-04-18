@@ -99,13 +99,13 @@ public class SimplePolygonXZTest {
 
 		SimplePolygonShapeXZ shiftP = p1.shift(VectorXZ.X_UNIT);
 
-		assertSame(p1.size(), shiftP.getVertexList().size() - 1);
-		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexList().get(0));
-		assertAlmostEquals(new VectorXZ( 0,  0), shiftP.getVertexList().get(1));
-		assertAlmostEquals(new VectorXZ( 0, +1), shiftP.getVertexList().get(2));
-		assertAlmostEquals(new VectorXZ( 2, +1), shiftP.getVertexList().get(3));
-		assertAlmostEquals(new VectorXZ( 2, -1), shiftP.getVertexList().get(4));
-		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.getVertexList().get(5));
+		assertSame(p1.size(), shiftP.vertices().size() - 1);
+		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.vertices().get(0));
+		assertAlmostEquals(new VectorXZ( 0,  0), shiftP.vertices().get(1));
+		assertAlmostEquals(new VectorXZ( 0, +1), shiftP.vertices().get(2));
+		assertAlmostEquals(new VectorXZ( 2, +1), shiftP.vertices().get(3));
+		assertAlmostEquals(new VectorXZ( 2, -1), shiftP.vertices().get(4));
+		assertAlmostEquals(new VectorXZ( 0, -1), shiftP.vertices().get(5));
 
 	}
 

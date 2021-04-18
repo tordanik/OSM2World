@@ -52,7 +52,7 @@ public class SkillionRoof extends HeightfieldRoof {
 
 			/* calculate maximum distance from ridge */
 
-			roofLength = originalPolygon.getOuter().getVertexList().stream()
+			roofLength = originalPolygon.getOuter().vertices().stream()
 					.mapToDouble(v -> distanceFromLine(v, ridge.p1, ridge.p2))
 					.max().getAsDouble();
 

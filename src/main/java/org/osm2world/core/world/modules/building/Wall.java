@@ -135,7 +135,7 @@ public class Wall implements Renderable {
 
 		/* calculate the lower boundary of the wall */
 
-		List<VectorXYZ> bottomPoints = listXYZ(points.getVertexList(), floorEle);
+		List<VectorXYZ> bottomPoints = listXYZ(points.vertices(), floorEle);
 
 		/* calculate the upper boundary of the wall (from roof polygons) */
 
@@ -185,7 +185,7 @@ public class Wall implements Renderable {
 			// just use the same points as for the bottom.
 			// This might miss some roof details and should only happen with legacy features like building_passage.
 			System.err.println("Warning: cannot construct top boundary of wall for " + buildingPart.area);
-			topPointsXZ = points.getVertexList();
+			topPointsXZ = points.vertices();
 		}
 
 		List<VectorXYZ> topPoints = topPointsXZ.stream()
@@ -310,7 +310,7 @@ public class Wall implements Renderable {
 
 	@Override
 	public String toString() {
-		if (getNodes().size() == points.getVertexList().size()) {
+		if (getNodes().size() == points.vertices().size()) {
 			return getNodes().toString();
 		} else {
 			return points.toString();
@@ -323,7 +323,7 @@ public class Wall implements Renderable {
 	 */
 	List<MapNode> getNodes() {
 		List<MapNode> result = new ArrayList<>();
-		for (VectorXZ point : points.getVertexList()) {
+		for (VectorXZ point : points.vertices()) {
 			if (pointNodeMap.containsKey(point)) {
 				result.add(pointNodeMap.get(point));
 			}

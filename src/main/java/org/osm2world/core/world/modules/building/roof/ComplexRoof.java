@@ -130,7 +130,7 @@ public class ComplexRoof extends HeightfieldRoof {
 		 * often there are nodes that are only added to join one building to another
 		 * but these interfere with proper triangulation.
 		 * TODO: do the same for holes */
-		List<VectorXZ> vertices = originalPolygon.getOuter().getVertexList();
+		List<VectorXZ> vertices = originalPolygon.getOuter().vertices();
 		List<VectorXZ> simplified = new ArrayList<>();
 		VectorXZ vPrev = vertices.get(vertices.size() - 2);
 

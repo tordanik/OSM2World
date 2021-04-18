@@ -53,7 +53,7 @@ public abstract class AbstractTarget implements Target {
 
 			List<VectorXYZ> triangleVertices = new ArrayList<VectorXYZ>();
 
-			for (VectorXZ v : triangle.getVertexList()) {
+			for (VectorXZ v : triangle.vertices()) {
 				triangleVertices.add(new VectorXYZ(-v.x, v.z, 0));
 			}
 
@@ -99,7 +99,7 @@ public abstract class AbstractTarget implements Target {
 
 		if (texCoordLists != null) {
 			for (List<VectorXZ> texCoordList : texCoordLists) {
-				if (texCoordList.size() != path.size() * shape.getVertexList().size()) {
+				if (texCoordList.size() != path.size() * shape.vertices().size()) {
 					throw new IllegalArgumentException("incorrect number of texture coordinates");
 				}
 			}
@@ -151,7 +151,7 @@ public abstract class AbstractTarget implements Target {
 				numPoints = Integer.max(4, numPoints / 2);
 			}
 
-			shape = new SimplePolygonXZ(circle.getVertexList(numPoints));
+			shape = new SimplePolygonXZ(circle.getVertices(numPoints));
 
 		}
 
@@ -179,7 +179,7 @@ public abstract class AbstractTarget implements Target {
 
 			List<VectorXYZ> shapeVertices = new ArrayList<>();
 
-			for (VectorXZ v : ring.getVertexList()) {
+			for (VectorXZ v : ring.vertices()) {
 				shapeVertices.add(new VectorXYZ(-v.x, v.z, 0));
 			}
 
@@ -375,7 +375,7 @@ public abstract class AbstractTarget implements Target {
 
 		} else {
 
-			bottomShape = new SimplePolygonXZ(bottomCircle.getVertexList(corners));
+			bottomShape = new SimplePolygonXZ(bottomCircle.getVertices(corners));
 
 		}
 

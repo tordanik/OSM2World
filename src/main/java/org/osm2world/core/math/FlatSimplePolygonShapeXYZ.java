@@ -15,14 +15,13 @@ public interface FlatSimplePolygonShapeXYZ {
 	/**
 	 * returns the polygon's vertices. First and last vertex are equal.
 	 */
-	public List<VectorXYZ> getVertexLoop();
+	public List<VectorXYZ> vertices();
 
 	/**
 	 * returns the polygon's vertices.
-	 * Unlike {@link #getVertexLoop()}, there is no duplication
-	 * of the first/last vertex.
+	 * Unlike {@link #vertices()}, there is no duplication of the first/last vertex.
 	 */
-	public List<VectorXYZ> getVertices();
+	public List<VectorXYZ> verticesNoDup();
 
 	/** returns the normalized normal vector. The vector points "up" for a counterclockwise polygon. */
 	public VectorXYZ getNormal();
@@ -34,8 +33,8 @@ public interface FlatSimplePolygonShapeXYZ {
 	 */
 	default public VectorXYZ getCenter() {
 		double x=0, y=0, z=0;
-		int numberVertices = getVertices().size();
-		for (VectorXYZ vertex : getVertices()) {
+		int numberVertices = verticesNoDup().size();
+		for (VectorXYZ vertex : verticesNoDup()) {
 			x += vertex.x / numberVertices;
 			y += vertex.y / numberVertices;
 			z += vertex.z / numberVertices;
@@ -68,7 +67,7 @@ public interface FlatSimplePolygonShapeXYZ {
 
 	/* TODO: make private in Java 9 */
 	default SimplePolygonXZ toFacePlane(FlatSimplePolygonShapeXYZ p) {
-		List<VectorXZ> xzLoop = p.getVertexLoop().stream().map(v -> toFacePlane(v)).collect(toList());
+		List<VectorXZ> xzLoop = p.vertices().stream().map(v -> toFacePlane(v)).collect(toList());
 		return new SimplePolygonXZ(xzLoop);
 	}
 
@@ -79,7 +78,7 @@ public interface FlatSimplePolygonShapeXYZ {
 
 	/* TODO: make private in Java 9 */
 	default FaceXYZ fromFacePlane(SimplePolygonXZ p) {
-		List<VectorXYZ> xyzLoop = p.getVertexList().stream().map(v -> fromFacePlane(v)).collect(toList());
+		List<VectorXYZ> xyzLoop = p.vertices().stream().map(v -> fromFacePlane(v)).collect(toList());
 		return new FaceXYZ(xyzLoop);
 	}
 

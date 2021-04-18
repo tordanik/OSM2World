@@ -33,7 +33,7 @@ public class Poly2TriUtil {
 				Collection<LineSegmentXZ> cSegments,
 				Collection<VectorXZ> cPoints) {
 
-			List<VectorXZ> vertices = polygon.getVertexLoop();
+			List<VectorXZ> vertices = polygon.vertices();
 
 			segmentSet.addAll(cSegments);
 
@@ -50,7 +50,7 @@ public class Poly2TriUtil {
 						vertices.get(i + 1)));
 
 			for (SimplePolygonXZ hole : holes) {
-				vertices = hole.getVertexLoop();
+				vertices = hole.vertices();
 				for (int i = 0, n = vertices.size() - 1; i < n; i++)
 					segmentSet.add(new LineSegmentXZ(vertices.get(i),
 							vertices.get(i + 1)));

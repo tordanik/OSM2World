@@ -78,7 +78,7 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public List<VectorXZ> getVertexList() {
+	public List<VectorXZ> vertices() {
 
 		VectorXZ v0 = new VectorXZ(minX, minZ);
 		VectorXZ v1 = new VectorXZ(maxX, minZ);
@@ -113,7 +113,7 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	public SimplePolygonXZ polygonXZ() {
 
 		if (polygonXZ == null) {
-			polygonXZ = new SimplePolygonXZ(getVertexList());
+			polygonXZ = new SimplePolygonXZ(vertices());
 		}
 
 		return polygonXZ;

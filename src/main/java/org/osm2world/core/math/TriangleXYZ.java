@@ -17,12 +17,12 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 	}
 
 	@Override
-	public List<VectorXYZ> getVertices() {
+	public List<VectorXYZ> verticesNoDup() {
 		return ImmutableList.of(v1, v2, v3);
 	}
 
 	@Override
-	public List<VectorXYZ> getVertexLoop() {
+	public List<VectorXYZ> vertices() {
 		return ImmutableList.of(v1, v2, v3, v1);
 	}
 

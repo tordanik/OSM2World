@@ -32,7 +32,7 @@ public class RoofDataDebugView extends DebugView {
 				HeightfieldRoof roofData = (HeightfieldRoof)part.getRoof();
 
 				for (SimplePolygonShapeXZ polygon : roofData.getPolygon().getRings()) {
-					for (VectorXZ v : polygon.getVertexListNoDup()) {
+					for (VectorXZ v : polygon.verticesNoDup()) {
 						drawBoxAround(target, v, POLYGON_COLOR, 0.3f);
 					}
 					for (LineSegmentXZ s : polygon.getSegments()) {

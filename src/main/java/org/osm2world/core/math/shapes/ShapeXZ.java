@@ -21,25 +21,23 @@ public interface ShapeXZ extends BoundedObject {
 	 * returns the shape's vertices.
 	 * For closed shapes, the first and last vertex are identical.
 	 *
-	 * TODO support accuracy-dependent vertex collections (e.g. for circles)
-	 *
 	 * @return list of vertices, not empty, not null
 	 */
-	public List<VectorXZ> getVertexList();
+	public List<VectorXZ> vertices();
 
 	/** returns the line segments connecting each successive pair of vertices */
 	public default List<LineSegmentXZ> getSegments() {
-		List<VectorXZ> vertexList = getVertexList();
-		List<LineSegmentXZ> segments = new ArrayList<>(vertexList.size() - 1);
-		for (int i = 0; i + 1 < vertexList.size(); i++) {
-			segments.add(new LineSegmentXZ(vertexList.get(i), vertexList.get(i + 1)));
+		List<VectorXZ> vertices = vertices();
+		List<LineSegmentXZ> segments = new ArrayList<>(vertices.size() - 1);
+		for (int i = 0; i + 1 < vertices.size(); i++) {
+			segments.add(new LineSegmentXZ(vertices.get(i), vertices.get(i + 1)));
 		}
 		return segments;
 	}
 
 	@Override
 	default AxisAlignedRectangleXZ boundingBox() {
-		return bbox(getVertexList());
+		return bbox(vertices());
 	}
 
 	/**
@@ -48,20 +46,20 @@ public interface ShapeXZ extends BoundedObject {
 	 * @param angleRad  clockwise rotation angle in radians
 	 */
 	public default ShapeXZ rotatedCW(double angleRad) {
-		List<VectorXZ> rotatedVertexList = getVertexList().stream()
+		List<VectorXZ> rotatedVertices = vertices().stream()
 				.map(v -> v.rotate(angleRad))
 				.collect(toList());
-		return () -> rotatedVertexList;
+		return () -> rotatedVertices;
 	}
 
 	/**
 	 * returns a moved version of this shape
 	 */
 	public default ShapeXZ shift(VectorXZ moveVector) {
-		List<VectorXZ> newVertexList = getVertexList().stream()
+		List<VectorXZ> newVertices = vertices().stream()
 				.map(v -> v.add(moveVector))
 				.collect(toList());
-		return () -> newVertexList;
+		return () -> newVertices;
 	}
 
 }

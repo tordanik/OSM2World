@@ -54,7 +54,7 @@ public class QuadtreeDebugView extends DebugView {
 
 			/* draw leaf boundary */
 
-			target.drawLineStrip(LEAF_BORDER_COLOR, 1, listXYZ(leaf.bounds.getVertexList(), 0));
+			target.drawLineStrip(LEAF_BORDER_COLOR, 1, listXYZ(leaf.bounds.vertices(), 0));
 
 			if (arrowsEnabled) {
 

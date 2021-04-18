@@ -26,7 +26,7 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	 * returns a list containing the two vertices {@link #p1} and {@link #p2}
 	 */
 	@Override
-	public List<VectorXZ> getVertexList() {
+	public List<VectorXZ> vertices() {
 		return asList(p1, p2);
 	}
 

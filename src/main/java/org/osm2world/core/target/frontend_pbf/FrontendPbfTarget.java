@@ -304,7 +304,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 			List<VectorXYZ> vertices = new ArrayList<>(triangles.size() * 3);
 
 			for (TriangleXYZ triangle : triangles) {
-				vertices.addAll(triangle.getVertices());
+				vertices.addAll(triangle.verticesNoDup());
 			}
 
 			/* remove degenerate triangles */
@@ -662,16 +662,16 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 			shapeBuilder.setType(ShapeType.POLYGON);
 
-			for (int i = 0; i < s.getVertexList().size() - 1; i++) { //omit the duplicated vector
-				shapeBuilder.addParameters(round(s.getVertexList().get(i).x * COORD_PRECISION_FACTOR));
-				shapeBuilder.addParameters(round(s.getVertexList().get(i).z * COORD_PRECISION_FACTOR));
+			for (int i = 0; i < s.vertices().size() - 1; i++) { //omit the duplicated vector
+				shapeBuilder.addParameters(round(s.vertices().get(i).x * COORD_PRECISION_FACTOR));
+				shapeBuilder.addParameters(round(s.vertices().get(i).z * COORD_PRECISION_FACTOR));
 			}
 
 		} else {
 
 			shapeBuilder.setType(ShapeType.POLYLINE);
 
-			for (VectorXZ v : s.getVertexList()) {
+			for (VectorXZ v : s.vertices()) {
 				shapeBuilder.addParameters(round(v.x * COORD_PRECISION_FACTOR));
 				shapeBuilder.addParameters(round(v.z * COORD_PRECISION_FACTOR));
 			}

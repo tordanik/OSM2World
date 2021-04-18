@@ -25,12 +25,12 @@ public class JTSBufferUtilTest {
 		{
 			List<PolygonWithHolesXZ> result0 = bufferPolygon(input, 0);
 			assertEquals(1, result0.size());
-			assertSameCyclicOrder(true, input.getVertexList(), result0.get(0).getVertexList());
+			assertSameCyclicOrder(true, input.vertices(), result0.get(0).vertices());
 		} {
 			List<PolygonWithHolesXZ> resultGrow5 = bufferPolygon(input, 5);
 			assertEquals(1, resultGrow5.size());
-			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 20, 20).getVertexList(),
-					resultGrow5.get(0).getVertexList());
+			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 20, 20).vertices(),
+					resultGrow5.get(0).vertices());
 		} {
 			List<PolygonWithHolesXZ> resultShrink20 = bufferPolygon(input, -20);
 			assertTrue(resultShrink20.isEmpty());
@@ -51,22 +51,22 @@ public class JTSBufferUtilTest {
 		{
 			List<PolygonWithHolesXZ> result0 = bufferPolygon(input, 0);
 			assertEquals(1, result0.size());
-			assertSameCyclicOrder(true, outer.getVertexList(), result0.get(0).getOuter().getVertexList());
-			assertSameCyclicOrder(true, inner.getVertexList(), result0.get(0).getHoles().get(0).getVertexList());
+			assertSameCyclicOrder(true, outer.vertices(), result0.get(0).getOuter().vertices());
+			assertSameCyclicOrder(true, inner.vertices(), result0.get(0).getHoles().get(0).vertices());
 		} {
 			List<PolygonWithHolesXZ> resultGrow1 = bufferPolygon(input, 1);
 			assertEquals(1, resultGrow1.size());
-			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 12, 12).getVertexList(),
-					resultGrow1.get(0).getOuter().getVertexList());
-			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 1, 1).getVertexList(),
-					resultGrow1.get(0).getHoles().get(0).getVertexList());
+			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 12, 12).vertices(),
+					resultGrow1.get(0).getOuter().vertices());
+			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 1, 1).vertices(),
+					resultGrow1.get(0).getHoles().get(0).vertices());
 		} {
 			List<PolygonWithHolesXZ> resultShrink1 = bufferPolygon(input, -1);
 			assertEquals(1, resultShrink1.size());
-			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 8, 8).getVertexList(),
-					resultShrink1.get(0).getOuter().getVertexList());
-			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 5, 5).getVertexList(),
-					resultShrink1.get(0).getHoles().get(0).getVertexList());
+			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 8, 8).vertices(),
+					resultShrink1.get(0).getOuter().vertices());
+			assertSameCyclicOrder(true, new AxisAlignedRectangleXZ(center, 5, 5).vertices(),
+					resultShrink1.get(0).getHoles().get(0).vertices());
 		} {
 			List<PolygonWithHolesXZ> resultShrink20 = bufferPolygon(input, -20);
 			assertTrue(resultShrink20.isEmpty());

@@ -249,7 +249,7 @@ public class WaterModule extends ConfigurableWorldModule {
 
 			//TODO: check whether it's within a riverbank (as with Waterway)
 
-			List<VectorXYZ> vertices = getOutlinePolygon().getVertices();
+			List<VectorXYZ> vertices = getOutlinePolygon().verticesNoDup();
 
 			target.drawConvexPolygon(WATER, vertices,
 					texCoordLists(vertices, WATER, GLOBAL_X_Z));
@@ -322,7 +322,7 @@ public class WaterModule extends ConfigurableWorldModule {
 					new VectorXZ(-width/2, 0)
 			);
 
-			List<VectorXYZ> path = getOutlinePolygon().getVertexLoop();
+			List<VectorXYZ> path = getOutlinePolygon().vertices();
 
 			target.drawExtrudedShape(CONCRETE, wallShape, path,
 					nCopies(path.size(), Y_UNIT), null, null, null);

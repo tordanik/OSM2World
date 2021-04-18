@@ -37,7 +37,7 @@ public interface PolylineShapeXZ extends ShapeXZ {
 	 */
 	default public double offsetOf(VectorXZ point) {
 
-		List<VectorXZ> vertices = getVertexList();
+		List<VectorXZ> vertices = vertices();
 
 		// how far a point can be from a segment of this polyline and still be considered "on" it
 		final double IS_ON_TOLERANCE = 1e-4;
@@ -111,7 +111,7 @@ public interface PolylineShapeXZ extends ShapeXZ {
 		/* return the last vertex: this might happen to accumulating floating point
 		 * errors if the offset is (almost) the same as this polyline's length */
 
-		return getVertexList().get(getVertexList().size() - 1);
+		return vertices().get(vertices().size() - 1);
 
 	}
 
@@ -125,7 +125,7 @@ public interface PolylineShapeXZ extends ShapeXZ {
 
 	/** returns the flipped version of this polyline */
 	public default PolylineShapeXZ reverse() {
-		List<VectorXZ> vertices = new ArrayList<>(this.getVertexList());
+		List<VectorXZ> vertices = new ArrayList<>(this.vertices());
 		Collections.reverse(vertices);
 		return new PolylineXZ(vertices);
 	}

@@ -36,7 +36,7 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 		return radius * radius * PI;
 	}
 
-	public List<VectorXZ> getVertexList(int numPoints) {
+	public List<VectorXZ> getVertices(int numPoints) {
 
 		List<VectorXZ> result = new ArrayList<VectorXZ>(numPoints + 1);
 
@@ -59,18 +59,16 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 	}
 
 	@Override
-	public List<VectorXZ> getVertexList() {
-
-		return getVertexList(NUM_POINTS);
-
+	public List<VectorXZ> vertices() {
+		return getVertices(NUM_POINTS);
 	}
 
 	@Override
 	public Collection<TriangleXZ> getTriangulation() {
 
-		List<VectorXZ> vertices = getVertexList();
+		List<VectorXZ> vertices = vertices();
 
-		List<TriangleXZ> result = new ArrayList<TriangleXZ>(vertices.size() - 1);
+		List<TriangleXZ> result = new ArrayList<>(vertices.size() - 1);
 
 		for (int i = 0; i + 1 < vertices.size(); i++) {
 			result.add(new TriangleXZ(center, vertices.get(i), vertices.get(i+1)));

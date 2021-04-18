@@ -51,7 +51,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		if (shape instanceof SimplePolygonXZ) {
 			return (SimplePolygonXZ) shape;
 		} else {
-			return new SimplePolygonXZ(shape.getVertexList());
+			return new SimplePolygonXZ(shape.vertices());
 		}
 	}
 
@@ -67,7 +67,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	/**
 	 * returns the polygon's vertices.
-	 * Unlike {@link #getVertexList()}, there is no duplication
+	 * Unlike {@link #vertices()}, there is no duplication
 	 * of the first/last vertex.
 	 */
 	public List<VectorXZ> getVertices() {
@@ -80,14 +80,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 * @return list of vertices, not empty, not null
 	 */
 	@Override
-	public List<VectorXZ> getVertexList() {
-		return vertexLoop;
-	}
-
-	/**
-	 * @deprecated Use the equivalent {@link #getVertexList()} instead.
-	 */
-	public List<VectorXZ> getVertexLoop() {
+	public List<VectorXZ> vertices() {
 		return vertexLoop;
 	}
 

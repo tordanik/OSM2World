@@ -51,7 +51,7 @@ public class TerrainBoundaryDebugView extends DebugView {
 
 				for (PolygonShapeXZ p : terrainBoundary.getTerrainBoundariesXZ()) {
 					for (SimplePolygonShapeXZ ring : p.getRings()) {
-						target.drawLineLoop(color, 1, listXYZ(ring.getVertexList(), 0));
+						target.drawLineLoop(color, 1, listXYZ(ring.vertices(), 0));
 					}
 				}
 

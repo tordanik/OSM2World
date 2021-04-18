@@ -42,7 +42,7 @@ public class JTSConversionUtil {
 	}
 
 	public static LineString toJTSLineString(PolylineShapeXZ polyline) {
-		List<Coordinate> ps = polyline.getVertexList().stream().map(p -> toJTS(p)).collect(toList());
+		List<Coordinate> ps = polyline.vertices().stream().map(p -> toJTS(p)).collect(toList());
 		return new LineString(new CoordinateArraySequence(ps.toArray(new Coordinate[0])), GF);
 	}
 
@@ -64,7 +64,7 @@ public class JTSConversionUtil {
 
 	private static final LinearRing toJTSLinearRing(SimplePolygonShapeXZ polygon) {
 
-		List<VectorXZ> vertices = polygon.getVertexList();
+		List<VectorXZ> vertices = polygon.vertices();
 
 		Coordinate[] array = new Coordinate[vertices.size()];
 
