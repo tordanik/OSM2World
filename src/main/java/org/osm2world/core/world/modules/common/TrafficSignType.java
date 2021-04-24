@@ -2,6 +2,12 @@ package org.osm2world.core.world.modules.common;
 
 import org.osm2world.core.target.common.material.Material;
 
+/**
+ * A class representing a single sign type
+ * e.g. a maxspeed or maxheight sign.
+ * One or more TrafficSignType instances
+ * can exist on the same {@link TrafficSignModel}
+ */
 public class TrafficSignType {
 
 	/** holds the rotation angle of DestinationSigns */

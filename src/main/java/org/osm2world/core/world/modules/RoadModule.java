@@ -16,7 +16,6 @@ import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +59,7 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
 public class RoadModule extends ConfigurableWorldModule {
 
 	/** determines whether right-hand or left-hand traffic is the default */
-	private static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
+	public static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
 
 	@Override
 	public void applyTo(MapData mapData) {
@@ -111,7 +110,28 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	private static boolean isRoad(TagSet tags) {
+	/**
+	 * Determine whether this segment has
+	 * right-hand traffic or not, based
+	 * on {@value org.osm2world.core.world.modules.RoadModule#RIGHT_HAND_TRAFFIC_BY_DEFAULT}
+	 * and way's driving_side tags, if any.
+	 */
+	public static boolean hasRightHandTraffic(MapWaySegment segment) {
+
+		TagSet wayTags = segment.getTags();
+
+		if (wayTags.contains("driving_side", "left")) {
+			return false;
+		}
+
+		if (wayTags.contains("driving_side", "right")) {
+			return true;
+		}
+
+		return RIGHT_HAND_TRAFFIC_BY_DEFAULT;
+	}
+
+	public static boolean isRoad(TagSet tags) {
 		if (tags.containsKey("highway")
 				&& !tags.contains("highway", "construction")
 				&& !tags.contains("highway", "proposed")
@@ -136,7 +156,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			|| "steps".equals(highwayValue);
 	}
 
-	private static boolean isOneway(TagSet tags) {
+	static boolean isOneway(TagSet tags) {
 		return tags.contains("oneway", "yes")
 				|| (!tags.contains("oneway", "no")
 					&& (tags.contains("highway", "motorway")
@@ -236,10 +256,24 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * returns all roads connected to a node
 	 * @param requireLanes  only include roads that are not paths and have lanes
 	 */
-	public static List<Road> getConnectedRoads(MapNode node, boolean requireLanes) {
+	public static List<Road> getConnectedRoads(MapNode node,
+			boolean requireLanes) {
 
-		return getConnectedNetworkSegments(node, Road.class,
-				road -> !requireLanes || (road.getLaneLayout() != null && !isPath(road.tags)));
+		List<Road> connectedRoadsWithLanes = new ArrayList<>();
+
+		for (MapWaySegment segment : node.getConnectedWaySegments()) {
+
+			if (segment.getPrimaryRepresentation() instanceof Road) {
+				Road road = (Road)segment.getPrimaryRepresentation();
+				if (!requireLanes ||
+						(road.getLaneLayout() != null && !isPath(road.tags))) {
+					connectedRoadsWithLanes.add(road);
+				}
+			}
+
+		}
+
+		return connectedRoadsWithLanes;
 
 	}
 
@@ -1726,6 +1760,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
+		@Override
 		public void renderTo(Target target) {
 
 			assert phase > 1;
@@ -1796,6 +1831,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
+		@Override
 		public void renderTo(Target target) {
 
 			type.render(target, roadPart, rightHandTraffic,
@@ -1938,6 +1974,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	static final LaneType VEHICLE_LANE = new FlatTexturedLane(
 			"VEHICLE_LANE", false, false) {
 
+		@Override
 		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 
 			double width = parseWidth(laneTags, -1);
@@ -1955,6 +1992,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	static final LaneType BUS_BAY = new FlatTexturedLane(
 			"BUS_BAY", false, false) {
 
+		@Override
 		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 
 			double width = parseWidth(laneTags, -1);
@@ -1972,6 +2010,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	static final LaneType CYCLEWAY = new FlatTexturedLane(
 			"CYCLEWAY", false, false) {
 
+		@Override
 		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 0.5f);
 		}
@@ -1988,6 +2027,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	static final LaneType SIDEWALK = new FlatTexturedLane(
 			"SIDEWALK", true, true) {
 
+		@Override
 		public Double getAbsoluteWidth(TagSet roadTags, TagSet laneTags) {
 			return (double)parseWidth(laneTags, 1.0f);
 		}
