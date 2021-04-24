@@ -108,36 +108,37 @@ public class TrafficSignModule extends AbstractModule {
 			List<String> keysForFirstModel = new ArrayList<>();
 			List<String> keysForSecondModel = new ArrayList<>();
 
-			if(!containedKeys.isEmpty()) {
+			if (!containedKeys.isEmpty()) {
 
 				String tempKey = "";
 
 				//determine rendering positions
-				for(String key : containedKeys) {
+				for (String key : containedKeys) {
 
 					//if a way adjacent to the beginning of this way does not contain the same traffic sign
-					if(!TrafficSignModel.adjacentWayContains(true, way, key, wayTags.getValue(key)) && !key.contains("backward")) {
+					if (!TrafficSignModel.adjacentWayContains(true, way, key, wayTags.getValue(key))
+							&& !key.contains("backward")) {
 
 						boolean renderMe = true;
 
 						//when at the beginning of the way, handle the sign
 						//as it was mapped as sign:forward (affect vehicles moving at the same
 						//direction as the way)
-						if(!key.contains("forward")) {
+						if (!key.contains("forward")) {
 							tempKey = key + ":forward";
 
 							//check the way adjacent to the beginning of this way for sign mapped with forward direction
-							if(TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))){
+							if (TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))) {
 
 								renderMe = false;
 							}
 
-						}else {
+						} else {
 
 							//check the way adjacent to the beginning of this way for sign mapped without direction specified
 							tempKey = key.substring(0, key.indexOf(':'));
 
-							if(TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))){
+							if (TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))) {
 
 								renderMe = false;
 							}
@@ -145,7 +146,7 @@ public class TrafficSignModule extends AbstractModule {
 							tempKey = key;
 						}
 
-						if(renderMe) {
+						if (renderMe) {
 
 							//get first way segment
 							MapWaySegment topSegment = way.getWaySegments().get(0);
@@ -160,16 +161,16 @@ public class TrafficSignModule extends AbstractModule {
 							firstModel.calculateDirection(topSegment, tempKey);
 
 							//Avoid the case where the first node of the way may be a junction
-							if(topSegment.getStartNode().getConnectedWaySegments().size()<3) {
+							if (topSegment.getStartNode().getConnectedWaySegments().size() < 3) {
 								firstModel.calculatePosition(topSegment, side, tempKey, false);
-							}else {
+							} else {
 
-								if(RoadModule.isRoad(wayTags)) {
+								if (RoadModule.isRoad(wayTags)) {
 									VectorXZ offset = NULL_VECTOR;
 									//FIXME - disabled during merge
 									//VectorXZ offset = ((Road)topSegment.getPrimaryRepresentation()).getStartOffset();
 									firstModel.position = firstModel.node.getPos().add(offset);
-								}else {
+								} else {
 									firstModel.position = firstModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
 								}
 							}
@@ -184,28 +185,29 @@ public class TrafficSignModule extends AbstractModule {
 					 * render an extra traffic sign model at the end of the way.
 					 * Configuration definition deduceTrafficSignsFromWayTags=limited "turns off" this mechanism
 					 */
-					if(!TrafficSignModel.adjacentWayContains(false, way, key, wayTags.getValue(key)) && !RoadModule.isOneway(way.getTags())
+					if (!TrafficSignModel.adjacentWayContains(false, way, key, wayTags.getValue(key))
+							&& !RoadModule.isOneway(way.getTags())
 							&& !state.equalsIgnoreCase("limited") && !key.contains("forward")) {
 
 						boolean renderMe = true;
 
 						//when at the end of the way, handle traffic sign
 						//as it was mapped as sign:backward
-						if(!key.contains("backward")) {
+						if (!key.contains("backward")) {
 							tempKey = key + ":backward";
 
 							//check the way adjacent to the beginning of this way for sign mapped with forward direction
-							if(TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))){
+							if (TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))) {
 								//continue;
 								renderMe = false;
 							}
 
-						}else {
+						} else {
 
 							//check the way adjacent to the beginning of this way for sign mapped without direction specified
 							tempKey = key.substring(0, key.indexOf(':'));
 
-							if(TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))){
+							if (TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))) {
 								//continue;
 								renderMe = false;
 							}
@@ -213,13 +215,13 @@ public class TrafficSignModule extends AbstractModule {
 							tempKey = key;
 						}
 
-						if(renderMe) {
+						if (renderMe) {
 
 							//get number of segments from the way this node is part of
 							int numOfSegments = way.getWaySegments().size();
 
 							//get last way segment
-							MapWaySegment bottomSegment = way.getWaySegments().get(numOfSegments-1);
+							MapWaySegment bottomSegment = way.getWaySegments().get(numOfSegments - 1);
 
 							secondModel = new TrafficSignModel(bottomSegment.getEndNode());
 
@@ -232,18 +234,18 @@ public class TrafficSignModule extends AbstractModule {
 							 * new TrafficSignModel at the end of the way.
 							 * Avoid the case where the last node of the way may be a junction
 							 */
-							if(bottomSegment.getEndNode().getConnectedWaySegments().size()<3) {
+							if (bottomSegment.getEndNode().getConnectedWaySegments().size() < 3) {
 
 								secondModel.calculatePosition(bottomSegment, side, tempKey, false);
 
-							}else {
+							} else {
 
-								if(RoadModule.isRoad(wayTags)) {
+								if (RoadModule.isRoad(wayTags)) {
 									VectorXZ offset = NULL_VECTOR;
 									//FIXME - disabled during merge
 									//VectorXZ offset = ((Road)bottomSegment.getPrimaryRepresentation()).getEndOffset();
 									secondModel.position = secondModel.node.getPos().add(offset);
-								}else {
+								} else {
 									secondModel.position = secondModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
 								}
 							}
@@ -264,22 +266,23 @@ public class TrafficSignModule extends AbstractModule {
 				for (String sign : signs) {
 
 					/* only take into account overtaking=no tags for "overtaking" key */
-					if(sign.equals("overtaking") && !wayTags.getValue(sign).equals("no")) {
+					if (sign.equals("overtaking") && !wayTags.getValue(sign).equals("no")) {
 						continue;
 					}
 
 					//distinguish between human-readable values and traffic sign IDs
 					tagValue = wayTags.getValue(sign);
 
-					if(tagValue.contains(":")) {
+					if (tagValue.contains(":")) {
 
 						String[] countryAndSigns = tagValue.split(":", 2);
-						if(countryAndSigns.length !=2) continue;
+						if (countryAndSigns.length != 2)
+							continue;
 						country = countryAndSigns[0];
 
 						sign = countryAndSigns[1];
 
-					}else {
+					} else {
 						country = "";
 					}
 
@@ -289,25 +292,26 @@ public class TrafficSignModule extends AbstractModule {
 
 				}
 
-				for(String sign : signsForSecondModel) {
+				for (String sign : signsForSecondModel) {
 
 					/* only take into account overtaking=no tags for "overtaking" key */
-					if(sign.equals("overtaking") && !wayTags.getValue(sign).equals("no")) {
+					if (sign.equals("overtaking") && !wayTags.getValue(sign).equals("no")) {
 						continue;
 					}
 
 					//distinguish between human-readable values and traffic sign IDs
 					tagValue = wayTags.getValue(sign);
 
-					if(tagValue.contains(":")) {
+					if (tagValue.contains(":")) {
 
 						String[] countryAndSigns = tagValue.split(":", 2);
-						if(countryAndSigns.length !=2) continue;
+						if (countryAndSigns.length != 2)
+							continue;
 						country = countryAndSigns[0];
 
 						sign = countryAndSigns[1];
 
-					}else {
+					} else {
 						country = "";
 					}
 
@@ -318,15 +322,15 @@ public class TrafficSignModule extends AbstractModule {
 
 				if (types.size() > 0) {
 
-					if(firstModel!=null) {
+					if (firstModel != null) {
 
 						firstModel.types = types;
 						node.addRepresentation(new TrafficSign(firstModel, config));
 					}
 				}
-				if(typesForSecondSign.size() > 0) {
+				if (typesForSecondSign.size() > 0) {
 
-					if(secondModel!=null) {
+					if (secondModel != null) {
 
 						secondModel.types = typesForSecondSign;
 						node.addRepresentation(new TrafficSign(secondModel, config));
@@ -346,8 +350,10 @@ public class TrafficSignModule extends AbstractModule {
 	 */
 	private void createSignFromNode(MapNode node) {
 
-		if (!asList("traffic_sign", "traffic_sign:forward", "traffic_sign:backward").stream().anyMatch(node.getTags()::containsKey)
-				&& !node.getTags().containsAny(asList("highway"), asList("give_way", "stop"))) return;
+		if (!asList("traffic_sign", "traffic_sign:forward", "traffic_sign:backward").stream()
+				.anyMatch(node.getTags()::containsKey)
+				&& !node.getTags().containsAny(asList("highway"), asList("give_way", "stop")))
+			return;
 
 		String[] signs = {};
 		String country = "";
@@ -367,23 +373,23 @@ public class TrafficSignModule extends AbstractModule {
 		boolean inHighway = isInHighway(node);
 
 		//if node is part of a way
-		if(inHighway) {
+		if (inHighway) {
 
 			String tempKey = "";
 
 			//one rendering is required
 			firstModel = new TrafficSignModel(node);
 
-			if(node.getTags().containsKey("traffic_sign:forward")) {
+			if (node.getTags().containsKey("traffic_sign:forward")) {
 				tagValue = node.getTags().getValue("traffic_sign:forward");
 				tempKey = "traffic_sign:forward";
-			}else if(node.getTags().containsKey("traffic_sign:backward")){
+			} else if (node.getTags().containsKey("traffic_sign:backward")) {
 				tagValue = node.getTags().getValue("traffic_sign:backward");
 				tempKey = "traffic_sign:backward";
-			}else if(node.getTags().containsKey("traffic_sign")){
+			} else if (node.getTags().containsKey("traffic_sign")) {
 				tagValue = node.getTags().getValue("traffic_sign");
 				tempKey = "traffic_sign:forward";
-			}else {
+			} else {
 				//in case of highway=give_way/stop, treat sign as if it was mapped as forward:
 				//affect vehicles moving in the way's direction if no explicit direction tag is defined
 				tempKey = "highway:forward";
@@ -400,7 +406,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			firstModel.calculateDirection();
 
-			if(node.getTags().contains("side", "both")) {
+			if (node.getTags().contains("side", "both")) {
 
 				//if side=both , create another model instance and place them to the left & right of the road
 
@@ -410,11 +416,12 @@ public class TrafficSignModule extends AbstractModule {
 				secondModel.calculatePosition(segment, !side, tempKey, true);
 			}
 
-		}else {
+		} else {
 
 			//if sign is explicitly mapped on node next to a way
 
-			if(node.getTags().containsKey("traffic_sign")) tagValue = node.getTags().getValue("traffic_sign");
+			if (node.getTags().containsKey("traffic_sign"))
+				tagValue = node.getTags().getValue("traffic_sign");
 
 			firstModel = new TrafficSignModel(node);
 			firstModel.position = node.getPos();
@@ -425,13 +432,14 @@ public class TrafficSignModule extends AbstractModule {
 
 		/* split the traffic sign value into its components */
 
-		if(!tagValue.isEmpty()) {
+		if (!tagValue.isEmpty()) {
 
-			if(tagValue.contains(":")) {
+			if (tagValue.contains(":")) {
 
 				//if country prefix is used
 				String[] countryAndSigns = tagValue.split(":", 2);
-				if(countryAndSigns.length !=2) return;
+				if (countryAndSigns.length != 2)
+					return;
 				country = countryAndSigns[0];
 				signs = countryAndSigns[1].split("[;,]");
 
@@ -445,16 +453,16 @@ public class TrafficSignModule extends AbstractModule {
 		//handle the special cases highway=give_way/stop
 		String[] specialCaseSigns = null;
 
-		if(node.getTags().containsAny(asList("highway"), asList("give_way", "stop"))) {
+		if (node.getTags().containsAny(asList("highway"), asList("give_way", "stop"))) {
 
 			String value = node.getTags().getValue("highway");
 
 			//check if value is already contained in signs[]
 			boolean contains = Arrays.stream(signs).anyMatch(value::equals);
 
-			if(!contains) {
+			if (!contains) {
 
-				specialCaseSigns = new String[] {value};
+				specialCaseSigns = new String[] { value };
 
 				//concatenate the two arrays
 				signs = (String[]) ArrayUtils.addAll(signs, specialCaseSigns);
@@ -467,7 +475,8 @@ public class TrafficSignModule extends AbstractModule {
 
 			attributes = configureSignType(country, sign, node.getTags());
 
-			if(attributes.defaultHeight==0) attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
+			if (attributes.defaultHeight == 0)
+				attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
 
 			types.add(attributes);
 		}
@@ -476,12 +485,12 @@ public class TrafficSignModule extends AbstractModule {
 
 		if (types.size() > 0) {
 
-			if(firstModel!=null) {
+			if (firstModel != null) {
 				firstModel.types = types;
 				node.addRepresentation(new TrafficSign(firstModel, config));
 			}
 
-			if(secondModel!=null) {
+			if (secondModel != null) {
 				secondModel.types = types;
 				node.addRepresentation(new TrafficSign(secondModel, config));
 			}
@@ -495,13 +504,13 @@ public class TrafficSignModule extends AbstractModule {
 
 		/* if sign is a destination sign */
 
-		if(!node.getMemberships().isEmpty()) {
+		if (!node.getMemberships().isEmpty()) {
 			createDestinationSign(node);
 		}
 
 		/* if "traffic_sign = *" or any of the human-readable signs (maxspeed|overtaking|maxwidth|maxweight|maxheight) are mapped as a way tag */
 
-		if(!node.getConnectedWaySegments().isEmpty() && !signsOnWaysState.equalsIgnoreCase("no")) {
+		if (!node.getConnectedWaySegments().isEmpty() && !signsOnWaysState.equalsIgnoreCase("no")) {
 			createSignFromTagOnWay(node, signsOnWaysState);
 		}
 
@@ -511,9 +520,9 @@ public class TrafficSignModule extends AbstractModule {
 
 	}
 
-	private static boolean isInHighway(MapNode node){
-		if (node.getConnectedWaySegments().size()>0){
-			for(MapWaySegment way: node.getConnectedWaySegments()){
+	private static boolean isInHighway(MapNode node) {
+		if (node.getConnectedWaySegments().size() > 0) {
+			for (MapWaySegment way : node.getConnectedWaySegments()) {
 				if (way.getTags().containsKey("highway")
 						&& !asList("path", "footway", "platform").contains(way.getTags().getValue("highway"))) {
 					return true;
@@ -540,19 +549,19 @@ public class TrafficSignModule extends AbstractModule {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher1 = pattern.matcher(sign);
 
-		if(matcher1.matches()) {
+		if (matcher1.matches()) {
 
-			if(matcher1.group(1)!=null) {
+			if (matcher1.group(1) != null) {
 				map.put("traffic_sign.subtype", matcher1.group(1));
 			}
 
-			if(matcher1.group(2)!=null) {
+			if (matcher1.group(2) != null) {
 
 				String brackettext = matcher1.group(2).replace('_', '-'); //revert the previous replacement
 				map.put("traffic_sign.brackettext", brackettext);
 
 				//cut off value to get the actual sign name
-				sign = sign.replace("["+matcher1.group(2)+"]", "");
+				sign = sign.replace("[" + matcher1.group(2) + "]", "");
 			}
 		}
 
@@ -564,39 +573,42 @@ public class TrafficSignModule extends AbstractModule {
 
 		TrafficSignType attributes = mapSignAttributes(signName);
 
-		/* "Fallback" functionality in case no attributes and material are defined for this sign name
+		/*
+		 * "Fallback" functionality in case no attributes and material are defined for this sign name
 		 *
 		 * attributes.materialName.isEmpty() -> no "trafficSign_name_material = " defined for this sign
 		 * getMaterial(signName)==null -> no material defined for this sign name
 		 * map.containsKey("traffic_sign.subtype") -> sign name contains a subtype value (e.g. 50 in 274-50)
 		 */
-		if(attributes.materialName.isEmpty() && getMaterial(signName)==null && map.containsKey("traffic_sign.subtype")) {
+		if (attributes.materialName.isEmpty() && getMaterial(signName) == null
+				&& map.containsKey("traffic_sign.subtype")) {
 
-			sign = sign.replace("_"+matcher1.group(1), ""); //cut off subtype value
+			sign = sign.replace("_" + matcher1.group(1), ""); //cut off subtype value
 
 			signName = generateSignName(country, sign);
 
 			attributes = mapSignAttributes(signName); //retry with new sign name
 		}
 
-		if(!attributes.materialName.isEmpty()) {
+		if (!attributes.materialName.isEmpty()) {
 			originalMaterial = getMaterial(attributes.materialName);
 			attributes.material = configureMaterial(originalMaterial, map, tagsOfElement);
 		}
 
-		if(attributes.material==null) {
+		if (attributes.material == null) {
 
 			//if there is no material configured for the sign, try predefined ones
 			originalMaterial = getMaterial(signName);
 			attributes.material = configureMaterial(originalMaterial, map, tagsOfElement);
 
 			//if there is no material defined for the sign, create simple white sign
-			if(attributes.material==null) {
+			if (attributes.material == null) {
 				attributes.material = new ConfMaterial(Interpolation.FLAT, Color.white);
 			}
 		}
 
-		if(attributes.defaultHeight==0) attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
+		if (attributes.defaultHeight == 0)
+			attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
 
 		return attributes;
 	}
@@ -605,10 +617,10 @@ public class TrafficSignModule extends AbstractModule {
 
 		String signName = "";
 
-		if(!country.isEmpty()) {
-			signName = "SIGN_"+country+"_"+sign;
-		}else {
-			signName = "SIGN_"+sign;
+		if (!country.isEmpty()) {
+			signName = "SIGN_" + country + "_" + sign;
+		} else {
+			signName = "SIGN_" + sign;
 		}
 
 		return signName;
@@ -618,12 +630,13 @@ public class TrafficSignModule extends AbstractModule {
 	 * Parses configuration files for the traffic sign-specific keys
 	 * trafficSign_NAME_numPosts|defaultHeight|material
 	 *
-	 * @param signName The sign name (country prefix and subtype/brackettext value)
+	 * @param signName
+	 * The sign name (country prefix and subtype/brackettext value)
 	 * @return A TrafficSignType instance of the the parsed values
 	 */
 	private TrafficSignType mapSignAttributes(String signName) {
 
-		String regex = "trafficSign_"+signName+"_(numPosts|defaultHeight|material)";
+		String regex = "trafficSign_" + signName + "_(numPosts|defaultHeight|material)";
 
 		String originalMaterial = "";
 		int numPosts = 1;
@@ -643,15 +656,15 @@ public class TrafficSignModule extends AbstractModule {
 
 				String attribute = matcher.group(1);
 
-				if("material".equals(attribute)) {
+				if ("material".equals(attribute)) {
 
 					originalMaterial = config.getString(key, "").toUpperCase();
 
-				} else if("numPosts".equals(attribute)) {
+				} else if ("numPosts".equals(attribute)) {
 
 					numPosts = config.getInt(key, 1);
 
-				} else if("defaultHeight".equals(attribute)) {
+				} else if ("defaultHeight".equals(attribute)) {
 
 					defaultHeight = config.getDouble(key, 0);
 				}
@@ -667,14 +680,18 @@ public class TrafficSignModule extends AbstractModule {
 	 * replaced by a new TextTextureData instance of different text.
 	 * Returns the new Material created.
 	 *
-	 * @param originalMaterial  the material to replicate
-	 * @param map  maps each of traffic_sign.subtype / traffic_sign.brackettext to their corresponding values
-	 * @param tags  the {@link TagSet} to extract values from
+	 * @param originalMaterial
+	 * the material to replicate
+	 * @param map
+	 * maps each of traffic_sign.subtype / traffic_sign.brackettext to their corresponding values
+	 * @param tags
+	 * the {@link TagSet} to extract values from
 	 * @return a ConfMaterial identical to originalMaterial with its texture layers altered
 	 */
 	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagSet tags) {
 
-		if(originalMaterial == null) return null;
+		if (originalMaterial == null)
+			return null;
 
 		Material newMaterial = null;
 		List<TextureLayer> newList = new ArrayList<>(originalMaterial.getTextureLayers());
@@ -682,9 +699,9 @@ public class TrafficSignModule extends AbstractModule {
 		String regex = ".*(%\\{(.+)\\}).*";
 		Pattern pattern = Pattern.compile(regex);
 
-		for(TextureLayer layer : originalMaterial.getTextureLayers()) {
+		for (TextureLayer layer : originalMaterial.getTextureLayers()) {
 
-			if(layer.baseColorTexture instanceof TextTexture) {
+			if (layer.baseColorTexture instanceof TextTexture) {
 
 				TextTexture textTexture = (TextTexture) layer.baseColorTexture;
 
@@ -692,32 +709,33 @@ public class TrafficSignModule extends AbstractModule {
 				Matcher matcher = pattern.matcher(textTexture.text);
 				int index = originalMaterial.getTextureLayers().indexOf(layer);
 
-				if( matcher.matches() && !((TextTexture) layer.baseColorTexture).text.isEmpty()) {
+				if (matcher.matches() && !((TextTexture) layer.baseColorTexture).text.isEmpty()) {
 
 					newText = textTexture.text;
 
-					while(matcher.matches()) {
+					while (matcher.matches()) {
 
-						if(tags.containsKey(matcher.group(2))) {
+						if (tags.containsKey(matcher.group(2))) {
 
 							newText = newText.replace(matcher.group(1), tags.getValue(matcher.group(2)));
 
-						} else if(!map.isEmpty()) {
+						} else if (!map.isEmpty()) {
 
 							//TODO: implement that with streams
 							boolean matched = false;
 
 							for (String key : map.keySet()) {
-								if(key.equals(matcher.group(2))) {
+								if (key.equals(matcher.group(2))) {
 									newText = newText.replace(matcher.group(1), map.get(matcher.group(2)));
 									matched = true;
 								}
 							}
 
-							if(!matched) newText = newText.replace(matcher.group(1), "");
+							if (!matched)
+								newText = newText.replace(matcher.group(1), "");
 
 						} else {
-							System.err.println("Unknown attribute: "+matcher.group(2));
+							System.err.println("Unknown attribute: " + matcher.group(2));
 							newText = newText.replace(matcher.group(1), "");
 						}
 
@@ -736,9 +754,9 @@ public class TrafficSignModule extends AbstractModule {
 			}
 		}
 
-		newMaterial = new ConfMaterial(originalMaterial.getInterpolation(),originalMaterial.getColor(),
-						originalMaterial.isDoubleSided(), originalMaterial.getTransparency(),
-						originalMaterial.getShadow(), originalMaterial.getAmbientOcclusion(), newList);
+		newMaterial = new ConfMaterial(originalMaterial.getInterpolation(), originalMaterial.getColor(),
+				originalMaterial.isDoubleSided(), originalMaterial.getTransparency(),
+				originalMaterial.getShadow(), originalMaterial.getAmbientOcclusion(), newList);
 
 		return newMaterial;
 	}
@@ -752,7 +770,7 @@ public class TrafficSignModule extends AbstractModule {
 
 		int numOfConnectedRoads = RoadModule.getConnectedRoads(node, false).size();
 
-		if(numOfConnectedRoads>2) {
+		if (numOfConnectedRoads > 2) {
 			throw new IllegalArgumentException("Node " + node + " itself is a junction");
 		}
 
@@ -767,61 +785,62 @@ public class TrafficSignModule extends AbstractModule {
 
 		boolean otherWayChecked = false;
 
-		while(numOfConnectedRoads<=2) {
+		while (numOfConnectedRoads <= 2) {
 
 			currentNode = currentSegment.getOtherNode(currentNode);
 
 			//get the number of roads connected to the current node
 			numOfConnectedRoads = RoadModule.getConnectedRoads(currentNode, false).size();
 
-			if(numOfConnectedRoads==1) {
+			if (numOfConnectedRoads == 1) {
 
 				//dead end, try the other way (if it exists and is not already checked)
 
-				if(RoadModule.getConnectedRoads(node, false).size()>1 && !otherWayChecked) {
+				if (RoadModule.getConnectedRoads(node, false).size() > 1 && !otherWayChecked) {
 
 					currentSegment = RoadModule.getConnectedRoads(node, false).get(1).segment;
-					otherWayChecked=true;
+					otherWayChecked = true;
 					currentNode = node;
 					numOfConnectedRoads = RoadModule.getConnectedRoads(currentNode, false).size();
 
-				}else {
+				} else {
 
 					break;
 				}
 
-			}else if(numOfConnectedRoads>=3){
+			} else if (numOfConnectedRoads >= 3) {
 
 				//junction found, try the other way (if it exists and is not already checked)
 
 				foundJunctions.add(currentNode);
 
-				if(RoadModule.getConnectedRoads(node, false).size()>1 && !otherWayChecked) {
+				if (RoadModule.getConnectedRoads(node, false).size() > 1 && !otherWayChecked) {
 
 					currentSegment = RoadModule.getConnectedRoads(node, false).get(1).segment;
-					otherWayChecked=true;
+					otherWayChecked = true;
 					currentNode = node;
 					numOfConnectedRoads = RoadModule.getConnectedRoads(currentNode, false).size();
 
-				}else{
+				} else {
 					break;
 				}
 
-			}else {
+			} else {
 
-				if(currentSegment.equals(RoadModule.getConnectedRoads(currentNode, false).get(1).segment)) {
+				if (currentSegment.equals(RoadModule.getConnectedRoads(currentNode, false).get(1).segment)) {
 					currentSegment = RoadModule.getConnectedRoads(currentNode, false).get(0).segment;
-				}else {
+				} else {
 					currentSegment = RoadModule.getConnectedRoads(currentNode, false).get(1).segment;
 				}
 			}
 		}
 
-		if(foundJunctions.size()==0) {
+		if (foundJunctions.size() == 0) {
 			return null;
 		}
 
-		return foundJunctions.stream().min((Comparator.comparingDouble(j -> j.getPos().distanceTo(node.getPos())))).get();
+		return foundJunctions.stream().min((Comparator.comparingDouble(j -> j.getPos().distanceTo(node.getPos()))))
+				.get();
 	}
 
 	/**
@@ -833,9 +852,9 @@ public class TrafficSignModule extends AbstractModule {
 
 		List<MapWaySegment> waySegments = way.getWaySegments(); //get the way's segments
 
-		for(MapWaySegment segment : asList(waySegments.get(0), waySegments.get(waySegments.size()-1))) {
+		for (MapWaySegment segment : asList(waySegments.get(0), waySegments.get(waySegments.size() - 1))) {
 
-			if(segment.getStartNode().equals(intersection) || segment.getEndNode().equals(intersection)) {
+			if (segment.getStartNode().equals(intersection) || segment.getEndNode().equals(intersection)) {
 				return segment;
 			}
 		}
@@ -854,7 +873,7 @@ public class TrafficSignModule extends AbstractModule {
 
 		private MapRelation relation;
 
-		private ArrayList<TrafficSignType> types = new ArrayList<TrafficSignType>();
+		private ArrayList<TrafficSignType> types = new ArrayList<>();
 		private double postRadius;
 
 		public DestinationSign(MapNode node) {
@@ -874,7 +893,7 @@ public class TrafficSignModule extends AbstractModule {
 			//collection with the relations this node is part of
 			Collection<Membership> membList = node.getMemberships();
 
-			for(Membership m : membList) {
+			for (Membership m : membList) {
 
 				String pointingDirection;
 
@@ -893,14 +912,15 @@ public class TrafficSignModule extends AbstractModule {
 				ConfMaterial originalMat = null;
 
 				destination = relation.getTags().getValue("destination");
-				if(destination==null) {
-					System.err.println("Destination can not be null. Destination sign rendering ommited for relation "+relation);
+				if (destination == null) {
+					System.err.println(
+							"Destination can not be null. Destination sign rendering ommited for relation " + relation);
 					continue;
 				}
 				distance = relation.getTags().getValue("distance");
 
 				//parse background color
-				if(relation.getTags().getValue("colour:back")!=null) {
+				if (relation.getTags().getValue("colour:back") != null) {
 
 					Field field;
 
@@ -914,7 +934,7 @@ public class TrafficSignModule extends AbstractModule {
 				}
 
 				//parse text color
-				if(relation.getTags().getValue("colour:text")!=null) {
+				if (relation.getTags().getValue("colour:text") != null) {
 
 					Field field;
 
@@ -928,13 +948,15 @@ public class TrafficSignModule extends AbstractModule {
 				}
 
 				arrowColour = relation.getTags().getValue("colour:arrow");
-				if(arrowColour==null) arrowColour = "BLACK";
+				if (arrowColour == null)
+					arrowColour = "BLACK";
 
 				//map to use in configureMaterial
-				HashMap<String, String> map = new HashMap<String, String>();
+				HashMap<String, String> map = new HashMap<>();
 
 				map.put("destination", destination);
-				if(distance!=null) map.put("distance", distance);
+				if (distance != null)
+					map.put("distance", distance);
 
 				//List to hold all "from" members of the relation (if multiple)
 				List<MapWay> fromMembers = new ArrayList<>();
@@ -943,32 +965,32 @@ public class TrafficSignModule extends AbstractModule {
 				//if fromMembers size is 0 because of not acceptable mapping
 				boolean wrongFrom = false;
 
-				for(Membership member : relation.getMemberships()) {
+				for (Membership member : relation.getMemberships()) {
 
-					if(member.getRole().equals("from")) {
+					if (member.getRole().equals("from")) {
 
-						if(member.getElement() instanceof MapWay) {
-							fromMembers.add((MapWay)member.getElement());
-						}else {
+						if (member.getElement() instanceof MapWay) {
+							fromMembers.add((MapWay) member.getElement());
+						} else {
 							System.err.println("'from' member of relation " + this.relation + " is not a way."
 									+ " It is not being considered for rendering this relation's destination sign");
 							wrongFrom = true;
 							continue;
 						}
 
-					}else if(member.getRole().equals("to")) {
+					} else if (member.getRole().equals("to")) {
 
-						if(member.getElement() instanceof MapWay) {
-							to = (MapWay)member.getElement();
-						}else {
+						if (member.getElement() instanceof MapWay) {
+							to = (MapWay) member.getElement();
+						} else {
 							System.err.println("'to' member of relation " + this.relation + " is not a way."
 									+ " It is not being considered for rendering this relation's destination sign");
 							continue;
 						}
 
-					}else if(member.getRole().equals("intersection")) {
+					} else if (member.getRole().equals("intersection")) {
 
-						if(!(member.getElement() instanceof MapNode)) {
+						if (!(member.getElement() instanceof MapNode)) {
 							System.err.println("'intersection' member of relation " + this.relation + " is not a node."
 									+ " It is not being considered for rendering this relation's destination sign");
 							continue;
@@ -979,16 +1001,18 @@ public class TrafficSignModule extends AbstractModule {
 				}
 
 				//check intersection first as it is being used in 'from' calculation below
-				if(intersection==null) {
+				if (intersection == null) {
 					System.err.println("Member 'intersection' was not defined in relation " + relation +
 							". Destination sign rendering is omited for this relation.");
 					continue;
 				}
 
-				/* if there are multiple "from" members or none at all,
-				use the vector from "sign" to "intersection" instead */
+				/*
+				 * if there are multiple "from" members or none at all,
+				 * use the vector from "sign" to "intersection" instead
+				 */
 
-				if(fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
+				if (fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
 					List<MapNode> signAndIntersection = asList(
 							node,
 							intersection);
@@ -997,13 +1021,13 @@ public class TrafficSignModule extends AbstractModule {
 					MapWay signToIntersection = new MapWay(0, TagSet.of(), signAndIntersection);
 					from = signToIntersection;
 
-				}else if(fromMembers.size()==1) {
+				} else if (fromMembers.size() == 1) {
 
 					from = fromMembers.get(0);
 				}
 
 				//check if the rest of the "vital" relation members where defined
-				if(from==null || to==null) {
+				if (from == null || to == null) {
 					System.err.println("not all members of relation " + relation + " were defined."
 							+ " Destination sign rendering is omited for this relation.");
 					continue;
@@ -1016,32 +1040,34 @@ public class TrafficSignModule extends AbstractModule {
 				//'from' member is a way
 				fromSegment = getAdjacentSegment(from, intersection);
 
-				if(fromSegment!=null) {
-					if(fromSegment.getEndNode().equals(intersection)) {
+				if (fromSegment != null) {
+					if (fromSegment.getEndNode().equals(intersection)) {
 						mustBeInverted = true;
 					}
-				}else {
-					System.err.println("Way "+from+" is not connected to intersection "+intersection);
+				} else {
+					System.err.println("Way " + from + " is not connected to intersection " + intersection);
 					continue;
 				}
 
 				VectorXZ facingDir = fromSegment.getDirection();
 
 				//if the segment is facing towards the intersection, invert its direction vector
-				if(mustBeInverted) facingDir = facingDir.invert();
+				if (mustBeInverted)
+					facingDir = facingDir.invert();
 
 				this.rotation = facingDir.angle();
 
 				//'to' member is also a way
 				toSegment = getAdjacentSegment(to, intersection);
 
-				if(toSegment==null) {
-					System.err.println("Way "+to+" is not connected to intersection "+intersection+". Returning");
+				if (toSegment == null) {
+					System.err
+							.println("Way " + to + " is not connected to intersection " + intersection + ". Returning");
 					continue;
 				}
 
 				//explicit direction definition overwrites from-derived facing direction
-				if(node.getTags().containsKey("direction")) {
+				if (node.getTags().containsKey("direction")) {
 
 					this.rotation = parseDirection(node.getTags(), PI);
 				}
@@ -1050,27 +1076,29 @@ public class TrafficSignModule extends AbstractModule {
 				MapNode otherToSegmentNode = toSegment.getOtherNode(intersection);
 				MapNode otherFromSegmentNode = fromSegment.getOtherNode(intersection);
 
-				boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(), intersection.getPos());
+				boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(),
+						intersection.getPos());
 
-				if(isRightOf) {
+				if (isRightOf) {
 					pointingDirection = "RIGHT";
-				}else {
+				} else {
 					pointingDirection = "LEFT";
 				}
 
 				//parse traffic sign specific configurable values: material,numPosts,defaultHeight
-				String signName = "SIGN_DESTINATION_SIGN_"+arrowColour.toUpperCase()+"_"+pointingDirection.toUpperCase();
+				String signName = "SIGN_DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_"
+						+ pointingDirection.toUpperCase();
 
 				TrafficSignType attributes = mapSignAttributes(signName);
 
 				//if trafficSign_signName_material = * is defined
-				if(!attributes.materialName.isEmpty()) {
+				if (!attributes.materialName.isEmpty()) {
 
 					originalMat = getMaterial(attributes.materialName);
 					attributes.material = configureMaterial(originalMat, map, relation.getTags());
 				}
 
-				if(attributes.material==null) {
+				if (attributes.material == null) {
 
 					//if there is no material configured for the sign, try predefined ones
 					originalMat = getMaterial(signName);
@@ -1078,7 +1106,7 @@ public class TrafficSignModule extends AbstractModule {
 					attributes.material = configureMaterial(originalMat, map, relation.getTags());
 
 					//if there is no material defined for the sign, create simple white sign
-					if(attributes.material==null) {
+					if (attributes.material == null) {
 
 						attributes.material = new ConfMaterial(Interpolation.FLAT, Color.white);
 					}
@@ -1091,7 +1119,8 @@ public class TrafficSignModule extends AbstractModule {
 				attributes.material = attributes.material.withTextColor(this.textColor, 1);
 
 				//if trafficSign_signName_defaultHeight = *  was not defined
-				if(attributes.defaultHeight==0) attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
+				if (attributes.defaultHeight == 0)
+					attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
 
 				attributes.rotation = this.rotation;
 
@@ -1112,9 +1141,10 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* get basic parameters */
 
-			if(types.size()==0) return;
+			if (types.size() == 0)
+				return;
 
-			double height = parseHeight(node.getTags(), (float)types.get(0).defaultHeight);
+			double height = parseHeight(node.getTags(), (float) types.get(0).defaultHeight);
 
 			double[] signHeights = new double[types.size()];
 			double[] signWidths = new double[types.size()];
@@ -1141,16 +1171,16 @@ public class TrafficSignModule extends AbstractModule {
 
 			int numPosts = types.get(0).numPosts;
 
-			List<VectorXYZ> positions = new ArrayList<VectorXYZ>(numPosts);
+			List<VectorXYZ> positions = new ArrayList<>(numPosts);
 
 			for (int i = 0; i < numPosts; i++) {
-				double relativePosition = 0.5 - (i+1)/(double)(numPosts+1);
+				double relativePosition = 0.5 - (i + 1) / (double) (numPosts + 1);
 				positions.add(getBase().add(X_UNIT.mult(relativePosition * signWidths[0])));
 			}
 
 			/* create the front and back side of the sign */
 
-			List<List<VectorXYZ>> signGeometries = new ArrayList<List<VectorXYZ>>();
+			List<List<VectorXYZ>> signGeometries = new ArrayList<>();
 
 			double distanceBetweenSigns = 0.1;
 			double upperHeight = height;
@@ -1161,11 +1191,10 @@ public class TrafficSignModule extends AbstractModule {
 				double signWidth = signWidths[sign];
 
 				List<VectorXYZ> vs = asList(
-						getBase().add(+signWidth/2, upperHeight, postRadius),
-						getBase().add(+signWidth/2, upperHeight-signHeight, postRadius),
-						getBase().add(-signWidth/2, upperHeight, postRadius),
-						getBase().add(-signWidth/2, upperHeight-signHeight, postRadius)
-						);
+						getBase().add(+signWidth / 2, upperHeight, postRadius),
+						getBase().add(+signWidth / 2, upperHeight - signHeight, postRadius),
+						getBase().add(-signWidth / 2, upperHeight, postRadius),
+						getBase().add(-signWidth / 2, upperHeight - signHeight, postRadius));
 
 				signGeometries.add(vs);
 
@@ -1226,7 +1255,7 @@ public class TrafficSignModule extends AbstractModule {
 
 		private final List<TrafficSignType> types;
 		private final Configuration config;
-		private final double postRadius ;
+		private final double postRadius;
 		private TrafficSignModel model;
 
 		public TrafficSign(TrafficSignModel model, Configuration config) {
@@ -1249,7 +1278,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* get basic parameters */
 
-			double height = parseHeight(node.getTags(), (float)types.get(0).defaultHeight);
+			double height = parseHeight(node.getTags(), (float) types.get(0).defaultHeight);
 
 			double[] signHeights = new double[types.size()];
 			double[] signWidths = new double[types.size()];
@@ -1276,18 +1305,18 @@ public class TrafficSignModule extends AbstractModule {
 
 			int numPosts = types.get(0).numPosts;
 
-			List<VectorXYZ> positions = new ArrayList<VectorXYZ>(numPosts);
+			List<VectorXYZ> positions = new ArrayList<>(numPosts);
 
 			for (int i = 0; i < numPosts; i++) {
 
-				double relativePosition = 0.5 - (i+1)/(double)(numPosts+1);
+				double relativePosition = 0.5 - (i + 1) / (double) (numPosts + 1);
 
 				positions.add(model.position.xyz(getBase().getY()).add(X_UNIT.mult(relativePosition * signWidths[0])));
 			}
 
 			/* create the front and back side of the sign */
 
-			List<List<VectorXYZ>> signGeometries = new ArrayList<List<VectorXYZ>>();
+			List<List<VectorXYZ>> signGeometries = new ArrayList<>();
 
 			double distanceBetweenSigns = 0.1;
 			double upperHeight = height;
@@ -1298,11 +1327,10 @@ public class TrafficSignModule extends AbstractModule {
 				double signWidth = signWidths[sign];
 
 				List<VectorXYZ> vs = asList(
-						model.position.xyz(getBase().getY()).add(+signWidth/2, upperHeight, postRadius),
-						model.position.xyz(getBase().getY()).add(+signWidth/2, upperHeight-signHeight, postRadius),
-						model.position.xyz(getBase().getY()).add(-signWidth/2, upperHeight, postRadius),
-						model.position.xyz(getBase().getY()).add(-signWidth/2, upperHeight-signHeight, postRadius)
-				);
+						model.position.xyz(getBase().getY()).add(+signWidth / 2, upperHeight, postRadius),
+						model.position.xyz(getBase().getY()).add(+signWidth / 2, upperHeight - signHeight, postRadius),
+						model.position.xyz(getBase().getY()).add(-signWidth / 2, upperHeight, postRadius),
+						model.position.xyz(getBase().getY()).add(-signWidth / 2, upperHeight - signHeight, postRadius));
 
 				signGeometries.add(vs);
 
@@ -1311,15 +1339,15 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* rotate the sign around the base to match the direction */
 
-				for (List<VectorXYZ> vs : signGeometries) {
+			for (List<VectorXYZ> vs : signGeometries) {
 
-					for (int i = 0; i < vs.size(); i++) {
-						VectorXYZ v = vs.get(i);
-						v = v.rotateVec(model.direction, model.position.xyz(getBase().getY()), VectorXYZ.Y_UNIT);
-						vs.set(i, v);
-					}
-
+				for (int i = 0; i < vs.size(); i++) {
+					VectorXYZ v = vs.get(i);
+					v = v.rotateVec(model.direction, model.position.xyz(getBase().getY()), VectorXYZ.Y_UNIT);
+					vs.set(i, v);
 				}
+
+			}
 
 			if (positions.size() > 1) { // if 1, the post is exactly on the base
 				for (int i = 0; i < positions.size(); i++) {
@@ -1345,13 +1373,13 @@ public class TrafficSignModule extends AbstractModule {
 
 				List<VectorXYZ> vs = signGeometries.get(sign);
 
-					target.drawTriangleStrip(type.material, vs,
-							texCoordLists(vs, type.material, STRIP_FIT));
+				target.drawTriangleStrip(type.material, vs,
+						texCoordLists(vs, type.material, STRIP_FIT));
 
-					vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
+				vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 
-					target.drawTriangleStrip(STEEL, vs,
-							texCoordLists(vs, STEEL, STRIP_FIT));
+				target.drawTriangleStrip(STEEL, vs,
+						texCoordLists(vs, STEEL, STRIP_FIT));
 
 			}
 		}
