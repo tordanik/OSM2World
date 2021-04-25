@@ -6,6 +6,11 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.osm2world.core.map_data.data.TagSet;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -107,19 +112,29 @@ public abstract class Material {
 	}
 
 	/**
-	 * returns a material that is the same as this one,
-	 * except with additional texture data layers stacked on top
+	 * returns a material that is like this one,
+	 * except with a different list of {@link TextureLayer}s
 	 */
-	public Material withAddedLayers(List<TextureLayer> textureLayers) {
+	public Material withLayers(List<TextureLayer> textureLayers) {
+		if (textureLayers.equals(this.textureLayers)) {
+			return this;
+		} else {
+		    return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
+		    		getTransparency(), getShadow(), getAmbientOcclusion(), textureLayers);
+		}
+	}
 
-		if (textureLayers.isEmpty()) return this;
+	/**
+	 * returns a material that is like this one,
+	 * except with additional {@link TextureLayer}s stacked on top
+	 */
+	public Material withAddedLayers(List<TextureLayer> additionalTextureLayers) {
 
-		List<TextureLayer> textureDataList = new ArrayList<>(getTextureLayers());
+		if (additionalTextureLayers.isEmpty()) return this;
 
-		textureDataList.addAll(textureLayers);
-
-	    return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
-	    		getTransparency(), getShadow(), getAmbientOcclusion(), textureDataList);
+		List<TextureLayer> newTextureLayerList = new ArrayList<>(getTextureLayers());
+		newTextureLayerList.addAll(additionalTextureLayers);
+	    return this.withLayers(newTextureLayerList);
 
 	}
 
@@ -180,6 +195,77 @@ public abstract class Material {
 		return this;
 	}
 
+	/**
+	 * Fills in placeholders, such as <code>%{name}</code>, in this material's {@link TextTexture}s.
+	 * To fill in a placeholder, it looks for the placeholder variable in the map parameter, then in the tags.
+	 *
+	 * @param map  map from placeholder variables to the text they should be replaced with
+	 * @param tags  the {@link TagSet} to extract values from
+	 * @return  a replica of this material with a modified list of {@link TextureLayer}s,
+	 * or this material itself if it has no {@link TextTexture}s with placeholders.
+	 */
+	public Material withPlaceholdersFilledIn(Map<String, String> map, TagSet tags) {
+
+		List<TextureLayer> newLayers = new ArrayList<>();
+
+		for (TextureLayer layer : this.getTextureLayers()) {
+
+			newLayers.add(new TextureLayer(
+					withPlaceholdersFilledIn(layer.baseColorTexture, map, tags),
+					withPlaceholdersFilledIn(layer.normalTexture, map, tags),
+					withPlaceholdersFilledIn(layer.ormTexture, map, tags),
+					withPlaceholdersFilledIn(layer.displacementTexture, map, tags),
+					layer.colorable));
+
+		}
+
+		return this.withLayers(newLayers);
+
+	}
+
+	private static TextureData withPlaceholdersFilledIn(TextureData texture, Map<String, String> map, TagSet tags) {
+
+		if (texture instanceof TextTexture) {
+
+			TextTexture textTexture = (TextTexture) texture;
+
+			Pattern pattern = Pattern.compile(".*(%\\{(.+)\\}).*");
+
+			String newText = textTexture.text;
+			Matcher matcher = pattern.matcher(newText);
+
+			while (matcher.matches()) {
+
+				String key = matcher.group(2);
+
+				if (map.containsKey(key)) {
+					newText = newText.replace(matcher.group(1), map.get(key));
+				} else if (tags.containsKey(key)) {
+					newText = newText.replace(matcher.group(1), tags.getValue(key));
+				} else {
+					System.err.println("Unknown placeholder key: " + key);
+					newText = newText.replace(matcher.group(1), "");
+				}
+
+				matcher = pattern.matcher(newText);
+
+			}
+
+			if (!newText.equals(textTexture.text)) {
+				return new TextTexture(newText,
+						textTexture.font, textTexture.width, textTexture.height,
+						textTexture.widthPerEntity, textTexture.heightPerEntity,
+						textTexture.topOffset, textTexture.leftOffset,
+						textTexture.textColor, textTexture.relativeFontSize,
+						textTexture.wrap, textTexture.coordFunction);
+			}
+
+		}
+
+		return texture;
+
+	}
+
 	public Transparency getTransparency() {
 		return transparency;
 	}
@@ -213,10 +299,5 @@ public abstract class Material {
 			return textureLayers.toString();
 		}
 	}
-
-	/*
-	 * some possible later additions: specular (obvious ...),
-	 * as well as brilliance, phong, metallic, reflection, crand and iridescence for POVRay
-	 */
 
 }

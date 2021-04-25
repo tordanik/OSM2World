@@ -37,11 +37,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.ConfMaterial;
-import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.TextTexture;
 import org.osm2world.core.target.common.material.TextureData;
-import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.TrafficSignModel;
@@ -592,14 +589,16 @@ public class TrafficSignModule extends AbstractModule {
 
 		if (!attributes.materialName.isEmpty()) {
 			originalMaterial = getMaterial(attributes.materialName);
-			attributes.material = configureMaterial(originalMaterial, map, tagsOfElement);
+			attributes.material = originalMaterial == null ? null
+					: originalMaterial.withPlaceholdersFilledIn(map, tagsOfElement);
 		}
 
 		if (attributes.material == null) {
 
 			//if there is no material configured for the sign, try predefined ones
 			originalMaterial = getMaterial(signName);
-			attributes.material = configureMaterial(originalMaterial, map, tagsOfElement);
+			attributes.material = originalMaterial == null ? null
+					: originalMaterial.withPlaceholdersFilledIn(map, tagsOfElement);
 
 			//if there is no material defined for the sign, create simple white sign
 			if (attributes.material == null) {
@@ -672,93 +671,6 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		return new TrafficSignType(originalMaterial, numPosts, defaultHeight);
-	}
-
-	/**
-	 * Creates a replica of originalMaterial with a new textureDataList.
-	 * The new list is a copy of the old one with its TextTextureData layers
-	 * replaced by a new TextTextureData instance of different text.
-	 * Returns the new Material created.
-	 *
-	 * @param originalMaterial
-	 * the material to replicate
-	 * @param map
-	 * maps each of traffic_sign.subtype / traffic_sign.brackettext to their corresponding values
-	 * @param tags
-	 * the {@link TagSet} to extract values from
-	 * @return a ConfMaterial identical to originalMaterial with its texture layers altered
-	 */
-	public static Material configureMaterial(ConfMaterial originalMaterial, Map<String, String> map, TagSet tags) {
-
-		if (originalMaterial == null)
-			return null;
-
-		Material newMaterial = null;
-		List<TextureLayer> newList = new ArrayList<>(originalMaterial.getTextureLayers());
-
-		String regex = ".*(%\\{(.+)\\}).*";
-		Pattern pattern = Pattern.compile(regex);
-
-		for (TextureLayer layer : originalMaterial.getTextureLayers()) {
-
-			if (layer.baseColorTexture instanceof TextTexture) {
-
-				TextTexture textTexture = (TextTexture) layer.baseColorTexture;
-
-				String newText = "";
-				Matcher matcher = pattern.matcher(textTexture.text);
-				int index = originalMaterial.getTextureLayers().indexOf(layer);
-
-				if (matcher.matches() && !((TextTexture) layer.baseColorTexture).text.isEmpty()) {
-
-					newText = textTexture.text;
-
-					while (matcher.matches()) {
-
-						if (tags.containsKey(matcher.group(2))) {
-
-							newText = newText.replace(matcher.group(1), tags.getValue(matcher.group(2)));
-
-						} else if (!map.isEmpty()) {
-
-							//TODO: implement that with streams
-							boolean matched = false;
-
-							for (String key : map.keySet()) {
-								if (key.equals(matcher.group(2))) {
-									newText = newText.replace(matcher.group(1), map.get(matcher.group(2)));
-									matched = true;
-								}
-							}
-
-							if (!matched)
-								newText = newText.replace(matcher.group(1), "");
-
-						} else {
-							System.err.println("Unknown attribute: " + matcher.group(2));
-							newText = newText.replace(matcher.group(1), "");
-						}
-
-						matcher = pattern.matcher(newText);
-					}
-
-					TextTexture newTextTexture = new TextTexture(newText, textTexture.font, textTexture.width,
-							textTexture.height, textTexture.widthPerEntity, textTexture.heightPerEntity,
-							textTexture.topOffset, textTexture.leftOffset,
-							textTexture.textColor, textTexture.relativeFontSize,
-							textTexture.wrap, textTexture.coordFunction);
-
-					newList.set(index, new TextureLayer(newTextTexture,
-							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
-				}
-			}
-		}
-
-		newMaterial = new ConfMaterial(originalMaterial.getInterpolation(), originalMaterial.getColor(),
-				originalMaterial.isDoubleSided(), originalMaterial.getTransparency(),
-				originalMaterial.getShadow(), originalMaterial.getAmbientOcclusion(), newList);
-
-		return newMaterial;
 	}
 
 	/**
@@ -1095,7 +1007,8 @@ public class TrafficSignModule extends AbstractModule {
 				if (!attributes.materialName.isEmpty()) {
 
 					originalMat = getMaterial(attributes.materialName);
-					attributes.material = configureMaterial(originalMat, map, relation.getTags());
+					attributes.material = originalMat == null ? null
+							: originalMat.withPlaceholdersFilledIn(map, relation.getTags());
 				}
 
 				if (attributes.material == null) {
@@ -1103,7 +1016,8 @@ public class TrafficSignModule extends AbstractModule {
 					//if there is no material configured for the sign, try predefined ones
 					originalMat = getMaterial(signName);
 
-					attributes.material = configureMaterial(originalMat, map, relation.getTags());
+					attributes.material = originalMat == null ? null
+							: originalMat.withPlaceholdersFilledIn(map, relation.getTags());
 
 					//if there is no material defined for the sign, create simple white sign
 					if (attributes.material == null) {
