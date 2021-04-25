@@ -66,6 +66,18 @@ public class MaterialTest {
 
 	}
 
+	@Test
+	public void testPlaceholders_default() {
+
+		Material originalMat = createTextTestMaterial("%{somekey, 30} t");
+
+		Material newMat = originalMat.withPlaceholdersFilledIn(emptyMap(), TagSet.of());
+
+		TextTexture result = (TextTexture)newMat.getTextureLayers().get(0).baseColorTexture;
+		assertEquals("30 t", result.text);
+
+	}
+
 	/** creates a material with a single {@link TextTexture} */
 	private static Material createTextTestMaterial(String text) {
 		return new ImmutableMaterial(Interpolation.FLAT, Color.WHITE, Transparency.TRUE, asList(new TextureLayer(

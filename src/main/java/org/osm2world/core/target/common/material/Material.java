@@ -198,6 +198,7 @@ public abstract class Material {
 	/**
 	 * Fills in placeholders, such as <code>%{name}</code>, in this material's {@link TextTexture}s.
 	 * To fill in a placeholder, it looks for the placeholder variable in the map parameter, then in the tags.
+	 * Fallback values in placeholders are supported as well, using <code>%{name, fallback}</code> syntax.
 	 *
 	 * @param map  map from placeholder variables to the text they should be replaced with
 	 * @param tags  the {@link TagSet} to extract values from
@@ -229,25 +230,28 @@ public abstract class Material {
 
 			TextTexture textTexture = (TextTexture) texture;
 
-			Pattern pattern = Pattern.compile(".*(%\\{(.+)\\}).*");
+			Pattern pattern = Pattern.compile("%\\{([^,\\}]+)(?:,\\s*([^\\}]+))?\\}");
 
 			String newText = textTexture.text;
 			Matcher matcher = pattern.matcher(newText);
 
-			while (matcher.matches()) {
+			while (matcher.find()) {
 
-				String key = matcher.group(2);
+				String key = matcher.group(1);
+				String replacement;
 
 				if (map.containsKey(key)) {
-					newText = newText.replace(matcher.group(1), map.get(key));
+					replacement = map.get(key);
 				} else if (tags.containsKey(key)) {
-					newText = newText.replace(matcher.group(1), tags.getValue(key));
+					replacement = tags.getValue(key);
+				} else if (matcher.group(2) != null) {
+					replacement = matcher.group(2);
 				} else {
 					System.err.println("Unknown placeholder key: " + key);
-					newText = newText.replace(matcher.group(1), "");
+					replacement = "";
 				}
 
-				matcher = pattern.matcher(newText);
+				newText = newText.replace(matcher.group(0), replacement);
 
 			}
 
