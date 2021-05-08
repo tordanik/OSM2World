@@ -3,7 +3,6 @@ package org.osm2world.core.math.shapes;
 import static java.lang.Math.PI;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
@@ -64,7 +63,7 @@ public class CircleXZ implements SimpleClosedShapeXZ {
 	}
 
 	@Override
-	public Collection<TriangleXZ> getTriangulation() {
+	public List<TriangleXZ> getTriangulation() {
 
 		List<VectorXZ> vertices = vertices();
 

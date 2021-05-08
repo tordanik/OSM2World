@@ -43,6 +43,6 @@ public interface ClosedShapeXZ extends ShapeXZ {
 	 * returns a decomposition of the shape into triangles.
 	 * For some shapes (e.g. circles), this may be an approximation.
 	 */
-	public Collection<TriangleXZ> getTriangulation();
+	public List<TriangleXZ> getTriangulation();
 
 }

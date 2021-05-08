@@ -123,6 +123,13 @@ public interface PolylineShapeXZ extends ShapeXZ {
 				.get();
 	}
 
+	/** returns the segment of this shape (from {@link #getSegments()}) that is closest to the parameter */
+	default public LineSegmentXZ closestSegment(VectorXZ p) {
+		return getSegments().stream()
+				.min(Comparator.comparing(it -> p.distanceTo(it.closestPoint(p))))
+				.get();
+	}
+
 	/** returns the flipped version of this polyline */
 	public default PolylineShapeXZ reverse() {
 		List<VectorXZ> vertices = new ArrayList<>(this.vertices());

@@ -343,9 +343,8 @@ public final class Materials {
 	}
 
 	/** same as {@link #getSurfaceMaterial(String)}, but with fallback value */
-	public static final Material getSurfaceMaterial(String value,
-			Material fallback) {
-		Material material = surfaceMaterialMap.get(value);
+	public static final Material getSurfaceMaterial(String value, Material fallback) {
+		Material material = value == null ? null : surfaceMaterialMap.get(value);
 		if (material != null) {
 			return material;
 		} else {

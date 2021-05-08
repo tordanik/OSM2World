@@ -1,25 +1,49 @@
 package org.osm2world.core.world.modules;
 
+import static java.lang.Math.max;
+import static java.lang.Math.toRadians;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
+import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
+import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -28,123 +52,268 @@ import org.osm2world.core.world.modules.common.AbstractModule;
 public class BicycleParkingModule extends AbstractModule {
 
 	@Override
-	protected void applyToArea(MapArea area) {
-		if (area.getTags().contains("amenity", "bicycle_parking")) {
+	protected void applyToElement(MapElement element) {
+		if (element.getTags().contains("amenity", "bicycle_parking")) {
 
-			if (area.getTags().contains("bicycle_parking", "stands")) {
-				area.addRepresentation(new BicycleStands(area));
+			if (element.getTags().contains("bicycle_parking", "stands")) {
+				if (element instanceof MapArea) {
+					((MapArea) element).addRepresentation(new BicycleStandsArea((MapArea) element));
+				} else if (element instanceof MapWaySegment) {
+					if (element.equals(((MapWaySegment) element).getWay().getWaySegments().get(0))) {
+						// renders the entire way at once, so only add it to the first way segment
+						((MapWaySegment) element).addRepresentation(new BicycleStandsWay((MapWaySegment) element));
+
+					}
+				} else if (element instanceof MapNode) {
+					if (element.getTags().containsKey("direction")) {
+						((MapNode) element).addRepresentation(new BicycleStandsNode((MapNode) element));
+					}
+				}
 			}
 
 		}
-
 	}
 
-	public static final class BicycleStands extends AbstractAreaWorldObject {
+	public static abstract class BicycleStands implements TerrainBoundaryWorldObject {
 
-		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
-
+		protected static final double DEFAULT_DISTANCE_BETWEEN_STANDS = 1.0;
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
-		private static final float STAND_DEFAULT_HEIGHT = 0.7f;
+		private static final double STAND_DEFAULT_HEIGHT = 0.7;
 
-		private EleConnectorGroup standConnectors;
+		private EleConnectorGroup eleConnectors;
+		private List<EleConnector> standEleConnectors;
 
-		private final double height;
+		/** the line along which stand centers should be placed */
+		protected abstract PolylineShapeXZ lineThroughStandCenters();
 
-		protected BicycleStands(MapArea area) {
-			super(area);
-			height = parseHeight(area.getTags(), STAND_DEFAULT_HEIGHT);
+		/**
+		 * the area of the bicycle parking facility (if any).
+		 * Used to avoid placing stands in holes of multipolygons and to draw the surface material below the stands.
+		 */
+		protected @Nullable PolygonShapeXZ area() {
+			return null;
 		}
 
-//		@Override
-//		public GroundState getGroundState() {
-//			return GroundState.ON; //TODO better ground state calculations
-//		}
-
-		protected Material getStandMaterial() {
-			return STEEL;
+		/** returns the number of stands, or null if it isn't known */
+		protected @Nullable Integer numberOfStands() {
+			Integer capacity = parseUInt(getPrimaryMapElement().getTags().getValue("capacity"));
+			if (capacity != null && capacity > 0) {
+				return (capacity + 1) / 2;
+			} else {
+				return null;
+			}
 		}
 
 		@Override
 		public EleConnectorGroup getEleConnectors() {
 
-			//replaces the default implementation (connectors at start and end of the segment)
-			//with one that sets up an ele connector for each stand
+			if (eleConnectors == null) {
 
-			if (standConnectors == null) {
+				eleConnectors = new EleConnectorGroup();
+				standEleConnectors = new ArrayList<>();
 
-				SimplePolygonXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
-				List<VectorXZ> standLocations;
-				VectorXZ midpoint1, midpoint2;
+				/* create connectors for the area */
 
-				// place the stand an eighth of the distance from either end of the bounded box
-				// ensures the stand is within the box and passing through the centre
-				if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > bbox.getVertex(1)
-					.distanceTo(bbox.getVertex(0))) {
-					midpoint1 = bbox.getVertex(0).add(bbox.getVertex(1)).mult(0.5);
-					midpoint2 = bbox.getVertex(2).add(bbox.getVertex(3)).mult(0.5);
-				} else {
-					midpoint1 = bbox.getVertex(1).add(bbox.getVertex(2)).mult(0.5);
-					midpoint2 = bbox.getVertex(3).add(bbox.getVertex(0)).mult(0.5);
+				if (area() != null) {
+					eleConnectors.addConnectorsForTriangulation(area().getTriangulation(), null, getGroundState());
 				}
-				standLocations = equallyDistributePointsAlong(1.0, true,
-					midpoint1.add(midpoint2.subtract(midpoint1).mult(0.125)),
-					midpoint2.add(midpoint1.subtract(midpoint2).mult(0.125)));
 
-				//TODO: take capacity into account
+				/* create a connector for each stand */
 
-				standConnectors = new EleConnectorGroup();
+				PolylineShapeXZ centerline = lineThroughStandCenters();
 
-				for (VectorXZ standLocation : standLocations) {
-					if (area.getPolygon().contains(standLocation)) {
-						standConnectors
-							.add(new EleConnector(standLocation, null, getGroundState()));
+				double distanceBetweenStands = DEFAULT_DISTANCE_BETWEEN_STANDS;
+				if (numberOfStands() != null) {
+					distanceBetweenStands = centerline.getLength() / (numberOfStands() - 1);
+				}
+
+				List<VectorXYZ> standLocations = Integer.valueOf(1).equals(numberOfStands())
+						? singletonList(centerline.pointAtOffset(centerline.getLength() / 2.0).xyz(0))
+						: equallyDistributePointsAlong(distanceBetweenStands, true,listXYZ(centerline.vertices(), 0));
+
+				for (VectorXYZ standLocation : standLocations) {
+					if (area() == null || area().contains(standLocation.xz())) {
+						EleConnector connector = new EleConnector(standLocation.xz(), null, getGroundState());
+						standEleConnectors.add(connector);
+						eleConnectors.add(connector);
 					}
 				}
 			}
 
-			return standConnectors;
+			return eleConnectors;
 
 		}
 
 		@Override
 		public void renderTo(Target target) {
 
-			SimplePolygonXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
+			TagSet tags = getPrimaryMapElement().getTags();
+			PolylineShapeXZ centerline = lineThroughStandCenters();
 
-			VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
+			/* render surface area */
 
-			//Determining which side of the bounded box is longer; main direction of the stand
-			if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > direction.length()) {
-				direction = bbox.getVertex(2).subtract(bbox.getVertex(1));
+			Material surfaceMaterial = getSurfaceMaterial();
+			if (surfaceMaterial != null) {
+				List<TriangleXYZ> triangles = eleConnectors.getTriangulationXYZ(area().getTriangulation());
+				target.drawTriangles(surfaceMaterial, triangles,
+						triangleTexCoordLists(triangles, surfaceMaterial, NamedTexCoordFunction.GLOBAL_X_Z));
 			}
 
-			direction = direction.rightNormal();
-			VectorXYZ toFront = direction.mult(STAND_DEFAULT_LENGTH / 2).xyz(0);
+			/* render stands */
 
-			for (EleConnector standConnector : standConnectors) {
+			double height = parseHeight(tags, STAND_DEFAULT_HEIGHT);
+			double length = parseLength(tags, STAND_DEFAULT_LENGTH);
 
-				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
+			Double direction = parseAngle(tags.getValue("direction"));
+			if (direction != null) { direction = toRadians(direction); }
 
-				path.add(standConnector.getPosXYZ().add(toFront));
-				path.add(standConnector.getPosXYZ().add(toFront).addY(height * 0.95));
-				path.add(standConnector.getPosXYZ().add(toFront.mult(0.95)).addY(height));
-				path.add(standConnector.getPosXYZ().add(toFront.invert().mult(0.95)).addY(height));
-				path.add(standConnector.getPosXYZ().add(toFront.invert()).addY(height * 0.95));
-				path.add(standConnector.getPosXYZ().add(toFront.invert()));
+			for (EleConnector standConnector : standEleConnectors) {
 
-				List<VectorXYZ> upVectors = new ArrayList<VectorXYZ>();
+				double localDirection;
+				if (direction != null) {
+					localDirection = direction;
+				} else {
+					LineSegmentXZ segment = centerline.closestSegment(standConnector.pos);
+					localDirection = segment.getDirection().rightNormal().angle();
+				}
 
-				upVectors.add(toFront.normalize());
-				upVectors.add(upVectors.get(0));
-				upVectors.add(Y_UNIT);
-				upVectors.add(upVectors.get(2));
-				upVectors.add(toFront.invert().normalize());
-				upVectors.add(upVectors.get(4));
+				target.drawModel(BICYCLE_STAND_MODEL, standConnector.getPosXYZ(), localDirection, height, null, length);
 
-				target.drawExtrudedShape(getStandMaterial(), STAND_SHAPE, path, upVectors,
-					null, null, null);
+			}
 
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+			if (area() != null && getSurfaceMaterial() != null) {
+				return singletonList(area());
+			} else {
+				return emptyList();
 			}
 		}
+
+		private @Nullable Material getSurfaceMaterial() {
+			return Materials.getSurfaceMaterial(getPrimaryMapElement().getTags().getValue("surface"));
+		}
+
 	}
+
+	public static final class BicycleStandsArea extends BicycleStands implements AreaWorldObject {
+
+		private final MapArea area;
+
+		protected BicycleStandsArea(MapArea area) {
+			this.area = area;
+		}
+
+		@Override
+		public MapArea getPrimaryMapElement() {
+			return area;
+		}
+
+		@Override
+		protected PolylineShapeXZ lineThroughStandCenters() {
+
+			SimplePolygonXZ bbox = area.getOuterPolygon().minimumRotatedBoundingBox();
+			VectorXZ midpoint1, midpoint2;
+
+			if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > bbox.getVertex(1).distanceTo(bbox.getVertex(0))) {
+				midpoint1 = bbox.getVertex(0).add(bbox.getVertex(1)).mult(0.5);
+				midpoint2 = bbox.getVertex(2).add(bbox.getVertex(3)).mult(0.5);
+			} else {
+				midpoint1 = bbox.getVertex(1).add(bbox.getVertex(2)).mult(0.5);
+				midpoint2 = bbox.getVertex(3).add(bbox.getVertex(0)).mult(0.5);
+			}
+
+			return new LineSegmentXZ(
+				midpoint1.add(midpoint2.subtract(midpoint1).normalize().mult(DEFAULT_DISTANCE_BETWEEN_STANDS / 2)),
+				midpoint2.add(midpoint1.subtract(midpoint2).normalize().mult(DEFAULT_DISTANCE_BETWEEN_STANDS / 2)));
+
+		}
+
+		@Override
+		protected PolygonShapeXZ area() {
+			return area.getPolygon();
+		}
+
+	}
+
+	public static final class BicycleStandsWay extends BicycleStands implements WaySegmentWorldObject {
+
+		private final MapWay way;
+		private final MapWaySegment waySegment;
+
+		protected BicycleStandsWay(MapWaySegment segment) {
+			this.way = segment.getWay();
+			this.waySegment = segment;
+		}
+
+		@Override
+		public MapWaySegment getPrimaryMapElement() {
+			return waySegment;
+		}
+
+		@Override
+		protected PolylineShapeXZ lineThroughStandCenters() {
+			return way.getPolylineXZ();
+		}
+
+	}
+
+	public static final class BicycleStandsNode extends BicycleStands implements NodeWorldObject {
+
+		private final MapNode node;
+		private final double direction;
+
+		public BicycleStandsNode(MapNode node) {
+			this.node = node;
+			this.direction = parseDirection(node.getTags(), 0);
+		}
+
+		@Override
+		public MapNode getPrimaryMapElement() {
+			return node;
+		}
+
+		@Override
+		protected PolylineShapeXZ lineThroughStandCenters() {
+			int numberOfStands = numberOfStands() == null ? 2 : numberOfStands();
+			double length = max(0.1, (numberOfStands - 1) * DEFAULT_DISTANCE_BETWEEN_STANDS);
+			VectorXZ toEnd = VectorXZ.fromAngle(direction).rightNormal().mult(length / 2);
+			return new LineSegmentXZ(node.getPos().subtract(toEnd), node.getPos().add(toEnd));
+		}
+
+	}
+
+	private static final Model BICYCLE_STAND_MODEL = new Model() {
+
+		private final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
+
+		@Override
+		public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
+				Double length) {
+
+			VectorXYZ toFront = VectorXZ.fromAngle(direction).mult(length / 2).xyz(0);
+
+			List<VectorXYZ> path = asList(
+					position.add(toFront),
+					position.add(toFront).addY(height * 0.95),
+					position.add(toFront.mult(0.95)).addY(height),
+					position.add(toFront.invert().mult(0.95)).addY(height),
+					position.add(toFront.invert()).addY(height * 0.95),
+					position.add(toFront.invert()));
+
+			List<VectorXYZ> upVectors = asList(
+					toFront.normalize(),
+					toFront.normalize(),
+					Y_UNIT,
+					Y_UNIT,
+					toFront.invert().normalize(),
+					toFront.invert().normalize());
+
+			target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors, null, null, null);
+
+		}
+	};
+
 }

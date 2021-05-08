@@ -1,8 +1,7 @@
 package org.osm2world.core.math;
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
@@ -101,8 +100,8 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public Collection<TriangleXZ> getTriangulation() {
-		return singleton(this);
+	public List<TriangleXZ> getTriangulation() {
+		return singletonList(this);
 	}
 
 	@Override

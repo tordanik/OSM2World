@@ -137,7 +137,7 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
-	public Collection<TriangleXZ> getTriangulation() {
+	public List<TriangleXZ> getTriangulation() {
 		return asList(
 				new TriangleXZ(topLeft(), bottomRight(), topRight()),
 				new TriangleXZ(topLeft(), bottomLeft(), bottomRight()));

@@ -1,7 +1,6 @@
 package org.osm2world.core.math;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.math.algorithms.TriangulationUtil;
@@ -57,7 +56,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 	}
 
 	@Override
-	public Collection<TriangleXZ> getTriangulation() {
+	public List<TriangleXZ> getTriangulation() {
 		return TriangulationUtil.triangulate(this);
 	}
 

@@ -96,6 +96,11 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 		return fromJTS(jtsResult);
 	}
 
+	@Override
+	public LineSegmentXZ closestSegment(VectorXZ p) {
+		return this;
+	}
+
 	/** returns the z value associated with a given x value so that the point (x, z) is on the line */
 	public double evaluateAtX(double x) {
 		double xLength = abs(p2.x - p1.x);

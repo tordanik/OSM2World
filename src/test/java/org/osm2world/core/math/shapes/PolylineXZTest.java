@@ -6,6 +6,7 @@ import static org.osm2world.core.math.VectorXZ.Z_UNIT;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import org.junit.Test;
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
 public class PolylineXZTest {
@@ -85,10 +86,28 @@ public class PolylineXZTest {
 			assertAlmostEquals(v, polyline.closestPoint(v));
 		}
 
-		assertAlmostEquals(new VectorXZ(5, 2), polyline.closestPoint(new VectorXZ(5, 5)));
-		assertAlmostEquals(new VectorXZ(-3, 2), polyline.closestPoint(new VectorXZ(-3, 2)));
+		assertAlmostEquals(5, 2, polyline.closestPoint(new VectorXZ(5, 5)));
+		assertAlmostEquals(-3, 2, polyline.closestPoint(new VectorXZ(-3, 2)));
 
 		assertAlmostEquals(v2, polyline.closestPoint(new VectorXZ(15, 0)));
+
+	}
+
+
+	@Test
+	public void testClosestSegment() {
+
+		VectorXZ v0 = new VectorXZ(-10, 2);
+		VectorXZ v1 = new VectorXZ(  0, 2);
+		VectorXZ v2 = new VectorXZ(+10, 2);
+
+		PolylineXZ polyline = new PolylineXZ(asList(v0, v1, v2));
+
+		for (LineSegmentXZ s : polyline.getSegments()) {
+			assertEquals(s, polyline.closestSegment(s.getCenter()));
+		}
+
+		assertEquals(polyline.getSegments().get(0), polyline.closestSegment(new VectorXZ(-5, 4)));
 
 	}
 
