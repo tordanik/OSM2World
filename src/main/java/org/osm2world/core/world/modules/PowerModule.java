@@ -37,7 +37,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.frontend_pbf.ModelTarget;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
@@ -316,20 +315,9 @@ public final class PowerModule extends AbstractModule {
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
 			/* draw rotor blades */
-
-			if (target instanceof ModelTarget) {
-
-				((ModelTarget) target).drawModel(ROTOR,
-						position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
-						0, rotorDiameter, rotorDiameter, rotorDiameter);
-
-			} else {
-
-				ROTOR.render(target,
-						position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
-						0, rotorDiameter, rotorDiameter, rotorDiameter);
-
-			}
+			target.drawModel(ROTOR,
+					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
+					0, rotorDiameter, rotorDiameter, rotorDiameter);
 
 		}
 

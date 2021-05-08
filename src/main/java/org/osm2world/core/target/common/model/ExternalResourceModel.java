@@ -21,7 +21,7 @@ public class ExternalResourceModel implements Model {
 	@Override
 	public void render(Target target, VectorXYZ position, double direction,
 			Double height, Double width, Double length) {
-		throw new UnsupportedOperationException();
+		// TODO implement - right now this only works for the FrontendPbfTarget, others will just show nothing
 	}
 
 }

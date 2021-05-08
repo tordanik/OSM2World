@@ -36,7 +36,6 @@ import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.frontend_pbf.ModelTarget;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
@@ -235,19 +234,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 					SleeperModel sleeperModel = sleeperModelByWidth.get(sleeperWidth);
 
-					if (target instanceof ModelTarget) {
-
-						((ModelTarget)target).drawModel(sleeperModel,
-								sleeperPosition, segment.getDirection().angle(),
-								null, sleeperWidth, null);
-
-					} else {
-
-						sleeperModel.render(target,
-								sleeperPosition, segment.getDirection().angle(),
-								null, sleeperWidth, null);
-
-					}
+					target.drawModel(sleeperModel,
+							sleeperPosition, segment.getDirection().angle(),
+							null, sleeperWidth, null);
 
 				}
 

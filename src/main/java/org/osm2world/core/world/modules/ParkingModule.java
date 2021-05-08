@@ -17,7 +17,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.frontend_pbf.ModelTarget;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -97,10 +96,8 @@ public class ParkingModule extends AbstractModule {
 				}
 				direction = direction.normalize();
 
-				if (target instanceof ModelTarget) {
-					((ModelTarget)target).drawModel(carModel, bbox.getCenter().xyz(ele),
-							direction.angle(), null, null, null);
-				}
+				target.drawModel(carModel, bbox.getCenter().xyz(ele), direction.angle(), null, null, null);
+
 			}
 
 		}

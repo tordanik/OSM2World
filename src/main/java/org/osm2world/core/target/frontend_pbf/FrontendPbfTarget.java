@@ -88,7 +88,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
+public class FrontendPbfTarget extends AbstractTarget {
 
 	/**
 	 * whether empty terrain should be faked as a big rectangle slightly below other ground-level geometries.
@@ -272,7 +272,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 	/**
 	 * internally used {@link Target} implementation that collects all geometry for a single object
 	 */
-	private class WorldObjectBuilder extends AbstractTarget implements ModelTarget {
+	private class WorldObjectBuilder extends AbstractTarget {
 
 		private final WorldObject worldObject;
 
@@ -488,7 +488,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 					geometryBuilder.addDirection(direction);
 					allUnrotated &= (direction == 0);
 
-					//FIXME: this assumes that 1 is the unscaled height, which happens to be true for trees
+					// this assumes that 1 is the unscaled height, which is why convertModel passes 1 to Model.render
 					double scaleDouble = instanceParams.height == null ? 1 : instanceParams.height;
 					int scale = (int)round(scaleDouble * 1000.0);
 					geometryBuilder.addScale(scale);
@@ -768,7 +768,7 @@ public class FrontendPbfTarget extends AbstractTarget implements ModelTarget {
 
 		WorldObjectBuilder objectBuilder = new WorldObjectBuilder(null);
 
-		m.render(objectBuilder, NULL_VECTOR, 0, null, null, null);
+		m.render(objectBuilder, NULL_VECTOR, 0.0, 1.0, null, null);
 
 		return objectBuilder.build();
 

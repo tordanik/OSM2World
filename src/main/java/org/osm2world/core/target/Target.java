@@ -13,6 +13,7 @@ import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -140,6 +141,15 @@ public interface Target {
 	void drawColumn(Material material, Integer corners,
 			VectorXYZ base, double height, double radiusBottom,
 			double radiusTop, boolean drawBottom, boolean drawTop);
+
+	/**
+	 * draws an instanced model.
+	 * For parameters, see {@link Model#render(Target, VectorXYZ, double, Double, Double, Double)}.
+	 */
+	public default void drawModel(Model model, VectorXYZ position,
+			double direction, Double height, Double width, Double length) {
+		model.render(this, position, direction, height, width, length);
+	}
 
 	/**
 	 * gives the target the chance to perform finish/cleanup operations

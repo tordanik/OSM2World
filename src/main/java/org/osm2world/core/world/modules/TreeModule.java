@@ -28,7 +28,6 @@ import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.frontend_pbf.ModelTarget;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -186,42 +185,6 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private static final float TREE_RADIUS_PER_HEIGHT = 0.2f;
 
-	private void renderTree(Target target, MapElement element, VectorXYZ pos,
-			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
-
-		// if leaf type is unknown, make "random" decision based on x coord
-		if (leafType == null) {
-			if ((long)(pos.getX()) % 2 == 0) {
-				leafType = LeafType.NEEDLELEAVED;
-			} else {
-				leafType = LeafType.BROADLEAVED;
-			}
-		}
-
-		double height = getTreeHeight(element, leafType == LeafType.NEEDLELEAVED, species != null);
-
-		if (useBillboards) {
-
-			//"random" decision based on x coord
-			boolean mirrored = (long)(pos.getX()) % 2 == 0;
-
-			Material material = species == TreeSpecies.APPLE_TREE
-					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
-					: leafType == LeafType.NEEDLELEAVED
-					? Materials.TREE_BILLBOARD_CONIFEROUS
-					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
-
-			WorldModuleBillboardUtil.renderCrosstree(target, material, pos,
-					(species != null ? 1.0 : 0.5 ) * height, height, mirrored);
-
-		} else {
-
-			renderTreeGeometry(target, pos, leafType, height);
-
-		}
-
-	}
-
 	private static void renderTreeGeometry(Target target,
 			VectorXYZ posXYZ, LeafType leafType, double height) {
 
@@ -311,12 +274,15 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private void renderTreeModel(ModelTarget target, MapElement element, VectorXYZ base,
+	private void renderTreeModel(Target target, MapElement element, VectorXYZ base,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
-		// if leaf type is unknown, make "random" decision based on x coord
+		// "random" decision to flip the tree texture based on z coord
+		boolean mirrored = (long)(base.getZ() * 1000) % 2 == 0;
+
+		// if leaf type is unknown, make another "random" decision based on x coord
 		if (leafType == null) {
-			if ((long)(base.getX()) % 2 == 0) {
+			if ((long)(base.getX() * 1000) % 2 == 0) {
 				leafType = LeafType.NEEDLELEAVED;
 			} else {
 				leafType = LeafType.BROADLEAVED;
@@ -330,14 +296,15 @@ public class TreeModule extends ConfigurableWorldModule {
 		for (TreeModel existingModel : existingModels) {
 			if (existingModel.leafType == leafType
 					&& existingModel.leafCycle == leafCycle
-					&& existingModel.species == species) {
+					&& existingModel.species == species
+					&& existingModel.mirrored == mirrored) {
 				model = existingModel;
 				break;
 			}
 		}
 
 		if (model == null) {
-			model = new TreeModel(leafType, leafCycle, species);
+			model = new TreeModel(leafType, leafCycle, species, mirrored);
 			existingModels.add(model);
 		}
 
@@ -350,20 +317,35 @@ public class TreeModule extends ConfigurableWorldModule {
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
 		private final TreeSpecies species;
+		private final boolean mirrored;
 
-		public TreeModel(LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
+		public TreeModel(LeafType leafType, LeafCycle leafCycle, TreeSpecies species, boolean mirrored) {
 			this.leafType = leafType;
 			this.leafCycle = leafCycle;
 			this.species = species;
+			this.mirrored = mirrored;
 		}
 
 		@Override
 		public void render(Target target, VectorXYZ position, double direction,
 				Double height, Double width, Double length) {
 
-			MapElement element = new MapNode(-1, TagSet.of("height", "1 m"), position.xz());
+			if (useBillboards) {
 
-			renderTree(target, element, position, leafType, leafCycle, species);
+				Material material = species == TreeSpecies.APPLE_TREE
+						? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
+						: leafType == LeafType.NEEDLELEAVED
+						? Materials.TREE_BILLBOARD_CONIFEROUS
+						: Materials.TREE_BILLBOARD_BROAD_LEAVED;
+
+				WorldModuleBillboardUtil.renderCrosstree(target, material, position,
+						(species != null ? 1.0 : 0.5 ) * height, height, mirrored);
+
+			} else {
+
+				renderTreeGeometry(target, position, leafType, height);
+
+			}
 
 		}
 
@@ -396,10 +378,8 @@ public class TreeModule extends ConfigurableWorldModule {
 		public void renderTo(Target target) {
 			if (target instanceof POVRayTarget) {
 				renderTreePovrayModel((POVRayTarget)target, node, getBase(), leafType, leafCycle, species);
-			} else if (target instanceof ModelTarget) {
-				renderTreeModel((ModelTarget)target, node, getBase(), leafType, leafCycle, species);
 			} else {
-				renderTree(target, node, getBase(), leafType, leafCycle, species);
+				renderTreeModel(target, node, getBase(), leafType, leafCycle, species);
 			}
 		}
 
@@ -489,11 +469,8 @@ public class TreeModule extends ConfigurableWorldModule {
 				if (target instanceof POVRayTarget) {
 					renderTreePovrayModel((POVRayTarget)target, segment, treeConnector.getPosXYZ(),
 							leafType, leafCycle, species);
-				} else if (target instanceof ModelTarget) {
-					renderTreeModel((ModelTarget)target, segment, treeConnector.getPosXYZ(),
-							leafType, leafCycle, species);
 				} else {
-					renderTree(target, segment, treeConnector.getPosXYZ(),
+					renderTreeModel(target, segment, treeConnector.getPosXYZ(),
 							leafType, leafCycle, species);
 				}
 
@@ -603,11 +580,8 @@ public class TreeModule extends ConfigurableWorldModule {
 				if (target instanceof POVRayTarget) {
 					renderTreePovrayModel((POVRayTarget)target, area, treeConnector.getPosXYZ(),
 							leafType, leafCycle, species);
-				} else if (target instanceof ModelTarget) {
-					renderTreeModel((ModelTarget)target, area, treeConnector.getPosXYZ(),
-							leafType, leafCycle, species);
 				} else {
-					renderTree(target, area, treeConnector.getPosXYZ(),
+					renderTreeModel(target, area, treeConnector.getPosXYZ(),
 							leafType, leafCycle, species);
 				}
 
