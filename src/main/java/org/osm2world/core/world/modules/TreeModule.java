@@ -442,16 +442,6 @@ public class TreeModule extends ConfigurableWorldModule {
 		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 		@Override
-		public VectorXZ getEndPosition() {
-			return segment.getEndNode().getPos();
-		}
-
-		@Override
-		public VectorXZ getStartPosition() {
-			return segment.getStartNode().getPos();
-		}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}

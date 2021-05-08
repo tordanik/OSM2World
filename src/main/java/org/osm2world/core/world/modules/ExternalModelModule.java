@@ -11,7 +11,6 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -90,14 +89,6 @@ public class ExternalModelModule implements WorldModule {
 
 		public WayPlaceholder(MapWaySegment primaryMapElement) {
 			super(primaryMapElement);
-		}
-
-		@Override public VectorXZ getStartPosition() {
-			return primaryMapElement.getStartNode().getPos();
-		}
-
-		@Override public VectorXZ getEndPosition() {
-			return primaryMapElement.getEndNode().getPos();
 		}
 
 	}

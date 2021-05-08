@@ -265,16 +265,6 @@ public class PoolModule extends AbstractModule {
 			return primarySegment;
 		}
 
-		@Override
-		public VectorXZ getStartPosition() {
-			return primarySegment.getStartNode().getPos();
-		}
-
-		@Override
-		public VectorXZ getEndPosition() {
-			return primarySegment.getEndNode().getPos();
-		}
-
 	}
 
 }

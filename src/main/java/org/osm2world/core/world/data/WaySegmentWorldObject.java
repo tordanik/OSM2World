@@ -13,12 +13,16 @@ public interface WaySegmentWorldObject extends WorldObject {
 	 * Might be different from {@link MapWaySegment}'s start position;
 	 * as node features such as crossings require space, too.
 	 */
-	public VectorXZ getStartPosition();
+	public default VectorXZ getStartPosition() {
+		return getPrimaryMapElement().getStartNode().getPos();
+	}
 
 	/**
 	 * returns the end position.
 	 * See {@link #getStartPosition()} for details.
 	 */
-	public VectorXZ getEndPosition();
+	public default VectorXZ getEndPosition() {
+		return getPrimaryMapElement().getEndNode().getPos();
+	}
 
 }
