@@ -1051,8 +1051,6 @@ public class TrafficSignModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			System.out.println("DestinationSign rendered!!");
-
 			/* get basic parameters */
 
 			if (types.size() == 0)
