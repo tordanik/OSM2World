@@ -115,7 +115,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	@Override
 	public GroundState getGroundState() {
 		if (attachmentConnector != null) {
-			return GroundState.ABOVE;
+			return GroundState.ATTACHED;
 		} else {
 			return GroundState.ON;
 		}

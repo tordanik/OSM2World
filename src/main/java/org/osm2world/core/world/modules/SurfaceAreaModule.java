@@ -145,74 +145,78 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			List<VectorXZ> eleConnectorPoints = new ArrayList<>();
 
-			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+			if (this.getGroundState() == ON) { // do not, e.g., subtract ground level objects if this is a rooftop lawn
 
-				// TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way)
+				for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
+					for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
 
-				if (otherWO.getGroundState() == GroundState.ON) {
+						// TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way)
 
-					if (otherWO instanceof SurfaceArea && !isEmptyTerrain) {
-						// empty terrain has lowest priority
-						continue;
-					}
+						if (otherWO.getGroundState() == GroundState.ON) {
 
-					if (overlap.type == MapOverlapType.CONTAIN
-							&& overlap.e1 == this.area) {
-						// completely within other element, no ground area left
-						return emptyList();
-					}
+							if (otherWO instanceof SurfaceArea && !isEmptyTerrain) {
+								// empty terrain has lowest priority
+								continue;
+							}
 
-					if (otherWO instanceof TerrainBoundaryWorldObject) {
+							if (overlap.type == MapOverlapType.CONTAIN
+									&& overlap.e1 == this.area) {
+								// completely within other element, no ground area left
+								return emptyList();
+							}
 
-						TerrainBoundaryWorldObject terrainBoundary = (TerrainBoundaryWorldObject)otherWO;
+							if (otherWO instanceof TerrainBoundaryWorldObject) {
 
-						Collection<PolygonShapeXZ> outlinePolygons = terrainBoundary.getTerrainBoundariesXZ();
+								TerrainBoundaryWorldObject terrainBoundary = (TerrainBoundaryWorldObject)otherWO;
 
-						for (PolygonShapeXZ outlinePolygon : outlinePolygons) {
+								Collection<PolygonShapeXZ> outlinePolygons = terrainBoundary.getTerrainBoundariesXZ();
 
-							subtractPolys.add(outlinePolygon);
-							allPolys.add(outlinePolygon);
+								for (PolygonShapeXZ outlinePolygon : outlinePolygons) {
+
+									subtractPolys.add(outlinePolygon);
+									allPolys.add(outlinePolygon);
+
+									for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+
+										if (!outlinePolygon.getRings().stream().anyMatch(
+												p-> p.vertices().contains(eleConnector.pos))) {
+											eleConnectorPoints.add(eleConnector.pos);
+										}
+
+									}
+
+								}
+
+							} else {
+								for (EleConnector eleConnector : otherWO.getEleConnectors()) {
+									eleConnectorPoints.add(eleConnector.pos);
+								}
+							}
+
+						} else {
 
 							for (EleConnector eleConnector : otherWO.getEleConnectors()) {
 
-								if (!outlinePolygon.getRings().stream().anyMatch(
-										p-> p.vertices().contains(eleConnector.pos))) {
-									eleConnectorPoints.add(eleConnector.pos);
+								if (eleConnector.reference == null) {
+									/* workaround to avoid using connectors at intersections,
+									 * which might fall on area segments
+									 * //TODO cleaner solution
+									 */
+									continue;
 								}
 
+								eleConnectorPoints.add(eleConnector.pos);
+							}
+
+							if (otherWO.getOutlinePolygonXZ() != null) {
+								allPolys.add(otherWO.getOutlinePolygonXZ());
 							}
 
 						}
 
-					} else {
-						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
-							eleConnectorPoints.add(eleConnector.pos);
-						}
 					}
-
-				} else {
-
-					for (EleConnector eleConnector : otherWO.getEleConnectors()) {
-
-						if (eleConnector.reference == null) {
-							/* workaround to avoid using connectors at intersections,
-							 * which might fall on area segments
-							 * //TODO cleaner solution
-							 */
-							continue;
-						}
-
-						eleConnectorPoints.add(eleConnector.pos);
-					}
-
-					if (otherWO.getOutlinePolygonXZ() != null) {
-						allPolys.add(otherWO.getOutlinePolygonXZ());
-					}
-
 				}
 
-			}
 			}
 
 			/* add a grid of points within the area for smoother surface shapes */
@@ -336,7 +340,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			} else if (TunnelModule.isTunnel(area.getTags())) {
 				return GroundState.BELOW;
 			} else {
-				return GroundState.ON;
+				return super.getGroundState();
 			}
 		}
 

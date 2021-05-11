@@ -1303,7 +1303,11 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			if (connector != null && connector.isAttached()) {
+				return GroundState.ATTACHED;
+			} else {
+				return GroundState.ON;
+			}
 		}
 
 		@Override
