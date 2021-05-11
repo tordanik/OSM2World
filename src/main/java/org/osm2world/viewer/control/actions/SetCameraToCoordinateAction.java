@@ -43,12 +43,16 @@ public class SetCameraToCoordinateAction extends AbstractAction implements Obser
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-		double lat = Double.parseDouble(
-				JOptionPane.showInputDialog(viewerFrame, "lat"));
-		double lon = Double.parseDouble(
-				JOptionPane.showInputDialog(viewerFrame, "lon"));
-		double height = Double.parseDouble(
-				JOptionPane.showInputDialog(viewerFrame, "height"));
+		String latInput = JOptionPane.showInputDialog(viewerFrame, "lat");
+		if (latInput == null) return;
+		String lonInput = JOptionPane.showInputDialog(viewerFrame, "lon");
+		if (lonInput == null) return;
+		String heightInput = JOptionPane.showInputDialog(viewerFrame, "height");
+		if (heightInput == null) return;
+
+		double lat = Double.parseDouble(latInput);
+		double lon = Double.parseDouble(lonInput);
+		double height = Double.parseDouble(heightInput);
 
 		MapProjection projection = data.getConversionResults().getMapProjection();
 
