@@ -110,11 +110,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			node.addRepresentation(new GritBin(node));
 		}
 		if (node.getTags().contains("amenity", "post_box")
-				&& asList("operator", "brand").stream().anyMatch(node.getTags()::containsKey)) {
+				&& node.getTags().containsAny(asList("operator", "brand"), null)) {
 			node.addRepresentation(new PostBox(node));
 		}
 		if (node.getTags().contains("amenity", "telephone")
-				&& asList("operator", "brand").stream().anyMatch(node.getTags()::containsKey)) {
+				&& node.getTags().containsAny(asList("operator", "brand"), null)) {
 			node.addRepresentation(new Phone(node));
 		}
 		if (node.getTags().contains("amenity", "vending_machine")

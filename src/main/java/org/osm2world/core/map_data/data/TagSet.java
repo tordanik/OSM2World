@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Iterators;
 
 /**
@@ -172,17 +174,25 @@ public final class TagSet implements Iterable<Tag> {
 
 	/**
 	 * returns true if this tag set contains at least one of the keys with one of the values
-	 * @param keys    keys of the tag to check for; != null
-	 * @param values  values of the tag to check for; != null
+	 * @param keys    keys of the tag to check for; null to allow any key
+	 * @param values  values of the tag to check for; null to allow any value
 	 */
-	public boolean containsAny(Collection<String> keys, Collection<String> values) {
-		for (String key : keys) {
-			String value = getValue(key);
-			if (values.contains(value)) {
-				return true;
+	public boolean containsAny(@Nullable Collection<String> keys, @Nullable Collection<String> values) {
+		if (keys == null && values == null) {
+			return !isEmpty();
+		} else if (keys == null) {
+			return values.stream().anyMatch(it -> containsValue(it));
+		} else if (values == null) {
+			return keys.stream().anyMatch(it -> containsKey(it));
+		} else {
+			for (String key : keys) {
+				String value = getValue(key);
+				if (values.contains(value)) {
+					return true;
+				}
 			}
+			return false;
 		}
-		return false;
 	}
 
 	/** returns a stream of all tags in this set */

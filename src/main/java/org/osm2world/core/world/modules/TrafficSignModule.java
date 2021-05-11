@@ -347,10 +347,10 @@ public class TrafficSignModule extends AbstractModule {
 	 */
 	private void createSignFromNode(MapNode node) {
 
-		if (!asList("traffic_sign", "traffic_sign:forward", "traffic_sign:backward").stream()
-				.anyMatch(node.getTags()::containsKey)
-				&& !node.getTags().containsAny(asList("highway"), asList("give_way", "stop")))
+		if (!node.getTags().containsAny(asList("traffic_sign", "traffic_sign:forward", "traffic_sign:backward"), null)
+				&& !node.getTags().containsAny(asList("highway"), asList("give_way", "stop"))) {
 			return;
+		}
 
 		String[] signs = {};
 		String country = "";

@@ -105,7 +105,7 @@ public class LevelAndHeightData {
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(inheritTags(buildingPartTags, buildingTags));
 
 		TagSet tags = buildingPartTags;
-		if (!asList("building:levels", "roof:levels", "height").stream().anyMatch(buildingPartTags::containsKey)) {
+		if (!buildingPartTags.containsAny(asList("building:levels", "roof:levels", "height"), null)) {
 			tags = inheritTags(buildingPartTags, buildingTags);
 		}
 

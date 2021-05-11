@@ -1144,7 +1144,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			// if there is some basic info on lanes, use that
 
-			if (asList("lanes", "lanes:forward", "lanes:backward", "divider").stream().anyMatch(tags::containsKey)) {
+			if (tags.containsAny(asList("lanes", "lanes:forward", "lanes:backward", "divider"), null)) {
 
 				return calculateLaneBasedWidth(true, false);
 

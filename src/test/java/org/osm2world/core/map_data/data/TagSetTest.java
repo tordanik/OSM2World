@@ -1,5 +1,6 @@
 package org.osm2world.core.map_data.data;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
 
@@ -66,6 +67,27 @@ public class TagSetTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testUniqueness() {
 		TagSet.of("highway", "primary", "highway", "secondary");
+	}
+
+	@Test
+	public void testContainsAny() {
+
+		TagSet set = TagSet.of(
+				"highway", "crossing",
+				"crossing", "uncontrolled",
+				"kerb", "lowered");
+
+		assertTrue(set.containsAny(null, null));
+
+		assertTrue(set.containsAny(null, asList("residential", "uncontrolled")));
+		assertFalse(set.containsAny(null, asList("foo", "bar")));
+
+		assertTrue(set.containsAny(asList("highway", "amenity", "kerb"), null));
+		assertFalse(set.containsAny(asList("1", "2"), null));
+
+		assertTrue(set.containsAny(asList("amenity", "crossing"), asList("uncontrolled", "wood")));
+		assertFalse(set.containsAny(asList("highway", "crossing"), asList("lowered")));
+
 	}
 
 }
