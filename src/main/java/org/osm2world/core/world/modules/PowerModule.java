@@ -4,13 +4,14 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -27,6 +28,8 @@ import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
@@ -119,8 +122,13 @@ public final class PowerModule extends AbstractModule {
 	@Override
 	protected void applyToArea(MapArea area) {
 		if (area.getTags().contains("power", "generator")
-				&& area.getTags().contains("generator:method", "photovoltaic")) {
-			area.addRepresentation(new PhotovoltaicPlant(area));
+				&& (area.getTags().contains("generator:method", "photovoltaic")
+						|| area.getTags().contains("generator:type", "solar_photovoltaic_panel"))) {
+			if (area.getTags().contains("location", "roof")) {
+				area.addRepresentation(new RooftopSolarPanels(area));
+			} else {
+				area.addRepresentation(new PhotovoltaicPlant(area));
+			}
 		}
 	}
 
@@ -938,6 +946,63 @@ public final class PowerModule extends AbstractModule {
 			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
 					texCoordLists(vs, Materials.PLASTIC_GREY, STRIP_WALL));
 
+		}
+
+	}
+
+	private static final class RooftopSolarPanels extends AbstractAreaWorldObject {
+
+		private static final double DISTANCE_FROM_ROOF = 0.05;
+
+		private final AttachmentConnector connector;
+
+		public RooftopSolarPanels(MapArea area) {
+			super(area);
+			VectorXYZ attachmentPoint = area.getOuterPolygon().getPointInside().xyz(0);
+			connector = new AttachmentConnector(asList("roof"), attachmentPoint, this, 0, false);
+		}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			return singletonList(connector);
+		}
+
+		@Override
+		public void renderTo(Target target) {
+
+			if (connector.isAttached() && connector.getAttachedSurfaceNormal().y >= 0.001) {
+
+				List<TriangleXZ> trianglesXZ = getTriangulationXZ();
+
+				TriangleXYZ plane = planeFromPosAndNormal(
+						connector.getAttachedPos().addY(DISTANCE_FROM_ROOF),
+						connector.getAttachedSurfaceNormal());
+
+				List<TriangleXYZ> triangles = trianglesXZ.stream()
+						.map(it -> new TriangleXYZ(
+								pointToPlane(plane, it.v1),
+								pointToPlane(plane, it.v2),
+								pointToPlane(plane, it.v3)))
+						.collect(toList());
+
+				target.drawTriangles(SOLAR_PANEL, triangles,
+						triangleTexCoordLists(triangles, SOLAR_PANEL, SLOPED_TRIANGLES));
+
+			}
+
+		}
+
+		private static final TriangleXYZ planeFromPosAndNormal(VectorXYZ pos, VectorXYZ normal) {
+			if (normal.y < 0.001) {
+				throw new IllegalArgumentException("does not work for vertical planes");
+			}
+			VectorXYZ cross1 = normal.crossNormalized(X_UNIT);
+			VectorXYZ cross2 = normal.crossNormalized(Z_UNIT);
+			return new TriangleXYZ(pos, pos.add(cross1), pos.add(cross2));
+		}
+
+		private static final VectorXYZ pointToPlane(TriangleXYZ plane, VectorXZ v) {
+			return v.xyz(plane.getYAt(v));
 		}
 
 	}
