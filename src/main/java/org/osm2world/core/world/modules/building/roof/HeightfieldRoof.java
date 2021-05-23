@@ -1,6 +1,10 @@
 package org.osm2world.core.world.modules.building.roof;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.SLOPED_TRIANGLES;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 
@@ -8,18 +12,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.Poly2TriUtil;
 import org.osm2world.core.math.PolygonWithHolesXZ;
+import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.util.exception.TriangulationException;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 
 /**
  * superclass for roofs that have exactly one height value
@@ -27,8 +37,10 @@ import org.osm2world.core.util.exception.TriangulationException;
  */
 abstract public class HeightfieldRoof extends Roof {
 
-	/** if {@link #getPolygon()} has additional roofs inserted, this is the threshold for snapping to existing points */
+	/** if {@link #getPolygon()} has additional points inserted, this is the threshold for snapping to existing points */
 	protected static final double SNAP_DISTANCE = 0.01;
+
+	protected @Nullable AttachmentSurface attachmentSurface;
 
 	public HeightfieldRoof(PolygonWithHolesXZ originalPolygon, TagSet tags, double height, Material material) {
 		super(originalPolygon, tags, height, material);
@@ -91,33 +103,59 @@ abstract public class HeightfieldRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(Target target, double baseEle) {
+	public Collection<AttachmentSurface> getAttachmentSurfaces(double baseEle, int level) {
 
-		/* create the triangulation of the roof */
+		if (attachmentSurface == null) {
 
-		Collection<TriangleXZ> triangles;
+			String[] types = new String[] {"roof" + level, "roof", "floor" + level};
 
-		try {
-
-			triangles = Poly2TriUtil.triangulate(
-					getPolygon().getOuter(),
-				    getPolygon().getHoles(),
-				    getInnerSegments(),
-				    getInnerPoints());
-
-		} catch (TriangulationException e) {
-
-			triangles = JTSTriangulationUtil.triangulate(
-					getPolygon().getOuter(),
-					getPolygon().getHoles(),
-					getInnerSegments(),
-					getInnerPoints());
+			try {
+				AttachmentSurface.Builder builder = new AttachmentSurface.Builder(types);
+				this.renderTo(builder, baseEle);
+				attachmentSurface = builder.build();
+			} catch (Exception e) {
+				System.err.println("Suppressed exception:");
+				e.printStackTrace(System.err);
+				PolygonXYZ flatPolygon = getPolygon().getOuter().xyz(baseEle);
+				attachmentSurface = new AttachmentSurface(asList(types), asList(new FaceXYZ(flatPolygon.vertices())));
+			}
 
 		}
 
-		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(triangles.size());
+		return singleton(attachmentSurface);
 
-		for (TriangleXZ triangle : triangles) {
+	}
+
+	@Override
+	public void renderTo(Target target, double baseEle) {
+
+		/* subtract attached rooftop areas (parking, helipads, pools, etc.) from the roof polygon */
+
+		List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
+
+		if (attachmentSurface != null) {
+			for (AttachmentConnector connector : attachmentSurface.getAttachedConnectors()) {
+				if (connector.object instanceof TerrainBoundaryWorldObject) {
+					subtractPolys.addAll(((TerrainBoundaryWorldObject)connector.object).getTerrainBoundariesXZ());
+				}
+			}
+		}
+
+		subtractPolys.addAll(this.getPolygon().getHoles());
+
+		/* triangulate the (remaining) roof polygon */
+
+		List<TriangleXZ> trianglesXZ = JTSTriangulationUtil.triangulate(
+					getPolygon().getOuter(),
+					subtractPolys.stream().map(p -> asSimplePolygon(p.getOuter())).collect(toList()),
+					getInnerSegments(),
+					getInnerPoints());
+
+		/* assign elevations to the triangulation */
+
+		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(trianglesXZ.size());
+
+		for (TriangleXZ triangle : trianglesXZ) {
 			TriangleXZ tCCW = triangle.makeCounterclockwise();
 			VectorXZ v = tCCW.v1;
 			VectorXZ v1 = tCCW.v2;

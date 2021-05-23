@@ -970,7 +970,7 @@ public final class PowerModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			if (connector.isAttached() && connector.getAttachedSurfaceNormal().y >= 0.001) {
+			if (connector.isAttached()) {
 
 				List<TriangleXZ> trianglesXZ = getTriangulationXZ();
 
