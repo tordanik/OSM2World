@@ -43,11 +43,10 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 	}
 
 	/**
-	 * returns the triangle's y coord value at a {@link VectorXZ} within the
-	 * triangle's 2D footprint.
-	 *
+	 * returns the triangle's y coord value at a {@link VectorXZ} within the triangle's 2D footprint.
 	 * It is obtained by linear interpolation within the triangle.
 	 */
+	@Override
 	public double getYAt(VectorXZ pos) {
 
 		double a = v1.z * (v2.y - v3.y) + v2.z * (v3.y - v1.y) + v3.z * (v1.y - v2.y);

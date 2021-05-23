@@ -2,6 +2,8 @@ package org.osm2world.core.world.attachment;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.WorldObject;
@@ -13,21 +15,29 @@ import org.osm2world.core.world.data.WorldObject;
  */
 public class AttachmentConnector {
 
-	/** default value for {@link #maxDistanceXZ} */
+	/** default value for {@link #maxDistanceXZ()} */
 	private static final double DEFAULT_MAX_DISTANCE_XZ = 10;
+
+	/**
+	 * default value for {@link #maxDistanceXZ()} on connectors that are not supposed to be moved horizontally.
+	 * Still allows for small horizontal movement in case of slight position errors.
+	 */
+	private static final double DEFAULT_IMMOBILE_MAX_DISTANCE_XZ = 0.01;
 
 	public final List<String> compatibleSurfaceTypes;
 
 	public final VectorXYZ originalPos;
 
 	/** the object that has created this connector, and which is looking for a surface */
-	public final WorldObject object;
+	public final @Nullable WorldObject object;
 
 	/**
-	 * the maximum horizontal distance a surface can be from the initial position and still allow attachment.
-	 * May be set to 0 in certain cases (e.g. for indoor mapping, when only vertical movement is desired).
+	 * whether the connector is allowed to be moved horizontally.
+	 * This is sometimes desired (e.g. when attaching a traffic sign to a pole, where the two nodes tend to be some
+	 * distance apart), and sometimes not (e.g. with indoor mapping, where connectors are only used to find the
+	 * desired floor, i.e. vertical elevation).
 	 */
-	public final double maxDistanceXZ;
+	public final boolean changeXZ;
 
 	/** preferred height above the surface's {@link AttachmentSurface#getBaseEleAt(VectorXZ)} */
 	public final double preferredHeight;
@@ -50,10 +60,16 @@ public class AttachmentConnector {
 		this.compatibleSurfaceTypes = compatibleSurfaceTypes;
 		this.originalPos = originalPos;
 		this.object = object;
-
-		// allow for small horizontal movement in case of slight position errors
-		this.maxDistanceXZ = changeXZ ? DEFAULT_MAX_DISTANCE_XZ : 0.01;
+		this.changeXZ = changeXZ;
 		this.preferredHeight = preferredHeight;
+	}
+
+	/**
+	 * the maximum horizontal distance a surface can be from the initial position and still allow attachment.
+	 * May be set to 0 (or close to it) when only vertical movement is desired.
+	 */
+	public double maxDistanceXZ() {
+		return changeXZ ? DEFAULT_MAX_DISTANCE_XZ : DEFAULT_IMMOBILE_MAX_DISTANCE_XZ;
 	}
 
 	/**
@@ -70,8 +86,8 @@ public class AttachmentConnector {
 		this.attachedPos = attachedPos;
 		this.attachedSurfaceNormal = attachedSurfaceNormal;
 
-		if (attachedPos.xz().distanceTo(originalPos.xz()) > maxDistanceXZ + 0.001) {
-			throw new IllegalArgumentException("this connector must not be moved horizontally more than " + this.maxDistanceXZ);
+		if (attachedPos.xz().distanceTo(originalPos.xz()) > maxDistanceXZ() + 0.001) {
+			throw new IllegalArgumentException("this connector must not be moved horizontally more than " + maxDistanceXZ());
 		}
 
 		attachedSurface.addAttachedConnector(this);

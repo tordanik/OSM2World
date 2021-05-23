@@ -1,10 +1,12 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.PI;
+import static java.lang.Math.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXYZ.*;
 
 import java.util.List;
+
+import org.apache.commons.lang.NotImplementedException;
 
 /**
  * a simple 3D polygon where all vertices are in the same plane.
@@ -60,6 +62,24 @@ public interface FlatSimplePolygonShapeXYZ {
 		return closestPoint(p).distanceTo(p);
 	}
 
+	default public double distanceToXZ(Vector3D p) {
+		VectorXZ pXZ = p.xz();
+		if (abs(this.getNormal().y) > 0.001) { // not vertical
+			return new PolygonXYZ(vertices()).getSimpleXZPolygon().closestPoint(pXZ).distanceTo(pXZ);
+		} else {
+			throw new NotImplementedException("only implemented for faces that are not vertical");
+		}
+	}
+
+	/**
+	 * returns the y coord value at a {@link VectorXZ} within the face's 2D footprint.
+	 *
+	 * @throws InvalidGeometryException  if this face is vertical
+	 */
+	default public double getYAt(VectorXZ v) {
+		return triangleOnFace(vertices()).getYAt(v);
+	}
+
 	/* TODO: make private in Java 9 */
 	default VectorXZ toFacePlane(VectorXYZ v) {
 		return rotateToOrFromFacePlane(v, true).xz();
@@ -106,6 +126,29 @@ public interface FlatSimplePolygonShapeXYZ {
 			return v.rotateVec(to ? angle : -angle, rotOrigin, rotAxis);
 
 		}
+
+	}
+
+	/* TODO: make protected in Java 9 */
+	/** returns a triangle consisting of three polygon vertices that are not collinear */
+	public static TriangleXYZ triangleOnFace(List<VectorXYZ> vertexLoop) throws InvalidGeometryException {
+
+		final VectorXYZ v1 = vertexLoop.get(0);
+		final VectorXYZ v2 = vertexLoop.get(1);
+
+		VectorXYZ v3 = null;
+		for (int i = 2; i < vertexLoop.size() - 1; i++) {
+			VectorXYZ vTest = vertexLoop.get(i);
+			if (vTest.subtract(v1).angleTo(vTest.subtract(v2)) > 0.001) {
+				v3 = vTest;
+			}
+		}
+
+		if (v3 == null) {
+			throw new InvalidGeometryException("Points of face are collinear: " + vertexLoop);
+		}
+
+		return new TriangleXYZ(v1, v2, v3);
 
 	}
 

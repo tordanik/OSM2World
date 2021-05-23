@@ -80,11 +80,23 @@ public class FaceXYZTest {
 	}
 
 	@Test
-	public void testDiagonalFace() {
+	public void testCreateDiagonalFace() {
 		new FaceXYZ(closeLoop(
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(2, 0, 0),
 				new VectorXYZ(1, 5, 1)));
+	}
+
+	@Test
+	public void testClosestPoint_diagonalFace() {
+
+		FaceXYZ face = new FaceXYZ(closeLoop(
+				new VectorXYZ(-10, 0, 0),
+				new VectorXYZ(+10, 0, 0),
+				new VectorXYZ(0, 20, 20)));
+
+		assertAlmostEquals(0, 15, 15, face.closestPoint(new VectorXYZ(0, 10, 20)));
+
 	}
 
 }
