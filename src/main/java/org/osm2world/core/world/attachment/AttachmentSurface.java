@@ -9,12 +9,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.*;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
+import org.osm2world.core.math.FaceXYZ;
+import org.osm2world.core.math.InvalidGeometryException;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 
 /**
- * TODO describe the concept
+ * a surface (consisting of one or more {@link FaceXYZ}s) that {@link AttachmentConnector} can attach to
  */
 public class AttachmentSurface implements BoundedObject {
 

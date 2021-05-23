@@ -7,7 +7,9 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
- * a connector that can be attached to an {@link AttachmentSurface}
+ * a connector that can be attached to an {@link AttachmentSurface}.
+ * This concept is used to model many possible connections, such as traffic signs or waste baskets attaching to a pole,
+ * parking lots or roads attaching to a roof, furniture attaching to indoor floors, and many others.
  */
 public class AttachmentConnector {
 
