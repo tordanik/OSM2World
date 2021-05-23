@@ -1269,8 +1269,9 @@ public class RoadModule extends ConfigurableWorldModule {
 		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
 			if (isBroken() || getOutlinePolygonXZ() == null) {
 				return emptyList();
-			} else if (steps && attachmentConnectorList.stream().allMatch(c -> c.isAttached())) {
-				// do not cut out the floor below indoor steps
+			} else if (steps && attachmentConnectorList.stream().allMatch(c -> c.isAttached())
+					&& attachmentConnectorList.stream().anyMatch(c -> !c.getAttachedSurface().getTypes().contains("roof"))) {
+				// do not cut out the floor below indoor steps (but remove the roof below rooftop steps)
 				return emptyList();
 			} else {
 				return singletonList(getOutlinePolygonXZ());

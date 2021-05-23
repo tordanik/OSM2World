@@ -2,7 +2,7 @@ package org.osm2world.core.world.network;
 
 import static java.lang.Double.*;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
@@ -632,14 +632,28 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 			}
 		}
 
+		/* determine compatible surface types based on level information and other tags */
+
+		List<String> firstNodeTypes = new ArrayList<>();
+		List<String> lastNodeTypes = new ArrayList<>();
+
+		if (firstNodeLevel != null && lastNodeLevel != null) {
+			firstNodeTypes.add("floor" + firstNodeLevel);
+			lastNodeTypes.add("floor" + lastNodeLevel);
+		}
+
+		if (segment.getTags().contains("location", "roof")) {
+			firstNodeTypes.add("roof");
+			lastNodeTypes.add("roof");
+		}
 
 		/* instantiate attachment connectors */
 
-		if (firstNodeLevel != null && lastNodeLevel != null) {
+		if (!firstNodeTypes.isEmpty() && !lastNodeTypes.isEmpty()) {
 
-			AttachmentConnector firstConnector = new AttachmentConnector(singletonList("floor" + firstNodeLevel),
+			AttachmentConnector firstConnector = new AttachmentConnector(firstNodeTypes,
 					wayStartNode.getPos().xyz(0), this, 0, false);
-			AttachmentConnector lastConnector = new AttachmentConnector(singletonList("floor" + lastNodeLevel),
+			AttachmentConnector lastConnector = new AttachmentConnector(lastNodeTypes,
 					wayEndNode.getPos().xyz(0), this, 0, false);
 
 			attachmentConnectorList = asList(firstConnector, lastConnector);
