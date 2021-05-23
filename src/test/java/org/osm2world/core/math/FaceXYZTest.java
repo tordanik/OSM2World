@@ -79,4 +79,12 @@ public class FaceXYZTest {
 
 	}
 
+	@Test
+	public void testDiagonalFace() {
+		new FaceXYZ(closeLoop(
+				new VectorXYZ(0, 0, 0),
+				new VectorXYZ(2, 0, 0),
+				new VectorXYZ(1, 5, 1)));
+	}
+
 }

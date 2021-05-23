@@ -98,7 +98,7 @@ public interface FlatSimplePolygonShapeXYZ {
 		} else {
 
 			VectorXYZ xzNormal = Y_UNIT;
-			VectorXYZ rotAxis = faceNormal.cross(xzNormal);
+			VectorXYZ rotAxis = faceNormal.crossNormalized(xzNormal);
 			VectorXYZ rotOrigin = getCenter();
 
 			double angle = faceNormal.angleTo(xzNormal);

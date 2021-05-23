@@ -153,29 +153,28 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 	}
 
 	/**
-	 * returns the result of rotating this vector around the
-	 * given normalized vector n
-	 * @param angleRad angle in radians
-	 * @param n  normalized vector
+	 * returns the result of rotating this vector around a freely chosen rotation axis
+	 * @param angleRad  angle in radians
+	 * @param n  normalized vector for the rotation axis
 	 */
 	public VectorXYZ rotateVec(double angleRad, VectorXYZ n) {
-		double a11 = n.x*n.x*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
-		double a12 = n.x*n.y*(1 - Math.cos(angleRad)) - n.z*Math.sin(angleRad);
-		double a13 = n.x*n.z*(1 - Math.cos(angleRad)) + n.y*Math.sin(angleRad);
-		double a21 = n.y*n.x*(1 - Math.cos(angleRad)) + n.z*Math.sin(angleRad);
-		double a22 = n.y*n.y*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
-		double a23 = n.y*n.z*(1 - Math.cos(angleRad)) - n.x*Math.sin(angleRad);
-		double a31 = n.z*n.x*(1 - Math.cos(angleRad)) - n.y*Math.sin(angleRad);
-		double a32 = n.z*n.y*(1 - Math.cos(angleRad)) + n.x*Math.sin(angleRad);
-		double a33 = n.z*n.z*(1 - Math.cos(angleRad)) + Math.cos(angleRad);
+		assert abs(n.lengthSquared() -  1) < 0.001; // must be normalized
+		double a11 = n.x*n.x*(1 - cos(angleRad)) + cos(angleRad);
+		double a12 = n.x*n.y*(1 - cos(angleRad)) - n.z*sin(angleRad);
+		double a13 = n.x*n.z*(1 - cos(angleRad)) + n.y*sin(angleRad);
+		double a21 = n.y*n.x*(1 - cos(angleRad)) + n.z*sin(angleRad);
+		double a22 = n.y*n.y*(1 - cos(angleRad)) + cos(angleRad);
+		double a23 = n.y*n.z*(1 - cos(angleRad)) - n.x*sin(angleRad);
+		double a31 = n.z*n.x*(1 - cos(angleRad)) - n.y*sin(angleRad);
+		double a32 = n.z*n.y*(1 - cos(angleRad)) + n.x*sin(angleRad);
+		double a33 = n.z*n.z*(1 - cos(angleRad)) + cos(angleRad);
 		return new VectorXYZ(a11*x+a12*y+a13*z, a21*x+a22*y+a23*z, a31*x+a32*y+a33*z);
 	}
 
 	/**
-	 * returns the result of rotating this vector around a freely chosen
-	 * axis and origin
-	 * @param angleRad angle in radians
-	 * @param rotOrigin  normalized vector for the rotation origin
+	 * returns the result of rotating this vector around a freely chosen axis and origin
+	 * @param angleRad  angle in radians
+	 * @param rotOrigin  the rotation origin
 	 * @param rotAxis  normalized vector for the rotation axis
 	 */
 	public VectorXYZ rotateVec(double angleRad, VectorXYZ rotOrigin, VectorXYZ rotAxis) {
