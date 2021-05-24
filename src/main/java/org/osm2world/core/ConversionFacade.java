@@ -64,12 +64,12 @@ import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.SportsModule;
 import org.osm2world.core.world.modules.StreetFurnitureModule;
 import org.osm2world.core.world.modules.SurfaceAreaModule;
-import org.osm2world.core.world.modules.TrafficSignModule;
 import org.osm2world.core.world.modules.TreeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 import org.osm2world.core.world.modules.WaterModule;
 import org.osm2world.core.world.modules.building.BuildingModule;
 import org.osm2world.core.world.modules.building.indoor.IndoorModule;
+import org.osm2world.core.world.modules.traffic_sign.TrafficSignModule;
 
 import com.google.common.collect.Streams;
 

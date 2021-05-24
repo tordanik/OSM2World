@@ -1,8 +1,8 @@
-package org.osm2world.core.world.modules;
+package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.world.modules.TrafficSignModule.findClosestJunction;
+import static org.osm2world.core.world.modules.traffic_sign.TrafficSignModule.findClosestJunction;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.test.TestMapDataGenerator;
+import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 
 public class TrafficSignModuleTest {

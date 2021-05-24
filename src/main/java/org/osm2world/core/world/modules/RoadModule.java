@@ -156,7 +156,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			|| "steps".equals(highwayValue);
 	}
 
-	static boolean isOneway(TagSet tags) {
+	public static boolean isOneway(TagSet tags) {
 		return tags.contains("oneway", "yes")
 				|| (!tags.contains("oneway", "no")
 					&& (tags.contains("highway", "motorway")

@@ -1,4 +1,4 @@
-package org.osm2world.core.world.modules.common;
+package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
@@ -16,15 +16,14 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
-import org.osm2world.core.world.modules.TrafficSignModule;
 
 /**
  * A class containing all the necessary information to render a traffic sign.
  */
 public class TrafficSignModel {
 
-	/** The {@link TrafficSignType}s on this sign */
-	public List<TrafficSignType> types;
+	/** The {@link TrafficSignTypeInstance}s on this sign */
+	public List<TrafficSignTypeInstance> types;
 
 	/** The position this TrafficSignModel will be rendered on */
 	public VectorXZ position;

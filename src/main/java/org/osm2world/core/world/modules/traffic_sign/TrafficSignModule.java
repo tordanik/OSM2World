@@ -1,10 +1,10 @@
-package org.osm2world.core.world.modules;
+package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.VectorXYZ.X_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -39,14 +38,12 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.ConfMaterial;
-import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.common.AbstractModule;
-import org.osm2world.core.world.modules.common.TrafficSignModel;
-import org.osm2world.core.world.modules.common.TrafficSignType;
 
 /**
  * adds traffic signs to the world
@@ -81,7 +78,7 @@ public class TrafficSignModule extends AbstractModule {
 		String tagValue = "";
 
 		//a TrafficSignType instance to hold the sign's attributes
-		TrafficSignType attributes;
+		TrafficSignTypeInstance attributes;
 
 		/*
 		 * Value to hold the side of the road non-explicitly defined signs
@@ -259,8 +256,8 @@ public class TrafficSignModule extends AbstractModule {
 				signs = keysForFirstModel.toArray(new String[0]);
 				signsForSecondModel = keysForSecondModel.toArray(new String[0]);
 
-				List<TrafficSignType> types = new ArrayList<>(containedKeys.size());
-				List<TrafficSignType> typesForSecondSign = new ArrayList<>(keysForSecondModel.size());
+				List<TrafficSignTypeInstance> types = new ArrayList<>(containedKeys.size());
+				List<TrafficSignTypeInstance> typesForSecondSign = new ArrayList<>(keysForSecondModel.size());
 
 				//configure the traffic sign types
 
@@ -287,7 +284,7 @@ public class TrafficSignModule extends AbstractModule {
 						country = "";
 					}
 
-					attributes = configureSignType(country, sign, wayTags);
+					attributes = configureSignTypeInstance(country, sign, wayTags);
 
 					types.add(attributes);
 
@@ -316,7 +313,7 @@ public class TrafficSignModule extends AbstractModule {
 						country = "";
 					}
 
-					attributes = configureSignType(country, sign, wayTags);
+					attributes = configureSignTypeInstance(country, sign, wayTags);
 
 					typesForSecondSign.add(attributes);
 				}
@@ -361,7 +358,7 @@ public class TrafficSignModule extends AbstractModule {
 		String tagValue = "";
 
 		//a TrafficSignType instance to hold the sign's attributes
-		TrafficSignType attributes;
+		TrafficSignTypeInstance attributes;
 
 		// Value to hold the angle the sign is facing
 		Double direction;
@@ -470,14 +467,11 @@ public class TrafficSignModule extends AbstractModule {
 			}
 		}
 
-		List<TrafficSignType> types = new ArrayList<>(signs.length);
+		List<TrafficSignTypeInstance> types = new ArrayList<>(signs.length);
 
 		for (String sign : signs) {
 
-			attributes = configureSignType(country, sign, node.getTags());
-
-			if (attributes.defaultHeight == 0)
-				attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
+			attributes = configureSignTypeInstance(country, sign, node.getTags());
 
 			types.add(attributes);
 		}
@@ -534,11 +528,11 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 	/**
-	 * Prepare a {@link TrafficSignType} object to (usually) be added in a {@link TrafficSignModel}
+	 * Prepare a {@link TrafficSignTypeInstance} object to (usually) be added in a {@link TrafficSignModel}
 	 */
-	private TrafficSignType configureSignType(String country, String sign, TagSet tagsOfElement) {
+	private TrafficSignTypeInstance configureSignTypeInstance(String country, String sign, TagSet tagsOfElement) {
 
-		sign.trim();
+		sign = sign.trim();
 		sign = sign.replace('-', '_');
 
 		/* extract subtype and/or brackettext values */
@@ -568,52 +562,22 @@ public class TrafficSignModule extends AbstractModule {
 
 		sign = sign.toUpperCase();
 
-		ConfMaterial originalMaterial;
-
 		String signName = generateSignName(country, sign);
+		TrafficSignType type = TrafficSignType.fromConfig(signName, config);
 
-		TrafficSignType attributes = mapSignAttributes(signName);
-
-		/*
-		 * "Fallback" functionality in case no attributes and material are defined for this sign name
-		 *
-		 * attributes.materialName.isEmpty() -> no "trafficSign_name_material = " defined for this sign
-		 * getMaterial(signName)==null -> no material defined for this sign name
-		 * map.containsKey("traffic_sign.subtype") -> sign name contains a subtype value (e.g. 50 in 274-50)
-		 */
-		if (attributes.materialName.isEmpty() && getMaterial(signName) == null
-				&& map.containsKey("traffic_sign.subtype")) {
-
-			sign = sign.replace("_" + matcher1.group(1), ""); //cut off subtype value
-
+		if (type == null && map.containsKey("traffic_sign.subtype")) {
+			// retry without the subtype (an example for a subtype is the "50" in "274-50")
+			sign = sign.replace("_" + matcher1.group(1), "");
 			signName = generateSignName(country, sign);
-
-			attributes = mapSignAttributes(signName); //retry with new sign name
+			type = TrafficSignType.fromConfig(signName, config);
 		}
 
-		if (!attributes.materialName.isEmpty()) {
-			originalMaterial = getMaterial(attributes.materialName);
-			attributes.material = originalMaterial == null ? null
-					: originalMaterial.withPlaceholdersFilledIn(map, tagsOfElement);
-		}
+		if (type == null) { type = TrafficSignType.blankSign(); }
 
-		if (attributes.material == null) {
+		return new TrafficSignTypeInstance(
+				type.material.withPlaceholdersFilledIn(map, tagsOfElement),
+				type.defaultNumPosts, type.defaultHeight);
 
-			//if there is no material configured for the sign, try predefined ones
-			originalMaterial = getMaterial(signName);
-			attributes.material = originalMaterial == null ? null
-					: originalMaterial.withPlaceholdersFilledIn(map, tagsOfElement);
-
-			//if there is no material defined for the sign, create simple white sign
-			if (attributes.material == null) {
-				attributes.material = new ConfMaterial(Interpolation.FLAT, Color.white);
-			}
-		}
-
-		if (attributes.defaultHeight == 0)
-			attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
-
-		return attributes;
 	}
 
 	private String generateSignName(String country, String sign) {
@@ -627,54 +591,6 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		return signName;
-	}
-
-	/**
-	 * Parses configuration files for the traffic sign-specific keys
-	 * trafficSign_NAME_numPosts|defaultHeight|material
-	 *
-	 * @param signName
-	 * The sign name (country prefix and subtype/brackettext value)
-	 * @return A TrafficSignType instance of the the parsed values
-	 */
-	private TrafficSignType mapSignAttributes(String signName) {
-
-		String regex = "trafficSign_" + signName + "_(numPosts|defaultHeight|material)";
-
-		String originalMaterial = "";
-		int numPosts = 1;
-		double defaultHeight = 0;
-
-		Matcher matcher = null;
-
-		Iterator<String> keyIterator = config.getKeys();
-
-		//parse traffic sign specific configuration values
-		while (keyIterator.hasNext()) {
-
-			String key = keyIterator.next();
-			matcher = Pattern.compile(regex).matcher(key);
-
-			if (matcher.matches()) {
-
-				String attribute = matcher.group(1);
-
-				if ("material".equals(attribute)) {
-
-					originalMaterial = config.getString(key, "").toUpperCase();
-
-				} else if ("numPosts".equals(attribute)) {
-
-					numPosts = config.getInt(key, 1);
-
-				} else if ("defaultHeight".equals(attribute)) {
-
-					defaultHeight = config.getDouble(key, 0);
-				}
-			}
-		}
-
-		return new TrafficSignType(originalMaterial, numPosts, defaultHeight);
 	}
 
 	/**
@@ -761,7 +677,7 @@ public class TrafficSignModule extends AbstractModule {
 
 		private MapRelation relation;
 
-		private ArrayList<TrafficSignType> types = new ArrayList<>();
+		private ArrayList<TrafficSignTypeInstance> signInstances = new ArrayList<>();
 		private double postRadius;
 
 		public DestinationSign(MapNode node) {
@@ -797,7 +713,6 @@ public class TrafficSignModule extends AbstractModule {
 				MapWaySegment fromSegment = null;
 
 				this.relation = m.getRelation();
-				ConfMaterial originalMat = null;
 
 				destination = relation.getTags().getValue("destination");
 				if (destination == null) {
@@ -973,48 +888,23 @@ public class TrafficSignModule extends AbstractModule {
 					pointingDirection = "LEFT";
 				}
 
-				//parse traffic sign specific configurable values: material,numPosts,defaultHeight
 				String signName = "SIGN_DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_"
 						+ pointingDirection.toUpperCase();
 
-				TrafficSignType attributes = mapSignAttributes(signName);
+				TrafficSignType type = TrafficSignType.fromConfig(signName, config);
+				if (type == null) { type = TrafficSignType.blankSign(); }
 
-				//if trafficSign_signName_material = * is defined
-				if (!attributes.materialName.isEmpty()) {
-
-					originalMat = getMaterial(attributes.materialName);
-					attributes.material = originalMat == null ? null
-							: originalMat.withPlaceholdersFilledIn(map, relation.getTags());
-				}
-
-				if (attributes.material == null) {
-
-					//if there is no material configured for the sign, try predefined ones
-					originalMat = getMaterial(signName);
-
-					attributes.material = originalMat == null ? null
-							: originalMat.withPlaceholdersFilledIn(map, relation.getTags());
-
-					//if there is no material defined for the sign, create simple white sign
-					if (attributes.material == null) {
-
-						attributes.material = new ConfMaterial(Interpolation.FLAT, Color.white);
-					}
-				}
+				Material material = type.material.withPlaceholdersFilledIn(map, relation.getTags());
 
 				//set material background color
-				attributes.material = attributes.material.withColor(this.backgroundColor);
+				material = material.withColor(this.backgroundColor);
 
 				//set material text color
-				attributes.material = attributes.material.withTextColor(this.textColor, 1);
+				material = material.withTextColor(this.textColor, 1);
 
-				//if trafficSign_signName_defaultHeight = *  was not defined
-				if (attributes.defaultHeight == 0)
-					attributes.defaultHeight = config.getFloat("defaultTrafficSignHeight", 2);
-
-				attributes.rotation = this.rotation;
-
-				types.add(attributes);
+				TrafficSignTypeInstance signInstance = new TrafficSignTypeInstance(material,
+						type.defaultNumPosts, type.defaultHeight);
+				signInstances.add(signInstance);
 
 			}
 		}
@@ -1029,20 +919,20 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* get basic parameters */
 
-			if (types.size() == 0)
+			if (signInstances.size() == 0)
 				return;
 
-			double height = parseHeight(node.getTags(), (float) types.get(0).defaultHeight);
+			double height = parseHeight(node.getTags(), (float) signInstances.get(0).defaultHeight);
 
-			double[] signHeights = new double[types.size()];
-			double[] signWidths = new double[types.size()];
+			double[] signHeights = new double[signInstances.size()];
+			double[] signWidths = new double[signInstances.size()];
 
-			for (int sign = 0; sign < types.size(); sign++) {
+			for (int sign = 0; sign < signInstances.size(); sign++) {
 
 				TextureData textureData = null;
 
-				if (types.get(sign).material.getNumTextureLayers() != 0) {
-					textureData = types.get(sign).material.getTextureLayers().get(0).baseColorTexture;
+				if (signInstances.get(sign).material.getNumTextureLayers() != 0) {
+					textureData = signInstances.get(sign).material.getTextureLayers().get(0).baseColorTexture;
 				}
 
 				if (textureData == null) {
@@ -1057,7 +947,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* position the post(s) */
 
-			int numPosts = types.get(0).numPosts;
+			int numPosts = signInstances.get(0).numPosts;
 
 			List<VectorXYZ> positions = new ArrayList<>(numPosts);
 
@@ -1073,7 +963,7 @@ public class TrafficSignModule extends AbstractModule {
 			double distanceBetweenSigns = 0.1;
 			double upperHeight = height;
 
-			for (int sign = 0; sign < types.size(); sign++) {
+			for (int sign = 0; sign < signInstances.size(); sign++) {
 
 				double signHeight = signHeights[sign];
 				double signWidth = signWidths[sign];
@@ -1092,12 +982,7 @@ public class TrafficSignModule extends AbstractModule {
 			/* rotate the sign around the base to match the direction value */
 
 			for (List<VectorXYZ> vs : signGeometries) {
-
-				int index = signGeometries.indexOf(vs);
-				double rotation = types.get(index).rotation;
-
 				for (int i = 0; i < vs.size(); i++) {
-
 					VectorXYZ v = vs.get(i);
 					v = v.rotateVec(rotation, getBase(), VectorXYZ.Y_UNIT);
 					vs.set(i, v);
@@ -1122,9 +1007,9 @@ public class TrafficSignModule extends AbstractModule {
 
 			/* render the sign (front, then back) */
 
-			for (int sign = 0; sign < types.size(); sign++) {
+			for (int sign = 0; sign < signInstances.size(); sign++) {
 
-				TrafficSignType type = types.get(sign);
+				TrafficSignTypeInstance type = signInstances.get(sign);
 				List<VectorXYZ> vs = signGeometries.get(sign);
 
 				target.drawTriangleStrip(type.material, vs,
@@ -1141,7 +1026,7 @@ public class TrafficSignModule extends AbstractModule {
 
 	private static final class TrafficSign extends NoOutlineNodeWorldObject implements Renderable {
 
-		private final List<TrafficSignType> types;
+		private final List<TrafficSignTypeInstance> types;
 		private final Configuration config;
 		private final double postRadius;
 		private TrafficSignModel model;
@@ -1257,7 +1142,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			for (int sign = 0; sign < types.size(); sign++) {
 
-				TrafficSignType type = types.get(sign);
+				TrafficSignTypeInstance type = types.get(sign);
 
 				List<VectorXYZ> vs = signGeometries.get(sign);
 
