@@ -173,47 +173,4 @@ public class TextTexture extends TextureData {
 		return text;
 	}
 
-	//auto-generated
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((file == null) ? 0 : file.hashCode());
-		result = prime * result + ((font == null) ? 0 : font.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(leftOffset);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		result = prime * result + ((text == null) ? 0 : text.hashCode());
-		temp = Double.doubleToLongBits(topOffset);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
-
-	//auto-generated
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		TextTexture other = (TextTexture) obj;
-		if (font == null) {
-			if (other.font != null)
-				return false;
-		} else if (!font.equals(other.font))
-			return false;
-		if (Double.doubleToLongBits(leftOffset) != Double.doubleToLongBits(other.leftOffset))
-			return false;
-		if (text == null) {
-			if (other.text != null)
-				return false;
-		} else if (!text.equals(other.text))
-			return false;
-		if (Double.doubleToLongBits(topOffset) != Double.doubleToLongBits(other.topOffset))
-			return false;
-		return true;
-	}
-
 }
