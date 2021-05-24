@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.ArrayUtils;
 import org.osm2world.core.map_data.data.MapNode;
@@ -675,10 +677,13 @@ public class TrafficSignModule extends AbstractModule {
 
 	/**
 	 * Finds the junction closest to {@code node}.
-	 * A node with 3 or more roads connected to it is considered
-	 * a junction.
+	 * The junction must be reachable by traveling forward or backward on the road {@code node} is part of.
+	 * A node with 3 or more roads connected to it is considered a junction.
+	 *
+	 * @param node  must not be a junction itself; != null
+	 * @returns  the node representing the closest junction, or null if none was found
 	 */
-	public static MapNode findClosestJunction(MapNode node) {
+	public static @Nullable MapNode findClosestJunction(MapNode node) {
 
 		int numOfConnectedRoads = RoadModule.getConnectedRoads(node, false).size();
 

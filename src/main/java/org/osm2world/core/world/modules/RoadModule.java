@@ -64,9 +64,9 @@ public class RoadModule extends ConfigurableWorldModule {
 	@Override
 	public void applyTo(MapData mapData) {
 
-		for (MapWaySegment line : mapData.getMapWaySegments()) {
-			if (isRoad(line.getTags())) {
-				line.addRepresentation(new Road(line, line.getTags()));
+		for (MapWaySegment segment : mapData.getMapWaySegments()) {
+			if (isRoad(segment.getTags())) {
+				segment.addRepresentation(new Road(segment));
 			}
 		}
 
@@ -733,13 +733,13 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		final private boolean steps;
 
-		public Road(MapWaySegment line, TagSet tags) {
+		public Road(MapWaySegment segment) {
 
-			super(line);
+			super(segment);
 
-			this.tags = tags;
-			this.startCoord = line.getStartNode().getPos();
-			this.endCoord = line.getEndNode().getPos();
+			this.tags = segment.getTags();
+			this.startCoord = segment.getStartNode().getPos();
+			this.endCoord = segment.getEndNode().getPos();
 
 			if (RIGHT_HAND_TRAFFIC_BY_DEFAULT) {
 				if (tags.contains("driving_side", "left")) {
