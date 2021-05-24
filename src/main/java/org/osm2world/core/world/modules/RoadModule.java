@@ -1406,30 +1406,29 @@ public class RoadModule extends ConfigurableWorldModule {
 				target.drawTriangles(material, sideTriangles,
 						triangleTexCoordLists(sideTriangles, material, SLOPED_TRIANGLES));
 
+				/* draw handrails */
+
+				renderHandrailsTo(target, leftOutline, rightOutline);
+
 			}
 
-			/* draw handrails */
+		}
 
-			List<List<VectorXYZ>> handrailFootprints =
-				new ArrayList<List<VectorXYZ>>();
+		/** draws 0 or more handrails depending on the tags of this object */
+		private void renderHandrailsTo(Target target, List<VectorXYZ> leftOutline, List<VectorXYZ> rightOutline) {
 
-			if (segment.getTags().contains("handrail:left","yes")) {
+			List<List<VectorXYZ>> handrailFootprints = new ArrayList<>();
+
+			if (tags.contains("handrail:left","yes")) {
 				handrailFootprints.add(leftOutline);
 			}
-			if (segment.getTags().contains("handrail:right","yes")) {
+			if (tags.contains("handrail:right","yes")) {
 				handrailFootprints.add(rightOutline);
 			}
 
-			int centerHandrails = 0;
-			if (segment.getTags().contains("handrail:center","yes")) {
-				centerHandrails = 1;
-			} else if (segment.getTags().containsKey("handrail:center")) {
-				try {
-					centerHandrails = Integer.parseInt(
-							segment.getTags().getValue("handrail:center"));
-				} catch (NumberFormatException e) {}
-			}
-
+			int centerHandrails = tags.contains("handrail:center", "yes")
+					? 1
+					: parseUInt(tags.getValue("handrail:center"), 0);
 
 			for (int i = 0; i < centerHandrails; i++) {
 				handrailFootprints.add(createLineBetween(
@@ -1504,6 +1503,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				renderStepsTo(target);
 			} else {
 				renderLanesTo(target);
+				renderHandrailsTo(target, getOutline(false), getOutline(true));
+				// FIXME: getOutline does not consider attachment, so handrails on paths rooftop paths are incorrect
 			}
 
 		}
