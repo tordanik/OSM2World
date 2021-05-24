@@ -45,7 +45,6 @@ public class TestMapDataGenerator {
 	}
 
 	public MapWay createWay(List<MapNode> wayNodes, TagSet tags) {
-		wayNodes = closeLoop(wayNodes);
 		MapWay result = new MapWay(createdWays ++, tags, wayNodes);
 		ways.add(result);
 		return result;
