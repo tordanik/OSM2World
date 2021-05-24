@@ -122,4 +122,31 @@ public class TrafficSignModuleTest {
 
 	}
 
+	@Test
+	public void zeroConnectedJunctionsWithLoop() {
+
+		TestMapDataGenerator generator = new TestMapDataGenerator();
+
+		/* prepare fake map data */
+
+		MapNode node00 = generator.createNode(0, 0);
+		MapNode node01 = generator.createNode(1, 1);
+		MapNode node02 = generator.createNode(2, 2);
+		MapNode node03 = generator.createNode(3, 0);
+
+		/* create a way and roads objects */
+
+		List<MapNode> wayNodes = asList(node00, node01, node02, node03, node00);
+		MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
+		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s)));
+
+		/* check that there is no infinite loop and that no junction is reported */
+
+		assertNull(findClosestJunction(node00));
+		assertNull(findClosestJunction(node01));
+		assertNull(findClosestJunction(node02));
+		assertNull(findClosestJunction(node03));
+
+	}
+
 }

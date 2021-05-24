@@ -7,6 +7,7 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
@@ -42,6 +43,7 @@ import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.modules.common.TrafficSignModel;
 import org.osm2world.core.world.modules.common.TrafficSignType;
@@ -685,79 +687,48 @@ public class TrafficSignModule extends AbstractModule {
 	 */
 	public static @Nullable MapNode findClosestJunction(MapNode node) {
 
-		int numOfConnectedRoads = RoadModule.getConnectedRoads(node, false).size();
-
-		if (numOfConnectedRoads > 2) {
+		if (getConnectedRoads(node, false).size() > 2) {
 			throw new IllegalArgumentException("Node " + node + " itself is a junction");
 		}
 
-		//hold the junctions found
 		List<MapNode> foundJunctions = new ArrayList<>();
 
-		//the way segment we are currently "working with"
-		MapWaySegment currentSegment = RoadModule.getConnectedRoads(node, false).get(0).segment;
+		for (Road firstRoad : getConnectedRoads(node, false)) {
 
-		//the node we are currently "working with"
-		MapNode currentNode = node;
+			Road currentRoad = firstRoad;
+			MapNode currentNode = currentRoad.segment.getOtherNode(node);
 
-		boolean otherWayChecked = false;
+			while (currentNode != node) { // this check avoids infinite loops with circular roads
 
-		while (numOfConnectedRoads <= 2) {
+				List<Road> connectedRoads = getConnectedRoads(currentNode, false);
 
-			currentNode = currentSegment.getOtherNode(currentNode);
-
-			//get the number of roads connected to the current node
-			numOfConnectedRoads = RoadModule.getConnectedRoads(currentNode, false).size();
-
-			if (numOfConnectedRoads == 1) {
-
-				//dead end, try the other way (if it exists and is not already checked)
-
-				if (RoadModule.getConnectedRoads(node, false).size() > 1 && !otherWayChecked) {
-
-					currentSegment = RoadModule.getConnectedRoads(node, false).get(1).segment;
-					otherWayChecked = true;
-					currentNode = node;
-					numOfConnectedRoads = RoadModule.getConnectedRoads(currentNode, false).size();
-
-				} else {
-
+				if (connectedRoads.size() >= 3) {
+					foundJunctions.add(currentNode);
 					break;
-				}
-
-			} else if (numOfConnectedRoads >= 3) {
-
-				//junction found, try the other way (if it exists and is not already checked)
-
-				foundJunctions.add(currentNode);
-
-				if (RoadModule.getConnectedRoads(node, false).size() > 1 && !otherWayChecked) {
-
-					currentSegment = RoadModule.getConnectedRoads(node, false).get(1).segment;
-					otherWayChecked = true;
-					currentNode = node;
-					numOfConnectedRoads = RoadModule.getConnectedRoads(currentNode, false).size();
-
-				} else {
+				} else if (connectedRoads.size() == 1) {
+					//dead end
 					break;
-				}
-
-			} else {
-
-				if (currentSegment.equals(RoadModule.getConnectedRoads(currentNode, false).get(1).segment)) {
-					currentSegment = RoadModule.getConnectedRoads(currentNode, false).get(0).segment;
 				} else {
-					currentSegment = RoadModule.getConnectedRoads(currentNode, false).get(1).segment;
+
+					// go to the next road segment
+					assert connectedRoads.size() == 2 && connectedRoads.contains(currentRoad);
+					if (connectedRoads.get(0).equals(currentRoad)) {
+						currentRoad = connectedRoads.get(1);
+					} else {
+						currentRoad = connectedRoads.get(0);
+					}
+
+					currentNode = currentRoad.segment.getOtherNode(currentNode);
+
 				}
+
 			}
-		}
 
-		if (foundJunctions.size() == 0) {
-			return null;
 		}
 
 		return foundJunctions.stream().min((Comparator.comparingDouble(j -> j.getPos().distanceTo(node.getPos()))))
-				.get();
+				.orElse(null);
+
 	}
 
 	/**
