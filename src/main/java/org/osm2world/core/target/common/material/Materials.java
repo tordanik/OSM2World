@@ -660,7 +660,7 @@ public final class Materials {
 				height = 1;
 			}
 
-			return new ImageTexture(file, width, height, widthPerEntity, heightPerEntity, wrap, coordFunction);
+			return new ImageFileTexture(file, width, height, widthPerEntity, heightPerEntity, wrap, coordFunction);
 
 		} else {
 			System.err.println("unknown type value: " + type);

@@ -8,13 +8,10 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
-import com.jogamp.opengl.util.awt.ImageUtil;
-
 import jakarta.xml.bind.DatatypeConverter;
 
 /**
- * a texture with metadata necessary for calculating tile coordinates.
- *
+ * a texture with metadata necessary for calculating texture coordinates.
  */
 public abstract class TextureData {
 
@@ -66,21 +63,15 @@ public abstract class TextureData {
 	public abstract File getRasterImage();
 
 	/**
+	 * returns the texture as a {@link BufferedImage}.
+	 * Like {@link #getRasterImage()}, this may involve converting a vector or procedural texture into a raster image.
+	 */
+	public abstract BufferedImage getBufferedImage();
+
+	/**
 	 * returns the texture as a data URI containing a raster image.
 	 */
-	public String getDataUri() {
-		try {
-			File file = getRasterImage();
-			String format = file.getName().endsWith(".png") ? "png" : "jpeg";
-			BufferedImage image = ImageIO.read(file);
-			if ("png".equals(format)) {
-				ImageUtil.flipImageVertically(image); //flip to ensure consistent tex coords with png images
-			}
-			return imageToDataUri(image, format);
-		} catch (IOException e) {
-			throw new Error(e);
-		}
-	}
+	public abstract String getDataUri();
 
 	protected static final String imageToDataUri(BufferedImage image, String format) {
 		try {

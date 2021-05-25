@@ -45,7 +45,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.ExtrudeOption;
-import org.osm2world.core.target.common.material.ImageTexture;
+import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.TextureData;
@@ -719,26 +719,26 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 		TextureData baseColorTexture = textureLayer.baseColorTexture;
 
-		if (baseColorTexture instanceof ImageTexture) {
-			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageTexture)baseColorTexture).getFile().getName());
+		if (baseColorTexture instanceof ImageFileTexture) {
+			layerBuilder.setBaseColorTextureURI(TEXTURE_BASE_URL + ((ImageFileTexture)baseColorTexture).getFile().getName());
 		} else {
 			layerBuilder.setBaseColorTextureURI(baseColorTexture.getDataUri());
 		}
 
-		if (textureLayer.ormTexture instanceof ImageTexture) {
-			layerBuilder.setOrmTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.ormTexture).getFile().getName());
+		if (textureLayer.ormTexture instanceof ImageFileTexture) {
+			layerBuilder.setOrmTextureURI(TEXTURE_BASE_URL + ((ImageFileTexture)textureLayer.ormTexture).getFile().getName());
 		} else if (textureLayer.ormTexture != null) {
 			layerBuilder.setOrmTextureURI(textureLayer.ormTexture.getDataUri());
 		}
 
-		if (textureLayer.normalTexture instanceof ImageTexture) {
-			layerBuilder.setNormalTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.normalTexture).getFile().getName());
+		if (textureLayer.normalTexture instanceof ImageFileTexture) {
+			layerBuilder.setNormalTextureURI(TEXTURE_BASE_URL + ((ImageFileTexture)textureLayer.normalTexture).getFile().getName());
 		} else if (textureLayer.normalTexture != null) {
 			layerBuilder.setNormalTextureURI(textureLayer.normalTexture.getDataUri());
 		}
 
-		if (textureLayer.displacementTexture instanceof ImageTexture) {
-			layerBuilder.setDisplacementTextureURI(TEXTURE_BASE_URL + ((ImageTexture)textureLayer.displacementTexture).getFile().getName());
+		if (textureLayer.displacementTexture instanceof ImageFileTexture) {
+			layerBuilder.setDisplacementTextureURI(TEXTURE_BASE_URL + ((ImageFileTexture)textureLayer.displacementTexture).getFile().getName());
 		} else if (textureLayer.displacementTexture != null) {
 			layerBuilder.setDisplacementTextureURI(textureLayer.displacementTexture.getDataUri());
 		}

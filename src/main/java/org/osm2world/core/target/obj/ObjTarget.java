@@ -19,7 +19,7 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.material.ImageTexture;
+import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.Materials;
@@ -242,7 +242,7 @@ public class ObjTarget extends FaceTarget {
 				textureLayer = material.getTextureLayers().get(i);
 
 				// ignore TextTextureData layers
-				if (!(textureLayer.baseColorTexture instanceof ImageTexture)) {
+				if (!(textureLayer.baseColorTexture instanceof ImageFileTexture)) {
 					continue;
 				}
 			}

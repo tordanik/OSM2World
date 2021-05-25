@@ -1,30 +1,32 @@
 package org.osm2world.core.target.common.material;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 
-public class ImageTexture extends TextureData {
+import com.jogamp.opengl.util.awt.ImageUtil;
+
+public class ImageFileTexture extends TextureData {
 
 	/**
 	 * Path to the texture file.
-	 * Represents a permanent, already saved
-	 * image file in contrast to the file
-	 * field in {@link TextTexture}
+	 * Represents a permanent, already saved image file in contrast to {@link RuntimeTexture}'s temmporary image file.
 	 */
 	private final File file;
 
 	private File convertedToPng = null;
 
-	public ImageTexture(File file, double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+	public ImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			Wrap wrap, TexCoordFunction texCoordFunction) {
 		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
 		this.file = file;
@@ -93,6 +95,29 @@ public class ImageTexture extends TextureData {
 	}
 
 	@Override
+	public BufferedImage getBufferedImage() {
+		try {
+			String format = getRasterImageFileFormat();
+			BufferedImage image = ImageIO.read(getRasterImage());
+			if ("png".equals(format)) {
+				ImageUtil.flipImageVertically(image); //flip to ensure consistent tex coords with png images
+			}
+			return image;
+		} catch (IOException e) {
+			throw new Error(e);
+		}
+	}
+
+	@Override
+	public String getDataUri() {
+		return imageToDataUri(getBufferedImage(), getRasterImageFileFormat());
+	}
+
+	private String getRasterImageFileFormat() {
+		return getRasterImage().getName().endsWith(".png") ? "png" : "jpeg";
+	}
+
+	@Override
 	public String toString() {
 		return file.getName();
 	}
@@ -115,7 +140,7 @@ public class ImageTexture extends TextureData {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ImageTexture other = (ImageTexture) obj;
+		ImageFileTexture other = (ImageFileTexture) obj;
 		if (file == null) {
 			if (other.file != null)
 				return false;

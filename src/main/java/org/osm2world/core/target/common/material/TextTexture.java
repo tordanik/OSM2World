@@ -5,21 +5,12 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
-public class TextTexture extends TextureData {
-
-	/**
-	 * File generated based on {@link #text}
-	 * and temporarily saved until application termination
-	 */
-	private File file = null;
+public class TextTexture extends RuntimeTexture {
 
 	public final String text;
 	public Font font;
@@ -50,24 +41,7 @@ public class TextTexture extends TextureData {
 	}
 
 	@Override
-	public File getRasterImage() {
-
-		if (file == null) {
-			BufferedImage image = createBufferedImage();
-			String prefix = text+"osm2world";
-			this.file = createPng(prefix, image);
-		}
-
-		return this.file;
-
-	}
-
-	@Override
-	public String getDataUri() {
-		return imageToDataUri(createBufferedImage(), "png");
-	}
-
-	private BufferedImage createBufferedImage() {
+	public BufferedImage getBufferedImage() {
 
 		if (!text.isEmpty()) {
 
@@ -112,22 +86,6 @@ public class TextTexture extends TextureData {
 
 		}
 
-	}
-
-	private File createPng(String prefix, BufferedImage image) {
-
-		File outputFile = null;
-
-		try {
-			outputFile = File.createTempFile(prefix, ".png");
-			outputFile.deleteOnExit();
-			ImageIO.write(image, "png", outputFile);
-		} catch(IOException e) {
-			System.err.println("Exception in createPng: " + prefix);
-			e.printStackTrace();
-		}
-
-		return outputFile;
 	}
 
 	public static enum FontStyle {
