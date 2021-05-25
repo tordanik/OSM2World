@@ -1,261 +1,154 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
-import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.target.common.material.Materials.STEEL;
+import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.world.modules.RoadModule;
-import org.osm2world.core.world.modules.RoadModule.Road;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.model.Model;
 
 /**
- * A class containing all the necessary information to render a traffic sign.
+ * 3D model of a single traffic sign. A {@link TrafficSignGroup} has one or more of these.
  */
-public class TrafficSignModel {
-
-	/** The {@link TrafficSignTypeInstance}s on this sign */
-	public List<TrafficSignTypeInstance> types;
-
-	/** The position this TrafficSignModel will be rendered on */
-	public VectorXZ position;
-
-	/** The direction the {@link TrafficSignModel#types} are facing */
-	public double direction;
-
-	/** The {@link org.osm2world.core.map_data.data.MapNode} the position of this model is relevant to */
-	public MapNode node;
-
-	public TrafficSignModel(MapNode node) {
-		this.node = node;
-	}
+public class TrafficSignModel implements Model {
 
 	/**
-	 * Check if the top (bottom) of the given {@code way} is connected
-	 * to another way that contains the same key-value tag. Applicable to
-	 * traffic sign mapping cases where signs must be rendered both at
-	 * the beginning and the end of the way they apply to
-	 *
-	 * @param topOrBottom
-	 * A boolean value indicating whether to check the
-	 * beginning or end of the {@code way}. True for beginning, false for end.
+	 * the material of the front of the sign.
+	 * Will be based on the {@link TrafficSignType}'s material, but may be slightly modified for a particular instance
+	 * of that sign type (e.g. with text placeholders filled in or colors modified).
 	 */
-	public static boolean adjacentWayContains(boolean topOrBottom, MapWay way, String key, String value) {
+	public final Material material;
 
-		//decide whether to check beginning or end of the way
-		int index = 0;
-		MapNode wayNode;
+	public final int numPosts;
+	public final double defaultHeight;
 
-		if (!topOrBottom) {
+	public TrafficSignModel(Material material, int numPosts, double height) {
+		this.material = material;
+		this.numPosts = numPosts;
+		this.defaultHeight = height;
+	}
 
-			//check the last node of the last segment
+	public static TrafficSignModel create(TrafficSignIdentifier signId, TagSet tagsOfElement, Configuration config) {
 
-			index = way.getWaySegments().size() - 1;
+		/* prepare map with subtype and/or brackettext values */
 
-			wayNode = way.getWaySegments().get(index).getEndNode();
+		Map<String, String> map = new HashMap<>();
 
+		if (signId.bracketText != null) {
+			map.put("traffic_sign.brackettext", signId.bracketText);
+		}
+		if (signId.subType() != null) {
+			map.put("traffic_sign.subtype", signId.subType());
+		}
+
+		/* load information about this type of sign from the configuration */
+
+		TrafficSignType type = TrafficSignType.fromConfig(signId, config);
+		if (type == null) { type = TrafficSignType.blankSign(); }
+
+		/* build the model */
+
+		return new TrafficSignModel(
+				type.material.withPlaceholdersFilledIn(map, tagsOfElement),
+				type.defaultNumPosts, type.defaultHeight);
+
+	}
+
+	public double getSignHeight() {
+		if (material.getNumTextureLayers() > 0) {
+			return material.getTextureLayers().get(0).baseColorTexture.height;
 		} else {
-
-			//check the first node of the first segment
-
-			wayNode = way.getWaySegments().get(index).getStartNode();
+			return 0.6;
 		}
-
-		//if the node is also part of another way
-		if (wayNode.getConnectedSegments().size() == 2) {
-
-			for (MapWaySegment segment : wayNode.getConnectedWaySegments()) {
-
-				//if current segment is part of this other way
-				if (!segment.getWay().equals(way)) {
-
-					//check if this other way also contains the key-value pair
-					MapWay nextWay = segment.getWay();
-
-					if (nextWay.getTags().contains(key, value)) {
-						return true;
-					} else {
-						return false;
-					}
-				}
-			}
-		}
-
-		return false;
 	}
 
-	/**
-	 * Calculate the position this model will be rendered to, based on the
-	 * {@code side} of the road it is supposed to be and the width of the road
-	 */
-	public void calculatePosition(MapWaySegment segment, boolean side, String key, boolean isNode) {
-
-		//if way is not a road
-		if (!RoadModule.isRoad(segment.getTags())) {
-			this.position = node.getPos();
-			return;
-		}
-
-		//get the rendered segment's width
-		Road r = (Road) segment.getPrimaryRepresentation();
-
-		double roadWidth = r.getWidth();
-
-		//rightNormal() vector will always be orthogonal to the segment, no matter its direction,
-		//so we use that to place the signs to the left/right of the way
-		VectorXZ rightNormal = segment.getDirection().rightNormal();
-
-		/*
-		 * Explicit side tag overwrites all. Applies only to sign mapped on way nodes
-		 */
-		if (node.getTags().containsKey("side") && isNode) {
-			if (node.getTags().getValue("side").equals("right")) {
-				this.position = node.getPos().add(rightNormal.mult(roadWidth));
-				return;
-			} else if (node.getTags().getValue("side").equals("left")) {
-				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
-				return;
-			}
-		}
-
-		if (side) {
-
-			if (key.contains("forward")) {
-				this.position = node.getPos().add(rightNormal.mult(roadWidth));
-				return;
-			} else {
-				//if backwards
-				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
-				return;
-			}
-
+	public double getSignWidth() {
+		if (material.getNumTextureLayers() > 0) {
+			return material.getTextureLayers().get(0).baseColorTexture.width;
 		} else {
-
-			if (key.contains("forward")) {
-
-				this.position = node.getPos().add(rightNormal.mult(-roadWidth));
-				return;
-			} else {
-				this.position = node.getPos().add(rightNormal.mult(roadWidth));
-				return;
-			}
-
+			return 0.6;
 		}
 	}
 
-	/**
-	 * Calculate the rotation angle of the model based
-	 * on the direction of {@code segment}. The segment
-	 * will always be either the first one of it's way
-	 * or the last one.
-	 */
-	public void calculateDirection(MapWaySegment segment, String key) {
+	@Override
+	public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
+			Double length) {
 
-		VectorXZ wayDir = segment.getDirection();
+		double signHeight = getSignHeight();
+		double signWidth = getSignWidth();
 
-		if (key.contains("forward")) {
-			wayDir = wayDir.invert();
-			this.direction = wayDir.angle();
-		} else {
-			this.direction = wayDir.angle();
+		/* create the geometry of the sign */
+
+		List<VectorXYZ> vsFront = asList(
+					position.add(+signWidth / 2, +signHeight / 2, 0),
+					position.add(+signWidth / 2, -signHeight / 2, 0),
+					position.add(-signWidth / 2, +signHeight / 2, 0),
+					position.add(-signWidth / 2, -signHeight / 2, 0));
+
+		/* rotate the sign around the base to match the direction */
+
+		for (int i = 0; i < vsFront.size(); i++) {
+			VectorXYZ v = vsFront.get(i);
+			v = v.rotateVec(direction, position, Y_UNIT);
+			vsFront.set(i, v);
 		}
+
+		/* render the front of the sign */
+
+		target.drawTriangleStrip(material, vsFront,
+				texCoordLists(vsFront, material, STRIP_FIT));
+
+		/* render the back of the sign */
+
+		List<VectorXYZ> vsBack = asList(vsFront.get(2), vsFront.get(3), vsFront.get(0), vsFront.get(1));
+		Material materialBack = STEEL;
+
+		target.drawTriangleStrip(materialBack, vsBack,
+				texCoordLists(vsBack, materialBack, STRIP_FIT));
+
 	}
 
-	/**
-	 * Same as {@link #calculateDirection(MapWaySegment, String)} but also parses the node's
-	 * tags for the direction specification and takes into account the
-	 * highway=give_way/stop special case. To be used on nodes that are part of ways.
-	 */
-	public void calculateDirection() {
-
-		if (node.getConnectedWaySegments().isEmpty()) {
-			System.err.println("Node " + node + " is not part of a way.");
-			this.direction = PI;
-			return;
-		}
-
-		TagSet nodeTags = node.getTags();
-
-		//Direction the way the node is part of, is facing
-		VectorXZ wayDir = node.getConnectedWaySegments().get(0).getDirection();
-
-		if (nodeTags.containsKey("direction")) {
-
-			if (!nodeTags.containsAny(asList("direction"), asList("forward", "backward"))) {
-
-				//get direction mapped as angle or cardinal direction
-				double dir = parseDirection(nodeTags, PI);
-				this.direction = dir;
-				return;
-
-			} else {
-
-				if (nodeTags.getValue("direction").equals("backward")) {
-
-					this.direction = wayDir.angle();
-					return;
-				}
-
-			}
-
-		} else if (nodeTags.containsKey("traffic_sign:forward") || nodeTags.containsKey("traffic_sign:backward")) {
-
-			String regex = "traffic_sign:(forward|backward)";
-			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher;
-
-			for (Tag tag : nodeTags) {
-
-				matcher = pattern.matcher(tag.key);
-
-				if (matcher.matches()) {
-
-					if (matcher.group(1).equals("backward")) {
-						this.direction = wayDir.angle();
-						return;
-					}
-				}
-			}
-		} else if (nodeTags.containsAny(asList("highway"), asList("give_way", "stop"))) {
-
-			/*
-			 * if no direction is specified with any of the above cases and a
-			 * sign of type highway=give_way/stop is mapped, calculate model's
-			 * direction based on the position of the junction closest to the node
-			 */
-
-			if (RoadModule.getConnectedRoads(node, false).size() <= 2
-					&& RoadModule.getConnectedRoads(node, false).size() > 0) {
-
-				MapNode closestJunction = TrafficSignModule.findClosestJunction(node);
-
-				if (closestJunction != null) {
-
-					this.direction = (node.getPos().subtract(closestJunction.getPos())).normalize().angle();
-					return;
-				} else {
-					this.direction = wayDir.angle();
-				}
-			}
-		}
-
-		/*
-		 * Either traffic_sign:forward or direction=forward is specified or no forward/backward is specified at all.
-		 * traffic_sign:forward affects vehicles moving in the same direction as
-		 * the way. Therefore they must face the sign so the way's direction is inverted.
-		 * Vehicles facing the sign is the most common case so it is set as the default case
-		 * as well
-		 */
-		wayDir = wayDir.invert();
-		this.direction = wayDir.angle();
-		return;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(defaultHeight);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((material == null) ? 0 : material.hashCode());
+		result = prime * result + numPosts;
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TrafficSignModel other = (TrafficSignModel) obj;
+		if (Double.doubleToLongBits(defaultHeight) != Double.doubleToLongBits(other.defaultHeight))
+			return false;
+		if (material == null) {
+			if (other.material != null)
+				return false;
+		} else if (!material.equals(other.material))
+			return false;
+		if (numPosts != other.numPosts)
+			return false;
+		return true;
+	}
+
 }

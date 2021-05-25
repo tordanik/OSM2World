@@ -2,41 +2,31 @@ package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.VectorXYZ.X_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.TextureData;
-import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -45,19 +35,6 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * adds traffic signs to the world
  */
 public class TrafficSignModule extends AbstractModule {
-
-	/**
-	 * Checks if {@code node} is part of any type=destination_sign relationships.
-	 * Adds destination sign world representation if it is
-	 */
-	private void createDestinationSign(MapNode node) {
-		for (Membership m : node.getMemberships()) {
-			if (m.getRelation().getTags().contains("type", "destination_sign") && m.getRole().equals("sign")) {
-				node.addRepresentation(new DestinationSign(node));
-				return;
-			}
-		}
-	}
 
 	/**
 	 * Checks if {@code node}'s way contains traffic sign tags to be rendered
@@ -73,9 +50,6 @@ public class TrafficSignModule extends AbstractModule {
 		String country = "";
 		String tagValue = "";
 
-		//a TrafficSignType instance to hold the sign's attributes
-		TrafficSignTypeInstance attributes;
-
 		/*
 		 * Value to hold the side of the road non-explicitly defined signs
 		 * will be rendered to. Default value is true. Indicates the rules of the
@@ -84,8 +58,8 @@ public class TrafficSignModule extends AbstractModule {
 		boolean side = RoadModule.RIGHT_HAND_TRAFFIC_BY_DEFAULT;
 
 		//The (potential) signs to be rendered
-		TrafficSignModel firstModel = null;
-		TrafficSignModel secondModel = null;
+		TrafficSignGroup firstModel = null;
+		TrafficSignGroup secondModel = null;
 
 		//the way this node is mapped on & its way tags
 		MapWay way = node.getConnectedWaySegments().get(0).getWay();
@@ -110,7 +84,7 @@ public class TrafficSignModule extends AbstractModule {
 				for (String key : containedKeys) {
 
 					//if a way adjacent to the beginning of this way does not contain the same traffic sign
-					if (!TrafficSignModel.adjacentWayContains(true, way, key, wayTags.getValue(key))
+					if (!adjacentWayContains(true, way, key, wayTags.getValue(key))
 							&& !key.contains("backward")) {
 
 						boolean renderMe = true;
@@ -122,7 +96,7 @@ public class TrafficSignModule extends AbstractModule {
 							tempKey = key + ":forward";
 
 							//check the way adjacent to the beginning of this way for sign mapped with forward direction
-							if (TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))) {
+							if (adjacentWayContains(true, way, tempKey, wayTags.getValue(key))) {
 
 								renderMe = false;
 							}
@@ -132,7 +106,7 @@ public class TrafficSignModule extends AbstractModule {
 							//check the way adjacent to the beginning of this way for sign mapped without direction specified
 							tempKey = key.substring(0, key.indexOf(':'));
 
-							if (TrafficSignModel.adjacentWayContains(true, way, tempKey, wayTags.getValue(key))) {
+							if (adjacentWayContains(true, way, tempKey, wayTags.getValue(key))) {
 
 								renderMe = false;
 							}
@@ -141,31 +115,31 @@ public class TrafficSignModule extends AbstractModule {
 						}
 
 						if (renderMe) {
-
 							//get first way segment
 							MapWaySegment topSegment = way.getWaySegments().get(0);
 
-							//new TrafficSignModel at the beginning of the way
-							firstModel = new TrafficSignModel(topSegment.getStartNode());
+							//place sign group at the beginning of the way
+							MapNode firstModelNode = topSegment.getStartNode();
+							firstModel = new TrafficSignGroup(firstModelNode, config);
 
 							//get segment's driving side
 							side = RoadModule.hasRightHandTraffic(topSegment);
 
 							//set the model's facing direction
-							firstModel.calculateDirection(topSegment, tempKey);
+							firstModel.direction = calculateDirection(topSegment, tempKey);
 
 							//Avoid the case where the first node of the way may be a junction
 							if (topSegment.getStartNode().getConnectedWaySegments().size() < 3) {
-								firstModel.calculatePosition(topSegment, side, tempKey, false);
+								firstModel.position = calculateSignPosition(firstModelNode, topSegment, side, tempKey, false);
 							} else {
 
 								if (RoadModule.isRoad(wayTags)) {
 									VectorXZ offset = NULL_VECTOR;
 									//FIXME - disabled during merge
 									//VectorXZ offset = ((Road)topSegment.getPrimaryRepresentation()).getStartOffset();
-									firstModel.position = firstModel.node.getPos().add(offset);
+									firstModel.position = firstModelNode.getPos().add(offset);
 								} else {
-									firstModel.position = firstModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
+									firstModel.position = firstModelNode.getPos().add(DEFAULT_OFFSET_VECTOR);
 								}
 							}
 
@@ -179,7 +153,7 @@ public class TrafficSignModule extends AbstractModule {
 					 * render an extra traffic sign model at the end of the way.
 					 * Configuration definition deduceTrafficSignsFromWayTags=limited "turns off" this mechanism
 					 */
-					if (!TrafficSignModel.adjacentWayContains(false, way, key, wayTags.getValue(key))
+					if (!adjacentWayContains(false, way, key, wayTags.getValue(key))
 							&& !RoadModule.isOneway(way.getTags())
 							&& !state.equalsIgnoreCase("limited") && !key.contains("forward")) {
 
@@ -191,7 +165,7 @@ public class TrafficSignModule extends AbstractModule {
 							tempKey = key + ":backward";
 
 							//check the way adjacent to the beginning of this way for sign mapped with forward direction
-							if (TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))) {
+							if (adjacentWayContains(false, way, tempKey, wayTags.getValue(key))) {
 								//continue;
 								renderMe = false;
 							}
@@ -201,7 +175,7 @@ public class TrafficSignModule extends AbstractModule {
 							//check the way adjacent to the beginning of this way for sign mapped without direction specified
 							tempKey = key.substring(0, key.indexOf(':'));
 
-							if (TrafficSignModel.adjacentWayContains(false, way, tempKey, wayTags.getValue(key))) {
+							if (adjacentWayContains(false, way, tempKey, wayTags.getValue(key))) {
 								//continue;
 								renderMe = false;
 							}
@@ -217,12 +191,13 @@ public class TrafficSignModule extends AbstractModule {
 							//get last way segment
 							MapWaySegment bottomSegment = way.getWaySegments().get(numOfSegments - 1);
 
-							secondModel = new TrafficSignModel(bottomSegment.getEndNode());
+							MapNode secondModelNode = bottomSegment.getEndNode();
+							secondModel = new TrafficSignGroup(secondModelNode, config);
 
 							//get segment's driving side
 							side = RoadModule.hasRightHandTraffic(bottomSegment);
 
-							secondModel.calculateDirection(bottomSegment, tempKey);
+							secondModel.direction = calculateDirection(bottomSegment, tempKey);
 
 							/*
 							 * new TrafficSignModel at the end of the way.
@@ -230,7 +205,7 @@ public class TrafficSignModule extends AbstractModule {
 							 */
 							if (bottomSegment.getEndNode().getConnectedWaySegments().size() < 3) {
 
-								secondModel.calculatePosition(bottomSegment, side, tempKey, false);
+								secondModel.position = calculateSignPosition(secondModelNode, bottomSegment, side, tempKey, false);
 
 							} else {
 
@@ -238,9 +213,9 @@ public class TrafficSignModule extends AbstractModule {
 									VectorXZ offset = NULL_VECTOR;
 									//FIXME - disabled during merge
 									//VectorXZ offset = ((Road)bottomSegment.getPrimaryRepresentation()).getEndOffset();
-									secondModel.position = secondModel.node.getPos().add(offset);
+									secondModel.position = secondModelNode.getPos().add(offset);
 								} else {
-									secondModel.position = secondModel.node.getPos().add(DEFAULT_OFFSET_VECTOR);
+									secondModel.position = secondModelNode.getPos().add(DEFAULT_OFFSET_VECTOR);
 								}
 							}
 
@@ -252,8 +227,8 @@ public class TrafficSignModule extends AbstractModule {
 				signs = keysForFirstModel.toArray(new String[0]);
 				signsForSecondModel = keysForSecondModel.toArray(new String[0]);
 
-				List<TrafficSignTypeInstance> types = new ArrayList<>(containedKeys.size());
-				List<TrafficSignTypeInstance> typesForSecondSign = new ArrayList<>(keysForSecondModel.size());
+				List<TrafficSignModel> models = new ArrayList<>(containedKeys.size());
+				List<TrafficSignModel> modelsForSecondSign = new ArrayList<>(keysForSecondModel.size());
 
 				//configure the traffic sign types
 
@@ -280,9 +255,7 @@ public class TrafficSignModule extends AbstractModule {
 						country = null;
 					}
 
-					attributes = configureSignTypeInstance(new TrafficSignIdentifier(country, sign), wayTags);
-
-					types.add(attributes);
+					models.add(TrafficSignModel.create(new TrafficSignIdentifier(country, sign), wayTags, config));
 
 				}
 
@@ -309,25 +282,22 @@ public class TrafficSignModule extends AbstractModule {
 						country = null;
 					}
 
-					attributes = configureSignTypeInstance(new TrafficSignIdentifier(country, sign), wayTags);
-
-					typesForSecondSign.add(attributes);
+					modelsForSecondSign.add(TrafficSignModel.create(
+							new TrafficSignIdentifier(country, sign), wayTags, config));
 				}
 
-				if (types.size() > 0) {
+				if (models.size() > 0) {
 
 					if (firstModel != null) {
-
-						firstModel.types = types;
-						node.addRepresentation(new TrafficSign(firstModel, config));
+						firstModel.signs = models;
+						node.addRepresentation(firstModel);
 					}
 				}
-				if (typesForSecondSign.size() > 0) {
+				if (modelsForSecondSign.size() > 0) {
 
 					if (secondModel != null) {
-
-						secondModel.types = typesForSecondSign;
-						node.addRepresentation(new TrafficSign(secondModel, config));
+						secondModel.signs = modelsForSecondSign;
+						node.addRepresentation(secondModel);
 					}
 
 					return;
@@ -352,8 +322,8 @@ public class TrafficSignModule extends AbstractModule {
 		String tagValue = "";
 
 		//The (potential) signs to be rendered
-		TrafficSignModel firstModel = null;
-		TrafficSignModel secondModel = null;
+		TrafficSignGroup firstModel = null;
+		TrafficSignGroup secondModel = null;
 
 		//if node is part of a way
 		if (isInHighway(node)) {
@@ -361,7 +331,7 @@ public class TrafficSignModule extends AbstractModule {
 			String tempKey = "";
 
 			//one rendering is required
-			firstModel = new TrafficSignModel(node);
+			firstModel = new TrafficSignGroup(node, config);
 
 			if (node.getTags().containsKey("traffic_sign:forward")) {
 				tagValue = node.getTags().getValue("traffic_sign:forward");
@@ -385,18 +355,18 @@ public class TrafficSignModule extends AbstractModule {
 
 			boolean side = RoadModule.hasRightHandTraffic(segment);
 
-			firstModel.calculatePosition(segment, side, tempKey, true);
+			firstModel.position = calculateSignPosition(node, segment, side, tempKey, true);
 
-			firstModel.calculateDirection();
+			firstModel.direction = calculateDirection(node);
 
 			if (node.getTags().contains("side", "both")) {
 
 				//if side=both , create another model instance and place them to the left & right of the road
 
-				secondModel = new TrafficSignModel(node);
+				secondModel = new TrafficSignGroup(node, config);
 
 				secondModel.direction = firstModel.direction;
-				secondModel.calculatePosition(segment, !side, tempKey, true);
+				secondModel.position = calculateSignPosition(node, segment, !side, tempKey, true);
 			}
 
 		} else {
@@ -406,7 +376,7 @@ public class TrafficSignModule extends AbstractModule {
 			if (node.getTags().containsKey("traffic_sign"))
 				tagValue = node.getTags().getValue("traffic_sign");
 
-			firstModel = new TrafficSignModel(node);
+			firstModel = new TrafficSignGroup(node, config);
 			firstModel.position = node.getPos();
 			firstModel.direction = parseDirection(node.getTags(), PI);
 
@@ -414,35 +384,261 @@ public class TrafficSignModule extends AbstractModule {
 
 		/* get the list of traffic signs from the tag's value */
 
-		List<TrafficSignIdentifier> signs = TrafficSignIdentifier.parseTrafficSignValue(tagValue);
+		List<TrafficSignIdentifier> signIds = TrafficSignIdentifier.parseTrafficSignValue(tagValue);
 
 		/* handle the special cases highway=give_way/stop */
 
 		String highwayValue = node.getTags().getValue("highway");
 
 		if (asList("give_way", "stop").contains(highwayValue)
-				&& !signs.contains(new TrafficSignIdentifier(null, highwayValue))) {
-			signs = new ArrayList<>(signs);
-			signs.add(new TrafficSignIdentifier(null, highwayValue));
+				&& !signIds.contains(new TrafficSignIdentifier(null, highwayValue))) {
+			signIds = new ArrayList<>(signIds);
+			signIds.add(new TrafficSignIdentifier(null, highwayValue));
 		}
 
 		/* create a visual representation for the traffic sign */
 
-		List<TrafficSignTypeInstance> types = new ArrayList<>(signs.size());
-		signs.forEach(sign -> types.add(configureSignTypeInstance(sign, node.getTags())));
+		List<TrafficSignModel> signs = new ArrayList<>(signIds.size());
+		signIds.forEach(sign -> signs.add(TrafficSignModel.create(sign, node.getTags(), config)));
 
-		if (types.size() > 0) {
+		if (signs.size() > 0) {
 
 			if (firstModel != null) {
-				firstModel.types = types;
-				node.addRepresentation(new TrafficSign(firstModel, config));
+				firstModel.signs = signs;
+				node.addRepresentation(firstModel);
 			}
 
 			if (secondModel != null) {
-				secondModel.types = types;
-				node.addRepresentation(new TrafficSign(secondModel, config));
+				secondModel.signs = signs;
+				node.addRepresentation(secondModel);
 			}
 		}
+	}
+
+	private void createDestinationSign(MapNode node) {
+
+		double direction = PI;
+		List<TrafficSignModel> signs = new ArrayList<>();
+
+		for (Membership m : node.getMemberships()) {
+
+			String pointingDirection;
+
+			//default values
+			Color backgroundColor = Color.WHITE;
+			Color textColor = Color.BLACK;
+
+			//relation attributes
+			MapWay from = null;
+			MapWay to = null;
+			MapNode intersection = null;
+			String destination;
+			String distance;
+			String arrowColour;
+
+			MapWaySegment toSegment = null;
+			MapWaySegment fromSegment = null;
+
+			MapRelation relation = m.getRelation();
+
+			destination = relation.getTags().getValue("destination");
+			if (destination == null) {
+				System.err.println(
+						"Destination can not be null. Destination sign rendering ommited for relation " + relation);
+				continue;
+			}
+			distance = relation.getTags().getValue("distance");
+
+			//parse background color
+			if (relation.getTags().getValue("colour:back") != null) {
+
+				Field field;
+
+				try {
+					field = Color.class.getField(relation.getTags().getValue("colour:back"));
+					backgroundColor = (Color) field.get(null);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+			//parse text color
+			if (relation.getTags().getValue("colour:text") != null) {
+
+				Field field;
+
+				try {
+					field = Color.class.getField(relation.getTags().getValue("colour:text"));
+					textColor = (Color) field.get(null);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+			arrowColour = relation.getTags().getValue("colour:arrow");
+			if (arrowColour == null)
+				arrowColour = "BLACK";
+
+			//map to use in configureMaterial
+			HashMap<String, String> map = new HashMap<>();
+
+			map.put("destination", destination);
+			if (distance != null)
+				map.put("distance", distance);
+
+			//List to hold all "from" members of the relation (if multiple)
+			List<MapWay> fromMembers = new ArrayList<>();
+
+			//variable to avoid calculating 'from' using vector from "sign" to "intersection"
+			//if fromMembers size is 0 because of not acceptable mapping
+			boolean wrongFrom = false;
+
+			for (Membership member : relation.getMemberships()) {
+
+				if (member.getRole().equals("from")) {
+
+					if (member.getElement() instanceof MapWay) {
+						fromMembers.add((MapWay) member.getElement());
+					} else {
+						System.err.println("'from' member of relation " + relation + " is not a way."
+								+ " It is not being considered for rendering this relation's destination sign");
+						wrongFrom = true;
+						continue;
+					}
+
+				} else if (member.getRole().equals("to")) {
+
+					if (member.getElement() instanceof MapWay) {
+						to = (MapWay) member.getElement();
+					} else {
+						System.err.println("'to' member of relation " + relation + " is not a way."
+								+ " It is not being considered for rendering this relation's destination sign");
+						continue;
+					}
+
+				} else if (member.getRole().equals("intersection")) {
+
+					if (!(member.getElement() instanceof MapNode)) {
+						System.err.println("'intersection' member of relation " + relation + " is not a node."
+								+ " It is not being considered for rendering this relation's destination sign");
+						continue;
+					}
+
+					intersection = (MapNode) member.getElement();
+				}
+			}
+
+			//check intersection first as it is being used in 'from' calculation below
+			if (intersection == null) {
+				System.err.println("Member 'intersection' was not defined in relation " + relation +
+						". Destination sign rendering is omited for this relation.");
+				continue;
+			}
+
+			/*
+			 * if there are multiple "from" members or none at all,
+			 * use the vector from "sign" to "intersection" instead
+			 */
+
+			if (fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
+				List<MapNode> signAndIntersection = asList(
+						node,
+						intersection);
+
+				//create a new MapWay instance from sign node to intersection node
+				MapWay signToIntersection = new MapWay(0, TagSet.of(), signAndIntersection);
+				from = signToIntersection;
+
+			} else if (fromMembers.size() == 1) {
+
+				from = fromMembers.get(0);
+			}
+
+			//check if the rest of the "vital" relation members where defined
+			if (from == null || to == null) {
+				System.err.println("not all members of relation " + relation + " were defined."
+						+ " Destination sign rendering is omited for this relation.");
+				continue;
+			}
+
+			//get facing direction
+
+			boolean mustBeInverted = false;
+
+			//'from' member is a way
+			fromSegment = getAdjacentSegment(from, intersection);
+
+			if (fromSegment != null) {
+				if (fromSegment.getEndNode().equals(intersection)) {
+					mustBeInverted = true;
+				}
+			} else {
+				System.err.println("Way " + from + " is not connected to intersection " + intersection);
+				continue;
+			}
+
+			VectorXZ facingDir = fromSegment.getDirection();
+
+			//if the segment is facing towards the intersection, invert its direction vector
+			if (mustBeInverted)
+				facingDir = facingDir.invert();
+
+			direction = facingDir.angle();
+
+			//'to' member is also a way
+			toSegment = getAdjacentSegment(to, intersection);
+
+			if (toSegment == null) {
+				System.err
+						.println("Way " + to + " is not connected to intersection " + intersection + ". Returning");
+				continue;
+			}
+
+			//explicit direction definition overwrites from-derived facing direction
+			if (node.getTags().containsKey("direction")) {
+				direction = parseDirection(node.getTags(), PI);
+			}
+
+			//get the other ends of the segments
+			MapNode otherToSegmentNode = toSegment.getOtherNode(intersection);
+			MapNode otherFromSegmentNode = fromSegment.getOtherNode(intersection);
+
+			boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(),
+					intersection.getPos());
+
+			if (isRightOf) {
+				pointingDirection = "RIGHT";
+			} else {
+				pointingDirection = "LEFT";
+			}
+
+			TrafficSignIdentifier identifier = new TrafficSignIdentifier(null,
+					"DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_" + pointingDirection.toUpperCase());
+
+			TrafficSignType type = TrafficSignType.fromConfig(identifier, config);
+			if (type == null) { type = TrafficSignType.blankSign(); }
+
+			Material material = type.material.withPlaceholdersFilledIn(map, relation.getTags());
+
+			//set material background color
+			material = material.withColor(backgroundColor);
+
+			//set material text color
+			material = material.withTextColor(textColor, 1);
+
+			signs.add(new TrafficSignModel(material, type.defaultNumPosts, type.defaultHeight));
+
+		}
+
+		TrafficSignGroup group = new TrafficSignGroup(node, config);
+		group.signs = signs;
+		group.position = node.getPos();
+		group.direction = direction;
+
+		node.addRepresentation(group);
+
 	}
 
 	@Override
@@ -450,9 +646,10 @@ public class TrafficSignModule extends AbstractModule {
 
 		String signsOnWaysState = config.getString("deduceTrafficSignsFromWayTags", "yes");
 
-		/* if sign is a destination sign */
+		/* if node is the "sign" member of at least one destination_sign relation */
 
-		if (!node.getMemberships().isEmpty()) {
+		if (node.getMemberships().stream().anyMatch(it -> "sign".equals(it.getRole())
+				&& it.getRelation().getTags().contains("type", "destination_sign"))) {
 			createDestinationSign(node);
 		}
 
@@ -481,35 +678,6 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 	/**
-	 * Prepare a {@link TrafficSignTypeInstance} object to (usually) be added in a {@link TrafficSignModel}
-	 */
-	private TrafficSignTypeInstance configureSignTypeInstance(TrafficSignIdentifier signId, TagSet tagsOfElement) {
-
-		/* prepare map with subtype and/or brackettext values */
-
-		Map<String, String> map = new HashMap<>();
-
-		if (signId.bracketText != null) {
-			map.put("traffic_sign.brackettext", signId.bracketText);
-		}
-		if (signId.subType() != null) {
-			map.put("traffic_sign.subtype", signId.subType());
-		}
-
-		/* load information about this type of sign from the configuration */
-
-		TrafficSignType type = TrafficSignType.fromConfig(signId, config);
-		if (type == null) { type = TrafficSignType.blankSign(); }
-
-		/* build the model */
-
-		return new TrafficSignTypeInstance(
-				type.material.withPlaceholdersFilledIn(map, tagsOfElement),
-				type.defaultNumPosts, type.defaultHeight);
-
-	}
-
-	/**
 	 * Finds the junction closest to {@code node}.
 	 * The junction must be reachable by traveling forward or backward on the road {@code node} is part of.
 	 * A node with 3 or more roads connected to it is considered a junction.
@@ -517,7 +685,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * @param node  must not be a junction itself; != null
 	 * @returns  the node representing the closest junction, or null if none was found
 	 */
-	public static @Nullable MapNode findClosestJunction(MapNode node) {
+	static @Nullable MapNode findClosestJunction(MapNode node) {
 
 		if (getConnectedRoads(node, false).size() > 2) {
 			throw new IllegalArgumentException("Node " + node + " itself is a junction");
@@ -568,7 +736,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * is the {@code intersection} . Returns the found segment,
 	 * null if not found.
 	 */
-	public static MapWaySegment getAdjacentSegment(MapWay way, MapNode intersection) {
+	private static MapWaySegment getAdjacentSegment(MapWay way, MapNode intersection) {
 
 		List<MapWaySegment> waySegments = way.getWaySegments(); //get the way's segments
 
@@ -582,495 +750,206 @@ public class TrafficSignModule extends AbstractModule {
 		return null;
 	}
 
-	private final class DestinationSign extends NoOutlineNodeWorldObject implements Renderable {
 
-		//relation attributes
-		private Color backgroundColor;
-		private Color textColor;
+	/**
+	 * Check if the top (bottom) of the given {@code way} is connected
+	 * to another way that contains the same key-value tag. Applicable to
+	 * traffic sign mapping cases where signs must be rendered both at
+	 * the beginning and the end of the way they apply to
+	 *
+	 * @param topOrBottom
+	 * A boolean value indicating whether to check the
+	 * beginning or end of the {@code way}. True for beginning, false for end.
+	 */
+	private static boolean adjacentWayContains(boolean topOrBottom, MapWay way, String key, String value) {
 
-		//calculated value
-		private double rotation;
+		//decide whether to check beginning or end of the way
+		int index = 0;
+		MapNode wayNode;
 
-		private MapRelation relation;
+		if (!topOrBottom) {
 
-		private ArrayList<TrafficSignTypeInstance> signInstances = new ArrayList<>();
-		private double postRadius;
+			//check the last node of the last segment
 
-		public DestinationSign(MapNode node) {
+			index = way.getWaySegments().size() - 1;
 
-			super(node);
+			wayNode = way.getWaySegments().get(index).getEndNode();
 
-			//default values
-			this.backgroundColor = Color.WHITE;
-			this.textColor = Color.BLACK;
-			this.postRadius = config.getDouble("standardPoleRadius", 0.05);
+		} else {
 
-			determineDestinationSignMaterial();
+			//check the first node of the first segment
+
+			wayNode = way.getWaySegments().get(index).getStartNode();
 		}
 
-		private void determineDestinationSignMaterial() {
+		//if the node is also part of another way
+		if (wayNode.getConnectedSegments().size() == 2) {
 
-			//collection with the relations this node is part of
-			Collection<Membership> membList = node.getMemberships();
+			for (MapWaySegment segment : wayNode.getConnectedWaySegments()) {
 
-			for (Membership m : membList) {
+				//if current segment is part of this other way
+				if (!segment.getWay().equals(way)) {
 
-				String pointingDirection;
+					//check if this other way also contains the key-value pair
+					MapWay nextWay = segment.getWay();
 
-				//relation attributes
-				MapWay from = null;
-				MapWay to = null;
-				MapNode intersection = null;
-				String destination;
-				String distance;
-				String arrowColour;
-
-				MapWaySegment toSegment = null;
-				MapWaySegment fromSegment = null;
-
-				this.relation = m.getRelation();
-
-				destination = relation.getTags().getValue("destination");
-				if (destination == null) {
-					System.err.println(
-							"Destination can not be null. Destination sign rendering ommited for relation " + relation);
-					continue;
-				}
-				distance = relation.getTags().getValue("distance");
-
-				//parse background color
-				if (relation.getTags().getValue("colour:back") != null) {
-
-					Field field;
-
-					try {
-						field = Color.class.getField(relation.getTags().getValue("colour:back"));
-						this.backgroundColor = (Color) field.get(null);
-
-					} catch (Exception e) {
-						e.printStackTrace();
+					if (nextWay.getTags().contains(key, value)) {
+						return true;
+					} else {
+						return false;
 					}
 				}
-
-				//parse text color
-				if (relation.getTags().getValue("colour:text") != null) {
-
-					Field field;
-
-					try {
-						field = Color.class.getField(relation.getTags().getValue("colour:text"));
-						this.textColor = (Color) field.get(null);
-
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-
-				arrowColour = relation.getTags().getValue("colour:arrow");
-				if (arrowColour == null)
-					arrowColour = "BLACK";
-
-				//map to use in configureMaterial
-				HashMap<String, String> map = new HashMap<>();
-
-				map.put("destination", destination);
-				if (distance != null)
-					map.put("distance", distance);
-
-				//List to hold all "from" members of the relation (if multiple)
-				List<MapWay> fromMembers = new ArrayList<>();
-
-				//variable to avoid calculating 'from' using vector from "sign" to "intersection"
-				//if fromMembers size is 0 because of not acceptable mapping
-				boolean wrongFrom = false;
-
-				for (Membership member : relation.getMemberships()) {
-
-					if (member.getRole().equals("from")) {
-
-						if (member.getElement() instanceof MapWay) {
-							fromMembers.add((MapWay) member.getElement());
-						} else {
-							System.err.println("'from' member of relation " + this.relation + " is not a way."
-									+ " It is not being considered for rendering this relation's destination sign");
-							wrongFrom = true;
-							continue;
-						}
-
-					} else if (member.getRole().equals("to")) {
-
-						if (member.getElement() instanceof MapWay) {
-							to = (MapWay) member.getElement();
-						} else {
-							System.err.println("'to' member of relation " + this.relation + " is not a way."
-									+ " It is not being considered for rendering this relation's destination sign");
-							continue;
-						}
-
-					} else if (member.getRole().equals("intersection")) {
-
-						if (!(member.getElement() instanceof MapNode)) {
-							System.err.println("'intersection' member of relation " + this.relation + " is not a node."
-									+ " It is not being considered for rendering this relation's destination sign");
-							continue;
-						}
-
-						intersection = (MapNode) member.getElement();
-					}
-				}
-
-				//check intersection first as it is being used in 'from' calculation below
-				if (intersection == null) {
-					System.err.println("Member 'intersection' was not defined in relation " + relation +
-							". Destination sign rendering is omited for this relation.");
-					continue;
-				}
-
-				/*
-				 * if there are multiple "from" members or none at all,
-				 * use the vector from "sign" to "intersection" instead
-				 */
-
-				if (fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
-					List<MapNode> signAndIntersection = asList(
-							node,
-							intersection);
-
-					//create a new MapWay instance from sign node to intersection node
-					MapWay signToIntersection = new MapWay(0, TagSet.of(), signAndIntersection);
-					from = signToIntersection;
-
-				} else if (fromMembers.size() == 1) {
-
-					from = fromMembers.get(0);
-				}
-
-				//check if the rest of the "vital" relation members where defined
-				if (from == null || to == null) {
-					System.err.println("not all members of relation " + relation + " were defined."
-							+ " Destination sign rendering is omited for this relation.");
-					continue;
-				}
-
-				//get facing direction
-
-				boolean mustBeInverted = false;
-
-				//'from' member is a way
-				fromSegment = getAdjacentSegment(from, intersection);
-
-				if (fromSegment != null) {
-					if (fromSegment.getEndNode().equals(intersection)) {
-						mustBeInverted = true;
-					}
-				} else {
-					System.err.println("Way " + from + " is not connected to intersection " + intersection);
-					continue;
-				}
-
-				VectorXZ facingDir = fromSegment.getDirection();
-
-				//if the segment is facing towards the intersection, invert its direction vector
-				if (mustBeInverted)
-					facingDir = facingDir.invert();
-
-				this.rotation = facingDir.angle();
-
-				//'to' member is also a way
-				toSegment = getAdjacentSegment(to, intersection);
-
-				if (toSegment == null) {
-					System.err
-							.println("Way " + to + " is not connected to intersection " + intersection + ". Returning");
-					continue;
-				}
-
-				//explicit direction definition overwrites from-derived facing direction
-				if (node.getTags().containsKey("direction")) {
-
-					this.rotation = parseDirection(node.getTags(), PI);
-				}
-
-				//get the other ends of the segments
-				MapNode otherToSegmentNode = toSegment.getOtherNode(intersection);
-				MapNode otherFromSegmentNode = fromSegment.getOtherNode(intersection);
-
-				boolean isRightOf = GeometryUtil.isRightOf(otherToSegmentNode.getPos(), otherFromSegmentNode.getPos(),
-						intersection.getPos());
-
-				if (isRightOf) {
-					pointingDirection = "RIGHT";
-				} else {
-					pointingDirection = "LEFT";
-				}
-
-				TrafficSignIdentifier identifier = new TrafficSignIdentifier(null,
-						"DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_" + pointingDirection.toUpperCase());
-
-				TrafficSignType type = TrafficSignType.fromConfig(identifier, config);
-				if (type == null) { type = TrafficSignType.blankSign(); }
-
-				Material material = type.material.withPlaceholdersFilledIn(map, relation.getTags());
-
-				//set material background color
-				material = material.withColor(this.backgroundColor);
-
-				//set material text color
-				material = material.withTextColor(this.textColor, 1);
-
-				TrafficSignTypeInstance signInstance = new TrafficSignTypeInstance(material,
-						type.defaultNumPosts, type.defaultHeight);
-				signInstances.add(signInstance);
-
 			}
 		}
 
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
+		return false;
+	}
+
+	/**
+	 * calculates the position of a traffic sign
+	 * based on the {@code side} of the road it is supposed to be and the width of the road
+	 */
+	private static VectorXZ calculateSignPosition(MapNode node, MapWaySegment segment, boolean side, String key, boolean isNode) {
+
+		//if way is not a road
+		if (!RoadModule.isRoad(segment.getTags())) {
+			return node.getPos();
 		}
 
-		@Override
-		public void renderTo(Target target) {
+		//get the rendered segment's width
+		Road r = (Road) segment.getPrimaryRepresentation();
 
-			/* get basic parameters */
+		double roadWidth = r.getWidth();
 
-			if (signInstances.size() == 0)
-				return;
+		//rightNormal() vector will always be orthogonal to the segment, no matter its direction,
+		//so we use that to place the signs to the left/right of the way
+		VectorXZ rightNormal = segment.getDirection().rightNormal();
 
-			double height = parseHeight(node.getTags(), (float) signInstances.get(0).defaultHeight);
+		/*
+		 * Explicit side tag overwrites all. Applies only to sign mapped on way nodes
+		 */
+		if (node.getTags().containsKey("side") && isNode) {
+			if (node.getTags().getValue("side").equals("right")) {
+				return node.getPos().add(rightNormal.mult(roadWidth));
+			} else if (node.getTags().getValue("side").equals("left")) {
+				return node.getPos().add(rightNormal.mult(-roadWidth));
+			}
+		}
 
-			double[] signHeights = new double[signInstances.size()];
-			double[] signWidths = new double[signInstances.size()];
+		if (side) {
 
-			for (int sign = 0; sign < signInstances.size(); sign++) {
-
-				TextureData textureData = null;
-
-				if (signInstances.get(sign).material.getNumTextureLayers() != 0) {
-					textureData = signInstances.get(sign).material.getTextureLayers().get(0).baseColorTexture;
-				}
-
-				if (textureData == null) {
-					signHeights[sign] = 0.6;
-					signWidths[sign] = 0.6;
-				} else {
-					signHeights[sign] = textureData.height;
-					signWidths[sign] = textureData.width;
-				}
-
+			if (key.contains("forward")) {
+				return node.getPos().add(rightNormal.mult(roadWidth));
+			} else {
+				//if backwards
+				return node.getPos().add(rightNormal.mult(-roadWidth));
 			}
 
-			/* position the post(s) */
+		} else {
 
-			int numPosts = signInstances.get(0).numPosts;
-
-			List<VectorXYZ> positions = new ArrayList<>(numPosts);
-
-			for (int i = 0; i < numPosts; i++) {
-				double relativePosition = 0.5 - (i + 1) / (double) (numPosts + 1);
-				positions.add(getBase().add(X_UNIT.mult(relativePosition * signWidths[0])));
+			if (key.contains("forward")) {
+				return node.getPos().add(rightNormal.mult(-roadWidth));
+			} else {
+				return node.getPos().add(rightNormal.mult(roadWidth));
 			}
 
-			/* create the front and back side of the sign */
-
-			List<List<VectorXYZ>> signGeometries = new ArrayList<>();
-
-			double distanceBetweenSigns = 0.1;
-			double upperHeight = height;
-
-			for (int sign = 0; sign < signInstances.size(); sign++) {
-
-				double signHeight = signHeights[sign];
-				double signWidth = signWidths[sign];
-
-				List<VectorXYZ> vs = asList(
-						getBase().add(+signWidth / 2, upperHeight, postRadius),
-						getBase().add(+signWidth / 2, upperHeight - signHeight, postRadius),
-						getBase().add(-signWidth / 2, upperHeight, postRadius),
-						getBase().add(-signWidth / 2, upperHeight - signHeight, postRadius));
-
-				signGeometries.add(vs);
-
-				upperHeight -= signHeight + distanceBetweenSigns;
-			}
-
-			/* rotate the sign around the base to match the direction value */
-
-			for (List<VectorXYZ> vs : signGeometries) {
-				for (int i = 0; i < vs.size(); i++) {
-					VectorXYZ v = vs.get(i);
-					v = v.rotateVec(rotation, getBase(), VectorXYZ.Y_UNIT);
-					vs.set(i, v);
-				}
-			}
-
-			if (positions.size() > 1) { // if 1, the post is exactly on the base
-				for (int i = 0; i < positions.size(); i++) {
-					VectorXYZ v = positions.get(i);
-					v = v.rotateVec(this.rotation, getBase(), VectorXYZ.Y_UNIT);
-					positions.set(i, v);
-				}
-			}
-
-			/* render the post(s) */
-
-			for (VectorXYZ position : positions) {
-				target.drawColumn(STEEL, null, position,
-						height, postRadius, postRadius,
-						false, true);
-			}
-
-			/* render the sign (front, then back) */
-
-			for (int sign = 0; sign < signInstances.size(); sign++) {
-
-				TrafficSignTypeInstance type = signInstances.get(sign);
-				List<VectorXYZ> vs = signGeometries.get(sign);
-
-				target.drawTriangleStrip(type.material, vs,
-						texCoordLists(vs, type.material, STRIP_FIT));
-
-				vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
-
-				target.drawTriangleStrip(STEEL, vs,
-						texCoordLists(vs, STEEL, STRIP_FIT));
-
-			}
 		}
 	}
 
-	private static final class TrafficSign extends NoOutlineNodeWorldObject implements Renderable {
+	/** calculates the rotation angle of a traffic sign based on the direction of {@code segment} */
+	private static double calculateDirection(MapWaySegment segment, String key) {
 
-		private final List<TrafficSignTypeInstance> types;
-		private final Configuration config;
-		private final double postRadius;
-		private TrafficSignModel model;
+		VectorXZ wayDir = segment.getDirection();
 
-		public TrafficSign(TrafficSignModel model, Configuration config) {
-
-			super(model.node);
-
-			this.model = model;
-			this.config = config;
-			this.postRadius = config.getDouble("standardPoleRadius", 0.05);
-			this.types = model.types;
-		}
-
-		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
-		public void renderTo(Target target) {
-
-			/* get basic parameters */
-
-			double height = parseHeight(node.getTags(), (float) types.get(0).defaultHeight);
-
-			double[] signHeights = new double[types.size()];
-			double[] signWidths = new double[types.size()];
-
-			for (int sign = 0; sign < types.size(); sign++) {
-
-				TextureData textureData = null;
-
-				if (types.get(sign).material.getNumTextureLayers() != 0) {
-					textureData = types.get(sign).material.getTextureLayers().get(0).baseColorTexture;
-				}
-
-				if (textureData == null) {
-					signHeights[sign] = 0.6;
-					signWidths[sign] = 0.6;
-				} else {
-					signHeights[sign] = textureData.height;
-					signWidths[sign] = textureData.width;
-				}
-
-			}
-
-			/* position the post(s) */
-
-			int numPosts = types.get(0).numPosts;
-
-			List<VectorXYZ> positions = new ArrayList<>(numPosts);
-
-			for (int i = 0; i < numPosts; i++) {
-
-				double relativePosition = 0.5 - (i + 1) / (double) (numPosts + 1);
-
-				positions.add(model.position.xyz(getBase().getY()).add(X_UNIT.mult(relativePosition * signWidths[0])));
-			}
-
-			/* create the front and back side of the sign */
-
-			List<List<VectorXYZ>> signGeometries = new ArrayList<>();
-
-			double distanceBetweenSigns = 0.1;
-			double upperHeight = height;
-
-			for (int sign = 0; sign < types.size(); sign++) {
-
-				double signHeight = signHeights[sign];
-				double signWidth = signWidths[sign];
-
-				List<VectorXYZ> vs = asList(
-						model.position.xyz(getBase().getY()).add(+signWidth / 2, upperHeight, postRadius),
-						model.position.xyz(getBase().getY()).add(+signWidth / 2, upperHeight - signHeight, postRadius),
-						model.position.xyz(getBase().getY()).add(-signWidth / 2, upperHeight, postRadius),
-						model.position.xyz(getBase().getY()).add(-signWidth / 2, upperHeight - signHeight, postRadius));
-
-				signGeometries.add(vs);
-
-				upperHeight -= signHeight + distanceBetweenSigns;
-			}
-
-			/* rotate the sign around the base to match the direction */
-
-			for (List<VectorXYZ> vs : signGeometries) {
-
-				for (int i = 0; i < vs.size(); i++) {
-					VectorXYZ v = vs.get(i);
-					v = v.rotateVec(model.direction, model.position.xyz(getBase().getY()), VectorXYZ.Y_UNIT);
-					vs.set(i, v);
-				}
-
-			}
-
-			if (positions.size() > 1) { // if 1, the post is exactly on the base
-				for (int i = 0; i < positions.size(); i++) {
-					VectorXYZ v = positions.get(i);
-					v = v.rotateVec(model.direction, model.position.xyz(getBase().getY()), VectorXYZ.Y_UNIT);
-					positions.set(i, v);
-				}
-			}
-
-			/* render the post(s) */
-
-			for (VectorXYZ position : positions) {
-				target.drawColumn(STEEL, null, position,
-						height, postRadius, postRadius,
-						false, true);
-			}
-
-			/* render the sign (front, then back) */
-
-			for (int sign = 0; sign < types.size(); sign++) {
-
-				TrafficSignTypeInstance type = types.get(sign);
-
-				List<VectorXYZ> vs = signGeometries.get(sign);
-
-				target.drawTriangleStrip(type.material, vs,
-						texCoordLists(vs, type.material, STRIP_FIT));
-
-				vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
-
-				target.drawTriangleStrip(STEEL, vs,
-						texCoordLists(vs, STEEL, STRIP_FIT));
-
-			}
+		if (key.contains("forward")) {
+			return wayDir.invert().angle();
+		} else {
+			return wayDir.angle();
 		}
 	}
+
+	/**
+	 * Same as {@link #calculateDirection(MapWaySegment, String)} but also parses the node's
+	 * tags for the direction specification and takes into account the
+	 * highway=give_way/stop special case. To be used on nodes that are part of ways.
+	 */
+	private static double calculateDirection(MapNode node) {
+
+		if (node.getConnectedWaySegments().isEmpty()) {
+			System.err.println("Node " + node + " is not part of a way.");
+			return PI;
+		}
+
+		TagSet nodeTags = node.getTags();
+
+		//Direction the way the node is part of, is facing
+		VectorXZ wayDir = node.getConnectedWaySegments().get(0).getDirection();
+
+		if (nodeTags.containsKey("direction")) {
+
+			if (!nodeTags.containsAny(asList("direction"), asList("forward", "backward"))) {
+
+				//get direction mapped as angle or cardinal direction
+				return parseDirection(nodeTags, PI);
+
+			} else {
+
+				if (nodeTags.getValue("direction").equals("backward")) {
+
+					return wayDir.angle();
+
+				}
+
+			}
+
+		} else if (nodeTags.containsKey("traffic_sign:forward") || nodeTags.containsKey("traffic_sign:backward")) {
+
+			String regex = "traffic_sign:(forward|backward)";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher;
+
+			for (Tag tag : nodeTags) {
+
+				matcher = pattern.matcher(tag.key);
+
+				if (matcher.matches()) {
+
+					if (matcher.group(1).equals("backward")) {
+						return wayDir.angle();
+					}
+				}
+			}
+		} else if (nodeTags.containsAny(asList("highway"), asList("give_way", "stop"))) {
+
+			/*
+			 * if no direction is specified with any of the above cases and a
+			 * sign of type highway=give_way/stop is mapped, calculate model's
+			 * direction based on the position of the junction closest to the node
+			 */
+
+			if (RoadModule.getConnectedRoads(node, false).size() <= 2
+					&& RoadModule.getConnectedRoads(node, false).size() > 0) {
+
+				MapNode closestJunction = TrafficSignModule.findClosestJunction(node);
+
+				if (closestJunction != null) {
+					return (node.getPos().subtract(closestJunction.getPos())).normalize().angle();
+				} else {
+					return wayDir.angle();
+				}
+			}
+		}
+
+		/*
+		 * Either traffic_sign:forward or direction=forward is specified or no forward/backward is specified at all.
+		 * traffic_sign:forward affects vehicles moving in the same direction as
+		 * the way. Therefore they must face the sign so the way's direction is inverted.
+		 * Vehicles facing the sign is the most common case so it is set as the default case
+		 * as well
+		 */
+		wayDir = wayDir.invert();
+		return wayDir.angle();
+
+	}
+
 }
