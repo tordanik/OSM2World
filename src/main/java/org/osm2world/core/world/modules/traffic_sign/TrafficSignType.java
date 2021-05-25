@@ -19,7 +19,7 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
  */
 public class TrafficSignType {
 
-	public String name;
+	public final String name;
 
 	public final Material material;
 	public final int defaultNumPosts;
@@ -41,25 +41,32 @@ public class TrafficSignType {
 	 * Parses a {@link Configuration} for the traffic sign-specific keys
 	 * trafficSign_NAME_numPosts|defaultHeight|material
 	 *
-	 * @param signName  the sign name (with country prefix)
 	 * @return  a {@link TrafficSignType} with the the parsed values; null if the type does not exist or is invalid
 	 */
-	public static @Nullable TrafficSignType fromConfig(String signName, Configuration config) {
+	public static @Nullable TrafficSignType fromConfig(TrafficSignIdentifier sign, Configuration config) {
+		TrafficSignType result = fromConfig(sign.configKey(), config);
+		if (result == null) {
+			result = fromConfig(sign.configKeyWithoutSubType(), config);
+		}
+		return result;
+	}
 
-		String keyPrefix = "trafficSign_" + signName;
+	private static @Nullable TrafficSignType fromConfig(String configKey, Configuration config) {
+
+		String keyPrefix = "trafficSign_" + configKey;
 
 		int numPosts = config.getInt(keyPrefix + "_numPosts", 1);
 
 		double defaultHeight = config.getDouble(keyPrefix + "_defaultHeight",
 				config.getFloat("defaultTrafficSignHeight", 2));
 
-		String materialName = config.getString(keyPrefix + "_material", signName).toUpperCase();
+		String materialName = config.getString(keyPrefix + "_material", configKey).toUpperCase();
 		Material material = getMaterial(materialName);
 
 		if (material == null) {
 			return null;
 		} else {
-			return new TrafficSignType(signName, material, numPosts, defaultHeight);
+			return new TrafficSignType(configKey, material, numPosts, defaultHeight);
 		}
 
 	}

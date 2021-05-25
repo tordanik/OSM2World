@@ -13,19 +13,15 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang.ArrayUtils;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
@@ -281,10 +277,10 @@ public class TrafficSignModule extends AbstractModule {
 						sign = countryAndSigns[1];
 
 					} else {
-						country = "";
+						country = null;
 					}
 
-					attributes = configureSignTypeInstance(country, sign, wayTags);
+					attributes = configureSignTypeInstance(new TrafficSignIdentifier(country, sign), wayTags);
 
 					types.add(attributes);
 
@@ -310,10 +306,10 @@ public class TrafficSignModule extends AbstractModule {
 						sign = countryAndSigns[1];
 
 					} else {
-						country = "";
+						country = null;
 					}
 
-					attributes = configureSignTypeInstance(country, sign, wayTags);
+					attributes = configureSignTypeInstance(new TrafficSignIdentifier(country, sign), wayTags);
 
 					typesForSecondSign.add(attributes);
 				}
@@ -353,25 +349,14 @@ public class TrafficSignModule extends AbstractModule {
 			return;
 		}
 
-		String[] signs = {};
-		String country = "";
 		String tagValue = "";
-
-		//a TrafficSignType instance to hold the sign's attributes
-		TrafficSignTypeInstance attributes;
-
-		// Value to hold the angle the sign is facing
-		Double direction;
 
 		//The (potential) signs to be rendered
 		TrafficSignModel firstModel = null;
 		TrafficSignModel secondModel = null;
 
-		//this variable is used because isInHighway needs to be called more than once
-		boolean inHighway = isInHighway(node);
-
 		//if node is part of a way
-		if (inHighway) {
+		if (isInHighway(node)) {
 
 			String tempKey = "";
 
@@ -423,60 +408,28 @@ public class TrafficSignModule extends AbstractModule {
 
 			firstModel = new TrafficSignModel(node);
 			firstModel.position = node.getPos();
+			firstModel.direction = parseDirection(node.getTags(), PI);
 
-			direction = parseDirection(node.getTags(), PI);
-			firstModel.direction = direction;
 		}
 
-		/* split the traffic sign value into its components */
+		/* get the list of traffic signs from the tag's value */
 
-		if (!tagValue.isEmpty()) {
+		List<TrafficSignIdentifier> signs = TrafficSignIdentifier.parseTrafficSignValue(tagValue);
 
-			if (tagValue.contains(":")) {
+		/* handle the special cases highway=give_way/stop */
 
-				//if country prefix is used
-				String[] countryAndSigns = tagValue.split(":", 2);
-				if (countryAndSigns.length != 2)
-					return;
-				country = countryAndSigns[0];
-				signs = countryAndSigns[1].split("[;,]");
+		String highwayValue = node.getTags().getValue("highway");
 
-			} else {
-
-				//human-readable value
-				signs = tagValue.split("[;,]");
-			}
-		}
-
-		//handle the special cases highway=give_way/stop
-		String[] specialCaseSigns = null;
-
-		if (node.getTags().containsAny(asList("highway"), asList("give_way", "stop"))) {
-
-			String value = node.getTags().getValue("highway");
-
-			//check if value is already contained in signs[]
-			boolean contains = Arrays.stream(signs).anyMatch(value::equals);
-
-			if (!contains) {
-
-				specialCaseSigns = new String[] { value };
-
-				//concatenate the two arrays
-				signs = (String[]) ArrayUtils.addAll(signs, specialCaseSigns);
-			}
-		}
-
-		List<TrafficSignTypeInstance> types = new ArrayList<>(signs.length);
-
-		for (String sign : signs) {
-
-			attributes = configureSignTypeInstance(country, sign, node.getTags());
-
-			types.add(attributes);
+		if (asList("give_way", "stop").contains(highwayValue)
+				&& !signs.contains(new TrafficSignIdentifier(null, highwayValue))) {
+			signs = new ArrayList<>(signs);
+			signs.add(new TrafficSignIdentifier(null, highwayValue));
 		}
 
 		/* create a visual representation for the traffic sign */
+
+		List<TrafficSignTypeInstance> types = new ArrayList<>(signs.size());
+		signs.forEach(sign -> types.add(configureSignTypeInstance(sign, node.getTags())));
 
 		if (types.size() > 0) {
 
@@ -530,67 +483,30 @@ public class TrafficSignModule extends AbstractModule {
 	/**
 	 * Prepare a {@link TrafficSignTypeInstance} object to (usually) be added in a {@link TrafficSignModel}
 	 */
-	private TrafficSignTypeInstance configureSignTypeInstance(String country, String sign, TagSet tagsOfElement) {
+	private TrafficSignTypeInstance configureSignTypeInstance(TrafficSignIdentifier signId, TagSet tagsOfElement) {
 
-		sign = sign.trim();
-		sign = sign.replace('-', '_');
-
-		/* extract subtype and/or brackettext values */
+		/* prepare map with subtype and/or brackettext values */
 
 		Map<String, String> map = new HashMap<>();
 
-		String regex = "[A-Za-z0-9]*\\.?\\d*_?(\\d+)?[A-Za-z]*(?:\\[(.*)\\])?"; //match every traffic sign
-
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher1 = pattern.matcher(sign);
-
-		if (matcher1.matches()) {
-
-			if (matcher1.group(1) != null) {
-				map.put("traffic_sign.subtype", matcher1.group(1));
-			}
-
-			if (matcher1.group(2) != null) {
-
-				String brackettext = matcher1.group(2).replace('_', '-'); //revert the previous replacement
-				map.put("traffic_sign.brackettext", brackettext);
-
-				//cut off value to get the actual sign name
-				sign = sign.replace("[" + matcher1.group(2) + "]", "");
-			}
+		if (signId.bracketText != null) {
+			map.put("traffic_sign.brackettext", signId.bracketText);
+		}
+		if (signId.subType() != null) {
+			map.put("traffic_sign.subtype", signId.subType());
 		}
 
-		sign = sign.toUpperCase();
+		/* load information about this type of sign from the configuration */
 
-		String signName = generateSignName(country, sign);
-		TrafficSignType type = TrafficSignType.fromConfig(signName, config);
-
-		if (type == null && map.containsKey("traffic_sign.subtype")) {
-			// retry without the subtype (an example for a subtype is the "50" in "274-50")
-			sign = sign.replace("_" + matcher1.group(1), "");
-			signName = generateSignName(country, sign);
-			type = TrafficSignType.fromConfig(signName, config);
-		}
-
+		TrafficSignType type = TrafficSignType.fromConfig(signId, config);
 		if (type == null) { type = TrafficSignType.blankSign(); }
+
+		/* build the model */
 
 		return new TrafficSignTypeInstance(
 				type.material.withPlaceholdersFilledIn(map, tagsOfElement),
 				type.defaultNumPosts, type.defaultHeight);
 
-	}
-
-	private String generateSignName(String country, String sign) {
-
-		String signName = "";
-
-		if (!country.isEmpty()) {
-			signName = "SIGN_" + country + "_" + sign;
-		} else {
-			signName = "SIGN_" + sign;
-		}
-
-		return signName;
 	}
 
 	/**
@@ -888,10 +804,10 @@ public class TrafficSignModule extends AbstractModule {
 					pointingDirection = "LEFT";
 				}
 
-				String signName = "SIGN_DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_"
-						+ pointingDirection.toUpperCase();
+				TrafficSignIdentifier identifier = new TrafficSignIdentifier(null,
+						"DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_" + pointingDirection.toUpperCase());
 
-				TrafficSignType type = TrafficSignType.fromConfig(signName, config);
+				TrafficSignType type = TrafficSignType.fromConfig(identifier, config);
 				if (type == null) { type = TrafficSignType.blankSign(); }
 
 				Material material = type.material.withPlaceholdersFilledIn(map, relation.getTags());
