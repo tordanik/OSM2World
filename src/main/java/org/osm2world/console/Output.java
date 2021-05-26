@@ -20,6 +20,7 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_elevation.creation.DiffusionEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
@@ -118,7 +119,7 @@ public final class Output {
 		} else if ("SimpleEleConstraintEnforcer".equals(enforcerType)) {
 			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
 		}else if ("DiffusionEleConstraintEnforcer".equals(enforcerType)) {
-			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
+			cf.setEleConstraintEnforcerFactory(DiffusionEleConstraintEnforcer::new);
 		}
 
 		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
