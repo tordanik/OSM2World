@@ -117,6 +117,8 @@ public final class Output {
 			cf.setEleConstraintEnforcerFactory(NoneEleConstraintEnforcer::new);
 		} else if ("SimpleEleConstraintEnforcer".equals(enforcerType)) {
 			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
+		}else if ("DiffusionEleConstraintEnforcer".equals(enforcerType)) {
+			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
 		}
 
 		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
