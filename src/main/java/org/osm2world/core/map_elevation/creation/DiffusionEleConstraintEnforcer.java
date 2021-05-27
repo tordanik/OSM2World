@@ -154,7 +154,6 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	@Override
 	public void requireVerticalDistance(ConstraintType type, double distance, EleConnector upper, EleConnector lower) {
 		// TODO Auto-generated method stub
-		addConnection(upper, lower);
 
 	}
 
@@ -162,26 +161,16 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	public void requireVerticalDistance(ConstraintType type, double distance, EleConnector upper, EleConnector base1,
 			EleConnector base2) {
 		// TODO Auto-generated method stub
-		addConnection(upper, base1);
-		addConnection(upper, base2);
-
 	}
 
 	@Override
 	public void requireIncline(ConstraintType type, double incline, List<EleConnector> cs) {
 		// TODO Auto-generated method stub
-		connectedCount++;
-		for (int i = 0; i < cs.size() - 1; i++) {
-			addConnection(cs.get(i), cs.get(i + 1));
-		}
 	}
 
 	@Override
 	public void requireSmoothness(EleConnector from, EleConnector via, EleConnector to) {
 		// TODO Auto-generated method stub
-		connectedCount++;
-		addConnection(from, via);
-		addConnection(via, to);
 	}
 
 	@Override
@@ -205,25 +194,11 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 
 		}
-		/*
-		 * for (int i = 0; i < roadConnections.size(); i++) { RoadConnection con =
-		 * roadConnections.get(i); for (int j = 0; j < con.connectors.size(); j++) {
-		 * EleConnector me = con.connectors.get(j); if
-		 * (!roadConnectedTo.containsKey(me)) { roadConnectedTo.put(me, new
-		 * ArrayList<EleConnector>()); } List<EleConnector> targetList =
-		 * roadConnectedTo.get(me); for (int k = 0; k < con.connectors.size(); k++) { if
-		 * (j != k) { EleConnector connector=con.connectors.get(k);
-		 * if(targetList.contains(connector)){ targetList.add(connector); } } }
-		 * System.out.println(targetList.size()); } System.out.println(con); }
-		 */
-		/*
-		 * for (Map.Entry<EleConnector, List<EleConnector>> entry :
-		 * roadConnectedTo.entrySet()) { System.out.println(entry.getValue()); }
-		 */
-
 		for (EleConnector c : connectors) {
 			// TODO use clearing
-
+			if(c.reference!=null){
+				System.out.println(c.reference.getClass().getName());
+			}
 			switch (c.groundState) {
 				case ABOVE:
 					c.setPosXYZ(c.getPosXYZ().addY(5));
@@ -237,60 +212,6 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 			heightMap.put(c, c.getPosXYZ().y);
 		}
-		// integrator code
-		double dt = 0.1;// dt
-		for (int step = 0; step < 100; step++) {
-			for (Map.Entry<EleConnector, List<EleConnector>> entry : roadConnectedTo.entrySet()) {
-				EleConnector source = entry.getKey();
-				if (source == null) {
-					continue;
-				}
-				double dhdt = 0;// dh/dt
-				double myheight = heightMap.get(source);
-				List<EleConnector> others = entry.getValue();
-				List<Double> coupling = new ArrayList<Double>();
-				for (int i = 0; i < others.size(); i++) {
-					EleConnector other = others.get(i);
-					double cc = 0;
-					coupling.add(cc);
-					if (other == null) {
-						continue;
-					}
-					double distance = other.pos.distanceTo(source.pos);
-					// diverge avoidance
-					if (distance < 0.3) {
-						distance = 0.3;
-					}
-					cc = 1 / distance;
-					coupling.set(0, cc);
-					dhdt += (heightMap.get(other) - myheight) / others.size();
-				}
-				source.setPosXYZ(source.getPosXYZ().addY(dhdt * dt));
-			}
-			// apply constant temperature boundary
-			for (EleConnector c : connectors) {
-				// TODO use clearing
-
-				switch (c.groundState) {
-					case ABOVE: {
-						VectorXYZ coord = c.getPosXYZ();
-						c.setPosXYZ(new VectorXYZ(coord.x, 5, coord.z));
-						// System.out.println("SimpleEleConstraintEnforcer:ABOVE");
-						break;
-					}
-					case BELOW: {
-						VectorXYZ coord = c.getPosXYZ();
-						c.setPosXYZ(new VectorXYZ(coord.x, -5, coord.z));
-						// System.out.println("SimpleEleConstraintEnforcer:BELOW");
-						break;
-					}
-					default: // stay at ground elevation
-				}
-				heightMap.put(c, c.getPosXYZ().y);
-			}
-		}
-
-		// System.out.print("connectedCount:"+connectedCount);
 	}
 
 	/**
