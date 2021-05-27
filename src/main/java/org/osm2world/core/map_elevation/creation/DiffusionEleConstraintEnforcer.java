@@ -11,8 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.modules.RoadModule;
+import org.osm2world.core.world.modules.RoadModule.Road;
 
 /**
  * enforcer implementation that ignores many of the constraints, but is much
@@ -196,8 +200,16 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		}
 		for (EleConnector c : connectors) {
 			// TODO use clearing
-			if(c.reference!=null){
+			if (c.reference != null) {
 				System.out.println(c.reference.getClass().getName());
+				if (c.reference instanceof MapNode) {
+					MapNode mn = (MapNode) c.reference;
+					List<Road> roads=RoadModule.getConnectedRoads(mn,true);
+					roads.forEach((road)->{
+						System.out.println(road);
+					});
+				}
+
 			}
 			switch (c.groundState) {
 				case ABOVE:
