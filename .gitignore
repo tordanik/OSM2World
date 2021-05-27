@@ -1,4 +1,5 @@
 bin
+test_diffusion.sh
 build
 .
 ..

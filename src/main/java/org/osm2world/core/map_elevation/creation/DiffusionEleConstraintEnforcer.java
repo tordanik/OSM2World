@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.math.VectorXYZ;
 
 /**
  * enforcer implementation that ignores many of the constraints, but is much
@@ -21,7 +22,8 @@ import org.osm2world.core.map_elevation.data.EleConnector;
  * therefore a compromise between the {@link NoneEleConstraintEnforcer} and a
  * full implementation.
  */
-
+// implemented by spinachpasta
+// This enforcer configures elavation using Diffusion equation (Heat equation)
 public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforcer {
 
 	private Collection<EleConnector> connectors = new ArrayList<EleConnector>();
@@ -32,7 +34,29 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	 */
 	private Map<EleConnector, StiffConnectorSet> stiffSetMap = new HashMap<EleConnector, StiffConnectorSet>();
 
-	int connectedCount=0;
+	int connectedCount = 0;
+
+	private Map<EleConnector, List<EleConnector>> roadConnectedTo = new HashMap<EleConnector, List<EleConnector>>();
+	private Map<EleConnector, Double> heightMap = new HashMap<EleConnector, Double>();
+
+	private void addConnection(EleConnector from, EleConnector to) {
+		EleConnector a = from;
+		EleConnector b = to;
+		if (a == b) {
+			return;
+		}
+		for (int i = 0; i < 2; i++) {
+			roadConnectedTo.putIfAbsent(a, new ArrayList<EleConnector>());
+			List<EleConnector> connectors = roadConnectedTo.get(a);
+			if (!connectors.contains(b)) {
+				connectors.add(b);
+			}
+			// swap a and b
+			EleConnector temp = a;
+			a = b;
+			b = temp;
+		}
+	}
 
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
@@ -130,6 +154,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	@Override
 	public void requireVerticalDistance(ConstraintType type, double distance, EleConnector upper, EleConnector lower) {
 		// TODO Auto-generated method stub
+		addConnection(upper, lower);
 
 	}
 
@@ -137,6 +162,8 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	public void requireVerticalDistance(ConstraintType type, double distance, EleConnector upper, EleConnector base1,
 			EleConnector base2) {
 		// TODO Auto-generated method stub
+		addConnection(upper, base1);
+		addConnection(upper, base2);
 
 	}
 
@@ -144,13 +171,17 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	public void requireIncline(ConstraintType type, double incline, List<EleConnector> cs) {
 		// TODO Auto-generated method stub
 		connectedCount++;
-
+		for (int i = 0; i < cs.size() - 1; i++) {
+			addConnection(cs.get(i), cs.get(i + 1));
+		}
 	}
 
 	@Override
 	public void requireSmoothness(EleConnector from, EleConnector via, EleConnector to) {
 		// TODO Auto-generated method stub
 		connectedCount++;
+		addConnection(from, via);
+		addConnection(via, to);
 	}
 
 	@Override
@@ -158,7 +189,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 
 		/* assign elevation to stiff sets by averaging terrain elevation */
 		// TODO what for stiff sets above the ground?
-		System.out.println("SimpleEleConstraintEnforcer:enforceConstraints");
+		System.out.println("DiffusionEleConstraintEnforcer:enforceConstraints");
 		for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
 
 			double averageEle = 0;
@@ -174,20 +205,23 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 
 		}
-
 		/*
-		 * TODO implement intended algorithm: - first assign ground ele to ON - then
-		 * assign ele for ABOVE and BELOW based on min vertical distance constraints,
-		 * and clearing
+		 * for (int i = 0; i < roadConnections.size(); i++) { RoadConnection con =
+		 * roadConnections.get(i); for (int j = 0; j < con.connectors.size(); j++) {
+		 * EleConnector me = con.connectors.get(j); if
+		 * (!roadConnectedTo.containsKey(me)) { roadConnectedTo.put(me, new
+		 * ArrayList<EleConnector>()); } List<EleConnector> targetList =
+		 * roadConnectedTo.get(me); for (int k = 0; k < con.connectors.size(); k++) { if
+		 * (j != k) { EleConnector connector=con.connectors.get(k);
+		 * if(targetList.contains(connector)){ targetList.add(connector); } } }
+		 * System.out.println(targetList.size()); } System.out.println(con); }
 		 */
-		List<String> types = new ArrayList<String>();
+		/*
+		 * for (Map.Entry<EleConnector, List<EleConnector>> entry :
+		 * roadConnectedTo.entrySet()) { System.out.println(entry.getValue()); }
+		 */
+
 		for (EleConnector c : connectors) {
-			if (c != null&&c.reference!=null) {
-				String typename = c.reference.getClass().getName();
-				if (types.contains(typename)) {
-					types.add(c.reference.getClass().getName());
-				}
-			}
 			// TODO use clearing
 
 			switch (c.groundState) {
@@ -201,13 +235,62 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					break;
 				default: // stay at ground elevation
 			}
+			heightMap.put(c, c.getPosXYZ().y);
+		}
+		// integrator code
+		double dt = 0.1;// dt
+		for (int step = 0; step < 100; step++) {
+			for (Map.Entry<EleConnector, List<EleConnector>> entry : roadConnectedTo.entrySet()) {
+				EleConnector source = entry.getKey();
+				if (source == null) {
+					continue;
+				}
+				double dhdt = 0;// dh/dt
+				double myheight = heightMap.get(source);
+				List<EleConnector> others = entry.getValue();
+				List<Double> coupling = new ArrayList<Double>();
+				for (int i = 0; i < others.size(); i++) {
+					EleConnector other = others.get(i);
+					double cc = 0;
+					coupling.add(cc);
+					if (other == null) {
+						continue;
+					}
+					double distance = other.pos.distanceTo(source.pos);
+					// diverge avoidance
+					if (distance < 0.3) {
+						distance = 0.3;
+					}
+					cc = 1 / distance;
+					coupling.set(0, cc);
+					dhdt += (heightMap.get(other) - myheight) / others.size();
+				}
+				source.setPosXYZ(source.getPosXYZ().addY(dhdt * dt));
+			}
+			// apply constant temperature boundary
+			for (EleConnector c : connectors) {
+				// TODO use clearing
 
+				switch (c.groundState) {
+					case ABOVE: {
+						VectorXYZ coord = c.getPosXYZ();
+						c.setPosXYZ(new VectorXYZ(coord.x, 5, coord.z));
+						// System.out.println("SimpleEleConstraintEnforcer:ABOVE");
+						break;
+					}
+					case BELOW: {
+						VectorXYZ coord = c.getPosXYZ();
+						c.setPosXYZ(new VectorXYZ(coord.x, -5, coord.z));
+						// System.out.println("SimpleEleConstraintEnforcer:BELOW");
+						break;
+					}
+					default: // stay at ground elevation
+				}
+				heightMap.put(c, c.getPosXYZ().y);
+			}
 		}
 
-		for (int i = 0; i < types.size(); i++) {
-			System.out.println(types.get(i));
-		}
-		//System.out.print("connectedCount:"+connectedCount);
+		// System.out.print("connectedCount:"+connectedCount);
 	}
 
 	/**
