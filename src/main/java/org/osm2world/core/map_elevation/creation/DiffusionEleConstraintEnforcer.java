@@ -41,26 +41,8 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	int connectedCount = 0;
 
 	private Map<EleConnector, List<EleConnector>> roadConnectedTo = new HashMap<EleConnector, List<EleConnector>>();
-	private Map<EleConnector, Double> heightMap = new HashMap<EleConnector, Double>();
 
-	private void addConnection(EleConnector from, EleConnector to) {
-		EleConnector a = from;
-		EleConnector b = to;
-		if (a == b) {
-			return;
-		}
-		for (int i = 0; i < 2; i++) {
-			roadConnectedTo.putIfAbsent(a, new ArrayList<EleConnector>());
-			List<EleConnector> connectors = roadConnectedTo.get(a);
-			if (!connectors.contains(b)) {
-				connectors.add(b);
-			}
-			// swap a and b
-			EleConnector temp = a;
-			a = b;
-			b = temp;
-		}
-	}
+	private Map<MapNode, EleConnector> mapNodeToEleconnector = new HashMap<MapNode, EleConnector>();
 
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
@@ -198,19 +180,39 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 
 		}
-		for (EleConnector c : connectors) {
-			// TODO use clearing
+		connectors.forEach((c) -> {
 			if (c.reference != null) {
-				System.out.println(c.reference.getClass().getName());
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
-					List<Road> roads=RoadModule.getConnectedRoads(mn,true);
-					roads.forEach((road)->{
-						System.out.println(road);
+					mapNodeToEleconnector.put(mn, c);
+				}
+			}
+		});
+		connectors.forEach((c) -> {
+			if (c.reference != null) {
+				if (c.reference instanceof MapNode) {
+					MapNode mn = (MapNode) c.reference;
+					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+					roads.forEach((road) -> {
+						//System.out.println(road);
+						road.getPrimaryMapElement().getEndNode();
+						road.getPrimaryMapElement().getStartNode();
 					});
 				}
-
 			}
+		});
+		for (EleConnector c : connectors) {
+			// TODO use clearing
+			/*
+			 * if (c.reference != null) {
+			 * System.out.println(c.reference.getClass().getName()); if (c.reference
+			 * instanceof MapNode) { MapNode mn = (MapNode) c.reference;
+			 * mapNodeToEleconnector.put(mn, c); List<Road> roads =
+			 * RoadModule.getConnectedRoads(mn, false);// requirelanes? roads.forEach((road)
+			 * -> { System.out.println(road); }); c.setPosXYZ(c.getPosXYZ().addY(30)); }
+			 * 
+			 * }
+			 */
 			switch (c.groundState) {
 				case ABOVE:
 					c.setPosXYZ(c.getPosXYZ().addY(5));
@@ -222,7 +224,6 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					break;
 				default: // stay at ground elevation
 			}
-			heightMap.put(c, c.getPosXYZ().y);
 		}
 	}
 
