@@ -194,8 +194,20 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					MapNode mn = (MapNode) c.reference;
 					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
 					roads.forEach((road) -> {
-						//System.out.println(road);
-						road.getPrimaryMapElement().getEndNode();
+						MapNode start = road.getPrimaryMapElement().getStartNode();
+						MapNode end = road.getPrimaryMapElement().getEndNode();
+						// System.out.println(road);
+						road.getPrimaryMapElement().getEndNode();// mapNodeToEleconnector
+						/*
+						 * if (road.getPrimaryMapElement().getEndNode() != mn) {
+						 * System.out.println("endnode!=reference"); }
+						 */
+						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
+							System.out.println("not contained in map");
+						}
+						// System.out.printf("start:%s end:%s reference:%s\n",
+						// road.getPrimaryMapElement().getStartNode(),
+						// road.getPrimaryMapElement().getEndNode(), mn);
 						road.getPrimaryMapElement().getStartNode();
 					});
 				}
