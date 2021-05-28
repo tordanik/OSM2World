@@ -20,7 +20,7 @@ public class WindowParameters {
 
 	static enum WindowShape {
 
-		RECTANGULAR, ROUND;
+		RECTANGLE, CIRCLE;
 
 		/**
 		 * convenient case-insensitive and exception-free alternative to valueOf
@@ -113,7 +113,7 @@ public class WindowParameters {
 		}
 
 		WindowParameters.WindowShape tempWindowShape = WindowShape.getValue(tags.getValue("window:shape"));
-		windowShape = tempWindowShape != null ? tempWindowShape : WindowShape.RECTANGULAR;
+		windowShape = tempWindowShape != null ? tempWindowShape : WindowShape.RECTANGLE;
 
 		/* frame */
 
