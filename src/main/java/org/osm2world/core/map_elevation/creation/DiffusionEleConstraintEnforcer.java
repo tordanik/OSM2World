@@ -17,6 +17,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
+import org.osm2world.core.world.modules.RoadModule.RoadConnector;
 
 /**
  * enforcer implementation that ignores many of the constraints, but is much
@@ -39,10 +40,6 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	private Map<EleConnector, StiffConnectorSet> stiffSetMap = new HashMap<EleConnector, StiffConnectorSet>();
 
 	int connectedCount = 0;
-
-	private Map<EleConnector, List<EleConnector>> roadConnectedTo = new HashMap<EleConnector, List<EleConnector>>();
-
-	private Map<MapNode, EleConnector> mapNodeToEleconnector = new HashMap<MapNode, EleConnector>();
 
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
@@ -180,15 +177,27 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 
 		}
-		connectors.forEach((c) -> {
+		List<EleConnector> roadList = new ArrayList<EleConnector>();
+		Map<EleConnector, List<EleConnector>> roadConnectedTo = new HashMap<EleConnector, List<EleConnector>>();
+
+		Map<MapNode, EleConnector> mapNodeToEleconnector = new HashMap<MapNode, EleConnector>();
+		Map<EleConnector, Double> heightMap = new HashMap<EleConnector, Double>();
+		Map<EleConnector, Double> heightMap1 = new HashMap<EleConnector, Double>();
+
+		// connectors.forEach((c) -> {
+		for (EleConnector c : connectors) {
+			heightMap.put(c, 0.0);
+			heightMap1.put(c, 0.0);
 			if (c.reference != null) {
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
 					mapNodeToEleconnector.put(mn, c);
+					roadList.add(c);
 				}
 			}
-		});
-		connectors.forEach((c) -> {
+		}
+		// connectors.forEach((c) -> {
+		for (EleConnector c : connectors) {
 			if (c.reference != null) {
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
@@ -204,39 +213,75 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						 */
 						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
 							System.out.println("not contained in map");
+							return;
 						}
+						EleConnector a = mapNodeToEleconnector.get(start);
+						EleConnector b = mapNodeToEleconnector.get(end);
+						for (int i = 0; i < 2; i++) {
+							if (roadConnectedTo.containsKey(a)) {
+								List<EleConnector> connected = roadConnectedTo.get(a);
+								if (!connected.contains(b)) {
+									connected.add(b);
+								}
+							} else {
+								List<EleConnector> connected = new ArrayList<EleConnector>();
+								connected.add(b);
+								roadConnectedTo.put(a, connected);
+							}
+							EleConnector temp = a;
+							a = b;
+							b = temp;
+						}
+
 						// System.out.printf("start:%s end:%s reference:%s\n",
 						// road.getPrimaryMapElement().getStartNode(),
 						// road.getPrimaryMapElement().getEndNode(), mn);
-						road.getPrimaryMapElement().getStartNode();
 					});
 				}
 			}
-		});
-		for (EleConnector c : connectors) {
-			// TODO use clearing
-			/*
-			 * if (c.reference != null) {
-			 * System.out.println(c.reference.getClass().getName()); if (c.reference
-			 * instanceof MapNode) { MapNode mn = (MapNode) c.reference;
-			 * mapNodeToEleconnector.put(mn, c); List<Road> roads =
-			 * RoadModule.getConnectedRoads(mn, false);// requirelanes? roads.forEach((road)
-			 * -> { System.out.println(road); }); c.setPosXYZ(c.getPosXYZ().addY(30)); }
-			 * 
-			 * }
-			 */
-			switch (c.groundState) {
-				case ABOVE:
-					c.setPosXYZ(c.getPosXYZ().addY(5));
-					// System.out.println("SimpleEleConstraintEnforcer:ABOVE");
-					break;
-				case BELOW:
-					c.setPosXYZ(c.getPosXYZ().addY(-5));
-					// System.out.println("SimpleEleConstraintEnforcer:BELOW");
-					break;
-				default: // stay at ground elevation
-			}
 		}
+		// });
+		final double dt = 0.1;
+		for (int step = 0; step < 10; step++) {
+			// heightMap:old
+			// apply boundary condition
+			// roadList.forEach((c) -> {
+			for (EleConnector c : roadList) {
+				switch (c.groundState) {
+					case ABOVE:
+						heightMap.put(c, 5.0);
+						break;
+					case BELOW:
+						heightMap.put(c, -5.0);
+						// System.out.println("SimpleEleConstraintEnforcer:BELOW");
+						break;
+					default: // stay at ground elevation
+				}
+			}
+			// heightMap1:new
+			for (EleConnector source : roadList) {
+				double dhdt = 0;
+				double sourceh = heightMap.get(source);
+				if (roadConnectedTo.containsKey(source)) {
+					for (EleConnector target : roadConnectedTo.get(source)) {
+						double targeth = heightMap.get(target);
+						dhdt += targeth - sourceh;
+					}
+				}
+				heightMap1.put(source, sourceh + dhdt * dt);
+			}
+
+			Map<EleConnector, Double> temp = heightMap;
+			heightMap = heightMap1;
+			heightMap1 = temp;
+		}
+		// roadList.forEach((c) -> {
+		for (EleConnector c : roadList) {
+			VectorXYZ xyz = c.getPosXYZ();
+			c.setPosXYZ(new VectorXYZ(xyz.x, heightMap.get(c), xyz.z));
+		}
+		// });
+		return;
 	}
 
 	/**
