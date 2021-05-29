@@ -1,19 +1,16 @@
 package org.osm2world.core.target.jogl;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 
+import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
 
 import com.jogamp.opengl.util.awt.ImageUtil;
 import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureIO;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
 /**
@@ -23,23 +20,17 @@ public class JOGLTextureManager {
 
 	private final GL gl;
 
-	private final Map<File, Texture> availableTextures = new HashMap<File, Texture>();
+	private final Map<TextureData, Texture> availableTextures = new HashMap<>();
 
 	public JOGLTextureManager(GL gl) {
 		this.gl = gl;
 	}
 
-	public Texture getTextureForFile(File file) {
-		return getTextureForFile(file, true);
-	}
-
 	public Texture getTextureForTextureData(TextureData textureData) {
-		return getTextureForFile(textureData.getRasterImage());
-	}
 
-	public Texture getTextureForFile(File file, boolean createMipmaps) {
+		boolean createMipmaps = true;
 
-		Texture result = availableTextures.get(file);
+		Texture result = availableTextures.get(textureData);
 
 		if (result == null) {
 
@@ -47,43 +38,36 @@ public class JOGLTextureManager {
 
 				//try again
 
-				if (availableTextures.containsKey(file)) {
-					return availableTextures.get(file);
+				if (availableTextures.containsKey(textureData)) {
+					return availableTextures.get(textureData);
 				}
 
-				try {
+				if (!(textureData instanceof ImageFileTexture)
+						|| !((ImageFileTexture)textureData).getFile().getName().toLowerCase().endsWith("png")) {
 
-					if (!file.getName().toLowerCase().endsWith("png")) {
+					//flip to ensure consistent tex coords with png images
+					BufferedImage bufferedImage = textureData.getBufferedImage();
+					ImageUtil.flipImageVertically(bufferedImage);
 
-						//flip to ensure consistent tex coords with png images
-						BufferedImage bufferedImage = ImageIO.read(file);
-						ImageUtil.flipImageVertically(bufferedImage);
+					result = AWTTextureIO.newTexture(
+							gl.getGLProfile(), bufferedImage, createMipmaps);
 
-						result = AWTTextureIO.newTexture(
-								gl.getGLProfile(), bufferedImage, createMipmaps);
+				} else {
 
-					} else {
-
-						result = TextureIO.newTexture(file, createMipmaps);
-
-					}
-
-					/* workaround for OpenGL 3: call to glGenerateMipmap is missing in [AWT]TextureIO.newTexture()
-					 * May be fixed in new versions of JOGL.
-					 */
-					if (createMipmaps && gl.isGL3()) {
-						gl.glGenerateMipmap(result.getTarget());
-					}
-
-					availableTextures.put(file, result);
-
-				} catch (IOException exc) {
-
-					exc.printStackTrace();
-					System.exit(2);
-					//TODO error handling
+					result = AWTTextureIO.newTexture(
+							gl.getGLProfile(), textureData.getBufferedImage(), createMipmaps);
 
 				}
+
+				/* workaround for OpenGL 3: call to glGenerateMipmap is missing in [AWT]TextureIO.newTexture()
+				 * May be fixed in new versions of JOGL.
+				 */
+				if (createMipmaps && gl.isGL3()) {
+					gl.glGenerateMipmap(result.getTarget());
+				}
+
+				availableTextures.put(textureData, result);
+
 			}
 
 		}

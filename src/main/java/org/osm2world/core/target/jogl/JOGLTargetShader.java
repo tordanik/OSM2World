@@ -18,6 +18,9 @@ import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
+import org.osm2world.core.target.common.material.ImageFileTexture;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
+import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 
@@ -84,8 +87,8 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		gl.glActiveTexture(GL_TEXTURE0);
 
-		Texture backgroundTexture =
-				textureManager.getTextureForFile(backgroundImage);
+		Texture backgroundTexture = textureManager.getTextureForTextureData(new ImageFileTexture(
+				backgroundImage, 1, 1, null, null, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
 
 		backgroundTexture.bind(gl);
 
