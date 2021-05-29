@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.RoadModule;
@@ -184,21 +185,142 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		Map<EleConnector, Double> heightMap = new HashMap<EleConnector, Double>();
 		Map<EleConnector, Double> heightMap1 = new HashMap<EleConnector, Double>();
 
-		// connectors.forEach((c) -> {
+		// initialize height map
 		for (EleConnector c : connectors) {
-			heightMap.put(c, 0.0);
-			heightMap1.put(c, 0.0);
-			if (c.reference != null) {
-				if (c.reference instanceof MapNode) {
-					MapNode mn = (MapNode) c.reference;
-					mapNodeToEleconnector.put(mn, c);
-					roadList.add(c);
-				}
+			double h = 0;
+			switch (c.groundState) {
+				case ABOVE:
+					h = 5.0;
+					break;
+				case BELOW:
+					h = -5.0;
+					break;
+				default: // stay at ground elevation
 			}
+			heightMap.put(c, h);
+			heightMap1.put(c, h);
 		}
 		// connectors.forEach((c) -> {
 		for (EleConnector c : connectors) {
 			if (c.reference != null) {
+				if (c.reference instanceof MapNode) {
+					MapNode mn = (MapNode) c.reference;
+					mapNodeToEleconnector.put(mn, c);
+				}
+			} else {
+				System.out.println(c);
+			}
+		}
+
+		// // connectors.forEach((c) -> {
+		int countabc = 0;
+		int countnabc = 0;
+		int isbetween = 0;
+		int isextra = 0;
+		int angledistribution[] = new int[181];
+		for (EleConnector c : connectors) {
+			if (c.reference != null) {
+				if (c.reference instanceof MapNode) {
+					MapNode mn = (MapNode) c.reference;
+					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+					for (Road road : roads) {
+						MapNode start = road.getPrimaryMapElement().getStartNode();
+						MapNode end = road.getPrimaryMapElement().getEndNode();
+						// System.out.println(road);
+						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
+							System.out.println("not contained in map");
+							return;
+						}
+						roadList.add(c);
+						EleConnector a = mapNodeToEleconnector.get(start);
+						EleConnector b = mapNodeToEleconnector.get(end);
+						EleConnector c1 = c;
+						if (a != c && b != c) {
+							System.out.println("a!=c&&b!=c");
+							System.out.println(c.getPosXYZ() + "," + a.getPosXYZ() + "," + b.getPosXYZ());
+							VectorXYZ ca = c.getPosXYZ().subtract(a.getPosXYZ());
+							VectorXYZ cb = c.getPosXYZ().subtract(b.getPosXYZ());
+
+							System.out.println(ca.dot(cb));
+							double angle = Math.abs(ca.angleTo(cb) * 180 / Math.PI);
+							angledistribution[(int) angle]++;
+							System.out.println((int) (angle) + "degree");
+							if (ca.dot(cb) < 0) {
+								isbetween++;
+							} else {
+								isextra++;
+
+								EleConnector tempa = a, tempb = b, tempc = c;
+								if (c.getPosXYZ().distanceToSquared(a.getPosXYZ()) > c.getPosXYZ()
+										.distanceToSquared(b.getPosXYZ())) {
+									// |ca|>|cb|
+									// cba
+									c1 = tempb;
+									b = tempc;
+								} else {
+									// cab
+									c1 = tempa;
+									a = tempc;
+								}
+							}
+							// if (angle < 10 || angle > 10) {
+							// for (int i = 0; i < 2; i++) {
+							// if (roadConnectedTo.containsKey(c1)) {
+							// List<EleConnector> connected = roadConnectedTo.get(c1);
+							// if (!connected.contains(b)) {
+							// connected.add(b);
+							// }
+							// } else {
+							// List<EleConnector> connected = new ArrayList<EleConnector>();
+							// connected.add(b);
+							// roadConnectedTo.put(c1, connected);
+							// }
+							// EleConnector temp = a;
+							// a = b;
+							// b = temp;
+							// }
+							// }
+							countabc++;
+						} else {
+							System.out.println("a==c||b==c");
+							countnabc++;
+							for (int i = 0; i < 2; i++) {
+								if (roadConnectedTo.containsKey(a)) {
+									List<EleConnector> connected = roadConnectedTo.get(a);
+									if (!connected.contains(b)) {
+										connected.add(b);
+									}
+								} else {
+									List<EleConnector> connected = new ArrayList<EleConnector>();
+									connected.add(b);
+									roadConnectedTo.put(a, connected);
+								}
+								EleConnector temp = a;
+								a = b;
+								b = temp;
+							}
+						}
+
+						// System.out.printf("start:%s end:%s reference:%s\n",
+						// road.getPrimaryMapElement().getStartNode(),
+						// road.getPrimaryMapElement().getEndNode(), mn);
+					}
+				}
+			}
+		}
+		System.out.println("countabc" + countabc);
+		System.out.println("countnabc" + countnabc);
+		System.out.println("isbetween" + isbetween);
+		System.out.println("isextra" + isextra);
+		for (int i = 0; i < 30; i++) {
+			int d = 0;
+			for (int n = 0; n < 6; n++) {
+				int index = i * 6 + n;
+				d += angledistribution[index];
+			}
+			System.out.println((i * 6) + ":" + d);
+		}
+			for (EleConnector c : connectors) {
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
 					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
@@ -206,11 +328,6 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						MapNode start = road.getPrimaryMapElement().getStartNode();
 						MapNode end = road.getPrimaryMapElement().getEndNode();
 						// System.out.println(road);
-						road.getPrimaryMapElement().getEndNode();// mapNodeToEleconnector
-						/*
-						 * if (road.getPrimaryMapElement().getEndNode() != mn) {
-						 * System.out.println("endnode!=reference"); }
-						 */
 						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
 							System.out.println("not contained in map");
 							return;
@@ -218,67 +335,76 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						EleConnector a = mapNodeToEleconnector.get(start);
 						EleConnector b = mapNodeToEleconnector.get(end);
 						for (int i = 0; i < 2; i++) {
-							if (roadConnectedTo.containsKey(a)) {
-								List<EleConnector> connected = roadConnectedTo.get(a);
-								if (!connected.contains(b)) {
-									connected.add(b);
+							if (a != c) {
+								if (a.groundState == GroundState.ON) {
+									if (c.groundState == GroundState.ABOVE) {
+										heightMap.put(c, 2.5);
+									}
 								}
-							} else {
-								List<EleConnector> connected = new ArrayList<EleConnector>();
-								connected.add(b);
-								roadConnectedTo.put(a, connected);
+								if (a.groundState == GroundState.ABOVE) {
+									if (c.groundState == GroundState.ON) {
+										heightMap.put(c, 3.0);
+									}
+								}
 							}
-							EleConnector temp = a;
 							a = b;
-							b = temp;
 						}
-
-						// System.out.printf("start:%s end:%s reference:%s\n",
-						// road.getPrimaryMapElement().getStartNode(),
-						// road.getPrimaryMapElement().getEndNode(), mn);
 					});
 				}
 			}
-		}
-		// });
-		final double dt = 0.1;
-		for (int step = 0; step < 10; step++) {
-			// heightMap:old
-			// apply boundary condition
-			// roadList.forEach((c) -> {
-			for (EleConnector c : roadList) {
-				switch (c.groundState) {
-					case ABOVE:
-						heightMap.put(c, 5.0);
-						break;
-					case BELOW:
-						heightMap.put(c, -5.0);
-						// System.out.println("SimpleEleConstraintEnforcer:BELOW");
-						break;
-					default: // stay at ground elevation
-				}
-			}
-			// heightMap1:new
-			for (EleConnector source : roadList) {
-				double dhdt = 0;
-				double sourceh = heightMap.get(source);
-				if (roadConnectedTo.containsKey(source)) {
-					for (EleConnector target : roadConnectedTo.get(source)) {
-						double targeth = heightMap.get(target);
-						dhdt += targeth - sourceh;
-					}
-				}
-				heightMap1.put(source, sourceh + dhdt * dt);
-			}
+		// final double dt = 0.05;
+		// for (int step = 0; step < 10; step++) {
+		// // heightMap:old
+		// // apply boundary condition
+		// // roadList.forEach((c) -> {
+		// // for (EleConnector c : roadList) {
+		// // switch (c.groundState) {
+		// // case ABOVE:
+		// // heightMap.put(c, 5.0);
+		// // break;
+		// // case BELOW:
+		// // heightMap.put(c, -5.0);
+		// // // System.out.println("SimpleEleConstraintEnforcer:BELOW");
+		// // break;
+		// // default: // stay at ground elevation
+		// // }
+		// // }
+		// // heightMap1:new
+		// for (EleConnector source : roadList) {
+		// double dhdt = 0;
+		// double sourceh = heightMap.get(source);
+		// if (roadConnectedTo.containsKey(source)) {
+		// for (EleConnector target : roadConnectedTo.get(source)) {
+		// double targeth = heightMap.get(target);
+		// dhdt += targeth - sourceh;
+		// }
+		// }
+		// heightMap1.put(source, sourceh + dhdt * dt);
+		// }
 
-			Map<EleConnector, Double> temp = heightMap;
-			heightMap = heightMap1;
-			heightMap1 = temp;
+		// Map<EleConnector, Double> temp = heightMap;
+		// heightMap = heightMap1;
+		// heightMap1 = temp;
+		// }
+
+		for (EleConnector c : connectors) {
+			// TODO use clearing
+			double h = heightMap.get(c);
+			c.setPosXYZ(c.getPosXYZ().addY(h));
+
 		}
+
+		if (true) {
+			return;
+		}
+
+		// // });
+
 		// roadList.forEach((c) -> {
 		for (EleConnector c : roadList) {
 			VectorXYZ xyz = c.getPosXYZ();
-			c.setPosXYZ(new VectorXYZ(xyz.x, heightMap.get(c), xyz.z));
+			// c.setPosXYZ(new VectorXYZ(xyz.x, heightMap.get(c), xyz.z));
+			c.setPosXYZ(xyz.addY(heightMap.get(c)));
 		}
 		// });
 		return;
