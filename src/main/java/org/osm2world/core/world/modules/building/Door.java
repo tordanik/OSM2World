@@ -1,11 +1,10 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 
 import java.util.List;
 
@@ -15,7 +14,6 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.TextureData;
 
 public class Door implements WallElement {
 
@@ -96,12 +94,7 @@ public class Door implements WallElement {
 
 			List<VectorXYZ> vsDoorRight = asList(topCenter, bottomCenter, topRight, bottomRight);
 			target.drawTriangleStrip(doorMaterial, vsDoorRight,
-					texCoordLists(vsDoorRight, doorMaterial, (List<VectorXYZ> vs, TextureData textureData) -> {
-						//mirror the door for the right wing
-						//TODO: maybe create a general-purpose function from this?
-						List<VectorXZ> result = STRIP_FIT.apply(vs, textureData);
-						return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).collect(toList());
-					}));
+					texCoordLists(vsDoorRight, doorMaterial, mirroredHorizontally(STRIP_FIT)));
 
 		}
 

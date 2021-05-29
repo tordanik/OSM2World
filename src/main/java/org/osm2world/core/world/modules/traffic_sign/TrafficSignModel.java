@@ -1,10 +1,11 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
+import static java.awt.Color.WHITE;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,14 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.CompositeTexture;
+import org.osm2world.core.target.common.material.CompositeTexture.CompositeMode;
+import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.model.Model;
 
 /**
@@ -23,17 +31,27 @@ import org.osm2world.core.target.common.model.Model;
 public class TrafficSignModel implements Model {
 
 	/**
+	 * the material of the back of a sign (uses the front material's alpha values to get the same shape)
+	 *
+	 * TODO: Use a hash of the alpha mask as the key to share back materials between sign types that have the same shape
+	 */
+	private static final Map<TrafficSignType, Material> backMaterials = new HashMap<>();
+
+	/**
 	 * the material of the front of the sign.
 	 * Will be based on the {@link TrafficSignType}'s material, but may be slightly modified for a particular instance
 	 * of that sign type (e.g. with text placeholders filled in or colors modified).
 	 */
 	public final Material material;
 
+	public final TrafficSignType type;
+
 	public final int numPosts;
 	public final double defaultHeight;
 
-	public TrafficSignModel(Material material, int numPosts, double height) {
+	public TrafficSignModel(Material material, TrafficSignType type, int numPosts, double height) {
 		this.material = material;
+		this.type = type;
 		this.numPosts = numPosts;
 		this.defaultHeight = height;
 	}
@@ -60,7 +78,7 @@ public class TrafficSignModel implements Model {
 
 		return new TrafficSignModel(
 				type.material.withPlaceholdersFilledIn(map, tagsOfElement),
-				type.defaultNumPosts, type.defaultHeight);
+				type, type.defaultNumPosts, type.defaultHeight);
 
 	}
 
@@ -111,11 +129,39 @@ public class TrafficSignModel implements Model {
 		/* render the back of the sign */
 
 		List<VectorXYZ> vsBack = asList(vsFront.get(2), vsFront.get(3), vsFront.get(0), vsFront.get(1));
-		Material materialBack = STEEL;
+
+		Material materialBack = getBackMaterial(type);
 
 		target.drawTriangleStrip(materialBack, vsBack,
-				texCoordLists(vsBack, materialBack, STRIP_FIT));
+				texCoordLists(vsBack, materialBack, mirroredHorizontally(STRIP_FIT)));
 
+	}
+
+	private static Material getBackMaterial(TrafficSignType type) {
+
+		if (type.material.getNumTextureLayers() == 0) {
+			return STEEL;
+		}
+
+		if (!backMaterials.containsKey(type)) {
+
+			// use the transparency information from the front of the sign to cut out the correct shape for the back
+			return new ImmutableMaterial(
+					Interpolation.FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
+						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).baseColorTexture),
+						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).normalTexture),
+						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).ormTexture),
+						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).displacementTexture),
+						false)));
+		}
+
+		return backMaterials.get(type);
+
+	}
+
+	private static CompositeTexture textureWithAlphaMask(Material alphaMaterial, TextureData textureB) {
+		return new CompositeTexture(CompositeMode.ALPHA_FROM_A,
+				alphaMaterial.getTextureLayers().get(0).baseColorTexture, textureB);
 	}
 
 	@Override

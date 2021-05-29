@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,6 +80,14 @@ public final class TexCoordUtil {
 
 		return texCoordLists(vs, material, defaultCoordFunction);
 
+	}
+
+	/** returns a horizontally flipped version of a {@link TexCoordFunction} */
+	public static final TexCoordFunction mirroredHorizontally(TexCoordFunction texCoordFunction) {
+		return (List<VectorXYZ> vs, TextureData textureData) -> {
+			List<VectorXZ> result = texCoordFunction.apply(vs, textureData);
+			return result.stream().map(v -> new VectorXZ(1 - v.x, v.z)).collect(toList());
+		};
 	}
 
 }
