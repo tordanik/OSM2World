@@ -42,12 +42,14 @@ public class TrafficSignModule extends AbstractModule {
 
 	/**
 	 * Checks if {@code node}'s way contains traffic sign tags to be rendered
-	 *
-	 * @param state The value extracted from the configuration key deduceTrafficSignsFromWayTags = yes/limited/no
 	 */
-	private void createSignFromTagOnWay(MapNode node, String state) {
+	private void createSignFromTagOnWay(MapNode node) {
 
 		final VectorXZ DEFAULT_OFFSET_VECTOR = new VectorXZ(1, 1);
+
+		// possible values are yes/limited/no
+		String state = config.getString("deduceTrafficSignsFromWayTags", "no");
+		if ("no".equals(state)) return;
 
 		String[] signs;
 		String[] signsForSecondModel;
@@ -624,8 +626,6 @@ public class TrafficSignModule extends AbstractModule {
 	@Override
 	protected void applyToNode(MapNode node) {
 
-		String signsOnWaysState = config.getString("deduceTrafficSignsFromWayTags", "yes");
-
 		/* if node is the "sign" member of at least one destination_sign relation */
 
 		if (node.getMemberships().stream().anyMatch(it -> "sign".equals(it.getRole())
@@ -635,8 +635,8 @@ public class TrafficSignModule extends AbstractModule {
 
 		/* if "traffic_sign = *" or any of the human-readable signs (maxspeed|overtaking|maxwidth|maxweight|maxheight) are mapped as a way tag */
 
-		if (!node.getConnectedWaySegments().isEmpty() && !signsOnWaysState.equalsIgnoreCase("no")) {
-			createSignFromTagOnWay(node, signsOnWaysState);
+		if (!node.getConnectedWaySegments().isEmpty()) {
+			createSignFromTagOnWay(node);
 		}
 
 		/* if sign is a simple traffic sign mapped on a node (not a destination sign or a human-readable value mapped on a way) */
