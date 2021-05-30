@@ -47,6 +47,8 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 	private Map<NodeLevelPair, Boolean> windowNodes = new HashMap<>();
 	private Map<NodeLevelPair, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
+	private Collection<AttachmentSurface> attachmentSurfaces = null;
+
 	public Building(MapArea area, Configuration config) {
 
 		this.area = area;
@@ -175,11 +177,13 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 	@Override
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-		List<AttachmentSurface> surfaces = new ArrayList<>();
-		for (BuildingPart part : parts) {
-			surfaces.addAll(part.getAttachmentSurfaces());
+		if (attachmentSurfaces == null) {
+			attachmentSurfaces = new ArrayList<>();
+			for (BuildingPart part : parts) {
+				attachmentSurfaces.addAll(part.getAttachmentSurfaces());
+			}
 		}
-		return surfaces;
+		return attachmentSurfaces;
 	}
 
 	public class NodeLevelPair{

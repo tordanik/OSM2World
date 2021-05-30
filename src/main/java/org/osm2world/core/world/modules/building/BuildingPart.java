@@ -472,7 +472,14 @@ public class BuildingPart implements AreaWorldObject {
 
 	}
 
+	@Override
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+
+		if (walls == null) {
+			// the reason why this is called here rather than the constructor is tunnel=building_passage:
+			// in the constructor, the roads' calculations aren't completed yet
+			createComponents();
+		}
 
 		List<AttachmentSurface> surfaces = new ArrayList<>();
 
@@ -480,12 +487,14 @@ public class BuildingPart implements AreaWorldObject {
 			surfaces.addAll(buildingPartInterior.getAttachmentSurfaces());
 		}
 
-
 		int roofAttachmentLevel = levelStructure.levels.get(levelStructure.levels.size() - 1).level + 1;
 		//TODO: support multiple roof levels
-
 		surfaces.addAll(roof.getAttachmentSurfaces(
 				building.getGroundLevelEle() + levelStructure.heightWithoutRoof(), roofAttachmentLevel));
+
+		for (Wall wall : walls) {
+			surfaces.addAll(wall.getAttachmentSurfaces());
+		}
 
 		return surfaces;
 	}

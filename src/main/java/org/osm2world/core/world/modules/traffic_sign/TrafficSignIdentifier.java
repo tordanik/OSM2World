@@ -101,7 +101,7 @@ public class TrafficSignIdentifier {
 
 	public static List<TrafficSignIdentifier> parseTrafficSignValue(String tagValue) {
 
-		if (tagValue.isEmpty()) return emptyList();
+		if (tagValue == null || tagValue.isEmpty()) return emptyList();
 
 		/* split the traffic sign value into its components */
 

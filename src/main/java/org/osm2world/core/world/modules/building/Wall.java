@@ -11,6 +11,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
 
@@ -306,6 +308,17 @@ public class Wall implements Renderable {
 			roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight, true);
 		}
 
+	}
+
+	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+		try {
+			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall", "wall_mounted");
+			this.renderTo(builder);
+			return singleton(builder.build());
+		} catch (Exception e) {
+			System.err.println("Could not create wall attachment surfacefor " + wallWay + ": " + e);
+			return emptyList();
+		}
 	}
 
 	@Override

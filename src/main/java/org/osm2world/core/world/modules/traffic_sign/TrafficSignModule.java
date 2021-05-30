@@ -331,7 +331,7 @@ public class TrafficSignModule extends AbstractModule {
 
 		if (!signIds.isEmpty()) {
 			node.addRepresentation(new TrafficSignGroup(node, signs, node.getPos(),
-					parseDirection(node.getTags(), PI), config));
+					parseDirection(node.getTags()), config));
 		}
 
 	}

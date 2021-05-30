@@ -1905,7 +1905,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		@Override
 		public Collection<AttachmentSurface> getAttachmentSurfaces() {
-			Builder builder = new AttachmentSurface.Builder("street_lamp", "pole");
+			Builder builder = new AttachmentSurface.Builder("street_lamp");
 			this.renderTo(builder);
 			return singleton(builder.build());
 		}

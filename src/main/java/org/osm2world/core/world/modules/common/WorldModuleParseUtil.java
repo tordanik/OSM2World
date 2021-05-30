@@ -1,8 +1,11 @@
 package org.osm2world.core.world.modules.common;
 
+import static java.lang.Math.toRadians;
 import static org.osm2world.core.util.ValueParseUtil.*;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.map_data.data.TagSet;
@@ -65,8 +68,7 @@ public class WorldModuleParseUtil {
 	}
 
 	/**
-	 * parses the direction tag and returns the direction
-	 * (or a default value) as radians
+	 * parses the direction tag and returns the direction (or a default value) as radians
 	 */
 	public static final double parseDirection(TagSet tags, double defaultValue) {
 
@@ -77,9 +79,28 @@ public class WorldModuleParseUtil {
 		}
 
 		if (directionAngle != null) {
-			return Math.toRadians(directionAngle);
+			return toRadians(directionAngle);
 		} else {
 			return defaultValue;
+		}
+
+	}
+
+	/**
+	 * parses the direction tag and returns the direction as radians (or null)
+	 */
+	public static final @Nullable Double parseDirection(TagSet tags) {
+
+		Double directionAngle = null;
+
+		if (tags.containsKey("direction")) {
+			directionAngle = parseAngle(tags.getValue("direction"));
+		}
+
+		if (directionAngle != null) {
+			return toRadians(directionAngle);
+		} else {
+			return null;
 		}
 
 	}

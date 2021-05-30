@@ -337,6 +337,7 @@ public class ConversionFacade {
 
 				Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
 						.filter(s -> s.getTypes().stream().anyMatch(connector.compatibleSurfaceTypes::contains))
+						.filter(s -> s.getFaces().stream().anyMatch(f -> connector.isAcceptableNormal.test(f.getNormal())))
 						.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
 
 				if (closestSurface.isPresent()) {
@@ -368,6 +369,7 @@ public class ConversionFacade {
 
 			Optional<FaceXYZ> closestFace = surface.getFaces().stream()
 					.filter(matchesPreferredHeight)
+					.filter(f -> connector.isAcceptableNormal.test(f.getNormal()))
 					.min(comparingDouble(f -> connector.changeXZ ? f.distanceTo(posAtEle) : f.distanceToXZ(posAtEle)));
 
 			if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height

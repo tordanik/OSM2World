@@ -1,6 +1,7 @@
 package org.osm2world.core.world.attachment;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -42,6 +43,8 @@ public class AttachmentConnector {
 	/** preferred height above the surface's {@link AttachmentSurface#getBaseEleAt(VectorXZ)} */
 	public final double preferredHeight;
 
+	public final Predicate<VectorXYZ> isAcceptableNormal;
+
 	private boolean isAttached = false;
 	private AttachmentSurface attachedSurface = null;
 	private VectorXYZ attachedPos = null;
@@ -56,12 +59,18 @@ public class AttachmentConnector {
 	 * @param changeXZ  whether the horizontal position may be changed
 	 */
 	public AttachmentConnector(List<String> compatibleSurfaceTypes, VectorXYZ originalPos, WorldObject object,
-			double preferredHeight, boolean changeXZ) {
+			double preferredHeight, boolean changeXZ, @Nullable Predicate<VectorXYZ> isAcceptableNormal) {
 		this.compatibleSurfaceTypes = compatibleSurfaceTypes;
 		this.originalPos = originalPos;
 		this.object = object;
 		this.changeXZ = changeXZ;
 		this.preferredHeight = preferredHeight;
+		this.isAcceptableNormal = (isAcceptableNormal != null) ? isAcceptableNormal : (v -> true);
+	}
+
+	public AttachmentConnector(List<String> compatibleSurfaceTypes, VectorXYZ originalPos, WorldObject object,
+			double preferredHeight, boolean changeXZ) {
+		this(compatibleSurfaceTypes, originalPos, object, preferredHeight, changeXZ, null);
 	}
 
 	/**
