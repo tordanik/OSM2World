@@ -111,10 +111,8 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/**
-	 * Determine whether this segment has
-	 * right-hand traffic or not, based
-	 * on {@value org.osm2world.core.world.modules.RoadModule#RIGHT_HAND_TRAFFIC_BY_DEFAULT}
-	 * and way's driving_side tags, if any.
+	 * Determine whether this segment has right-hand traffic or not,
+	 * based on {@link #RIGHT_HAND_TRAFFIC_BY_DEFAULT} and way's driving_side tags, if any.
 	 */
 	public static boolean hasRightHandTraffic(MapWaySegment segment) {
 

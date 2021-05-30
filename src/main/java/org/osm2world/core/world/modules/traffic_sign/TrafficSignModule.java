@@ -3,6 +3,8 @@ package org.osm2world.core.world.modules.traffic_sign;
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.util.ForwardBackward.*;
+import static org.osm2world.core.util.LeftRight.*;
 import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
@@ -27,6 +29,8 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.util.ForwardBackward;
+import org.osm2world.core.util.LeftRight;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -55,7 +59,7 @@ public class TrafficSignModule extends AbstractModule {
 		 * will be rendered to. Default value is true. Indicates the rules of the
 		 * road as defined in RoadModule.java
 		 */
-		boolean side = RoadModule.RIGHT_HAND_TRAFFIC_BY_DEFAULT;
+		LeftRight side = RoadModule.RIGHT_HAND_TRAFFIC_BY_DEFAULT ? RIGHT : LEFT;
 
 		//The (potential) signs to be rendered
 		TrafficSignGroup firstModel = null;
@@ -78,7 +82,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			if (!containedKeys.isEmpty()) {
 
-				String tempKey = "";
+				String tempKey;
 
 				//determine rendering positions
 				for (String key : containedKeys) {
@@ -123,14 +127,16 @@ public class TrafficSignModule extends AbstractModule {
 							firstModel = new TrafficSignGroup(firstModelNode, config);
 
 							//get segment's driving side
-							side = RoadModule.hasRightHandTraffic(topSegment);
+							side = RoadModule.hasRightHandTraffic(topSegment) ? RIGHT : LEFT;
 
 							//set the model's facing direction
-							firstModel.direction = calculateDirection(topSegment, tempKey);
+							firstModel.direction = calculateDirection(topSegment,
+									tempKey.contains("forward") ? FORWARD : BACKWARD);
 
 							//Avoid the case where the first node of the way may be a junction
 							if (topSegment.getStartNode().getConnectedWaySegments().size() < 3) {
-								firstModel.position = calculateSignPosition(firstModelNode, topSegment, side, tempKey, false);
+								firstModel.position = calculateSignPosition(firstModelNode, topSegment, side,
+										tempKey.contains("forward") ? FORWARD : BACKWARD, false);
 							} else {
 
 								if (RoadModule.isRoad(wayTags)) {
@@ -195,9 +201,10 @@ public class TrafficSignModule extends AbstractModule {
 							secondModel = new TrafficSignGroup(secondModelNode, config);
 
 							//get segment's driving side
-							side = RoadModule.hasRightHandTraffic(bottomSegment);
+							side = RoadModule.hasRightHandTraffic(bottomSegment) ? RIGHT : LEFT;
 
-							secondModel.direction = calculateDirection(bottomSegment, tempKey);
+							secondModel.direction = calculateDirection(bottomSegment,
+									tempKey.contains("forward") ? FORWARD : BACKWARD);
 
 							/*
 							 * new TrafficSignModel at the end of the way.
@@ -205,7 +212,8 @@ public class TrafficSignModule extends AbstractModule {
 							 */
 							if (bottomSegment.getEndNode().getConnectedWaySegments().size() < 3) {
 
-								secondModel.position = calculateSignPosition(secondModelNode, bottomSegment, side, tempKey, false);
+								secondModel.position = calculateSignPosition(secondModelNode, bottomSegment, side,
+										tempKey.contains("forward") ? FORWARD : BACKWARD, false);
 
 							} else {
 
@@ -309,77 +317,46 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 	/**
-	 * Handles signs mapped on nodes
-	 * (either on a way node or on an explicitly defined one)
+	 * Handles signs mapped as stand-alone nodes (next to the road)
 	 */
-	private void createSignFromNode(MapNode node) {
+	private void createSignFromSeparateNode(MapNode node) {
 
-		if (!node.getTags().containsAny(asList("traffic_sign", "traffic_sign:forward", "traffic_sign:backward"), null)
-				&& !node.getTags().containsAny(asList("highway"), asList("give_way", "stop"))) {
-			return;
+		List<TrafficSignIdentifier> signIds =
+				TrafficSignIdentifier.parseTrafficSignValue(node.getTags().getValue("traffic_sign"));
+
+		List<TrafficSignModel> signs = new ArrayList<>(signIds.size());
+		signIds.forEach(sign -> signs.add(TrafficSignModel.create(sign, node.getTags(), config)));
+
+		if (!signIds.isEmpty()) {
+			node.addRepresentation(new TrafficSignGroup(node, signs, node.getPos(),
+					parseDirection(node.getTags(), PI), config));
 		}
 
+	}
+
+	/**
+	 * Handles signs mapped on nodes that are part of the highway way
+	 */
+	private void createSignFromHighwayNode(MapNode node) {
+
 		String tagValue = "";
+		ForwardBackward signDirection;
 
-		//The (potential) signs to be rendered
-		TrafficSignGroup firstModel = null;
-		TrafficSignGroup secondModel = null;
+		// TODO: allow traffic_sign:forward and traffic_sign:backward to be tagged at the same time
 
-		//if node is part of a way
-		if (isInHighway(node)) {
-
-			String tempKey = "";
-
-			//one rendering is required
-			firstModel = new TrafficSignGroup(node, config);
-
-			if (node.getTags().containsKey("traffic_sign:forward")) {
-				tagValue = node.getTags().getValue("traffic_sign:forward");
-				tempKey = "traffic_sign:forward";
-			} else if (node.getTags().containsKey("traffic_sign:backward")) {
-				tagValue = node.getTags().getValue("traffic_sign:backward");
-				tempKey = "traffic_sign:backward";
-			} else if (node.getTags().containsKey("traffic_sign")) {
-				tagValue = node.getTags().getValue("traffic_sign");
-				tempKey = "traffic_sign:forward";
-			} else {
-				//in case of highway=give_way/stop, treat sign as if it was mapped as forward:
-				//affect vehicles moving in the way's direction if no explicit direction tag is defined
-				tempKey = "highway:forward";
-			}
-
-			//the segment this node is part of
-			MapWaySegment segment = node.getConnectedWaySegments().get(0);
-
-			//calculate the model's position
-
-			boolean side = RoadModule.hasRightHandTraffic(segment);
-
-			firstModel.position = calculateSignPosition(node, segment, side, tempKey, true);
-
-			firstModel.direction = calculateDirection(node);
-
-			if (node.getTags().contains("side", "both")) {
-
-				//if side=both , create another model instance and place them to the left & right of the road
-
-				secondModel = new TrafficSignGroup(node, config);
-
-				secondModel.direction = firstModel.direction;
-				secondModel.position = calculateSignPosition(node, segment, !side, tempKey, true);
-			}
-
+		if (node.getTags().containsKey("traffic_sign:forward")) {
+			tagValue = node.getTags().getValue("traffic_sign:forward");
+			signDirection = FORWARD;
+		} else if (node.getTags().containsKey("traffic_sign:backward")) {
+			tagValue = node.getTags().getValue("traffic_sign:backward");
+			signDirection = BACKWARD;
+		} else if (node.getTags().containsKey("traffic_sign")) {
+			tagValue = node.getTags().getValue("traffic_sign");
+			signDirection = FORWARD;
 		} else {
-
-			//if sign is explicitly mapped on node next to a way
-
-			if (node.getTags().containsKey("traffic_sign"))
-				tagValue = node.getTags().getValue("traffic_sign");
-
-			firstModel = new TrafficSignGroup(node, config);
-			firstModel.position = node.getPos();
-			firstModel.direction = parseDirection(node.getTags(), PI);
-
+			//in case of highway=give_way/stop, treat sign as if it was mapped as forward:
+			//affect vehicles moving in the way's direction if no explicit direction tag is defined
+			signDirection = FORWARD;
 		}
 
 		/* get the list of traffic signs from the tag's value */
@@ -396,23 +373,31 @@ public class TrafficSignModule extends AbstractModule {
 			signIds.add(new TrafficSignIdentifier(null, highwayValue));
 		}
 
-		/* create a visual representation for the traffic sign */
+		/* calculate the rotation and position(s) */
+
+		MapWaySegment segment = node.getConnectedWaySegments().get(0);
+		LeftRight side = RoadModule.hasRightHandTraffic(segment) ? RIGHT : LEFT;
+		double direction = calculateDirection(node);
+
+		List<VectorXZ> positions = new ArrayList<>();
+
+		positions.add(calculateSignPosition(node, segment, side, signDirection, true));
+
+		if (node.getTags().contains("side", "both")) {
+			positions.add(calculateSignPosition(node, segment, side.invert(), signDirection, true));
+		}
+
+		/* create a visual representation of the group of signs at each position */
 
 		List<TrafficSignModel> signs = new ArrayList<>(signIds.size());
 		signIds.forEach(sign -> signs.add(TrafficSignModel.create(sign, node.getTags(), config)));
 
 		if (signs.size() > 0) {
-
-			if (firstModel != null) {
-				firstModel.signs = signs;
-				node.addRepresentation(firstModel);
-			}
-
-			if (secondModel != null) {
-				secondModel.signs = signs;
-				node.addRepresentation(secondModel);
+			for (VectorXZ position : positions) {
+				node.addRepresentation(new TrafficSignGroup(node, signs, position, direction, config));
 			}
 		}
+
 	}
 
 	private void createDestinationSign(MapNode node) {
@@ -632,12 +617,7 @@ public class TrafficSignModule extends AbstractModule {
 
 		}
 
-		TrafficSignGroup group = new TrafficSignGroup(node, config);
-		group.signs = signs;
-		group.position = node.getPos();
-		group.direction = direction;
-
-		node.addRepresentation(group);
+		node.addRepresentation(new TrafficSignGroup(node, signs, node.getPos(), direction, config));
 
 	}
 
@@ -661,17 +641,21 @@ public class TrafficSignModule extends AbstractModule {
 
 		/* if sign is a simple traffic sign mapped on a node (not a destination sign or a human-readable value mapped on a way) */
 
-		createSignFromNode(node);
+		if (node.getTags().containsAny(asList("traffic_sign", "traffic_sign:forward", "traffic_sign:backward", "highway"), null)) {
+			if (isInHighway(node)) {
+				createSignFromHighwayNode(node);
+			} else {
+				createSignFromSeparateNode(node);
+			}
+		}
 
 	}
 
-	private static boolean isInHighway(MapNode node) {
-		if (node.getConnectedWaySegments().size() > 0) {
-			for (MapWaySegment way : node.getConnectedWaySegments()) {
-				if (way.getTags().containsKey("highway")
-						&& !asList("path", "footway", "platform").contains(way.getTags().getValue("highway"))) {
-					return true;
-				}
+	static boolean isInHighway(MapNode node) {
+		for (MapWaySegment way : node.getConnectedWaySegments()) {
+			if (way.getTags().containsKey("highway")
+					&& !asList("path", "footway", "platform").contains(way.getTags().getValue("highway"))) {
+				return true;
 			}
 		}
 		return false;
@@ -809,7 +793,8 @@ public class TrafficSignModule extends AbstractModule {
 	 * calculates the position of a traffic sign
 	 * based on the {@code side} of the road it is supposed to be and the width of the road
 	 */
-	private static VectorXZ calculateSignPosition(MapNode node, MapWaySegment segment, boolean side, String key, boolean isNode) {
+	private static VectorXZ calculateSignPosition(MapNode node, MapWaySegment segment, LeftRight side ,
+			ForwardBackward signDirection, boolean isNode) {
 
 		//if way is not a road
 		if (!RoadModule.isRoad(segment.getTags())) {
@@ -836,18 +821,17 @@ public class TrafficSignModule extends AbstractModule {
 			}
 		}
 
-		if (side) {
+		if (side == RIGHT) {
 
-			if (key.contains("forward")) {
+			if (signDirection == FORWARD) {
 				return node.getPos().add(rightNormal.mult(roadWidth));
 			} else {
-				//if backwards
 				return node.getPos().add(rightNormal.mult(-roadWidth));
 			}
 
 		} else {
 
-			if (key.contains("forward")) {
+			if (signDirection == FORWARD) {
 				return node.getPos().add(rightNormal.mult(-roadWidth));
 			} else {
 				return node.getPos().add(rightNormal.mult(roadWidth));
@@ -857,11 +841,11 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 	/** calculates the rotation angle of a traffic sign based on the direction of {@code segment} */
-	private static double calculateDirection(MapWaySegment segment, String key) {
+	private static double calculateDirection(MapWaySegment segment, ForwardBackward signDirection) {
 
 		VectorXZ wayDir = segment.getDirection();
 
-		if (key.contains("forward")) {
+		if (signDirection == FORWARD) {
 			return wayDir.invert().angle();
 		} else {
 			return wayDir.angle();
@@ -869,7 +853,7 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 	/**
-	 * Same as {@link #calculateDirection(MapWaySegment, String)} but also parses the node's
+	 * Same as {@link #calculateDirection(MapWaySegment, ForwardBackward)} but also parses the node's
 	 * tags for the direction specification and takes into account the
 	 * highway=give_way/stop special case. To be used on nodes that are part of ways.
 	 */

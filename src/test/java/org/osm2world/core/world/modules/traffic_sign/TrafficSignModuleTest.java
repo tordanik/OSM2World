@@ -11,7 +11,6 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.test.TestMapDataGenerator;
-import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 
 public class TrafficSignModuleTest {

@@ -32,8 +32,17 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 	public final double postRadius;
 
 	public TrafficSignGroup(MapNode node, Configuration config) {
+		// TODO remove this constructor and make the class immutable
+		this(node, null, null, 0, config);
+	}
+
+	public TrafficSignGroup(MapNode node, List<TrafficSignModel> signs, VectorXZ position, double direction,
+			Configuration config) {
 		super(node);
-		postRadius = config.getDouble("standardPoleRadius", 0.05);
+		this.signs = signs;
+		this.position = position;
+		this.direction = direction;
+		this.postRadius = config.getDouble("standardPoleRadius", 0.05);
 	}
 
 	@Override
