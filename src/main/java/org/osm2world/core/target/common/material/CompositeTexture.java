@@ -6,8 +6,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import com.jogamp.opengl.util.awt.ImageUtil;
-
 /**
  * two textures (with compatible dimensions) combined with each other
  */
@@ -43,11 +41,6 @@ public class CompositeTexture extends RuntimeTexture {
 
 		int imageWidth = imageA.getWidth();
 		int imageHeight = imageA.getHeight();
-
-		/* flip the images (this is a workaround for an unknown problem - TODO: understand this better) */
-
-	    ImageUtil.flipImageVertically(imageA);
-	    ImageUtil.flipImageVertically(imageB);
 
 	    /* repeat imageB to fill the necessary space */
 

@@ -14,8 +14,6 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 
-import com.jogamp.opengl.util.awt.ImageUtil;
-
 public class ImageFileTexture extends TextureData {
 
 	/**
@@ -97,12 +95,7 @@ public class ImageFileTexture extends TextureData {
 	@Override
 	public BufferedImage getBufferedImage() {
 		try {
-			String format = getRasterImageFileFormat();
-			BufferedImage image = ImageIO.read(getRasterImage());
-			if ("png".equals(format)) {
-				ImageUtil.flipImageVertically(image); //flip to ensure consistent tex coords with png images
-			}
-			return image;
+			return ImageIO.read(getRasterImage());
 		} catch (IOException e) {
 			throw new Error(e);
 		}

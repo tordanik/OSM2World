@@ -1,14 +1,17 @@
 package org.osm2world.core.target;
 
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.PRIMITIVE_COUNT;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.*;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.statistics.StatisticsTarget;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -75,6 +78,11 @@ public final class TargetUtil {
 	public static final void renderObject(Target target, WorldObject object) {
 		target.beginObject(object);
 		object.renderTo(target);
+	}
+
+	public static final List<List<VectorXZ>> flipTexCoordsVertically(List<List<VectorXZ>> texCoordLists) {
+		return texCoordLists.stream().map(list ->
+				list.stream().map(v -> new VectorXZ(v.x, 1.0 - v.z)).collect(toList())).collect(toList());
 	}
 
 }

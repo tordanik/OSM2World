@@ -3,6 +3,7 @@ package org.osm2world.core.target.jogl;
 import static java.util.Arrays.asList;
 import static javax.media.opengl.GL.*;
 import static javax.media.opengl.GL2.GL_POLYGON;
+import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.jogl.NonAreaPrimitive.Type.*;
 
 import java.awt.Color;
@@ -56,7 +57,7 @@ public abstract class AbstractJOGLTarget extends PrimitiveTarget implements JOGL
 			List<VectorXYZ> vertices, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 
-		primitiveBuffer.drawPrimitive(type, material, vertices, normals, texCoordLists);
+		primitiveBuffer.drawPrimitive(type, material, vertices, normals, flipTexCoordsVertically(texCoordLists));
 
 		// cache textures. they should not be loaded in the render function (see https://www.opengl.org/wiki/Common_Mistakes#glGenTextures_in_render_function)
 		// in some situations even errors were encountered
