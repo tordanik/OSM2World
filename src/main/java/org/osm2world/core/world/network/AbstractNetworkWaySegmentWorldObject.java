@@ -448,7 +448,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 
 	}
 
-	protected List<EleConnector> getCenterlineEleConnectors() {
+	public List<EleConnector> getCenterlineEleConnectors() {
 
 		if (isBroken()) return emptyList();
 
