@@ -3,6 +3,7 @@ package org.osm2world.core.map_elevation.creation;
 import static java.util.Arrays.asList;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,11 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.batik.bridge.Bridge;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.RoadModule.RoadConnector;
@@ -214,13 +218,44 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 		}
 		PrintWriter point_out;
+		PrintWriter point_out2;
 		try {
-			point_out = new PrintWriter("roadpoints.csv");
+			point_out = new PrintWriter(new FileOutputStream("roadpoints.csv", false));
+			point_out2 = new PrintWriter(new FileOutputStream("segmentpoints.csv", false));
+			// for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
+
+			// double averageEle = 0;
+			// if (stiffSet.size() == 2) {
+			// int i = 0;
+			// for (EleConnector c : stiffSet) {
+			// for (int j = 0; j < i+1; j++) {
+			// point_out2.printf("%f,%f,%f\n", c.getPosXYZ().x,
+			// c.groundState == GroundState.ABOVE ? 10.0 : 5.0, c.getPosXYZ().z);
+			// }//generate triangle
+			// i++;
+			// }
+			// }
+			// }
 			for (EleConnector c : connectors) {
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
+					List<MapWaySegment> segments = mn.getConnectedWaySegments();
+					segments.forEach((segment) -> {
+						segment.getRepresentations().forEach((rep) -> {
+							MapWaySegment element = rep.getPrimaryMapElement();
+							EleConnector a = mapNodeToEleconnector.get(element.getStartNode());
+							EleConnector b = mapNodeToEleconnector.get(element.getEndNode());
+							// point_out2.printf("%f,%f,%f\n", c.getPosXYZ().x,
+							// c.groundState == GroundState.ABOVE ? 10.0 : 5.0, c.getPosXYZ().z);
+							// point_out2.printf("%f,%f,%f\n", a.getPosXYZ().x,
+							// a.groundState == GroundState.ABOVE ? 5.0 : 0.0, a.getPosXYZ().z);
+							// point_out2.printf("%f,%f,%f\n", b.getPosXYZ().x,
+							// b.groundState == GroundState.ABOVE ? 5.0 : 0.0, b.getPosXYZ().z);
+
+						});
+					});
 					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
-					System.out.println("roads.size()" + roads.size());
+					// System.out.println("roads.size()" + roads.size());
 					roads.forEach((road) -> {
 						MapNode start = road.getPrimaryMapElement().getStartNode();
 						MapNode end = road.getPrimaryMapElement().getEndNode();
@@ -229,39 +264,61 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 							System.out.println("not contained in map");
 							return;
 						}
-						EleConnector a = mapNodeToEleconnector.get(start);
-						EleConnector b = mapNodeToEleconnector.get(end);
-						point_out.printf("%f,%f,%f\n", c.getPosXYZ().x, c.groundState==GroundState.ABOVE?10.0:5.0,c.getPosXYZ().z);
-						point_out.printf("%f,%f,%f\n", a.getPosXYZ().x, a.groundState==GroundState.ABOVE?5.0:0.0,a.getPosXYZ().z);
-						point_out.printf("%f,%f,%f\n", b.getPosXYZ().x, b.groundState==GroundState.ABOVE?5.0:0.0,b.getPosXYZ().z);
-						if (c.groundState == GroundState.ON) {
-							if (a.groundState == GroundState.ABOVE||b.groundState == GroundState.ABOVE) {
-								heightMap.put(c, 2.0);
-							}
+						// System.out.println("road.getCenterline().size()" +
+						// road.getCenterline().size());
+						List<EleConnector> center = road.getCenterlineEleConnectors();
+						//List<EleConnector> left = road.connectors.getConnectors(road.getOutlineXZ(false));
+						//List<EleConnector> right = road.connectors.getConnectors(road.getOutlineXZ(true));
+						for (int i = 1; i < center.size(); i++) {
+							EleConnector a = center.get(i-1);
+							EleConnector b = center.get(i);
+							point_out.printf("%f,%f,%f\n", c.getPosXYZ().x,
+									c.groundState == GroundState.ABOVE ? 15.0 : 5.0, c.getPosXYZ().z);
+							point_out.printf("%f,%f,%f\n", a.getPosXYZ().x,
+									a.groundState == GroundState.ABOVE ? 10.0 : 0.0, a.getPosXYZ().z);
+							point_out.printf("%f,%f,%f\n", b.getPosXYZ().x,
+									b.groundState == GroundState.ABOVE ? 10.0 : 0.0, b.getPosXYZ().z);
 						}
-						if (c.groundState == GroundState.ABOVE) {
-							if (a.groundState == GroundState.ON||b.groundState == GroundState.ON) {
-								heightMap.put(c, 4.0);
-							}
-						}
+						// {
+						// EleConnector a = mapNodeToEleconnector.get(start);
+						// EleConnector b = mapNodeToEleconnector.get(end);
+						// point_out.printf("%f,%f,%f\n", c.getPosXYZ().x,
+						// c.groundState == GroundState.ABOVE ? 15.0 : 5.0, c.getPosXYZ().z);
+						// point_out.printf("%f,%f,%f\n", a.getPosXYZ().x,
+						// a.groundState == GroundState.ABOVE ? 10.0 : 0.0, a.getPosXYZ().z);
+						// point_out.printf("%f,%f,%f\n", b.getPosXYZ().x,
+						// b.groundState == GroundState.ABOVE ? 10.0 : 0.0, b.getPosXYZ().z);
+
+						// if (c.groundState == GroundState.ON) {
+						// if (a.groundState == GroundState.ABOVE || b.groundState == GroundState.ABOVE)
+						// {
+						// heightMap.put(c, 2.0);
+						// }
+						// }
+						// if (c.groundState == GroundState.ABOVE) {
+						// if (a.groundState == GroundState.ON || b.groundState == GroundState.ON) {
+						// heightMap.put(c, 4.0);
+						// }
+						// }
+						// }
 						// if (a != b) {
-						// 	for (int i = 0; i < 2; i++) {
-						// 		if (a.groundState == GroundState.ON) {
-						// 			if (b.groundState == GroundState.ABOVE) {
-						// 				heightMap.put(b, 4.0);
-						// 				heightMap.put(a, 2.0);
-						// 				VectorXYZ cpos = c.getPosXYZ();
-						// 				if (a.getPosXYZ().distanceToXZ(cpos) < b.getPosXYZ().distanceToXZ(cpos)) {
-						// 					heightMap.put(c, 2.0);
-						// 				} else {
-						// 					heightMap.put(c, 2.0);
-						// 				}
-						// 			}
-						// 		}
-						// 		EleConnector temp = a;
-						// 		a = b;
-						// 		b = temp;
-						// 	}
+						// for (int i = 0; i < 2; i++) {
+						// if (a.groundState == GroundState.ON) {
+						// if (b.groundState == GroundState.ABOVE) {
+						// heightMap.put(b, 4.0);
+						// heightMap.put(a, 2.0);
+						// VectorXYZ cpos = c.getPosXYZ();
+						// if (a.getPosXYZ().distanceToXZ(cpos) < b.getPosXYZ().distanceToXZ(cpos)) {
+						// heightMap.put(c, 2.0);
+						// } else {
+						// heightMap.put(c, 2.0);
+						// }
+						// }
+						// }
+						// EleConnector temp = a;
+						// a = b;
+						// b = temp;
+						// }
 						// }
 						// for (int i = 0; i < 2; i++) {
 						// if (a != c) {
@@ -284,6 +341,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				}
 			}
 			point_out.flush();
+			point_out2.flush();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
