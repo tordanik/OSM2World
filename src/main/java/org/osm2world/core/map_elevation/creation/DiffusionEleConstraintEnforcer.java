@@ -2,6 +2,8 @@ package org.osm2world.core.map_elevation.creation;
 
 import static java.util.Arrays.asList;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -211,119 +213,14 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				System.out.println(c);
 			}
 		}
-
-		// // connectors.forEach((c) -> {
-		int countabc = 0;
-		int countnabc = 0;
-		int isbetween = 0;
-		int isextra = 0;
-		int angledistribution[] = new int[181];
-		for (EleConnector c : connectors) {
-			if (c.reference != null) {
-				if (c.reference instanceof MapNode) {
-					MapNode mn = (MapNode) c.reference;
-					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
-					for (Road road : roads) {
-						MapNode start = road.getPrimaryMapElement().getStartNode();
-						MapNode end = road.getPrimaryMapElement().getEndNode();
-						// System.out.println(road);
-						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
-							System.out.println("not contained in map");
-							return;
-						}
-						roadList.add(c);
-						EleConnector a = mapNodeToEleconnector.get(start);
-						EleConnector b = mapNodeToEleconnector.get(end);
-						EleConnector c1 = c;
-						if (a != c && b != c) {
-							System.out.println("a!=c&&b!=c");
-							System.out.println(c.getPosXYZ() + "," + a.getPosXYZ() + "," + b.getPosXYZ());
-							VectorXYZ ca = c.getPosXYZ().subtract(a.getPosXYZ());
-							VectorXYZ cb = c.getPosXYZ().subtract(b.getPosXYZ());
-
-							System.out.println(ca.dot(cb));
-							double angle = Math.abs(ca.angleTo(cb) * 180 / Math.PI);
-							angledistribution[(int) angle]++;
-							System.out.println((int) (angle) + "degree");
-							if (ca.dot(cb) < 0) {
-								isbetween++;
-							} else {
-								isextra++;
-
-								EleConnector tempa = a, tempb = b, tempc = c;
-								if (c.getPosXYZ().distanceToSquared(a.getPosXYZ()) > c.getPosXYZ()
-										.distanceToSquared(b.getPosXYZ())) {
-									// |ca|>|cb|
-									// cba
-									c1 = tempb;
-									b = tempc;
-								} else {
-									// cab
-									c1 = tempa;
-									a = tempc;
-								}
-							}
-							// if (angle < 10 || angle > 10) {
-							// for (int i = 0; i < 2; i++) {
-							// if (roadConnectedTo.containsKey(c1)) {
-							// List<EleConnector> connected = roadConnectedTo.get(c1);
-							// if (!connected.contains(b)) {
-							// connected.add(b);
-							// }
-							// } else {
-							// List<EleConnector> connected = new ArrayList<EleConnector>();
-							// connected.add(b);
-							// roadConnectedTo.put(c1, connected);
-							// }
-							// EleConnector temp = a;
-							// a = b;
-							// b = temp;
-							// }
-							// }
-							countabc++;
-						} else {
-							System.out.println("a==c||b==c");
-							countnabc++;
-							for (int i = 0; i < 2; i++) {
-								if (roadConnectedTo.containsKey(a)) {
-									List<EleConnector> connected = roadConnectedTo.get(a);
-									if (!connected.contains(b)) {
-										connected.add(b);
-									}
-								} else {
-									List<EleConnector> connected = new ArrayList<EleConnector>();
-									connected.add(b);
-									roadConnectedTo.put(a, connected);
-								}
-								EleConnector temp = a;
-								a = b;
-								b = temp;
-							}
-						}
-
-						// System.out.printf("start:%s end:%s reference:%s\n",
-						// road.getPrimaryMapElement().getStartNode(),
-						// road.getPrimaryMapElement().getEndNode(), mn);
-					}
-				}
-			}
-		}
-		System.out.println("countabc" + countabc);
-		System.out.println("countnabc" + countnabc);
-		System.out.println("isbetween" + isbetween);
-		System.out.println("isextra" + isextra);
-		for (int i = 0; i < 30; i++) {
-			int d = 0;
-			for (int n = 0; n < 6; n++) {
-				int index = i * 6 + n;
-				d += angledistribution[index];
-			}
-			System.out.println((i * 6) + ":" + d);
-		}
+		PrintWriter point_out;
+		try {
+			point_out = new PrintWriter("roadpoints.csv");
 			for (EleConnector c : connectors) {
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
 					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+					System.out.println("roads.size()" + roads.size());
 					roads.forEach((road) -> {
 						MapNode start = road.getPrimaryMapElement().getStartNode();
 						MapNode end = road.getPrimaryMapElement().getEndNode();
@@ -334,24 +231,54 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						}
 						EleConnector a = mapNodeToEleconnector.get(start);
 						EleConnector b = mapNodeToEleconnector.get(end);
-						for (int i = 0; i < 2; i++) {
-							if (a != c) {
+						point_out.printf("%f,%f,%f\n", c.getPosXYZ().x, c.getPosXYZ().y, c.getPosXYZ().z);
+						point_out.printf("%f,%f,%f\n", a.getPosXYZ().x, a.getPosXYZ().y, a.getPosXYZ().z);
+						point_out.printf("%f,%f,%f\n", b.getPosXYZ().x, b.getPosXYZ().y, b.getPosXYZ().z);
+
+						if (a != b) {
+							for (int i = 0; i < 2; i++) {
 								if (a.groundState == GroundState.ON) {
-									if (c.groundState == GroundState.ABOVE) {
-										heightMap.put(c, 2.5);
+									if (b.groundState == GroundState.ABOVE) {
+										heightMap.put(b, 4.0);
+										heightMap.put(a, 2.0);
+										VectorXYZ cpos = c.getPosXYZ();
+										if (a.getPosXYZ().distanceToXZ(cpos) < b.getPosXYZ().distanceToXZ(cpos)) {
+											heightMap.put(c, 2.0);
+										} else {
+											heightMap.put(c, 2.0);
+										}
 									}
 								}
-								if (a.groundState == GroundState.ABOVE) {
-									if (c.groundState == GroundState.ON) {
-										heightMap.put(c, 3.0);
-									}
-								}
+								EleConnector temp = a;
+								a = b;
+								b = temp;
 							}
-							a = b;
 						}
+						// for (int i = 0; i < 2; i++) {
+						// if (a != c) {
+						// if (a.groundState == GroundState.ON) {
+						// if (c.groundState == GroundState.ABOVE) {
+						// heightMap.put(c, 4.0);
+						// heightMap.put(a, 2.0);
+						// }
+						// }
+						// if (a.groundState == GroundState.ABOVE) {
+						// if (c.groundState == GroundState.ON) {
+						// heightMap.put(c, 2.0);
+						// heightMap.put(a, 4.0);
+						// }
+						// }
+						// }
+						// a = b;
+						// }
 					});
 				}
 			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		// final double dt = 0.05;
 		// for (int step = 0; step < 10; step++) {
 		// // heightMap:old
