@@ -231,29 +231,38 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						}
 						EleConnector a = mapNodeToEleconnector.get(start);
 						EleConnector b = mapNodeToEleconnector.get(end);
-						point_out.printf("%f,%f,%f\n", c.getPosXYZ().x, c.getPosXYZ().y, c.getPosXYZ().z);
-						point_out.printf("%f,%f,%f\n", a.getPosXYZ().x, a.getPosXYZ().y, a.getPosXYZ().z);
-						point_out.printf("%f,%f,%f\n", b.getPosXYZ().x, b.getPosXYZ().y, b.getPosXYZ().z);
-
-						if (a != b) {
-							for (int i = 0; i < 2; i++) {
-								if (a.groundState == GroundState.ON) {
-									if (b.groundState == GroundState.ABOVE) {
-										heightMap.put(b, 4.0);
-										heightMap.put(a, 2.0);
-										VectorXYZ cpos = c.getPosXYZ();
-										if (a.getPosXYZ().distanceToXZ(cpos) < b.getPosXYZ().distanceToXZ(cpos)) {
-											heightMap.put(c, 2.0);
-										} else {
-											heightMap.put(c, 2.0);
-										}
-									}
-								}
-								EleConnector temp = a;
-								a = b;
-								b = temp;
+						point_out.printf("%f,%f,%f\n", c.getPosXYZ().x, c.groundState==GroundState.ABOVE?10.0:5.0,c.getPosXYZ().z);
+						point_out.printf("%f,%f,%f\n", a.getPosXYZ().x, a.groundState==GroundState.ABOVE?5.0:0.0,a.getPosXYZ().z);
+						point_out.printf("%f,%f,%f\n", b.getPosXYZ().x, b.groundState==GroundState.ABOVE?5.0:0.0,b.getPosXYZ().z);
+						if (c.groundState == GroundState.ON) {
+							if (a.groundState == GroundState.ABOVE||b.groundState == GroundState.ABOVE) {
+								heightMap.put(c, 2.0);
 							}
 						}
+						if (c.groundState == GroundState.ABOVE) {
+							if (a.groundState == GroundState.ON||b.groundState == GroundState.ON) {
+								heightMap.put(c, 4.0);
+							}
+						}
+						// if (a != b) {
+						// 	for (int i = 0; i < 2; i++) {
+						// 		if (a.groundState == GroundState.ON) {
+						// 			if (b.groundState == GroundState.ABOVE) {
+						// 				heightMap.put(b, 4.0);
+						// 				heightMap.put(a, 2.0);
+						// 				VectorXYZ cpos = c.getPosXYZ();
+						// 				if (a.getPosXYZ().distanceToXZ(cpos) < b.getPosXYZ().distanceToXZ(cpos)) {
+						// 					heightMap.put(c, 2.0);
+						// 				} else {
+						// 					heightMap.put(c, 2.0);
+						// 				}
+						// 			}
+						// 		}
+						// 		EleConnector temp = a;
+						// 		a = b;
+						// 		b = temp;
+						// 	}
+						// }
 						// for (int i = 0; i < 2; i++) {
 						// if (a != c) {
 						// if (a.groundState == GroundState.ON) {
@@ -274,11 +283,11 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					});
 				}
 			}
+			point_out.flush();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		// final double dt = 0.05;
 		// for (int step = 0; step < 10; step++) {
 		// // heightMap:old
