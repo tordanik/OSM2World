@@ -58,7 +58,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	private VectorXZ endCutCenter = null;
 	private VectorXZ endCutRight = null;
 
-	protected EleConnectorGroup connectors;
+	public EleConnectorGroup connectors;
 
 	protected List<AttachmentConnector> attachmentConnectorList = emptyList();
 
