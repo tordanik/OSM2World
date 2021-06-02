@@ -70,6 +70,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BarrierModule.Bollard;
 import org.osm2world.core.world.modules.BarrierModule.BollardRow;
@@ -860,9 +861,9 @@ public class FrontendPbfTarget extends AbstractTarget {
 		//model block needs to be first, because it adds content (e.g. vectors) to the other blocks
 		ModelBlock.Builder modelBlockBuilder = ModelBlock.newBuilder();
 
-		for (Model m : modelBlock.getElements()) {
+		FaultTolerantIterationUtil.forEach(modelBlock.getElements(), (Model m) -> {
 			modelBlockBuilder.addModels(convertModel(m));
-		}
+		});
 
 		Vector3dBlock.Builder vector3dBlockBuilder = Vector3dBlock.newBuilder();
 
