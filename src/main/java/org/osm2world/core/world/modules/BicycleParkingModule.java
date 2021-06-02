@@ -163,6 +163,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 			double height = parseHeight(tags, STAND_DEFAULT_HEIGHT);
 			double length = parseLength(tags, STAND_DEFAULT_LENGTH);
+			BicycleStandModel model = new BicycleStandModel(height, length);
 
 			Double direction = parseAngle(tags.getValue("direction"));
 			if (direction != null) { direction = toRadians(direction); }
@@ -177,7 +178,7 @@ public class BicycleParkingModule extends AbstractModule {
 					localDirection = segment.getDirection().rightNormal().angle();
 				}
 
-				target.drawModel(BICYCLE_STAND_MODEL, standConnector.getPosXYZ(), localDirection, height, null, length);
+				target.drawModel(model, standConnector.getPosXYZ(), localDirection, height, null, length);
 
 			}
 
@@ -285,13 +286,22 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	private static final Model BICYCLE_STAND_MODEL = new Model() {
+	private static final class BicycleStandModel implements Model {
 
 		private final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
+		private final double height;
+		private final double length;
+
+		public BicycleStandModel(double height, double length) {
+			this.height = height;
+			this.length = length;
+		}
+
+
+
 		@Override
-		public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
-				Double length) {
+		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
 
 			VectorXYZ toFront = VectorXZ.fromAngle(direction).mult(length / 2).xyz(0);
 
@@ -314,6 +324,27 @@ public class BicycleParkingModule extends AbstractModule {
 			target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors, null, null, null);
 
 		}
-	};
+
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof BicycleStandModel
+					&& ((BicycleStandModel) obj).length == this.length
+					&& ((BicycleStandModel) obj).height == this.height;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((STAND_SHAPE == null) ? 0 : STAND_SHAPE.hashCode());
+			long temp;
+			temp = Double.doubleToLongBits(height);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			temp = Double.doubleToLongBits(length);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			return result;
+		}
+
+	}
 
 }
