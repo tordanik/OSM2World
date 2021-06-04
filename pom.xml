@@ -15,7 +15,7 @@
 	<licenses>
 		<license>
 			<name>GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1, February 1999</name>
-			<url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
+			<url>https://www.gnu.org/licenses/lgpl-2.1.html</url>
 		</license>
 	</licenses>
 
@@ -33,11 +33,11 @@
 	<repositories>
 		<repository>
 			<id>topobyte-repo</id>
-			<url>http://mvn.topobyte.de</url>
+			<url>https://mvn.topobyte.de</url>
 		</repository>
 		<repository>
 			<id>slimjars-repo</id>
-			<url>http://mvn.slimjars.com</url>
+			<url>https://mvn.slimjars.com</url>
 		</repository>
 	</repositories>
 
