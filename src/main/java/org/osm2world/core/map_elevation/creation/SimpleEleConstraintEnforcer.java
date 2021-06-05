@@ -175,7 +175,7 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 		/* TODO implement intended algorithm:
 		 * - first assign ground ele to ON
 		 * - then assign ele for ABOVE and BELOW based on min vertical distance constraints, and clearing
-		 */
+		 */ 
 
 		for (EleConnector c : connectors) {
 
