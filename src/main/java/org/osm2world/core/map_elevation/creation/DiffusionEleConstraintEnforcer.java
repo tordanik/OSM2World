@@ -55,10 +55,65 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		public EleConnector b;
 		public double distance;
 
+		public static final double dx = 2f;
+
+		public List<Double> h = new ArrayList<Double>();
+		public List<Double> h1 = new ArrayList<Double>();
+
 		public RoadNetworkEdge(EleConnector start, EleConnector end, double d) {
 			a = start;
 			b = end;
 			distance = d;
+			for (int i = 0; i < /* distance / dx + 2 */2; i++) {
+				h.add(0.0);
+				h1.add(0.0);
+			}
+		}
+
+		// calculate diffusion
+		public void step(double dt, double conductance) {
+			{
+				int i = 0;
+				double dhdt = conductance * (h.get(i + 1) - h.get(i)) / dx;
+				h1.set(i, h.get(i) + dhdt * dt);
+			}
+			{
+				int i = h.size() - 1;
+				double dhdt = conductance * (h.get(i - 1) - h.get(i)) / dx;
+				h1.set(i, h.get(i) + dhdt * dt);
+			}
+			for (int i = 1; i < h.size() - 1; i++) {
+				double dhdt = conductance * (h.get(i + 1) - 2 * h.get(i) + h.get(i - 1)) / dx;
+				h1.set(i, h.get(i) + dhdt * dt);
+			}
+			for (int i = 0; i < h.size(); i++) {
+				h.set(i, h1.get(i));
+			}
+			if(h.get(0)!=h.get(1)){
+				System.out.println(h);
+			}
+		}
+
+		public void setStartEnd(double start, double end) {
+			h.set(0, start);
+			h.set(h.size() - 1, end);
+		}
+
+		public double getStart() {
+			return h.get(0);
+		}
+
+		public double getEnd() {
+			return h.get(h.size() - 1);
+		}
+
+		public double getHeight(double pos/* between 0 and 1 */) {
+			int index = (int) Math.floor(pos * (h.size() - 1));
+			if (index >= h.size() - 1) {
+				return getEnd();
+			}
+			double interpolation = pos * (h.size() - 1.0) - index;
+			return h.get(index) * interpolation + h.get(index + 1) * (1 - interpolation);
 		}
 	}
 
@@ -201,14 +256,12 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 
 		}
 
-		List<EleConnector> roadList = new ArrayList<EleConnector>();
-
 		Map<MapNode, EleConnector> mapNodeToEleconnector = new HashMap<MapNode, EleConnector>();
 		Map<EleConnector, Double> heightMap = new HashMap<EleConnector, Double>();
 		Map<EleConnector, Double> heightMap1 = new HashMap<EleConnector, Double>();
 
 		// initialize height map
-		
+
 		for (EleConnector c : connectors) {
 			if (c.reference != null) {
 				if (c.reference instanceof MapNode) {
@@ -255,7 +308,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		}
 		double dt = 0.1;
 		double conductance = 1;
-		for (double t = 0; t < 3; t += dt) {
+		for (double t = 0; t < 10; t += dt) {
 			for (EleConnector c : connectors) {
 				double h = heightMap.get(c);
 				switch (c.groundState) {
@@ -274,10 +327,20 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				double dhdt = 0;
 				double h = heightMap.get(a);
 				for (RoadNetworkEdge edge : roadGraph.get(a)) {
-					dhdt -= conductance * Math.min(1, 1.0 / edge.distance) * (h - heightMap.get(edge.b));
-					// System.out.println(edge.distance);
+					edge.setStartEnd(heightMap.get(a), heightMap.get(edge.b));
+					edge.step(dt, conductance);
+					heightMap1.put(a, edge.getStart());
+					// heightMap1.put(edge.b, edge.getEnd());
+					// dhdt -= conductance * Math.min(1, 1.0 / edge.distance) * (h -
+					// heightMap.get(edge.b));
 				}
-				heightMap1.put(a, dhdt * dt + h);
+				// double dhdt = 0;
+				// double h = heightMap.get(a);
+				// for (RoadNetworkEdge edge : roadGraph.get(a)) {
+				// dhdt -= conductance * Math.min(1, 1.0 / edge.distance) * (h -
+				// heightMap.get(edge.b));
+				// }
+				// heightMap1.put(a, dhdt * dt + h);
 			}
 			for (EleConnector c : connectors) {
 				heightMap.put(c, heightMap1.get(c));
@@ -295,18 +358,18 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					EleConnector b = mapNodeToEleconnector.get(end);
 					try {
 						List<EleConnector> center = road.getCenterlineEleConnectors();
-						interpolateConnection(heightMap,center, a, b, false);
+						interpolateConnection(heightMap, center, a, b, false);
 					} catch (Exception e) {
 						// System.out.println("center" + e.getStackTrace());
 					}
 					try {
 						List<EleConnector> left = road.connectors.getConnectors(road.getOutlineXZ(false));
-						interpolateConnection(heightMap,left, a, b, true);
+						interpolateConnection(heightMap, left, a, b, true);
 					} catch (Exception e) {
 					}
 					try {
 						List<EleConnector> right = road.connectors.getConnectors(road.getOutlineXZ(true));
-						interpolateConnection(heightMap,right, a, b, true);
+						interpolateConnection(heightMap, right, a, b, true);
 					} catch (Exception e) {
 					}
 				});
@@ -322,6 +385,16 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			EleConnector start, EleConnector end, boolean isSide) {
 		if (center.size() == 0) {
 			return;
+		}
+		RoadNetworkEdge edge = null;
+		for (RoadNetworkEdge e : roadGraph.get(start)) {
+			if (e.b == end) {
+				edge = e;
+				break;
+			}
+		}
+		if (edge != null) {
+			System.out.println(edge.h);
 		}
 		// calculate length of road
 		// length will be used to calculate weights for linear interpolation
