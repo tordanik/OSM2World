@@ -224,78 +224,50 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		try {
 			point_out = new PrintWriter(new FileOutputStream("roadpoints.csv", false));
 			point_out2 = new PrintWriter(new FileOutputStream("segmentpoints.csv", false));
-			// for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
-
-			// double averageEle = 0;
-			// if (stiffSet.size() == 2) {
-			// int i = 0;
-			// for (EleConnector c : stiffSet) {
-			// for (int j = 0; j < i+1; j++) {
-			// point_out2.printf("%f,%f,%f\n", c.getPosXYZ().x,
-			// c.groundState == GroundState.ABOVE ? 10.0 : 5.0, c.getPosXYZ().z);
-			// }//generate triangle
-			// i++;
-			// }
-			// }
-			// }
 			for (EleConnector c : connectors) {
 				if (c.reference instanceof MapNode) {
 					MapNode mn = (MapNode) c.reference;
-					List<MapWaySegment> segments = mn.getConnectedWaySegments();
-					segments.forEach((segment) -> {
-						segment.getRepresentations().forEach((rep) -> {
-							MapWaySegment element = rep.getPrimaryMapElement();
-							EleConnector a = mapNodeToEleconnector.get(element.getStartNode());
-							EleConnector b = mapNodeToEleconnector.get(element.getEndNode());
-							// point_out2.printf("%f,%f,%f\n", c.getPosXYZ().x,
-							// c.groundState == GroundState.ABOVE ? 10.0 : 5.0, c.getPosXYZ().z);
-							// point_out2.printf("%f,%f,%f\n", a.getPosXYZ().x,
-							// a.groundState == GroundState.ABOVE ? 5.0 : 0.0, a.getPosXYZ().z);
-							// point_out2.printf("%f,%f,%f\n", b.getPosXYZ().x,
-							// b.groundState == GroundState.ABOVE ? 5.0 : 0.0, b.getPosXYZ().z);
-
-						});
-					});
 					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
-					// System.out.println("roads.size()" + roads.size());
+
 					roads.forEach((road) -> {
 						MapNode start = road.getPrimaryMapElement().getStartNode();
 						MapNode end = road.getPrimaryMapElement().getEndNode();
-						// System.out.println(road);
 						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
 							System.out.println("not contained in map");
 							return;
 						}
-						// System.out.println("road.getCenterline().size()" +
-						// road.getCenterline().size());
-						// List<EleConnector> left =
-						// road.connectors.getConnectors(road.getOutlineXZ(false));
-						// List<EleConnector> right =
-						// road.connectors.getConnectors(road.getOutlineXZ(true));
 						EleConnector a = mapNodeToEleconnector.get(start);
 						EleConnector b = mapNodeToEleconnector.get(end);
 						AddConnection(c, b, heightMap);
 						AddConnection(c, a, heightMap);
-						//AddConnection(a, b, heightMap);
-						if (true) {
-							return;
-						}
-
+						// AddConnection(a, b, heightMap);
+					});
+				}
+			}
+			for (EleConnector c : connectors) {
+				if (c.reference instanceof MapNode) {
+					MapNode mn = (MapNode) c.reference;
+					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+					roads.forEach((road) -> {
+						MapNode start = road.getPrimaryMapElement().getStartNode();
+						MapNode end = road.getPrimaryMapElement().getEndNode();
+						EleConnector a = mapNodeToEleconnector.get(start);
+						EleConnector b = mapNodeToEleconnector.get(end);
 						try {
 							List<EleConnector> center = road.getCenterlineEleConnectors();
-							DebugConnection(heightMap, center, point_out, c, a, b);
+							interpolateConnection(heightMap, center, a, b, false);
 						} catch (Exception e) {
 							System.out.println("center" + e.getStackTrace());
 						}
 						try {
 							List<EleConnector> left = road.connectors.getConnectors(road.getOutlineXZ(false));
-							DebugConnection(heightMap, left, point_out, c, a, b);
+							interpolateConnection(heightMap, left, a, b, true);
 						} catch (Exception e) {
 							// System.out.println(e.getStackTrace());
 						}
 						try {
 							List<EleConnector> right = road.connectors.getConnectors(road.getOutlineXZ(true));
-							DebugConnection(heightMap, right, point_out, c, a, b);
+							interpolateConnection(heightMap, right, a, b, true);
 						} catch (Exception e) {
 							// System.out.println(e.getStackTrace());
 						}
@@ -304,7 +276,9 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 			point_out.flush();
 			point_out2.flush();
-		} catch (FileNotFoundException e) {
+		} catch (
+
+		FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -402,6 +376,46 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			// point_out.printf("%f,%f,%f\n", c.getPosXYZ().x, 5.0, c.getPosXYZ().z);
 			// point_out.printf("%f,%f,%f\n", a.getPosXYZ().x, 0.0, a.getPosXYZ().z);
 			// point_out.printf("%f,%f,%f\n", b.getPosXYZ().x, 0.0, b.getPosXYZ().z);
+		}
+	}
+
+	private void interpolateConnection(Map<EleConnector, Double> heightMap, List<EleConnector> center,
+			EleConnector start, EleConnector end, boolean isSide) {
+		if (center.size() == 0) {
+			return;
+		}
+		// calculate length of road
+		// length will be used to calculate weights for linear interpolation
+		double length = 0;
+		if (isSide) {
+			EleConnector before = center.get(0);
+			for (int i = 0; i < center.size(); i++) {
+				EleConnector segment = center.get(i);
+				length += segment.getPosXYZ().distanceToXZ(before.getPosXYZ());
+				before = segment;
+			}
+		} else {
+			EleConnector before = start;
+			for (int i = 0; i < center.size(); i++) {
+				EleConnector segment = center.get(i);
+				length += segment.getPosXYZ().distanceToXZ(before.getPosXYZ());
+				before = segment;
+			}
+			length += end.getPosXYZ().distanceToXZ(before.getPosXYZ());
+		}
+		System.out.println("length=" + length);
+
+		{
+			double pos = 0;
+			double startHeight = heightMap.get(start);
+			double endHeight = heightMap.get(end);
+			EleConnector before = isSide ? center.get(0) : start;
+			for (int i = 0; i < center.size(); i++) {
+				EleConnector segment = center.get(i);
+				pos += segment.getPosXYZ().distanceToXZ(before.getPosXYZ());
+				heightMap.put(segment, endHeight * pos / length + startHeight * (1 - pos / length));
+				before = segment;
+			}
 		}
 	}
 
