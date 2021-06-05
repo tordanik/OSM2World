@@ -25,6 +25,7 @@ import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.SimpleInterpolatedEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -120,6 +121,8 @@ public final class Output {
 			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
 		}else if ("DiffusionEleConstraintEnforcer".equals(enforcerType)) {
 			cf.setEleConstraintEnforcerFactory(DiffusionEleConstraintEnforcer::new);
+		}else if ("SimpleInterpolatedEleConstraintEnforcer".equals(enforcerType)) {
+			cf.setEleConstraintEnforcerFactory(SimpleInterpolatedEleConstraintEnforcer::new);
 		}
 
 		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
