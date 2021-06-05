@@ -94,6 +94,11 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	}
 
 	@Override
+	public VectorXZ getCentroid() {
+		return center();
+	}
+
+	@Override
 	public AxisAlignedRectangleXZ boundingBox() {
 		return this;
 	}

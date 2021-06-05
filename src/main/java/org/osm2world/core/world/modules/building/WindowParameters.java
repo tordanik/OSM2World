@@ -60,6 +60,7 @@ public class WindowParameters {
 
 	public final int panesHorizontal;
 	public final int panesVertical;
+	public final boolean radialPanes;
 
 	public final WindowParameters.WindowShape windowShape;
 
@@ -111,6 +112,8 @@ public class WindowParameters {
 			panesVertical = 1;
 			panesHorizontal = 2;
 		}
+
+		radialPanes = tags.contains("window:panes:arrangement", "radial");
 
 		WindowParameters.WindowShape tempWindowShape = WindowShape.getValue(tags.getValue("window:shape"));
 		windowShape = tempWindowShape != null ? tempWindowShape : WindowShape.RECTANGLE;

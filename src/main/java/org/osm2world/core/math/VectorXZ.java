@@ -196,6 +196,11 @@ public class VectorXZ implements Vector3D {
 				cos(directionRad));
 	}
 
+	/** variant of {@link #fromAngle(double)} that takes an {@link Angle} object as the parameter */
+	public static VectorXZ fromAngle(Angle angle) {
+		return fromAngle(angle.radians);
+	}
+
 	/**
 	 * returns the angle between two direction vectors
 	 * @return  angle as radians, in range 0 to PI

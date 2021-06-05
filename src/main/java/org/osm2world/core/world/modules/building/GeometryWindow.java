@@ -1,7 +1,6 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.lang.Math.max;
-import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
@@ -17,6 +16,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonXYZ;
@@ -27,6 +27,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
@@ -46,7 +47,7 @@ public class GeometryWindow implements Window {
 
 	private final SimplePolygonXZ outline;
 	private final SimplePolygonXZ paneOutline;
-	private final List<List<VectorXZ>> innerFramePaths;
+	private final List<PolylineXZ> innerFramePaths;
 
 	private final boolean transparent;
 
@@ -70,33 +71,80 @@ public class GeometryWindow implements Window {
 			break;
 		}
 
-		innerFramePaths = new ArrayList<>();
+		if (params.radialPanes) {
+			innerFramePaths = innerPaneBorderPathsRadial(paneOutline, paneOutline.boundingBox().center(),
+					params.panesHorizontal, params.panesVertical, true);
+		} else {
+			innerFramePaths = innerPaneBorderPaths(paneOutline, params.panesHorizontal, params.panesVertical);
+		}
+
+	}
+
+	private static List<PolylineXZ> innerPaneBorderPaths(SimplePolygonXZ paneOutline,
+			int panesHorizontal, int panesVertical) {
+
+		List<PolylineXZ> result = new ArrayList<>();
 
 		AxisAlignedRectangleXZ paneBbox = paneOutline.boundingBox();
 
 		VectorXZ windowBottom = paneBbox.center().add(0, -paneBbox.sizeZ() / 2);
 		VectorXZ windowTop = paneBbox.center().add(0, +paneBbox.sizeZ() / 2);
-		for (int vertFrameI = 0; vertFrameI < params.panesVertical - 1; vertFrameI ++) {
-			VectorXZ center = interpolateBetween(windowBottom, windowTop, (vertFrameI + 1.0)/params.panesVertical);
+		for (int vertFrameI = 0; vertFrameI < panesVertical - 1; vertFrameI ++) {
+			VectorXZ center = interpolateBetween(windowBottom, windowTop, (vertFrameI + 1.0)/panesVertical);
 			LineSegmentXZ intersectionSegment = new LineSegmentXZ(
 					center.add(-paneBbox.sizeX(), 0), center.add(+paneBbox.sizeX(), 0));
 			List<VectorXZ> is = paneOutline.intersectionPositions(intersectionSegment);
-			innerFramePaths.add(asList(
+			result.add(new PolylineXZ(
 					Collections.min(is, Comparator.comparingDouble(v -> v.x)),
 					Collections.max(is, Comparator.comparingDouble(v -> v.x))));
 		}
 
 		VectorXZ windowLeft = paneBbox.center().add(-paneBbox.sizeX() / 2, 0);
 		VectorXZ windowRight = paneBbox.center().add(+paneBbox.sizeX() / 2, 0);
-		for (int horizFrameI = 0; horizFrameI < params.panesHorizontal - 1; horizFrameI ++) {
-			VectorXZ center = interpolateBetween(windowLeft, windowRight, (horizFrameI + 1.0)/params.panesHorizontal);
+		for (int horizFrameI = 0; horizFrameI < panesHorizontal - 1; horizFrameI ++) {
+			VectorXZ center = interpolateBetween(windowLeft, windowRight, (horizFrameI + 1.0)/panesHorizontal);
 			LineSegmentXZ intersectionSegment = new LineSegmentXZ(
 					center.add(0, -paneBbox.sizeZ()), center.add(0, +paneBbox.sizeZ()));
 			List<VectorXZ> is = paneOutline.intersectionPositions(intersectionSegment);
-			innerFramePaths.add(asList(
+			result.add(new PolylineXZ(
 					Collections.min(is, Comparator.comparingDouble(v -> v.z)),
 					Collections.max(is, Comparator.comparingDouble(v -> v.z))));
 		}
+
+		return result;
+
+	}
+
+	private static List<PolylineXZ> innerPaneBorderPathsRadial(SimplePolygonXZ paneOutline,
+			VectorXZ center, int panesHorizontal, int panesVertical, boolean centerSection) {
+
+		List<PolylineXZ> result = new ArrayList<>();
+
+		Angle minAngle, step;
+
+		if (centerSection) {
+			minAngle = Angle.ofDegrees(0);
+			step = Angle.ofDegrees(360 / panesHorizontal);
+		} else {
+			minAngle = Angle.ofDegrees(270);
+			Angle maxAngle = Angle.ofDegrees(90);
+			step = maxAngle.minus(minAngle).div(panesHorizontal);
+		}
+
+		for (int paneH = 0; paneH < panesHorizontal; paneH ++) {
+			if (paneH > 0 || centerSection) {
+				Angle angle = minAngle.plus(step.times(paneH));
+				System.out.println(angle);
+				LineSegmentXZ intersectionSegment = new LineSegmentXZ(center,
+						center.add(VectorXZ.fromAngle(angle).mult(2 * paneOutline.getDiameter())));
+				VectorXZ intersectionPoint = paneOutline.intersectionPositions(intersectionSegment).get(0);
+				result.add(new PolylineXZ(center, intersectionPoint));
+			}
+		}
+
+		// TODO use panesVertical for "rings" around the center
+
+		return result;
 
 	}
 
@@ -170,9 +218,9 @@ public class GeometryWindow implements Window {
 				-INNER_FRAME_WIDTH/2, -INNER_FRAME_THICKNESS/2,
 				+INNER_FRAME_WIDTH/2, +INNER_FRAME_THICKNESS/2);
 
-		for (List<VectorXZ> framePath : innerFramePaths) {
+		for (PolylineXZ framePath : innerFramePaths) {
 
-			List<VectorXYZ> framePathXYZ = framePath.stream()
+			List<VectorXYZ> framePathXYZ = framePath.vertices().stream()
 					.map(v -> surface.convertTo3D(v))
 					.map(v -> v.add(toBack))
 					.collect(toList());
