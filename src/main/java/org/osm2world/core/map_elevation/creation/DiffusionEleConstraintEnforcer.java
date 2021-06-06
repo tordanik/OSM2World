@@ -22,7 +22,6 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.RoadModule;
@@ -351,54 +350,12 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		if (from.size() == 0) {
 			return;
 		}
-
-		List<Double> hs = new ArrayList<Double>();
-		List<Double> xs = new ArrayList<Double>();
-		{
-			double l = 0;
-			VectorXYZ before = from.get(0).getPosXYZ();
-			for (int i = 0; i < from.size(); i++) {
-				VectorXYZ pos = from.get(i).getPosXYZ();
-				l += pos.distanceToXZ(before);
-
-				hs.add(heightMap.get(from.get(i)));
-				xs.add(l);
-				before = pos;
-			}
-		}
-		double total = 0;
-		{
-			VectorXYZ before = to.get(0).getPosXYZ();
-			for (int i = 0; i < from.size(); i++) {
-				VectorXYZ pos = from.get(i).getPosXYZ();
-				total += pos.distanceToXZ(before);
-			}
-		}
-		{
-			double l = 0;
-			VectorXYZ before = to.get(0).getPosXYZ();
-			for (EleConnector target : to) {
-				VectorXYZ pos = target.getPosXYZ();
-				l += pos.distanceToXZ(before);
-				boolean found = false;
-				heightMap.put(target, hs.get(0));
-				for (int i = 1; i < from.size(); i++) {
-					double x = l / total;
-					double x1 = xs.get(i) / xs.get(xs.size() - 1);
-					double h1 = hs.get(i);
-					double x2 = xs.get(i - 1) / xs.get(xs.size() - 1);
-					double h2 = hs.get(i - 1);
-					if (x1 >= x) {
-						found = true;
-						heightMap.put(target, (h1 * (x - x2) + h2 * (x1 - x)) / (x1 - x2));
-						break;
-					}
-				}
-				if(!found){
-					heightMap.put(target, hs.get(hs.size()-1));
-				}
-
-			}
+		
+		double conversionratio = (double) from.size() / to.size();
+		for (int i = 0; i < to.size(); i++) {
+			int i_from = (int) Math.round((double) (i * conversionratio));
+			i_from = i_from >= from.size() ? from.size() : i_from;
+			heightMap.put(to.get(i), heightMap.get(from.get(i_from)));
 		}
 	}
 
