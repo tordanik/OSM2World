@@ -234,6 +234,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 
 					List<EleConnector> center = road.getCenterlineEleConnectors();
 					if (center.size() == 0) {
+						// if (true) {
 						addConnectionToGraph(c, b);
 						addConnectionToGraph(c, a);
 					} else {
@@ -268,7 +269,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		}
 		double dt = 0.01;
 		double conductance = 1;
-		for (double t = 0; t < 3; t += dt) {
+		for (double t = 0; t < 100; t += dt) {
 			for (EleConnector c : connectors) {
 				double h = heightMap.get(c);
 				switch (c.groundState) {
@@ -287,7 +288,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				double dhdt = 0;
 				double h = heightMap.get(a);
 				for (RoadNetworkEdge edge : roadGraph.get(a)) {
-					dhdt -= conductance * Math.min(5, 1.0 / edge.distance) * (h - heightMap.get(edge.b));
+					dhdt -= conductance / Math.max(edge.distance * edge.distance, 5) * (h - heightMap.get(edge.b));
 				}
 				heightMap1.put(a, dhdt * dt + h);
 			}
@@ -295,33 +296,65 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				heightMap.put(c, heightMap1.get(c));
 			}
 		}
-		// apply heights to center lane
-		// for (EleConnector c : connectors) {
-		// if (c.reference instanceof MapNode) {
-		// MapNode mn = (MapNode) c.reference;
-		// List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
-		// roads.forEach((road) -> {
-		// MapNode start = road.getPrimaryMapElement().getStartNode();
-		// MapNode end = road.getPrimaryMapElement().getEndNode();
-		// EleConnector a = mapNodeToEleconnector.get(start);
-		// EleConnector b = mapNodeToEleconnector.get(end);
-		// List<EleConnector> center = road.getCenterlineEleConnectors();
-		// try {
-		// List<EleConnector> left =
-		// road.connectors.getConnectors(road.getOutlineXZ(false));
-		// } catch (Exception e) {
-		// }
-		// try {
-		// List<EleConnector> right =
-		// road.connectors.getConnectors(road.getOutlineXZ(true));
-		// } catch (Exception e) {
-		// }
-		// });
-		// }
-		// }
+		// apply heights to side lane
+		for (EleConnector c : connectors) {
+			if (c.reference instanceof MapNode) {
+				MapNode mn = (MapNode) c.reference;
+				List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+				roads.forEach((road) -> {
+					EleConnector start = mapNodeToEleconnector.get(road.getPrimaryMapElement().getStartNode());
+					EleConnector end = mapNodeToEleconnector.get(road.getPrimaryMapElement().getEndNode());
+					List<EleConnector> center = new ArrayList<EleConnector>(road.getCenterlineEleConnectors());
+
+					if (center.size() == 0) {
+						center = new ArrayList<EleConnector>();
+						center.add(start);
+						center.add(end);
+					} else {
+						if (center.get(0) != start) {
+							center.add(0, start);
+						}
+						if (center.get(center.size() - 1) != end) {
+							center.add(center.size() - 1, end);
+						}
+					}
+					try {
+						List<EleConnector> left = road.connectors.getConnectors(road.getOutlineXZ(false));
+						if (left.size() != center.size()) {
+							System.out.println(left.size() + "," + center.size());
+						}
+						copyLane(heightMap, center, left);
+					} catch (Exception e) {
+					}
+					try {
+						List<EleConnector> right = road.connectors.getConnectors(road.getOutlineXZ(true));
+						if (right.size() != center.size()) {
+							System.out.println(right.size() + "," + center.size());
+						}
+						copyLane(heightMap, center, right);
+					} catch (Exception e) {
+					}
+				});
+			}
+		}
 		for (EleConnector c : connectors) {
 			double h = heightMap.get(c);
 			c.setPosXYZ(c.getPosXYZ().addY(h));
+		}
+	}
+
+	private void copyLane(Map<EleConnector, Double> heightMap, List<EleConnector> from, List<EleConnector> to) {
+		if (to.size() == 0) {
+			return;
+		}
+		if (from.size() == 0) {
+			return;
+		}
+		double conversionratio = (double) from.size() / to.size();
+		for (int i = 0; i < to.size(); i++) {
+			int i_from = (int) Math.round((double) (i * conversionratio));
+			i_from = i_from >= from.size() ? from.size() : i_from;
+			heightMap.put(to.get(i), heightMap.get(from.get(i_from)));
 		}
 	}
 
