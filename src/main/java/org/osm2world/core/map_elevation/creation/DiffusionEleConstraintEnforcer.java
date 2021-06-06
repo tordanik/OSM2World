@@ -237,11 +237,16 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						addConnectionToGraph(c, b);
 						addConnectionToGraph(c, a);
 					} else {
+						if (c.getPosXYZ().distanceToXZ(b.getPosXYZ()) > c.getPosXYZ().distanceToXZ(a.getPosXYZ())) {
+							addConnectionToGraph(c, a);
+						} else {
+							addConnectionToGraph(c, b);
+						}
 						addConnectionToGraph(a, center.get(0));
-						addConnectionToGraph(b, center.get(center.size() - 1));
 						for (int i = 0; i < center.size() - 1; i++) {
 							addConnectionToGraph(center.get(i), center.get(i + 1));
 						}
+						addConnectionToGraph(center.get(center.size() - 1), b);
 					}
 					// AddConnection(a, b, heightMap);
 				});
@@ -261,9 +266,9 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			heightMap.put(c, h);
 			heightMap1.put(c, h);
 		}
-		double dt = 0.1;
+		double dt = 0.01;
 		double conductance = 1;
-		for (double t = 0; t < 10; t += dt) {
+		for (double t = 0; t < 3; t += dt) {
 			for (EleConnector c : connectors) {
 				double h = heightMap.get(c);
 				switch (c.groundState) {
@@ -275,14 +280,14 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 						break;
 					default: // stay at ground elevation
 				}
-				heightMap.put(c, h);
-				heightMap1.put(c, h);
+				// heightMap.put(c, h);
+				// heightMap1.put(c, h);
 			}
 			for (EleConnector a : roadGraph.keySet()) {
 				double dhdt = 0;
 				double h = heightMap.get(a);
 				for (RoadNetworkEdge edge : roadGraph.get(a)) {
-					dhdt -= conductance * Math.min(1, 1.0 / edge.distance) * (h - heightMap.get(edge.b));
+					dhdt -= conductance * Math.min(5, 1.0 / edge.distance) * (h - heightMap.get(edge.b));
 				}
 				heightMap1.put(a, dhdt * dt + h);
 			}
@@ -292,25 +297,27 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		}
 		// apply heights to center lane
 		// for (EleConnector c : connectors) {
-		// 	if (c.reference instanceof MapNode) {
-		// 		MapNode mn = (MapNode) c.reference;
-		// 		List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
-		// 		roads.forEach((road) -> {
-		// 			MapNode start = road.getPrimaryMapElement().getStartNode();
-		// 			MapNode end = road.getPrimaryMapElement().getEndNode();
-		// 			EleConnector a = mapNodeToEleconnector.get(start);
-		// 			EleConnector b = mapNodeToEleconnector.get(end);
-		// 			List<EleConnector> center = road.getCenterlineEleConnectors();
-		// 			try {
-		// 				List<EleConnector> left = road.connectors.getConnectors(road.getOutlineXZ(false));
-		// 			} catch (Exception e) {
-		// 			}
-		// 			try {
-		// 				List<EleConnector> right = road.connectors.getConnectors(road.getOutlineXZ(true));
-		// 			} catch (Exception e) {
-		// 			}
-		// 		});
-		// 	}
+		// if (c.reference instanceof MapNode) {
+		// MapNode mn = (MapNode) c.reference;
+		// List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+		// roads.forEach((road) -> {
+		// MapNode start = road.getPrimaryMapElement().getStartNode();
+		// MapNode end = road.getPrimaryMapElement().getEndNode();
+		// EleConnector a = mapNodeToEleconnector.get(start);
+		// EleConnector b = mapNodeToEleconnector.get(end);
+		// List<EleConnector> center = road.getCenterlineEleConnectors();
+		// try {
+		// List<EleConnector> left =
+		// road.connectors.getConnectors(road.getOutlineXZ(false));
+		// } catch (Exception e) {
+		// }
+		// try {
+		// List<EleConnector> right =
+		// road.connectors.getConnectors(road.getOutlineXZ(true));
+		// } catch (Exception e) {
+		// }
+		// });
+		// }
 		// }
 		for (EleConnector c : connectors) {
 			double h = heightMap.get(c);
@@ -392,7 +399,6 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				}
 				if (!found) {
 					edges.add(new RoadNetworkEdge(a, b, distance));
-					roadGraph.put(a, edges);
 				}
 			} else {
 				List<RoadNetworkEdge> edges = new ArrayList<RoadNetworkEdge>();
