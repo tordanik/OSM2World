@@ -436,12 +436,16 @@ public class ConversionFacade {
 			long lastTime = startTime;
 			long count = 0;
 			for (WorldObject o : mapData.getWorldObjects()) {
-				o.defineEleConstraints(enforcer);
+				try {
+					o.defineEleConstraints(enforcer);
+				} catch (Exception e) {
+
+				}
 				count++;
 				long current = System.currentTimeMillis();
-				if (current - lastTime > 1000) {
+				if (current - lastTime > 5000) {
 					System.out.println(
-							"creating graph:" + (count) + "/" + connectors.size() + " " + (current - startTime) + "ms");
+							"defineEleConstraints:" + (count) + "/" + connectors.size() + " " + (current - startTime) + "ms");
 					lastTime = current;
 				}
 			}

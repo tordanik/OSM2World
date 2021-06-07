@@ -16,7 +16,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Stopwatch;
+
 import org.apache.batik.bridge.Bridge;
+import org.apache.commons.lang.time.StopWatch;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -107,27 +110,54 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	private Map<AABB, List<EleConnector>> createAABBMap(Iterable<EleConnector> newConnectors) {
 		Map<AABB, List<EleConnector>> aabbs = new HashMap<AABB, List<EleConnector>>();
 		// construct aabbs
-		for (EleConnector c : newConnectors) {
-			VectorXYZ pos = c.getPosXYZ();
-			boolean found = false;
-			for (AABB aabb : aabbs.keySet()) {
-				if (aabb.isInside(pos.x, pos.z)) {
-					found = true;
-					break;
+		int eleconnectorCount = 0;
+		{
+			StopWatch stopWatch = new StopWatch();
+			stopWatch.start();
+			long last = System.currentTimeMillis();
+			int count = 0;
+			for (EleConnector c : newConnectors) {
+				VectorXYZ pos = c.getPosXYZ();
+				count++;
+				boolean found = false;
+				for (AABB aabb : aabbs.keySet()) {
+					if (aabb.isInside(pos.x, pos.z)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					List<EleConnector> cons = new ArrayList<EleConnector>();
+					AABB aabb = gridPoint(pos.x, pos.z, 100);
+					aabbs.put(aabb, cons);
+				}
+				long current = System.currentTimeMillis();
+				if (current - last > 5000) {
+					last = current;
+					System.out.println("AABB contstruction loop: " + count + " :" + stopWatch);
 				}
 			}
-			if (!found) {
-				List<EleConnector> cons = new ArrayList<EleConnector>();
-				AABB aabb = gridPoint(pos.x, pos.z, 100);
-				aabbs.put(aabb, cons);
-			}
+			eleconnectorCount = count;
 		}
-		// add EleConnectors to map
-		for (EleConnector c : newConnectors) {
-			VectorXYZ pos = c.getPosXYZ();
-			for (AABB aabb : aabbs.keySet()) {
-				if (aabb.isInsideMargin(pos.x, pos.z, 1)) {
-					aabbs.get(aabb).add(c);
+		{
+			StopWatch stopWatch = new StopWatch();
+			stopWatch.start();
+			long last = System.currentTimeMillis();
+			int count = 0;
+			// add EleConnectors to map
+			for (EleConnector c : newConnectors) {
+				VectorXYZ pos = c.getPosXYZ();
+				for (AABB aabb : aabbs.keySet()) {
+					if (aabb.isInsideMargin(pos.x, pos.z, 1)) {
+						aabbs.get(aabb).add(c);
+					}
+				}
+				long current = System.currentTimeMillis();
+				count++;
+				if (current - last > 5000) {
+					last = current;
+					System.out.println(
+							"AABB contstruction loop 2: " + count + "/" + eleconnectorCount + " :" + stopWatch);
 				}
 			}
 		}
@@ -137,8 +167,23 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
 
-		for (EleConnector c : newConnectors) {
-			connectors.add(c);
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		{
+			long last = System.currentTimeMillis();
+			long count = 0;
+			System.out.println("connectors.add(c)" + count + " :" + stopWatch);
+			System.out.flush();
+			for (EleConnector c : newConnectors) {
+				connectors.add(c);
+				count++;
+				long current = System.currentTimeMillis();
+				// System.out.println(current - last);
+				if (current - last > 5000) {
+					last = current;
+					System.out.println("connectors.add(c)" + count + " :" + stopWatch);
+				}
+			}
 		}
 
 		/* connect connectors */
@@ -154,14 +199,23 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 
 		// }
 		// }
-
-		Map<AABB, List<EleConnector>> map = createAABBMap(connectors);
-		for (List<EleConnector> pconnectors : map.values()) {// parts of connector list
-			for (EleConnector c1 : pconnectors) {
-				for (EleConnector c2 : pconnectors) {
-					if (c1 != c2 && c1.connectsTo(c2)) {
-						requireSameEle(c1, c2);
+		{
+			long last = System.currentTimeMillis();
+			System.out.println("createAABBMap");
+			Map<AABB, List<EleConnector>> map = createAABBMap(connectors);
+			for (List<EleConnector> pconnectors : map.values()) {// parts of connector list
+				for (EleConnector c1 : pconnectors) {
+					for (EleConnector c2 : pconnectors) {
+						if (c1 != c2 && c1.connectsTo(c2)) {
+							requireSameEle(c1, c2);
+						}
 					}
+				}
+				long current = System.currentTimeMillis();
+				if (current - last > 5000) {
+					last = current;
+					System.out.println("AABB:" + stopWatch + "/" + map.size());
+					System.out.flush();
 				}
 			}
 		}
