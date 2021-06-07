@@ -1,5 +1,6 @@
 package org.osm2world.console;
 
+import static java.util.Arrays.asList;
 import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
@@ -31,20 +32,22 @@ public class OSM2World {
 
 	private static final File STANDARD_PROPERTIES_FILE = new File("standard.properties");
 
-	public static void main(String[] unparsedArgs) {
+	public static void main(String[] rawArgs) {
 
-		/* assume --gui (and --config with standard properties, if they exist) if no parameters are given */
+		/* assume --gui and standard properties if the respective parameters are missing */
 
-		if (unparsedArgs.length == 0) {
+		List<String> unparsedArgs = new ArrayList<>(asList(rawArgs));
 
+		if (unparsedArgs.isEmpty()) {
 			System.out.println("No parameters, running graphical interface.\n"
 					+ "If you want to use the command line, use the --help"
 					+ " parameter for a list of available parameters.");
+			unparsedArgs.add("--gui");
+		}
 
-			if (STANDARD_PROPERTIES_FILE.isFile()) {
-				unparsedArgs = new String[]{"--gui", "--config", STANDARD_PROPERTIES_FILE.toString()};
-			}
-
+		if (!unparsedArgs.contains("--config") && STANDARD_PROPERTIES_FILE.isFile()) {
+			System.out.println("No --config parameter, using default style (" + STANDARD_PROPERTIES_FILE + ").\n");
+			unparsedArgs.addAll(asList("--config", STANDARD_PROPERTIES_FILE.toString()));
 		}
 
 		/* parse command line arguments */
@@ -52,7 +55,7 @@ public class OSM2World {
 		CLIArguments args = null;
 
 		try {
-			args = parseArguments(unparsedArgs);
+			args = parseArguments(unparsedArgs.toArray(new String[0]));
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
