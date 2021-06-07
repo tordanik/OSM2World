@@ -183,23 +183,29 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 	public void enforceConstraints() {
 
 		/* assign elevation to stiff sets by averaging terrain elevation */
-		// TODO what for stiff sets above the ground?
-		System.out.println("DiffusionEleConstraintEnforcer:enforceConstraints");
-		for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
+		System.out.print("DiffusionEleConstraintEnforcer: StiffConnectorSet");
+		System.out.flush();
+		{
+			long startTime = System.currentTimeMillis();
+			for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
 
-			double averageEle = 0;
+				double averageEle = 0;
 
-			for (EleConnector connector : stiffSet) {
-				averageEle += connector.getPosXYZ().y;
+				for (EleConnector connector : stiffSet) {
+					averageEle += connector.getPosXYZ().y;
+				}
+
+				averageEle /= stiffSet.size();
+
+				for (EleConnector connector : stiffSet) {
+					connector.setPosXYZ(connector.pos.xyz(averageEle));
+				}
+
 			}
-
-			averageEle /= stiffSet.size();
-
-			for (EleConnector connector : stiffSet) {
-				connector.setPosXYZ(connector.pos.xyz(averageEle));
-			}
-
+			System.out.println(" " + (System.currentTimeMillis() - startTime) + "ms");
 		}
+		System.out.println("initialize height map");
+		System.out.flush();
 
 		Map<MapNode, EleConnector> mapNodeToEleconnector = new HashMap<MapNode, EleConnector>();
 		Map<EleConnector, Double> heightMap = new HashMap<EleConnector, Double>();
@@ -218,43 +224,64 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 			}
 		}
 
-		for (EleConnector c : connectors) {
-			if (c.reference instanceof MapNode) {
-				MapNode mn = (MapNode) c.reference;
-				List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
-				roads.forEach((road) -> {
-					MapNode start = road.getPrimaryMapElement().getStartNode();
-					MapNode end = road.getPrimaryMapElement().getEndNode();
-					if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
-						System.out.println("not contained in map");
-						return;
-					}
-					EleConnector a = mapNodeToEleconnector.get(start);
-					EleConnector b = mapNodeToEleconnector.get(end);
+		{
+			System.out.println("creating graph...");
+			System.out.flush();
+			long startTime = System.currentTimeMillis();
+			long lastTime = startTime;
+			int count = 0;
+			for (EleConnector c : connectors) {
+				count++;
+				if (c.reference instanceof MapNode) {
+					MapNode mn = (MapNode) c.reference;
+					List<Road> roads = RoadModule.getConnectedRoads(mn, false);// requirelanes?
+					roads.forEach((road) -> {
+						MapNode start = road.getPrimaryMapElement().getStartNode();
+						MapNode end = road.getPrimaryMapElement().getEndNode();
+						if (!mapNodeToEleconnector.containsKey(start) || !mapNodeToEleconnector.containsKey(end)) {
+							// System.out.println("not contained in map");
+							return;
+						}
+						EleConnector a = mapNodeToEleconnector.get(start);
+						EleConnector b = mapNodeToEleconnector.get(end);
 
-					List<EleConnector> center = road.getCenterlineEleConnectors();
-					if (center.size() == 0) {
-						// if (true) {
-						addConnectionToGraph(c, b);
-						addConnectionToGraph(c, a);
-					} else {
-						if (c.getPosXYZ().distanceToXZ(b.getPosXYZ()) > c.getPosXYZ().distanceToXZ(a.getPosXYZ())) {
+						List<EleConnector> center = road.getCenterlineEleConnectors();
+						if (center.size() == 0) {
+							// if (true) {
+							addConnectionToGraph(c, b);
 							addConnectionToGraph(c, a);
 						} else {
-							addConnectionToGraph(c, b);
+							if (c.getPosXYZ().distanceToXZ(b.getPosXYZ()) > c.getPosXYZ().distanceToXZ(a.getPosXYZ())) {
+								addConnectionToGraph(c, a);
+							} else {
+								addConnectionToGraph(c, b);
+							}
+							addConnectionToGraph(a, center.get(0));
+							for (int i = 0; i < center.size() - 1; i++) {
+								addConnectionToGraph(center.get(i), center.get(i + 1));
+							}
+							addConnectionToGraph(center.get(center.size() - 1), b);
 						}
-						addConnectionToGraph(a, center.get(0));
-						for (int i = 0; i < center.size() - 1; i++) {
-							addConnectionToGraph(center.get(i), center.get(i + 1));
-						}
-						addConnectionToGraph(center.get(center.size() - 1), b);
-					}
-					// AddConnection(a, b, heightMap);
-				});
+						// AddConnection(a, b, heightMap);
+					});
+				}
+				long current = System.currentTimeMillis();
+				if (current - lastTime > 5000) {
+					System.out.println(
+							"creating graph:" + (count) + "/" + connectors.size() + " " + (current - startTime) + "ms");
+					lastTime = current;
+				}
 			}
+			System.out.println("creating graph:" + (System.currentTimeMillis() - startTime) + "ms");
+			System.out.flush();
 		}
 		for (EleConnector c : connectors) {
 			double h = 0;
+			if (c == null || c.groundState == null) {
+				heightMap.put(c, h);
+				heightMap1.put(c, h);
+				continue;
+			}
 			switch (c.groundState) {
 				case ABOVE:
 					h = 5.0;
@@ -269,31 +296,41 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		}
 		double dt = 0.01;
 		double conductance = 1;
-		for (double t = 0; t < 100; t += dt) {
-			for (EleConnector c : connectors) {
-				double h = heightMap.get(c);
-				switch (c.groundState) {
-					case ABOVE:
-						h = 5.0;
-						break;
-					case BELOW:
-						h = -5.0;
-						break;
-					default: // stay at ground elevation
+		{
+			long startTime = System.currentTimeMillis();
+			for (double t = 0; t < 10; t += dt) {
+				for (EleConnector c : connectors) {
+					double h = heightMap.get(c);
+					if (c == null || c.groundState == null) {
+						heightMap.put(c, h);
+						heightMap1.put(c, h);
+						continue;
+					}
+					switch (c.groundState) {
+						case ABOVE:
+							h = 5.0;
+							break;
+						case BELOW:
+							h = -5.0;
+							break;
+						default: // stay at ground elevation
+					}
+					// heightMap.put(c, h);
+					// heightMap1.put(c, h);
 				}
-				// heightMap.put(c, h);
-				// heightMap1.put(c, h);
-			}
-			for (EleConnector a : roadGraph.keySet()) {
-				double dhdt = 0;
-				double h = heightMap.get(a);
-				for (RoadNetworkEdge edge : roadGraph.get(a)) {
-					dhdt -= conductance / Math.max(edge.distance * edge.distance, 5) * (h - heightMap.get(edge.b));
+				for (EleConnector a : roadGraph.keySet()) {
+					double dhdt = 0;
+					double h = heightMap.get(a);
+					for (RoadNetworkEdge edge : roadGraph.get(a)) {
+						dhdt -= conductance / Math.max(edge.distance * edge.distance, 5) * (h - heightMap.get(edge.b));
+					}
+					heightMap1.put(a, dhdt * dt + h);
 				}
-				heightMap1.put(a, dhdt * dt + h);
-			}
-			for (EleConnector c : connectors) {
-				heightMap.put(c, heightMap1.get(c));
+				for (EleConnector c : connectors) {
+					heightMap.put(c, heightMap1.get(c));
+				}
+				System.out.println("t=" + t + "diffusion time:" + (System.currentTimeMillis() - startTime) + "ms");
+				System.out.flush();
 			}
 		}
 		// apply heights to side lane
@@ -321,7 +358,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					try {
 						List<EleConnector> left = road.connectors.getConnectors(road.getOutlineXZ(false));
 						if (left.size() != center.size()) {
-							System.out.println(left.size() + "," + center.size());
+							// System.out.println(left.size() + "," + center.size());
 						}
 						copyLane(heightMap, center, left);
 					} catch (Exception e) {
@@ -329,7 +366,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 					try {
 						List<EleConnector> right = road.connectors.getConnectors(road.getOutlineXZ(true));
 						if (right.size() != center.size()) {
-							System.out.println(right.size() + "," + center.size());
+							// System.out.println(right.size() + "," + center.size());
 						}
 						copyLane(heightMap, center, right);
 					} catch (Exception e) {
@@ -350,7 +387,7 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		if (from.size() == 0) {
 			return;
 		}
-		
+
 		double conversionratio = (double) from.size() / to.size();
 		for (int i = 0; i < to.size(); i++) {
 			int i_from = (int) Math.round((double) (i * conversionratio));

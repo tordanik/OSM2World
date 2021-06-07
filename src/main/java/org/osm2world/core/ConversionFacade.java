@@ -23,6 +23,7 @@ import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.creation.OriginMapProjection;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_elevation.creation.DiffusionEleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.EleConstraintValidator;
 import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
@@ -77,8 +78,8 @@ import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 /**
- * provides an easy way to call all steps of the conversion process
- * in the correct order
+ * provides an easy way to call all steps of the conversion process in the
+ * correct order
  */
 public class ConversionFacade {
 
@@ -116,30 +117,12 @@ public class ConversionFacade {
 	 */
 	private static final List<WorldModule> createDefaultModuleList() {
 
-		return Arrays.asList((WorldModule)
-				new RoadModule(),
-				new RailwayModule(),
-				new AerowayModule(),
-				new BuildingModule(),
-				new ParkingModule(),
-				new TreeModule(),
-				new StreetFurnitureModule(),
-				new TrafficSignModule(),
-				new BicycleParkingModule(),
-				new WaterModule(),
-				new PoolModule(),
-				new GolfModule(),
-				new SportsModule(),
-				new CliffModule(),
-				new BarrierModule(),
-				new PowerModule(),
-				new MastModule(),
-				new BridgeModule(),
-				new TunnelModule(),
-				new SurfaceAreaModule(),
-				new InvisibleModule(),
-				new IndoorModule()
-		);
+		return Arrays.asList((WorldModule) new RoadModule(), new RailwayModule(), new AerowayModule(),
+				new BuildingModule(), new ParkingModule(), new TreeModule(), new StreetFurnitureModule(),
+				new TrafficSignModule(), new BicycleParkingModule(), new WaterModule(), new PoolModule(),
+				new GolfModule(), new SportsModule(), new CliffModule(), new BarrierModule(), new PowerModule(),
+				new MastModule(), new BridgeModule(), new TunnelModule(), new SurfaceAreaModule(),
+				new InvisibleModule(), new IndoorModule());
 
 	}
 
@@ -150,53 +133,46 @@ public class ConversionFacade {
 	private Factory<? extends EleConstraintEnforcer> eleConstraintEnforcerFactory = NoneEleConstraintEnforcer::new;
 
 	/**
-	 * sets the factory that will make {@link MapProjection}
-	 * instances during subsequent calls to
+	 * sets the factory that will make {@link MapProjection} instances during
+	 * subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
 	 */
-	public void setMapProjectionFactory(
-			Factory<? extends OriginMapProjection> mapProjectionFactory) {
+	public void setMapProjectionFactory(Factory<? extends OriginMapProjection> mapProjectionFactory) {
 		this.mapProjectionFactory = mapProjectionFactory;
 	}
 
 	/**
-	 * sets the factory that will make {@link EleConstraintEnforcer}
-	 * instances during subsequent calls to
+	 * sets the factory that will make {@link EleConstraintEnforcer} instances
+	 * during subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
 	 */
-	public void setEleConstraintEnforcerFactory(
-			Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
+	public void setEleConstraintEnforcerFactory(Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
 		this.eleConstraintEnforcerFactory = interpolatorFactory;
 	}
 
 	/**
-	 * sets the factory that will make {@link TerrainInterpolator}
-	 * instances during subsequent calls to
+	 * sets the factory that will make {@link TerrainInterpolator} instances during
+	 * subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
 	 */
-	public void setTerrainEleInterpolatorFactory(
-			Factory<? extends TerrainInterpolator> enforcerFactory) {
+	public void setTerrainEleInterpolatorFactory(Factory<? extends TerrainInterpolator> enforcerFactory) {
 		this.terrainEleInterpolatorFactory = enforcerFactory;
 	}
 
-
 	/**
-	 * performs all necessary steps to go from
-	 * an OSM file to the renderable {@link WorldObject}s.
-	 * Sends updates to {@link ProgressListener}s.
+	 * performs all necessary steps to go from an OSM file to the renderable
+	 * {@link WorldObject}s. Sends updates to {@link ProgressListener}s.
 	 *
-	 * @param osmFile       file to read OSM data from; != null
-	 * @param worldModules  modules that will create the {@link WorldObject}s
-	 *                      in the result; null to use a default module list
-	 * @param config        set of parameters that controls various aspects
-	 *                      of the modules' behavior; null to use defaults
-	 * @param targets       receivers of the conversion results; can be null if
-	 *                      you want to handle the returned results yourself
+	 * @param osmFile      file to read OSM data from; != null
+	 * @param worldModules modules that will create the {@link WorldObject}s in the
+	 *                     result; null to use a default module list
+	 * @param config       set of parameters that controls various aspects of the
+	 *                     modules' behavior; null to use defaults
+	 * @param targets      receivers of the conversion results; can be null if you
+	 *                     want to handle the returned results yourself
 	 */
-	public Results createRepresentations(File osmFile,
-			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target> targets)
-			throws IOException {
+	public Results createRepresentations(File osmFile, List<? extends WorldModule> worldModules, Configuration config,
+			List<? extends Target> targets) throws IOException {
 
 		if (osmFile == null) {
 			throw new IllegalArgumentException("osmFile must not be null");
@@ -209,27 +185,23 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * variant of
-	 * {@link #createRepresentations(File, List, Configuration, List)}
-	 * that accepts {@link OSMData} instead of a file.
-	 * Use this when all data is already
-	 * in memory, for example with editor applications.
-	 * To obtain the data, you can use an {@link OSMDataReader}.
+	 * variant of {@link #createRepresentations(File, List, Configuration, List)}
+	 * that accepts {@link OSMData} instead of a file. Use this when all data is
+	 * already in memory, for example with editor applications. To obtain the data,
+	 * you can use an {@link OSMDataReader}.
 	 *
-	 * @param osmData       input data; != null
-	 * @param worldModules  modules that will create the {@link WorldObject}s
-	 *                      in the result; null to use a default module list
-	 * @param config        set of parameters that controls various aspects
-	 *                      of the modules' behavior; null to use defaults
-	 * @param targets       receivers of the conversion results; can be null if
-	 *                      you want to handle the returned results yourself
+	 * @param osmData      input data; != null
+	 * @param worldModules modules that will create the {@link WorldObject}s in the
+	 *                     result; null to use a default module list
+	 * @param config       set of parameters that controls various aspects of the
+	 *                     modules' behavior; null to use defaults
+	 * @param targets      receivers of the conversion results; can be null if you
+	 *                     want to handle the returned results yourself
 	 *
-	 * @throws BoundingBoxSizeException  for oversized bounding boxes
+	 * @throws BoundingBoxSizeException for oversized bounding boxes
 	 */
-	public Results createRepresentations(OSMData osmData,
-			List<? extends WorldModule> worldModules, Configuration config,
-			List<? extends Target> targets)
-			throws IOException, BoundingBoxSizeException {
+	public Results createRepresentations(OSMData osmData, List<? extends WorldModule> worldModules,
+			Configuration config, List<? extends Target> targets) throws IOException, BoundingBoxSizeException {
 
 		/* check the inputs */
 
@@ -273,11 +245,10 @@ public class ConversionFacade {
 		}
 
 		Materials.configureMaterials(config);
-			//this will cause problems if multiple conversions are run
-			//at the same time, because global variables are being modified
+		// this will cause problems if multiple conversions are run
+		// at the same time, because global variables are being modified
 
-		WorldCreator moduleManager =
-			new WorldCreator(config, worldModules);
+		WorldCreator moduleManager = new WorldCreator(config, worldModules);
 		moduleManager.addRepresentationsTo(mapData);
 
 		/* determine elevations */
@@ -316,11 +287,12 @@ public class ConversionFacade {
 
 		/* collect the surfaces */
 
-		SpatialIndex<AttachmentSurface> attachmentSurfaceIndex =
-				new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
+		SpatialIndex<AttachmentSurface> attachmentSurfaceIndex = new IndexGrid<>(mapData.getDataBoundary().pad(50), 100,
+				100);
 
 		for (WorldObject object : mapData.getWorldObjects()) {
-			if (object.getParent() != null) continue;
+			if (object.getParent() != null)
+				continue;
 			object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
 		}
 
@@ -328,12 +300,13 @@ public class ConversionFacade {
 
 		for (WorldObject object : mapData.getWorldObjects()) {
 
-			if (object.getParent() != null) continue;
+			if (object.getParent() != null)
+				continue;
 
 			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
 
-				Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
-						bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ));
+				Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex
+						.probe(bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ));
 
 				Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
 						.filter(s -> s.getTypes().stream().anyMatch(connector.compatibleSurfaceTypes::contains))
@@ -341,7 +314,8 @@ public class ConversionFacade {
 
 				if (closestSurface.isPresent()) {
 
-					double ele = closestSurface.get().getBaseEleAt(connector.originalPos.xz()) + connector.preferredHeight;
+					double ele = closestSurface.get().getBaseEleAt(connector.originalPos.xz())
+							+ connector.preferredHeight;
 					VectorXYZ posAtEle = connector.originalPos.y(ele);
 
 					for (boolean requirePreferredHeight : asList(true, false)) {
@@ -357,14 +331,15 @@ public class ConversionFacade {
 						};
 
 						Optional<FaceXYZ> closestFace = closestSurface.get().getFaces().stream()
-								.filter(matchesPreferredHeight)
-								.min(comparingDouble(f -> f.distanceTo(posAtEle)));
+								.filter(matchesPreferredHeight).min(comparingDouble(f -> f.distanceTo(posAtEle)));
 
-						if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height
+						if (!closestFace.isPresent())
+							continue; // try again without enforcing the preferred height
 
 						VectorXYZ closestPoint = closestFace.get().closestPoint(posAtEle);
 
-						if (closestPoint.xz().distanceTo(connector.originalPos.xz()) > connector.maxDistanceXZ + 0.001) {
+						if (closestPoint.xz().distanceTo(connector.originalPos.xz()) > connector.maxDistanceXZ
+								+ 0.001) {
 							continue;
 						}
 
@@ -382,16 +357,13 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * uses OSM data and an terrain elevation data (usually from an external
-	 * source) to calculate elevations for all {@link EleConnector}s of the
+	 * uses OSM data and an terrain elevation data (usually from an external source)
+	 * to calculate elevations for all {@link EleConnector}s of the
 	 * {@link WorldObject}s
 	 */
-	private void calculateElevations(MapData mapData,
-			TerrainElevationData eleData, Configuration config) {
+	private void calculateElevations(MapData mapData, TerrainElevationData eleData, Configuration config) {
 
-		final TerrainInterpolator interpolator =
-				(eleData != null)
-				? terrainEleInterpolatorFactory.get()
+		final TerrainInterpolator interpolator = (eleData != null) ? terrainEleInterpolatorFactory.get()
 				: new ZeroInterpolator();
 
 		/* provide known elevations from eleData to the interpolator */
@@ -437,28 +409,46 @@ public class ConversionFacade {
 		});
 
 		System.out.println("time terrain interpolation: " + stopWatch);
+		System.out.flush();
+
 		stopWatch.reset();
 		stopWatch.start();
 
 		/* enforce constraints defined by WorldObjects */
 
+		System.out.println("enforcer.addConnectors");
+		System.out.flush();
+
 		boolean debugConstraints = config.getBoolean("debugConstraints", false);
 
 		final EleConstraintEnforcer enforcer = debugConstraints
-				? new EleConstraintValidator(mapData,
-						eleConstraintEnforcerFactory.get())
+				? new EleConstraintValidator(mapData, eleConstraintEnforcerFactory.get())
 				: eleConstraintEnforcerFactory.get();
 
 		enforcer.addConnectors(connectors);
 
 		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {
 
-			FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(),
-					(WorldObject o) -> o.defineEleConstraints(enforcer));
-
+			System.out.println("defineEleConstraints");
+			System.out.flush();
+			long startTime = System.currentTimeMillis();
+			long lastTime = startTime;
+			long count = 0;
+			for (WorldObject o : mapData.getWorldObjects()) {
+				o.defineEleConstraints(enforcer);
+				count++;
+				long current = System.currentTimeMillis();
+				if (current - lastTime > 1000) {
+					System.out.println(
+							"creating graph:" + (count) + "/" + connectors.size() + " " + (current - startTime) + "ms");
+					lastTime = current;
+				}
+			}
 		}
 
 		System.out.println("time add constraints: " + stopWatch);
+		System.out.flush();
+
 		stopWatch.reset();
 		stopWatch.start();
 
@@ -471,24 +461,20 @@ public class ConversionFacade {
 	}
 
 	public static enum Phase {
-		MAP_DATA,
-		REPRESENTATION,
-		ELEVATION,
-		TERRAIN,
-		FINISHED
+		MAP_DATA, REPRESENTATION, ELEVATION, TERRAIN, FINISHED
 	}
 
 	/**
-	 * implemented by classes that want to be informed about
-	 * a conversion run's progress
+	 * implemented by classes that want to be informed about a conversion run's
+	 * progress
 	 */
 	public static interface ProgressListener {
 
 		/** announces the start of a new phase */
 		public void updatePhase(Phase newPhase);
 
-//		/** announces the fraction of the current phase that is completed */
-//		public void updatePhaseProgress(float phaseProgress);
+		// /** announces the fraction of the current phase that is completed */
+		// public void updatePhaseProgress(float phaseProgress);
 
 	}
 
@@ -504,19 +490,19 @@ public class ConversionFacade {
 		}
 	}
 
-//	private void updatePhaseProgress(float phaseProgress) {
-//		for (ProgressListener listener : listeners) {
-//			listener.updatePhaseProgress(phaseProgress);
-//		}
-//	}
+	// private void updatePhaseProgress(float phaseProgress) {
+	// for (ProgressListener listener : listeners) {
+	// listener.updatePhaseProgress(phaseProgress);
+	// }
+	// }
 
 	/**
-	 * exception to be thrown if the OSM input data covers an area
-	 * larger than the maxBoundingBoxDegrees config property
+	 * exception to be thrown if the OSM input data covers an area larger than the
+	 * maxBoundingBoxDegrees config property
 	 */
 	public static class BoundingBoxSizeException extends RuntimeException {
 
-		private static final long serialVersionUID = 2841146365929523046L; //generated VersionID
+		private static final long serialVersionUID = 2841146365929523046L; // generated VersionID
 		public final OsmBounds bound;
 
 		private BoundingBoxSizeException(OsmBounds bound) {
