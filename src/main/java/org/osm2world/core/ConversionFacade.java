@@ -425,6 +425,7 @@ public class ConversionFacade {
 				? new EleConstraintValidator(mapData, eleConstraintEnforcerFactory.get())
 				: eleConstraintEnforcerFactory.get();
 
+		System.out.println("calculateElevations:connectors.size()" + connectors.size());
 		enforcer.addConnectors(connectors);
 
 		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {

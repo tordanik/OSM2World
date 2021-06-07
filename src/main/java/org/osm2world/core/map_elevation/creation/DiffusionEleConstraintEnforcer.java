@@ -64,6 +64,76 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 
 	Map<EleConnector, List<RoadNetworkEdge>> roadGraph = new HashMap<EleConnector, List<RoadNetworkEdge>>();;
 
+	// axis aligned boundary boxes
+	class AABB {
+		public int x1;
+		public int z1;
+		public int x2;
+		public int z2;
+
+		public AABB(int x1, int z1, int x2, int z2) {
+			this.x1 = x1;
+			this.x2 = x2;
+			this.z1 = z1;
+			this.z2 = z2;
+			if (x1 > x2) {
+				throw new RuntimeException("x2 should be greater than x1");
+			}
+			if (z1 > z2) {
+				throw new RuntimeException("z2 should be greater than z1s");
+			}
+		}
+
+		public boolean isInside(double x, double z) {
+			return isInsideMargin(x, z, 0);
+		}
+
+		// more likely to be true
+		public boolean isInsideMargin(double x, double z, int margin) {
+			return (x1 - margin - x) * (x2 + margin - x) < 0 && (z1 - margin - z) * (z2 + margin - z) < 0;
+		}
+
+		public boolean equalsTo(AABB aabb1) {
+			return aabb1.x1 == x1 && aabb1.x2 == x2 && aabb1.z1 == z1 && aabb1.z1 == z1;
+		}
+	}
+
+	private AABB gridPoint(double x, double z, int size) {
+		int x1 = (int) Math.floor(x / size) * size;
+		int z1 = (int) Math.floor(z / size) * size;
+		return new AABB(x1, z1, x1 + size, z1 + size);
+	}
+
+	private Map<AABB, List<EleConnector>> createAABBMap(Iterable<EleConnector> newConnectors) {
+		Map<AABB, List<EleConnector>> aabbs = new HashMap<AABB, List<EleConnector>>();
+		// construct aabbs
+		for (EleConnector c : newConnectors) {
+			VectorXYZ pos = c.getPosXYZ();
+			boolean found = false;
+			for (AABB aabb : aabbs.keySet()) {
+				if (aabb.isInside(pos.x, pos.z)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				List<EleConnector> cons = new ArrayList<EleConnector>();
+				AABB aabb = gridPoint(pos.x, pos.z, 100);
+				aabbs.put(aabb, cons);
+			}
+		}
+		// add EleConnectors to map
+		for (EleConnector c : newConnectors) {
+			VectorXYZ pos = c.getPosXYZ();
+			for (AABB aabb : aabbs.keySet()) {
+				if (aabb.isInsideMargin(pos.x, pos.z, 1)) {
+					aabbs.get(aabb).add(c);
+				}
+			}
+		}
+		return aabbs;
+	}
+
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
 
@@ -73,13 +143,26 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 
 		/* connect connectors */
 
-		for (EleConnector c1 : newConnectors) {
-			for (EleConnector c2 : connectors) {
+		// old implementation O(n^2)
 
-				if (c1 != c2 && c1.connectsTo(c2)) {
-					requireSameEle(c1, c2);
+		// for (EleConnector c1 : newConnectors) {
+		// for (EleConnector c2 : connectors) {
+
+		// if (c1 != c2 && c1.connectsTo(c2)) {
+		// requireSameEle(c1, c2);
+		// }
+
+		// }
+		// }
+
+		Map<AABB, List<EleConnector>> map = createAABBMap(connectors);
+		for (List<EleConnector> pconnectors : map.values()) {// parts of connector list
+			for (EleConnector c1 : pconnectors) {
+				for (EleConnector c2 : pconnectors) {
+					if (c1 != c2 && c1.connectsTo(c2)) {
+						requireSameEle(c1, c2);
+					}
 				}
-
 			}
 		}
 
@@ -298,7 +381,8 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 		double conductance = 1;
 		{
 			long startTime = System.currentTimeMillis();
-			for (double t = 0; t < 10; t += dt) {
+			long lastTime = startTime;
+			for (double t = 0; t < 100; t += dt) {
 				for (EleConnector c : connectors) {
 					double h = heightMap.get(c);
 					if (c == null || c.groundState == null) {
@@ -329,8 +413,12 @@ public final class DiffusionEleConstraintEnforcer implements EleConstraintEnforc
 				for (EleConnector c : connectors) {
 					heightMap.put(c, heightMap1.get(c));
 				}
-				System.out.println("t=" + t + "diffusion time:" + (System.currentTimeMillis() - startTime) + "ms");
-				System.out.flush();
+				long current = System.currentTimeMillis();
+				if (current - lastTime > 5000) {
+					lastTime = current;
+					System.out.println("t=" + t + "diffusion time:" + (System.currentTimeMillis() - startTime) + "ms");
+					System.out.flush();
+				}
 			}
 		}
 		// apply heights to side lane
