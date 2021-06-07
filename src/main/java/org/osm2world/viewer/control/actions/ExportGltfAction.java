@@ -3,32 +3,33 @@ package org.osm2world.viewer.control.actions;
 import java.awt.HeadlessException;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.osm2world.core.target.obj.ObjWriter;
+import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ViewerFrame;
 
-public class ExportObjAction extends AbstractExportAction {
+public class ExportGltfAction extends AbstractExportAction {
 
 	private static final long serialVersionUID = -6233943695461766122L;  //generated serialVersionUID
 
-	public ExportObjAction(ViewerFrame viewerFrame, Data data,
+	public ExportGltfAction(ViewerFrame viewerFrame, Data data,
 			MessageManager messageManager, RenderOptions renderOptions) {
 
-		super("Export OBJ file", viewerFrame, data, messageManager, renderOptions);
-		putValue(SHORT_DESCRIPTION, "Writes a Wavefront .obj file");
-		putValue(MNEMONIC_KEY, KeyEvent.VK_O);
+		super("Export glTF file", viewerFrame, data, messageManager, renderOptions);
+		putValue(SHORT_DESCRIPTION, "Writes a .gltf file");
+		putValue(MNEMONIC_KEY, KeyEvent.VK_G);
 
 	}
 
+	@Override
 	protected FileNameExtensionFilter getFileNameExtensionFilter() {
-		return new FileNameExtensionFilter("Wavefront .obj files", "obj");
+		return new FileNameExtensionFilter("glTF files", ".gltf");
 	}
 
 	@Override
@@ -39,18 +40,16 @@ public class ExportObjAction extends AbstractExportAction {
 			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
 
 			/* write the file */
-			ObjWriter.writeObjFile(
-					file,
-					data.getConversionResults().getMapData(),
-					data.getConversionResults().getMapProjection(),
-					null, renderOptions.projection, underground);
+			GltfTarget gltfTarget = new GltfTarget(file);
+			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
+			gltfTarget.finish();
 
-			messageManager.addMessage("exported Wavefront .obj file " + file);
+			messageManager.addMessage("exported .gltf file " + file);
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			JOptionPane.showMessageDialog(viewerFrame,
 					e.toString(),
-					"Could not export Wavefront .obj file",
+					"Could not export .gltf file",
 					JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}

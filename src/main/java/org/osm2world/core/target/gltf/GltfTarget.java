@@ -194,7 +194,7 @@ public class GltfTarget extends AbstractTarget {
 		try (FileWriter writer = new FileWriter(outputFile)) {
 			new GsonBuilder().setPrettyPrinting().create().toJson(gltf, writer);
 		} catch (JsonIOException | IOException e) {
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 
 	}
