@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.DatatypeConverter;
 
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -55,6 +54,8 @@ import org.osm2world.core.world.data.WorldObject;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 public class GltfTarget extends AbstractTarget {
 
