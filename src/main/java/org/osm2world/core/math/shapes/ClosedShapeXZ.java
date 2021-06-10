@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -44,5 +45,7 @@ public interface ClosedShapeXZ extends ShapeXZ {
 	 * For some shapes (e.g. circles), this may be an approximation.
 	 */
 	public List<TriangleXZ> getTriangulation();
+
+	public List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment);
 
 }

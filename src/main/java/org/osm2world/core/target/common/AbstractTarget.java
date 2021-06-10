@@ -151,7 +151,7 @@ public abstract class AbstractTarget implements Target {
 				numPoints = Integer.max(4, numPoints / 2);
 			}
 
-			shape = new SimplePolygonXZ(circle.getVertices(numPoints));
+			shape = new SimplePolygonXZ(circle.vertices(numPoints));
 
 		}
 
@@ -375,7 +375,7 @@ public abstract class AbstractTarget implements Target {
 
 		} else {
 
-			bottomShape = new SimplePolygonXZ(bottomCircle.getVertices(corners));
+			bottomShape = new SimplePolygonXZ(bottomCircle.vertices(corners));
 
 		}
 

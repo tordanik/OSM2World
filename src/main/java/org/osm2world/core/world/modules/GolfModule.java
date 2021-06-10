@@ -220,7 +220,7 @@ public class GolfModule extends AbstractModule {
 
 			/* create circle around the hole */
 
-			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).getVertices(HOLE_CIRCLE_VERTICES));
+			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).vertices(HOLE_CIRCLE_VERTICES));
 
 			pinConnectors = new EleConnectorGroup();
 			pinConnectors.addConnectorsFor(pinHoleLoop.getVertexCollection(), area, GroundState.ON);

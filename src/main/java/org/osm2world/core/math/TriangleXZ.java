@@ -37,10 +37,16 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 				(v1.z + v2.z + v3.z) / 3);
 	}
 
+	@Override
+	public VectorXZ getCentroid() {
+		return getCenter();
+	}
+
 	public TriangleXYZ xyz(double y) {
 		return new TriangleXYZ(v1.xyz(y), v2.xyz(y), v3.xyz(y));
 	}
 
+	@Override
 	public boolean isClockwise() {
 		return GeometryUtil.isRightOf(v3, v1, v2);
 	}
@@ -72,6 +78,7 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	/**
 	 * returns the area of the triangle
 	 */
+	@Override
 	public double getArea() {
 
 		double sum =

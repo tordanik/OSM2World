@@ -157,6 +157,18 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 				maxZ + paddingSize);
 	}
 
+	@Override
+	public AxisAlignedRectangleXZ scale(VectorXZ center, double factorX, double factorZ) {
+		if (factorX <= 0) throw new IllegalArgumentException("x scale factor must be positive, was " + factorX);
+		if (factorZ <= 0) throw new IllegalArgumentException("z scale factor must be positive, was " + factorZ);
+		return new AxisAlignedRectangleXZ(center(), sizeX() * factorX, sizeZ() * factorZ);
+	}
+
+	@Override
+	public AxisAlignedRectangleXZ shift(VectorXZ moveVector) {
+		return new AxisAlignedRectangleXZ(center().add(moveVector), sizeX(), sizeZ());
+	}
+
 	public boolean overlaps(AxisAlignedRectangleXZ otherBox) {
 		return !(maxX <= otherBox.minX
 				|| minX >= otherBox.maxX
@@ -171,6 +183,7 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 				&& maxZ >= otherBox.maxZ;
 	}
 
+	@Override
 	public boolean contains(VectorXZ v) {
 		return v.x >= minX && v.x <= maxX && v.z >= minZ && v.z <= maxZ;
 	}

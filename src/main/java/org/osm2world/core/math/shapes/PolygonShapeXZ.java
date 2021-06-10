@@ -157,6 +157,7 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 
 	}
 
+	@Override
 	public default List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
 		return getRings().stream().flatMap(p -> p.intersectionPositions(lineSegment).stream()).collect(toList());
 	}

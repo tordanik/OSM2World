@@ -92,6 +92,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 
 	}
 
+	@Override
 	public default boolean intersects(VectorXZ segmentP1, VectorXZ segmentP2) {
 
 		List<VectorXZ> vertexList = vertices();
@@ -113,6 +114,7 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	}
 
 	/** @see #intersects(VectorXZ, VectorXZ) */
+	@Override
 	public default boolean intersects(LineSegmentXZ lineSegment) {
 		return intersects(lineSegment.p1, lineSegment.p2);
 	}
@@ -154,11 +156,6 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	@Override
 	public default double getArea() {
 		return asSimplePolygon(this).getArea();
-	}
-
-	/** returns the centroid (or "barycenter") of the polygon */
-	public default VectorXZ getCentroid() {
-		return asSimplePolygon(this).getCentroid();
 	}
 
 	@Override
