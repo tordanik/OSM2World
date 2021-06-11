@@ -137,26 +137,6 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 		return false;
 	}
 
-	public default Collection<LineSegmentXZ> intersectionSegments(LineSegmentXZ lineSegment) {
-
-		List<LineSegmentXZ> result = new ArrayList<>();
-
-		for (LineSegmentXZ polygonSegment : getSegments()) {
-
-			VectorXZ intersection = GeometryUtil.getTrueLineSegmentIntersection(
-					lineSegment.p1, lineSegment.p2,
-					polygonSegment.p1, polygonSegment.p2);
-
-			if (intersection != null) {
-				result.add(polygonSegment);
-			}
-
-		}
-
-		return result;
-
-	}
-
 	@Override
 	public default List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment) {
 		return getRings().stream().flatMap(p -> p.intersectionPositions(lineSegment).stream()).collect(toList());
