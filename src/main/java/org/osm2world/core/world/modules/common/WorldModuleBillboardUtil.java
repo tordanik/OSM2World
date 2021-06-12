@@ -2,7 +2,7 @@ package org.osm2world.core.world.modules.common;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static org.osm2world.core.world.modules.common.WorldModuleBillboardUtil.LeftRightBoth.*;
+import static org.osm2world.core.util.enums.LeftRightBoth.*;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.util.enums.LeftRightBoth;
 
 /**
  * utility class for drawing billboards, particularly "cross tree" shapes
@@ -18,10 +19,6 @@ import org.osm2world.core.target.common.material.Material.Transparency;
 public final class WorldModuleBillboardUtil {
 
 	private WorldModuleBillboardUtil() { }
-
-	enum LeftRightBoth {
-		LEFT, RIGHT, BOTH
-	}
 
 	/**
 	 * renders a "cross tree" shape.
