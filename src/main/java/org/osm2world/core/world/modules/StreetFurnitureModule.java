@@ -1339,7 +1339,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			/* determine position */
 
 			VectorXYZ pos;
-			VectorXYZ direction = X_UNIT;
+			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
 
 			if (connector != null && connector.isAttached()) {
 
