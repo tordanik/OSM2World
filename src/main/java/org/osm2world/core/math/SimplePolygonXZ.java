@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.min;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
@@ -312,6 +314,11 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		List<VectorXZ> newVertexLoop = new ArrayList<VectorXZ>(vertexLoop);
 		Collections.reverse(newVertexLoop);
 		return new SimplePolygonXZ(newVertexLoop);
+	}
+
+	@Override
+	public SimplePolygonXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		return new SimplePolygonXZ(vertices().stream().map(operation).collect(toList()));
 	}
 
 	/**

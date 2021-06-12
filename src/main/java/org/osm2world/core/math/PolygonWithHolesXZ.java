@@ -1,7 +1,11 @@
 package org.osm2world.core.math;
 
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
@@ -58,6 +62,13 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 	@Override
 	public List<TriangleXZ> getTriangulation() {
 		return TriangulationUtil.triangulate(this);
+	}
+
+	@Override
+	public PolygonWithHolesXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		return new PolygonWithHolesXZ(
+				asSimplePolygon(getOuter().transform(operation)),
+				getHoles().stream().map(it -> asSimplePolygon(it.transform(operation))).collect(toList()));
 	}
 
 	@Override

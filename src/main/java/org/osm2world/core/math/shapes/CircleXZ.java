@@ -93,12 +93,12 @@ public class CircleXZ implements SimpleClosedShapeXZ, RoundShapeXZ {
 	}
 
 	@Override
-	public ShapeXZ rotatedCW(double angleRad) {
+	public CircleXZ rotatedCW(double angleRad) {
 		return this;
 	}
 
 	@Override
-	public ShapeXZ shift(VectorXZ moveVector) {
+	public CircleXZ shift(VectorXZ moveVector) {
 		return new CircleXZ(center.add(moveVector), radius);
 	}
 
@@ -106,6 +106,11 @@ public class CircleXZ implements SimpleClosedShapeXZ, RoundShapeXZ {
 	public CircleXZ scale(double factor) {
 		if (factor <= 0) throw new IllegalArgumentException("scale factor must be positive, was " + factor);
 		return new CircleXZ(center, radius * factor);
+	}
+
+	@Override
+	public CircleXZ mirrorX(double axisX) {
+		return shift(getCenter().mirrorX(axisX).subtract(getCenter()));
 	}
 
 	@Override

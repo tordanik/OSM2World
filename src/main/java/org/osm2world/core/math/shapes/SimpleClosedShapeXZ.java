@@ -6,6 +6,7 @@ import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -39,6 +40,11 @@ public interface SimpleClosedShapeXZ extends ClosedShapeXZ {
 
 	/** returns the largest distance between any pair of vertices of this shape */
 	public double getDiameter();
+
+	@Override
+	public default SimpleClosedShapeXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		return asSimplePolygon(this).transform(operation);
+	}
 
 	/**
 	 * returns a scaled version of this shape.

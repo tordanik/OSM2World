@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -136,5 +137,8 @@ public interface PolylineShapeXZ extends ShapeXZ {
 		Collections.reverse(vertices);
 		return new PolylineXZ(vertices);
 	}
+
+	@Override
+	public PolylineShapeXZ transform(Function<VectorXZ, VectorXZ> operation);
 
 }

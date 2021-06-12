@@ -10,6 +10,7 @@ import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.GeometryUtil;
@@ -231,6 +232,11 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	}
 
 	@Override
+	public default SimplePolygonShapeXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		return asSimplePolygon(this).transform(operation);
+	}
+
+	@Override
 	default SimplePolygonShapeXZ rotatedCW(double angleRad) {
 		List<VectorXZ> rotatedVertexList = vertices().stream()
 				.map(v -> v.rotate(angleRad))
@@ -242,6 +248,11 @@ public interface SimplePolygonShapeXZ extends SimpleClosedShapeXZ, PolygonShapeX
 	@Override
 	public default SimplePolygonShapeXZ shift(VectorXZ moveVector) {
 		return new SimplePolygonXZ(vertices().stream().map(moveVector::add).collect(toList()));
+	}
+
+	@Override
+	public default SimplePolygonShapeXZ mirrorX(double axisX) {
+		return new SimplePolygonXZ(vertices().stream().map(v -> v.mirrorX(axisX)).collect(toList()));
 	}
 
 }

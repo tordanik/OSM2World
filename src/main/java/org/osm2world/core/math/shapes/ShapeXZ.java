@@ -6,6 +6,7 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
@@ -43,25 +44,39 @@ public interface ShapeXZ extends BoundedObject {
 	}
 
 	/**
+	 * returns a new shape that has been created by applying the same operation to all vertices of this shape.
+	 * Only moving, rotating, mirroring and scaling are permitted as operations.
+	 *
+	 * @param operation  the operation to apply to each vertex
+	 */
+	public default ShapeXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		List<VectorXZ> newVertices = vertices().stream().map(operation).collect(toList());
+		return () -> newVertices;
+	}
+
+	/**
 	 * returns a rotated version of this shape. Rotation is around the origin.
 	 *
 	 * @param angleRad  clockwise rotation angle in radians
 	 */
 	public default ShapeXZ rotatedCW(double angleRad) {
-		List<VectorXZ> rotatedVertices = vertices().stream()
-				.map(v -> v.rotate(angleRad))
-				.collect(toList());
-		return () -> rotatedVertices;
+		return transform(v -> v.rotate(angleRad));
 	}
 
 	/**
 	 * returns a moved version of this shape
 	 */
 	public default ShapeXZ shift(VectorXZ moveVector) {
-		List<VectorXZ> newVertices = vertices().stream()
-				.map(v -> v.add(moveVector))
-				.collect(toList());
-		return () -> newVertices;
+		return transform(v -> v.add(moveVector));
+	}
+
+	/**
+	 * returns a horizontally mirrored version of this shape
+	 *
+	 * @param axisX  x coordinate of the mirror axis
+	 */
+	public default ShapeXZ mirrorX(double axisX) {
+		return transform(v -> v.mirrorX(axisX));
 	}
 
 	/** returns all segments of this shape ({@link #getSegments()}) which intersect lineSegment */

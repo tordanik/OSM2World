@@ -140,6 +140,16 @@ public class VectorXZ implements Vector3D {
 		return new VectorXZ(sin*z + cos*x, cos*z - sin*x);
 	}
 
+	/**
+	 * returns the result of mirroring a point horizontally across an axis
+	 *
+	 * @param axisX  x coordinate of the mirror axis
+	 */
+	public VectorXZ mirrorX(double axisX) {
+		double newX = axisX - (x - axisX);
+		return new VectorXZ(newX, z);
+	}
+
 	@Override
 	public AxisAlignedRectangleXZ boundingBox() {
 		return new AxisAlignedRectangleXZ(x, z, x, z);

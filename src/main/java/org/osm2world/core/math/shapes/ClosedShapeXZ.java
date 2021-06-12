@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.TriangleXZ;
@@ -47,5 +48,8 @@ public interface ClosedShapeXZ extends ShapeXZ {
 	public List<TriangleXZ> getTriangulation();
 
 	public List<VectorXZ> intersectionPositions(LineSegmentXZ lineSegment);
+
+	@Override
+	public ClosedShapeXZ transform(Function<VectorXZ, VectorXZ> operation);
 
 }

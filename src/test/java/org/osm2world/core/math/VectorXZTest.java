@@ -94,4 +94,14 @@ public class VectorXZTest {
 
 	}
 
+	@Test
+	public void testMirrorX() {
+
+		assertAlmostEquals(-25, 0, new VectorXZ(25, 0).mirrorX(0));
+		assertAlmostEquals(0, 0, new VectorXZ(0, 0).mirrorX(0));
+		assertAlmostEquals(-3, 0, new VectorXZ(-3, 0).mirrorX(-3));
+		assertAlmostEquals(5, 0, new VectorXZ(0, 0).mirrorX(2.5));
+
+	}
+
 }

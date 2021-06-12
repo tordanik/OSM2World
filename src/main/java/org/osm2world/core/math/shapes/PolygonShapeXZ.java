@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.LineSegmentXZ;
@@ -154,6 +155,14 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 		} else {
 			return getTriangulation().iterator().next().getCenter();
 		}
+	}
+
+	@Override
+	public PolygonShapeXZ transform(Function<VectorXZ, VectorXZ> operation);
+
+	@Override
+	public default PolygonShapeXZ mirrorX(double axisX) {
+		return transform(v -> v.mirrorX(axisX));
 	}
 
 }

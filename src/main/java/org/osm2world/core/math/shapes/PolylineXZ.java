@@ -6,6 +6,7 @@ import static org.osm2world.core.math.VectorXZ.distance;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -53,6 +54,12 @@ public class PolylineXZ implements PolylineShapeXZ {
 		}
 
 		return length;
+
+	}
+
+	@Override
+	public PolylineShapeXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		return new PolylineXZ(vertices.stream().map(operation).collect(toList()));
 
 	}
 

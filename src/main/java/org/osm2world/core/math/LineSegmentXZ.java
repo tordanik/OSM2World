@@ -6,6 +6,7 @@ import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.JTSConversionUtil.*;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
@@ -81,6 +82,11 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	@Override
 	public LineSegmentXZ reverse() {
 		return new LineSegmentXZ(p2, p1);
+	}
+
+	@Override
+	public PolylineShapeXZ transform(Function<VectorXZ, VectorXZ> operation) {
+		return new LineSegmentXZ(operation.apply(p1), operation.apply(p2));
 	}
 
 	@Override
