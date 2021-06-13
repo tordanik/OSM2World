@@ -29,11 +29,11 @@ class TexturedWindow implements Window {
 	public SimplePolygonXZ outline() {
 
 		return new SimplePolygonXZ(asList(
-				position.add(new VectorXZ(-params.width/2, 0)),
-				position.add(new VectorXZ(+params.width/2, 0)),
-				position.add(new VectorXZ(+params.width/2, +params.height)),
-				position.add(new VectorXZ(-params.width/2, +params.height)),
-				position.add(new VectorXZ(-params.width/2, 0))));
+				position.add(new VectorXZ(-params.overallProperties.width/2, 0)),
+				position.add(new VectorXZ(+params.overallProperties.width/2, 0)),
+				position.add(new VectorXZ(+params.overallProperties.width/2, +params.overallProperties.height)),
+				position.add(new VectorXZ(-params.overallProperties.width/2, +params.overallProperties.height)),
+				position.add(new VectorXZ(-params.overallProperties.width/2, 0))));
 
 	}
 

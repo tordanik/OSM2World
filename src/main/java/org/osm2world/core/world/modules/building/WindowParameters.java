@@ -1,11 +1,16 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.lang.Math.max;
+import static java.util.Arrays.*;
 import static java.util.Collections.unmodifiableMap;
 import static org.osm2world.core.util.ValueParseUtil.*;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -104,7 +109,10 @@ public class WindowParameters {
 	}
 
 	static enum WindowRegion {
-		CENTER, TOP, LEFT, RIGHT, BOTTOM
+		CENTER, TOP, LEFT, RIGHT, BOTTOM;
+		public String keyInfix() {
+			return this.toString().toLowerCase() + ":";
+		}
 	}
 
 	static class PaneLayout {
@@ -126,9 +134,15 @@ public class WindowParameters {
 
 		public final WindowShape shape;
 
+		public final double width;
+		public final double height;
+
 		public final @Nullable PaneLayout panes;
 
-		public RegionProperties(TagSet tags, String infix) {
+		public RegionProperties(double width, double height, TagSet tags, String infix) {
+
+			this.width = width;
+			this.height = height;
 
 			WindowParameters.WindowShape tempShape = WindowShape.getValue(tags.getValue("window:" + infix + "shape"));
 			shape = tempShape != null ? tempShape : WindowShape.RECTANGLE;
@@ -161,8 +175,6 @@ public class WindowParameters {
 	public final @Nullable Integer numberWindows;
 	public final int groupSize;
 
-	public final double width;
-	public final double height;
 	public final double breast;
 
 	public final RegionProperties overallProperties;
@@ -201,18 +213,147 @@ public class WindowParameters {
 		numberWindows = parseUInt(tags.getValue("window:count"));
 		groupSize = parseUInt(tags.getValue("window:group_size"), 1);
 
-		width = parseMeasure(tags.getValue("window:width"), DEFAULT_WIDTH);
-		height = parseMeasure(tags.getValue("window:height"), DEFAULT_HEIGHT_RELATIVE_TO_LEVEL * levelHeight);
 		breast = parseMeasure(tags.getValue("window:breast"), DEFAULT_BREAST_RELATIVE_TO_LEVEL * levelHeight);
 
-		overallProperties = new RegionProperties(tags, "");
+		/* find out which "regions" this window has */
+
+		Set<WindowRegion> regions = new HashSet<>(asList(WindowRegion.CENTER));
+
+		stream(WindowRegion.values())
+				.filter(it -> tags.containsKey("window:" + it.keyInfix() + "shape"))
+				.forEach(regions::add);
+
+		/* determine width and height for the window as a whole and each region */
+
+		double parsedWidth = parseMeasure(tags.getValue("window:width"), DEFAULT_WIDTH);
+		double parsedHeight = parseMeasure(tags.getValue("window:height"), DEFAULT_HEIGHT_RELATIVE_TO_LEVEL * levelHeight);
+
+		double width, height;
+		Map<WindowRegion, Double> regionHeights = new EnumMap<>(WindowRegion.class);
+		Map<WindowRegion, Double> regionWidths = new EnumMap<>(WindowRegion.class);
+
+		if (regions.size() == 1) {
+
+			assert regions.contains(WindowRegion.CENTER);
+
+			width = parsedWidth;
+			height = parsedHeight;
+
+			regionWidths.put(WindowRegion.CENTER, width);
+			regionHeights.put(WindowRegion.CENTER, height);
+
+		} else {
+
+			{ /* determine height by distributing the total height equally among regions without explicit height */
+
+				double sumHeights = 0;
+				List<WindowRegion> verticalRegionsWithoutHeight = new ArrayList<>();
+
+				for (WindowRegion region : asList(WindowRegion.TOP, WindowRegion.CENTER, WindowRegion.BOTTOM)) {
+					if (!regions.contains(region)) continue;
+					Double regionHeight = parseMeasure(tags.getValue("window:" + region.keyInfix() + "height"));
+					if (regionHeight == null) {
+						verticalRegionsWithoutHeight.add(region);
+					} else {
+						sumHeights += regionHeight;
+						regionHeights.put(region, regionHeight);
+					}
+				}
+
+				if (verticalRegionsWithoutHeight.isEmpty()) {
+					height = sumHeights;
+				} else {
+
+					height = max(parsedHeight, sumHeights + 0.1);
+
+					double remainingHeight = height - sumHeights;
+
+					if (verticalRegionsWithoutHeight.contains(WindowRegion.CENTER)) {
+						// double weight for center
+						double centerHeight = 2 * remainingHeight / (verticalRegionsWithoutHeight.size() + 1);
+						regionHeights.put(WindowRegion.CENTER, centerHeight);
+						verticalRegionsWithoutHeight.remove(WindowRegion.CENTER);
+						remainingHeight -= centerHeight;
+					}
+
+					if (verticalRegionsWithoutHeight.size() > 0) {
+						double dividedHeight = remainingHeight / verticalRegionsWithoutHeight.size();
+						verticalRegionsWithoutHeight.forEach(region -> regionHeights.put(region, dividedHeight));
+					}
+
+				}
+			}
+
+			{ /* same as above, but for width */
+
+				double sumWidths = 0;
+				List<WindowRegion> horizontalRegionsWithoutWidth = new ArrayList<>();
+
+				for (WindowRegion region : asList(WindowRegion.LEFT, WindowRegion.CENTER, WindowRegion.RIGHT)) {
+					if (!regions.contains(region)) continue;
+					Double regionWidth = parseMeasure(tags.getValue("window:" + region.keyInfix() + "width"));
+					if (regionWidth == null) {
+						horizontalRegionsWithoutWidth.add(region);
+					} else {
+						sumWidths += regionWidth;
+						regionWidths.put(region, regionWidth);
+					}
+				}
+
+				if (horizontalRegionsWithoutWidth.isEmpty()) {
+					width = sumWidths;
+				} else {
+
+					width = max(parsedWidth, sumWidths + 0.1);
+
+					double remainingWidth = width - sumWidths;
+
+					if (horizontalRegionsWithoutWidth.contains(WindowRegion.CENTER)) {
+						// double weight for center
+						double centerWidth = 2 * remainingWidth / (horizontalRegionsWithoutWidth.size() + 1);
+						regionWidths.put(WindowRegion.CENTER, centerWidth);
+						horizontalRegionsWithoutWidth.remove(WindowRegion.CENTER);
+						remainingWidth -= centerWidth;
+					}
+
+					if (horizontalRegionsWithoutWidth.size() > 0) {
+						double dividedWidth = remainingWidth / horizontalRegionsWithoutWidth.size();
+						horizontalRegionsWithoutWidth.forEach(region -> regionWidths.put(region, dividedWidth));
+					}
+
+				}
+			}
+
+			{ /* set remaining heights and widths (those "off to the side") */
+
+				if (regions.contains(WindowRegion.LEFT)) {
+					regionHeights.put(WindowRegion.LEFT, regionHeights.get(WindowRegion.CENTER));
+				}
+				if (regions.contains(WindowRegion.RIGHT)) {
+					regionHeights.put(WindowRegion.RIGHT, regionHeights.get(WindowRegion.CENTER));
+				}
+
+				if (regions.contains(WindowRegion.TOP)) {
+					regionWidths.put(WindowRegion.TOP, regionWidths.get(WindowRegion.CENTER));
+				}
+				if (regions.contains(WindowRegion.BOTTOM)) {
+					regionWidths.put(WindowRegion.BOTTOM, regionWidths.get(WindowRegion.CENTER));
+				}
+
+			}
+
+		}
+
+		/* other region-based properties */
+
+		overallProperties = new RegionProperties(width, height, tags, "");
 
 		EnumMap<WindowRegion, RegionProperties> regionProperties = new EnumMap<>(WindowRegion.class);
-		for (WindowRegion region : WindowRegion.values()) {
-			String infix = region.toString().toLowerCase() + ":";
-			if (tags.containsKey("window:" + infix + "shape")) {
-				regionProperties.put(region, new RegionProperties(tags, infix));
-			}
+		for (WindowRegion region : regions) {
+			regionProperties.put(region, new RegionProperties(
+					regionWidths.get(region),
+					regionHeights.get(region),
+					tags, region.keyInfix()));
 		}
 		this.regionProperties = unmodifiableMap(regionProperties);
 

@@ -71,12 +71,13 @@ public class GeometryWindow implements Window {
 
 		if (!useRegions) {
 
-			outline = params.overallProperties.shape.buildShapeXZ(position, params.width, params.height);
+			outline = params.overallProperties.shape.buildShapeXZ(position,
+					params.overallProperties.width, params.overallProperties.height);
 
 		} else {
 
-			regionOutlines.put(CENTER,
-					params.regionProperties.get(CENTER).shape.buildShapeXZ(position, params.width, params.height));
+			regionOutlines.put(CENTER, params.regionProperties.get(CENTER).shape.buildShapeXZ(position,
+					params.regionProperties.get(CENTER).width, params.regionProperties.get(CENTER).height));
 			SimpleClosedShapeXZ centerOutline = regionOutlines.get(CENTER);
 
 			LineSegmentXZ topSegment = centerOutline.intersectionSegments(new LineSegmentXZ(
@@ -86,7 +87,7 @@ public class GeometryWindow implements Window {
 
 			RegionProperties properties = params.regionProperties.get(TOP);
 
-			double topHeight = 1.0; //TODO use parameters for region height and width
+			double topHeight = params.regionProperties.get(TOP).height;
 			regionOutlines.put(TOP, properties.shape.buildShapeXZ(topSegment, topHeight));
 
 			assert !centerOutline.isClockwise();
@@ -229,7 +230,6 @@ public class GeometryWindow implements Window {
 		for (int paneH = 0; paneH < panesHorizontal; paneH ++) {
 			if (paneH > 0 || regionBorderSegment == null) {
 				Angle angle = minAngle.plus(step.times(paneH));
-				System.out.println(angle);
 				LineSegmentXZ intersectionSegment = new LineSegmentXZ(center,
 						center.add(VectorXZ.fromAngle(angle).mult(2 * paneOutline.getDiameter())));
 				VectorXZ intersectionPoint = paneOutline.intersectionPositions(intersectionSegment).get(0);

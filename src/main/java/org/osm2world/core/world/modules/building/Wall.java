@@ -361,7 +361,7 @@ public class Wall implements Renderable {
 
 			int numColums = windowParams.numberWindows != null
 					? windowParams.numberWindows
-					: (int) round(surface.getLength() / (2 * windowParams.width));
+					: (int) round(surface.getLength() / (2 * windowParams.overallProperties.width));
 
 			for (int i = 0; i < numColums; i++) {
 
