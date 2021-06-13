@@ -1,6 +1,7 @@
 package org.osm2world.viewer.view.debug;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 import java.awt.Color;
 
@@ -207,13 +208,13 @@ public abstract class DebugView {
 				lastV,
 				headStart.subtract(endDirXZ.mult(headLength/2)),
 				headStart.add(endDirXZ.mult(headLength/2))),
-				null);
+				emptyList());
 
 		target.drawTriangleStrip(colorMaterial, asList(
 				lastV,
 				headStart.subtract(endNormalXZ.mult(headLength/2)),
 				headStart.add(endNormalXZ.mult(headLength/2))),
-				null);
+				emptyList());
 
 	}
 
