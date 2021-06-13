@@ -42,13 +42,12 @@ import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
  */
 public class TreeModule extends ConfigurableWorldModule {
 
-	private static final List<String> LEAF_TYPE_KEYS =
-			asList("leaf_type", "wood", "type");
+	private static final List<String> LEAF_TYPE_KEYS = asList("leaf_type", "wood");
 
 	private static enum LeafType {
 
-		BROADLEAVED("broadleaved", "broad_leaved", "broad_leafed", "deciduous"),
-		NEEDLELEAVED("needleleaved", "coniferous", "conifer");
+		BROADLEAVED("broadleaved", "deciduous"),
+		NEEDLELEAVED("needleleaved", "coniferous");
 
 		private final List<String> values;
 
@@ -67,13 +66,12 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private static final List<String> LEAF_CYCLE_KEYS =
-			asList("leaf_cycle", "wood", "type");
+	private static final List<String> LEAF_CYCLE_KEYS = asList("leaf_cycle", "wood");
 
 	private static enum LeafCycle {
 
 		EVERGREEN("evergreen"),
-		DECIDUOUS("deciduous", "broad_leaved"),
+		DECIDUOUS("deciduous"),
 		SEMI_EVERGREEN("semi_evergreen"),
 		SEMI_DECIDUOUS("semi_deciduous");
 
