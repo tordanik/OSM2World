@@ -5,6 +5,8 @@ import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.material.Materials.BRIDGE_DEFAULT;
+import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
@@ -33,6 +35,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
@@ -119,9 +122,12 @@ public class BridgeModule extends AbstractModule {
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					rightOutline, belowRightOutline);
 
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip1, null);
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip2, null);
-			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip3, null);
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip1,
+					texCoordLists(strip1, BRIDGE_DEFAULT, NamedTexCoordFunction.STRIP_WALL));
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip2,
+					texCoordLists(strip2, BRIDGE_DEFAULT, NamedTexCoordFunction.STRIP_WALL));
+			target.drawTriangleStrip(Materials.BRIDGE_DEFAULT, strip3,
+					texCoordLists(strip3, BRIDGE_DEFAULT, NamedTexCoordFunction.STRIP_WALL));
 
 		}
 
