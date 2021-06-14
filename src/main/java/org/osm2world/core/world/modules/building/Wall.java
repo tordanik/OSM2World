@@ -85,6 +85,10 @@ public class Wall implements Renderable {
 
 	@Override
 	public void renderTo(Target target) {
+		renderTo(target, true);
+	}
+
+	public void renderTo(Target target, boolean renderElements) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -301,11 +305,11 @@ public class Wall implements Renderable {
 			mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
 					hasWindows && !individuallyMappedWindows
 						&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
-					windowHeight, true);
+					windowHeight, renderElements);
 		}
 
 		if (roofSurface != null) {
-			roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight, true);
+			roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight, renderElements);
 		}
 
 	}
@@ -313,10 +317,10 @@ public class Wall implements Renderable {
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
 		try {
 			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall", "wall_mounted");
-			this.renderTo(builder);
+			this.renderTo(builder, false);
 			return singleton(builder.build());
 		} catch (Exception e) {
-			System.err.println("Could not create wall attachment surfacefor " + wallWay + ": " + e);
+			System.err.println("Could not create wall attachment surface for " + wallWay + ": " + e);
 			return emptyList();
 		}
 	}
