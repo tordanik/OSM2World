@@ -29,7 +29,7 @@ public class ExportGltfAction extends AbstractExportAction {
 
 	@Override
 	protected FileNameExtensionFilter getFileNameExtensionFilter() {
-		return new FileNameExtensionFilter("glTF files", ".gltf");
+		return new FileNameExtensionFilter("glTF files", "gltf");
 	}
 
 	@Override
