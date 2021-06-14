@@ -1,17 +1,22 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.lang.Math.max;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.math.algorithms.FaceDecompositionUtil.splitPolygonIntoFaces;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.building.WindowParameters.WindowRegion.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -22,6 +27,7 @@ import java.util.Map;
 import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
@@ -29,6 +35,7 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.JTSBufferUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
@@ -37,6 +44,7 @@ import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.util.enums.LeftRightBoth;
 import org.osm2world.core.world.modules.building.WindowParameters.RegionProperties;
 import org.osm2world.core.world.modules.building.WindowParameters.WindowRegion;
 
@@ -47,6 +55,7 @@ public class GeometryWindow implements Window {
 	private static final double INNER_FRAME_WIDTH = 0.05;
 	private static final double OUTER_FRAME_THICKNESS = 0.05;
 	private static final double INNER_FRAME_THICKNESS = 0.03;
+	private static final double SHUTTER_THICKNESS = 0.03;
 
 	private final WindowParameters params;
 
@@ -315,6 +324,67 @@ public class GeometryWindow implements Window {
 			target.drawExtrudedShape(params.frameMaterial, innerFrameShape,
 					framePathXYZ, nCopies(framePathXYZ.size(), windowNormal),
 					null, null, EnumSet.noneOf(ExtrudeOption.class));
+
+		}
+
+		/* draw shutters */
+
+		if (params.shutterSide != null) {
+
+			LineSegmentXZ splitLine = new LineSegmentXZ(
+					outline.getCentroid().add(0, -outline.getDiameter()),
+					outline.getCentroid().add(0, +outline.getDiameter()));
+
+			Collection<PolygonWithHolesXZ> outlineParts = splitPolygonIntoFaces(asSimplePolygon(outline), asList(splitLine));
+
+			double hingeSpace = 0.03;
+
+			for (PolygonWithHolesXZ outlinePart : outlineParts) {
+
+				boolean isInRightHalf = isRightOf(outlinePart.getOuter().getCentroid(), splitLine.p1, splitLine.p2);
+
+				double axisX;
+
+				if (params.shutterSide == LeftRightBoth.RIGHT
+						|| (params.shutterSide == LeftRightBoth.BOTH && isInRightHalf)) {
+					axisX = outline.boundingBox().maxX + hingeSpace / 2;
+				} else {
+					axisX = outline.boundingBox().minX - hingeSpace / 2;
+				}
+
+				PolygonShapeXZ mirroredOutlinePart = outlinePart.mirrorX(axisX);
+
+				VectorXZ extrusionStart = outline.getCentroid();
+				VectorXYZ extrusionStartXYZ = surface.convertTo3D(extrusionStart);
+				SimpleClosedShapeXZ extrusionShape = mirroredOutlinePart.getOuter().shift(extrusionStart.invert());
+
+				target.drawExtrudedShape(params.shutterMaterial, extrusionShape,
+						asList(extrusionStartXYZ, extrusionStartXYZ.add(windowNormal.mult(SHUTTER_THICKNESS))),
+						nCopies(2, VectorXYZ.Y_UNIT), null, null, EnumSet.of(END_CAP));
+
+			}
+
+			/* draw shutter hinges */
+
+			// TODO: place hinges based on shapes (placement is not suitable for some, e.g. triangles)
+			// TODO: place 2 hinges for certain shapes
+
+			AxisAlignedRectangleXZ bbox = outline.boundingBox().pad(hingeSpace / 2);
+
+			List<VectorXZ> hingeLocations = new ArrayList<>();
+
+			if (params.shutterSide.isLeftOrBoth()) {
+				hingeLocations.add(new VectorXZ(bbox.minX, bbox.center().z));
+			}
+			if (params.shutterSide.isRightOrBoth()) {
+				hingeLocations.add(new VectorXZ(bbox.maxX, bbox.center().z));
+			}
+
+			for (VectorXZ hingeLocation : hingeLocations) {
+				double hingeHeight = 0.1;
+				VectorXYZ base = surface.convertTo3D(hingeLocation).addY(-hingeHeight / 2);
+				target.drawColumn(STEEL, null, base, hingeHeight, hingeSpace / 2, hingeSpace / 2, true, true);
+			}
 
 		}
 

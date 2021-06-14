@@ -318,7 +318,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	@Override
 	public SimplePolygonXZ transform(Function<VectorXZ, VectorXZ> operation) {
-		return new SimplePolygonXZ(vertices().stream().map(operation).collect(toList()));
+		return new SimplePolygonXZ(vertices().stream().map(operation).collect(toList())).makeRotationSense(this.isClockwise());
 	}
 
 	/**

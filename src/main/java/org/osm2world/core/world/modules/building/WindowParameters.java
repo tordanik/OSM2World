@@ -25,6 +25,7 @@ import org.osm2world.core.math.shapes.CircularSectorXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.util.enums.LeftRightBoth;
 
 /**
  * data about the window(s) on a wall, door, or for a single window.
@@ -169,8 +170,7 @@ public class WindowParameters {
 
 	public final WindowParameters.WindowType type;
 
-	public final boolean hasLeftShutter;
-	public final boolean hasRightShutter;
+	public final @Nullable LeftRightBoth shutterSide;
 
 	public final @Nullable Integer numberWindows;
 	public final int groupSize;
@@ -366,19 +366,7 @@ public class WindowParameters {
 
 		/* shutters */
 
-		if (tags.contains("window:shutter", "both")) {
-			hasLeftShutter = true;
-			hasRightShutter = true;
-		} else if (tags.contains("window:shutter", "left")) {
-			hasLeftShutter = true;
-			hasRightShutter = false;
-		} else if (tags.contains("window:shutter", "right")) {
-			hasLeftShutter = false;
-			hasRightShutter = true;
-		} else {
-			hasLeftShutter = false;
-			hasRightShutter = false;
-		}
+		shutterSide = LeftRightBoth.of(tags.getValue("window:shutter"));
 
 		shutterMaterial = BuildingPart.buildMaterial(
 				tags.getValue("window:shutter:material"),

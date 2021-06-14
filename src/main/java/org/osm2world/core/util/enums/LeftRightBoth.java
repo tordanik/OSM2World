@@ -34,4 +34,12 @@ public enum LeftRightBoth {
 		}
 	}
 
+	public boolean isLeftOrBoth() {
+		return this == LEFT || this == BOTH;
+	}
+
+	public boolean isRightOrBoth() {
+		return this == RIGHT || this == BOTH;
+	}
+
 }
