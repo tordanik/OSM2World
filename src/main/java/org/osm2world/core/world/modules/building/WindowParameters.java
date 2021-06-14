@@ -123,9 +123,16 @@ public class WindowParameters {
 		public final boolean radialPanes;
 
 		public PaneLayout(int panesHorizontal, int panesVertical, boolean radialPanes) {
+			if (panesHorizontal <= 0) throw new IllegalArgumentException("number of panels must be positive");
+			if (panesVertical <= 0) throw new IllegalArgumentException("number of panels must be positive");
 			this.panesHorizontal = panesHorizontal;
 			this.panesVertical = panesVertical;
 			this.radialPanes = radialPanes;
+		}
+
+		@Override
+		public String toString() {
+			return panesHorizontal + "x" + panesVertical + (radialPanes ? " radial" : " grid");
 		}
 
 	}
@@ -153,8 +160,8 @@ public class WindowParameters {
 			if (panesValue != null && panesValue.matches("^\\d+x\\d+$")) {
 				String[] s = panesValue.split("x");
 				panes = new PaneLayout(
-						parseUInt(s[0], 1),
-						parseUInt(s[1], 1),
+						max(1, parseUInt(s[0], 1)),
+						max(1, parseUInt(s[1], 1)),
 						tags.contains("window:" + infix + "panes:arrangement", "radial"));
 			} else {
 				panes = null;

@@ -132,4 +132,19 @@ public class WindowParametersTest {
 
 	}
 
+	@Test
+	public void testInvalidPanes() {
+
+		TagSet tags = TagSet.of(
+				"window:shape", "rectangle",
+				"window:panes", "0x0");
+
+		WindowParameters result = new WindowParameters(tags, 2.5);
+
+		assertEquals(RECTANGLE, result.overallProperties.shape);
+		assertTrue(result.overallProperties.panes.panesHorizontal > 0);
+		assertTrue(result.overallProperties.panes.panesVertical > 0);
+
+	}
+
 }
