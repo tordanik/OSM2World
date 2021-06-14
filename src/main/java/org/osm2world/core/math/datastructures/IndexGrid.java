@@ -1,5 +1,7 @@
 package org.osm2world.core.math.datastructures;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Collections.*;
 
 import java.util.ArrayList;
@@ -199,14 +201,14 @@ public class IndexGrid<T extends BoundedObject> implements SpatialIndex<T> {
 	 * returns the x index of the cell that contains the coordinate
 	 */
 	public final int cellXForCoord(double x) {
-		return (int) ((x - gridBounds.minX) / cellSizeX);
+		return max(0, min(cellCountX - 1, (int) ((x - gridBounds.minX) / cellSizeX)));
 	}
 
 	/**
 	 * returns the z index of the cell that contains the coordinate
 	 */
 	public final int cellZForCoord(double z) {
-		return (int) ((z - gridBounds.minZ) / cellSizeZ);
+		return max(0, min(cellCountZ - 1, (int) ((z - gridBounds.minZ) / cellSizeZ)));
 	}
 
 }
