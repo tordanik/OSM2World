@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.*;
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
@@ -110,7 +111,12 @@ public class BarrierModule extends AbstractModule {
 	private static Model createBollardModel(TagSet tags) {
 		double height = parseHeight(tags, 1.0);
 		double width = parseWidth(tags, 0.3);
-		return new CylinderBollard(height, width);
+		// TODO: support and document other bollard shapes, or support bollard models from 3dmr
+		if (tags.contains("bollard:shape", "roundtop")) {
+			return new RoundtopBollard(height, width);
+		} else {
+			return new CylinderBollard(height, width);
+		}
 	}
 
 	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject {
@@ -979,6 +985,85 @@ public class BarrierModule extends AbstractModule {
 			if (getClass() != obj.getClass())
 				return false;
 			CylinderBollard other = (CylinderBollard) obj;
+			if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
+				return false;
+			if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
+				return false;
+			return true;
+		}
+
+	}
+
+	public static class RoundtopBollard implements Model {
+
+		private final double height;
+		private final double width;
+
+		public RoundtopBollard(double height, double width) {
+			this.height = height;
+			this.width = width;
+		}
+
+		@Override
+		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
+
+			double radius = width / 2;
+			double splitHeight = max(0, height - radius);
+
+			double radius2 = radius * radius;
+
+			List<Double> heights = new ArrayList<>(asList(
+					splitHeight + 0d,
+					splitHeight + 1*radius/6,
+					splitHeight + 2*radius/6,
+					splitHeight + 3*radius/6,
+					splitHeight + 4*radius/6,
+					splitHeight + 5*radius/6,
+					splitHeight + 5.5*radius/6,
+					splitHeight + radius));
+			List<Double> scaleFactors = new ArrayList<>(asList(
+					1d,
+					sqrt(radius2 - 1*radius/6 * 1*radius/6) / radius,
+					sqrt(radius2 - 2*radius/6 * 2*radius/6) / radius,
+					sqrt(radius2 - 3*radius/6 * 3*radius/6) / radius,
+					sqrt(radius2 - 4*radius/6 * 4*radius/6) / radius,
+					sqrt(radius2 - 5*radius/6 * 5*radius/6) / radius,
+					sqrt(radius2 - 5.5*radius/6 * 5.5*radius/6) / radius,
+					0d));
+
+			if (splitHeight > 0) {
+				heights.add(0, 0.0);
+				scaleFactors.add(0, 1.0);
+			}
+
+			List<VectorXYZ> path = new ArrayList<>();
+			heights.forEach(it -> path.add(position.addY(it)));
+
+			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, radius), path, null, scaleFactors, null, null);
+
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			long temp;
+			temp = Double.doubleToLongBits(height);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			temp = Double.doubleToLongBits(width);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			RoundtopBollard other = (RoundtopBollard) obj;
 			if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
 				return false;
 			if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
