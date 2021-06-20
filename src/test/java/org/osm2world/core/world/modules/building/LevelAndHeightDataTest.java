@@ -368,4 +368,40 @@ public class LevelAndHeightDataTest {
 
 	}
 
+
+	@Test
+	public void testRoofLevelAndMinLevel() {
+
+		TestMapDataGenerator generator = new TestMapDataGenerator();
+
+		List<MapNode> nodes = closeLoop(
+				generator.createNode(-10, -5),
+				generator.createNode(  0, -5),
+				generator.createNode(+10, -5),
+				generator.createNode(+10, +5),
+				generator.createNode(-10, +5));
+
+		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+				"building", "yes",
+				"building:levels", "3",
+				"building:min_level", "2",
+				"roof:levels", "1",
+				"roof:shape", "round"));
+		Building building = new Building(buildingArea, new BaseConfiguration());
+		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
+
+		System.out.println(levelStructure);
+
+		assertEquals(2, levelStructure.levels.size());
+		assertEquals(emptyList(), levelStructure.levels(EnumSet.of(LevelType.UNDERGROUND)));
+		assertEquals(1, levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size());
+		assertEquals(1, levelStructure.levels(EnumSet.of(LevelType.ROOF)).size());
+
+		assertEquals(2, levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).get(0).level);
+		assertEquals(3, levelStructure.levels(EnumSet.of(LevelType.ROOF)).get(0).level);
+
+		assertTrue(levelStructure.height() > levelStructure.heightWithoutRoof());
+
+	}
+
 }

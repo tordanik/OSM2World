@@ -241,9 +241,11 @@ public class LevelAndHeightData {
 		Function<Integer, LevelType> getLevelType = level -> {
 			int index = levelNumbers.indexOf(level);
 			if (index < buildingUndergroundLevels) return LevelType.UNDERGROUND;
-			if (index < buildingUndergroundLevels + buildingLevels) return LevelType.ABOVEGROUND;
+			if (index < buildingUndergroundLevels + (buildingLevels - buildingMinLevel)) return LevelType.ABOVEGROUND;
 			return LevelType.ROOF;
 		};
+
+
 
 		List<Integer> levelNumbersAboveground = levelNumbers.stream().filter(l -> getLevelType.apply(l) == LevelType.ABOVEGROUND).collect(toList());
 		List<Integer> levelNumbersRoof = levelNumbers.stream().filter(l -> getLevelType.apply(l) == LevelType.ROOF).collect(toList());
