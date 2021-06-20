@@ -41,8 +41,10 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
@@ -83,9 +85,9 @@ public class BarrierModule extends AbstractModule {
 			line.addRepresentation(new TrellisWorkFence(line));
 		} else if (PoleFence.fits(tags)) {
 			line.addRepresentation(new PoleFence(line));
-		}else if (BollardRow.fits(tags)) {
+		} else if (BollardRow.fits(tags)) {
 			line.addRepresentation(new BollardRow(line));
-		}else if (ChainRow.fits(tags)) {
+		} else if (ChainRow.fits(tags)) {
 			line.addRepresentation(new ChainRow(line));
 		}
 
@@ -97,13 +99,18 @@ public class BarrierModule extends AbstractModule {
 		TagSet tags = node.getTags();
 		if (!tags.containsKey("barrier")) return; //fast exit for common case
 
-		if (Bollard.fits(tags)) {
-			node.addRepresentation(new Bollard(node, tags));
+		if (tags.contains("barrier", "bollard")) {
+			node.addRepresentation(new NodeModelInstance(node, createBollardModel(tags)));
 		} else if (Chain.fits(tags)){
 			node.addRepresentation(new Chain(node, tags));
 		}
 
+	}
 
+	private static Model createBollardModel(TagSet tags) {
+		double height = parseHeight(tags, 1.0);
+		double width = parseWidth(tags, 0.3);
+		return new CylinderBollard(height, width);
 	}
 
 	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject {
@@ -841,43 +848,40 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class BollardRow extends PoleFence{
+	public static class BollardRow extends AbstractNetworkWaySegmentWorldObject {
+
+		private final Model bollardModel;
+
+		public BollardRow(MapWaySegment segment) {
+			super(segment);
+			this.bollardModel = createBollardModel(segment.getTags());
+		}
 
 		public static boolean fits(TagSet tags) {
 			return tags.contains("barrier", "bollard");
 		}
 
-		public BollardRow(MapWaySegment line) {
-			super(line);
-
-			this.barWidth = 0.15f;
-			this.defaultPoleMaterial = CONCRETE;
-			this.barGap = 2;
-		}
-
 		@Override
 		public void renderTo(Target target) {
-
-			if (this.poleMaterial == null) {
-				poleMaterial = defaultPoleMaterial;
-			}
-
-			/* render bollards */
 
 			//TODO connect the bollards to the ground independently
 
 			//TODO: bollard_count or similar tag exists? create "Bollards" rep.
 			//just as lift gates etc, this should use the line.getRightNormal and the road width
 
-
-			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(
-					this.barGap, false, getCenterline());
+			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(2, false, getCenterline());
 
 			for (VectorXYZ base : bollardPositions) {
-				target.drawColumn(this.poleMaterial, null, base,
-						this.height, this.barWidth, this.barWidth, false, true);
+				bollardModel.render(target, base, 0, null, null, null);
 			}
+
 		}
+
+		@Override
+		public double getWidth() {
+			return 0.15;
+		}
+
 	}
 
 	public static class ChainRow extends PoleFence{
@@ -939,32 +943,47 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	public static class Bollard extends NoOutlineNodeWorldObject {
+	public static class CylinderBollard implements Model {
 
-		private static final double DEFAULT_HEIGHT = 1;
 		private final double height;
+		private final double width;
 
-		public static boolean fits(TagSet tags) {
-			return tags.contains("barrier", "bollard");
-		}
-
-		public Bollard(MapNode node, TagSet tags) {
-
-			super(node);
-
-			height = parseHeight(tags, DEFAULT_HEIGHT);
-
+		public CylinderBollard(double height, double width) {
+			this.height = height;
+			this.width = width;
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON; //TODO: flexible ground states
+		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
+			target.drawColumn(Materials.CONCRETE, null, position, height, width/2, width/2, false, true);
 		}
 
 		@Override
-		public void renderTo(Target target) {
-			target.drawColumn(Materials.CONCRETE,
-					null, getBase(), height, 0.15f, 0.15f, false, true);
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			long temp;
+			temp = Double.doubleToLongBits(height);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			temp = Double.doubleToLongBits(width);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CylinderBollard other = (CylinderBollard) obj;
+			if (Double.doubleToLongBits(height) != Double.doubleToLongBits(other.height))
+				return false;
+			if (Double.doubleToLongBits(width) != Double.doubleToLongBits(other.width))
+				return false;
+			return true;
 		}
 
 	}

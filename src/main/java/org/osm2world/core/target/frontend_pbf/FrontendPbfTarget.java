@@ -71,9 +71,10 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.BarrierModule.Bollard;
 import org.osm2world.core.world.modules.BarrierModule.BollardRow;
+import org.osm2world.core.world.modules.BarrierModule.CylinderBollard;
 import org.osm2world.core.world.modules.BarrierModule.HandRail;
 import org.osm2world.core.world.modules.BicycleParkingModule.BicycleStands;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
@@ -100,8 +101,10 @@ public class FrontendPbfTarget extends AbstractTarget {
 	private final double FLOOR_PLATE_Y = -0.03;
 
 	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, BicycleStands.class,
-			WasteBasket.class, VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, Bollard.class,
+			WasteBasket.class, VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class,
 			BollardRow.class);
+
+	private final List<Class<? extends Model>> LOD_2_MODEL_FEATURES = asList(CylinderBollard.class);
 
 	/**
 	 * materials which default to being shadowless
@@ -532,7 +535,9 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));
 
-				if (LOD_2_FEATURES.contains(worldObject.getClass())) {
+				if (LOD_2_FEATURES.contains(worldObject.getClass())
+						|| (worldObject instanceof NodeModelInstance
+								&& LOD_2_MODEL_FEATURES.contains(((NodeModelInstance)worldObject).model.getClass()))) {
 					objectBuilder.setMinLod(2);
 				}
 
