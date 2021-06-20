@@ -271,10 +271,7 @@ public class WallSurface {
 	}
 
 	public TriangleXYZ convertTo3D(TriangleXZ t) {
-		return new TriangleXYZ(
-				convertTo3D(t.v1),
-				convertTo3D(t.v2),
-				convertTo3D(t.v3));
+		return t.xyz(v -> convertTo3D(v));
 	}
 
 	public PolygonXYZ convertTo3D(PolygonShapeXZ polygon) {

@@ -979,10 +979,7 @@ public final class PowerModule extends AbstractModule {
 						connector.getAttachedSurfaceNormal());
 
 				List<TriangleXYZ> triangles = trianglesXZ.stream()
-						.map(it -> new TriangleXYZ(
-								pointToPlane(plane, it.v1),
-								pointToPlane(plane, it.v2),
-								pointToPlane(plane, it.v3)))
+						.map(it -> it.xyz(v -> pointToPlane(plane, v)))
 						.collect(toList());
 
 				target.drawTriangles(SOLAR_PANEL, triangles,

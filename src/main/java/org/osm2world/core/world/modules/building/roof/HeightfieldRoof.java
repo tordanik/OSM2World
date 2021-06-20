@@ -157,13 +157,7 @@ abstract public class HeightfieldRoof extends Roof {
 
 		for (TriangleXZ triangle : trianglesXZ) {
 			TriangleXZ tCCW = triangle.makeCounterclockwise();
-			VectorXZ v = tCCW.v1;
-			VectorXZ v1 = tCCW.v2;
-			VectorXZ v2 = tCCW.v3;
-			trianglesXYZ.add(new TriangleXYZ(
-					v.xyz(baseEle + getRoofHeightAt(v)),
-					v1.xyz(baseEle + getRoofHeightAt(v1)),
-					v2.xyz(baseEle + getRoofHeightAt(v2))));
+			trianglesXYZ.add(tCCW.xyz(v -> v.xyz(baseEle + getRoofHeightAt(v))));
 		}
 
 		/* draw triangles */

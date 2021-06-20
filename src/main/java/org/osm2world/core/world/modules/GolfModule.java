@@ -131,7 +131,7 @@ public class GolfModule extends AbstractModule {
 
 					List<PolygonWithHolesXZ> small = JTSBufferUtil.bufferPolygon(large, -0.5);
 
-					Function<VectorXZ, VectorXYZ> withEle = v -> {
+					Function<VectorXZ, VectorXYZ> xyzFunction = v -> {
 
 						if (getEleConnectors().getConnector(v) != null) {
 							return getEleConnectors().getPosXYZ(v);
@@ -147,7 +147,7 @@ public class GolfModule extends AbstractModule {
 					Collection<TriangleXZ> triangulationXZ = trianguateAreaBetween(large, small);
 
 					triangulationXZ.stream()
-							.map(t -> new TriangleXYZ(withEle.apply(t.v1), withEle.apply(t.v2), withEle.apply(t.v3)))
+							.map(t -> t.xyz(xyzFunction))
 							.forEach(resultingTriangulation::add);
 
 					newPolys.addAll(small);

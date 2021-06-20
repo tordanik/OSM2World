@@ -3,6 +3,7 @@ package org.osm2world.core.math;
 import static java.util.Collections.singletonList;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
@@ -44,6 +45,13 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 
 	public TriangleXYZ xyz(double y) {
 		return new TriangleXYZ(v1.xyz(y), v2.xyz(y), v3.xyz(y));
+	}
+
+	public TriangleXYZ xyz(Function<VectorXZ, VectorXYZ> xyzFunction) {
+		return new TriangleXYZ(
+				xyzFunction.apply(v1),
+				xyzFunction.apply(v2),
+				xyzFunction.apply(v3));
 	}
 
 	@Override
