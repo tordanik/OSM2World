@@ -142,7 +142,7 @@ public class GeometryWindow implements Window {
 					? innerPaneBorderPathsRadial(paneOutline, null, panesHorizontal, panesVertical)
 					: innerPaneBorderPaths(paneOutline, panesHorizontal, panesVertical);
 
-		} else if (!regionOutlines.isEmpty()) {
+		} else if (!regionOutlines.isEmpty() && params.regionProperties.values().stream().anyMatch(it -> it.panes != null)) {
 
 			innerFramePaths = new ArrayList<>();
 
@@ -154,11 +154,15 @@ public class GeometryWindow implements Window {
 
 					SimpleClosedShapeXZ regionPaneOutline = paneOutlineFromOutline(regionOutlines.get(region));
 
-					innerFramePaths.addAll((properties.panes.radialPanes)
-							? innerPaneBorderPathsRadial(regionPaneOutline, regionBorderSegments.get(region),
-									properties.panes.panesHorizontal, properties.panes.panesVertical)
-							: innerPaneBorderPaths(regionPaneOutline,
-									properties.panes.panesHorizontal, properties.panes.panesVertical));
+					if (properties.panes != null) {
+
+						innerFramePaths.addAll((properties.panes.radialPanes)
+								? innerPaneBorderPathsRadial(regionPaneOutline, regionBorderSegments.get(region),
+										properties.panes.panesHorizontal, properties.panes.panesVertical)
+								: innerPaneBorderPaths(regionPaneOutline,
+										properties.panes.panesHorizontal, properties.panes.panesVertical));
+
+					}
 
 				}
 
