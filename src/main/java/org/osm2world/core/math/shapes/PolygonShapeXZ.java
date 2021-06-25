@@ -165,4 +165,9 @@ public interface PolygonShapeXZ extends ClosedShapeXZ {
 		return transform(v -> v.mirrorX(axisX));
 	}
 
+	@Override
+	default PolygonShapeXZ rotatedCW(double angleRad) {
+		return transform(v -> v.rotate(angleRad));
+	}
+
 }

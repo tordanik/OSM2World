@@ -3,6 +3,9 @@ package org.osm2world.core.world.modules;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+import static org.osm2world.core.world.modules.PowerModule.RooftopSolarPanels.roughCommonDivisor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,11 +13,17 @@ import java.util.List;
 
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
+import org.osm2world.core.math.Angle;
+import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.BlankTexture;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.statistics.StatisticsTarget;
 import org.osm2world.core.target.statistics.StatisticsTarget.Stat;
 import org.osm2world.core.world.creation.WorldModule;
+import org.osm2world.core.world.modules.PowerModule.RooftopSolarPanels.PanelTexCoordFunction;
 
 import com.slimjars.dist.gnu.trove.list.TLongList;
 import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
@@ -22,7 +31,6 @@ import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
 import de.topobyte.osm4j.core.model.impl.Node;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.model.impl.Way;
-
 
 public class PowerModuleTest {
 
@@ -63,6 +71,38 @@ public class PowerModuleTest {
 		for (Stat stat : Stat.values()) {
 			assertEquals(t1.getGlobalCount(stat), t2.getGlobalCount(stat));
 		}
+
+	}
+
+	@Test
+	public void testPanelTexCoords() {
+
+		TextureData d = new BlankTexture(1, 1, null, null);
+
+		PanelTexCoordFunction t1 = new PanelTexCoordFunction(new VectorXZ(100, 100), Angle.ofDegrees(0), 5, 10, 1, 1);
+
+		assertAlmostEquals(0, 0, t1.apply(new VectorXYZ(100, 30, 100), d));
+		assertAlmostEquals(1, 1, t1.apply(new VectorXYZ(105, 30, 110), d));
+		assertAlmostEquals(2, 0.5, t1.apply(new VectorXYZ(110, 30, 105), d));
+
+		PanelTexCoordFunction t2 = new PanelTexCoordFunction(NULL_VECTOR, Angle.ofDegrees(90), 5, 10, 1, 1);
+
+		assertAlmostEquals(0, 0, t2.apply(new VectorXYZ(0, 0, 0), d));
+		assertAlmostEquals(1, 1, t2.apply(new VectorXYZ(10, 0, -5), d));
+
+		PanelTexCoordFunction t3 = new PanelTexCoordFunction(NULL_VECTOR, Angle.ofDegrees(90), 20, 20, 4, 2);
+
+		assertAlmostEquals(0, 0, t3.apply(new VectorXYZ(0, 0, 0), d));
+		assertAlmostEquals(1, 1, t3.apply(new VectorXYZ(10, 0, -5), d));
+
+	}
+
+	@Test
+	public void testRoughCommonDivisor() {
+
+		assertEquals(3, (int)roughCommonDivisor(9.0, asList(3.0, 6.0), 2.5));
+		assertEquals(3, (int)roughCommonDivisor(9.0, asList(3.1, 5.9), 3.5));
+		assertEquals(4, (int)roughCommonDivisor(12.0, asList(9.0, 5.9), 2.3));
 
 	}
 

@@ -1,14 +1,19 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.PI;
+import static java.lang.Math.*;
+import static java.lang.Math.max;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.X_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXZ.angleBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
@@ -18,7 +23,13 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
@@ -26,8 +37,10 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -36,9 +49,12 @@ import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
@@ -950,7 +966,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private static final class RooftopSolarPanels extends AbstractAreaWorldObject {
+	static final class RooftopSolarPanels extends AbstractAreaWorldObject {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 
@@ -982,8 +998,10 @@ public final class PowerModule extends AbstractModule {
 						.map(it -> it.xyz(v -> pointToPlane(plane, v)))
 						.collect(toList());
 
+				TexCoordFunction texCoordFunction = placePanelTextures(area.getPolygon(), plane.getNormal());
+
 				target.drawTriangles(SOLAR_PANEL, triangles,
-						triangleTexCoordLists(triangles, SOLAR_PANEL, SLOPED_TRIANGLES));
+						triangleTexCoordLists(triangles, SOLAR_PANEL, texCoordFunction));
 
 			}
 
@@ -1000,6 +1018,187 @@ public final class PowerModule extends AbstractModule {
 
 		private static final VectorXYZ pointToPlane(TriangleXYZ plane, VectorXZ v) {
 			return v.xyz(plane.getYAt(v));
+		}
+
+		/** attempts to place textures so that all points lie roughly on integer multiples of a panel's dimensions */
+		private static final TexCoordFunction placePanelTextures(PolygonShapeXZ polygon, VectorXYZ roofNormal) {
+
+			SimplePolygonShapeXZ outerPolygon = polygon.getOuter();
+
+			/* fit a rectangle around the panels */
+
+			SimplePolygonXZ bbox = outerPolygon.minimumRotatedBoundingBox();
+
+			VectorXZ downDirection;
+			if (roofNormal.xz().lengthSquared() > 0.01) {
+				downDirection = roofNormal.xz().normalize();
+			} else {
+				// roof normal is almost vertical, e.g. with flat roofs. Try to have panels face south.
+				downDirection = new VectorXZ(0, -1);
+			}
+
+			/* determine the rotation of panels on the rectangle */
+
+			LineSegmentXZ segment = bbox.reverse().getSegments().stream()
+					.min(Comparator.comparingDouble(s -> angleBetween(s.getDirection(), downDirection))).get();
+
+			VectorXZ origin;
+			Angle zDirection;
+			origin = segment.p1;
+			zDirection = Angle.ofRadians(segment.getDirection().angle());
+
+			/* determine width and height of the rectangle around the panels */
+
+			AxisAlignedRectangleXZ xzBbox = bbox.rotatedCW(-zDirection.radians).boundingBox();
+
+			double totalWidth = xzBbox.sizeX();
+			double totalHeight = xzBbox.sizeZ();
+
+			/* determine the number of panels to place */
+
+			//TODO possibly run this twice; with all segments, and (as fallback) with segments of simplified polygon
+
+			PolygonShapeXZ rotatedPolygon = polygon.rotatedCW(-zDirection.radians);
+
+			List<Double> horizontalSegmentLengths = new ArrayList<>();
+			List<Double> verticalSegmentLengths = new ArrayList<>();
+
+			List<LineSegmentXZ> segments = rotatedPolygon.getRings().stream()
+					.flatMap(r -> r.getSegments().stream())
+					.collect(toList());
+
+			for (LineSegmentXZ s : segments) {
+
+				if (angleBetween(VectorXZ.X_UNIT, s.getDirection()) < PI / 18
+						|| angleBetween(VectorXZ.X_UNIT.invert(), s.getDirection()) < PI / 18) {
+					horizontalSegmentLengths.add(s.getLength());
+				} else if (angleBetween(VectorXZ.Z_UNIT, s.getDirection()) < PI / 18
+						|| angleBetween(VectorXZ.Z_UNIT.invert(), s.getDirection()) < PI / 18) {
+					verticalSegmentLengths.add(s.getLength());
+				}
+
+			}
+
+			// consider that the panel height in the XZ plane is smaller than the real panel height for small windows
+			double heightFactor = cos(roofNormal.angleTo(Y_UNIT));
+
+			@Nullable Integer panelsX = roughCommonDivisor(totalWidth, horizontalSegmentLengths, 1.0);
+			@Nullable Integer panelsZ = roughCommonDivisor(totalHeight, verticalSegmentLengths, 1.66 * heightFactor);
+
+			/* construct the result */
+
+			return new PanelTexCoordFunction(origin, zDirection, totalWidth, totalHeight, panelsX, panelsZ);
+
+		}
+
+		/**
+		 * tries to find a length somewhat close to preferredLength
+		 * that fits an integer number of times into the total length,
+		 * and also fits an integer number of times into as many segment lengths as possible.
+		 *
+		 * @return  the number of times the resulting length fits into the total, or null if no good solution was found
+		 */
+		static Integer roughCommonDivisor(double total, List<Double> lengths, double preferredLength) {
+
+			/* determine some lengths which are somewhat close to preferredLength and fit the total */
+
+			Set<Double> candidateLengths = new HashSet<>();
+			Map<Double, Double> maxDeviations = new HashMap<>();
+
+			int iMin = max(1, (int)floor(total / (2.0 * preferredLength)));
+			int iMax = max(1, (int)ceil(total / (0.5 * preferredLength)));
+
+			for (int i = iMin; i <= iMax; i++) {
+				double candidateLength = total / i;
+				candidateLengths.add(candidateLength);
+				maxDeviations.put(candidateLength, 0.0);
+			}
+
+			/* remove any candidate lengths which do not fit in one of the segment lengths */
+
+			for (double segmentLength : lengths) {
+				for (double candidate : new ArrayList<>(candidateLengths)) {
+					// check if it's "almost" an integer multiple
+					double deviation = abs((segmentLength / candidate) - round(segmentLength / candidate));
+					if (deviation > 0.2) {
+						candidateLengths.remove(candidate);
+						maxDeviations.remove(candidate);
+					} else if (deviation > maxDeviations.get(candidate)) {
+						maxDeviations.put(candidate, deviation);
+					}
+				}
+
+			}
+
+			/* among the results which get close to the smallest deviation,
+			 * select the one most similar to preferredLength */
+
+			if (candidateLengths.isEmpty()) return null;
+
+			double minDeviation = min(maxDeviations.values());
+
+			double selectedLength = candidateLengths.stream()
+					.filter(l -> maxDeviations.get(l) - minDeviation < 0.05)
+					.min(Comparator.comparingDouble(l -> abs(preferredLength - l)))
+					.get();
+
+			return (int)round(total / selectedLength);
+
+		}
+
+		static class PanelTexCoordFunction implements TexCoordFunction {
+
+			public final VectorXZ origin;
+			public final Angle zDirection;
+			public final double totalWidth;
+			public final double totalHeight;
+			public final @Nullable Integer panelsX;
+			public final @Nullable Integer panelsZ;
+
+			public PanelTexCoordFunction(VectorXZ origin, Angle zDirection, double totalWidth, double totalHeight,
+					@Nullable Integer panelsX, @Nullable Integer panelsZ) {
+				this.origin = origin;
+				this.zDirection = zDirection;
+				this.totalWidth = totalWidth;
+				this.totalHeight = totalHeight;
+				this.panelsX = panelsX;
+				this.panelsZ = panelsZ;
+			}
+
+			@Override
+			public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
+				return vs.stream().map(v -> apply(v, textureData)).collect(toList());
+			}
+
+			VectorXZ apply(VectorXYZ v, TextureData textureData) {
+
+				double defaultEntityWidth = textureData.widthPerEntity != null ? textureData.widthPerEntity : textureData.width;
+				double defaultEntityHeight = textureData.heightPerEntity != null ? textureData.heightPerEntity : textureData.height;
+
+				double wFactor = defaultEntityWidth / textureData.width;
+				double hFactor = defaultEntityHeight / textureData.height;
+
+				double panelWidth, panelHeight;
+
+				if (panelsX != null && panelsZ != null) {
+					panelWidth = totalWidth / panelsX;
+					panelHeight = totalHeight / panelsZ;
+				} else {
+					int panelsX = max(1, (int)round(totalWidth / defaultEntityWidth));
+					int panelsZ = max(1, (int)round(totalHeight / defaultEntityHeight));
+					panelWidth = totalWidth / panelsX;
+					panelHeight = totalHeight / panelsZ;
+				}
+
+				VectorXZ metricTexCoord = v.xz().subtract(origin);
+				metricTexCoord = metricTexCoord.rotate(-zDirection.radians);
+
+				return new VectorXZ(
+						wFactor * metricTexCoord.x / panelWidth,
+						hFactor * metricTexCoord.z / panelHeight);
+
+			}
+
 		}
 
 	}
