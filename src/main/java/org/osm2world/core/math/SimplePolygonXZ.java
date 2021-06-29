@@ -1,7 +1,7 @@
 package org.osm2world.core.math;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
@@ -340,6 +342,24 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 */
 	public SimplePolygonXZ getSimplifiedPolygon() {
 
+		SimplePolygonXZ result = getSimplifiedPolygon(0.05);
+
+		if (result == null || abs(result.getArea() - this.getArea()) / this.getArea() > 0.1) {
+			// redo with less tolerance
+			result = getSimplifiedPolygon(0.001);
+		}
+
+		return result != null ? result : this;
+
+	}
+
+	/**
+	 * simple implementation of {@link #getSimplifiedPolygon()} that can produce invalid polygons
+	 *
+	 * @return the simplified polygon, or null if the result would be invalid
+	 */
+	private @Nullable SimplePolygonXZ getSimplifiedPolygon(double maxDotProduct) {
+
 		boolean[] delete = new boolean[size()];
 		int deleteCount = 0;
 
@@ -347,7 +367,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 			VectorXZ segmentBefore = getVertex(i).subtract(getVertexBefore(i));
 			VectorXZ segmentAfter = getVertexAfter(i).subtract(getVertex(i));
 			double dot = segmentBefore.normalize().dot(segmentAfter.normalize());
-			if (Math.abs(dot - 1) < 0.05) {
+			if (abs(dot - 1) < maxDotProduct) {
 				delete[i] = true;
 				deleteCount += 1;
 			}
@@ -357,7 +377,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 			return this;
 		} else {
 
-			List<VectorXZ> newVertexList = new ArrayList<VectorXZ>(getVertices());
+			List<VectorXZ> newVertexList = new ArrayList<>(getVertices());
 
 			//iterate backwards => it doesn't matter when higher indices change
 			for (int i = size() - 1; i >= 0; i--) {
@@ -367,7 +387,12 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 			}
 
 			newVertexList.add(newVertexList.get(0));
-			return new SimplePolygonXZ(newVertexList);
+
+			try {
+				return new SimplePolygonXZ(newVertexList);
+			} catch (InvalidGeometryException e) {
+				return null;
+			}
 
 		}
 
