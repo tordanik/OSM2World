@@ -332,16 +332,20 @@ public class ConversionFacade {
 
 			for (AttachmentConnector connector : object.getAttachmentConnectors()) {
 
-				Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
-						bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ()));
+				for (String surfaceType : connector.compatibleSurfaceTypes) {
 
-				Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
-						.filter(s -> s.getTypes().stream().anyMatch(connector.compatibleSurfaceTypes::contains))
-						.filter(s -> s.getFaces().stream().anyMatch(f -> connector.isAcceptableNormal.test(f.getNormal())))
-						.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+					Iterable<AttachmentSurface> nearbySurfaces = attachmentSurfaceIndex.probe(
+							bbox(singleton(connector.originalPos)).pad(connector.maxDistanceXZ()));
 
-				if (closestSurface.isPresent()) {
-					attachConnectorIfValid(connector, closestSurface.get());
+					Optional<AttachmentSurface> closestSurface = Streams.stream(nearbySurfaces)
+							.filter(s -> s.getTypes().stream().anyMatch(t -> t.equals(surfaceType)))
+							.filter(s -> s.getFaces().stream().anyMatch(f -> connector.isAcceptableNormal.test(f.getNormal())))
+							.min(comparingDouble(s -> s.distanceTo(connector.originalPos)));
+
+					if (closestSurface.isPresent()) {
+						attachConnectorIfValid(connector, closestSurface.get());
+						break;
+					}
 				}
 
 			}

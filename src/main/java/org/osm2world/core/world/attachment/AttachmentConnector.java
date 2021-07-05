@@ -54,7 +54,8 @@ public class AttachmentConnector {
 
 	/**
 	 *
-	 * @param compatibleSurfaceTypes  list of surface types this can attach to; see {@link AttachmentSurface#getTypes()}
+	 * @param compatibleSurfaceTypes  list of surface types this can attach to in order of preference;
+	 *   see {@link AttachmentSurface#getTypes()}
 	 * @param originalPos  the original location of the connector (before snapping to an {@link AttachmentSurface})
 	 * @param changeXZ  whether the horizontal position may be changed
 	 */

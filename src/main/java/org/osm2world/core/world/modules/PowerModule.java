@@ -56,6 +56,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
@@ -973,9 +974,20 @@ public final class PowerModule extends AbstractModule {
 		private final AttachmentConnector connector;
 
 		public RooftopSolarPanels(MapArea area) {
+
 			super(area);
+
+			List<String> compatibleSurfaceTypes = asList("roof");
+			if (area.getTags().containsKey("level")) {
+				List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
+				if (levels != null) {
+					compatibleSurfaceTypes = asList("roof" + levels.get(0), "roof");
+				}
+			}
+
 			VectorXYZ attachmentPoint = area.getOuterPolygon().getPointInside().xyz(0);
-			connector = new AttachmentConnector(asList("roof"), attachmentPoint, this, 0, false);
+			connector = new AttachmentConnector(compatibleSurfaceTypes, attachmentPoint, this, 0, false);
+
 		}
 
 		@Override
