@@ -363,6 +363,8 @@ public class Wall implements Renderable {
 
 			WindowParameters windowParams = new WindowParameters(tags, level.height);
 
+			double levelEle = level.relativeEle - buildingPart.levelStructure.bottomHeight();
+
 			int numColums = windowParams.numberWindows != null
 					? windowParams.numberWindows
 					: (int) round(surface.getLength() / (2 * windowParams.overallProperties.width));
@@ -370,7 +372,7 @@ public class Wall implements Renderable {
 			for (int i = 0; i < numColums; i++) {
 
 				VectorXZ pos = new VectorXZ((i + 0.5) * surface.getLength() / numColums,
-						level.relativeEle + windowParams.breast);
+						levelEle + windowParams.breast);
 
 				Window window = implementation == WindowImplementation.FULL_GEOMETRY
 						? new GeometryWindow(pos, windowParams, false)
