@@ -1,17 +1,37 @@
+# OSM2World
+textures
+locales
+models
+srtm
+standard.properties
+
+# Build
+target
+dist
 bin
 build
-.
-..
-.*.swp
-*~
-.bzr
-.bzrignore
+
+# IntelliJ
+*.iml
+*.iws
+*.ipr
+.idea/
+
+# Eclipse
+.settings/
+.metadata/
 .classpath
 .project
-/nbproject
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+nbactions.xml
 nbbuild.xml
-doc/javadoc
-/nbproject/private/
-/dist/
-/textures
-/target/
+nb-configuration.xml
+
+# Miscellaneous
+*~
+*.swp
+.DS_Store
