@@ -6,6 +6,7 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
 
 import java.util.List;
 
+import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -142,21 +143,12 @@ public final class OrthoTilesUtil {
 
 	}
 
-	private static final AxisAlignedRectangleXZ boundsForTile(
-			MapProjection mapProjection, TileNumber tile) {
-
-		VectorXZ tilePos1 = mapProjection.calcPos(
-				tile2lat(tile.y, tile.zoom), tile2lon(tile.x, tile.zoom));
-
-		VectorXZ tilePos2 = mapProjection.calcPos(
-				tile2lat(tile.y+1, tile.zoom), tile2lon(tile.x+1, tile.zoom));
-
-		return bbox(asList(tilePos1, tilePos2));
-
+	private static final AxisAlignedRectangleXZ boundsForTile(MapProjection mapProjection, TileNumber tile) {
+		LatLonBounds bounds = tile.bounds();
+		return bbox(asList(mapProjection.calcPos(bounds.getMin()), mapProjection.calcPos(bounds.getMax())));
 	}
 
-	public static final AxisAlignedRectangleXZ boundsForTiles(
-			MapProjection mapProjection, List<TileNumber> tiles) {
+	public static final AxisAlignedRectangleXZ boundsForTiles(MapProjection mapProjection, List<TileNumber> tiles) {
 
 		AxisAlignedRectangleXZ result = boundsForTile(mapProjection, tiles.get(0));
 
@@ -167,15 +159,6 @@ public final class OrthoTilesUtil {
 
 		return result;
 
-	}
-
-	private static final double tile2lon(int x, int z) {
-		return x / Math.pow(2.0, z) * 360.0 - 180;
-	}
-
-	private static final double tile2lat(int y, int z) {
-		double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, z);
-		return Math.toDegrees(Math.atan(Math.sinh(n)));
 	}
 
 }

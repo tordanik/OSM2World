@@ -38,8 +38,8 @@ public final class CLIArgumentsUtil {
 				break;
 
 			case OVERPASS:
-				if (!args.isInputQuery() && !args.isInputBoundingBox()) {
-					return "either a bounding box or a query string is required for Overpass";
+				if (!args.isInputQuery() && !args.isInputBoundingBox() && !args.isTile()) {
+					return "either a bounding box, a tile, or a query string is required for Overpass";
 				}
 				break;
 

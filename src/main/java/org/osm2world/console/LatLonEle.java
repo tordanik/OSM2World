@@ -14,14 +14,8 @@ public class LatLonEle {
 	public final double lon;
 	public final double ele;
 
-	// typographical minus '−' works around the CLI parser's special handling of '-'
-	private static final String DOUBLE_P = "[+-−]?\\d+(?:\\.\\d+)?";
-
-	/**
-	 * pattern for parseable arguments
-	 */
-	public static final String PATTERN = "("+DOUBLE_P+"),("+DOUBLE_P+")";
-	public static final String PATTERN_WITH_ELE = PATTERN + ",(" + DOUBLE_P + ")";
+	/** pattern for parseable arguments */
+	public static final String PATTERN = LatLon.PATTERN + ",(" + LatLon.DOUBLE_PATTERN + ")";
 
 	/**
 	 * regular constructor
@@ -42,15 +36,14 @@ public class LatLonEle {
 
 	/**
 	 * parsing constructor
-	 * @param arg  command line argument to be parsed;
-	 *             formats see {@link #PATTERN} and {@link #PATTERN_WITH_ELE}
+	 * @param arg  command line argument to be parsed; must match {@link #PATTERN} or {@link LatLon#PATTERN}
 	 */
 	public LatLonEle(String arg) {
 
 		arg = arg.replace('−', '-');
 
-		Matcher mEle = Pattern.compile(PATTERN_WITH_ELE).matcher(arg);
-		Matcher m = Pattern.compile(PATTERN).matcher(arg);
+		Matcher mEle = Pattern.compile(PATTERN).matcher(arg);
+		Matcher m = Pattern.compile(LatLon.PATTERN).matcher(arg);
 		if (mEle.matches()) {
 			lat = Double.parseDouble(mEle.group(1));
 			lon = Double.parseDouble(mEle.group(2));

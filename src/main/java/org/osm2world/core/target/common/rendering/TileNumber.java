@@ -1,7 +1,12 @@
 package org.osm2world.core.target.common.rendering;
 
+import static java.lang.Math.*;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 
 /**
  * immutable tile number with zoom level.
@@ -99,6 +104,21 @@ public class TileNumber {
 	@Override
 	public String toString() {
 		return zoom + "," + x + "," + y;
+	}
+
+	public LatLonBounds bounds() {
+		LatLon min = new LatLon(tile2lat(y + 1, zoom), tile2lon(x, zoom));
+		LatLon max = new LatLon(tile2lat(y, zoom), tile2lon(x + 1, zoom));
+		return new LatLonBounds(min, max);
+	}
+
+	static final double tile2lon(int x, int z) {
+		return x / pow(2.0, z) * 360.0 - 180;
+	}
+
+	static final double tile2lat(int y, int z) {
+		double n = PI - (2.0 * PI * y) / pow(2.0, z);
+		return toDegrees(atan(sinh(n)));
 	}
 
 }

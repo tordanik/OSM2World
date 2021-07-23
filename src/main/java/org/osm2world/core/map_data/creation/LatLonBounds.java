@@ -1,5 +1,7 @@
 package org.osm2world.core.map_data.creation;
 
+import static java.lang.Double.*;
+
 /**
  * an area on the globe represented by two coordinate pairs,
  * each with latitude and longitude. Immutable.
@@ -31,6 +33,32 @@ public class LatLonBounds {
 
 	public LatLon getMax() {
 		return new LatLon(maxlat, maxlon);
+	}
+
+	public static LatLonBounds ofPoints(Iterable<LatLon> points) {
+
+		double minLat = POSITIVE_INFINITY;
+		double maxLat = NEGATIVE_INFINITY;
+		double minLon = POSITIVE_INFINITY;
+		double maxLon = NEGATIVE_INFINITY;
+
+		for (LatLon p : points) {
+			if (p.lat < minLat) {
+				minLat = p.lat;
+			}
+			if (p.lat > maxLat) {
+				maxLat = p.lat;
+			}
+			if (p.lon < minLon) {
+				minLon = p.lon;
+			}
+			if (p.lon > maxLon) {
+				maxLon = p.lon;
+			}
+		}
+
+		return new LatLonBounds(minLat, minLon, maxLat, maxLon);
+
 	}
 
 }

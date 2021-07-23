@@ -1,6 +1,5 @@
 package org.osm2world.console;
 
-import static java.lang.Double.*;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
@@ -18,7 +17,7 @@ import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
-import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
 import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
@@ -66,34 +65,15 @@ public final class Output {
 
 		case OVERPASS:
 			if (argumentsGroup.getRepresentative().isInputBoundingBox()) {
-
-				double minLat = POSITIVE_INFINITY;
-				double maxLat = NEGATIVE_INFINITY;
-				double minLon = POSITIVE_INFINITY;
-				double maxLon = NEGATIVE_INFINITY;
-
-				for (LatLonEle l : argumentsGroup.getRepresentative().getInputBoundingBox()) {
-					if (l.lat < minLat) {
-						minLat = l.lat;
-					}
-					if (l.lat > maxLat) {
-						maxLat = l.lat;
-					}
-					if (l.lon < minLon) {
-						minLon = l.lon;
-					}
-					if (l.lon > maxLon) {
-						maxLon = l.lon;
-					}
-				}
-
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(),
-						new LatLon(minLat, minLon), new LatLon(maxLat, maxLon));
-
-			} else { //due to input validation, there needs to be either a query or bounding box for Overpass input mode
-				assert argumentsGroup.getRepresentative().isInputQuery();
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(),
-						argumentsGroup.getRepresentative().getInputQuery());
+				LatLonBounds bounds = LatLonBounds.ofPoints(argumentsGroup.getRepresentative().getInputBoundingBox());
+				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), bounds);
+			} else if (argumentsGroup.getRepresentative().isTile()) {
+				LatLonBounds bounds = argumentsGroup.getRepresentative().getTile().bounds();
+				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), bounds);
+			} else {
+				assert argumentsGroup.getRepresentative().isInputQuery(); // can be assumed due to input validation
+				String query = argumentsGroup.getRepresentative().getInputQuery();
+				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), query);
 			}
 			break;
 
@@ -164,7 +144,6 @@ public final class Output {
 
 				if (args.isOviewBoundingBox()) {
 					bounds = bbox(args.getOviewBoundingBox().stream()
-							.map(LatLonEle::latLon)
 							.map(results.getMapProjection()::calcPos)
 							.collect(toList()));
 				} else if (args.isOviewTiles()) {

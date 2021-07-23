@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import org.osm2world.console.CLIArgumentsUtil.InputMode;
+import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.TileNumber;
@@ -40,11 +41,11 @@ public interface CLIArguments {
 	boolean isInputMode();
 
 	@Option(description="lat,lon pairs defining an input bounding box (does not work with files)",
-			longName="input_bbox", pattern=LatLonEle.PATTERN)
-	List<LatLonEle> getInputBoundingBox();
+			longName="input_bbox", pattern=LatLon.PATTERN)
+	List<LatLon> getInputBoundingBox();
 	boolean isInputBoundingBox();
 
-	@Option(description="zoom,x,y defining an input tile (used for mbtiles sqlite input)", pattern=TileNumber.PATTERN)
+	@Option(description="zoom,x,y defining an input tile (used for mbtiles and Overpass)", pattern=TileNumber.PATTERN)
 	TileNumber getTile();
 	boolean isTile();
 
@@ -69,8 +70,8 @@ public interface CLIArguments {
 	boolean isOviewFrom();
 
 	@Option(description="lat,lon pairs defining a bounding box for orthographic view",
-			pattern=LatLonEle.PATTERN, longName="oview.bbox")
-	List<LatLonEle> getOviewBoundingBox();
+			pattern=LatLon.PATTERN, longName="oview.bbox")
+	List<LatLon> getOviewBoundingBox();
 	boolean isOviewBoundingBox();
 
 	@Option(description="zoom,x,y triples of tiles defining a bounding box for orthographic view",
@@ -79,12 +80,12 @@ public interface CLIArguments {
 	boolean isOviewTiles();
 
 	@Option(description="lat,lon,ele of camera position for perspective view",
-			pattern=LatLonEle.PATTERN_WITH_ELE, longName="pview.pos")
+			pattern=LatLonEle.PATTERN, longName="pview.pos")
 	LatLonEle getPviewPos();
 	boolean isPviewPos();
 
 	@Option(description="lat,lon,ele of camera look-at for perspective view",
-			pattern=LatLonEle.PATTERN_WITH_ELE, longName="pview.lookAt")
+			pattern=LatLonEle.PATTERN, longName="pview.lookAt")
 	LatLonEle getPviewLookat();
 	boolean isPviewLookat();
 

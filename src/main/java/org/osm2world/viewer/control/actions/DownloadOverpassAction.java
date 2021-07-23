@@ -6,7 +6,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.JOptionPane;
 
 import org.osm2world.core.map_data.creation.LatLonBounds;
-import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
@@ -34,11 +33,7 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 		LatLonBounds bounds = askLatLonBounds();
 
 		if (bounds != null) {
-
-			OSMDataReader reader = new OverpassReader(bounds.getMin(), bounds.getMax());
-
-			loadOSMData(reader, true);
-
+			loadOSMData(new OverpassReader(bounds), true);
 		}
 
 	}

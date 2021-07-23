@@ -7,7 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.osm.data.OSMData;
 
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
@@ -24,13 +24,14 @@ public class OverpassReader implements OSMDataReader {
 	private String queryString;
 
 	/** fetches data within a bounding box from Overpass API */
-	public OverpassReader(LatLon min, LatLon max) {
-		this(DEFAULT_API_URL, min, max);
+	public OverpassReader(LatLonBounds bounds) {
+		this(DEFAULT_API_URL, bounds);
 	}
 
 	/** fetches data within a bounding box from any Overpass API instance */
-	public OverpassReader(String apiURL, LatLon min, LatLon max) {
-		this(apiURL, "[bbox:"+min.lat+","+min.lon+","+max.lat+","+max.lon+"];(node;rel(bn)->.x;way;node(w)->.x;rel(bw););out meta;");
+	public OverpassReader(String apiURL, LatLonBounds bounds) {
+		this(apiURL, "[bbox:"+bounds.minlat+","+bounds.minlon+","+bounds.maxlat+","+bounds.maxlon+"];"
+				+ "(node;rel(bn)->.x;way;node(w)->.x;rel(bw););out meta;");
 	}
 
 	/** fetches data from Overpass API according to an arbitrary query */
