@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='false' generator='JOSM'>
+  <node id='-30' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.0758398356392741' lon='0.4919413819744184' />
+  <node id='-28' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07585509521399153' lon='0.49187212692078847' />
+  <node id='-24' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07578310132296985' lon='0.4919362954450558' />
+  <node id='-22' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07585705156972414' lon='0.4918549109752532' />
+  <node id='-20' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07584022691042076' lon='0.4918173489122674' />
+  <node id='-18' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07577762352690895' lon='0.49183534740078144' />
+  <node id='-16' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07588170165194749' lon='0.49181343619737306' />
+  <node id='-14' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07588287546538634' lon='0.4919233834859045' />
+  <node id='-12' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07580031725344245' lon='0.4920043766842175' />
+  <node id='-10' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07574827819085664' lon='0.49193903434548186' />
+  <node id='-8' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07574827819085664' lon='0.4918306521429082' />
+  <node id='-6' action='modify' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242' lat='-0.07581557682818' lon='0.4917680487045985' />
+  <way id='-38' action='modify' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242'>
+    <nd ref='-18' />
+    <nd ref='-22' />
+    <nd ref='-20' />
+    <nd ref='-18' />
+  </way>
+  <way id='-36' action='modify' timestamp='2011-03-16T20:56:47Z' visible='true' version='424242'>
+    <nd ref='-6' />
+    <nd ref='-8' />
+    <nd ref='-10' />
+    <nd ref='-12' />
+    <nd ref='-14' />
+  </way>
+  <way id='-34' visible='true' version='424242'>
+    <nd ref='-14' />
+    <nd ref='-16' />
+    <nd ref='-6' />
+  </way>
+  <way id='-32' visible='true' version='424242'>
+    <nd ref='-28' />
+    <nd ref='-30' />
+    <nd ref='-24' />
+  </way>
+  <relation id='-42' action='modify' timestamp='2011-03-16T20:56:47Z' visible='true'>
+    <member type='way' ref='-36' role='outer' />
+    <member type='way' ref='-34' role='outer' />
+    <member type='way' ref='-32' role='inner' />
+    <member type='way' ref='-38' role='inner' />
+    <tag k='area' v='yes' />
+    <tag k='highway' v='service' />
+    <tag k='type' v='multipolygon' />
+  </relation>
+</osm>
