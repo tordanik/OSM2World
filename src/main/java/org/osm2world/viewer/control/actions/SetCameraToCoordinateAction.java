@@ -56,7 +56,7 @@ public class SetCameraToCoordinateAction extends AbstractAction implements Obser
 
 		MapProjection projection = data.getConversionResults().getMapProjection();
 
-		VectorXZ newPosXZ = projection.calcPos(lat, lon);
+		VectorXZ newPosXZ = projection.toXZ(lat, lon);
 		VectorXYZ newPos = newPosXZ.xyz(height);
 
 		renderOptions.camera.move(newPos.subtract(renderOptions.camera.getPos()));

@@ -32,8 +32,7 @@ public class OSMToMapDataConverterTest {
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
 		OSMData osmData = new StrictOSMFileReader(testFile).getData();
-		OriginMapProjection mapProjection = new MetricMapProjection();
-		mapProjection.setOrigin(osmData);
+		MapProjection mapProjection = new MetricMapProjection(osmData.getOrigin());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
 		return converter.createMapData(osmData);
@@ -96,8 +95,7 @@ public class OSMToMapDataConverterTest {
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
 		OSMData osmData = new StrictOSMFileReader(testFile).getData();
-		OriginMapProjection mapProjection = new MetricMapProjection();
-		mapProjection.setOrigin(osmData);
+		MapProjection mapProjection = new MetricMapProjection(osmData.getOrigin());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
 		MapData mapData = converter.createMapData(osmData);
@@ -116,7 +114,7 @@ public class OSMToMapDataConverterTest {
 
 		for (LatLon landSite : landSites) {
 
-			VectorXZ v = mapProjection.calcPos(landSite);
+			VectorXZ v = mapProjection.toXZ(landSite);
 
 			for (MapArea waterArea : waterAreas) {
 				assertFalse(waterArea.getPolygon().contains(v));
@@ -126,7 +124,7 @@ public class OSMToMapDataConverterTest {
 
 		for (LatLon waterSite : waterSites) {
 
-			VectorXZ v = mapProjection.calcPos(waterSite);
+			VectorXZ v = mapProjection.toXZ(waterSite);
 
 			boolean isWater = false;
 

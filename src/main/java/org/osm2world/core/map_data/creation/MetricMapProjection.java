@@ -4,38 +4,46 @@ import static org.osm2world.core.map_data.creation.MercatorProjection.*;
 
 import org.osm2world.core.math.VectorXZ;
 
-/**
- * Map projection that is intended to use the "dense" space
- * of floating point values by making all coordinates relative to
- * the origin. 1 meter distance is roughly represented by 1 internal unit.
- */
-public class MetricMapProjection extends OriginMapProjection {
+public class MetricMapProjection implements MapProjection {
 
-	private double originX;
-	private double originY;
-	private double scaleFactor;
+	private final LatLon origin;
+	private final double originX;
+	private final double originY;
+	private final double scaleFactor;
 
-	public VectorXZ calcPos(double lat, double lon) {
+	public MetricMapProjection(LatLon origin) {
+
+		this.origin = origin;
+
+		this.scaleFactor = earthCircumference(origin.lat);
+		this.originY = latToY(origin.lat) * scaleFactor;
+		this.originX = lonToX(origin.lon) * scaleFactor;
+
+	}
+
+	@Override
+	public LatLon getOrigin() {
+		return origin;
+	}
+
+	@Override
+	public VectorXZ toXZ(double lat, double lon) {
 
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 
 		double x = lonToX(lon) * scaleFactor - originX;
 		double y = latToY(lat) * scaleFactor - originY;
 
-		/* snap to som cm precision, seems to reduce geometry exceptions */
+		/* snap to mm precision, seems to reduce geometry exceptions */
 		x = Math.round(x * 1000) / 1000.0d;
 		y = Math.round(y * 1000) / 1000.0d;
 
 		return new VectorXZ(x, y); // x and z(!) are 2d here
+
 	}
 
 	@Override
-	public VectorXZ calcPos(LatLon latlon) {
-		return calcPos(latlon.lat, latlon.lon);
-	}
-
-	@Override
-	public double calcLat(VectorXZ pos) {
+	public double toLat(VectorXZ pos) {
 
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 
@@ -44,7 +52,7 @@ public class MetricMapProjection extends OriginMapProjection {
 	}
 
 	@Override
-	public double calcLon(VectorXZ pos) {
+	public double toLon(VectorXZ pos) {
 
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 
@@ -52,17 +60,4 @@ public class MetricMapProjection extends OriginMapProjection {
 
 	}
 
-	@Override
-	public VectorXZ getNorthUnit() {
-		return VectorXZ.Z_UNIT;
-	}
-
-	@Override
-	public void setOrigin(LatLon origin) {
-		super.setOrigin(origin);
-
-		this.scaleFactor = earthCircumference(origin.lat);
-		this.originY = latToY(origin.lat) * scaleFactor;
-		this.originX = lonToX(origin.lon) * scaleFactor;
-	}
 }

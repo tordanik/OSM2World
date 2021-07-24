@@ -47,11 +47,11 @@ public class ShowCameraConfigurationAction
 		VectorXYZ lookAt = renderOptions.camera.getLookAt();
 
 		JOptionPane.showMessageDialog(null,
-				"posLat = " + mapProjection.calcLat(pos.xz())
-				+ "\nposLon = " + mapProjection.calcLon(pos.xz())
+				"posLat = " + mapProjection.toLat(pos.xz())
+				+ "\nposLon = " + mapProjection.toLon(pos.xz())
 				+ "\nposEle = " + pos.y
-				+ "\nlookAtLat = " + mapProjection.calcLat(lookAt.xz())
-				+ "\nlookAtLon = " + mapProjection.calcLon(lookAt.xz())
+				+ "\nlookAtLat = " + mapProjection.toLat(lookAt.xz())
+				+ "\nlookAtLon = " + mapProjection.toLon(lookAt.xz())
 				+ "\nlookAtEle = " + lookAt.y,
 				"Current camera configuration", JOptionPane.INFORMATION_MESSAGE);
 	}

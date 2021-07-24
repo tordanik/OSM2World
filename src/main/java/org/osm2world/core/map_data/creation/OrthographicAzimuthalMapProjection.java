@@ -1,52 +1,38 @@
 package org.osm2world.core.map_data.creation;
 
-import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.data.OSMData;
 
 /**
- * application of an orthographic projection that is intended to use
- * values in meters centered around the coordinate center (0,0).
- * It projects coordinates onto a plane touching the globe at the origin.
- * This results in sufficient accuracy
- * if the data covers only a "small" part of the globe.
+ * application of an orthographic projection that is intended to use values in meters centered around the coordinate
+ * center (0,0). It projects coordinates onto a plane touching the globe at the origin.
+ * This results in sufficient accuracy if the data covers only a "small" part of the globe.
  */
-public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
+public class OrthographicAzimuthalMapProjection implements MapProjection {
 
 	private final double GLOBE_RADIUS = 6371000;
 
-	private double lat0 = NaN;
-	private double lon0 = NaN;
+	private final LatLon origin;
+	private final double lat0;
+	private final double lon0;
 
-	@Override
-	public VectorXZ calcPos(LatLon latlon) {
-		return calcPos(latlon.lat, latlon.lon);
-	}
+	public OrthographicAzimuthalMapProjection(LatLon origin) {
 
-	@Override
-	public void setOrigin(LatLon origin) {
+		this.origin = origin;
 
-		super.setOrigin(origin);
-
-		lat0 = toRadians(getOrigin().lat);
-		lon0 = toRadians(getOrigin().lon);
+		this.lat0 = toRadians(getOrigin().lat);
+		this.lon0 = toRadians(getOrigin().lon);
 
 	}
 
 	@Override
-	public void setOrigin(OSMData osmData) {
-
-		super.setOrigin(osmData);
-
-		lat0 = toRadians(getOrigin().lat);
-		lon0 = toRadians(getOrigin().lon);
-
+	public LatLon getOrigin() {
+		return origin;
 	}
 
 	@Override
-	public VectorXZ calcPos(double latDeg, double lonDeg) {
+	public VectorXZ toXZ(double latDeg, double lonDeg) {
 
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 
@@ -61,7 +47,7 @@ public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 	}
 
 	@Override
-	public double calcLat(VectorXZ pos) {
+	public double toLat(VectorXZ pos) {
 
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 
@@ -77,7 +63,7 @@ public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 	}
 
 	@Override
-	public double calcLon(VectorXZ pos) {
+	public double toLon(VectorXZ pos) {
 
 		if (origin == null) throw new IllegalStateException("the origin needs to be set first");
 
@@ -92,11 +78,6 @@ public class OrthographicAzimuthalMapProjection extends OriginMapProjection {
 			return toDegrees(lon0);
 		}
 
-	}
-
-	@Override
-	public VectorXZ getNorthUnit() {
-		return VectorXZ.Z_UNIT;
 	}
 
 }

@@ -157,14 +157,11 @@ public final class ObjWriter {
 				+ GlobalValues.OSM2WORLD_URI + "\n");
 		objStream.println("# Projection information:");
 		objStream.println("# Coordinate origin (0,0,0): "
-				+ "lat " + mapProjection.calcLat(VectorXZ.NULL_VECTOR) + ", "
-				+ "lon " + mapProjection.calcLon(VectorXZ.NULL_VECTOR) + ", "
+				+ "lat " + mapProjection.toLat(VectorXZ.NULL_VECTOR) + ", "
+				+ "lon " + mapProjection.toLon(VectorXZ.NULL_VECTOR) + ", "
 				+ "ele 0");
-		objStream.println("# North direction: " + new VectorXYZ(
-						mapProjection.getNorthUnit().x, 0,
-						- mapProjection.getNorthUnit().z));
-		objStream.println("# 1 coordinate unit corresponds to roughly "
-				+ "1 m in reality\n");
+		objStream.println("# North direction: " + new VectorXYZ(0, 0, -1));
+		objStream.println("# 1 coordinate unit corresponds to roughly 1 m in reality\n");
 
 	}
 

@@ -74,8 +74,8 @@ public class SRTMData implements TerrainElevationData {
 
 		for (MapNode mapNode : mapData.getMapNodes()) {
 
-			double lon = projection.calcLon(mapNode.getPos());
-			double lat = projection.calcLat(mapNode.getPos());
+			double lon = projection.toLon(mapNode.getPos());
+			double lat = projection.toLat(mapNode.getPos());
 
 			if (!isNaN(lat) && !isNaN(lon)) {
 				minLon = min(minLon, lon);
@@ -163,7 +163,7 @@ public class SRTMData implements TerrainElevationData {
 				double lat = tileLat + 1.0 / SRTMTile.PIXELS * (y + 0.5);
 				double lon = tileLon + 1.0 / SRTMTile.PIXELS * (x + 0.5);
 
-				VectorXZ pos = projection.calcPos(lat, lon);
+				VectorXZ pos = projection.toXZ(lat, lon);
 
 				if (value != SRTMTile.BLANK_VALUE &&
 						!Double.isNaN(pos.x) && !Double.isNaN(pos.z)) {

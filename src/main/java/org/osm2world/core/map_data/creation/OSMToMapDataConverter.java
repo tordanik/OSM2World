@@ -107,7 +107,7 @@ public class OSMToMapDataConverter {
 		final TLongObjectMap<MapNode> nodeIdMap = new TLongObjectHashMap<MapNode>();
 
 		for (OsmNode node : osmData.getNodes()) {
-			VectorXZ nodePos = mapProjection.calcPos(node.getLatitude(), node.getLongitude());
+			VectorXZ nodePos = mapProjection.toXZ(node.getLatitude(), node.getLongitude());
 			MapNode mapNode = new MapNode(node.getId(), tagsOfEntity(node), nodePos);
 			mapNodes.add(mapNode);
 			nodeIdMap.put(node.getId(), mapNode);
@@ -643,10 +643,10 @@ public class OSMToMapDataConverter {
 
 		for (OsmBounds bound : bounds) {
 
-			boundedPoints.add(mapProjection.calcPos(bound.getBottom(), bound.getLeft()));
-			boundedPoints.add(mapProjection.calcPos(bound.getBottom(), bound.getRight()));
-			boundedPoints.add(mapProjection.calcPos(bound.getTop(), bound.getLeft()));
-			boundedPoints.add(mapProjection.calcPos(bound.getTop(), bound.getRight()));
+			boundedPoints.add(mapProjection.toXZ(bound.getBottom(), bound.getLeft()));
+			boundedPoints.add(mapProjection.toXZ(bound.getBottom(), bound.getRight()));
+			boundedPoints.add(mapProjection.toXZ(bound.getTop(), bound.getLeft()));
+			boundedPoints.add(mapProjection.toXZ(bound.getTop(), bound.getRight()));
 
 		}
 

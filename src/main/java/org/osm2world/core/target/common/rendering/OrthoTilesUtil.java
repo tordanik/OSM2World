@@ -145,7 +145,7 @@ public final class OrthoTilesUtil {
 
 	private static final AxisAlignedRectangleXZ boundsForTile(MapProjection mapProjection, TileNumber tile) {
 		LatLonBounds bounds = tile.bounds();
-		return bbox(asList(mapProjection.calcPos(bounds.getMin()), mapProjection.calcPos(bounds.getMax())));
+		return bbox(asList(mapProjection.toXZ(bounds.getMin()), mapProjection.toXZ(bounds.getMax())));
 	}
 
 	public static final AxisAlignedRectangleXZ boundsForTiles(MapProjection mapProjection, List<TileNumber> tiles) {

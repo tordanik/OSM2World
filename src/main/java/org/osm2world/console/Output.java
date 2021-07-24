@@ -122,8 +122,8 @@ public final class Output {
 				LatLonEle lookAt = args.getPviewLookat();
 
 				camera = new Camera();
-				VectorXYZ posV = proj.calcPos(pos.lat, pos.lon).xyz(pos.ele);
-				VectorXYZ laV =	proj.calcPos(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
+				VectorXYZ posV = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
+				VectorXYZ laV =	proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
 				camera.setCamera(posV.x, posV.y, posV.z, laV.x, laV.y, laV.z);
 
 				projection = new Projection(false,
@@ -144,7 +144,7 @@ public final class Output {
 
 				if (args.isOviewBoundingBox()) {
 					bounds = bbox(args.getOviewBoundingBox().stream()
-							.map(results.getMapProjection()::calcPos)
+							.map(results.getMapProjection()::toXZ)
 							.collect(toList()));
 				} else if (args.isOviewTiles()) {
 					bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());

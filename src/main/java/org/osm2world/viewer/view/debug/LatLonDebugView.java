@@ -39,10 +39,10 @@ public class LatLonDebugView extends DebugView {
 
 		AxisAlignedRectangleXZ bound = map.getDataBoundary();
 
-		double minLon = toDegrees(mapProjection.calcLon(new VectorXZ(bound.minX, bound.minZ)));
-		double minLat = toDegrees(mapProjection.calcLat(new VectorXZ(bound.minX, bound.minZ)));
-		double maxLon = toDegrees(mapProjection.calcLon(new VectorXZ(bound.maxX, bound.maxZ)));
-		double maxLat = toDegrees(mapProjection.calcLat(new VectorXZ(bound.maxX, bound.maxZ)));
+		double minLon = toDegrees(mapProjection.toLon(new VectorXZ(bound.minX, bound.minZ)));
+		double minLat = toDegrees(mapProjection.toLat(new VectorXZ(bound.minX, bound.minZ)));
+		double maxLon = toDegrees(mapProjection.toLon(new VectorXZ(bound.maxX, bound.maxZ)));
+		double maxLat = toDegrees(mapProjection.toLat(new VectorXZ(bound.maxX, bound.maxZ)));
 
 		for (int x = (int)floor(minLon / LINE_DIST); x < (int)ceil(maxLon / LINE_DIST); x++) {
 			for (int z = (int)floor(minLat / LINE_DIST); z < (int)ceil(maxLat / LINE_DIST); z++) {
@@ -52,8 +52,8 @@ public class LatLonDebugView extends DebugView {
 
 				if (widthLat > 1 || camera.getPos().y < 1000) {
 					target.drawLineStrip(WHITE, widthLat,
-							mapProjection.calcPos(z * LINE_DIST, x * LINE_DIST).xyz(0),
-							mapProjection.calcPos(z * LINE_DIST, (x+1) * LINE_DIST).xyz(0));
+							mapProjection.toXZ(z * LINE_DIST, x * LINE_DIST).xyz(0),
+							mapProjection.toXZ(z * LINE_DIST, (x+1) * LINE_DIST).xyz(0));
 				}
 
 				int widthLon = (x % 3600 == 0) ? 6
@@ -61,8 +61,8 @@ public class LatLonDebugView extends DebugView {
 
 				if (widthLon > 1 || camera.getPos().y < 1000) {
 					target.drawLineStrip(WHITE, widthLon,
-							mapProjection.calcPos(z * LINE_DIST, x * LINE_DIST).xyz(0),
-							mapProjection.calcPos((z+1) * LINE_DIST, x * LINE_DIST).xyz(0));
+							mapProjection.toXZ(z * LINE_DIST, x * LINE_DIST).xyz(0),
+							mapProjection.toXZ((z+1) * LINE_DIST, x * LINE_DIST).xyz(0));
 				}
 
 			}

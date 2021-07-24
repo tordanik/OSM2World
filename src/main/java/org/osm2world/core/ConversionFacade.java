@@ -13,15 +13,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
+import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
-import org.osm2world.core.map_data.creation.OriginMapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.EleConstraintValidator;
@@ -143,7 +144,7 @@ public class ConversionFacade {
 
 	}
 
-	private Factory<? extends OriginMapProjection> mapProjectionFactory = MetricMapProjection::new;
+	private Function<LatLon, ? extends MapProjection> mapProjectionFactory = MetricMapProjection::new;
 
 	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = ZeroInterpolator::new;
 
@@ -154,8 +155,7 @@ public class ConversionFacade {
 	 * instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
 	 */
-	public void setMapProjectionFactory(
-			Factory<? extends OriginMapProjection> mapProjectionFactory) {
+	public void setMapProjectionFactory(Function<LatLon, ? extends MapProjection> mapProjectionFactory) {
 		this.mapProjectionFactory = mapProjectionFactory;
 	}
 
@@ -254,8 +254,7 @@ public class ConversionFacade {
 		/* create map data from OSM data */
 		updatePhase(Phase.MAP_DATA);
 
-		OriginMapProjection mapProjection = mapProjectionFactory.get();
-		mapProjection.setOrigin(osmData);
+		MapProjection mapProjection = mapProjectionFactory.apply(osmData.getOrigin());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
 		MapData mapData = null;

@@ -11,54 +11,22 @@ public class OrthographicAzimuthalMapProjectionTest {
 	@Test
 	public void testCalcPos() {
 
-		OrthographicAzimuthalMapProjection proj =
-				new OrthographicAzimuthalMapProjection();
-		proj.setOrigin(new LatLon(0, 0));
+		OrthographicAzimuthalMapProjection proj = new OrthographicAzimuthalMapProjection(new LatLon(0, 0));
 
-		VectorXZ posOrigin = proj.calcPos(0, 0);
-		assertAlmostEquals(0, posOrigin.x);
-		assertAlmostEquals(0, posOrigin.z);
-		assertAlmostEquals(0, proj.calcLat(posOrigin));
-		assertAlmostEquals(0, proj.calcLon(posOrigin));
+		VectorXZ posOrigin = proj.toXZ(0, 0);
+		assertAlmostEquals(0, 0, posOrigin);
+		assertAlmostEquals(0, proj.toLat(posOrigin));
+		assertAlmostEquals(0, proj.toLon(posOrigin));
 
-		VectorXZ posE = proj.calcPos(0, 0.000009);
-		assertAlmostEquals(1, posE.x);
-		assertAlmostEquals(0, posE.z);
-		assertAlmostEquals(0, proj.calcLat(posE));
-		assertAlmostEquals(0.000009, proj.calcLon(posE));
+		VectorXZ posE = proj.toXZ(0, 0.000009);
+		assertAlmostEquals(1, 0, posE);
+		assertAlmostEquals(0, proj.toLat(posE));
+		assertAlmostEquals(0.000009, proj.toLon(posE));
 
-		VectorXZ posN = proj.calcPos(0.000009, 0);
-		assertAlmostEquals(0, posN.x);
-		assertAlmostEquals(1, posN.z);
-		assertAlmostEquals(0.000009, proj.calcLat(posN));
-		assertAlmostEquals(0, proj.calcLon(posN));
-
-	}
-
-	@Test(expected=IllegalStateException.class)
-	public void testCalcPos_missingOrigin() {
-
-		OriginMapProjection projection = new OrthographicAzimuthalMapProjection();
-
-		projection.calcPos(new LatLon(1, 2));
-
-	}
-
-	@Test(expected=IllegalStateException.class)
-	public void testCalcLat_missingOrigin() {
-
-		OriginMapProjection projection = new OrthographicAzimuthalMapProjection();
-
-		projection.calcLat(new VectorXZ(1, 2));
-
-	}
-
-	@Test(expected=IllegalStateException.class)
-	public void testCalcLon_missingOrigin() {
-
-		OriginMapProjection projection = new OrthographicAzimuthalMapProjection();
-
-		projection.calcLon(new VectorXZ(1, 2));
+		VectorXZ posN = proj.toXZ(0.000009, 0);
+		assertAlmostEquals(0, 1, posN);
+		assertAlmostEquals(0.000009, proj.toLat(posN));
+		assertAlmostEquals(0, proj.toLon(posN));
 
 	}
 
