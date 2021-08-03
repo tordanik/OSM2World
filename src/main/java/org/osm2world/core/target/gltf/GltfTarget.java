@@ -192,6 +192,38 @@ public class GltfTarget extends AbstractTarget {
 
 		gltf.nodes.get(0).children = IntStream.range(1, gltf.nodes.size()).boxed().collect(toList());
 
+		if (gltf.accessors.isEmpty()) {
+			gltf.accessors = null;
+		}
+
+		if (gltf.buffers.isEmpty()) {
+			gltf.buffers = null;
+		}
+
+		if (gltf.bufferViews.isEmpty()) {
+			gltf.bufferViews = null;
+		}
+
+		if (gltf.images.isEmpty()) {
+			gltf.images = null;
+		}
+
+		if (gltf.materials.isEmpty()) {
+			gltf.materials = null;
+		}
+
+		if (gltf.meshes.isEmpty()) {
+			gltf.meshes = null;
+		}
+
+		if (gltf.samplers.isEmpty()) {
+			gltf.samplers = null;
+		}
+
+		if (gltf.textures.isEmpty()) {
+			gltf.textures = null;
+		}
+
 		try (FileWriter writer = new FileWriter(outputFile)) {
 			new GsonBuilder().setPrettyPrinting().create().toJson(gltf, writer);
 		} catch (JsonIOException | IOException e) {
