@@ -187,7 +187,7 @@ public final class TagSet implements Iterable<Tag> {
 		} else {
 			for (String key : keys) {
 				String value = getValue(key);
-				if (values.contains(value)) {
+				if (value != null && values.contains(value)) {
 					return true;
 				}
 			}
