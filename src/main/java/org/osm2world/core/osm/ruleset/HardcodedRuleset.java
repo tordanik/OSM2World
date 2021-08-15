@@ -29,6 +29,9 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("amenity", "parking"));
 		areaTags.add(new Tag("amenity", "parking_space"));
 		areaTags.add(new Tag("amenity", "swimming_pool"));
+		areaTags.add(new Tag("indoor", "area"));
+		areaTags.add(new Tag("indoor", "corridor"));
+		areaTags.add(new Tag("indoor", "room"));
 		areaTags.add(new Tag("leisure", "pitch"));
 		areaTags.add(new Tag("leisure", "swimming_pool"));
 		areaTags.add(new Tag("natural", "beach"));
@@ -37,10 +40,8 @@ public class HardcodedRuleset implements Ruleset {
 		areaTags.add(new Tag("natural", "wood"));
 		areaTags.add(new Tag("natural", "scrub"));
 		areaTags.add(new Tag("power", "generator"));
+		areaTags.add(new Tag("tourism", "artwork"));
 		areaTags.add(new Tag("waterway", "riverbank"));
-		areaTags.add(new Tag("indoor", "room"));
-		areaTags.add(new Tag("indoor", "area"));
-		areaTags.add(new Tag("indoor", "corridor"));
 
 		areaTags.addAll(SurfaceAreaModule.defaultSurfaceMap.keySet());
 
@@ -51,6 +52,7 @@ public class HardcodedRuleset implements Ruleset {
 		areaKeys.add("golf");
 		areaKeys.add("landuse");
 		areaKeys.add("landcover");
+		areaKeys.add("leisure");
 
 		landTags.add(new Tag("landuse", "forest"));
 		landTags.add(new Tag("natural", "water"));
