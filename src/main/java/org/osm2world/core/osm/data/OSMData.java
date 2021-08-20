@@ -1,10 +1,15 @@
 package org.osm2world.core.osm.data;
 
 import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
 import de.topobyte.osm4j.core.model.iface.OsmBounds;
@@ -52,10 +57,6 @@ public class OSMData implements OsmEntityProvider {
 
 	}
 
-	public Collection<OsmBounds> getBounds() {
-		return bounds;
-	}
-
 	public InMemoryMapDataSet getData() {
 		return data;
 	}
@@ -87,30 +88,37 @@ public class OSMData implements OsmEntityProvider {
 		return data.getRelation(id);
 	}
 
-	/**
-	 * Returns a point that can be used as a map projection's origin.
-	 * It is placed at the center of the bounds, or else at the first node's coordinates.
-	 */
-	public LatLon getOrigin() {
+	public Collection<LatLonBounds> getExplicitBounds() {
+		return bounds.stream()
+				.map(b -> new LatLonBounds(b.getBottom(), b.getLeft(), b.getTop(), b.getRight()))
+				.collect(toList());
+	}
 
-		if (getBounds() != null && !getBounds().isEmpty()) {
-
-			OsmBounds firstBound = getBounds().iterator().next();
-			return new LatLon(
-					(firstBound.getTop() + firstBound.getBottom()) / 2,
-					(firstBound.getLeft() + firstBound.getRight()) / 2);
-
+	public @Nullable LatLonBounds getUnionOfExplicitBounds() {
+		if (getExplicitBounds().isEmpty()) {
+			return null;
 		} else {
-
-			if (getNodes().isEmpty()) {
-				throw new IllegalArgumentException("OSM data must contain bounds or nodes");
-			}
-
-			OsmNode firstNode = getNodes().iterator().next();
-			return new LatLon(firstNode.getLatitude(), firstNode.getLongitude());
-
+			return LatLonBounds.union(getExplicitBounds());
 		}
+	}
 
+	/** returns the center of the bounds or, if there are no explicit bounds, the center of all the nodes */
+	public LatLonBounds getLatLonBounds() {
+		if (getUnionOfExplicitBounds() != null) {
+			return getUnionOfExplicitBounds();
+		} else if (!getNodes().isEmpty()) {
+			List<LatLon> nodeCoords = getNodes().stream()
+				.map(n -> new LatLon(n.getLatitude(), n.getLongitude()))
+				.collect(toList());
+			return LatLonBounds.ofPoints(nodeCoords);
+		} else {
+			throw new IllegalArgumentException("OSM data must contain bounds or nodes");
+		}
+	}
+
+	/** returns the center of {@link #getLatLonBounds()} */
+	public LatLon getCenter() {
+		return getLatLonBounds().getCenter();
 	}
 
 }

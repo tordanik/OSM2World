@@ -74,7 +74,6 @@ import org.osm2world.core.world.modules.traffic_sign.TrafficSignModule;
 
 import com.google.common.collect.Streams;
 
-import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 /**
@@ -242,19 +241,16 @@ public class ConversionFacade {
 		}
 
 		Double maxBoundingBoxDegrees = config.getDouble("maxBoundingBoxDegrees", null);
-		if (maxBoundingBoxDegrees != null) {
-			for (OsmBounds bound : osmData.getBounds()) {
-				if (bound.getTop() - bound.getBottom() > maxBoundingBoxDegrees
-						|| bound.getRight() - bound.getLeft() > maxBoundingBoxDegrees) {
-					throw new BoundingBoxSizeException(bound);
-				}
-			}
+		if (maxBoundingBoxDegrees != null
+				&& (osmData.getLatLonBounds().sizeLat() > maxBoundingBoxDegrees
+						|| osmData.getLatLonBounds().sizeLon() > maxBoundingBoxDegrees)) {
+			throw new BoundingBoxSizeException();
 		}
 
 		/* create map data from OSM data */
 		updatePhase(Phase.MAP_DATA);
 
-		MapProjection mapProjection = mapProjectionFactory.apply(osmData.getOrigin());
+		MapProjection mapProjection = mapProjectionFactory.apply(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
 		MapData mapData = null;
@@ -534,15 +530,12 @@ public class ConversionFacade {
 	public static class BoundingBoxSizeException extends RuntimeException {
 
 		private static final long serialVersionUID = 2841146365929523046L; //generated VersionID
-		public final OsmBounds bound;
 
-		private BoundingBoxSizeException(OsmBounds bound) {
-			this.bound = bound;
-		}
+		private BoundingBoxSizeException() {}
 
 		@Override
 		public String toString() {
-			return "oversized bounding box: " + bound;
+			return "oversized bounding box";
 		}
 
 	}

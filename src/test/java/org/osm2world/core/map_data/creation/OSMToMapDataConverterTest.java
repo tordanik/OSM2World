@@ -32,7 +32,7 @@ public class OSMToMapDataConverterTest {
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
 		OSMData osmData = new StrictOSMFileReader(testFile).getData();
-		MapProjection mapProjection = new MetricMapProjection(osmData.getOrigin());
+		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
 		return converter.createMapData(osmData);
@@ -95,7 +95,7 @@ public class OSMToMapDataConverterTest {
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
 		OSMData osmData = new StrictOSMFileReader(testFile).getData();
-		MapProjection mapProjection = new MetricMapProjection(osmData.getOrigin());
+		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
 		MapData mapData = converter.createMapData(osmData);

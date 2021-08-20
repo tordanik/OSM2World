@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.creation;
 
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
@@ -14,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
@@ -43,7 +46,6 @@ import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
-import de.topobyte.osm4j.core.model.iface.OsmBounds;
 import de.topobyte.osm4j.core.model.iface.OsmEntity;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
@@ -83,7 +85,7 @@ public class OSMToMapDataConverter {
 		createMapElements(osmData, mapNodes, mapWays, mapAreas, mapRelations);
 
 		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations,
-				calculateFileBoundary(osmData.getBounds()));
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds()));
 
 		calculateIntersectionsInMapData(mapData);
 
@@ -151,7 +153,7 @@ public class OSMToMapDataConverter {
 
 		mapAreas.addAll(MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeIdMap, mapNodes,
-				calculateFileBoundary(osmData.getBounds())));
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds())));
 
 		/* ... based on closed ways */
 
@@ -186,8 +188,7 @@ public class OSMToMapDataConverter {
 
 		/* ... for empty terrain */
 
-		AxisAlignedRectangleXZ terrainBoundary =
-				calculateFileBoundary(osmData.getBounds());
+		AxisAlignedRectangleXZ terrainBoundary = calculateFileBoundary(osmData.getUnionOfExplicitBounds());
 
 		if (terrainBoundary != null
 				&& config.getBoolean("createTerrain", true)) {
@@ -637,24 +638,16 @@ public class OSMToMapDataConverter {
 
 	}
 
-	private AxisAlignedRectangleXZ calculateFileBoundary(Collection<OsmBounds> bounds) {
+	/** @param b  union of all explicit bounding boxes in the OSM dataset */
+	private @Nullable AxisAlignedRectangleXZ calculateFileBoundary(@Nullable LatLonBounds b) {
 
-		Collection<VectorXZ> boundedPoints = new ArrayList<>();
+		if (b == null) return null;
 
-		for (OsmBounds bound : bounds) {
-
-			boundedPoints.add(mapProjection.toXZ(bound.getBottom(), bound.getLeft()));
-			boundedPoints.add(mapProjection.toXZ(bound.getBottom(), bound.getRight()));
-			boundedPoints.add(mapProjection.toXZ(bound.getTop(), bound.getLeft()));
-			boundedPoints.add(mapProjection.toXZ(bound.getTop(), bound.getRight()));
-
-		}
-
-		if (boundedPoints.isEmpty()) {
-			return null;
-		} else {
-			return bbox(boundedPoints);
-		}
+		return bbox(asList(
+				mapProjection.toXZ(b.minlat, b.minlon),
+				mapProjection.toXZ(b.minlat, b.maxlon),
+				mapProjection.toXZ(b.maxlat, b.minlon),
+				mapProjection.toXZ(b.maxlat, b.maxlon)));
 
 	}
 

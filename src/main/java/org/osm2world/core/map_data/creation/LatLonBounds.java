@@ -2,6 +2,9 @@ package org.osm2world.core.map_data.creation;
 
 import static java.lang.Double.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * an area on the globe represented by two coordinate pairs,
  * each with latitude and longitude. Immutable.
@@ -21,10 +24,15 @@ public class LatLonBounds {
 	}
 
 	public LatLonBounds(LatLon min, LatLon max) {
-		this.minlat = min.lat;
-		this.minlon = min.lon;
-		this.maxlat = max.lat;
-		this.maxlon = max.lon;
+		this(min.lat, min.lon, max.lat, max.lon);
+	}
+
+	public double sizeLat() {
+		return maxlat - minlat;
+	}
+
+	public double sizeLon() {
+		return maxlon - minlon;
 	}
 
 	public LatLon getMin() {
@@ -33,6 +41,10 @@ public class LatLonBounds {
 
 	public LatLon getMax() {
 		return new LatLon(maxlat, maxlon);
+	}
+
+	public LatLon getCenter() {
+		return new LatLon(minlat + sizeLat() / 2, minlon + sizeLon() / 2);
 	}
 
 	public static LatLonBounds ofPoints(Iterable<LatLon> points) {
@@ -58,6 +70,24 @@ public class LatLonBounds {
 		}
 
 		return new LatLonBounds(minLat, minLon, maxLat, maxLon);
+
+	}
+
+	/** returns the union of a nonempty group of {@link LatLonBounds} */
+	public static LatLonBounds union(Iterable<LatLonBounds> bounds) {
+
+		List<LatLon> points = new ArrayList<>();
+
+		for (LatLonBounds b : bounds) {
+			points.add(b.getMin());
+			points.add(b.getMax());
+		}
+
+		if (points.isEmpty()) {
+			throw new IllegalArgumentException("parameter must not be empty");
+		}
+
+		return LatLonBounds.ofPoints(points);
 
 	}
 
