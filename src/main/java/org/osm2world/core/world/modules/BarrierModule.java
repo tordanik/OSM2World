@@ -25,6 +25,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 
+import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
@@ -40,10 +41,12 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -106,6 +109,15 @@ public class BarrierModule extends AbstractModule {
 			node.addRepresentation(new Chain(node, tags));
 		}
 
+	}
+
+	@Override
+	protected void applyToArea(MapArea area) {
+		TagSet tags = area.getTags();
+		if (tags.contains("natural", "shrubbery")
+				|| tags.contains("barrier", "hedge")) {
+			area.addRepresentation(new DenseShrubbery(area));
+		}
 	}
 
 	private static Model createBollardModel(TagSet tags) {
@@ -1144,5 +1156,30 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
+	public static class DenseShrubbery extends AbstractAreaWorldObject {
+
+		/** the shrubbery:shape=* value. Only "box" is supported at the moment. */
+		private static enum ShrubberyShape { BOX }
+
+		private final ShrubberyShape shape = ShrubberyShape.BOX;
+		private final double height;
+
+		public DenseShrubbery(MapArea area) {
+			super(area);
+			this.height = parseHeight(area.getTags(), 0.7);
+		}
+
+		@Override
+		public void renderTo(Target target) {
+			switch (shape) {
+			case BOX:
+				target.drawExtrudedShape(HEDGE, getOutlinePolygonXZ(),
+						asList(new VectorXYZ(0, 0, 0), new VectorXYZ(0, height, 0)),
+						null, null, null, EnumSet.of(ExtrudeOption.END_CAP));
+				break;
+			}
+		}
+
+	}
 
 }
