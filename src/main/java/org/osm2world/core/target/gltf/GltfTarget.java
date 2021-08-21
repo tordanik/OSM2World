@@ -390,7 +390,7 @@ public class GltfTarget extends AbstractTarget {
 		String uri;
 		if (alwaysEmbedTextures
 				|| !(textureData instanceof ImageFileTexture)
-				|| ((ImageFileTexture)textureData).getFile().getPath().endsWith(".svg")) {
+				|| ((ImageFileTexture)textureData).isSvgTexture()) {
 			uri = textureData.getDataUri();
 		} else {
 			uri = ((ImageFileTexture)textureData).getFile().getPath();

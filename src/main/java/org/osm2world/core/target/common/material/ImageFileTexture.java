@@ -38,10 +38,14 @@ public class ImageFileTexture extends TextureData {
 		return file;
 	}
 
+	public boolean isSvgTexture() {
+		return file.getName().endsWith(".svg");
+	}
+
 	@Override
 	public File getRasterImage() {
 
-		if (this.file.getName().endsWith(".svg")) {
+		if (isSvgTexture()) {
 
 			if (this.convertedToPng == null) {
 				convertedToPng = svg2png(this.file);

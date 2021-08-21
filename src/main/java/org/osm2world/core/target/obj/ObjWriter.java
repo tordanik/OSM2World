@@ -58,7 +58,7 @@ public final class ObjWriter {
 
 			/* write actual file content */
 
-			ObjTarget target = new ObjTarget(objStream, mtlStream);
+			ObjTarget target = new ObjTarget(objStream, mtlStream, objFile.getParentFile());
 
 			TargetUtil.renderWorldObjects(target, mapData, underground);
 
@@ -124,7 +124,7 @@ public final class ObjWriter {
 
 					objStream.println("mtllib " + mtlFile.getName() + "\n");
 
-					return new ObjTarget(objStream, mtlStream);
+					return new ObjTarget(objStream, mtlStream, objDirectory);
 
 				} catch (FileNotFoundException e) {
 					throw new RuntimeException(e);

@@ -3,9 +3,12 @@ package org.osm2world.core.target.obj;
 import static java.awt.Color.WHITE;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
@@ -23,6 +28,7 @@ import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.WorldObject;
@@ -33,11 +39,14 @@ public class ObjTarget extends FaceTarget {
 
 	private final PrintStream objStream;
 	private final PrintStream mtlStream;
+	private final File objDirectory;
+	private final File textureDirectory;
 
-	private final Map<VectorXYZ, Integer> vertexIndexMap = new HashMap<VectorXYZ, Integer>();
-	private final Map<VectorXYZ, Integer> normalsIndexMap = new HashMap<VectorXYZ, Integer>();
-	private final Map<VectorXZ, Integer> texCoordsIndexMap = new HashMap<VectorXZ, Integer>();
-	private final Map<Material, String> materialMap = new HashMap<Material, String>();
+	private final Map<VectorXYZ, Integer> vertexIndexMap = new HashMap<>();
+	private final Map<VectorXYZ, Integer> normalsIndexMap = new HashMap<>();
+	private final Map<VectorXZ, Integer> texCoordsIndexMap = new HashMap<>();
+	private final Map<Material, String> materialMap = new HashMap<>();
+	private final Map<TextureData, String> textureMap = new HashMap<>();
 
 	private Class<? extends WorldObject> currentWOGroup = null;
 	private int anonymousWOCounter = 0;
@@ -49,10 +58,19 @@ public class ObjTarget extends FaceTarget {
 	// this is approximately one millimeter
 	private static final double SMALL_OFFSET = 1e-3;
 
-	public ObjTarget(PrintStream objStream, PrintStream mtlStream) {
+	/**
+	 *
+	 * @param objDirectory  the directory in which the obj is located.
+	 * Other files (such as textures) may be written to this directory as well.
+	 */
+	public ObjTarget(PrintStream objStream, PrintStream mtlStream, File objDirectory) {
 
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
+		this.objDirectory = objDirectory;
+
+		this.textureDirectory = new File(objDirectory, "textures");
+		textureDirectory.mkdir();
 
 	}
 
@@ -197,6 +215,39 @@ public class ObjTarget extends FaceTarget {
 
 	}
 
+	/** returns the texture's path as a String; creates a file in the output directory if necessary */
+	private String textureToPath(TextureData texture) throws IOException {
+
+		if (!textureMap.containsKey(texture)) {
+
+			String path;
+
+			if (config != null && !config.getBoolean("alwaysCopyTextureFiles", true)
+					&& texture instanceof ImageFileTexture
+					&& !((ImageFileTexture)texture).isSvgTexture()) {
+
+				path = ((ImageFileTexture)texture).getFile().getAbsolutePath();
+
+			} else {
+
+				String prefix = "tex-" + ((texture instanceof ImageFileTexture)
+						? getBaseName(((ImageFileTexture)texture).getFile().getName()) + "-" : "");
+				File textureFile = File.createTempFile(prefix, ".png", textureDirectory);
+				ImageIO.write(texture.getBufferedImage(), "png", textureFile);
+
+				// construct a relative path
+				path = objDirectory.toURI().relativize(textureFile.toURI()).getPath();
+
+			}
+
+			textureMap.put(texture, path);
+
+		}
+
+		return textureMap.get(texture);
+
+	}
+
 	private void writeFace(int[] vertexIndices, int[] normalIndices,
 			int[] texCoordIndices) {
 
@@ -240,11 +291,6 @@ public class ObjTarget extends FaceTarget {
 			TextureLayer textureLayer = null;
 			if (material.getNumTextureLayers() > 0) {
 				textureLayer = material.getTextureLayers().get(i);
-
-				// ignore TextTextureData layers
-				if (!(textureLayer.baseColorTexture instanceof ImageFileTexture)) {
-					continue;
-				}
 			}
 
 			mtlStream.println("newmtl " + name + "_" + i);
@@ -263,18 +309,20 @@ public class ObjTarget extends FaceTarget {
 			mtlStream.println(String.format(Locale.US ,"Ke %f %f %f", 0f, 0f, 0f));
 
 			if (textureLayer != null) {
+				try {
 
-				// TODO deal with SVG textures
+					String clamp = (textureLayer.baseColorTexture.wrap == Wrap.REPEAT) ? "" : "-clamp on ";
 
-				String clamp = (textureLayer.baseColorTexture.wrap == Wrap.REPEAT) ? "" : "-clamp on ";
+					mtlStream.println("map_Ka " + clamp + textureToPath(textureLayer.baseColorTexture));
+					mtlStream.println("map_Kd " + clamp + textureToPath(textureLayer.baseColorTexture));
 
-				mtlStream.println("map_Ka " + clamp + textureLayer.baseColorTexture.getRasterImage().getName());
-				mtlStream.println("map_Kd " + clamp + textureLayer.baseColorTexture.getRasterImage().getName());
+					if (material.getTransparency() != Transparency.FALSE) {
+						mtlStream.println("map_d " + clamp + textureToPath(textureLayer.baseColorTexture));
+					}
 
-				if (material.getTransparency() != Transparency.FALSE) {
-					mtlStream.println("map_d " + clamp + textureLayer.baseColorTexture.getRasterImage().getName());
+				} catch (IOException e) {
+					System.err.println("Unable to export material " + name + ": " + e);
 				}
-
 			}
 
 			int shininess = 1;
