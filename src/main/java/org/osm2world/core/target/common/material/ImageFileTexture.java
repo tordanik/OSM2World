@@ -1,10 +1,13 @@
 package org.osm2world.core.target.common.material;
 
+import static java.util.Collections.*;
+
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -12,6 +15,7 @@ import javax.imageio.ImageIO;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.TranscodingHints;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 
 public class ImageFileTexture extends TextureData {
@@ -40,7 +44,7 @@ public class ImageFileTexture extends TextureData {
 		if (this.file.getName().endsWith(".svg")) {
 
 			if (this.convertedToPng == null) {
-				convertedToPng = SVG2PNG(this.file);
+				convertedToPng = svg2png(this.file);
 			}
 
 			return convertedToPng;
@@ -50,46 +54,83 @@ public class ImageFileTexture extends TextureData {
 
 	}
 
+	/** variant of {@link #svg2png(File, int, int)} that uses a default, power-of-two image size */
+	private static final File svg2png(File svg) {
+		return svg2png(svg, 512, 512);
+	}
+
 	/**
 	 * Converts an .svg image file into a (temporary) .png
 	 *
-	 * @param svg
-	 * The svg file to be converted
-	 * @return a File object representation of the generated png
+	 * @param svgFile  the svg file to be converted
+	 * @param width  horizontal resolution (in pixels) of the output image
+	 * @param height  vertical resolution (in pixels) of the output image
 	 */
-	private File SVG2PNG(File svg) {
+	private static final File svg2png(File svgFile, int width, int height) {
 
-		String prefix = svg.getName().substring(0, svg.getName().indexOf('.')) + "osm2World";
+		if (width <= 0 || height <= 0) throw new IllegalArgumentException("Invalid resolution: " + width + "x" + height);
 
-		PNGTranscoder t = new PNGTranscoder();
-
-		//create the transcoder input
-		String svgURI = svg.toURI().toString();
-		TranscoderInput input = new TranscoderInput(svgURI);
+		double outputAspectRatio = width / height;
 
 		try {
 
-			File outputFile = null;
+			/* first conversion (temporary result to determine the SVG's aspect ratio) */
 
-			//create a temporary file in the default temporary-file directory
-			outputFile = File.createTempFile(prefix, ".png");
-			outputFile.deleteOnExit();
+			BufferedImage tmpImage = svgToBufferedImage(svgFile, emptyMap());
+			double inputAspectRatio = tmpImage.getWidth() / (float)tmpImage.getHeight();
 
-			try (OutputStream ostream = new FileOutputStream(outputFile)) {
+			/* second conversion (to produce the actual output image) */
 
-				TranscoderOutput output = new TranscoderOutput(ostream);
+			Map<TranscodingHints.Key, Object> transcodingHints;
 
-				//save the image.
-				t.transcode(input, output);
-
-				ostream.flush();
+			if (outputAspectRatio > inputAspectRatio) {
+				transcodingHints = singletonMap(PNGTranscoder.KEY_WIDTH, (float) width);
+			} else {
+				transcodingHints = singletonMap(PNGTranscoder.KEY_HEIGHT, (float) height);
 			}
+
+			BufferedImage outputImage = svgToBufferedImage(svgFile, transcodingHints);
+
+			/* scale the output image to the desired resolution */
+
+			outputImage = getScaledImage(outputImage, width, height);
+
+			/* write the output image to a temporary file in the default temporary-file directory */
+
+			File outputFile = File.createTempFile("o2w-" + svgFile.getName().replaceAll("\\.svg$", "-"), ".png");
+			outputFile.deleteOnExit();
+			ImageIO.write(outputImage, "png", outputFile);
 
 			return outputFile;
 
 		} catch (IOException | TranscoderException e) {
 			throw new RuntimeException(e);
 		}
+
+	}
+
+	/** returns a raster image representation of an SVG file */
+	private static final BufferedImage svgToBufferedImage(File svgFile,
+			Map<TranscodingHints.Key, Object> transcodingHints) throws IOException, TranscoderException {
+
+		PNGTranscoder t = new PNGTranscoder();
+		t.setTranscodingHints(transcodingHints);
+
+		TranscoderInput input = new TranscoderInput(svgFile.toURI().toString());
+
+		try (ByteArrayOutputStream ostream = new ByteArrayOutputStream()) {
+
+			TranscoderOutput output = new TranscoderOutput(ostream);
+			t.transcode(input, output);
+			ostream.flush();
+			byte[] tempImageBytes = ostream.toByteArray();
+
+			try (ByteArrayInputStream istream = new ByteArrayInputStream(tempImageBytes)) {
+				return ImageIO.read(istream);
+			}
+
+		}
+
 	}
 
 	@Override

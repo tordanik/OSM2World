@@ -1,5 +1,7 @@
 package org.osm2world.core.target.common.material;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -82,6 +84,15 @@ public abstract class TextureData {
 		} catch (IOException e) {
 		    throw new Error(e);
 		}
+	}
+
+	protected static final BufferedImage getScaledImage(BufferedImage originalImage, int newWidth, int newHeight) {
+		Image tmp = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+		BufferedImage result = new BufferedImage(newWidth, newHeight, originalImage.getType());
+		Graphics2D g2d = result.createGraphics();
+		g2d.drawImage(tmp, 0, 0, null);
+		g2d.dispose();
+		return result;
 	}
 
 }
