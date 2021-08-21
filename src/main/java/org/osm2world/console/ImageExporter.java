@@ -40,13 +40,13 @@ import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
+import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
+
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLineByte;
 import ar.com.hjg.pngj.PngWriter;
 import ar.com.hjg.pngj.chunks.PngChunkTextVar;
 import ar.com.hjg.pngj.chunks.PngMetadata;
-
-import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 
 public class ImageExporter {
 
@@ -136,8 +136,8 @@ public class ImageExporter {
 				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
 				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM || outputMode == OutputMode.GD) {
 					expectedFileCalls += 1;
-					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().x);
-					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().y);
+					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().width);
+					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().height);
 				}
 			}
 

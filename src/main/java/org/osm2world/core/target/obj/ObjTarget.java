@@ -28,6 +28,7 @@ import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.RasterImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
@@ -223,8 +224,7 @@ public class ObjTarget extends FaceTarget {
 			String path;
 
 			if (config != null && !config.getBoolean("alwaysCopyTextureFiles", true)
-					&& texture instanceof ImageFileTexture
-					&& !((ImageFileTexture)texture).isSvgTexture()) {
+					&& texture instanceof RasterImageFileTexture) {
 
 				path = ((ImageFileTexture)texture).getFile().getAbsolutePath();
 

@@ -8,6 +8,7 @@ import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
 import org.osm2world.core.target.common.rendering.TileNumber;
+import org.osm2world.core.util.Resolution;
 
 import com.lexicalscope.jewel.cli.Option;
 

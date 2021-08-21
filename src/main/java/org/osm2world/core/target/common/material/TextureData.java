@@ -9,6 +9,8 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
+import org.osm2world.core.util.Resolution;
+
 import jakarta.xml.bind.DatatypeConverter;
 
 /**
@@ -39,7 +41,7 @@ public abstract class TextureData {
 	/** calculation rule for texture coordinates */
 	public final TexCoordFunction coordFunction;
 
-	public TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+	protected TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			Wrap wrap, TexCoordFunction texCoordFunction) {
 
 		if (width <= 0 || height <= 0) {
@@ -61,13 +63,22 @@ public abstract class TextureData {
 	 * returns the texture as a {@link BufferedImage}.
 	 * This may involve converting a vector or procedural texture into a raster image,
 	 * or simply reading an existing raster image from a file.
+	 *
+	 * @param resolution  parameter to request a specific resolution
 	 */
+	public BufferedImage getBufferedImage(Resolution resolution) {
+		return getScaledImage(getBufferedImage(), resolution);
+	}
+
+	/** see {@link #getBufferedImage(Resolution)} */
 	public abstract BufferedImage getBufferedImage();
 
 	/**
 	 * returns the texture as a data URI containing a raster image.
 	 */
-	public abstract String getDataUri();
+	public String getDataUri() {
+		return imageToDataUri(getBufferedImage(), "png");
+	}
 
 	protected static final String imageToDataUri(BufferedImage image, String format) {
 		try {
@@ -80,9 +91,9 @@ public abstract class TextureData {
 		}
 	}
 
-	protected static final BufferedImage getScaledImage(BufferedImage originalImage, int newWidth, int newHeight) {
-		Image tmp = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-		BufferedImage result = new BufferedImage(newWidth, newHeight, originalImage.getType());
+	protected static final BufferedImage getScaledImage(BufferedImage originalImage, Resolution newResolution) {
+		Image tmp = originalImage.getScaledInstance(newResolution.width, newResolution.height, Image.SCALE_SMOOTH);
+		BufferedImage result = new BufferedImage(newResolution.width, newResolution.height, originalImage.getType());
 		Graphics2D g2d = result.createGraphics();
 		g2d.drawImage(tmp, 0, 0, null);
 		g2d.dispose();

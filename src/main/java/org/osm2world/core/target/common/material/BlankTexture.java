@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.util.Resolution;
+
 
 public class BlankTexture extends RuntimeTexture {
 
@@ -16,8 +18,13 @@ public class BlankTexture extends RuntimeTexture {
 	}
 
 	@Override
+	public BufferedImage getBufferedImage(Resolution resolution) {
+		return new BufferedImage(resolution.width, resolution.height, BufferedImage.TYPE_INT_RGB);
+	}
+
+	@Override
 	public BufferedImage getBufferedImage() {
-		return new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
+		return getBufferedImage(new Resolution(128, 128));
 	}
 
 }

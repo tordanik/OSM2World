@@ -128,7 +128,7 @@ public final class Output {
 
 				projection = new Projection(false,
 						args.isPviewAspect() ? args.getPviewAspect() :
-							(double)args.getResolution().x / args.getResolution().y,
+							(double)args.getResolution().getAspectRatio(),
 							args.getPviewFovy(),
 						0,
 						1, 50000);
@@ -217,7 +217,7 @@ public final class Output {
 								config, results, argumentsGroup);
 					}
 					exporter.writeImageFile(outputFile, outputMode,
-							args.getResolution().x, args.getResolution().y,
+							args.getResolution().width, args.getResolution().height,
 							camera, projection);
 					break;
 

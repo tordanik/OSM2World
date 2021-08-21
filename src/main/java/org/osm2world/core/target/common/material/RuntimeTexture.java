@@ -5,14 +5,9 @@ package org.osm2world.core.target.common.material;
  */
 public abstract class RuntimeTexture extends TextureData {
 
-	public RuntimeTexture(double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap,
+	protected RuntimeTexture(double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap,
 			TexCoordFunction texCoordFunction) {
 		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
-	}
-
-	@Override
-	public String getDataUri() {
-		return imageToDataUri(getBufferedImage(), "png");
 	}
 
 }

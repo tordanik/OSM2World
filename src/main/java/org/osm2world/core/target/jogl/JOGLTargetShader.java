@@ -87,7 +87,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		gl.glActiveTexture(GL_TEXTURE0);
 
-		Texture backgroundTexture = textureManager.getTextureForTextureData(new ImageFileTexture(
+		Texture backgroundTexture = textureManager.getTextureForTextureData(ImageFileTexture.create(
 				backgroundImage, 1, 1, null, null, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
 
 		backgroundTexture.bind(gl);

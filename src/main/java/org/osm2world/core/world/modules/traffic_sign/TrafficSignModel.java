@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.awt.Color.WHITE;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
@@ -31,13 +32,6 @@ import org.osm2world.core.target.common.model.Model;
 public class TrafficSignModel implements Model {
 
 	/**
-	 * the material of the back of a sign (uses the front material's alpha values to get the same shape)
-	 *
-	 * TODO: Use a hash of the alpha mask as the key to share back materials between sign types that have the same shape
-	 */
-	private static final Map<TrafficSignType, Material> backMaterials = new HashMap<>();
-
-	/**
 	 * the material of the front of the sign.
 	 * Will be based on the {@link TrafficSignType}'s material, but may be slightly modified for a particular instance
 	 * of that sign type (e.g. with text placeholders filled in or colors modified).
@@ -48,6 +42,19 @@ public class TrafficSignModel implements Model {
 
 	public final int numPosts;
 	public final double defaultHeight;
+
+	/**
+	 * the material of the back of a sign (uses the front material's alpha values to get the same shape)
+	 *
+	 * TODO: Use a hash of the alpha mask as the key to share back materials between sign types that have the same shape
+	 */
+	private static final Map<TrafficSignType, Material> backMaterials = new HashMap<>();
+
+	/**
+	 * the material of the front of a sign.
+	 * Only used when combining multi-layer materials, single-layer materials are used without modification.
+	 */
+	private static final Map<Material, Material> frontMaterials = new HashMap<>();
 
 	public TrafficSignModel(Material material, TrafficSignType type, int numPosts, double height) {
 		this.material = material;
@@ -123,8 +130,10 @@ public class TrafficSignModel implements Model {
 
 		/* render the front of the sign */
 
-		target.drawTriangleStrip(material, vsFront,
-				texCoordLists(vsFront, material, STRIP_FIT));
+		Material materialFront = getFrontMaterial(material);
+
+		target.drawTriangleStrip(materialFront, vsFront,
+				texCoordLists(vsFront, materialFront, STRIP_FIT));
 
 		/* render the back of the sign */
 
@@ -159,8 +168,38 @@ public class TrafficSignModel implements Model {
 
 	}
 
+	private static Material getFrontMaterial(Material material) {
+
+		if (material.getNumTextureLayers() <= 0) {
+			return material;
+		}
+
+		if (!frontMaterials.containsKey(material)) {
+
+			List<TextureData> baseColorTextures = material.getTextureLayers().stream().map(t -> t.baseColorTexture)
+					.collect(toList());
+			List<TextureData> normalTextures = material.getTextureLayers().stream().map(t -> t.normalTexture)
+					.filter(t -> t != null).collect(toList());
+			List<TextureData> ormTextures = material.getTextureLayers().stream().map(t -> t.ormTexture)
+					.filter(t -> t != null).collect(toList());
+			List<TextureData> displacementTextures = material.getTextureLayers().stream().map(t -> t.displacementTexture)
+					.filter(t -> t != null).collect(toList());
+
+			return new ImmutableMaterial(
+					Interpolation.FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
+						CompositeTexture.stackOf(baseColorTextures),
+						normalTextures.isEmpty() ? null : CompositeTexture.stackOf(normalTextures),
+						ormTextures.isEmpty() ? null : CompositeTexture.stackOf(ormTextures),
+						displacementTextures.isEmpty() ? null : CompositeTexture.stackOf(displacementTextures),
+						false)));
+		}
+
+		return frontMaterials.get(material);
+
+	}
+
 	private static CompositeTexture textureWithAlphaMask(Material alphaMaterial, TextureData textureB) {
-		return new CompositeTexture(CompositeMode.ALPHA_FROM_A,
+		return new CompositeTexture(CompositeMode.ALPHA_FROM_A, false,
 				alphaMaterial.getTextureLayers().get(0).baseColorTexture, textureB);
 	}
 

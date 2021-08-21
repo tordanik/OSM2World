@@ -32,6 +32,7 @@ import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.RasterImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.gltf.data.Gltf;
@@ -388,9 +389,7 @@ public class GltfTarget extends AbstractTarget {
 	private int createTexture(TextureData textureData) {
 
 		String uri;
-		if (alwaysEmbedTextures
-				|| !(textureData instanceof ImageFileTexture)
-				|| ((ImageFileTexture)textureData).isSvgTexture()) {
+		if (alwaysEmbedTextures || !(textureData instanceof RasterImageFileTexture)) {
 			uri = textureData.getDataUri();
 		} else {
 			uri = ((ImageFileTexture)textureData).getFile().getPath();

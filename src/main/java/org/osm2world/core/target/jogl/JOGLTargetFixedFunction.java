@@ -123,6 +123,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 	 *
 	 * Only supported for orthographic projections!
 	 */
+	@Override
 	public void renderPart(Camera camera, Projection projection,
 			double xStart, double xEnd, double yStart, double yEnd) {
 
@@ -517,6 +518,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 	}
 
+	@Override
 	public final void drawBackgoundImage(File backgroundImage,
 			int startPixelX, int startPixelY,
 			int pixelWidth, int pixelHeight,
@@ -540,7 +542,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 		gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-		Texture backgroundTexture = textureManager.getTextureForTextureData(new ImageFileTexture(
+		Texture backgroundTexture = textureManager.getTextureForTextureData(ImageFileTexture.create(
 				backgroundImage, 1, 1, null, null, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
 
 		backgroundTexture.enable(gl);
