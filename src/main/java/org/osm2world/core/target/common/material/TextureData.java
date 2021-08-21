@@ -4,7 +4,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 
 import javax.annotation.Nullable;
@@ -59,14 +58,9 @@ public abstract class TextureData {
 	}
 
 	/**
-	 * returns the texture as a raster image file (png or jpeg).
-	 * If the texture is originally defined as a procedural texture or vector graphics, a temporary file is provided.
-	 */
-	public abstract File getRasterImage();
-
-	/**
 	 * returns the texture as a {@link BufferedImage}.
-	 * Like {@link #getRasterImage()}, this may involve converting a vector or procedural texture into a raster image.
+	 * This may involve converting a vector or procedural texture into a raster image,
+	 * or simply reading an existing raster image from a file.
 	 */
 	public abstract BufferedImage getBufferedImage();
 

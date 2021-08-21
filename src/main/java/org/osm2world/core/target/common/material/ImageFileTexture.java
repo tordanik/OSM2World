@@ -26,8 +26,6 @@ public class ImageFileTexture extends TextureData {
 	 */
 	private final File file;
 
-	private File convertedToPng = null;
-
 	public ImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			Wrap wrap, TexCoordFunction texCoordFunction) {
 		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
@@ -43,34 +41,31 @@ public class ImageFileTexture extends TextureData {
 	}
 
 	@Override
-	public File getRasterImage() {
-
-		if (isSvgTexture()) {
-
-			if (this.convertedToPng == null) {
-				convertedToPng = svg2png(this.file);
+	public BufferedImage getBufferedImage() {
+		try {
+			if (isSvgTexture()) {
+				return svgToBufferedImage(this.file);
+			} else {
+				return ImageIO.read(this.file);
 			}
-
-			return convertedToPng;
+		} catch (IOException e) {
+			throw new Error("Could not read texture file " + file, e);
 		}
-
-		return this.file;
-
 	}
 
-	/** variant of {@link #svg2png(File, int, int)} that uses a default, power-of-two image size */
-	private static final File svg2png(File svg) {
-		return svg2png(svg, 512, 512);
+	/** variant of {@link #svgToBufferedImage(File, int, int)} that uses a default, power-of-two image size */
+	private static final BufferedImage svgToBufferedImage(File svg) throws IOException {
+		return svgToBufferedImage(svg, 512, 512);
 	}
 
 	/**
-	 * Converts an .svg image file into a (temporary) .png
+	 * Converts an .svg image file to a raster image and returns it
 	 *
 	 * @param svgFile  the svg file to be converted
 	 * @param width  horizontal resolution (in pixels) of the output image
 	 * @param height  vertical resolution (in pixels) of the output image
 	 */
-	private static final File svg2png(File svgFile, int width, int height) {
+	private static final BufferedImage svgToBufferedImage(File svgFile, int width, int height) throws IOException {
 
 		if (width <= 0 || height <= 0) throw new IllegalArgumentException("Invalid resolution: " + width + "x" + height);
 
@@ -80,7 +75,7 @@ public class ImageFileTexture extends TextureData {
 
 			/* first conversion (temporary result to determine the SVG's aspect ratio) */
 
-			BufferedImage tmpImage = svgToBufferedImage(svgFile, emptyMap());
+			BufferedImage tmpImage = svgToBufferedImageImpl(svgFile, emptyMap());
 			double inputAspectRatio = tmpImage.getWidth() / (float)tmpImage.getHeight();
 
 			/* second conversion (to produce the actual output image) */
@@ -93,28 +88,21 @@ public class ImageFileTexture extends TextureData {
 				transcodingHints = singletonMap(PNGTranscoder.KEY_HEIGHT, (float) height);
 			}
 
-			BufferedImage outputImage = svgToBufferedImage(svgFile, transcodingHints);
+			BufferedImage outputImage = svgToBufferedImageImpl(svgFile, transcodingHints);
 
 			/* scale the output image to the desired resolution */
 
 			outputImage = getScaledImage(outputImage, width, height);
 
-			/* write the output image to a temporary file in the default temporary-file directory */
+			return outputImage;
 
-			File outputFile = File.createTempFile("o2w-" + svgFile.getName().replaceAll("\\.svg$", "-"), ".png");
-			outputFile.deleteOnExit();
-			ImageIO.write(outputImage, "png", outputFile);
-
-			return outputFile;
-
-		} catch (IOException | TranscoderException e) {
-			throw new RuntimeException(e);
+		} catch (TranscoderException e) {
+			throw new IOException(e);
 		}
 
 	}
 
-	/** returns a raster image representation of an SVG file */
-	private static final BufferedImage svgToBufferedImage(File svgFile,
+	private static final BufferedImage svgToBufferedImageImpl(File svgFile,
 			Map<TranscodingHints.Key, Object> transcodingHints) throws IOException, TranscoderException {
 
 		PNGTranscoder t = new PNGTranscoder();
@@ -138,21 +126,12 @@ public class ImageFileTexture extends TextureData {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
-		try {
-			return ImageIO.read(getRasterImage());
-		} catch (IOException e) {
-			throw new Error(e);
-		}
-	}
-
-	@Override
 	public String getDataUri() {
 		return imageToDataUri(getBufferedImage(), getRasterImageFileFormat());
 	}
 
 	private String getRasterImageFileFormat() {
-		return getRasterImage().getName().endsWith(".png") ? "png" : "jpeg";
+		return (isSvgTexture() || getFile().getName().endsWith(".png")) ? "png" : "jpeg";
 	}
 
 	@Override

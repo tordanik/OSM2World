@@ -1,6 +1,9 @@
 package org.osm2world.core.target.povray;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,10 +11,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextTexture;
@@ -578,15 +584,21 @@ public class POVRayTarget extends AbstractTarget {
 
 			append("        image_map {\n");
 
-			if (textureData.getRasterImage().getName().toLowerCase().endsWith("png")) {
-				append("             png \"" + textureData.getRasterImage() + "\"\n");
-			} else {
-				append("             jpeg \"" + textureData.getRasterImage() + "\"\n");
+			try {
+				if (!(textureData instanceof ImageFileTexture)
+						|| ((ImageFileTexture)textureData).getFile().getName().toLowerCase().endsWith("png")) {
+					append("             png \"" + getTextureFile(textureData) + "\"\n");
+				} else {
+					append("             jpeg \"" + getTextureFile(textureData) + "\"\n");
+				}
+
+				if (colorable) {
+					append("             filter all 1.0\n");
+				}
+			} catch (IOException e) {
+				System.err.println("Could not append image_map for texture " + textureData + ":" + e);
 			}
 
-			if (colorable) {
-				append("             filter all 1.0\n");
-			}
 			append("\n          }");
 	}
 
@@ -698,7 +710,6 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 	//TODO: avoid having to do this
-
 	private void performNaNCheck(TriangleXYZ triangle) {
 		performNaNCheck(triangle.v1);
 		performNaNCheck(triangle.v2);
@@ -709,6 +720,27 @@ public class POVRayTarget extends AbstractTarget {
 		if (Double.isNaN(v.x) || Double.isNaN(v.y) || Double.isNaN(v.z)) {
 			throw new IllegalArgumentException("NaN vector " + v.x + ", " + v.y + ", " + v.z);
 		}
+	}
+
+	private final Map<TextureData, File> textureFileMap = new HashMap<>();
+
+	private File getTextureFile(TextureData texture) throws IOException {
+
+		if (!textureFileMap.containsKey(texture)) {
+
+			BufferedImage image = texture.getBufferedImage();
+			String prefix = "o2w-";
+
+			File textureFile = File.createTempFile(prefix, ".png");
+			ImageIO.write(image, "png", textureFile);
+
+			textureFileMap.put(texture, textureFile);
+
+		}
+
+		return textureFileMap.get(texture);
+
+
 	}
 
 }
