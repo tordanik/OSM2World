@@ -382,7 +382,12 @@ public class LevelAndHeightData {
 	public double heightWithoutRoof() {
 		List<Level> levelsWithoutRoof = levels(EnumSet.of(LevelType.ABOVEGROUND));
 		if (levelsWithoutRoof.isEmpty()) {
-			return 0;
+			List<Level> roofLevels = levels(EnumSet.of(LevelType.ROOF));
+			if (roofLevels.isEmpty()) {
+				return 0;
+			} else {
+				return roofLevels.get(0).relativeEle;
+			}
 		} else {
 			Level topLevel = levelsWithoutRoof.get(levelsWithoutRoof.size() - 1);
 			return topLevel.relativeEleTop();
