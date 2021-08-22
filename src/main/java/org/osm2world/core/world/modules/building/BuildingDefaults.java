@@ -92,6 +92,15 @@ public class BuildingDefaults {
 			hasWindows = false;
 		}
 
+		if (tags.contains("man_made", "chimney") || type.equals("chimney")) {
+			roofShape = "chimney";
+			levels = 1;
+			heightPerLevel = 10;
+			hasWindows = false;
+			materialWall = Materials.BRICK;
+			materialRoof = Materials.BRICK;
+		}
+
 		/* make flat roofs use concrete by default */
 
 		if (tags.contains("roof:shape", "flat") && materialRoof == Materials.ROOF_DEFAULT) {

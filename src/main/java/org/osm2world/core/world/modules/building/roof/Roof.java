@@ -83,6 +83,7 @@ abstract public class Roof {
 		case "mansard": return new MansardRoof(originalPolygon, tags, height, material);
 		case "dome": return new DomeRoof(originalPolygon, tags, height, material);
 		case "round": return new RoundRoof(originalPolygon, tags, height, material);
+		case "chimney": return new ChimneyRoof(originalPolygon, tags, material);
 		case "complex": return new ComplexRoof(area, originalPolygon, tags, height, material);
 		default: return new FlatRoof(originalPolygon, tags, material);
 		}
