@@ -86,9 +86,8 @@ public class HardcodedRuleset implements Ruleset {
 	}
 
 	@Override
-	public boolean isAreaTag(OsmTag tag) {
-		return areaKeys.contains(tag.getKey())
-			|| areaTags.contains(new Tag(tag.getKey(), tag.getValue()));
+	public boolean isAreaTag(Tag tag) {
+		return areaKeys.contains(tag.key) || areaTags.contains(tag);
 	}
 
 	@Override

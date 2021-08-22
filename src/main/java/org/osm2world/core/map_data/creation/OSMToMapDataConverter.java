@@ -50,7 +50,6 @@ import de.topobyte.osm4j.core.model.iface.OsmEntity;
 import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmRelation;
 import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
-import de.topobyte.osm4j.core.model.iface.OsmTag;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
@@ -155,33 +154,30 @@ public class OSMToMapDataConverter {
 				osmData, nodeIdMap, mapNodes,
 				calculateFileBoundary(osmData.getUnionOfExplicitBounds())));
 
-		/* ... based on closed ways */
+		/* ... based on closed ways with certain tags */
 
 		for (OsmWay way : osmData.getWays()) {
 			if (isClosed(way) && !areaMap.containsKey(way.getId())) {
-				//create MapArea only if at least one tag is an area tag
-				for (OsmTag tag : getTagsAsList(way)) {
-					if (ruleset.isAreaTag(tag)) {
-						//TODO: check whether this is old-style MP outer
+				TagSet tags = tagsOfEntity(way);
+				if (!tags.contains("area", "no")
+						&& tags.stream().anyMatch(ruleset::isAreaTag)) {
 
-						List<MapNode> nodes = new ArrayList<>(way.getNumberOfNodes());
-						for (long id : nodesAsList(way).toArray()) {
-							nodes.add(nodeIdMap.get(id));
-						}
-
-						try {
-
-							MapArea mapArea = new MapArea(way.getId(), false, tagsOfEntity(way), nodes);
-
-							mapAreas.add(mapArea);
-							areaMap.put(way.getId(), mapArea);
-
-						} catch (InvalidGeometryException e) {
-							System.err.println(e);
-						}
-
-						break;
+					List<MapNode> nodes = new ArrayList<>(way.getNumberOfNodes());
+					for (long id : nodesAsList(way).toArray()) {
+						nodes.add(nodeIdMap.get(id));
 					}
+
+					try {
+
+						MapArea mapArea = new MapArea(way.getId(), false, tags, nodes);
+
+						mapAreas.add(mapArea);
+						areaMap.put(way.getId(), mapArea);
+
+					} catch (InvalidGeometryException e) {
+						System.err.println(e);
+					}
+
 				}
 			}
 		}
@@ -304,14 +300,14 @@ public class OSMToMapDataConverter {
 
 	}
 
-	static TagSet tagsOfEntity(OsmEntity osmNode) {
+	static TagSet tagsOfEntity(OsmEntity entity) {
 
-		if (osmNode.getNumberOfTags() == 0) return TagSet.of();
+		if (entity.getNumberOfTags() == 0) return TagSet.of();
 
 		org.osm2world.core.map_data.data.Tag[] tags =
-				new org.osm2world.core.map_data.data.Tag[osmNode.getNumberOfTags()];
-		for (int i = 0; i < osmNode.getNumberOfTags(); i++) {
-			tags[i] = new org.osm2world.core.map_data.data.Tag(osmNode.getTag(i).getKey(), osmNode.getTag(i).getValue());
+				new org.osm2world.core.map_data.data.Tag[entity.getNumberOfTags()];
+		for (int i = 0; i < entity.getNumberOfTags(); i++) {
+			tags[i] = new org.osm2world.core.map_data.data.Tag(entity.getTag(i).getKey(), entity.getTag(i).getValue());
 		}
 		return TagSet.of(tags);
 

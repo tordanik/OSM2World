@@ -1,11 +1,13 @@
 package org.osm2world.core.osm.ruleset;
 
+import org.osm2world.core.map_data.data.Tag;
+
 import de.topobyte.osm4j.core.model.iface.OsmTag;
 
 public interface Ruleset {
 
 	/** identifies tags that indicate that a closed way represents an area */
-	public boolean isAreaTag(OsmTag tag);
+	public boolean isAreaTag(Tag tag);
 
 	/**
 	 * identifies tags which (almost) exclusively appear outside the sea.
