@@ -232,8 +232,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		Material result;
 
-		if (tags.contains("tracktype", "grade4")
-				|| tags.contains("tracktype", "grade5")) {
+		if ((tags.contains("tracktype", "grade4") || tags.contains("tracktype", "grade5"))
+				&& !tags.containsKey("surface")) {
 			result = TERRAIN_DEFAULT;
 			// ideally, this would be the terrain type surrounds the track...
 		} else {
@@ -1206,11 +1206,10 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (!tags.containsKey("lanes") && !tags.containsKey("divider")) {
 
 				if (isPath(tags)) {
-					width = 1f;
-				}
-
-				else if ("service".equals(highwayValue)
-						|| "track".equals(highwayValue)) {
+					width = 1.0;
+				} else if ("track".equals(highwayValue)) {
+					width = min(2.5, DEFAULT_LANE_WIDTH);
+				} else if ("service".equals(highwayValue)) {
 					if (tags.contains("service", "parking_aisle")) {
 						width = DEFAULT_LANE_WIDTH * 0.8;
 					} else {
