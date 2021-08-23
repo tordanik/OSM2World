@@ -206,7 +206,7 @@ public class AbstractTargetTest {
 	 *
 	 * @throws AssertionError  if the condition is not fulfilled
 	 */
-	private static final void assertContainsQuad(List<TriangleXYZ> collection,
+	public static final void assertContainsQuad(List<TriangleXYZ> collection,
 			VectorXYZ a, VectorXYZ b, VectorXYZ c, VectorXYZ d) {
 
 		assertTrue(containsTriangle(collection, a, b, c) && containsTriangle(collection, a, c, d)
@@ -218,7 +218,7 @@ public class AbstractTargetTest {
 	 * returns true iff the collection contains the triangle defined by the vertices.
 	 * The winding is checked, but otherwise the order of vertices does not matter.
 	 */
-	private static final boolean containsTriangle(List<TriangleXYZ> collection,
+	public static final boolean containsTriangle(List<TriangleXYZ> collection,
 			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3) {
 
 		for (TriangleXYZ t : collection) {

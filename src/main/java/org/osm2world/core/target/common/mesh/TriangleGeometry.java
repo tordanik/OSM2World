@@ -85,6 +85,10 @@ public class TriangleGeometry implements Geometry {
 		public List<VectorXYZ> normals() {
 			return normals;
 		}
+		@Override
+		public String toString() {
+			return normals.toString();
+		}
 	}
 
 	public class CalculatedNormals implements NormalData {
@@ -95,6 +99,10 @@ public class TriangleGeometry implements Geometry {
 		@Override
 		public List<VectorXYZ> normals() {
 			return NormalCalculationUtil.calculateTriangleNormals(triangles, normalMode == Interpolation.SMOOTH);
+		}
+		@Override
+		public String toString() {
+			return "CalculatedNormals(" + normalMode + ")";
 		}
 	}
 
