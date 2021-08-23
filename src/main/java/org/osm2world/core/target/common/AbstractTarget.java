@@ -266,9 +266,9 @@ public abstract class AbstractTarget implements Target {
 
 	}
 
-	private static final Double DEFAULT_SCALE_FACTOR = Double.valueOf(1.0);
+	public static final Double DEFAULT_SCALE_FACTOR = Double.valueOf(1.0);
 
-	private static final EnumSet<ExtrudeOption> DEFAULT_EXTRUDE_OPTIONS = EnumSet.noneOf(ExtrudeOption.class);
+	public static final EnumSet<ExtrudeOption> DEFAULT_EXTRUDE_OPTIONS = EnumSet.noneOf(ExtrudeOption.class);
 
 	public static final List<VectorXYZ> scaleShapeVectors(List<VectorXYZ> vs, double scale) {
 
