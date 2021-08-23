@@ -9,6 +9,7 @@ import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD2;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 import java.io.File;
@@ -626,7 +627,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 		/* give special treatment for railways (multiple levels of detail) */
 
 		if (object instanceof Rail) {
-			((Rail)object).renderTo(this, 2);
+			((Rail)object).renderTo(this, LOD2);
 			finishCurrentObject();
 			currentObjectBuilder = new WorldObjectBuilder(object);
 		}

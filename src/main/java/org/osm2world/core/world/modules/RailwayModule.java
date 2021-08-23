@@ -9,6 +9,7 @@ import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -35,6 +36,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
@@ -175,17 +177,17 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 		@Override
 		public void renderTo(Target target) {
-			renderTo(target, 3);
+			renderTo(target, LOD3);
 		}
 
-		public void renderTo(Target target, int lod) {
+		public void renderTo(Target target, LevelOfDetail lod) {
 
 			/* draw ground */
 
 			List<VectorXYZ> groundVs = WorldModuleGeometryUtil.createTriangleStripBetween(
 					getOutline(false), getOutline(true));
 
-			if (lod >= 4) {
+			if (lod == LOD4) {
 				// just render the ballast (sleepers will be rendered as separate geometry)
 				target.drawTriangleStrip(RAIL_BALLAST, groundVs,
 						texCoordLists(groundVs, RAIL_BALLAST, GLOBAL_X_Z));
@@ -197,9 +199,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			/* draw rails */
 
-			if (lod >= 3) {
+			if (lod == LOD3 || lod == LOD4) {
 
-				double yOffset = (lod == 4) ? SLEEPER_HEIGHT : 0;
+				double yOffset = (lod == LOD4) ? SLEEPER_HEIGHT : 0;
 
 				ShapeXZ shape = RAIL_SHAPE;
 
@@ -225,7 +227,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			/* draw railway ties/sleepers */
 
-			if (lod >= 4) {
+			if (lod == LOD4) {
 
 				List<VectorXYZ> sleeperPositions = equallyDistributePointsAlong(
 						SLEEPER_DISTANCE, false, getCenterline());
