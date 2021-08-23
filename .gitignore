@@ -1,15 +1,15 @@
 # OSM2World
-textures
-locales
-models
-srtm
-standard.properties
+/textures
+/locales
+/models
+/srtm
+/standard.properties
 
 # Build
-target
-dist
-bin
-build
+/target
+/dist
+/bin
+/build
 
 # IntelliJ
 *.iml
