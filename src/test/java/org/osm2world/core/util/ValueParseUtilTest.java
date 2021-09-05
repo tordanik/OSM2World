@@ -2,8 +2,8 @@ package org.osm2world.core.util;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 
 import java.awt.Color;
 

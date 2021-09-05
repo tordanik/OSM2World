@@ -1,4 +1,4 @@
-package org.osm2world.core.util;
+package org.osm2world.core.util.color;
 
 import java.awt.Color;
 

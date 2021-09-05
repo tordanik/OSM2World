@@ -5,8 +5,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
 import java.awt.Color;

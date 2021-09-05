@@ -7,8 +7,8 @@ import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.BRIDGE_DEFAULT;
 import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.ArrayList;

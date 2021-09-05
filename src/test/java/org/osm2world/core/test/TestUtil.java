@@ -4,6 +4,7 @@ import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -124,6 +125,15 @@ public final class TestUtil {
 
 	public static final void assertAlmostEquals(PolygonXYZ expected, PolygonXYZ actual) {
 		assertAlmostEqualsXYZ(expected.verticesNoDup(), actual.verticesNoDup());
+	}
+
+	public static final void assertAlmostEquals(Color expected, Color actual) {
+		float[] expectedComponents = expected.getRGBColorComponents(null);
+		float[] actualComponents = actual.getRGBColorComponents(null);
+		for (int i = 0; i < 3; i++) {
+			assertEquals(expectedComponents[i], actualComponents[i], 0.01f);
+		}
+
 	}
 
 	/**

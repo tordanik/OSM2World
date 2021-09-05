@@ -1,8 +1,14 @@
 package org.osm2world.core.target.common.material;
 
+import static java.lang.Math.max;
+import static java.util.Arrays.stream;
+import static org.apache.commons.lang3.math.NumberUtils.min;
+
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -10,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 import org.osm2world.core.util.Resolution;
+import org.osm2world.core.util.color.LColor;
 
 import jakarta.xml.bind.DatatypeConverter;
 
@@ -78,6 +85,31 @@ public abstract class TextureData {
 	 */
 	public String getDataUri() {
 		return imageToDataUri(getBufferedImage(), "png");
+	}
+
+	/** averages the color values (in linear color space) */
+	public LColor getAverageColor() {
+
+		ColorSpace linearCS = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
+
+		BufferedImage linearRgbImage = new ColorConvertOp(linearCS, null).filter(getBufferedImage(), null);
+		int w = linearRgbImage.getWidth();
+		int h = linearRgbImage.getHeight();
+
+		double[] redValues = linearRgbImage.getData().getSamples(0, 0, w, h, 0, new double[w * h]);
+		double[] greenValues = linearRgbImage.getData().getSamples(0, 0, w, h, 1, new double[w * h]);
+		double[] blueValues = linearRgbImage.getData().getSamples(0, 0, w, h, 2, new double[w * h]);
+
+		float redAverage = (float) stream(redValues).average().getAsDouble();
+		float greenAverage = (float) stream(greenValues).average().getAsDouble();
+		float blueAverage = (float) stream(blueValues).average().getAsDouble();
+
+		redAverage = min(max(redAverage / 255f, 0.0f), 1.0f);
+		greenAverage = min(max(greenAverage / 255f, 0.0f), 1.0f);
+		blueAverage = min(max(blueAverage / 255f, 0.0f), 1.0f);
+
+		return new LColor(redAverage, greenAverage, blueAverage);
+
 	}
 
 	protected static final String imageToDataUri(BufferedImage image, String format) {

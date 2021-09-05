@@ -12,8 +12,8 @@ import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.material.TexCoordUtil.*;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 

@@ -1,8 +1,8 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.osm2world.core.util.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.awt.Color;
