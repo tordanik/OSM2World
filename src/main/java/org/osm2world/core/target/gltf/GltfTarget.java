@@ -51,6 +51,7 @@ import org.osm2world.core.target.gltf.data.GltfNode;
 import org.osm2world.core.target.gltf.data.GltfSampler;
 import org.osm2world.core.target.gltf.data.GltfScene;
 import org.osm2world.core.target.gltf.data.GltfTexture;
+import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
 import com.google.gson.GsonBuilder;
@@ -337,12 +338,13 @@ public class GltfTarget extends AbstractTarget {
 		material.doubleSided = m.isDoubleSided();
 
 		if (textureLayer == null || textureLayer.colorable) {
-			material.pbrMetallicRoughness.baseColorFactor = new float[] {
-				m.getColor().getRed() / 255f,
-				m.getColor().getGreen() / 255f,
-				m.getColor().getBlue() / 255f,
-				1.0f
-			};
+
+			LColor baseColorFactor = textureLayer == null
+					? new LColor(1f, 1f, 1f)
+					: textureLayer.clampedBaseColorFactor(LColor.fromAWT(m.getColor()));
+
+			material.pbrMetallicRoughness.baseColorFactor = baseColorFactor.componentsRGBA();
+
 		}
 
 		if (textureLayer != null) {

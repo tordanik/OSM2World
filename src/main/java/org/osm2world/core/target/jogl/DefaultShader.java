@@ -18,6 +18,7 @@ import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.util.color.LColor;
 
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
@@ -177,11 +178,18 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 		/* set color / lighting */
 
-		if (numTexLayers == 0 || material.getTextureLayers().get(0).colorable) {
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(material.getColor()));
+		Color color;
+
+		if (numTexLayers == 0) {
+			color = material.getColor();
+		} else if (material.getTextureLayers().get(0).colorable) {
+			color = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromAWT(material.getColor())).toAWT();
 		} else {
-			gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(Color.WHITE));
+			color = Color.WHITE;
 		}
+
+		gl.glUniform3fv(gl.glGetUniformLocation(shaderProgram, "Material.Color"), 1, getFloatBuffer(color));
+
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ka"), AbstractJOGLTarget.AMBIENT_FACTOR);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Kd"), 1 - AbstractJOGLTarget.AMBIENT_FACTOR);
 		gl.glUniform1f(gl.glGetUniformLocation(shaderProgram, "Material.Ks"), AbstractJOGLTarget.SPECULAR_FACTOR);

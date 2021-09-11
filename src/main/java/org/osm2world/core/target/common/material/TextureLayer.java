@@ -1,5 +1,7 @@
 package org.osm2world.core.target.common.material;
 
+import static java.lang.Math.min;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -8,6 +10,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang.StringUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.osm2world.core.util.color.LColor;
 
 /**
  * a set of textures for a material.
@@ -66,6 +69,36 @@ public class TextureLayer {
 			result.add(displacementTexture);
 		}
 		return result;
+	}
+
+	/**
+	 * calculates the base color factor, a constant factor for the color values of the {@link #baseColorTexture}.
+	 * The factor includes a correction for the color of the {@link #baseColorTexture} in order to get the product
+	 * as close as possible to the targetBaseColor).
+	 *
+	 * @param targetBaseColor  the intended average color of the result
+	 * @param maxValue  the maximum value for each component of the result, often set to 1.0f
+	 *
+	 * @return array with 4 components for red, green, blue and alpha
+	 */
+	public float[] baseColorFactor(LColor targetBaseColor, float maxValue) {
+
+		LColor textureColor = baseColorTexture.getAverageColor();
+
+		return new float[] {
+			min(maxValue, targetBaseColor.red / textureColor.red),
+			min(maxValue, targetBaseColor.green / textureColor.green),
+			min(maxValue, targetBaseColor.blue / textureColor.blue)
+		};
+
+	}
+
+	/**
+	 * variant of {@link #baseColorFactor(LColor, float)} that clamps each component to the range [0,1]
+	 * and returns {@link LColor}
+	 */
+	public LColor clampedBaseColorFactor(LColor targetBaseColor) {
+		return new LColor(baseColorFactor(targetBaseColor, 1.0f));
 	}
 
 	@Override

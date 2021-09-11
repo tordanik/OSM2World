@@ -72,6 +72,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BarrierModule.BollardRow;
@@ -693,9 +694,13 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 		FrontendPbf.Material.Builder materialBuilder = FrontendPbf.Material.newBuilder();
 
-		materialBuilder.setBaseColorR(material.getColor().getRed());
-		materialBuilder.setBaseColorG(material.getColor().getGreen());
-		materialBuilder.setBaseColorB(material.getColor().getBlue());
+		float[] baseColorFactor = material.getNumTextureLayers() == 0
+				? new float[] {1f, 1f, 1f}
+				: material.getTextureLayers().get(0).baseColorFactor(LColor.fromAWT(material.getColor()), 1f);
+
+		materialBuilder.setBaseColorR(round(baseColorFactor[0] * 255));
+		materialBuilder.setBaseColorG(round(baseColorFactor[1] * 255));
+		materialBuilder.setBaseColorB(round(baseColorFactor[2] * 255));
 
 		switch (material.getTransparency()) {
 			case TRUE: materialBuilder.setTransparency(Transparency.TRUE); break;

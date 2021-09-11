@@ -21,13 +21,26 @@ public class LColor {
 		this.blue = blue;
 	}
 
+	/** @param componentsRGB  array with red, green and blue values at indices 0, 1 and 2 */
+	public LColor(float[] componentsRGB) {
+		this(componentsRGB[0], componentsRGB[1], componentsRGB[2]);
+	}
+
+	public float[] componentsRGB() {
+		return new float[] {red, green, blue};
+	}
+
+	public float[] componentsRGBA() {
+		return new float[] {red, green, blue, 1.0f};
+	}
+
 	public Color toAWT() {
-		return new Color(LINEAR_COLOR_SPACE, new float[] {red, green, blue}, 1.0f);
+		return new Color(LINEAR_COLOR_SPACE, componentsRGB(), 1.0f);
 	}
 
 	public static LColor fromAWT(Color color) {
-		float[] components = color.getColorComponents(LINEAR_COLOR_SPACE, null);
-		return new LColor(components[0], components[1], components[2]);
+		float[] componentsRGB = color.getColorComponents(LINEAR_COLOR_SPACE, null);
+		return new LColor(componentsRGB);
 	}
 
 }

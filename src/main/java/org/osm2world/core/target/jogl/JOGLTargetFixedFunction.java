@@ -33,6 +33,7 @@ import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding;
+import org.osm2world.core.util.color.LColor;
 
 import com.jogamp.opengl.util.texture.Texture;
 
@@ -348,8 +349,10 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 
 		Color c = WHITE;
 
-		if (numTexLayers == 0 || material.getTextureLayers().get(0).colorable) {
+		if (numTexLayers == 0) {
 			c = material.getColor();
+		} else if (material.getTextureLayers().get(0).colorable) {
+			c = material.getTextureLayers().get(0).clampedBaseColorFactor(LColor.fromAWT(material.getColor())).toAWT();
 		}
 
 		//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
