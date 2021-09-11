@@ -48,6 +48,9 @@ public abstract class TextureData {
 	/** calculation rule for texture coordinates */
 	public final TexCoordFunction coordFunction;
 
+	/** cached result of {@link #getAverageColor()} */
+	private LColor averageColor = null;
+
 	protected TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			Wrap wrap, TexCoordFunction texCoordFunction) {
 
@@ -90,25 +93,31 @@ public abstract class TextureData {
 	/** averages the color values (in linear color space) */
 	public LColor getAverageColor() {
 
-		ColorSpace linearCS = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
+		if (averageColor == null) {
 
-		BufferedImage linearRgbImage = new ColorConvertOp(linearCS, null).filter(getBufferedImage(), null);
-		int w = linearRgbImage.getWidth();
-		int h = linearRgbImage.getHeight();
+			ColorSpace linearCS = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
 
-		double[] redValues = linearRgbImage.getData().getSamples(0, 0, w, h, 0, new double[w * h]);
-		double[] greenValues = linearRgbImage.getData().getSamples(0, 0, w, h, 1, new double[w * h]);
-		double[] blueValues = linearRgbImage.getData().getSamples(0, 0, w, h, 2, new double[w * h]);
+			BufferedImage linearRgbImage = new ColorConvertOp(linearCS, null).filter(getBufferedImage(), null);
+			int w = linearRgbImage.getWidth();
+			int h = linearRgbImage.getHeight();
 
-		float redAverage = (float) stream(redValues).average().getAsDouble();
-		float greenAverage = (float) stream(greenValues).average().getAsDouble();
-		float blueAverage = (float) stream(blueValues).average().getAsDouble();
+			double[] redValues = linearRgbImage.getData().getSamples(0, 0, w, h, 0, new double[w * h]);
+			double[] greenValues = linearRgbImage.getData().getSamples(0, 0, w, h, 1, new double[w * h]);
+			double[] blueValues = linearRgbImage.getData().getSamples(0, 0, w, h, 2, new double[w * h]);
 
-		redAverage = min(max(redAverage / 255f, 0.0f), 1.0f);
-		greenAverage = min(max(greenAverage / 255f, 0.0f), 1.0f);
-		blueAverage = min(max(blueAverage / 255f, 0.0f), 1.0f);
+			float redAverage = (float) stream(redValues).average().getAsDouble();
+			float greenAverage = (float) stream(greenValues).average().getAsDouble();
+			float blueAverage = (float) stream(blueValues).average().getAsDouble();
 
-		return new LColor(redAverage, greenAverage, blueAverage);
+			redAverage = min(max(redAverage / 255f, 0.0f), 1.0f);
+			greenAverage = min(max(greenAverage / 255f, 0.0f), 1.0f);
+			blueAverage = min(max(blueAverage / 255f, 0.0f), 1.0f);
+
+			averageColor = new LColor(redAverage, greenAverage, blueAverage);
+
+		}
+
+		return averageColor;
 
 	}
 
