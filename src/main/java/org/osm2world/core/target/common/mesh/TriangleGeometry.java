@@ -35,7 +35,7 @@ public class TriangleGeometry implements Geometry {
 	public final List<TexCoordFunction> texCoordFunctions;
 
 	/** vertex colors, one for each entry in {@link #vertices()}. Each color value can be null. null if all are null. */
-	public final @Nullable List<@Nullable Color> colors;
+	public final @Nullable List</* @Nullable */ Color> colors;
 
 	public List<VectorXYZ> vertices() {
 		List<VectorXYZ> result = new ArrayList<>(triangles.size() * 3);
@@ -113,7 +113,7 @@ public class TriangleGeometry implements Geometry {
 		public final @Nullable Interpolation normalMode;
 
 		private final List<TriangleXYZ> triangles = new ArrayList<>();
-		private final List<@Nullable Color> colors = new ArrayList<>();
+		private final List</* @Nullable */ Color> colors = new ArrayList<>();
 		private final @Nullable List<VectorXYZ> normals;
 
 		private List<TexCoordFunction> texCoordFunctions = null;
@@ -223,7 +223,7 @@ public class TriangleGeometry implements Geometry {
 				throw new IllegalStateException("texCoordFunctions has not been set yet");
 			}
 
-			@Nullable List<@Nullable Color> colors = this.colors;
+			@Nullable List</* @Nullable */ Color> colors = this.colors;
 			if (colors.stream().allMatch(c -> c == null)) {
 				colors = null;
 			}
