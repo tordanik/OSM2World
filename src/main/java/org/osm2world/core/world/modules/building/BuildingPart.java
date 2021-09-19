@@ -166,6 +166,7 @@ public class BuildingPart implements AreaWorldObject {
 				.filter(o -> o.getTags().containsAny(asList("tunnel"), asList("building_passage", "passage")))
 				.filter(o -> o.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject)
 				.map(o -> (TerrainBoundaryWorldObject)o.getPrimaryRepresentation())
+				.filter(o -> o.getOutlinePolygonXZ() != null)
 				.filter(o -> o.getGroundState() == GroundState.ON)
 				.filter(o -> clearingAbovePassage > floorHeight)
 				.collect(toList());
