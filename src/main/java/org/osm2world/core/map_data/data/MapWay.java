@@ -1,5 +1,7 @@
 package org.osm2world.core.map_data.data;
 
+import static org.osm2world.core.map_data.creation.MapDataCreationUtil.withoutConsecutiveDuplicates;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,8 @@ public class MapWay extends MapRelation.Element implements BoundedObject {
 			throw new IllegalArgumentException("a way needs at least two nodes, but "
 					+ "w" + id + " was created with only " + nodes.size());
 		}
+
+		nodes = withoutConsecutiveDuplicates(nodes);
 
 		this.id = id;
 		this.tags = tags;

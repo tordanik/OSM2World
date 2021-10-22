@@ -1,6 +1,7 @@
 package org.osm2world.core.map_data.data;
 
 import static java.util.Collections.*;
+import static org.osm2world.core.map_data.creation.MapDataCreationUtil.withoutConsecutiveDuplicates;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +15,6 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AreaWorldObject;
-
 
 /**
  * An area (closed way or multipolygon relation) from an OSM dataset.
@@ -49,17 +49,18 @@ public class MapArea extends MapRelation.Element implements MapElement {
 		this.id = id;
 		this.basedOnRelation = basedOnRelation;
 		this.tags = tags;
-		this.nodes = nodes;
-		this.holes = holes;
+		this.nodes = withoutConsecutiveDuplicates(nodes);
+		this.holes = new ArrayList<>(holes.size());
+		holes.forEach(h -> this.holes.add(withoutConsecutiveDuplicates(h)));
 
 		try {
 
-			this.polygon = convertToPolygon(nodes, holes);
+			this.polygon = convertToPolygon(this.nodes, this.holes);
 
 			finishConstruction();
 
 		} catch (InvalidGeometryException e) {
-			throw new InvalidGeometryException("invalid polygon for " + (basedOnRelation ? "r" : "w") + id);
+			throw new InvalidGeometryException("invalid polygon for " + (basedOnRelation ? "r" : "w") + id, e);
 		}
 
 	}
@@ -70,22 +71,20 @@ public class MapArea extends MapRelation.Element implements MapElement {
 		this.id = id;
 		this.basedOnRelation = basedOnRelation;
 		this.tags = tags;
-		this.nodes = nodes;
-		this.holes = holes;
+		this.nodes = withoutConsecutiveDuplicates(nodes);
+		this.holes = new ArrayList<>(holes.size());
+		holes.forEach(h -> this.holes.add(withoutConsecutiveDuplicates(h)));
 		this.polygon = polygon;
 
 		finishConstruction();
 
 	}
 
-	private static final PolygonWithHolesXZ convertToPolygon(
-			List<MapNode> nodes, List<List<MapNode>> holes) {
+	private static final PolygonWithHolesXZ convertToPolygon(List<MapNode> nodes, List<List<MapNode>> holes) {
 
-		SimplePolygonXZ outerPolygon =
-				polygonFromMapNodeLoop(nodes);
+		SimplePolygonXZ outerPolygon = polygonFromMapNodeLoop(nodes);
 
-		List<SimplePolygonXZ> holePolygons =
-			new ArrayList<SimplePolygonXZ>(holes.size());
+		List<SimplePolygonXZ> holePolygons = new ArrayList<>(holes.size());
 		for (List<MapNode> hole : holes) {
 			holePolygons.add(polygonFromMapNodeLoop(hole));
 		}
@@ -125,13 +124,14 @@ public class MapArea extends MapRelation.Element implements MapElement {
 
 	}
 
-	public static final SimplePolygonXZ polygonFromMapNodeLoop(
-			List<MapNode> nodes) {
+	public static final SimplePolygonXZ polygonFromMapNodeLoop(List<MapNode> nodes) {
 
-		List<VectorXZ> vertices = new ArrayList<VectorXZ>(nodes.size());
+		List<VectorXZ> vertices = new ArrayList<>(nodes.size());
 
 		for (MapNode node : nodes) {
-			vertices.add(node.getPos());
+			if (vertices.isEmpty() || node.getPos().distanceTo(vertices.get(vertices.size() - 1)) > 0) { // no duplicate
+				vertices.add(node.getPos());
+			}
 		}
 
 		return new SimplePolygonXZ(vertices);

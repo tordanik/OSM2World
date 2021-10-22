@@ -48,6 +48,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		assertLoopProperty(vertexLoop);
 		assertLoopLength(vertexLoop);
 		assertNotSelfIntersecting(vertexLoop);
+		assertNoDuplicates(vertexLoop);
 
 	}
 
@@ -681,6 +682,19 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 			throw new InvalidGeometryException(
 					"polygon must not be self-intersecting\n"
 					+ "Polygon vertices: " + vertexLoop);
+		}
+	}
+
+	/**
+	 * @throws InvalidGeometryException  if the vertex loop has duplicated points
+	 */
+	private static void assertNoDuplicates(List<VectorXZ> vertexLoop) {
+		for (int i = 0; i < vertexLoop.size() - 1; i++) {
+			if (vertexLoop.get(i + 1).distanceTo(vertexLoop.get(i)) == 0) {
+				throw new InvalidGeometryException(
+						"polygon must not not have duplicate poitns\n"
+						+ "Polygon vertices: " + vertexLoop);
+			}
 		}
 	}
 

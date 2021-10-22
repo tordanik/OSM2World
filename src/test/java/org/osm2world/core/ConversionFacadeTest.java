@@ -7,9 +7,21 @@ import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
+import java.nio.file.Files;
+import java.util.List;
+
 import org.junit.Test;
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_data.creation.MetricMapProjection;
+import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.gltf.GltfTarget;
+import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 
@@ -85,6 +97,42 @@ public class ConversionFacadeTest {
 				assertAlmostEquals(0, 15, 15, connector.getAttachedPos());
 			} else {
 				assertAlmostEquals(0, 10, 10, connector.getAttachedPos());
+			}
+
+		}
+
+	}
+
+	@Test
+	public void testAreasWithDuplicateNodes() {
+
+		List<TagSet> tagSets = asList(TagSet.of("building", "yes"));
+
+		for (TagSet tagSet : tagSets) {
+
+			TestMapDataGenerator generator = new TestMapDataGenerator();
+
+			List<MapNode> nodes = asList(
+					generator.createNode(0, 0),
+					generator.createNode(10, 0),
+					generator.createNode(10, 5),
+					generator.createNode(10, 5),
+					generator.createNode(10, 10),
+					generator.createNode(0, 10));
+			generator.createWayArea(nodes, tagSet);
+
+			MapData mapData = generator.createMapData();
+
+			try {
+
+				Target testTarget = new GltfTarget(Files.createTempFile("o2w-test-", ".gltf").toFile());
+				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
+				ConversionFacade cf = new ConversionFacade();
+
+				cf.createRepresentations(mapProjection, mapData, null, null, asList(testTarget));
+
+			} catch (Exception e) {
+				throw new AssertionError("Conversion failed for tags: " +  tagSet, e);
 			}
 
 		}

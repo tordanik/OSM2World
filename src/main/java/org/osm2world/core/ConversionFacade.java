@@ -114,7 +114,7 @@ public class ConversionFacade {
 	/**
 	 * generates a default list of modules for the conversion
 	 */
-	private static final List<WorldModule> createDefaultModuleList() {
+	static final List<WorldModule> createDefaultModuleList() {
 
 		return Arrays.asList((WorldModule)
 				new RoadModule(),
@@ -258,6 +258,31 @@ public class ConversionFacade {
 			mapData = converter.createMapData(osmData);
 		} catch (EntityNotFoundException e) {
 			// TODO: what to do here?
+		}
+
+		/* perform the rest of the conversion */
+
+		return createRepresentations(mapProjection, mapData, worldModules, config, targets);
+
+	}
+
+	/**
+	 * variant of {@link #createRepresentations(OSMData, List, Configuration, List)}
+	 * that takes {@link MapData} instead of {@link OSMData}
+	 */
+	public Results createRepresentations(MapProjection mapProjection, MapData mapData,
+			List<? extends WorldModule> worldModules, Configuration config,
+			List<? extends Target> targets)
+			throws IOException {
+
+		/* check the inputs */
+
+		if (mapData == null) {
+			throw new IllegalArgumentException("osmData must not be null");
+		}
+
+		if (config == null) {
+			config = new BaseConfiguration();
 		}
 
 		/* apply world modules */
