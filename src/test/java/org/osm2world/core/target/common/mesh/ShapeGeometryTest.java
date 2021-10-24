@@ -5,6 +5,7 @@ import static java.util.Collections.nCopies;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.*;
 
 import org.junit.Test;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -12,7 +13,6 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.common.AbstractTargetTest;
 
 public class ShapeGeometryTest {
 
@@ -29,7 +29,7 @@ public class ShapeGeometryTest {
 		TriangleGeometry triangleGeometry = shapeGeometry.asTriangles();
 
 		assertEquals(2, triangleGeometry.triangles.size());
-		AbstractTargetTest.assertContainsQuad(triangleGeometry.triangles,
+		assertContainsQuad(triangleGeometry.triangles,
 				new VectorXYZ(0, 4, -1), new VectorXYZ(0, 4, 1), new VectorXYZ(0, 6, 2), new VectorXYZ(0, 6, 1));
 
 		assertEquals(nCopies(6, WHITE), triangleGeometry.colors);
@@ -50,7 +50,7 @@ public class ShapeGeometryTest {
 		TriangleGeometry triangleGeometry = shapeGeometry.asTriangles();
 
 		assertEquals(1, triangleGeometry.triangles.size());
-		assertTrue(AbstractTargetTest.containsTriangle(triangleGeometry.triangles,
+		assertTrue(containsTriangle(triangleGeometry.triangles,
 				new VectorXYZ(0, 0, 10),
 				new VectorXYZ(10, 0, 10),
 				new VectorXYZ(0, 0, 0)));

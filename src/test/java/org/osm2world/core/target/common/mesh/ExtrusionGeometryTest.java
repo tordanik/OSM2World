@@ -1,13 +1,13 @@
-package org.osm2world.core.target.common;
+package org.osm2world.core.target.common.mesh;
 
 import static com.google.common.collect.Lists.reverse;
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.*;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -21,51 +21,9 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.ExtrudeOption;
 
-public class AbstractTargetTest {
-
-	/**
-	 * a test implementation of {@link Target}.
-	 * It collects all triangles "drawn" with it in a list.
-	 */
-	private static class TestTarget extends AbstractTarget {
-
-		private final List<TriangleXYZ> drawnTriangles = new ArrayList<>();
-
-		public List<TriangleXYZ> getDrawnTriangles() {
-			return drawnTriangles;
-		}
-
-		@Override
-		public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
-				List<List<VectorXZ>> texCoordLists) {
-			drawnTriangles.addAll(triangles);
-		}
-
-	}
-
-	@Test
-	public void testDrawShape() {
-
-		SimpleClosedShapeXZ shape = new SimplePolygonXZ(closeLoop(
-				new VectorXZ(-1, -1),
-				new VectorXZ( 1, -1),
-				new VectorXZ( 2,  1),
-				new VectorXZ( 1,  1)));
-
-		TestTarget target = new TestTarget();
-
-		target.drawShape(PLASTIC, shape, new VectorXYZ(0, 5, 0), X_UNIT, Y_UNIT, 1.0);
-
-		List<TriangleXYZ> result = target.getDrawnTriangles();
-
-		assertContainsQuad(result, new VectorXYZ(0, 4, -1), new VectorXYZ(0, 4, 1),
-				new VectorXYZ(0, 6, 2), new VectorXYZ(0, 6, 1));
-
-	}
+public class ExtrusionGeometryTest {
 
 	@Test
 	public void testExtrudeLineSegment() {
@@ -77,11 +35,9 @@ public class AbstractTargetTest {
 				new VectorXYZ(0, 1, 0),
 				new VectorXYZ(0, 1, 1));
 
-		TestTarget target = new TestTarget();
-
-		target.drawExtrudedShape(PLASTIC, shape, path, asList(Z_UNIT.invert(), Y_UNIT, Y_UNIT), null, null, null);
-
-		List<TriangleXYZ> result = target.getDrawnTriangles();
+		ExtrusionGeometry eg = new ExtrusionGeometry(shape, path, asList(Z_UNIT.invert(), Y_UNIT, Y_UNIT),
+				null, null, null, emptyList());
+		List<TriangleXYZ> result = eg.asTriangles().triangles;
 
 		assertEquals(4, result.size());
 
@@ -105,21 +61,17 @@ public class AbstractTargetTest {
 
 		{ /* path from bottom to top */
 
-			TestTarget target = new TestTarget();
+			ExtrusionGeometry eg = new ExtrusionGeometry(shape, path, nCopies(2, Z_UNIT),
+					asList(1.0, 0.0), null, EnumSet.of(ExtrudeOption.START_CAP), emptyList());
 
-			target.drawExtrudedShape(PLASTIC, shape, path, nCopies(2, Z_UNIT),
-					asList(1.0, 0.0), null, EnumSet.of(ExtrudeOption.START_CAP));
-
-			results.add(target.getDrawnTriangles());
+			results.add(eg.asTriangles().triangles);
 
 		} { /* path from top to bottom (should produce same result for symmetric shape) */
 
-			TestTarget target = new TestTarget();
+			ExtrusionGeometry eg = new ExtrusionGeometry(shape, reverse(path), nCopies(2, Z_UNIT),
+					asList(0.0, 1.0), null, EnumSet.of(ExtrudeOption.END_CAP), emptyList());
 
-			target.drawExtrudedShape(PLASTIC, shape, reverse(path), nCopies(2, Z_UNIT),
-					asList(0.0, 1.0), null, EnumSet.of(ExtrudeOption.END_CAP));
-
-			results.add(target.getDrawnTriangles());
+			results.add(eg.asTriangles().triangles);
 
 		}
 
@@ -127,7 +79,7 @@ public class AbstractTargetTest {
 
 		for (List<TriangleXYZ> result : results) {
 
-			//TODO remove this line once extrudeShape no longer necessarily uses strips
+			//TODO remove this line once ExtrusionGeometry no longer necessarily uses strips
 			result.removeIf(TriangleXYZ::isDegenerateOrNaN);
 
 			assertEquals(4, result.size());
@@ -168,12 +120,10 @@ public class AbstractTargetTest {
 				new VectorXYZ(5, 0, 0),
 				new VectorXYZ(5, 0, -1));
 
-		TestTarget target = new TestTarget();
+		ExtrusionGeometry eg = new ExtrusionGeometry(shape, path, nCopies(2, Y_UNIT),
+				null, null, EnumSet.of(ExtrudeOption.START_CAP, ExtrudeOption.END_CAP), emptyList());
 
-		target.drawExtrudedShape(BRICK, shape, path, nCopies(2, Y_UNIT),
-				null, null, EnumSet.of(ExtrudeOption.START_CAP, ExtrudeOption.END_CAP));
-
-		List<TriangleXYZ> result = target.getDrawnTriangles();
+		List<TriangleXYZ> result = eg.asTriangles().triangles;
 
 		/* check results */
 
@@ -201,38 +151,5 @@ public class AbstractTargetTest {
 
 	}
 
-	/**
-	 * asserts that the collection contains two triangles which together form the quad.
-	 *
-	 * @throws AssertionError  if the condition is not fulfilled
-	 */
-	public static final void assertContainsQuad(List<TriangleXYZ> collection,
-			VectorXYZ a, VectorXYZ b, VectorXYZ c, VectorXYZ d) {
-
-		assertTrue(containsTriangle(collection, a, b, c) && containsTriangle(collection, a, c, d)
-				|| containsTriangle(collection, a, b, d) && containsTriangle(collection, b, c, d));
-
-	}
-
-	/**
-	 * returns true iff the collection contains the triangle defined by the vertices.
-	 * The winding is checked, but otherwise the order of vertices does not matter.
-	 */
-	public static final boolean containsTriangle(List<TriangleXYZ> collection,
-			VectorXYZ v1, VectorXYZ v2, VectorXYZ v3) {
-
-		for (TriangleXYZ t : collection) {
-
-			if ((v1.equals(t.v1) && v2.equals(t.v2) && v3.equals(t.v3))
-					|| v2.equals(t.v1) && v3.equals(t.v2) && v1.equals(t.v3)
-					|| v3.equals(t.v1) && v1.equals(t.v2) && v2.equals(t.v3)) {
-				return true;
-			}
-
-		}
-
-		return false;
-
-	}
 
 }

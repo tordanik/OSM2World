@@ -4,13 +4,13 @@ import static java.awt.Color.RED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.junit.Assert.*;
+import static org.osm2world.core.target.common.mesh.MeshTestUtil.containsTriangle;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.common.AbstractTargetTest;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 
 public class TriangleGeometryTest {
@@ -30,14 +30,14 @@ public class TriangleGeometryTest {
 		assertEquals(6, geometry.triangles.size());
 		assertEquals(18, geometry.vertices().size());
 
-		assertTrue(AbstractTargetTest.containsTriangle(geometry.triangles,
+		assertTrue(containsTriangle(geometry.triangles,
 				new VectorXYZ(0, 1, 0), new VectorXYZ(0, 0, 0), new VectorXYZ(1, 1, 0)));
-		assertTrue(AbstractTargetTest.containsTriangle(geometry.triangles,
+		assertTrue(containsTriangle(geometry.triangles,
 				new VectorXYZ(0, 0, 0), new VectorXYZ(1, 0, 0), new VectorXYZ(1, 1, 0)));
 
-		assertTrue(AbstractTargetTest.containsTriangle(geometry.triangles,
+		assertTrue(containsTriangle(geometry.triangles,
 				new VectorXYZ(1, 1, 0), new VectorXYZ(1, 0, 0), new VectorXYZ(2, 1, 0)));
-		assertTrue(AbstractTargetTest.containsTriangle(geometry.triangles,
+		assertTrue(containsTriangle(geometry.triangles,
 				new VectorXYZ(1, 0, 0), new VectorXYZ(2, 0, 0), new VectorXYZ(2, 1, 0)));
 
 		Map<VectorXYZ, VectorXYZ> expectedNormals = new HashMap<>();
