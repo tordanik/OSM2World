@@ -2,6 +2,7 @@ package org.osm2world.core.target.common.mesh;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.nCopies;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.awt.Color;
@@ -47,7 +48,13 @@ public class TriangleGeometry implements Geometry {
 
 	/** provides the texture coordinates for each texture layer by applying the {@link #texCoordFunctions} */
 	public List<List<VectorXZ>> texCoords() {
-		return null; //FIXME implement
+
+		return texCoordFunctions.stream()
+				.map(texCoordFunction -> {
+					return texCoordFunction.apply(vertices(), null /* FIXME - needs textureData */);
+				})
+				.collect(toList());
+
 	}
 
 	@Override

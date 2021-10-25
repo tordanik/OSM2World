@@ -3,9 +3,12 @@ package org.osm2world.core.target.common.mesh;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.PrecomputedTexCoordFunction;
+import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.target.common.mesh.TriangleGeometry.CalculatedNormals;
 
 public interface Geometry {
@@ -41,6 +44,8 @@ public interface Geometry {
 			}
 		}
 
+		/* combine the triangles from all geometries */
+
 		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, normalMode);
 
 		for (TriangleGeometry t : triangleGeometries) {
@@ -61,6 +66,44 @@ public interface Geometry {
 			}
 
 		}
+
+		/* combine the texture coordinates */
+
+		int numTextureLayers = triangleGeometries.get(0).texCoordFunctions.size();
+
+		if (!triangleGeometries.stream().allMatch(it -> it.texCoordFunctions.size() == numTextureLayers)) {
+			throw new IllegalArgumentException("Cannot combine geometries, incompatible number of texture layers");
+		}
+
+		List<TexCoordFunction> texCoordFunctions = new ArrayList<>(numTextureLayers);
+
+		for (int i = 0; i < numTextureLayers; i++) {
+
+			final int layer = i;
+
+			TexCoordFunction firstTexCoordFunction = triangleGeometries.get(0).texCoordFunctions.get(layer);
+
+			if (triangleGeometries.stream().allMatch(it -> it.texCoordFunctions.get(layer).equals(firstTexCoordFunction))) {
+
+				texCoordFunctions.add(firstTexCoordFunction);
+
+			} else {
+
+				/* pre-compute texture coordinates and combine the results */
+
+				List<PrecomputedTexCoordFunction> partialTexCoordFunctions = triangleGeometries.stream()
+						.map(it -> new PrecomputedTexCoordFunction(it.vertices(), it.texCoords().get(layer)))
+						.collect(toList());
+
+				texCoordFunctions.add(PrecomputedTexCoordFunction.merge(partialTexCoordFunctions));
+
+			}
+
+		}
+
+		builder.setTexCoordFunctions(texCoordFunctions);
+
+		/* build and return the result */
 
 		return builder.build();
 

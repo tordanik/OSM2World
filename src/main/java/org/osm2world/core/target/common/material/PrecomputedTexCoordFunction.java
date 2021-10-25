@@ -1,5 +1,6 @@
 package org.osm2world.core.target.common.material;
 
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 
 import java.util.HashMap;
@@ -48,10 +49,27 @@ public class PrecomputedTexCoordFunction implements TexCoordFunction {
 
 	public VectorXZ apply(VectorXYZ v, TextureData textureData) {
 		VectorXZ result = texCoordMap.get(v);
-		if (needsScalingToTexture) {
+		if (needsScalingToTexture && textureData != null) {
 			result = new VectorXZ(result.x / textureData.width, result.z / textureData.height);
 		}
 		return result;
+	}
+
+	public static PrecomputedTexCoordFunction merge(List<PrecomputedTexCoordFunction> texCoordFunctions) {
+
+		switch (texCoordFunctions.size()) {
+		case 0: return new PrecomputedTexCoordFunction(emptyMap());
+		case 1: return texCoordFunctions.get(0);
+		}
+
+		Map<VectorXYZ, VectorXZ> mergedMap = new HashMap<>();
+
+		for (PrecomputedTexCoordFunction texCoordFunction : texCoordFunctions) {
+			texCoordFunction.texCoordMap.forEach((k, v) -> mergedMap.merge(k, v, (v1, v2) -> v1));
+		}
+
+		return new PrecomputedTexCoordFunction(mergedMap );
+
 	}
 
 }
