@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -291,6 +292,14 @@ public abstract class Material {
 			return 0;
 		} else {
 			return textureLayers.size();
+		}
+	}
+
+	public List<TextureDataDimensions> getTextureDimensions() {
+		if (textureLayers == null) {
+			return null;
+		} else {
+			return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
 		}
 	}
 

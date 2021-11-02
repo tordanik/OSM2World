@@ -160,7 +160,7 @@ public class TriangleGeometry implements Geometry {
 		public void addTriangles(List<TriangleXYZ> triangles, List<Color> colors) {
 
 			if (normalMode == null) {
-				throw new IllegalStateException("If normal mode is set, normals must be provided explicitly");
+				throw new IllegalStateException("If normal mode is not set, normals must be provided explicitly");
 			} else if (colors.size() != triangles.size() * 3) {
 				throw new IllegalArgumentException("there must be 3 color values for every triangle");
 			}

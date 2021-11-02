@@ -41,7 +41,6 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
@@ -1175,7 +1174,7 @@ public class BarrierModule extends AbstractModule {
 			case BOX:
 				target.drawExtrudedShape(HEDGE, getOutlinePolygonXZ(),
 						asList(new VectorXYZ(0, 0, 0), new VectorXYZ(0, height, 0)),
-						null, null, null, EnumSet.of(ExtrudeOption.END_CAP));
+						null, null, null, EnumSet.of(END_CAP));
 				break;
 			}
 		}

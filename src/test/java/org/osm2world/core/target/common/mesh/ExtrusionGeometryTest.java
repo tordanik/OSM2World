@@ -151,5 +151,11 @@ public class ExtrusionGeometryTest {
 
 	}
 
+	@Test
+	public void testExtrusionNormals() {
+
+
+
+	}
 
 }

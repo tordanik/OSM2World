@@ -52,6 +52,16 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 	public void drawTriangles(Material material,
 			List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
+		drawTriangles(material, triangles,
+				calculateTriangleNormals(triangles, material.getInterpolation() == Interpolation.SMOOTH),
+				texCoordLists);
+	}
+
+	@Override
+	public void drawTriangles(Material material,
+			List<? extends TriangleXYZ> triangles,
+			List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
 
 		List<VectorXYZ> vectors = new ArrayList<>(triangles.size() * 3);
 
@@ -61,10 +71,7 @@ public abstract class PrimitiveTarget extends AbstractTarget {
 			vectors.add(triangle.v3);
 		}
 
-		drawPrimitive(TRIANGLES, material, vectors,
-				calculateTriangleNormals(triangles,
-						material.getInterpolation() == Interpolation.SMOOTH),
-						texCoordLists);
+		drawPrimitive(TRIANGLES, material, vectors, normals, texCoordLists);
 
 	}
 

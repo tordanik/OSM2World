@@ -1,6 +1,6 @@
 package org.osm2world.core.target.common.mesh;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -54,8 +54,9 @@ public interface Geometry {
 				if (normalMode != null) {
 					builder.addTriangles(t.triangles);
 				} else {
-					throw new Error("not implemented yet");
-					//TODO add normals unless normalMode is consistent
+					builder.addTriangles(t.triangles,
+							nCopies(t.triangles.size() * 3, builder.defaultColor),
+							t.normalData.normals());
 				}
 			} else {
 				if (normalMode != null) {

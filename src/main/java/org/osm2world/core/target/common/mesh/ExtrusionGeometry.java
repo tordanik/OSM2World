@@ -36,13 +36,16 @@ import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 
 /**
  * geometry defined by extruding a 2d shape along a path
  */
 public class ExtrusionGeometry implements Geometry {
+
+	private static final Double DEFAULT_SCALE_FACTOR = Double.valueOf(1.0);
+	private static final EnumSet<ExtrudeOption> DEFAULT_EXTRUDE_OPTIONS = EnumSet.noneOf(ExtrudeOption.class);
 
 	/** the shape to be extruded; != null */
 	public final ShapeXZ shape;
@@ -145,7 +148,7 @@ public class ExtrusionGeometry implements Geometry {
 		Set<ExtrudeOption> options = this.options;
 
 		if (scaleFactors == null) {
-			scaleFactors = nCopies(path.size(), AbstractTarget.DEFAULT_SCALE_FACTOR);
+			scaleFactors = nCopies(path.size(), DEFAULT_SCALE_FACTOR);
 		}
 
 		if (upVectors == null) {
@@ -153,7 +156,7 @@ public class ExtrusionGeometry implements Geometry {
 		}
 
 		if (options == null) {
-			options = AbstractTarget.DEFAULT_EXTRUDE_OPTIONS;
+			options = DEFAULT_EXTRUDE_OPTIONS;
 		}
 
 		/* prepare the builder for the result */

@@ -43,6 +43,13 @@ public interface Target {
 			List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists);
 
+	default void drawTriangles(Material material,
+			List<? extends TriangleXYZ> triangles,
+			List<VectorXYZ> normals,
+			List<List<VectorXZ>> texCoordLists) {
+		this.drawTriangles(material, triangles, texCoordLists);
+	}
+
 	/**
 	 * draws a triangle strip.
 	 *
