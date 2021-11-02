@@ -5,7 +5,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.material.Materials.VOID;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,8 +21,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 
 /** the top of a chimney, modeled as a special kind of "roof" */
 public class ChimneyRoof extends Roof {

@@ -5,8 +5,8 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.SLOPED_TRIANGLES;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.SLOPED_TRIANGLES;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;

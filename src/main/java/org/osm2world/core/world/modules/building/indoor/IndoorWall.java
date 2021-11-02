@@ -6,8 +6,8 @@ import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.math3.util.MathUtils.TWO_PI;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 

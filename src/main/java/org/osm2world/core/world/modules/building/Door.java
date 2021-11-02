@@ -3,8 +3,8 @@ package org.osm2world.core.world.modules.building;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 
 import java.util.List;
 

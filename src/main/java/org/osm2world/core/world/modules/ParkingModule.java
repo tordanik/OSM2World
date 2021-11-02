@@ -1,8 +1,8 @@
 package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.List;

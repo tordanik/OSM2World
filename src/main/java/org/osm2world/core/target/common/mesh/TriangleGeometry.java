@@ -17,8 +17,8 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.NormalCalculationUtil;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.PrecomputedTexCoordFunction;
-import org.osm2world.core.target.common.material.TexCoordFunction;
+import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 /** a geometry composed of triangles */
 public class TriangleGeometry implements Geometry {
@@ -51,7 +51,7 @@ public class TriangleGeometry implements Geometry {
 
 		return texCoordFunctions.stream()
 				.map(texCoordFunction -> {
-					return texCoordFunction.apply(vertices(), null /* FIXME - needs textureData */);
+					return texCoordFunction.apply(vertices());
 				})
 				.collect(toList());
 

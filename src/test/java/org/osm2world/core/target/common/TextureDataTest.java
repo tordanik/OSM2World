@@ -2,6 +2,7 @@ package org.osm2world.core.target.common;
 
 import static java.awt.Color.*;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.awt.Color;
@@ -51,7 +52,7 @@ public class TextureDataTest {
 	}
 
 	private static final TextureData drawTestTexture(BiConsumer<Resolution, Graphics2D> drawImpl) {
-		return new RuntimeTexture(1, 1, null, null, Wrap.REPEAT, null) {
+		return new RuntimeTexture(1, 1, null, null, Wrap.REPEAT, GLOBAL_X_Z) {
 			@Override
 			public BufferedImage getBufferedImage() {
 				Resolution res = new Resolution(128, 128);

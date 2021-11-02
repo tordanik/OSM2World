@@ -177,7 +177,7 @@ public abstract class Material {
 							texture.height, texture.widthPerEntity, texture.heightPerEntity,
 							texture.topOffset, texture.leftOffset,
 							color, texture.relativeFontSize,
-							texture.wrap, texture.coordFunction);
+							texture.wrap, t -> texture.coordFunction);
 
 					textureDataList.set(numberOfTextLayer, new TextureLayer(newTextTexture,
 							layer.normalTexture, layer.ormTexture, layer.displacementTexture, layer.colorable));
@@ -261,7 +261,7 @@ public abstract class Material {
 						textTexture.widthPerEntity, textTexture.heightPerEntity,
 						textTexture.topOffset, textTexture.leftOffset,
 						textTexture.textColor, textTexture.relativeFontSize,
-						textTexture.wrap, textTexture.coordFunction);
+						textTexture.wrap, t -> textTexture.coordFunction);
 			}
 
 		}

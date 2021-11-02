@@ -36,7 +36,7 @@ import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.PrecomputedTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 
 /**

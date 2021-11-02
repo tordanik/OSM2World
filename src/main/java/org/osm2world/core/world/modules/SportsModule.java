@@ -4,8 +4,8 @@ import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,8 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
-import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -94,7 +93,7 @@ public class SportsModule extends AbstractModule {
 				Material material = getPitchMaterial();
 
 				target.drawTriangles(material, triangles,
-						triangleTexCoordLists(triangles, material, texFunction));
+						triangleTexCoordLists(triangles, material, t -> texFunction));
 
 			} else {
 
@@ -197,7 +196,7 @@ public class SportsModule extends AbstractModule {
 			}
 
 			@Override
-			public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
+			public List<VectorXZ> apply(List<VectorXYZ> vs) {
 
 				List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
 

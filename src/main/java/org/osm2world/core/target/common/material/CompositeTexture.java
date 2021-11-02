@@ -29,7 +29,7 @@ public class CompositeTexture extends RuntimeTexture {
 
 	public CompositeTexture(CompositeMode mode, boolean rescale, TextureData textureA, TextureData textureB) {
 		super(textureA.width, textureA.height, textureA.widthPerEntity, textureA.heightPerEntity,
-				textureA.wrap, textureA.coordFunction);
+				textureA.wrap, t -> textureA.coordFunction);
 		this.mode = mode;
 		this.rescale = rescale;
 		this.textureA = textureA;

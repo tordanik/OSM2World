@@ -5,8 +5,8 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;

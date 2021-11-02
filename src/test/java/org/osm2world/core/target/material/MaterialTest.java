@@ -4,6 +4,7 @@ import static java.awt.Color.BLACK;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class MaterialTest {
 		return new ImmutableMaterial(Interpolation.FLAT, Color.WHITE, Transparency.TRUE, asList(new TextureLayer(
 				new TextTexture(text,
 				null, 1.0, 1.0, null, null, 50.0, 50.0, BLACK, 50.0,
-				Wrap.CLAMP, null), null, null, null, false)));
+				Wrap.CLAMP, GLOBAL_X_Z), null, null, null, false)));
 	}
 
 }

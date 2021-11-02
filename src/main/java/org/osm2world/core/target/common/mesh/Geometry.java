@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.PrecomputedTexCoordFunction;
-import org.osm2world.core.target.common.material.TexCoordFunction;
 import org.osm2world.core.target.common.mesh.TriangleGeometry.CalculatedNormals;
+import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 public interface Geometry {
 

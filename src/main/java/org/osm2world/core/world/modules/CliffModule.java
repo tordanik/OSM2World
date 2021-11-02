@@ -1,8 +1,8 @@
 package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 

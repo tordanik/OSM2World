@@ -14,8 +14,8 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -51,9 +51,8 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
@@ -278,7 +277,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				/* define a function that looks the texture coordinate up in the map  */
 
-				TexCoordFunction texCoordFunction = (List<VectorXYZ> vs, TextureData textureData) ->
+				TexCoordFunction texCoordFunction = (List<VectorXYZ> vs) ->
 					vs.stream().map(texCoordMap::get).collect(toList());
 
 				/* flip the mesh array in case of vertically striped flags */
@@ -324,11 +323,11 @@ public class StreetFurnitureModule extends AbstractModule {
 					Material material = stripeMaterials.get(materialIndex);
 
 					target.drawTriangleStrip(material, vsFront, texCoordLists(
-							vsFront, material, texCoordFunction));
+							vsFront, material, t -> texCoordFunction));
 
 					if (!material.isDoubleSided()) {
 						target.drawTriangleStrip(material, vsBack, texCoordLists(
-								vsBack, material, texCoordFunction));
+								vsBack, material, t -> texCoordFunction));
 					}
 
 				}

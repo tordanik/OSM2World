@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common.mesh;
 
 import static java.awt.Color.WHITE;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -25,7 +25,7 @@ public class ShapeGeometryTest {
 				new VectorXZ( 2,  1),
 				new VectorXZ( 1,  1)));
 
-		ShapeGeometry shapeGeometry = new ShapeGeometry(shape, new VectorXYZ(0, 5, 0), X_UNIT, Y_UNIT, 1.0, WHITE);
+		ShapeGeometry shapeGeometry = new ShapeGeometry(shape, new VectorXYZ(0, 5, 0), X_UNIT, Y_UNIT, 1.0, WHITE, emptyList());
 		TriangleGeometry triangleGeometry = shapeGeometry.asTriangles();
 
 		assertEquals(2, triangleGeometry.triangles.size());
@@ -46,7 +46,7 @@ public class ShapeGeometryTest {
 				new VectorXZ(0, 1));
 
 		ShapeGeometry shapeGeometry = new ShapeGeometry(shape, new VectorXYZ(0, 0, 10),
-				Y_UNIT.invert(), Z_UNIT.invert(), 10.0, null);
+				Y_UNIT.invert(), Z_UNIT.invert(), 10.0, null, emptyList());
 		TriangleGeometry triangleGeometry = shapeGeometry.asTriangles();
 
 		assertEquals(1, triangleGeometry.triangles.size());

@@ -5,8 +5,8 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 
 import java.util.HashMap;
 import java.util.List;

@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
@@ -36,10 +36,10 @@ import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
-import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 /**
  * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
@@ -250,7 +250,8 @@ public class WallSurface {
 				fixedHeight = windowHeight;
 			}
 
-			texCoordLists.add(texCoords(vs, textureLayers.get(texLayer).baseColorTexture, textureOrigin, fixedHeight));
+			texCoordLists.add(texCoords(vs, textureLayers.get(texLayer).baseColorTexture.dimensions(),
+					textureOrigin, fixedHeight));
 
 		}
 
@@ -331,7 +332,7 @@ public class WallSurface {
 	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
 	 * @param fixedHeight  if not null, this overrides the texture's height (used for windows)
 	 */
-	public List<VectorXZ> texCoords(List<VectorXZ> vs, TextureData textureData,
+	public List<VectorXZ> texCoords(List<VectorXZ> vs, TextureDataDimensions textureDimensions,
 			VectorXZ textureOrigin, @Nullable Double fixedHeight) {
 
 		List<VectorXZ> result = new ArrayList<>(vs.size());
@@ -342,23 +343,23 @@ public class WallSurface {
 
 		for (int i = 0; i < vs.size(); i++) {
 
-			double height = textureData.height;
-			double width = textureData.width;
+			double height = textureDimensions.height;
+			double width = textureDimensions.width;
 
 			if (fixedHeight != null) {
 				height = fixedHeight;
-				if (textureData.heightPerEntity != null) {
-					height /= (textureData.heightPerEntity / textureData.height);
+				if (textureDimensions.heightPerEntity != null) {
+					height /= (textureDimensions.heightPerEntity / textureDimensions.height);
 				}
-			} else if (textureData.heightPerEntity != null) {
-				long entities = max(1, round(getHeight() / textureData.heightPerEntity));
-				double textureRepeats = entities / (textureData.height / textureData.heightPerEntity);
+			} else if (textureDimensions.heightPerEntity != null) {
+				long entities = max(1, round(getHeight() / textureDimensions.heightPerEntity));
+				double textureRepeats = entities / (textureDimensions.height / textureDimensions.heightPerEntity);
 				height = getHeight() / textureRepeats;
 			}
 
-			if (textureData.widthPerEntity != null) {
-				long entities = max(1, round(getLength() / textureData.widthPerEntity));
-				double textureRepeats = entities / (textureData.width / textureData.widthPerEntity);
+			if (textureDimensions.widthPerEntity != null) {
+				long entities = max(1, round(getLength() / textureDimensions.widthPerEntity));
+				double textureRepeats = entities / (textureDimensions.width / textureDimensions.widthPerEntity);
 				width = getLength() / textureRepeats;
 			}
 
@@ -366,7 +367,6 @@ public class WallSurface {
 			double t = (vs.get(i).z - textureOrigin.z) / height;
 
 			result.add(new VectorXZ(s, t));
-
 
 		}
 
@@ -377,13 +377,19 @@ public class WallSurface {
 
 	/**
 	 * generates texture coordinates for textures placed on the wall surface,
-	 * compare {@link #texCoords(List, TextureData, VectorXZ, Double)}.
+	 * compare {@link #texCoords(List, TextureDataDimensions, VectorXZ, Double)}.
 	 * Input coordinates are global coordinates and will be projected onto the wall.
-	 * Can be used as a {@link TexCoordFunction}.
 	 */
-	public List<VectorXZ> texCoordsGlobal(List<VectorXYZ> vs, TextureData textureData) {
+	public List<VectorXZ> texCoordsGlobal(List<VectorXYZ> vs, TextureDataDimensions textureDimensions) {
 		List<VectorXZ> wallSurfaceVectors = vs.stream().map(v -> toWallCoord(v)).collect(toList());
-		return texCoords(wallSurfaceVectors, textureData, NULL_VECTOR, null);
+		return texCoords(wallSurfaceVectors, textureDimensions, NULL_VECTOR, null);
+	}
+
+	/**
+	 * returns a {@link TexCoordFunction} based on {@link #texCoordsGlobal(List, TextureDataDimensions)}.
+	 */
+	public TexCoordFunction texCoordFunction(TextureDataDimensions textureDimensions) {
+		return vs -> texCoordsGlobal(vs, textureDimensions);
 	}
 
 }

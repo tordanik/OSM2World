@@ -8,8 +8,8 @@ import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.ArrayList;

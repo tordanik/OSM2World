@@ -27,11 +27,11 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding;
 import org.osm2world.core.util.color.LColor;
 

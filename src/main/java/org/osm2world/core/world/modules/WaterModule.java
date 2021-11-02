@@ -5,8 +5,8 @@ import static java.util.Collections.nCopies;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 

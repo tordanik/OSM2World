@@ -8,7 +8,7 @@ import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
@@ -38,8 +38,8 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.NamedTexCoordFunction;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;

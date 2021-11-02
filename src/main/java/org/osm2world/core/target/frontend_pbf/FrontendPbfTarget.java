@@ -7,9 +7,9 @@ import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SUR
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD2;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 import java.io.File;
@@ -53,6 +53,7 @@ import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry;
@@ -448,7 +449,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 				for (int layer = 0; layer < triangleData.getTexCoordLists().size(); layer++) {
 
 					// check if the tex coords can be calculated in the client
-					if (material.getTextureLayers().get(layer).baseColorTexture.coordFunction != GLOBAL_X_Z) {
+					if (!(material.getTextureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
 
 						// append the texture coordinates for this layer
 						texCoords.addAll(triangleData.getTexCoordLists().get(layer));
@@ -767,7 +768,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 		layerBuilder.setTextureHeight((int)round(textureLayer.baseColorTexture.height * 1000));
 		layerBuilder.setTextureWidth((int)round(textureLayer.baseColorTexture.width * 1000));
 
-		if (textureLayer.baseColorTexture.coordFunction == GLOBAL_X_Z) {
+		if (textureLayer.baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction) {
 			//TODO: GLOBAL_X_Z could also be the module's default rather than a config setting
 			layerBuilder.setTexCoordFunction(TexCoordFunction.GLOBAL_X_Z);
 		}

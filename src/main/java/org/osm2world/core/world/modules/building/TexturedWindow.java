@@ -2,8 +2,8 @@ package org.osm2world.core.world.modules.building;
 
 import static java.util.Arrays.asList;
 import static org.osm2world.core.target.common.material.Materials.SINGLE_WINDOW;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.material.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package org.osm2world.core.target.common.material;
+package org.osm2world.core.target.common.texcoord;
 
 import java.util.List;
 
@@ -21,6 +21,6 @@ public interface TexCoordFunction {
 	/**
 	 * calculates a texture coordinate for each vertex
 	 */
-	public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData);
+	public List<VectorXZ> apply(List<VectorXYZ> vs);
 
 }

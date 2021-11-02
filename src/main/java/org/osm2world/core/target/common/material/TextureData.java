@@ -11,10 +11,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
 import org.osm2world.core.util.color.LColor;
 
@@ -46,13 +48,13 @@ public abstract class TextureData {
 	public final Wrap wrap;
 
 	/** calculation rule for texture coordinates */
-	public final TexCoordFunction coordFunction;
+	public final @Nullable TexCoordFunction coordFunction;
 
 	/** cached result of {@link #getAverageColor()} */
 	private LColor averageColor = null;
 
 	protected TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
-			Wrap wrap, TexCoordFunction texCoordFunction) {
+			Wrap wrap, @Nullable  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 
 		if (width <= 0 || height <= 0) {
 			throw new IllegalArgumentException("Illegal texture dimensions. Width: " + width + ", height: " + height);
@@ -65,8 +67,12 @@ public abstract class TextureData {
 		this.widthPerEntity = widthPerEntity;
 		this.heightPerEntity = heightPerEntity;
 		this.wrap = wrap;
-		this.coordFunction = texCoordFunction;
+		this.coordFunction = texCoordFunction == null ? null : texCoordFunction.apply(this.dimensions());
 
+	}
+
+	public TextureDataDimensions dimensions() {
+		return new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity);
 	}
 
 	/**

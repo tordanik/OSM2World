@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -28,6 +29,8 @@ import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.TextTexture.FontStyle;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
@@ -590,7 +593,8 @@ public final class Materials {
 			double width = config.getDouble(widthKey, defaultWidth);
 			double height = config.getDouble(heightKey, defaultHeight);
 			Wrap wrap = getWrap(config.getString(wrapKey));
-			TexCoordFunction coordFunction = getCoordFunction(config.getString(coordFunctionKey));
+			@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
+					getCoordFunction(config.getString(coordFunctionKey));
 
 			//get top/left offset configuration
 			String topOffset = config.getString(topOffsetKey);
@@ -648,7 +652,8 @@ public final class Materials {
 			double width = config.getDouble(widthKey, 1);
 			double height = config.getDouble(heightKey, 1);
 			Wrap wrap = getWrap(config.getString(wrapKey));
-			TexCoordFunction coordFunction = getCoordFunction(config.getString(coordFunctionKey));
+			@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
+					getCoordFunction(config.getString(coordFunctionKey));
 
 			if (width <= 0) {
 				System.err.println("Error: illegal width for texture " + keyPrefix);
@@ -681,15 +686,16 @@ public final class Materials {
 		return wrap;
 	}
 
-	private static TexCoordFunction getCoordFunction(String coordFunctionString) {
+	private static @Nullable Function<TextureDataDimensions, TexCoordFunction> getCoordFunction(
+			String coordFunctionString) {
 
-		TexCoordFunction coordFunction = null;
+		Function<TextureDataDimensions, TexCoordFunction> result = null;
+
 		if (coordFunctionString != null) {
-			coordFunction = NamedTexCoordFunction.valueOf(
-					coordFunctionString.toUpperCase());
+			result = NamedTexCoordFunction.valueOf(coordFunctionString.toUpperCase());
 		}
 
-		return coordFunction;
+		return result;
 	}
 
 }

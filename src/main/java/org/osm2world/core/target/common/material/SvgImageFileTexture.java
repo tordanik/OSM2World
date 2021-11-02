@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -17,6 +18,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.TranscodingHints;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
 
 public class SvgImageFileTexture extends ImageFileTexture {
@@ -24,7 +26,7 @@ public class SvgImageFileTexture extends ImageFileTexture {
 	public static final Resolution DEFAULT_SVG_RESOLUTION = new Resolution(512, 512);
 
 	public SvgImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
-			Wrap wrap, TexCoordFunction texCoordFunction) {
+			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 		super(file, width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
 	}
 

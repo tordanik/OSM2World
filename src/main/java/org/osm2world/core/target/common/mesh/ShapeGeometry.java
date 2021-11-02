@@ -1,7 +1,6 @@
 package org.osm2world.core.target.common.mesh;
 
-import static java.util.Arrays.asList;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Y;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.awt.Color;
@@ -16,6 +15,8 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 
 /** a geometry defined by placing a 2D shape ({@link ClosedShapeXZ}) in 3D space at some location, rotation and scale */
 public class ShapeGeometry implements Geometry {
@@ -40,8 +41,13 @@ public class ShapeGeometry implements Geometry {
 
 	public final Interpolation normalMode;
 
+	/** the dimensions of each texture layer */
+	public final List<TextureDataDimensions> textureDimensions;
+
+
 	public ShapeGeometry(ClosedShapeXZ shape, VectorXYZ point, VectorXYZ frontVector, VectorXYZ upVector,
-			double scaleFactor, @Nullable Color color, Interpolation normalMode) {
+			double scaleFactor, @Nullable Color color, Interpolation normalMode,
+			List<TextureDataDimensions> textureDimensions) {
 
 		this.shape = shape;
 		this.point = point;
@@ -50,6 +56,7 @@ public class ShapeGeometry implements Geometry {
 		this.scaleFactor = scaleFactor;
 		this.color = color;
 		this.normalMode = normalMode;
+		this.textureDimensions = textureDimensions;
 
 		if (scaleFactor <= 0) {
 			throw new IllegalArgumentException("scale factor must be positive, was " + scaleFactor);
@@ -58,8 +65,8 @@ public class ShapeGeometry implements Geometry {
 	}
 
 	public ShapeGeometry(ClosedShapeXZ shape, VectorXYZ point, VectorXYZ frontVector, VectorXYZ upVector,
-			double scaleFactor, @Nullable Color color) {
-		this(shape, point, frontVector, upVector, scaleFactor, color, Interpolation.FLAT);
+			double scaleFactor, @Nullable Color color, List<TextureDataDimensions> textureDimensions) {
+		this(shape, point, frontVector, upVector, scaleFactor, color, Interpolation.FLAT, textureDimensions);
 	}
 
 	@Override
@@ -86,7 +93,9 @@ public class ShapeGeometry implements Geometry {
 		}
 
 		// TODO better default texture coordinate function
-		builder.setTexCoordFunctions(asList(GLOBAL_X_Y));
+		builder.setTexCoordFunctions(textureDimensions.stream()
+				.map(t -> new GlobalXZTexCoordFunction(t))
+				.collect(toList()));
 
 		return builder.build();
 

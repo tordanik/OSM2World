@@ -10,8 +10,8 @@ import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.Co
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
@@ -44,8 +44,8 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -1923,8 +1923,8 @@ public class RoadModule extends ConfigurableWorldModule {
 				}
 
 				target.drawTriangleStrip(surface, vs,
-						texCoordLists(vs, surface, new ArrowTexCoordFunction(
-								roadPart, rightHandTraffic, mirrorLeftRight)));
+						texCoordLists(vs, surface, textureDimensions -> new ArrowTexCoordFunction(
+								roadPart, rightHandTraffic, mirrorLeftRight, textureDimensions)));
 
 			} else {
 
@@ -2195,18 +2195,20 @@ public class RoadModule extends ConfigurableWorldModule {
 		private final RoadPart roadPart;
 		private final boolean rightHandTraffic;
 		private final boolean mirrorLeftRight;
+		private final TextureDataDimensions textureDimensions;
 
 		private ArrowTexCoordFunction(RoadPart roadPart,
-				boolean rightHandTraffic, boolean mirrorLeftRight) {
+				boolean rightHandTraffic, boolean mirrorLeftRight, TextureDataDimensions textureDimensions) {
 
 			this.roadPart = roadPart;
 			this.rightHandTraffic = rightHandTraffic;
 			this.mirrorLeftRight = mirrorLeftRight;
+			this.textureDimensions = textureDimensions;
 
 		}
 
 		@Override
-		public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
+		public List<VectorXZ> apply(List<VectorXYZ> vs) {
 
 			if (vs.size() % 2 == 1) {
 				throw new IllegalArgumentException("not a triangle strip lane");
@@ -2269,10 +2271,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				double s, t;
 
-				s = accumulatedLength / textureData.width;
+				s = accumulatedLength / textureDimensions.width;
 
-				if (width > textureData.height) {
-					double padding = ((width / textureData.height) - 1)  / 2;
+				if (width > textureDimensions.height) {
+					double padding = ((width / textureDimensions.height) - 1)  / 2;
 					t = higher ? 0 - padding : 1 + padding;
 				} else {
 					t = higher ? 0 : 1;

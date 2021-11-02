@@ -7,8 +7,11 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
+
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 public class TextTexture extends RuntimeTexture {
 
@@ -27,7 +30,7 @@ public class TextTexture extends RuntimeTexture {
 	public TextTexture(String text, Font font, double width, double height,
 			@Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			double topOffset, double leftOffset, Color textColor, double relativeFontSize,
-			Wrap wrap, TexCoordFunction texCoordFunction) {
+			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 
 		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
 

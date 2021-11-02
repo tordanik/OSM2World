@@ -7,8 +7,8 @@ import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.material.Materials.SAND;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.util.ArrayList;

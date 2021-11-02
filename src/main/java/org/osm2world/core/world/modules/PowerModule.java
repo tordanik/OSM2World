@@ -15,8 +15,8 @@ import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -53,9 +54,9 @@ import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
@@ -1010,10 +1011,11 @@ public final class PowerModule extends AbstractModule {
 						.map(it -> it.xyz(v -> pointToPlane(plane, v)))
 						.collect(toList());
 
-				TexCoordFunction texCoordFunction = placePanelTextures(area.getPolygon(), plane.getNormal());
+				Function<TextureDataDimensions, PanelTexCoordFunction> texCoordFunctionGenerator =
+						placePanelTextures(area.getPolygon(), plane.getNormal());
 
 				target.drawTriangles(SOLAR_PANEL, triangles,
-						triangleTexCoordLists(triangles, SOLAR_PANEL, texCoordFunction));
+						triangleTexCoordLists(triangles, SOLAR_PANEL, texCoordFunctionGenerator));
 
 			}
 
@@ -1033,7 +1035,8 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		/** attempts to place textures so that all points lie roughly on integer multiples of a panel's dimensions */
-		private static final TexCoordFunction placePanelTextures(PolygonShapeXZ polygon, VectorXYZ roofNormal) {
+		private static final Function<TextureDataDimensions, PanelTexCoordFunction> placePanelTextures(
+				PolygonShapeXZ polygon, VectorXYZ roofNormal) {
 
 			SimplePolygonShapeXZ outerPolygon = polygon.getOuter();
 
@@ -1099,7 +1102,7 @@ public final class PowerModule extends AbstractModule {
 
 			/* construct the result */
 
-			return new PanelTexCoordFunction(origin, zDirection, totalWidth, totalHeight, panelsX, panelsZ);
+			return t -> new PanelTexCoordFunction(origin, zDirection, totalWidth, totalHeight, panelsX, panelsZ, t);
 
 		}
 
@@ -1166,29 +1169,31 @@ public final class PowerModule extends AbstractModule {
 			public final double totalHeight;
 			public final @Nullable Integer panelsX;
 			public final @Nullable Integer panelsZ;
+			public final TextureDataDimensions texDim;
 
 			public PanelTexCoordFunction(VectorXZ origin, Angle zDirection, double totalWidth, double totalHeight,
-					@Nullable Integer panelsX, @Nullable Integer panelsZ) {
+					@Nullable Integer panelsX, @Nullable Integer panelsZ, TextureDataDimensions textureData) {
 				this.origin = origin;
 				this.zDirection = zDirection;
 				this.totalWidth = totalWidth;
 				this.totalHeight = totalHeight;
 				this.panelsX = panelsX;
 				this.panelsZ = panelsZ;
+				this.texDim = textureData;
 			}
 
 			@Override
-			public List<VectorXZ> apply(List<VectorXYZ> vs, TextureData textureData) {
-				return vs.stream().map(v -> apply(v, textureData)).collect(toList());
+			public List<VectorXZ> apply(List<VectorXYZ> vs) {
+				return vs.stream().map(v -> apply(v)).collect(toList());
 			}
 
-			VectorXZ apply(VectorXYZ v, TextureData textureData) {
+			VectorXZ apply(VectorXYZ v) {
 
-				double defaultEntityWidth = textureData.widthPerEntity != null ? textureData.widthPerEntity : textureData.width;
-				double defaultEntityHeight = textureData.heightPerEntity != null ? textureData.heightPerEntity : textureData.height;
+				double defaultEntityWidth = texDim.widthPerEntity != null ? texDim.widthPerEntity : texDim.width;
+				double defaultEntityHeight = texDim.heightPerEntity != null ? texDim.heightPerEntity : texDim.height;
 
-				double wFactor = defaultEntityWidth / textureData.width;
-				double hFactor = defaultEntityHeight / textureData.height;
+				double wFactor = defaultEntityWidth / texDim.width;
+				double hFactor = defaultEntityHeight / texDim.height;
 
 				double panelWidth, panelHeight;
 

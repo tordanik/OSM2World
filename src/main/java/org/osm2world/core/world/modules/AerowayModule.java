@@ -3,14 +3,15 @@ package org.osm2world.core.world.modules;
 import static java.lang.Math.min;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -21,8 +22,9 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.TexCoordFunction;
-import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
@@ -100,11 +102,14 @@ public class AerowayModule extends ConfigurableWorldModule {
 		@Override
 		public void renderTo(Target target) {
 
-			TexCoordFunction localXZTexCoordFunction = (List<VectorXYZ> vs, TextureData textureData) -> {
-				VectorXZ center = area.getOuterPolygon().getCentroid();
-				List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(center)).collect(toList());
-				List<VectorXZ> result = GLOBAL_X_Z.apply(localCoords, textureData);
-				return result.stream().map(v -> v.add(new VectorXZ(0.5, 0.5))).collect(toList());
+			Function<TextureDataDimensions, TexCoordFunction> localXZTexCoordFunction = (TextureDataDimensions textureDimensions) -> {
+				return (List<VectorXYZ> vs) -> {
+					TexCoordFunction globalXZ = new GlobalXZTexCoordFunction(textureDimensions);
+					VectorXZ center = area.getOuterPolygon().getCentroid();
+					List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(center)).collect(toList());
+					List<VectorXZ> result = globalXZ.apply(localCoords);
+					return result.stream().map(v -> v.add(new VectorXZ(0.5, 0.5))).collect(toList());
+				};
 			};
 
 			List<TriangleXYZ> triangles = getTriangulation();
@@ -117,7 +122,6 @@ public class AerowayModule extends ConfigurableWorldModule {
 			texCoords.addAll(triangleTexCoordLists(triangles, HELIPAD_MARKING, localXZTexCoordFunction));
 
 			target.drawTriangles(fullMaterial, triangles, texCoords);
-
 
 		}
 

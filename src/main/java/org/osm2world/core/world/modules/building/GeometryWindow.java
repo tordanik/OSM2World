@@ -10,8 +10,8 @@ import static org.osm2world.core.math.algorithms.FaceDecompositionUtil.splitPoly
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.target.common.material.NamedTexCoordFunction.STRIP_WALL;
-import static org.osm2world.core.target.common.material.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.building.WindowParameters.WindowRegion.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -281,7 +281,7 @@ public class GeometryWindow implements Window {
 				.map(t -> surface.convertTo3D(t).shift(toBack))
 				.collect(toList());
 		target.drawTriangles(paneMaterial, paneTriangles,
-				triangleTexCoordLists(paneTriangles, paneMaterial, surface::texCoordsGlobal));
+				triangleTexCoordLists(paneTriangles, paneMaterial, surface::texCoordFunction));
 
 		/* draw outer frame */
 
@@ -296,7 +296,7 @@ public class GeometryWindow implements Window {
 				.map(t -> t.shift(toOuterFrame))
 				.collect(toList());
 		target.drawTriangles(params.frameMaterial, frontFaceTrianglesXYZ,
-				triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, surface::texCoordsGlobal));
+				triangleTexCoordLists(frontFaceTrianglesXYZ, params.frameMaterial, surface::texCoordFunction));
 
 		Material frameSideMaterial = params.frameMaterial;
 		if (params.overallProperties.shape == WindowParameters.WindowShape.CIRCLE) {

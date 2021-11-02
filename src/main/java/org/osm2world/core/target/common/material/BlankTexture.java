@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.util.Resolution;
 
 
