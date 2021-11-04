@@ -93,7 +93,7 @@ public interface Geometry {
 				/* pre-compute texture coordinates and combine the results */
 
 				List<PrecomputedTexCoordFunction> partialTexCoordFunctions = triangleGeometries.stream()
-						.map(it -> new PrecomputedTexCoordFunction(it.vertices(), it.texCoords().get(layer)))
+						.map(it -> new PrecomputedTexCoordFunction(it.texCoords().get(layer)))
 						.collect(toList());
 
 				texCoordFunctions.add(PrecomputedTexCoordFunction.merge(partialTexCoordFunctions));
