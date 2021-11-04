@@ -95,9 +95,9 @@ public class StripWallTexCoordFunction implements TexCoordFunction {
 			s = accumulatedLength / width;
 
 			if (fitHeight) {
-				t = (i % 2 == 0) ? (v.distanceTo(vs.get(i+1))) / height : 0;
-			} else {
 				t = (i % 2 == 0) ? 1 : 0;
+			} else {
+				t = (i % 2 == 0) ? (v.distanceTo(vs.get(i+1))) / height : 0;
 			}
 
 			result.add(new VectorXZ(s, t));
