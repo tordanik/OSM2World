@@ -1,6 +1,7 @@
 package org.osm2world.core.osm.creation;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -31,11 +32,18 @@ public class MbtilesReader implements OSMDataReader {
 	private static Map<File, MBTilesReader> readerMap = new HashMap<>();
 	//TODO reference counter, closing it
 
-	private static synchronized MBTilesReader getReader(File mbtilesFile) throws MBTilesReadException {
+	private static synchronized MBTilesReader getReader(File mbtilesFile)
+			throws MBTilesReadException, FileNotFoundException {
+
 		if (!readerMap.containsKey(mbtilesFile)) {
+			if (!mbtilesFile.exists()) {
+				throw new FileNotFoundException("MBTiles file does not exist: " + mbtilesFile);
+			}
 			readerMap.put(mbtilesFile, new MBTilesReader(mbtilesFile));
 		}
+
 		return readerMap.get(mbtilesFile);
+
 	}
 
 	private final File mbtilesFile;
