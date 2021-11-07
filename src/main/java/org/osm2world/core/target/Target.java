@@ -13,6 +13,8 @@ import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -156,6 +158,11 @@ public interface Target {
 	public default void drawModel(Model model, VectorXYZ position,
 			double direction, Double height, Double width, Double length) {
 		model.render(this, position, direction, height, width, length);
+	}
+
+	public default void drawMesh(Mesh mesh) {
+		TriangleGeometry tg = mesh.geometry.asTriangles();
+		drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords());
 	}
 
 	/**

@@ -3,6 +3,7 @@ package org.osm2world.core.world.data;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -12,10 +13,16 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Renderable;
+import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 
-public interface WorldObject extends Renderable {
+public interface WorldObject {
+
+	/**
+	 * returns the meshes making up this {@link WorldObject}.
+	 */
+	public List<Mesh> buildMeshes();
 
 	/**
 	 * returns the "primary" {@link MapElement} for this WorldObject;

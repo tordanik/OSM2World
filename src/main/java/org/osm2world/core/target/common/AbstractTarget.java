@@ -21,8 +21,7 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
-import org.osm2world.core.target.common.mesh.Geometry;
-import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
 
 /**
  * superclass for {@link Target} implementations that defines some
@@ -36,11 +35,6 @@ public abstract class AbstractTarget implements Target {
 	@Override
 	public void setConfiguration(Configuration config) {
 		this.config = config;
-	}
-
-	protected void drawGeometry(Geometry geometry, Material material) {
-		TriangleGeometry tg = geometry.asTriangles();
-		drawTriangles(material, tg.triangles, tg.normalData.normals(), tg.texCoords());
 	}
 
 	@Override
@@ -80,8 +74,8 @@ public abstract class AbstractTarget implements Target {
 			List<VectorXYZ> upVectors, List<Double> scaleFactors,
 			List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
 
-		drawGeometry(new ExtrusionGeometry(shape, path, upVectors, scaleFactors, null, options,
-				material.getTextureDimensions()), material);
+		drawMesh(new Mesh(new ExtrusionGeometry(shape, path, upVectors, scaleFactors, null, options,
+				material.getTextureDimensions()), material));
 
 	}
 
@@ -180,8 +174,8 @@ public abstract class AbstractTarget implements Target {
 			double height, double radiusBottom, double radiusTop,
 			boolean drawBottom, boolean drawTop) {
 
-		drawGeometry(ExtrusionGeometry.createColumn(corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop,
-				null, material.getTextureDimensions()), material);
+		drawMesh(new Mesh(ExtrusionGeometry.createColumn(corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop,
+				null, material.getTextureDimensions()), material));
 
 	}
 

@@ -14,9 +14,9 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
-import org.osm2world.core.world.data.WorldObject;
 
 public class ExternalModelModule implements WorldModule {
 
@@ -44,7 +44,7 @@ public class ExternalModelModule implements WorldModule {
 	public void setConfiguration(Configuration config) {}
 
 	/** temporary placeholder, to be replaced with an actual 3dmr model by the Target */
-	private abstract static class ExternalModelPlaceholder<T extends MapElement> implements WorldObject {
+	private abstract static class ExternalModelPlaceholder<T extends MapElement> implements LegacyWorldObject {
 
 		protected final T primaryMapElement;
 

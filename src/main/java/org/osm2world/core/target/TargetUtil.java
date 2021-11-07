@@ -13,6 +13,7 @@ import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.statistics.StatisticsTarget;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
 public final class TargetUtil {
@@ -77,7 +78,11 @@ public final class TargetUtil {
 	 */
 	public static final void renderObject(Target target, WorldObject object) {
 		target.beginObject(object);
-		object.renderTo(target);
+		if (object instanceof LegacyWorldObject) {
+			((LegacyWorldObject)object).renderTo(target);
+		} else {
+			object.buildMeshes().forEach(target::drawMesh);
+		}
 	}
 
 	public static final List<List<VectorXZ>> flipTexCoordsVertically(List<List<VectorXZ>> texCoordLists) {

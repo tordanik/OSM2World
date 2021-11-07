@@ -41,6 +41,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -74,7 +75,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 	}
 
-	public static abstract class BicycleStands implements TerrainBoundaryWorldObject {
+	public static abstract class BicycleStands implements LegacyWorldObject, TerrainBoundaryWorldObject {
 
 		protected static final double DEFAULT_DISTANCE_BETWEEN_STANDS = 1.0;
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
