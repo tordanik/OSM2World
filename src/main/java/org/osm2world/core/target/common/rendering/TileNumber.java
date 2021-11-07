@@ -2,6 +2,8 @@ package org.osm2world.core.target.common.rendering;
 
 import static java.lang.Math.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -110,6 +112,31 @@ public class TileNumber {
 		LatLon min = new LatLon(tile2lat(y + 1, zoom), tile2lon(x, zoom));
 		LatLon max = new LatLon(tile2lat(y, zoom), tile2lon(x + 1, zoom));
 		return new LatLonBounds(min, max);
+	}
+
+	/** returns the {@link TileNumber} at the given zoom and location */
+	public static TileNumber atLatLon(int zoom, LatLon latLon) {
+		int x = (int)floor((latLon.lon + 180) / 360 * (1<<zoom));
+		int y = (int)floor((1 - log(tan(toRadians(latLon.lat)) + 1 / cos(toRadians(latLon.lat))) / PI) / 2 * (1<<zoom));
+		return new TileNumber(zoom, x, y);
+	}
+
+	/** returns the {@link TileNumber}s of all tiles overlapping the given bounds */
+	public static List<TileNumber> tilesForBounds(int zoom, LatLonBounds bounds) {
+
+		TileNumber min = atLatLon(zoom, bounds.getMin());
+		TileNumber max = atLatLon(zoom, bounds.getMax());
+
+		List<TileNumber> result = new ArrayList<TileNumber>();
+
+		for (int x = min.x; x <= max.x; x++) {
+			for (int y = max.y; y <= min.y; y++) {
+				result.add(new TileNumber(zoom, x, y));
+			}
+		}
+
+		return result;
+
 	}
 
 	static final double tile2lon(int x, int z) {
