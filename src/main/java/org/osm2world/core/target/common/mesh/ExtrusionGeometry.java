@@ -108,7 +108,7 @@ public class ExtrusionGeometry implements Geometry {
 
 	/**
 	 * creates geometry for a column with outward-facing polygons around a point.
-	 * A column is a polygon with > 3 corners extruded upwards.
+	 * A column is a polygon with 3 or more corners extruded upwards.
 	 *
 	 * The implementation may decide to reduce the number of corners in order to improve performance
 	 * (or make rendering possible when a perfect cylinder isn't supported).
