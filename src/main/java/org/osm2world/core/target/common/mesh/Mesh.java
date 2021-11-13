@@ -30,4 +30,10 @@ public class Mesh {
 
 	}
 
+	@Override
+	public String toString() {
+		String lodString = "LOD " + lodRangeMin.ordinal() + "-" + lodRangeMax.ordinal() + ", ";
+		return "Mesh(" + lodString + material + ", " + geometry.getClass().getSimpleName() + ")";
+	}
+
 }

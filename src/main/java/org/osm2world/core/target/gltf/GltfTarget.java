@@ -1,7 +1,6 @@
 package org.osm2world.core.target.gltf;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
@@ -13,10 +12,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
@@ -28,13 +27,15 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.RasterImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.gltf.data.Gltf;
 import org.osm2world.core.target.gltf.data.GltfAccessor;
 import org.osm2world.core.target.gltf.data.GltfAsset;
@@ -51,6 +52,7 @@ import org.osm2world.core.target.gltf.data.GltfNode;
 import org.osm2world.core.target.gltf.data.GltfSampler;
 import org.osm2world.core.target.gltf.data.GltfScene;
 import org.osm2world.core.target.gltf.data.GltfTexture;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -59,7 +61,7 @@ import com.google.gson.JsonIOException;
 
 import jakarta.xml.bind.DatatypeConverter;
 
-public class GltfTarget extends AbstractTarget {
+public class GltfTarget extends MeshTarget {
 
 	// TODO expose as option - whether images should be embedded in the glTF file instead of referenced using a path
 	private final boolean alwaysEmbedTextures = true;
@@ -67,27 +69,30 @@ public class GltfTarget extends AbstractTarget {
 	private final File outputFile;
 
 	/** the gltf asset under construction */
-	private final Gltf gltf;
-
-	private GltfMesh currentMesh = null;
+	private final Gltf gltf = new Gltf();
 
 	private final Map<Material, Integer> materialIndexMap = new HashMap<>();
 	private final Map<String, Integer> imageIndexMap = new HashMap<>();
 
 	public GltfTarget(File outputFile) {
 		this.outputFile = outputFile;
+	}
+
+	@Override
+	public String toString() {
+		return "GltfTarget(" + outputFile + ")";
+	}
+
+	@Override
+	public void finish() {
 
 		/* create the basic structure of the glTF */
 
-		gltf = new Gltf();
 		gltf.asset = new GltfAsset();
 
 		gltf.scene = 0;
 		gltf.scenes = asList(new GltfScene());
 		gltf.scenes.get(0).nodes = asList(0);
-		gltf.nodes = new ArrayList<>();
-		gltf.nodes.add(new GltfNode());
-		gltf.nodes.get(0).name = "OSM2World scene";
 
 		gltf.accessors = new ArrayList<>();
 		gltf.buffers = new ArrayList<>();
@@ -98,101 +103,26 @@ public class GltfTarget extends AbstractTarget {
 		gltf.samplers = new ArrayList<>();
 		gltf.textures = new ArrayList<>();
 
-	}
+		/* generate the nodes and meshes */
 
-	@Override
-	public void beginObject(WorldObject object) {
+		gltf.nodes = new ArrayList<>();
 
-		if (currentMesh != null) {
-			finishCurrentObject();
+		GltfNode rootNode = new GltfNode();
+		rootNode.name = "OSM2World scene";
+		gltf.nodes.add(rootNode);
+
+		rootNode.children = new ArrayList<>();
+
+		for (WorldObject object : meshes.keySet()) {
+			Collection<Mesh> objectMeshes = mergeMeshes(meshes.get(object));
+			FaultTolerantIterationUtil.forEach(objectMeshes, (Mesh mesh) -> {
+				int index = createNodeWithMesh(mesh, object.getClass(), object.getPrimaryMapElement());
+				rootNode.children.add(index);
+			});
 		}
 
-		GltfNode currentNode = new GltfNode();
-		gltf.nodes.add(currentNode);
 
-		if (object != null) {
-
-			MapElement osmElement = object.getPrimaryMapElement();
-			TagSet tags = osmElement.getTags();
-			Object elementWithId = osmElement instanceof MapWaySegment ? ((MapWaySegment)osmElement).getWay() : osmElement;
-
-			if (tags.containsKey("name")) {
-				currentNode.name = object.getClass().getSimpleName() + " " + tags.getValue("name");
-			} else if (tags.containsKey("ref")) {
-				currentNode.name = object.getClass().getSimpleName() + " " + tags.getValue("ref");
-			} else {
-				currentNode.name = object.getClass().getSimpleName() + " " + elementWithId.toString();
-			}
-
-			Map<String, Object> extras = new HashMap<>();
-			extras.put("osmId", elementWithId.toString());
-			currentNode.extras = extras;
-
-		}
-
-		currentMesh = new GltfMesh();
-		gltf.meshes.add(currentMesh);
-		currentNode.mesh = gltf.meshes.size() - 1;
-
-	}
-
-	@Override
-	public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-
-		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
-			throw new InvalidGeometryException("degenerate triangle");
-		}
-
-		texCoordLists = flipTexCoordsVertically(texCoordLists); // move texture coordinate origin to the top left
-
-		// TODO merge sets of triangles using the same material into a single primitive
-
-		GltfMesh.Primitive primitive = new GltfMesh.Primitive();
-		currentMesh.primitives.add(primitive);
-
-		/* convert material */
-
-		int materialIndex;
-		if (material.getNumTextureLayers() == 0) {
-			materialIndex = materialIndexMap.containsKey(material)
-					? materialIndexMap.get(material)
-					: createMaterial(material, null);
-		} else {
-			materialIndex = materialIndexMap.containsKey(material)
-					? materialIndexMap.get(material)
-					: createMaterial(material, material.getTextureLayers().get(0));
-			// TODO: handle additional material layers by having a similar method that gets a @Nullable TextureLayer and offset distance passed in
-			// TODO (continued) ... but calculate normal vectors only once.
-		}
-		primitive.material = materialIndex;
-
-		/* put geometry into buffers and set up accessors */
-		// TODO consider using indices
-
-		primitive.mode = GltfMesh.TRIANGLES;
-
-		List<VectorXYZ> positions = new ArrayList<>(3 * triangles.size());
-		triangles.forEach(t -> positions.addAll(t.verticesNoDup()));
-		primitive.attributes.put("POSITION", createAccessor(3, positions));
-
-		List<VectorXYZ> normals = calculateTriangleNormals(triangles, material.getInterpolation() == SMOOTH);
-		primitive.attributes.put("NORMAL", createAccessor(3, normals));
-
-		if (material.getNumTextureLayers() > 0) {
-			primitive.attributes.put("TEXCOORD_0", createAccessor(2, texCoordLists.get(0)));
-		}
-
-	}
-
-	@Override
-	public void finish() {
-
-		if (currentMesh != null) {
-			finishCurrentObject();
-		}
-
-		gltf.nodes.get(0).children = IntStream.range(1, gltf.nodes.size()).boxed().collect(toList());
+		/* use null instead of [] when lists are empty */
 
 		if (gltf.accessors.isEmpty()) {
 			gltf.accessors = null;
@@ -226,6 +156,8 @@ public class GltfTarget extends AbstractTarget {
 			gltf.textures = null;
 		}
 
+		/* write the JSON file */
+
 		try (FileWriter writer = new FileWriter(outputFile)) {
 			new GsonBuilder().setPrettyPrinting().create().toJson(gltf, writer);
 		} catch (JsonIOException | IOException e) {
@@ -234,13 +166,78 @@ public class GltfTarget extends AbstractTarget {
 
 	}
 
-	private void finishCurrentObject() {
-		if (currentMesh.primitives.isEmpty()) {
-			gltf.nodes.remove(gltf.nodes.size() - 1);
-			gltf.meshes.remove(gltf.meshes.size() - 1);
-		}
+	/** creates a {@link GltfNode} and returns its index in {@link Gltf#nodes} */
+	private int createNodeWithMesh(Mesh mesh, Class<?> modelClass, MapElement osmElement) {
+
+		GltfNode node = new GltfNode();
+
+		node.mesh = createMesh(mesh);
+
+		addMeshNameAndId(node, modelClass, osmElement);
+
+		gltf.nodes.add(node);
+		return gltf.nodes.size() - 1;
+
 	}
 
+	/** creates a {@link GltfMesh} and returns its index in {@link Gltf#meshes} */
+	private int createMesh(Mesh mesh) {
+
+		GltfMesh gltfMesh = new GltfMesh();
+
+		Material material = mesh.material;
+
+		TriangleGeometry triangleGeometry = mesh.geometry.asTriangles();
+		List<? extends TriangleXYZ> triangles = triangleGeometry.triangles;
+		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords();
+
+		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
+			throw new InvalidGeometryException("degenerate triangle");
+		}
+
+		texCoordLists = flipTexCoordsVertically(texCoordLists); // move texture coordinate origin to the top left
+
+		// TODO merge sets of triangles using the same material into a single primitive
+
+		GltfMesh.Primitive primitive = new GltfMesh.Primitive();
+		gltfMesh.primitives.add(primitive);
+
+		/* convert material */
+
+		int materialIndex;
+		if (material.getNumTextureLayers() == 0) {
+			materialIndex = materialIndexMap.containsKey(material)
+					? materialIndexMap.get(material)
+					: createMaterial(material, null);
+		} else {
+			materialIndex = materialIndexMap.containsKey(material)
+					? materialIndexMap.get(material)
+					: createMaterial(material, material.getTextureLayers().get(0));
+			// TODO: handle additional material layers by having a similar method that gets a @Nullable TextureLayer and offset distance passed in
+			// TODO (continued) ... but calculate normal vectors only once.
+		}
+		primitive.material = materialIndex;
+
+		/* put geometry into buffers and set up accessors */
+		// TODO consider using indices
+
+		primitive.mode = GltfMesh.TRIANGLES;
+
+		List<VectorXYZ> positions = new ArrayList<>(3 * triangles.size());
+		triangles.forEach(t -> positions.addAll(t.verticesNoDup()));
+		primitive.attributes.put("POSITION", createAccessor(3, positions));
+
+		List<VectorXYZ> normals = calculateTriangleNormals(triangles, material.getInterpolation() == SMOOTH);
+		primitive.attributes.put("NORMAL", createAccessor(3, normals));
+
+		if (material.getNumTextureLayers() > 0) {
+			primitive.attributes.put("TEXCOORD_0", createAccessor(2, texCoordLists.get(0)));
+		}
+
+		gltf.meshes.add(gltfMesh);
+		return gltf.meshes.size() - 1;
+
+	}
 
 	private int createAccessor(int numComponents, List<? extends Vector3D> vs) {
 
@@ -294,22 +291,6 @@ public class GltfTarget extends AbstractTarget {
 
 		return gltf.accessors.size() - 1;
 
-	}
-
-	private static float[] components(int numComponents, Vector3D v) {
-		if (numComponents == 2) {
-			return new float[] {
-					(float)((VectorXZ)v).x,
-					(float)((VectorXZ)v).z
-			};
-		} else {
-			assert numComponents == 3;
-			return new float[] {
-					(float)((VectorXYZ)v).x,
-					(float)((VectorXYZ)v).y,
-					(float)((VectorXYZ)v).z * -1
-			};
-		}
 	}
 
 	private int createMaterial(Material m, @Nullable TextureLayer textureLayer) {
@@ -434,6 +415,41 @@ public class GltfTarget extends AbstractTarget {
 		imageIndexMap.put(uri, index);
 
 		return index;
+
+	}
+
+	private static float[] components(int numComponents, Vector3D v) {
+		if (numComponents == 2) {
+			return new float[] {
+					(float)((VectorXZ)v).x,
+					(float)((VectorXZ)v).z
+			};
+		} else {
+			assert numComponents == 3;
+			return new float[] {
+					(float)((VectorXYZ)v).x,
+					(float)((VectorXYZ)v).y,
+					(float)((VectorXYZ)v).z * -1
+			};
+		}
+	}
+
+	private static void addMeshNameAndId(GltfNode node, Class<?> modelClass, MapElement osmElement) {
+
+		Object elementWithId = osmElement instanceof MapWaySegment ? ((MapWaySegment)osmElement).getWay() : osmElement;
+
+		Map<String, Object> extras = new HashMap<>();
+		extras.put("osmId", elementWithId.toString());
+		node.extras = extras;
+
+		TagSet tags = osmElement.getTags();
+		if (tags.containsKey("name")) {
+			node.name = modelClass.getSimpleName() + " " + tags.getValue("name");
+		} else if (tags.containsKey("ref")) {
+			node.name = modelClass.getSimpleName() + " " + tags.getValue("ref");
+		} else {
+			node.name = modelClass.getSimpleName() + " " + elementWithId.toString();
+		}
 
 	}
 
