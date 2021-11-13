@@ -114,13 +114,29 @@ public class GltfTarget extends MeshTarget {
 		rootNode.children = new ArrayList<>();
 
 		for (WorldObject object : meshes.keySet()) {
-			Collection<Mesh> objectMeshes = mergeMeshes(meshes.get(object));
-			FaultTolerantIterationUtil.forEach(objectMeshes, (Mesh mesh) -> {
-				int index = createNodeWithMesh(mesh, object.getClass(), object.getPrimaryMapElement());
-				rootNode.children.add(index);
-			});
-		}
 
+			Collection<Mesh> objectMeshes = mergeMeshes(meshes.get(object));
+
+			List<Integer> meshNodeIndizes = new ArrayList<>(meshes.size());
+
+			FaultTolerantIterationUtil.forEach(objectMeshes, (Mesh mesh) -> {
+				int index = createNode(createMesh(mesh), null);
+				meshNodeIndizes.add(index);
+			});
+
+			if (meshNodeIndizes.size() > 1) {
+				// create a parent node if this model has more than one mesh node
+				int parentNodeIndex = createNode(null, new ArrayList<>(meshNodeIndizes));
+				meshNodeIndizes.clear();
+				meshNodeIndizes.add(parentNodeIndex);
+			}
+
+			meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index),
+					object.getClass(), object.getPrimaryMapElement()));
+
+			rootNode.children.addAll(meshNodeIndizes);
+
+		}
 
 		/* use null instead of [] when lists are empty */
 
@@ -167,13 +183,14 @@ public class GltfTarget extends MeshTarget {
 	}
 
 	/** creates a {@link GltfNode} and returns its index in {@link Gltf#nodes} */
-	private int createNodeWithMesh(Mesh mesh, Class<?> modelClass, MapElement osmElement) {
+	private int createNode(@Nullable Integer meshIndex, @Nullable List<Integer> childNodeIndices) {
+
+		assert childNodeIndices == null || !childNodeIndices.isEmpty();
 
 		GltfNode node = new GltfNode();
 
-		node.mesh = createMesh(mesh);
-
-		addMeshNameAndId(node, modelClass, osmElement);
+		node.mesh = meshIndex;
+		node.children = childNodeIndices;
 
 		gltf.nodes.add(node);
 		return gltf.nodes.size() - 1;
