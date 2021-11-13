@@ -12,6 +12,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.math.FaceXYZ;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -64,19 +65,31 @@ public class TriangleGeometry implements Geometry {
 
 	private TriangleGeometry(List<TriangleXYZ> triangles, List<VectorXYZ> normals,
 			List<TexCoordFunction> texCoordFunctions, @Nullable List<Color> colors) {
+
 		this.triangles = triangles;
 		this.texCoordFunctions = texCoordFunctions;
 		this.normalData = new ExplicitNormals(normals);
 		this.colors = colors;
+
+		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
+			throw new InvalidGeometryException("degenerate triangle");
+		}
+
 	}
 
 	/** constructor suitable for straightforward cases. Use the {@link Builder} when you need more flexibility. */
 	public TriangleGeometry(List<TriangleXYZ> triangles, Interpolation normalMode,
 			List<TexCoordFunction> texCoordFunctions, @Nullable List<Color> colors) {
+
 		this.triangles = triangles;
 		this.texCoordFunctions = texCoordFunctions;
 		this.normalData = new CalculatedNormals(normalMode);
 		this.colors = colors;
+
+		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
+			throw new InvalidGeometryException("degenerate triangle");
+		}
+
 	}
 
 	public interface NormalData {
@@ -149,6 +162,8 @@ public class TriangleGeometry implements Geometry {
 				throw new IllegalArgumentException("there must be 3 color values for every triangle");
 			} else if (normals.size() != triangles.size() * 3) {
 				throw new IllegalArgumentException("there must be 3 normals for every triangle");
+			} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
+				throw new InvalidGeometryException("degenerate triangle");
 			}
 
 			this.triangles.addAll(triangles);
@@ -163,6 +178,8 @@ public class TriangleGeometry implements Geometry {
 				throw new IllegalStateException("If normal mode is not set, normals must be provided explicitly");
 			} else if (colors.size() != triangles.size() * 3) {
 				throw new IllegalArgumentException("there must be 3 color values for every triangle");
+			} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
+				throw new InvalidGeometryException("degenerate triangle");
 			}
 
 			this.triangles.addAll(triangles);
