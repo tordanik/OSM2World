@@ -2,10 +2,12 @@ package org.osm2world.core.osm.creation;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.osm2world.core.osm.creation.OSMStreamReader.CompressionMethod;
 import org.osm2world.core.osm.data.OSMData;
 
 /**
@@ -13,9 +15,6 @@ import org.osm2world.core.osm.data.OSMData;
  * non-standard variants such as those files produced by JOSM. The file is read
  * during the {@link #getData()} call, there will be no updates when the file is
  * changed later. This class internally uses osm4j to read the file.
- *
- * At its core, this reader combines the capabilities of the {@link OSMFileReader}
- * and the {@link JOSMFileReader}.
  */
 public class OSMFileReader implements OSMDataReader {
 
@@ -35,42 +34,25 @@ public class OSMFileReader implements OSMDataReader {
 	@Override
 	public OSMData getData() throws IOException {
 
-		OSMData osmData = null;
-		boolean useJOSMReader = false;
-
-		if (isJOSMGenerated(file)) {
-			useJOSMReader = true;
-		} else {
+		if (!isJOSMGenerated(file)) {
 
 			/* try to read file using osm4j */
 
-			try {
-				osmData = new StrictOSMFileReader(file).getData();
+			try (FileInputStream is = new FileInputStream(file)) {
+				return new OSMStreamReader(is, CompressionMethod.fromFileName(file.getName()), false).getData();
 			} catch (IOException e) {
-
-				System.out.println("could not read file," +
-						" trying workaround for files created by JOSM");
-
-				useJOSMReader = true;
-
+				System.out.println("could not read file, trying workaround for files created by JOSM");
 			}
 
 		}
 
 		/* try reading the file while taking into account JOSM-specific extensions */
 
-		if (useJOSMReader) {
-
-			try {
-				osmData = new JOSMFileReader(file).getData();
-			} catch (Exception e2) {
-				throw new IOException("could not read OSM file" +
-						" (not even with workaround for JOSM files)", e2);
-			}
-
+		try (FileInputStream is = new FileInputStream(file)) {
+			return new OSMStreamReader(is, CompressionMethod.fromFileName(file.getName()), true).getData();
+		} catch (Exception e2) {
+			throw new IOException("could not read OSM file (not even with workaround for JOSM files)", e2);
 		}
-
-		return osmData;
 
 	}
 

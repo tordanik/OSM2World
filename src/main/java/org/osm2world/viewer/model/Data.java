@@ -14,7 +14,6 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
-import org.osm2world.core.osm.creation.StrictOSMFileReader;
 import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
@@ -44,9 +43,7 @@ public class Data extends Observable {
 
 		try {
 
-			if (reader instanceof StrictOSMFileReader) {
-				this.osmFile = ((StrictOSMFileReader)reader).getFile();
-			} else if (reader instanceof OSMFileReader) {
+			if (reader instanceof OSMFileReader) {
 				this.osmFile = ((OSMFileReader)reader).getFile();
 			} else {
 				this.osmFile = null;

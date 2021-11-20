@@ -15,7 +15,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.osm.creation.StrictOSMFileReader;
+import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.osm.data.OSMData;
 
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
@@ -31,7 +31,7 @@ public class OSMToMapDataConverterTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
-		OSMData osmData = new StrictOSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getData();
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
@@ -94,7 +94,7 @@ public class OSMToMapDataConverterTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
-		OSMData osmData = new StrictOSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getData();
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
