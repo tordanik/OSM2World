@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -1087,7 +1088,11 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (resultLists == null) {
 				return null;
 			} else {
-				return stream(resultLists).map(TagSet::of).toArray(TagSet[]::new);
+				TagSet[] result = stream(resultLists).map(TagSet::of).toArray(TagSet[]::new);
+				if (!rightHandTraffic) {
+					ArrayUtils.reverse(result);
+				}
+				return result;
 			}
 
 		}
