@@ -79,9 +79,6 @@ public class ExtrusionGeometryTest {
 
 		for (List<TriangleXYZ> result : results) {
 
-			//TODO remove this line once ExtrusionGeometry no longer necessarily uses strips
-			result.removeIf(TriangleXYZ::isDegenerateOrNaN);
-
 			assertEquals(4, result.size());
 
 			assertTrue(containsTriangle(result,

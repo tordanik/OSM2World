@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -280,21 +281,26 @@ public class ExtrusionGeometry implements Geometry {
 				}
 			}
 
-			/* draw triangle strips */
+			/* create the rings of triangles between each pair of successive points */
 
-			for (int i = 0; i+1 < shapeVertices.size(); i++) {
+			for (int pathI = 0; pathI + 1 < path.size(); pathI ++) {
 
-				VectorXYZ[] triangleStripVectors = new VectorXYZ[2*shapeVectors.length];
+				double scaleA = scaleFactors.get(pathI);
+				double scaleB = scaleFactors.get(pathI + 1);
+				List<VectorXYZ> shapeA = shapeVectors[pathI];
+				List<VectorXYZ> shapeB = shapeVectors[pathI + 1];
 
-				for (int j = 0; j < shapeVectors.length; j++) {
-
-					triangleStripVectors[j*2+0] = shapeVectors[j].get(i);
-					triangleStripVectors[j*2+1] = shapeVectors[j].get(i+1);
-
+				if (scaleA != 0 && scaleB != 0) {
+					builder.addTriangleStrip(createTriangleStripBetween(shapeB, shapeA));
+				} else if (scaleA != 0 && scaleB == 0) {
+					for (int i = 0; i + 1 < shapeA.size(); i++) {
+						builder.addTriangles(new TriangleXYZ(shapeA.get(i), shapeA.get(i + 1), shapeB.get(0)));
+					}
+				} else if (scaleA == 0 && scaleB != 0) {
+					for (int i = 0; i + 1 < shapeB.size(); i++) {
+						builder.addTriangles(new TriangleXYZ(shapeB.get(i + 1), shapeB.get(i), shapeA.get(0)));
+					}
 				}
-
-				List<VectorXYZ> strip = asList(triangleStripVectors);
-				builder.addTriangleStrip(strip);
 
 			}
 
