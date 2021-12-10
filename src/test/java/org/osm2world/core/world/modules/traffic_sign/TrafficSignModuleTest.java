@@ -1,11 +1,13 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.*;
 import static org.osm2world.core.world.modules.traffic_sign.TrafficSignModule.findClosestJunction;
 
 import java.util.List;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.junit.Test;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
@@ -31,7 +33,7 @@ public class TrafficSignModuleTest {
 
 		List<MapNode> wayNodes = asList(node00, node01, node02, node03);
 		MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s)));
+		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 
 		/* check that no junction is found for any starting node */
 
@@ -66,7 +68,7 @@ public class TrafficSignModuleTest {
 
 		for (List<MapNode> wayNodes : wayNodeLists) {
 			MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s)));
+			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 		}
 
 		/* check that the single junction node is found for each starting node */
@@ -107,7 +109,7 @@ public class TrafficSignModuleTest {
 
 		for (List<MapNode> wayNodes : wayNodeLists) {
 			MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s)));
+			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 		}
 
 		/* check that the correct junction node is found for each starting node */
@@ -138,7 +140,7 @@ public class TrafficSignModuleTest {
 
 		List<MapNode> wayNodes = asList(node00, node01, node02, node03, node00);
 		MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
-		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s)));
+		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 
 		/* check that there is no infinite loop and that no junction is reported */
 

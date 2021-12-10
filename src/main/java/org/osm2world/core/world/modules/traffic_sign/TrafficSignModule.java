@@ -4,7 +4,7 @@ import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.util.enums.ForwardBackward.*;
-import static org.osm2world.core.util.enums.LeftRight.*;
+import static org.osm2world.core.util.enums.LeftRight.RIGHT;
 import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
@@ -61,7 +61,7 @@ public class TrafficSignModule extends AbstractModule {
 		 * will be rendered to. Default value is true. Indicates the rules of the
 		 * road as defined in RoadModule.java
 		 */
-		LeftRight side = RoadModule.RIGHT_HAND_TRAFFIC_BY_DEFAULT ? RIGHT : LEFT;
+		LeftRight side = RoadModule.getDefaultDrivingSide(config);
 
 		//The (potential) signs to be rendered
 		TrafficSignGroup firstModel = null;
@@ -129,7 +129,7 @@ public class TrafficSignModule extends AbstractModule {
 							firstModel = new TrafficSignGroup(firstModelNode, config);
 
 							//get segment's driving side
-							side = RoadModule.hasRightHandTraffic(topSegment) ? RIGHT : LEFT;
+							side = RoadModule.getDrivingSide(topSegment, config);
 
 							//set the model's facing direction
 							firstModel.direction = calculateDirection(topSegment,
@@ -203,7 +203,7 @@ public class TrafficSignModule extends AbstractModule {
 							secondModel = new TrafficSignGroup(secondModelNode, config);
 
 							//get segment's driving side
-							side = RoadModule.hasRightHandTraffic(bottomSegment) ? RIGHT : LEFT;
+							side = RoadModule.getDrivingSide(bottomSegment, config);
 
 							secondModel.direction = calculateDirection(bottomSegment,
 									tempKey.contains("forward") ? FORWARD : BACKWARD);
@@ -378,7 +378,7 @@ public class TrafficSignModule extends AbstractModule {
 		/* calculate the rotation and position(s) */
 
 		MapWaySegment segment = node.getConnectedWaySegments().get(0);
-		LeftRight side = RoadModule.hasRightHandTraffic(segment) ? RIGHT : LEFT;
+		LeftRight side = RoadModule.getDrivingSide(segment, config);
 		double direction = calculateDirection(node);
 
 		List<VectorXZ> positions = new ArrayList<>();

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -47,6 +48,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.util.enums.LeftRight;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -59,15 +61,12 @@ import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
  */
 public class RoadModule extends ConfigurableWorldModule {
 
-	/** determines whether right-hand or left-hand traffic is the default */
-	public static final boolean RIGHT_HAND_TRAFFIC_BY_DEFAULT = true;
-
 	@Override
 	public void applyTo(MapData mapData) {
 
 		for (MapWaySegment segment : mapData.getMapWaySegments()) {
 			if (isRoad(segment.getTags())) {
-				segment.addRepresentation(new Road(segment));
+				segment.addRepresentation(new Road(segment, config));
 			}
 		}
 
@@ -111,23 +110,23 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
+	/** returns the default driving side based on a {@link Configuration} */
+	public static LeftRight getDefaultDrivingSide(Configuration config) {
+		return "left".equals(config.getString("drivingSide", "right").toLowerCase()) ? LeftRight.LEFT : LeftRight.RIGHT;
+	}
+
 	/**
-	 * Determine whether this segment has right-hand traffic or not,
-	 * based on {@link #RIGHT_HAND_TRAFFIC_BY_DEFAULT} and way's driving_side tags, if any.
+	 * Determine whether this segment has left-hand or right-hand traffic,
+	 * based on the configured default and the way's driving_side tags, if any.
 	 */
-	public static boolean hasRightHandTraffic(MapWaySegment segment) {
-
-		TagSet wayTags = segment.getTags();
-
-		if (wayTags.contains("driving_side", "left")) {
-			return false;
+	public static LeftRight getDrivingSide(MapWaySegment segment, Configuration config) {
+		if (segment.getTags().contains("driving_side", "left")) {
+			return LeftRight.LEFT;
+		} else if (segment.getTags().contains("driving_side", "right")) {
+			return LeftRight.RIGHT;
+		} else {
+			return getDefaultDrivingSide(config);
 		}
-
-		if (wayTags.contains("driving_side", "right")) {
-			return true;
-		}
-
-		return RIGHT_HAND_TRAFFIC_BY_DEFAULT;
 	}
 
 	public static boolean isRoad(TagSet tags) {
@@ -732,7 +731,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		final private boolean steps;
 
-		public Road(MapWaySegment segment) {
+		public Road(MapWaySegment segment, Configuration config) {
 
 			super(segment);
 
@@ -740,19 +739,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			this.startCoord = segment.getStartNode().getPos();
 			this.endCoord = segment.getEndNode().getPos();
 
-			if (RIGHT_HAND_TRAFFIC_BY_DEFAULT) {
-				if (tags.contains("driving_side", "left")) {
-					rightHandTraffic = false;
-				} else {
-					rightHandTraffic = true;
-				}
-			} else {
-				if (tags.contains("driving_side", "right")) {
-					rightHandTraffic = true;
-				} else {
-					rightHandTraffic = false;
-				}
-			}
+			rightHandTraffic = (getDrivingSide(segment, config) == LeftRight.RIGHT);
 
 			this.steps = isSteps(tags);
 
