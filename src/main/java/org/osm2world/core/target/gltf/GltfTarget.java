@@ -89,14 +89,15 @@ public class GltfTarget extends MeshTarget {
 
 		/* process the meshes */
 
-		EnumSet<MergeOption> mergeOption = EnumSet.of(MergeOption.SINGLE_COLOR_MESHES);
+		EnumSet<MergeOption> mergeOptions = EnumSet.of(MergeOption.SINGLE_COLOR_MESHES);
 
 		if (!keepOsmElements) {
-			mergeOption.add(MergeOption.MERGE_ELEMENTS);
+			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
 		}
 
 		MeshStore processedMeshStore = meshStore.process(asList(
-				new MergeMeshes(mergeOption)));
+				new EmulateTextureLayers(),
+				new MergeMeshes(mergeOptions)));
 
 		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
 
@@ -243,8 +244,6 @@ public class GltfTarget extends MeshTarget {
 			materialIndex = materialIndexMap.containsKey(material)
 					? materialIndexMap.get(material)
 					: createMaterial(material, material.getTextureLayers().get(0));
-			// TODO: handle additional material layers by having a similar method that gets a @Nullable TextureLayer and offset distance passed in
-			// TODO (continued) ... but calculate normal vectors only once.
 		}
 		primitive.material = materialIndex;
 

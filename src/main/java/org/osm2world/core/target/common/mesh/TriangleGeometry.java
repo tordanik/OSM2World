@@ -154,7 +154,11 @@ public class TriangleGeometry implements Geometry {
 
 		}
 
-		public void addTriangles(List<TriangleXYZ> triangles, List<Color> colors, List<VectorXYZ> normals) {
+		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<Color> colors, List<VectorXYZ> normals) {
+
+			if (colors == null) {
+				colors = nCopies(triangles.size() * 3, defaultColor);
+			}
 
 			if (normalMode != null) {
 				throw new IllegalStateException("If normal mode is set, normals must not be provided explicitly");
@@ -172,7 +176,11 @@ public class TriangleGeometry implements Geometry {
 
 		}
 
-		public void addTriangles(List<TriangleXYZ> triangles, List<Color> colors) {
+		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<Color> colors) {
+
+			if (colors == null) {
+				colors = nCopies(triangles.size() * 3, defaultColor);
+			}
 
 			if (normalMode == null) {
 				throw new IllegalStateException("If normal mode is not set, normals must be provided explicitly");

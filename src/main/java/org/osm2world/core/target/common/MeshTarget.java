@@ -1,5 +1,6 @@
 package org.osm2world.core.target.common;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -143,9 +144,63 @@ public class MeshTarget extends AbstractTarget {
 
 	}
 
+	/** replaces meshes that have multiple layers of textures with multiple meshes, each of which have only one layer */
+	public static class EmulateTextureLayers implements MeshProcessingStep {
+
+		private static final double OFFSET_PER_LAYER = 1e-3;
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			/* replace any multi-layer meshes with multiple meshes */
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
+
+				Mesh mesh = meshWithMetadata.mesh;
+
+				if (mesh.material.getNumTextureLayers() <= 1) {
+					result.add(meshWithMetadata);
+				} else {
+
+					TriangleGeometry tg = mesh.geometry.asTriangles();
+
+					for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
+
+						double offset = layer * OFFSET_PER_LAYER;
+
+						TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
+						builder.setTexCoordFunctions(asList(tg.texCoordFunctions.get(layer)));
+						List<TriangleXYZ> offsetTriangles = tg.triangles.stream()
+								.map(t -> t.shift(t.getNormal().mult(offset)))
+								.collect(toList());
+						builder.addTriangles(offsetTriangles, tg.colors, tg.normalData.normals());
+						TriangleGeometry newGeometry = builder.build();
+
+						Material singleLayerMaterial = mesh.material.withLayers(asList(
+								mesh.material.getTextureLayers().get(layer)));
+
+						Mesh newMesh = new Mesh(newGeometry, singleLayerMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
+
+						result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata));
+
+					}
+
+				}
+			}
+
+			/* build and return a MeshStore with the results */
+
+			MeshStore resultingStore = new MeshStore();
+			result.forEach(resultingStore::addMesh);
+			return resultingStore;
+
+		}
+
+	}
 
 	// TODO: implement additional processing steps
-	// * EmulateTextureLayers
 	// * EmulateDoubleSidedMaterials
 	// * GenerateTextureAtlas
 	// * ClipToBounds(bounds)
