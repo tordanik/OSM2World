@@ -41,4 +41,7 @@ public interface MapElement extends BoundedObject {
 	/** returns this element's tags */
 	TagSet getTags();
 
+	/** returns the corresponding {@link MapRelation.Element} */
+	public MapRelation.Element getElementWithId();
+
 }

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.InvalidGeometryException;
@@ -227,6 +228,11 @@ public class MapArea extends MapRelation.Element implements MapElement {
 	@Override
 	public AxisAlignedRectangleXZ boundingBox() {
 		return getOuterPolygon().boundingBox();
+	}
+
+	@Override
+	public Element getElementWithId() {
+		return this;
 	}
 
 	@Override

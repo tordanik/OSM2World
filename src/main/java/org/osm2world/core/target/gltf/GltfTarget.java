@@ -1,6 +1,7 @@
 package org.osm2world.core.target.gltf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
@@ -12,21 +13,21 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.common.MeshStore;
+import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
@@ -54,8 +55,8 @@ import org.osm2world.core.target.gltf.data.GltfScene;
 import org.osm2world.core.target.gltf.data.GltfTexture;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
-import org.osm2world.core.world.data.WorldObject;
 
+import com.google.common.collect.Multimap;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 
@@ -86,6 +87,13 @@ public class GltfTarget extends MeshTarget {
 	@Override
 	public void finish() {
 
+		/* process the meshes */
+
+		MeshStore processedMeshStore = meshStore.process(asList(
+				new MergeMeshes(emptySet())));
+
+		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
+
 		/* create the basic structure of the glTF */
 
 		gltf.asset = new GltfAsset();
@@ -103,7 +111,7 @@ public class GltfTarget extends MeshTarget {
 		gltf.samplers = new ArrayList<>();
 		gltf.textures = new ArrayList<>();
 
-		/* generate the nodes and meshes */
+		/* generate the glTF nodes and meshes */
 
 		gltf.nodes = new ArrayList<>();
 
@@ -113,13 +121,11 @@ public class GltfTarget extends MeshTarget {
 
 		rootNode.children = new ArrayList<>();
 
-		for (WorldObject object : meshes.keySet()) {
+		for (MeshMetadata objectMetadata : meshesByMetadata.keySet()) {
 
-			Collection<Mesh> objectMeshes = mergeMeshes(meshes.get(object));
+			List<Integer> meshNodeIndizes = new ArrayList<>(meshesByMetadata.size());
 
-			List<Integer> meshNodeIndizes = new ArrayList<>(meshes.size());
-
-			FaultTolerantIterationUtil.forEach(objectMeshes, (Mesh mesh) -> {
+			FaultTolerantIterationUtil.forEach(meshesByMetadata.get(objectMetadata), (Mesh mesh) -> {
 				int index = createNode(createMesh(mesh), null);
 				meshNodeIndizes.add(index);
 			});
@@ -131,8 +137,7 @@ public class GltfTarget extends MeshTarget {
 				meshNodeIndizes.add(parentNodeIndex);
 			}
 
-			meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index),
-					object.getClass(), object.getPrimaryMapElement()));
+			meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index), objectMetadata));
 
 			rootNode.children.addAll(meshNodeIndizes);
 
@@ -213,8 +218,6 @@ public class GltfTarget extends MeshTarget {
 		}
 
 		texCoordLists = flipTexCoordsVertically(texCoordLists); // move texture coordinate origin to the top left
-
-		// TODO merge sets of triangles using the same material into a single primitive
 
 		GltfMesh.Primitive primitive = new GltfMesh.Primitive();
 		gltfMesh.primitives.add(primitive);
@@ -451,21 +454,27 @@ public class GltfTarget extends MeshTarget {
 		}
 	}
 
-	private static void addMeshNameAndId(GltfNode node, Class<?> modelClass, MapElement osmElement) {
+	private static void addMeshNameAndId(GltfNode node, MeshMetadata metadata) {
 
-		Object elementWithId = osmElement instanceof MapWaySegment ? ((MapWaySegment)osmElement).getWay() : osmElement;
+		MapRelation.Element mapElement = metadata.mapElement;
 
-		Map<String, Object> extras = new HashMap<>();
-		extras.put("osmId", elementWithId.toString());
-		node.extras = extras;
+		if (mapElement != null) {
+			Map<String, Object> extras = new HashMap<>();
+			extras.put("osmId", mapElement.toString());
+			node.extras = extras;
+		}
 
-		TagSet tags = osmElement.getTags();
-		if (tags.containsKey("name")) {
-			node.name = modelClass.getSimpleName() + " " + tags.getValue("name");
-		} else if (tags.containsKey("ref")) {
-			node.name = modelClass.getSimpleName() + " " + tags.getValue("ref");
+		if (metadata.modelClass != null && mapElement != null) {
+			TagSet tags = mapElement.getTags();
+			if (tags.containsKey("name")) {
+				node.name = metadata.modelClass.getSimpleName() + " " + tags.getValue("name");
+			} else if (tags.containsKey("ref")) {
+				node.name = metadata.modelClass.getSimpleName() + " " + tags.getValue("ref");
+			} else {
+				node.name = metadata.modelClass.getSimpleName() + " " + mapElement.toString();
+			}
 		} else {
-			node.name = modelClass.getSimpleName() + " " + elementWithId.toString();
+			node.name = "Multiple elements";
 		}
 
 	}

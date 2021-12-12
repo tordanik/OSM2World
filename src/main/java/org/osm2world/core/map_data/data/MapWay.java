@@ -84,6 +84,7 @@ public class MapWay extends MapRelation.Element implements BoundedObject {
 		return getPolylineXZ().boundingBox();
 	}
 
+	@Override
 	public TagSet getTags() {
 		return tags;
 	}

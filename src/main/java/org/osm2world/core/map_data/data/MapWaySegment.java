@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
@@ -44,6 +45,11 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	@Override
 	public TagSet getTags() {
 		return getWay().getTags();
+	}
+
+	@Override
+	public Element getElementWithId() {
+		return getWay();
 	}
 
 	public void addOverlap(MapOverlap<?, ?> overlap) {

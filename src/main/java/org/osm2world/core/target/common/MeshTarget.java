@@ -1,17 +1,18 @@
 package org.osm2world.core.target.common;
 
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.target.common.mesh.Geometry.combine;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.MeshStore.MeshMetadata;
+import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
+import org.osm2world.core.target.common.MeshStore.MeshWithMetadata;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
@@ -19,25 +20,14 @@ import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.WorldObject;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-
 /**
  * a {@link Target} that collects everything that is being drawn as {@link Mesh}es
  */
 public class MeshTarget extends AbstractTarget {
 
-	protected final MultiValuedMap<WorldObject, Mesh> meshes = new ArrayListValuedHashMap<>();
+	protected final MeshStore meshStore = new MeshStore();
 
 	private WorldObject currentWorldObject = null;
-
-	public List<Mesh> getMeshes() {
-		List<Mesh> result = new ArrayList<>();
-		for (WorldObject object : meshes.keySet()) {
-			result.addAll(meshes.get(object));
-		}
-		return result;
-	}
 
 	@Override
 	public void beginObject(WorldObject object) {
@@ -59,21 +49,95 @@ public class MeshTarget extends AbstractTarget {
 
 	@Override
 	public void drawMesh(Mesh mesh) {
-		meshes.put(currentWorldObject, mesh);
+
+		MeshMetadata metadata = (currentWorldObject != null)
+				? new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),
+						currentWorldObject.getClass())
+				: new MeshMetadata(null, null);
+
+		meshStore.addMesh(mesh, metadata);
+
 	}
 
-	protected static Collection<Mesh> mergeMeshes(Collection<Mesh> meshes) {
+	public List<Mesh> getMeshes() {
+		return meshStore.meshes();
+	}
 
-		List<Mesh> result = new ArrayList<>();
+	protected static class MergeMeshes implements MeshProcessingStep {
 
-		Multimap<Material, Mesh> meshesByMaterial = Multimaps.index(meshes, m -> m.material);
+		/** options that alter the behavior away from the default */
+		protected enum MergeOptions {
 
-		for (Material m : meshesByMaterial.keySet()) {
-			result.add(new Mesh(combine(meshesByMaterial.get(m).stream().map(it -> it.geometry).collect(toList())), m));
+			/**
+			 * whether meshes should be merged across distinct OSM elements.
+			 * If this is enabled, the result will not have any {@link MeshMetadata}.
+			 */
+			MERGE_ELEMENTS
+
+			// TODO: more options: SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES, SEPARATE_NORMAL_MODES
+
 		}
 
-		return result;
+		private final Set<MergeOptions> options;
+
+		public MergeMeshes(Set<MergeOptions> options) {
+			this.options = options;
+		}
+
+		/** checks if two meshes should be merged according to the MergeOptions */
+		public boolean shouldBeMerged(MeshWithMetadata m1, MeshWithMetadata m2) {
+
+			return Objects.equals(m1.mesh.material, m2.mesh.material)
+					&& (options.contains(MergeOptions.MERGE_ELEMENTS) || Objects.equals(m1.metadata, m2.metadata));
+
+		}
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			/* merge meshes */
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata mesh : meshStore.meshesWithMetadata()) {
+
+				boolean merged = false;
+
+				for (int i = 0; i < result.size(); i++) {
+
+					MeshWithMetadata existingMesh = result.get(i);
+
+					if (shouldBeMerged(mesh, existingMesh)) {
+						result.set(i, MeshWithMetadata.merge(mesh, existingMesh));
+						merged = true;
+						break;
+					}
+
+				}
+
+				if (!merged) {
+					result.add(mesh);
+				}
+
+			}
+
+			/* build and return a MeshStore with the results */
+
+			MeshStore resultingStore = new MeshStore();
+			result.forEach(resultingStore::addMesh);
+			return resultingStore;
+
+		}
 
 	}
+
+
+	// TODO: implement additional processing steps
+	// * EmulateTextureLayers
+	// * EmulateDoubleSidedMaterials
+	// * GenerateTextureAtlas
+	// * ClipToBounds(bounds)
+	// * FilterLod(LevelOfDetail targetLod)
+
 
 }
