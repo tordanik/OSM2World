@@ -63,10 +63,10 @@ public class MeshTarget extends AbstractTarget {
 		return meshStore.meshes();
 	}
 
-	protected static class MergeMeshes implements MeshProcessingStep {
+	public static class MergeMeshes implements MeshProcessingStep {
 
 		/** options that alter the behavior away from the default */
-		protected enum MergeOptions {
+		public enum MergeOption {
 
 			/**
 			 * whether meshes should be merged across distinct OSM elements.
@@ -78,9 +78,9 @@ public class MeshTarget extends AbstractTarget {
 
 		}
 
-		private final Set<MergeOptions> options;
+		private final Set<MergeOption> options;
 
-		public MergeMeshes(Set<MergeOptions> options) {
+		public MergeMeshes(Set<MergeOption> options) {
 			this.options = options;
 		}
 
@@ -88,7 +88,7 @@ public class MeshTarget extends AbstractTarget {
 		public boolean shouldBeMerged(MeshWithMetadata m1, MeshWithMetadata m2) {
 
 			return Objects.equals(m1.mesh.material, m2.mesh.material)
-					&& (options.contains(MergeOptions.MERGE_ELEMENTS) || Objects.equals(m1.metadata, m2.metadata));
+					&& (options.contains(MergeOption.MERGE_ELEMENTS) || Objects.equals(m1.metadata, m2.metadata));
 
 		}
 

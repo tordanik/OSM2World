@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -30,11 +33,15 @@ import org.osm2world.core.target.common.mesh.Mesh;
  */
 public abstract class AbstractTarget implements Target {
 
-	protected Configuration config;
+	protected @Nonnull Configuration config = new PropertiesConfiguration();
 
 	@Override
 	public void setConfiguration(Configuration config) {
-		this.config = config;
+		if (config != null) {
+			this.config = config;
+		} else {
+			this.config = new PropertiesConfiguration();
+		}
 	}
 
 	@Override

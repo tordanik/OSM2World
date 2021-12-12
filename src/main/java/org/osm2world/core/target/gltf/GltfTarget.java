@@ -1,7 +1,6 @@
 package org.osm2world.core.target.gltf;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
@@ -13,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.MeshStore;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshTarget;
+import org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -64,9 +65,6 @@ import jakarta.xml.bind.DatatypeConverter;
 
 public class GltfTarget extends MeshTarget {
 
-	// TODO expose as option - whether images should be embedded in the glTF file instead of referenced using a path
-	private final boolean alwaysEmbedTextures = true;
-
 	private final File outputFile;
 
 	/** the gltf asset under construction */
@@ -87,10 +85,18 @@ public class GltfTarget extends MeshTarget {
 	@Override
 	public void finish() {
 
+		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
+
 		/* process the meshes */
 
+		EnumSet<MergeOption> mergeOption = EnumSet.noneOf(MergeOption.class);
+
+		if (!keepOsmElements) {
+			mergeOption.add(MergeOption.MERGE_ELEMENTS);
+		}
+
 		MeshStore processedMeshStore = meshStore.process(asList(
-				new MergeMeshes(emptySet())));
+				new MergeMeshes(mergeOption)));
 
 		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
 
@@ -130,14 +136,18 @@ public class GltfTarget extends MeshTarget {
 				meshNodeIndizes.add(index);
 			});
 
-			if (meshNodeIndizes.size() > 1) {
-				// create a parent node if this model has more than one mesh node
-				int parentNodeIndex = createNode(null, new ArrayList<>(meshNodeIndizes));
-				meshNodeIndizes.clear();
-				meshNodeIndizes.add(parentNodeIndex);
-			}
+			if (keepOsmElements) {
 
-			meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index), objectMetadata));
+				if (meshNodeIndizes.size() > 1) {
+					// create a parent node if this model has more than one mesh node
+					int parentNodeIndex = createNode(null, new ArrayList<>(meshNodeIndizes));
+					meshNodeIndizes.clear();
+					meshNodeIndizes.add(parentNodeIndex);
+				}
+
+				meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index), objectMetadata));
+
+			}
 
 			rootNode.children.addAll(meshNodeIndizes);
 
@@ -390,6 +400,9 @@ public class GltfTarget extends MeshTarget {
 	}
 
 	private int createTexture(TextureData textureData) {
+
+		// whether images should be embedded in the glTF file instead of referenced using a path
+		boolean alwaysEmbedTextures = config.getBoolean("alwaysEmbedTextures", true);
 
 		String uri;
 		if (alwaysEmbedTextures || !(textureData instanceof RasterImageFileTexture)) {
