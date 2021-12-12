@@ -89,7 +89,7 @@ public class GltfTarget extends MeshTarget {
 
 		/* process the meshes */
 
-		EnumSet<MergeOption> mergeOption = EnumSet.noneOf(MergeOption.class);
+		EnumSet<MergeOption> mergeOption = EnumSet.of(MergeOption.SINGLE_COLOR_MESHES);
 
 		if (!keepOsmElements) {
 			mergeOption.add(MergeOption.MERGE_ELEMENTS);

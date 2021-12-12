@@ -46,31 +46,13 @@ public final class ImmutableMaterial extends Material {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!(obj instanceof ImmutableMaterial)) {
+		} if (!(obj instanceof ImmutableMaterial)) {
 			return false;
+		} else {
+			return this.equals((ImmutableMaterial) obj, false, false);
 		}
-		ImmutableMaterial other = (ImmutableMaterial) obj;
-		if (ambientOcclusion != other.ambientOcclusion)
-			return false;
-		if (color == null) {
-			if (other.color != null)
-				return false;
-		} else if (!color.equals(other.color))
-			return false;
-		if (interpolation != other.interpolation)
-			return false;
-		if (shadow != other.shadow)
-			return false;
-		if (textureLayers == null) {
-			if (other.textureLayers != null)
-				return false;
-		} else if (!textureLayers.equals(other.textureLayers))
-			return false;
-		if (transparency != other.transparency)
-			return false;
-		return true;
 	}
 
 }

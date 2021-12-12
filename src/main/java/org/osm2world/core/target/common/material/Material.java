@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
 
 import org.osm2world.core.map_data.data.TagSet;
 
@@ -301,6 +304,16 @@ public abstract class Material {
 		} else {
 			return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
 		}
+	}
+
+	public boolean equals(@Nonnull Material other, boolean ignoreNormalMode, boolean ignoreColor) {
+		return (ignoreNormalMode || interpolation == other.interpolation)
+				&& (ignoreColor || Objects.equals(color, other.color))
+				&& doubleSided == other.doubleSided
+				&& transparency == other.transparency
+				&& shadow == other.shadow
+				&& ambientOcclusion == other.ambientOcclusion
+				&& Objects.equals(textureLayers, other.textureLayers);
 	}
 
 	@Override

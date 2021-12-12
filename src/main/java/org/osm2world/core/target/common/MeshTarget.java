@@ -72,9 +72,15 @@ public class MeshTarget extends AbstractTarget {
 			 * whether meshes should be merged across distinct OSM elements.
 			 * If this is enabled, the result will not have any {@link MeshMetadata}.
 			 */
-			MERGE_ELEMENTS
+			MERGE_ELEMENTS,
 
-			// TODO: more options: SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES, SEPARATE_NORMAL_MODES
+			/** whether meshes should be kept separate if they have different {@link Material#getInterpolation()} */
+			SEPARATE_NORMAL_MODES,
+
+			/** whether meshes should be kept separate if they have different {@link Material#getColor()} */
+			SINGLE_COLOR_MESHES
+
+			// TODO: add PRESERVE_GEOMETRY_TYPES option
 
 		}
 
@@ -87,8 +93,14 @@ public class MeshTarget extends AbstractTarget {
 		/** checks if two meshes should be merged according to the MergeOptions */
 		public boolean shouldBeMerged(MeshWithMetadata m1, MeshWithMetadata m2) {
 
-			return Objects.equals(m1.mesh.material, m2.mesh.material)
-					&& (options.contains(MergeOption.MERGE_ELEMENTS) || Objects.equals(m1.metadata, m2.metadata));
+			if (!options.contains(MergeOption.MERGE_ELEMENTS)
+					&& !Objects.equals(m1.metadata, m2.metadata)) {
+				return false;
+			}
+
+			return m1.mesh.material.equals(m2.mesh.material,
+					!options.contains(MergeOption.SEPARATE_NORMAL_MODES),
+					!options.contains(MergeOption.SINGLE_COLOR_MESHES));
 
 		}
 

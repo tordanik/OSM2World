@@ -88,8 +88,6 @@ public class MeshStore {
 
 		public static MeshWithMetadata merge(MeshWithMetadata m1, MeshWithMetadata m2) {
 
-			assert Objects.equal(m1.mesh.material, m2.mesh.material);
-
 			MeshMetadata metadata = (Objects.equal(m1.metadata, m2.metadata))
 					? m1.metadata
 					: new MeshMetadata(null, null);
