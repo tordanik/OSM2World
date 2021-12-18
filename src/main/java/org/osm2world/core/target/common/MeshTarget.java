@@ -1,8 +1,11 @@
 package org.osm2world.core.target.common;
 
+import static java.awt.Color.WHITE;
 import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,10 +18,14 @@ import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshStore.MeshWithMetadata;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Geometry;
 import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.mesh.ShapeGeometry;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
@@ -188,6 +195,70 @@ public class MeshTarget extends AbstractTarget {
 					}
 
 				}
+			}
+
+			/* build and return a MeshStore with the results */
+
+			MeshStore resultingStore = new MeshStore();
+			result.forEach(resultingStore::addMesh);
+			return resultingStore;
+
+		}
+
+	}
+
+	/** adds the {@link Material}'s colors */
+	public static class MoveColorsToVertices implements MeshProcessingStep {
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
+
+				Mesh mesh = meshWithMetadata.mesh;
+				Material newMaterial = mesh.material.withColor(WHITE);
+				Geometry newGeometry;
+
+				if (mesh.geometry instanceof TriangleGeometry) {
+					TriangleGeometry tg = ((TriangleGeometry)mesh.geometry);
+
+					List<Color> colors = (tg.colors != null) ? tg.colors
+							: new ArrayList<>(nCopies(tg.vertices().size(), WHITE));
+					for (int i = 0; i < colors.size(); i++) {
+						colors.set(i, LColor.fromAWT(colors.get(i)).multiply(mesh.material.getLColor()).toAWT());
+					}
+
+					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
+					builder.setTexCoordFunctions(tg.texCoordFunctions);
+					builder.addTriangles(tg.triangles, colors, tg.normalData.normals());
+					newGeometry = builder.build();
+
+				} else if (mesh.geometry instanceof ShapeGeometry) {
+					ShapeGeometry sg = ((ShapeGeometry)mesh.geometry);
+
+					LColor existingColor = sg.color == null ? LColor.WHITE : LColor.fromAWT(sg.color);
+					LColor newColor = existingColor.multiply(mesh.material.getLColor());
+
+					newGeometry = new ShapeGeometry(sg.shape, sg.point, sg.frontVector, sg.upVector, sg.scaleFactor,
+							newColor.toAWT(), sg.normalMode, sg.textureDimensions);
+
+				} else if (mesh.geometry instanceof ExtrusionGeometry) {
+					ExtrusionGeometry eg = ((ExtrusionGeometry)mesh.geometry);
+
+					LColor existingColor = eg.color == null ? LColor.WHITE : LColor.fromAWT(eg.color);
+					LColor newColor = existingColor.multiply(LColor.fromAWT(mesh.material.getColor()));
+
+					newGeometry = new ExtrusionGeometry(eg.shape, eg.path, eg.upVectors, eg.scaleFactors,
+							newColor.toAWT(), eg.options, eg.textureDimensions);
+
+				} else {
+					throw new Error("unsupported geometry type: " + mesh.geometry.getClass());
+				}
+
+				result.add(new MeshWithMetadata(new Mesh(newGeometry, newMaterial), meshWithMetadata.metadata));
+
 			}
 
 			/* build and return a MeshStore with the results */

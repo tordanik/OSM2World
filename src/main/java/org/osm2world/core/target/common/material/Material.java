@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.util.color.LColor;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -94,6 +95,10 @@ public abstract class Material {
 
 	public Color getColor() {
 		return color;
+	}
+
+	public LColor getLColor() {
+		return LColor.fromAWT(getColor());
 	}
 
 	public boolean isDoubleSided() {

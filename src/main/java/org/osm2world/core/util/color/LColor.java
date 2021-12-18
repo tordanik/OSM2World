@@ -9,6 +9,8 @@ import java.awt.color.ColorSpace;
  */
 public class LColor {
 
+	public static final LColor WHITE = new LColor(1f, 1f, 1f);
+
 	private static final ColorSpace LINEAR_COLOR_SPACE = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
 
 	public final float red;
@@ -32,6 +34,10 @@ public class LColor {
 
 	public float[] componentsRGBA() {
 		return new float[] {red, green, blue, 1.0f};
+	}
+
+	public LColor multiply(LColor color) {
+		return new LColor(red * color.red, green * color.green, blue * color.blue);
 	}
 
 	public Color toAWT() {

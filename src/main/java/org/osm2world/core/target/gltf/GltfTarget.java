@@ -1,6 +1,7 @@
 package org.osm2world.core.target.gltf;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
@@ -89,13 +90,14 @@ public class GltfTarget extends MeshTarget {
 
 		/* process the meshes */
 
-		EnumSet<MergeOption> mergeOptions = EnumSet.of(MergeOption.SINGLE_COLOR_MESHES);
+		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
 
 		if (!keepOsmElements) {
 			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
 		}
 
 		MeshStore processedMeshStore = meshStore.process(asList(
+				new MoveColorsToVertices(),
 				new EmulateTextureLayers(),
 				new MergeMeshes(mergeOptions)));
 
@@ -223,6 +225,8 @@ public class GltfTarget extends MeshTarget {
 		TriangleGeometry triangleGeometry = mesh.geometry.asTriangles();
 		List<? extends TriangleXYZ> triangles = triangleGeometry.triangles;
 		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords();
+		List<LColor> colors = triangleGeometry.colors == null ? null
+				: triangleGeometry.colors.stream().map(c -> LColor.fromAWT(c)).collect(toList());
 
 		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
 			throw new InvalidGeometryException("degenerate triangle");
@@ -261,6 +265,11 @@ public class GltfTarget extends MeshTarget {
 
 		if (material.getNumTextureLayers() > 0) {
 			primitive.attributes.put("TEXCOORD_0", createAccessor(2, texCoordLists.get(0)));
+		}
+
+		if (colors != null) {
+			List<VectorXYZ> colorsAsVectors = colors.stream().map(c -> new VectorXYZ(c.red, c.green, -c.blue)).collect(toList());
+			primitive.attributes.put("COLOR_0", createAccessor(3, colorsAsVectors));
 		}
 
 		gltf.meshes.add(gltfMesh);
@@ -346,16 +355,6 @@ public class GltfTarget extends MeshTarget {
 		}
 
 		material.doubleSided = m.isDoubleSided();
-
-		if (textureLayer == null || textureLayer.colorable) {
-
-			LColor baseColorFactor = textureLayer == null
-					? new LColor(1f, 1f, 1f)
-					: textureLayer.clampedBaseColorFactor(LColor.fromAWT(m.getColor()));
-
-			material.pbrMetallicRoughness.baseColorFactor = baseColorFactor.componentsRGBA();
-
-		}
 
 		if (textureLayer != null) {
 
