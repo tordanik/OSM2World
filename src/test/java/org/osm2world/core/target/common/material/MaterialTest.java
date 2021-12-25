@@ -1,4 +1,4 @@
-package org.osm2world.core.target.material;
+package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.BLACK;
 import static java.util.Arrays.asList;
@@ -12,13 +12,9 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Transparency;
-import org.osm2world.core.target.common.material.TextTexture;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
-import org.osm2world.core.target.common.material.TextureLayer;
 
 public class MaterialTest {
 
