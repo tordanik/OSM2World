@@ -99,6 +99,7 @@ public class GltfTarget extends MeshTarget {
 		MeshStore processedMeshStore = meshStore.process(asList(
 				new MoveColorsToVertices(),
 				new EmulateTextureLayers(),
+				new GenerateTextureAtlas(),
 				new MergeMeshes(mergeOptions)));
 
 		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();

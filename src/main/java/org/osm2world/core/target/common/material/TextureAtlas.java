@@ -34,6 +34,10 @@ public class TextureAtlas extends RuntimeTexture {
 
 		super(1, 1, null, null, Wrap.CLAMP, null);
 
+		if (textures.isEmpty()) {
+			throw new IllegalArgumentException("empty texture atlas");
+		}
+
 		this.textures = textures;
 
 		this.numTexturesX = (int) ceil(sqrt(textures.size()));
@@ -89,6 +93,11 @@ public class TextureAtlas extends RuntimeTexture {
 				slotX / (double) numTexturesX + texCoord.x / numTexturesX,
 				(numTexturesZ - 1 - slotZ) / (double) numTexturesZ + texCoord.z / numTexturesZ); // lower left origin
 
+	}
+
+	@Override
+	public String toString() {
+		return "TextureAtlas " + textures;
 	}
 
 }

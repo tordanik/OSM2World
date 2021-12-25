@@ -23,6 +23,8 @@ import org.osm2world.core.util.color.LColor;
  */
 public class TextureLayer {
 
+	public static enum TextureType {BASE_COLOR, NORMAL, ORM, DISPLACEMENT}
+
 	/**
 	 * texture for base color and alpha as in glTF 2.0.
 	 */
@@ -69,6 +71,16 @@ public class TextureLayer {
 			result.add(displacementTexture);
 		}
 		return result;
+	}
+
+	public @Nullable TextureData getTexture(TextureType type) {
+		switch (type) {
+		case BASE_COLOR: return baseColorTexture;
+		case NORMAL: return normalTexture;
+		case ORM: return ormTexture;
+		case DISPLACEMENT: return displacementTexture;
+		default: throw new Error("Unsupported texture type: " + type);
+		}
 	}
 
 	/**

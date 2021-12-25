@@ -7,7 +7,10 @@ import static java.util.stream.Collectors.toList;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +20,12 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshStore.MeshWithMetadata;
+import org.osm2world.core.target.common.material.BlankTexture;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.TextureAtlas;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.material.TextureLayer.TextureType;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Geometry;
 import org.osm2world.core.target.common.mesh.Mesh;
@@ -141,11 +149,7 @@ public class MeshTarget extends AbstractTarget {
 
 			}
 
-			/* build and return a MeshStore with the results */
-
-			MeshStore resultingStore = new MeshStore();
-			result.forEach(resultingStore::addMesh);
-			return resultingStore;
+			return new MeshStore(result);
 
 		}
 
@@ -197,11 +201,7 @@ public class MeshTarget extends AbstractTarget {
 				}
 			}
 
-			/* build and return a MeshStore with the results */
-
-			MeshStore resultingStore = new MeshStore();
-			result.forEach(resultingStore::addMesh);
-			return resultingStore;
+			return new MeshStore(result);
 
 		}
 
@@ -261,11 +261,107 @@ public class MeshTarget extends AbstractTarget {
 
 			}
 
-			/* build and return a MeshStore with the results */
+			return new MeshStore(result);
 
-			MeshStore resultingStore = new MeshStore();
-			result.forEach(resultingStore::addMesh);
-			return resultingStore;
+		}
+
+	}
+
+	public static class GenerateTextureAtlas implements MeshProcessingStep {
+
+		/** a group of {@link TextureAtlas}es, one for each texture type in a {@link TextureLayer} */
+		private static class TextureAtlasGroup {
+
+			final TextureAtlas baseColorAtlas, normalAtlas, ormAtlas, displacementAtlas;
+
+			TextureAtlasGroup(List<TextureLayer> textureLayers) {
+
+				Map<TextureType, List<TextureData>> map = new HashMap<>();
+
+				for (TextureType type : TextureType.values()) {
+					map.put(type, textureLayers.stream()
+							.map(l -> l.getTexture(type))
+							.map(t -> t != null ? t : new BlankTexture())
+							.collect(toList()));
+				}
+
+				this.baseColorAtlas = new TextureAtlas(map.get(TextureType.BASE_COLOR));
+				this.normalAtlas = new TextureAtlas(map.get(TextureType.NORMAL));
+				this.ormAtlas = new TextureAtlas(map.get(TextureType.ORM));
+				this.displacementAtlas = new TextureAtlas(map.get(TextureType.DISPLACEMENT));
+
+			}
+
+		}
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			Set<TextureLayer> result1 = new HashSet<>();
+			for (Mesh mesh1 : meshStore.meshes()) {
+				result1.addAll(mesh1.material.getTextureLayers());
+			}
+			Set<TextureLayer> textureLayersForAtlas = result1;
+
+			for (Mesh mesh : meshStore.meshes()) {
+				List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords();
+				for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
+					if (texCoordLists.get(layer).stream().anyMatch(t -> t.x < 0 || t.x > 1 || t.z < 0 || t.z > 1)) {
+						// texture is accessed at a tex coordinate outside the [0;1] range, it should not be in an atlas
+						textureLayersForAtlas.remove(mesh.material.getTextureLayers().get(layer));
+					}
+				}
+			}
+
+			TextureAtlasGroup atlasGroup = new TextureAtlasGroup(new ArrayList<>(textureLayersForAtlas));
+
+			/* replace textures with the atlas texture and translate texture coordinates */
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
+
+				Mesh mesh = meshWithMetadata.mesh;
+
+				if (!mesh.material.getTextureLayers().stream().anyMatch(l -> textureLayersForAtlas.contains(l))) {
+					result.add(meshWithMetadata);
+				} else {
+
+					TriangleGeometry tg = mesh.geometry.asTriangles();
+
+					List<TextureLayer> newTextureLayers = new ArrayList<>(mesh.material.getTextureLayers());
+					List<TexCoordFunction> newTexCoordFunctions = new ArrayList<>(tg.texCoordFunctions);
+
+					for (int layer = 0; layer < newTextureLayers.size(); layer ++) {
+
+						TextureLayer oldLayer = newTextureLayers.get(layer);
+
+						if (textureLayersForAtlas.contains(oldLayer)) {
+							TextureLayer newLayer = new TextureLayer(atlasGroup.baseColorAtlas,
+									oldLayer.normalTexture == null ? null : atlasGroup.normalAtlas,
+									oldLayer.ormTexture == null ? null : atlasGroup.ormAtlas,
+									oldLayer.displacementTexture == null ? null : atlasGroup.displacementAtlas,
+									false);
+							newTextureLayers.set(layer, newLayer);
+							newTexCoordFunctions.set(layer, atlasGroup.baseColorAtlas.mapTexCoords(
+									oldLayer.baseColorTexture, newTexCoordFunctions.get(layer)));
+						}
+
+					}
+
+					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
+					builder.setTexCoordFunctions(newTexCoordFunctions);
+					builder.addTriangles(tg.triangles, tg.colors, tg.normalData.normals());
+
+					Material newMaterial = mesh.material.withLayers(newTextureLayers);
+					Mesh newMesh = new Mesh(builder.build(), newMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
+
+					result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata));
+
+				}
+			}
+
+			return new MeshStore(result);
 
 		}
 
@@ -273,9 +369,9 @@ public class MeshTarget extends AbstractTarget {
 
 	// TODO: implement additional processing steps
 	// * EmulateDoubleSidedMaterials
-	// * GenerateTextureAtlas
 	// * ClipToBounds(bounds)
 	// * FilterLod(LevelOfDetail targetLod)
-
+	// * ReplaceAlmostBlankTextures(threshold)
+	// * BakeDisplacement
 
 }

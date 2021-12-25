@@ -103,6 +103,12 @@ public class MeshStore {
 
 	private final List<MeshWithMetadata> meshes = new ArrayList<>();
 
+	public MeshStore() {}
+
+	public MeshStore(List<MeshWithMetadata> initialMeshes) {
+		initialMeshes.forEach(this::addMesh);
+	}
+
 	public void addMesh(Mesh mesh, MeshMetadata metadata) {
 		addMesh(new MeshWithMetadata(mesh, metadata));
 	}
