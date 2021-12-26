@@ -28,6 +28,7 @@ import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.material.TextureLayer.TextureType;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Geometry;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.ShapeGeometry;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
@@ -79,6 +80,23 @@ public class MeshTarget extends AbstractTarget {
 		return meshStore.meshes();
 	}
 
+	public static class FilterLod implements MeshProcessingStep {
+
+		private final LevelOfDetail targetLod;
+
+		public FilterLod(LevelOfDetail targetLod) {
+			this.targetLod = targetLod;
+		}
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+			return new MeshStore(meshStore.meshesWithMetadata().stream()
+					.filter(m -> m.mesh.lodRangeContains(targetLod))
+					.collect(toList()));
+		}
+
+	}
+
 	public static class MergeMeshes implements MeshProcessingStep {
 
 		/** options that alter the behavior away from the default */
@@ -108,6 +126,11 @@ public class MeshTarget extends AbstractTarget {
 
 		/** checks if two meshes should be merged according to the MergeOptions */
 		public boolean shouldBeMerged(MeshWithMetadata m1, MeshWithMetadata m2) {
+
+			if (m1.mesh.lodRangeMin != m2.mesh.lodRangeMin
+					|| m1.mesh.lodRangeMax != m2.mesh.lodRangeMax) {
+				return false;
+			}
 
 			if (!options.contains(MergeOption.MERGE_ELEMENTS)
 					&& !Objects.equals(m1.metadata, m2.metadata)) {
@@ -370,7 +393,6 @@ public class MeshTarget extends AbstractTarget {
 	// TODO: implement additional processing steps
 	// * EmulateDoubleSidedMaterials
 	// * ClipToBounds(bounds)
-	// * FilterLod(LevelOfDetail targetLod)
 	// * ReplaceAlmostBlankTextures(threshold)
 	// * BakeDisplacement
 

@@ -37,6 +37,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.RasterImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.gltf.data.Gltf;
@@ -88,6 +89,12 @@ public class GltfTarget extends MeshTarget {
 
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
 
+		int lodValue = config.getInt("lod", 4);
+		if (lodValue < 0 || lodValue > 4) {
+			lodValue = 4;
+		}
+
+
 		/* process the meshes */
 
 		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
@@ -97,6 +104,7 @@ public class GltfTarget extends MeshTarget {
 		}
 
 		MeshStore processedMeshStore = meshStore.process(asList(
+				new FilterLod(LevelOfDetail.values()[lodValue]),
 				new MoveColorsToVertices(),
 				new EmulateTextureLayers(),
 				new GenerateTextureAtlas(),

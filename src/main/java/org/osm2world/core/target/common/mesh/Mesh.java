@@ -30,6 +30,10 @@ public class Mesh {
 
 	}
 
+	public boolean lodRangeContains(LevelOfDetail lod) {
+		return lodRangeMin.ordinal() <= lod.ordinal() && lod.ordinal() <= lodRangeMax.ordinal();
+	}
+
 	@Override
 	public String toString() {
 		String lodString = "LOD " + lodRangeMin.ordinal() + "-" + lodRangeMax.ordinal() + ", ";
