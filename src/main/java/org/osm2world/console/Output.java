@@ -186,7 +186,13 @@ public final class Output {
 					break;
 
 				case GLTF:
-					GltfTarget gltfTarget = new GltfTarget(outputFile);
+					AxisAlignedRectangleXZ bounds = null;
+					if (args.isTile()) {
+						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+					} else {
+						bounds = results.getMapData().getBoundary();
+					}
+					GltfTarget gltfTarget = new GltfTarget(outputFile, bounds);
 					boolean underground = config.getBoolean("renderUnderground", true);
 					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
 					gltfTarget.finish();

@@ -1,5 +1,6 @@
 package org.osm2world.core.target.common.mesh;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -88,7 +90,11 @@ public class ShapeGeometry implements Geometry {
 
 			triangleVertices = transformShape(triangleVertices, point, frontVector, upVector);
 
-			builder.addTriangleVs(triangleVertices.subList(0, 3));
+			TriangleXYZ tXYZ = new TriangleXYZ(triangleVertices.get(0), triangleVertices.get(1), triangleVertices.get(2));
+
+			if (!tXYZ.isDegenerateOrNaN()) {
+				builder.addTriangles(singletonList(tXYZ));
+			}
 
 		}
 

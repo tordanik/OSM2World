@@ -125,7 +125,7 @@ public class ConversionFacadeTest {
 
 			try {
 
-				Target testTarget = new GltfTarget(Files.createTempFile("o2w-test-", ".gltf").toFile());
+				Target testTarget = new GltfTarget(Files.createTempFile("o2w-test-", ".gltf").toFile(), null);
 				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
 				ConversionFacade cf = new ConversionFacade();
 

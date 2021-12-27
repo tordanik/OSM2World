@@ -15,7 +15,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
@@ -230,7 +232,7 @@ public class MeshTarget extends AbstractTarget {
 
 	}
 
-	/** adds the {@link Material}'s colors */
+	/** adds the {@link Material}'s colors directly to the {@link Mesh} as vertex colors */
 	public static class MoveColorsToVertices implements MeshProcessingStep {
 
 		@Override
@@ -390,9 +392,114 @@ public class MeshTarget extends AbstractTarget {
 
 	}
 
+	/** removes all geometry outside a bounding shape */
+	public static class ClipToBounds implements MeshProcessingStep {
+
+		private final SimpleClosedShapeXZ bounds;
+
+		public ClipToBounds(SimpleClosedShapeXZ bounds) {
+			this.bounds = bounds;
+		}
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
+
+				Mesh mesh = meshWithMetadata.mesh;
+				TriangleGeometry tg = mesh.geometry.asTriangles();
+
+				/* mark triangles outside the bounds for removal */
+
+				Set<TriangleXYZ> trianglesToRemove = new HashSet<>();
+
+				for (TriangleXYZ t : tg.triangles) {
+					if (!bounds.contains(t.getCenter().xz())) {
+						trianglesToRemove.add(t);
+					}
+				}
+
+				/* build a new mesh without the triangles outside the bounds */
+
+				if (trianglesToRemove.size() == tg.triangles.size()) {
+					// entire mesh has been removed
+				} else if (trianglesToRemove.isEmpty()) {
+					result.add(meshWithMetadata);
+				} else {
+
+					List<VectorXYZ> normals = tg.normalData.normals();
+					@SuppressWarnings("unchecked")
+					List<VectorXZ>[] oldTexCoords = new List[tg.texCoordFunctions.size()];
+
+					for (int layer = 0; layer < tg.texCoordFunctions.size(); layer++) {
+						if (tg.texCoordFunctions.get(layer) instanceof PrecomputedTexCoordFunction) {
+							oldTexCoords[layer] = tg.texCoordFunctions.get(layer).apply(tg.vertices());
+						}
+					}
+
+					List<TriangleXYZ> newTriangles = new ArrayList<>();
+					List<Color> newColors = tg.colors == null ? null : new ArrayList<>();
+					List<VectorXYZ> newNormals = new ArrayList<>();
+					@SuppressWarnings("unchecked")
+					List<VectorXZ>[] newTexCoords = new List[oldTexCoords.length];
+
+					for (int layer = 0; layer < oldTexCoords.length; layer++) {
+						newTexCoords[layer] = (oldTexCoords[layer] != null) ? new ArrayList<>() : null;
+					}
+
+					for (int i = 0; i < tg.triangles.size(); i++) {
+						if (!trianglesToRemove.contains(tg.triangles.get(i))) {
+
+							newTriangles.add(tg.triangles.get(i));
+
+							for (int j = 0; j <= 2; j++) {
+
+								if (newColors != null) {
+									newColors.add(tg.colors.get(3 * i + j));
+								}
+
+								newNormals.add(normals.get(3 * i + j));
+
+								for (int layer = 0; layer < oldTexCoords.length; layer ++) {
+									if (oldTexCoords[layer] != null) {
+										newTexCoords[layer].add(oldTexCoords[layer].get(3 * i + j));
+									}
+								}
+
+							}
+
+						}
+					}
+
+					List<TexCoordFunction> newTexCoordFunctions = new ArrayList<>(newTexCoords.length);
+
+					for (int layer = 0; layer < newTexCoords.length; layer ++) {
+						if (newTexCoords[layer] == null) {
+							newTexCoordFunctions.add(tg.texCoordFunctions.get(layer));
+						} else {
+							newTexCoordFunctions.add(new PrecomputedTexCoordFunction(newTexCoords[layer]));
+						}
+					}
+
+					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
+					builder.setTexCoordFunctions(newTexCoordFunctions);
+					builder.addTriangles(newTriangles, newColors, newNormals);
+					result.add(new MeshWithMetadata(new Mesh(builder.build(), mesh.material), meshWithMetadata.metadata));
+
+				}
+
+			}
+
+			return new MeshStore(result);
+
+		}
+
+	}
+
 	// TODO: implement additional processing steps
 	// * EmulateDoubleSidedMaterials
-	// * ClipToBounds(bounds)
 	// * ReplaceAlmostBlankTextures(threshold)
 	// * BakeDisplacement
 

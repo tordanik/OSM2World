@@ -27,8 +27,10 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.common.MeshStore;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
+import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption;
 import org.osm2world.core.target.common.material.ImageFileTexture;
@@ -68,6 +70,7 @@ import jakarta.xml.bind.DatatypeConverter;
 public class GltfTarget extends MeshTarget {
 
 	private final File outputFile;
+	private final @Nullable SimpleClosedShapeXZ bounds;
 
 	/** the gltf asset under construction */
 	private final Gltf gltf = new Gltf();
@@ -75,8 +78,9 @@ public class GltfTarget extends MeshTarget {
 	private final Map<Material, Integer> materialIndexMap = new HashMap<>();
 	private final Map<String, Integer> imageIndexMap = new HashMap<>();
 
-	public GltfTarget(File outputFile) {
+	public GltfTarget(File outputFile, @Nullable SimpleClosedShapeXZ bounds) {
 		this.outputFile = outputFile;
+		this.bounds = bounds;
 	}
 
 	@Override
@@ -88,12 +92,12 @@ public class GltfTarget extends MeshTarget {
 	public void finish() {
 
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
+		boolean clipToBounds = config.getBoolean("clipToBounds", false);
 
 		int lodValue = config.getInt("lod", 4);
 		if (lodValue < 0 || lodValue > 4) {
 			lodValue = 4;
 		}
-
 
 		/* process the meshes */
 
@@ -103,12 +107,18 @@ public class GltfTarget extends MeshTarget {
 			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
 		}
 
-		MeshStore processedMeshStore = meshStore.process(asList(
+		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
 				new FilterLod(LevelOfDetail.values()[lodValue]),
 				new MoveColorsToVertices(),
 				new EmulateTextureLayers(),
 				new GenerateTextureAtlas(),
 				new MergeMeshes(mergeOptions)));
+
+		if (clipToBounds && bounds != null) {
+			processingSteps.add(1, new ClipToBounds(bounds));
+		}
+
+		MeshStore processedMeshStore = meshStore.process(processingSteps);
 
 		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
 

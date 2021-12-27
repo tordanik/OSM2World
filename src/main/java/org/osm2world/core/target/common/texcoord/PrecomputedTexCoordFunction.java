@@ -1,6 +1,6 @@
 package org.osm2world.core.target.common.texcoord;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,16 +14,17 @@ import org.osm2world.core.math.VectorXZ;
  */
 public class PrecomputedTexCoordFunction implements TexCoordFunction {
 
-	private final List<VectorXZ> texCoords;
+	public final List<VectorXZ> texCoords;
 
 	public PrecomputedTexCoordFunction(List<VectorXZ> texCoords) {
-		this.texCoords = texCoords;
-
+		this.texCoords = unmodifiableList(texCoords);
 	}
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {
-		if (vs.size() != texCoords.size()) throw new IllegalArgumentException("incorrect number of vertices");
+		if (vs.size() != texCoords.size()) {
+			throw new IllegalArgumentException("incorrect number of vertices");
+		}
 		return texCoords;
 	}
 
