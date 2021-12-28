@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,12 +30,12 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 	 * associates each EleConnector with the {@link StiffConnectorSet}
 	 * it is part of (if any)
 	 */
-	private Map<EleConnector, StiffConnectorSet> stiffSetMap =
-			new HashMap<EleConnector, StiffConnectorSet>();
+	private Map<EleConnector, StiffConnectorSet> stiffSetMap = new HashMap<EleConnector, StiffConnectorSet>();
 
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
-
+		System.out.print("addConnectors");
+		Date start = new Date();
 		for (EleConnector c : newConnectors) {
 			connectors.add(c);
 		}
@@ -50,13 +51,14 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 			}
 		}
-
+		Date end = new Date();
+		System.out.print("addConnectors: %d ms".formatted(end.getTime() - start.getTime()));
 	}
 
 	@Override
 	public void requireSameEle(EleConnector c1, EleConnector c2) {
 
-		//SUGGEST (performance): a special case implementation would be faster
+		// SUGGEST (performance): a special case implementation would be faster
 
 		requireSameEle(asList(c1, c2));
 
@@ -84,7 +86,8 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 		/* return if the connectors are already in a set together */
 
-		if (existingStiffSets.size() == 1 && looseConnectors.isEmpty()) return;
+		if (existingStiffSets.size() == 1 && looseConnectors.isEmpty())
+			return;
 
 		/* merge existing sets (if any) into a single set */
 
@@ -154,7 +157,7 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 	public void enforceConstraints() {
 
 		/* assign elevation to stiff sets by averaging terrain elevation */
-		//TODO what for stiff sets above the ground?
+		// TODO what for stiff sets above the ground?
 
 		for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
 
@@ -172,19 +175,25 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 		}
 
-		/* TODO implement intended algorithm:
+		/*
+		 * TODO implement intended algorithm:
 		 * - first assign ground ele to ON
-		 * - then assign ele for ABOVE and BELOW based on min vertical distance constraints, and clearing
+		 * - then assign ele for ABOVE and BELOW based on min vertical distance
+		 * constraints, and clearing
 		 */
 
 		for (EleConnector c : connectors) {
 
-			//TODO use clearing
+			// TODO use clearing
 
 			switch (c.groundState) {
-			case ABOVE: c.setPosXYZ(c.getPosXYZ().addY(5)); break;
-			case BELOW: c.setPosXYZ(c.getPosXYZ().addY(-5)); break;
-			default: //stay at ground elevation
+				case ABOVE:
+					c.setPosXYZ(c.getPosXYZ().addY(5));
+					break;
+				case BELOW:
+					c.setPosXYZ(c.getPosXYZ().addY(-5));
+					break;
+				default: // stay at ground elevation
 			}
 
 		}
@@ -197,7 +206,7 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 	 */
 	private static class StiffConnectorSet implements Iterable<EleConnector> {
 
-		//TODO maybe look for a more efficient set implementation
+		// TODO maybe look for a more efficient set implementation
 		private Set<EleConnector> connectors = new HashSet<EleConnector>();
 
 		/**
