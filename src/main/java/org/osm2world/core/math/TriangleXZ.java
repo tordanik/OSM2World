@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import static java.lang.Double.isFinite;
 import static java.util.Collections.singletonList;
 
 import java.util.List;
@@ -117,6 +118,17 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	@Override
 	public List<TriangleXZ> getTriangulation() {
 		return singletonList(this);
+	}
+
+	/**
+	 * checks if the triangle contains NaN/Infinity values or is degenerate. That is, all three points are
+	 * (almost, to account for floating point arithmetic) in a line.
+	 */
+	public boolean isDegenerateOrNaN() {
+		return getArea() < 1e-5
+				|| !isFinite(v1.x) || !isFinite(v1.z)
+				|| !isFinite(v2.x) || !isFinite(v2.z)
+				|| !isFinite(v3.x) || !isFinite(v3.z);
 	}
 
 	@Override

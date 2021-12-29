@@ -113,7 +113,9 @@ public class Earcut4JTriangulationUtil {
 					&& !triangle.v2.equals(triangle.v3)
 					&& !triangle.v3.equals(triangle.v1)) {  // check required due to workaround for individual points
 
-				result.add(triangle);
+				if (!triangle.isDegenerateOrNaN()) {
+					result.add(triangle);
+				}
 
 			}
 
