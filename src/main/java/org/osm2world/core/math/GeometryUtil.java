@@ -420,9 +420,8 @@ public final class GeometryUtil {
 	/**
 	 * performs linear interpolation for elevation along a polyline segment within a another polyline
 	 */
-	public static List<VectorXYZ> interpolateEleOfSegment(List<VectorXZ> lineSegmentString, List<VectorXZ> fullLine, double firstPointEle, double secondPointEle){
-
-		assert(fullLine.size() >= lineSegmentString.size());
+	public static List<VectorXYZ> interpolateEleOfSegment(List<VectorXZ> lineSegmentString, List<VectorXZ> fullLine,
+			double firstPointEle, double secondPointEle) {
 
 		Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
 			PolylineXZ lineXZ = new PolylineXZ(fullLine);

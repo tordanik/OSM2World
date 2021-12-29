@@ -692,7 +692,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		for (int i = 0; i < vertexLoop.size() - 1; i++) {
 			if (vertexLoop.get(i + 1).distanceTo(vertexLoop.get(i)) == 0) {
 				throw new InvalidGeometryException(
-						"polygon must not not have duplicate poitns\n"
+						"polygon must not not have duplicate points\n"
 						+ "Polygon vertices: " + vertexLoop);
 			}
 		}

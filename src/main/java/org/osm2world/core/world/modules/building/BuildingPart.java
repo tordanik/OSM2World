@@ -289,7 +289,7 @@ public class BuildingPart implements AreaWorldObject {
 					ring = ring.getSimplifiedPolygon();
 					for (int i = 0; i < ring.size(); i++) {
 						walls.add(new Wall(null, this,
-								asList(ring.getVertex(i), ring.getVertex(i + 1)),
+								asList(ring.getVertex(i), ring.getVertexAfter(i)),
 								emptyMap(),
 								polygonFloorHeightMap.get(polygon)));
 					}
