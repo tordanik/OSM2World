@@ -251,14 +251,33 @@ public class TriangleGeometry implements Geometry {
 
 		public TriangleGeometry build() {
 
+			/* perform validation */
+
 			if (texCoordFunctions == null) {
 				throw new IllegalStateException("texCoordFunctions has not been set yet");
 			}
+
+			boolean assertionsEnabled = false;
+			assert assertionsEnabled = true;
+
+			if (assertionsEnabled) {
+
+				List<VectorXYZ> vs = triangles.stream().flatMap(t -> t.verticesNoDup().stream()).collect(toList());
+
+				for (TexCoordFunction f : texCoordFunctions) {
+					assert f.apply(vs).size() == vs.size() : "incorrect texcoord function result";
+				}
+
+			}
+
+			/* set colors to null if all values are null */
 
 			@Nullable List</* @Nullable */ Color> colors = this.colors;
 			if (colors.stream().allMatch(c -> c == null)) {
 				colors = null;
 			}
+
+			/* build and return the result */
 
 			if (normalMode == null) {
 				return new TriangleGeometry(triangles, normals, texCoordFunctions, colors);

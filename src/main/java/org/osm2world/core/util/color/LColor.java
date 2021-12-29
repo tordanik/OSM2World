@@ -1,5 +1,7 @@
 package org.osm2world.core.util.color;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.awt.Color;
 import java.awt.color.ColorSpace;
 
@@ -18,9 +20,15 @@ public class LColor {
 	public final float blue;
 
 	public LColor(float red, float green, float blue) {
+
 		this.red = red;
 		this.green = green;
 		this.blue = blue;
+
+		checkArgument(red >= 0 && red <= 1);
+		checkArgument(green >= 0 && green <= 1);
+		checkArgument(blue >= 0 && blue <= 1);
+
 	}
 
 	/** @param componentsRGB  array with red, green and blue values at indices 0, 1 and 2 */
