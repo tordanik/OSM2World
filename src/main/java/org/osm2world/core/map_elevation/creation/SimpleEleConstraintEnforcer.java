@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 /**
  * enforcer implementation that ignores many of the constraints,
@@ -34,13 +35,14 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
-		System.out.print("addConnectors");
+		System.out.println("addConnectors");
 		Date start = new Date();
 		for (EleConnector c : newConnectors) {
 			connectors.add(c);
 		}
-
 		/* connect connectors */
+		EleConnector[] connectorArray = (EleConnector[]) connectors.toArray();
+		Median median = new Median();
 
 		for (EleConnector c1 : newConnectors) {
 			for (EleConnector c2 : connectors) {
@@ -52,7 +54,7 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 			}
 		}
 		Date end = new Date();
-		System.out.print("addConnectors: %d ms".formatted(end.getTime() - start.getTime()));
+		System.out.println("addConnectors: %d ms".formatted(end.getTime() - start.getTime()));
 	}
 
 	@Override
