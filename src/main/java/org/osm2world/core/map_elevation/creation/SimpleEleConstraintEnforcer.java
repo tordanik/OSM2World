@@ -40,8 +40,6 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 	@Override
 	public void addConnectors(Iterable<EleConnector> newConnectors) {
-		System.out.println("addConnectors");
-		Date start = new Date();
 		for (EleConnector c : newConnectors) {
 			connectors.add(c);
 		}
