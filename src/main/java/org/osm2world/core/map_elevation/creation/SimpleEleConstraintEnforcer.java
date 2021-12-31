@@ -46,40 +46,48 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 			connectors.add(c);
 		}
 		/* connect connectors */
-		int count=0;
+		int count = 0;
 
 		// build Kd-tree
-		
+
 		KdTree kdTree = new KdTree();
-		for (EleConnector c : newConnectors) {
+		for (EleConnector c : connectors) {
 			Coordinate co = new Coordinate(c.pos.x, c.pos.z);
-			kdTree.insert(co, c);
+			KdNode node = kdTree.query(co);
+			if (node == null) {
+				ArrayList<EleConnector> cs = new ArrayList<EleConnector>();
+				cs.add(c);
+				kdTree.insert(co, cs);
+			} else {
+				ArrayList<EleConnector> cs = (ArrayList<EleConnector>) node.getData();
+				cs.add(c);
+				System.out.println(cs.size());
+			}
 		}
 		for (EleConnector c1 : newConnectors) {
 			Coordinate co = new Coordinate(c1.pos.x, c1.pos.z);
-			Envelope env = new Envelope(co);
-			env.expandBy(10);
-			ArrayList<KdNode> nodes = (ArrayList<KdNode>) kdTree.query(env);
-			for (KdNode node : nodes) {
-				EleConnector c2 = (EleConnector) node.getData();
+			KdNode node = kdTree.query(co);
+			ArrayList<EleConnector> cs = (ArrayList<EleConnector>) node.getData();
+			for (EleConnector c2 : cs) {
 				if (c1 != c2 && c1.connectsTo(c2)) {
 					requireSameEle(c1, c2);
 					count++;
 				}
 			}
 		}
-		// for (EleConnector c1 : newConnectors) {
-		// 	for (EleConnector c2 : connectors) {
+		/*
+		for (EleConnector c1 : newConnectors) {
+			for (EleConnector c2 : connectors) {
 
-		// 		if (c1 != c2 && c1.connectsTo(c2)) {
-		// 			requireSameEle(c1, c2);
-		// 			count++;
-		// 		}
+				if (c1 != c2 && c1.connectsTo(c2)) {
+					requireSameEle(c1, c2);
+					count++;
+				}
 
-		// 	}
-		// }
-		//8310
-		//21602
+			}
+		}*/
+		// 8310
+		// 21602
 		Date end = new Date();
 		System.out.println("addConnectors: %d ms".formatted(end.getTime() - start.getTime()));
 		System.out.println("count: %d".formatted(count));
