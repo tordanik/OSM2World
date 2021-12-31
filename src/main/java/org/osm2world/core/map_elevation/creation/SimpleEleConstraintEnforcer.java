@@ -13,7 +13,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.math.VectorXZ;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.kdtree.KdNode;
+import org.locationtech.jts.index.kdtree.KdTree;
 
 /**
  * enforcer implementation that ignores many of the constraints,
@@ -41,20 +46,43 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 			connectors.add(c);
 		}
 		/* connect connectors */
-		EleConnector[] connectorArray = (EleConnector[]) connectors.toArray();
-		Median median = new Median();
+		int count=0;
 
+		// build Kd-tree
+		
+		KdTree kdTree = new KdTree();
+		for (EleConnector c : newConnectors) {
+			Coordinate co = new Coordinate(c.pos.x, c.pos.z);
+			kdTree.insert(co, c);
+		}
 		for (EleConnector c1 : newConnectors) {
-			for (EleConnector c2 : connectors) {
-
+			Coordinate co = new Coordinate(c1.pos.x, c1.pos.z);
+			Envelope env = new Envelope(co);
+			env.expandBy(10);
+			ArrayList<KdNode> nodes = (ArrayList<KdNode>) kdTree.query(env);
+			for (KdNode node : nodes) {
+				EleConnector c2 = (EleConnector) node.getData();
 				if (c1 != c2 && c1.connectsTo(c2)) {
 					requireSameEle(c1, c2);
+					count++;
 				}
-
 			}
 		}
+		// for (EleConnector c1 : newConnectors) {
+		// 	for (EleConnector c2 : connectors) {
+
+		// 		if (c1 != c2 && c1.connectsTo(c2)) {
+		// 			requireSameEle(c1, c2);
+		// 			count++;
+		// 		}
+
+		// 	}
+		// }
+		//8310
+		//21602
 		Date end = new Date();
 		System.out.println("addConnectors: %d ms".formatted(end.getTime() - start.getTime()));
+		System.out.println("count: %d".formatted(count));
 	}
 
 	@Override
