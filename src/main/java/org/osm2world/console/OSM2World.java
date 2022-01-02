@@ -169,14 +169,9 @@ public class OSM2World {
 		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
 
 		if (representativeArgs.isConfig()) {
+			configFile = representativeArgs.getConfig();
 			try {
-				configFile = representativeArgs.getConfig();
-				PropertiesConfiguration fileConfig = new PropertiesConfiguration();
-				fileConfig.setListDelimiter(';');
-				fileConfig.load(configFile);
-				config = fileConfig;
-				ConfigUtil.parseFonts(config);
-
+				config = loadConfigFile(configFile);
 			} catch (ConfigurationException e) {
 				System.err.println("could not read config, ignoring it: ");
 				System.err.println(e);
@@ -223,6 +218,15 @@ public class OSM2World {
 			throw new Error("Cannot recursively execute parameter files. Program mode was: " + programMode);
 
 		}
+	}
+
+	public static Configuration loadConfigFile(File configFile) throws ConfigurationException {
+		PropertiesConfiguration fileConfig = new PropertiesConfiguration();
+		fileConfig.setListDelimiter(';');
+		fileConfig.load(configFile);
+		Configuration config = fileConfig;
+		ConfigUtil.parseFonts(config);
+		return config;
 	}
 
 }
