@@ -445,6 +445,29 @@ public final class GeometryUtil {
 		return interpolateEleOfSegment(lineString, lineString, firstPointEle, secondPointEle);
 	}
 
+	/** performs interpolation on a triangle with barycentric coordinates */
+	public static double interpolateOnTriangle(VectorXZ point, TriangleXZ t, double val1, double val2, double val3) {
+
+		double denom = (t.v2.z - t.v3.z) * (t.v1.x - t.v3.x) + (t.v3.x - t.v2.x) * (t.v1.z - t.v3.z);
+
+		double weight1 = ((t.v2.z - t.v3.z) * (point.x - t.v3.x) + (t.v3.x - t.v2.x) * (point.z - t.v3.z)) / denom;
+		double weight2 = ((t.v3.z - t.v1.z) * (point.x - t.v3.x) + (t.v1.x - t.v3.x) * (point.z - t.v3.z)) / denom;
+		double weight3 = 1 - weight1 - weight2;
+
+		if (weight1 > 1.0 || weight2 > 1.0) {
+			throw new IllegalArgumentException("point outside the triangle");
+		}
+
+		return weight1 * val1 + weight2 * val2 + weight3 * val3;
+
+	}
+
+	public static VectorXZ interpolateOnTriangle(VectorXZ point, TriangleXZ t, VectorXZ val1, VectorXZ val2, VectorXZ val3) {
+		double x = interpolateOnTriangle(point, t, val1.x, val2.x, val3.x);
+		double z = interpolateOnTriangle(point, t, val1.z, val2.z, val3.z);
+		return new VectorXZ(x, z);
+	}
+
 	/**
 	 * distributes points along a line segment.
 	 *

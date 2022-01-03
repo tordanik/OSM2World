@@ -1,5 +1,10 @@
 package org.osm2world.core.target.common.material;
 
+import static java.lang.Math.floor;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.math.NumberUtils.min;
+import static org.osm2world.core.math.GeometryUtil.interpolateOnTriangle;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -10,10 +15,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
+import org.osm2world.core.target.common.material.TextureLayer.TextureType;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
@@ -40,7 +48,8 @@ public class TextureCam {
 
 		Map<TriangleXZ, Double> heightMap = new HashMap<>();
 		Map<TriangleXZ, Material> materialMap = new HashMap<>();
-		Map<TriangleXZ, List<VectorXZ>> texCoordMap = new HashMap<>(); //TODO: use this, add normals and vertex colors
+		Map<TriangleXZ, List<List<VectorXZ>>> texCoordMap = new HashMap<>();
+		//TODO: add maps for normals and vertex colors
 
 		for (Mesh mesh : meshes) {
 
@@ -57,8 +66,20 @@ public class TextureCam {
 				TriangleXZ tXZ = new TriangleXZ(t.v1.xz(), t.v2.xz(), t.v3.xz());
 
 				if (!tXZ.isDegenerateOrNaN()) {
+
 					materialMap.put(tXZ, mesh.material);
 					heightMap.put(tXZ, t.getCenter().y); // FIXME using the center doesn't work in less simple cases
+
+					List<List<VectorXZ>> texCoords = new ArrayList<>();
+					for (int layer = 0; layer < tg.texCoords().size(); layer++) {
+						texCoords.add(asList(
+								tg.texCoords().get(layer).get(3 * i),
+								tg.texCoords().get(layer).get(3 * i + 1),
+								tg.texCoords().get(layer).get(3 * i + 2)));
+					}
+
+					texCoordMap.put(tXZ, texCoords);
+
 				}
 
 			}
@@ -91,18 +112,19 @@ public class TextureCam {
 					}
 				}
 
-				Optional<TriangleXZ> t = intersectedTriangles.stream().max(Comparator.comparingDouble(heightMap::get));
+				Optional<TriangleXZ> optionalT = intersectedTriangles.stream().max(Comparator.comparingDouble(heightMap::get));
 
-				if (!t.isPresent()) {
+				if (!optionalT.isPresent()) {
 					colorImage.setRGB(x, y, TRANSPARENT_RGB);
 				} else {
-					Material m = materialMap.get(t.get());
-					LColor c = LColor.fromAWT(m.color);
-					if (m.getNumTextureLayers() > 0) {
-						c = m.getTextureLayers().get(0).baseColorTexture.getAverageColor();
-						// TODO use texture coordinates to pick the color in that location, not just the average one
+					TriangleXZ t = optionalT.get();
+					Material m = materialMap.get(t);
+					VectorXZ texCoord = null;
+					if (texCoordMap.size() > 0) {
+						texCoord = interpolateOnTriangle(point, t, texCoordMap.get(t).get(0).get(0),
+								texCoordMap.get(t).get(0).get(1), texCoordMap.get(t).get(0).get(2));
 					}
-					// TODO multiply material color, vertex colors (if any) and layer color
+					LColor c = pickColorAtTexCoord(TextureType.BASE_COLOR, texCoord, m);
 					colorImage.setRGB(x, y, c.toAWT().getRGB());
 				}
 
@@ -121,6 +143,41 @@ public class TextureCam {
 				new RenderedTexture(displacementImage, name + " displacement",
 						width, height, widthPerEntity, heightPerEntity, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
 				false);
+
+	}
+
+	private static LColor pickColorAtTexCoord(TextureType textureType, @Nullable VectorXZ texCoord, Material material) {
+
+		LColor c = LColor.fromAWT(material.color);
+
+		if (material.getNumTextureLayers() > 0) { // TODO support multiple texture layers
+
+			TextureData texture = material.getTextureLayers().get(0).getTexture(textureType);
+
+			if (texture != null && texCoord != null) {
+
+				double texX = texCoord.x % 1;
+				double texZ = texCoord.z % 1;
+
+				while (texX < 0) texX += 1.0;
+				while (texZ < 0) texZ += 1.0;
+
+				BufferedImage image = texture.getBufferedImage();
+				int x = min((int)floor(image.getWidth() * texX), image.getWidth() - 1);
+				int y = min((int)floor(image.getHeight() * texZ), image.getHeight() - 1);
+				LColor textureColor = LColor.fromAWT(new Color(image.getRGB(x, y)));
+
+				if (material.getTextureLayers().get(0).colorable) {
+					c = c.multiply(textureColor);
+				} else {
+					c = textureColor;
+				}
+
+			}
+
+		}
+
+		return c;
 
 	}
 

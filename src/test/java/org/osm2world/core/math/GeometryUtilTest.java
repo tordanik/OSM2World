@@ -134,6 +134,19 @@ public class GeometryUtilTest {
 	}
 
 	@Test
+	public void testInterpolateOnTriangle() {
+
+		TriangleXZ t = new TriangleXZ(new VectorXZ(0, 10), new VectorXZ(10, 0), new VectorXZ(20, 10));
+
+		assertEquals(1, interpolateOnTriangle(t.v1, t, 1, -100, 3), 0.01);
+		assertEquals(-100, interpolateOnTriangle(t.v2, t, 1, -100, 3), 0.01);
+		assertEquals(3, interpolateOnTriangle(t.v3, t, 1, -100, 3), 0.01);
+
+		assertEquals(2.0, interpolateOnTriangle(new VectorXZ(10, 10), t, 1, -100, 3), 0.01);
+
+	}
+
+	@Test
 	public void testEquallyDistributePointsAlong1StartEnd() {
 
 		List<VectorXZ> result1 = equallyDistributePointsAlong(
