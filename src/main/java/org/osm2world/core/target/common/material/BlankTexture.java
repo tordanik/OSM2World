@@ -19,12 +19,12 @@ public class BlankTexture extends RuntimeTexture {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage(Resolution resolution) {
+	protected BufferedImage createBufferedImage(Resolution resolution) {
 		return new BufferedImage(resolution.width, resolution.height, BufferedImage.TYPE_INT_RGB);
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
+	protected BufferedImage createBufferedImage() {
 		return getBufferedImage(new Resolution(128, 128));
 	}
 

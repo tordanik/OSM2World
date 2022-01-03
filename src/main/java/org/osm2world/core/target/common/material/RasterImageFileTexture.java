@@ -19,7 +19,7 @@ public class RasterImageFileTexture extends ImageFileTexture {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
+	protected BufferedImage createBufferedImage() {
 		try {
 			return ImageIO.read(this.file);
 		} catch (IOException e) {

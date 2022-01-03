@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -53,6 +55,12 @@ public abstract class TextureData {
 	/** cached result of {@link #getAverageColor()} */
 	private LColor averageColor = null;
 
+	/** cached result of {@link #getBufferedImage()} */
+	private BufferedImage bufferedImage = null;
+
+	/** cached result of {@link #getBufferedImage(Resolution)} */
+	private final Map<Resolution, BufferedImage> bufferedImageByResolution = new HashMap<>();
+
 	protected TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			Wrap wrap, @Nullable  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 
@@ -82,12 +90,27 @@ public abstract class TextureData {
 	 *
 	 * @param resolution  parameter to request a specific resolution
 	 */
-	public BufferedImage getBufferedImage(Resolution resolution) {
-		return getScaledImage(getBufferedImage(), resolution);
+	public final BufferedImage getBufferedImage(Resolution resolution) {
+		if (!bufferedImageByResolution.containsKey(resolution)) {
+			bufferedImageByResolution.put(resolution, createBufferedImage(resolution));
+		}
+		return bufferedImageByResolution.get(resolution);
 	}
 
 	/** see {@link #getBufferedImage(Resolution)} */
-	public abstract BufferedImage getBufferedImage();
+	public final BufferedImage getBufferedImage() {
+		if (bufferedImage == null) {
+			bufferedImage = createBufferedImage();
+			bufferedImageByResolution.put(Resolution.of(bufferedImage), bufferedImage);
+		}
+		return bufferedImage;
+	}
+
+	protected BufferedImage createBufferedImage(Resolution resolution) {
+		return getScaledImage(getBufferedImage(), resolution);
+	}
+
+	protected abstract BufferedImage createBufferedImage();
 
 	/**
 	 * returns the texture as a data URI containing a raster image.

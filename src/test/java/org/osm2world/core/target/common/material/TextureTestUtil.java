@@ -18,7 +18,7 @@ class TextureTestUtil {
 	static final TextureData drawTestTexture(BiConsumer<Resolution, Graphics2D> drawImpl) {
 		return new RuntimeTexture(1, 1, null, null, Wrap.REPEAT, GLOBAL_X_Z) {
 			@Override
-			public BufferedImage getBufferedImage() {
+			protected BufferedImage createBufferedImage() {
 				Resolution res = new Resolution(128, 128);
 				BufferedImage image = new BufferedImage(res.width, res.height, BufferedImage.TYPE_INT_ARGB);
 				drawImpl.accept(res, image.createGraphics());

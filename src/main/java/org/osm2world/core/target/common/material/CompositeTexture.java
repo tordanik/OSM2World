@@ -37,7 +37,7 @@ public class CompositeTexture extends RuntimeTexture {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
+	protected BufferedImage createBufferedImage() {
 
 		/* obtain images and dimensions */
 

@@ -137,7 +137,7 @@ public class TextureCam {
 		}
 
 		@Override
-		public BufferedImage getBufferedImage() {
+		protected BufferedImage createBufferedImage() {
 			return image;
 		}
 
