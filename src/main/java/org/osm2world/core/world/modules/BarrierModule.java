@@ -43,9 +43,14 @@ import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -130,7 +135,8 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject {
+	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject
+			implements LegacyWorldObject {
 
 		protected final double height;
 		protected final double width;
@@ -879,7 +885,12 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
+			return emptyList(); // all meshes are in sub-models
+		}
+
+		@Override
+		public List<ModelInstance> getSubModels() {
 
 			//TODO connect the bollards to the ground independently
 
@@ -888,9 +899,9 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(2, false, getCenterline());
 
-			for (VectorXYZ base : bollardPositions) {
-				bollardModel.render(target, base, 0, null, null, null);
-			}
+			return bollardPositions.stream()
+					.map(base -> new ModelInstance(bollardModel, new InstanceParameters(base, 0, null, null, null)))
+					.collect(toList());
 
 		}
 
@@ -971,8 +982,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
-			target.drawColumn(Materials.CONCRETE, null, position, height, width/2, width/2, false, true);
+		public List<Mesh> buildMeshes(InstanceParameters params) {
+			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position, height,
+					width/2, width/2, false, true, null, CONCRETE.getTextureDimensions()), CONCRETE));
 		}
 
 		@Override
@@ -1016,7 +1028,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
+		public List<Mesh> buildMeshes(InstanceParameters params) {
 
 			double radius = width / 2;
 			double splitHeight = max(0, height - radius);
@@ -1048,9 +1060,10 @@ public class BarrierModule extends AbstractModule {
 			}
 
 			List<VectorXYZ> path = new ArrayList<>();
-			heights.forEach(it -> path.add(position.addY(it)));
+			heights.forEach(it -> path.add(params.position.addY(it)));
 
-			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, radius), path, null, scaleFactors, null, null);
+			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
+					path, null, scaleFactors, null, null, CONCRETE.getTextureDimensions()), CONCRETE));
 
 		}
 

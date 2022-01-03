@@ -23,9 +23,10 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
-import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
@@ -148,7 +149,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	/** some linear "road" on an airport, e.g. a runway or taxiway */
 	public static abstract class AerowaySegment extends AbstractNetworkWaySegmentWorldObject
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		final float centerlineWidthMeters;
 

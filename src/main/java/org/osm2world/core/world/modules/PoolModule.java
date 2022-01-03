@@ -32,6 +32,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -103,7 +104,7 @@ public class PoolModule extends AbstractModule {
 		}
 	}
 
-	private static class WaterSlide implements WaySegmentWorldObject {
+	private static class WaterSlide implements WaySegmentWorldObject, LegacyWorldObject {
 
 		private static final Color DEFAULT_COLOR = ORANGE;
 

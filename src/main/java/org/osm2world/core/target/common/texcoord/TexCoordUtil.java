@@ -25,11 +25,10 @@ public final class TexCoordUtil {
 	private TexCoordUtil() {}
 
 	/**
-	 * calculates the texture coordinate lists based on the
-	 * {@link TexCoordFunction} associated with each {@link TextureLayer}
+	 * returns the texture coordinate functions based on the
+	 * {@link TexCoordFunction} associated with each {@link TextureLayer} and a default
 	 */
-	public static final List<List<VectorXZ>> texCoordLists(
-			List<VectorXYZ> vs, Material material,
+	public static final List<TexCoordFunction> texCoordFunctions(Material material,
 			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
 
 		List<TextureLayer> textureLayers = material.getTextureLayers();
@@ -46,11 +45,11 @@ public final class TexCoordUtil {
 				coordFunction = defaultCoordFunctionGenerator.apply(textureData.dimensions());
 			}
 
-			return singletonList(coordFunction.apply(vs));
+			return singletonList(coordFunction);
 
 		} else {
 
-			List<List<VectorXZ>> result = new ArrayList<>();
+			List<TexCoordFunction> result = new ArrayList<>();
 
 			for (TextureLayer textureLayer : textureLayers) {
 
@@ -61,12 +60,29 @@ public final class TexCoordUtil {
 					coordFunction = defaultCoordFunctionGenerator.apply(textureData.dimensions());
 				}
 
-				result.add(coordFunction.apply(vs));
+				result.add(coordFunction);
 
 			}
 
 			return result;
 
+		}
+
+	}
+
+	/**
+	 * calculates the texture coordinate lists based on the
+	 * {@link TexCoordFunction} associated with each {@link TextureLayer}
+	 */
+	public static final List<List<VectorXZ>> texCoordLists(List<VectorXYZ> vs, Material material,
+			Function<TextureDataDimensions, ? extends TexCoordFunction> defaultCoordFunctionGenerator) {
+
+		List<TexCoordFunction> texCoordFunctions = texCoordFunctions(material, defaultCoordFunctionGenerator);
+
+		switch (texCoordFunctions.size()) {
+		case 0: return emptyList();
+		case 1: return singletonList(texCoordFunctions.get(0).apply(vs));
+		default: return texCoordFunctions.stream().map(it -> it.apply(vs)).collect(toList());
 		}
 
 	}

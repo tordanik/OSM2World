@@ -33,6 +33,7 @@ import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
@@ -107,7 +108,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Waterway extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
+	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public Waterway(MapWaySegment line) {
 			super(line);

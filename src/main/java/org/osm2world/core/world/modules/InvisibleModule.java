@@ -1,5 +1,9 @@
 package org.osm2world.core.world.modules;
 
+import static java.util.Collections.emptyList;
+
+import java.util.List;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapElement;
@@ -8,6 +12,7 @@ import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
@@ -94,8 +99,8 @@ public class InvisibleModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
-			// no rendering
+		public List<Mesh> buildMeshes() {
+			return emptyList();
 		}
 
 	}

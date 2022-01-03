@@ -51,7 +51,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -1122,7 +1122,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		}
 
-		private static class ClockFace implements Model {
+		private static class ClockFace implements LegacyModel {
 
 			private final LocalTime time;
 

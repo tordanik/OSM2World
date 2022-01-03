@@ -18,6 +18,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -58,7 +59,7 @@ public class CliffModule extends ConfigurableWorldModule {
 	}
 
 	private abstract static class AbstractCliff extends AbstractNetworkWaySegmentWorldObject
-			implements TerrainBoundaryWorldObject {
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		protected AbstractCliff(MapWaySegment segment) {
 			super(segment);

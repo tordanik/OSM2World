@@ -38,6 +38,10 @@ import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Geometry;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -240,7 +244,8 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	public static final class BicycleStandsWay extends BicycleStands implements WaySegmentWorldObject {
+	public static final class BicycleStandsWay extends BicycleStands
+			implements WaySegmentWorldObject, LegacyWorldObject {
 
 		private final MapWay way;
 		private final MapWaySegment waySegment;
@@ -299,20 +304,18 @@ public class BicycleParkingModule extends AbstractModule {
 			this.length = length;
 		}
 
-
-
 		@Override
-		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
+		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			VectorXYZ toFront = VectorXZ.fromAngle(direction).mult(length / 2).xyz(0);
+			VectorXYZ toFront = VectorXZ.fromAngle(params.direction).mult(length / 2).xyz(0);
 
 			List<VectorXYZ> path = asList(
-					position.add(toFront),
-					position.add(toFront).addY(height * 0.95),
-					position.add(toFront.mult(0.95)).addY(height),
-					position.add(toFront.invert().mult(0.95)).addY(height),
-					position.add(toFront.invert()).addY(height * 0.95),
-					position.add(toFront.invert()));
+					params.position.add(toFront),
+					params.position.add(toFront).addY(height * 0.95),
+					params.position.add(toFront.mult(0.95)).addY(height),
+					params.position.add(toFront.invert().mult(0.95)).addY(height),
+					params.position.add(toFront.invert()).addY(height * 0.95),
+					params.position.add(toFront.invert()));
 
 			List<VectorXYZ> upVectors = asList(
 					toFront.normalize(),
@@ -322,7 +325,10 @@ public class BicycleParkingModule extends AbstractModule {
 					toFront.invert().normalize(),
 					toFront.invert().normalize());
 
-			target.drawExtrudedShape(STEEL, STAND_SHAPE, path, upVectors, null, null, null);
+			Geometry geom = new ExtrusionGeometry(STAND_SHAPE, path, upVectors, null, null, null,
+					STEEL.getTextureDimensions());
+
+			return asList(new Mesh(geom, STEEL));
 
 		}
 

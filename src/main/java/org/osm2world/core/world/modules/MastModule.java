@@ -17,6 +17,7 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -68,7 +69,7 @@ public class MastModule extends AbstractModule {
 
 	}
 
-	private static final Model MOBILE_PHONE_ANTENNA_MODEL = new Model() {
+	private static final Model MOBILE_PHONE_ANTENNA_MODEL = new LegacyModel() {
 
 		@Override
 		public void render(Target target, VectorXYZ position, double direction, Double height, Double width,

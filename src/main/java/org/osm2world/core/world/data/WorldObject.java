@@ -2,6 +2,7 @@ package org.osm2world.core.world.data;
 
 import static java.util.Collections.emptyList;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 
@@ -23,6 +26,15 @@ public interface WorldObject {
 	 * returns the meshes making up this {@link WorldObject}.
 	 */
 	public List<Mesh> buildMeshes();
+
+	/**
+	 * returns the meshes making up this {@link WorldObject}, including {@Link #getSubModels()}.
+	 */
+	public default List<Mesh> buildMeshesForModelHierarchy() {
+		List<Mesh> result = new ArrayList<>(buildMeshes());
+		getSubModels().forEach(it -> result.addAll(it.model.buildMeshes(it.params)));
+		return result;
+	}
 
 	/**
 	 * returns the "primary" {@link MapElement} for this WorldObject;
@@ -37,6 +49,12 @@ public interface WorldObject {
 	 * will have their {@link Renderable#renderTo(org.osm2world.core.target.Target)} methods called.
 	 */
 	public default @Nullable WorldObject getParent() { return null; }
+
+	/**
+	 * returns instances of {@link Model}s that are part of this {@link WorldObject}.
+	 * Together with the result of {@link #buildMeshes()}, these compose the visual appearance of this object.
+	 */
+	public default List<ModelInstance> getSubModels() { return emptyList(); }
 
 	/**
 	 * returns whether this feature is on, above or below the ground.

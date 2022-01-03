@@ -49,6 +49,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.enums.LeftRight;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -710,7 +711,8 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/** representation of a road */
-	public static class Road extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
+	public static class Road extends AbstractNetworkWaySegmentWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		protected static final double DEFAULT_LANE_WIDTH = 3.5f;
 

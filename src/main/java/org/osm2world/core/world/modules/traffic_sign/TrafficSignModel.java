@@ -24,12 +24,12 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
-import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.LegacyModel;
 
 /**
  * 3D model of a single traffic sign. A {@link TrafficSignGroup} has one or more of these.
  */
-public class TrafficSignModel implements Model {
+public class TrafficSignModel implements LegacyModel {
 
 	/**
 	 * the material of the front of the sign.

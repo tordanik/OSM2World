@@ -55,11 +55,13 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -233,7 +235,7 @@ public final class PowerModule extends AbstractModule {
 	public static final class WindTurbine extends NoOutlineNodeWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
-		public static final Model ROTOR = new Model() {
+		public static final Model ROTOR = new LegacyModel() {
 
 			@Override
 			public void render(Target target, VectorXYZ position,
@@ -358,7 +360,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private static class PowerMinorLine extends NoOutlineWaySegmentWorldObject {
+	private static class PowerMinorLine extends NoOutlineWaySegmentWorldObject implements LegacyWorldObject {
 
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
@@ -392,7 +394,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private final static class PowerLine extends NoOutlineWaySegmentWorldObject {
+	private final static class PowerLine extends NoOutlineWaySegmentWorldObject implements LegacyWorldObject {
 
 		private static final float CABLE_THICKNESS = 0.05f;
 		// TODO: we need black plastic for cable material

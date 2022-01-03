@@ -6,7 +6,7 @@ import org.osm2world.core.target.Target;
 /**
  * A model referencing an external resource, such as an URI
  */
-public class ExternalResourceModel implements Model {
+public class ExternalResourceModel implements LegacyModel {
 
 	private final String resourceIdentifier;
 

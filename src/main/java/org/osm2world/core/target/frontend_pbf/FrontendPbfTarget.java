@@ -7,7 +7,6 @@ import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SUR
 import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD2;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
@@ -78,7 +77,6 @@ import org.osm2world.core.world.modules.BarrierModule.CylinderBollard;
 import org.osm2world.core.world.modules.BarrierModule.HandRail;
 import org.osm2world.core.world.modules.BicycleParkingModule.BicycleStands;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
-import org.osm2world.core.world.modules.RailwayModule.Rail;
 import org.osm2world.core.world.modules.StreetFurnitureModule.Bench;
 import org.osm2world.core.world.modules.StreetFurnitureModule.GritBin;
 import org.osm2world.core.world.modules.StreetFurnitureModule.PostBox;
@@ -374,14 +372,6 @@ public class FrontendPbfTarget extends MeshTarget {
 					objectBuilder.setMinLod(2);
 				}
 
-				if (worldObject instanceof Rail) {
-					if (extrusionGeometries.isEmpty()) {
-						objectBuilder.setMaxLod(2);
-					} else {
-						objectBuilder.setMinLod(3);
-					}
-				}
-
 			}
 
 			objectBuilder.addAllTriangleGeometries(triangleGeometries);
@@ -529,14 +519,6 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		currentObjectBuilder = new WorldObjectBuilder(object);
 
-		/* give special treatment for railways (multiple levels of detail) */
-
-		if (object instanceof Rail) {
-			((Rail)object).renderTo(this, LOD2);
-			finishCurrentObject();
-			currentObjectBuilder = new WorldObjectBuilder(object);
-		}
-
 	}
 
 	@Override
@@ -674,14 +656,9 @@ public class FrontendPbfTarget extends MeshTarget {
 	}
 
 	private FrontendPbf.WorldObject convertModel(Model m) {
-
-		MeshTarget target = new MeshTarget();
-		target.drawModel(m, NULL_VECTOR, 0.0, 1.0, null, null);
-
 		WorldObjectBuilder objectBuilder = new WorldObjectBuilder(null);
-		target.getMeshes().forEach(it -> objectBuilder.drawMesh(it));
+		m.buildMeshes(new InstanceParameters(NULL_VECTOR, 0.0, 1.0, null, null)).forEach(it -> objectBuilder.drawMesh(it));
 		return objectBuilder.build();
-
 	}
 
 	/**

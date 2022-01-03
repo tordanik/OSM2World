@@ -20,6 +20,7 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.TreeModule.Forest;
@@ -28,7 +29,7 @@ import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 /**
  * common superclass for bridges and tunnels
  */
-public abstract class BridgeOrTunnel implements WaySegmentWorldObject {
+public abstract class BridgeOrTunnel implements WaySegmentWorldObject, LegacyWorldObject {
 
 	protected final MapWaySegment segment;
 	protected final AbstractNetworkWaySegmentWorldObject primaryRep;

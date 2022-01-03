@@ -27,10 +27,11 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -310,7 +311,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private final class TreeModel implements Model {
+	private final class TreeModel implements LegacyModel {
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -388,7 +389,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	public class TreeRow implements WaySegmentWorldObject, RenderableToPOVRay {
+	public class TreeRow implements WaySegmentWorldObject, RenderableToPOVRay, LegacyWorldObject {
 
 		private final MapWaySegment segment;
 
