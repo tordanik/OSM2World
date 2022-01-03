@@ -322,11 +322,10 @@ public class MeshTarget extends AbstractTarget {
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
 
-			Set<TextureLayer> result1 = new HashSet<>();
-			for (Mesh mesh1 : meshStore.meshes()) {
-				result1.addAll(mesh1.material.getTextureLayers());
+			Set<TextureLayer> textureLayersForAtlas = new HashSet<>();
+			for (Mesh mesh : meshStore.meshes()) {
+				textureLayersForAtlas.addAll(mesh.material.getTextureLayers());
 			}
-			Set<TextureLayer> textureLayersForAtlas = result1;
 
 			for (Mesh mesh : meshStore.meshes()) {
 				List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords();
@@ -337,6 +336,8 @@ public class MeshTarget extends AbstractTarget {
 					}
 				}
 			}
+
+			if (textureLayersForAtlas.isEmpty()) return meshStore;
 
 			TextureAtlasGroup atlasGroup = new TextureAtlasGroup(new ArrayList<>(textureLayersForAtlas));
 
