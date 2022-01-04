@@ -71,9 +71,7 @@ public class TriangleGeometry implements Geometry {
 		this.normalData = new ExplicitNormals(normals);
 		this.colors = colors;
 
-		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
-			throw new InvalidGeometryException("degenerate triangle");
-		}
+		validate();
 
 	}
 
@@ -86,8 +84,28 @@ public class TriangleGeometry implements Geometry {
 		this.normalData = new CalculatedNormals(normalMode);
 		this.colors = colors;
 
+		validate();
+
+	}
+
+	/* perform validation during construction */
+	private void validate() {
+
 		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
 			throw new InvalidGeometryException("degenerate triangle");
+		}
+
+		boolean assertionsEnabled = false;
+		assert assertionsEnabled = true;
+
+		if (assertionsEnabled) {
+
+			List<VectorXYZ> vs = triangles.stream().flatMap(t -> t.verticesNoDup().stream()).collect(toList());
+
+			for (TexCoordFunction f : texCoordFunctions) {
+				assert f.apply(vs).size() == vs.size() : "incorrect texcoord function result";
+			}
+
 		}
 
 	}
@@ -255,19 +273,6 @@ public class TriangleGeometry implements Geometry {
 
 			if (texCoordFunctions == null) {
 				throw new IllegalStateException("texCoordFunctions has not been set yet");
-			}
-
-			boolean assertionsEnabled = false;
-			assert assertionsEnabled = true;
-
-			if (assertionsEnabled) {
-
-				List<VectorXYZ> vs = triangles.stream().flatMap(t -> t.verticesNoDup().stream()).collect(toList());
-
-				for (TexCoordFunction f : texCoordFunctions) {
-					assert f.apply(vs).size() == vs.size() : "incorrect texcoord function result";
-				}
-
 			}
 
 			/* set colors to null if all values are null */
