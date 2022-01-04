@@ -10,6 +10,7 @@ import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
@@ -984,7 +985,7 @@ public class BarrierModule extends AbstractModule {
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position, height,
-					width/2, width/2, false, true, null, CONCRETE.getTextureDimensions()), CONCRETE));
+					width/2, width/2, false, true, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
 		}
 
 		@Override
@@ -1063,7 +1064,7 @@ public class BarrierModule extends AbstractModule {
 			heights.forEach(it -> path.add(params.position.addY(it)));
 
 			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
-					path, null, scaleFactors, null, null, CONCRETE.getTextureDimensions()), CONCRETE));
+					path, null, scaleFactors, null, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
 
 		}
 

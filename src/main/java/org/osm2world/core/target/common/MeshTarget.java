@@ -46,7 +46,7 @@ public class MeshTarget extends AbstractTarget {
 
 	protected final MeshStore meshStore = new MeshStore();
 
-	private WorldObject currentWorldObject = null;
+	protected WorldObject currentWorldObject = null;
 
 	@Override
 	public void beginObject(WorldObject object) {
