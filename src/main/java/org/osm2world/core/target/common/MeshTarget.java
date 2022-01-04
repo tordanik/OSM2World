@@ -34,6 +34,8 @@ import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.ShapeGeometry;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.target.common.texcoord.GlobalXYTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.color.LColor;
@@ -435,7 +437,8 @@ public class MeshTarget extends AbstractTarget {
 					List<VectorXZ>[] oldTexCoords = new List[tg.texCoordFunctions.size()];
 
 					for (int layer = 0; layer < tg.texCoordFunctions.size(); layer++) {
-						if (tg.texCoordFunctions.get(layer) instanceof PrecomputedTexCoordFunction) {
+						if (!(tg.texCoordFunctions.get(layer) instanceof GlobalXZTexCoordFunction)
+								&& !(tg.texCoordFunctions.get(layer) instanceof GlobalXYTexCoordFunction)) {
 							oldTexCoords[layer] = tg.texCoordFunctions.get(layer).apply(tg.vertices());
 						}
 					}
