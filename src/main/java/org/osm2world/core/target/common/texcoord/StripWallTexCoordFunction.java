@@ -1,11 +1,10 @@
 package org.osm2world.core.target.common.texcoord;
 
 import static java.lang.Math.round;
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -65,8 +64,9 @@ public class StripWallTexCoordFunction implements TexCoordFunction {
 		}
 
 		if (textureDimensions.heightPerEntity != null) {
-			List<Double> yValues = vs.stream().map(v -> v.y).collect(toList());
-			double totalHeight = max(yValues) - min(yValues);
+			double totalHeight = IntStream.range(0, vs.size() / 2)
+					.mapToDouble(i -> vs.get(2 * i).distanceTo(vs.get(2 * i + 1)))
+					.max().getAsDouble();
 			long entities = Long.max(1, round(totalHeight / textureDimensions.heightPerEntity));
 			double textureRepeats = entities / (textureDimensions.height / textureDimensions.heightPerEntity);
 			height = totalHeight / textureRepeats;
