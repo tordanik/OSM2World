@@ -256,7 +256,7 @@ public class ExtrusionGeometry implements Geometry {
 			double totalShapeLength = new PolylineXZ(shape.vertices()).getLength();
 
 			for (int pathI = 0; pathI < path.size(); pathI ++) {
-				for (int j = 0; j < shape.vertices().size() - 1; j++) {
+				for (int j = 0; j < shape.vertices().size(); j++) {
 
 					VectorXZ texCoord;
 
