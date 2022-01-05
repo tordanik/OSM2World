@@ -33,9 +33,9 @@ public class TextureAtlasTest {
 		assertEquals(WHITE, new Color(atlasImage.getRGB(1 * atlasImage.getWidth() / 4, 3 * atlasImage.getHeight() / 4)));
 		assertEquals(BLACK, new Color(atlasImage.getRGB(3 * atlasImage.getWidth() / 4, 3 * atlasImage.getHeight() / 4)));
 
-		assertAlmostEquals(0, 0, atlas.mapTexCoord(testTextures.get(0), new VectorXZ(0, 0)));
-		assertAlmostEquals(0.25, 0.5, atlas.mapTexCoord(testTextures.get(0), new VectorXZ(0.5, 1.0)));
-		assertAlmostEquals(0.25, 1.0, atlas.mapTexCoord(testTextures.get(2), new VectorXZ(0.5, 1.0)));
+		assertAlmostEquals(0, 0.5, atlas.mapTexCoord(testTextures.get(0), new VectorXZ(0, 0)));
+		assertAlmostEquals(0.25, 1.0, atlas.mapTexCoord(testTextures.get(0), new VectorXZ(0.5, 1.0)));
+		assertAlmostEquals(0.25, 0.5, atlas.mapTexCoord(testTextures.get(2), new VectorXZ(0.5, 1.0)));
 
 	}
 
