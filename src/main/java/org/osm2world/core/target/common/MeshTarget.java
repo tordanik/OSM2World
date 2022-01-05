@@ -116,9 +116,13 @@ public class MeshTarget extends AbstractTarget {
 			SEPARATE_NORMAL_MODES,
 
 			/** whether meshes should be kept separate if they have different {@link Material#getColor()} */
-			SINGLE_COLOR_MESHES
+			SINGLE_COLOR_MESHES,
 
-			// TODO: add PRESERVE_GEOMETRY_TYPES option
+			/**
+			 * whether specialized {@link Geometry} types (such as {@link ExtrusionGeometry} and {@link ShapeGeometry})
+			 * should be preserved in separate meshes instead of being converted to {@link TriangleGeometry}
+			 */
+			PRESERVE_GEOMETRY_TYPES
 
 		}
 
@@ -138,6 +142,12 @@ public class MeshTarget extends AbstractTarget {
 
 			if (!options.contains(MergeOption.MERGE_ELEMENTS)
 					&& !Objects.equals(m1.metadata, m2.metadata)) {
+				return false;
+			}
+
+			if (options.contains(MergeOption.PRESERVE_GEOMETRY_TYPES)
+					&& (!Objects.equals(m1.mesh.geometry.getClass(), TriangleGeometry.class)
+							|| !Objects.equals(m2.mesh.geometry.getClass(), TriangleGeometry.class))) {
 				return false;
 			}
 

@@ -689,7 +689,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		MeshStore meshStore = this.meshStore.process(asList(
 				new ClipToBounds(bbox),
 				new GenerateTextureAtlas(),
-				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES))
+				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
 				));
 
 		/* convert all WorldObjects */
