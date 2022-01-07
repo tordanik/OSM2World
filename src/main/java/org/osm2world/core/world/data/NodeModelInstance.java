@@ -6,7 +6,6 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.model.Model;
 
-
 public class NodeModelInstance extends NoOutlineNodeWorldObject {
 
 	public final Model model;

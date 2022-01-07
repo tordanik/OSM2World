@@ -14,6 +14,8 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.mesh.ExtrusionGeometry.createColumn;
+import static org.osm2world.core.target.common.mesh.MeshUtil.createBox;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
@@ -32,6 +34,7 @@ import java.util.Map;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -51,12 +54,16 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -116,9 +123,11 @@ public class StreetFurnitureModule extends AbstractModule {
 				&& node.getTags().containsAny(asList("operator", "brand"), null)) {
 			node.addRepresentation(new Phone(node));
 		}
-		if (node.getTags().contains("amenity", "vending_machine")
-				&& (node.getTags().containsAny(asList("vending"), asList("parcel_pickup;parcel_mail_in", "parcel_mail_in")))) {
-			node.addRepresentation(new ParcelMachine(node));
+		if (node.getTags().contains("amenity", "parcel_locker")
+				|| (node.getTags().contains("amenity", "vending_machine") && (node.getTags().containsAny(
+						asList("vending"), asList("parcel_pickup;parcel_mail_in", "parcel_mail_in"))))) {
+			node.addRepresentation(new NodeModelInstance(node,
+					new ParcelLocker(node.getTags()), parseDirection(node.getTags(), PI)));
 		}
 		if (node.getTags().contains("amenity", "vending_machine")
 				&& (node.getTags().containsAny(asList("vending"), asList("bicycle_tube", "cigarettes", "condoms")))) {
@@ -1722,77 +1731,71 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
+	public static final class ParcelLocker implements Model {
 
-	public static final class ParcelMachine extends NoOutlineNodeWorldObject {
+		private final TagSet tags;
 
-		public ParcelMachine(MapNode node) {
-			super(node);
+		public ParcelLocker(TagSet tags) {
+			this.tags = tags;
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
-		public void renderTo(Target target) {
-
-			double ele = getBase().y;
-
-			double directionAngle = parseDirection(node.getTags(), PI);
+		public List<Mesh> buildMeshes(InstanceParameters params) {
 
 			Material boxMaterial = POSTBOX_DEUTSCHEPOST;
 			Material otherMaterial = STEEL;
 
-			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+			VectorXZ faceVector = VectorXZ.fromAngle(params.direction);
 			VectorXZ rightVector = faceVector.rightNormal();
 
 			// shape depends on type
-			if (node.getTags().contains("type", "Rondell")) {
+			if (tags.containsAny(asList("packstation_type", "type"), asList("Rondell", "circular"))) {
 
-				double height = parseHeight(node.getTags(), 2.2f);
-				double width = parseWidth(node.getTags(), 3f);
+				double height = parseHeight(tags, 2.2f);
+				double width = parseWidth(tags, 3f);
 				double rondelWidth = width * 2 / 3;
 				double boxWidth = width * 1 / 3;
 				double roofOverhang = 0.3f;
 
-				/* draw rondel */
-				target.drawColumn(boxMaterial, null,
-						getBase().add(rightVector.mult(-rondelWidth / 2)),
-						height, rondelWidth / 2, rondelWidth / 2, false, true);
-				/* draw box */
-				target.drawBox(boxMaterial,
-						getBase().add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
-						faceVector, height, boxWidth, boxWidth);
-				/* draw roof */
-				target.drawColumn(otherMaterial, null,
-						getBase().addY(height),
-						0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true);
+				return asList(
+						/* rondel */
+						new Mesh(createColumn(null, params.position.add(rightVector.mult(-rondelWidth / 2)),
+								height, rondelWidth / 2, rondelWidth / 2, false, true,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+						/* box */
+						new Mesh(createBox(params.position.add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
+								faceVector, height, boxWidth, boxWidth,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+						/* roof */
+						new Mesh(createColumn(null, params.position.addY(height),
+								0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true,
+								otherMaterial.getColor(), otherMaterial.getTextureDimensions()), otherMaterial));
 
-			} else if (node.getTags().contains("type", "Paketbox")) {
+			} else if (tags.containsAny(asList("packstation_type", "type"), asList("Paketbox", "parcel_box"))) {
 
-				double height = parseHeight(node.getTags(), 1.5);
-				double width = parseHeight(node.getTags(), 1.0);
+				double height = parseHeight(tags, 1.5);
+				double width = parseHeight(tags, 1.0);
 				double depth = width;
 
-				target.drawBox(boxMaterial, getBase(),
-						faceVector, height, width * 2, depth * 2);
+				return asList(new Mesh(createBox(params.position, faceVector, height, width * 2, depth * 2,
+						boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
 
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
 
-				double height = parseHeight(node.getTags(), 2.2);
-				double width = parseWidth(node.getTags(), 3.5);
+				double height = parseHeight(tags, 2.2);
+				double width = parseWidth(tags, 3.5);
 				double depth = width / 3;
 				double roofOverhang = 0.3f;
 
-				/* draw box */
-				target.drawBox(boxMaterial,
-						getBase(),
-						faceVector, height, width, depth);
-				/*  draw small roof */
-				target.drawBox(otherMaterial,
-						node.getPos().add(faceVector.mult(roofOverhang)).xyz(ele + height),
-						faceVector, 0.1, width, depth + roofOverhang * 2);
+				return asList(
+						/* box */
+						new Mesh(createBox(params.position,
+								faceVector, height, width, depth,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+						/* small roof */
+						new Mesh(createBox(params.position.add(faceVector.mult(roofOverhang)).addY(height),
+								faceVector, 0.1, width, depth + roofOverhang * 2,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
 
 			}
 
