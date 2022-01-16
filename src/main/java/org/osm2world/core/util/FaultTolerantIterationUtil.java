@@ -12,12 +12,12 @@ final public class FaultTolerantIterationUtil {
 	private FaultTolerantIterationUtil() { }
 
 	public static final <T> void forEach(Iterable<? extends T> iterable,
-			Consumer<? super T> action, BiConsumer<? super Exception, ? super T> exceptionHandler) {
+			Consumer<? super T> action, BiConsumer<? super Throwable, ? super T> exceptionHandler) {
 
 		for (T t : iterable) {
 			try {
 				action.accept(t);
-			} catch (Exception e) {
+			} catch (Exception | AssertionError e) {
 				exceptionHandler.accept(e, t);
 			}
 		}
@@ -32,7 +32,7 @@ final public class FaultTolerantIterationUtil {
 	}
 
 	/** a default exception handler that prints to System.err */
-	public static final BiConsumer<Exception, Object> DEFAULT_EXCEPTION_HANDLER = (Exception e, Object o) -> {
+	public static final BiConsumer<Throwable, Object> DEFAULT_EXCEPTION_HANDLER = (Throwable e, Object o) -> {
 		System.err.println("ignored exception:");
 		e.printStackTrace();
 		System.err.println("this exception occurred for the following input:\n" + o);
