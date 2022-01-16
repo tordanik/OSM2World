@@ -104,26 +104,25 @@ public class GeometryWindow implements Window {
 
 			List<VectorXZ> newOutline = new ArrayList<>();
 
-			for (int i = centerOutline.vertices().indexOf(topSegment.p2);
-					i != centerOutline.vertices().indexOf(topSegment.p1);
-					i = (i + 1) % centerOutline.vertices().size()) {
+			List<VectorXZ> centerVs = centerOutline.verticesNoDup();
+			for (int i = centerVs.indexOf(topSegment.p2);
+					i != centerVs.indexOf(topSegment.p1);
+					i = (i + 1) % centerVs.size()) {
 				newOutline.add(centerOutline.vertices().get(i));
 			}
 
-			VectorXZ start = regionOutlines.get(TOP).vertices().stream().min(
-					Comparator.comparingDouble(topSegment.p1::distanceTo)).get();
-			VectorXZ end = regionOutlines.get(TOP).vertices().stream().min(
-					Comparator.comparingDouble(topSegment.p2::distanceTo)).get();
+			List<VectorXZ> topVs = regionOutlines.get(TOP).verticesNoDup();
 
-			for (int i = regionOutlines.get(TOP) .vertices().indexOf(start);
-					i != regionOutlines.get(TOP).vertices().indexOf(end);
-					i = (i + 1) % regionOutlines.get(TOP).vertices().size()) {
-				newOutline.add(regionOutlines.get(TOP).vertices().get(i));
+			VectorXZ start = topVs.stream().min(Comparator.comparingDouble(topSegment.p1::distanceTo)).get();
+			VectorXZ end = topVs.stream().min(Comparator.comparingDouble(topSegment.p2::distanceTo)).get();
+
+			for (int i = topVs.indexOf(start);
+					i != topVs.indexOf(end);
+					i = (i + 1) % topVs.size()) {
+				newOutline.add(topVs.get(i));
 			}
 
-			newOutline.add(newOutline.get(0));
-
-			outline = new SimplePolygonXZ(newOutline);
+			outline = new SimplePolygonXZ(closeLoop(newOutline));
 
 		}
 
