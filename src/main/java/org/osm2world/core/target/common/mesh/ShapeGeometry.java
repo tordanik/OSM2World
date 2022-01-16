@@ -19,6 +19,7 @@ import org.osm2world.core.target.common.AbstractTarget;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 /** a geometry defined by placing a 2D shape ({@link ClosedShapeXZ}) in 3D space at some location, rotation and scale */
 public class ShapeGeometry implements Geometry {
@@ -74,7 +75,12 @@ public class ShapeGeometry implements Geometry {
 	@Override
 	public TriangleGeometry asTriangles() {
 
-		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(color, normalMode);
+		// TODO better default texture coordinate function
+		List<TexCoordFunction> defaultTexCoordFunction = textureDimensions.stream()
+						.map(t -> new GlobalXZTexCoordFunction(t))
+						.collect(toList());
+
+		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(defaultTexCoordFunction, color, normalMode);
 
 		for (TriangleXZ triangle : shape.getTriangulation()) {
 
@@ -97,11 +103,6 @@ public class ShapeGeometry implements Geometry {
 			}
 
 		}
-
-		// TODO better default texture coordinate function
-		builder.setTexCoordFunctions(textureDimensions.stream()
-				.map(t -> new GlobalXZTexCoordFunction(t))
-				.collect(toList()));
 
 		return builder.build();
 

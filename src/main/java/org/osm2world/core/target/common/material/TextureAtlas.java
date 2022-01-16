@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
@@ -73,8 +72,8 @@ public class TextureAtlas extends RuntimeTexture {
 	 * converts a {@link TexCoordFunction} for one of the {@link TextureData}s in this atlas
 	 * to a {@link TexCoordFunction} for this atlas
 	 */
-	public TexCoordFunction mapTexCoords(TextureData texture, TexCoordFunction texCoordFunction) {
-		return (List<VectorXYZ> vs) -> texCoordFunction.apply(vs).stream()
+	public List<VectorXZ> mapTexCoords(TextureData texture, List<VectorXZ> texCoords) {
+		return texCoords.stream()
 				.map(v -> mapTexCoord(texture, v))
 				.collect(toList());
 	}

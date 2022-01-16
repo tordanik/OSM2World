@@ -621,13 +621,13 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		List<VectorXZ> texCoords = new ArrayList<>();
 
-		for (int layer = 0; layer < geom.texCoordFunctions.size(); layer++) {
+		for (int layer = 0; layer < geom.texCoords.size(); layer++) {
 
 			// check if the tex coords can be calculated in the client
-			if (!(geom.texCoordFunctions.get(layer) instanceof GlobalXZTexCoordFunction)) {
+			if (!(material.getTextureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
 
 				// append the texture coordinates for this layer
-				texCoords.addAll(geom.texCoords().get(layer));
+				texCoords.addAll(geom.texCoords.get(layer));
 
 			}
 

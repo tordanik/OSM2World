@@ -162,7 +162,7 @@ public interface Target {
 
 	public default void drawMesh(Mesh mesh) {
 		TriangleGeometry tg = mesh.geometry.asTriangles();
-		drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords());
+		drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords);
 	}
 
 	/**

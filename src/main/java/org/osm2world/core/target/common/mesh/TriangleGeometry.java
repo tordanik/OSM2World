@@ -11,14 +11,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.NormalCalculationUtil;
 import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 /** a geometry composed of triangles */
@@ -28,34 +26,22 @@ public class TriangleGeometry implements Geometry {
 
 	public final NormalData normalData;
 
-	/**
-	 * functions to calculate texture coordinates for each texture layer.
-	 * Can be a single {@link TexCoordFunction} if there's only one layer or all layers have the same tex coords,
-	 * or it can be one {@link TexCoordFunction} per layer.
-	 * If you want to store already-calculated texture coordinates, use a {@link PrecomputedTexCoordFunction}.
-	 */
-	public final List<TexCoordFunction> texCoordFunctions;
+	/** texture coordinate lists for each texture layer. Each list has the same size as {@link #vertices()}. */
+	public final List<List<VectorXZ>> texCoords;
 
 	/** vertex colors, one for each entry in {@link #vertices()}. Each color value can be null. null if all are null. */
 	public final @Nullable List</* @Nullable */ Color> colors;
 
 	public List<VectorXYZ> vertices() {
+		return vertices(triangles);
+	}
+
+	private static List<VectorXYZ> vertices(List<TriangleXYZ> triangles) {
 		List<VectorXYZ> result = new ArrayList<>(triangles.size() * 3);
 		for (TriangleXYZ triangle : triangles) {
 			result.addAll(triangle.verticesNoDup());
 		}
 		return result;
-	}
-
-	/** provides the texture coordinates for each texture layer by applying the {@link #texCoordFunctions} */
-	public List<List<VectorXZ>> texCoords() {
-
-		return texCoordFunctions.stream()
-				.map(texCoordFunction -> {
-					return texCoordFunction.apply(vertices());
-				})
-				.collect(toList());
-
 	}
 
 	@Override
@@ -64,10 +50,10 @@ public class TriangleGeometry implements Geometry {
 	}
 
 	private TriangleGeometry(List<TriangleXYZ> triangles, List<VectorXYZ> normals,
-			List<TexCoordFunction> texCoordFunctions, @Nullable List<Color> colors) {
+			List<List<VectorXZ>> texCoords, @Nullable List<Color> colors) {
 
 		this.triangles = triangles;
-		this.texCoordFunctions = texCoordFunctions;
+		this.texCoords = texCoords;
 		this.normalData = new ExplicitNormals(normals);
 		this.colors = colors;
 
@@ -77,10 +63,10 @@ public class TriangleGeometry implements Geometry {
 
 	/** constructor suitable for straightforward cases. Use the {@link Builder} when you need more flexibility. */
 	public TriangleGeometry(List<TriangleXYZ> triangles, Interpolation normalMode,
-			List<TexCoordFunction> texCoordFunctions, @Nullable List<Color> colors) {
+			List<List<VectorXZ>> texCoords, @Nullable List<Color> colors) {
 
 		this.triangles = triangles;
-		this.texCoordFunctions = texCoordFunctions;
+		this.texCoords = texCoords;
 		this.normalData = new CalculatedNormals(normalMode);
 		this.colors = colors;
 
@@ -100,11 +86,11 @@ public class TriangleGeometry implements Geometry {
 
 		if (assertionsEnabled) {
 
-			List<VectorXYZ> vs = triangles.stream().flatMap(t -> t.verticesNoDup().stream()).collect(toList());
+			List<VectorXYZ> vs = vertices(triangles);
 
-			for (TexCoordFunction f : texCoordFunctions) {
-				assert f.apply(vs).size() == vs.size() : "incorrect texcoord function result";
-			}
+			assert normalData.normals().size() == vs.size();
+			assert colors == null || colors.size() == vs.size();
+			assert texCoords.stream().allMatch(t -> t.size() == vs.size());
 
 		}
 
@@ -147,14 +133,15 @@ public class TriangleGeometry implements Geometry {
 	/** a builder for flexibly constructing a {@link TriangleGeometry} */
 	public static class Builder {
 
+		public final int numTextureLayers;
+		public final @Nullable List<? extends TexCoordFunction> defaultTexCoordFunctions;
 		public final @Nullable Color defaultColor;
 		public final @Nullable Interpolation normalMode;
 
 		private final List<TriangleXYZ> triangles = new ArrayList<>();
+		private final List<List<VectorXZ>> texCoords;
 		private final List</* @Nullable */ Color> colors = new ArrayList<>();
 		private final @Nullable List<VectorXYZ> normals;
-
-		private List<TexCoordFunction> texCoordFunctions = null;
 
 		/**
 		 *
@@ -163,65 +150,97 @@ public class TriangleGeometry implements Geometry {
 		 * @param normalMode  how to calculate normals. If set to null, normals must be provided explicitly.
 		 *   Otherwise, normals must not be provided explicitly.
 		 */
-		public Builder(@Nullable Color defaultColor, @Nullable Interpolation normalMode) {
+		public Builder(int numTextureLayers, @Nullable Color defaultColor, @Nullable Interpolation normalMode) {
 
+			this.numTextureLayers = numTextureLayers;
+			this.defaultTexCoordFunctions = null;
 			this.defaultColor = defaultColor;
 			this.normalMode = normalMode;
+
+			this.texCoords = new ArrayList<>(numTextureLayers);
+			for (int i = 0; i < numTextureLayers; i++) {
+				texCoords.add(new ArrayList<>());
+			}
 
 			normals = (normalMode == null) ? new ArrayList<>() : null;
 
 		}
 
-		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<Color> colors, List<VectorXYZ> normals) {
+		/**
+		 * @param defaultTexCoordFunctions  the {@link TexCoordFunction} that are used to calculate texture coords
+		 *  if none are passed in explicitly
+		 */
+		public Builder(List<? extends TexCoordFunction> defaultTexCoordFunctions, @Nullable Color defaultColor,
+				@Nullable Interpolation normalMode) {
+
+			this.numTextureLayers = defaultTexCoordFunctions.size();
+			this.defaultTexCoordFunctions = defaultTexCoordFunctions;
+			this.defaultColor = defaultColor;
+			this.normalMode = normalMode;
+
+			this.texCoords = new ArrayList<>(numTextureLayers);
+			for (int i = 0; i < numTextureLayers; i++) {
+				texCoords.add(new ArrayList<>());
+			}
+
+			normals = (normalMode == null) ? new ArrayList<>() : null;
+
+		}
+
+		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<List<VectorXZ>> texCoords,
+				@Nullable List<Color> colors, @Nullable List<VectorXYZ> normals) {
 
 			if (colors == null) {
 				colors = nCopies(triangles.size() * 3, defaultColor);
 			}
 
-			if (normalMode != null) {
-				throw new IllegalStateException("If normal mode is set, normals must not be provided explicitly");
+			if (texCoords == null) {
+				texCoords = applyDefaultTexCoordFunctions(vertices(triangles));
+			}
+
+			if (texCoords.size() != numTextureLayers) {
+				throw new IllegalAccessError(texCoords.size() + " texCoord lists, expected " +  numTextureLayers);
 			} else if (colors.size() != triangles.size() * 3) {
 				throw new IllegalArgumentException("there must be 3 color values for every triangle");
-			} else if (normals.size() != triangles.size() * 3) {
-				throw new IllegalArgumentException("there must be 3 normals for every triangle");
+			} else if (texCoords.stream().anyMatch(tcs -> tcs.size() != triangles.size() * 3)) {
+				throw new IllegalArgumentException("there must be 3 tex coord values for every triangle");
 			} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
 				throw new InvalidGeometryException("degenerate triangle");
 			}
 
 			this.triangles.addAll(triangles);
-			this.normals.addAll(normals);
 			this.colors.addAll(colors);
 
-		}
-
-		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<Color> colors) {
-
-			if (colors == null) {
-				colors = nCopies(triangles.size() * 3, defaultColor);
+			for (int layer = 0; layer < numTextureLayers; layer ++) {
+				this.texCoords.get(layer).addAll(texCoords.get(layer));
 			}
 
-			if (normalMode == null) {
+			if (normals != null) {
+
+				if (normalMode != null) {
+					throw new IllegalStateException("If normal mode is set, normals must not be provided explicitly");
+				} else if (normals.size() != triangles.size() * 3) {
+					throw new IllegalArgumentException("there must be 3 normals for every triangle");
+				}
+
+				this.normals.addAll(normals);
+
+			} else if (normalMode == null) {
 				throw new IllegalStateException("If normal mode is not set, normals must be provided explicitly");
-			} else if (colors.size() != triangles.size() * 3) {
-				throw new IllegalArgumentException("there must be 3 color values for every triangle");
-			} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
-				throw new InvalidGeometryException("degenerate triangle");
 			}
 
-			this.triangles.addAll(triangles);
-			this.colors.addAll(colors);
-
 		}
 
-		public void addTriangles(List<TriangleXYZ> triangles) {
-			addTriangles(triangles, nCopies(triangles.size() * 3, defaultColor));
+		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<List<VectorXZ>> texCoords,
+				@Nullable List<Color> colors) {
+			addTriangles(triangles, texCoords, colors, null);
 		}
 
-		public void addTriangles(TriangleXYZ... triangles) {
-			addTriangles(asList(triangles));
+		public void addTriangles(List<TriangleXYZ> triangles, @Nullable List<List<VectorXZ>> texCoords) {
+			addTriangles(triangles, texCoords, null);
 		}
 
-		public void addTriangleVs(List<VectorXYZ> vs) {
+		public void addTriangleVs(List<VectorXYZ> vs, @Nullable List<List<VectorXZ>> texCoords) {
 
 			if (vs.isEmpty() || vs.size() % 3 != 0) {
 				throw new IllegalArgumentException("vertices must be provided in multiples of 3, was " + vs.size());
@@ -235,45 +254,42 @@ public class TriangleGeometry implements Geometry {
 				triangles.add(new TriangleXYZ(vs.get(3 * i), vs.get(3 * i + 1), vs.get(3 * i + 2)));
 			}
 
-			addTriangles(triangles);
+			addTriangles(triangles, texCoords);
 
 		}
 
+		public void addTriangles(List<TriangleXYZ> triangles) {
+			addTriangles(triangles, null);
+		}
+
+		public void addTriangles(TriangleXYZ... triangles) {
+			addTriangles(asList(triangles));
+		}
+
+		public void addTriangleStrip(List<VectorXYZ> vs, List<List<VectorXZ>> texCoords) {
+			addTriangles(trianglesFromTriangleStrip(vs),
+					texCoords.stream().map(it -> triangleVertexListFromTriangleStrip(it)).collect(toList()));
+		}
+
+		/** Like {@link #addTriangleStrip(List, List)}, but uses {@link #defaultTexCoordFunctions} */
 		public void addTriangleStrip(List<VectorXYZ> vs) {
-			addTriangles(trianglesFromTriangleStrip(vs));
+			addTriangleStrip(vs, applyDefaultTexCoordFunctions(vs));
 		}
 
 		/**
 		 * @param vs  no duplication of first/last vector
 		 */
+		public void addTriangleFan(List<VectorXYZ> vs, List<List<VectorXZ>> texCoords) {
+			addTriangles(trianglesFromTriangleFan(vs),
+					texCoords.stream().map(it -> triangleVertexListFromTriangleFan(it)).collect(toList()));
+		}
+
+		/** Like {@link #addTriangleFan(List, List)}, but uses {@link #defaultTexCoordFunctions} */
 		public void addTriangleFan(List<VectorXYZ> vs) {
-			addTriangles(trianglesFromTriangleFan(vs));
-		}
-
-		/**
-		 * @param vs  no duplication of first/last vector
-		 */
-		public void addConvexPolygon(List<VectorXYZ> vs) {
-			addTriangleFan(vs);
-		}
-
-		public void addFaces(FaceXYZ... faces) {
-			for (FaceXYZ face : faces) {
-				addConvexPolygon(face.verticesNoDup());
-			}
-		}
-
-		public void setTexCoordFunctions(List<? extends TexCoordFunction> texCoordFunctions) {
-			this.texCoordFunctions = new ArrayList<TexCoordFunction>(texCoordFunctions);
+			addTriangleFan(vs, applyDefaultTexCoordFunctions(vs));
 		}
 
 		public TriangleGeometry build() {
-
-			/* perform validation */
-
-			if (texCoordFunctions == null) {
-				throw new IllegalStateException("texCoordFunctions has not been set yet");
-			}
 
 			/* set colors to null if all values are null */
 
@@ -285,10 +301,22 @@ public class TriangleGeometry implements Geometry {
 			/* build and return the result */
 
 			if (normalMode == null) {
-				return new TriangleGeometry(triangles, normals, texCoordFunctions, colors);
+				return new TriangleGeometry(triangles, normals, texCoords, colors);
 			} else {
-				return new TriangleGeometry(triangles, normalMode, texCoordFunctions, colors);
+				return new TriangleGeometry(triangles, normalMode, texCoords, colors);
 			}
+
+		}
+
+		private List<List<VectorXZ>> applyDefaultTexCoordFunctions(List<VectorXYZ> vertices) {
+
+			if (defaultTexCoordFunctions == null) {
+				throw new IllegalStateException("No default functions for calulating tex coords are available");
+			}
+
+			return defaultTexCoordFunctions.stream()
+					.map(texCoordFunction -> texCoordFunction.apply(vertices))
+					.collect(toList());
 
 		}
 

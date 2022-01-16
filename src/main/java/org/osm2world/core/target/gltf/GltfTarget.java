@@ -243,7 +243,7 @@ public class GltfTarget extends MeshTarget {
 
 		TriangleGeometry triangleGeometry = mesh.geometry.asTriangles();
 		List<? extends TriangleXYZ> triangles = triangleGeometry.triangles;
-		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords();
+		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords;
 		List<LColor> colors = triangleGeometry.colors == null ? null
 				: triangleGeometry.colors.stream().map(c -> LColor.fromAWT(c)).collect(toList());
 

@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common.mesh;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
 
 import java.awt.Color;
@@ -9,13 +9,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.collections4.ListUtils;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
-import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
-import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 public class MeshUtil {
 
@@ -35,9 +32,6 @@ public class MeshUtil {
 		new VectorXZ(0.75, 2.0/3), new VectorXZ(0.75, 1.0/3),
 		new VectorXZ(1.00, 2.0/3), new VectorXZ(1.00, 1.0/3)
 	));
-
-	private static final TexCoordFunction BOX_TEX_COORD_FUNCTION = new PrecomputedTexCoordFunction(
-			ListUtils.union(BOX_TEX_COORDS_1, BOX_TEX_COORDS_2));
 
 	/**
 	 * draws a box with outward-facing polygons.
@@ -78,16 +72,11 @@ public class MeshUtil {
 				frontUpperLeft, frontLowerLeft
 		);
 
-		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(color, Interpolation.FLAT);
-		builder.addTriangleStrip(vsStrip1);
-		builder.addTriangleStrip(vsStrip2);
+		int numLayers = textureDimensions == null ? 0 : textureDimensions.size();
 
-		if (textureDimensions != null && !textureDimensions.isEmpty()) {
-			builder.setTexCoordFunctions(nCopies(textureDimensions.size(), BOX_TEX_COORD_FUNCTION));
-		} else {
-			builder.setTexCoordFunctions(emptyList());
-		}
-
+		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(numLayers, color, Interpolation.FLAT);
+		builder.addTriangleStrip(vsStrip1, nCopies(numLayers, BOX_TEX_COORDS_1));
+		builder.addTriangleStrip(vsStrip2, nCopies(numLayers, BOX_TEX_COORDS_2));
 		return builder.build();
 
 	}

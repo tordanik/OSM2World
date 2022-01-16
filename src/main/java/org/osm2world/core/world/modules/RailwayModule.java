@@ -9,7 +9,7 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
@@ -198,15 +198,15 @@ public class RailwayModule extends ConfigurableWorldModule {
 					getOutline(false), getOutline(true));
 
 			// just the ballast (sleepers will be rendered as separate models at this LOD)
-			TriangleGeometry.Builder lod4GroundBuilder = new TriangleGeometry.Builder(null, Interpolation.SMOOTH);
+			TriangleGeometry.Builder lod4GroundBuilder = new TriangleGeometry.Builder(
+					texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
 			lod4GroundBuilder.addTriangleStrip(groundVs);
-			lod4GroundBuilder.setTexCoordFunctions(texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z));
 			result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST, LOD4));
 
 			// repeating texture containing ballast, sleepers and rails
-			TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(null, Interpolation.SMOOTH);
+			TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(
+					texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
 			lod3GroundBuilder.addTriangleStrip(groundVs);
-			lod3GroundBuilder.setTexCoordFunctions(texCoordFunctions(RAILWAY, STRIP_FIT_HEIGHT));
 			result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY, LOD1, LOD3));
 
 			/* build rail meshes */

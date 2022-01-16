@@ -34,10 +34,6 @@ import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.ShapeGeometry;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
-import org.osm2world.core.target.common.texcoord.GlobalXYTexCoordFunction;
-import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
-import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
-import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -59,12 +55,8 @@ public class MeshTarget extends AbstractTarget {
 	public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
 			List<List<VectorXZ>> texCoordLists) {
 
-		List<TexCoordFunction> texCoordFunctions = texCoordLists.stream()
-				.map(PrecomputedTexCoordFunction::new)
-				.collect(toList());
-
 		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.getInterpolation(),
-				texCoordFunctions, null), material));
+				texCoordLists, null), material));
 
 	}
 
@@ -218,12 +210,12 @@ public class MeshTarget extends AbstractTarget {
 
 						double offset = layer * OFFSET_PER_LAYER;
 
-						TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
-						builder.setTexCoordFunctions(asList(tg.texCoordFunctions.get(layer)));
+						TriangleGeometry.Builder builder = new TriangleGeometry.Builder(1, null, null);
 						List<TriangleXYZ> offsetTriangles = tg.triangles.stream()
 								.map(t -> t.shift(t.getNormal().mult(offset)))
 								.collect(toList());
-						builder.addTriangles(offsetTriangles, tg.colors, tg.normalData.normals());
+						List<List<VectorXZ>> texCoords = asList(tg.texCoords.get(layer));
+						builder.addTriangles(offsetTriangles, texCoords, tg.colors, tg.normalData.normals());
 						TriangleGeometry newGeometry = builder.build();
 
 						Material singleLayerMaterial = mesh.material.withLayers(asList(
@@ -267,9 +259,8 @@ public class MeshTarget extends AbstractTarget {
 						colors.set(i, LColor.fromAWT(colors.get(i)).multiply(mesh.material.getLColor()).toAWT());
 					}
 
-					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
-					builder.setTexCoordFunctions(tg.texCoordFunctions);
-					builder.addTriangles(tg.triangles, colors, tg.normalData.normals());
+					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(tg.texCoords.size(), null, null);
+					builder.addTriangles(tg.triangles, tg.texCoords, colors, tg.normalData.normals());
 					newGeometry = builder.build();
 
 				} else if (mesh.geometry instanceof ShapeGeometry) {
@@ -340,7 +331,7 @@ public class MeshTarget extends AbstractTarget {
 			}
 
 			for (Mesh mesh : meshStore.meshes()) {
-				List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords();
+				List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords;
 				for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
 					if (texCoordLists.get(layer).stream().anyMatch(t -> t.x < 0 || t.x > 1 || t.z < 0 || t.z > 1)) {
 						// texture is accessed at a tex coordinate outside the [0;1] range, it should not be in an atlas
@@ -368,7 +359,7 @@ public class MeshTarget extends AbstractTarget {
 					TriangleGeometry tg = mesh.geometry.asTriangles();
 
 					List<TextureLayer> newTextureLayers = new ArrayList<>(mesh.material.getTextureLayers());
-					List<TexCoordFunction> newTexCoordFunctions = new ArrayList<>(tg.texCoordFunctions);
+					List<List<VectorXZ>> newTexCoords = new ArrayList<>(tg.texCoords);
 
 					for (int layer = 0; layer < newTextureLayers.size(); layer ++) {
 
@@ -381,15 +372,14 @@ public class MeshTarget extends AbstractTarget {
 									oldLayer.displacementTexture == null ? null : atlasGroup.displacementAtlas,
 									false);
 							newTextureLayers.set(layer, newLayer);
-							newTexCoordFunctions.set(layer, atlasGroup.baseColorAtlas.mapTexCoords(
-									oldLayer.baseColorTexture, newTexCoordFunctions.get(layer)));
+							newTexCoords.set(layer, atlasGroup.baseColorAtlas.mapTexCoords(
+									oldLayer.baseColorTexture, newTexCoords.get(layer)));
 						}
 
 					}
 
-					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
-					builder.setTexCoordFunctions(newTexCoordFunctions);
-					builder.addTriangles(tg.triangles, tg.colors, tg.normalData.normals());
+					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(tg.texCoords.size(), null, null);
+					builder.addTriangles(tg.triangles, newTexCoords, tg.colors, tg.normalData.normals());
 
 					Material newMaterial = mesh.material.withLayers(newTextureLayers);
 					Mesh newMesh = new Mesh(builder.build(), newMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
@@ -443,24 +433,14 @@ public class MeshTarget extends AbstractTarget {
 				} else {
 
 					List<VectorXYZ> normals = tg.normalData.normals();
-					@SuppressWarnings("unchecked")
-					List<VectorXZ>[] oldTexCoords = new List[tg.texCoordFunctions.size()];
-
-					for (int layer = 0; layer < tg.texCoordFunctions.size(); layer++) {
-						if (!(tg.texCoordFunctions.get(layer) instanceof GlobalXZTexCoordFunction)
-								&& !(tg.texCoordFunctions.get(layer) instanceof GlobalXYTexCoordFunction)) {
-							oldTexCoords[layer] = tg.texCoordFunctions.get(layer).apply(tg.vertices());
-						}
-					}
 
 					List<TriangleXYZ> newTriangles = new ArrayList<>();
 					List<Color> newColors = tg.colors == null ? null : new ArrayList<>();
 					List<VectorXYZ> newNormals = new ArrayList<>();
-					@SuppressWarnings("unchecked")
-					List<VectorXZ>[] newTexCoords = new List[oldTexCoords.length];
+					List<List<VectorXZ>> newTexCoords = new ArrayList<>(tg.texCoords.size());
 
-					for (int layer = 0; layer < oldTexCoords.length; layer++) {
-						newTexCoords[layer] = (oldTexCoords[layer] != null) ? new ArrayList<>() : null;
+					for (int layer = 0; layer < tg.texCoords.size(); layer++) {
+						newTexCoords.add(new ArrayList<>());
 					}
 
 					for (int i = 0; i < tg.triangles.size(); i++) {
@@ -476,10 +456,8 @@ public class MeshTarget extends AbstractTarget {
 
 								newNormals.add(normals.get(3 * i + j));
 
-								for (int layer = 0; layer < oldTexCoords.length; layer ++) {
-									if (oldTexCoords[layer] != null) {
-										newTexCoords[layer].add(oldTexCoords[layer].get(3 * i + j));
-									}
+								for (int layer = 0; layer < tg.texCoords.size(); layer ++) {
+									newTexCoords.get(layer).add(tg.texCoords.get(layer).get(3 * i + j));
 								}
 
 							}
@@ -487,19 +465,8 @@ public class MeshTarget extends AbstractTarget {
 						}
 					}
 
-					List<TexCoordFunction> newTexCoordFunctions = new ArrayList<>(newTexCoords.length);
-
-					for (int layer = 0; layer < newTexCoords.length; layer ++) {
-						if (newTexCoords[layer] == null) {
-							newTexCoordFunctions.add(tg.texCoordFunctions.get(layer));
-						} else {
-							newTexCoordFunctions.add(new PrecomputedTexCoordFunction(newTexCoords[layer]));
-						}
-					}
-
-					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, null);
-					builder.setTexCoordFunctions(newTexCoordFunctions);
-					builder.addTriangles(newTriangles, newColors, newNormals);
+					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(newTexCoords.size(), null, null);
+					builder.addTriangles(newTriangles, newTexCoords, newColors, newNormals);
 					result.add(new MeshWithMetadata(new Mesh(builder.build(), mesh.material), meshWithMetadata.metadata));
 
 				}

@@ -81,11 +81,11 @@ public class TextureCam {
 					heightMap.put(tXZ, t.getCenter().y); // FIXME using the center doesn't work in less simple cases
 
 					List<List<VectorXZ>> texCoords = new ArrayList<>();
-					for (int layer = 0; layer < tg.texCoords().size(); layer++) {
+					for (int layer = 0; layer < tg.texCoords.size(); layer++) {
 						texCoords.add(asList(
-								tg.texCoords().get(layer).get(3 * i),
-								tg.texCoords().get(layer).get(3 * i + 1),
-								tg.texCoords().get(layer).get(3 * i + 2)));
+								tg.texCoords.get(layer).get(3 * i),
+								tg.texCoords.get(layer).get(3 * i + 1),
+								tg.texCoords.get(layer).get(3 * i + 2)));
 					}
 
 					texCoordMap.put(tXZ, texCoords);

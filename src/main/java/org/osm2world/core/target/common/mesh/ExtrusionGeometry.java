@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Collections.max;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
@@ -24,7 +25,6 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -165,7 +165,7 @@ public class ExtrusionGeometry implements Geometry {
 		Interpolation normalMode = (shape instanceof CircleXZ || options.contains(SMOOTH_SIDES))
 				? Interpolation.SMOOTH : Interpolation.FLAT;
 		Map<VectorXYZ, VectorXZ> texCoordMap = new HashMap<>();
-		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(color, normalMode);
+		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(textureDimensions.size(), color, normalMode);
 
 		/* calculate the forward direction of the shape from the path.
 		 * Special handling for the first and last point,
@@ -290,25 +290,39 @@ public class ExtrusionGeometry implements Geometry {
 				List<VectorXYZ> shapeA = shapeVectors[pathI];
 				List<VectorXYZ> shapeB = shapeVectors[pathI + 1];
 
+				List<VectorXYZ> triangleVs;
+
 				if (scaleA != 0 && scaleB != 0) {
-					builder.addTriangleStrip(createTriangleStripBetween(shapeB, shapeA));
+					triangleVs = triangleVertexListFromTriangleStrip(createTriangleStripBetween(shapeB, shapeA));
 				} else if (scaleA != 0 && scaleB == 0) {
+					triangleVs = new ArrayList<>();
 					for (int i = 0; i + 1 < shapeA.size(); i++) {
-						builder.addTriangles(new TriangleXYZ(shapeA.get(i), shapeA.get(i + 1), shapeB.get(0)));
+						triangleVs.addAll(asList(shapeA.get(i), shapeA.get(i + 1), shapeB.get(0)));
 					}
 				} else if (scaleA == 0 && scaleB != 0) {
+					triangleVs = new ArrayList<>();
 					for (int i = 0; i + 1 < shapeB.size(); i++) {
-						builder.addTriangles(new TriangleXYZ(shapeB.get(i + 1), shapeB.get(i), shapeA.get(0)));
+						triangleVs.addAll(asList(shapeB.get(i + 1), shapeB.get(i), shapeA.get(0)));
 					}
+				} else {
+					triangleVs = null;
+				}
+
+				if (triangleVs != null) {
+
+					List<List<VectorXZ>> texCoords = textureDimensions.stream()
+							.map(t -> new MapBasedTexCoordFunction(texCoordMap, t))
+							.map(f -> f.apply(triangleVs))
+							.collect(toList());
+
+					builder.addTriangleVs(triangleVs, texCoords);
+
 				}
 
 			}
 
 		}
 
-		builder.setTexCoordFunctions(textureDimensions.stream()
-				.map(t -> new MapBasedTexCoordFunction(texCoordMap, t))
-				.collect(toList()));
 
 		TriangleGeometry result = builder.build();
 
