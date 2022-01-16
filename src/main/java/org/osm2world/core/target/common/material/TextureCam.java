@@ -1,9 +1,10 @@
 package org.osm2world.core.target.common.material;
 
-import static java.lang.Math.floor;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.math.NumberUtils.min;
 import static org.osm2world.core.math.GeometryUtil.interpolateOnTriangle;
+import static org.osm2world.core.math.VectorXYZ.*;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -19,6 +20,7 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer.TextureType;
@@ -44,7 +46,8 @@ public class TextureCam {
 	private static final int TRANSPARENT_RGB = new Color(0, 0, 0, 0).getRGB();
 
 	public static final TextureLayer renderTextures(List<Mesh> meshes, ViewDirection viewDirection, String name,
-			double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap) {
+			double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap,
+			@Nullable VectorXYZ center) {
 
 		Map<TriangleXZ, Double> heightMap = new HashMap<>();
 		Map<TriangleXZ, Material> materialMap = new HashMap<>();
@@ -59,8 +62,15 @@ public class TextureCam {
 
 				TriangleXYZ t = tg.triangles.get(i);
 
+				if (center != null) {
+					t = t.shift(center.invert());
+				}
+
 				if (viewDirection == ViewDirection.FROM_FRONT) {
-					// TODO v.rotateVec(PI, NULL_VECTOR, Z_UNIT);
+					t = new TriangleXYZ(
+							t.v1.rotateVec(PI / 2, NULL_VECTOR, X_UNIT),
+							t.v2.rotateVec(PI / 2, NULL_VECTOR, X_UNIT),
+							t.v3.rotateVec(PI / 2, NULL_VECTOR, X_UNIT));
 				}
 
 				TriangleXZ tXZ = new TriangleXZ(t.v1.xz(), t.v2.xz(), t.v3.xz());
