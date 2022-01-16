@@ -82,7 +82,6 @@ import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BarrierModule.BollardRow;
 import org.osm2world.core.world.modules.BarrierModule.HandRail;
-import org.osm2world.core.world.modules.BicycleParkingModule.BicycleStands;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
 import org.osm2world.core.world.modules.StreetFurnitureModule.Bench;
 import org.osm2world.core.world.modules.StreetFurnitureModule.GritBin;
@@ -103,9 +102,8 @@ public class FrontendPbfTarget extends MeshTarget {
 
 	private final double FLOOR_PLATE_Y = -0.03;
 
-	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, BicycleStands.class,
-			WasteBasket.class, VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class,
-			BollardRow.class);
+	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, WasteBasket.class,
+			VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
 
 	/**
 	 * materials which default to being shadowless

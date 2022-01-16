@@ -8,6 +8,7 @@ import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
@@ -328,7 +329,7 @@ public class BicycleParkingModule extends AbstractModule {
 			Geometry geom = new ExtrusionGeometry(STAND_SHAPE, path, upVectors, null, null, null,
 					STEEL.getTextureDimensions());
 
-			return asList(new Mesh(geom, STEEL));
+			return asList(new Mesh(geom, STEEL, LOD2, LOD4));
 
 		}
 
