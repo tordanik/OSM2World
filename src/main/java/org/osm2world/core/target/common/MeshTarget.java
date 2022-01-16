@@ -370,7 +370,7 @@ public class MeshTarget extends AbstractTarget {
 									oldLayer.normalTexture == null ? null : atlasGroup.normalAtlas,
 									oldLayer.ormTexture == null ? null : atlasGroup.ormAtlas,
 									oldLayer.displacementTexture == null ? null : atlasGroup.displacementAtlas,
-									false);
+									true);
 							newTextureLayers.set(layer, newLayer);
 							newTexCoords.set(layer, atlasGroup.baseColorAtlas.mapTexCoords(
 									oldLayer.baseColorTexture, newTexCoords.get(layer)));
