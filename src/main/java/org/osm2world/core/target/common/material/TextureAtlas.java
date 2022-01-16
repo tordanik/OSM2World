@@ -7,9 +7,12 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
+
+import com.google.common.base.Objects;
 
 /**
  * a texture atlas or spritesheet that combines multiple textures in a single image.
@@ -97,6 +100,31 @@ public class TextureAtlas extends RuntimeTexture {
 	@Override
 	public String toString() {
 		return "TextureAtlas " + textures;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof TextureAtlas)) return false;
+		TextureAtlas other = (TextureAtlas) obj;
+		return dimensions().equals(other.dimensions())
+				&& Objects.equal(wrap, other.wrap)
+				&& Objects.equal(coordFunction, other.coordFunction)
+				&& Objects.equal(textures, other.textures)
+				&& numTexturesX == other.numTexturesX
+				&& numTexturesZ == other.numTexturesZ;
+	}
+
+	@Override
+	public int hashCode() {
+		HashCodeBuilder builder = new HashCodeBuilder();
+		builder.append(dimensions());
+		builder.append(wrap);
+		builder.append(coordFunction);
+		builder.append(textures);
+		builder.append(numTexturesX);
+		builder.append(numTexturesZ);
+		return builder.toHashCode();
 	}
 
 }

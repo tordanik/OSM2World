@@ -309,7 +309,7 @@ public class MeshTarget extends AbstractTarget {
 				for (TextureType type : TextureType.values()) {
 					map.put(type, textureLayers.stream()
 							.map(l -> l.getTexture(type))
-							.map(t -> t != null ? t : new BlankTexture())
+							.map(t -> t != null ? t : BlankTexture.INSTANCE)
 							.collect(toList()));
 				}
 

@@ -8,13 +8,15 @@ import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.util.Resolution;
 
 
-public class BlankTexture extends RuntimeTexture {
+public final class BlankTexture extends RuntimeTexture {
 
-	public BlankTexture(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity) {
+	public static final BlankTexture INSTANCE = new BlankTexture();
+
+	private BlankTexture(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity) {
 		super(width, height, widthPerEntity, heightPerEntity, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z);
 	}
 
-	public BlankTexture() {
+	private BlankTexture() {
 		this(1.0, 1.0, null, null);
 	}
 
@@ -26,6 +28,21 @@ public class BlankTexture extends RuntimeTexture {
 	@Override
 	protected BufferedImage createBufferedImage() {
 		return getBufferedImage(new Resolution(128, 128));
+	}
+
+	@Override
+	public String toString() {
+		return "Blank";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj == this;
+	}
+
+	@Override
+	public int hashCode() {
+		return 42;
 	}
 
 }
