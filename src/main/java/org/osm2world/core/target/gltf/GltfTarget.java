@@ -111,7 +111,7 @@ public class GltfTarget extends MeshTarget {
 				new FilterLod(LevelOfDetail.values()[lodValue]),
 				new MoveColorsToVertices(),
 				new EmulateTextureLayers(),
-				new GenerateTextureAtlas(),
+				new ReplaceTexturesWithAtlas(),
 				new MergeMeshes(mergeOptions)));
 
 		if (clipToBounds && bounds != null) {

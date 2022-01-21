@@ -49,6 +49,7 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.MeshStore;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshTarget;
+import org.osm2world.core.target.common.MeshTarget.ReplaceTexturesWithAtlas.TextureAtlasGroup;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
@@ -418,9 +419,11 @@ public class FrontendPbfTarget extends MeshTarget {
 
 	}
 
-	private FrontendPbf.WorldObject convertModel(Model m) {
+	private FrontendPbf.WorldObject convertModel(Model m, TextureAtlasGroup textureAtlasGroup) {
 		InstanceParameters params = new InstanceParameters(NULL_VECTOR, 0.0, 1.0, null, null);
-		return buildWorldObject(null, m.buildMeshes(params), HashMultimap.create());
+		MeshStore tempMeshStore = new MeshStore(m.buildMeshes(params), null);
+		tempMeshStore = tempMeshStore.process(asList(new ReplaceTexturesWithAtlas(textureAtlasGroup)));
+		return buildWorldObject(null, tempMeshStore.meshes(), HashMultimap.create());
 	}
 
 	/**
@@ -682,11 +685,26 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		List<FrontendPbf.WorldObject> objects = new ArrayList<>();
 
+		/* create texture atlases */
+
+		MeshStore instanceMeshStore = new MeshStore();
+
+		for (MeshMetadata metadata : modelInstancesByWO.keySet()) {
+			for (java.util.Map.Entry<Model, InstanceParameters> entry : modelInstancesByWO.get(metadata).entries()) {
+				for (Mesh mesh : entry.getKey().buildMeshes(entry.getValue())) {
+					instanceMeshStore.addMesh(mesh, metadata);
+				}
+			}
+		}
+
+		TextureAtlasGroup textureAtlasGroup = ReplaceTexturesWithAtlas.generateTextureAtlasGroup(
+				asList(this.meshStore, instanceMeshStore));
+
 		/* pre-process meshes */
 
 		MeshStore meshStore = this.meshStore.process(asList(
 				new ClipToBounds(bbox),
-				new GenerateTextureAtlas(),
+				new ReplaceTexturesWithAtlas(textureAtlasGroup),
 				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
 				));
 
@@ -721,7 +739,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		ModelBlock.Builder modelBlockBuilder = ModelBlock.newBuilder();
 
 		FaultTolerantIterationUtil.forEach(modelBlock.getElements(), (Model m) -> {
-			modelBlockBuilder.addModels(convertModel(m));
+			modelBlockBuilder.addModels(convertModel(m, textureAtlasGroup));
 		});
 
 		Vector3dBlock.Builder vector3dBlockBuilder = Vector3dBlock.newBuilder();

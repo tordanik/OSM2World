@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common;
 
 import static java.awt.Color.WHITE;
-import static java.util.Arrays.asList;
+import static java.util.Arrays.*;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 
@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -295,14 +297,14 @@ public class MeshTarget extends AbstractTarget {
 
 	}
 
-	public static class GenerateTextureAtlas implements MeshProcessingStep {
+	public static class ReplaceTexturesWithAtlas implements MeshProcessingStep {
 
 		/** a group of {@link TextureAtlas}es, one for each texture type in a {@link TextureLayer} */
-		private static class TextureAtlasGroup {
+		public static class TextureAtlasGroup {
 
-			final TextureAtlas baseColorAtlas, normalAtlas, ormAtlas, displacementAtlas;
+			public final TextureAtlas baseColorAtlas, normalAtlas, ormAtlas, displacementAtlas;
 
-			TextureAtlasGroup(List<TextureLayer> textureLayers) {
+			private TextureAtlasGroup(Set<TextureLayer> textureLayers) {
 
 				Map<TextureType, List<TextureData>> map = new HashMap<>();
 
@@ -320,31 +322,91 @@ public class MeshTarget extends AbstractTarget {
 
 			}
 
+			public TextureAtlas getTextureAtlas(TextureType type) {
+				switch (type) {
+				case BASE_COLOR: return baseColorAtlas;
+				case NORMAL: return normalAtlas;
+				case ORM: return ormAtlas;
+				case DISPLACEMENT: return displacementAtlas;
+				default: throw new Error();
+				}
+			}
+
+			public boolean canReplaceLayer(TextureLayer layer) {
+
+				int index = baseColorAtlas.textures.indexOf(layer.baseColorTexture);
+
+				return index >= 0 && stream(TextureType.values()).allMatch(type -> layer.getTexture(type) == null
+						|| index == getTextureAtlas(type).textures.indexOf(layer.getTexture(type)));
+
+			}
+
+		}
+
+		public final @Nullable TextureAtlasGroup textureAtlasGroup;
+
+		/**
+		 * @param textureAtlasGroup  a pre-existing group of texture atlases that will be used.
+		 *   If none is provided, such a group will be generated separately for each {@link MeshStore}
+		 */
+		public ReplaceTexturesWithAtlas(@Nullable TextureAtlasGroup textureAtlasGroup) {
+			this.textureAtlasGroup = textureAtlasGroup;
+		}
+
+		public ReplaceTexturesWithAtlas() {
+			this(null);
 		}
 
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
 
-			Set<TextureLayer> textureLayersForAtlas = new HashSet<>();
-			for (Mesh mesh : meshStore.meshes()) {
-				textureLayersForAtlas.addAll(mesh.material.getTextureLayers());
+			TextureAtlasGroup atlasGroup = textureAtlasGroup != null
+					? textureAtlasGroup
+					: generateTextureAtlasGroup(asList(meshStore));
+
+			if (atlasGroup == null) {
+				return meshStore;
+			} else {
+				return replaceTexturesWithAtlas(meshStore, atlasGroup);
 			}
 
-			for (Mesh mesh : meshStore.meshes()) {
-				List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords;
-				for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
-					if (texCoordLists.get(layer).stream().anyMatch(t -> t.x < 0 || t.x > 1 || t.z < 0 || t.z > 1)) {
-						// texture is accessed at a tex coordinate outside the [0;1] range, it should not be in an atlas
-						textureLayersForAtlas.remove(mesh.material.getTextureLayers().get(layer));
+		}
+
+		/**
+		 * finds suitable textures in one or more {@link MeshStore}s and creates a {@link TextureAtlasGroup} for them.
+		 * @returns  the {@link TextureAtlasGroup} with all suitable textures, or null if no suitable textures exist
+		 */
+		public static @Nullable TextureAtlasGroup generateTextureAtlasGroup(Iterable<MeshStore> meshStores) {
+
+			Set<TextureLayer> textureLayersForAtlas = new HashSet<>();
+			for (MeshStore meshStore : meshStores) {
+				for (Mesh mesh : meshStore.meshes()) {
+					textureLayersForAtlas.addAll(mesh.material.getTextureLayers());
+				}
+			}
+
+			for (MeshStore meshStore : meshStores) {
+				for (Mesh mesh : meshStore.meshes()) {
+					List<List<VectorXZ>> texCoordLists = mesh.geometry.asTriangles().texCoords;
+					for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
+						if (texCoordLists.get(layer).stream().anyMatch(t -> t.x < 0 || t.x > 1 || t.z < 0 || t.z > 1)) {
+							// texture is accessed at a tex coordinate outside the [0;1] range, it should not be in an atlas
+							textureLayersForAtlas.remove(mesh.material.getTextureLayers().get(layer));
+						}
 					}
 				}
 			}
 
-			if (textureLayersForAtlas.isEmpty()) return meshStore;
+			if (textureLayersForAtlas.isEmpty()) {
+				return null;
+			} else {
+				return new TextureAtlasGroup(textureLayersForAtlas);
+			}
 
-			TextureAtlasGroup atlasGroup = new TextureAtlasGroup(new ArrayList<>(textureLayersForAtlas));
+		}
 
-			/* replace textures with the atlas texture and translate texture coordinates */
+		/** replaces textures with the atlas texture and translate texture coordinates */
+		private static MeshStore replaceTexturesWithAtlas(MeshStore meshStore, TextureAtlasGroup atlasGroup) {
 
 			List<MeshWithMetadata> result = new ArrayList<>();
 
@@ -352,7 +414,7 @@ public class MeshTarget extends AbstractTarget {
 
 				Mesh mesh = meshWithMetadata.mesh;
 
-				if (!mesh.material.getTextureLayers().stream().anyMatch(l -> textureLayersForAtlas.contains(l))) {
+				if (!mesh.material.getTextureLayers().stream().anyMatch(atlasGroup::canReplaceLayer)) {
 					result.add(meshWithMetadata);
 				} else {
 
@@ -365,7 +427,7 @@ public class MeshTarget extends AbstractTarget {
 
 						TextureLayer oldLayer = newTextureLayers.get(layer);
 
-						if (textureLayersForAtlas.contains(oldLayer)) {
+						if (atlasGroup.canReplaceLayer(oldLayer)) {
 							TextureLayer newLayer = new TextureLayer(atlasGroup.baseColorAtlas,
 									oldLayer.normalTexture == null ? null : atlasGroup.normalAtlas,
 									oldLayer.ormTexture == null ? null : atlasGroup.ormAtlas,

@@ -109,8 +109,12 @@ public class MeshStore {
 		initialMeshes.forEach(this::addMesh);
 	}
 
-	public void addMesh(Mesh mesh, MeshMetadata metadata) {
-		addMesh(new MeshWithMetadata(mesh, metadata));
+	public MeshStore(List<Mesh> initialMeshes, @Nullable MeshMetadata meshMetadata) {
+		initialMeshes.forEach(mesh -> this.addMesh(mesh, meshMetadata));
+	}
+
+	public void addMesh(Mesh mesh, @Nullable MeshMetadata metadata) {
+		addMesh(new MeshWithMetadata(mesh, metadata != null ? metadata : new MeshMetadata(null, null)));
 	}
 
 	public void addMesh(MeshWithMetadata meshWithMetadata) {

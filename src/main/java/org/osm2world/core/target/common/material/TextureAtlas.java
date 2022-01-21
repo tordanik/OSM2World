@@ -27,7 +27,7 @@ public class TextureAtlas extends RuntimeTexture {
 	/** size of each individual texture on the atlas */
 	private static final Resolution TEXTURE_RESOLUTION = new Resolution(512, 512);
 
-	private final List<TextureData> textures;
+	public final List<TextureData> textures;
 
 	private final int numTexturesX;
 	private final int numTexturesZ;
