@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common.mesh;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 
@@ -309,6 +309,10 @@ public class TriangleGeometry implements Geometry {
 		}
 
 		private List<List<VectorXZ>> applyDefaultTexCoordFunctions(List<VectorXYZ> vertices) {
+
+			if (numTextureLayers == 0) {
+				return emptyList();
+			}
 
 			if (defaultTexCoordFunctions == null) {
 				throw new IllegalStateException("No default functions for calulating tex coords are available");
