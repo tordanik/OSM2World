@@ -11,6 +11,7 @@ import java.awt.color.ColorSpace;
  */
 public class LColor {
 
+	public static final LColor BLACK = new LColor(0f, 0f, 0f);
 	public static final LColor WHITE = new LColor(1f, 1f, 1f);
 
 	private static final ColorSpace LINEAR_COLOR_SPACE = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);

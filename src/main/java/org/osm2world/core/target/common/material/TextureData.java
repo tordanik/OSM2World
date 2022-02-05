@@ -1,9 +1,10 @@
 package org.osm2world.core.target.common.material;
 
-import static java.lang.Math.max;
+import static java.lang.Math.*;
 import static java.util.Arrays.stream;
 import static org.apache.commons.lang3.math.NumberUtils.min;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.color.ColorSpace;
@@ -18,6 +19,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
 import org.osm2world.core.util.color.LColor;
@@ -147,6 +149,21 @@ public abstract class TextureData {
 		}
 
 		return averageColor;
+
+	}
+
+	public LColor getColorAt(VectorXZ texCoord) {
+
+		double texX = texCoord.x % 1;
+		double texZ = texCoord.z % 1;
+
+		while (texX < 0) texX += 1.0;
+		while (texZ < 0) texZ += 1.0;
+
+		BufferedImage image = getBufferedImage();
+		int x = min((int)floor(image.getWidth() * texX), image.getWidth() - 1);
+		int y = min((int)floor(image.getHeight() * texZ), image.getHeight() - 1);
+		return LColor.fromAWT(new Color(image.getRGB(x, y)));
 
 	}
 

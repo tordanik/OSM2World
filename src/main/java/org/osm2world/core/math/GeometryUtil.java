@@ -17,6 +17,7 @@ import java.util.function.Function;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
 import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.util.color.LColor;
 
 /**
  * utility class for some useful calculations
@@ -466,6 +467,20 @@ public final class GeometryUtil {
 		double x = interpolateOnTriangle(point, t, val1.x, val2.x, val3.x);
 		double z = interpolateOnTriangle(point, t, val1.z, val2.z, val3.z);
 		return new VectorXZ(x, z);
+	}
+
+	public static VectorXYZ interpolateOnTriangle(VectorXZ point, TriangleXZ t, VectorXYZ val1, VectorXYZ val2, VectorXYZ val3) {
+		double x = interpolateOnTriangle(point, t, val1.x, val2.x, val3.x);
+		double y = interpolateOnTriangle(point, t, val1.y, val2.y, val3.y);
+		double z = interpolateOnTriangle(point, t, val1.z, val2.z, val3.z);
+		return new VectorXYZ(x, y, z);
+	}
+
+	public static LColor interpolateOnTriangle(VectorXZ point, TriangleXZ t, LColor val1, LColor val2, LColor val3) {
+		float r = (float) interpolateOnTriangle(point, t, val1.red, val2.red, val3.red);
+		float g = (float) interpolateOnTriangle(point, t, val1.green, val2.green, val3.green);
+		float b = (float) interpolateOnTriangle(point, t, val1.blue, val2.blue, val3.blue);
+		return new LColor(r, g, b);
 	}
 
 	/**
