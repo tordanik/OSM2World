@@ -1749,7 +1749,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			VectorXZ rightVector = faceVector.rightNormal();
 
 			// shape depends on type
-			if (tags.containsAny(asList("packstation_type", "type"), asList("Rondell", "circular"))) {
+			if (tags.containsAny(asList("parcel_locker:type", "packstation_type", "type"),
+					asList("Rondell", "circular"))) {
 
 				double height = parseHeight(tags, 2.2f);
 				double width = parseWidth(tags, 3f);
@@ -1771,7 +1772,8 @@ public class StreetFurnitureModule extends AbstractModule {
 								0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true,
 								otherMaterial.getColor(), otherMaterial.getTextureDimensions()), otherMaterial));
 
-			} else if (tags.containsAny(asList("packstation_type", "type"), asList("Paketbox", "parcel_box"))) {
+			} else if (tags.containsAny(asList("parcel_locker:type", "packstation_type", "type"),
+					asList("Paketbox", "parcel_box"))) {
 
 				double height = parseHeight(tags, 1.5);
 				double width = parseHeight(tags, 1.0);
