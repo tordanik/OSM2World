@@ -28,7 +28,7 @@ public interface WorldObject {
 	public List<Mesh> buildMeshes();
 
 	/**
-	 * returns the meshes making up this {@link WorldObject}, including {@Link #getSubModels()}.
+	 * returns the meshes making up this {@link WorldObject}, including {@link #getSubModels()}.
 	 */
 	public default List<Mesh> buildMeshesForModelHierarchy() {
 		List<Mesh> result = new ArrayList<>(buildMeshes());

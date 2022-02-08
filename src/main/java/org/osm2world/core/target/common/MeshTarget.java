@@ -374,7 +374,7 @@ public class MeshTarget extends AbstractTarget {
 
 		/**
 		 * finds suitable textures in one or more {@link MeshStore}s and creates a {@link TextureAtlasGroup} for them.
-		 * @returns  the {@link TextureAtlasGroup} with all suitable textures, or null if no suitable textures exist
+		 * @return  the {@link TextureAtlasGroup} with all suitable textures, or null if no suitable textures exist
 		 */
 		public static @Nullable TextureAtlasGroup generateTextureAtlasGroup(Iterable<MeshStore> meshStores) {
 
