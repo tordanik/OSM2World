@@ -77,7 +77,9 @@ public class TriangleGeometry implements Geometry {
 	/* perform validation during construction */
 	private void validate() {
 
-		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
+		if (triangles.isEmpty()) {
+			throw new IllegalArgumentException("empty geometry");
+		} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
 			throw new InvalidGeometryException("degenerate triangle");
 		}
 

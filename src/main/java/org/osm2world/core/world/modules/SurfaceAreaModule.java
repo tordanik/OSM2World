@@ -116,8 +116,11 @@ public class SurfaceAreaModule extends AbstractModule {
 			if (material != null) {
 
 				List<TriangleXYZ> triangles = getTriangulation();
-				target.drawTriangles(material, triangles,
-						triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+
+				if (!triangles.isEmpty()) {
+					target.drawTriangles(material, triangles,
+							triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+				}
 
 			}
 
