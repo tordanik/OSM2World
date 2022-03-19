@@ -400,40 +400,8 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 	private boolean checkMeshValidity(Collection<? extends TriangleXYZ> triangles) {
-
-		if (triangles.size() == 0)
-			return false;
-
-		boolean result = false;
-		for (TriangleXYZ triangle : triangles) {
-
-			result |= !isDegenerated(triangle);
-		}
-
-		return result;
+		return (triangles.size() >= 0);
 	}
-
-	private boolean isDegenerated(TriangleXYZ triangle) {
-
-		VectorXYZ a = triangle.v1;
-		VectorXYZ b = triangle.v2;
-		VectorXYZ c = triangle.v3;
-
-		if (a.equals(b) || a.equals(c) || b.equals(c)) {
-			return true;
-		} else if (a.x == b.x && b.x == c.x
-				&& a.y == b.y && b.y == c.y) {
-			return true;
-		} else if (a.x == b.x && b.x == c.x
-				&& a.z == b.z && b.z == c.z) {
-			return true;
-		} else if (a.y == b.y && b.y == c.y
-				&& a.z == b.z && b.z == c.z) {
-			return true;
-		}
-		return false;
-	}
-
 
 	public void appendTriangle(VectorXYZ a, VectorXYZ b, VectorXYZ c) {
 

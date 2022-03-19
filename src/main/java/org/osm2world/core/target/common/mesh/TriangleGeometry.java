@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -79,8 +78,6 @@ public class TriangleGeometry implements Geometry {
 
 		if (triangles.isEmpty()) {
 			throw new IllegalArgumentException("empty geometry");
-		} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
-			throw new InvalidGeometryException("degenerate triangle");
 		}
 
 		boolean assertionsEnabled = false;
@@ -206,8 +203,6 @@ public class TriangleGeometry implements Geometry {
 				throw new IllegalArgumentException("there must be 3 color values for every triangle");
 			} else if (texCoords.stream().anyMatch(tcs -> tcs.size() != triangles.size() * 3)) {
 				throw new IllegalArgumentException("there must be 3 tex coord values for every triangle");
-			} else if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
-				throw new InvalidGeometryException("degenerate triangle");
 			}
 
 			this.triangles.addAll(triangles);

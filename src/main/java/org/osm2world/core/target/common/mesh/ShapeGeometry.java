@@ -97,10 +97,7 @@ public class ShapeGeometry implements Geometry {
 			triangleVertices = transformShape(triangleVertices, point, frontVector, upVector);
 
 			TriangleXYZ tXYZ = new TriangleXYZ(triangleVertices.get(0), triangleVertices.get(1), triangleVertices.get(2));
-
-			if (!tXYZ.isDegenerateOrNaN()) {
-				builder.addTriangles(singletonList(tXYZ));
-			}
+			builder.addTriangles(singletonList(tXYZ));
 
 		}
 

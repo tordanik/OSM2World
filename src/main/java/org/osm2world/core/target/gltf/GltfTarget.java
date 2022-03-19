@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
@@ -246,10 +245,6 @@ public class GltfTarget extends MeshTarget {
 		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords;
 		List<LColor> colors = triangleGeometry.colors == null ? null
 				: triangleGeometry.colors.stream().map(c -> LColor.fromAWT(c)).collect(toList());
-
-		if (triangles.stream().anyMatch(t -> t.isDegenerateOrNaN())) {
-			throw new InvalidGeometryException("degenerate triangle");
-		}
 
 		texCoordLists = flipTexCoordsVertically(texCoordLists); // move texture coordinate origin to the top left
 

@@ -1,6 +1,5 @@
 package org.osm2world.core.math;
 
-import static org.junit.Assert.*;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
@@ -39,30 +38,30 @@ public class TriangleXYZTest {
 
 	}
 
-
 	@Test
-	public void testIsDegenerate() {
-
-		TriangleXYZ t1 = new TriangleXYZ(
+	public void testConstructor_valid() {
+		new TriangleXYZ(
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 1, 0),
 				new VectorXYZ(0, 1, 1));
+	}
 
-		assertFalse(t1.isDegenerateOrNaN());
-
-		TriangleXYZ t2 = new TriangleXYZ(
+	@Test(expected = InvalidGeometryException.class)
+	public void testConstructor_degenerate0() {
+		new TriangleXYZ(
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 0.5, 0),
 				new VectorXYZ(0, 1.0, 0));
 
-		assertTrue(t2.isDegenerateOrNaN());
+	}
 
-		TriangleXYZ t3 = new TriangleXYZ(
+	@Test(expected = InvalidGeometryException.class)
+	public void testConstructor_degenerate1() {
+		new TriangleXYZ(
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(1, 2, 3));
 
-		assertTrue(t3.isDegenerateOrNaN());
-
 	}
+
 }
