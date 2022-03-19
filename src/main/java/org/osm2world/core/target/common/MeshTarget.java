@@ -39,6 +39,9 @@ import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 /**
  * a {@link Target} that collects everything that is being drawn as {@link Mesh}es
  */
@@ -154,30 +157,35 @@ public class MeshTarget extends AbstractTarget {
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
 
-			/* merge meshes */
+			/* form sets of meshes that should be merged with each other.
+			 * To improve performance, sets are indexed by the hash code of the mesh material's texture layer list. */
+
+			Multimap<Integer, List<MeshWithMetadata>> meshSetsByHashCode = HashMultimap.create();
+
+			meshLoop:
+			for (MeshWithMetadata mesh : meshStore.meshesWithMetadata()) {
+
+				int hashCode = mesh.mesh.material.getTextureLayers().hashCode();
+
+				for (List<MeshWithMetadata> set : meshSetsByHashCode.get(hashCode)) {
+					if (shouldBeMerged(mesh, set.get(0))) {
+						set.add(mesh);
+						continue meshLoop;
+					}
+				}
+
+				ArrayList<MeshWithMetadata> newSet = new ArrayList<>();
+				newSet.add(mesh);
+				meshSetsByHashCode.put(hashCode, newSet);
+
+			}
+
+			/* merge meshes in the same set to produce the result */
 
 			List<MeshWithMetadata> result = new ArrayList<>();
 
-			for (MeshWithMetadata mesh : meshStore.meshesWithMetadata()) {
-
-				boolean merged = false;
-
-				for (int i = 0; i < result.size(); i++) {
-
-					MeshWithMetadata existingMesh = result.get(i);
-
-					if (shouldBeMerged(mesh, existingMesh)) {
-						result.set(i, MeshWithMetadata.merge(mesh, existingMesh));
-						merged = true;
-						break;
-					}
-
-				}
-
-				if (!merged) {
-					result.add(mesh);
-				}
-
+			for (List<MeshWithMetadata> meshSet : meshSetsByHashCode.values()) {
+				result.add(MeshWithMetadata.merge(meshSet));
 			}
 
 			return new MeshStore(result);

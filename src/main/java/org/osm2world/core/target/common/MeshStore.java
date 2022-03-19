@@ -1,6 +1,5 @@
 package org.osm2world.core.target.common;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.mesh.Geometry.combine;
 
@@ -86,14 +85,16 @@ public class MeshStore {
 			this.metadata = metadata;
 		}
 
-		public static MeshWithMetadata merge(MeshWithMetadata m1, MeshWithMetadata m2) {
+		public static MeshWithMetadata merge(List<MeshWithMetadata> meshes) {
 
-			MeshMetadata metadata = (Objects.equal(m1.metadata, m2.metadata))
-					? m1.metadata
+			if (meshes.isEmpty()) throw new IllegalArgumentException();
+
+			MeshMetadata metadata = (meshes.stream().allMatch(m -> Objects.equal(m.metadata, meshes.get(0).metadata)))
+					? meshes.get(0).metadata
 					: new MeshMetadata(null, null);
 
-			Geometry mergedGeometry = combine(asList(m1.mesh.geometry, m2.mesh.geometry));
-			Mesh mergedMesh = new Mesh(mergedGeometry, m1.mesh.material);
+			Geometry mergedGeometry = combine(meshes.stream().map(m -> m.mesh.geometry).collect(toList()));
+			Mesh mergedMesh = new Mesh(mergedGeometry, meshes.get(0).mesh.material);
 
 			return new MeshWithMetadata(mergedMesh, metadata);
 

@@ -76,7 +76,7 @@ public abstract class Material {
 		this.transparency = transparency;
 		this.shadow = shadow;
 		this.ambientOcclusion = ambientOcclusion;
-		this.textureLayers = textureLayers;
+		this.textureLayers = textureLayers != null ? textureLayers : emptyList();
 
 	}
 
@@ -296,19 +296,11 @@ public abstract class Material {
 	}
 
 	public int getNumTextureLayers() {
-		if (textureLayers == null) {
-			return 0;
-		} else {
-			return textureLayers.size();
-		}
+		return textureLayers.size();
 	}
 
 	public List<TextureDataDimensions> getTextureDimensions() {
-		if (textureLayers == null) {
-			return null;
-		} else {
-			return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
-		}
+		return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
 	}
 
 	public boolean equals(@Nonnull Material other, boolean ignoreNormalMode, boolean ignoreColor) {
