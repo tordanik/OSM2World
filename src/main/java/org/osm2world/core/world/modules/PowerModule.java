@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.awt.Color.BLACK;
 import static java.lang.Math.*;
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
@@ -21,6 +22,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,13 +57,14 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -169,12 +172,12 @@ public final class PowerModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			target.drawBox(PLASTIC_GREY, getBase(),
-					faceVector, 1.5, 0.8, 0.3);
+			Material material = PLASTIC.withColor(new Color(184, 184, 184));
+			target.drawBox(material, getBase(), faceVector, 1.5, 0.8, 0.3);
 
 		}
 
-		}
+	}
 
 	private final static class TowerConfig {
 		MapNode pos;
@@ -360,11 +363,10 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	private static class PowerMinorLine extends NoOutlineWaySegmentWorldObject implements LegacyWorldObject {
+	private static class PowerMinorLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
-		private static final Material material = PLASTIC_BLACK;
 
 		public PowerMinorLine(MapWaySegment segment) {
 			super(segment);
@@ -376,7 +378,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
 
 			ShapeXZ powerlineShape = new PolylineXZ(
 				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL),
@@ -387,18 +389,17 @@ public final class PowerModule extends AbstractModule {
 
 			List<VectorXYZ> path = getBaseline();
 
-			target.drawExtrudedShape(material, powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, null, null);
+			return singletonList(new Mesh(new ExtrusionGeometry(powerlineShape, getBaseline(),
+					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.getTextureDimensions()), PLASTIC));
 
 		}
 
 	}
 
-	private final static class PowerLine extends NoOutlineWaySegmentWorldObject implements LegacyWorldObject {
+	private final static class PowerLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float CABLE_THICKNESS = 0.05f;
-		// TODO: we need black plastic for cable material
-		private final static Material CABLE_MATERIAL = PLASTIC_BLACK;
+		private static final Material CABLE_MATERIAL = PLASTIC;
 		private static final double SLACK_SPAN = 6;
 		private static final double INTERPOLATION_STEPS = 10;
 		private static final ShapeXZ powerlineShape = new CircleXZ(NULL_VECTOR, CABLE_THICKNESS/2);
@@ -525,7 +526,9 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
+
+			List<Mesh> result = new ArrayList<>();
 
 			// do initial setup for height and position calculation, if necessary
 			if (startPos == null) {
@@ -558,10 +561,13 @@ public final class PowerModule extends AbstractModule {
 					path.add(start.add(dir.mult(dx)).add(0, height, 0));
 				}
 
-				target.drawExtrudedShape(CABLE_MATERIAL, powerlineShape, path,
-						nCopies(path.size(), Y_UNIT), null, null, null);
+				result.add(new Mesh(new ExtrusionGeometry(powerlineShape, path, nCopies(path.size(), Y_UNIT),
+						null, BLACK, null, CABLE_MATERIAL.getTextureDimensions()), CABLE_MATERIAL));
 
 			}
+
+			return result;
+
 		}
 
 	}
@@ -963,8 +969,9 @@ public final class PowerModule extends AbstractModule {
 
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 
-			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
-					texCoordLists(vs, Materials.PLASTIC_GREY, STRIP_WALL));
+			Material backMaterial = PLASTIC.withColor(new Color(184, 184, 184));
+			target.drawTriangleStrip(backMaterial, vs,
+					texCoordLists(vs, backMaterial, STRIP_WALL));
 
 		}
 

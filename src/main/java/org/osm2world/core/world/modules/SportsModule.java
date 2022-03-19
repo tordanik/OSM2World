@@ -2,11 +2,14 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +21,10 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
@@ -271,6 +278,19 @@ public class SportsModule extends AbstractModule {
 	 */
 	class TennisPitch extends Pitch {
 
+		private final double netHeightAtPosts = 1.07;
+		private final double netHeightCenter = 0.91;
+		private final double postRadius = 0.04;
+
+		private final Model tennisNetPost = new Model() {
+			@Override
+			public List<Mesh> buildMeshes(InstanceParameters params) {
+				return singletonList(new Mesh(ExtrusionGeometry.createColumn(
+						null, NULL_VECTOR, netHeightAtPosts, postRadius, postRadius, false, true,
+						new Color(184, 184, 184), PLASTIC.getTextureDimensions()), PLASTIC));
+			}
+		};
+
 		TennisPitch(MapArea area) {
 			super(area);
 		}
@@ -360,10 +380,6 @@ public class SportsModule extends AbstractModule {
 
 			if (texFunction != null && renderNet) {
 
-				final double netHeightAtPosts = 1.07;
-				final double netHeightCenter = 0.91;
-				final double postRadius = 0.04;
-
 				VectorXYZ postPositionA = texFunction.getOrigin()
 						.add(texFunction.getLongSide().mult(0.5)).xyz(ele);
 
@@ -377,9 +393,7 @@ public class SportsModule extends AbstractModule {
 				/* add two posts */
 
 				for (VectorXYZ postPosition : asList(postPositionA, postPositionB)) {
-
-					target.drawColumn(PLASTIC_GREY, null, postPosition, netHeightAtPosts, postRadius, postRadius, false, true);
-
+					target.drawModel(tennisNetPost, postPosition, 0, null, null, null);
 				}
 
 				/* draw the net (with an approximated droop in the center) */

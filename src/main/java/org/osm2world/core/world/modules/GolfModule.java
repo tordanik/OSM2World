@@ -6,11 +6,12 @@ import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
-import static org.osm2world.core.target.common.material.Materials.SAND;
+import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -300,7 +301,8 @@ public class GolfModule extends AbstractModule {
 
 			/* draw pole and flag */
 
-			target.drawColumn(Materials.PLASTIC_GREY.makeSmooth(), null,
+			Material flagPoleMaterial = PLASTIC.withColor(new Color(184, 184, 184));
+			target.drawColumn(flagPoleMaterial, null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 
 			StripedFlag flag = new StripedFlag(3 / 4, asList(YELLOW), true);

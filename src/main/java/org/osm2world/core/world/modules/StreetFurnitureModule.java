@@ -1157,7 +1157,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				PolygonWithHolesXZ ring = new PolygonWithHolesXZ(asSimplePolygon(outerCircle),
 						asList(asSimplePolygon(innerCircle).reverse()));
 
-				target.drawExtrudedShape(PLASTIC_BLACK, ring,
+				target.drawExtrudedShape(PLASTIC.withColor(BLACK), ring,
 						asList(position, frontCenter),
 						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
@@ -1176,7 +1176,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				ShapeXZ handShape = new AxisAlignedRectangleXZ(-width/2, -width/2, width/2, length - width/2);
 				handShape = handShape.rotatedCW(angleRad);
 
-				target.drawExtrudedShape(PLASTIC_BLACK, handShape,
+				target.drawExtrudedShape(PLASTIC.withColor(BLACK), handShape,
 						asList(origin, origin.add(faceNormal.mult(thickness))),
 						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
