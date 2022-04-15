@@ -48,7 +48,7 @@ class TexturedWindow implements Window {
 		PolygonXYZ frontOutline = surface.convertTo3D(outline());
 
 		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
-		VectorXYZ toBack = windowNormal.mult(insetDistance());
+		VectorXYZ toBack = windowNormal.mult(-insetDistance());
 		PolygonXYZ backOutline = frontOutline.add(toBack);
 
 		/* draw the window itself */
