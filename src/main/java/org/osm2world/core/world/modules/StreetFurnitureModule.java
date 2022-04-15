@@ -1680,11 +1680,6 @@ public class StreetFurnitureModule extends AbstractModule {
 
 		public BusStop(MapNode node) {
 			super(node);
-
-			if (node.getTags().contains("bin", "yes")) {
-				node.addRepresentation(new WasteBasket(node));
-			}
-
 		}
 
 		@Override
