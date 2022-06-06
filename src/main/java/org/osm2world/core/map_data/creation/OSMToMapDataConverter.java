@@ -213,7 +213,13 @@ public class OSMToMapDataConverter {
 				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
 
 				for (long id : nodesAsList(osmWay).toArray()) {
-					nodes.add(nodeIdMap.get(id));
+					MapNode node = nodeIdMap.get(id);
+					if (node != null) {
+						nodes.add(node);
+					} else {
+						throw new Error("Invalid input data: Way w" + osmWay.getId()
+								+ " references missing node n" + id);
+					}
 				}
 
 				MapWay way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
