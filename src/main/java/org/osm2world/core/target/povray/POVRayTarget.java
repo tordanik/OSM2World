@@ -17,7 +17,6 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
-import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextTexture;
@@ -553,11 +552,11 @@ public class POVRayTarget extends AbstractTarget {
 			append("        image_map {\n");
 
 			try {
-				if (!(textureData instanceof ImageFileTexture)
-						|| ((ImageFileTexture)textureData).getFile().getName().toLowerCase().endsWith("png")) {
-					append("             png \"" + getTextureFile(textureData) + "\"\n");
+				File textureFile = getTextureFile(textureData);
+				if (textureFile.getName().toLowerCase().endsWith("png")) {
+					append("             png \"" + textureFile + "\"\n");
 				} else {
-					append("             jpeg \"" + getTextureFile(textureData) + "\"\n");
+					append("             jpeg \"" + textureFile + "\"\n");
 				}
 
 				if (colorable) {
