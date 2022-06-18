@@ -2,11 +2,11 @@ package org.osm2world.core.world.modules;
 
 import static java.awt.Color.*;
 import static java.lang.Math.*;
-import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.math.NumberUtils.max;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.*;
@@ -54,6 +54,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
@@ -76,6 +77,9 @@ public class StreetFurnitureModule extends AbstractModule {
 	protected void applyToNode(MapNode node) {
 		if (node.getTags().contains("playground", "swing")) {
 			node.addRepresentation(new Swing(node));
+		}
+		if (node.getTags().contains("man_made", "pole")) {
+			node.addRepresentation(new Pole(node));
 		}
 		if (node.getTags().contains("man_made", "flagpole")) {
 			node.addRepresentation(new Flagpole(node));
@@ -168,6 +172,41 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 		}
 		return false;
+	}
+
+	public static final class Pole extends NoOutlineNodeWorldObject {
+
+		public Pole(MapNode node) {
+			super(node);
+		}
+
+		@Override
+		public List<Mesh> buildMeshes() {
+
+			double height = parseMeasure(node.getTags().getValue("height"), 5.0);
+			double radius = parseMeasure(node.getTags().getValue("width"), 0.2) / 2;
+
+			Material material = Materials.getMaterial(node.getTags().getValue("material"), STEEL);
+			Color color = parseColor(node.getTags().getValue("colour"));
+
+			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
+					height, radius, radius, false, true,
+					color, material.getTextureDimensions());
+
+			return singletonList(new Mesh(geometry, material));
+
+		}
+
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			return singleton(AttachmentSurface.fromMeshes("pole", buildMeshes()));
+		}
+
+		@Override
+		public void renderTo(Target target) {
+			buildMeshes().forEach(target::drawMesh);
+		}
+
 	}
 
 	public static final class Flagpole extends NoOutlineNodeWorldObject {

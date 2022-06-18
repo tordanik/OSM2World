@@ -315,10 +315,19 @@ public final class Materials {
 		return fieldNameMap.keySet();
 	}
 
-	/** returns a material defined here based on its field name */
-	public static final ConfMaterial getMaterial(String fieldName) {
+	/**
+	 * returns a material defined here based on its name
+	 *
+	 * @param name  case-insensitive name of the material
+	 */
+	public static final @Nullable ConfMaterial getMaterial(@Nullable String name) {
+
+		if (name == null) return null;
+
+		/* look for materials defined as a constant first */
+
 		for (Entry<ConfMaterial, String> entry : fieldNameMap.entrySet()) {
-			if (entry.getValue().equalsIgnoreCase(fieldName)) {
+			if (entry.getValue().equalsIgnoreCase(name)) {
 				return entry.getKey();
 			}
 		}
@@ -328,12 +337,19 @@ public final class Materials {
 		 * through externalMaterials map
 		 */
 		for (String key : externalMaterials.keySet()) {
-			if(fieldName.equals(key)) {
-				return externalMaterials.get(fieldName);
+			if (name.equals(key)) {
+				return externalMaterials.get(name);
 			}
 		}
 
 		return null;
+
+	}
+
+	/** variant of {@link #getMaterial(String)} with a default value */
+	public static final Material getMaterial(@Nullable String name, Material defaultValue) {
+		Material result = getMaterial(name);
+		return result == null ? defaultValue : result;
 	}
 
 	/** returns a material for a surface value; null if none is found */
