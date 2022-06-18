@@ -160,11 +160,11 @@ public class WallSurface {
 	 * renders the wall
 	 *
 	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
-	 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+	 * @param windowHeight  the height for window textures will be replaced with this value if it's non-null
 	 * @param renderElements  whether the {@link WallElement}s inserted into this surface should also be rendered
 	 */
 	public void renderTo(Target target, VectorXZ textureOrigin,
-			boolean applyWindowTexture, double windowHeight, boolean renderElements) {
+			boolean applyWindowTexture, Double windowHeight, boolean renderElements) {
 
 		/* render the elements on the wall */
 
@@ -244,8 +244,9 @@ public class WallSurface {
 
 			Double fixedHeight = null;
 
-			if (texLayer >= this.material.getNumTextureLayers()
-					|| this.material == GLASS_WALL) {
+			if (windowHeight != null
+					&& (texLayer >= this.material.getNumTextureLayers()
+						|| this.material == GLASS_WALL)) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

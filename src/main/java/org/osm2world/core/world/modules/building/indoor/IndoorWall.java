@@ -965,11 +965,11 @@ public class IndoorWall implements Renderable {
 
 						if (mainSurface != null && backSurface != null) {
 							somethingRendered = true;
-							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, !attachmentSurfaces);
-							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, !attachmentSurfaces);
+							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, !attachmentSurfaces);
+							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, !attachmentSurfaces);
 							if (leftSurface != null && rightSurface != null) {
-								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, true);
-								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, true);
+								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, true);
+								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, true);
 							}
 						}
 					} else {
