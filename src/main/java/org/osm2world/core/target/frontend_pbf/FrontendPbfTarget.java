@@ -271,6 +271,8 @@ public class FrontendPbfTarget extends MeshTarget {
 	public void drawModel(Model model, VectorXYZ position,
 			double direction, Double height, Double width, Double length) {
 
+		if (!bbox.contains(position.xz())) return;
+
 		MeshMetadata worldObjectMetadata = new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),
 				currentWorldObject.getClass());
 
