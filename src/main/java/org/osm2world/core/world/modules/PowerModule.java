@@ -84,20 +84,24 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 
-		VectorXZ dir = VectorXZ.NULL_VECTOR;
+		VectorXZ dir = VectorXZ.Z_UNIT;
 		int cables = -1;
 		int voltage = -1;
-		for (MapWaySegment powerLine : powerLines) {
-			dir = dir.add(powerLine.getDirection());
 
-			try {
-				cables = Integer.valueOf(powerLine.getTags().getValue("cables"));
-			} catch (NumberFormatException e) {}
-			try {
-				voltage = Integer.valueOf(powerLine.getTags().getValue("voltage"));
-			} catch (NumberFormatException e) {}
+		if (!powerLines.isEmpty()) {
+			dir = VectorXZ.NULL_VECTOR;
+			for (MapWaySegment powerLine : powerLines) {
+				dir = dir.add(powerLine.getDirection());
+
+				try {
+					cables = Integer.valueOf(powerLine.getTags().getValue("cables"));
+				} catch (NumberFormatException e) {}
+				try {
+					voltage = Integer.valueOf(powerLine.getTags().getValue("voltage"));
+				} catch (NumberFormatException e) {}
+			}
+			dir = dir.normalize();
 		}
-		dir = dir.mult(1.0/powerLines.size());
 
 		return new TowerConfig(node, cables, voltage, dir);
 	}
