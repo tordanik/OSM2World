@@ -1,6 +1,7 @@
 package org.osm2world.core.world.attachment;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 
@@ -17,6 +18,8 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.mesh.Geometry;
+import org.osm2world.core.target.common.mesh.Mesh;
 
 /**
  * a surface (consisting of one or more {@link FaceXYZ}s) that {@link AttachmentConnector} can attach to
@@ -85,6 +88,30 @@ public class AttachmentSurface implements BoundedObject {
 	@Override
 	public String toString() {
 		return "{" + types + ", " + faces + "}";
+	}
+
+	public static AttachmentSurface fromGeometry(String type, Geometry... geometries) {
+		return fromGeometry(singletonList(type), geometries);
+	}
+
+	public static AttachmentSurface fromGeometry(Collection<String> types, Geometry... geometries) {
+		List<FaceXYZ> faces = new ArrayList<>();
+		for (Geometry g : geometries) {
+			g.asTriangles().triangles.forEach(t -> faces.add(new FaceXYZ(t.vertices())));
+		}
+		return new AttachmentSurface(types, faces);
+	}
+
+	public static AttachmentSurface fromMeshes(String type, Iterable<Mesh> meshes) {
+		return fromMeshes(singletonList(type), meshes);
+	}
+
+	public static AttachmentSurface fromMeshes(Collection<String> types, Iterable<Mesh> meshes) {
+		List<FaceXYZ> faces = new ArrayList<>();
+		for (Mesh mesh : meshes) {
+			mesh.geometry.asTriangles().triangles.forEach(t -> faces.add(new FaceXYZ(t.vertices())));
+		}
+		return new AttachmentSurface(types, faces);
 	}
 
 	public static class Builder extends FaceTarget {
