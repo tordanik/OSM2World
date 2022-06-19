@@ -58,4 +58,9 @@ public class LColor {
 		return new LColor(componentsRGB);
 	}
 
+	@Override
+	public String toString() {
+		return "(" + red + ", " + green + ", " + blue + ")";
+	}
+
 }

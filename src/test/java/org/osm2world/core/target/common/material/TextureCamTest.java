@@ -4,6 +4,7 @@ import static java.awt.Color.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,11 +13,13 @@ import java.util.List;
 import org.junit.Test;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureCam.ViewDirection;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.util.color.LColor;
 
 public class TextureCamTest {
 
@@ -36,6 +39,20 @@ public class TextureCamTest {
 				Wrap.CLAMP, new VectorXYZ(0.5, 0.5, 0));
 
 		result.writeToFiles(new File("/tmp/texturecam-test_$INFIX.png"));
+
+		/* check some pixels of the result */
+
+		assertAlmostEquals(new LColor(0.5f, 0.5f, 0f),
+				result.baseColorTexture.getColorAt(new VectorXZ(0.0, 0.5), Wrap.CLAMP));
+		assertAlmostEquals(LColor.fromAWT(GRAY),
+				result.baseColorTexture.getColorAt(new VectorXZ(1.0, 0.5), Wrap.CLAMP));
+
+		assertAlmostEquals(new LColor(1f, 1f, 1f),
+				result.displacementTexture.getColorAt(new VectorXZ(0.0, 0.01), Wrap.CLAMP));
+		assertAlmostEquals(new LColor(0.5f, 0.5f, 0.5f),
+				result.displacementTexture.getColorAt(new VectorXZ(0.5, 1.0), Wrap.CLAMP));
+		assertAlmostEquals(new LColor(0f, 0f, 0f),
+				result.displacementTexture.getColorAt(new VectorXZ(1.0, 0.5), Wrap.CLAMP));
 
 	}
 
