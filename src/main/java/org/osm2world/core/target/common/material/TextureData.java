@@ -31,7 +31,27 @@ import jakarta.xml.bind.DatatypeConverter;
  */
 public abstract class TextureData {
 
-	public static enum Wrap { REPEAT, CLAMP, CLAMP_TO_BORDER }
+	public static enum Wrap {
+
+		REPEAT,
+		CLAMP,
+		CLAMP_TO_BORDER;
+
+		public double apply(double d) {
+			if (this == REPEAT) {
+				double result = d % 1;
+				while (result < 0) result += 1.0;
+				return result;
+			} else {
+				return min(max(0.0, d), 1.0);
+			}
+		}
+
+		public VectorXZ apply(VectorXZ v) {
+			return new VectorXZ(apply(v.x), apply(v.z));
+		}
+
+	}
 
 	/** width of a single tile of the texture in meters, greater than 0 */
 	public final double width;
@@ -152,17 +172,13 @@ public abstract class TextureData {
 
 	}
 
-	public LColor getColorAt(VectorXZ texCoord) {
+	public LColor getColorAt(VectorXZ texCoord, Wrap wrap) {
 
-		double texX = texCoord.x % 1;
-		double texZ = texCoord.z % 1;
-
-		while (texX < 0) texX += 1.0;
-		while (texZ < 0) texZ += 1.0;
+		texCoord = wrap.apply(texCoord);
 
 		BufferedImage image = getBufferedImage();
-		int x = min((int)floor(image.getWidth() * texX), image.getWidth() - 1);
-		int y = min((int)floor(image.getHeight() * texZ), image.getHeight() - 1);
+		int x = min((int)floor(image.getWidth() * texCoord.x), image.getWidth() - 1);
+		int y = min((int)floor(image.getHeight() * texCoord.z), image.getHeight() - 1);
 		return LColor.fromAWT(new Color(image.getRGB(x, y)));
 
 	}

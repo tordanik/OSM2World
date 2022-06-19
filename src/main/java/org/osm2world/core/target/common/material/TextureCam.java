@@ -258,7 +258,7 @@ public class TextureCam {
 
 			if (texture != null && texCoord != null) {
 
-				LColor textureColor = texture.getColorAt(texCoord);
+				LColor textureColor = texture.getColorAt(texCoord, Wrap.REPEAT);
 
 				if (textureType == TextureType.BASE_COLOR && material.getTextureLayers().get(0).colorable) {
 					c = c.multiply(textureColor);
