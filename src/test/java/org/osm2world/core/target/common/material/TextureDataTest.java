@@ -2,6 +2,7 @@ package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.target.common.material.TextureData.Wrap.*;
 import static org.osm2world.core.target.common.material.TextureTestUtil.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
@@ -11,6 +12,31 @@ import org.junit.Test;
 import org.osm2world.core.util.color.LColor;
 
 public class TextureDataTest {
+
+	@Test
+	public void testWrap() {
+
+		assertAlmostEquals(0.0, REPEAT.apply(0.0));
+		assertAlmostEquals(0.8, REPEAT.apply(0.8));
+
+		assertAlmostEquals(0.0, REPEAT.apply(1.0));
+		assertAlmostEquals(0.5, REPEAT.apply(1.5));
+		assertAlmostEquals(0.5, REPEAT.apply(3.5));
+
+		assertAlmostEquals(0.2, REPEAT.apply(-0.8));
+		assertAlmostEquals(0.2, REPEAT.apply(-10.8));
+
+		assertAlmostEquals(0.0, CLAMP.apply(0.0));
+		assertAlmostEquals(0.8, CLAMP.apply(0.8));
+
+		assertAlmostEquals(1.0, CLAMP.apply(1.0));
+		assertAlmostEquals(1.0, CLAMP.apply(1.5));
+		assertAlmostEquals(1.0, CLAMP.apply(3.5));
+
+		assertAlmostEquals(0.0, CLAMP.apply(-0.8));
+		assertAlmostEquals(0.0, CLAMP.apply(-10.8));
+
+	}
 
 	@Test
 	public void testAverageColor_singleColor() {
