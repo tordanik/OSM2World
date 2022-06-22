@@ -43,6 +43,7 @@ public class TextureCam {
 	public static final Resolution DEFAULT_RESOLUTION = new Resolution(1024, 1024);
 
 	private static final int TRANSPARENT_RGB = new Color(0, 0, 0, 0).getRGB();
+	private static final int DEFAULT_NORMAL_RGB = new LColor(0.5f, 0.5f, 1f).toAWT().getRGB();
 
 	private static class TriangleWithAttributes {
 
@@ -145,6 +146,8 @@ public class TextureCam {
 		BufferedImage ormImage = new BufferedImage(res.width, res.height, BufferedImage.TYPE_INT_RGB);
 		Double[][] displacementHeights = new Double[res.width][res.height];
 
+
+
 		List<TriangleWithAttributes> intersectedTriangles = new ArrayList<>();
 
 		for (int y = 0; y < res.height; y++) {
@@ -168,6 +171,7 @@ public class TextureCam {
 				if (!optionalT.isPresent()) {
 
 					colorImage.setRGB(x, y, TRANSPARENT_RGB);
+					normalImage.setRGB(x, y, DEFAULT_NORMAL_RGB);
 
 				} else {
 
@@ -186,9 +190,17 @@ public class TextureCam {
 					LColor cOrm = pickColorAtTexCoord(TextureType.ORM, texCoord, t.material, LColor.WHITE);
 					ormImage.setRGB(x, y, cOrm.toAWT().getRGB());
 
-					// LColor cNormal = pickColorAtTexCoord(TextureType.ORM, texCoord, m);
-					// TODO: extract normal vector, rotate it based on interpolated normal (NOT triangle normal), convert back to color
-					// start implementation by JUST interpolating triangle normal
+					LColor cNormal = pickColorAtTexCoord(TextureType.ORM, texCoord, t.material, LColor.WHITE);
+					VectorXYZ geometryNormal = interpolateOnTriangle(point, t.triangle,
+							t.normals.get(0), t.normals.get(1), t.normals.get(2));
+					geometryNormal = new VectorXYZ(geometryNormal.x, geometryNormal.y, -geometryNormal.z);
+					if (viewDirection == ViewDirection.FROM_TOP) {
+						geometryNormal = geometryNormal.rotateVec(PI / 2, NULL_VECTOR, X_UNIT);
+					}
+					// TODO: rotate texture normal vector based on geometry normal vector
+					// VectorXYZ textureNormal = cNormal == LColor.WHITE ? Z_UNIT : normalFromColor(cNormal);
+					cNormal = colorFromNormal(geometryNormal);
+					normalImage.setRGB(x, y, cNormal.toAWT().getRGB());
 
 					displacementHeights[x][y] = interpolateOnTriangle(point, t.triangle, t.vertexHeights.get(0),
 							t.vertexHeights.get(1), t.vertexHeights.get(2));
@@ -274,14 +286,27 @@ public class TextureCam {
 
 	}
 
-	private static VectorXYZ normalFromColor(LColor color) {
-
-		return NULL_VECTOR; //FIXME implement
-
+	/**
+	 * represents a normal vector as a color value for use in normal textures.
+	 * Follows §3.9.3 of the glTF 2.0 specification.
+	 */
+	static VectorXYZ normalFromColor(LColor color) {
+		assert color.blue > 0.5;
+		return new VectorXYZ(
+				-1.0 + 2 * color.red,
+				-1.0 + 2 * color.green,
+				-1.0 + 2 * color.blue);
 	}
 
-	private static LColor colorFromNormal(VectorXYZ color) {
-		return new LColor(1, 0, 0); //FIXME implement
+	/** inverse of {@link #normalFromColor(LColor)} */
+	static LColor colorFromNormal(VectorXYZ normal) {
+		assert normal.x >= -1.0 && normal.x <= 1.0
+				&& normal.y >= -1.0 && normal.y <= 1.0
+				&& normal.z > 0.0 && normal.z <= 1.0;
+		return new LColor(
+				(float)(normal.x + 1.0) / 2,
+				(float)(normal.y + 1.0) / 2,
+				(float)(normal.z + 1.0) / 2);
 	}
 
 	private static final class RenderedTexture extends RuntimeTexture {

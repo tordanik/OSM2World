@@ -1,9 +1,11 @@
 package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
+import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.target.common.material.TextureCam.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.io.File;
@@ -22,6 +24,15 @@ import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.util.color.LColor;
 
 public class TextureCamTest {
+
+	@Test
+	public void testNormalColorConversion() {
+
+		assertAlmostEquals(new VectorXYZ(0, 0, 1), normalFromColor(new LColor(0.5f, 0.5f, 1f)));
+
+		assertAlmostEquals(new LColor(0.5f, 0.5f, 1f), colorFromNormal(new VectorXYZ(0, 0, 1)));
+
+	}
 
 	@Test
 	public void test2Triangles() throws IOException {
@@ -53,6 +64,12 @@ public class TextureCamTest {
 				result.displacementTexture.getColorAt(new VectorXZ(0.5, 1.0), Wrap.CLAMP));
 		assertAlmostEquals(new LColor(0f, 0f, 0f),
 				result.displacementTexture.getColorAt(new VectorXZ(1.0, 0.5), Wrap.CLAMP));
+
+		assertAlmostEquals(0, sqrt(2), sqrt(2),
+				normalFromColor(result.normalTexture.getColorAt(new VectorXZ(0.25, 0.5), Wrap.CLAMP)));
+		assertAlmostEquals(0, 0, 1,
+				normalFromColor(result.normalTexture.getColorAt(new VectorXZ(0.75, 0.5), Wrap.CLAMP)));
+
 
 	}
 
