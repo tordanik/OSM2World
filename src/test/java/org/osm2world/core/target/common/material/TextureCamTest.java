@@ -32,6 +32,10 @@ public class TextureCamTest {
 
 		assertAlmostEquals(new LColor(0.5f, 0.5f, 1f), colorFromNormal(new VectorXYZ(0, 0, 1)));
 
+		for (VectorXYZ normal : asList(new VectorXYZ(0.0, -sqrt(0.5), sqrt(0.5)))) {
+			assertAlmostEquals(normal, normalFromColor(colorFromNormal(normal)));
+		}
+
 	}
 
 	@Test
@@ -65,11 +69,12 @@ public class TextureCamTest {
 		assertAlmostEquals(new LColor(0f, 0f, 0f),
 				result.displacementTexture.getColorAt(new VectorXZ(1.0, 0.5), Wrap.CLAMP));
 
-		assertAlmostEquals(0, sqrt(2), sqrt(2),
-				normalFromColor(result.normalTexture.getColorAt(new VectorXZ(0.25, 0.5), Wrap.CLAMP)));
+		assertAlmostEquals(0, -sqrt(0.5), sqrt(0.5),
+				normalFromColor(result.normalTexture.getColorAt(new VectorXZ(0.25, 0.5), Wrap.CLAMP)),
+				0.02);
 		assertAlmostEquals(0, 0, 1,
-				normalFromColor(result.normalTexture.getColorAt(new VectorXZ(0.75, 0.5), Wrap.CLAMP)));
-
+				normalFromColor(result.normalTexture.getColorAt(new VectorXZ(0.75, 0.5), Wrap.CLAMP)),
+				0.02);
 
 	}
 

@@ -88,6 +88,16 @@ public final class TestUtil {
 		}
 	}
 
+	public static final void assertAlmostEquals(double expectedX, double expectedY, double expectedZ,
+			VectorXYZ actual, double delta) {
+		VectorXYZ expected = new VectorXYZ(expectedX, expectedY, expectedZ);
+		if (abs(expectedX - actual.x) > delta
+				|| abs(expectedY - actual.y) > delta
+				|| abs(expectedZ - actual.z) > delta) {
+			fail("expected " + expected + ", was " + actual);
+		}
+	}
+
 	public static final void assertAlmostEquals(List<VectorXZ> expected, List<VectorXZ> actual) {
 
 		assertSame(expected.size(), actual.size());
