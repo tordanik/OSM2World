@@ -4,7 +4,6 @@ import static java.awt.Color.*;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 import static org.osm2world.core.target.common.material.TextureCam.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
@@ -48,10 +47,10 @@ public class TextureCamTest {
 		geometryBuilder.addTriangles(asList(tFront), emptyList(), asList(RED, RED, GREEN));
 		geometryBuilder.addTriangles(tBack);
 
-		List<Mesh> meshes = asList(new Mesh(geometryBuilder.build(), PLASTIC));
+		List<Mesh> meshes = asList(new Mesh(geometryBuilder.build(), new ImmutableMaterial(Interpolation.FLAT, WHITE)));
 
 		TextureLayer result = TextureCam.renderTextures(meshes, ViewDirection.FROM_FRONT, "test", 1.0, 1.0, null, null,
-				Wrap.CLAMP, new VectorXYZ(0.5, 0.5, 0));
+				Wrap.CLAMP, new VectorXYZ(0.5, 0.5, 0), 0.0);
 
 		result.writeToFiles(new File("/tmp/texturecam-test_$INFIX.png"));
 

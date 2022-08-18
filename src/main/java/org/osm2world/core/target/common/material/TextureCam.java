@@ -70,7 +70,7 @@ public class TextureCam {
 
 	public static final TextureLayer renderTextures(List<Mesh> meshes, ViewDirection viewDirection, String name,
 			double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap,
-			@Nullable VectorXYZ center) {
+			@Nullable VectorXYZ center, double displacementScale) {
 
 		List<TriangleWithAttributes> triangles = new ArrayList<>();
 
@@ -190,21 +190,32 @@ public class TextureCam {
 					LColor cOrm = pickColorAtTexCoord(TextureType.ORM, texCoord, t.material, LColor.WHITE);
 					ormImage.setRGB(x, y, cOrm.toAWT().getRGB());
 
-					LColor cNormal = pickColorAtTexCoord(TextureType.ORM, texCoord, t.material, LColor.WHITE);
+					LColor cNormal = pickColorAtTexCoord(TextureType.NORMAL, texCoord, t.material, LColor.WHITE);
+					if (cNormal == LColor.WHITE) {
+						cNormal = colorFromNormal(Z_UNIT);
+					}
 					VectorXYZ geometryNormal = interpolateOnTriangle(point, t.triangle,
 							t.normals.get(0), t.normals.get(1), t.normals.get(2));
 					geometryNormal = new VectorXYZ(geometryNormal.x, geometryNormal.y, -geometryNormal.z);
 					if (viewDirection == ViewDirection.FROM_TOP) {
 						geometryNormal = geometryNormal.rotateVec(PI / 2, NULL_VECTOR, X_UNIT);
 					}
-					// TODO: rotate texture normal vector based on geometry normal vector
-					// VectorXYZ textureNormal = cNormal == LColor.WHITE ? Z_UNIT : normalFromColor(cNormal);
-					cNormal = colorFromNormal(geometryNormal);
+					if (geometryNormal.distanceTo(Z_UNIT) > 0.1) {
+						// overwrite texture normal with geometry normal unless it's almost directly facing the camera
+						// TODO: general solution: rotate texture normal vector based on geometry normal vector (MikkTSpace)
+						cNormal = colorFromNormal(geometryNormal);
+					}
 					normalImage.setRGB(x, y, cNormal.toAWT().getRGB());
 
 					displacementHeights[x][y] = interpolateOnTriangle(point, t.triangle, t.vertexHeights.get(0),
 							t.vertexHeights.get(1), t.vertexHeights.get(2));
-					// TODO: add displacement from existing displacement textures
+					if (geometryNormal.distanceTo(Z_UNIT) <= 0.1) {
+						// add displacement from existing displacement textures
+						// TODO: do this even if the geometry is not (almost) directly facing the camera
+						double origDisplacement = pickColorAtTexCoord(TextureType.DISPLACEMENT,
+								texCoord, t.material, LColor.WHITE).red;
+						displacementHeights[x][y] += origDisplacement * displacementScale;
+					}
 
 				}
 
