@@ -51,6 +51,17 @@ public class Angle {
 		return radians + " rad";
 	}
 
+	/**
+	 * returns the angular difference in radians between two direction angles.
+	 * The difference can be either in clockwise or counterclockwise direction,
+	 * whichever is smaller.
+	 *
+	 * @return  value in range 0 to PI
+	 */
+	public static double radiansBetween(Angle a1, Angle a2) {
+		return VectorXZ.angleBetween(VectorXZ.fromAngle(a1), VectorXZ.fromAngle(a2));
+	}
+
 	public static Angle ofRadians(double radians) {
 		return new Angle(fitToRange(radians));
 	}
