@@ -1,17 +1,12 @@
 package org.osm2world.core.world.modules.building.roof;
 
-import static java.lang.Math.*;
+import static java.lang.Math.min;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.Angle.radiansBetween;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
-import static org.osm2world.core.util.ValueParseUtil.parseAngle;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -157,43 +152,6 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 		}
 
 		return result;
-
-	}
-
-	private static @Nullable Angle snapDirection(String directionValue, List<LineSegmentXZ> segments) {
-
-		Double angleDeg = parseAngle(directionValue);
-
-		if (angleDeg == null) return null;
-
-		Angle angle = Angle.ofDegrees(angleDeg);
-
-		List<Angle> segmentAngles = new ArrayList<>();
-		for (LineSegmentXZ segment : segments) {
-			Angle segmentAngle = Angle.ofRadians(segment.getDirection().angle());
-			segmentAngles.add(segmentAngle);
-			segmentAngles.add(segmentAngle.plus(Angle.ofRadians(0.5 * PI)));
-			segmentAngles.add(segmentAngle.plus(Angle.ofRadians(PI)));
-			segmentAngles.add(segmentAngle.plus(Angle.ofRadians(1.5 * PI)));
-		}
-
-		Angle closestSegmentAngle = Collections.min(segmentAngles, comparingDouble(a -> radiansBetween(a, angle)));
-
-		double acceptableDifference;
-
-		if (directionValue.matches("[NSEW]+")) {
-			acceptableDifference = PI / 4;
-		} else if (!directionValue.contains(".")) {
-			acceptableDifference = PI / 18;
-		} else {
-			acceptableDifference = PI / 360;
-		}
-
-		if (radiansBetween(closestSegmentAngle, angle) <= acceptableDifference) {
-			return closestSegmentAngle;
-		} else {
-			return angle;
-		}
 
 	}
 
