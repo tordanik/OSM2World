@@ -44,7 +44,7 @@ public class GltfMaterial {
 	public @Nullable float[] emissiveFactor;
 	public @Nullable String alphaMode;
 	public @Nullable Float alphaCutoff;
-	public @Nullable boolean doubleSided;
+	public @Nullable Boolean doubleSided;
 
 	public @Nullable String name;
 	public @Nullable Map<String, Object> extensions;
