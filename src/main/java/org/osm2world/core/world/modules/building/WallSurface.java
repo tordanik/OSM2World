@@ -126,6 +126,10 @@ public class WallSurface {
 
 		wallOutline = new SimplePolygonXZ(outerLoop);
 
+		if (wallOutline.getArea() < 0.01) {
+			throw new InvalidGeometryException("wall surface area is (almost) zero");
+		}
+
 	}
 
 	public double getLength() {
