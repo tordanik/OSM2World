@@ -440,16 +440,15 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				int wrap = 0;
 
 				switch (textureData.wrap) {
-				case CLAMP: wrap = GL_CLAMP; break;
+				case CLAMP: wrap = GL_CLAMP_TO_EDGE; break;
 				case REPEAT: wrap = GL_REPEAT; break;
-				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
 				}
 
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
 
-		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+		        if (textureData.wrap == Wrap.CLAMP) {
 
 		        	/* TODO: make the RGB configurable -  for some reason,
 		        	 * it shows up in lowzoom even if fully transparent */

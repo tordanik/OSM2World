@@ -687,15 +687,11 @@ public final class Materials {
 	}
 
 	private static Wrap getWrap(String wrapString) {
-
-		Wrap wrap = Wrap.REPEAT;
-		if ("clamp_to_border".equalsIgnoreCase(wrapString)) {
-			wrap = Wrap.CLAMP_TO_BORDER;
-		} else if ("clamp".equalsIgnoreCase(wrapString)) {
-			wrap = Wrap.CLAMP;
+		if (wrapString != null && wrapString.toLowerCase().startsWith("clamp")) {
+			return Wrap.CLAMP;
+		} else {
+			return Wrap.REPEAT;
 		}
-
-		return wrap;
 	}
 
 	private static @Nullable Function<TextureDataDimensions, TexCoordFunction> getCoordFunction(

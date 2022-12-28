@@ -428,7 +428,6 @@ public class GltfTarget extends MeshTarget {
 		GltfSampler sampler = new GltfSampler();
 		switch (textureData.wrap) {
 		case CLAMP:
-		case CLAMP_TO_BORDER:
 			sampler.wrapS = GltfSampler.WRAP_CLAMP_TO_EDGE;
 			sampler.wrapT = GltfSampler.WRAP_CLAMP_TO_EDGE;
 			break;

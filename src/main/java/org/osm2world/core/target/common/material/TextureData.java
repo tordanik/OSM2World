@@ -33,9 +33,11 @@ public abstract class TextureData {
 
 	public static enum Wrap {
 
+		/** should behave like glTF's "repeat" */
 		REPEAT,
-		CLAMP,
-		CLAMP_TO_BORDER;
+
+		/** should behave like glTF's "clamp to edge" */
+		CLAMP;
 
 		public double apply(double d) {
 			if (this == REPEAT) {

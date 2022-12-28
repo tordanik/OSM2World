@@ -401,8 +401,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		}
 
 		switch (textureLayer.baseColorTexture.wrap) {
-			case CLAMP:
-			case CLAMP_TO_BORDER: layerBuilder.setWrap(Wrap.CLAMP); break;
+			case CLAMP: layerBuilder.setWrap(Wrap.CLAMP); break;
 			case REPEAT: break; //default value – not setting it saves bandwidth in proto2
 			default: throw new Error("unsupported wrap: " + baseColorTexture.wrap);
 		}

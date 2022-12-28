@@ -1,7 +1,7 @@
 package org.osm2world.core.target.jogl;
 
 import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2ES2.*;
+import static com.jogamp.opengl.GL2ES2.GL_TEXTURE_BORDER_COLOR;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
@@ -105,16 +105,15 @@ public class DepthBufferShader extends AbstractPrimitiveShader {
 				int wrap = 0;
 
 				switch (textureData.wrap) {
-				case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
 				case REPEAT: wrap = GL_REPEAT; break;
-				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
+				case CLAMP: wrap = GL_CLAMP_TO_EDGE; break;
 				}
 
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
 
-		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+		        if (textureData.wrap == Wrap.CLAMP) {
 
 		        	/* TODO: make the RGB configurable -  for some reason,
 		        	 * it shows up in lowzoom even if fully transparent */
