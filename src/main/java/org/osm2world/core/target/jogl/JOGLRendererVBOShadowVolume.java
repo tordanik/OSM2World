@@ -1,15 +1,13 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_FLOAT;
-import static javax.media.opengl.GL2GL3.GL_DOUBLE;
+import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL2GL3.GL_DOUBLE;
 
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.Primitive;
@@ -18,6 +16,7 @@ import org.osm2world.core.target.common.material.Material.Shadow;
 import org.osm2world.core.target.common.material.Material.Transparency;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL3;
 
 /**
  * Renders the shadow volumes for the contents of a {@link PrimitiveBuffer} using JOGL.

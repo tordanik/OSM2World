@@ -1,12 +1,14 @@
 package org.osm2world.core.target.jogl;
 
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2.*;
+import static com.jogamp.opengl.GL2ES1.*;
+import static com.jogamp.opengl.GL2ES2.*;
+import static com.jogamp.opengl.GL2ES3.GL_QUADS;
+import static com.jogamp.opengl.GL2GL3.*;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.*;
 import static java.awt.Color.WHITE;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2.*;
-import static javax.media.opengl.GL2ES1.*;
-import static javax.media.opengl.GL2GL3.*;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.common.material.Material.Transparency.*;
 
@@ -15,9 +17,6 @@ import java.io.File;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.glu.GLU;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -35,6 +34,9 @@ import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding;
 import org.osm2world.core.util.color.LColor;
 
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.texture.Texture;
 
 /**

@@ -2,8 +2,6 @@ package org.osm2world.viewer.view.debug;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
-
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
@@ -11,6 +9,8 @@ import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.view.TextRenderer;
 import org.osm2world.viewer.view.TextRendererFixedFunction;
 import org.osm2world.viewer.view.TextRendererShader;
+
+import com.jogamp.opengl.GL;
 
 /**
  * view that prints an explanation how to open OSM data.

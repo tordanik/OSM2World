@@ -2,8 +2,8 @@ package org.osm2world.core.target.jogl;
 
 import java.nio.IntBuffer;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL3;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 
 /**
  * Simple base class for a shader program. Manages vertex and fragment shaders, links and validates them.

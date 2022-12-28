@@ -5,8 +5,6 @@ import static java.util.Collections.emptyList;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
-
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.data.MapData;
@@ -21,6 +19,8 @@ import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
+
+import com.jogamp.opengl.GL;
 
 /**
  * contains some common methods for debug views

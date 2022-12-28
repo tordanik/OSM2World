@@ -1,13 +1,12 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT;
-import static javax.media.opengl.GL.GL_DEPTH_TEST;
-
-import javax.media.opengl.GL;
-import javax.media.opengl.GL3;
+import static com.jogamp.opengl.GL.*;
 
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
+
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 
 /**
  * Shader to render the depth buffer into a texture that can be used to implement SSAO later.

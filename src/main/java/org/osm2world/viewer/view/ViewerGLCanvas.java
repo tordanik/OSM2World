@@ -2,11 +2,6 @@ package org.osm2world.viewer.view;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.awt.GLCanvas;
 import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
@@ -16,6 +11,11 @@ import org.osm2world.viewer.view.debug.DebugView;
 import org.osm2world.viewer.view.debug.HelpView;
 import org.osm2world.viewer.view.debug.WorldObjectView;
 
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 public class ViewerGLCanvas extends GLCanvas {

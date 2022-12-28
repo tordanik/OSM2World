@@ -1,17 +1,13 @@
 package org.osm2world.core.target.jogl;
 
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2GL3.*;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.*;
 import static java.util.Arrays.asList;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2GL3.*;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 
 import java.awt.Color;
 import java.io.File;
 import java.nio.FloatBuffer;
-
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2GL3;
-import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.AxisAlignedBoundingBoxXYZ;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
@@ -25,6 +21,9 @@ import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2GL3;
+import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
@@ -190,7 +189,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 
 		for (VectorXYZ corner : boundingBox.corners()) {
 			float[] result = new float[4];
-			FloatUtil.multMatrixVecf(camMat.glGetMvMatrixf(),
+			FloatUtil.multMatrixVec(camMat.glGetMvMatrixf(),
 					new float[]{(float)corner.x, (float)corner.y, (float)corner.z, 1}, result);
 			VectorXYZ cornerCam = new VectorXYZ(result[0]/result[3], result[1]/result[3], result[2]/result[3]);
 			double depth = -cornerCam.z;
