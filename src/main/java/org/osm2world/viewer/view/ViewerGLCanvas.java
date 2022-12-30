@@ -18,12 +18,20 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import javax.swing.*;
+
+import static jogamp.nativewindow.awt.AWTMisc.getWindow;
+
 public class ViewerGLCanvas extends GLCanvas {
 
 	private static final long serialVersionUID = 817150566654010861L;
 
-	public ViewerGLCanvas(Data data, MessageManager messageManager, RenderOptions renderOptions, GLCapabilities capabilities) {
+	private final JFrame frame;
+
+	public ViewerGLCanvas(JFrame frame, Data data, MessageManager messageManager, RenderOptions renderOptions, GLCapabilities capabilities) {
 		super(capabilities);
+
+		this.frame = frame;
 
 		setSize(800, 600);
 		setIgnoreRepaint(true);
@@ -130,7 +138,9 @@ public class ViewerGLCanvas extends GLCanvas {
 	            height = 1;
 	        }
 
-	        gl.glViewport(0, 0, width, height);
+			double dpiScaleFactor = getWindow(frame).getGraphicsConfiguration().getDefaultTransform().getScaleX();
+
+			gl.glViewport(0, 0, (int) (width * dpiScaleFactor), (int) (height * dpiScaleFactor));
 
 	        renderOptions.projection =
 	        	renderOptions.projection.withAspectRatio((double)width / height);

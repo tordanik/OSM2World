@@ -353,7 +353,7 @@ public class ViewerFrame extends JFrame {
 				caps.setStencilBits(STENCIL_BITS);
 		}
 
-		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
+		glCanvas = new ViewerGLCanvas(this, data, messageManager, renderOptions, caps);
 		add(glCanvas, BorderLayout.CENTER);
 
 		new FileDrop(glCanvas, new FileDrop.Listener() {
