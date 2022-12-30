@@ -9,7 +9,7 @@
 
 	<name>OSM2World</name>
 	<description>OSM2World creates three-dimensional models of the world from OpenStreetMap data</description>
-	<url>http://osm2world.org</url>
+	<url>https://osm2world.org</url>
 	<inceptionYear>2010</inceptionYear>
 
 	<licenses>

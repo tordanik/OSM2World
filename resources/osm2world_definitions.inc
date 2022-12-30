@@ -1,6 +1,6 @@
 /*
  * This is an example for a POVRay include file that can be used to configure the rendering
- * of .pov files generated with OSM2World (http://osm2world.org/).
+ * of .pov files generated with OSM2World (https://osm2world.org/).
  *
  * You can leave out any definition from this file, the rendering will then fall back
  * to (mostly very basic) default materials and shapes.
@@ -23,7 +23,7 @@
 #declare time="day"
 
 // activate this #include if you have downloaded the tree models
-// that are available from http://osm2world.org/download (optional)
+// that are available from https://osm2world.org/download/files/misc/ (optional)
 // #include "osm2world_trees.inc"
 
 // texture definitions
