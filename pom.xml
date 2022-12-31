@@ -176,7 +176,14 @@
 			<version>2.10</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.geodesk</groupId>
+			<artifactId>geodesk</artifactId>
+			<version>0.1.4</version>
+		</dependency>
+
 		<!-- JOGL -->
+
 		<dependency>
 			<groupId>org.jogamp.jogl</groupId>
 			<artifactId>jogl-all</artifactId>
