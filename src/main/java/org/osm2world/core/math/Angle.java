@@ -71,13 +71,8 @@ public class Angle {
 	}
 
 	private static double fitToRange(double radians) {
-		if (radians < 0) {
-			return fitToRange(radians + 2 * PI);
-		} else if (radians >= 2 * PI) {
-			return fitToRange(radians - 2 * PI);
-		} else {
-			return radians;
-		}
+		double angle = radians % (2 * PI);
+		return (angle + (2 * PI)) % (2 * PI);
 	}
 
 }
