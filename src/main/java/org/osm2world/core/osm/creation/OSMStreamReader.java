@@ -1,25 +1,11 @@
 package org.osm2world.core.osm.creation;
 
-import static java.lang.Double.parseDouble;
-import static java.lang.Math.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
+import de.topobyte.osm4j.core.access.OsmIterator;
+import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
+import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
+import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.osm2world.core.osm.data.OSMData;
 import org.w3c.dom.Document;
@@ -28,11 +14,23 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.topobyte.osm4j.core.access.OsmIterator;
-import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
-import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
-import de.topobyte.osm4j.pbf.seq.PbfIterator;
-import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Double.parseDouble;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * {@link OSMDataReader} providing information from a stream of OSM data (such as a {@link FileInputStream}).
@@ -183,12 +181,17 @@ public class OSMStreamReader implements OSMDataReader {
 
 			try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
 
-				TransformerFactory tFactory = TransformerFactory.newInstance();
-				Transformer transformer = tFactory.newTransformer();
+				// temporary UTF-16 string representation, avoids incorrectly encoded emojis
+				StringWriter stringWriter = new StringWriter();
+				stringWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-				StreamResult result = new StreamResult(outputStream);
-				DOMSource source = new DOMSource(doc);
-				transformer.transform(source, result);
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16");
+				transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+				transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
+
+				IOUtils.write(stringWriter.toString(), outputStream, StandardCharsets.UTF_8);
 
 				return tempFile;
 
