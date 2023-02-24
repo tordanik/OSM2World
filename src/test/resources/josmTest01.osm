@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='false' generator='JOSM'>
+  <bounds minlat='48.5694248' minlon='13.4566936' maxlat='48.5695917' maxlon='13.4570476' origin='CGImap 0.8.8 (3313932 spike-07.openstreetmap.org)' />
+  <bounds minlat='48.5693822' minlon='13.4567767' maxlat='48.5694621' maxlon='13.4569645' origin='CGImap 0.8.8 (2341062 spike-06.openstreetmap.org)' />
+  <node id='-137719' action='modify' lat='48.56941058732' lon='13.45684228977' />
+  <node id='-137720' action='modify' lat='48.56944440541' lon='13.45685743257' />
+  <node id='-137721' action='modify' lat='48.56946381948' lon='13.45688109319' />
+  <node id='-137722' action='modify' lat='48.56948385981' lon='13.45694450367' />
+  <node id='1470046898' action='delete' timestamp='2015-04-18T09:40:41Z' uid='4368547324346' user='testuser0' version='3' changeset='999888999' lat='48.569447' lon='13.4570021'>
+    <tag k='leaf_type' v='broadleaved' />
+    <tag k='natural' v='tree' />
+  </node>
+  <node id='4753139686' action='modify' timestamp='2017-03-24T15:47:38Z' uid='1643934562356' user='testuser1' version='1' changeset='111222333' lat='48.5694482413' lon='13.45688496808'>
+    <tag k='amenity' v='waste_basket' />
+  </node>
+  <way id='-103231' action='modify'>
+    <nd ref='-137719' />
+    <nd ref='-137720' />
+    <nd ref='-137721' />
+    <nd ref='-137722' />
+    <tag k='highway' v='footway' />
+  </way>
+</osm>

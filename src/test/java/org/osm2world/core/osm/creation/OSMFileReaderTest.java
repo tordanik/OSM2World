@@ -39,6 +39,20 @@ public class OSMFileReaderTest {
 
 	}
 
+	/** read a JOSM file with new, modified, and deleted elements and multiple bounds */
+	@Test
+	public void testJosmFileWithEdits() throws IOException, EntityNotFoundException {
+
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		File testFile = new File(classLoader.getResource("josmTest01.osm").getFile());
+		OSMData osmData = new OSMFileReader(testFile).getData();
+
+		assertSame(5, osmData.getNodes().size());
+		assertSame(1, osmData.getWays().size());
+		assertSame(0, osmData.getRelations().size());
+
+	}
+
 	@Test
 	public void testJosmFileWithEmoji() throws IOException, EntityNotFoundException {
 
