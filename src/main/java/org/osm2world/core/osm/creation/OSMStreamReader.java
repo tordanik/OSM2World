@@ -23,7 +23,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,10 +77,7 @@ public class OSMStreamReader implements OSMDataReader {
 		if (!useJosmWorkaround) {
 			return getDataFromStream(inputStream, compressionMethod);
 		} else {
-			File tempFile = createTempFileWithJosmWorkarounds(inputStream);
-			try (InputStream tempFileInputStream = new FileInputStream(tempFile)) {
-				return getDataFromStream(tempFileInputStream, compressionMethod);
-			}
+			return getDataFromStream(applyJosmWorkarounds(inputStream), CompressionMethod.None);
 		}
 	}
 
@@ -107,10 +107,10 @@ public class OSMStreamReader implements OSMDataReader {
 	 * Removes some JOSM-specific attributes present in the original data, sets fake versions for unversioned elements,
 	 * and merges multiple bound elements.
 	 *
-	 * The result is written to a temporary file in the .osm format, which is returned.
-	 * The generated file should <em>not</em> be used for anything except feeding it to OSM2World.
+	 * The result is provided as an input stream of OSM XML data, which is returned.
+	 * The generated data should <em>not</em> be used for anything except feeding it to OSM2World.
 	 */
-	protected static final File createTempFileWithJosmWorkarounds(InputStream josmDataInputStream) throws IOException {
+	protected static InputStream applyJosmWorkarounds(InputStream josmDataInputStream) throws IOException {
 
 		try {
 
@@ -176,26 +176,17 @@ public class OSMStreamReader implements OSMDataReader {
 
 			/* write result */
 
-			File tempFile = File.createTempFile("workaround", ".osm", null);
-			tempFile.deleteOnExit();
+			// temporary UTF-16 string representation, avoids incorrectly encoded emojis
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-			try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
-				// temporary UTF-16 string representation, avoids incorrectly encoded emojis
-				StringWriter stringWriter = new StringWriter();
-				stringWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
 
-				Transformer transformer = TransformerFactory.newInstance().newTransformer();
-				transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16");
-				transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-				transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
-
-				IOUtils.write(stringWriter.toString(), outputStream, StandardCharsets.UTF_8);
-
-				return tempFile;
-
-			}
+			return IOUtils.toInputStream(stringWriter.toString(), StandardCharsets.UTF_8);
 
 		} catch (ParserConfigurationException | TransformerException | SAXException e) {
 			throw new IOException(e);
