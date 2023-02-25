@@ -1,16 +1,5 @@
 package org.osm2world.console;
 
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
@@ -19,17 +8,10 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
-import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
-import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.osm.creation.MbtilesReader;
-import org.osm2world.core.osm.creation.OSMDataReader;
-import org.osm2world.core.osm.creation.OSMFileReader;
-import org.osm2world.core.osm.creation.OverpassReader;
+import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
@@ -39,6 +21,17 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 public final class Output {
 
@@ -56,11 +49,11 @@ public final class Output {
 
 		case FILE:
 			File inputFile = argumentsGroup.getRepresentative().getInput();
-			if (inputFile.getName().endsWith(".mbtiles")) {
-				dataReader = new MbtilesReader(inputFile, argumentsGroup.getRepresentative().getTile());
-			} else {
-				dataReader = new OSMFileReader(inputFile);
-			}
+			dataReader = switch (CLIArgumentsUtil.getInputFileType(argumentsGroup.getRepresentative())) {
+				case SIMPLE_FILE -> new OSMFileReader(inputFile);
+				case MBTILES -> new MbtilesReader(inputFile, argumentsGroup.getRepresentative().getTile());
+				case GEODESK -> new GeodeskReader(inputFile, argumentsGroup.getRepresentative().getTile().bounds());
+			};
 			break;
 
 		case OVERPASS:

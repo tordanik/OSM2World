@@ -1,8 +1,6 @@
 package org.osm2world.console;
 
-import java.io.File;
-import java.util.List;
-
+import com.lexicalscope.jewel.cli.Option;
 import org.osm2world.console.CLIArgumentsUtil.InputMode;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.osm.creation.OverpassReader;
@@ -10,7 +8,8 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.TileNumber;
 import org.osm2world.core.util.Resolution;
 
-import com.lexicalscope.jewel.cli.Option;
+import java.io.File;
+import java.util.List;
 
 public interface CLIArguments {
 
@@ -46,7 +45,8 @@ public interface CLIArguments {
 	List<LatLon> getInputBoundingBox();
 	boolean isInputBoundingBox();
 
-	@Option(description="zoom,x,y defining an input tile (used for mbtiles and Overpass)", pattern=TileNumber.PATTERN)
+	@Option(description="zoom,x,y defining an input tile (used for mbtiles, Geodesk and Overpass)",
+			pattern=TileNumber.PATTERN)
 	TileNumber getTile();
 	boolean isTile();
 

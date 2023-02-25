@@ -1,22 +1,21 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
+import org.osm2world.core.osm.creation.GeodeskReader;
 import org.osm2world.core.osm.creation.MbtilesReader;
+import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.target.common.rendering.TileNumber;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.RecentFilesUpdater;
 import org.osm2world.viewer.view.ViewerFrame;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
 
 public class OpenOSMAction extends AbstractLoadOSMAction {
 
@@ -45,7 +44,10 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 		if (osmFile != null) {
 
-			if (!osmFile.getName().endsWith(".mbtiles")) {
+			boolean mbtiles = osmFile.getName().endsWith(".mbtiles");
+			boolean geodesk = osmFile.getName().endsWith(".gol");
+
+			if (!mbtiles && !geodesk) {
 				openOSMFile(osmFile, true);
 			} else {
 
@@ -53,7 +55,10 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 					String tileString = JOptionPane.showInputDialog("Enter a tile number (such as \"13,1234,4321\")");
 					TileNumber tileNumber = new TileNumber(tileString);
-					loadOSMData(new MbtilesReader(osmFile, tileNumber), true);
+					OSMDataReader reader = mbtiles
+							? new MbtilesReader(osmFile, tileNumber)
+							: new GeodeskReader(osmFile, tileNumber.bounds());
+					loadOSMData(reader, true);
 
 				} catch (IllegalArgumentException e) {
 					JOptionPane.showMessageDialog(viewerFrame, "Invalid input: " + e.getMessage(),
@@ -104,7 +109,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		JFileChooser chooser = new JFileChooser(lastPath);
 		chooser.setDialogTitle("Open OSM file");
 		chooser.setFileFilter(new FileNameExtensionFilter(
-				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf", "mbtiles"));
+				"OpenStreetMap data files", "osm", "gz", "bz2", "pbf", "mbtiles", "gol"));
 
 		int returnVal = chooser.showOpenDialog(null);
 

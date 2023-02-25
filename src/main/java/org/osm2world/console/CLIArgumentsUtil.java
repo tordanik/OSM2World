@@ -1,7 +1,6 @@
 package org.osm2world.console;
 
-import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
-
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,11 +10,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
+
 public final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
 	public static enum OutputMode {OBJ, GLTF, POV, WEB_PBF, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
+	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
 
 	private CLIArgumentsUtil() { }
 
@@ -32,8 +34,8 @@ public final class CLIArgumentsUtil {
 			case FILE:
 				if (!args.isInput()) {
 					return "input file parameter is required (or choose a different input mode)";
-				} else if (args.getInput().getName().endsWith(".mbtiles") && !args.isTile()) {
-					return "the --tile parameter is required for .mbtiles input files";
+				} else if (getInputFileType(args) != InputFileType.SIMPLE_FILE && !args.isTile()) {
+					return "the --tile parameter is required for database input files";
 				}
 				break;
 
@@ -104,6 +106,23 @@ public final class CLIArgumentsUtil {
 						: args.getVersion() ? VERSION
 							: args.getGui() ? GUI
 								: CONVERT;
+	}
+
+	/** @param args  set of arguments with non-null {@link CLIArguments#getInput()} */
+	public static @Nonnull InputFileType getInputFileType(CLIArguments args) {
+
+		assert args.getInput() != null;
+
+		String inputName = args.getInput().getName();
+
+		if (inputName.endsWith(".mbtiles")) {
+			return InputFileType.MBTILES;
+		} else if (inputName.endsWith(".gol")) {
+			return InputFileType.GEODESK;
+		} else {
+			return InputFileType.SIMPLE_FILE;
+		}
+
 	}
 
 	public static final OutputMode getOutputMode(File outputFile) {

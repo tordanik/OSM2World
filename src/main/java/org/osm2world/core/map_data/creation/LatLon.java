@@ -2,6 +2,8 @@ package org.osm2world.core.map_data.creation;
 
 import org.osm2world.console.LatLonEle;
 
+import java.util.Objects;
+
 /**
  * an immutable coordinate pair with latitude and longitude
  */
@@ -26,6 +28,19 @@ public class LatLon {
 		LatLonEle lle = new LatLonEle(string);
 		this.lat = lle.lat;
 		this.lon = lle.lon;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		LatLon latLon = (LatLon) o;
+		return Double.compare(latLon.lat, lat) == 0 && Double.compare(latLon.lon, lon) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(lat, lon);
 	}
 
 	@Override
