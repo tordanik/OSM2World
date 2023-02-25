@@ -43,60 +43,61 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 		File osmFile = askFile();
 
 		if (osmFile != null) {
-
-			boolean mbtiles = osmFile.getName().endsWith(".mbtiles");
-			boolean geodesk = osmFile.getName().endsWith(".gol");
-
-			if (!mbtiles && !geodesk) {
-				openOSMFile(osmFile, true);
-			} else {
-
-				try {
-
-					String tileString = JOptionPane.showInputDialog("Enter a tile number (such as \"13,1234,4321\")");
-					TileNumber tileNumber = new TileNumber(tileString);
-					OSMDataReader reader = mbtiles
-							? new MbtilesReader(osmFile, tileNumber)
-							: new GeodeskReader(osmFile, tileNumber.bounds());
-					loadOSMData(reader, true);
-
-				} catch (IllegalArgumentException e) {
-					JOptionPane.showMessageDialog(viewerFrame, "Invalid input: " + e.getMessage(),
-							"Error", JOptionPane.ERROR_MESSAGE);
-				}
-
-			}
-
+			openOSMFile(osmFile, true);
 		}
 
 	}
 
 	public void openOSMFile(File osmFile, boolean resetCamera) {
 
-		if (osmFile.length() > 1e7) {
+		boolean mbtiles = osmFile.getName().endsWith(".mbtiles");
+		boolean geodesk = osmFile.getName().endsWith(".gol");
 
-			String[] options = new String[] {"Try anyway" ,"Cancel"};
+		if (!mbtiles && !geodesk) {
 
-			int answer = JOptionPane.showOptionDialog(viewerFrame,
-					"The input file is probably too big.\n"
-					+ "This viewer can only handle relatively small areas well.\n",
-					"Large input file size",
-					JOptionPane.OK_CANCEL_OPTION,
-					JOptionPane.WARNING_MESSAGE,
-					null, options, options[1]);
+			if (osmFile.length() > 1e7) {
 
-			if (answer != JOptionPane.OK_OPTION) return;
+				String[] options = new String[] {"Try anyway", "Cancel"};
 
-		}
+				int answer = JOptionPane.showOptionDialog(viewerFrame,
+						"""
+								The input file is probably too big.
+								This viewer can only handle relatively small areas well.""",
+						"Large input file size",
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.WARNING_MESSAGE,
+						null, options, options[1]);
 
-		try {
-			loadOSMData(new OSMFileReader(osmFile), resetCamera);
-		} catch (IOException e) {
+				if (answer != JOptionPane.OK_OPTION) return;
 
-			String msg = "File not found:\n" + osmFile;
+			}
 
-			JOptionPane.showMessageDialog(viewerFrame, msg,
-					"Error", JOptionPane.ERROR_MESSAGE);
+			try {
+				loadOSMData(new OSMFileReader(osmFile), resetCamera);
+			} catch (IOException e) {
+
+				String msg = "File not found:\n" + osmFile;
+
+				JOptionPane.showMessageDialog(viewerFrame, msg,
+						"Error", JOptionPane.ERROR_MESSAGE);
+
+			}
+
+		} else {
+
+			try {
+
+				String tileString = JOptionPane.showInputDialog("Enter a tile number (such as \"13,1234,4321\")");
+				TileNumber tileNumber = new TileNumber(tileString);
+				OSMDataReader reader = mbtiles
+						? new MbtilesReader(osmFile, tileNumber)
+						: new GeodeskReader(osmFile, tileNumber.bounds());
+				loadOSMData(reader, true);
+
+			} catch (IllegalArgumentException e) {
+				JOptionPane.showMessageDialog(viewerFrame, "Invalid input: " + e.getMessage(),
+						"Error", JOptionPane.ERROR_MESSAGE);
+			}
 
 		}
 
