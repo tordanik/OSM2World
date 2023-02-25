@@ -1,10 +1,5 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.util.Collections.singletonList;
-
-import java.awt.Color;
-import java.util.Collection;
-
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -21,6 +16,12 @@ import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLTarget;
+
+import java.awt.*;
+import java.util.Collection;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 /**
  * shows the plain {@link MapData} as a network of nodes, lines and areas
@@ -61,7 +62,7 @@ public class MapDataDebugView extends DebugView {
 				target.drawTriangles(
 						new ImmutableMaterial(Interpolation.FLAT, AREA_COLOR),
 						singletonList(t.xyz(-0.1)),
-						null);
+						emptyList());
 			}
 
 		}
