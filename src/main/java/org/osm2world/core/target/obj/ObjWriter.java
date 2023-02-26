@@ -1,14 +1,5 @@
 package org.osm2world.core.target.obj;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.lang.String.format;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Iterator;
-
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
@@ -17,6 +8,15 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Iterator;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
 
 /**
  * utility class for creating an Wavefront OBJ file
@@ -58,7 +58,7 @@ public final class ObjWriter {
 
 			/* write actual file content */
 
-			ObjTarget target = new ObjTarget(objStream, mtlStream, objFile.getParentFile());
+			ObjTarget target = new ObjTarget(objStream, mtlStream, objFile.getAbsoluteFile().getParentFile());
 
 			TargetUtil.renderWorldObjects(target, mapData, underground);
 

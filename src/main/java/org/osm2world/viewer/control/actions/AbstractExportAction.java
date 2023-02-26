@@ -1,20 +1,18 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.Observable;
-import java.util.Observer;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.ProgressDialog;
 import org.osm2world.viewer.view.ViewerFrame;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.Observable;
+import java.util.Observer;
 
 public abstract class AbstractExportAction
 	extends AbstractAction implements Observer {
@@ -83,7 +81,7 @@ public abstract class AbstractExportAction
 
 			File selectedFile = chooser.getSelectedFile();
 
-			lastPath = selectedFile.getParentFile();
+			lastPath = selectedFile.getAbsoluteFile().getParentFile();
 
 			/* make sure that file uses correct extension */
 

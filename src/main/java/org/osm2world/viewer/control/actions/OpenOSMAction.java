@@ -116,7 +116,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = chooser.getSelectedFile();
-			lastPath = selectedFile.getParentFile();
+			lastPath = selectedFile.getAbsoluteFile().getParentFile();
 			return selectedFile;
 		} else {
 			return null;
