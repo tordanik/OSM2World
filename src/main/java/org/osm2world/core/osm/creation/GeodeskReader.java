@@ -84,6 +84,7 @@ public class GeodeskReader implements OSMDataReader {
 		for (int i = 0; i < maxRelationNestingDepth; i++) {
 			Set<Relation> newRelations = new HashSet<>();
 			for (Relation relation : golRelationMap.valueCollection()) {
+				if (!membersShouldBeIncluded(relation)) continue;
 				for (Relation memberRelation : relation.memberRelations()) {
 					if (!golRelationMap.containsKey(memberRelation.id())) {
 						newRelations.add(memberRelation);
@@ -94,8 +95,10 @@ public class GeodeskReader implements OSMDataReader {
 		}
 
 		for (Relation relation : golRelationMap.valueCollection()) {
-			relation.memberNodes().forEach(it -> golNodeMap.put(it.id(), it));
-			relation.memberWays().forEach(it -> golWayMap.put(it.id(), it));
+			if (membersShouldBeIncluded(relation)) {
+				relation.memberNodes().forEach(it -> golNodeMap.put(it.id(), it));
+				relation.memberWays().forEach(it -> golWayMap.put(it.id(), it));
+			}
 		}
 
 		for (Way way : golWayMap.valueCollection()) {
@@ -162,6 +165,10 @@ public class GeodeskReader implements OSMDataReader {
 					.map(t -> new Tag(t.getKey(), t.getValue().toString()))
 					.collect(toList());
 		}
+	}
+
+	private boolean membersShouldBeIncluded(Relation relation) {
+		return relation.hasTag("type", "multipolygon");
 	}
 
 	/** returns the id non-anonymous nodes, or else a fake id based on the coords */
