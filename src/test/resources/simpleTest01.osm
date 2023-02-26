@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never'>
+  <bounds minlat='48.5639199' minlon='13.4471425' maxlat='48.5655842' maxlon='13.4497191' />
+  <node id='137716' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56516644405' lon='13.44859951035' />
+  <node id='137717' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56435646386' lon='13.44891953517' />
+  <node id='137718' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56501410932' lon='13.44841423282' />
+  <node id='137719' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56455710237' lon='13.44859951035' />
+  <node id='137720' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56493107575' lon='13.44794656488' />
+  <node id='137721' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56447406805' lon='13.4481318424' />
+  <node id='137722' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.5648952136' lon='13.44831878683' />
+  <node id='137723' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56486548963' lon='13.44813912377' />
+  <node id='137724' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56464430774' lon='13.4484135723' />
+  <node id='137725' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56461458362' lon='13.44823390924' />
+  <node id='137730' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56478882289' lon='13.44874870988'>
+    <tag k='crossing' v='uncontrolled' />
+    <tag k='highway' v='crossing' />
+  </node>
+  <node id='137768' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true' lat='48.56475982037' lon='13.44851732561'>
+    <tag k='entrance' v='main' />
+  </node>
+  <way id='103380' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true'>
+    <nd ref='137716' />
+    <nd ref='137730' />
+    <nd ref='137717' />
+    <tag k='highway' v='tertiary' />
+  </way>
+  <way id='103397' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true'>
+    <nd ref='137718' />
+    <nd ref='137720' />
+    <nd ref='137721' />
+    <nd ref='137719' />
+    <nd ref='137768' />
+    <nd ref='137718' />
+  </way>
+  <way id='103399' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true'>
+    <nd ref='137722' />
+    <nd ref='137724' />
+    <nd ref='137725' />
+    <nd ref='137723' />
+    <nd ref='137722' />
+  </way>
+  <relation id='99749' user="Tordanik" uid="27223" version="1" changeset="12345" timestamp="2008-09-21T21:37:45Z" visible='true'>
+    <member type='way' ref='103399' role='inner' />
+    <member type='way' ref='103397' role='outer' />
+    <tag k='building' v='yes' />
+    <tag k='building:levels' v='2' />
+    <tag k='type' v='multipolygon' />
+  </relation>
+</osm>
