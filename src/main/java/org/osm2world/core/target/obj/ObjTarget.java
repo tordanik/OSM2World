@@ -1,38 +1,28 @@
 package org.osm2world.core.target.obj;
 
-import static java.awt.Color.WHITE;
-import static java.lang.Math.max;
-import static java.util.Collections.nCopies;
-import static org.apache.commons.io.FilenameUtils.getBaseName;
-import static org.osm2world.core.target.common.material.Material.multiplyColor;
-
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.material.ImageFileTexture;
-import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.material.Material.Transparency;
-import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.RasterImageFileTexture;
-import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
-import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.WorldObject;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.*;
+
+import static java.awt.Color.WHITE;
+import static java.lang.Math.max;
+import static java.util.Collections.nCopies;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+import static org.osm2world.core.target.common.material.Material.multiplyColor;
 
 public class ObjTarget extends FaceTarget {
 
@@ -64,13 +54,13 @@ public class ObjTarget extends FaceTarget {
 	 * @param objDirectory  the directory in which the obj is located.
 	 * Other files (such as textures) may be written to this directory as well.
 	 */
-	public ObjTarget(PrintStream objStream, PrintStream mtlStream, File objDirectory) {
+	public ObjTarget(PrintStream objStream, PrintStream mtlStream, File objDirectory, String objName) {
 
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
 		this.objDirectory = objDirectory;
 
-		this.textureDirectory = new File(objDirectory, "textures");
+		this.textureDirectory = new File(objDirectory, objName + "_textures");
 		textureDirectory.mkdir();
 
 	}
