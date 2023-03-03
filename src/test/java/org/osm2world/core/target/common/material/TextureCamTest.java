@@ -52,7 +52,8 @@ public class TextureCamTest {
 		TextureLayer result = TextureCam.renderTextures(meshes, ViewDirection.FROM_FRONT, "test", 1.0, 1.0, null, null,
 				Wrap.CLAMP, new VectorXYZ(0.5, 0.5, 0), 0.0);
 
-		result.writeToFiles(new File("/tmp/texturecam-test_$INFIX.png"));
+		String tmpDir = System. getProperty("java.io.tmpdir");
+		result.writeToFiles(new File(tmpDir, "texturecam-test_$INFIX.png"));
 
 		/* check some pixels of the result */
 
