@@ -13,15 +13,17 @@ public class BuildingDefaults {
 	public final Material materialWall;
 	public final Material materialRoof;
 	public final boolean hasWindows;
+	public final boolean hasWalls;
 
 	public BuildingDefaults(int levels, double heightPerLevel, String roofShape,
-			Material materialWall, Material materialRoof, boolean hasWindows) {
+			Material materialWall, Material materialRoof, boolean hasWindows, boolean hasWalls) {
 		this.levels = levels;
 		this.heightPerLevel = heightPerLevel;
 		this.roofShape = roofShape;
 		this.materialWall = materialWall;
 		this.materialRoof = materialRoof;
 		this.hasWindows = hasWindows;
+		this.hasWalls = hasWalls;
 	}
 
 	public static BuildingDefaults getDefaultsFor(TagSet tags) {
@@ -42,6 +44,7 @@ public class BuildingDefaults {
 		Material materialWall = Materials.BUILDING_DEFAULT;
 		Material materialRoof = Materials.ROOF_DEFAULT;
 		boolean hasWindows = true;
+		boolean hasWalls = true;
 		String roofShape = "flat";
 
 		switch (type) {
@@ -61,6 +64,14 @@ public class BuildingDefaults {
 			hasWindows = false;
 			break;
 
+		case "carport":
+			levels = 1;
+			materialWall = Materials.CONCRETE;
+			materialRoof = Materials.CONCRETE;
+			hasWindows = false;
+			hasWalls = false;
+			break;
+
 		case "hut":
 		case "shed":
 			levels = 1;
@@ -75,6 +86,7 @@ public class BuildingDefaults {
 		case "roof":
 			levels = 1;
 			hasWindows = false;
+			hasWalls = false;
 			break;
 
 		case "church":
@@ -110,7 +122,7 @@ public class BuildingDefaults {
 		/* return an object populated with the results */
 
     	return new BuildingDefaults(levels, heightPerLevel, roofShape,
-    			materialWall, materialRoof, hasWindows);
+    			materialWall, materialRoof, hasWindows, hasWalls);
 
 	}
 

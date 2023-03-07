@@ -174,7 +174,7 @@ public class LevelAndHeightData {
 			minHeight = parseMeasure(tags.getValue("min_height"));
 		} else if (buildingMinLevel > 0) {
 			minHeight = (heightWithoutRoof / buildingLevels) * buildingMinLevel;
-		} else if (tags.contains("building", "roof") || tags.contains("building:part", "roof")) {
+		} else if (!defaults.hasWalls) {
 			minHeight = heightWithoutRoof - 0.3;
 		} else {
 			minHeight = 0;
