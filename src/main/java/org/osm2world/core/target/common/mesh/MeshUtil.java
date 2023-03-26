@@ -1,37 +1,35 @@
 package org.osm2world.core.target.common.mesh;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
-
-import java.awt.Color;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.nCopies;
 
 public class MeshUtil {
 
 	/** prevents instantiation */
 	private MeshUtil() {}
 
-	private static final List<VectorXZ> BOX_TEX_COORDS_1 = triangleVertexListFromTriangleStrip(asList(
+	private static final List<VectorXZ> BOX_TEX_COORDS_1 = asList(
 		new VectorXZ(0,     0), new VectorXZ(0.25,     0),
 		new VectorXZ(0, 1.0/3), new VectorXZ(0.25, 1.0/3),
 		new VectorXZ(0, 2.0/3), new VectorXZ(0.25, 2.0/3),
 		new VectorXZ(0,     1), new VectorXZ(0.25,     1)
-	));
+	);
 
-	private static final List<VectorXZ> BOX_TEX_COORDS_2 = triangleVertexListFromTriangleStrip(asList(
+	private static final List<VectorXZ> BOX_TEX_COORDS_2 = asList(
 		new VectorXZ(0.25, 2.0/3), new VectorXZ(0.25, 1.0/3),
 		new VectorXZ(0.50, 2.0/3), new VectorXZ(0.50, 1.0/3),
 		new VectorXZ(0.75, 2.0/3), new VectorXZ(0.75, 1.0/3),
 		new VectorXZ(1.00, 2.0/3), new VectorXZ(1.00, 1.0/3)
-	));
+	);
 
 	/**
 	 * draws a box with outward-facing polygons.
