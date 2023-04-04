@@ -45,19 +45,16 @@ public class GeodeskReader implements OSMDataReader {
 	@Override
 	public OSMData getData() throws IOException {
 
-		try {
+		if (!golFile.exists()) {
+			throw new FileNotFoundException("Geodesk file does not exist: " + golFile);
+		}
 
-			if (!golFile.exists()) {
-				throw new FileNotFoundException("Geodesk file does not exist: " + golFile);
-			}
+		try (FeatureLibrary library = new FeatureLibrary(golFile.getPath())) {
 
-			FeatureLibrary library = new FeatureLibrary(golFile.getPath());
 			Box bbox = Box.ofWSEN(bounds.minlon, bounds.minlat, bounds.maxlon, bounds.maxlat);
 			Features<Feature> features = library.in(bbox);
 
 			InMemoryMapDataSet data = geodeskToOsm4j(features);
-
-			library.close();
 
 			return new OSMData(data);
 
@@ -158,7 +155,7 @@ public class GeodeskReader implements OSMDataReader {
 
 	private List<? extends OsmTag> geodeskToOsm4j(Tags geodeskTags) {
 		Map<String, Object> tagMap = geodeskTags.toMap();
-		if (tagMap == null || tagMap.isEmpty()) {
+		if (tagMap.isEmpty()) {
 			return List.of();
 		} else {
 			return tagMap.entrySet().stream()

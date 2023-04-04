@@ -179,7 +179,7 @@
 		<dependency>
 			<groupId>com.geodesk</groupId>
 			<artifactId>geodesk</artifactId>
-			<version>0.1.4</version>
+			<version>0.1.7</version>
 		</dependency>
 
 		<!-- JOGL -->
