@@ -1,22 +1,22 @@
 package org.osm2world.core.math.algorithms;
 
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
-import static org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.findAllIntersections;
-import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.osm2world.core.math.LineSegmentXZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
+import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.junit.Assert.assertEquals;
+import static org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.findAllIntersections;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 public class LineSegmentIntersectionFinderTest {
 
@@ -29,7 +29,7 @@ public class LineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(5, 0)), result);
 
@@ -49,7 +49,7 @@ public class LineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(0, 0)), result);
 
@@ -65,7 +65,7 @@ public class LineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(0, 0), new VectorXZ(0.5, -0.5)), result);
 
@@ -88,7 +88,7 @@ public class LineSegmentIntersectionFinderTest {
 		assertEquals(3, result.size());
 
 		Set<VectorXZ> resultSet = new HashSet<>();
-		result.forEach(it -> resultSet.add(it.pos));
+		result.forEach(it -> resultSet.add(it.pos()));
 		assertAlmostEquals(newHashSet(new VectorXZ(5, 0)), resultSet);
 
 	}
@@ -106,7 +106,7 @@ public class LineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(4, 4)), result);
 

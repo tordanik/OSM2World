@@ -3,13 +3,7 @@ package org.osm2world.core.math.algorithms;
 import static java.lang.Double.NaN;
 import static org.osm2world.core.math.GeometryUtil.getTrueLineSegmentIntersection;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -30,60 +24,11 @@ public final class LineSegmentIntersectionFinder {
 	private LineSegmentIntersectionFinder() {}
 
 	/** an intersection detected by the finder */
-	public static class Intersection<E> {
-
-		public final VectorXZ pos;
-		public final E segmentA;
-		public final E segmentB;
-
-		public Intersection(VectorXZ pos, E segmentA, E segmentB) {
-			this.pos = pos;
-			this.segmentA = segmentA;
-			this.segmentB = segmentB;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((pos == null) ? 0 : pos.hashCode());
-			result = prime * result + ((segmentA == null) ? 0 : segmentA.hashCode());
-			result = prime * result + ((segmentB == null) ? 0 : segmentB.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Intersection<?> other = (Intersection<?>) obj;
-			if (pos == null) {
-				if (other.pos != null)
-					return false;
-			} else if (!pos.equals(other.pos))
-				return false;
-			if (segmentA == null) {
-				if (other.segmentA != null)
-					return false;
-			} else if (!segmentA.equals(other.segmentA))
-				return false;
-			if (segmentB == null) {
-				if (other.segmentB != null)
-					return false;
-			} else if (!segmentB.equals(other.segmentB))
-				return false;
-			return true;
-		}
-
+	public record Intersection<E>(VectorXZ pos, E segmentA, E segmentB) {
 		@Override
 		public String toString() {
 			return pos.toString();
 		}
-
 	}
 
 	/**
@@ -120,7 +65,7 @@ public final class LineSegmentIntersectionFinder {
 		for (Intersection<OrderedSegment> intersection : rawResult) {
 			for (S segmentA : originalSegmentsMap.get(intersection.segmentA)) {
 				for (S segmentB : originalSegmentsMap.get(intersection.segmentB)) {
-					result.add(new Intersection<S>(intersection.pos, segmentA, segmentB));
+					result.add(new Intersection<>(intersection.pos, segmentA, segmentB));
 				}
 			}
 		}
@@ -147,8 +92,7 @@ public final class LineSegmentIntersectionFinder {
 
 		/* set up the event queue */
 
-		PriorityQueue<Event> eventQueue = new PriorityQueue<>();
-		eventQueue.addAll(beginEndEvents);
+		PriorityQueue<Event> eventQueue = new PriorityQueue<>(beginEndEvents);
 
 		/* run the sweep */
 
@@ -232,7 +176,7 @@ public final class LineSegmentIntersectionFinder {
 
 		if (pos != null
 				&& pos.x >= currentSweeplineX) { //avoid re-inserting intersections that are "old news"
-			eventQueue.add(new IntersectionEvent(new Intersection<OrderedSegment>(pos, segmentA, segmentB)));
+			eventQueue.add(new IntersectionEvent(new Intersection<>(pos, segmentA, segmentB)));
 		}
 
 	}
@@ -334,13 +278,8 @@ public final class LineSegmentIntersectionFinder {
 
 	}
 
-	private static class IntersectionEvent implements Event {
-
-		public final Intersection<OrderedSegment> intersection;
-
-		public IntersectionEvent(Intersection<OrderedSegment> intersection) {
-			this.intersection = intersection;
-		}
+	private record IntersectionEvent(
+			Intersection<OrderedSegment> intersection) implements Event {
 
 		@Override
 		public double getXPosition() {
@@ -383,7 +322,7 @@ public final class LineSegmentIntersectionFinder {
 		 * It's ok for the comparator to be mutable: only changes at intersections, and there will be an event for each.
 		 */
 		private final Comparator<OrderedSegment> comparator = (OrderedSegment s1, OrderedSegment s2) -> {
-			if (currentX == NaN) throw new IllegalStateException("sweeplineX unset");
+			if (Double.isNaN(currentX)) throw new IllegalStateException("sweeplineX unset");
 			double x = currentX + 1e-5; //small offset ensures a sensible order if we're exactly at an intersection
 			VectorXZ p1 = new VectorXZ(x, s1.evaluateAtX(x));
 			VectorXZ p2 = new VectorXZ(x, s2.evaluateAtX(x));

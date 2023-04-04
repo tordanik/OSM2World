@@ -29,7 +29,7 @@ public class SimpleLineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(5, 0)), result);
 
@@ -49,7 +49,7 @@ public class SimpleLineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(0, 0)), result);
 
@@ -65,7 +65,7 @@ public class SimpleLineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(0, 0), new VectorXZ(0.5, -0.5)), result);
 
@@ -84,7 +84,7 @@ public class SimpleLineSegmentIntersectionFinderTest {
 		);
 
 		Set<VectorXZ> result = new HashSet<>();
-		findAllIntersections(testData).forEach(it -> result.add(it.pos));
+		findAllIntersections(testData).forEach(it -> result.add(it.pos()));
 
 		assertAlmostEquals(newHashSet(new VectorXZ(4, 4)), result);
 

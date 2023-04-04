@@ -85,10 +85,10 @@ public final class FaceDecompositionUtil {
 		List<Intersection<LineSegmentXZ>> newIntersections = new ArrayList<>();
 		for (Iterator<Intersection<LineSegmentXZ>> iterator = intersections.iterator(); iterator.hasNext();) {
 			Intersection<LineSegmentXZ> intersection = iterator.next();
-			VectorXZ closestKnownPoint = knownPoints.stream().min(comparingDouble(intersection.pos::distanceTo)).get();
-			if (closestKnownPoint.distanceTo(intersection.pos) < SNAP_DISTANCE) {
+			VectorXZ closestKnownPoint = knownPoints.stream().min(comparingDouble(intersection.pos()::distanceTo)).get();
+			if (closestKnownPoint.distanceTo(intersection.pos()) < SNAP_DISTANCE) {
 				iterator.remove();
-				newIntersections.add(new Intersection<>(closestKnownPoint, intersection.segmentA, intersection.segmentB));
+				newIntersections.add(new Intersection<>(closestKnownPoint, intersection.segmentA(), intersection.segmentB()));
 			}
 		}
 		intersections.addAll(newIntersections);
@@ -97,8 +97,8 @@ public final class FaceDecompositionUtil {
 
 		Multimap<LineSegmentXZ, VectorXZ> intersectionPointsPerSegment = HashMultimap.create(); //deduplicates values
 		for (Intersection<LineSegmentXZ> intersection : intersections) {
-			intersectionPointsPerSegment.put(intersection.segmentA, intersection.pos);
-			intersectionPointsPerSegment.put(intersection.segmentB, intersection.pos);
+			intersectionPointsPerSegment.put(intersection.segmentA(), intersection.pos());
+			intersectionPointsPerSegment.put(intersection.segmentB(), intersection.pos());
 		}
 		for (LineSegmentXZ segment : segments) {
 			intersectionPointsPerSegment.putAll(segment, segment.vertices());
