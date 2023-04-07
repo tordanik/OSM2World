@@ -1,21 +1,7 @@
 package org.osm2world.core;
 
-import static java.lang.Math.abs;
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
+import com.google.common.collect.Streams;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.time.StopWatch;
@@ -24,13 +10,7 @@ import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.EleConstraintValidator;
-import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.SRTMData;
-import org.osm2world.core.map_elevation.creation.TerrainElevationData;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -49,32 +29,23 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.AerowayModule;
-import org.osm2world.core.world.modules.BarrierModule;
-import org.osm2world.core.world.modules.BicycleParkingModule;
-import org.osm2world.core.world.modules.BridgeModule;
-import org.osm2world.core.world.modules.CliffModule;
-import org.osm2world.core.world.modules.GolfModule;
-import org.osm2world.core.world.modules.InvisibleModule;
-import org.osm2world.core.world.modules.MastModule;
-import org.osm2world.core.world.modules.ParkingModule;
-import org.osm2world.core.world.modules.PoolModule;
-import org.osm2world.core.world.modules.PowerModule;
-import org.osm2world.core.world.modules.RailwayModule;
-import org.osm2world.core.world.modules.RoadModule;
-import org.osm2world.core.world.modules.SportsModule;
-import org.osm2world.core.world.modules.StreetFurnitureModule;
-import org.osm2world.core.world.modules.SurfaceAreaModule;
-import org.osm2world.core.world.modules.TreeModule;
-import org.osm2world.core.world.modules.TunnelModule;
-import org.osm2world.core.world.modules.WaterModule;
+import org.osm2world.core.world.modules.*;
 import org.osm2world.core.world.modules.building.BuildingModule;
 import org.osm2world.core.world.modules.building.indoor.IndoorModule;
 import org.osm2world.core.world.modules.traffic_sign.TrafficSignModule;
 
-import com.google.common.collect.Streams;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import static java.lang.Math.abs;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 /**
  * provides an easy way to call all steps of the conversion process
@@ -339,10 +310,11 @@ public class ConversionFacade {
 		SpatialIndex<AttachmentSurface> attachmentSurfaceIndex =
 				new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
 
-		for (WorldObject object : mapData.getWorldObjects()) {
-			if (object.getParent() != null) continue;
-			object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
-		}
+		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
+			if (object.getParent() == null) {
+				object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
+			}
+		});
 
 		/* attach connectors to the surfaces */
 
