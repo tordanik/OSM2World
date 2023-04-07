@@ -1,14 +1,14 @@
 package org.osm2world.core.target.common.rendering;
 
-import static java.lang.Math.*;
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import static java.lang.Math.*;
 
 /**
  * immutable tile number with zoom level.
@@ -23,7 +23,7 @@ public class TileNumber {
 	/**
 	 * pattern for parsing constructor
 	 */
-	public static final String PATTERN = "([0-9]{1,2}),([0-9]{1,9}),([0-9]{1,9})";
+	public static final String PATTERN = "([0-9]{1,2})[,/_]([0-9]{1,9})[,/_]([0-9]{1,9})";
 
 	/**
 	 * regular constructor

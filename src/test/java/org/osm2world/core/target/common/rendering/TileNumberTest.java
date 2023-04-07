@@ -1,15 +1,16 @@
 package org.osm2world.core.target.common.rendering;
 
+import org.junit.Test;
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
+
+import java.util.HashSet;
+import java.util.List;
+
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.core.target.common.rendering.TileNumber.tilesForBounds;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
-
-import java.util.HashSet;
-
-import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
 
 public class TileNumberTest {
 
@@ -25,8 +26,9 @@ public class TileNumberTest {
 	@Test
 	public void testTileNumberParsing() {
 		TileNumber tileNumber = new TileNumber(13, 4402, 2828);
-		TileNumber parsedTileNumber = new TileNumber("13,4402,2828");
-		assertEquals(tileNumber, parsedTileNumber);
+		assertEquals(tileNumber, new TileNumber("13,4402,2828"));
+		assertEquals(tileNumber, new TileNumber("13/4402/2828"));
+		assertEquals(tileNumber, new TileNumber("13_4402_2828"));
 	}
 
 	@Test
@@ -87,7 +89,7 @@ public class TileNumberTest {
 	@Test
 	public void testTilesForBounds() {
 
-		assertEquals(asList(new TileNumber(13, 4402, 2828)),
+		assertEquals(List.of(new TileNumber(13, 4402, 2828)),
 				tilesForBounds(13, new LatLonBounds(48.56687, 13.45127, 48.56687, 13.45127)));
 
 		assertEquals(new HashSet<>(asList(new TileNumber(13, 4401, 2827), new TileNumber(13, 4401, 2828),
