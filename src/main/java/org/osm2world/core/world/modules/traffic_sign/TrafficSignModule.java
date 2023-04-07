@@ -1,31 +1,7 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
-import static java.lang.Math.PI;
-import static java.util.Arrays.asList;
-import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.util.enums.ForwardBackward.*;
-import static org.osm2world.core.util.enums.LeftRight.RIGHT;
-import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
-
-import java.awt.Color;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
@@ -34,6 +10,26 @@ import org.osm2world.core.util.enums.LeftRight;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.common.AbstractModule;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.lang.Math.PI;
+import static java.util.Arrays.asList;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.enums.ForwardBackward.BACKWARD;
+import static org.osm2world.core.util.enums.ForwardBackward.FORWARD;
+import static org.osm2world.core.util.enums.LeftRight.RIGHT;
+import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 /**
  * adds traffic signs to the world
@@ -411,17 +407,12 @@ public class TrafficSignModule extends AbstractModule {
 
 			String pointingDirection;
 
-			//default values
-			Color backgroundColor = Color.WHITE;
-			Color textColor = Color.BLACK;
-
 			//relation attributes
 			MapWay from = null;
 			MapWay to = null;
 			MapNode intersection = null;
 			String destination;
 			String distance;
-			String arrowColour;
 
 			MapWaySegment toSegment = null;
 			MapWaySegment fromSegment = null;
@@ -430,43 +421,14 @@ public class TrafficSignModule extends AbstractModule {
 
 			destination = relation.getTags().getValue("destination");
 			if (destination == null) {
-				System.err.println(
-						"Destination can not be null. Destination sign rendering ommited for relation " + relation);
+				System.err.println("Destination can not be null." +
+						" Destination sign rendering omitted for relation " + relation);
 				continue;
 			}
 			distance = relation.getTags().getValue("distance");
 
-			//parse background color
-			if (relation.getTags().getValue("colour:back") != null) {
-
-				Field field;
-
-				try {
-					field = Color.class.getField(relation.getTags().getValue("colour:back"));
-					backgroundColor = (Color) field.get(null);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-
-			//parse text color
-			if (relation.getTags().getValue("colour:text") != null) {
-
-				Field field;
-
-				try {
-					field = Color.class.getField(relation.getTags().getValue("colour:text"));
-					textColor = (Color) field.get(null);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-
-			arrowColour = relation.getTags().getValue("colour:arrow");
-			if (arrowColour == null)
-				arrowColour = "BLACK";
+			Color backgroundColor = parseColor(relation.getTags().getValue("colour:back"), Color.WHITE);
+			Color textColor = parseColor(relation.getTags().getValue("colour:text"), Color.BLACK);
 
 			//map to use in configureMaterial
 			HashMap<String, String> map = new HashMap<>();
@@ -601,10 +563,9 @@ public class TrafficSignModule extends AbstractModule {
 				pointingDirection = "LEFT";
 			}
 
-			TrafficSignIdentifier identifier = new TrafficSignIdentifier(null,
-					"DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_" + pointingDirection.toUpperCase());
-
-			TrafficSignType type = TrafficSignType.fromConfig(identifier, config);
+			TrafficSignType type = buildDestinationSignType(pointingDirection,
+					relation.getTags().getValue("colour:arrow"));
+			if (type == null) { buildDestinationSignType(pointingDirection, "BLACK"); }
 			if (type == null) { type = TrafficSignType.blankSign(); }
 
 			Material material = type.material.withPlaceholdersFilledIn(map, relation.getTags());
@@ -621,6 +582,14 @@ public class TrafficSignModule extends AbstractModule {
 
 		node.addRepresentation(new TrafficSignGroup(node, signs, node.getPos(), direction, config));
 
+	}
+
+	private @Nullable TrafficSignType buildDestinationSignType(@Nonnull String pointingDirection,
+															   @Nullable String arrowColour) {
+		if (arrowColour == null) return null;
+		TrafficSignIdentifier identifier = new TrafficSignIdentifier(null,
+				"DESTINATION_SIGN_" + arrowColour.toUpperCase() + "_" + pointingDirection.toUpperCase());
+		return TrafficSignType.fromConfig(identifier, config);
 	}
 
 	@Override
