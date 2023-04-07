@@ -30,4 +30,9 @@ public class MapAreaSegment extends MapSegment {
 		return areaRight;
 	}
 
+	@Override
+	public String toString() {
+		return area + "[" + startNode + "->" + endNode + "]";
+	}
+
 }

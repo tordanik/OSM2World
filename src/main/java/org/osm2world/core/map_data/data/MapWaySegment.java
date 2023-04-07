@@ -1,20 +1,19 @@
 package org.osm2world.core.map_data.data;
 
-import static java.util.Arrays.asList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
+import com.google.common.collect.Iterables;
 import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 
-import com.google.common.collect.Iterables;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 
 /**
@@ -93,6 +92,11 @@ public class MapWaySegment extends MapSegment implements MapElement {
 	 */
 	public void addRepresentation(WaySegmentWorldObject representation) {
 		this.representations.add(representation);
+	}
+
+	@Override
+	public String toString() {
+		return way + "[" + way.getWaySegments().indexOf(this) + "]";
 	}
 
 }

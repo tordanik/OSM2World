@@ -1,22 +1,5 @@
 package org.osm2world.core.world.network;
 
-import static java.lang.Double.*;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXZ.*;
-import static org.osm2world.core.util.ValueParseUtil.*;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -30,19 +13,33 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static java.lang.Double.NaN;
+import static java.lang.Double.isNaN;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.core.map_elevation.data.GroundState.*;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.GeometryUtil.interpolateEleOfSegment;
+import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.math.VectorXZ.distanceSquared;
+import static org.osm2world.core.util.ValueParseUtil.parseIncline;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWaySegmentWorldObject, BoundedObject {
 
@@ -113,7 +110,7 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	private void calculateXZGeometry() {
 
 		if (startCutCenter == null || endCutCenter == null) {
-			throw new IllegalStateException("cannot calculate outlines before cut information is set");
+			throw new IllegalStateException("cannot calculate outlines of " + this + " before cut information is set");
 		}
 
 		connectors = new EleConnectorGroup();
