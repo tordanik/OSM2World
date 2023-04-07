@@ -47,17 +47,8 @@ public class TrafficSignModule extends AbstractModule {
 		String state = config.getString("deduceTrafficSignsFromWayTags", "no");
 		if ("no".equals(state)) return;
 
-		String[] signs;
-		String[] signsForSecondModel;
-		String country = "";
-		String tagValue = "";
-
-		/*
-		 * Value to hold the side of the road non-explicitly defined signs
-		 * will be rendered to. Default value is true. Indicates the rules of the
-		 * road as defined in RoadModule.java
-		 */
-		LeftRight side = RoadModule.getDefaultDrivingSide(config);
+		String country;
+		String tagValue;
 
 		//The (potential) signs to be rendered
 		TrafficSignGroup firstModel = null;
@@ -125,7 +116,7 @@ public class TrafficSignModule extends AbstractModule {
 							firstModel = new TrafficSignGroup(firstModelNode, config);
 
 							//get segment's driving side
-							side = RoadModule.getDrivingSide(topSegment, config);
+							LeftRight side = RoadModule.getDrivingSide(topSegment, config);
 
 							//set the model's facing direction
 							firstModel.direction = calculateDirection(topSegment,
@@ -199,7 +190,7 @@ public class TrafficSignModule extends AbstractModule {
 							secondModel = new TrafficSignGroup(secondModelNode, config);
 
 							//get segment's driving side
-							side = RoadModule.getDrivingSide(bottomSegment, config);
+							LeftRight side = RoadModule.getDrivingSide(bottomSegment, config);
 
 							secondModel.direction = calculateDirection(bottomSegment,
 									tempKey.contains("forward") ? FORWARD : BACKWARD);
@@ -230,72 +221,50 @@ public class TrafficSignModule extends AbstractModule {
 					}
 				}
 
-				signs = keysForFirstModel.toArray(new String[0]);
-				signsForSecondModel = keysForSecondModel.toArray(new String[0]);
-
-				List<TrafficSignModel> models = new ArrayList<>(containedKeys.size());
+				List<TrafficSignModel> modelsForFirstSign = new ArrayList<>(containedKeys.size());
 				List<TrafficSignModel> modelsForSecondSign = new ArrayList<>(keysForSecondModel.size());
 
 				//configure the traffic sign types
 
-				for (String sign : signs) {
+				for (List<String> signs : List.of(keysForFirstModel, keysForSecondModel)) {
+					for (String sign : signs) {
 
-					/* only take into account overtaking=no tags for "overtaking" key */
-					if (sign.equals("overtaking") && !wayTags.getValue(sign).equals("no")) {
-						continue;
-					}
-
-					//distinguish between human-readable values and traffic sign IDs
-					tagValue = wayTags.getValue(sign);
-
-					if (tagValue.contains(":")) {
-
-						String[] countryAndSigns = tagValue.split(":", 2);
-						if (countryAndSigns.length != 2)
+						/* only take into account overtaking=no tags for "overtaking" key */
+						if (sign.equals("overtaking") && !wayTags.contains("overtaking", "no")) {
 							continue;
-						country = countryAndSigns[0];
+						}
 
-						sign = countryAndSigns[1];
+						//distinguish between human-readable values and traffic sign IDs
+						tagValue = wayTags.getValue(sign);
 
-					} else {
-						country = null;
+						if (tagValue.contains(":")) {
+
+							String[] countryAndSigns = tagValue.split(":", 2);
+							if (countryAndSigns.length != 2)
+								continue;
+							country = countryAndSigns[0];
+
+							sign = countryAndSigns[1];
+
+						} else {
+							country = null;
+						}
+
+						var newModel = TrafficSignModel.create(new TrafficSignIdentifier(country, sign), wayTags, config);
+
+						if (signs == keysForFirstModel) {
+							modelsForFirstSign.add(newModel);
+						} else {
+							modelsForSecondSign.add(newModel);
+						}
+
 					}
-
-					models.add(TrafficSignModel.create(new TrafficSignIdentifier(country, sign), wayTags, config));
-
 				}
 
-				for (String sign : signsForSecondModel) {
-
-					/* only take into account overtaking=no tags for "overtaking" key */
-					if (sign.equals("overtaking") && !wayTags.getValue(sign).equals("no")) {
-						continue;
-					}
-
-					//distinguish between human-readable values and traffic sign IDs
-					tagValue = wayTags.getValue(sign);
-
-					if (tagValue.contains(":")) {
-
-						String[] countryAndSigns = tagValue.split(":", 2);
-						if (countryAndSigns.length != 2)
-							continue;
-						country = countryAndSigns[0];
-
-						sign = countryAndSigns[1];
-
-					} else {
-						country = null;
-					}
-
-					modelsForSecondSign.add(TrafficSignModel.create(
-							new TrafficSignIdentifier(country, sign), wayTags, config));
-				}
-
-				if (models.size() > 0) {
+				if (modelsForFirstSign.size() > 0) {
 
 					if (firstModel != null) {
-						firstModel.signs = models;
+						firstModel.signs = modelsForFirstSign;
 						node.addRepresentation(firstModel);
 					}
 				}
@@ -306,12 +275,9 @@ public class TrafficSignModule extends AbstractModule {
 						node.addRepresentation(secondModel);
 					}
 
-					return;
 				}
 			}
 		}
-
-		return;
 	}
 
 	/**
@@ -405,27 +371,17 @@ public class TrafficSignModule extends AbstractModule {
 
 		for (Membership m : node.getMemberships()) {
 
-			String pointingDirection;
-
-			//relation attributes
-			MapWay from = null;
-			MapWay to = null;
-			MapNode intersection = null;
-			String destination;
-			String distance;
-
-			MapWaySegment toSegment = null;
-			MapWaySegment fromSegment = null;
-
 			MapRelation relation = m.getRelation();
 
-			destination = relation.getTags().getValue("destination");
+			String pointingDirection;
+
+			String destination = relation.getTags().getValue("destination");
 			if (destination == null) {
-				System.err.println("Destination can not be null." +
-						" Destination sign rendering omitted for relation " + relation);
+				System.err.println("Missing destination in destination_sign: " + relation);
 				continue;
 			}
-			distance = relation.getTags().getValue("distance");
+
+			String distance = relation.getTags().getValue("distance");
 
 			Color backgroundColor = parseColor(relation.getTags().getValue("colour:back"), Color.WHITE);
 			Color textColor = parseColor(relation.getTags().getValue("colour:text"), Color.BLACK);
@@ -439,111 +395,57 @@ public class TrafficSignModule extends AbstractModule {
 
 			//List to hold all "from" members of the relation (if multiple)
 			List<MapWay> fromMembers = new ArrayList<>();
-
-			//variable to avoid calculating 'from' using vector from "sign" to "intersection"
-			//if fromMembers size is 0 because of not acceptable mapping
-			boolean wrongFrom = false;
+			MapWay to = null;
+			MapNode intersection = null;
 
 			for (Membership member : relation.getMemberships()) {
-
-				if (member.getRole().equals("from")) {
-
-					if (member.getElement() instanceof MapWay) {
-						fromMembers.add((MapWay) member.getElement());
-					} else {
-						System.err.println("'from' member of relation " + relation + " is not a way."
-								+ " It is not being considered for rendering this relation's destination sign");
-						wrongFrom = true;
-						continue;
-					}
-
-				} else if (member.getRole().equals("to")) {
-
-					if (member.getElement() instanceof MapWay) {
-						to = (MapWay) member.getElement();
-					} else {
-						System.err.println("'to' member of relation " + relation + " is not a way."
-								+ " It is not being considered for rendering this relation's destination sign");
-						continue;
-					}
-
-				} else if (member.getRole().equals("intersection")) {
-
-					if (!(member.getElement() instanceof MapNode)) {
-						System.err.println("'intersection' member of relation " + relation + " is not a node."
-								+ " It is not being considered for rendering this relation's destination sign");
-						continue;
-					}
-
-					intersection = (MapNode) member.getElement();
+				if (member.getRole().equals("from") && member.getElement() instanceof MapWay w) {
+					fromMembers.add(w);
+				} else if (member.getRole().equals("to") && member.getElement() instanceof MapWay w) {
+					to = w;
+				} else if (member.getRole().equals("intersection") && member.getElement() instanceof MapNode n) {
+					intersection = n;
 				}
 			}
 
-			//check intersection first as it is being used in 'from' calculation below
-			if (intersection == null) {
-				System.err.println("Member 'intersection' was not defined in relation " + relation +
-						". Destination sign rendering is omited for this relation.");
+			if (intersection == null || to == null) {
+				System.err.println("Member 'intersection' or 'to' was not defined in relation " + relation +
+						". Destination sign rendering is omitted for this relation.");
 				continue;
 			}
 
-			/*
-			 * if there are multiple "from" members or none at all,
-			 * use the vector from "sign" to "intersection" instead
-			 */
-
-			if (fromMembers.size() > 1 || (fromMembers.size() == 0 && !wrongFrom)) {
-				List<MapNode> signAndIntersection = asList(
-						node,
-						intersection);
-
-				//create a new MapWay instance from sign node to intersection node
-				MapWay signToIntersection = new MapWay(0, TagSet.of(), signAndIntersection);
-				from = signToIntersection;
-
-			} else if (fromMembers.size() == 1) {
-
+			MapWay from;
+			if (fromMembers.size() != 1) {
+				// use the vector from "sign" to "intersection" instead
+				from = new MapWay(0, TagSet.of(), asList(node, intersection));
+			} else {
 				from = fromMembers.get(0);
 			}
 
-			//check if the rest of the "vital" relation members where defined
-			if (from == null || to == null) {
-				System.err.println("not all members of relation " + relation + " were defined."
-						+ " Destination sign rendering is omited for this relation.");
+			// get adjacent segments
+
+			MapWaySegment toSegment = getAdjacentSegment(to, intersection);
+			MapWaySegment fromSegment = getAdjacentSegment(from, intersection);
+
+			if (toSegment == null) {
+				System.err.println("Way " + to + " is not connected to intersection " + intersection + ".");
+				continue;
+			}
+			if (fromSegment == null) {
+				System.err.println("Way " + from + " is not connected to intersection " + intersection);
 				continue;
 			}
 
 			//get facing direction
 
-			boolean mustBeInverted = false;
-
-			//'from' member is a way
-			fromSegment = getAdjacentSegment(from, intersection);
-
-			if (fromSegment != null) {
-				if (fromSegment.getEndNode().equals(intersection)) {
-					mustBeInverted = true;
-				}
-			} else {
-				System.err.println("Way " + from + " is not connected to intersection " + intersection);
-				continue;
-			}
-
 			VectorXZ facingDir = fromSegment.getDirection();
 
 			//if the segment is facing towards the intersection, invert its direction vector
-			if (mustBeInverted)
+			if (fromSegment.getEndNode().equals(intersection)) {
 				facingDir = facingDir.invert();
+			}
 
 			direction = facingDir.angle();
-
-			//'to' member is also a way
-			toSegment = getAdjacentSegment(to, intersection);
-
-			if (toSegment == null) {
-				System.err
-						.println("Way " + to + " is not connected to intersection " + intersection + ". Returning");
-				continue;
-			}
 
 			//explicit direction definition overwrites from-derived facing direction
 			if (node.getTags().containsKey("direction")) {
@@ -636,7 +538,7 @@ public class TrafficSignModule extends AbstractModule {
 	 * A node with 3 or more roads connected to it is considered a junction.
 	 *
 	 * @param node  must not be a junction itself; != null
-	 * @returns  the node representing the closest junction, or null if none was found
+	 * @return  the node representing the closest junction, or null if none was found
 	 */
 	static @Nullable MapNode findClosestJunction(MapNode node) {
 
@@ -746,11 +648,7 @@ public class TrafficSignModule extends AbstractModule {
 					//check if this other way also contains the key-value pair
 					MapWay nextWay = segment.getWay();
 
-					if (nextWay.getTags().contains(key, value)) {
-						return true;
-					} else {
-						return false;
-					}
+					return nextWay.getTags().contains(key, value);
 				}
 			}
 		}
@@ -783,9 +681,9 @@ public class TrafficSignModule extends AbstractModule {
 		 * Explicit side tag overwrites all. Applies only to sign mapped on way nodes
 		 */
 		if (node.getTags().containsKey("side") && isNode) {
-			if (node.getTags().getValue("side").equals("right")) {
+			if (node.getTags().contains("side", "right")) {
 				return node.getPos().add(rightNormal.mult(roadWidth));
-			} else if (node.getTags().getValue("side").equals("left")) {
+			} else if (node.getTags().contains("side", "left")) {
 				return node.getPos().add(rightNormal.mult(-roadWidth));
 			}
 		}
@@ -840,19 +738,11 @@ public class TrafficSignModule extends AbstractModule {
 
 		if (nodeTags.containsKey("direction")) {
 
-			if (!nodeTags.containsAny(asList("direction"), asList("forward", "backward"))) {
-
+			if (!nodeTags.containsAny(List.of("direction"), List.of("forward", "backward"))) {
 				//get direction mapped as angle or cardinal direction
 				return parseDirection(nodeTags, PI);
-
-			} else {
-
-				if (nodeTags.getValue("direction").equals("backward")) {
-
-					return wayDir.angle();
-
-				}
-
+			} else if (nodeTags.contains("direction", "backward")) {
+				return wayDir.angle();
 			}
 
 		} else if (nodeTags.containsKey("traffic_sign:forward") || nodeTags.containsKey("traffic_sign:backward")) {
@@ -872,7 +762,7 @@ public class TrafficSignModule extends AbstractModule {
 					}
 				}
 			}
-		} else if (nodeTags.containsAny(asList("highway"), asList("give_way", "stop"))) {
+		} else if (nodeTags.containsAny(List.of("highway"), List.of("give_way", "stop"))) {
 
 			/*
 			 * if no direction is specified with any of the above cases and a
