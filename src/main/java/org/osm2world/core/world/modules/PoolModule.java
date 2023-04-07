@@ -44,8 +44,7 @@ public class PoolModule extends AbstractModule {
 
 	@Override
 	protected void applyToArea(MapArea area) {
-		if (area.getTags().contains("amenity", "swimming_pool")
-				|| area.getTags().contains("leisure", "swimming_pool")) {
+		if (area.getTags().contains("leisure", "swimming_pool")) {
 			area.addRepresentation(new Pool(area));
 		}
 	}
