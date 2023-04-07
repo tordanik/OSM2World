@@ -19,6 +19,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.math.shapes.ProgramAction;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.viewer.view.ViewerFrame;
 
@@ -159,7 +160,45 @@ public class OSM2World {
 
 	}
 
-	private static void executeArgumentsGroup(CLIArgumentsGroup argumentsGroup) {
+	public static class HelpProgramAction implements ProgramAction {
+		@Override
+		public void doAction(CLIArguments representativeArgs, Configuration config, CLIArgumentsGroup argumentsGroup, File configFile) throws IOException {
+			System.out.println(CliFactory.createCli(CLIArguments.class).getHelpMessage()
+					+ "\n\nFor more information, see " + GlobalValues.WIKI_URI);
+		}
+	}
+
+	public static class VersionProgramAction implements ProgramAction {
+		@Override
+		public void doAction(CLIArguments representativeArgs, Configuration config, CLIArgumentsGroup argumentsGroup, File configFile) throws IOException {
+			System.out.println("OSM2World " + VERSION_STRING);
+		}
+	}
+
+	public static class GuiProgramAction implements ProgramAction {
+		@Override
+		public void doAction(CLIArguments representativeArgs, Configuration config, CLIArgumentsGroup argumentsGroup, File configFile) throws IOException {
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} catch(Exception e) {
+				System.out.println("Error setting native look and feel: " + e);
+			}
+			File input = representativeArgs.isInput() ?
+					representativeArgs.getInput() : null;
+			new ViewerFrame(config, configFile, input).setVisible(true);
+		}
+	}
+
+	public static class ConvertProgramAction implements ProgramAction {
+		@Override
+		public void doAction(CLIArguments representativeArgs, Configuration config, CLIArgumentsGroup argumentsGroup, File configFile) throws IOException {
+			Output.output(config, argumentsGroup);
+		}
+	}
+
+
+
+	private static void executeArgumentsGroup(CLIArgumentsGroup argumentsGroup)  {
 
 		/* load configuration file */
 
@@ -177,46 +216,42 @@ public class OSM2World {
 				System.err.println(e);
 			}
 		}
-
 		/* run selected mode */
 
 		ProgramMode programMode = getProgramMode(representativeArgs);
 
+		/**
+		 *
+		 */
+		ProgramAction programAction;
 		switch (programMode) {
+			case HELP:
+				programAction = new HelpProgramAction();
+				break;
 
-		case HELP:
-			System.out.println(
-					CliFactory.createCli(CLIArguments.class).getHelpMessage()
-					+ "\n\nFor more information, see " + GlobalValues.WIKI_URI);
-			break;
+			case VERSION:
+				programAction = new VersionProgramAction();
+				break;
 
-		case VERSION:
-			System.out.println("OSM2World " + VERSION_STRING);
-			break;
+			case GUI:
+				programAction = new GuiProgramAction();
+				break;
 
-		case GUI:
-			try {
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} catch(Exception e) {
-				System.out.println("Error setting native look and feel: " + e);
-			}
-			File input = representativeArgs.isInput() ?
-					representativeArgs.getInput() : null;
-			new ViewerFrame(config, configFile, input).setVisible(true);
-			break;
+			case CONVERT:
+				programAction = new ConvertProgramAction();
+				break;
 
-		case CONVERT:
-			try {
-				Output.output(config, argumentsGroup);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			break;
-
-		case PARAMFILE:
-		case PARAMFILEDIR:
+			case PARAMFILE:
+			default: PARAMFILEDIR:
 			throw new Error("Cannot recursively execute parameter files. Program mode was: " + programMode);
 
+		}
+
+		try {
+			programAction.doAction(representativeArgs, config, argumentsGroup, configFile);
+		} catch (IOException e) {
+			// handle the IOException here
+			e.printStackTrace(); // or log the exception, show an error message, etc.
 		}
 	}
 

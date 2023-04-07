@@ -28,6 +28,11 @@ public class CircularSectorXZ implements SimpleClosedShapeXZ, RoundShapeXZ {
 	}
 
 	@Override
+	public VectorXZ getCenter() {
+		return center;
+	}
+
+	@Override
 	public List<VectorXZ> vertices(int numPoints) {
 
 		List<VectorXZ> result = new ArrayList<>(numPoints + 1);

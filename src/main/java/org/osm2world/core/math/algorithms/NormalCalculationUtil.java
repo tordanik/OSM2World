@@ -67,7 +67,7 @@ public final class NormalCalculationUtil {
 
 			List<VectorXYZ> result = new ArrayList<>(vertices.size());
 
-			List<TriangleXYZ> triangles = trianglesFromTriangleStrip(vertices);
+			List<TriangleXYZ> triangles = TrainglesFromMode.trianglesFromTriangleStrip(vertices);
 			Multimap<VectorXYZ, VectorXYZ> adjacentNormals = calculateAdjacentNormals(triangles);
 
 			for (VectorXYZ v : vertices) {

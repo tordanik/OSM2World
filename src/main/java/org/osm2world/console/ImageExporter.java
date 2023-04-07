@@ -381,6 +381,7 @@ public class ImageExporter {
 			append(img, img.getHeight());
 		}
 
+
 		@Override
 		public void append(BufferedImage img, int lines) throws IOException {
 
@@ -393,6 +394,23 @@ public class ImageExporter {
 			byte[] line = bline.getScanline();
 			int channels = imgInfo.channels;
 
+			/**
+			 * Extract Method refactoring applied
+			 * WriteRows() extracted from here
+			 */
+			writeRows(lines,img,data,line,channels,bline);
+		}
+
+		/**
+		 * Method extracted from append
+		 * @param lines
+		 * @param img
+		 * @param data
+		 * @param line
+		 * @param channels
+		 * @param bline
+		 */
+		public void writeRows(int lines,BufferedImage img,int[] data,byte[] line,int channels,ImageLineByte bline){
 			for (int i = 0; i < lines; i++) {
 				for (int d = 0; d < img.getWidth(); d++) {
 					int val = data[i*img.getWidth()+d];

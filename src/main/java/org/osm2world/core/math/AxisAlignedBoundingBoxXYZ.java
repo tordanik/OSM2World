@@ -84,15 +84,35 @@ public class AxisAlignedBoundingBoxXYZ {
 				|| minZ >= otherBox.maxZ);
 	}
 
+	/**
+	 * Decompose conditional applied on contains() method
+	 * @param otherBox
+	 * @return
+	 */
 	public boolean contains(AxisAlignedBoundingBoxXYZ otherBox) {
+		return allMinCoordinatesAreLessThanOrEqual(otherBox) && allMaxCoordinatesAreGreaterThanOrEqual(otherBox);
+	}
+
+	/**
+	 * Decompose from contains
+	 * @param otherBox
+	 * @return
+	 */
+	private boolean allMinCoordinatesAreLessThanOrEqual(AxisAlignedBoundingBoxXYZ otherBox) {
 		return minX <= otherBox.minX
 				&& minY <= otherBox.minY
-				&& minZ <= otherBox.minZ
-				&& maxX >= otherBox.maxX
+				&& minZ <= otherBox.minZ;
+	}
+	/**
+	 * Decompose from contains
+	 * @param otherBox
+	 * @return
+	 */
+	private boolean allMaxCoordinatesAreGreaterThanOrEqual(AxisAlignedBoundingBoxXYZ otherBox) {
+		return maxX >= otherBox.maxX
 				&& maxY >= otherBox.maxY
 				&& maxZ >= otherBox.maxZ;
 	}
-
 	public boolean contains(VectorXYZ v) {
 		return v.x >= minX && v.x <= maxX && v.y >= minY && v.y <= maxY && v.z >= minZ && v.z <= maxZ;
 	}

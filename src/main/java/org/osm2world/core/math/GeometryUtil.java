@@ -4,6 +4,7 @@ import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.GeometryUtil.TrainglesFromMode.trianglesFromVertexList;
 import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
@@ -45,58 +46,68 @@ public final class GeometryUtil {
 		return closeLoop(asList(list));
 	}
 
-	public static final List<TriangleXYZ> trianglesFromVertexList(
-			List<? extends VectorXYZ> vs) {
+	/**
+	 * Extract Class refactoring done.
+	 * Class extracted with the same functionality for triangles.
+	 */
+	public static class TrainglesFromMode{
+		public static final List<TriangleXYZ> trianglesFromVertexList(
+				List<? extends VectorXYZ> vs) {
 
-		if (vs.size() % 3 != 0) {
-			throw new IllegalArgumentException("vertex size must be multiple of 3");
-		}
-
-		List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>(vs.size() / 3);
-
-		for (int triangle = 0; triangle  < vs.size() / 3; triangle++) {
-
-			triangles.add(new TriangleXYZ(
-					vs.get(triangle * 3),
-					vs.get(triangle * 3 + 1),
-					vs.get(triangle * 3 + 2)));
-
-		}
-
-		return triangles;
-
-	}
-
-	public static final List<TriangleXYZ> trianglesFromTriangleStrip(
-			List<? extends VectorXYZ> vs) {
-
-		return trianglesFromVertexList(
-				triangleVertexListFromTriangleStrip(vs));
-
-	}
-
-	public static final <V> List<V> triangleVertexListFromTriangleStrip(
-			List<? extends V> vs) {
-
-		List<V> result = new ArrayList<V>((vs.size() - 2) * 3);
-
-		for (int triangle = 0; triangle + 2 < vs.size(); triangle++) {
-
-			if (triangle % 2 == 0) {
-				result.add(vs.get(triangle));
-				result.add(vs.get(triangle + 1));
-				result.add(vs.get(triangle + 2));
-			} else {
-				result.add(vs.get(triangle));
-				result.add(vs.get(triangle + 2));
-				result.add(vs.get(triangle + 1));
+			if (vs.size() % 3 != 0) {
+				throw new IllegalArgumentException("vertex size must be multiple of 3");
 			}
 
+			List<TriangleXYZ> triangles = new ArrayList<TriangleXYZ>(vs.size() / 3);
+
+			for (int triangle = 0; triangle  < vs.size() / 3; triangle++) {
+
+				triangles.add(new TriangleXYZ(
+						vs.get(triangle * 3),
+						vs.get(triangle * 3 + 1),
+						vs.get(triangle * 3 + 2)));
+
+			}
+
+			return triangles;
+
 		}
 
-		return result;
+		public static final List<TriangleXYZ> trianglesFromTriangleStrip(
+				List<? extends VectorXYZ> vs) {
 
+			return trianglesFromVertexList(
+					triangleVertexListFromTriangleStrip(vs));
+
+		}
+
+
+		public static final <V> List<V> triangleVertexListFromTriangleStrip(
+				List<? extends V> vs) {
+
+			List<V> result = new ArrayList<V>((vs.size() - 2) * 3);
+
+			for (int triangle = 0; triangle + 2 < vs.size(); triangle++) {
+
+				if (triangle % 2 == 0) {
+					result.add(vs.get(triangle));
+					result.add(vs.get(triangle + 1));
+					result.add(vs.get(triangle + 2));
+				} else {
+					result.add(vs.get(triangle));
+					result.add(vs.get(triangle + 2));
+					result.add(vs.get(triangle + 1));
+				}
+
+			}
+
+			return result;
+
+		}
 	}
+
+	TrainglesFromMode trainglesFromMode=new TrainglesFromMode();
+
 
 	/**
 	 * turns the list of normals for a triangle strip/fan into the list of normals for a list of triangles.

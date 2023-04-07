@@ -20,7 +20,7 @@ public class CircleXZ implements SimpleClosedShapeXZ, RoundShapeXZ {
 		this.center = center;
 		this.radius = radius;
 	}
-
+	@Override
 	public VectorXZ getCenter() {
 		return center;
 	}
