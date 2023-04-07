@@ -1,58 +1,13 @@
 package org.osm2world.core.world.modules;
 
-import static java.awt.Color.BLACK;
-import static java.lang.Math.*;
-import static java.lang.Math.max;
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static java.util.Collections.min;
-import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.map_elevation.data.GroundState.ON;
-import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.math.VectorXYZ.X_UNIT;
-import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
-import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.math.VectorXZ.angleBetween;
-import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
-import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.*;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -62,13 +17,42 @@ import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
+
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+
+import static java.awt.Color.BLACK;
+import static java.lang.Math.max;
+import static java.lang.Math.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.min;
+import static java.util.Collections.*;
+import static java.util.Comparator.comparingDouble;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXZ.angleBetween;
+import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.target.common.material.Materials.SOLAR_PANEL;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 /**
  * module for power infrastructure
@@ -941,14 +925,14 @@ public final class PowerModule extends AbstractModule {
 			List<PolygonShapeXZ> obstacles = new ArrayList<>();
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+				FaultTolerantIterationUtil.forEach(overlap.getOther(area).getRepresentations(), otherWO -> {
 
 					if (otherWO.getGroundState() == GroundState.ON
 							&& otherWO.getOutlinePolygonXZ() != null) {
 						obstacles.add(otherWO.getOutlinePolygonXZ());
 					}
 
-				}
+				});
 			}
 
 			return obstacles;
