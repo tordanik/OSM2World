@@ -1,60 +1,31 @@
 package org.osm2world.core.map_data.creation;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-import static org.osm2world.core.math.VectorXZ.distance;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-
-import javax.annotation.Nullable;
-
+import de.topobyte.osm4j.core.model.iface.*;
+import de.topobyte.osm4j.core.model.impl.Tag;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Element;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.map_data.data.overlaps.*;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
-import de.topobyte.osm4j.core.model.iface.OsmEntity;
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-import de.topobyte.osm4j.core.model.impl.Tag;
-import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.*;
+
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -228,7 +199,7 @@ public class OSMToMapDataConverter {
 			}
 		}
 
-		/* crate relations from remaining OSM relations */
+		/* create relations from the remaining relevant OSM relations */
 
 		TLongObjectMap<MapRelation.Element> wayIdMap = new TLongObjectHashMap<>();
 		TLongObjectMap<MapRelation.Element> relationIdMap = new TLongObjectHashMap<>();
@@ -250,6 +221,10 @@ public class OSMToMapDataConverter {
 			if (hasTags && !relationIdMap.containsKey(osmRelation.getId())) {
 
 				MapRelation relation = new MapRelation(osmRelation.getId(), tagsOfEntity(osmRelation));
+
+				if (!ruleset.isRelevantRelation(relation.getTags())) {
+					continue;
+				}
 
 				List<OsmRelationMember> incompleteMembers = null;
 
@@ -284,10 +259,6 @@ public class OSMToMapDataConverter {
 
 				}
 
-				if (!ruleset.isWhitelistedRelationType(relation.getTags().getValue("type"))) {
-					continue;
-				}
-
 				if (incompleteMembers != null) {
 
 					StringJoiner memberList = new StringJoiner(", ");
@@ -306,7 +277,7 @@ public class OSMToMapDataConverter {
 
 	}
 
-	static TagSet tagsOfEntity(OsmEntity entity) {
+	public static TagSet tagsOfEntity(OsmEntity entity) {
 
 		if (entity.getNumberOfTags() == 0) return TagSet.of();
 

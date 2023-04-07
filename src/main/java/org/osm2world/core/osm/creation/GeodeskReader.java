@@ -15,7 +15,9 @@ import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.osm.data.OSMData;
+import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -113,7 +115,7 @@ public class GeodeskReader implements OSMDataReader {
 		for (long nodeId : golNodeMap.keys()) {
 			Node node = golNodeMap.get(nodeId);
 			var golNode = new de.topobyte.osm4j.core.model.impl.Node(nodeId, node.lon(), node.lat());
-			golNode.setTags(geodeskToOsm4j(node.tags()));
+			golNode.setTags(geodeskTagsToOsm4j(node.tags()));
 			osm4jNodeMap.put(nodeId, golNode);
 		}
 
@@ -122,7 +124,7 @@ public class GeodeskReader implements OSMDataReader {
 			way.nodes().forEach(n -> nodeIds.add(nodeId(n)));
 			assert(stream(nodeIds.toArray()).allMatch(osm4jNodeMap::containsKey));
 			var golWay = new de.topobyte.osm4j.core.model.impl.Way(way.id(), nodeIds);
-			golWay.setTags(geodeskToOsm4j(way.tags()));
+			golWay.setTags(geodeskTagsToOsm4j(way.tags()));
 			osm4jWayMap.put(way.id(), golWay);
 		}
 
@@ -140,7 +142,7 @@ public class GeodeskReader implements OSMDataReader {
 				members.add(new RelationMember(m.id(), mType, m.role()));
 			}
 			var golRelation = new de.topobyte.osm4j.core.model.impl.Relation(relation.id(), members);
-			golRelation.setTags(geodeskToOsm4j(relation.tags()));
+			golRelation.setTags(geodeskTagsToOsm4j(relation.tags()));
 			osm4jRelationMap.put(relation.id(), golRelation);
 		}
 
@@ -153,7 +155,12 @@ public class GeodeskReader implements OSMDataReader {
 
 	}
 
-	private List<? extends OsmTag> geodeskToOsm4j(Tags geodeskTags) {
+	private boolean membersShouldBeIncluded(Relation relation) {
+		return relation.hasTag("type", "multipolygon")
+				&& new HardcodedRuleset().isRelevantRelation(geodeskTagsToTagSet(relation.tags()));
+	}
+
+	private List<? extends OsmTag> geodeskTagsToOsm4j(Tags geodeskTags) {
 		Map<String, Object> tagMap = geodeskTags.toMap();
 		if (tagMap.isEmpty()) {
 			return List.of();
@@ -164,8 +171,10 @@ public class GeodeskReader implements OSMDataReader {
 		}
 	}
 
-	private boolean membersShouldBeIncluded(Relation relation) {
-		return relation.hasTag("type", "multipolygon");
+	private static TagSet geodeskTagsToTagSet(Tags geodeskTags) {
+		return TagSet.of(geodeskTags.toMap().entrySet().stream()
+				.map(it -> new org.osm2world.core.map_data.data.Tag(it.getKey(), it.getValue().toString()))
+				.collect(toList()));
 	}
 
 	/** returns the id non-anonymous nodes, or else a fake id based on the coords */

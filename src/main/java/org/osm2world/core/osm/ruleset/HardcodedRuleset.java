@@ -1,22 +1,23 @@
 package org.osm2world.core.osm.ruleset;
 
-import static java.util.Arrays.asList;
+import de.topobyte.osm4j.core.model.iface.OsmTag;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.world.modules.SurfaceAreaModule;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
-import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.world.modules.SurfaceAreaModule;
-
-import de.topobyte.osm4j.core.model.iface.OsmTag;
+import static java.util.Arrays.asList;
 
 public class HardcodedRuleset implements Ruleset {
 
-	private static Collection<Tag> areaTags = new HashSet<>();
-	private static Collection<String> areaKeys = new HashSet<>();
+	private static final Collection<Tag> areaTags = new HashSet<>();
+	private static final Collection<String> areaKeys = new HashSet<>();
 
-	private static Collection<Tag> landTags = new HashSet<>();
-	private static Collection<Tag> seaTags = new HashSet<>();
+	private static final Collection<Tag> landTags = new HashSet<>();
+	private static final Collection<Tag> seaTags = new HashSet<>();
 
 	private static final Collection<String> relationTypeWhitelist;
 
@@ -100,9 +101,35 @@ public class HardcodedRuleset implements Ruleset {
 		return seaTags.contains(new Tag(tag.getKey(), tag.getValue()));
 	}
 
+	/**
+	 * checks whether a relation is relevant to OSM2World.
+	 * This is intended to filter out giant relations for things like place names
+	 * which cause performance issues (e.g. during intersection checks)
+	 * despite not being visible in a 3D rendering.
+	 *
+	 * @param tags  the relation's tags
+	 */
 	@Override
-	public boolean isWhitelistedRelationType(String type) {
-		return relationTypeWhitelist.contains(type);
+	public boolean isRelevantRelation(TagSet tags) {
+		if ("multipolygon".equals(tags.getValue("type"))) {
+			// check whether the multipolygon has a relevant main tag
+			// TODO once there is proper style support, check whether any of the style rules matches
+			return tags.containsKey("building")
+					|| tags.containsKey("building:part")
+					|| tags.containsKey("landcover")
+					|| tags.containsKey("highway")
+					|| tags.containsKey("barrier")
+					|| tags.containsKey("golf")
+					|| tags.containsAny(List.of("man_made"), List.of("bridge", "tunnel"))
+					|| tags.containsAny(List.of("natural"), List.of("shrubbery", "wood", "mud", "water"))
+					|| tags.containsAny(List.of("landuse"), List.of("forest", "orchard"))
+					|| tags.containsAny(List.of("aeroway"), List.of("apron", "helipad"))
+					|| tags.containsAny(List.of("amenity"), List.of("parking", "parking_space", "bicycle_parking", "fountain"))
+					|| tags.containsAny(List.of("leisure"), List.of("swimming_pool", "pitch"))
+					|| tags.containsAny(List.of("power"), List.of("generator"));
+		} else {
+			return relationTypeWhitelist.contains(tags.getValue("type"));
+		}
 	}
 
 }
