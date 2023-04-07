@@ -3,6 +3,7 @@ package org.osm2world.core.target.common.rendering;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -70,7 +71,7 @@ public class TileNumber {
 	 * @param arg  string to be parsed; format see {@link #PATTERN}
 	 * @throws IllegalArgumentException  for invalid tile numbers
 	 */
-	public TileNumber(String arg) {
+	public TileNumber(@Nonnull String arg) {
 		Matcher m = Pattern.compile(PATTERN).matcher(arg);
 		if (m.matches()) {
 			zoom = Integer.parseInt(m.group(1));

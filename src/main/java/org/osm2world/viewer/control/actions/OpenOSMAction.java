@@ -88,6 +88,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 			try {
 
 				String tileString = JOptionPane.showInputDialog("Enter a tile number (such as \"13,1234,4321\")");
+				if (tileString == null) return;
 				TileNumber tileNumber = new TileNumber(tileString);
 				OSMDataReader reader = mbtiles
 						? new MbtilesReader(osmFile, tileNumber)
