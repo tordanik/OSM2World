@@ -1,21 +1,7 @@
 package org.osm2world.core.target.common;
 
-import static java.awt.Color.WHITE;
-import static java.util.Arrays.*;
-import static java.util.Collections.nCopies;
-import static java.util.stream.Collectors.toList;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -24,23 +10,22 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshStore.MeshWithMetadata;
-import org.osm2world.core.target.common.material.BlankTexture;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.TextureAtlas;
-import org.osm2world.core.target.common.material.TextureData;
-import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.material.TextureLayer.TextureType;
-import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
-import org.osm2world.core.target.common.mesh.Geometry;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
-import org.osm2world.core.target.common.mesh.Mesh;
-import org.osm2world.core.target.common.mesh.ShapeGeometry;
-import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.target.common.mesh.*;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+
+import static java.awt.Color.WHITE;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.nCopies;
+import static java.util.stream.Collectors.toList;
 
 /**
  * a {@link Target} that collects everything that is being drawn as {@link Mesh}es
@@ -166,6 +151,9 @@ public class MeshTarget extends AbstractTarget {
 			for (MeshWithMetadata mesh : meshStore.meshesWithMetadata()) {
 
 				int hashCode = mesh.mesh.material.getTextureLayers().hashCode();
+				if (!options.contains(MergeOption.MERGE_ELEMENTS)) {
+					hashCode ^= mesh.metadata.hashCode();
+				}
 
 				for (List<MeshWithMetadata> set : meshSetsByHashCode.get(hashCode)) {
 					if (shouldBeMerged(mesh, set.get(0))) {
