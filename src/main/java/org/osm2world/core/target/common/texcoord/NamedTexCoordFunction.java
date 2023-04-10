@@ -1,9 +1,9 @@
 package org.osm2world.core.target.common.texcoord;
 
-import java.util.function.Function;
-
 import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+
+import java.util.function.Function;
 
 /**
  * offers generators for several useful {@link TexCoordFunction} implementations.
@@ -23,6 +23,12 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 	 * Better suited for certain vertical surfaces.
 	 */
 	GLOBAL_X_Y,
+
+	/**
+	 * like {@link #GLOBAL_X_Z}, but uses y instead of x dimension.
+	 * Better suited for certain vertical surfaces.
+	 */
+	GLOBAL_Z_Y,
 
 	/**
 	 * creates texture coordinates for individual triangles that
@@ -69,16 +75,15 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 
 	@Override
 	public TexCoordFunction apply(TextureDataDimensions dimensions) {
-		switch (this) {
-		case GLOBAL_X_Y: return new GlobalXYTexCoordFunction(dimensions);
-		case GLOBAL_X_Z: return new GlobalXZTexCoordFunction(dimensions);
-		case SLOPED_TRIANGLES: return new SlopedTrianglesTexCoordFunction(dimensions);
-		case STRIP_WALL:
-		case STRIP_FIT_HEIGHT:
-		case STRIP_FIT: return new StripWallTexCoordFunction(dimensions, this == STRIP_FIT, this != STRIP_WALL);
-		case FACE_FIT: return new FaceFitTexCoordFunction();
-		default: throw new Error("unimplemented texture coordinate function");
-		}
+		return switch (this) {
+			case GLOBAL_X_Y -> new GlobalXYTexCoordFunction(dimensions);
+			case GLOBAL_X_Z -> new GlobalXZTexCoordFunction(dimensions);
+			case GLOBAL_Z_Y -> new GlobalZYTexCoordFunction(dimensions);
+			case SLOPED_TRIANGLES -> new SlopedTrianglesTexCoordFunction(dimensions);
+			case STRIP_WALL, STRIP_FIT_HEIGHT, STRIP_FIT ->
+					new StripWallTexCoordFunction(dimensions, this == STRIP_FIT, this != STRIP_WALL);
+			case FACE_FIT -> new FaceFitTexCoordFunction();
+		};
 	}
 
 }
