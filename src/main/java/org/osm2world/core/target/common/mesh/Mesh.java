@@ -27,6 +27,9 @@ public class Mesh {
 		if (lodRangeMin.compareTo(lodRangeMax) > 0) {
 			throw new IllegalArgumentException("invalid LOD range: " + lodRangeMin + "-" + lodRangeMax);
 		}
+		if (geometry instanceof TriangleGeometry tg && tg.texCoords.size() != material.getNumTextureLayers()) {
+			throw new IllegalArgumentException("incorrect number of texCoord layers");
+		}
 
 	}
 
