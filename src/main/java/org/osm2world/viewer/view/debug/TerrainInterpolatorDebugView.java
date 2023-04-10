@@ -1,11 +1,5 @@
 package org.osm2world.viewer.view.debug;
 
-import static java.util.Arrays.asList;
-
-import java.awt.Color;
-import java.io.IOException;
-import java.util.Collection;
-
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
@@ -19,6 +13,13 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.RenderOptions;
+
+import java.awt.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public abstract class TerrainInterpolatorDebugView extends DebugView {
 
@@ -99,7 +100,7 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 					target.drawTriangleFan(TERRAIN_MAT,
 							asList(samples[x][z], samples[x+1][z],
 									samples[x+1][z+1], samples[x][z+1]),
-							null);
+							List.of());
 
 				}
 			}

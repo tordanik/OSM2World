@@ -46,8 +46,7 @@ import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 import static org.osm2world.core.target.common.material.Materials.SOLAR_PANEL;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
@@ -252,16 +251,22 @@ public final class PowerModule extends AbstractModule {
 
 				bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
-				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				target.drawTriangleStrip(bladeMaterial, bladeFront,
+						texCoordLists(bladeFront, bladeMaterial, GLOBAL_Z_Y));
+				target.drawTriangleStrip(bladeMaterial, bladeBack,
+						texCoordLists(bladeBack, bladeMaterial, GLOBAL_Z_Y));
 				bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				target.drawTriangleStrip(bladeMaterial, bladeFront,
+						texCoordLists(bladeFront, bladeMaterial, GLOBAL_Z_Y));
+				target.drawTriangleStrip(bladeMaterial, bladeBack,
+						texCoordLists(bladeBack, bladeMaterial, GLOBAL_Z_Y));
 				bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				target.drawTriangleStrip(bladeMaterial, bladeFront,
+						texCoordLists(bladeFront, bladeMaterial, GLOBAL_Z_Y));
+				target.drawTriangleStrip(bladeMaterial, bladeBack,
+						texCoordLists(bladeBack, bladeMaterial, GLOBAL_Z_Y));
 
 			}
 

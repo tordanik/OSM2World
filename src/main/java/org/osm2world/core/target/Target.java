@@ -1,10 +1,5 @@
 package org.osm2world.core.target;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -17,6 +12,13 @@ import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.WorldObject;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A sink for rendering/writing {@link WorldObject}s to.
@@ -32,23 +34,22 @@ public interface Target {
 	 *
 	 * @param object  the object that all draw method calls until the next beginObject belong to; can be null
 	 */
-	default void beginObject(WorldObject object) {}
+	default void beginObject(@Nullable WorldObject object) {}
 
 	/**
 	 * draws triangles.
 	 *
 	 * @param texCoordLists  one texture coordinate list per texture.
 	 *          Each must have three coordinates per triangle.
-	 *          Can be null if no texturing information is available.
 	 */
-	void drawTriangles(Material material,
-			List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists);
+	void drawTriangles(@Nonnull Material material,
+					   @Nonnull List<? extends TriangleXYZ> triangles,
+					   @Nonnull List<List<VectorXZ>> texCoordLists);
 
-	default void drawTriangles(Material material,
-			List<? extends TriangleXYZ> triangles,
-			List<VectorXYZ> normals,
-			List<List<VectorXZ>> texCoordLists) {
+	default void drawTriangles(@Nonnull Material material,
+							   @Nonnull List<? extends TriangleXYZ> triangles,
+							   @Nonnull List<VectorXYZ> normals,
+							   @Nonnull List<List<VectorXZ>> texCoordLists) {
 		this.drawTriangles(material, triangles, texCoordLists);
 	}
 
@@ -58,26 +59,25 @@ public interface Target {
 	 * @param vs             vertices of the triangle strip
 	 * @param texCoordLists  one texture coordinate list per texture.
 	 *          Each must have the same length as the "vs" parameter.
-	 *          Can be null if no texturing information is available.
 	 */
-	void drawTriangleStrip(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists);
+	void drawTriangleStrip(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+						   @Nonnull List<List<VectorXZ>> texCoordLists);
 
 	/**
 	 * draws a triangle fan.
 	 *
 	 * @see #drawTriangleStrip(Material, List, List)
 	 */
-	void drawTriangleFan(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists);
+	void drawTriangleFan(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+						 @Nonnull List<List<VectorXZ>> texCoordLists);
 
 	/**
 	 * draws a <em>convex</em> polygon
 	 *
 	 * @see #drawTriangleStrip(Material, List, List)
 	 */
-	void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists);
+	void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+						   @Nonnull List<List<VectorXZ>> texCoordLists);
 
 	/**
 	 * draws a flat shape in 3D space, at an arbitrary rotation.
@@ -91,8 +91,8 @@ public interface Target {
 	 *                     Defines the shape's rotation along with frontVector; != null
 	 * @param scaleFactor  a factor to scale the shape by, 1.0 leaves the shape unscaled.
 	 */
-	void drawShape(Material material, ClosedShapeXZ shape, VectorXYZ point,
-			VectorXYZ frontVector, VectorXYZ upVector, double scaleFactor);
+	void drawShape(@Nonnull Material material, @Nonnull ClosedShapeXZ shape, @Nonnull VectorXYZ point,
+				   @Nonnull VectorXYZ frontVector, @Nonnull VectorXYZ upVector, double scaleFactor);
 
 	/**
 	 * extrudes a 2d shape along a path.
@@ -124,17 +124,16 @@ public interface Target {
 	 *                                   from the path. This happens for completely vertical
 	 *                                   or otherwise ambiguous paths.
 	 */
-	void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
-			List<VectorXYZ> upVectors, List<Double> scaleFactors,
-			List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options);
+	void drawExtrudedShape(@Nonnull Material material, @Nonnull ShapeXZ shape, @Nonnull List<VectorXYZ> path,
+						   @Nullable List<VectorXYZ> upVectors, @Nullable List<Double> scaleFactors,
+						   @Nullable List<List<VectorXZ>> texCoordLists, @Nullable Set<ExtrudeOption> options);
 
 	/**
 	 * draws a box with outward-facing polygons.
 	 *
 	 * @param faceDirection  direction for the "front" of the box
 	 */
-	void drawBox(Material material,
-			VectorXYZ bottomCenter, VectorXZ faceDirection,
+	void drawBox(@Nonnull Material material, @Nonnull VectorXYZ bottomCenter, @Nonnull VectorXZ faceDirection,
 			double height, double width, double depth);
 
 	/**
@@ -147,8 +146,8 @@ public interface Target {
 	 * @param corners  number of corners; null creates a cylinder
 	 *  for radiusBottom == radiusTop or (truncated) cone otherwise
 	 */
-	void drawColumn(Material material, Integer corners,
-			VectorXYZ base, double height, double radiusBottom,
+	void drawColumn(@Nonnull Material material, @Nullable Integer corners,
+					@Nonnull VectorXYZ base, double height, double radiusBottom,
 			double radiusTop, boolean drawBottom, boolean drawTop);
 
 	/**

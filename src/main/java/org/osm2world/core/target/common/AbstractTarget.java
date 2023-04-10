@@ -1,18 +1,5 @@
 package org.osm2world.core.target.common;
 
-import static java.util.Collections.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.core.math.TriangleXZ;
@@ -25,6 +12,19 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.MeshUtil;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
+import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 /**
  * superclass for {@link Target} implementations that defines some
@@ -45,8 +45,8 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawShape(Material material, ClosedShapeXZ shape, VectorXYZ point,
-			VectorXYZ frontVector, VectorXYZ upVector, double scaleFactor) {
+	public void drawShape(@Nonnull Material material, @Nonnull ClosedShapeXZ shape, @Nonnull VectorXYZ point,
+						  @Nonnull VectorXYZ frontVector, @Nonnull VectorXYZ upVector, double scaleFactor) {
 
 		for (TriangleXZ triangle : shape.getTriangulation()) {
 
@@ -77,9 +77,9 @@ public abstract class AbstractTarget implements Target {
 	 * for documentation of the implemented interface method.
 	 */
 	@Override
-	public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path,
-			List<VectorXYZ> upVectors, List<Double> scaleFactors,
-			List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
+	public void drawExtrudedShape(@Nonnull Material material, @Nonnull ShapeXZ shape, @Nonnull List<VectorXYZ> path,
+								  List<VectorXYZ> upVectors, List<Double> scaleFactors,
+								  List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
 
 		drawMesh(new Mesh(new ExtrusionGeometry(shape, path, upVectors, scaleFactors, null, options,
 				material.getTextureDimensions()), material));
@@ -111,8 +111,8 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawBox(Material material, VectorXYZ bottomCenter, VectorXZ faceDirection,
-			double height, double width, double depth) {
+	public void drawBox(@Nonnull Material material, @Nonnull VectorXYZ bottomCenter, @Nonnull VectorXZ faceDirection,
+						double height, double width, double depth) {
 
 		drawMesh(new Mesh(MeshUtil.createBox(bottomCenter, faceDirection, height, width, depth, null,
 				material.getTextureDimensions()), material));
@@ -120,9 +120,9 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawColumn(Material material, Integer corners, VectorXYZ base,
-			double height, double radiusBottom, double radiusTop,
-			boolean drawBottom, boolean drawTop) {
+	public void drawColumn(@Nonnull Material material, Integer corners, @Nonnull VectorXYZ base,
+						   double height, double radiusBottom, double radiusTop,
+						   boolean drawBottom, boolean drawTop) {
 
 		drawMesh(new Mesh(ExtrusionGeometry.createColumn(corners, base, height, radiusBottom, radiusTop, drawBottom, drawTop,
 				null, material.getTextureDimensions()), material));
@@ -130,8 +130,8 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawTriangleStrip(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawTriangleStrip(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		List<List<VectorXZ>> newTexCoordLists = emptyList();
 		if (texCoordLists != null && !texCoordLists.isEmpty()) {
@@ -146,8 +146,8 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawTriangleFan(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawTriangleFan(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+								@Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		List<List<VectorXZ>> newTexCoordLists = emptyList();
 		if (texCoordLists != null && !texCoordLists.isEmpty()) {
@@ -163,8 +163,8 @@ public abstract class AbstractTarget implements Target {
 	}
 
 	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 		drawTriangleFan(material, vs, texCoordLists);
 	}
 

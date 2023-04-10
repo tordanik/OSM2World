@@ -1,21 +1,21 @@
 package org.osm2world.core.target.common;
 
-import static java.lang.Math.abs;
-import static java.util.Collections.nCopies;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
+import static java.lang.Math.abs;
+import static java.util.Collections.nCopies;
 
 /**
  * a target that relies on faces to represent geometry.
@@ -230,9 +230,9 @@ public abstract class FaceTarget extends AbstractTarget {
 			HashMultimap.create();
 
 	@Override
-	public void drawTriangles(Material material,
-			List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawTriangles(@Nonnull Material material,
+							  @Nonnull List<? extends TriangleXYZ> triangles,
+							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		int i = 0;
 
@@ -264,8 +264,8 @@ public abstract class FaceTarget extends AbstractTarget {
 	}
 
 	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		if (reconstructFaces()) {
 			super.drawConvexPolygon(material, vs, texCoordLists);

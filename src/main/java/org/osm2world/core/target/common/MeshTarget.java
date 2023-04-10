@@ -16,6 +16,7 @@ import org.osm2world.core.target.common.mesh.*;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.List;
@@ -42,8 +43,8 @@ public class MeshTarget extends AbstractTarget {
 	}
 
 	@Override
-	public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawTriangles(@Nonnull Material material, @Nonnull List<? extends TriangleXYZ> triangles,
+							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.getInterpolation(),
 				texCoordLists, null), material));
