@@ -1,31 +1,8 @@
 package org.osm2world.core.target.frontend_pbf;
 
-import static java.lang.Math.round;
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.ExtrudeOption.*;
-import static org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption.*;
-import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.osm2world.core.map_data.creation.MapProjection;
@@ -34,13 +11,7 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.Vector3D;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
@@ -62,37 +33,40 @@ import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.*;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCoordFunction;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape.ShapeType;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BarrierModule.BollardRow;
 import org.osm2world.core.world.modules.BarrierModule.HandRail;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
-import org.osm2world.core.world.modules.StreetFurnitureModule.Bench;
-import org.osm2world.core.world.modules.StreetFurnitureModule.GritBin;
-import org.osm2world.core.world.modules.StreetFurnitureModule.PostBox;
-import org.osm2world.core.world.modules.StreetFurnitureModule.VendingMachineVice;
-import org.osm2world.core.world.modules.StreetFurnitureModule.WasteBasket;
+import org.osm2world.core.world.modules.StreetFurnitureModule.*;
 
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
+
+import static java.lang.Math.round;
+import static java.util.Arrays.asList;
+import static java.util.Collections.binarySearch;
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
+import static org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption.*;
+import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 public class FrontendPbfTarget extends MeshTarget {
 
@@ -489,7 +463,7 @@ public class FrontendPbfTarget extends MeshTarget {
 			throw new IllegalStateException("a WorldObject needs geometry");
 		}
 
-		Element element = worldObjectMetadata == null ? null : worldObjectMetadata.mapElement;
+		Element element = worldObjectMetadata == null ? null : worldObjectMetadata.mapElement();
 
 		/* check for 3DMR ids */
 
@@ -591,9 +565,9 @@ public class FrontendPbfTarget extends MeshTarget {
 				objectBuilder.setOsmId(element.toString());
 			}
 
-			objectBuilder.setTypeName(stringBlock.toIndex(worldObjectMetadata.modelClass.getSimpleName()));
+			objectBuilder.setTypeName(stringBlock.toIndex(worldObjectMetadata.modelClass().getSimpleName()));
 
-			if (LOD_2_FEATURES.contains(worldObjectMetadata.modelClass)) {
+			if (LOD_2_FEATURES.contains(worldObjectMetadata.modelClass())) {
 				objectBuilder.setMinLod(2);
 			}
 

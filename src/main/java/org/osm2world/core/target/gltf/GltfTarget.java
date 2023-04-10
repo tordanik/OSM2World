@@ -1,25 +1,9 @@
 package org.osm2world.core.target.gltf;
 
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
-import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
-import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.Multimap;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import jakarta.xml.bind.DatatypeConverter;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
@@ -32,39 +16,31 @@ import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption;
-import org.osm2world.core.target.common.material.ImageFileTexture;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.RasterImageFileTexture;
-import org.osm2world.core.target.common.material.TextureData;
-import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
-import org.osm2world.core.target.gltf.data.Gltf;
-import org.osm2world.core.target.gltf.data.GltfAccessor;
-import org.osm2world.core.target.gltf.data.GltfAsset;
-import org.osm2world.core.target.gltf.data.GltfBuffer;
-import org.osm2world.core.target.gltf.data.GltfBufferView;
-import org.osm2world.core.target.gltf.data.GltfImage;
-import org.osm2world.core.target.gltf.data.GltfMaterial;
+import org.osm2world.core.target.gltf.data.*;
 import org.osm2world.core.target.gltf.data.GltfMaterial.NormalTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.OcclusionTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.PbrMetallicRoughness;
 import org.osm2world.core.target.gltf.data.GltfMaterial.TextureInfo;
-import org.osm2world.core.target.gltf.data.GltfMesh;
-import org.osm2world.core.target.gltf.data.GltfNode;
-import org.osm2world.core.target.gltf.data.GltfSampler;
-import org.osm2world.core.target.gltf.data.GltfScene;
-import org.osm2world.core.target.gltf.data.GltfTexture;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 
-import com.google.common.collect.Multimap;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.*;
 
-import jakarta.xml.bind.DatatypeConverter;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
+import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
+import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
 public class GltfTarget extends MeshTarget {
 
@@ -480,7 +456,7 @@ public class GltfTarget extends MeshTarget {
 
 	private static void addMeshNameAndId(GltfNode node, MeshMetadata metadata) {
 
-		MapRelation.Element mapElement = metadata.mapElement;
+		MapRelation.Element mapElement = metadata.mapElement();
 
 		if (mapElement != null) {
 			Map<String, Object> extras = new HashMap<>();
@@ -488,14 +464,14 @@ public class GltfTarget extends MeshTarget {
 			node.extras = extras;
 		}
 
-		if (metadata.modelClass != null && mapElement != null) {
+		if (metadata.modelClass() != null && mapElement != null) {
 			TagSet tags = mapElement.getTags();
 			if (tags.containsKey("name")) {
-				node.name = metadata.modelClass.getSimpleName() + " " + tags.getValue("name");
+				node.name = metadata.modelClass().getSimpleName() + " " + tags.getValue("name");
 			} else if (tags.containsKey("ref")) {
-				node.name = metadata.modelClass.getSimpleName() + " " + tags.getValue("ref");
+				node.name = metadata.modelClass().getSimpleName() + " " + tags.getValue("ref");
 			} else {
-				node.name = metadata.modelClass.getSimpleName() + " " + mapElement.toString();
+				node.name = metadata.modelClass().getSimpleName() + " " + mapElement;
 			}
 		} else {
 			node.name = "Multiple elements";

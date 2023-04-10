@@ -1,24 +1,23 @@
 package org.osm2world.core.target.common;
 
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.target.common.mesh.Geometry.combine;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.target.common.mesh.Geometry;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.world.data.WorldObject;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.target.common.mesh.Geometry.combine;
 
 /** a collection of meshes along with some metadata */
 public class MeshStore {
@@ -26,58 +25,18 @@ public class MeshStore {
 	@FunctionalInterface
 	public static interface MeshProcessingStep extends Function<MeshStore, MeshStore> {}
 
-	public static class MeshMetadata {
-
-		public final @Nullable MapRelation.Element mapElement;
-		public final @Nullable Class<? extends WorldObject> modelClass;
-
-		public MeshMetadata(MapRelation.Element mapElement, Class<? extends WorldObject> modelClass) {
-			this.mapElement = mapElement;
-			this.modelClass = modelClass;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((mapElement == null) ? 0 : mapElement.hashCode());
-			result = prime * result + ((modelClass == null) ? 0 : modelClass.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			MeshMetadata other = (MeshMetadata) obj;
-			if (mapElement == null) {
-				if (other.mapElement != null)
-					return false;
-			} else if (!mapElement.equals(other.mapElement))
-				return false;
-			if (modelClass == null) {
-				if (other.modelClass != null)
-					return false;
-			} else if (!modelClass.equals(other.modelClass))
-				return false;
-			return true;
-		}
+	public record MeshMetadata(
+			@Nullable MapRelation.Element mapElement,
+			@Nullable Class<? extends WorldObject> modelClass) {
 
 		@Override
 		public String toString() {
-			return "{" + mapElement + ", " + modelClass.getSimpleName() + "}";
+			return "{" + mapElement + ", " + (modelClass == null ? null : modelClass.getSimpleName()) + "}";
 		}
 
 	}
 
-	public static class MeshWithMetadata {
-
-		public final Mesh mesh;
-		public final MeshMetadata metadata;
+	public record MeshWithMetadata(@Nonnull Mesh mesh, @Nonnull MeshMetadata metadata) {
 
 		public MeshWithMetadata(Mesh mesh, MeshMetadata metadata) {
 			if (mesh == null || metadata == null) throw new NullPointerException();

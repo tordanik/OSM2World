@@ -77,7 +77,7 @@ public class MeshTarget extends AbstractTarget {
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
 			return new MeshStore(meshStore.meshesWithMetadata().stream()
-					.filter(m -> m.mesh.lodRangeContains(targetLod))
+					.filter(m -> m.mesh().lodRangeContains(targetLod))
 					.collect(toList()));
 		}
 
@@ -117,23 +117,23 @@ public class MeshTarget extends AbstractTarget {
 		/** checks if two meshes should be merged according to the MergeOptions */
 		public boolean shouldBeMerged(MeshWithMetadata m1, MeshWithMetadata m2) {
 
-			if (m1.mesh.lodRangeMin != m2.mesh.lodRangeMin
-					|| m1.mesh.lodRangeMax != m2.mesh.lodRangeMax) {
+			if (m1.mesh().lodRangeMin != m2.mesh().lodRangeMin
+					|| m1.mesh().lodRangeMax != m2.mesh().lodRangeMax) {
 				return false;
 			}
 
 			if (!options.contains(MergeOption.MERGE_ELEMENTS)
-					&& !Objects.equals(m1.metadata, m2.metadata)) {
+					&& !Objects.equals(m1.metadata(), m2.metadata())) {
 				return false;
 			}
 
 			if (options.contains(MergeOption.PRESERVE_GEOMETRY_TYPES)
-					&& (!Objects.equals(m1.mesh.geometry.getClass(), TriangleGeometry.class)
-							|| !Objects.equals(m2.mesh.geometry.getClass(), TriangleGeometry.class))) {
+					&& (!Objects.equals(m1.mesh().geometry.getClass(), TriangleGeometry.class)
+							|| !Objects.equals(m2.mesh().geometry.getClass(), TriangleGeometry.class))) {
 				return false;
 			}
 
-			return m1.mesh.material.equals(m2.mesh.material,
+			return m1.mesh().material.equals(m2.mesh().material,
 					!options.contains(MergeOption.SEPARATE_NORMAL_MODES),
 					!options.contains(MergeOption.SINGLE_COLOR_MESHES));
 
@@ -150,9 +150,9 @@ public class MeshTarget extends AbstractTarget {
 			meshLoop:
 			for (MeshWithMetadata mesh : meshStore.meshesWithMetadata()) {
 
-				int hashCode = mesh.mesh.material.getTextureLayers().hashCode();
+				int hashCode = mesh.mesh().material.getTextureLayers().hashCode();
 				if (!options.contains(MergeOption.MERGE_ELEMENTS)) {
-					hashCode ^= mesh.metadata.hashCode();
+					hashCode ^= mesh.metadata().hashCode();
 				}
 
 				for (List<MeshWithMetadata> set : meshSetsByHashCode.get(hashCode)) {
@@ -196,7 +196,7 @@ public class MeshTarget extends AbstractTarget {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
-				Mesh mesh = meshWithMetadata.mesh;
+				Mesh mesh = meshWithMetadata.mesh();
 
 				if (mesh.material.getNumTextureLayers() <= 1) {
 					result.add(meshWithMetadata);
@@ -221,7 +221,7 @@ public class MeshTarget extends AbstractTarget {
 
 						Mesh newMesh = new Mesh(newGeometry, singleLayerMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
 
-						result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata));
+						result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata()));
 
 					}
 
@@ -244,7 +244,7 @@ public class MeshTarget extends AbstractTarget {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
-				Mesh mesh = meshWithMetadata.mesh;
+				Mesh mesh = meshWithMetadata.mesh();
 				Material newMaterial = mesh.material.withColor(WHITE);
 				Geometry newGeometry;
 
@@ -283,7 +283,7 @@ public class MeshTarget extends AbstractTarget {
 					throw new Error("unsupported geometry type: " + mesh.geometry.getClass());
 				}
 
-				result.add(new MeshWithMetadata(new Mesh(newGeometry, newMaterial), meshWithMetadata.metadata));
+				result.add(new MeshWithMetadata(new Mesh(newGeometry, newMaterial), meshWithMetadata.metadata()));
 
 			}
 
@@ -408,7 +408,7 @@ public class MeshTarget extends AbstractTarget {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
-				Mesh mesh = meshWithMetadata.mesh;
+				Mesh mesh = meshWithMetadata.mesh();
 
 				if (!mesh.material.getTextureLayers().stream().anyMatch(atlasGroup::canReplaceLayer)) {
 					result.add(meshWithMetadata);
@@ -442,7 +442,7 @@ public class MeshTarget extends AbstractTarget {
 					Material newMaterial = mesh.material.withLayers(newTextureLayers);
 					Mesh newMesh = new Mesh(builder.build(), newMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
 
-					result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata));
+					result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata()));
 
 				}
 			}
@@ -469,7 +469,7 @@ public class MeshTarget extends AbstractTarget {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
-				Mesh mesh = meshWithMetadata.mesh;
+				Mesh mesh = meshWithMetadata.mesh();
 				TriangleGeometry tg = mesh.geometry.asTriangles();
 
 				/* mark triangles outside the bounds for removal */
@@ -525,7 +525,7 @@ public class MeshTarget extends AbstractTarget {
 
 					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(newTexCoords.size(), null, null);
 					builder.addTriangles(newTriangles, newTexCoords, newColors, newNormals);
-					result.add(new MeshWithMetadata(new Mesh(builder.build(), mesh.material), meshWithMetadata.metadata));
+					result.add(new MeshWithMetadata(new Mesh(builder.build(), mesh.material), meshWithMetadata.metadata()));
 
 				}
 
