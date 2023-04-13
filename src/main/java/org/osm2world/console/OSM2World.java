@@ -65,6 +65,7 @@ public class OSM2World {
 
 		if (args.isParameterFileDir()) {
 			ParamFileDirMode.run(args.getParameterFileDir());
+			return;
 		}
 
 		/* parse lines from parameter file (if one exists) */
