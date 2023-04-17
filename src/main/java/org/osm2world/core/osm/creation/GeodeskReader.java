@@ -34,6 +34,12 @@ public class GeodeskReader implements OSMDataReader {
 
 	private static final long ANONYMOUS_NODE_ID_OFFSET = 100_000_000_000L;
 
+	/**
+	 * object used to prevent concurrent access to a Geodesk database.
+	 * This simple solution also prevents concurrent access to different databases, but that's likely a rare situation.
+	 */
+	private static final Object synchronizationObject = new Object();
+
 	private final File golFile;
 	private final LatLonBounds bounds;
 
@@ -51,17 +57,21 @@ public class GeodeskReader implements OSMDataReader {
 			throw new FileNotFoundException("Geodesk file does not exist: " + golFile);
 		}
 
-		try (FeatureLibrary library = new FeatureLibrary(golFile.getPath())) {
+		synchronized (synchronizationObject) {
 
-			Box bbox = Box.ofWSEN(bounds.minlon, bounds.minlat, bounds.maxlon, bounds.maxlat);
-			Features<Feature> features = library.in(bbox);
+			try (FeatureLibrary library = new FeatureLibrary(golFile.getPath())) {
 
-			InMemoryMapDataSet data = geodeskToOsm4j(features);
+				Box bbox = Box.ofWSEN(bounds.minlon, bounds.minlat, bounds.maxlon, bounds.maxlat);
+				Features<Feature> features = library.in(bbox);
 
-			return new OSMData(data);
+				InMemoryMapDataSet data = geodeskToOsm4j(features);
 
-		} catch (StoreException e) {
-			throw new IOException(e);
+				return new OSMData(data);
+
+			} catch (StoreException e) {
+				throw new IOException(e);
+			}
+
 		}
 
 	}

@@ -8,6 +8,10 @@ import org.osm2world.core.target.common.rendering.TileNumber;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,6 +57,34 @@ public class GeodeskReaderTest {
 	public void testMissingFile() throws IOException {
 		GeodeskReader reader = new GeodeskReader(new File("noSuchFile.gol"), globalBounds);
 		reader.getData();
+	}
+
+	@Test
+	public void testParallelAccess() {
+
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		AtomicReference<IOException> encounteredException = new AtomicReference<>(null);
+
+		for (int i = 0; i < 2; i++) {
+			executor.submit(() -> {
+				try {
+					testSimpleFile();
+				} catch (IOException e) {
+					encounteredException.set(e);
+				}
+			});
+		}
+
+		executor.shutdown();
+
+		try {
+			executor.awaitTermination(1, TimeUnit.SECONDS);
+		} catch (InterruptedException ignored) {}
+
+		if (encounteredException.get() != null) {
+			throw new AssertionError("At least one thread encountered an exception ", encounteredException.get());
+		}
+
 	}
 
 }
