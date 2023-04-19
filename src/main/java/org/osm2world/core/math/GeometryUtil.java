@@ -8,14 +8,10 @@ import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineSegment;
+import org.locationtech.jts.geom.*;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.util.color.LColor;
 
@@ -531,6 +527,16 @@ public final class GeometryUtil {
 
 		return result;
 
+	}
+
+	/**
+	 * 2D version of {@link #equallyDistributePointsAlong(double, boolean, List)}
+	 */
+	public static List<VectorXZ> equallyDistributePointsAlong(
+			double preferredDistance, boolean pointsAtStartAndEnd, PolylineXZ polyline) {
+		List<VectorXYZ> pointsXYZ = polyline.vertices().stream().map(it -> it.xyz(0)).toList();
+		List<VectorXYZ> resultXYZ = equallyDistributePointsAlong(preferredDistance, pointsAtStartAndEnd, pointsXYZ);
+		return resultXYZ.stream().map(VectorXYZ::xz).toList();
 	}
 
 	/**
