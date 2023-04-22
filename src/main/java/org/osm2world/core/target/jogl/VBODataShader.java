@@ -57,18 +57,18 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 
 		if (primitive.type == Type.TRIANGLE_STRIP) {
 
-			primVertices = triangleVertexListFromTriangleStrip(primVertices);
+			primVertices = TrainglesFromMode.triangleVertexListFromTriangleStrip(primVertices);
 
 			if (material.getInterpolation() == Interpolation.FLAT) {
 				primNormals = triangleNormalListFromTriangleStripOrFan(primNormals);
 			} else {
-				primNormals = triangleVertexListFromTriangleStrip(primNormals);
+				primNormals = TrainglesFromMode.triangleVertexListFromTriangleStrip(primNormals);
 			}
 
 			if (primTexCoordLists != null) {
 				List<List<VectorXZ>> newPrimTexCoordLists = new ArrayList<List<VectorXZ>>();
 				for (List<VectorXZ> primTexCoordList : primTexCoordLists) {
-					newPrimTexCoordLists.add(triangleVertexListFromTriangleStrip(primTexCoordList));
+					newPrimTexCoordLists.add(TrainglesFromMode.triangleVertexListFromTriangleStrip(primTexCoordList));
 				}
 				primTexCoordLists = newPrimTexCoordLists;
 			}

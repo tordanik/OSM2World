@@ -10,9 +10,15 @@ import org.osm2world.core.map_data.creation.LatLon;
  */
 public class LatLonEle {
 
-	public final double lat;
-	public final double lon;
-	public final double ele;
+	/**
+	 * Rename variable refactoring applied
+	 * lat changed to latitude
+	 * long changed to longitude
+	 * ele changed to elevation
+	 */
+	public final double latitude;
+	public final double longitude;
+	public final double elevation;
 
 	/** pattern for parseable arguments */
 	public static final String PATTERN = LatLon.PATTERN + ",(" + LatLon.DOUBLE_PATTERN + ")";
@@ -20,18 +26,18 @@ public class LatLonEle {
 	/**
 	 * regular constructor
 	 */
-	public LatLonEle(double lat, double lon, double ele) {
-		this.lat = lat;
-		this.lon = lon;
-		this.ele = ele;
+	public LatLonEle(double latitude, double longitude, double elevation) {
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.elevation = elevation;
 		validateValues();
 	}
 
 	/**
 	 * regular constructor (with default elevation of 0)
 	 */
-	public LatLonEle(double lat, double lon) {
-		this(lat, lon, 0);
+	public LatLonEle(double latitude, double longitude) {
+		this(latitude, longitude, 0);
 	}
 
 	/**
@@ -45,14 +51,14 @@ public class LatLonEle {
 		Matcher mEle = Pattern.compile(PATTERN).matcher(arg);
 		Matcher m = Pattern.compile(LatLon.PATTERN).matcher(arg);
 		if (mEle.matches()) {
-			lat = Double.parseDouble(mEle.group(1));
-			lon = Double.parseDouble(mEle.group(2));
-			ele = Double.parseDouble(mEle.group(3));
+			latitude = Double.parseDouble(mEle.group(1));
+			longitude = Double.parseDouble(mEle.group(2));
+			elevation = Double.parseDouble(mEle.group(3));
 			validateValues();
 		} else if (m.matches()) {
-			lat = Double.parseDouble(m.group(1));
-			lon = Double.parseDouble(m.group(2));
-			ele = 0;
+			latitude = Double.parseDouble(m.group(1));
+			longitude = Double.parseDouble(m.group(2));
+			elevation = 0;
 			validateValues();
 		} else {
 			throw new IllegalArgumentException("argument doesn't match: " + arg);
@@ -63,19 +69,19 @@ public class LatLonEle {
 	 * @throws IllegalArgumentException  for incorrect field values
 	 */
 	private void validateValues() {
-		if (lat > 90 || lat < -90 || lon > 180 || lon < -180) {
-			throw new IllegalArgumentException("not valid: " + lat + ", " + lon);
+		if (latitude > 90 || latitude < -90 || longitude > 180 || longitude < -180) {
+			throw new IllegalArgumentException("not valid: " + latitude + ", " + longitude);
 		}
 	}
 
 	/** returns just the {@link LatLon} components */
 	public LatLon latLon() {
-		return new LatLon(lat, lon);
+		return new LatLon(latitude, longitude);
 	}
 
 	@Override
 	public String toString() {
-		return lat + "," + lon;
+		return latitude + "," + longitude;
 	}
 
 }

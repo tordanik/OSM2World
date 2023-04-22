@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Collections.max;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
+import static org.osm2world.core.math.GeometryUtil.TrainglesFromMode.triangleVertexListFromTriangleStrip;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
@@ -24,10 +24,7 @@ import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXYZ;
@@ -293,7 +290,7 @@ public class ExtrusionGeometry implements Geometry {
 				List<VectorXYZ> triangleVs;
 
 				if (scaleA != 0 && scaleB != 0) {
-					triangleVs = triangleVertexListFromTriangleStrip(createTriangleStripBetween(shapeB, shapeA));
+					triangleVs = GeometryUtil.TrainglesFromMode.triangleVertexListFromTriangleStrip(createTriangleStripBetween(shapeB, shapeA));
 				} else if (scaleA != 0 && scaleB == 0) {
 					triangleVs = new ArrayList<>();
 					for (int i = 0; i + 1 < shapeA.size(); i++) {

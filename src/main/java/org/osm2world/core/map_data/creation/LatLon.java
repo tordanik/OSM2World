@@ -26,8 +26,8 @@ public class LatLon {
 	/** parsing constructor for strings matching {@link #PATTERN} */
 	public LatLon(String string) {
 		LatLonEle lle = new LatLonEle(string);
-		this.lat = lle.lat;
-		this.lon = lle.lon;
+		this.lat = lle.latitude;
+		this.lon = lle.longitude;
 	}
 
 	@Override

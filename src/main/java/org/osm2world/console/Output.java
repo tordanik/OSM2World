@@ -115,8 +115,8 @@ public final class Output {
 				LatLonEle lookAt = args.getPviewLookat();
 
 				camera = new Camera();
-				VectorXYZ posV = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
-				VectorXYZ laV =	proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
+				VectorXYZ posV = proj.toXZ(pos.latitude, pos.longitude).xyz(pos.elevation);
+				VectorXYZ laV =	proj.toXZ(lookAt.latitude, lookAt.longitude).xyz(lookAt.elevation);
 				camera.setCamera(posV.x, posV.y, posV.z, laV.x, laV.y, laV.z);
 
 				projection = new Projection(false,

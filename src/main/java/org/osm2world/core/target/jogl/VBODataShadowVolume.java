@@ -131,7 +131,7 @@ abstract class VBODataShadowVolume<BufferT extends Buffer> {
 
 		if (primitive.type == Type.TRIANGLE_STRIP) {
 
-			primVertices = triangleVertexListFromTriangleStrip(primVertices);
+			primVertices = TrainglesFromMode.triangleVertexListFromTriangleStrip(primVertices);
 
 		} else if (primitive.type == Type.TRIANGLE_FAN) {
 

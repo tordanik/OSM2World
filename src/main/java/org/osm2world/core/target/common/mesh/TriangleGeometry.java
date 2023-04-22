@@ -264,8 +264,8 @@ public class TriangleGeometry implements Geometry {
 		}
 
 		public void addTriangleStrip(List<VectorXYZ> vs, List<List<VectorXZ>> texCoords) {
-			addTriangles(trianglesFromTriangleStrip(vs),
-					texCoords.stream().map(it -> triangleVertexListFromTriangleStrip(it)).collect(toList()));
+			addTriangles(TrainglesFromMode.trianglesFromTriangleStrip(vs),
+					texCoords.stream().map(it -> TrainglesFromMode.triangleVertexListFromTriangleStrip(it)).collect(toList()));
 		}
 
 		/** Like {@link #addTriangleStrip(List, List)}, but uses {@link #defaultTexCoordFunctions} */

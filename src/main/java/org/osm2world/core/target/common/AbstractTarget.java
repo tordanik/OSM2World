@@ -138,11 +138,11 @@ public abstract class AbstractTarget implements Target {
 			newTexCoordLists = new ArrayList<List<VectorXZ>>(texCoordLists.size());
 			for (List<VectorXZ> texCoordList : texCoordLists) {
 				newTexCoordLists.add(
-						triangleVertexListFromTriangleStrip(texCoordList));
+						TrainglesFromMode.triangleVertexListFromTriangleStrip(texCoordList));
 			}
 		}
 
-		drawTriangles(material, trianglesFromTriangleStrip(vs), newTexCoordLists);
+		drawTriangles(material, TrainglesFromMode.trianglesFromTriangleStrip(vs), newTexCoordLists);
 	}
 
 	@Override

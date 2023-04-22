@@ -34,7 +34,7 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 	public boolean isFinite() {
 		return Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z);
 	}
-
+	@Override
 	public double length() {
 		return Math.sqrt(x*x + y*y + z*z);
 	}

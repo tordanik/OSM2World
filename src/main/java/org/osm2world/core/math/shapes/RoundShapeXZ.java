@@ -19,4 +19,6 @@ public interface RoundShapeXZ extends ShapeXZ {
 
 	public List<VectorXZ> vertices(int numPoints);
 
+	public VectorXZ getCenter() ;
+
 }
