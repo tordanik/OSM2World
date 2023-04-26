@@ -105,6 +105,9 @@ public class ExtrusionGeometry implements Geometry {
 			throw new NullPointerException("upVectors must not be null for non-vertical paths");
 		}
 
+		// convert to triangles; this ensures that any exceptions related to illegal geometry are thrown now
+		this.asTriangles();
+
 	}
 
 	/**
