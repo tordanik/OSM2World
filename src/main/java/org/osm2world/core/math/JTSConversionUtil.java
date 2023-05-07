@@ -106,21 +106,21 @@ public class JTSConversionUtil {
 
 		List<PolygonWithHolesXZ> result = new ArrayList<>(1);
 
-		if (geometry instanceof Polygon) {
-			if (geometry.getNumPoints() > 2) {
+		if (geometry instanceof Polygon polygon) {
+			if (polygon.getNumPoints() > 2) {
 				try {
-					result.add(fromJTS((Polygon)geometry));
+					result.add(fromJTS(polygon));
 				} catch (InvalidGeometryException e) {
-					ConversionLog.warn("Ignoring invalid JTS polygon: " + e.getMessage());
+					ConversionLog.warn("Ignoring invalid JTS polygon: " + e.getMessage(), e);
 				}
 			}
-		} else if (geometry instanceof GeometryCollection) {
-			GeometryCollection collection = (GeometryCollection)geometry;
+		} else if (geometry instanceof GeometryCollection collection) {
 			for (int i = 0; i < collection.getNumGeometries(); i++) {
 				result.addAll(polygonsFromJTS(collection.getGeometryN(i)));
 			}
-		} else {
-			System.err.println("unhandled geometry type: " + geometry.getClass());
+		} else if (!(geometry instanceof LineString)) {
+			// LineString is known to sometimes occur in the result and is ignored; other elements are unexpected
+			throw new Error("unhandled geometry type: " + geometry.getClass());
 		}
 
 		return result;
