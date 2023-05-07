@@ -1,5 +1,27 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
+import static java.lang.Math.PI;
+import static java.util.Arrays.asList;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.enums.ForwardBackward.BACKWARD;
+import static org.osm2world.core.util.enums.ForwardBackward.FORWARD;
+import static org.osm2world.core.util.enums.LeftRight.RIGHT;
+import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Membership;
 import org.osm2world.core.math.GeometryUtil;
@@ -10,26 +32,6 @@ import org.osm2world.core.util.enums.LeftRight;
 import org.osm2world.core.world.modules.RoadModule;
 import org.osm2world.core.world.modules.RoadModule.Road;
 import org.osm2world.core.world.modules.common.AbstractModule;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.lang.Math.PI;
-import static java.util.Arrays.asList;
-import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.util.ValueParseUtil.parseColor;
-import static org.osm2world.core.util.enums.ForwardBackward.BACKWARD;
-import static org.osm2world.core.util.enums.ForwardBackward.FORWARD;
-import static org.osm2world.core.util.enums.LeftRight.RIGHT;
-import static org.osm2world.core.world.modules.RoadModule.getConnectedRoads;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 /**
  * adds traffic signs to the world
@@ -377,7 +379,7 @@ public class TrafficSignModule extends AbstractModule {
 
 			String destination = relation.getTags().getValue("destination");
 			if (destination == null) {
-				System.err.println("Missing destination in destination_sign: " + relation);
+				ConversionLog.warn("Missing destination in destination_sign: " + relation);
 				continue;
 			}
 
@@ -409,7 +411,7 @@ public class TrafficSignModule extends AbstractModule {
 			}
 
 			if (intersection == null || to == null) {
-				System.err.println("Member 'intersection' or 'to' was not defined in relation " + relation +
+				ConversionLog.warn("Member 'intersection' or 'to' was not defined in relation " + relation +
 						". Destination sign rendering is omitted for this relation.");
 				continue;
 			}
@@ -428,11 +430,11 @@ public class TrafficSignModule extends AbstractModule {
 			MapWaySegment fromSegment = getAdjacentSegment(from, intersection);
 
 			if (toSegment == null) {
-				System.err.println("Way " + to + " is not connected to intersection " + intersection + ".");
+				ConversionLog.warn("Way " + to + " is not connected to intersection " + intersection + ".");
 				continue;
 			}
 			if (fromSegment == null) {
-				System.err.println("Way " + from + " is not connected to intersection " + intersection);
+				ConversionLog.warn("Way " + from + " is not connected to intersection " + intersection);
 				continue;
 			}
 
@@ -727,7 +729,7 @@ public class TrafficSignModule extends AbstractModule {
 	private static double calculateDirection(MapNode node) {
 
 		if (node.getConnectedWaySegments().isEmpty()) {
-			System.err.println("Node " + node + " is not part of a way.");
+			ConversionLog.warn("Node " + node + " is not part of a way.");
 			return PI;
 		}
 

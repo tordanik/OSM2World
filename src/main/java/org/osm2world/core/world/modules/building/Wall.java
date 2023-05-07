@@ -4,30 +4,23 @@ import static java.lang.Math.round;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.osm2world.core.math.GeometryUtil.insertIntoPolygon;
-import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.target.Renderable;
@@ -190,7 +183,7 @@ public class Wall implements Renderable {
 		if (topPointsXZ == null) {
 			// just use the same points as for the bottom.
 			// This might miss some roof details and should only happen with legacy features like building_passage.
-			System.err.println("Warning: cannot construct top boundary of wall for " + buildingPart.area);
+			ConversionLog.warn("cannot construct top boundary of wall", buildingPart.area);
 			topPointsXZ = points.vertices();
 		}
 
@@ -320,7 +313,7 @@ public class Wall implements Renderable {
 			this.renderTo(builder, false);
 			return singleton(builder.build());
 		} catch (Exception e) {
-			System.err.println("Could not create wall attachment surface for " + wallWay + ": " + e);
+			ConversionLog.error("Could not create wall attachment surface for an element", e, wallWay);
 			return emptyList();
 		}
 	}

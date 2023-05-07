@@ -3,7 +3,8 @@ package org.osm2world.core.world.modules.building.roof;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
+import static org.osm2world.core.math.GeometryUtil.interpolateValue;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.SLOPED_TRIANGLES;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -14,15 +15,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.FaceXYZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
@@ -114,8 +109,7 @@ abstract public class HeightfieldRoof extends Roof {
 				this.renderTo(builder, baseEle);
 				attachmentSurface = builder.build();
 			} catch (Exception e) {
-				System.err.println("Suppressed exception:");
-				e.printStackTrace(System.err);
+				ConversionLog.error("Suppressed exception in HeightfieldRoof attachment surface generation", e);
 				PolygonXYZ flatPolygon = getPolygon().getOuter().xyz(baseEle);
 				attachmentSurface = new AttachmentSurface(asList(types), asList(new FaceXYZ(flatPolygon.vertices())));
 			}

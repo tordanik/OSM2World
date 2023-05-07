@@ -390,8 +390,6 @@ public class LevelAndHeightDataTest {
 		Building building = new Building(buildingArea, new BaseConfiguration());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
 
-		System.out.println(levelStructure);
-
 		assertEquals(2, levelStructure.levels.size());
 		assertEquals(emptyList(), levelStructure.levels(EnumSet.of(LevelType.UNDERGROUND)));
 		assertEquals(1, levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND)).size());

@@ -2,11 +2,13 @@ package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
 import static java.util.Arrays.asList;
-import static org.osm2world.core.target.common.material.TextureData.Wrap.*;
-import static org.osm2world.core.target.common.material.TextureTestUtil.*;
+import static org.osm2world.core.target.common.material.TextureData.Wrap.CLAMP;
+import static org.osm2world.core.target.common.material.TextureData.Wrap.REPEAT;
+import static org.osm2world.core.target.common.material.TextureTestUtil.drawSingleColorTexture;
+import static org.osm2world.core.target.common.material.TextureTestUtil.drawTestTexture;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.junit.Test;
 import org.osm2world.core.util.color.LColor;
@@ -59,7 +61,6 @@ public class TextureDataTest {
 			g2d.clearRect(widthLeft, 0, res.width - widthLeft, res.height);
 		});
 
-		System.out.println(testTexture.getAverageColor());
 		assertAlmostEquals(new LColor(0.5f, 0f, 0.5f).toAWT(), testTexture.getAverageColor().toAWT());
 
 	}

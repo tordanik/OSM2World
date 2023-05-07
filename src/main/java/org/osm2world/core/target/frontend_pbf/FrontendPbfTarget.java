@@ -1,10 +1,29 @@
 package org.osm2world.core.target.frontend_pbf;
 
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import static java.lang.Math.round;
+import static java.util.Arrays.asList;
+import static java.util.Collections.binarySearch;
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
+import static org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption.*;
+import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.*;
+
+import javax.annotation.Nullable;
+
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
@@ -48,25 +67,9 @@ import org.osm2world.core.world.modules.BarrierModule.HandRail;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
 import org.osm2world.core.world.modules.StreetFurnitureModule.*;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.*;
-
-import static java.lang.Math.round;
-import static java.util.Arrays.asList;
-import static java.util.Collections.binarySearch;
-import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
-import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
-import static org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption.*;
-import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 public class FrontendPbfTarget extends MeshTarget {
 
@@ -704,7 +707,7 @@ public class FrontendPbfTarget extends MeshTarget {
 				objects.add(buildFloorPlate());
 			} catch (InvalidGeometryException | IllegalStateException | TopologyException
 					| ConstraintEnforcementException e) {
-				System.err.println("Error while producing the floor plate: " + e);
+				ConversionLog.error("Error while producing the floor plate", e);
 			}
 		}
 

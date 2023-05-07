@@ -6,15 +6,9 @@ import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineSegment;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
@@ -117,7 +111,7 @@ public class JTSConversionUtil {
 				try {
 					result.add(fromJTS((Polygon)geometry));
 				} catch (InvalidGeometryException e) {
-					System.err.println("Ignoring invalid JTS polygon: " + e.getMessage());
+					ConversionLog.warn("Ignoring invalid JTS polygon: " + e.getMessage());
 				}
 			}
 		} else if (geometry instanceof GeometryCollection) {
