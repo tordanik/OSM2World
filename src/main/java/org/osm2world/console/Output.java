@@ -22,13 +22,17 @@ import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.time.Instant.now;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
@@ -41,7 +45,7 @@ public final class Output {
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
 
-		long start = System.currentTimeMillis();
+		Instant start = now();
 
 		OSMDataReader dataReader = null;
 
@@ -75,7 +79,7 @@ public final class Output {
 
 		ConversionFacade cf = new ConversionFacade();
 		PerformanceListener perfListener =
-			new PerformanceListener(argumentsGroup.getRepresentative());
+			new PerformanceListener(argumentsGroup.getRepresentative().getPerformancePrint());
 		cf.addProgressListener(perfListener);
 
 		String interpolatorType = config.getString("terrainInterpolator");
@@ -232,7 +236,7 @@ public final class Output {
 		}
 
 		if (argumentsGroup.getRepresentative().getPerformancePrint()) {
-			long timeSec = (System.currentTimeMillis() - start) / 1000;
+			long timeSec = Duration.between(start, now()).getSeconds();
 			System.out.println("finished after " + timeSec + " s");
 		}
 
@@ -240,12 +244,12 @@ public final class Output {
 			try (PrintWriter w = new PrintWriter(new FileWriter(
 					argumentsGroup.getRepresentative().getPerformanceTable(), true), true)) {
 				w.printf("|%6d |%6d |%6d |%6d |%6d |%6d |\n",
-					(perfListener.getPhaseDuration(Phase.MAP_DATA) + 500) / 1000,
-					(perfListener.getPhaseDuration(Phase.REPRESENTATION) + 500) / 1000,
-					(perfListener.getPhaseDuration(Phase.ELEVATION) + 500) / 1000,
-					(perfListener.getPhaseDuration(Phase.TERRAIN) + 500) / 1000,
-					(System.currentTimeMillis() - perfListener.getPhaseEnd(Phase.TERRAIN) + 500) / 1000,
-					(System.currentTimeMillis() - start + 500) / 1000);
+					perfListener.getPhaseDuration(Phase.MAP_DATA).getSeconds(),
+					perfListener.getPhaseDuration(Phase.REPRESENTATION).getSeconds(),
+					perfListener.getPhaseDuration(Phase.ELEVATION).getSeconds(),
+					perfListener.getPhaseDuration(Phase.TERRAIN).getSeconds(),
+					Duration.between(perfListener.getPhaseEnd(Phase.TERRAIN), now()).getSeconds(),
+					Duration.between(start, now()).getSeconds());
 			}
 		}
 
@@ -253,48 +257,49 @@ public final class Output {
 
 	private static class PerformanceListener implements ProgressListener {
 
-		private final CLIArguments args;
-		public PerformanceListener(CLIArguments args) {
-			this.args = args;
+		private final boolean printToSysout;
+		public PerformanceListener(boolean printToSysout) {
+			this.printToSysout = printToSysout;
 		}
 
-		private Phase currentPhase = null;
-		private long currentPhaseStart;
+		private @Nullable Phase currentPhase = null;
+		private @Nullable Instant currentPhaseStart;
 
-		private Map<Phase, Long> phaseStarts = new HashMap<Phase, Long>();
-		private Map<Phase, Long> phaseEnds = new HashMap<Phase, Long>();
+		private final Map<Phase, Instant> phaseStarts = new HashMap<>();
+		private final Map<Phase, Instant> phaseEnds = new HashMap<>();
 
-		public Long getPhaseStart(Phase phase) {
+		public Instant getPhaseStart(Phase phase) {
+			if (!phaseStarts.containsKey(phase)) throw new IllegalStateException();
 			return phaseStarts.get(phase);
 		}
 
-		public Long getPhaseEnd(Phase phase) {
+		public Instant getPhaseEnd(Phase phase) {
+			if (!phaseEnds.containsKey(phase)) throw new IllegalStateException();
 			return phaseEnds.get(phase);
 		}
 
-		public Long getPhaseDuration(Phase phase) {
-			return getPhaseEnd(phase) - getPhaseStart(phase);
+		public Duration getPhaseDuration(Phase phase) {
+			return Duration.between(getPhaseStart(phase), getPhaseEnd(phase));
 		}
 
 		@Override
 		public void updatePhase(Phase newPhase) {
 
-			phaseStarts.put(newPhase, System.currentTimeMillis());
+			phaseStarts.put(newPhase, now());
 
 			if (currentPhase != null) {
 
-				phaseEnds.put(currentPhase, System.currentTimeMillis());
+				phaseEnds.put(currentPhase, now());
 
-				if (args.getPerformancePrint()) {
-					long ms = System.currentTimeMillis() - currentPhaseStart;
-					System.out.println("phase " + currentPhase
-						+  " finished after " + ms + " ms");
+				if (printToSysout) {
+					long ms = Duration.between(currentPhaseStart, now()).toMillis();
+					System.out.println("phase " + currentPhase + " finished after " + ms + " ms");
 				}
 
 			}
 
 			currentPhase = newPhase;
-			currentPhaseStart = System.currentTimeMillis();
+			currentPhaseStart = now();
 
 		}
 
