@@ -1,18 +1,20 @@
 package org.osm2world.core.world.modules;
 
 import static java.awt.Color.*;
-import static java.lang.Math.*;
 import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.math.NumberUtils.max;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
-import static org.osm2world.core.target.common.ExtrudeOption.*;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.mesh.ExtrusionGeometry.createColumn;
 import static org.osm2world.core.target.common.mesh.MeshUtil.createBox;
@@ -20,17 +22,13 @@ import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
@@ -38,12 +36,7 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Renderable;
@@ -1531,7 +1524,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				roofMaterial = POSTBOX_ROYALMAIL;
 				poleMaterial = POSTBOX_ROYALMAIL;
 			} else {
-				//no rendering, unknown operator or brand //TODO log info
+				//no rendering, unknown operator or brand
 				return;
 			}
 
@@ -1673,7 +1666,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				boxMaterial = POSTBOX_ROYALMAIL;
 				type = Type.PILLAR;
 			} else {
-				//no rendering, unknown operator or brand for post box //TODO log info
+				//no rendering, unknown operator or brand for post box
 				return;
 			}
 

@@ -1,21 +1,24 @@
 package org.osm2world.core.target.common;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import static java.lang.Math.abs;
+import static java.util.Collections.nCopies;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.data.WorldObject;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
-import static java.lang.Math.abs;
-import static java.util.Collections.nCopies;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * a target that relies on faces to represent geometry.
@@ -243,7 +246,7 @@ public abstract class FaceTarget extends AbstractTarget {
 				VectorXYZ n = triangle.getNormal();
 
 				if (Double.isNaN(n.x) || Double.isNaN(n.y) || Double.isNaN(n.z)) {
-					continue; //TODO log
+					ConversionLog.error("Unexpected NaN value in FaceTarget.drawTriangles: " + n);
 				}
 
 				isolatedTriangles.put(material,
