@@ -287,8 +287,8 @@ public class ConversionFacade {
 		calculateElevations(mapData, eleData, config);
 		attachConnectors(mapData);
 
-		/* supply results to targets and caller */
-		updatePhase(Phase.FINISHED);
+		/* convert 3d scene to target representation */
+		updatePhase(Phase.TARGET);
 
 		boolean underground = config.getBoolean("renderUnderground", true);
 
@@ -298,6 +298,9 @@ public class ConversionFacade {
 				target.finish();
 			}
 		}
+
+		/* supply results to targets */
+		updatePhase(Phase.FINISHED);
 
 		return new Results(mapProjection, mapData, eleData);
 
@@ -480,11 +483,12 @@ public class ConversionFacade {
 
 	}
 
-	public static enum Phase {
+	public enum Phase {
 		MAP_DATA,
 		REPRESENTATION,
 		ELEVATION,
 		TERRAIN,
+		TARGET,
 		FINISHED
 	}
 

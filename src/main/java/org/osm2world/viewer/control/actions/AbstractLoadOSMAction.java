@@ -140,28 +140,31 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 		@Override
 		public void updatePhase(Phase newPhase) {
 			switch (newPhase) {
-			case MAP_DATA:
-				progressDialog.setProgress(0);
-				progressDialog.setText("1/5: Organize information from .osm file...");
-				break;
-			case REPRESENTATION:
-				progressDialog.setProgress(20);
-				progressDialog.setText("2/5: Choose visual representations for OSM objects...");
-				break;
-			case ELEVATION:
-				progressDialog.setProgress(40);
-				progressDialog.setText("3/5: Guess elevations from available information...");
-				break;
-			case TERRAIN:
-				progressDialog.setProgress(60);
-				progressDialog.setText("4/5: Generate terrain...");
-				break;
-			case FINISHED:
-				progressDialog.setProgress(80);
-				progressDialog.setText("5/5: Represent objects by 3D primitives...");
-				break;
+				case MAP_DATA -> {
+					progressDialog.setProgress(0);
+					progressDialog.setText("1/5: Organize information from .osm file...");
+				}
+				case REPRESENTATION -> {
+					progressDialog.setProgress(20);
+					progressDialog.setText("2/5: Choose visual representations for OSM objects...");
+				}
+				case ELEVATION -> {
+					progressDialog.setProgress(40);
+					progressDialog.setText("3/5: Guess elevations from available information...");
+				}
+				case TERRAIN -> {
+					progressDialog.setProgress(60);
+					progressDialog.setText("4/5: Generate terrain...");
+				}
+				case TARGET -> {
+					progressDialog.setProgress(80);
+					progressDialog.setText("5/5: Represent objects by 3D primitives...");
+				}
+				case FINISHED -> {
+					progressDialog.setProgress(99);
+					progressDialog.setText("Conversion complete");
+				}
 			}
-
 		}
 
 	}
