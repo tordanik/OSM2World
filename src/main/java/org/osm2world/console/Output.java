@@ -1,11 +1,33 @@
 package org.osm2world.console;
 
+import static java.time.Instant.now;
+import static java.util.Collections.singletonList;
+import static java.util.Map.entry;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.ConversionFacade.Phase.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.*;
@@ -22,20 +44,8 @@ import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.time.Instant.now;
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 
 public final class Output {
 
@@ -45,7 +55,11 @@ public final class Output {
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
 
-		Instant start = now();
+		var perfListener = new PerformanceListener(argumentsGroup.getRepresentative().getPerformancePrint());
+
+		if (argumentsGroup.getRepresentative().isLogDir()) {
+			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
+		}
 
 		OSMDataReader dataReader = null;
 
@@ -78,8 +92,6 @@ public final class Output {
 
 
 		ConversionFacade cf = new ConversionFacade();
-		PerformanceListener perfListener =
-			new PerformanceListener(argumentsGroup.getRepresentative().getPerformancePrint());
 		cf.addProgressListener(perfListener);
 
 		String interpolatorType = config.getString("terrainInterpolator");
@@ -236,28 +248,76 @@ public final class Output {
 		}
 
 		if (argumentsGroup.getRepresentative().getPerformancePrint()) {
-			long timeSec = Duration.between(start, now()).getSeconds();
+			long timeSec = Duration.between(perfListener.startTime, now()).getSeconds();
 			System.out.println("finished after " + timeSec + " s");
 		}
 
-		if (argumentsGroup.getRepresentative().isPerformanceTable()) {
-			try (PrintWriter w = new PrintWriter(new FileWriter(
-					argumentsGroup.getRepresentative().getPerformanceTable(), true), true)) {
-				w.printf("|%6d |%6d |%6d |%6d |%6d |%6d |\n",
-					perfListener.getPhaseDuration(Phase.MAP_DATA).getSeconds(),
-					perfListener.getPhaseDuration(Phase.REPRESENTATION).getSeconds(),
-					perfListener.getPhaseDuration(Phase.ELEVATION).getSeconds(),
-					perfListener.getPhaseDuration(Phase.TERRAIN).getSeconds(),
-					Duration.between(perfListener.getPhaseEnd(Phase.TERRAIN), now()).getSeconds(),
-					Duration.between(start, now()).getSeconds());
+		if (argumentsGroup.getRepresentative().isLogDir()) {
+
+			File logDir = argumentsGroup.getRepresentative().getLogDir();
+			logDir.mkdirs();
+
+			String fileNameBase = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm_ss"));
+			if (argumentsGroup.getRepresentative().isTile()) {
+				fileNameBase = argumentsGroup.getRepresentative().getTile().toString("_");
 			}
+			fileNameBase = "osm2world_log_" + fileNameBase;
+
+			writeLogFiles(logDir, fileNameBase, perfListener);
+
+		}
+
+	}
+
+	private static void writeLogFiles(File logDir, String fileNameBase, PerformanceListener perfListener) {
+
+		double totalTime = Duration.between(perfListener.startTime, now()).toMillis() / 1000.0;
+		Map<Phase, Double> timePerPhase = Map.ofEntries(
+				entry(MAP_DATA, perfListener.getPhaseDuration(MAP_DATA).toMillis() / 1000.0),
+				entry(REPRESENTATION, perfListener.getPhaseDuration(REPRESENTATION).toMillis() / 1000.0),
+				entry(ELEVATION, perfListener.getPhaseDuration(ELEVATION).toMillis() / 1000.0),
+				entry(TERRAIN, perfListener.getPhaseDuration(TERRAIN).toMillis() / 1000.0),
+				entry(TARGET, Duration.between(perfListener.getPhaseEnd(TERRAIN), now()).toMillis() / 1000.0)
+		);
+
+		/* write a json file with performance stats */
+
+		try (FileWriter writer = new FileWriter(logDir.toPath().resolve(fileNameBase + ".json").toFile())) {
+
+			Map<String, Object> jsonRoot = Map.of(
+					"startTime", perfListener.startTime.toString(),
+					"totalTime", totalTime,
+					"timePerPhase", timePerPhase
+			);
+
+			new GsonBuilder().setPrettyPrinting().create().toJson(jsonRoot, writer);
+
+		} catch (JsonIOException | IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		/* write a text file with the error log */
+
+		try (var printStream = new PrintStream(logDir.toPath().resolve(fileNameBase + ".txt").toFile())) {
+			printStream.println("Runtime (seconds):\nTotal: " + totalTime);
+			for (Phase phase : Phase.values()) {
+				if (timePerPhase.containsKey(phase)) {
+					printStream.println(phase + ": " + timePerPhase.get(phase));
+				}
+			}
+			printStream.println();
+			ConversionLog.getLog().forEach(printStream::println);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 
 	}
 
 	private static class PerformanceListener implements ProgressListener {
 
+		public final Instant startTime = Instant.now();
 		private final boolean printToSysout;
+
 		public PerformanceListener(boolean printToSysout) {
 			this.printToSysout = printToSysout;
 		}

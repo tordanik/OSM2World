@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapRelation;
@@ -17,14 +18,12 @@ import org.osm2world.core.map_data.data.MapRelation;
  */
 public class ConversionLog {
 
-	public static final EnumSet<LogLevel> CONSOLE_LOG_LEVELS = EnumSet.of(LogLevel.WARNING, LogLevel.ERROR, LogLevel.FATAL);
-
 	public enum LogLevel {WARNING, ERROR, FATAL}
 
 	public record Entry (
-			LogLevel level,
-			Instant time,
-			String message,
+			@Nonnull LogLevel level,
+			@Nonnull Instant time,
+			@Nonnull String message,
 			@Nullable Throwable e,
 			@Nullable MapRelation.Element element
 	) {
@@ -45,8 +44,14 @@ public class ConversionLog {
 	}
 
 	private static final ThreadLocal<List<Entry>> log = ThreadLocal.withInitial(ArrayList::new);
+	private static final ThreadLocal<EnumSet<LogLevel>> consoleLogLevels =
+			ThreadLocal.withInitial(() -> EnumSet.allOf(LogLevel.class));
 
-	public List<Entry> getLog() {
+	public static void setConsoleLogLevels(EnumSet<LogLevel> consoleLogLevels) {
+		ConversionLog.consoleLogLevels.set(consoleLogLevels);
+	}
+
+	public static List<Entry> getLog() {
 		return Collections.unmodifiableList(log.get());
 	}
 
@@ -56,7 +61,7 @@ public class ConversionLog {
 
 	public static void log(Entry entry) {
 		log.get().add(entry);
-		if (CONSOLE_LOG_LEVELS.contains(entry.level)) {
+		if (consoleLogLevels.get().contains(entry.level)) {
 			System.err.println(entry);
 		}
 	}

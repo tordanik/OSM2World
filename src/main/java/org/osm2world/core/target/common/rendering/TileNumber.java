@@ -1,15 +1,16 @@
 package org.osm2world.core.target.common.rendering;
 
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
+import static java.lang.Math.*;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.Math.*;
+import javax.annotation.Nonnull;
+
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 
 /**
  * immutable tile number with zoom level.
@@ -106,7 +107,12 @@ public class TileNumber {
 	/** formats this tile number as a string that matches {@link #PATTERN} */
 	@Override
 	public String toString() {
-		return zoom + "," + x + "," + y;
+		return toString(",");
+	}
+
+	/** variant of {@link #toString()} with a custom separator between the components of the tile number */
+	public String toString(String separator) {
+		return zoom + separator + x + separator + y;
 	}
 
 	public LatLonBounds bounds() {

@@ -1,6 +1,8 @@
 package org.osm2world.console;
 
-import com.lexicalscope.jewel.cli.Option;
+import java.io.File;
+import java.util.List;
+
 import org.osm2world.console.CLIArgumentsUtil.InputMode;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.osm.creation.OverpassReader;
@@ -8,8 +10,7 @@ import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirecti
 import org.osm2world.core.target.common.rendering.TileNumber;
 import org.osm2world.core.util.Resolution;
 
-import java.io.File;
-import java.util.List;
+import com.lexicalscope.jewel.cli.Option;
 
 public interface CLIArguments {
 
@@ -105,9 +106,9 @@ public interface CLIArguments {
 	@Option(description="writes execution times to the command line")
 	boolean getPerformancePrint();
 
-	@Option(description="appends a line with execution times to a file")
-	File getPerformanceTable();
-	boolean isPerformanceTable();
+	@Option(description="output directory for log files")
+	File getLogDir();
+	boolean isLogDir();
 
 	/* other parameters */
 

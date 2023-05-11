@@ -1,10 +1,20 @@
 package org.osm2world.core;
 
-import com.google.common.collect.Streams;
-import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import static java.lang.Math.abs;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang.time.StopWatch;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
@@ -34,18 +44,9 @@ import org.osm2world.core.world.modules.building.BuildingModule;
 import org.osm2world.core.world.modules.building.indoor.IndoorModule;
 import org.osm2world.core.world.modules.traffic_sign.TrafficSignModule;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import com.google.common.collect.Streams;
 
-import static java.lang.Math.abs;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 /**
  * provides an easy way to call all steps of the conversion process
@@ -409,30 +410,17 @@ public class ConversionFacade {
 
 		/* provide known elevations from eleData to the interpolator */
 
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-
 		if (!(interpolator instanceof ZeroInterpolator)) {
 
 			Collection<VectorXYZ> sites = emptyList();
 
 			try {
-
 				sites = eleData.getSites(mapData);
-
-				System.out.println("time getSites: " + stopWatch);
-				stopWatch.reset();
-				stopWatch.start();
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
 			interpolator.setKnownSites(sites);
-
-			System.out.println("time setKnownSites: " + stopWatch);
-			stopWatch.reset();
-			stopWatch.start();
 
 		}
 
@@ -448,10 +436,6 @@ public class ConversionFacade {
 			}
 
 		});
-
-		System.out.println("time terrain interpolation: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
 
 		/* enforce constraints defined by WorldObjects */
 
@@ -471,15 +455,7 @@ public class ConversionFacade {
 
 		}
 
-		System.out.println("time add constraints: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
-
 		enforcer.enforceConstraints();
-
-		System.out.println("time enforce constraints: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
 
 	}
 
