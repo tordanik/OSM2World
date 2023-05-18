@@ -1,11 +1,19 @@
 package org.osm2world.core.map_data.creation;
 
-import de.topobyte.osm4j.core.model.iface.*;
-import de.topobyte.osm4j.core.model.impl.Tag;
-import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
+
+import java.io.IOException;
+import java.util.*;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Element;
 import org.osm2world.core.map_data.data.overlaps.*;
@@ -16,16 +24,11 @@ import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.*;
-
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
-import static org.osm2world.core.math.VectorXZ.distance;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
+import de.topobyte.osm4j.core.model.iface.*;
+import de.topobyte.osm4j.core.model.impl.Tag;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 
 /**
  * converts {@link OSMData} into the internal map data representation
@@ -264,7 +267,7 @@ public class OSMToMapDataConverter {
 					StringJoiner memberList = new StringJoiner(", ");
 					incompleteMembers.forEach(m -> memberList.add(
 							"'" + m.getRole() + "': " + m.getType() + " " + m.getId()));
-					System.err.println("Relation " + relation + " is incomplete, missing members: " + memberList);
+					ConversionLog.warn("Relation " + relation + " is incomplete, missing members: " + memberList);
 
 					if (relation.getMemberships().isEmpty()) continue;
 
