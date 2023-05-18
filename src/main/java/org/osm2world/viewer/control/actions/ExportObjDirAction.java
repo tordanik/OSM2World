@@ -1,10 +1,10 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.HeadlessException;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.core.target.obj.ObjWriter;
@@ -50,7 +50,7 @@ public class ExportObjDirAction extends AbstractExportAction {
 					file,
 					data.getConversionResults().getMapData(),
 					data.getConversionResults().getMapProjection(),
-					null, renderOptions.projection,
+					data.getConfig(), null, renderOptions.projection,
 					primitiveThresholdPerFile);
 
 			messageManager.addMessage("exported Wavefront .obj file " + file);

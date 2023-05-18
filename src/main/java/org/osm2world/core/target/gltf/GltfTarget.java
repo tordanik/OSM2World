@@ -1,9 +1,22 @@
 package org.osm2world.core.target.gltf;
 
-import com.google.common.collect.Multimap;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import jakarta.xml.bind.DatatypeConverter;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
+import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
+import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.*;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.io.FilenameUtils;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
@@ -16,6 +29,7 @@ import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption;
+import org.osm2world.core.target.common.ResourceOutputSettings;
 import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
@@ -28,19 +42,11 @@ import org.osm2world.core.target.gltf.data.GltfMaterial.TextureInfo;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.*;
+import com.google.common.collect.Multimap;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
-import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
-import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
+import jakarta.xml.bind.DatatypeConverter;
 
 public class GltfTarget extends MeshTarget {
 
@@ -129,8 +135,12 @@ public class GltfTarget extends MeshTarget {
 			List<Integer> meshNodeIndizes = new ArrayList<>(meshesByMetadata.size());
 
 			FaultTolerantIterationUtil.forEach(meshesByMetadata.get(objectMetadata), (Mesh mesh) -> {
-				int index = createNode(createMesh(mesh), null);
-				meshNodeIndizes.add(index);
+				try {
+					int index = createNode(createMesh(mesh), null);
+					meshNodeIndizes.add(index);
+				} catch (JsonIOException | IOException e) {
+					throw new RuntimeException(e);
+				}
 			});
 
 			if (keepOsmElements) {
@@ -210,7 +220,7 @@ public class GltfTarget extends MeshTarget {
 	}
 
 	/** creates a {@link GltfMesh} and returns its index in {@link Gltf#meshes} */
-	private int createMesh(Mesh mesh) {
+	private int createMesh(Mesh mesh) throws IOException {
 
 		GltfMesh gltfMesh = new GltfMesh();
 
@@ -321,7 +331,7 @@ public class GltfTarget extends MeshTarget {
 
 	}
 
-	private int createMaterial(Material m, @Nullable TextureLayer textureLayer) {
+	private int createMaterial(Material m, @Nullable TextureLayer textureLayer) throws IOException {
 
 		GltfMaterial material = new GltfMaterial();
 		material.pbrMetallicRoughness = new PbrMetallicRoughness();
@@ -387,17 +397,18 @@ public class GltfTarget extends MeshTarget {
 
 	}
 
-	private int createTexture(TextureData textureData) {
+	private int createTexture(TextureData textureData) throws IOException {
 
-		// whether images should be embedded in the glTF file instead of referenced using a path
-		boolean alwaysEmbedTextures = config.getBoolean("alwaysEmbedTextures", true);
+		File outputDir = outputFile.getParentFile();
+		URI textureDir = new File(outputDir,FilenameUtils.removeExtension(outputFile.getName()) + "_textures").toURI();
+		ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDir, true);
+		ResourceOutputSettings.ResourceOutputMode mode = resourceOutputSettings.modeForTexture(textureData);
 
-		String uri;
-		if (alwaysEmbedTextures || !(textureData instanceof RasterImageFileTexture)) {
-			uri = textureData.getDataUri();
-		} else {
-			uri = ((ImageFileTexture)textureData).getFile().getPath();
-		}
+		String uri = switch (mode) {
+			case EMBED -> textureData.getDataUri();
+			case REFERENCE -> ((ImageFileTexture)textureData).getFile().getAbsolutePath();
+			case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(textureData, outputDir.toURI());
+		};
 
 		int imageIndex = imageIndexMap.containsKey(uri) ? imageIndexMap.get(uri) : createImage(uri);
 

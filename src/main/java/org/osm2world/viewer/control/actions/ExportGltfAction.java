@@ -1,10 +1,10 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.HeadlessException;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.core.target.TargetUtil;
@@ -41,6 +41,7 @@ public class ExportGltfAction extends AbstractExportAction {
 
 			/* write the file */
 			GltfTarget gltfTarget = new GltfTarget(file, null);
+			gltfTarget.setConfiguration(data.getConfig());
 			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
 			gltfTarget.finish();
 

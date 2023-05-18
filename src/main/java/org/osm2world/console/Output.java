@@ -185,11 +185,11 @@ public final class Output {
 						boolean underground = config.getBoolean("renderUnderground", true);
 
 						ObjWriter.writeObjFile(outputFile,
-								results.getMapData(), results.getMapProjection(),
+								results.getMapData(), results.getMapProjection(), config,
 								camera, projection, underground);
 					} else {
 						ObjWriter.writeObjFiles(outputFile,
-								results.getMapData(), results.getMapProjection(),
+								results.getMapData(), results.getMapProjection(), config,
 								camera, projection, primitiveThresholdOBJ);
 					}
 					break;
@@ -202,6 +202,7 @@ public final class Output {
 						bounds = results.getMapData().getBoundary();
 					}
 					GltfTarget gltfTarget = new GltfTarget(outputFile, bounds);
+					gltfTarget.setConfiguration(config);
 					boolean underground = config.getBoolean("renderUnderground", true);
 					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
 					gltfTarget.finish();
