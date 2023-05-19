@@ -57,6 +57,7 @@ public class GltfTarget extends MeshTarget {
 	private final Gltf gltf = new Gltf();
 
 	private final Map<Material, Integer> materialIndexMap = new HashMap<>();
+	private final Map<TextureData, Integer> textureIndexMap = new HashMap<>();
 	private final Map<String, Integer> imageIndexMap = new HashMap<>();
 
 	public GltfTarget(File outputFile, @Nullable SimpleClosedShapeXZ bounds) {
@@ -241,13 +242,9 @@ public class GltfTarget extends MeshTarget {
 
 		int materialIndex;
 		if (material.getNumTextureLayers() == 0) {
-			materialIndex = materialIndexMap.containsKey(material)
-					? materialIndexMap.get(material)
-					: createMaterial(material, null);
+			materialIndex = createMaterial(material, null);
 		} else {
-			materialIndex = materialIndexMap.containsKey(material)
-					? materialIndexMap.get(material)
-					: createMaterial(material, material.getTextureLayers().get(0));
+			materialIndex = createMaterial(material, material.getTextureLayers().get(0));
 		}
 		primitive.material = materialIndex;
 
@@ -333,6 +330,8 @@ public class GltfTarget extends MeshTarget {
 
 	private int createMaterial(Material m, @Nullable TextureLayer textureLayer) throws IOException {
 
+		if (materialIndexMap.containsKey(m)) return materialIndexMap.get(m);
+
 		GltfMaterial material = new GltfMaterial();
 		material.pbrMetallicRoughness = new PbrMetallicRoughness();
 
@@ -399,6 +398,8 @@ public class GltfTarget extends MeshTarget {
 
 	private int createTexture(TextureData textureData) throws IOException {
 
+		if (textureIndexMap.containsKey(textureData)) return textureIndexMap.get(textureData);
+
 		File outputDir = outputFile.getParentFile();
 		URI textureDir = new File(outputDir,FilenameUtils.removeExtension(outputFile.getName()) + "_textures").toURI();
 		ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDir, true);
@@ -431,7 +432,9 @@ public class GltfTarget extends MeshTarget {
 		texture.sampler = samplerIndex;
 
 		gltf.textures.add(texture);
-		return gltf.textures.size() - 1;
+		int index = gltf.textures.size() - 1;
+		textureIndexMap.put(textureData, index);
+		return index;
 
 	}
 
