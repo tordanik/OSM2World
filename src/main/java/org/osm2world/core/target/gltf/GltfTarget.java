@@ -30,7 +30,10 @@ import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption;
 import org.osm2world.core.target.common.ResourceOutputSettings;
-import org.osm2world.core.target.common.material.*;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
@@ -406,9 +409,9 @@ public class GltfTarget extends MeshTarget {
 		ResourceOutputSettings.ResourceOutputMode mode = resourceOutputSettings.modeForTexture(textureData);
 
 		String uri = switch (mode) {
-			case EMBED -> textureData.getDataUri();
-			case REFERENCE -> ((ImageFileTexture)textureData).getFile().getAbsolutePath();
+			case REFERENCE -> resourceOutputSettings.buildTextureReference(textureData);
 			case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(textureData, outputDir.toURI());
+			case EMBED -> textureData.getDataUri();
 		};
 
 		int imageIndex = imageIndexMap.containsKey(uri) ? imageIndexMap.get(uri) : createImage(uri);

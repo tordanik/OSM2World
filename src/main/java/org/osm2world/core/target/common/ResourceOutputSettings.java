@@ -6,6 +6,7 @@ import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOu
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -19,8 +20,19 @@ import org.osm2world.core.target.common.material.TextureData;
 public record ResourceOutputSettings(
 		ResourceOutputMode modeForStaticResources,
 		ResourceOutputMode modeForGeneratedResources,
-		URI textureDirectory
+		URI textureDirectory,
+		Function<String, String> textureReferenceMapping
 ) {
+
+	public String buildTextureReference(TextureData texture) {
+
+		if (!(texture instanceof ImageFileTexture fileTexture)) {
+			throw new IllegalArgumentException("Cannot reference runtime-generated textures: " + texture);
+		}
+
+		return textureReferenceMapping.apply(fileTexture.getFile().getAbsolutePath());
+
+	}
 
 	public enum ResourceOutputMode {
 		/** store the resource inside the model file */
@@ -63,7 +75,9 @@ public record ResourceOutputSettings(
 
 	}
 
-	public static ResourceOutputSettings fromConfig(Configuration config, URI defaultTextureDirectory, boolean canEmbed) {
+	public static ResourceOutputSettings fromConfig(Configuration config, URI textureDirectory, boolean canEmbed) {
+
+		/* parse the modes */
 
 		ResourceOutputMode modeForStaticResources = canEmbed ? EMBED : REFERENCE;
 		ResourceOutputMode modeForGeneratedResources = canEmbed ? EMBED : STORE_SEPARATELY_AND_REFERENCE;
@@ -76,7 +90,16 @@ public record ResourceOutputSettings(
 			modeForGeneratedResources = ResourceOutputMode.valueOf(config.getString("generatedResourceOutputMode", ""));
 		} catch (IllegalArgumentException ignored) { /* keep existing value */ }
 
-		URI textureDirectory = defaultTextureDirectory;
+		/* parse the texture reference mapping */
+
+		Function<String, String> textureReferenceMapping = Function.identity();
+
+		@Nullable String regex = config.getString("textureReferenceMappingFrom", null);
+		@Nullable String replacement = config.getString("textureReferenceMappingTo", null);
+
+		if (regex != null && replacement != null) {
+			textureReferenceMapping = (String input) -> input.replaceAll(regex, replacement);
+		}
 
 		/* perform some validation */
 
@@ -90,7 +113,7 @@ public record ResourceOutputSettings(
 
 		/* build and return the result */
 
-		return new ResourceOutputSettings(modeForStaticResources, modeForGeneratedResources, textureDirectory);
+		return new ResourceOutputSettings(modeForStaticResources, modeForGeneratedResources, textureDirectory, textureReferenceMapping);
 
 	}
 

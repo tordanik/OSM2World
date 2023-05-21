@@ -18,9 +18,12 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.ResourceOutputSettings;
-import org.osm2world.core.target.common.material.*;
+import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
+import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.world.data.WorldObject;
 
 public class ObjTarget extends FaceTarget {
@@ -212,9 +215,9 @@ public class ObjTarget extends FaceTarget {
 			ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDirectory.toURI(), false);
 
 			String path = switch (resourceOutputSettings.modeForTexture(texture)) {
-				case REFERENCE -> ((ImageFileTexture)texture).getFile().getAbsolutePath();
+				case REFERENCE -> resourceOutputSettings.buildTextureReference(texture);
 				case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(texture, objDirectory.toURI());
-				default -> throw new UnsupportedOperationException("unsupported output mode");
+				case EMBED -> throw new UnsupportedOperationException("unsupported output mode");
 			};
 
 			textureMap.put(texture, path);
