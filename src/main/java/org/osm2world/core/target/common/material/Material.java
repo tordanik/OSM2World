@@ -3,17 +3,15 @@ package org.osm2world.core.target.common.material;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import java.awt.Color;
-import java.util.ArrayList;
+import java.awt.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.util.color.LColor;
 
@@ -256,7 +254,7 @@ public abstract class Material {
 				} else if (matcher.group(2) != null) {
 					replacement = matcher.group(2);
 				} else {
-					System.err.println("Unknown placeholder key: " + key);
+					ConversionLog.warn("Unknown placeholder key '" + key + "' for texture: " + texture);
 					replacement = "";
 				}
 
