@@ -1,6 +1,8 @@
 package org.osm2world.console;
 
 import static java.util.Arrays.asList;
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.GUI;
 import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
@@ -10,8 +12,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -45,7 +48,8 @@ public class OSM2World {
 			unparsedArgs.add("--gui");
 		}
 
-		if (!unparsedArgs.contains("--config") && STANDARD_PROPERTIES_FILE.isFile()) {
+		if (!unparsedArgs.contains("--config") && STANDARD_PROPERTIES_FILE.isFile()
+				&& Stream.of(CONVERT, GUI).anyMatch(it -> it == getProgramMode(unparsedArgs))) {
 			System.out.println("No --config parameter, using default style (" + STANDARD_PROPERTIES_FILE + ").\n");
 			unparsedArgs.addAll(asList("--config", STANDARD_PROPERTIES_FILE.toString()));
 		}

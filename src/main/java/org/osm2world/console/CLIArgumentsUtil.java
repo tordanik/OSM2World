@@ -1,6 +1,7 @@
 package org.osm2world.console;
 
-import javax.annotation.Nonnull;
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,7 +11,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import com.lexicalscope.jewel.cli.CliFactory;
 
 public final class CLIArgumentsUtil {
 
@@ -106,6 +110,17 @@ public final class CLIArgumentsUtil {
 						: args.getVersion() ? VERSION
 							: args.getGui() ? GUI
 								: CONVERT;
+	}
+
+	/** equivalent of {@link #getProgramMode(CLIArguments)} for a list-wrapped args array */
+	public static @Nullable ProgramMode getProgramMode(List<String> unparsedArgs) {
+		try {
+			String[] args = unparsedArgs.toArray(new String[0]);
+			CLIArguments cliArgs = CliFactory.parseArguments(CLIArguments.class, args);
+			return getProgramMode(cliArgs);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/** @param args  set of arguments with non-null {@link CLIArguments#getInput()} */
