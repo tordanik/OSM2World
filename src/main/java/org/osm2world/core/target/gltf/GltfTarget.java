@@ -6,9 +6,7 @@ import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculate
 import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -51,9 +49,15 @@ import com.google.gson.JsonIOException;
 
 import jakarta.xml.bind.DatatypeConverter;
 
+/**
+ * builds a glTF or glb (binary glTF) output file
+ */
 public class GltfTarget extends MeshTarget {
 
+	public enum GltfFlavor { GLTF, GLB }
+
 	private final File outputFile;
+	private final GltfFlavor flavor;
 	private final @Nullable SimpleClosedShapeXZ bounds;
 
 	/** the gltf asset under construction */
@@ -63,8 +67,9 @@ public class GltfTarget extends MeshTarget {
 	private final Map<TextureData, Integer> textureIndexMap = new HashMap<>();
 	private final Map<String, Integer> imageIndexMap = new HashMap<>();
 
-	public GltfTarget(File outputFile, @Nullable SimpleClosedShapeXZ bounds) {
+	public GltfTarget(File outputFile, GltfFlavor flavor, @Nullable SimpleClosedShapeXZ bounds) {
 		this.outputFile = outputFile;
+		this.flavor = flavor;
 		this.bounds = bounds;
 	}
 
@@ -76,132 +81,18 @@ public class GltfTarget extends MeshTarget {
 	@Override
 	public void finish() {
 
-		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
-		boolean clipToBounds = config.getBoolean("clipToBounds", false);
+		try (var fileOutputStream = new FileOutputStream(outputFile)) {
 
-		int lodValue = config.getInt("lod", 4);
-		if (lodValue < 0 || lodValue > 4) {
-			lodValue = 4;
-		}
-
-		/* process the meshes */
-
-		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
-
-		if (!keepOsmElements) {
-			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
-		}
-
-		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
-				new FilterLod(LevelOfDetail.values()[lodValue]),
-				new MoveColorsToVertices(),
-				new EmulateTextureLayers(),
-				new ReplaceTexturesWithAtlas(),
-				new MergeMeshes(mergeOptions)));
-
-		if (clipToBounds && bounds != null) {
-			processingSteps.add(1, new ClipToBounds(bounds));
-		}
-
-		MeshStore processedMeshStore = meshStore.process(processingSteps);
-
-		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
-
-		/* create the basic structure of the glTF */
-
-		gltf.asset = new GltfAsset();
-
-		gltf.scene = 0;
-		gltf.scenes = asList(new GltfScene());
-		gltf.scenes.get(0).nodes = asList(0);
-
-		gltf.accessors = new ArrayList<>();
-		gltf.buffers = new ArrayList<>();
-		gltf.bufferViews = new ArrayList<>();
-		gltf.images = new ArrayList<>();
-		gltf.materials = new ArrayList<>();
-		gltf.meshes = new ArrayList<>();
-		gltf.samplers = new ArrayList<>();
-		gltf.textures = new ArrayList<>();
-
-		/* generate the glTF nodes and meshes */
-
-		gltf.nodes = new ArrayList<>();
-
-		GltfNode rootNode = new GltfNode();
-		rootNode.name = "OSM2World scene";
-		gltf.nodes.add(rootNode);
-
-		rootNode.children = new ArrayList<>();
-
-		for (MeshMetadata objectMetadata : meshesByMetadata.keySet()) {
-
-			List<Integer> meshNodeIndizes = new ArrayList<>(meshesByMetadata.size());
-
-			FaultTolerantIterationUtil.forEach(meshesByMetadata.get(objectMetadata), (Mesh mesh) -> {
-				try {
-					int index = createNode(createMesh(mesh), null);
-					meshNodeIndizes.add(index);
-				} catch (JsonIOException | IOException e) {
-					throw new RuntimeException(e);
+			if (flavor == GltfFlavor.GLTF) {
+				writeJson(fileOutputStream);
+			} else {
+				try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
+					writeJson(jsonChunkOutputStream);
+					ByteBuffer jsonChunkData = ByteBuffer.wrap(jsonChunkOutputStream.toByteArray());
+					writeGlb(fileOutputStream, jsonChunkData);
 				}
-			});
-
-			if (keepOsmElements) {
-
-				if (meshNodeIndizes.size() > 1) {
-					// create a parent node if this model has more than one mesh node
-					int parentNodeIndex = createNode(null, new ArrayList<>(meshNodeIndizes));
-					meshNodeIndizes.clear();
-					meshNodeIndizes.add(parentNodeIndex);
-				}
-
-				meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index), objectMetadata));
-
 			}
-
-			rootNode.children.addAll(meshNodeIndizes);
-
-		}
-
-		/* use null instead of [] when lists are empty */
-
-		if (gltf.accessors.isEmpty()) {
-			gltf.accessors = null;
-		}
-
-		if (gltf.buffers.isEmpty()) {
-			gltf.buffers = null;
-		}
-
-		if (gltf.bufferViews.isEmpty()) {
-			gltf.bufferViews = null;
-		}
-
-		if (gltf.images.isEmpty()) {
-			gltf.images = null;
-		}
-
-		if (gltf.materials.isEmpty()) {
-			gltf.materials = null;
-		}
-
-		if (gltf.meshes.isEmpty()) {
-			gltf.meshes = null;
-		}
-
-		if (gltf.samplers.isEmpty()) {
-			gltf.samplers = null;
-		}
-
-		if (gltf.textures.isEmpty()) {
-			gltf.textures = null;
-		}
-
-		/* write the JSON file */
-
-		try (FileWriter writer = new FileWriter(outputFile)) {
-			new GsonBuilder().setPrettyPrinting().create().toJson(gltf, writer);
+			
 		} catch (JsonIOException | IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -452,6 +343,175 @@ public class GltfTarget extends MeshTarget {
 		imageIndexMap.put(uri, index);
 
 		return index;
+
+	}
+
+	/**
+	 * constructs the JSON document after all parts of the glTF have been created
+	 * and outputs it to an {@link OutputStream}
+	 */
+	private void writeJson(OutputStream outputStream) throws IOException {
+
+		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
+		boolean clipToBounds = config.getBoolean("clipToBounds", false);
+
+		int lodValue = config.getInt("lod", 4);
+		if (lodValue < 0 || lodValue > 4) {
+			lodValue = 4;
+		}
+
+		/* process the meshes */
+
+		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
+
+		if (!keepOsmElements) {
+			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
+		}
+
+		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
+				new FilterLod(LevelOfDetail.values()[lodValue]),
+				new MoveColorsToVertices(),
+				new EmulateTextureLayers(),
+				new ReplaceTexturesWithAtlas(),
+				new MergeMeshes(mergeOptions)));
+
+		if (clipToBounds && bounds != null) {
+			processingSteps.add(1, new ClipToBounds(bounds));
+		}
+
+		MeshStore processedMeshStore = meshStore.process(processingSteps);
+
+		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
+
+		/* create the basic structure of the glTF */
+
+		gltf.asset = new GltfAsset();
+
+		gltf.scene = 0;
+		gltf.scenes = asList(new GltfScene());
+		gltf.scenes.get(0).nodes = asList(0);
+
+		gltf.accessors = new ArrayList<>();
+		gltf.buffers = new ArrayList<>();
+		gltf.bufferViews = new ArrayList<>();
+		gltf.images = new ArrayList<>();
+		gltf.materials = new ArrayList<>();
+		gltf.meshes = new ArrayList<>();
+		gltf.samplers = new ArrayList<>();
+		gltf.textures = new ArrayList<>();
+
+		/* generate the glTF nodes and meshes */
+
+		gltf.nodes = new ArrayList<>();
+
+		GltfNode rootNode = new GltfNode();
+		rootNode.name = "OSM2World scene";
+		gltf.nodes.add(rootNode);
+
+		rootNode.children = new ArrayList<>();
+
+		for (MeshMetadata objectMetadata : meshesByMetadata.keySet()) {
+
+			List<Integer> meshNodeIndizes = new ArrayList<>(meshesByMetadata.size());
+
+			FaultTolerantIterationUtil.forEach(meshesByMetadata.get(objectMetadata), (Mesh mesh) -> {
+				try {
+					int index = createNode(createMesh(mesh), null);
+					meshNodeIndizes.add(index);
+				} catch (JsonIOException | IOException e) {
+					throw new RuntimeException(e);
+				}
+			});
+
+			if (keepOsmElements) {
+
+				if (meshNodeIndizes.size() > 1) {
+					// create a parent node if this model has more than one mesh node
+					int parentNodeIndex = createNode(null, new ArrayList<>(meshNodeIndizes));
+					meshNodeIndizes.clear();
+					meshNodeIndizes.add(parentNodeIndex);
+				}
+
+				meshNodeIndizes.forEach(index -> addMeshNameAndId(gltf.nodes.get(index), objectMetadata));
+
+			}
+
+			rootNode.children.addAll(meshNodeIndizes);
+
+		}
+
+		/* use null instead of [] when lists are empty */
+
+		if (gltf.accessors.isEmpty()) {
+			gltf.accessors = null;
+		}
+
+		if (gltf.buffers.isEmpty()) {
+			gltf.buffers = null;
+		}
+
+		if (gltf.bufferViews.isEmpty()) {
+			gltf.bufferViews = null;
+		}
+
+		if (gltf.images.isEmpty()) {
+			gltf.images = null;
+		}
+
+		if (gltf.materials.isEmpty()) {
+			gltf.materials = null;
+		}
+
+		if (gltf.meshes.isEmpty()) {
+			gltf.meshes = null;
+		}
+
+		if (gltf.samplers.isEmpty()) {
+			gltf.samplers = null;
+		}
+
+		if (gltf.textures.isEmpty()) {
+			gltf.textures = null;
+		}
+
+		/* write the JSON file */
+
+		try (var writer = new OutputStreamWriter(outputStream)) {
+			new GsonBuilder().setPrettyPrinting().create().toJson(gltf, writer);
+		}
+
+	}
+
+	/** writes a binary glTF */
+	private void writeGlb(OutputStream outputStream, ByteBuffer jsonChunkData) throws IOException {
+
+		int length = 12 // header
+				+ 8 + jsonChunkData.capacity(); // JSON chunk header + JSON chunk data
+
+		ByteBuffer result = ByteBuffer.allocate(length);
+		result.order(ByteOrder.LITTLE_ENDIAN);
+
+		/* write the header */
+
+		result.putInt(0x46546C67); // magic number
+		result.putInt(2); // version
+		result.putInt(length);
+
+		/* write the JSON chunk */
+
+		result.putInt(jsonChunkData.capacity());
+		result.putInt(0x4E4F534A); // chunk type "JSON"
+		result.put(jsonChunkData.array());
+
+		/* write the BIN chunk */
+
+		// TODO put binary data into a BIN chunk
+//		result.putInt(binChunkData.capacity());
+//		result.putInt(0x004E4942); // chunk type "BIN"
+
+		/* output the result */
+
+		outputStream.write(result.array());
 
 	}
 

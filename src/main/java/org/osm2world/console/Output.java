@@ -194,14 +194,16 @@ public final class Output {
 					}
 					break;
 
-				case GLTF:
+				case GLTF, GLB:
 					AxisAlignedRectangleXZ bounds = null;
 					if (args.isTile()) {
 						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
 					} else {
 						bounds = results.getMapData().getBoundary();
 					}
-					GltfTarget gltfTarget = new GltfTarget(outputFile, bounds);
+					GltfTarget.GltfFlavor gltfFlavor = outputMode == OutputMode.GLB
+							? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
+					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, bounds);
 					gltfTarget.setConfiguration(config);
 					boolean underground = config.getBoolean("renderUnderground", true);
 					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
