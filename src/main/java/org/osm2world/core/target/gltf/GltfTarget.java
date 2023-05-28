@@ -67,6 +67,9 @@ public class GltfTarget extends MeshTarget {
 	private final Map<TextureData, Integer> textureIndexMap = new HashMap<>();
 	private final Map<String, Integer> imageIndexMap = new HashMap<>();
 
+	/** data for the glb BIN chunk, only used if {@link #flavor} is {@link GltfFlavor#GLB} */
+	private final List<ByteBuffer> binChunkData = new ArrayList<>();
+
 	public GltfTarget(File outputFile, GltfFlavor flavor, @Nullable SimpleClosedShapeXZ bounds) {
 		this.outputFile = outputFile;
 		this.flavor = flavor;
@@ -89,7 +92,7 @@ public class GltfTarget extends MeshTarget {
 				try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
 					writeJson(jsonChunkOutputStream);
 					ByteBuffer jsonChunkData = ByteBuffer.wrap(jsonChunkOutputStream.toByteArray());
-					writeGlb(fileOutputStream, jsonChunkData);
+					writeGlb(fileOutputStream, jsonChunkData, binChunkData);
 				}
 			}
 			
@@ -170,13 +173,11 @@ public class GltfTarget extends MeshTarget {
 
 	private int createAccessor(int numComponents, List<? extends Vector3D> vs) {
 
-		String type;
-
-		switch (numComponents) {
-		case 2: type = "VEC2"; break;
-		case 3: type = "VEC3"; break;
-		default: throw new UnsupportedOperationException("invalid numComponents: " + numComponents);
-		}
+		String type = switch (numComponents) {
+			case 2 -> "VEC2";
+			case 3 -> "VEC3";
+			default -> throw new UnsupportedOperationException("invalid numComponents: " + numComponents);
+		};
 
 		float[] min = new float[numComponents];
 		float[] max = new float[numComponents];
@@ -201,15 +202,29 @@ public class GltfTarget extends MeshTarget {
 
 		}
 
-	    String dataUri = "data:application/gltf-buffer;base64,"
-	    		+ DatatypeConverter.printBase64Binary(byteBuffer.array());
+		GltfBufferView view = switch (flavor) {
+			case GLTF -> {
 
-		GltfBuffer buffer = new GltfBuffer(byteLength);
-		buffer.uri = dataUri;
-		gltf.buffers.add(buffer);
-		int bufferIndex = gltf.buffers.size() - 1;
+				String dataUri = "data:application/gltf-buffer;base64,"
+						+ DatatypeConverter.printBase64Binary(byteBuffer.array());
 
-		GltfBufferView view = new GltfBufferView(bufferIndex, byteLength);
+				GltfBuffer buffer = new GltfBuffer(byteLength);
+				buffer.uri = dataUri;
+				gltf.buffers.add(buffer);
+				int bufferIndex = gltf.buffers.size() - 1;
+
+				yield new GltfBufferView(bufferIndex, byteLength);
+
+			}
+			case GLB -> {
+				int byteOffset = binChunkData.stream().mapToInt(ByteBuffer::capacity).sum();
+				binChunkData.add(byteBuffer);
+				var binBufferView = new GltfBufferView(0, byteLength);
+				binBufferView.byteOffset = byteOffset;
+				yield binBufferView;
+			}
+		};
+
 		gltf.bufferViews.add(view);
 
 		GltfAccessor accessor = new GltfAccessor(GltfAccessor.TYPE_FLOAT, vs.size(), type);
@@ -440,6 +455,12 @@ public class GltfTarget extends MeshTarget {
 
 		}
 
+		/* add a buffer for the BIN chunk */
+
+		if (flavor == GltfFlavor.GLB) {
+			gltf.buffers.add(0, new GltfBuffer(binChunkData.stream().mapToInt(ByteBuffer::capacity).sum()));
+		}
+
 		/* use null instead of [] when lists are empty */
 
 		if (gltf.accessors.isEmpty()) {
@@ -483,10 +504,15 @@ public class GltfTarget extends MeshTarget {
 	}
 
 	/** writes a binary glTF */
-	private void writeGlb(OutputStream outputStream, ByteBuffer jsonChunkData) throws IOException {
+	private static void writeGlb(OutputStream outputStream, ByteBuffer jsonChunkData, List<ByteBuffer> binChunkData)
+			throws IOException {
+
+		int jsonChunkDataLength = jsonChunkData.capacity();
+		int binChunkDataLength = binChunkData.stream().mapToInt(ByteBuffer::capacity).sum();
 
 		int length = 12 // header
-				+ 8 + jsonChunkData.capacity(); // JSON chunk header + JSON chunk data
+				+ 8 + jsonChunkDataLength // JSON chunk header + JSON chunk data
+				+ 8 + binChunkDataLength; // BIN chunk header + BIN chunk data
 
 		ByteBuffer result = ByteBuffer.allocate(length);
 		result.order(ByteOrder.LITTLE_ENDIAN);
@@ -499,15 +525,15 @@ public class GltfTarget extends MeshTarget {
 
 		/* write the JSON chunk */
 
-		result.putInt(jsonChunkData.capacity());
+		result.putInt(jsonChunkDataLength);
 		result.putInt(0x4E4F534A); // chunk type "JSON"
 		result.put(jsonChunkData.array());
 
 		/* write the BIN chunk */
 
-		// TODO put binary data into a BIN chunk
-//		result.putInt(binChunkData.capacity());
-//		result.putInt(0x004E4942); // chunk type "BIN"
+		result.putInt(binChunkDataLength);
+		result.putInt(0x004E4942); // chunk type "BIN"
+		binChunkData.forEach(it -> result.put(it.array()));
 
 		/* output the result */
 
