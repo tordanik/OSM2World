@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
+import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
 import java.io.*;
@@ -13,6 +14,7 @@ import java.nio.ByteOrder;
 import java.util.*;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
 import org.osm2world.core.map_data.data.MapRelation;
@@ -65,7 +67,6 @@ public class GltfTarget extends MeshTarget {
 
 	private final Map<Material, Integer> materialIndexMap = new HashMap<>();
 	private final Map<TextureData, Integer> textureIndexMap = new HashMap<>();
-	private final Map<String, Integer> imageIndexMap = new HashMap<>();
 
 	/** data for the glb BIN chunk, only used if {@link #flavor} is {@link GltfFlavor#GLB} */
 	private final List<ByteBuffer> binChunkData = new ArrayList<>();
@@ -91,7 +92,7 @@ public class GltfTarget extends MeshTarget {
 			} else {
 				try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
 					writeJson(jsonChunkOutputStream);
-					ByteBuffer jsonChunkData = ByteBuffer.wrap(jsonChunkOutputStream.toByteArray());
+					ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
 					writeGlb(fileOutputStream, jsonChunkData, binChunkData);
 				}
 			}
@@ -202,38 +203,43 @@ public class GltfTarget extends MeshTarget {
 
 		}
 
+		GltfAccessor accessor = new GltfAccessor(GltfAccessor.TYPE_FLOAT, vs.size(), type);
+		accessor.bufferView = createBufferView(byteBuffer);
+		accessor.min = min;
+		accessor.max = max;
+		gltf.accessors.add(accessor);
+
+		return gltf.accessors.size() - 1;
+
+	}
+
+	private int createBufferView(ByteBuffer byteBuffer) {
+
 		GltfBufferView view = switch (flavor) {
 			case GLTF -> {
 
 				String dataUri = "data:application/gltf-buffer;base64,"
 						+ DatatypeConverter.printBase64Binary(byteBuffer.array());
 
-				GltfBuffer buffer = new GltfBuffer(byteLength);
+				GltfBuffer buffer = new GltfBuffer(byteBuffer.capacity());
 				buffer.uri = dataUri;
 				gltf.buffers.add(buffer);
 				int bufferIndex = gltf.buffers.size() - 1;
 
-				yield new GltfBufferView(bufferIndex, byteLength);
+				yield new GltfBufferView(bufferIndex, byteBuffer.capacity());
 
 			}
 			case GLB -> {
 				int byteOffset = binChunkData.stream().mapToInt(ByteBuffer::capacity).sum();
 				binChunkData.add(byteBuffer);
-				var binBufferView = new GltfBufferView(0, byteLength);
+				var binBufferView = new GltfBufferView(0, byteBuffer.capacity());
 				binBufferView.byteOffset = byteOffset;
 				yield binBufferView;
 			}
 		};
 
 		gltf.bufferViews.add(view);
-
-		GltfAccessor accessor = new GltfAccessor(GltfAccessor.TYPE_FLOAT, vs.size(), type);
-		accessor.bufferView = gltf.bufferViews.size() - 1;
-		accessor.min = min;
-		accessor.max = max;
-		gltf.accessors.add(accessor);
-
-		return gltf.accessors.size() - 1;
+		return gltf.bufferViews.size() - 1;
 
 	}
 
@@ -309,19 +315,6 @@ public class GltfTarget extends MeshTarget {
 
 		if (textureIndexMap.containsKey(textureData)) return textureIndexMap.get(textureData);
 
-		File outputDir = outputFile.getParentFile();
-		URI textureDir = new File(outputDir,FilenameUtils.removeExtension(outputFile.getName()) + "_textures").toURI();
-		ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDir, true);
-		ResourceOutputSettings.ResourceOutputMode mode = resourceOutputSettings.modeForTexture(textureData);
-
-		String uri = switch (mode) {
-			case REFERENCE -> resourceOutputSettings.buildTextureReference(textureData);
-			case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(textureData, outputDir.toURI());
-			case EMBED -> textureData.getDataUri();
-		};
-
-		int imageIndex = imageIndexMap.containsKey(uri) ? imageIndexMap.get(uri) : createImage(uri);
-
 		GltfSampler sampler = new GltfSampler();
 		switch (textureData.wrap) {
 		case CLAMP:
@@ -337,7 +330,7 @@ public class GltfTarget extends MeshTarget {
 		int samplerIndex = gltf.samplers.size() - 1;
 
 		GltfTexture texture = new GltfTexture();
-		texture.source = imageIndex;
+		texture.source = createImage(textureData);
 		texture.sampler = samplerIndex;
 
 		gltf.textures.add(texture);
@@ -347,17 +340,31 @@ public class GltfTarget extends MeshTarget {
 
 	}
 
-	private int createImage(String uri) {
+	private int createImage(TextureData textureData) throws IOException {
+
+		File outputDir = outputFile.getParentFile();
+		URI textureDir = new File(outputDir, FilenameUtils.removeExtension(outputFile.getName()) + "_textures").toURI();
+		ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDir, true);
+		ResourceOutputSettings.ResourceOutputMode mode = resourceOutputSettings.modeForTexture(textureData);
 
 		GltfImage image = new GltfImage();
-		image.uri = uri;
+
+		if (flavor == GltfFlavor.GLB && mode == EMBED) {
+			try (var stream = new ByteArrayOutputStream()) {
+				ImageIO.write(textureData.getBufferedImage(), "jpeg", stream);
+				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00));
+				image.mimeType = "image/jpeg";
+			}
+		} else {
+			image.uri = switch (mode) {
+				case REFERENCE -> resourceOutputSettings.buildTextureReference(textureData);
+				case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(textureData, outputDir.toURI());
+				case EMBED -> textureData.getDataUri();
+			};
+		}
 
 		gltf.images.add(image);
-		int index = gltf.images.size() - 1;
-
-		imageIndexMap.put(uri, index);
-
-		return index;
+		return gltf.images.size() - 1;
 
 	}
 
@@ -554,6 +561,27 @@ public class GltfTarget extends MeshTarget {
 					(float)((VectorXYZ)v).y,
 					(float)((VectorXYZ)v).z * -1
 			};
+		}
+	}
+
+	/**
+	 * returns a ByteBuffer containing an input array, which is padded (if necessary) to be a multiple of 4 bytes in
+	 * length. This is used to fulfil the glTF spec requirement of alignment to 4-byte boundaries.
+	 *
+	 * @param paddingChar  byte value which is used to fill the padding
+	 * @return a {@link ByteBuffer} which either wraps the input array or contains a copy of the bytes and some padding
+	 */
+	private static ByteBuffer asPaddedByteBuffer(byte[] bytes, byte paddingChar) {
+		if (bytes.length % 4 == 0) {
+			return ByteBuffer.wrap(bytes);
+		} else {
+			int padding = 4 - (bytes.length % 4);
+			ByteBuffer byteBuffer = ByteBuffer.allocate(bytes.length + padding);
+			byteBuffer.put(bytes);
+			for (int i = 0; i < padding; i++) {
+				byteBuffer.put(paddingChar);
+			}
+			return byteBuffer;
 		}
 	}
 
