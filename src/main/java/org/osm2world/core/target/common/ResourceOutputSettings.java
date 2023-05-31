@@ -3,6 +3,7 @@ package org.osm2world.core.target.common;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.*;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -55,6 +56,8 @@ public record ResourceOutputSettings(
 	 */
 	public String storeTexture(TextureData texture, @Nullable URI baseForRelativePaths) throws IOException {
 
+		BufferedImage bufferedImage = texture.getBufferedImage();
+
 		File textureDir = new File(textureDirectory);
 		boolean textureDirCreated = textureDir.mkdir();
 		if (!textureDirCreated && !textureDir.exists()) {
@@ -63,9 +66,10 @@ public record ResourceOutputSettings(
 
 		String prefix = "tex-" + ((texture instanceof ImageFileTexture)
 				? getBaseName(((ImageFileTexture)texture).getFile().getName()) + "-" : "");
-		File textureFile = File.createTempFile(prefix, ".png", textureDir);
+		String format = bufferedImage.getColorModel().hasAlpha() ? "png" : "jpg";
+		File textureFile = File.createTempFile(prefix, "." + format, textureDir);
 
-		ImageIO.write(texture.getBufferedImage(), "png", textureFile);
+		ImageIO.write(bufferedImage, format, textureFile);
 
 		if (baseForRelativePaths == null) {
 			return textureFile.getAbsolutePath();

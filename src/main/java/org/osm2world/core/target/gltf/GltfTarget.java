@@ -7,6 +7,7 @@ import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -351,9 +352,11 @@ public class GltfTarget extends MeshTarget {
 
 		if (flavor == GltfFlavor.GLB && mode == EMBED) {
 			try (var stream = new ByteArrayOutputStream()) {
-				ImageIO.write(textureData.getBufferedImage(), "jpeg", stream);
+				BufferedImage bufferedImage = textureData.getBufferedImage();
+				String format = bufferedImage.getColorModel().hasAlpha() ? "png" : "jpeg";
+				ImageIO.write(bufferedImage, format, stream);
 				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00));
-				image.mimeType = "image/jpeg";
+				image.mimeType = "image/" + format;
 			}
 		} else {
 			image.uri = switch (mode) {
