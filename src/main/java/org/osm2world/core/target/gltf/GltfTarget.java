@@ -130,7 +130,7 @@ public class GltfTarget extends MeshTarget {
 		List<? extends TriangleXYZ> triangles = triangleGeometry.triangles;
 		List<List<VectorXZ>> texCoordLists = triangleGeometry.texCoords;
 		List<LColor> colors = triangleGeometry.colors == null ? null
-				: triangleGeometry.colors.stream().map(c -> LColor.fromAWT(c)).collect(toList());
+				: triangleGeometry.colors.stream().map(LColor::fromAWT).toList();
 
 		texCoordLists = flipTexCoordsVertically(texCoordLists); // move texture coordinate origin to the top left
 
@@ -259,23 +259,17 @@ public class GltfTarget extends MeshTarget {
 		}
 		material.name = name;
 
-		switch (m.getTransparency()) {
-		case FALSE:
-			material.alphaMode = "OPAQUE";
-			break;
-		case BINARY:
-			material.alphaMode = "MASK";
-			break;
-		case TRUE:
-			material.alphaMode = "BLEND";
-			break;
-		}
+		material.alphaMode = switch (m.getTransparency()) {
+			case FALSE -> "OPAQUE";
+			case BINARY -> "MASK";
+			case TRUE -> "BLEND";
+		};
 
 		material.doubleSided = m.isDoubleSided();
 
 		if (textureLayer != null) {
 
-			if (textureLayer.baseColorTexture != null) {
+			/* textureLayer.baseColorTexture != null */ {
 
 				int baseColorTextureIndex = createTexture(textureLayer.baseColorTexture);
 
@@ -320,14 +314,14 @@ public class GltfTarget extends MeshTarget {
 
 		GltfSampler sampler = new GltfSampler();
 		switch (textureData.wrap) {
-		case CLAMP:
-			sampler.wrapS = GltfSampler.WRAP_CLAMP_TO_EDGE;
-			sampler.wrapT = GltfSampler.WRAP_CLAMP_TO_EDGE;
-			break;
-		case REPEAT:
-			sampler.wrapS = GltfSampler.WRAP_REPEAT;
-			sampler.wrapT = GltfSampler.WRAP_REPEAT;
-			break;
+			case CLAMP -> {
+				sampler.wrapS = GltfSampler.WRAP_CLAMP_TO_EDGE;
+				sampler.wrapT = GltfSampler.WRAP_CLAMP_TO_EDGE;
+			}
+			case REPEAT -> {
+				sampler.wrapS = GltfSampler.WRAP_REPEAT;
+				sampler.wrapT = GltfSampler.WRAP_REPEAT;
+			}
 		}
 		gltf.samplers.add(sampler);
 		int samplerIndex = gltf.samplers.size() - 1;
@@ -415,8 +409,8 @@ public class GltfTarget extends MeshTarget {
 		gltf.asset = new GltfAsset();
 
 		gltf.scene = 0;
-		gltf.scenes = asList(new GltfScene());
-		gltf.scenes.get(0).nodes = asList(0);
+		gltf.scenes = List.of(new GltfScene());
+		gltf.scenes.get(0).nodes = List.of(0);
 
 		gltf.accessors = new ArrayList<>();
 		gltf.buffers = new ArrayList<>();
