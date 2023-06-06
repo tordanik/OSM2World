@@ -205,7 +205,7 @@ public class GltfTarget extends MeshTarget {
 		}
 
 		GltfAccessor accessor = new GltfAccessor(GltfAccessor.TYPE_FLOAT, vs.size(), type);
-		accessor.bufferView = createBufferView(byteBuffer);
+		accessor.bufferView = createBufferView(byteBuffer, GltfBufferView.TARGET_ARRAY_BUFFER);
 		accessor.min = min;
 		accessor.max = max;
 		gltf.accessors.add(accessor);
@@ -214,7 +214,7 @@ public class GltfTarget extends MeshTarget {
 
 	}
 
-	private int createBufferView(ByteBuffer byteBuffer) {
+	private int createBufferView(ByteBuffer byteBuffer, @Nullable Integer target) {
 
 		GltfBufferView view = switch (flavor) {
 			case GLTF -> {
@@ -238,6 +238,8 @@ public class GltfTarget extends MeshTarget {
 				yield binBufferView;
 			}
 		};
+
+		view.target = target;
 
 		gltf.bufferViews.add(view);
 		return gltf.bufferViews.size() - 1;
@@ -355,7 +357,7 @@ public class GltfTarget extends MeshTarget {
 				BufferedImage bufferedImage = textureData.getBufferedImage();
 				String format = bufferedImage.getColorModel().hasAlpha() ? "png" : "jpeg";
 				ImageIO.write(bufferedImage, format, stream);
-				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00));
+				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00), null);
 				image.mimeType = "image/" + format;
 			}
 		} else {
