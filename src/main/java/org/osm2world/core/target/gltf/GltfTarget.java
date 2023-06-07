@@ -346,7 +346,7 @@ public class GltfTarget extends MeshTarget {
 
 		if (flavor == GltfFlavor.GLB && mode == EMBED) {
 			try (var stream = new ByteArrayOutputStream()) {
-				textureData.writeRasterImageToStream(stream);
+				textureData.writeRasterImageToStream(stream, config.getFloat("textureQuality", 0.75f));
 				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00), null);
 				image.mimeType = textureData.getRasterImageFormat().mimeType();
 			}

@@ -19,7 +19,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
@@ -153,7 +157,7 @@ public abstract class TextureData {
 
 	/**
 	 * returns the format this texture should have when written as a raster image,
-	 * e.g. with {@link #getDataUri()} or {@link #writeRasterImageToStream(OutputStream)}
+	 * e.g. with {@link #getDataUri()} or {@link #writeRasterImageToStream(OutputStream, float)}
 	 */
 	public RasterImageFormat getRasterImageFormat() {
 		return getBufferedImage().getColorModel().hasAlpha() ? PNG : JPEG;
@@ -162,11 +166,39 @@ public abstract class TextureData {
 	/**
 	 * writes this texture as a raster image to the output stream.
 	 * Uses the format returned by {@link #getRasterImageFormat()}
+	 *
+	 * @param compressionQuality  value between 0 and 1 indicating the desired quality
 	 */
-	public void writeRasterImageToStream(OutputStream stream) throws IOException {
+	public void writeRasterImageToStream(OutputStream stream, float compressionQuality) throws IOException {
+
 		BufferedImage bufferedImage = getBufferedImage();
-		String format = getRasterImageFormat().imageIOFormatName();
-		ImageIO.write(bufferedImage, format, stream);
+		RasterImageFormat format = getRasterImageFormat();
+
+		if (format == JPEG) {
+
+			/* use an implementation which allows setting JPEG compression quality */
+
+			ImageWriter jpegWriter = ImageIO.getImageWritersByMIMEType(JPEG.mimeType()).next();
+			ImageWriteParam jpegWriteParam = jpegWriter.getDefaultWriteParam();
+			jpegWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			jpegWriteParam.setCompressionQuality(compressionQuality);
+
+			try (var imageOutputStream = new MemoryCacheImageOutputStream(stream)) {
+				jpegWriter.setOutput(imageOutputStream);
+				var outputImage = new IIOImage(bufferedImage, null, null);
+				jpegWriter.write(null, outputImage, jpegWriteParam);
+				jpegWriter.dispose();
+			}
+
+		} else {
+			ImageIO.write(bufferedImage, format.imageIOFormatName(), stream);
+		}
+
+	}
+
+	/** variant of {@link #writeRasterImageToStream(OutputStream, float)} with default compression quality */
+	public void writeRasterImageToStream(OutputStream stream) throws IOException {
+		writeRasterImageToStream(stream, 0.75f);
 	}
 
 	/** averages the color values (in linear color space) */
