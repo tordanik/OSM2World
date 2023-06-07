@@ -1,17 +1,19 @@
 package org.osm2world.core.target.common.material;
 
-import static java.lang.Math.*;
+import static java.lang.Math.floor;
+import static java.lang.Math.max;
 import static java.util.Arrays.stream;
 import static org.apache.commons.lang3.math.NumberUtils.min;
+import static org.osm2world.core.target.common.material.RasterImageFormat.JPEG;
+import static org.osm2world.core.target.common.material.RasterImageFormat.PNG;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -140,7 +142,31 @@ public abstract class TextureData {
 	 * returns the texture as a data URI containing a raster image.
 	 */
 	public String getDataUri() {
-		return imageToDataUri(getBufferedImage(), "png");
+		RasterImageFormat format = getRasterImageFormat();
+		try (var stream = new ByteArrayOutputStream()) {
+		    writeRasterImageToStream(stream);
+		    return "data:" + format.mimeType() + ";base64," + DatatypeConverter.printBase64Binary(stream.toByteArray());
+		} catch (IOException e) {
+		    throw new Error(e);
+		}
+	}
+
+	/**
+	 * returns the format this texture should have when written as a raster image,
+	 * e.g. with {@link #getDataUri()} or {@link #writeRasterImageToStream(OutputStream)}
+	 */
+	public RasterImageFormat getRasterImageFormat() {
+		return getBufferedImage().getColorModel().hasAlpha() ? PNG : JPEG;
+	}
+
+	/**
+	 * writes this texture as a raster image to the output stream.
+	 * Uses the format returned by {@link #getRasterImageFormat()}
+	 */
+	public void writeRasterImageToStream(OutputStream stream) throws IOException {
+		BufferedImage bufferedImage = getBufferedImage();
+		String format = getRasterImageFormat().imageIOFormatName();
+		ImageIO.write(bufferedImage, format, stream);
 	}
 
 	/** averages the color values (in linear color space) */
@@ -183,17 +209,6 @@ public abstract class TextureData {
 		int y = min((int)floor(image.getHeight() * texCoord.z), image.getHeight() - 1);
 		return LColor.fromAWT(new Color(image.getRGB(x, y)));
 
-	}
-
-	protected static final String imageToDataUri(BufferedImage image, String format) {
-		try {
-			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		    ImageIO.write(image, format, byteArrayOutputStream);
-		    return "data:image/" + format + ";base64,"
-		    		+ DatatypeConverter.printBase64Binary(byteArrayOutputStream.toByteArray());
-		} catch (IOException e) {
-		    throw new Error(e);
-		}
 	}
 
 	protected static final BufferedImage getScaledImage(BufferedImage originalImage, Resolution newResolution) {

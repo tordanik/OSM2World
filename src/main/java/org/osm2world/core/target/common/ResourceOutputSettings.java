@@ -3,14 +3,13 @@ package org.osm2world.core.target.common;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.*;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.material.ImageFileTexture;
@@ -56,8 +55,6 @@ public record ResourceOutputSettings(
 	 */
 	public String storeTexture(TextureData texture, @Nullable URI baseForRelativePaths) throws IOException {
 
-		BufferedImage bufferedImage = texture.getBufferedImage();
-
 		File textureDir = new File(textureDirectory);
 		boolean textureDirCreated = textureDir.mkdir();
 		if (!textureDirCreated && !textureDir.exists()) {
@@ -66,10 +63,11 @@ public record ResourceOutputSettings(
 
 		String prefix = "tex-" + ((texture instanceof ImageFileTexture)
 				? getBaseName(((ImageFileTexture)texture).getFile().getName()) + "-" : "");
-		String format = bufferedImage.getColorModel().hasAlpha() ? "png" : "jpg";
-		File textureFile = File.createTempFile(prefix, "." + format, textureDir);
+		File textureFile = File.createTempFile(prefix, "." + texture.getRasterImageFormat().fileExtension(), textureDir);
 
-		ImageIO.write(bufferedImage, format, textureFile);
+		try (var stream = new FileOutputStream(textureFile)) {
+			texture.writeRasterImageToStream(stream);
+		}
 
 		if (baseForRelativePaths == null) {
 			return textureFile.getAbsolutePath();

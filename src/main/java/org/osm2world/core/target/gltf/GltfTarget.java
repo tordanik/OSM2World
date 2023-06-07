@@ -7,7 +7,6 @@ import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
 import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -15,7 +14,6 @@ import java.nio.ByteOrder;
 import java.util.*;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
 import org.osm2world.core.map_data.data.MapRelation;
@@ -348,11 +346,9 @@ public class GltfTarget extends MeshTarget {
 
 		if (flavor == GltfFlavor.GLB && mode == EMBED) {
 			try (var stream = new ByteArrayOutputStream()) {
-				BufferedImage bufferedImage = textureData.getBufferedImage();
-				String format = bufferedImage.getColorModel().hasAlpha() ? "png" : "jpeg";
-				ImageIO.write(bufferedImage, format, stream);
+				textureData.writeRasterImageToStream(stream);
 				image.bufferView = createBufferView(asPaddedByteBuffer(stream.toByteArray(), (byte) 0x00), null);
-				image.mimeType = "image/" + format;
+				image.mimeType = textureData.getRasterImageFormat().mimeType();
 			}
 		} else {
 			image.uri = switch (mode) {

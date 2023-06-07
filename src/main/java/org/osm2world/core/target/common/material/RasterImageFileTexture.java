@@ -1,5 +1,8 @@
 package org.osm2world.core.target.common.material;
 
+import static org.osm2world.core.target.common.material.RasterImageFormat.JPEG;
+import static org.osm2world.core.target.common.material.RasterImageFormat.PNG;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +16,8 @@ import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 public class RasterImageFileTexture extends ImageFileTexture {
 
 	public RasterImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity,
-			@Nullable Double heightPerEntity, Wrap wrap,
-			Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+								  @Nullable Double heightPerEntity, Wrap wrap,
+								  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 		super(file, width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
 	}
 
@@ -28,12 +31,8 @@ public class RasterImageFileTexture extends ImageFileTexture {
 	}
 
 	@Override
-	public String getDataUri() {
-		return imageToDataUri(getBufferedImage(), getRasterImageFileFormat());
-	}
-
-	private String getRasterImageFileFormat() {
-		return (getFile().getName().endsWith(".png")) ? "png" : "jpeg";
+	public RasterImageFormat getRasterImageFormat() {
+		return (getFile().getName().endsWith(".png")) ? PNG : JPEG;
 	}
 
 }
