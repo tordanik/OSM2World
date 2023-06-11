@@ -180,7 +180,7 @@ public class MeshTarget extends AbstractTarget {
 	/** replaces meshes that have multiple layers of textures with multiple meshes, each of which have only one layer */
 	public static class EmulateTextureLayers implements MeshProcessingStep {
 
-		private static final double OFFSET_PER_LAYER = 1e-3;
+		private static final double OFFSET_PER_LAYER = 5e-2;
 
 		/** maximum number of layers for which geometry is created, additional ones are omitted */
 		private final int maxLayers;
