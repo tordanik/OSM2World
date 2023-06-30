@@ -12,6 +12,8 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
 
@@ -56,9 +58,11 @@ import jakarta.xml.bind.DatatypeConverter;
 public class GltfTarget extends MeshTarget {
 
 	public enum GltfFlavor { GLTF, GLB }
+	public enum Compression { NONE, ZIP }
 
 	private final File outputFile;
 	private final GltfFlavor flavor;
+	private final Compression compression;
 	private final @Nullable SimpleClosedShapeXZ bounds;
 
 	/** the gltf asset under construction */
@@ -70,9 +74,11 @@ public class GltfTarget extends MeshTarget {
 	/** data for the glb BIN chunk, only used if {@link #flavor} is {@link GltfFlavor#GLB} */
 	private final List<ByteBuffer> binChunkData = new ArrayList<>();
 
-	public GltfTarget(File outputFile, GltfFlavor flavor, @Nullable SimpleClosedShapeXZ bounds) {
+	public GltfTarget(File outputFile, GltfFlavor flavor, Compression compression,
+					  @Nullable SimpleClosedShapeXZ bounds) {
 		this.outputFile = outputFile;
 		this.flavor = flavor;
+		this.compression = compression;
 		this.bounds = bounds;
 	}
 
@@ -84,18 +90,39 @@ public class GltfTarget extends MeshTarget {
 	@Override
 	public void finish() {
 
-		try (var fileOutputStream = new FileOutputStream(outputFile)) {
+		try {
 
-			if (flavor == GltfFlavor.GLTF) {
-				writeJson(fileOutputStream);
+			var fileOutputStream = new FileOutputStream(outputFile);
+			@Nullable ZipOutputStream zipOutputStream = null;
+
+			OutputStream outputStream;
+
+			if (compression == Compression.ZIP) {
+				zipOutputStream = new ZipOutputStream(fileOutputStream);
+				zipOutputStream.putNextEntry(new ZipEntry(outputFile.getName().replace(".gz", "")));
+				outputStream = zipOutputStream;
 			} else {
-				try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
-					writeJson(jsonChunkOutputStream);
-					ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
-					writeGlb(fileOutputStream, jsonChunkData, binChunkData);
-				}
+				outputStream = fileOutputStream;
 			}
-			
+
+			try (outputStream) {
+
+				if (flavor == GltfFlavor.GLTF) {
+					writeJson(outputStream);
+				} else {
+					try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
+						writeJson(jsonChunkOutputStream);
+						ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
+						writeGlb(outputStream, jsonChunkData, binChunkData);
+					}
+				}
+
+				if (zipOutputStream != null) {
+					zipOutputStream.closeEntry();
+				}
+
+			}
+
 		} catch (JsonIOException | IOException e) {
 			throw new RuntimeException(e);
 		}

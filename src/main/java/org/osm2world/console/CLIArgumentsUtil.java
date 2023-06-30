@@ -19,7 +19,7 @@ import com.lexicalscope.jewel.cli.CliFactory;
 public final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
-	public static enum OutputMode {OBJ, GLTF, GLB, POV, WEB_PBF, PNG, PPM, GD}
+	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, WEB_PBF, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
 	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
 
@@ -147,6 +147,10 @@ public final class CLIArgumentsUtil {
 			return OutputMode.GLTF;
 		} else if (outputFile.getName().toLowerCase().endsWith(".glb")) {
 			return OutputMode.GLB;
+		} else if (outputFile.getName().toLowerCase().endsWith(".gltf.gz")) {
+			return OutputMode.GLTF_GZ;
+		} else if (outputFile.getName().toLowerCase().endsWith(".glb.gz")) {
+			return OutputMode.GLB_GZ;
 		} else if (outputFile.getName().toLowerCase().endsWith(".pov")) {
 			return OutputMode.POV;
 		} else if (outputFile.getName().toLowerCase().endsWith(".o2w.pbf")) {

@@ -46,7 +46,7 @@ public class ExportGltfAction extends AbstractExportAction {
 			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
 
 			/* write the file */
-			GltfTarget gltfTarget = new GltfTarget(file, flavor,null);
+			GltfTarget gltfTarget = new GltfTarget(file, flavor, GltfTarget.Compression.NONE,null);
 			gltfTarget.setConfiguration(data.getConfig());
 			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
 			gltfTarget.finish();
