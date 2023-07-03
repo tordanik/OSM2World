@@ -80,6 +80,12 @@ public class FrontendPbfTarget extends MeshTarget {
 
 	private final double FLOOR_PLATE_Y = -0.03;
 
+	/**
+	 * whether some textures should be combined into a texture atlas.
+	 * This prevents textures from being shared between tiles and therefore significantly increases tile size.
+	 */
+	private static final boolean USE_TEXTURE_ATLAS = false;
+
 	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, WasteBasket.class,
 			VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
 
@@ -397,11 +403,15 @@ public class FrontendPbfTarget extends MeshTarget {
 
 	}
 
-	private FrontendPbf.WorldObject convertModel(Model m, TextureAtlasGroup textureAtlasGroup) {
+	private FrontendPbf.WorldObject convertModel(Model m, @Nullable TextureAtlasGroup textureAtlasGroup) {
 		InstanceParameters params = new InstanceParameters(NULL_VECTOR, 0.0, 1.0, null, null);
-		MeshStore tempMeshStore = new MeshStore(m.buildMeshes(params), null);
-		tempMeshStore = tempMeshStore.process(asList(new ReplaceTexturesWithAtlas(textureAtlasGroup)));
-		return buildWorldObject(null, tempMeshStore.meshes(), HashMultimap.create());
+		List<Mesh> meshes = m.buildMeshes(params);
+		if (textureAtlasGroup != null) {
+			var tempMeshStore = new MeshStore(meshes, null);
+			tempMeshStore = tempMeshStore.process(List.of(new ReplaceTexturesWithAtlas(textureAtlasGroup)));
+			meshes = tempMeshStore.meshes();
+		}
+		return buildWorldObject(null, meshes, HashMultimap.create());
 	}
 
 	/**
@@ -675,16 +685,22 @@ public class FrontendPbfTarget extends MeshTarget {
 			}
 		}
 
-		TextureAtlasGroup textureAtlasGroup = ReplaceTexturesWithAtlas.generateTextureAtlasGroup(
-				asList(this.meshStore, instanceMeshStore));
+		@Nullable TextureAtlasGroup textureAtlasGroup = USE_TEXTURE_ATLAS
+				? ReplaceTexturesWithAtlas.generateTextureAtlasGroup(List.of(this.meshStore, instanceMeshStore))
+				: null;
 
 		/* pre-process meshes */
 
-		MeshStore meshStore = this.meshStore.process(asList(
+		List<MeshStore.MeshProcessingStep> processingSteps = new ArrayList<>(List.of(
 				new ClipToBounds(bbox),
-				new ReplaceTexturesWithAtlas(textureAtlasGroup),
 				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
-				));
+		));
+
+		if (USE_TEXTURE_ATLAS) {
+			processingSteps.add(1, new ReplaceTexturesWithAtlas(textureAtlasGroup));
+		}
+
+		MeshStore meshStore = this.meshStore.process(processingSteps);
 
 		/* convert all WorldObjects */
 
