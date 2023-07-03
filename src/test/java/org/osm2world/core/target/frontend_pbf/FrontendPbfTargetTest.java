@@ -2,8 +2,10 @@ package org.osm2world.core.target.frontend_pbf;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.target.TargetUtil.Compression;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,7 +76,7 @@ public class FrontendPbfTargetTest {
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
-		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null);
+		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null, Compression.NONE);
 
 	}
 
@@ -91,7 +93,7 @@ public class FrontendPbfTargetTest {
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
-		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null);
+		FrontendPbfTarget.writePbfFile(outputFile, results.getMapData(), bbox, null, Compression.NONE);
 
 		try (FileInputStream is = new FileInputStream(outputFile)) {
 

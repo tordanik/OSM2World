@@ -3,7 +3,7 @@ package org.osm2world.core.target.gltf;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
-import static org.osm2world.core.target.TargetUtil.flipTexCoordsVertically;
+import static org.osm2world.core.target.TargetUtil.*;
 import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
@@ -12,8 +12,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
 
@@ -58,7 +56,6 @@ import jakarta.xml.bind.DatatypeConverter;
 public class GltfTarget extends MeshTarget {
 
 	public enum GltfFlavor { GLTF, GLB }
-	public enum Compression { NONE, ZIP }
 
 	private final File outputFile;
 	private final GltfFlavor flavor;
@@ -90,23 +87,9 @@ public class GltfTarget extends MeshTarget {
 	@Override
 	public void finish() {
 
-		try {
+		writeFileWithCompression(outputFile, compression, outputStream -> {
 
-			var fileOutputStream = new FileOutputStream(outputFile);
-			@Nullable ZipOutputStream zipOutputStream = null;
-
-			OutputStream outputStream;
-
-			if (compression == Compression.ZIP) {
-				zipOutputStream = new ZipOutputStream(fileOutputStream);
-				zipOutputStream.putNextEntry(new ZipEntry(outputFile.getName().replace(".gz", "")));
-				outputStream = zipOutputStream;
-			} else {
-				outputStream = fileOutputStream;
-			}
-
-			try (outputStream) {
-
+			try {
 				if (flavor == GltfFlavor.GLTF) {
 					writeJson(outputStream);
 				} else {
@@ -116,16 +99,11 @@ public class GltfTarget extends MeshTarget {
 						writeGlb(outputStream, jsonChunkData, binChunkData);
 					}
 				}
-
-				if (zipOutputStream != null) {
-					zipOutputStream.closeEntry();
-				}
-
+			} catch (IOException | JsonIOException e) {
+				throw new RuntimeException(e);
 			}
 
-		} catch (JsonIOException | IOException e) {
-			throw new RuntimeException(e);
-		}
+		});
 
 	}
 

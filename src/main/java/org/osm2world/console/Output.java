@@ -35,6 +35,7 @@ import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
@@ -194,7 +195,7 @@ public final class Output {
 					}
 					break;
 
-				case GLTF, GLB, GLTF_GZ, GLB_GZ:
+				case GLTF, GLB, GLTF_GZ, GLB_GZ: {
 					AxisAlignedRectangleXZ bounds = null;
 					if (args.isTile()) {
 						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
@@ -203,28 +204,29 @@ public final class Output {
 					}
 					GltfTarget.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
 							? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
-					GltfTarget.Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
-							? GltfTarget.Compression.ZIP : GltfTarget.Compression.NONE;
+					Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
+							? Compression.ZIP : Compression.NONE;
 					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
 					gltfTarget.setConfiguration(config);
 					boolean underground = config.getBoolean("renderUnderground", true);
 					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
 					gltfTarget.finish();
-					break;
+				} break;
 
 				case POV:
 					POVRayWriter.writePOVInstructionFile(outputFile,
 							results.getMapData(), camera, projection);
 					break;
 
-				case WEB_PBF:
+				case WEB_PBF, WEB_PBF_GZ: {
 					AxisAlignedRectangleXZ bbox = null;
 					if (args.isTile()) {
 						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
 					}
+					Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.ZIP : Compression.NONE;
 					FrontendPbfTarget.writePbfFile(
-							outputFile, results.getMapData(), bbox, results.getMapProjection());
-					break;
+							outputFile, results.getMapData(), bbox, results.getMapProjection(), compression);
+				} break;
 
 				case PNG:
 				case PPM:

@@ -14,7 +14,6 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTex
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -36,6 +35,7 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.MeshStore;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshTarget;
@@ -791,21 +791,10 @@ public class FrontendPbfTarget extends MeshTarget {
 	}
 
 	public static void writePbfFile(File outputFile, MapData mapData,
-			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
+			AxisAlignedRectangleXZ bbox, MapProjection projection, Compression compression) throws IOException {
 
-		FileOutputStream output = null;
-
-		try {
-
-			output = new FileOutputStream(outputFile);
-
-			writePbfStream(output, mapData, bbox, projection);
-
-		} finally {
-			if (output != null) {
-				output.close();
-			}
-		}
+		TargetUtil.writeFileWithCompression(outputFile, compression,
+			it -> writePbfStream(it, mapData, bbox, projection));
 
 	}
 

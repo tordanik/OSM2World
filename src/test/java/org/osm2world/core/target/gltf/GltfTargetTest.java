@@ -1,8 +1,8 @@
 package org.osm2world.core.target.gltf;
 
 import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.core.target.gltf.GltfTarget.Compression.NONE;
-import static org.osm2world.core.target.gltf.GltfTarget.Compression.ZIP;
+import static org.osm2world.core.target.TargetUtil.Compression.NONE;
+import static org.osm2world.core.target.TargetUtil.Compression.ZIP;
 import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLB;
 import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 

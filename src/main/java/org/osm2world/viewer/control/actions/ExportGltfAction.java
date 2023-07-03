@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.gltf.GltfTarget.GltfFlavor;
 import org.osm2world.viewer.model.Data;
@@ -46,7 +47,7 @@ public class ExportGltfAction extends AbstractExportAction {
 			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
 
 			/* write the file */
-			GltfTarget gltfTarget = new GltfTarget(file, flavor, GltfTarget.Compression.NONE,null);
+			GltfTarget gltfTarget = new GltfTarget(file, flavor, Compression.NONE,null);
 			gltfTarget.setConfiguration(data.getConfig());
 			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
 			gltfTarget.finish();

@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
-import static org.osm2world.core.target.gltf.GltfTarget.Compression.NONE;
+import static org.osm2world.core.target.TargetUtil.Compression.NONE;
 import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
