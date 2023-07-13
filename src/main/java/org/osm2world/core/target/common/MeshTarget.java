@@ -1,7 +1,18 @@
 package org.osm2world.core.target.common;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import static java.awt.Color.WHITE;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.nCopies;
+import static java.util.stream.Collectors.toList;
+
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -16,17 +27,8 @@ import org.osm2world.core.target.common.mesh.*;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-
-import static java.awt.Color.WHITE;
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.Collections.nCopies;
-import static java.util.stream.Collectors.toList;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * a {@link Target} that collects everything that is being drawn as {@link Mesh}es
@@ -245,12 +247,16 @@ public class MeshTarget extends AbstractTarget {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
+				if (meshWithMetadata.mesh().material.getTextureLayers().stream().noneMatch(it -> it.colorable)) {
+					result.add(meshWithMetadata);
+					continue;
+				}
+
 				Mesh mesh = meshWithMetadata.mesh();
 				Material newMaterial = mesh.material.withColor(WHITE);
 				Geometry newGeometry;
 
-				if (mesh.geometry instanceof TriangleGeometry) {
-					TriangleGeometry tg = ((TriangleGeometry)mesh.geometry);
+				if (mesh.geometry instanceof TriangleGeometry tg) {
 
 					List<Color> colors = (tg.colors != null) ? tg.colors
 							: new ArrayList<>(nCopies(tg.vertices().size(), WHITE));
@@ -262,8 +268,7 @@ public class MeshTarget extends AbstractTarget {
 					builder.addTriangles(tg.triangles, tg.texCoords, colors, tg.normalData.normals());
 					newGeometry = builder.build();
 
-				} else if (mesh.geometry instanceof ShapeGeometry) {
-					ShapeGeometry sg = ((ShapeGeometry)mesh.geometry);
+				} else if (mesh.geometry instanceof ShapeGeometry sg) {
 
 					LColor existingColor = sg.color == null ? LColor.WHITE : LColor.fromAWT(sg.color);
 					LColor newColor = existingColor.multiply(mesh.material.getLColor());
@@ -271,8 +276,7 @@ public class MeshTarget extends AbstractTarget {
 					newGeometry = new ShapeGeometry(sg.shape, sg.point, sg.frontVector, sg.upVector, sg.scaleFactor,
 							newColor.toAWT(), sg.normalMode, sg.textureDimensions);
 
-				} else if (mesh.geometry instanceof ExtrusionGeometry) {
-					ExtrusionGeometry eg = ((ExtrusionGeometry)mesh.geometry);
+				} else if (mesh.geometry instanceof ExtrusionGeometry eg) {
 
 					LColor existingColor = eg.color == null ? LColor.WHITE : LColor.fromAWT(eg.color);
 					LColor newColor = existingColor.multiply(LColor.fromAWT(mesh.material.getColor()));

@@ -388,8 +388,8 @@ public class GltfTarget extends MeshTarget {
 
 		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
 				new FilterLod(LevelOfDetail.values()[lodValue]),
+				new EmulateTextureLayers(), // before MoveColors because colorable is per layer
 				new MoveColorsToVertices(),
-				new EmulateTextureLayers(),
 				new ReplaceTexturesWithAtlas(),
 				new MergeMeshes(mergeOptions)));
 
