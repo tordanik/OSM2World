@@ -159,6 +159,19 @@ public abstract class Material {
 	}
 
 	/**
+	 * returns a material that is the same as this one, except with a different transparency setting.
+	 * @param transparency  the transparency setting to use. Can be null, in which case this material is returned unaltered.
+	 */
+	public Material withTransparency(Transparency transparency) {
+
+		if (transparency == null) return this;
+
+		return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
+				transparency, getShadow(), getAmbientOcclusion(), getTextureLayers());
+
+	}
+
+	/**
 	 * returns a copy of {@code material} with its {@link TextTexture} layer
 	 * No. {@code numberOfTextLayer} changed with a replica with textColor={@code color}
 	 */

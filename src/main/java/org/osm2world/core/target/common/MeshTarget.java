@@ -215,12 +215,13 @@ public class MeshTarget extends AbstractTarget {
 						List<TriangleXYZ> offsetTriangles = tg.triangles.stream()
 								.map(t -> t.shift(t.getNormal().mult(offset)))
 								.collect(toList());
-						List<List<VectorXZ>> texCoords = asList(tg.texCoords.get(layer));
+						List<List<VectorXZ>> texCoords = List.of(tg.texCoords.get(layer));
 						builder.addTriangles(offsetTriangles, texCoords, tg.colors, tg.normalData.normals());
 						TriangleGeometry newGeometry = builder.build();
 
-						Material singleLayerMaterial = mesh.material.withLayers(asList(
-								mesh.material.getTextureLayers().get(layer)));
+						Material singleLayerMaterial = mesh.material
+								.withTransparency(layer > 0 ? Material.Transparency.BINARY : null)
+								.withLayers(List.of(mesh.material.getTextureLayers().get(layer)));
 
 						Mesh newMesh = new Mesh(newGeometry, singleLayerMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
 
