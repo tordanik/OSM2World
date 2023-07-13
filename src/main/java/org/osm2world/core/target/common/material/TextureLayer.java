@@ -163,7 +163,7 @@ public class TextureLayer {
 		int index = commonPrefix.lastIndexOf("_");
 
 		if (textureNames.length == 1) {
-			return textureNames[0].replaceAll("\\.(png|jpg|svg)", "");
+			return textureNames[0].replaceAll("(?i)\\.(png|jpg|svg)", "");
 		} else if (index > 0) {
 			return commonPrefix.subSequence(0, index).toString();
 		} else {

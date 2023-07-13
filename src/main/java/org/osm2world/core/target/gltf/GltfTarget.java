@@ -256,11 +256,7 @@ public class GltfTarget extends MeshTarget {
 		GltfMaterial material = new GltfMaterial();
 		material.pbrMetallicRoughness = new PbrMetallicRoughness();
 
-		String name = Materials.getUniqueName(m);
-		if (textureLayer != null && m.getNumTextureLayers() > 1) {
-			name += "_layer" + m.getTextureLayers().indexOf(textureLayer);
-		}
-		material.name = name;
+		material.name = getMaterialName(m, textureLayer);
 
 		material.alphaMode = switch (m.getTransparency()) {
 			case FALSE -> "OPAQUE";
@@ -583,6 +579,24 @@ public class GltfTarget extends MeshTarget {
 			}
 			return byteBuffer;
 		}
+	}
+
+	private @Nullable String getMaterialName(Material m, TextureLayer textureLayer) {
+
+		String name = Materials.getUniqueName(m);
+
+		if (name == null) {
+			if (textureLayer.toString().startsWith("TextureAtlas")) {
+				name = "TextureAtlas " + Integer.toHexString(m.hashCode());
+			} else if (!textureLayer.toString().contains(",")) {
+				name = textureLayer.toString();
+			}
+		} else if (textureLayer != null && m.getNumTextureLayers() > 1) {
+			name += "_layer" + m.getTextureLayers().indexOf(textureLayer);
+		}
+
+		return name;
+
 	}
 
 	private static void addMeshNameAndId(GltfNode node, MeshMetadata metadata) {
