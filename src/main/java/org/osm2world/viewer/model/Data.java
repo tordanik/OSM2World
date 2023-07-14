@@ -13,6 +13,8 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.osm.creation.GeodeskReader;
+import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.util.ConfigUtil;
@@ -47,8 +49,10 @@ public class Data extends Observable {
 
 			ConfigUtil.parseFonts(fileConfig);
 
-			this.setChanged();
-			this.notifyObservers();
+			if (conversionResults != null) {
+				this.setChanged();
+				this.notifyObservers();
+			}
 
 		}
 
@@ -62,8 +66,12 @@ public class Data extends Observable {
 
 		try {
 
-			if (reader instanceof OSMFileReader) {
-				this.osmFile = ((OSMFileReader)reader).getFile();
+			if (reader instanceof OSMFileReader r) {
+				this.osmFile = r.getFile();
+			} else if (reader instanceof GeodeskReader r) {
+				this.osmFile = r.getFile();
+			} else if (reader instanceof MbtilesReader r) {
+				this.osmFile = r.getFile();
 			} else {
 				this.osmFile = null;
 			}

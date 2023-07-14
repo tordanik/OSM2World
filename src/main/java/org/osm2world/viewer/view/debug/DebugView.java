@@ -3,7 +3,7 @@ package org.osm2world.viewer.view.debug;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;

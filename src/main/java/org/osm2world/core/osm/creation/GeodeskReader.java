@@ -1,11 +1,26 @@
 package org.osm2world.core.osm.creation;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.osm.data.OSMData;
+import org.osm2world.core.osm.ruleset.HardcodedRuleset;
+
 import com.clarisma.common.store.StoreException;
 import com.geodesk.core.Box;
 import com.geodesk.feature.*;
 import com.slimjars.dist.gnu.trove.list.array.TLongArrayList;
 import com.slimjars.dist.gnu.trove.map.TLongObjectMap;
 import com.slimjars.dist.gnu.trove.map.hash.TLongObjectHashMap;
+
 import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.impl.Bounds;
@@ -13,19 +28,6 @@ import de.topobyte.osm4j.core.model.impl.RelationMember;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.LatLonBounds;
-import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.osm.ruleset.HardcodedRuleset;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
-
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
 
 /**
  * {@link OSMDataReader} fetching data from a GeoDesk database (.gol file)
@@ -48,6 +50,11 @@ public class GeodeskReader implements OSMDataReader {
 	public GeodeskReader(File golFile, LatLonBounds bounds) {
 		this.golFile = golFile;
 		this.bounds = bounds;
+	}
+
+	/** returns the gol file this reader is obtaining data from */
+	public File getFile() {
+		return golFile;
 	}
 
 	@Override
