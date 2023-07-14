@@ -1,27 +1,26 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.nCopies;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.GeometryUtil.closeLoop;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.addYList;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT_HEIGHT;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordFunctions;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -205,9 +204,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			// repeating texture containing ballast, sleepers and rails
 			TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(
-					texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
+					texCoordFunctions(RAILWAY, STRIP_FIT_HEIGHT), null, Interpolation.SMOOTH);
 			lod3GroundBuilder.addTriangleStrip(groundVs);
-			result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY, LOD1, LOD3));
+			result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY, LOD0, LOD3));
 
 			/* build rail meshes */
 
