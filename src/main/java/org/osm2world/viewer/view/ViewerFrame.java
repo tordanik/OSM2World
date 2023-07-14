@@ -38,12 +38,10 @@ public class ViewerFrame extends JFrame {
 
 	public ViewerGLCanvas glCanvas;
 
-	private final Data data = new Data();
+	private final Data data;
 	private final RenderOptions renderOptions = new RenderOptions();
 	private final MessageManager messageManager = new MessageManager();
 	private final List<DebugView> debugViews = new ArrayList<DebugView>();
-
-	private final File configFile;
 
 	/**
 	 *
@@ -56,8 +54,7 @@ public class ViewerFrame extends JFrame {
 
 		super("OSM2World Viewer");
 
-		this.configFile = configFile;
-		data.setConfig(config);
+		data = new Data(configFile, config);
 
 		createMenuBar();
 
@@ -102,7 +99,7 @@ public class ViewerFrame extends JFrame {
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
-			subMenu.add(new ReloadOSMAction(this, data, renderOptions, configFile));
+			subMenu.add(new ReloadOSMAction(this, data, renderOptions));
 			subMenu.add(recentFilesMenu);
 			subMenu.add(new DownloadOverpassAction(this, data, renderOptions));
 			subMenu.add(new ExportGltfAction(this, data, messageManager, renderOptions, GLTF));

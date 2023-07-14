@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
@@ -14,24 +15,42 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
 
-	private Configuration config = new BaseConfiguration();
+	private final File configFile;
+	private Configuration config;
 	private File osmFile = null;
 	private Results conversionResults = null;
+
+	public Data(File configFile, Configuration config) {
+		this.configFile = configFile;
+		this.config = config;
+	}
 
 	public Configuration getConfig() {
 		return config;
 	}
 
-	public void setConfig(Configuration config) {
+	/** reloads the configuration from the config file */
+	public void reloadConfig() throws ConfigurationException {
 
-		this.config = config;
+		if (configFile != null) {
 
-		this.setChanged();
-		this.notifyObservers();
+			PropertiesConfiguration fileConfig = new PropertiesConfiguration();
+			fileConfig.setListDelimiter(';');
+			fileConfig.load(configFile);
+
+			this.config = fileConfig;
+
+			ConfigUtil.parseFonts(fileConfig);
+
+			this.setChanged();
+			this.notifyObservers();
+
+		}
 
 	}
 

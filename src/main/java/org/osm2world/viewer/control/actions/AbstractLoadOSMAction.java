@@ -6,6 +6,7 @@ import java.io.Serial;
 
 import javax.swing.*;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
@@ -40,6 +41,20 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 	}
 
 	protected void loadOSMData(OSMDataReader dataReader, boolean resetCamera) {
+
+		try {
+			data.reloadConfig();
+		} catch (ConfigurationException e) {
+
+			JOptionPane.showMessageDialog(viewerFrame,
+					"Could not reload the properties configuration file:\n"
+							+ e.getMessage(),
+					"Error reloading configuration",
+					JOptionPane.WARNING_MESSAGE);
+
+			System.err.println(e);
+
+		}
 
 		LoadOSMThread thread = new LoadOSMThread(dataReader, resetCamera);
 
