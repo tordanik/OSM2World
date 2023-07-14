@@ -6,8 +6,6 @@ import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLB;
 import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,6 @@ import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.debug.*;
 
-import com.google.common.base.Function;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 
@@ -70,22 +67,6 @@ public class ViewerFrame extends JFrame {
 
 	}
 
-	private final Function<File, ActionListener> actionForFileFunction =
-			new Function<File, ActionListener>() {
-
-		public ActionListener apply(final File file) {
-
-			return new ActionListener() {
-				@Override public void actionPerformed(ActionEvent e) {
-					new OpenOSMAction(ViewerFrame.this, data,
-							renderOptions).openOSMFile(file, true);
-				}
-			};
-
-		}
-
-	};
-
 	private void createMenuBar() {
 
 		JMenuBar menu = new JMenuBar();
@@ -94,7 +75,8 @@ public class ViewerFrame extends JFrame {
 
 			JMenu recentFilesMenu = new JMenu("Recent files");
 
-			new RecentFilesUpdater(recentFilesMenu, actionForFileFunction);
+			new RecentFilesUpdater(recentFilesMenu, (File file) -> new OpenOSMAction(
+					ViewerFrame.this, data, renderOptions).openOSMFile(file, true));
 
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
