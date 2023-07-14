@@ -36,6 +36,20 @@ public class Data extends Observable {
 		return config;
 	}
 
+	/** updates the configuration */
+	public void setConfig(Configuration config) {
+
+		this.config = config;
+
+		ConfigUtil.parseFonts(config);
+
+		if (conversionResults != null) {
+			this.setChanged();
+			this.notifyObservers();
+		}
+
+	}
+
 	/** reloads the configuration from the config file */
 	public void reloadConfig() throws ConfigurationException {
 
@@ -45,14 +59,7 @@ public class Data extends Observable {
 			fileConfig.setListDelimiter(';');
 			fileConfig.load(configFile);
 
-			this.config = fileConfig;
-
-			ConfigUtil.parseFonts(fileConfig);
-
-			if (conversionResults != null) {
-				this.setChanged();
-				this.notifyObservers();
-			}
+			this.setConfig(fileConfig);
 
 		}
 

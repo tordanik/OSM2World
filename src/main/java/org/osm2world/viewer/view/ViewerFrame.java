@@ -14,6 +14,7 @@ import javax.swing.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_elevation.creation.*;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.viewer.control.actions.*;
 import org.osm2world.viewer.control.navigation.DefaultNavigation;
 import org.osm2world.viewer.model.Data;
@@ -171,6 +172,17 @@ public class ViewerFrame extends JFrame {
 
 			JMenu subMenu = new JMenu("Options");
 			subMenu.setMnemonic(VK_O);
+
+			JMenu lodMenu = new JMenu("Level of Detail");
+			subMenu.add(lodMenu);
+
+			var lodGroup = new ButtonGroup();
+
+			for (LevelOfDetail lod : LevelOfDetail.values()) {
+				var item = new JRadioButtonMenuItem(new SetLodAction(lod, this, data, renderOptions));
+				lodGroup.add(item);
+				lodMenu.add(item);
+			}
 
 			JMenu interpolatorMenu = new JMenu("TerrainInterpolator");
 			subMenu.add(interpolatorMenu);
