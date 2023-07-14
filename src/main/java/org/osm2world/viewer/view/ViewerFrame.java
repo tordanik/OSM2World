@@ -281,13 +281,10 @@ public class ViewerFrame extends JFrame {
 		glCanvas = new ViewerGLCanvas(this, data, messageManager, renderOptions, caps);
 		add(glCanvas, BorderLayout.CENTER);
 
-		new FileDrop(glCanvas, new FileDrop.Listener() {
-			@Override
-			public void filesDropped(File[] files) {
-				if (files.length >= 1) {
-					new OpenOSMAction(ViewerFrame.this, data, renderOptions)
-						.openOSMFile(files[0], true);
-				}
+		new FileDrop(glCanvas, files -> {
+			if (files.length >= 1) {
+				new OpenOSMAction(ViewerFrame.this, data, renderOptions)
+					.openOSMFile(files[0], true);
 			}
 		});
 
