@@ -33,7 +33,6 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.gltf.data.*;
@@ -41,6 +40,7 @@ import org.osm2world.core.target.gltf.data.GltfMaterial.NormalTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.OcclusionTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.PbrMetallicRoughness;
 import org.osm2world.core.target.gltf.data.GltfMaterial.TextureInfo;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 
@@ -373,11 +373,6 @@ public class GltfTarget extends MeshTarget {
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
 		boolean clipToBounds = config.getBoolean("clipToBounds", false);
 
-		int lodValue = config.getInt("lod", 4);
-		if (lodValue < 0 || lodValue > 4) {
-			lodValue = 4;
-		}
-
 		/* process the meshes */
 
 		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
@@ -387,7 +382,7 @@ public class GltfTarget extends MeshTarget {
 		}
 
 		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
-				new FilterLod(LevelOfDetail.values()[lodValue]),
+				new FilterLod(ConfigUtil.readLOD(config)),
 				new EmulateTextureLayers(), // before MoveColors because colorable is per layer
 				new MoveColorsToVertices(),
 				new ReplaceTexturesWithAtlas(),

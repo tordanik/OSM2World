@@ -1,5 +1,19 @@
 package org.osm2world.core.target.common;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
+import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.core.math.TriangleXZ;
@@ -13,19 +27,6 @@ import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.MeshUtil;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.nCopies;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Y;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
-
 /**
  * superclass for {@link Target} implementations that defines some
  * of the required methods using others. Extending it reduces the number of
@@ -34,6 +35,11 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.tr
 public abstract class AbstractTarget implements Target {
 
 	protected @Nonnull Configuration config = new PropertiesConfiguration();
+
+	@Override
+	public Configuration getConfiguration() {
+		return config;
+	}
 
 	@Override
 	public void setConfiguration(Configuration config) {

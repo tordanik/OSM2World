@@ -1,15 +1,15 @@
 package org.osm2world.core.util;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GraphicsEnvironment;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
+
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 
 /**
  * utility class for parsing configuration values
@@ -21,6 +21,17 @@ final public class ConfigUtil {
 	public static final String BG_COLOR_KEY = "backgroundColor";
 	public static final String BG_IMAGE_KEY = "backgroundImage";
 	public static final String CANVAS_LIMIT_KEY = "canvasLimit";
+
+	/** reads and parses the value of the lod property */
+	public static LevelOfDetail readLOD(Configuration config) {
+		return switch (config.getInt("lod", 4)) {
+			case 0 -> LOD0;
+			case 1 -> LOD1;
+			case 2 -> LOD2;
+			case 3 -> LOD3;
+			default -> LOD4;
+		};
+	}
 
 	public static final Color parseColor(String colorString) {
 

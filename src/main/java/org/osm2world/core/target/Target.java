@@ -1,5 +1,13 @@
 package org.osm2world.core.target;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -11,14 +19,8 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.data.WorldObject;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A sink for rendering/writing {@link WorldObject}s to.
@@ -26,6 +28,7 @@ import java.util.Set;
 public interface Target {
 
 	void setConfiguration(Configuration config);
+	Configuration getConfiguration();
 
 	/**
 	 * announces the begin of the draw* calls for a {@link WorldObject}.
@@ -160,8 +163,10 @@ public interface Target {
 	}
 
 	public default void drawMesh(Mesh mesh) {
-		TriangleGeometry tg = mesh.geometry.asTriangles();
-		drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords);
+		if (mesh.lodRangeContains(ConfigUtil.readLOD(getConfiguration()))) {
+			TriangleGeometry tg = mesh.geometry.asTriangles();
+			drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords);
+		}
 	}
 
 	/**
