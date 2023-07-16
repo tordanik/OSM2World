@@ -2,15 +2,20 @@ package org.osm2world.core.world.modules;
 
 import static java.lang.Math.max;
 import static java.lang.Math.toRadians;
-import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
+import static org.osm2world.core.math.VectorXZ.listXYZ;
+import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
-import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
-import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD4;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordFunctions;
+import static org.osm2world.core.util.ValueParseUtil.parseAngle;
+import static org.osm2world.core.util.ValueParseUtil.parseUInt;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
 import java.util.ArrayList;
@@ -19,34 +24,27 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Geometry;
 import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -80,7 +78,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 	}
 
-	public static abstract class BicycleStands implements LegacyWorldObject, TerrainBoundaryWorldObject {
+	public static abstract class BicycleStands implements TerrainBoundaryWorldObject {
 
 		protected static final double DEFAULT_DISTANCE_BETWEEN_STANDS = 1.0;
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
@@ -151,21 +149,31 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
+
+			@Nullable Material surfaceMaterial = getSurfaceMaterial();
+			@Nullable PolygonShapeXZ area = area();
+
+			if (area != null && surfaceMaterial != null) {
+
+				/* render surface area */
+				var builder = new TriangleGeometry.Builder(texCoordFunctions(surfaceMaterial, GLOBAL_X_Z), null, SMOOTH);
+				builder.addTriangles(eleConnectors.getTriangulationXYZ(area.getTriangulation()));
+				return List.of(new Mesh(builder.build(), surfaceMaterial));
+
+			} else {
+				return emptyList();
+			}
+
+		}
+
+		@Override
+		public List<ModelInstance> getSubModels() {
+
+			/* place models for the stands */
 
 			TagSet tags = getPrimaryMapElement().getTags();
 			PolylineShapeXZ centerline = lineThroughStandCenters();
-
-			/* render surface area */
-
-			Material surfaceMaterial = getSurfaceMaterial();
-			if (surfaceMaterial != null) {
-				List<TriangleXYZ> triangles = eleConnectors.getTriangulationXYZ(area().getTriangulation());
-				target.drawTriangles(surfaceMaterial, triangles,
-						triangleTexCoordLists(triangles, surfaceMaterial, NamedTexCoordFunction.GLOBAL_X_Z));
-			}
-
-			/* render stands */
 
 			double height = parseHeight(tags, STAND_DEFAULT_HEIGHT);
 			double length = parseLength(tags, STAND_DEFAULT_LENGTH);
@@ -173,6 +181,8 @@ public class BicycleParkingModule extends AbstractModule {
 
 			Double direction = parseAngle(tags.getValue("direction"));
 			if (direction != null) { direction = toRadians(direction); }
+
+			List<ModelInstance> result = new ArrayList<>();
 
 			for (EleConnector standConnector : standEleConnectors) {
 
@@ -184,9 +194,12 @@ public class BicycleParkingModule extends AbstractModule {
 					localDirection = segment.getDirection().rightNormal().angle();
 				}
 
-				target.drawModel(model, standConnector.getPosXYZ(), localDirection, height, null, length);
+				result.add(new ModelInstance(model,new InstanceParameters(
+						standConnector.getPosXYZ(), localDirection, height, null, length)));
 
 			}
+
+			return result;
 
 		}
 
@@ -233,8 +246,8 @@ public class BicycleParkingModule extends AbstractModule {
 			}
 
 			return new LineSegmentXZ(
-				midpoint1.add(midpoint2.subtract(midpoint1).normalize().mult(DEFAULT_DISTANCE_BETWEEN_STANDS / 2)),
-				midpoint2.add(midpoint1.subtract(midpoint2).normalize().mult(DEFAULT_DISTANCE_BETWEEN_STANDS / 2)));
+					midpoint1.add(midpoint2.subtract(midpoint1).normalize().mult(DEFAULT_DISTANCE_BETWEEN_STANDS / 2)),
+					midpoint2.add(midpoint1.subtract(midpoint2).normalize().mult(DEFAULT_DISTANCE_BETWEEN_STANDS / 2)));
 
 		}
 
@@ -245,8 +258,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	public static final class BicycleStandsWay extends BicycleStands
-			implements WaySegmentWorldObject, LegacyWorldObject {
+	public static final class BicycleStandsWay extends BicycleStands implements WaySegmentWorldObject {
 
 		private final MapWay way;
 		private final MapWaySegment waySegment;
@@ -293,24 +305,16 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	private static final class BicycleStandModel implements Model {
+	private record BicycleStandModel(double height, double length) implements Model {
 
-		private final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
-
-		private final double height;
-		private final double length;
-
-		public BicycleStandModel(double height, double length) {
-			this.height = height;
-			this.length = length;
-		}
+		private static final ShapeXZ STAND_SHAPE = new CircleXZ(NULL_VECTOR, 0.02f);
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
 			VectorXYZ toFront = VectorXZ.fromAngle(params.direction).mult(length / 2).xyz(0);
 
-			List<VectorXYZ> path = asList(
+			List<VectorXYZ> path = List.of(
 					params.position.add(toFront),
 					params.position.add(toFront).addY(height * 0.95),
 					params.position.add(toFront.mult(0.95)).addY(height),
@@ -318,7 +322,7 @@ public class BicycleParkingModule extends AbstractModule {
 					params.position.add(toFront.invert()).addY(height * 0.95),
 					params.position.add(toFront.invert()));
 
-			List<VectorXYZ> upVectors = asList(
+			List<VectorXYZ> upVectors = List.of(
 					toFront.normalize(),
 					toFront.normalize(),
 					Y_UNIT,
@@ -329,28 +333,8 @@ public class BicycleParkingModule extends AbstractModule {
 			Geometry geom = new ExtrusionGeometry(STAND_SHAPE, path, upVectors, null, null, null,
 					STEEL.getTextureDimensions());
 
-			return asList(new Mesh(geom, STEEL, LOD2, LOD4));
+			return List.of(new Mesh(geom, STEEL, LOD3, LOD4));
 
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			return obj instanceof BicycleStandModel
-					&& ((BicycleStandModel) obj).length == this.length
-					&& ((BicycleStandModel) obj).height == this.height;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((STAND_SHAPE == null) ? 0 : STAND_SHAPE.hashCode());
-			long temp;
-			temp = Double.doubleToLongBits(height);
-			result = prime * result + (int) (temp ^ (temp >>> 32));
-			temp = Double.doubleToLongBits(length);
-			result = prime * result + (int) (temp ^ (temp >>> 32));
-			return result;
 		}
 
 	}
