@@ -7,7 +7,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.mesh.Mesh;
 
 /**
- * a single 3D model, typically loaded from a file or other resource
+ * a single 3D model, defined in code or loaded from a file or other resource
  */
 public interface Model {
 

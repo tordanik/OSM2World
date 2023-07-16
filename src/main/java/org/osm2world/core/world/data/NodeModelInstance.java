@@ -32,7 +32,7 @@ public class NodeModelInstance extends NoOutlineNodeWorldObject {
 
 	@Override
 	public List<Mesh> buildMeshes() {
-		return model.buildMeshes(new InstanceParameters(getBase(), direction, null, null, null));
+		return model.buildMeshes(new InstanceParameters(getBase(), direction));
 	}
 
 	@Override

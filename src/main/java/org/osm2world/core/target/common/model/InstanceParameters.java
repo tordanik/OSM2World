@@ -24,4 +24,9 @@ public final class InstanceParameters {
 		this.length = length;
 	}
 
+	/** alternative constructor for an unscaled instance */
+	public InstanceParameters(VectorXYZ position, double direction) {
+		this(position, direction, null, null, null);
+	}
+
 }

@@ -519,8 +519,8 @@ public class FrontendPbfTarget extends MeshTarget {
 
 			InstanceGeometry.Builder geometryBuilder = InstanceGeometry.newBuilder();
 
-			if (model instanceof ExternalResourceModel) {
-				geometryBuilder.setResourceIdentifier(((ExternalResourceModel)model).getResourceIdentifier());
+			if (model instanceof ExternalResourceModel externalResourceModel) {
+				geometryBuilder.setResourceIdentifier(externalResourceModel.resourceIdentifier());
 			} else {
 				geometryBuilder.setModel(modelBlock.toIndex(model));
 			}
