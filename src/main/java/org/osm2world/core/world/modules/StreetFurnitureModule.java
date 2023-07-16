@@ -17,6 +17,7 @@ import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.mesh.ExtrusionGeometry.createColumn;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.mesh.MeshUtil.createBox;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
@@ -30,6 +31,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
@@ -47,6 +49,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
@@ -167,7 +170,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		return false;
 	}
 
-	public static final class Pole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Pole extends NoOutlineNodeWorldObject {
 
 		public Pole(MapNode node) {
 			super(node);
@@ -186,18 +189,13 @@ public class StreetFurnitureModule extends AbstractModule {
 					height, radius, radius, false, true,
 					color, material.getTextureDimensions());
 
-			return singletonList(new Mesh(geometry, material));
+			return singletonList(new Mesh(geometry, material, height >= 10 ? LOD2 : LOD3, LOD4));
 
 		}
 
 		@Override
 		public Collection<AttachmentSurface> getAttachmentSurfaces() {
 			return singleton(AttachmentSurface.fromMeshes("pole", buildMeshes()));
-		}
-
-		@Override
-		public void renderTo(Target target) {
-			buildMeshes().forEach(target::drawMesh);
 		}
 
 	}
@@ -211,6 +209,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -556,6 +559,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			double height = parseHeight(node.getTags(), 3.0);
@@ -615,6 +623,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -720,6 +733,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -846,6 +864,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			/* determine elevation from connector */
@@ -941,6 +964,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1068,6 +1096,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			boolean summit = node.getTags().containsKey("summit:cross")
@@ -1136,6 +1169,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -1240,6 +1278,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -1351,6 +1394,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
+		}
+
+		@Override
 		public Iterable<AttachmentConnector> getAttachmentConnectors() {
 			if (connector == null) {
 				return emptyList();
@@ -1439,6 +1487,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			double height = parseHeight(node.getTags(), 0.5f);
@@ -1497,6 +1550,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1580,6 +1638,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
@@ -1644,6 +1707,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1717,6 +1785,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1844,6 +1917,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			double height = parseHeight(node.getTags(), 1.0);
@@ -1878,6 +1956,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -1952,6 +2035,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
