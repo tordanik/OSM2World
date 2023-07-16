@@ -1,7 +1,6 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.osm2world.core.map_elevation.data.GroundState.ATTACHED;
@@ -10,27 +9,33 @@ import static org.osm2world.core.math.VectorXYZ.X_UNIT;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.attachment.AttachmentConnector;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 
 /**
  * a group of vertically stacked traffic signs, including their pole(s) or other means of support/attachment.
  */
-public class TrafficSignGroup extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 
 	/** The {@link TrafficSignModel}s from top to bottom */
 	public List<TrafficSignModel> signs;
@@ -72,7 +77,9 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject implements Legacy
 	@Override
 	public Iterable<AttachmentConnector> getAttachmentConnectors() {
 
-		if (!node.getTags().containsKey("support")) {
+		String supportValue = node.getTags().getValue("support");
+
+		if (supportValue == null) {
 			return emptyList();
 		} else {
 
@@ -80,7 +87,7 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject implements Legacy
 
 				if (position == null) throw new IllegalStateException();
 
-				List<String> types = asList(node.getTags().getValue("support"));
+				List<String> types = List.of(supportValue);
 				double height = parseHeight(node.getTags(), (float) signs.get(0).defaultHeight);
 
 				Predicate<VectorXYZ> isAcceptableNormal = null;
@@ -98,7 +105,19 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject implements Legacy
 	}
 
 	@Override
-	public void renderTo(Target target) {
+	public List<Mesh> buildMeshes() {
+		return buildMeshesAndSubModels().getLeft();
+	}
+
+	@Override
+	public List<ModelInstance> getSubModels() {
+		return buildMeshesAndSubModels().getRight();
+	}
+
+	private Pair<List<Mesh>, List<ModelInstance>> buildMeshesAndSubModels() {
+
+		List<Mesh> resultMeshes = emptyList();
+		List<ModelInstance> resultInstances = new ArrayList<>();
 
 		double height = parseHeight(node.getTags(), (float) signs.get(0).defaultHeight);
 		double width = signs.get(0).getSignWidth();
@@ -130,9 +149,9 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject implements Legacy
 					position = position.rotateVec(direction, basePositionXYZ, Y_UNIT);
 				}
 
-				target.drawColumn(STEEL, null, position,
-						height, postRadius, postRadius,
-						false, true);
+				ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, position, height,
+						postRadius, postRadius, false, true, null, STEEL.getTextureDimensions());
+				resultMeshes = List.of(new Mesh(geometry, STEEL, LOD3, LOD4));
 
 			}
 
@@ -152,11 +171,13 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject implements Legacy
 			VectorXYZ position = signPositionXYZ.addY(upperHeight - signHeight / 2);
 			position = position.add(VectorXZ.fromAngle(direction).mult((drawPosts ? postRadius : 0) + distanceFromPost));
 
-			target.drawModel(sign, position, direction, null, null, null);
+			resultInstances.add(new ModelInstance(sign, new InstanceParameters(position, direction, null, null, null)));
 
 			upperHeight -= signHeight + distanceBetweenSigns;
 
 		}
+
+		return Pair.of(resultMeshes, resultInstances);
 
 	}
 

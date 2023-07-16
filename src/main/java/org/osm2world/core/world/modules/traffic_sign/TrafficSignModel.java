@@ -4,9 +4,13 @@ import static java.awt.Color.WHITE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.target.common.material.Material.Interpolation.FLAT;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.mirroredHorizontally;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordFunctions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,21 +19,18 @@ import java.util.Map;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.CompositeTexture;
+import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.material.CompositeTexture.CompositeMode;
-import org.osm2world.core.target.common.material.ImmutableMaterial;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Material.Transparency;
-import org.osm2world.core.target.common.material.TextureData;
-import org.osm2world.core.target.common.material.TextureLayer;
-import org.osm2world.core.target.common.model.LegacyModel;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.target.common.model.InstanceParameters;
+import org.osm2world.core.target.common.model.Model;
 
 /**
  * 3D model of a single traffic sign. A {@link TrafficSignGroup} has one or more of these.
  */
-public class TrafficSignModel implements LegacyModel {
+public class TrafficSignModel implements Model {
 
 	/**
 	 * the material of the front of the sign.
@@ -106,8 +107,7 @@ public class TrafficSignModel implements LegacyModel {
 	}
 
 	@Override
-	public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
-			Double length) {
+	public List<Mesh> buildMeshes(InstanceParameters params) {
 
 		double signHeight = getSignHeight();
 		double signWidth = getSignWidth();
@@ -115,16 +115,16 @@ public class TrafficSignModel implements LegacyModel {
 		/* create the geometry of the sign */
 
 		List<VectorXYZ> vsFront = asList(
-					position.add(+signWidth / 2, +signHeight / 2, 0),
-					position.add(+signWidth / 2, -signHeight / 2, 0),
-					position.add(-signWidth / 2, +signHeight / 2, 0),
-					position.add(-signWidth / 2, -signHeight / 2, 0));
+				params.position.add(+signWidth / 2, +signHeight / 2, 0),
+				params.position.add(+signWidth / 2, -signHeight / 2, 0),
+				params.position.add(-signWidth / 2, +signHeight / 2, 0),
+				params.position.add(-signWidth / 2, -signHeight / 2, 0));
 
 		/* rotate the sign around the base to match the direction */
 
 		for (int i = 0; i < vsFront.size(); i++) {
 			VectorXYZ v = vsFront.get(i);
-			v = v.rotateVec(direction, position, Y_UNIT);
+			v = v.rotateVec(params.direction, params.position, Y_UNIT);
 			vsFront.set(i, v);
 		}
 
@@ -132,8 +132,9 @@ public class TrafficSignModel implements LegacyModel {
 
 		Material materialFront = getFrontMaterial(material);
 
-		target.drawTriangleStrip(materialFront, vsFront,
-				texCoordLists(vsFront, materialFront, STRIP_FIT));
+		var frontBuilder = new TriangleGeometry.Builder(texCoordFunctions(materialFront, STRIP_FIT), null, FLAT);
+		frontBuilder.addTriangleStrip(vsFront);
+		var frontMesh = new Mesh(frontBuilder.build(), materialFront, LOD3, LOD4);
 
 		/* render the back of the sign */
 
@@ -141,8 +142,11 @@ public class TrafficSignModel implements LegacyModel {
 
 		Material materialBack = getBackMaterial(type);
 
-		target.drawTriangleStrip(materialBack, vsBack,
-				texCoordLists(vsBack, materialBack, mirroredHorizontally(STRIP_FIT)));
+		var backBuilder = new TriangleGeometry.Builder(texCoordFunctions(materialBack, mirroredHorizontally(STRIP_FIT)), null, FLAT);
+		backBuilder.addTriangleStrip(vsBack);
+		var backMesh = new Mesh(backBuilder.build(), materialBack, LOD3, LOD4);
+
+		return List.of(frontMesh, backMesh);
 
 	}
 
@@ -156,7 +160,7 @@ public class TrafficSignModel implements LegacyModel {
 
 			// use the transparency information from the front of the sign to cut out the correct shape for the back
 			return new ImmutableMaterial(
-					Interpolation.FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
+					FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
 						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).baseColorTexture),
 						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).normalTexture),
 						textureWithAlphaMask(type.material, STEEL.getTextureLayers().get(0).ormTexture),
@@ -186,7 +190,7 @@ public class TrafficSignModel implements LegacyModel {
 					.filter(t -> t != null).collect(toList());
 
 			return new ImmutableMaterial(
-					Interpolation.FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
+					FLAT, WHITE, Transparency.BINARY, asList(new TextureLayer(
 						CompositeTexture.stackOf(baseColorTextures),
 						normalTextures.isEmpty() ? null : CompositeTexture.stackOf(normalTextures),
 						ormTextures.isEmpty() ? null : CompositeTexture.stackOf(ormTextures),
