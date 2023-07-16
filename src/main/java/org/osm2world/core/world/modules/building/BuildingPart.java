@@ -5,30 +5,20 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
-import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.util.ValueParseUtil.parseColor;
+import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -43,10 +33,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
-import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.data.*;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
 import org.osm2world.core.world.modules.building.indoor.BuildingPartInterior;
@@ -58,7 +45,7 @@ import org.osm2world.core.world.modules.building.roof.Roof;
  * Consists of {@link Wall}s, a {@link Roof}, and maybe a {@link Floor}.
  * This is the core class of the {@link BuildingModule}.
  */
-public class BuildingPart implements AreaWorldObject {
+public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 
 	static final double DEFAULT_RIDGE_HEIGHT = 5;
 

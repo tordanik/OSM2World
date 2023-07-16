@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.ASPHALT;
+import static org.osm2world.core.target.common.material.Materials.getSurfaceMaterial;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
@@ -18,6 +19,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -40,7 +42,8 @@ public class ParkingModule extends AbstractModule {
 		}
 	}
 
-	private static class SurfaceParking extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+	private static class SurfaceParking extends AbstractAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		private final List<MapArea> parkingSpaces = new ArrayList<MapArea>();
 

@@ -4,7 +4,8 @@ import static java.lang.Math.min;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
@@ -94,7 +95,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 		}
 	}
 
-	public static class Helipad extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class Helipad extends AbstractAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		protected Helipad(MapArea area) {
 			super(area);
@@ -128,7 +130,8 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Apron extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class Apron extends NetworkAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public Apron(MapArea area) {
 			super(area);
@@ -238,7 +241,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class AerowayJunction extends JunctionNodeWorldObject<AerowaySegment>
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public AerowayJunction(MapNode node) {
 			super(node, AerowaySegment.class);
@@ -258,7 +261,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class AerowayConnector extends VisibleConnectorNodeWorldObject<AerowaySegment>
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public AerowayConnector(MapNode node) {
 			super(node, AerowaySegment.class);

@@ -9,11 +9,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapSegment;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
@@ -23,6 +19,8 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -293,13 +291,14 @@ public class TunnelModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
 			// no rendering
+			return emptyList();
 		}
 
 	}
 
-	public static class TunnelJunction implements NodeWorldObject {
+	public static class TunnelJunction implements NodeWorldObject, LegacyWorldObject {
 
 		private final MapNode node;
 		private final JunctionNodeWorldObject<?> primaryRep;

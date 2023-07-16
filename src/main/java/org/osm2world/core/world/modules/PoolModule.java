@@ -11,7 +11,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +67,8 @@ public class PoolModule extends AbstractModule {
 
 	}
 
-	public static class Pool extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class Pool extends AbstractAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public Pool(MapArea area) {
 			super(area);

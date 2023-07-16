@@ -1,44 +1,37 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Arrays.*;
+import static java.lang.Math.*;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.core.math.GeometryUtil.interpolateEleOfPolyline;
+import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.addYList;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.ArrayUtils;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
@@ -554,7 +547,8 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * representation for junctions between roads.
 	 */
-	public static class RoadJunction extends JunctionNodeWorldObject<Road> implements TerrainBoundaryWorldObject {
+	public static class RoadJunction extends JunctionNodeWorldObject<Road>
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public RoadJunction(MapNode node) {
 			super(node, Road.class);
@@ -593,7 +587,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 
@@ -647,7 +641,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		private static final double CROSSING_WIDTH = 3.0;
 
@@ -1504,7 +1498,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RoadArea extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class RoadArea extends NetworkAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public RoadArea(MapArea area) {
 			super(area);

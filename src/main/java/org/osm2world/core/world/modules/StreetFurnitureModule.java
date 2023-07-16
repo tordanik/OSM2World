@@ -39,7 +39,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.ConfMaterial;
@@ -56,6 +55,7 @@ import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.data.NodeWorldObject;
@@ -167,7 +167,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		return false;
 	}
 
-	public static final class Pole extends NoOutlineNodeWorldObject {
+	public static final class Pole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Pole(MapNode node) {
 			super(node);
@@ -202,7 +202,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Flagpole extends NoOutlineNodeWorldObject {
+	public static final class Flagpole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -544,7 +544,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject {
+	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public AdvertisingColumn(MapNode node) {
 			super(node);
@@ -581,7 +581,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Billboard extends NoOutlineNodeWorldObject {
+	public static final class Billboard extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final double width;
 		/** the height of the billboard itself, i.e. height minus minHeight */
@@ -711,7 +711,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Swing extends NoOutlineNodeWorldObject {
+	public static final class Swing extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Swing(MapNode node) {
 			super(node);
@@ -824,7 +824,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 	}
 
-	public static final class Bench extends NoOutlineNodeWorldObject {
+	public static final class Bench extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -924,7 +924,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	public static final class Table extends NoOutlineNodeWorldObject {
+	public static final class Table extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final ConfMaterial defaultMaterial;
 
@@ -1056,7 +1056,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a summit cross or wayside cross
 	 */
-	public static final class Cross extends NoOutlineNodeWorldObject {
+	public static final class Cross extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Cross(MapNode node) {
 			super(node);
@@ -1112,7 +1112,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a clock. Currently only clocks attached to walls are supported.
 	 */
-	public static final class Clock implements NodeWorldObject, Renderable {
+	public static final class Clock implements NodeWorldObject, LegacyWorldObject {
 
 		private static final LocalTime TIME = LocalTime.parse("12:25");
 
@@ -1228,7 +1228,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class RecyclingContainer extends NoOutlineNodeWorldObject {
+	public static final class RecyclingContainer extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		double directionAngle = parseDirection(node.getTags(), PI);
 		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1323,7 +1323,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class WasteBasket extends NoOutlineNodeWorldObject {
+	public static final class WasteBasket extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -1427,7 +1427,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class GritBin extends NoOutlineNodeWorldObject {
+	public static final class GritBin extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public GritBin(MapNode node) {
 			super(node);
@@ -1486,7 +1486,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Phone extends NoOutlineNodeWorldObject {
+	public static final class Phone extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 
@@ -1566,7 +1566,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class VendingMachineVice extends NoOutlineNodeWorldObject {
+	public static final class VendingMachineVice extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1633,7 +1633,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class PostBox extends NoOutlineNodeWorldObject {
+	public static final class PostBox extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1708,7 +1708,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class BusStop extends NoOutlineNodeWorldObject {
+	public static final class BusStop extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public BusStop(MapNode node) {
 			super(node);
@@ -1832,7 +1832,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class FireHydrant extends NoOutlineNodeWorldObject {
+	public static final class FireHydrant extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public FireHydrant(MapNode node) {
 			super(node);
@@ -1869,7 +1869,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class StreetLamp extends NoOutlineNodeWorldObject {
+	public static final class StreetLamp extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public StreetLamp(MapNode node) {
 			super(node);
@@ -1943,7 +1943,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Board extends NoOutlineNodeWorldObject {
+	public static final class Board extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Board(MapNode node) {
 			super(node);

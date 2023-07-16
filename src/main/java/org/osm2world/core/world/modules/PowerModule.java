@@ -1,36 +1,5 @@
 package org.osm2world.core.world.modules;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.*;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.TextureDataDimensions;
-import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
-import org.osm2world.core.target.common.mesh.Mesh;
-import org.osm2world.core.target.common.model.LegacyModel;
-import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.common.texcoord.TexCoordFunction;
-import org.osm2world.core.util.FaultTolerantIterationUtil;
-import org.osm2world.core.util.ValueParseUtil;
-import org.osm2world.core.world.attachment.AttachmentConnector;
-import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
-import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
-import org.osm2world.core.world.modules.common.AbstractModule;
-
-import javax.annotation.Nullable;
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-import java.util.function.Function;
-
 import static java.awt.Color.BLACK;
 import static java.lang.Math.max;
 import static java.lang.Math.*;
@@ -52,6 +21,39 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTex
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.osm2world.core.map_data.data.MapArea;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
+import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.*;
+import org.osm2world.core.math.shapes.*;
+import org.osm2world.core.target.Target;
+import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.LegacyModel;
+import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.util.ValueParseUtil;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
+import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
  * module for power infrastructure
@@ -142,7 +144,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PowerCabinet extends NoOutlineNodeWorldObject {
+	private static final class PowerCabinet extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public PowerCabinet(MapNode node) {
 			super(node);
@@ -185,7 +187,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class Powerpole extends NoOutlineNodeWorldObject {
+	private static final class Powerpole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Powerpole(MapNode node) {
 			super(node);
@@ -222,7 +224,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	public static final class WindTurbine extends NoOutlineNodeWorldObject {
+	public static final class WindTurbine extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
 		public static final Model ROTOR = new LegacyModel() {
@@ -566,7 +568,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class PowerTower extends NoOutlineNodeWorldObject {
+	private static final class PowerTower extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private TowerConfig config;
 
@@ -614,7 +616,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject {
+	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private TowerConfig config;
 		private VectorXZ direction;
@@ -805,7 +807,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject {
+	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject implements LegacyWorldObject {
 
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = comparingDouble(v -> v.x);
@@ -970,7 +972,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	static final class RooftopSolarPanels extends AbstractAreaWorldObject {
+	static final class RooftopSolarPanels extends AbstractAreaWorldObject implements LegacyWorldObject {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 

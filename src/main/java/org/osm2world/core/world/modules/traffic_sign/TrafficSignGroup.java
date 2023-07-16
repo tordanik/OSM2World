@@ -2,9 +2,12 @@ package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static org.osm2world.core.map_elevation.data.GroundState.*;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static org.osm2world.core.map_elevation.data.GroundState.ATTACHED;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.math.VectorXYZ.X_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
@@ -21,12 +24,13 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 
 /**
  * a group of vertically stacked traffic signs, including their pole(s) or other means of support/attachment.
  */
-public class TrafficSignGroup extends NoOutlineNodeWorldObject {
+public class TrafficSignGroup extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 	/** The {@link TrafficSignModel}s from top to bottom */
 	public List<TrafficSignModel> signs;

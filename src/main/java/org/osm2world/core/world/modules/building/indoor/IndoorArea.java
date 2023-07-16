@@ -10,9 +10,10 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
-public class IndoorArea implements AreaWorldObject {
+public class IndoorArea implements AreaWorldObject, LegacyWorldObject {
 
     private final IndoorFloor floor;
 

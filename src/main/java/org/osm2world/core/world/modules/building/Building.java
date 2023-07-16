@@ -4,13 +4,7 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.roughlyContains;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
@@ -30,13 +24,14 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
  */
-public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
+public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, LegacyWorldObject {
 
 	private final MapArea area;
 

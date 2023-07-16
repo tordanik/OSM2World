@@ -333,7 +333,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private final List<TreeModel> existingModels = new ArrayList<>();
 
-	public class Tree extends NoOutlineNodeWorldObject implements RenderableToPOVRay {
+	public class Tree extends NoOutlineNodeWorldObject implements RenderableToPOVRay, LegacyWorldObject {
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -485,7 +485,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 
 
-	public class Forest implements AreaWorldObject, RenderableToPOVRay {
+	public class Forest implements AreaWorldObject, RenderableToPOVRay, LegacyWorldObject {
 
 		private final MapArea area;
 		private final MapData mapData;

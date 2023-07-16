@@ -19,6 +19,7 @@ import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -36,7 +37,7 @@ public class MastModule extends AbstractModule {
 
 	}
 
-	public static class MobilePhoneMast extends NoOutlineNodeWorldObject {
+	public static class MobilePhoneMast extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public MobilePhoneMast(MapNode node) {
 			super(node);

@@ -45,6 +45,7 @@ import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
@@ -270,7 +271,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RailJunction extends JunctionNodeWorldObject<Rail> implements TerrainBoundaryWorldObject {
+	public static class RailJunction extends JunctionNodeWorldObject<Rail>
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public RailJunction(MapNode node) {
 			super(node, Rail.class);
