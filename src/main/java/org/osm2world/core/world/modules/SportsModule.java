@@ -397,7 +397,7 @@ public class SportsModule extends AbstractModule {
 				/* add two posts */
 
 				for (VectorXYZ postPosition : asList(postPositionA, postPositionB)) {
-					target.drawModel(tennisNetPost, postPosition, 0, null, null, null);
+					target.drawModel(tennisNetPost, new InstanceParameters(postPosition, 0));
 				}
 
 				/* draw the net (with an approximated droop in the center) */

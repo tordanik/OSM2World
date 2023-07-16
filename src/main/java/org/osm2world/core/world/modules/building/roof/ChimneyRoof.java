@@ -11,17 +11,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 
 /** the top of a chimney, modeled as a special kind of "roof" */
@@ -76,8 +71,8 @@ public class ChimneyRoof extends Roof {
 
 		/* mark the location where a client might want to emit a smoke effect */
 
-		ExternalResourceModel smokeEmitterModel = new ExternalResourceModel("smokeEmitter");
-		target.drawModel(smokeEmitterModel, chimneyHole.getCenter().xyz(chimneyHoleEle), 0, null, null, null);
+		var smokeEmitterModel = new ExternalResourceModel("smokeEmitter");
+		target.drawModel(smokeEmitterModel, new InstanceParameters(chimneyHole.getCenter().xyz(chimneyHoleEle), 0));
 
 	}
 

@@ -17,6 +17,7 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
@@ -100,7 +101,7 @@ public class ParkingModule extends AbstractModule {
 				}
 				direction = direction.normalize();
 
-				target.drawModel(carModel, bbox.getCenter().xyz(ele), direction.angle(), null, null, null);
+				target.drawModel(carModel, new InstanceParameters(bbox.getCenter().xyz(ele), direction.angle()));
 
 			}
 

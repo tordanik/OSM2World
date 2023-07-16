@@ -1195,9 +1195,9 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (!connector.isAttached()) return;
 
 			double diameter = parseWidth(node.getTags(), 1f);
-			new ClockFace(TIME).render(target, connector.getAttachedPos(),
+			new ClockFace(TIME).render(target, new InstanceParameters(connector.getAttachedPos(),
 					connector.getAttachedSurfaceNormal().xz().angle(),
-					null, diameter, null);
+					null, diameter, null));
 
 		}
 
@@ -1210,16 +1210,15 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			@Override
-			public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
-					Double length) {
+			public void render(Target target, InstanceParameters params) {
 
-				double diameter = width != null ? width : 1.0;
-				double thickness = length != null ? length : 0.08;
+				double diameter = params.width() != null ? params.width() : 1.0;
+				double thickness = params.length() != null ? params.length() : 0.08;
 
-				VectorXZ faceNormal = VectorXZ.fromAngle(direction);
+				VectorXZ faceNormal = VectorXZ.fromAngle(params.direction());
 
-				VectorXYZ backCenter = position.add(faceNormal.mult(thickness * 0.7));
-				VectorXYZ frontCenter = position.add(faceNormal.mult(thickness));
+				VectorXYZ backCenter = params.position().add(faceNormal.mult(thickness * 0.7));
+				VectorXYZ frontCenter = params.position().add(faceNormal.mult(thickness));
 
 				CircleXZ outerCircle = new CircleXZ(NULL_VECTOR, diameter / 2);
 				CircleXZ innerCircle = new CircleXZ(NULL_VECTOR, diameter / 2.2);
@@ -1228,7 +1227,7 @@ public class StreetFurnitureModule extends AbstractModule {
 						asList(asSimplePolygon(innerCircle).reverse()));
 
 				target.drawExtrudedShape(PLASTIC.withColor(BLACK), ring,
-						asList(position, frontCenter),
+						asList(params.position(), frontCenter),
 						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
 				target.drawShape(PLASTIC, innerCircle, backCenter, faceNormal.xyz(0), Y_UNIT, 1);
@@ -1845,7 +1844,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			Material boxMaterial = POSTBOX_DEUTSCHEPOST;
 			Material otherMaterial = STEEL;
 
-			VectorXZ faceVector = VectorXZ.fromAngle(params.direction);
+			VectorXZ faceVector = VectorXZ.fromAngle(params.direction());
 			VectorXZ rightVector = faceVector.rightNormal();
 
 			// shape depends on type
@@ -1860,15 +1859,15 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				return asList(
 						/* rondel */
-						new Mesh(createColumn(null, params.position.add(rightVector.mult(-rondelWidth / 2)),
+						new Mesh(createColumn(null, params.position().add(rightVector.mult(-rondelWidth / 2)),
 								height, rondelWidth / 2, rondelWidth / 2, false, true,
 								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
 						/* box */
-						new Mesh(createBox(params.position.add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
+						new Mesh(createBox(params.position().add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
 								faceVector, height, boxWidth, boxWidth,
 								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
 						/* roof */
-						new Mesh(createColumn(null, params.position.addY(height),
+						new Mesh(createColumn(null, params.position().addY(height),
 								0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true,
 								otherMaterial.getColor(), otherMaterial.getTextureDimensions()), otherMaterial));
 
@@ -1879,7 +1878,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				double width = parseHeight(tags, 1.0);
 				double depth = width;
 
-				return asList(new Mesh(createBox(params.position, faceVector, height, width * 2, depth * 2,
+				return asList(new Mesh(createBox(params.position(), faceVector, height, width * 2, depth * 2,
 						boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
 
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
@@ -1891,11 +1890,11 @@ public class StreetFurnitureModule extends AbstractModule {
 
 				return asList(
 						/* box */
-						new Mesh(createBox(params.position,
+						new Mesh(createBox(params.position(),
 								faceVector, height, width, depth,
 								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
 						/* small roof */
-						new Mesh(createBox(params.position.add(faceVector.mult(roofOverhang)).addY(height),
+						new Mesh(createBox(params.position().add(faceVector.mult(roofOverhang)).addY(height),
 								faceVector, 0.1, width, depth + roofOverhang * 2,
 								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
 

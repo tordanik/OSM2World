@@ -2,7 +2,6 @@ package org.osm2world.core.target.common.model;
 
 import java.util.List;
 
-import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.mesh.Mesh;
@@ -22,12 +21,6 @@ public interface LegacyModel extends Model {
 	}
 
 	@Override
-	public abstract void render(Target target, VectorXYZ position,
-			double direction, Double height, Double width, Double length);
-
-	@Override
-	public default void render(Target target, InstanceParameters params) {
-		this.render(target, params.position, params.direction, params.height, params.width, params.length);
-	}
+	public abstract void render(Target target, InstanceParameters params);
 
 }

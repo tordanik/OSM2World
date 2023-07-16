@@ -898,7 +898,7 @@ public class BarrierModule extends AbstractModule {
 			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(2, false, getCenterline());
 
 			return bollardPositions.stream()
-					.map(base -> new ModelInstance(bollardModel, new InstanceParameters(base, 0, null, null, null)))
+					.map(base -> new ModelInstance(bollardModel, new InstanceParameters(base, 0)))
 					.collect(toList());
 
 		}
@@ -981,7 +981,7 @@ public class BarrierModule extends AbstractModule {
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
-			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position, height,
+			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position(), height,
 					width/2, width/2, false, true, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
 		}
 
@@ -1058,7 +1058,7 @@ public class BarrierModule extends AbstractModule {
 			}
 
 			List<VectorXYZ> path = new ArrayList<>();
-			heights.forEach(it -> path.add(params.position.addY(it)));
+			heights.forEach(it -> path.add(params.position().addY(it)));
 
 			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
 					path, null, scaleFactors, null, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));

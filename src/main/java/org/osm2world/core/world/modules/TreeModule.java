@@ -22,6 +22,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
@@ -288,7 +289,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			existingModels.add(model);
 		}
 
-		target.drawModel(model, base, 0, height, null, null);
+		target.drawModel(model, new InstanceParameters(base, 0, height, null, null));
 
 	}
 
@@ -307,8 +308,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(Target target, VectorXYZ position, double direction,
-				Double height, Double width, Double length) {
+		public void render(Target target, InstanceParameters params) {
 
 			if (useBillboards) {
 
@@ -318,12 +318,12 @@ public class TreeModule extends ConfigurableWorldModule {
 						? Materials.TREE_BILLBOARD_CONIFEROUS
 						: Materials.TREE_BILLBOARD_BROAD_LEAVED;
 
-				WorldModuleBillboardUtil.renderCrosstree(target, material, position,
-						(species != null ? 1.0 : 0.5 ) * height, height, mirrored);
+				WorldModuleBillboardUtil.renderCrosstree(target, material, params.position(),
+						(species != null ? 1.0 : 0.5 ) * params.height(), params.height(), mirrored);
 
 			} else {
 
-				renderTreeGeometry(target, position, leafType, height);
+				renderTreeGeometry(target, params.position(), leafType, params.height());
 
 			}
 

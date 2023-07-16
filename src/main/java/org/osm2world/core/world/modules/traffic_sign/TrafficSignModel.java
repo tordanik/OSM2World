@@ -115,16 +115,16 @@ public class TrafficSignModel implements Model {
 		/* create the geometry of the sign */
 
 		List<VectorXYZ> vsFront = asList(
-				params.position.add(+signWidth / 2, +signHeight / 2, 0),
-				params.position.add(+signWidth / 2, -signHeight / 2, 0),
-				params.position.add(-signWidth / 2, +signHeight / 2, 0),
-				params.position.add(-signWidth / 2, -signHeight / 2, 0));
+				params.position().add(+signWidth / 2, +signHeight / 2, 0),
+				params.position().add(+signWidth / 2, -signHeight / 2, 0),
+				params.position().add(-signWidth / 2, +signHeight / 2, 0),
+				params.position().add(-signWidth / 2, -signHeight / 2, 0));
 
 		/* rotate the sign around the base to match the direction */
 
 		for (int i = 0; i < vsFront.size(); i++) {
 			VectorXYZ v = vsFront.get(i);
-			v = v.rotateVec(params.direction, params.position, Y_UNIT);
+			v = v.rotateVec(params.direction(), params.position(), Y_UNIT);
 			vsFront.set(i, v);
 		}
 

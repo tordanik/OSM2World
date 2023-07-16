@@ -251,10 +251,9 @@ public class FrontendPbfTarget extends MeshTarget {
 	}
 
 	@Override
-	public void drawModel(Model model, VectorXYZ position,
-			double direction, Double height, Double width, Double length) {
+	public void drawModel(Model model, InstanceParameters params) {
 
-		if (!bbox.contains(position.xz())) return;
+		if (!bbox.contains(params.position().xz())) return;
 
 		MeshMetadata worldObjectMetadata = new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),
 				currentWorldObject.getClass());
@@ -264,7 +263,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		}
 
 		Multimap<Model, InstanceParameters> map = modelInstancesByWO.get(worldObjectMetadata);
-		map.put(model, new InstanceParameters(position, direction, height, width, length));
+		map.put(model, params);
 
 	}
 
@@ -492,7 +491,7 @@ public class FrontendPbfTarget extends MeshTarget {
 			VectorXZ center = getCenter(element);
 			double direction = parseDirection(element.getTags(), 0);
 
-			modelInstances.put(model3DMR, new InstanceParameters(center.xyz(0), direction, null, null, null));
+			modelInstances.put(model3DMR, new InstanceParameters(center.xyz(0), direction));
 
 		}
 
@@ -530,16 +529,16 @@ public class FrontendPbfTarget extends MeshTarget {
 
 			for (InstanceParameters instanceParams : modelInstances.get(model)) {
 
-				geometryBuilder.addPosition(round(instanceParams.position.x * COORD_PRECISION_FACTOR));
-				geometryBuilder.addPosition(round(instanceParams.position.y * COORD_PRECISION_FACTOR));
-				geometryBuilder.addPosition(round(instanceParams.position.z * COORD_PRECISION_FACTOR));
+				geometryBuilder.addPosition(round(instanceParams.position().x * COORD_PRECISION_FACTOR));
+				geometryBuilder.addPosition(round(instanceParams.position().y * COORD_PRECISION_FACTOR));
+				geometryBuilder.addPosition(round(instanceParams.position().z * COORD_PRECISION_FACTOR));
 
-				int direction = (int)round(instanceParams.direction * 1000.0);
+				int direction = (int)round(instanceParams.direction() * 1000.0);
 				geometryBuilder.addDirection(direction);
 				allUnrotated &= (direction == 0);
 
 				// this assumes that 1 is the unscaled height, which is why convertModel passes 1 to Model.render
-				double scaleDouble = instanceParams.height == null ? 1 : instanceParams.height;
+				double scaleDouble = instanceParams.height() == null ? 1 : instanceParams.height();
 				int scale = (int)round(scaleDouble * 1000.0);
 				geometryBuilder.addScale(scale);
 				allUnscaled &= (scale == 1000);

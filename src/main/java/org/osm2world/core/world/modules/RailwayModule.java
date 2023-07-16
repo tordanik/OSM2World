@@ -98,28 +98,28 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	private static class SleeperModel implements Model {
-
-		private final double sleeperWidth;
-
-		public SleeperModel(double sleeperWidth) {
-			this.sleeperWidth = sleeperWidth;
-		}
+	private record SleeperModel(double sleeperWidth) implements Model {
 
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			VectorXYZ position = params.position;
-			Double height = params.height;
-			Double width = params.width;
-			Double length = params.length;
+			VectorXYZ position = params.position();
+			Double height = params.height();
+			Double width = params.width();
+			Double length = params.length();
 
-			if (height == null) { height = SLEEPER_HEIGHT; }
-			if (length == null) { length = SLEEPER_LENGTH; }
-			if (width == null) { width = sleeperWidth; }
+			if (height == null) {
+				height = SLEEPER_HEIGHT;
+			}
+			if (length == null) {
+				length = SLEEPER_LENGTH;
+			}
+			if (width == null) {
+				width = sleeperWidth;
+			}
 
 			SimplePolygonShapeXZ box = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
-			box = box.rotatedCW(params.direction);
+			box = box.rotatedCW(params.direction());
 
 			return singletonList(new Mesh(new ExtrusionGeometry(box, asList(position, position.addY(height)),
 					null, null, null, EnumSet.of(END_CAP), WOOD.getTextureDimensions()), WOOD, LOD4));

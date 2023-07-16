@@ -194,8 +194,7 @@ public class BicycleParkingModule extends AbstractModule {
 					localDirection = segment.getDirection().rightNormal().angle();
 				}
 
-				result.add(new ModelInstance(model,new InstanceParameters(
-						standConnector.getPosXYZ(), localDirection, height, null, length)));
+				result.add(new ModelInstance(model, new InstanceParameters(standConnector.getPosXYZ(), localDirection)));
 
 			}
 
@@ -312,15 +311,15 @@ public class BicycleParkingModule extends AbstractModule {
 		@Override
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			VectorXYZ toFront = VectorXZ.fromAngle(params.direction).mult(length / 2).xyz(0);
+			VectorXYZ toFront = VectorXZ.fromAngle(params.direction()).mult(length / 2).xyz(0);
 
 			List<VectorXYZ> path = List.of(
-					params.position.add(toFront),
-					params.position.add(toFront).addY(height * 0.95),
-					params.position.add(toFront.mult(0.95)).addY(height),
-					params.position.add(toFront.invert().mult(0.95)).addY(height),
-					params.position.add(toFront.invert()).addY(height * 0.95),
-					params.position.add(toFront.invert()));
+					params.position().add(toFront),
+					params.position().add(toFront).addY(height * 0.95),
+					params.position().add(toFront.mult(0.95)).addY(height),
+					params.position().add(toFront.invert().mult(0.95)).addY(height),
+					params.position().add(toFront.invert()).addY(height * 0.95),
+					params.position().add(toFront.invert()));
 
 			List<VectorXYZ> upVectors = List.of(
 					toFront.normalize(),

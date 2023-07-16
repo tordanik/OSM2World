@@ -171,7 +171,7 @@ public class TrafficSignGroup extends NoOutlineNodeWorldObject {
 			VectorXYZ position = signPositionXYZ.addY(upperHeight - signHeight / 2);
 			position = position.add(VectorXZ.fromAngle(direction).mult((drawPosts ? postRadius : 0) + distanceFromPost));
 
-			resultInstances.add(new ModelInstance(sign, new InstanceParameters(position, direction, null, null, null)));
+			resultInstances.add(new ModelInstance(sign, new InstanceParameters(position, direction)));
 
 			upperHeight -= signHeight + distanceBetweenSigns;
 

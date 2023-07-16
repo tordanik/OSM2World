@@ -18,6 +18,7 @@ import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.data.WorldObject;
@@ -155,11 +156,9 @@ public interface Target {
 
 	/**
 	 * draws an instanced model.
-	 * For parameters, see {@link Model#render(Target, VectorXYZ, double, Double, Double, Double)}.
 	 */
-	public default void drawModel(Model model, VectorXYZ position,
-			double direction, Double height, Double width, Double length) {
-		model.render(this, position, direction, height, width, length);
+	public default void drawModel(Model model, InstanceParameters params) {
+		model.render(this, params);
 	}
 
 	public default void drawMesh(Mesh mesh) {

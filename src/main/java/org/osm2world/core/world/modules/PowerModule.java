@@ -43,6 +43,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
@@ -230,26 +231,25 @@ public final class PowerModule extends AbstractModule {
 		public static final Model ROTOR = new LegacyModel() {
 
 			@Override
-			public void render(Target target, VectorXYZ position,
-					double direction, Double height, Double width, Double length) {
+			public void render(Target target, InstanceParameters params) {
 
-				double bladeLength = (height == null ? 1 : height) / 2;
+				double bladeLength = (params.height() == null ? 1 : params.height()) / 2;
 				double bladeWidth = 0.1 * bladeLength;
 
 				Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
 
 				// define first blade
 				List<VectorXYZ> bladeFront = asList(
-						position.add(-bladeWidth/5, 0, +bladeWidth/2),
-						position.add(0, -bladeLength, 0),
-						position.add(+bladeWidth/5, 0, -bladeWidth/2)
+						params.position().add(-bladeWidth/5, 0, +bladeWidth/2),
+						params.position().add(0, -bladeLength, 0),
+						params.position().add(+bladeWidth/5, 0, -bladeWidth/2)
 				);
 
 				List<VectorXYZ> bladeBack = asList(bladeFront.get(0), bladeFront.get(2), bladeFront.get(1));
 
 				// rotate and draw blades
-				double rotCenterY = position.y;
-				double rotCenterZ = position.z;
+				double rotCenterY = params.position().y;
+				double rotCenterZ = params.position().z;
 
 				bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
@@ -341,9 +341,9 @@ public final class PowerModule extends AbstractModule {
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
 			/* draw rotor blades */
-			target.drawModel(ROTOR,
+			target.drawModel(ROTOR, new InstanceParameters(
 					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
-					0, rotorDiameter, rotorDiameter, rotorDiameter);
+					0, rotorDiameter, rotorDiameter, rotorDiameter));
 
 		}
 
