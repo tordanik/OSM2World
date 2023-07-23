@@ -38,7 +38,7 @@ class TexturedWindow implements Window {
 	}
 
 	@Override
-	public Double insetDistance() {
+	public double insetDistance() {
 		return 0.10;
 	}
 

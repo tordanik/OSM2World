@@ -3,13 +3,14 @@ package org.osm2world.core.world.modules.building;
 import static com.google.common.collect.Iterables.getLast;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.round;
-import static java.util.Collections.*;
+import static java.lang.Math.*;
 import static java.util.Collections.min;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.BUILDING_WINDOWS;
+import static org.osm2world.core.target.common.material.Materials.GLASS_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -21,15 +22,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
@@ -181,7 +174,7 @@ public class WallSurface {
 		/* draw insets around the elements */
 
 		for (WallElement e : elements) {
-			if (e.insetDistance() != null) {
+			if (e.insetDistance() > 0) {
 
 				PolygonXYZ frontOutline = convertTo3D(e.outline());
 				PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
