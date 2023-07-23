@@ -1,6 +1,8 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
+import static org.osm2world.core.target.common.material.Materials.TREE_CROWN;
+import static org.osm2world.core.target.common.material.Materials.TREE_TRUNK;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
@@ -8,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.*;
@@ -22,8 +26,10 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
-import org.osm2world.core.target.common.model.LegacyModel;
+import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.*;
@@ -166,26 +172,6 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private static final float TREE_RADIUS_PER_HEIGHT = 0.2f;
 
-	private static void renderTreeGeometry(Target target,
-			VectorXYZ posXYZ, LeafType leafType, double height) {
-
-		boolean coniferous = (leafType == LeafType.NEEDLELEAVED);
-
-		double stemRatio = coniferous?0.3:0.5;
-		double radius = height*TREE_RADIUS_PER_HEIGHT;
-
-		target.drawColumn(Materials.TREE_TRUNK,
-				null, posXYZ, height*stemRatio,
-				radius / 4, radius / 5, false, true);
-
-		target.drawColumn(Materials.TREE_CROWN,
-				null, posXYZ.y(posXYZ.y+height*stemRatio),
-				height*(1-stemRatio),
-				radius,
-				coniferous ? 0 : radius,
-				true, true);
-	}
-
 	/**
 	 * parse height (for forests, add some random factor)
 	 */
@@ -218,12 +204,14 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			target.append("#ifndef (broad_leaved_tree)\n");
 			target.append("#declare broad_leaved_tree = object { union {\n");
-			renderTreeGeometry(target, VectorXYZ.NULL_VECTOR, LeafType.BROADLEAVED, 1);
+			target.drawModel(new TreeGeometryModel(LeafType.BROADLEAVED, LeafCycle.DECIDUOUS, null),
+					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null));
 			target.append("} }\n#end\n\n");
 
 			target.append("#ifndef (coniferous_tree)\n");
 			target.append("#declare coniferous_tree = object { union {\n");
-			renderTreeGeometry(target, VectorXYZ.NULL_VECTOR, LeafType.NEEDLELEAVED, 1);
+			target.drawModel(new TreeGeometryModel(LeafType.NEEDLELEAVED, LeafCycle.EVERGREEN, null),
+					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null));
 			target.append("} }\n#end\n\n");
 
 		}
@@ -275,17 +263,20 @@ public class TreeModule extends ConfigurableWorldModule {
 		TreeModel model = null;
 
 		for (TreeModel existingModel : existingModels) {
-			if (existingModel.leafType == leafType
-					&& existingModel.leafCycle == leafCycle
-					&& existingModel.species == species
-					&& existingModel.mirrored == mirrored) {
+			if (existingModel.leafType() == leafType
+					&& existingModel.leafCycle() == leafCycle
+					&& existingModel.species() == species
+					&& existingModel.mirrored() == mirrored
+					&& (existingModel instanceof TreeBillboardModel) == useBillboards) {
 				model = existingModel;
 				break;
 			}
 		}
 
 		if (model == null) {
-			model = new TreeModel(leafType, leafCycle, species, mirrored);
+			model = useBillboards
+					? new TreeBillboardModel(leafType, leafCycle, species, mirrored)
+					: new TreeGeometryModel(leafType, leafCycle, species);
 			existingModels.add(model);
 		}
 
@@ -293,39 +284,72 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private final class TreeModel implements LegacyModel {
+	private interface TreeModel extends Model {
 
-		private final LeafType leafType;
-		private final LeafCycle leafCycle;
-		private final TreeSpecies species;
-		private final boolean mirrored;
+		LeafType leafType();
+		LeafCycle leafCycle();
+		@Nullable TreeSpecies species();
+		boolean mirrored();
 
-		public TreeModel(LeafType leafType, LeafCycle leafCycle, TreeSpecies species, boolean mirrored) {
-			this.leafType = leafType;
-			this.leafCycle = leafCycle;
-			this.species = species;
-			this.mirrored = mirrored;
+	}
+
+	private record TreeBillboardModel(
+			LeafType leafType,
+			LeafCycle leafCycle,
+			@Nullable TreeSpecies species,
+			boolean mirrored
+	) implements TreeModel {
+
+		@Override
+		public List<Mesh> buildMeshes(InstanceParameters params) {
+
+			Material material = species == TreeSpecies.APPLE_TREE
+					? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
+					: leafType == LeafType.NEEDLELEAVED
+					? Materials.TREE_BILLBOARD_CONIFEROUS
+					: Materials.TREE_BILLBOARD_BROAD_LEAVED;
+
+			return WorldModuleBillboardUtil.buildCrosstree(material, params.position(),
+					(species != null ? 1.0 : 0.5) * params.height(), params.height(), mirrored);
+
+		}
+
+	}
+
+	private record TreeGeometryModel(
+			LeafType leafType,
+			LeafCycle leafCycle,
+			@Nullable TreeSpecies species
+	) implements TreeModel {
+
+		@Override
+		public boolean mirrored() {
+			return false;
 		}
 
 		@Override
-		public void render(Target target, InstanceParameters params) {
+		public List<Mesh> buildMeshes(InstanceParameters params) {
 
-			if (useBillboards) {
+			double height = params.height();
+			VectorXYZ posXYZ = params.position();
 
-				Material material = species == TreeSpecies.APPLE_TREE
-						? Materials.TREE_BILLBOARD_BROAD_LEAVED_FRUIT
-						: leafType == LeafType.NEEDLELEAVED
-						? Materials.TREE_BILLBOARD_CONIFEROUS
-						: Materials.TREE_BILLBOARD_BROAD_LEAVED;
+			boolean coniferous = (leafType == LeafType.NEEDLELEAVED);
 
-				WorldModuleBillboardUtil.renderCrosstree(target, material, params.position(),
-						(species != null ? 1.0 : 0.5 ) * params.height(), params.height(), mirrored);
+			double stemRatio = coniferous?0.3:0.5;
+			double radius = height*TREE_RADIUS_PER_HEIGHT;
 
-			} else {
+			ExtrusionGeometry trunk = ExtrusionGeometry.createColumn(null,
+					posXYZ, height*stemRatio,radius / 4, radius / 5,
+					false, true, null, TREE_TRUNK.getTextureDimensions());
 
-				renderTreeGeometry(target, params.position(), leafType, params.height());
+			ExtrusionGeometry crown = ExtrusionGeometry.createColumn(null,
+					posXYZ.addY(height*stemRatio), height*(1-stemRatio), radius, coniferous ? 0 : radius,
+					true, true, null, TREE_CROWN.getTextureDimensions());
 
-			}
+			return List.of(
+					new Mesh(trunk, TREE_TRUNK),
+					new Mesh(crown, TREE_CROWN)
+			);
 
 		}
 
