@@ -1,8 +1,7 @@
 package org.osm2world.core.target.gltf;
 
 import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
-import static org.osm2world.core.target.TargetUtil.Compression.NONE;
-import static org.osm2world.core.target.TargetUtil.Compression.ZIP;
+import static org.osm2world.core.target.TargetUtil.Compression.*;
 import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLB;
 import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 
@@ -34,6 +33,16 @@ public class GltfTargetTest {
 		createTemporaryTestGltf(".glb.gz");
 	}
 
+	@Test
+	public void testSimpleGltfZip() throws IOException {
+		createTemporaryTestGltf(".gltf.zip");
+	}
+
+	@Test
+	public void testSimpleGlbZip() throws IOException {
+		createTemporaryTestGltf(".glb.zip");
+	}
+
 	private static void createTemporaryTestGltf(String fileExtension) throws IOException {
 
 		File tempFile = File.createTempFile("osm2world-test-", fileExtension);
@@ -42,8 +51,10 @@ public class GltfTargetTest {
 		var target = switch (fileExtension) {
 			case ".gltf" -> new GltfTarget(tempFile, GLTF, NONE, null);
 			case ".glb" -> new GltfTarget(tempFile, GLB, NONE, null);
-			case ".gltf.gz" -> new GltfTarget(tempFile, GLTF, ZIP, null);
-			case ".glb.gz" -> new GltfTarget(tempFile, GLB, ZIP, null);
+			case ".gltf.gz" -> new GltfTarget(tempFile, GLTF, GZ, null);
+			case ".glb.gz" -> new GltfTarget(tempFile, GLB, GZ, null);
+			case ".gltf.zip" -> new GltfTarget(tempFile, GLTF, ZIP, null);
+			case ".glb.zip" -> new GltfTarget(tempFile, GLB, ZIP, null);
 			default -> throw new Error("unsupported extension: " + fileExtension);
 		};
 

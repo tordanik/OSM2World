@@ -205,7 +205,7 @@ public final class Output {
 					GltfTarget.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
 							? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
 					Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
-							? Compression.ZIP : Compression.NONE;
+							? Compression.GZ : Compression.NONE;
 					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
 					gltfTarget.setConfiguration(config);
 					boolean underground = config.getBoolean("renderUnderground", true);
@@ -223,7 +223,7 @@ public final class Output {
 					if (args.isTile()) {
 						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
 					}
-					Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.ZIP : Compression.NONE;
+					Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
 					FrontendPbfTarget.writePbfFile(
 							outputFile, results.getMapData(), bbox, results.getMapProjection(), compression);
 				} break;

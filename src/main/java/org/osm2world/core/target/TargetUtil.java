@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -28,7 +29,7 @@ import com.google.gson.JsonIOException;
 
 public final class TargetUtil {
 
-	public enum Compression { NONE, ZIP }
+	public enum Compression { NONE, ZIP, GZ }
 
 	private TargetUtil() {}
 
@@ -115,15 +116,17 @@ public final class TargetUtil {
 
 		try {
 
-			OutputStream outputStream;
+			var fileOutputStream = new FileOutputStream(outputFile);
 
-			if (compression == Compression.ZIP) {
-				var zipOutputStream = new ZipOutputStream(new FileOutputStream(outputFile));
-				zipOutputStream.putNextEntry(new ZipEntry(outputFile.getName().replace(".gz", "")));
-				outputStream = zipOutputStream;
-			} else {
-				outputStream = new FileOutputStream(outputFile);
-			}
+			OutputStream outputStream = switch (compression) {
+				case NONE -> fileOutputStream;
+				case GZ -> new GZIPOutputStream(fileOutputStream);
+				case ZIP -> {
+					var zipOS = new ZipOutputStream(fileOutputStream);
+					zipOS.putNextEntry(new ZipEntry(outputFile.getName().replace(".gz", "")));
+					yield zipOS;
+				}
+			};
 
 			try (outputStream) {
 
