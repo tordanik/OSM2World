@@ -5,10 +5,10 @@ import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
 import static org.osm2world.core.target.TargetUtil.*;
 import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
+import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.REFERENCE;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 
 import java.io.*;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -77,6 +77,10 @@ public class GltfTarget extends MeshTarget {
 		this.flavor = flavor;
 		this.compression = compression;
 		this.bounds = bounds;
+	}
+
+	public File outputDir() {
+		return outputFile.getParentFile();
 	}
 
 	@Override
@@ -338,9 +342,7 @@ public class GltfTarget extends MeshTarget {
 
 	private int createImage(TextureData textureData) throws IOException {
 
-		File outputDir = outputFile.getParentFile();
-		URI textureDir = new File(outputDir, FilenameUtils.removeExtension(outputFile.getName()) + "_textures").toURI();
-		ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDir, true);
+		ResourceOutputSettings resourceOutputSettings = getResourceOutputSettings();
 		ResourceOutputSettings.ResourceOutputMode mode = resourceOutputSettings.modeForTexture(textureData);
 
 		GltfImage image = new GltfImage();
@@ -354,7 +356,7 @@ public class GltfTarget extends MeshTarget {
 		} else {
 			image.uri = switch (mode) {
 				case REFERENCE -> resourceOutputSettings.buildTextureReference(textureData);
-				case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(textureData, outputDir.toURI());
+				case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(textureData, outputDir().toURI());
 				case EMBED -> textureData.getDataUri();
 			};
 		}
@@ -385,7 +387,7 @@ public class GltfTarget extends MeshTarget {
 				new FilterLod(ConfigUtil.readLOD(config)),
 				new EmulateTextureLayers(), // before MoveColors because colorable is per layer
 				new MoveColorsToVertices(),
-				new ReplaceTexturesWithAtlas(),
+				new ReplaceTexturesWithAtlas(t -> getResourceOutputSettings().modeForTexture(t) == REFERENCE),
 				new MergeMeshes(mergeOptions)));
 
 		if (clipToBounds && bounds != null) {
@@ -617,6 +619,11 @@ public class GltfTarget extends MeshTarget {
 			node.name = "Multiple elements";
 		}
 
+	}
+
+	private ResourceOutputSettings getResourceOutputSettings() {
+		File textureDir = new File(outputDir(), FilenameUtils.removeExtension(outputFile.getName()) + "_textures");
+		return ResourceOutputSettings.fromConfig(config, textureDir.toURI(), true);
 	}
 
 }

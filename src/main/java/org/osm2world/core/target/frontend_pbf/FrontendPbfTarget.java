@@ -8,6 +8,7 @@ import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
 import static org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption.*;
+import static org.osm2world.core.target.common.MeshTarget.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -43,6 +44,7 @@ import org.osm2world.core.target.common.MeshTarget.ReplaceTexturesWithAtlas.Text
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
+import org.osm2world.core.target.common.material.RuntimeTexture;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
@@ -82,9 +84,11 @@ public class FrontendPbfTarget extends MeshTarget {
 
 	/**
 	 * whether some textures should be combined into a texture atlas.
-	 * This prevents textures from being shared between tiles and therefore significantly increases tile size.
+	 * However, if textures could otherwise be referenced and shared between tiles, it greatly increases tile size.
+	 * For {@link RuntimeTexture}s, this isn't a problem because they cannot be shared between tiles anyway.
 	 */
-	private static final boolean USE_TEXTURE_ATLAS = false;
+	private static final TextureAtlasMode USE_TEXTURE_ATLAS = TextureAtlasMode.RUNTIME_ONLY;
+	private enum TextureAtlasMode { ALWAYS, RUNTIME_ONLY, NEVER };
 
 	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, WasteBasket.class,
 			VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
@@ -684,9 +688,12 @@ public class FrontendPbfTarget extends MeshTarget {
 			}
 		}
 
-		@Nullable TextureAtlasGroup textureAtlasGroup = USE_TEXTURE_ATLAS
-				? ReplaceTexturesWithAtlas.generateTextureAtlasGroup(List.of(this.meshStore, instanceMeshStore))
-				: null;
+		@Nullable TextureAtlasGroup textureAtlasGroup = switch (USE_TEXTURE_ATLAS) {
+			case ALWAYS -> generateTextureAtlasGroup(List.of(this.meshStore, instanceMeshStore), t -> false);
+			case RUNTIME_ONLY -> generateTextureAtlasGroup(List.of(this.meshStore, instanceMeshStore),
+					t -> !(t instanceof RuntimeTexture));
+			case NEVER -> null;
+		};
 
 		/* pre-process meshes */
 
@@ -695,7 +702,7 @@ public class FrontendPbfTarget extends MeshTarget {
 				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
 		));
 
-		if (USE_TEXTURE_ATLAS) {
+		if (textureAtlasGroup != null) {
 			processingSteps.add(1, new ReplaceTexturesWithAtlas(textureAtlasGroup));
 		}
 

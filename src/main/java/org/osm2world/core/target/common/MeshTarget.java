@@ -1,7 +1,6 @@
 package org.osm2world.core.target.common;
 
 import static java.awt.Color.WHITE;
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
@@ -9,6 +8,7 @@ import static java.util.stream.Collectors.toList;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -346,6 +346,7 @@ public class MeshTarget extends AbstractTarget {
 		}
 
 		public final @Nullable TextureAtlasGroup textureAtlasGroup;
+		public final Predicate<TextureData> excludeFromAtlas;
 
 		/**
 		 * @param textureAtlasGroup  a pre-existing group of texture atlases that will be used.
@@ -353,10 +354,19 @@ public class MeshTarget extends AbstractTarget {
 		 */
 		public ReplaceTexturesWithAtlas(@Nullable TextureAtlasGroup textureAtlasGroup) {
 			this.textureAtlasGroup = textureAtlasGroup;
+			this.excludeFromAtlas = x -> false;
+		}
+
+		/**
+		 * @param excludeFromAtlas  identifies texture layers which should never be included in a texture atlas
+		 */
+		public ReplaceTexturesWithAtlas(Predicate<TextureData> excludeFromAtlas) {
+			this.textureAtlasGroup = null;
+			this.excludeFromAtlas = excludeFromAtlas;
 		}
 
 		public ReplaceTexturesWithAtlas() {
-			this(null);
+			this((TextureAtlasGroup) null);
 		}
 
 		@Override
@@ -364,7 +374,7 @@ public class MeshTarget extends AbstractTarget {
 
 			TextureAtlasGroup atlasGroup = textureAtlasGroup != null
 					? textureAtlasGroup
-					: generateTextureAtlasGroup(asList(meshStore));
+					: generateTextureAtlasGroup(List.of(meshStore), excludeFromAtlas);
 
 			if (atlasGroup == null) {
 				return meshStore;
@@ -376,14 +386,20 @@ public class MeshTarget extends AbstractTarget {
 
 		/**
 		 * finds suitable textures in one or more {@link MeshStore}s and creates a {@link TextureAtlasGroup} for them.
+		 * @param excludeFromAtlas  identifies texture layers which should never be included in a texture atlas
 		 * @return  the {@link TextureAtlasGroup} with all suitable textures, or null if no suitable textures exist
 		 */
-		public static @Nullable TextureAtlasGroup generateTextureAtlasGroup(Iterable<MeshStore> meshStores) {
+		public static @Nullable TextureAtlasGroup generateTextureAtlasGroup(
+				Iterable<MeshStore> meshStores, Predicate<TextureData> excludeFromAtlas) {
 
 			Set<TextureLayer> textureLayersForAtlas = new HashSet<>();
 			for (MeshStore meshStore : meshStores) {
 				for (Mesh mesh : meshStore.meshes()) {
-					textureLayersForAtlas.addAll(mesh.material.getTextureLayers());
+					for (TextureLayer textureLayer : mesh.material.getTextureLayers()) {
+						if (textureLayer.textures().stream().noneMatch(excludeFromAtlas)) {
+							textureLayersForAtlas.add(textureLayer);
+						}
+					}
 				}
 			}
 
