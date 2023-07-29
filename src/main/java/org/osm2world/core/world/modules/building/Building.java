@@ -3,6 +3,7 @@ package org.osm2world.core.world.modules.building;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.roughlyContains;
+import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
 import java.util.*;
 
@@ -56,7 +57,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, Le
 
 		if (buildingRelation.isPresent()) {
 
-			/** find building parts based on the relation */
+			/* find building parts based on the relation */
 
 			for (Membership membership : buildingRelation.get().getMemberships()) {
 				if ("part".equals(membership.getRole()) && membership.getElement() instanceof MapArea) {
@@ -66,14 +67,12 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, Le
 
 		} else {
 
-			/** find building part areas geometrically contained within the building outline */
+			/* find building part areas geometrically contained within the building outline */
 
 			FaultTolerantIterationUtil.forEach(area.getOverlaps(), (MapOverlap<?,?> overlap) -> {
 				MapElement other = overlap.getOther(area);
-				if (other instanceof MapArea
+				if (other instanceof MapArea otherArea
 						&& other.getTags().containsKey("building:part")) {
-
-					MapArea otherArea = (MapArea)other;
 
 					if (otherArea.getMemberships().stream().anyMatch(m -> "part".equals(m.getRole())
 							&& m.getRelation().getTags().contains("type", "building"))) {
@@ -89,12 +88,25 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, Le
 
 		}
 
-		/* use the building itself as a part if no parts exist,
-		 * or if it's explicitly tagged as a building part at the same time (non-standard mapping) */
+		/* use the building itself as a part if no parts exist, or in certain cases of non-standard mapping */
+
+		boolean useBuildingAsPart = parts.isEmpty();
 
 		String buildingPartValue = area.getTags().getValue("building:part");
+		if (buildingPartValue != null && !"no".equals(buildingPartValue)) {
+			// building is also tagged as a building part (non-standard mapping)
+			useBuildingAsPart = true;
+		}
 
-		if (parts.isEmpty() || buildingPartValue != null && !"no".equals(buildingPartValue)) {
+		if (parts.stream().mapToDouble(p -> p.area.getPolygon().getArea()).sum() < 0.9 * area.getPolygon().getArea()) {
+			var remainder = subtractPolygons(area.getPolygon(), parts.stream().map(p -> p.area.getPolygon()).toList());
+			if (remainder.stream().mapToDouble(PolygonShapeXZ::getArea).sum() < 0.9 * area.getPolygon().getArea()) {
+				// less than 90% of the building polygon is covered by building parts (non-standard mapping)
+				useBuildingAsPart = true;
+			}
+		}
+
+		if (useBuildingAsPart) {
 			parts.add(new BuildingPart(this, area, config));
 		}
 

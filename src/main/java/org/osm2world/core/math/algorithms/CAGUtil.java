@@ -1,6 +1,7 @@
 package org.osm2world.core.math.algorithms;
 
-import static org.osm2world.core.math.JTSConversionUtil.*;
+import static org.osm2world.core.math.JTSConversionUtil.polygonsFromJTS;
+import static org.osm2world.core.math.JTSConversionUtil.toJTS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +14,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
  * utility class for Constructive Area Geometry (CAG),
@@ -33,7 +33,7 @@ public final class CAGUtil {
 	 * @return  polygons without self-intersections, but maybe with holes
 	 */
 	public static final Collection<PolygonWithHolesXZ> subtractPolygons(
-			SimplePolygonShapeXZ basePolygon, List<? extends PolygonShapeXZ> subtractPolygons) {
+			PolygonShapeXZ basePolygon, List<? extends PolygonShapeXZ> subtractPolygons) {
 
 		List<Geometry> remainingGeometry = Collections.singletonList(
 				(Geometry)toJTS(basePolygon));
