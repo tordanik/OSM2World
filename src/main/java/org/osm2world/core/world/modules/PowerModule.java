@@ -42,6 +42,8 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.LODRange;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
@@ -385,7 +387,8 @@ public final class PowerModule extends AbstractModule {
 			List<VectorXYZ> path = getBaseline();
 
 			return singletonList(new Mesh(new ExtrusionGeometry(powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.getTextureDimensions()), PLASTIC));
+					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.getTextureDimensions()),
+					PLASTIC, LevelOfDetail.LOD3, LevelOfDetail.LOD4));
 
 		}
 
@@ -396,7 +399,9 @@ public final class PowerModule extends AbstractModule {
 		private static final float CABLE_THICKNESS = 0.05f;
 		private static final Material CABLE_MATERIAL = PLASTIC;
 		private static final double SLACK_SPAN = 6;
-		private static final double INTERPOLATION_STEPS = 10;
+		private static final Map<LODRange, Double> INTERPOLATION_STEPS = Map.of(
+				new LODRange(LevelOfDetail.LOD3), 3.0,
+				new LODRange(LevelOfDetail.LOD4), 10.0);
 		private static final ShapeXZ powerlineShape = new CircleXZ(NULL_VECTOR, CABLE_THICKNESS/2);
 
 		private int cables = -1;
@@ -525,39 +530,46 @@ public final class PowerModule extends AbstractModule {
 
 			List<Mesh> result = new ArrayList<>();
 
-			// do initial setup for height and position calculation, if necessary
-			if (startPos == null) {
-				setup();
-			}
+			for (LODRange lodRange : INTERPOLATION_STEPS.keySet()) {
 
-			for (int i = 0; i < startPos.size(); i++) {
+				double interpolationSteps = INTERPOLATION_STEPS.get(lodRange);
 
-				VectorXYZ start = startPos.get(i);
-				VectorXYZ end = endPos.get(i);
-
-				double lenToEnd = end.distanceToXZ(start);
-				double heightDiff = end.y - start.y;
-
-				double stepSize = lenToEnd / INTERPOLATION_STEPS;
-				VectorXZ dir = end.xz().subtract(start.xz()).normalize();
-
-				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
-				for (int x = 0; x <= INTERPOLATION_STEPS; x++) {
-					double ratio = x / INTERPOLATION_STEPS;
-
-					// distance from start to position x
-					double dx = stepSize * x;
-
-					// use a simple parabola between two towers
-					double height = (1 - Math.pow(2.0*(ratio - 0.5), 2)) * -SLACK_SPAN;
-					// add a linear function to account for different tower/terrain heights
-					height += ratio * heightDiff;
-
-					path.add(start.add(dir.mult(dx)).add(0, height, 0));
+				// do initial setup for height and position calculation, if necessary
+				if (startPos == null) {
+					setup();
 				}
 
-				result.add(new Mesh(new ExtrusionGeometry(powerlineShape, path, nCopies(path.size(), Y_UNIT),
-						null, BLACK, null, CABLE_MATERIAL.getTextureDimensions()), CABLE_MATERIAL));
+				for (int i = 0; i < startPos.size(); i++) {
+
+					VectorXYZ start = startPos.get(i);
+					VectorXYZ end = endPos.get(i);
+
+					double lenToEnd = end.distanceToXZ(start);
+					double heightDiff = end.y - start.y;
+
+					double stepSize = lenToEnd / interpolationSteps;
+					VectorXZ dir = end.xz().subtract(start.xz()).normalize();
+
+					List<VectorXYZ> path = new ArrayList<VectorXYZ>();
+					for (int x = 0; x <= interpolationSteps; x++) {
+						double ratio = x / interpolationSteps;
+
+						// distance from start to position x
+						double dx = stepSize * x;
+
+						// use a simple parabola between two towers
+						double height = (1 - Math.pow(2.0 * (ratio - 0.5), 2)) * -SLACK_SPAN;
+						// add a linear function to account for different tower/terrain heights
+						height += ratio * heightDiff;
+
+						path.add(start.add(dir.mult(dx)).add(0, height, 0));
+					}
+
+					result.add(new Mesh(new ExtrusionGeometry(powerlineShape, path, nCopies(path.size(), Y_UNIT),
+							null, BLACK, null, CABLE_MATERIAL.getTextureDimensions()),
+							CABLE_MATERIAL, lodRange.min(), lodRange.max()));
+
+				}
 
 			}
 
