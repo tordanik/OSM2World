@@ -559,6 +559,44 @@ public class MeshTarget extends AbstractTarget {
 
 	}
 
+	/** replaces meshes' {@link Material}s with equivalents that omit certain texture types */
+	public record RemoveTextures(EnumSet<TextureType> textureTypesToRemove) implements MeshProcessingStep {
+
+		public RemoveTextures {
+			if (textureTypesToRemove.contains(TextureType.BASE_COLOR)) {
+				throw new IllegalArgumentException("Base color textures cannot be removed");
+			}
+		}
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+
+			List<MeshWithMetadata> result = new ArrayList<>();
+
+			for (MeshWithMetadata m : meshStore.meshesWithMetadata()) {
+
+				Material oldMaterial = m.mesh().material;
+
+				Material newMaterial = oldMaterial.withLayers(oldMaterial.getTextureLayers().stream().map(
+						l -> new TextureLayer(
+								l.baseColorTexture,
+								textureTypesToRemove.contains(TextureType.NORMAL) ? null : l.normalTexture,
+								textureTypesToRemove.contains(TextureType.ORM) ? null : l.ormTexture,
+								textureTypesToRemove.contains(TextureType.DISPLACEMENT) ? null : l.displacementTexture,
+								l.colorable
+						)
+				).toList());
+
+				result.add(new MeshWithMetadata(new Mesh(m.mesh().geometry, newMaterial), m.metadata()));
+
+			}
+
+			return new MeshStore(result);
+
+		}
+
+	}
+
 	// TODO: implement additional processing steps
 	// * EmulateDoubleSidedMaterials
 	// * ReplaceAlmostBlankTextures(threshold)
