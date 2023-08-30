@@ -173,24 +173,26 @@ public class WallSurface {
 
 		/* draw insets around the elements */
 
-		for (WallElement e : elements) {
-			if (e.insetDistance() > 0) {
+		if (renderElements) {
+			for (WallElement e : elements) {
+				if (e.insetDistance() > 0) {
 
-				PolygonXYZ frontOutline = convertTo3D(e.outline());
-				PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
+					PolygonXYZ frontOutline = convertTo3D(e.outline());
+					PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
 
-				List<VectorXYZ> vsWall = createTriangleStripBetween(
-						backOutline.vertices(), frontOutline.vertices());
+					List<VectorXYZ> vsWall = createTriangleStripBetween(
+							backOutline.vertices(), frontOutline.vertices());
 
-				Material material = this.material;
-				// TODO attempt to simulate ambient occlusion with a different baked ao texture?
+					Material material = this.material;
+					// TODO attempt to simulate ambient occlusion with a different baked ao texture?
 
-				target.drawTriangleStrip(material, vsWall,
-						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+					target.drawTriangleStrip(material, vsWall,
+							texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
 
+				}
 			}
 		}
-
+		
 		/* decompose and triangulate the empty wall surface */
 
 		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
