@@ -484,7 +484,9 @@ public class TrafficSignModule extends AbstractModule {
 
 		}
 
-		node.addRepresentation(new TrafficSignGroup(node, signs, node.getPos(), direction, config));
+		if (!signs.isEmpty()) {
+			node.addRepresentation(new TrafficSignGroup(node, signs, node.getPos(), direction, config));
+		}
 
 	}
 
