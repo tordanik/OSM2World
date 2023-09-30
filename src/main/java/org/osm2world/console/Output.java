@@ -303,20 +303,22 @@ public final class Output {
 			throw new RuntimeException(e);
 		}
 
-		/* write a text file with the error log */
+		/* write a gz-compressed text file with the error log */
 
-		try (var printStream = new PrintStream(logDir.toPath().resolve(fileNameBase + ".txt").toFile())) {
-			printStream.println("Runtime (seconds):\nTotal: " + totalTime);
-			for (Phase phase : Phase.values()) {
-				if (timePerPhase.containsKey(phase)) {
-					printStream.println(phase + ": " + timePerPhase.get(phase));
+		Compression compression = Compression.GZ;
+		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
+		TargetUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
+			try (var printStream = new PrintStream(outputStream)) {
+				printStream.println("Runtime (seconds):\nTotal: " + totalTime);
+				for (Phase phase : Phase.values()) {
+					if (timePerPhase.containsKey(phase)) {
+						printStream.println(phase + ": " + timePerPhase.get(phase));
+					}
 				}
+				printStream.println();
+				ConversionLog.getLog().forEach(printStream::println);
 			}
-			printStream.println();
-			ConversionLog.getLog().forEach(printStream::println);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		});
 
 	}
 
