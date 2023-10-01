@@ -101,6 +101,12 @@ public interface CLIArguments {
 	double getPviewAspect();
 	boolean isPviewAspect();
 
+	/* metadata */
+
+	@Option(description="path to a JSON file with metadata, or an mbtiles file with such JSON data for multiple tiles")
+	File getMetadataFile();
+	boolean isMetadataFile();
+
 	/* logging */
 
 	@Option(description="writes execution times to the command line")

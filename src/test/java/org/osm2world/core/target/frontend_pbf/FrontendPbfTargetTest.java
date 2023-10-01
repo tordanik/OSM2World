@@ -72,7 +72,7 @@ public class FrontendPbfTargetTest {
 		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());
 
 		ConversionFacade cf = new ConversionFacade();
-		Results results = cf.createRepresentations(osmData, asList(new TestWorldModule()), null, null);
+		Results results = cf.createRepresentations(osmData, null, asList(new TestWorldModule()), null, null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();
@@ -89,7 +89,7 @@ public class FrontendPbfTargetTest {
 		OSMData osmData = new OSMData(emptyList(), asList(node), emptyList(), emptyList());
 
 		ConversionFacade cf = new ConversionFacade();
-		Results results = cf.createRepresentations(osmData, null, null, null);
+		Results results = cf.createRepresentations(osmData, null, null, null, null);
 
 		File outputFile = File.createTempFile("unittest", ".o2w.pbf");
 		outputFile.deleteOnExit();

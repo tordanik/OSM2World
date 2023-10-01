@@ -94,7 +94,7 @@ public class Data extends Observable {
 			}
 
 			conversionResults = converter.createRepresentations(
-					reader.getData(), null, config, null);
+					reader.getData(), null, null, config, null);
 
 		} catch (IOException e) {
 

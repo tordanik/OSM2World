@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
@@ -30,6 +31,7 @@ import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -56,39 +58,58 @@ public final class Output {
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
 
-		var perfListener = new PerformanceListener(argumentsGroup.getRepresentative().getPerformancePrint());
+		CLIArguments sharedArgs = argumentsGroup.getRepresentative();
 
-		if (argumentsGroup.getRepresentative().isLogDir()) {
+		var perfListener = new PerformanceListener(sharedArgs.getPerformancePrint());
+
+		if (sharedArgs.isLogDir()) {
 			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
 		}
 
 		OSMDataReader dataReader = null;
 
-		switch (argumentsGroup.getRepresentative().getInputMode()) {
+		switch (sharedArgs.getInputMode()) {
 
-		case FILE:
-			File inputFile = argumentsGroup.getRepresentative().getInput();
-			dataReader = switch (CLIArgumentsUtil.getInputFileType(argumentsGroup.getRepresentative())) {
-				case SIMPLE_FILE -> new OSMFileReader(inputFile);
-				case MBTILES -> new MbtilesReader(inputFile, argumentsGroup.getRepresentative().getTile());
-				case GEODESK -> new GeodeskReader(inputFile, argumentsGroup.getRepresentative().getTile().bounds());
-			};
-			break;
+			case FILE:
+				File inputFile = sharedArgs.getInput();
+				dataReader = switch (CLIArgumentsUtil.getInputFileType(sharedArgs)) {
+					case SIMPLE_FILE -> new OSMFileReader(inputFile);
+					case MBTILES -> new MbtilesReader(inputFile, sharedArgs.getTile());
+					case GEODESK -> new GeodeskReader(inputFile, sharedArgs.getTile().bounds());
+				};
+				break;
 
-		case OVERPASS:
-			if (argumentsGroup.getRepresentative().isInputBoundingBox()) {
-				LatLonBounds bounds = LatLonBounds.ofPoints(argumentsGroup.getRepresentative().getInputBoundingBox());
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), bounds);
-			} else if (argumentsGroup.getRepresentative().isTile()) {
-				LatLonBounds bounds = argumentsGroup.getRepresentative().getTile().bounds();
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), bounds);
+			case OVERPASS:
+				if (sharedArgs.isInputBoundingBox()) {
+					LatLonBounds bounds = LatLonBounds.ofPoints(sharedArgs.getInputBoundingBox());
+					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
+				} else if (sharedArgs.isTile()) {
+					LatLonBounds bounds = sharedArgs.getTile().bounds();
+					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
+				} else {
+					assert sharedArgs.isInputQuery(); // can be assumed due to input validation
+					String query = sharedArgs.getInputQuery();
+					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), query);
+				}
+				break;
+
+		}
+
+
+		MapMetadata metadata = null;
+
+		if (sharedArgs.isMetadataFile()) {
+			if (sharedArgs.getMetadataFile().getName().endsWith(".mbtiles")) {
+				if (sharedArgs.isMetadataFile() && sharedArgs.isTile()) {
+					try {
+						metadata = MapMetadata.metadataForTile(sharedArgs.getTile(), sharedArgs.getMetadataFile());
+					} catch(MBTilesReadException e){
+						System.err.println("Cannot read tile metadata: " + e);
+					}
+				}
 			} else {
-				assert argumentsGroup.getRepresentative().isInputQuery(); // can be assumed due to input validation
-				String query = argumentsGroup.getRepresentative().getInputQuery();
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), query);
+				metadata = MapMetadata.metadataFromJson(sharedArgs.getMetadataFile());
 			}
-			break;
-
 		}
 
 
@@ -111,7 +132,7 @@ public final class Output {
 			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
 		}
 
-		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
+		Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
 
 		ImageExporter exporter = null;
 
@@ -254,19 +275,19 @@ public final class Output {
 			exporter = null;
 		}
 
-		if (argumentsGroup.getRepresentative().getPerformancePrint()) {
+		if (sharedArgs.getPerformancePrint()) {
 			long timeSec = Duration.between(perfListener.startTime, now()).getSeconds();
 			System.out.println("finished after " + timeSec + " s");
 		}
 
-		if (argumentsGroup.getRepresentative().isLogDir()) {
+		if (sharedArgs.isLogDir()) {
 
-			File logDir = argumentsGroup.getRepresentative().getLogDir();
+			File logDir = sharedArgs.getLogDir();
 			logDir.mkdirs();
 
 			String fileNameBase = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm_ss"));
-			if (argumentsGroup.getRepresentative().isTile()) {
-				fileNameBase = argumentsGroup.getRepresentative().getTile().toString("_");
+			if (sharedArgs.isTile()) {
+				fileNameBase = sharedArgs.getTile().toString("_");
 			}
 			fileNameBase = "osm2world_log_" + fileNameBase;
 

@@ -37,8 +37,10 @@ public class MapData {
 	AxisAlignedRectangleXZ fileBoundary;
 	AxisAlignedRectangleXZ dataBoundary;
 
+	final MapMetadata metadata;
+
 	public MapData(List<MapNode> mapNodes, List<MapWay> mapWays, List<MapArea> mapAreas,
-			List<MapRelation> mapRelations, AxisAlignedRectangleXZ fileBoundary) {
+			List<MapRelation> mapRelations, AxisAlignedRectangleXZ fileBoundary, MapMetadata metadata) {
 
 		this.mapNodes = mapNodes;
 		this.mapWays = mapWays;
@@ -49,6 +51,8 @@ public class MapData {
 		mapWaySegments = mapWays.stream().flatMap(w -> w.getWaySegments().stream()).collect(toList());
 
 		calculateDataBoundary();
+
+		this.metadata = metadata;
 
 	}
 

@@ -1,7 +1,8 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
@@ -63,7 +64,7 @@ public class PowerModuleTest {
 		List<Target> targets = asList(t1, t2);
 		List<WorldModule> modules = singletonList(new PowerModule());
 
-		cf.createRepresentations(osmData, modules, null, targets);
+		cf.createRepresentations(osmData, null, modules, null, targets);
 
 		/* check whether the results are the same each time */
 

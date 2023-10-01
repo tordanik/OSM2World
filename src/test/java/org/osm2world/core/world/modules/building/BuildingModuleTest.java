@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules.building;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class BuildingModuleTest {
 		File testFile = new File(classLoader.getResource("issue-203.osm").getFile());
 
 		ConversionFacade facade = new ConversionFacade();
-		Results results = facade.createRepresentations(testFile, null, null, null);
+		Results results = facade.createRepresentations(testFile, null, null, null, null);
 
 		Collection<MapArea> areas = results.getMapData().getMapAreas();
 		assertEquals(5, areas.size());

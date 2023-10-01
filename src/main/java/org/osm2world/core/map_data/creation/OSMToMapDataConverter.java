@@ -7,7 +7,6 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
-import java.io.IOException;
 import java.util.*;
 
 import javax.annotation.Nullable;
@@ -48,17 +47,21 @@ public class OSMToMapDataConverter {
 		this.config = config;
 	}
 
-	public MapData createMapData(OSMData osmData) throws IOException, EntityNotFoundException {
+	public MapData createMapData(OSMData osmData, @Nullable MapMetadata metadata) throws EntityNotFoundException {
 
 		final List<MapNode> mapNodes = new ArrayList<>();
 		final List<MapWay> mapWays = new ArrayList<>();
 		final List<MapArea> mapAreas = new ArrayList<>();
 		final List<MapRelation> mapRelations = new ArrayList<>();
 
-		createMapElements(osmData, mapNodes, mapWays, mapAreas, mapRelations);
+		if (metadata == null) {
+			metadata = new MapMetadata(null, null);
+		}
+
+		createMapElements(osmData, metadata, mapNodes, mapWays, mapAreas, mapRelations);
 
 		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds()));
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds()), metadata);
 
 		calculateIntersectionsInMapData(mapData);
 
@@ -70,10 +73,9 @@ public class OSMToMapDataConverter {
 	 * creates {@link MapElement}s
 	 * based on OSM data from an {@link OSMData} dataset.
 	 * and adds them to collections
-	 * @param mapRelations
 	 * @throws EntityNotFoundException
 	 */
-	private void createMapElements(final OSMData osmData,
+	private void createMapElements(final OSMData osmData, MapMetadata metadata,
 			final List<MapNode> mapNodes, final List<MapWay> mapWays,
 			final List<MapArea> mapAreas, List<MapRelation> mapRelations) throws EntityNotFoundException {
 
@@ -126,7 +128,8 @@ public class OSMToMapDataConverter {
 
 		mapAreas.addAll(MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeIdMap, mapNodes,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds())));
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds()),
+				metadata.land() == Boolean.FALSE));
 
 		/* ... based on closed ways with certain tags */
 

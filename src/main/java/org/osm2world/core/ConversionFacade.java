@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.creation.LatLon;
@@ -20,6 +22,7 @@ import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.FaceXYZ;
@@ -124,7 +127,7 @@ public class ConversionFacade {
 	/**
 	 * sets the factory that will make {@link MapProjection}
 	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
 	public void setMapProjectionFactory(Function<LatLon, ? extends MapProjection> mapProjectionFactory) {
 		this.mapProjectionFactory = mapProjectionFactory;
@@ -133,7 +136,7 @@ public class ConversionFacade {
 	/**
 	 * sets the factory that will make {@link EleConstraintEnforcer}
 	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
 	public void setEleConstraintEnforcerFactory(
 			Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
@@ -143,7 +146,7 @@ public class ConversionFacade {
 	/**
 	 * sets the factory that will make {@link TerrainInterpolator}
 	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
 	public void setTerrainEleInterpolatorFactory(
 			Factory<? extends TerrainInterpolator> enforcerFactory) {
@@ -157,6 +160,7 @@ public class ConversionFacade {
 	 * Sends updates to {@link ProgressListener}s.
 	 *
 	 * @param osmFile       file to read OSM data from; != null
+	 * @param metadata      metadata associated with the OSM dataset to process, may be null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
@@ -164,7 +168,7 @@ public class ConversionFacade {
 	 * @param targets       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
-	public Results createRepresentations(File osmFile,
+	public Results createRepresentations(File osmFile, @Nullable MapMetadata metadata,
 			List<? extends WorldModule> worldModules, Configuration config,
 			List<? extends Target> targets)
 			throws IOException {
@@ -175,19 +179,19 @@ public class ConversionFacade {
 
 		OSMData osmData = new OSMFileReader(osmFile).getData();
 
-		return createRepresentations(osmData, worldModules, config, targets);
+		return createRepresentations(osmData, metadata, worldModules, config, targets);
 
 	}
 
 	/**
-	 * variant of
-	 * {@link #createRepresentations(File, List, Configuration, List)}
+	 * variant of {@link #createRepresentations(File, MapMetadata, List, Configuration, List)}
 	 * that accepts {@link OSMData} instead of a file.
 	 * Use this when all data is already
 	 * in memory, for example with editor applications.
 	 * To obtain the data, you can use an {@link OSMDataReader}.
 	 *
 	 * @param osmData       input data; != null
+	 * @param metadata      metadata associated with the OSM dataset to process, may be null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
@@ -197,7 +201,7 @@ public class ConversionFacade {
 	 *
 	 * @throws BoundingBoxSizeException  for oversized bounding boxes
 	 */
-	public Results createRepresentations(OSMData osmData,
+	public Results createRepresentations(OSMData osmData, @Nullable MapMetadata metadata,
 			List<? extends WorldModule> worldModules, Configuration config,
 			List<? extends Target> targets)
 			throws IOException, BoundingBoxSizeException {
@@ -227,7 +231,7 @@ public class ConversionFacade {
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
 		MapData mapData = null;
 		try {
-			mapData = converter.createMapData(osmData);
+			mapData = converter.createMapData(osmData, metadata);
 		} catch (EntityNotFoundException e) {
 			// TODO: what to do here?
 		}
@@ -239,7 +243,7 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * variant of {@link #createRepresentations(OSMData, List, Configuration, List)}
+	 * variant of {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}
 	 * that takes {@link MapData} instead of {@link OSMData}
 	 */
 	public Results createRepresentations(MapProjection mapProjection, MapData mapData,

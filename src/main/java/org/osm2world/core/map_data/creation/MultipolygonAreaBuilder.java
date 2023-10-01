@@ -1,13 +1,16 @@
 package org.osm2world.core.map_data.creation;
 
 import static de.topobyte.osm4j.core.model.util.OsmModelUtil.*;
-import static java.lang.Boolean.*;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.GeometryUtil.getLineSegmentIntersection;
+import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,24 +21,12 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapAreaSegment;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
-import de.topobyte.osm4j.core.model.iface.EntityType;
-import de.topobyte.osm4j.core.model.iface.OsmEntity;
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
-import de.topobyte.osm4j.core.model.iface.OsmTag;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.impl.Relation;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
@@ -359,13 +350,18 @@ final class MultipolygonAreaBuilder {
 	 * within the file's bounds.
 	 *
 	 * It cannot distinguish between water and land tiles if there is no
-	 * coastline at all (it will then guess based on the tags being used),
+	 * coastline at all and no explicit information is provided,
 	 * but should be able to handle all other cases.
+	 *
+	 * @param isSeaTile  true if the {@link OSMData} is sea on all sides (it may contain islands as long as they are
+	 *                   entirely within the bounds); false if it's on land or unknown/mixed
+	 *
 	 * @throws EntityNotFoundException
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
-			Collection<MapNode> mapNodes, AxisAlignedRectangleXZ fileBoundary) throws EntityNotFoundException {
+			Collection<MapNode> mapNodes, AxisAlignedRectangleXZ fileBoundary,
+			boolean isSeaTile) throws EntityNotFoundException {
 
 		long highestRelationId = 0;
 		long highestNodeId = 0;
@@ -587,7 +583,7 @@ final class MultipolygonAreaBuilder {
 						}
 					}
 
-					if (hasIsland || isProbablySeaTile(osmData)) {
+					if (hasIsland || isSeaTile || isProbablySeaTile(osmData)) {
 
 						NodeSequence boundaryRing = new NodeSequence();
 
