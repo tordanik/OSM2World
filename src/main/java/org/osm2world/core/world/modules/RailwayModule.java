@@ -1,8 +1,7 @@
 package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.nCopies;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
@@ -30,6 +29,7 @@ import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
@@ -155,6 +155,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 		final double sleeperWidth;
 		final double groundWidth;
 
+		final boolean ownGround;
+
 		public Rail(MapWaySegment segment) {
 
 			super(segment);
@@ -168,6 +170,9 @@ public class RailwayModule extends ConfigurableWorldModule {
 			if (!sleeperModelByWidth.containsKey(sleeperWidth)) {
 				sleeperModelByWidth.put(sleeperWidth, new SleeperModel(sleeperWidth));
 			}
+
+			// tram is often part of a street, omit ground mesh
+			ownGround = !segment.getTags().contains("railway", "tram");
 
 		}
 
@@ -194,20 +199,24 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			/* build ground meshes */
 
-			List<VectorXYZ> groundVs = WorldModuleGeometryUtil.createTriangleStripBetween(
-					getOutline(false), getOutline(true));
+			if (ownGround) {
 
-			// just the ballast (sleepers will be rendered as separate models at this LOD)
-			TriangleGeometry.Builder lod4GroundBuilder = new TriangleGeometry.Builder(
-					texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
-			lod4GroundBuilder.addTriangleStrip(groundVs);
-			result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST, LOD4));
+				List<VectorXYZ> groundVs = WorldModuleGeometryUtil.createTriangleStripBetween(
+						getOutline(false), getOutline(true));
 
-			// repeating texture containing ballast, sleepers and rails
-			TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(
-					texCoordFunctions(RAILWAY, STRIP_FIT_HEIGHT), null, Interpolation.SMOOTH);
-			lod3GroundBuilder.addTriangleStrip(groundVs);
-			result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY, LOD0, LOD3));
+				// just the ballast (sleepers will be rendered as separate models at this LOD)
+				TriangleGeometry.Builder lod4GroundBuilder = new TriangleGeometry.Builder(
+						texCoordFunctions(RAIL_BALLAST, GLOBAL_X_Z), null, Interpolation.SMOOTH);
+				lod4GroundBuilder.addTriangleStrip(groundVs);
+				result.add(new Mesh(lod4GroundBuilder.build(), RAIL_BALLAST, LOD4));
+
+				// repeating texture containing ballast, sleepers and rails
+				TriangleGeometry.Builder lod3GroundBuilder = new TriangleGeometry.Builder(
+						texCoordFunctions(RAILWAY, STRIP_FIT_HEIGHT), null, Interpolation.SMOOTH);
+				lod3GroundBuilder.addTriangleStrip(groundVs);
+				result.add(new Mesh(lod3GroundBuilder.build(), RAILWAY, LOD0, LOD3));
+
+			}
 
 			/* build rail meshes */
 
@@ -245,6 +254,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 		@Override
 		public List<ModelInstance> getSubModels() {
 
+			if (segment.getTags().contains("railway", "tram")) return List.of();
+
 			/* return railway ties/sleeper model instances (LOD4 only) */
 
 			SleeperModel sleeperModel = sleeperModelByWidth.get(sleeperWidth);
@@ -253,7 +264,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			return sleeperPositions.stream()
 					.map(it -> new ModelInstance(sleeperModel,
-							new InstanceParameters(it, segment.getDirection().angle(), null, sleeperWidth, null)))
+								new InstanceParameters(it, segment.getDirection().angle(), null, sleeperWidth, null)))
 					.collect(toList());
 
 		}
@@ -261,6 +272,15 @@ public class RailwayModule extends ConfigurableWorldModule {
 		@Override
 		public double getWidth() {
 			return groundWidth;
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+			if (!ownGround || getOutlinePolygonXZ() == null) {
+				return emptyList();
+			} else {
+				return singletonList(getOutlinePolygonXZ());
+			}
 		}
 
 		private long countConnectedRailSegments(MapNode node) {
