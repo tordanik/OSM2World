@@ -169,14 +169,14 @@ public class OSM2World {
 		/* load configuration file */
 
 		Configuration config = new BaseConfiguration();
-		File configFile = null;
+		List<File> configFiles = null;
 
 		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
 
 		if (representativeArgs.isConfig()) {
-			configFile = representativeArgs.getConfig();
+			configFiles = representativeArgs.getConfig();
 			try {
-				config = loadConfigFile(configFile);
+				config = loadConfigFiles(configFiles.toArray(new File[0]));
 			} catch (ConfigurationException e) {
 				System.err.println("could not read config, ignoring it: ");
 				System.err.println(e);
@@ -207,7 +207,7 @@ public class OSM2World {
 			}
 			File input = representativeArgs.isInput() ?
 					representativeArgs.getInput() : null;
-			new ViewerFrame(config, configFile, input).setVisible(true);
+			new ViewerFrame(config, configFiles, input).setVisible(true);
 			break;
 
 		case CONVERT:
@@ -225,13 +225,19 @@ public class OSM2World {
 		}
 	}
 
-	public static Configuration loadConfigFile(File configFile) throws ConfigurationException {
-		PropertiesConfiguration fileConfig = new PropertiesConfiguration();
-		fileConfig.setListDelimiter(';');
-		fileConfig.load(configFile);
-		Configuration config = fileConfig;
+	public static Configuration loadConfigFiles(File... configFiles) throws ConfigurationException {
+
+		PropertiesConfiguration config = new PropertiesConfiguration();
+		config.setListDelimiter(';');
+
+		for (File it : configFiles) {
+			config.load(it);
+		}
+
 		ConfigUtil.parseFonts(config);
+
 		return config;
+
 	}
 
 }

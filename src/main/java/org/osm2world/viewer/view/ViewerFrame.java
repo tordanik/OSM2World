@@ -44,15 +44,15 @@ public class ViewerFrame extends JFrame {
 	/**
 	 *
 	 * @param config  configuration object, != null
-	 * @param configFile  properties (where config was loaded from), can be null
+	 * @param configFiles  properties (where config was loaded from), can be null
 	 * @param inputFile  osm data file to be loaded at viewer start, can be null
 	 */
 	public ViewerFrame(final Configuration config,
-			final File configFile, File inputFile) {
+			final List<File> configFiles, File inputFile) {
 
 		super("OSM2World Viewer");
 
-		data = new Data(configFile, config);
+		data = new Data(configFiles != null ? configFiles : List.of(), config);
 
 		createMenuBar();
 

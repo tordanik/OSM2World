@@ -2,11 +2,14 @@ package org.osm2world.viewer.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.osm2world.console.OSM2World;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
@@ -22,13 +25,13 @@ import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
 
-	private final File configFile;
+	private final @Nonnull List<File> configFiles;
 	private Configuration config;
 	private File osmFile = null;
 	private Results conversionResults = null;
 
-	public Data(File configFile, Configuration config) {
-		this.configFile = configFile;
+	public Data(List<File> configFiles, Configuration config) {
+		this.configFiles = configFiles;
 		this.config = config;
 	}
 
@@ -52,17 +55,8 @@ public class Data extends Observable {
 
 	/** reloads the configuration from the config file */
 	public void reloadConfig() throws ConfigurationException {
-
-		if (configFile != null) {
-
-			PropertiesConfiguration fileConfig = new PropertiesConfiguration();
-			fileConfig.setListDelimiter(';');
-			fileConfig.load(configFile);
-
-			this.setConfig(fileConfig);
-
-		}
-
+		Configuration config = OSM2World.loadConfigFiles(configFiles.toArray(new File[0]));
+		this.setConfig(config);
 	}
 
 	public void loadOSMData(OSMDataReader reader, boolean failOnLargeBBox,
