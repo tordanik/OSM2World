@@ -87,6 +87,13 @@ public class RailwayModule extends ConfigurableWorldModule {
 				new VectorXZ(-0.25, 0.55), new VectorXZ(-0.1, 0.5),
 				new VectorXZ(-0.1, 0.1), new VectorXZ(-0.45, 0));
 
+		List<VectorXZ> simpleRailShape = asList(
+				new VectorXZ(0.25, 0), new VectorXZ(0.25, 0.75),
+				new VectorXZ(-0.25, 0.75), new VectorXZ(-0.25, 0));
+
+		// the detailed shape is overkill for almost all purposes
+		railShape = simpleRailShape;
+
 		for (int i=0; i < railShape.size(); i++) {
 			VectorXZ v = railShape.get(i);
 			v = v.mult(0.1117f);
