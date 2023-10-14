@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common;
 
 import static java.awt.Color.WHITE;
+import static java.lang.Math.min;
 import static java.util.Arrays.stream;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
@@ -190,6 +191,17 @@ public class MeshTarget extends AbstractTarget {
 
 		private static final double OFFSET_PER_LAYER = 1e-3;
 
+		/** maximum number of layers for which geometry is created, additional ones are omitted */
+		private final int maxLayers;
+
+		public EmulateTextureLayers(int maxLayers) {
+			this.maxLayers = maxLayers;
+		}
+
+		public EmulateTextureLayers() {
+			this.maxLayers = Integer.MAX_VALUE;
+		}
+
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
 
@@ -207,7 +219,7 @@ public class MeshTarget extends AbstractTarget {
 
 					TriangleGeometry tg = mesh.geometry.asTriangles();
 
-					for (int layer = 0; layer < mesh.material.getNumTextureLayers(); layer++) {
+					for (int layer = 0; layer < min(maxLayers, mesh.material.getNumTextureLayers()); layer++) {
 
 						double offset = layer * OFFSET_PER_LAYER;
 

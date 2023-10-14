@@ -33,6 +33,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.gltf.data.*;
@@ -383,10 +384,12 @@ public class GltfTarget extends MeshTarget {
 			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
 		}
 
+		LevelOfDetail lod = ConfigUtil.readLOD(config);
+
 		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
-				new FilterLod(ConfigUtil.readLOD(config)),
-				new EmulateTextureLayers(), // before MoveColors because colorable is per layer
-				new MoveColorsToVertices(),
+				new FilterLod(lod),
+				new EmulateTextureLayers(lod.ordinal() <= 1 ? 1 : Integer.MAX_VALUE),
+				new MoveColorsToVertices(), // after EmulateTextureLayers because colorable is per layer
 				new ReplaceTexturesWithAtlas(t -> getResourceOutputSettings().modeForTexture(t) == REFERENCE),
 				new MergeMeshes(mergeOptions)));
 
