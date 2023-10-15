@@ -4,6 +4,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.EXACT;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
+import static org.osm2world.core.target.common.material.Materials.TUNNEL_DEFAULT;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
 import java.util.ArrayList;
@@ -18,7 +21,6 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
@@ -161,9 +163,12 @@ public class TunnelModule extends AbstractModule {
 			List<VectorXYZ> strip3 = createTriangleStripBetween(
 					aboveLeftOutline, leftOutline);
 
-			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip1, null);
-			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip2, null);
-			target.drawTriangleStrip(Materials.TUNNEL_DEFAULT, strip3, null);
+			target.drawTriangleStrip(TUNNEL_DEFAULT, strip1,
+					texCoordLists(strip1, TUNNEL_DEFAULT, STRIP_WALL));
+			target.drawTriangleStrip(TUNNEL_DEFAULT, strip2,
+					texCoordLists(strip1, TUNNEL_DEFAULT, STRIP_WALL));
+			target.drawTriangleStrip(TUNNEL_DEFAULT, strip3,
+					texCoordLists(strip1, TUNNEL_DEFAULT, STRIP_WALL));
 
 		}
 
