@@ -3,6 +3,7 @@ package org.osm2world.core.target;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
@@ -17,6 +18,10 @@ public interface Target extends CommonTarget {
 
 	void setConfiguration(Configuration config);
 	Configuration getConfiguration();
+
+	default LevelOfDetail getLod() {
+		return ConfigUtil.readLOD(getConfiguration());
+	}
 
 	/**
 	 * announces the begin of the draw* calls for a {@link WorldObject}.
@@ -35,7 +40,7 @@ public interface Target extends CommonTarget {
 	}
 
 	public default void drawMesh(Mesh mesh) {
-		if (mesh.lodRangeContains(ConfigUtil.readLOD(getConfiguration()))) {
+		if (mesh.lodRangeContains(getLod())) {
 			TriangleGeometry tg = mesh.geometry.asTriangles();
 			drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords);
 		}

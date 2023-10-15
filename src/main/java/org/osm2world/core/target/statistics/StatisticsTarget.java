@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.jogl.JOGLRendererVBO;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -19,11 +22,21 @@ import org.osm2world.core.world.data.WorldObject;
  */
 public class StatisticsTarget extends PrimitiveTarget {
 
+	public final @Nullable LevelOfDetail lod;
+
 	private final long[] globalCounts = new long[Stat.values().length];
 	private final Map<Material, long[]> countsPerMaterial = new HashMap<>();
 	private final Map<Class<? extends WorldObject>, long[]> countsPerClass = new HashMap<>();
 
 	private WorldObject currentObject = null;
+
+	public StatisticsTarget(LevelOfDetail lod) {
+		this.lod = lod;
+	}
+
+	public StatisticsTarget() {
+		this(null);
+	}
 
 	public enum Stat {
 
@@ -114,6 +127,15 @@ public class StatisticsTarget extends PrimitiveTarget {
 			return 0;
 		}
 
+	}
+
+	@Override
+	public LevelOfDetail getLod() {
+		if (lod != null) {
+			return lod;
+		} else {
+			return super.getLod();
+		}
 	}
 
 	@Override

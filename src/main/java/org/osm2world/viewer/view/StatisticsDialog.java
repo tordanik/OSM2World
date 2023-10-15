@@ -3,21 +3,9 @@ package org.osm2world.viewer.view;
 import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.*;
 
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -121,6 +109,7 @@ public class StatisticsDialog extends JDialog {
 			JPanel panel = new JPanel();
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
+			panel.add(new JLabel("Level of detail: " + stats.lod));
 			panel.add(new JLabel("object types: " + classList.size()));
 			panel.add(new JLabel("materials: " + materialList.size()));
 
