@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -60,28 +59,23 @@ public final class TargetUtil {
 	public static void renderWorldObjects(Iterator<? extends Target> targetIterator, MapData mapData,
 			int primitiveThresholdPerTarget) {
 
-		final StatisticsTarget primitiveCounter = new StatisticsTarget();
+		StatisticsTarget primitiveCounter = new StatisticsTarget();
+		Target currentTarget = targetIterator.next();
 
-		forEach(mapData.getMapElements(), new Consumer<MapElement>() {
+		for (MapElement e : mapData.getMapElements()) {
+			for (WorldObject r : e.getRepresentations()) {
 
-			Target currentTarget = targetIterator.next();
+				renderObject(primitiveCounter, r);
 
-			@Override public void accept(MapElement e) {
-				for (WorldObject r : e.getRepresentations()) {
+				renderObject(currentTarget, r);
 
-					renderObject(primitiveCounter, r);
-
-					renderObject(currentTarget, r);
-
-					if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT) >= primitiveThresholdPerTarget) {
-						currentTarget = targetIterator.next();
-						primitiveCounter.clear();
-					}
-
+				if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT) >= primitiveThresholdPerTarget) {
+					currentTarget = targetIterator.next();
+					primitiveCounter = new StatisticsTarget();
 				}
-			}
 
-		});
+			}
+		}
 
 	}
 
