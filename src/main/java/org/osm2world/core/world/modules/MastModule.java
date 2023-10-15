@@ -17,6 +17,7 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
@@ -75,7 +76,7 @@ public class MastModule extends AbstractModule {
 	private static final Model MOBILE_PHONE_ANTENNA_MODEL = new LegacyModel() {
 
 		@Override
-		public void render(Target target, InstanceParameters params) {
+		public void render(CommonTarget target, InstanceParameters params) {
 
 			VectorXZ faceDirection = VectorXZ.fromAngle(params.direction());
 			double antennaHeight = 1.0;

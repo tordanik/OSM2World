@@ -41,6 +41,7 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.ConfMaterial;
@@ -1210,7 +1211,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			@Override
-			public void render(Target target, InstanceParameters params) {
+			public void render(CommonTarget target, InstanceParameters params) {
 
 				double diameter = params.width() != null ? params.width() : 1.0;
 				double thickness = params.length() != null ? params.length() : 0.08;
@@ -1237,7 +1238,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			}
 
-			private final void drawHand(Target target, VectorXYZ origin, VectorXZ faceNormal,
+			private final void drawHand(CommonTarget target, VectorXYZ origin, VectorXZ faceNormal,
 					double width, double length, double thickness, double angleRad) {
 
 				assert width < length;

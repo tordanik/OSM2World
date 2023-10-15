@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.*;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.math.TriangleXYZ;
@@ -43,15 +42,6 @@ public class MeshTarget extends AbstractTarget {
 	@Override
 	public void beginObject(WorldObject object) {
 		this.currentWorldObject = object;
-	}
-
-	@Override
-	public void drawTriangles(@Nonnull Material material, @Nonnull List<? extends TriangleXYZ> triangles,
-							  @Nonnull List<List<VectorXZ>> texCoordLists) {
-
-		drawMesh(new Mesh(new TriangleGeometry(new ArrayList<>(triangles), material.getInterpolation(),
-				texCoordLists, null), material));
-
 	}
 
 	@Override

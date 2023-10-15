@@ -1,25 +1,20 @@
 package org.osm2world.core.target.common.mesh;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static java.util.Collections.max;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.target.common.ExtrudeOption.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
@@ -28,13 +23,8 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.ClosedShapeXZ;
-import org.osm2world.core.math.shapes.PolylineXYZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.math.shapes.*;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
@@ -244,7 +234,7 @@ public class ExtrusionGeometry implements Geometry {
 			for (int pathI = 0; pathI < path.size(); pathI ++) {
 
 				shapeVectors[pathI] = transformShape(
-						AbstractTarget.scaleShapeVectors(shapeVertices, scaleFactors.get(pathI)),
+						CommonTarget.scaleShapeVectors(shapeVertices, scaleFactors.get(pathI)),
 						path.get(pathI),
 						forwardVectors.get(pathI),
 						upVectors.get(pathI));

@@ -2,6 +2,7 @@ package org.osm2world.core.target.common.model;
 
 import java.util.List;
 
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.mesh.Mesh;
 
@@ -20,7 +21,7 @@ public interface Model {
 	 *
 	 * @param target target for the model; != null
 	 */
-	public default void render(Target target, InstanceParameters params) {
+	public default void render(CommonTarget target, InstanceParameters params) {
 		buildMeshes(params).forEach(target::drawMesh);
 	}
 

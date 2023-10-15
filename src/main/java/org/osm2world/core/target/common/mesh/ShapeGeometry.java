@@ -4,7 +4,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +15,7 @@ import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ClosedShapeXZ;
-import org.osm2world.core.target.common.AbstractTarget;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
@@ -91,7 +91,7 @@ public class ShapeGeometry implements Geometry {
 			}
 
 			if (scaleFactor != 1.0) {
-				triangleVertices = AbstractTarget.scaleShapeVectors(triangleVertices, scaleFactor);
+				triangleVertices = CommonTarget.scaleShapeVectors(triangleVertices, scaleFactor);
 			}
 
 			triangleVertices = transformShape(triangleVertices, point, frontVector, upVector);
