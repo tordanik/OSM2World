@@ -1,6 +1,7 @@
 package org.osm2world.console;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
 
 import java.util.ArrayList;
@@ -87,9 +88,7 @@ public class CLIArgumentsGroup {
 				? args2.isOverpassURL() && args1.getOverpassURL().equals(args2.getOverpassURL())
 				: !args2.isOverpassURL())
 
-			&& (args1.isConfig()
-				? args2.isConfig() && args1.getConfig().equals(args2.getConfig())
-				: !args2.isConfig());
+			&& args1.getConfig().equals(args2.getConfig());
 
 	}
 

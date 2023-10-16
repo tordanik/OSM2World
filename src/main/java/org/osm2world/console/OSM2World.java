@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 import org.apache.commons.configuration.BaseConfiguration;
@@ -22,6 +23,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.viewer.view.ViewerFrame;
 
@@ -166,21 +168,22 @@ public class OSM2World {
 
 	private static void executeArgumentsGroup(CLIArgumentsGroup argumentsGroup) {
 
+		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
+
+		LevelOfDetail lod = null;
+		if (representativeArgs.getLod() != null) {
+			lod = LevelOfDetail.values()[representativeArgs.getLod()];
+		}
+
 		/* load configuration file */
 
 		Configuration config = new BaseConfiguration();
-		List<File> configFiles = null;
 
-		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
-
-		if (representativeArgs.isConfig()) {
-			configFiles = representativeArgs.getConfig();
-			try {
-				config = loadConfigFiles(configFiles.toArray(new File[0]));
-			} catch (ConfigurationException e) {
-				System.err.println("could not read config, ignoring it: ");
-				System.err.println(e);
-			}
+		try {
+			File[] configFiles = representativeArgs.getConfig().toArray(new File[0]);
+			config = loadConfigFiles(lod, configFiles);
+		} catch (ConfigurationException e) {
+			System.err.println("could not read config, ignoring it:\n" + e);
 		}
 
 		/* run selected mode */
@@ -207,7 +210,7 @@ public class OSM2World {
 			}
 			File input = representativeArgs.isInput() ?
 					representativeArgs.getInput() : null;
-			new ViewerFrame(config, configFiles, input).setVisible(true);
+			new ViewerFrame(config, lod, representativeArgs.getConfig(), input).setVisible(true);
 			break;
 
 		case CONVERT:
@@ -225,13 +228,19 @@ public class OSM2World {
 		}
 	}
 
-	public static Configuration loadConfigFiles(File... configFiles) throws ConfigurationException {
+	public static Configuration loadConfigFiles(@Nullable LevelOfDetail lod, File... configFiles)
+			throws ConfigurationException {
 
 		PropertiesConfiguration config = new PropertiesConfiguration();
 		config.setListDelimiter(';');
 
 		for (File it : configFiles) {
 			config.load(it);
+		}
+
+		if (lod != null) {
+			config.clearProperty("lod");
+			config.addProperty("lod", lod.ordinal());
 		}
 
 		ConfigUtil.parseFonts(config);

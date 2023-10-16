@@ -54,8 +54,8 @@ public class Data extends Observable {
 	}
 
 	/** reloads the configuration from the config file */
-	public void reloadConfig() throws ConfigurationException {
-		Configuration config = OSM2World.loadConfigFiles(configFiles.toArray(new File[0]));
+	public void reloadConfig(RenderOptions options) throws ConfigurationException {
+		Configuration config = OSM2World.loadConfigFiles(options.lod, configFiles.toArray(new File[0]));
 		this.setConfig(config);
 	}
 

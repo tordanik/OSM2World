@@ -3,6 +3,8 @@ package org.osm2world.console;
 import java.io.File;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.console.CLIArgumentsUtil.InputMode;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.osm.creation.OverpassReader;
@@ -26,14 +28,16 @@ public interface CLIArguments {
 	List<File> getOutput();
 	boolean isOutput();
 
-	@Option(description="properties file(s) with configuration parameters")
+	@Option(description="properties file(s) with configuration parameters", defaultValue = "{}")
 	List<File> getConfig();
-	boolean isConfig();
 
 	@Option(description="output size in pixels", pattern=Resolution.PATTERN,
 			defaultValue="800,600")
 	Resolution getResolution();
 	boolean isResolution();
+
+	@Option(description="level of detail of the output", pattern="[01234]", defaultToNull=true)
+	@Nullable Integer getLod();
 
 	/* other input options */
 

@@ -43,7 +43,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 	protected void loadOSMData(OSMDataReader dataReader, boolean resetCamera) {
 
 		try {
-			data.reloadConfig();
+			data.reloadConfig(renderOptions);
 		} catch (ConfigurationException e) {
 
 			JOptionPane.showMessageDialog(viewerFrame,

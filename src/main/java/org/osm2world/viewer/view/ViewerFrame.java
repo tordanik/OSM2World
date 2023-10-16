@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 import org.apache.commons.configuration.Configuration;
@@ -44,15 +45,20 @@ public class ViewerFrame extends JFrame {
 	/**
 	 *
 	 * @param config  configuration object, != null
+	 * @param lod  initial {@link LevelOfDetail} setting
 	 * @param configFiles  properties (where config was loaded from), can be null
 	 * @param inputFile  osm data file to be loaded at viewer start, can be null
 	 */
-	public ViewerFrame(final Configuration config,
+	public ViewerFrame(final Configuration config, @Nullable LevelOfDetail lod,
 			final List<File> configFiles, File inputFile) {
 
 		super("OSM2World Viewer");
 
-		data = new Data(configFiles != null ? configFiles : List.of(), config);
+		data = new Data(configFiles, config);
+
+		if (lod != null) {
+			renderOptions.setLod(lod);
+		}
 
 		createMenuBar();
 

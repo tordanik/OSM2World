@@ -16,6 +16,8 @@ import org.osm2world.viewer.view.debug.DebugView;
 
 public class RenderOptions {
 
+	public LevelOfDetail lod = LevelOfDetail.LOD4;
+
 	public Camera camera = null;
 	public Projection projection = Defaults.PERSPECTIVE_PROJECTION;
 
@@ -24,8 +26,6 @@ public class RenderOptions {
 	private boolean showWorldObjects = true;
 	private boolean wireframe = false;
 	private boolean backfaceCulling = true;
-
-	private @Nullable LevelOfDetail lod = null;
 
 	Class<? extends TerrainInterpolator> interpolatorClass = ZeroInterpolator.class;
 	Class<? extends EleConstraintEnforcer> enforcerClass = NoneEleConstraintEnforcer.class;
