@@ -9,6 +9,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.map_data.creation.OSMToMapDataConverter.tagsOfEntity;
+import static org.osm2world.core.map_data.creation.OSMToMapDataConverter.wayNodes;
 import static org.osm2world.core.math.GeometryUtil.getLineSegmentIntersection;
 import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
@@ -59,7 +61,6 @@ final class MultipolygonAreaBuilder {
 	 *
 	 * @return  constructed area(s), multiple areas will be created if there
 	 *          is more than one outer ring. Empty for invalid multipolygons.
-	 * @throws EntityNotFoundException
 	 */
 	public static final Collection<MapArea> createAreasForMultipolygon(OsmRelation relation,
 			TLongObjectMap<MapNode> nodeIdMap, OsmEntityProvider db) throws EntityNotFoundException {
@@ -107,48 +108,38 @@ final class MultipolygonAreaBuilder {
 	 * {@link #createAreasForAdvancedMultipolygon(OsmRelation, TLongObjectMap, OsmEntityProvider)}
 	 *
 	 * @param relation  has to be a simple multipolygon relation
-	 * @throws EntityNotFoundException
 	 */
 	private static final Collection<MapArea> createAreasForSimpleMultipolygon(OsmRelation relation,
 			TLongObjectMap<MapNode> nodeIdMap, OsmEntityProvider db) throws EntityNotFoundException {
 
-		assert isSimpleMultipolygon(relation, db);
+		try {
+			assert isSimpleMultipolygon(relation, db);
 
-		OsmEntity tagSource = null;
-		List<MapNode> outerNodes = null;
-		List<List<MapNode>> holes = new ArrayList<List<MapNode>>();
+			OsmEntity tagSource = null;
+			List<MapNode> outerNodes = null;
+			List<List<MapNode>> holes = new ArrayList<List<MapNode>>();
 
-		for (OsmRelationMember member : membersAsList(relation)) {
-			if (member.getType() == EntityType.Way) {
+			for (OsmRelationMember member : membersAsList(relation)) {
+				if (member.getType() == EntityType.Way) {
 
-				OsmWay way = db.getWay(member.getId());
+					OsmWay way = db.getWay(member.getId());
 
-				if ("inner".equals(member.getRole())) {
-
-					List<MapNode> hole = new ArrayList<MapNode>(way.getNumberOfNodes());
-
-					for (long nodeId : nodesAsList(way).toArray()) {
-						hole.add(nodeIdMap.get(nodeId));
-					}
-
-					holes.add(hole);
-
-				} else if ("outer".equals(member.getRole())) {
-
-					tagSource = relation.getNumberOfTags() > 1 ? relation : way;
-
-					outerNodes = new ArrayList<MapNode>(way.getNumberOfNodes());
-					for (long nodeId : nodesAsList(way).toArray()) {
-						outerNodes.add(nodeIdMap.get(nodeId));
+					if ("inner".equals(member.getRole())) {
+						holes.add(wayNodes(way, nodeIdMap));
+					} else if ("outer".equals(member.getRole())) {
+						tagSource = relation.getNumberOfTags() > 1 ? relation : way;
+						outerNodes = wayNodes(way, nodeIdMap);
 					}
 
 				}
-
 			}
-		}
 
-		return singleton(new MapArea(tagSource.getId(), tagSource instanceof OsmRelation,
-				OSMToMapDataConverter.tagsOfEntity(tagSource), outerNodes, holes));
+			return singleton(new MapArea(tagSource.getId(), tagSource instanceof OsmRelation,
+					tagsOfEntity(tagSource), outerNodes, holes));
+
+		} catch (EntityNotFoundException e) {
+			throw new EntityNotFoundException(e);
+		}
 
 	}
 
@@ -323,7 +314,7 @@ final class MultipolygonAreaBuilder {
 				holesXZ.add(innerRing.getPolygon());
 			}
 
-			MapArea area = new MapArea(relation.getId(), true, OSMToMapDataConverter.tagsOfEntity(relation),
+			MapArea area = new MapArea(relation.getId(), true, tagsOfEntity(relation),
 					outerRing.getNodeLoop(), holes, new PolygonWithHolesXZ(outerRing.getPolygon(), holesXZ));
 
 			finishedPolygons.add(area);
@@ -355,8 +346,6 @@ final class MultipolygonAreaBuilder {
 	 *
 	 * @param isSeaTile  true if the {@link OSMData} is sea on all sides (it may contain islands as long as they are
 	 *                   entirely within the bounds); false if it's on land or unknown/mixed
-	 *
-	 * @throws EntityNotFoundException
 	 */
 	public static final Collection<MapArea> createAreasForCoastlines(
 			OSMData osmData, TLongObjectMap<MapNode> nodeIdMap,
@@ -685,16 +674,10 @@ final class MultipolygonAreaBuilder {
 
 		/**
 		 * creates a node sequence from an {@link OsmWay}
-		 * @throws EntityNotFoundException
 		 */
 		public NodeSequence(OsmWay way, TLongObjectMap<MapNode> nodeIdMap) throws EntityNotFoundException {
-
 			super(way.getNumberOfNodes());
-
-			for (long nodeId : nodesAsList(way).toArray()) {
-				add(nodeIdMap.get(nodeId));
-			}
-
+			addAll(wayNodes(way, nodeIdMap));
 		}
 
 		/**

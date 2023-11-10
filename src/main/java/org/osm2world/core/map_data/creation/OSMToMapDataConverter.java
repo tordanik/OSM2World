@@ -73,7 +73,6 @@ public class OSMToMapDataConverter {
 	 * creates {@link MapElement}s
 	 * based on OSM data from an {@link OSMData} dataset.
 	 * and adds them to collections
-	 * @throws EntityNotFoundException
 	 */
 	private void createMapElements(final OSMData osmData, MapMetadata metadata,
 			final List<MapNode> mapNodes, final List<MapWay> mapWays,
@@ -119,7 +118,7 @@ public class OSMToMapDataConverter {
 				}
 
 			} catch (EntityNotFoundException e) {
-				// TODO: what to do here?
+				// skip this area
 			}
 
 		});
@@ -148,7 +147,7 @@ public class OSMToMapDataConverter {
 						mapAreas.add(mapArea);
 						areaMap.put(way.getId(), mapArea);
 
-					} catch (IncompleteDataException | InvalidGeometryException e) {
+					} catch (EntityNotFoundException | InvalidGeometryException e) {
 						ConversionLog.error(e.getMessage());
 						break;
 					}
@@ -188,7 +187,7 @@ public class OSMToMapDataConverter {
 					List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
 					var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
 					mapWays.add(way);
-				} catch (IncompleteDataException e) {
+				} catch (EntityNotFoundException e) {
 					ConversionLog.error(e.getMessage());
 				}
 			}
@@ -285,14 +284,14 @@ public class OSMToMapDataConverter {
 
 	}
 
-	private static List<MapNode> wayNodes(OsmWay way, TLongObjectMap<MapNode> nodeIdMap) throws IncompleteDataException {
+	public static List<MapNode> wayNodes(OsmWay way, TLongObjectMap<MapNode> nodeIdMap) throws EntityNotFoundException {
 		List<MapNode> result = new ArrayList<>(way.getNumberOfNodes());
 		for (long id : nodesAsList(way).toArray()) {
 			MapNode node = nodeIdMap.get(id);
 			if (node != null) {
 				result.add(node);
 			} else {
-				throw new IncompleteDataException("Invalid input data: Way w" + way.getId()
+				throw new EntityNotFoundException("Invalid input data: Way w" + way.getId()
 						+ " references missing node n" + id);
 			}
 		}
