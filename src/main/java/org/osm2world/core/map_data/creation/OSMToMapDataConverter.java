@@ -139,20 +139,18 @@ public class OSMToMapDataConverter {
 				if (!tags.contains("area", "no")
 						&& tags.stream().anyMatch(ruleset::isAreaTag)) {
 
-					List<MapNode> nodes = new ArrayList<>(way.getNumberOfNodes());
-					for (long id : nodesAsList(way).toArray()) {
-						nodes.add(nodeIdMap.get(id));
-					}
-
 					try {
+
+						List<MapNode> nodes = wayNodes(way, nodeIdMap);
 
 						MapArea mapArea = new MapArea(way.getId(), false, tags, nodes);
 
 						mapAreas.add(mapArea);
 						areaMap.put(way.getId(), mapArea);
 
-					} catch (InvalidGeometryException e) {
-						System.err.println(e);
+					} catch (IncompleteDataException | InvalidGeometryException e) {
+						ConversionLog.error(e.getMessage());
+						break;
 					}
 
 				}
@@ -186,22 +184,13 @@ public class OSMToMapDataConverter {
 		for (OsmWay osmWay : osmData.getWays()) {
 			boolean hasTags = osmWay.getNumberOfTags() != 0;
 			if (hasTags && !areaMap.containsKey(osmWay.getId())) {
-
-				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
-
-				for (long id : nodesAsList(osmWay).toArray()) {
-					MapNode node = nodeIdMap.get(id);
-					if (node != null) {
-						nodes.add(node);
-					} else {
-						throw new Error("Invalid input data: Way w" + osmWay.getId()
-								+ " references missing node n" + id);
-					}
+				try {
+					List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
+					var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
+					mapWays.add(way);
+				} catch (IncompleteDataException e) {
+					ConversionLog.error(e.getMessage());
 				}
-
-				MapWay way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
-				mapWays.add(way);
-
 			}
 		}
 
@@ -294,6 +283,20 @@ public class OSMToMapDataConverter {
 		}
 		return TagSet.of(tags);
 
+	}
+
+	private static List<MapNode> wayNodes(OsmWay way, TLongObjectMap<MapNode> nodeIdMap) throws IncompleteDataException {
+		List<MapNode> result = new ArrayList<>(way.getNumberOfNodes());
+		for (long id : nodesAsList(way).toArray()) {
+			MapNode node = nodeIdMap.get(id);
+			if (node != null) {
+				result.add(node);
+			} else {
+				throw new IncompleteDataException("Invalid input data: Way w" + way.getId()
+						+ " references missing node n" + id);
+			}
+		}
+		return result;
 	}
 
 	/**
