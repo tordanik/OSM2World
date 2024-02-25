@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.Serial;
+import java.util.Locale;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -30,13 +31,14 @@ public class ExportGltfAction extends AbstractExportAction {
 		super("Export " + flavor.toString().toLowerCase() + " file", viewerFrame, data, messageManager, renderOptions);
 		this.flavor = flavor;
 		putValue(SHORT_DESCRIPTION, "Writes a ." + flavor.toString().toLowerCase() + " file");
-		putValue(MNEMONIC_KEY, KeyEvent.VK_G);
+		putValue(MNEMONIC_KEY, flavor == GltfFlavor.GLTF ? KeyEvent.VK_G :  KeyEvent.VK_B);
 
 	}
 
 	@Override
 	protected FileNameExtensionFilter getFileNameExtensionFilter() {
-		return new FileNameExtensionFilter("glTF files", "gltf");
+		String extension = flavor.name().toLowerCase(Locale.ROOT);
+		return new FileNameExtensionFilter(extension + " files", extension);
 	}
 
 	@Override
@@ -52,12 +54,12 @@ public class ExportGltfAction extends AbstractExportAction {
 			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
 			gltfTarget.finish();
 
-			messageManager.addMessage("exported .gltf file " + file);
+			messageManager.addMessage("exported glTF file " + file);
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(viewerFrame,
 					e.toString(),
-					"Could not export .gltf file",
+					"Could not export glTF file",
 					JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
