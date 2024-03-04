@@ -7,7 +7,10 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.osm2world.core.util.Resolution;
+
+import com.google.common.base.Objects;
 
 /**
  * two textures (with compatible dimensions) combined with each other
@@ -37,7 +40,7 @@ public class CompositeTexture extends RuntimeTexture {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
+	protected BufferedImage createBufferedImage() {
 
 		/* obtain images and dimensions */
 
@@ -116,13 +119,40 @@ public class CompositeTexture extends RuntimeTexture {
 		return "CompositeTexture [" + mode + ", " + textureA + " + " + textureB + "]";
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof CompositeTexture)) return false;
+		CompositeTexture other = (CompositeTexture) obj;
+		return dimensions().equals(other.dimensions())
+				&& Objects.equal(wrap, other.wrap)
+				&& Objects.equal(coordFunction, other.coordFunction)
+				&& mode == other.mode
+				&& rescale == other.rescale
+				&& Objects.equal(textureA, other.textureA)
+				&& Objects.equal(textureB, other.textureB);
+	}
+
+	@Override
+	public int hashCode() {
+		HashCodeBuilder builder = new HashCodeBuilder();
+		builder.append(dimensions());
+		builder.append(wrap);
+		builder.append(coordFunction);
+		builder.append(mode);
+		builder.append(rescale);
+		builder.append(textureA);
+		builder.append(textureB);
+		return builder.toHashCode();
+	}
+
 	/**
 	 * stacks an arbitrary number of textures (compare {@link CompositeMode#STACKED})
 	 * @param textures  textures ordered bottom to top, != null
 	 */
 	public static TextureData stackOf(List<TextureData> textures) {
 		switch (textures.size()) {
-		case 0: return new BlankTexture();
+		case 0: return BlankTexture.INSTANCE;
 		case 1: return textures.get(0);
 		case 2: return new CompositeTexture(CompositeMode.STACKED, true,
 				textures.get(0), textures.get(1));

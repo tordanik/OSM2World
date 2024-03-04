@@ -18,14 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLDrawableFactory;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLOffscreenAutoDrawable;
-import javax.media.opengl.GLProfile;
-
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade.Results;
@@ -40,6 +32,13 @@ import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
 import org.osm2world.core.target.jogl.JOGLTargetShader;
 import org.osm2world.core.target.jogl.JOGLTextureManager;
 
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLDrawableFactory;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLOffscreenAutoDrawable;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 
 import ar.com.hjg.pngj.ImageInfo;
@@ -188,7 +187,7 @@ public class ImageExporter {
 		pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
 
 		drawable = factory.createOffscreenAutoDrawable(null,
-				cap, null, pBufferSizeX, pBufferSizeY, null);
+				cap, null, pBufferSizeX, pBufferSizeY);
 		listener = new ImageExporterGLEventListener();
 		drawable.addGLEventListener(listener);
 
@@ -196,6 +195,7 @@ public class ImageExporter {
 
 	}
 
+	@Override
 	protected void finalize() throws Throwable {
 		freeResources();
 	}
@@ -605,7 +605,7 @@ public class ImageExporter {
 			if (this.xSize != xSize || this.ySize != ySize) {
 				// disable display while resizing. all display calls need to be from @writeImageFile
 				nodisplay = true;
-				drawable.setSize(xSize, ySize);
+				drawable.setSurfaceSize(xSize, ySize);
 				nodisplay = false;
 			}
 

@@ -1,6 +1,8 @@
 package org.osm2world.console;
 
 import static java.util.Arrays.asList;
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.GUI;
 import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
@@ -10,8 +12,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
-import javax.swing.UIManager;
+import javax.annotation.Nullable;
+import javax.swing.*;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -19,6 +23,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.viewer.view.ViewerFrame;
 
@@ -45,7 +50,8 @@ public class OSM2World {
 			unparsedArgs.add("--gui");
 		}
 
-		if (!unparsedArgs.contains("--config") && STANDARD_PROPERTIES_FILE.isFile()) {
+		if (!unparsedArgs.contains("--config") && STANDARD_PROPERTIES_FILE.isFile()
+				&& Stream.of(CONVERT, GUI).anyMatch(it -> it == getProgramMode(unparsedArgs))) {
 			System.out.println("No --config parameter, using default style (" + STANDARD_PROPERTIES_FILE + ").\n");
 			unparsedArgs.addAll(asList("--config", STANDARD_PROPERTIES_FILE.toString()));
 		}
@@ -65,6 +71,7 @@ public class OSM2World {
 
 		if (args.isParameterFileDir()) {
 			ParamFileDirMode.run(args.getParameterFileDir());
+			return;
 		}
 
 		/* parse lines from parameter file (if one exists) */
@@ -161,26 +168,22 @@ public class OSM2World {
 
 	private static void executeArgumentsGroup(CLIArgumentsGroup argumentsGroup) {
 
+		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
+
+		LevelOfDetail lod = null;
+		if (representativeArgs.getLod() != null) {
+			lod = LevelOfDetail.values()[representativeArgs.getLod()];
+		}
+
 		/* load configuration file */
 
 		Configuration config = new BaseConfiguration();
-		File configFile = null;
 
-		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
-
-		if (representativeArgs.isConfig()) {
-			try {
-				configFile = representativeArgs.getConfig();
-				PropertiesConfiguration fileConfig = new PropertiesConfiguration();
-				fileConfig.setListDelimiter(';');
-				fileConfig.load(configFile);
-				config = fileConfig;
-				ConfigUtil.parseFonts(config);
-
-			} catch (ConfigurationException e) {
-				System.err.println("could not read config, ignoring it: ");
-				System.err.println(e);
-			}
+		try {
+			File[] configFiles = representativeArgs.getConfig().toArray(new File[0]);
+			config = loadConfigFiles(lod, configFiles);
+		} catch (ConfigurationException e) {
+			System.err.println("could not read config, ignoring it:\n" + e);
 		}
 
 		/* run selected mode */
@@ -207,7 +210,7 @@ public class OSM2World {
 			}
 			File input = representativeArgs.isInput() ?
 					representativeArgs.getInput() : null;
-			new ViewerFrame(config, configFile, input).setVisible(true);
+			new ViewerFrame(config, lod, representativeArgs.getConfig(), input).setVisible(true);
 			break;
 
 		case CONVERT:
@@ -223,6 +226,27 @@ public class OSM2World {
 			throw new Error("Cannot recursively execute parameter files. Program mode was: " + programMode);
 
 		}
+	}
+
+	public static Configuration loadConfigFiles(@Nullable LevelOfDetail lod, File... configFiles)
+			throws ConfigurationException {
+
+		PropertiesConfiguration config = new PropertiesConfiguration();
+		config.setListDelimiter(';');
+
+		for (File it : configFiles) {
+			config.load(it);
+		}
+
+		if (lod != null) {
+			config.clearProperty("lod");
+			config.addProperty("lod", lod.ordinal());
+		}
+
+		ConfigUtil.parseFonts(config);
+
+		return config;
+
 	}
 
 }

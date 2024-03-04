@@ -3,13 +3,14 @@ package org.osm2world.core.world.modules.building;
 import static com.google.common.collect.Iterables.getLast;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.round;
-import static java.util.Collections.*;
+import static java.lang.Math.*;
 import static java.util.Collections.min;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.BUILDING_WINDOWS;
+import static org.osm2world.core.target.common.material.Materials.GLASS_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
@@ -21,15 +22,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
@@ -126,6 +119,10 @@ public class WallSurface {
 
 		wallOutline = new SimplePolygonXZ(outerLoop);
 
+		if (wallOutline.getArea() < 0.01) {
+			throw new InvalidGeometryException("wall surface area is (almost) zero");
+		}
+
 	}
 
 	public double getLength() {
@@ -160,11 +157,11 @@ public class WallSurface {
 	 * renders the wall
 	 *
 	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
-	 * @param windowHeight  the height for textures with the special height value 0 (used for windows)
+	 * @param windowHeight  the height for window textures will be replaced with this value if it's non-null
 	 * @param renderElements  whether the {@link WallElement}s inserted into this surface should also be rendered
 	 */
 	public void renderTo(Target target, VectorXZ textureOrigin,
-			boolean applyWindowTexture, double windowHeight, boolean renderElements) {
+			boolean applyWindowTexture, Double windowHeight, boolean renderElements) {
 
 		/* render the elements on the wall */
 
@@ -176,24 +173,26 @@ public class WallSurface {
 
 		/* draw insets around the elements */
 
-		for (WallElement e : elements) {
-			if (e.insetDistance() != null) {
+		if (renderElements) {
+			for (WallElement e : elements) {
+				if (e.insetDistance() > 0) {
 
-				PolygonXYZ frontOutline = convertTo3D(e.outline());
-				PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
+					PolygonXYZ frontOutline = convertTo3D(e.outline());
+					PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
 
-				List<VectorXYZ> vsWall = createTriangleStripBetween(
-						backOutline.vertices(), frontOutline.vertices());
+					List<VectorXYZ> vsWall = createTriangleStripBetween(
+							backOutline.vertices(), frontOutline.vertices());
 
-				Material material = this.material;
-				// TODO attempt to simulate ambient occlusion with a different baked ao texture?
+					Material material = this.material;
+					// TODO attempt to simulate ambient occlusion with a different baked ao texture?
 
-				target.drawTriangleStrip(material, vsWall,
-						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+					target.drawTriangleStrip(material, vsWall,
+							texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
 
+				}
 			}
 		}
-
+		
 		/* decompose and triangulate the empty wall surface */
 
 		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
@@ -244,8 +243,9 @@ public class WallSurface {
 
 			Double fixedHeight = null;
 
-			if (texLayer >= this.material.getNumTextureLayers()
-					|| this.material == GLASS_WALL) {
+			if (windowHeight != null
+					&& (texLayer >= this.material.getNumTextureLayers()
+						|| this.material == GLASS_WALL)) {
 				// window texture layer
 				fixedHeight = windowHeight;
 			}

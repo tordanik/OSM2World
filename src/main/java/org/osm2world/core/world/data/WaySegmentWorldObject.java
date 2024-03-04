@@ -3,7 +3,7 @@ package org.osm2world.core.world.data;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.VectorXZ;
 
-public interface WaySegmentWorldObject extends LegacyWorldObject {
+public interface WaySegmentWorldObject extends WorldObject {
 
 	@Override
 	public MapWaySegment getPrimaryMapElement();

@@ -3,13 +3,10 @@ package org.osm2world.core.target.common.mesh;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.mesh.TriangleGeometry.CalculatedNormals;
-import org.osm2world.core.target.common.texcoord.PrecomputedTexCoordFunction;
-import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 public interface Geometry {
 
@@ -27,6 +24,14 @@ public interface Geometry {
 		}
 
 		List<TriangleGeometry> triangleGeometries = geometries.stream().map(it -> it.asTriangles()).collect(toList());
+
+		/* verify that the number of texture layers is compatible */
+
+		int numTextureLayers = triangleGeometries.get(0).texCoords.size();
+
+		if (!triangleGeometries.stream().allMatch(it -> it.texCoords.size() == numTextureLayers)) {
+			throw new IllegalArgumentException("Cannot combine geometries, incompatible number of texture layers");
+		}
 
 		/* determine normal mode (null unless all geometries use the same normal mode) */
 		// TODO: "smooth" can alter normals even with same mode if there are adjacent triangles in different geometries
@@ -46,63 +51,27 @@ public interface Geometry {
 
 		/* combine the triangles from all geometries */
 
-		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(null, normalMode);
+		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(numTextureLayers, null, normalMode);
 
 		for (TriangleGeometry t : triangleGeometries) {
 
 			if (t.colors == null) {
 				if (normalMode != null) {
-					builder.addTriangles(t.triangles);
+					builder.addTriangles(t.triangles, t.texCoords);
 				} else {
-					builder.addTriangles(t.triangles,
+					builder.addTriangles(t.triangles, t.texCoords,
 							nCopies(t.triangles.size() * 3, builder.defaultColor),
 							t.normalData.normals());
 				}
 			} else {
 				if (normalMode != null) {
-					builder.addTriangles(t.triangles, t.colors);
+					builder.addTriangles(t.triangles, t.texCoords, t.colors);
 				} else {
-					builder.addTriangles(t.triangles, t.colors, t.normalData.normals());
+					builder.addTriangles(t.triangles, t.texCoords, t.colors, t.normalData.normals());
 				}
 			}
 
 		}
-
-		/* combine the texture coordinates */
-
-		int numTextureLayers = triangleGeometries.get(0).texCoordFunctions.size();
-
-		if (!triangleGeometries.stream().allMatch(it -> it.texCoordFunctions.size() == numTextureLayers)) {
-			throw new IllegalArgumentException("Cannot combine geometries, incompatible number of texture layers");
-		}
-
-		List<TexCoordFunction> texCoordFunctions = new ArrayList<>(numTextureLayers);
-
-		for (int i = 0; i < numTextureLayers; i++) {
-
-			final int layer = i;
-
-			TexCoordFunction firstTexCoordFunction = triangleGeometries.get(0).texCoordFunctions.get(layer);
-
-			if (triangleGeometries.stream().allMatch(it -> it.texCoordFunctions.get(layer).equals(firstTexCoordFunction))) {
-
-				texCoordFunctions.add(firstTexCoordFunction);
-
-			} else {
-
-				/* pre-compute texture coordinates and combine the results */
-
-				List<PrecomputedTexCoordFunction> partialTexCoordFunctions = triangleGeometries.stream()
-						.map(it -> new PrecomputedTexCoordFunction(it.texCoords().get(layer)))
-						.collect(toList());
-
-				texCoordFunctions.add(PrecomputedTexCoordFunction.merge(partialTexCoordFunctions));
-
-			}
-
-		}
-
-		builder.setTexCoordFunctions(texCoordFunctions);
 
 		/* build and return the result */
 

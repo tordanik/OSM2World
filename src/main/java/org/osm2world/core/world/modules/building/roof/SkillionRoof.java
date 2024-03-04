@@ -1,14 +1,15 @@
 package org.osm2world.core.world.modules.building.roof;
 
-import static java.lang.Math.toRadians;
+import static java.lang.Math.PI;
 import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.util.ValueParseUtil.parseAngle;
+import static org.osm2world.core.math.VectorXZ.angleBetween;
 
 import java.util.Collection;
 
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
@@ -24,22 +25,15 @@ public class SkillionRoof extends HeightfieldRoof {
 
 		super(originalPolygon, tags, height, material);
 
-		/* parse slope direction */
+		SimplePolygonXZ simplifiedOuter = originalPolygon.getOuter().getSimplifiedPolygon();
 
-		VectorXZ slopeDirection = null;
+		Angle angle = snapDirection(tags.getValue("roof:direction"), simplifiedOuter.getSegments());
 
-		if (tags.containsKey("roof:direction")) {
-			Double angle = parseAngle(tags.getValue("roof:direction"));
-			if (angle != null) {
-				slopeDirection = VectorXZ.fromAngle(toRadians(angle));
-			}
-		}
+		if (angle != null) {
 
-		if (slopeDirection != null) {
+			VectorXZ slopeDirection = VectorXZ.fromAngle(angle);
 
-			SimplePolygonXZ simplifiedOuter = originalPolygon.getOuter().getSimplifiedPolygon();
-
-			/* find ridge by calculating the outermost intersections of
+			/* find the "top" (upper) segment by calculating the outermost intersections of
 			 * the quasi-infinite slope "line" towards the centroid vector
 			 * with segments of the polygon */
 
@@ -48,7 +42,19 @@ public class SkillionRoof extends HeightfieldRoof {
 			Collection<LineSegmentXZ> intersectedSegments = simplifiedOuter.intersectionSegments(
 					new LineSegmentXZ(center.add(slopeDirection.mult(-1000)), center));
 
-			ridge = max(intersectedSegments, comparingDouble(i -> distanceFromLineSegment(center, i)));
+			LineSegmentXZ upperSegment = max(intersectedSegments,
+					comparingDouble(i -> distanceFromLineSegment(center, i)));
+
+			/* use either the upper segment as the ridge or pick one of its end points as the top */
+
+			if (angleBetween(upperSegment.getDirection(), slopeDirection) < PI / 180) {
+				ridge = upperSegment;
+			} else {
+				VectorXZ offset = slopeDirection.rightNormal().mult(simplifiedOuter.getDiameter());
+				LineSegmentXZ centerLine = new LineSegmentXZ(center.subtract(offset), center.add(offset));
+				VectorXZ topPoint = max(upperSegment.vertices(), comparingDouble(p -> distanceFromLine(p, centerLine.p1, centerLine.p2)));
+				ridge = new LineSegmentXZ(topPoint.subtract(offset), topPoint.add(offset));
+			}
 
 			/* calculate maximum distance from ridge */
 

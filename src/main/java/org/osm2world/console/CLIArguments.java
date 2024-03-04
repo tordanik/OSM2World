@@ -3,6 +3,8 @@ package org.osm2world.console;
 import java.io.File;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.console.CLIArgumentsUtil.InputMode;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.osm.creation.OverpassReader;
@@ -14,7 +16,7 @@ import com.lexicalscope.jewel.cli.Option;
 
 public interface CLIArguments {
 
-	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|gltf|pov|o2w.pbf|png|ppm|gd)";
+	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|gltf(?:.gz)?|glb(?:.gz)?|pov|o2w.pbf(?:.gz)?|png|ppm|gd)";
 
 	/* input and output files */
 
@@ -26,14 +28,16 @@ public interface CLIArguments {
 	List<File> getOutput();
 	boolean isOutput();
 
-	@Option(description="properties file with configuration parameters")
-	File getConfig();
-	boolean isConfig();
+	@Option(description="properties file(s) with configuration parameters", defaultValue = "{}")
+	List<File> getConfig();
 
 	@Option(description="output size in pixels", pattern=Resolution.PATTERN,
 			defaultValue="800,600")
 	Resolution getResolution();
 	boolean isResolution();
+
+	@Option(description="level of detail of the output", pattern="[01234]", defaultToNull=true)
+	@Nullable Integer getLod();
 
 	/* other input options */
 
@@ -46,7 +50,8 @@ public interface CLIArguments {
 	List<LatLon> getInputBoundingBox();
 	boolean isInputBoundingBox();
 
-	@Option(description="zoom,x,y defining an input tile (used for mbtiles and Overpass)", pattern=TileNumber.PATTERN)
+	@Option(description="zoom,x,y defining an input tile (used for mbtiles, Geodesk and Overpass)",
+			pattern=TileNumber.PATTERN)
 	TileNumber getTile();
 	boolean isTile();
 
@@ -100,14 +105,20 @@ public interface CLIArguments {
 	double getPviewAspect();
 	boolean isPviewAspect();
 
+	/* metadata */
+
+	@Option(description="path to a JSON file with metadata, or an mbtiles file with such JSON data for multiple tiles")
+	File getMetadataFile();
+	boolean isMetadataFile();
+
 	/* logging */
 
 	@Option(description="writes execution times to the command line")
 	boolean getPerformancePrint();
 
-	@Option(description="appends a line with execution times to a file")
-	File getPerformanceTable();
-	boolean isPerformanceTable();
+	@Option(description="output directory for log files")
+	File getLogDir();
+	boolean isLogDir();
 
 	/* other parameters */
 

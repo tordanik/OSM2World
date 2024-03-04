@@ -3,23 +3,21 @@ package org.osm2world.core.world.modules.building;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.util.ValueParseUtil.*;
-import static org.osm2world.core.util.ValueParseUtil.parseInt;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
@@ -174,14 +172,14 @@ public class LevelAndHeightData {
 			minHeight = parseMeasure(tags.getValue("min_height"));
 		} else if (buildingMinLevel > 0) {
 			minHeight = (heightWithoutRoof / buildingLevels) * buildingMinLevel;
-		} else if (tags.contains("building", "roof") || tags.contains("building:part", "roof")) {
+		} else if (!defaults.hasWalls) {
 			minHeight = heightWithoutRoof - 0.3;
 		} else {
 			minHeight = 0;
 		}
 
 		if (minHeight > heightWithoutRoof) {
-			System.err.println("Warning: min_height exceeds building (part) height without roof");
+			ConversionLog.warn("min_height exceeds building (part) height without roof");
 			minHeight = heightWithoutRoof - 0.1;
 		}
 
@@ -215,10 +213,10 @@ public class LevelAndHeightData {
 
 		if (minLevel != null && maxLevel != null) {
 			if (minLevel > maxLevel) {
-				System.err.println("Warning: min_level is larger than max_level");
+				ConversionLog.warn("min_level is larger than max_level");
 				ignoreIndoorLevelNumbers = true;
 			} else if ((maxLevel - minLevel) + 1 - nonExistentLevels.size() != totalLevels) {
-				System.err.println("Warning: min_level, max_level and non_existent_levels do not match S3DB levels");
+				ConversionLog.warn("min_level, max_level and non_existent_levels do not match S3DB levels");
 				ignoreIndoorLevelNumbers = true;
 			}
 		} else if (minLevel != null && maxLevel == null) {
@@ -272,7 +270,7 @@ public class LevelAndHeightData {
 			defaultLevelHeights.put(LevelType.UNDERGROUND, defaults.heightPerLevel);
 
 			if (defaultLevelHeights.values().stream().anyMatch(it -> it < 0)) {
-				System.err.println("Warning: Sum of explicit level heights exceeds total available height, ignoring them.");
+				ConversionLog.warn("Sum of explicit level heights exceeds total available height, ignoring them.");
 				explicitLevelHeights.clear();
 				defaultLevelHeights.clear();
 			}

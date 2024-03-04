@@ -3,10 +3,9 @@ package org.osm2world.core.target.jogl;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.media.opengl.GL;
-
 import org.osm2world.core.target.common.material.TextureData;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 

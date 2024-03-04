@@ -11,30 +11,11 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTex
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.map_data.data.*;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.Target;
@@ -42,12 +23,7 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.Building.NodeLevelPair;
-import org.osm2world.core.world.modules.building.BuildingPart;
-import org.osm2world.core.world.modules.building.Door;
-import org.osm2world.core.world.modules.building.DoorParameters;
-import org.osm2world.core.world.modules.building.GeometryWindow;
-import org.osm2world.core.world.modules.building.WallSurface;
-import org.osm2world.core.world.modules.building.WindowParameters;
+import org.osm2world.core.world.modules.building.*;
 import org.osm2world.core.world.modules.building.roof.Roof;
 
 import com.google.common.collect.Sets;
@@ -965,15 +941,15 @@ public class IndoorWall implements Renderable {
 
 						if (mainSurface != null && backSurface != null) {
 							somethingRendered = true;
-							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, !attachmentSurfaces);
-							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, !attachmentSurfaces);
+							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, !attachmentSurfaces);
+							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, !attachmentSurfaces);
 							if (leftSurface != null && rightSurface != null) {
-								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, true);
-								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, 0, true);
+								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, true);
+								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, true);
 							}
 						}
 					} else {
-						System.err.println("Warning: Zero height level for level" + level);
+						ConversionLog.warn("Zero height level for level " + level);
 					}
 				}
 			}

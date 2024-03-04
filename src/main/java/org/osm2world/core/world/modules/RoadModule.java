@@ -1,54 +1,51 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Arrays.*;
+import static java.lang.Math.*;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.core.math.GeometryUtil.interpolateEleOfPolyline;
+import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.addYList;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.ArrayUtils;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Renderable;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.enums.LeftRight;
+import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -553,22 +550,27 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * representation for junctions between roads.
 	 */
-	public static class RoadJunction extends JunctionNodeWorldObject<Road> implements TerrainBoundaryWorldObject {
+	public static class RoadJunction extends JunctionNodeWorldObject<Road>
+			implements TerrainBoundaryWorldObject, ProceduralWorldObject {
 
 		public RoadJunction(MapNode node) {
 			super(node, Road.class);
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			Material material = getSurfaceForNode(node);
 			List<TriangleXYZ> triangles = super.getTriangulation();
+
+			target.setCurrentLodRange(LOD0, LOD4);
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
 
 			/* connect some lanes such as sidewalks between adjacent roads */
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			List<LaneConnection> connections = buildLaneConnections(
 					node, true, false);
@@ -592,7 +594,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, ProceduralWorldObject {
 
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 
@@ -615,12 +617,14 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			List<LaneConnection> connections = buildLaneConnections(
 					node, false, false);
 
 			/* render connections */
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			for (LaneConnection connection : connections) {
 				connection.renderTo(target);
@@ -628,7 +632,9 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* render area not covered by connections */
 
-			//TODO: subtract area covered by connections
+			//TODO: subtract area covered by connections at higher LOD
+
+			target.setCurrentLodRange(LOD0, LOD4);
 
 			Material material = getSurfaceForNode(node);
 
@@ -646,7 +652,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements TerrainBoundaryWorldObject {
+		implements TerrainBoundaryWorldObject, ProceduralWorldObject {
 
 		private static final double CROSSING_WIDTH = 3.0;
 
@@ -660,7 +666,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			VectorXYZ startLeft = getEleConnectors().getPosXYZ(
 					startPos.subtract(cutVector.mult(0.5 * startWidth)));
@@ -698,6 +704,8 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			/* draw lane connections */
 
+			target.setCurrentLodRange(LOD2, LOD4);
+
 			List<LaneConnection> connections = buildLaneConnections(
 					node, false, true);
 
@@ -710,7 +718,8 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	/** representation of a road */
-	public static class Road extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
+	public static class Road extends AbstractNetworkWaySegmentWorldObject
+			implements TerrainBoundaryWorldObject, ProceduralWorldObject {
 
 		protected static final double DEFAULT_LANE_WIDTH = 3.5f;
 
@@ -1488,21 +1497,45 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
+			List<Mesh> result = new ArrayList<>();
+
+			/* handrails */
+
+			if (!steps) { // renderStepsTo has handrails built in
+				target.setCurrentLodRange(LOD2, LOD4);
+				renderHandrailsTo(target, getOutline(false), getOutline(true));
+				// FIXME: getOutline does not consider attachment, so handrails on rooftop paths are incorrect
+			}
+
+			/* road surface */
+
+			boolean multipleLod = (!steps && laneLayout.getLanesLeftToRight().size() > 1);
+
+			/* high LOD lanes */
+
+			target.setCurrentLodRange(multipleLod ? LOD2 : LOD0, LOD4);
 			if (steps) {
 				renderStepsTo(target);
 			} else {
 				renderLanesTo(target);
-				renderHandrailsTo(target, getOutline(false), getOutline(true));
-				// FIXME: getOutline does not consider attachment, so handrails on paths rooftop paths are incorrect
+			}
+
+			if (multipleLod) { /* low LOD */
+
+				target.setCurrentLodRange(LOD0, LOD1);
+				VEHICLE_LANE.render(target, RoadPart.RIGHT, true,
+						this.tags, TagSet.of(), getOutline(false), getOutline(true));
+
 			}
 
 		}
 
 	}
 
-	public static class RoadArea extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class RoadArea extends NetworkAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public RoadArea(MapArea area) {
 			super(area);
@@ -1664,7 +1697,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * {@link #setCalculatedValues1(double, double)} and
 	 * {@link #setCalculatedValues2(double, double)}, respectively.
 	 */
-	static final class Lane implements Renderable {
+	static final class Lane {
 
 		public final Road road;
 		public final LaneType type;
@@ -1753,8 +1786,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		@Override
-		public void renderTo(Target target) {
+		public void renderTo(CommonTarget target) {
 
 			assert phase > 1;
 
@@ -1785,7 +1817,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	/**
 	 * a connection between two lanes (e.g. at a junction)
 	 */
-	static class LaneConnection implements Renderable {
+	static class LaneConnection {
 
 		public final LaneType type;
 		public final RoadPart roadPart;
@@ -1824,8 +1856,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		@Override
-		public void renderTo(Target target) {
+		public void renderTo(CommonTarget target) {
 
 			type.render(target, roadPart, rightHandTraffic,
 					TagSet.of(), TagSet.of(), leftBorder, rightBorder);
@@ -1854,7 +1885,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 		}
 
-		public abstract void render(Target target, RoadPart roadPart,
+		public abstract void render(CommonTarget target, RoadPart roadPart,
 				boolean rightHandTraffic,
 				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
@@ -1884,7 +1915,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void render(Target target, RoadPart roadPart,
+		public void render(CommonTarget target, RoadPart roadPart,
 				boolean rightHandTraffic,
 				TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
@@ -2061,7 +2092,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			"KERB", true, true) {
 
 		@Override
-		public void render(Target target, RoadPart roadPart,
+		public void render(CommonTarget target, RoadPart roadPart,
 				boolean rightHandTraffic, TagSet roadTags, TagSet laneTags,
 				List<VectorXYZ> leftLaneBorder,
 				List<VectorXYZ> rightLaneBorder) {

@@ -1,15 +1,17 @@
 package org.osm2world.core.world.modules.building.roof;
 
-import static java.lang.Math.*;
+import static java.lang.Math.min;
 import static java.util.Collections.max;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
-import static org.osm2world.core.util.ValueParseUtil.parseAngle;
 
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -51,47 +53,28 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 
 		SimplePolygonXZ simplifiedPolygon = outerPoly.getSimplifiedPolygon();
 
-		/* determine ridge direction based on tag if it exists,
-		 * otherwise choose direction of longest polygon segment */
+		/* determine ridge direction based on one of several supported tags */
 
-		VectorXZ ridgeDirection = null;
+		VectorXZ ridgeDirection = ridgeVectorFromRoofDirection(tags, simplifiedPolygon);
 
-		if (tags.containsKey("roof:direction")) {
-			Double angle = parseAngle(tags.getValue("roof:direction"));
-			if (angle != null) {
-				ridgeDirection = VectorXZ.fromAngle(toRadians(angle)).rightNormal();
-			}
-		}
-
-		if (ridgeDirection == null && tags.containsKey("roof:ridge:direction")) {
-			Double angle = parseAngle(tags.getValue("roof:ridge:direction"));
-			if (angle != null) {
-				ridgeDirection = VectorXZ.fromAngle(toRadians(angle));
-			}
+		if (ridgeDirection == null) {
+			ridgeDirection = ridgeVectorFromRidgeDirection(tags, simplifiedPolygon);
 		}
 
 		if (ridgeDirection == null) {
-
-			LineSegmentXZ longestSeg = max(simplifiedPolygon.getSegments(), comparingDouble(s -> s.getLength()));
-
-			ridgeDirection = longestSeg.p2.subtract(longestSeg.p1).normalize();
-
-			if (tags.contains("roof:orientation", "across")) {
-				ridgeDirection = ridgeDirection.rightNormal();
-			}
-
+			ridgeDirection = ridgeVectorFromRoofOrientation(tags, simplifiedPolygon);
 		}
 
 		/* calculate the two outermost intersections of the
 		 * quasi-infinite ridge line with segments of the polygon */
 
 		VectorXZ p1 = outerPoly.getCentroid();
+		LineSegmentXZ intersectionLine = new LineSegmentXZ(
+				p1.add(ridgeDirection.mult(-1000)),
+				p1.add(ridgeDirection.mult(1000))
+		);
 
-		Collection<LineSegmentXZ> intersections =
-			simplifiedPolygon.intersectionSegments(new LineSegmentXZ(
-					p1.add(ridgeDirection.mult(-1000)),
-					p1.add(ridgeDirection.mult(1000))
-			));
+		Collection<LineSegmentXZ> intersections = simplifiedPolygon.intersectionSegments(intersectionLine);
 
 		if (intersections.size() < 2) {
 			throw new InvalidGeometryException("cannot handle roof geometry");
@@ -102,12 +85,10 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 		cap1 = it.next();
 		cap2 = it.next();
 
-		/* base ridge on the centers of the intersected segments
-		 * (the intersections itself are not used because the
-		 * tagged ridge direction is likely not precise)       */
+		VectorXZ c1 = cap1.getIntersection(intersectionLine.p1, intersectionLine.p2);
+		VectorXZ c2 = cap2.getIntersection(intersectionLine.p1, intersectionLine.p2);
 
-		VectorXZ c1 = cap1.getCenter();
-		VectorXZ c2 = cap2.getCenter();
+		/* consider an offset for ridges which do not end at the wall of the building */
 
 		ridgeOffset = min(
 				cap1.getLength() * relativeRoofOffset,
@@ -130,6 +111,47 @@ abstract public class RoofWithRidge extends HeightfieldRoof {
 		maxDistanceToRidge = outerPoly.getVertices().stream()
 				.mapToDouble(v -> distanceFromLineSegment(v, ridge))
 				.max().getAsDouble();
+
+	}
+
+	/**
+	 * returns a ridge direction vector based on the roof:direction tag, if possible.
+	 * May modify the direction a bit to "snap" to directions parallel or orthogonal to polygon segments.
+	 */
+	private static @Nullable VectorXZ ridgeVectorFromRoofDirection(TagSet tags, SimplePolygonXZ polygon) {
+		Angle angle = snapDirection(tags.getValue("roof:direction"), polygon.getSegments());
+		if (angle == null) {
+			return null;
+		} else {
+			return VectorXZ.fromAngle(angle).rightNormal();
+		}
+	}
+
+	/**
+	 * returns a ridge direction vector based on the roof:ridge:direction tag, if possible.
+	 */
+	private static VectorXZ ridgeVectorFromRidgeDirection(TagSet tags, SimplePolygonXZ polygon) {
+		Angle angle = snapDirection(tags.getValue("roof:ridge:direction"), polygon.getSegments());
+		return angle != null ? VectorXZ.fromAngle(angle) : null;
+	}
+
+	/**
+	 * returns a ridge direction vector based on the roof:orientation tag.
+	 * If that tag is not set or has an unknown value, roof:orientation=along is assumed.
+	 */
+	private static @Nullable VectorXZ ridgeVectorFromRoofOrientation(TagSet tags,
+			SimplePolygonXZ polygon) {
+
+		SimplePolygonXZ rotatedBbox = polygon.minimumRotatedBoundingBox();
+		LineSegmentXZ longestSeg = max(rotatedBbox.getSegments(), comparingDouble(s -> s.getLength()));
+
+		VectorXZ result = longestSeg.p2.subtract(longestSeg.p1).normalize();
+
+		if (tags.contains("roof:orientation", "across")) {
+			result = result.rightNormal();
+		}
+
+		return result;
 
 	}
 

@@ -1,14 +1,13 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
-import static javax.media.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.*;
 
 import java.awt.Color;
 import java.nio.Buffer;
 
-import javax.media.opengl.GL3;
-
 import org.osm2world.core.math.VectorXYZ;
+
+import com.jogamp.opengl.GL3;
 
 /**
  * class that keeps a VBO id along with associated information for {@link NonAreaPrimitive} objects.

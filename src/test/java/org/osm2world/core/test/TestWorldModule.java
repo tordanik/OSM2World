@@ -1,6 +1,7 @@
 package org.osm2world.core.test;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 
 import org.osm2world.core.map_data.data.MapNode;
@@ -9,6 +10,7 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -22,7 +24,7 @@ public class TestWorldModule extends AbstractModule {
 		node.addRepresentation(new TestNodeWorldObject(node));
 	}
 
-	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject {
+	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public TestNodeWorldObject(MapNode node) {
 			super(node);

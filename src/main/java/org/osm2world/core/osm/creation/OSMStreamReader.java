@@ -1,25 +1,11 @@
 package org.osm2world.core.osm.creation;
 
-import static java.lang.Double.parseDouble;
-import static java.lang.Math.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
+import de.topobyte.osm4j.core.access.OsmIterator;
+import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
+import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
+import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.osm2world.core.osm.data.OSMData;
 import org.w3c.dom.Document;
@@ -28,11 +14,26 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.topobyte.osm4j.core.access.OsmIterator;
-import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
-import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
-import de.topobyte.osm4j.pbf.seq.PbfIterator;
-import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Double.parseDouble;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * {@link OSMDataReader} providing information from a stream of OSM data (such as a {@link FileInputStream}).
@@ -76,10 +77,7 @@ public class OSMStreamReader implements OSMDataReader {
 		if (!useJosmWorkaround) {
 			return getDataFromStream(inputStream, compressionMethod);
 		} else {
-			File tempFile = createTempFileWithJosmWorkarounds(inputStream);
-			try (InputStream tempFileInputStream = new FileInputStream(tempFile)) {
-				return getDataFromStream(tempFileInputStream, compressionMethod);
-			}
+			return getDataFromStream(applyJosmWorkarounds(inputStream), CompressionMethod.None);
 		}
 	}
 
@@ -109,10 +107,10 @@ public class OSMStreamReader implements OSMDataReader {
 	 * Removes some JOSM-specific attributes present in the original data, sets fake versions for unversioned elements,
 	 * and merges multiple bound elements.
 	 *
-	 * The result is written to a temporary file in the .osm format, which is returned.
-	 * The generated file should <em>not</em> be used for anything except feeding it to OSM2World.
+	 * The result is provided as an input stream of OSM XML data, which is returned.
+	 * The generated data should <em>not</em> be used for anything except feeding it to OSM2World.
 	 */
-	protected static final File createTempFileWithJosmWorkarounds(InputStream josmDataInputStream) throws IOException {
+	protected static InputStream applyJosmWorkarounds(InputStream josmDataInputStream) throws IOException {
 
 		try {
 
@@ -178,21 +176,17 @@ public class OSMStreamReader implements OSMDataReader {
 
 			/* write result */
 
-			File tempFile = File.createTempFile("workaround", ".osm", null);
-			tempFile.deleteOnExit();
+			// temporary UTF-16 string representation, avoids incorrectly encoded emojis
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-			try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
-				TransformerFactory tFactory = TransformerFactory.newInstance();
-				Transformer transformer = tFactory.newTransformer();
+			transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
 
-				StreamResult result = new StreamResult(outputStream);
-				DOMSource source = new DOMSource(doc);
-				transformer.transform(source, result);
-
-				return tempFile;
-
-			}
+			return IOUtils.toInputStream(stringWriter.toString(), StandardCharsets.UTF_8);
 
 		} catch (ParserConfigurationException | TransformerException | SAXException e) {
 			throw new IOException(e);

@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.PrimitiveTarget;
 import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.jogl.JOGLRendererVBO;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -19,43 +22,39 @@ import org.osm2world.core.world.data.WorldObject;
  */
 public class StatisticsTarget extends PrimitiveTarget {
 
-	private long[] globalCounts = new long[Stat.values().length];
-	private Map<Material, long[]> countsPerMaterial = new HashMap<Material, long[]>();
-	private Map<Class<?>, long[]> countsPerClass = new HashMap<Class<?>, long[]>();
+	public final @Nullable LevelOfDetail lod;
+
+	private final long[] globalCounts = new long[Stat.values().length];
+	private final Map<Material, long[]> countsPerMaterial = new HashMap<>();
+	private final Map<Class<? extends WorldObject>, long[]> countsPerClass = new HashMap<>();
 
 	private WorldObject currentObject = null;
 
-	private static abstract class StatImpl {
-
-		public long countObject(WorldObject object) {
-			return 0;
-		}
-
-		public long countPrimitive(Type type, Material material,
-				List<VectorXYZ> vs, List<VectorXYZ> normals,
-				List<List<VectorXZ>> texCoordLists) {
-			return 0;
-		}
-
+	public StatisticsTarget(LevelOfDetail lod) {
+		this.lod = lod;
 	}
 
-	public static enum Stat {
+	public StatisticsTarget() {
+		this(null);
+	}
 
-		OBJECT_COUNT(new StatImpl() {
+	public enum Stat {
+
+		OBJECT_COUNT {
 			@Override public long countObject(WorldObject object) {
 				return 1;
 			}
-		}),
+		},
 
-		PRIMITIVE_COUNT(new StatImpl() {
+		PRIMITIVE_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
 				return 1;
 			}
-		}),
+		},
 
-		TOTAL_TRIANGLE_COUNT(new StatImpl() {
+		TOTAL_TRIANGLE_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
@@ -65,41 +64,41 @@ public class StatisticsTarget extends PrimitiveTarget {
 					return vs.size() - 2;
 				}
 			}
-		}),
+		},
 
-		TRIANGLES_COUNT(new StatImpl() {
+		TRIANGLES_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.TRIANGLES ? 1 : 0;
 			}
-		}),
+		},
 
-		TRIANGLE_STRIP_COUNT(new StatImpl() {
+		TRIANGLE_STRIP_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.TRIANGLE_STRIP ? 1 : 0;
 			}
-		}),
+		},
 
-		TRIANGLE_FAN_COUNT(new StatImpl() {
+		TRIANGLE_FAN_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.TRIANGLE_FAN ? 1 : 0;
 			}
-		}),
+		},
 
-		CONVEX_POLYGON_COUNT(new StatImpl() {
+		CONVEX_POLYGON_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
 				return type == Type.CONVEX_POLYGON ? 1 : 0;
 			}
-		}),
+		},
 
-		VBO_VALUE_COUNT(new StatImpl() {
+		VBO_VALUE_COUNT {
 			@Override public long countPrimitive(Type type, Material material,
 					List<VectorXYZ> vs, List<VectorXYZ> normals,
 					List<List<VectorXZ>> texCoordLists) {
@@ -112,18 +111,31 @@ public class StatisticsTarget extends PrimitiveTarget {
 					vertexCount = 3 * (vs.size() - 2);
 				}
 
-				return vertexCount *
+				return (long) vertexCount *
 					JOGLRendererVBO.getValuesPerVertex(material);
 
 			}
-		});
+		};
 
-		private final StatImpl impl;
-
-		private Stat(StatImpl impl) {
-			this.impl = impl;
+		public long countObject(WorldObject object) {
+			return 0;
 		}
 
+		public long countPrimitive(Type type, Material material,
+									List<VectorXYZ> vs, List<VectorXYZ> normals,
+									List<List<VectorXZ>> texCoordLists) {
+			return 0;
+		}
+
+	}
+
+	@Override
+	public LevelOfDetail getLod() {
+		if (lod != null) {
+			return lod;
+		} else {
+			return super.getLod();
+		}
 	}
 
 	@Override
@@ -133,16 +145,13 @@ public class StatisticsTarget extends PrimitiveTarget {
 
 		if (currentObject != null) {
 
-			Class<?> currentClass = currentObject.getClass();
+			Class<? extends WorldObject> currentClass = currentObject.getClass();
 
-			if (!countsPerClass.containsKey(currentClass)) {
-				countsPerClass.put(currentClass,
-						new long[Stat.values().length]);
-			}
+			countsPerClass.putIfAbsent(currentClass, new long[Stat.values().length]);
 
 			for (Stat stat : Stat.values()) {
 
-				long count = stat.impl.countObject(object);
+				long count = stat.countObject(object);
 
 				globalCounts[stat.ordinal()] += count;
 
@@ -164,13 +173,11 @@ public class StatisticsTarget extends PrimitiveTarget {
 			List<VectorXYZ> vs, List<VectorXYZ> normals,
 			List<List<VectorXZ>> texCoordLists) {
 
-		if (!countsPerMaterial.containsKey(material)) {
-			countsPerMaterial.put(material, new long[Stat.values().length]);
-		}
+		countsPerMaterial.putIfAbsent(material, new long[Stat.values().length]);
 
 		for (Stat stat : Stat.values()) {
 
-			long count = stat.impl.countPrimitive(
+			long count = stat.countPrimitive(
 					type, material, vs, normals, texCoordLists);
 
 			globalCounts[stat.ordinal()] += count;
@@ -187,15 +194,6 @@ public class StatisticsTarget extends PrimitiveTarget {
 
 	}
 
-	public void clear() {
-		for (int i=0; i < globalCounts.length; ++i) {
-			globalCounts[i] = 0;
-		}
-		countsPerMaterial.clear();
-		countsPerClass.clear();
-		currentObject = null;
-	}
-
 	public long getGlobalCount(Stat stat) {
 		return globalCounts[stat.ordinal()];
 	}
@@ -208,7 +206,7 @@ public class StatisticsTarget extends PrimitiveTarget {
 		return countsPerMaterial.get(material)[stat.ordinal()];
 	}
 
-	public Set<Class<?>> getKnownRenderableClasses() {
+	public Set<Class<? extends WorldObject>> getKnownRenderableClasses() {
 		return countsPerClass.keySet();
 	}
 

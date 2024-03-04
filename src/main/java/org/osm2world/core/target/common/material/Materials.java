@@ -85,10 +85,6 @@ public final class Materials {
 			new ConfMaterial(Interpolation.FLAT, new Color(0.4f, 0.4f, 0.4f));
 	public static final ConfMaterial PLASTIC =
 			new ConfMaterial(Interpolation.FLAT, new Color(255, 255, 255));
-	public static final ConfMaterial PLASTIC_GREY =
-			new ConfMaterial(Interpolation.FLAT, new Color(184, 184, 184));
-	public static final ConfMaterial PLASTIC_BLACK =
-			new ConfMaterial(Interpolation.FLAT, new Color(0, 0, 0));
 	public static final ConfMaterial ROCK =
 			new ConfMaterial(Interpolation.FLAT, new Color(160, 166, 155));
 	public static final ConfMaterial SAND =
@@ -319,10 +315,19 @@ public final class Materials {
 		return fieldNameMap.keySet();
 	}
 
-	/** returns a material defined here based on its field name */
-	public static final ConfMaterial getMaterial(String fieldName) {
+	/**
+	 * returns a material defined here based on its name
+	 *
+	 * @param name  case-insensitive name of the material
+	 */
+	public static final @Nullable ConfMaterial getMaterial(@Nullable String name) {
+
+		if (name == null) return null;
+
+		/* look for materials defined as a constant first */
+
 		for (Entry<ConfMaterial, String> entry : fieldNameMap.entrySet()) {
-			if (entry.getValue().equalsIgnoreCase(fieldName)) {
+			if (entry.getValue().equalsIgnoreCase(name)) {
 				return entry.getKey();
 			}
 		}
@@ -332,12 +337,19 @@ public final class Materials {
 		 * through externalMaterials map
 		 */
 		for (String key : externalMaterials.keySet()) {
-			if(fieldName.equals(key)) {
-				return externalMaterials.get(fieldName);
+			if (name.equals(key)) {
+				return externalMaterials.get(name);
 			}
 		}
 
 		return null;
+
+	}
+
+	/** variant of {@link #getMaterial(String)} with a default value */
+	public static final Material getMaterial(@Nullable String name, Material defaultValue) {
+		Material result = getMaterial(name);
+		return result == null ? defaultValue : result;
 	}
 
 	/** returns a material for a surface value; null if none is found */
@@ -675,15 +687,11 @@ public final class Materials {
 	}
 
 	private static Wrap getWrap(String wrapString) {
-
-		Wrap wrap = Wrap.REPEAT;
-		if ("clamp_to_border".equalsIgnoreCase(wrapString)) {
-			wrap = Wrap.CLAMP_TO_BORDER;
-		} else if ("clamp".equalsIgnoreCase(wrapString)) {
-			wrap = Wrap.CLAMP;
+		if (wrapString != null && wrapString.toLowerCase().startsWith("clamp")) {
+			return Wrap.CLAMP;
+		} else {
+			return Wrap.REPEAT;
 		}
-
-		return wrap;
 	}
 
 	private static @Nullable Function<TextureDataDimensions, TexCoordFunction> getCoordFunction(

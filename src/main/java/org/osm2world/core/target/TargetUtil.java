@@ -2,21 +2,33 @@ package org.osm2world.core.target;
 
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.PRIMITIVE_COUNT;
-import static org.osm2world.core.util.FaultTolerantIterationUtil.*;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.DEFAULT_EXCEPTION_HANDLER;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.statistics.StatisticsTarget;
+import org.osm2world.core.util.functions.CheckedConsumer;
 import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
+import com.google.gson.JsonIOException;
+
 public final class TargetUtil {
+
+	public enum Compression { NONE, ZIP, GZ }
 
 	private TargetUtil() {}
 
@@ -47,28 +59,23 @@ public final class TargetUtil {
 	public static void renderWorldObjects(Iterator<? extends Target> targetIterator, MapData mapData,
 			int primitiveThresholdPerTarget) {
 
-		final StatisticsTarget primitiveCounter = new StatisticsTarget();
+		StatisticsTarget primitiveCounter = new StatisticsTarget();
+		Target currentTarget = targetIterator.next();
 
-		forEach(mapData.getMapElements(), new Consumer<MapElement>() {
+		for (MapElement e : mapData.getMapElements()) {
+			for (WorldObject r : e.getRepresentations()) {
 
-			Target currentTarget = targetIterator.next();
+				renderObject(primitiveCounter, r);
 
-			@Override public void accept(MapElement e) {
-				for (WorldObject r : e.getRepresentations()) {
+				renderObject(currentTarget, r);
 
-					renderObject(primitiveCounter, r);
-
-					renderObject(currentTarget, r);
-
-					if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT) >= primitiveThresholdPerTarget) {
-						currentTarget = targetIterator.next();
-						primitiveCounter.clear();
-					}
-
+				if (primitiveCounter.getGlobalCount(PRIMITIVE_COUNT) >= primitiveThresholdPerTarget) {
+					currentTarget = targetIterator.next();
+					primitiveCounter = new StatisticsTarget();
 				}
-			}
 
-		});
+			}
+		}
 
 	}
 
@@ -82,12 +89,55 @@ public final class TargetUtil {
 			((LegacyWorldObject)object).renderTo(target);
 		} else {
 			object.buildMeshes().forEach(target::drawMesh);
+			object.getSubModels().forEach(it -> target.drawModel(it.model, it.params));
 		}
 	}
 
 	public static final List<List<VectorXZ>> flipTexCoordsVertically(List<List<VectorXZ>> texCoordLists) {
 		return texCoordLists.stream().map(list ->
 				list.stream().map(v -> new VectorXZ(v.x, 1.0 - v.z)).collect(toList())).collect(toList());
+	}
+
+	/**
+	 * writes content to a file and optionally applies a compression
+	 *
+	 * @param outputFile  the file to write to
+	 * @param compression  the compression to use, can be {@link Compression#NONE}
+	 * @param writeToStream  the function which produces the content that should be written to the file
+	 */
+	public static <E extends Exception> void writeFileWithCompression(File outputFile,
+				Compression compression, CheckedConsumer<OutputStream, E> writeToStream) throws E {
+
+		try {
+
+			var fileOutputStream = new FileOutputStream(outputFile);
+
+			OutputStream outputStream = switch (compression) {
+				case NONE -> fileOutputStream;
+				case GZ -> new GZIPOutputStream(fileOutputStream);
+				case ZIP -> {
+					var zipOS = new ZipOutputStream(fileOutputStream);
+					zipOS.putNextEntry(new ZipEntry(outputFile.getName().replace(".gz", "")));
+					yield zipOS;
+				}
+			};
+
+			try (outputStream) {
+
+				writeToStream.accept(outputStream);
+
+				if (outputStream instanceof ZipOutputStream zipOutputStream) {
+					try {
+						zipOutputStream.closeEntry();
+					} catch (IOException ignored) { /* stream was already closed */ }
+				}
+
+			}
+
+		} catch (JsonIOException | IOException e) {
+			throw new RuntimeException(e);
+		}
+
 	}
 
 }

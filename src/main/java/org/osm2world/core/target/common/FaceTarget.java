@@ -8,6 +8,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -230,9 +233,9 @@ public abstract class FaceTarget extends AbstractTarget {
 			HashMultimap.create();
 
 	@Override
-	public void drawTriangles(Material material,
-			List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawTriangles(@Nonnull Material material,
+							  @Nonnull List<? extends TriangleXYZ> triangles,
+							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		int i = 0;
 
@@ -243,7 +246,7 @@ public abstract class FaceTarget extends AbstractTarget {
 				VectorXYZ n = triangle.getNormal();
 
 				if (Double.isNaN(n.x) || Double.isNaN(n.y) || Double.isNaN(n.z)) {
-					continue; //TODO log
+					ConversionLog.error("Unexpected NaN value in FaceTarget.drawTriangles: " + n);
 				}
 
 				isolatedTriangles.put(material,
@@ -264,8 +267,8 @@ public abstract class FaceTarget extends AbstractTarget {
 	}
 
 	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		if (reconstructFaces()) {
 			super.drawConvexPolygon(material, vs, texCoordLists);

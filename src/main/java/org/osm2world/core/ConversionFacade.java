@@ -2,35 +2,28 @@ package org.osm2world.core;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Comparator.comparingDouble;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.lang.time.StopWatch;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.EleConstraintValidator;
-import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.SRTMData;
-import org.osm2world.core.map_elevation.creation.TerrainElevationData;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.map_data.data.MapMetadata;
+import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -49,25 +42,7 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.creation.WorldCreator;
 import org.osm2world.core.world.creation.WorldModule;
 import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.AerowayModule;
-import org.osm2world.core.world.modules.BarrierModule;
-import org.osm2world.core.world.modules.BicycleParkingModule;
-import org.osm2world.core.world.modules.BridgeModule;
-import org.osm2world.core.world.modules.CliffModule;
-import org.osm2world.core.world.modules.GolfModule;
-import org.osm2world.core.world.modules.InvisibleModule;
-import org.osm2world.core.world.modules.MastModule;
-import org.osm2world.core.world.modules.ParkingModule;
-import org.osm2world.core.world.modules.PoolModule;
-import org.osm2world.core.world.modules.PowerModule;
-import org.osm2world.core.world.modules.RailwayModule;
-import org.osm2world.core.world.modules.RoadModule;
-import org.osm2world.core.world.modules.SportsModule;
-import org.osm2world.core.world.modules.StreetFurnitureModule;
-import org.osm2world.core.world.modules.SurfaceAreaModule;
-import org.osm2world.core.world.modules.TreeModule;
-import org.osm2world.core.world.modules.TunnelModule;
-import org.osm2world.core.world.modules.WaterModule;
+import org.osm2world.core.world.modules.*;
 import org.osm2world.core.world.modules.building.BuildingModule;
 import org.osm2world.core.world.modules.building.indoor.IndoorModule;
 import org.osm2world.core.world.modules.traffic_sign.TrafficSignModule;
@@ -152,7 +127,7 @@ public class ConversionFacade {
 	/**
 	 * sets the factory that will make {@link MapProjection}
 	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
 	public void setMapProjectionFactory(Function<LatLon, ? extends MapProjection> mapProjectionFactory) {
 		this.mapProjectionFactory = mapProjectionFactory;
@@ -161,7 +136,7 @@ public class ConversionFacade {
 	/**
 	 * sets the factory that will make {@link EleConstraintEnforcer}
 	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
 	public void setEleConstraintEnforcerFactory(
 			Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
@@ -171,7 +146,7 @@ public class ConversionFacade {
 	/**
 	 * sets the factory that will make {@link TerrainInterpolator}
 	 * instances during subsequent calls to
-	 * {@link #createRepresentations(OSMData, List, Configuration, List)}.
+	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
 	public void setTerrainEleInterpolatorFactory(
 			Factory<? extends TerrainInterpolator> enforcerFactory) {
@@ -185,6 +160,7 @@ public class ConversionFacade {
 	 * Sends updates to {@link ProgressListener}s.
 	 *
 	 * @param osmFile       file to read OSM data from; != null
+	 * @param metadata      metadata associated with the OSM dataset to process, may be null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
@@ -192,7 +168,7 @@ public class ConversionFacade {
 	 * @param targets       receivers of the conversion results; can be null if
 	 *                      you want to handle the returned results yourself
 	 */
-	public Results createRepresentations(File osmFile,
+	public Results createRepresentations(File osmFile, @Nullable MapMetadata metadata,
 			List<? extends WorldModule> worldModules, Configuration config,
 			List<? extends Target> targets)
 			throws IOException {
@@ -203,19 +179,19 @@ public class ConversionFacade {
 
 		OSMData osmData = new OSMFileReader(osmFile).getData();
 
-		return createRepresentations(osmData, worldModules, config, targets);
+		return createRepresentations(osmData, metadata, worldModules, config, targets);
 
 	}
 
 	/**
-	 * variant of
-	 * {@link #createRepresentations(File, List, Configuration, List)}
+	 * variant of {@link #createRepresentations(File, MapMetadata, List, Configuration, List)}
 	 * that accepts {@link OSMData} instead of a file.
 	 * Use this when all data is already
 	 * in memory, for example with editor applications.
 	 * To obtain the data, you can use an {@link OSMDataReader}.
 	 *
 	 * @param osmData       input data; != null
+	 * @param metadata      metadata associated with the OSM dataset to process, may be null
 	 * @param worldModules  modules that will create the {@link WorldObject}s
 	 *                      in the result; null to use a default module list
 	 * @param config        set of parameters that controls various aspects
@@ -225,7 +201,7 @@ public class ConversionFacade {
 	 *
 	 * @throws BoundingBoxSizeException  for oversized bounding boxes
 	 */
-	public Results createRepresentations(OSMData osmData,
+	public Results createRepresentations(OSMData osmData, @Nullable MapMetadata metadata,
 			List<? extends WorldModule> worldModules, Configuration config,
 			List<? extends Target> targets)
 			throws IOException, BoundingBoxSizeException {
@@ -255,7 +231,7 @@ public class ConversionFacade {
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, config);
 		MapData mapData = null;
 		try {
-			mapData = converter.createMapData(osmData);
+			mapData = converter.createMapData(osmData, metadata);
 		} catch (EntityNotFoundException e) {
 			// TODO: what to do here?
 		}
@@ -267,7 +243,7 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * variant of {@link #createRepresentations(OSMData, List, Configuration, List)}
+	 * variant of {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}
 	 * that takes {@link MapData} instead of {@link OSMData}
 	 */
 	public Results createRepresentations(MapProjection mapProjection, MapData mapData,
@@ -316,8 +292,8 @@ public class ConversionFacade {
 		calculateElevations(mapData, eleData, config);
 		attachConnectors(mapData);
 
-		/* supply results to targets and caller */
-		updatePhase(Phase.FINISHED);
+		/* convert 3d scene to target representation */
+		updatePhase(Phase.TARGET);
 
 		boolean underground = config.getBoolean("renderUnderground", true);
 
@@ -327,6 +303,9 @@ public class ConversionFacade {
 				target.finish();
 			}
 		}
+
+		/* supply results to targets */
+		updatePhase(Phase.FINISHED);
 
 		return new Results(mapProjection, mapData, eleData);
 
@@ -339,10 +318,11 @@ public class ConversionFacade {
 		SpatialIndex<AttachmentSurface> attachmentSurfaceIndex =
 				new IndexGrid<>(mapData.getDataBoundary().pad(50), 100, 100);
 
-		for (WorldObject object : mapData.getWorldObjects()) {
-			if (object.getParent() != null) continue;
-			object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
-		}
+		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), object -> {
+			if (object.getParent() == null) {
+				object.getAttachmentSurfaces().forEach(attachmentSurfaceIndex::insert);
+			}
+		});
 
 		/* attach connectors to the surfaces */
 
@@ -434,30 +414,17 @@ public class ConversionFacade {
 
 		/* provide known elevations from eleData to the interpolator */
 
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-
 		if (!(interpolator instanceof ZeroInterpolator)) {
 
 			Collection<VectorXYZ> sites = emptyList();
 
 			try {
-
 				sites = eleData.getSites(mapData);
-
-				System.out.println("time getSites: " + stopWatch);
-				stopWatch.reset();
-				stopWatch.start();
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
 			interpolator.setKnownSites(sites);
-
-			System.out.println("time setKnownSites: " + stopWatch);
-			stopWatch.reset();
-			stopWatch.start();
 
 		}
 
@@ -473,10 +440,6 @@ public class ConversionFacade {
 			}
 
 		});
-
-		System.out.println("time terrain interpolation: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
 
 		/* enforce constraints defined by WorldObjects */
 
@@ -496,23 +459,16 @@ public class ConversionFacade {
 
 		}
 
-		System.out.println("time add constraints: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
-
 		enforcer.enforceConstraints();
-
-		System.out.println("time enforce constraints: " + stopWatch);
-		stopWatch.reset();
-		stopWatch.start();
 
 	}
 
-	public static enum Phase {
+	public enum Phase {
 		MAP_DATA,
 		REPRESENTATION,
 		ELEVATION,
 		TERRAIN,
+		TARGET,
 		FINISHED
 	}
 

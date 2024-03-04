@@ -1,27 +1,18 @@
 package org.osm2world.core.target.common.model;
 
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Target;
+import java.util.List;
+
+import org.osm2world.core.target.common.mesh.Mesh;
 
 /**
- * A model referencing an external resource, such as an URI
+ * A model referencing an external resource, such as a URI
  */
-public class ExternalResourceModel implements Model {
-
-	private final String resourceIdentifier;
-
-	public ExternalResourceModel(String resourceIdentifier) {
-		this.resourceIdentifier = resourceIdentifier;
-	}
-
-	public String getResourceIdentifier() {
-		return resourceIdentifier;
-	}
+public record ExternalResourceModel(String resourceIdentifier) implements Model {
 
 	@Override
-	public void render(Target target, VectorXYZ position, double direction,
-			Double height, Double width, Double length) {
+	public List<Mesh> buildMeshes(InstanceParameters params) {
 		// TODO implement - right now this only works for the FrontendPbfTarget, others will just show nothing
+		return List.of();
 	}
 
 }

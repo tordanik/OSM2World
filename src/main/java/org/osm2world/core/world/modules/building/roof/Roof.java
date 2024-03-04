@@ -1,10 +1,20 @@
 package org.osm2world.core.world.modules.building.roof;
 
+import static java.lang.Math.PI;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.Angle.radiansBetween;
+import static org.osm2world.core.util.ValueParseUtil.parseAngle;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.VectorXZ;
@@ -89,4 +99,47 @@ abstract public class Roof {
 		}
 
 	}
+
+	/**
+	 * attempts to slightly modify the angle from an OSM direction tag
+	 * so that it is parallel or orthogonal to one of the segments.
+	 * Returns the modified angle, or the original angle if the required modification would be too great.
+	 */
+	protected static @Nullable Angle snapDirection(String directionValue, List<LineSegmentXZ> segments) {
+
+		Double angleDeg = parseAngle(directionValue);
+
+		if (angleDeg == null) return null;
+
+		Angle angle = Angle.ofDegrees(angleDeg);
+
+		List<Angle> segmentAngles = new ArrayList<>();
+		for (LineSegmentXZ segment : segments) {
+			Angle segmentAngle = Angle.ofRadians(segment.getDirection().angle());
+			segmentAngles.add(segmentAngle);
+			segmentAngles.add(segmentAngle.plus(Angle.ofRadians(0.5 * PI)));
+			segmentAngles.add(segmentAngle.plus(Angle.ofRadians(PI)));
+			segmentAngles.add(segmentAngle.plus(Angle.ofRadians(1.5 * PI)));
+		}
+
+		Angle closestSegmentAngle = Collections.min(segmentAngles, comparingDouble(a -> radiansBetween(a, angle)));
+
+		double acceptableDifference;
+
+		if (directionValue.matches("[NSEW]+")) {
+			acceptableDifference = PI / 4;
+		} else if (!directionValue.contains(".")) {
+			acceptableDifference = PI / 18;
+		} else {
+			acceptableDifference = PI / 360;
+		}
+
+		if (radiansBetween(closestSegmentAngle, angle) <= acceptableDifference) {
+			return closestSegmentAngle;
+		} else {
+			return angle;
+		}
+
+	}
+
 }

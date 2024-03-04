@@ -11,10 +11,11 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
 
-public class IndoorRoom implements AreaWorldObject {
+public class IndoorRoom implements AreaWorldObject, LegacyWorldObject {
 
     private final IndoorWall wall;
     private final IndoorFloor floor;

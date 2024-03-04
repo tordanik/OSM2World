@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 
+import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
@@ -27,9 +28,8 @@ public final class ObjWriter {
 	private ObjWriter() { }
 
 	public static final void writeObjFile(
-			File objFile, MapData mapData,
-			MapProjection mapProjection,
-			Camera camera, Projection projection, boolean underground)
+			File objFile, MapData mapData, MapProjection mapProjection,
+			Configuration config, Camera camera, Projection projection, boolean underground)
 			throws IOException {
 
 		if (!objFile.exists()) {
@@ -58,7 +58,9 @@ public final class ObjWriter {
 
 			/* write actual file content */
 
-			ObjTarget target = new ObjTarget(objStream, mtlStream, objFile.getParentFile());
+			ObjTarget target = new ObjTarget(objStream, mtlStream, objFile.getAbsoluteFile().getParentFile(),
+					objFile.getName());
+			target.setConfiguration(config);
 
 			TargetUtil.renderWorldObjects(target, mapData, underground);
 
@@ -67,9 +69,8 @@ public final class ObjWriter {
 	}
 
 	public static final void writeObjFiles(
-			final File objDirectory, MapData mapData,
-			final MapProjection mapProjection,
-			Camera camera, Projection projection,
+			final File objDirectory, MapData mapData, final MapProjection mapProjection,
+			Configuration config, Camera camera, Projection projection,
 			int primitiveThresholdPerFile)
 			throws IOException {
 
@@ -124,7 +125,9 @@ public final class ObjWriter {
 
 					objStream.println("mtllib " + mtlFile.getName() + "\n");
 
-					return new ObjTarget(objStream, mtlStream, objDirectory);
+					var target = new ObjTarget(objStream, mtlStream, objDirectory, "part_obj");
+					target.setConfiguration(config);
+					return target;
 
 				} catch (FileNotFoundException e) {
 					throw new RuntimeException(e);

@@ -6,13 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapRelation;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.math.VectorXZ;
@@ -68,7 +62,7 @@ public class TestMapDataGenerator {
 
 	/** returns a {@link MapData} object containing all the elements created so far */
 	public MapData createMapData() {
-		return new MapData(nodes, ways, areas, relations, null);
+		return new MapData(nodes, ways, areas, relations, null, new MapMetadata(null, null));
 	}
 
 	/**

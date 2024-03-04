@@ -2,11 +2,16 @@ package org.osm2world.core;
 
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.target.TargetUtil.Compression.NONE;
+import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -125,7 +130,8 @@ public class ConversionFacadeTest {
 
 			try {
 
-				Target testTarget = new GltfTarget(Files.createTempFile("o2w-test-", ".gltf").toFile());
+				File outputFile = Files.createTempFile("o2w-test-", ".gltf").toFile();
+				Target testTarget = new GltfTarget(outputFile, GLTF, NONE, null);
 				MapProjection mapProjection = new MetricMapProjection(new LatLon(0, 0));
 				ConversionFacade cf = new ConversionFacade();
 

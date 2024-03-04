@@ -1,13 +1,13 @@
 package org.osm2world.core.world.network;
 
-import static java.util.Arrays.asList;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.math.SimplePolygonXZ;
+import org.osm2world.core.math.VectorXZ;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import static java.util.Arrays.asList;
 
 /** junction between at least three segments in a network */
 public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldObject>
@@ -102,7 +102,7 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 	private void checkInformationProvided() throws IllegalStateException {
 		if (segmentInterfaces == null) {
 			throw new IllegalStateException("no junction information" +
-					" has been set for this representation");
+					" has been set for " + this);
 		}
 	}
 

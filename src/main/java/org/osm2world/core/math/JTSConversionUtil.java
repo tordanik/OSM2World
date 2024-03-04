@@ -6,15 +6,9 @@ import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineSegment;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
@@ -112,21 +106,21 @@ public class JTSConversionUtil {
 
 		List<PolygonWithHolesXZ> result = new ArrayList<>(1);
 
-		if (geometry instanceof Polygon) {
-			if (geometry.getNumPoints() > 2) {
+		if (geometry instanceof Polygon polygon) {
+			if (polygon.getNumPoints() > 2) {
 				try {
-					result.add(fromJTS((Polygon)geometry));
+					result.add(fromJTS(polygon));
 				} catch (InvalidGeometryException e) {
-					System.err.println("Ignoring invalid JTS polygon: " + e.getMessage());
+					ConversionLog.warn("Ignoring invalid JTS polygon: " + e.getMessage(), e);
 				}
 			}
-		} else if (geometry instanceof GeometryCollection) {
-			GeometryCollection collection = (GeometryCollection)geometry;
+		} else if (geometry instanceof GeometryCollection collection) {
 			for (int i = 0; i < collection.getNumGeometries(); i++) {
 				result.addAll(polygonsFromJTS(collection.getGeometryN(i)));
 			}
-		} else {
-			System.err.println("unhandled geometry type: " + geometry.getClass());
+		} else if (!(geometry instanceof LineString)) {
+			// LineString is known to sometimes occur in the result and is ignored; other elements are unexpected
+			throw new Error("unhandled geometry type: " + geometry.getClass());
 		}
 
 		return result;

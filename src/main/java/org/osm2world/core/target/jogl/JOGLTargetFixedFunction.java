@@ -1,12 +1,14 @@
 package org.osm2world.core.target.jogl;
 
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2.*;
+import static com.jogamp.opengl.GL2ES1.*;
+import static com.jogamp.opengl.GL2ES2.*;
+import static com.jogamp.opengl.GL2ES3.GL_QUADS;
+import static com.jogamp.opengl.GL2GL3.*;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.*;
 import static java.awt.Color.WHITE;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2.*;
-import static javax.media.opengl.GL2ES1.*;
-import static javax.media.opengl.GL2GL3.*;
-import static javax.media.opengl.fixedfunc.GLLightingFunc.*;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 import static org.osm2world.core.target.common.material.Material.Transparency.*;
 
@@ -15,9 +17,6 @@ import java.io.File;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.glu.GLU;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -35,6 +34,9 @@ import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding;
 import org.osm2world.core.util.color.LColor;
 
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.texture.Texture;
 
 /**
@@ -438,16 +440,15 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 				int wrap = 0;
 
 				switch (textureData.wrap) {
-				case CLAMP: wrap = GL_CLAMP; break;
+				case CLAMP: wrap = GL_CLAMP_TO_EDGE; break;
 				case REPEAT: wrap = GL_REPEAT; break;
-				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
 				}
 
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
 
-		        if (textureData.wrap == Wrap.CLAMP_TO_BORDER) {
+		        if (textureData.wrap == Wrap.CLAMP) {
 
 		        	/* TODO: make the RGB configurable -  for some reason,
 		        	 * it shows up in lowzoom even if fully transparent */

@@ -1,49 +1,47 @@
 package org.osm2world.core.world.modules;
 
 import static java.awt.Color.*;
-import static java.lang.Math.*;
-import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.math.NumberUtils.max;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
-import static org.osm2world.core.target.common.ExtrudeOption.*;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.mesh.ExtrusionGeometry.createColumn;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
+import static org.osm2world.core.target.common.mesh.MeshUtil.createBox;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseInt;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Renderable;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.ConfMaterial;
@@ -51,12 +49,19 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
+import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
@@ -69,6 +74,9 @@ public class StreetFurnitureModule extends AbstractModule {
 	protected void applyToNode(MapNode node) {
 		if (node.getTags().contains("playground", "swing")) {
 			node.addRepresentation(new Swing(node));
+		}
+		if (node.getTags().contains("man_made", "pole")) {
+			node.addRepresentation(new Pole(node));
 		}
 		if (node.getTags().contains("man_made", "flagpole")) {
 			node.addRepresentation(new Flagpole(node));
@@ -116,9 +124,11 @@ public class StreetFurnitureModule extends AbstractModule {
 				&& node.getTags().containsAny(asList("operator", "brand"), null)) {
 			node.addRepresentation(new Phone(node));
 		}
-		if (node.getTags().contains("amenity", "vending_machine")
-				&& (node.getTags().containsAny(asList("vending"), asList("parcel_pickup;parcel_mail_in", "parcel_mail_in")))) {
-			node.addRepresentation(new ParcelMachine(node));
+		if (node.getTags().contains("amenity", "parcel_locker")
+				|| (node.getTags().contains("amenity", "vending_machine") && (node.getTags().containsAny(
+						asList("vending"), asList("parcel_pickup;parcel_mail_in", "parcel_mail_in"))))) {
+			node.addRepresentation(new NodeModelInstance(node,
+					new ParcelLocker(node.getTags()), parseDirection(node.getTags(), PI)));
 		}
 		if (node.getTags().contains("amenity", "vending_machine")
 				&& (node.getTags().containsAny(asList("vending"), asList("bicycle_tube", "cigarettes", "condoms")))) {
@@ -161,7 +171,37 @@ public class StreetFurnitureModule extends AbstractModule {
 		return false;
 	}
 
-	public static final class Flagpole extends NoOutlineNodeWorldObject {
+	public static final class Pole extends NoOutlineNodeWorldObject {
+
+		public Pole(MapNode node) {
+			super(node);
+		}
+
+		@Override
+		public List<Mesh> buildMeshes() {
+
+			double height = parseMeasure(node.getTags().getValue("height"), 5.0);
+			double radius = parseMeasure(node.getTags().getValue("width"), 0.2) / 2;
+
+			Material material = Materials.getMaterial(node.getTags().getValue("material"), STEEL);
+			Color color = parseColor(node.getTags().getValue("colour"));
+
+			ExtrusionGeometry geometry = ExtrusionGeometry.createColumn(null, this.getBase(),
+					height, radius, radius, false, true,
+					color, material.getTextureDimensions());
+
+			return singletonList(new Mesh(geometry, material, height >= 10 ? LOD2 : LOD3, LOD4));
+
+		}
+
+		@Override
+		public Collection<AttachmentSurface> getAttachmentSurfaces() {
+			return singleton(AttachmentSurface.fromMeshes("pole", buildMeshes()));
+		}
+
+	}
+
+	public static final class Flagpole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -170,6 +210,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -503,7 +548,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject {
+	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public AdvertisingColumn(MapNode node) {
 			super(node);
@@ -512,6 +557,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -540,7 +590,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Billboard extends NoOutlineNodeWorldObject {
+	public static final class Billboard extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final double width;
 		/** the height of the billboard itself, i.e. height minus minHeight */
@@ -574,6 +624,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -670,7 +725,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Swing extends NoOutlineNodeWorldObject {
+	public static final class Swing extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Swing(MapNode node) {
 			super(node);
@@ -679,6 +734,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -783,7 +843,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 	}
 
-	public static final class Bench extends NoOutlineNodeWorldObject {
+	public static final class Bench extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -802,6 +862,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -883,7 +948,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	public static final class Table extends NoOutlineNodeWorldObject {
+	public static final class Table extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final ConfMaterial defaultMaterial;
 
@@ -900,6 +965,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1015,7 +1085,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a summit cross or wayside cross
 	 */
-	public static final class Cross extends NoOutlineNodeWorldObject {
+	public static final class Cross extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Cross(MapNode node) {
 			super(node);
@@ -1024,6 +1094,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -1071,7 +1146,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a clock. Currently only clocks attached to walls are supported.
 	 */
-	public static final class Clock implements NodeWorldObject, Renderable {
+	public static final class Clock implements NodeWorldObject, LegacyWorldObject {
 
 		private static final LocalTime TIME = LocalTime.parse("12:25");
 
@@ -1098,6 +1173,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
+		}
+
+		@Override
 		public Iterable<EleConnector> getEleConnectors() {
 			return emptyList();
 		}
@@ -1116,13 +1196,13 @@ public class StreetFurnitureModule extends AbstractModule {
 			if (!connector.isAttached()) return;
 
 			double diameter = parseWidth(node.getTags(), 1f);
-			new ClockFace(TIME).render(target, connector.getAttachedPos(),
+			new ClockFace(TIME).render(target, new InstanceParameters(connector.getAttachedPos(),
 					connector.getAttachedSurfaceNormal().xz().angle(),
-					null, diameter, null);
+					null, diameter, null));
 
 		}
 
-		private static class ClockFace implements Model {
+		private static class ClockFace implements LegacyModel {
 
 			private final LocalTime time;
 
@@ -1131,16 +1211,15 @@ public class StreetFurnitureModule extends AbstractModule {
 			}
 
 			@Override
-			public void render(Target target, VectorXYZ position, double direction, Double height, Double width,
-					Double length) {
+			public void render(CommonTarget target, InstanceParameters params) {
 
-				double diameter = width != null ? width : 1.0;
-				double thickness = length != null ? length : 0.08;
+				double diameter = params.width() != null ? params.width() : 1.0;
+				double thickness = params.length() != null ? params.length() : 0.08;
 
-				VectorXZ faceNormal = VectorXZ.fromAngle(direction);
+				VectorXZ faceNormal = VectorXZ.fromAngle(params.direction());
 
-				VectorXYZ backCenter = position.add(faceNormal.mult(thickness * 0.7));
-				VectorXYZ frontCenter = position.add(faceNormal.mult(thickness));
+				VectorXYZ backCenter = params.position().add(faceNormal.mult(thickness * 0.7));
+				VectorXYZ frontCenter = params.position().add(faceNormal.mult(thickness));
 
 				CircleXZ outerCircle = new CircleXZ(NULL_VECTOR, diameter / 2);
 				CircleXZ innerCircle = new CircleXZ(NULL_VECTOR, diameter / 2.2);
@@ -1148,8 +1227,8 @@ public class StreetFurnitureModule extends AbstractModule {
 				PolygonWithHolesXZ ring = new PolygonWithHolesXZ(asSimplePolygon(outerCircle),
 						asList(asSimplePolygon(innerCircle).reverse()));
 
-				target.drawExtrudedShape(PLASTIC_BLACK, ring,
-						asList(position, frontCenter),
+				target.drawExtrudedShape(PLASTIC.withColor(BLACK), ring,
+						asList(params.position(), frontCenter),
 						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
 				target.drawShape(PLASTIC, innerCircle, backCenter, faceNormal.xyz(0), Y_UNIT, 1);
@@ -1159,7 +1238,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			}
 
-			private final void drawHand(Target target, VectorXYZ origin, VectorXZ faceNormal,
+			private final void drawHand(CommonTarget target, VectorXYZ origin, VectorXZ faceNormal,
 					double width, double length, double thickness, double angleRad) {
 
 				assert width < length;
@@ -1167,7 +1246,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				ShapeXZ handShape = new AxisAlignedRectangleXZ(-width/2, -width/2, width/2, length - width/2);
 				handShape = handShape.rotatedCW(angleRad);
 
-				target.drawExtrudedShape(PLASTIC_BLACK, handShape,
+				target.drawExtrudedShape(PLASTIC.withColor(BLACK), handShape,
 						asList(origin, origin.add(faceNormal.mult(thickness))),
 						nCopies(2, Y_UNIT), null, null, EnumSet.of(ExtrudeOption.END_CAP));
 
@@ -1187,7 +1266,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class RecyclingContainer extends NoOutlineNodeWorldObject {
+	public static final class RecyclingContainer extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		double directionAngle = parseDirection(node.getTags(), PI);
 		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1199,6 +1278,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -1282,7 +1366,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class WasteBasket extends NoOutlineNodeWorldObject {
+	public static final class WasteBasket extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -1307,6 +1391,11 @@ public class StreetFurnitureModule extends AbstractModule {
 			} else {
 				return GroundState.ON;
 			}
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1386,7 +1475,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class GritBin extends NoOutlineNodeWorldObject {
+	public static final class GritBin extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public GritBin(MapNode node) {
 			super(node);
@@ -1395,6 +1484,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1445,7 +1539,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Phone extends NoOutlineNodeWorldObject {
+	public static final class Phone extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 
@@ -1456,6 +1550,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1483,7 +1582,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				roofMaterial = POSTBOX_ROYALMAIL;
 				poleMaterial = POSTBOX_ROYALMAIL;
 			} else {
-				//no rendering, unknown operator or brand //TODO log info
+				//no rendering, unknown operator or brand
 				return;
 			}
 
@@ -1525,7 +1624,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class VendingMachineVice extends NoOutlineNodeWorldObject {
+	public static final class VendingMachineVice extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1536,6 +1635,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1592,7 +1696,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class PostBox extends NoOutlineNodeWorldObject {
+	public static final class PostBox extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1603,6 +1707,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1625,7 +1734,7 @@ public class StreetFurnitureModule extends AbstractModule {
 				boxMaterial = POSTBOX_ROYALMAIL;
 				type = Type.PILLAR;
 			} else {
-				//no rendering, unknown operator or brand for post box //TODO log info
+				//no rendering, unknown operator or brand for post box
 				return;
 			}
 
@@ -1667,20 +1776,20 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class BusStop extends NoOutlineNodeWorldObject {
+	public static final class BusStop extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public BusStop(MapNode node) {
 			super(node);
-
-			if (node.getTags().contains("bin", "yes")) {
-				node.addRepresentation(new WasteBasket(node));
-			}
-
 		}
 
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1722,77 +1831,73 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
+	public static final class ParcelLocker implements Model {
 
-	public static final class ParcelMachine extends NoOutlineNodeWorldObject {
+		private final TagSet tags;
 
-		public ParcelMachine(MapNode node) {
-			super(node);
+		public ParcelLocker(TagSet tags) {
+			this.tags = tags;
 		}
 
 		@Override
-		public GroundState getGroundState() {
-			return GroundState.ON;
-		}
-
-		@Override
-		public void renderTo(Target target) {
-
-			double ele = getBase().y;
-
-			double directionAngle = parseDirection(node.getTags(), PI);
+		public List<Mesh> buildMeshes(InstanceParameters params) {
 
 			Material boxMaterial = POSTBOX_DEUTSCHEPOST;
 			Material otherMaterial = STEEL;
 
-			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
+			VectorXZ faceVector = VectorXZ.fromAngle(params.direction());
 			VectorXZ rightVector = faceVector.rightNormal();
 
 			// shape depends on type
-			if (node.getTags().contains("type", "Rondell")) {
+			if (tags.containsAny(asList("parcel_locker:type", "packstation_type", "type"),
+					asList("Rondell", "circular"))) {
 
-				double height = parseHeight(node.getTags(), 2.2f);
-				double width = parseWidth(node.getTags(), 3f);
+				double height = parseHeight(tags, 2.2f);
+				double width = parseWidth(tags, 3f);
 				double rondelWidth = width * 2 / 3;
 				double boxWidth = width * 1 / 3;
 				double roofOverhang = 0.3f;
 
-				/* draw rondel */
-				target.drawColumn(boxMaterial, null,
-						getBase().add(rightVector.mult(-rondelWidth / 2)),
-						height, rondelWidth / 2, rondelWidth / 2, false, true);
-				/* draw box */
-				target.drawBox(boxMaterial,
-						getBase().add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
-						faceVector, height, boxWidth, boxWidth);
-				/* draw roof */
-				target.drawColumn(otherMaterial, null,
-						getBase().addY(height),
-						0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true);
+				return asList(
+						/* rondel */
+						new Mesh(createColumn(null, params.position().add(rightVector.mult(-rondelWidth / 2)),
+								height, rondelWidth / 2, rondelWidth / 2, false, true,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+						/* box */
+						new Mesh(createBox(params.position().add(rightVector.mult(boxWidth / 2)).add(faceVector.mult(-boxWidth / 2)),
+								faceVector, height, boxWidth, boxWidth,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+						/* roof */
+						new Mesh(createColumn(null, params.position().addY(height),
+								0.1, rondelWidth / 2 + roofOverhang / 2, rondelWidth / 2 + roofOverhang / 2, true, true,
+								otherMaterial.getColor(), otherMaterial.getTextureDimensions()), otherMaterial));
 
-			} else if (node.getTags().contains("type", "Paketbox")) {
+			} else if (tags.containsAny(asList("parcel_locker:type", "packstation_type", "type"),
+					asList("Paketbox", "parcel_box"))) {
 
-				double height = parseHeight(node.getTags(), 1.5);
-				double width = parseHeight(node.getTags(), 1.0);
+				double height = parseHeight(tags, 1.5);
+				double width = parseHeight(tags, 1.0);
 				double depth = width;
 
-				target.drawBox(boxMaterial, getBase(),
-						faceVector, height, width * 2, depth * 2);
+				return asList(new Mesh(createBox(params.position(), faceVector, height, width * 2, depth * 2,
+						boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
 
 			} else { // type=Schrank or type=24/7 Station (they look roughly the same) or no type (fallback)
 
-				double height = parseHeight(node.getTags(), 2.2);
-				double width = parseWidth(node.getTags(), 3.5);
+				double height = parseHeight(tags, 2.2);
+				double width = parseWidth(tags, 3.5);
 				double depth = width / 3;
 				double roofOverhang = 0.3f;
 
-				/* draw box */
-				target.drawBox(boxMaterial,
-						getBase(),
-						faceVector, height, width, depth);
-				/*  draw small roof */
-				target.drawBox(otherMaterial,
-						node.getPos().add(faceVector.mult(roofOverhang)).xyz(ele + height),
-						faceVector, 0.1, width, depth + roofOverhang * 2);
+				return asList(
+						/* box */
+						new Mesh(createBox(params.position(),
+								faceVector, height, width, depth,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial),
+						/* small roof */
+						new Mesh(createBox(params.position().add(faceVector.mult(roofOverhang)).addY(height),
+								faceVector, 0.1, width, depth + roofOverhang * 2,
+								boxMaterial.getColor(), boxMaterial.getTextureDimensions()), boxMaterial));
 
 			}
 
@@ -1800,7 +1905,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class FireHydrant extends NoOutlineNodeWorldObject {
+	public static final class FireHydrant extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public FireHydrant(MapNode node) {
 			super(node);
@@ -1809,6 +1914,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override
@@ -1837,7 +1947,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class StreetLamp extends NoOutlineNodeWorldObject {
+	public static final class StreetLamp extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public StreetLamp(MapNode node) {
 			super(node);
@@ -1846,6 +1956,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD2, LOD4);
 		}
 
 		@Override
@@ -1911,7 +2026,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Board extends NoOutlineNodeWorldObject {
+	public static final class Board extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Board(MapNode node) {
 			super(node);
@@ -1920,6 +2035,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
+			return Pair.of(LOD3, LOD4);
 		}
 
 		@Override

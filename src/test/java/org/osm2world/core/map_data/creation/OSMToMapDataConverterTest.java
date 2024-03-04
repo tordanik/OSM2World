@@ -35,7 +35,7 @@ public class OSMToMapDataConverterTest {
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
-		return converter.createMapData(osmData);
+		return converter.createMapData(osmData, null);
 
 	}
 
@@ -98,7 +98,7 @@ public class OSMToMapDataConverterTest {
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection, new BaseConfiguration());
-		MapData mapData = converter.createMapData(osmData);
+		MapData mapData = converter.createMapData(osmData, null);
 
 		/* check coastline properties */
 

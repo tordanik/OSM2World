@@ -15,6 +15,7 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.util.color.LColor;
 
 public final class TestUtil {
 
@@ -36,6 +37,10 @@ public final class TestUtil {
 
 		//TODO (test): more + random vectors
 
+	}
+
+	private static final boolean almostEquals(float a, float b) {
+		return abs(a - b) <= 0.01;
 	}
 
 	private static final boolean almostEquals(double a, double b) {
@@ -79,6 +84,16 @@ public final class TestUtil {
 			VectorXYZ actual) {
 		VectorXYZ expected = new VectorXYZ(expectedX, expectedY, expectedZ);
 		if (!almostEquals(expected, actual)) {
+			fail("expected " + expected + ", was " + actual);
+		}
+	}
+
+	public static final void assertAlmostEquals(double expectedX, double expectedY, double expectedZ,
+			VectorXYZ actual, double delta) {
+		VectorXYZ expected = new VectorXYZ(expectedX, expectedY, expectedZ);
+		if (abs(expectedX - actual.x) > delta
+				|| abs(expectedY - actual.y) > delta
+				|| abs(expectedZ - actual.z) > delta) {
 			fail("expected " + expected + ", was " + actual);
 		}
 	}
@@ -131,9 +146,18 @@ public final class TestUtil {
 		float[] expectedComponents = expected.getRGBColorComponents(null);
 		float[] actualComponents = actual.getRGBColorComponents(null);
 		for (int i = 0; i < 3; i++) {
-			assertEquals(expectedComponents[i], actualComponents[i], 0.01f);
+			if (!almostEquals(expectedComponents[i], actualComponents[i])) {
+				fail("expected " + expected + ", was " + actual);
+			}
 		}
+	}
 
+	public static final void assertAlmostEquals(LColor expected, LColor actual) {
+		if (!almostEquals(expected.red, actual.red)
+				|| !almostEquals(expected.green, actual.green)
+				|| !almostEquals(expected.blue, actual.blue)) {
+			fail("expected " + expected + ", was " + actual);
+		}
 	}
 
 	/**

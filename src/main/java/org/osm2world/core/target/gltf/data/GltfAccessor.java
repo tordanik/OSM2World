@@ -28,9 +28,13 @@ public class GltfAccessor {
 	public @Nullable Object extras;
 
 	public GltfAccessor(int componentType, int count, String type) {
+
+		if (count <= 0) { throw new IllegalArgumentException("invalid count: " + count); }
+
 		this.componentType = componentType;
 		this.count = count;
 		this.type = type;
+
 	}
 
 }

@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' upload='never' generator='JOSM'>
+  <node id='137739' version='1' lat='50.09865952848' lon='8.66281159366' />
+  <node id='137740' version='1' lat='50.0984645084' lon='8.66281421145' />
+  <node id='137741' version='1' lat='50.09866024593' lon='8.66294148712' />
+  <node id='137742' version='1' lat='50.09846522586' lon='8.66294410491' />
+  <node id='137743' version='1' lat='50.09865892901' lon='8.66270306095' />
+  <node id='137744' version='1' lat='50.09846390893' lon='8.66270567874' />
+  <node id='137745' version='1' lat='50.09846588521' lon='8.66306347967' />
+  <node id='137746' version='1' lat='50.09866090528' lon='8.66306086188' />
+  <node id='137769' version='1' lat='50.09855740713' lon='8.6627044237' />
+  <node id='137770' version='1' lat='50.09855800998' lon='8.66281295636' />
+  <way id='103224' version='1'>
+    <nd ref='137739' />
+    <nd ref='137743' />
+    <nd ref='137769' />
+    <nd ref='137744' />
+    <nd ref='137740' />
+    <nd ref='137742' />
+    <nd ref='137745' />
+    <nd ref='137746' />
+    <nd ref='137741' />
+    <nd ref='137739' />
+    <tag k='building' v='yes' />
+  </way>
+  <way id='103230' version='1'>
+    <nd ref='137741' />
+    <nd ref='137742' />
+    <nd ref='137745' />
+    <nd ref='137746' />
+    <nd ref='137741' />
+    <tag k='building:levels' v='1' />
+    <tag k='building:part' v='yes' />
+    <tag k='height' v='5' />
+    <tag k='roof:height' v='2.2' />
+    <tag k='roof:levels' v='1' />
+    <tag k='roof:orientation' v='along' />
+    <tag k='roof:shape' v='gabled' />
+  </way>
+  <way id='103286' version='1'>
+    <nd ref='137739' />
+    <nd ref='137741' />
+    <nd ref='137742' />
+    <nd ref='137740' />
+    <nd ref='137770' />
+    <nd ref='137739' />
+    <tag k='building:levels' v='1' />
+    <tag k='building:min_level' v='1' />
+    <tag k='building:part' v='yes' />
+    <tag k='height' v='5' />
+    <tag k='roof:height' v='2.2' />
+    <tag k='roof:levels' v='1' />
+    <tag k='roof:orientation' v='along' />
+    <tag k='roof:shape' v='gabled' />
+  </way>
+  <way id='103311' version='1'>
+    <nd ref='137740' />
+    <nd ref='137744' />
+    <nd ref='137769' />
+    <nd ref='137743' />
+    <nd ref='137739' />
+    <nd ref='137770' />
+    <nd ref='137740' />
+    <tag k='building:levels' v='1' />
+    <tag k='building:part' v='yes' />
+    <tag k='height' v='2.8' />
+    <tag k='roof:levels' v='0' />
+    <tag k='roof:shape' v='flat' />
+  </way>
+  <way id='103415' version='1'>
+    <nd ref='137769' />
+    <nd ref='137770' />
+    <nd ref='137740' />
+    <nd ref='137744' />
+    <nd ref='137769' />
+    <tag k='building:levels' v='1' />
+    <tag k='building:min_level' v='1' />
+    <tag k='building:part' v='yes' />
+    <tag k='height' v='5' />
+    <tag k='roof:height' v='2.2' />
+    <tag k='roof:levels' v='1' />
+    <tag k='roof:orientation' v='along' />
+    <tag k='roof:shape' v='gabled' />
+  </way>
+</osm>

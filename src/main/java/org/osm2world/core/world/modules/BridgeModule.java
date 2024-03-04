@@ -1,7 +1,8 @@
 package org.osm2world.core.world.modules;
 
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
@@ -9,18 +10,15 @@ import static org.osm2world.core.target.common.material.Materials.BRIDGE_DEFAULT
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.map_elevation.data.EleConnector;
@@ -245,6 +243,7 @@ public class BridgeModule extends AbstractModule {
 
 			//note: there's a small inaccuracy because the length along the 3D line is different than in 2D
 			VectorXYZ top = interpolateOn(primaryRep.getCenterline(), ratio);
+			top = top.addY(-0.5 * BRIDGE_UNDERSIDE_HEIGHT);
 
 			/* draw the pillar */
 

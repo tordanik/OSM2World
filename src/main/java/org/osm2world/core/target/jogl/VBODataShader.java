@@ -1,14 +1,12 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.*;
+import static com.jogamp.opengl.GL.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
@@ -17,6 +15,8 @@ import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
+
+import com.jogamp.opengl.GL3;
 
 /**
  * class that keeps a VBO id along with associated information for the shader based OpenGL pipeline
@@ -27,7 +27,7 @@ abstract class VBODataShader<BufferT extends Buffer> extends VBOData<BufferT> {
 	protected AbstractPrimitiveShader shader;
 
 	/**
-	 * @see VBOData#VBOData(javax.media.opengl.GL, JOGLTextureManager, Material, Collection)
+	 * @see VBOData#VBOData(com.jogamp.opengl.GL, JOGLTextureManager, Material, Collection)
 	 */
 	public VBODataShader(GL3 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		super(gl, textureManager, material, primitives);

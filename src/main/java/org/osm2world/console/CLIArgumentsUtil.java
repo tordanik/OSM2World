@@ -11,11 +11,17 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import com.lexicalscope.jewel.cli.CliFactory;
+
 public final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
-	public static enum OutputMode {OBJ, GLTF, POV, WEB_PBF, PNG, PPM, GD}
+	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, WEB_PBF, WEB_PBF_GZ, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
+	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
 
 	private CLIArgumentsUtil() { }
 
@@ -32,8 +38,8 @@ public final class CLIArgumentsUtil {
 			case FILE:
 				if (!args.isInput()) {
 					return "input file parameter is required (or choose a different input mode)";
-				} else if (args.getInput().getName().endsWith(".mbtiles") && !args.isTile()) {
-					return "the --tile parameter is required for .mbtiles input files";
+				} else if (getInputFileType(args) != InputFileType.SIMPLE_FILE && !args.isTile()) {
+					return "the --tile parameter is required for database input files";
 				}
 				break;
 
@@ -106,15 +112,51 @@ public final class CLIArgumentsUtil {
 								: CONVERT;
 	}
 
+	/** equivalent of {@link #getProgramMode(CLIArguments)} for a list-wrapped args array */
+	public static @Nullable ProgramMode getProgramMode(List<String> unparsedArgs) {
+		try {
+			String[] args = unparsedArgs.toArray(new String[0]);
+			CLIArguments cliArgs = CliFactory.parseArguments(CLIArguments.class, args);
+			return getProgramMode(cliArgs);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/** @param args  set of arguments with non-null {@link CLIArguments#getInput()} */
+	public static @Nonnull InputFileType getInputFileType(CLIArguments args) {
+
+		assert args.getInput() != null;
+
+		String inputName = args.getInput().getName();
+
+		if (inputName.endsWith(".mbtiles")) {
+			return InputFileType.MBTILES;
+		} else if (inputName.endsWith(".gol")) {
+			return InputFileType.GEODESK;
+		} else {
+			return InputFileType.SIMPLE_FILE;
+		}
+
+	}
+
 	public static final OutputMode getOutputMode(File outputFile) {
 		if (outputFile.getName().toLowerCase().endsWith(".obj")) {
 			return OutputMode.OBJ;
 		} else if (outputFile.getName().toLowerCase().endsWith(".gltf")) {
 			return OutputMode.GLTF;
+		} else if (outputFile.getName().toLowerCase().endsWith(".glb")) {
+			return OutputMode.GLB;
+		} else if (outputFile.getName().toLowerCase().endsWith(".gltf.gz")) {
+			return OutputMode.GLTF_GZ;
+		} else if (outputFile.getName().toLowerCase().endsWith(".glb.gz")) {
+			return OutputMode.GLB_GZ;
 		} else if (outputFile.getName().toLowerCase().endsWith(".pov")) {
 			return OutputMode.POV;
 		} else if (outputFile.getName().toLowerCase().endsWith(".o2w.pbf")) {
 			return OutputMode.WEB_PBF;
+		} else if (outputFile.getName().toLowerCase().endsWith(".o2w.pbf.gz")) {
+			return OutputMode.WEB_PBF_GZ;
 		} else if (outputFile.getName().toLowerCase().endsWith(".png")) {
 			return OutputMode.PNG;
 		} else if (outputFile.getName().toLowerCase().endsWith(".ppm")) {

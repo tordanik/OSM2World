@@ -1,33 +1,30 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.*;
+import static java.awt.Color.BLACK;
 import static java.lang.Math.max;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
 import static java.util.Collections.min;
+import static java.util.Collections.*;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
-import static org.osm2world.core.math.VectorXYZ.X_UNIT;
-import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
-import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
+import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.angleBetween;
-import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.target.common.material.Materials.SOLAR_PANEL;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.rotateShapeX;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -38,31 +35,28 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.*;
+import org.osm2world.core.math.shapes.*;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.LODRange;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
+import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -79,20 +73,24 @@ public final class PowerModule extends AbstractModule {
 			}
 		}
 
-		VectorXZ dir = VectorXZ.NULL_VECTOR;
+		VectorXZ dir = VectorXZ.Z_UNIT;
 		int cables = -1;
 		int voltage = -1;
-		for (MapWaySegment powerLine : powerLines) {
-			dir = dir.add(powerLine.getDirection());
 
-			try {
-				cables = Integer.valueOf(powerLine.getTags().getValue("cables"));
-			} catch (NumberFormatException e) {}
-			try {
-				voltage = Integer.valueOf(powerLine.getTags().getValue("voltage"));
-			} catch (NumberFormatException e) {}
+		if (!powerLines.isEmpty()) {
+			dir = VectorXZ.NULL_VECTOR;
+			for (MapWaySegment powerLine : powerLines) {
+				dir = dir.add(powerLine.getDirection());
+
+				try {
+					cables = Integer.valueOf(powerLine.getTags().getValue("cables"));
+				} catch (NumberFormatException e) {}
+				try {
+					voltage = Integer.valueOf(powerLine.getTags().getValue("voltage"));
+				} catch (NumberFormatException e) {}
+			}
+			dir = dir.normalize();
 		}
-		dir = dir.mult(1.0/powerLines.size());
 
 		return new TowerConfig(node, cables, voltage, dir);
 	}
@@ -150,7 +148,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PowerCabinet extends NoOutlineNodeWorldObject {
+	private static final class PowerCabinet extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public PowerCabinet(MapNode node) {
 			super(node);
@@ -167,12 +165,12 @@ public final class PowerModule extends AbstractModule {
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
 
-			target.drawBox(PLASTIC_GREY, getBase(),
-					faceVector, 1.5, 0.8, 0.3);
+			Material material = PLASTIC.withColor(new Color(184, 184, 184));
+			target.drawBox(material, getBase(), faceVector, 1.5, 0.8, 0.3);
 
 		}
 
-		}
+	}
 
 	private final static class TowerConfig {
 		MapNode pos;
@@ -193,7 +191,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class Powerpole extends NoOutlineNodeWorldObject {
+	private static final class Powerpole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		public Powerpole(MapNode node) {
 			super(node);
@@ -230,45 +228,50 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	public static final class WindTurbine extends NoOutlineNodeWorldObject {
+	public static final class WindTurbine extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
-		public static final Model ROTOR = new Model() {
+		public static final Model ROTOR = new LegacyModel() {
 
 			@Override
-			public void render(Target target, VectorXYZ position,
-					double direction, Double height, Double width, Double length) {
+			public void render(CommonTarget target, InstanceParameters params) {
 
-				double bladeLength = (height == null ? 1 : height) / 2;
+				double bladeLength = (params.height() == null ? 1 : params.height()) / 2;
 				double bladeWidth = 0.1 * bladeLength;
 
 				Material bladeMaterial = Materials.STEEL; // probably fibre, but color matches roughly :)
 
 				// define first blade
 				List<VectorXYZ> bladeFront = asList(
-						position.add(-bladeWidth/5, 0, +bladeWidth/2),
-						position.add(0, -bladeLength, 0),
-						position.add(+bladeWidth/5, 0, -bladeWidth/2)
+						params.position().add(-bladeWidth/5, 0, +bladeWidth/2),
+						params.position().add(0, -bladeLength, 0),
+						params.position().add(+bladeWidth/5, 0, -bladeWidth/2)
 				);
 
 				List<VectorXYZ> bladeBack = asList(bladeFront.get(0), bladeFront.get(2), bladeFront.get(1));
 
 				// rotate and draw blades
-				double rotCenterY = position.y;
-				double rotCenterZ = position.z;
+				double rotCenterY = params.position().y;
+				double rotCenterZ = params.position().z;
 
 				bladeFront = rotateShapeX(bladeFront, 60, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 60, rotCenterY, rotCenterZ);
-				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				target.drawTriangleStrip(bladeMaterial, bladeFront,
+						texCoordLists(bladeFront, bladeMaterial, GLOBAL_Z_Y));
+				target.drawTriangleStrip(bladeMaterial, bladeBack,
+						texCoordLists(bladeBack, bladeMaterial, GLOBAL_Z_Y));
 				bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				target.drawTriangleStrip(bladeMaterial, bladeFront,
+						texCoordLists(bladeFront, bladeMaterial, GLOBAL_Z_Y));
+				target.drawTriangleStrip(bladeMaterial, bladeBack,
+						texCoordLists(bladeBack, bladeMaterial, GLOBAL_Z_Y));
 				bladeFront = rotateShapeX(bladeFront, 120, rotCenterY, rotCenterZ);
 				bladeBack  = rotateShapeX(bladeBack, 120, rotCenterY, rotCenterZ);
-				target.drawTriangleStrip(bladeMaterial, bladeFront, null);
-				target.drawTriangleStrip(bladeMaterial, bladeBack, null);
+				target.drawTriangleStrip(bladeMaterial, bladeFront,
+						texCoordLists(bladeFront, bladeMaterial, GLOBAL_Z_Y));
+				target.drawTriangleStrip(bladeMaterial, bladeBack,
+						texCoordLists(bladeBack, bladeMaterial, GLOBAL_Z_Y));
 
 			}
 
@@ -341,9 +344,9 @@ public final class PowerModule extends AbstractModule {
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
 			/* draw rotor blades */
-			target.drawModel(ROTOR,
+			target.drawModel(ROTOR, new InstanceParameters(
 					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
-					0, rotorDiameter, rotorDiameter, rotorDiameter);
+					0, rotorDiameter, rotorDiameter, rotorDiameter));
 
 		}
 
@@ -362,7 +365,6 @@ public final class PowerModule extends AbstractModule {
 
 		private static final float DEFAULT_THICKN = 0.05f; // width and height
 		private static final float DEFAULT_CLEARING_BL = 7.5f; // power pole height is 8
-		private static final Material material = PLASTIC_BLACK;
 
 		public PowerMinorLine(MapWaySegment segment) {
 			super(segment);
@@ -374,7 +376,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
 
 			ShapeXZ powerlineShape = new PolylineXZ(
 				new VectorXZ(-DEFAULT_THICKN/2, DEFAULT_CLEARING_BL),
@@ -385,8 +387,9 @@ public final class PowerModule extends AbstractModule {
 
 			List<VectorXYZ> path = getBaseline();
 
-			target.drawExtrudedShape(material, powerlineShape, getBaseline(),
-					nCopies(path.size(), Y_UNIT), null, null, null);
+			return singletonList(new Mesh(new ExtrusionGeometry(powerlineShape, getBaseline(),
+					nCopies(path.size(), Y_UNIT), null, BLACK, null, PLASTIC.getTextureDimensions()),
+					PLASTIC, LevelOfDetail.LOD3, LevelOfDetail.LOD4));
 
 		}
 
@@ -395,10 +398,11 @@ public final class PowerModule extends AbstractModule {
 	private final static class PowerLine extends NoOutlineWaySegmentWorldObject {
 
 		private static final float CABLE_THICKNESS = 0.05f;
-		// TODO: we need black plastic for cable material
-		private final static Material CABLE_MATERIAL = PLASTIC_BLACK;
+		private static final Material CABLE_MATERIAL = PLASTIC;
 		private static final double SLACK_SPAN = 6;
-		private static final double INTERPOLATION_STEPS = 10;
+		private static final Map<LODRange, Double> INTERPOLATION_STEPS = Map.of(
+				new LODRange(LevelOfDetail.LOD3), 3.0,
+				new LODRange(LevelOfDetail.LOD4), 10.0);
 		private static final ShapeXZ powerlineShape = new CircleXZ(NULL_VECTOR, CABLE_THICKNESS/2);
 
 		private int cables = -1;
@@ -523,49 +527,61 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
 
-			// do initial setup for height and position calculation, if necessary
-			if (startPos == null) {
-				setup();
-			}
+			List<Mesh> result = new ArrayList<>();
 
-			for (int i = 0; i < startPos.size(); i++) {
+			for (LODRange lodRange : INTERPOLATION_STEPS.keySet()) {
 
-				VectorXYZ start = startPos.get(i);
-				VectorXYZ end = endPos.get(i);
+				double interpolationSteps = INTERPOLATION_STEPS.get(lodRange);
 
-				double lenToEnd = end.distanceToXZ(start);
-				double heightDiff = end.y - start.y;
-
-				double stepSize = lenToEnd / INTERPOLATION_STEPS;
-				VectorXZ dir = end.xz().subtract(start.xz()).normalize();
-
-				List<VectorXYZ> path = new ArrayList<VectorXYZ>();
-				for (int x = 0; x <= INTERPOLATION_STEPS; x++) {
-					double ratio = x / INTERPOLATION_STEPS;
-
-					// distance from start to position x
-					double dx = stepSize * x;
-
-					// use a simple parabola between two towers
-					double height = (1 - Math.pow(2.0*(ratio - 0.5), 2)) * -SLACK_SPAN;
-					// add a linear function to account for different tower/terrain heights
-					height += ratio * heightDiff;
-
-					path.add(start.add(dir.mult(dx)).add(0, height, 0));
+				// do initial setup for height and position calculation, if necessary
+				if (startPos == null) {
+					setup();
 				}
 
-				target.drawExtrudedShape(CABLE_MATERIAL, powerlineShape, path,
-						nCopies(path.size(), Y_UNIT), null, null, null);
+				for (int i = 0; i < startPos.size(); i++) {
+
+					VectorXYZ start = startPos.get(i);
+					VectorXYZ end = endPos.get(i);
+
+					double lenToEnd = end.distanceToXZ(start);
+					double heightDiff = end.y - start.y;
+
+					double stepSize = lenToEnd / interpolationSteps;
+					VectorXZ dir = end.xz().subtract(start.xz()).normalize();
+
+					List<VectorXYZ> path = new ArrayList<VectorXYZ>();
+					for (int x = 0; x <= interpolationSteps; x++) {
+						double ratio = x / interpolationSteps;
+
+						// distance from start to position x
+						double dx = stepSize * x;
+
+						// use a simple parabola between two towers
+						double height = (1 - Math.pow(2.0 * (ratio - 0.5), 2)) * -SLACK_SPAN;
+						// add a linear function to account for different tower/terrain heights
+						height += ratio * heightDiff;
+
+						path.add(start.add(dir.mult(dx)).add(0, height, 0));
+					}
+
+					result.add(new Mesh(new ExtrusionGeometry(powerlineShape, path, nCopies(path.size(), Y_UNIT),
+							null, BLACK, null, CABLE_MATERIAL.getTextureDimensions()),
+							CABLE_MATERIAL, lodRange.min(), lodRange.max()));
+
+				}
 
 			}
+
+			return result;
+
 		}
 
 	}
 
 
-	private static final class PowerTower extends NoOutlineNodeWorldObject {
+	private static final class PowerTower extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private TowerConfig config;
 
@@ -613,7 +629,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject {
+	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private TowerConfig config;
 		private VectorXZ direction;
@@ -804,7 +820,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject {
+	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject implements LegacyWorldObject {
 
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = comparingDouble(v -> v.x);
@@ -929,14 +945,14 @@ public final class PowerModule extends AbstractModule {
 			List<PolygonShapeXZ> obstacles = new ArrayList<>();
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-				for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+				FaultTolerantIterationUtil.forEach(overlap.getOther(area).getRepresentations(), otherWO -> {
 
 					if (otherWO.getGroundState() == GroundState.ON
 							&& otherWO.getOutlinePolygonXZ() != null) {
 						obstacles.add(otherWO.getOutlinePolygonXZ());
 					}
 
-				}
+				});
 			}
 
 			return obstacles;
@@ -961,14 +977,15 @@ public final class PowerModule extends AbstractModule {
 
 			vs = asList(vs.get(2), vs.get(3), vs.get(0), vs.get(1));
 
-			target.drawTriangleStrip(Materials.PLASTIC_GREY, vs,
-					texCoordLists(vs, Materials.PLASTIC_GREY, STRIP_WALL));
+			Material backMaterial = PLASTIC.withColor(new Color(184, 184, 184));
+			target.drawTriangleStrip(backMaterial, vs,
+					texCoordLists(vs, backMaterial, STRIP_WALL));
 
 		}
 
 	}
 
-	static final class RooftopSolarPanels extends AbstractAreaWorldObject {
+	static final class RooftopSolarPanels extends AbstractAreaWorldObject implements LegacyWorldObject {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 

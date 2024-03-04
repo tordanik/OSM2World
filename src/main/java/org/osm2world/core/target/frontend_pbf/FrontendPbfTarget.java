@@ -2,112 +2,96 @@ package org.osm2world.core.target.frontend_pbf;
 
 import static java.lang.Math.round;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
-import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
-import static org.osm2world.core.math.VectorXYZ.*;
-import static org.osm2world.core.target.common.ExtrudeOption.*;
+import static java.util.Collections.binarySearch;
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
+import static org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption.*;
+import static org.osm2world.core.target.common.MeshTarget.ReplaceTexturesWithAtlas.generateTextureAtlasGroup;
 import static org.osm2world.core.target.common.material.Materials.*;
-import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD2;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseDirection;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import javax.annotation.Nullable;
 
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.Vector3D;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.map_data.data.MapRelation.Element;
+import org.osm2world.core.map_data.data.MapWay;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
-import org.osm2world.core.target.common.AbstractTarget;
-import org.osm2world.core.target.common.ExtrudeOption;
+import org.osm2world.core.target.TargetUtil.Compression;
+import org.osm2world.core.target.common.MeshStore;
+import org.osm2world.core.target.common.MeshStore.MeshMetadata;
+import org.osm2world.core.target.common.MeshTarget;
+import org.osm2world.core.target.common.MeshTarget.ReplaceTexturesWithAtlas.TextureAtlasGroup;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Shadow;
+import org.osm2world.core.target.common.material.RuntimeTexture;
 import org.osm2world.core.target.common.material.TextureData;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation;
+import org.osm2world.core.target.frontend_pbf.FrontendPbf.*;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.ExtrusionGeometry;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.InstanceGeometry;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.TexCoordFunction;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.TextureLayer.Wrap;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Material.Transparency;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.MaterialBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.ModelBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Shape.ShapeType;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.ShapeBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.StringBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Tile;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.TriangleGeometry;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector2dBlock;
-import org.osm2world.core.target.frontend_pbf.FrontendPbf.Vector3dBlock;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
-import org.osm2world.core.world.data.NodeModelInstance;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.BarrierModule.BollardRow;
-import org.osm2world.core.world.modules.BarrierModule.CylinderBollard;
 import org.osm2world.core.world.modules.BarrierModule.HandRail;
-import org.osm2world.core.world.modules.BicycleParkingModule.BicycleStands;
 import org.osm2world.core.world.modules.PowerModule.WindTurbine;
-import org.osm2world.core.world.modules.RailwayModule.Rail;
-import org.osm2world.core.world.modules.StreetFurnitureModule.Bench;
-import org.osm2world.core.world.modules.StreetFurnitureModule.GritBin;
-import org.osm2world.core.world.modules.StreetFurnitureModule.PostBox;
-import org.osm2world.core.world.modules.StreetFurnitureModule.VendingMachineVice;
-import org.osm2world.core.world.modules.StreetFurnitureModule.WasteBasket;
-import org.osm2world.core.world.modules.TreeModule.Forest;
+import org.osm2world.core.world.modules.StreetFurnitureModule.*;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-public class FrontendPbfTarget extends AbstractTarget {
+public class FrontendPbfTarget extends MeshTarget {
 
 	/**
-	 * whether empty terrain should be faked as a big rectangle slightly below other ground-level geometries.
-	 * This reduces the number of triangles used for empty terrain.
+	 * whether gaps in the terrain should be concealed with a big rectangle slightly below other ground-level geometries
 	 */
 	private final boolean USE_FLOOR_PLATE = true;
 
 	private final double FLOOR_PLATE_Y = -0.03;
 
-	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, BicycleStands.class,
-			WasteBasket.class, VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class,
-			BollardRow.class);
+	/**
+	 * whether some textures should be combined into a texture atlas.
+	 * However, if textures could otherwise be referenced and shared between tiles, it greatly increases tile size.
+	 * For {@link RuntimeTexture}s, this isn't a problem because they cannot be shared between tiles anyway.
+	 */
+	private static final TextureAtlasMode USE_TEXTURE_ATLAS = TextureAtlasMode.RUNTIME_ONLY;
+	private enum TextureAtlasMode { ALWAYS, RUNTIME_ONLY, NEVER };
 
-	private final List<Class<? extends Model>> LOD_2_MODEL_FEATURES = asList(CylinderBollard.class);
+	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, WasteBasket.class,
+			VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
 
 	/**
 	 * materials which default to being shadowless
@@ -148,11 +132,13 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 		List<T> elements = new ArrayList<T>();
 
+		@Override
 		public List<T> getElements() {
 			return elements;
 		}
 
 		/** adds the element to the block if necessary, and returns its index */
+		@Override
 		public int toIndex(T element) {
 
 			int index = elements.indexOf(element);
@@ -197,11 +183,13 @@ public class FrontendPbfTarget extends AbstractTarget {
 		List<T> elements = new ArrayList<T>();
 		List<Entry<T>> sortedEntrys = new ArrayList<Entry<T>>();
 
+		@Override
 		public List<T> getElements() {
 			return elements;
 		}
 
 		/** adds the element to the block if necessary, and returns its index */
+		@Override
 		public int toIndex(T element) {
 
 			int index = binarySearch(sortedEntrys, new Entry<T>(element, -1));
@@ -223,360 +211,11 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 	}
 
-	private static class TriangleData {
-
-		private final List<VectorXYZ> vertices;
-		private final List<VectorXYZ> normals;
-		private final List<List<VectorXZ>> texCoordLists;
-
-		public TriangleData(int numTextureLayers) {
-
-			vertices = new ArrayList<VectorXYZ>();
-			normals = new ArrayList<VectorXYZ>();
-
-			texCoordLists = new ArrayList<List<VectorXZ>>(numTextureLayers);
-
-			for (int i = 0; i < numTextureLayers; i++) {
-				texCoordLists.add(new ArrayList<VectorXZ>());
-			}
-
-		}
-
-		public void add(List<VectorXYZ> vs,
-				List<VectorXYZ> normals,
-				List<List<VectorXZ>> texCoordLists) {
-
-			assert (vs.size() == normals.size());
-			assert (texCoordLists.size() == this.texCoordLists.size());
-
-			this.vertices.addAll(vs);
-			this.normals.addAll(normals);
-
-			for (int i = 0; i < texCoordLists.size(); i++) {
-
-				assert (vs.size() == texCoordLists.get(i).size());
-
-				this.texCoordLists.get(i).addAll(texCoordLists.get(i));
-
-			}
-
-		}
-
-		public List<VectorXYZ> getVertices() {
-			return unmodifiableList(vertices);
-		}
-
-		public List<VectorXYZ> getNormals() {
-			return unmodifiableList(normals);
-		}
-
-		public List<List<VectorXZ>> getTexCoordLists() {
-			return unmodifiableList(texCoordLists);
-		}
-
-	}
-
-	/**
-	 * internally used {@link Target} implementation that collects all geometry for a single object
-	 */
-	private class WorldObjectBuilder extends AbstractTarget {
-
-		private final WorldObject worldObject;
-
-		private final Map<Material, TriangleData> currentTriangles = new HashMap<Material, TriangleData>();
-		private final List<ExtrusionGeometry> currentExtrusionGeometries = new ArrayList<ExtrusionGeometry>();
-		private final Multimap<Model, InstanceParameters> currentModelInstances = HashMultimap.create();
-
-		/**
-		 * @param worldObject  the OSM2World {@link WorldObject} that will provide the id and type,
-		 *                     can be null.
-		 */
-		public WorldObjectBuilder(WorldObject worldObject) {
-			this.worldObject = worldObject;
-		}
-
-		@Override
-		public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
-				List<List<VectorXZ>> texCoordLists) {
-
-			TriangleData triangleData = currentTriangles.get(material);
-
-			if (triangleData == null) {
-				triangleData = new TriangleData(material.getTextureLayers().size());
-				currentTriangles.put(material, triangleData);
-			}
-
-			/* create a vertex list from the triangles */
-
-			List<VectorXYZ> vertices = new ArrayList<>(triangles.size() * 3);
-
-			for (TriangleXYZ triangle : triangles) {
-				vertices.addAll(triangle.verticesNoDup());
-			}
-
-			/* remove degenerate triangles */
-
-			for (int i = triangles.size() - 1; i >= 0; i--) { //go backwards because we're doing index-based deletion
-
-				if (triangles.get(i).isDegenerateOrNaN()) { // filter degenerate triangles
-
-					vertices.remove(3 * i + 2);
-					vertices.remove(3 * i + 1);
-					vertices.remove(3 * i);
-
-					for (int layer = 0; layer < texCoordLists.size(); layer++) {
-						texCoordLists.get(layer).remove(3 * i + 2);
-						texCoordLists.get(layer).remove(3 * i + 1);
-						texCoordLists.get(layer).remove(3 * i);
-					}
-
-				}
-
-			}
-
-			triangleData.add(vertices,
-					nCopies(vertices.size(), Y_UNIT), //TODO replace with actual normals by extending PrimitiveTarget
-					texCoordLists);
-
-		}
-
-		@Override
-		public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path, List<VectorXYZ> upVectors,
-				List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
-
-			ExtrusionGeometry.Builder geometryBuilder = ExtrusionGeometry.newBuilder();
-
-			geometryBuilder.setMaterial(materialBlock.toIndex(material));
-
-			geometryBuilder.setShape(shapeBlock.toIndex(shape));
-
-			for (VectorXYZ v : path) {
-				geometryBuilder.addPath(vector3dBlock.toIndex(v));
-			}
-
-			if (upVectors != null) {
-				for (VectorXYZ v : upVectors) {
-					geometryBuilder.addUpVectors(vector3dBlock.toIndex(v));
-				}
-			}
-
-			if (scaleFactors != null) {
-				for (double scaleFactor : scaleFactors) {
-					geometryBuilder.addScaleFactors(round(scaleFactor * 1000));
-				}
-			}
-
-			if (options != null && options.contains(START_CAP)) {
-				geometryBuilder.setStartCap(true);
-			}
-
-			if (options != null && options.contains(END_CAP)) {
-				geometryBuilder.setEndCap(true);
-			}
-
-			currentExtrusionGeometries.add(geometryBuilder.build());
-
-		}
-
-		/** draw an instanced model */
-		@Override
-		public void drawModel(Model model, VectorXYZ position,
-				double direction, Double height, Double width, Double length) {
-
-			currentModelInstances.put(model, new InstanceParameters(
-					position, direction, height, width, length));
-
-		}
-
-		public FrontendPbf.WorldObject build() {
-
-			if (isEmpty()) {
-				throw new IllegalStateException("a WorldObject needs geometry");
-			}
-
-			MapElement element = worldObject == null ? null : worldObject.getPrimaryMapElement();
-
-			/* check for 3DMR ids */
-
-			String id3DMR = element == null ? null : element.getTags().getValue("3dmr");
-
-			if (id3DMR != null) {
-
-				currentTriangles.clear();
-				currentExtrusionGeometries.clear();
-				currentModelInstances.clear();
-
-				Model model3DMR = new ExternalResourceModel("3dmr:" + id3DMR);
-
-				VectorXZ center = null;
-
-				if (element instanceof MapNode) {
-					center = ((MapNode) element).getPos();
-				} else if (element instanceof MapWaySegment) {
-					center = ((MapWaySegment) element).getCenter();
-				} else if (element instanceof MapArea) {
-					center = ((MapArea) element).getOuterPolygon().getCenter();
-				}
-
-				double direction = parseDirection(element.getTags(), 0);
-
-				currentModelInstances.put(model3DMR, new InstanceParameters(center.xyz(0), direction, null, null, null));
-
-			}
-
-			/* build the object's triangle geometries */
-
-			List<TriangleGeometry> triangleGeometries = new ArrayList<TriangleGeometry>();
-
-			for (Material material : currentTriangles.keySet()) {
-
-				TriangleGeometry.Builder geometryBuilder = TriangleGeometry.newBuilder();
-
-				geometryBuilder.setMaterial(materialBlock.toIndex(material));
-
-				TriangleData triangleData = currentTriangles.get(material);
-
-				/* write the vertices */
-
-				for (VectorXYZ v : triangleData.getVertices()) {
-					geometryBuilder.addVertices(vector3dBlock.toIndex(v));
-				}
-
-				/* write the texture coordinates */
-
-				List<VectorXZ> texCoords = new ArrayList<VectorXZ>();
-
-				for (int layer = 0; layer < triangleData.getTexCoordLists().size(); layer++) {
-
-					// check if the tex coords can be calculated in the client
-					if (!(material.getTextureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
-
-						// append the texture coordinates for this layer
-						texCoords.addAll(triangleData.getTexCoordLists().get(layer));
-
-					}
-
-				}
-
-				for (VectorXZ v : texCoords) {
-					geometryBuilder.addTexCoords(vector2dBlock.toIndex(v));
-				}
-
-				/* build the geometry */
-
-				triangleGeometries.add(geometryBuilder.build());
-
-			}
-
-			/* build the object's instance geometries */
-
-			List<InstanceGeometry> instanceGeometries = new ArrayList<InstanceGeometry>();
-
-			for (Model model : currentModelInstances.keySet()) {
-
-				InstanceGeometry.Builder geometryBuilder = InstanceGeometry.newBuilder();
-
-				if (model instanceof ExternalResourceModel) {
-					geometryBuilder.setResourceIdentifier(((ExternalResourceModel)model).getResourceIdentifier());
-				} else {
-					geometryBuilder.setModel(modelBlock.toIndex(model));
-				}
-
-				boolean allUnrotated = true;
-				boolean allUnscaled = true;
-
-				for (InstanceParameters instanceParams : currentModelInstances.get(model)) {
-
-					geometryBuilder.addPosition(round(instanceParams.position.x * COORD_PRECISION_FACTOR));
-					geometryBuilder.addPosition(round(instanceParams.position.y * COORD_PRECISION_FACTOR));
-					geometryBuilder.addPosition(round(instanceParams.position.z * COORD_PRECISION_FACTOR));
-
-					int direction = (int)round(instanceParams.direction * 1000.0);
-					geometryBuilder.addDirection(direction);
-					allUnrotated &= (direction == 0);
-
-					// this assumes that 1 is the unscaled height, which is why convertModel passes 1 to Model.render
-					double scaleDouble = instanceParams.height == null ? 1 : instanceParams.height;
-					int scale = (int)round(scaleDouble * 1000.0);
-					geometryBuilder.addScale(scale);
-					allUnscaled &= (scale == 1000);
-
-				}
-
-				if (allUnrotated) {
-					geometryBuilder.clearDirection();
-				}
-
-				if (allUnscaled) {
-					geometryBuilder.clearScale();
-				}
-
-				if (model == WindTurbine.ROTOR) {
-
-					// hard-coded animation of wind turbine rotors
-					Animation.Builder animationBuilder = Animation.newBuilder();
-					animationBuilder.setType(AnimationType.ROTATION_X);
-					animationBuilder.setRunsPerSecond(0.3);
-					geometryBuilder.setAnimation(animationBuilder );
-
-				}
-
-				instanceGeometries.add(geometryBuilder.build());
-
-			}
-
-			/* build the actual object */
-
-			FrontendPbf.WorldObject.Builder objectBuilder = FrontendPbf.WorldObject.newBuilder();
-
-			if (worldObject != null) {
-
-				if (element != null) {
-					Object elementWithId = element instanceof MapWaySegment ? ((MapWaySegment)element).getWay() : element;
-					objectBuilder.setOsmId(elementWithId.toString());
-				}
-
-				objectBuilder.setTypeName(stringBlock.toIndex(worldObject.getClass().getSimpleName()));
-
-				if (LOD_2_FEATURES.contains(worldObject.getClass())
-						|| (worldObject instanceof NodeModelInstance
-								&& LOD_2_MODEL_FEATURES.contains(((NodeModelInstance)worldObject).model.getClass()))) {
-					objectBuilder.setMinLod(2);
-				}
-
-				if (worldObject instanceof Rail) {
-					if (currentExtrusionGeometries.isEmpty()) {
-						objectBuilder.setMaxLod(2);
-					} else {
-						objectBuilder.setMinLod(3);
-					}
-				}
-
-			}
-
-			objectBuilder.addAllTriangleGeometries(triangleGeometries);
-			objectBuilder.addAllExtrusionGeometries(currentExtrusionGeometries);
-			objectBuilder.addAllInstanceGeometries(instanceGeometries);
-
-			return objectBuilder.build();
-
-		}
-
-		public boolean isEmpty() {
-			return currentTriangles.isEmpty()
-					&& currentExtrusionGeometries.isEmpty()
-					&& currentModelInstances.isEmpty();
-		}
-
-	}
-
 	/** prefix for the URL of texture files */
 	private static final String TEXTURE_BASE_URL = "textures/";
 
 	/** factor applied to coordinate values before rounding to integers */
 	private final int COORD_PRECISION_FACTOR = 1000;
-
-	private static final Tag EMPTY_SURFACE_TAG = new Tag("surface", EMPTY_SURFACE_VALUE);
 
 	private final OutputStream outputStream;
 	private final AxisAlignedRectangleXZ bbox;
@@ -589,9 +228,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 	private final Block<Material> materialBlock = new SimpleBlock<>();
 	private final Block<Model> modelBlock = new SimpleBlock<>();
 
-	private final List<FrontendPbf.WorldObject> objects = new ArrayList<>();
-
-	private WorldObjectBuilder currentObjectBuilder = new WorldObjectBuilder(null);
+	private final Map<MeshMetadata, Multimap<Model, InstanceParameters>> modelInstancesByWO = new HashMap<>();
 
 	/**
 	 * Creates a {@link FrontendPbfTarget}. Writing only completes once {@link #finish()} is called.
@@ -618,40 +255,33 @@ public class FrontendPbfTarget extends AbstractTarget {
 	}
 
 	@Override
-	public void beginObject(WorldObject object) {
+	public void drawModel(Model model, InstanceParameters params) {
 
-		finishCurrentObject();
+		if (!bbox.contains(params.position().xz())) return;
 
-		/* start a new object */
+		MeshMetadata worldObjectMetadata = new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),
+				currentWorldObject.getClass());
 
-		currentObjectBuilder = new WorldObjectBuilder(object);
-
-		/* give special treatment for railways (multiple levels of detail) */
-
-		if (object instanceof Rail) {
-			((Rail)object).renderTo(this, LOD2);
-			finishCurrentObject();
-			currentObjectBuilder = new WorldObjectBuilder(object);
+		if (!modelInstancesByWO.containsKey(worldObjectMetadata)) {
+			modelInstancesByWO.put(worldObjectMetadata, HashMultimap.create());
 		}
 
+		Multimap<Model, InstanceParameters> map = modelInstancesByWO.get(worldObjectMetadata);
+		map.put(model, params);
+
 	}
 
-	@Override
-	public void drawTriangles(Material material, List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
-		currentObjectBuilder.drawTriangles(material, triangles, texCoordLists);
-	}
-
-	@Override
-	public void drawExtrudedShape(Material material, ShapeXZ shape, List<VectorXYZ> path, List<VectorXYZ> upVectors,
-			List<Double> scaleFactors, List<List<VectorXZ>> texCoordLists, Set<ExtrudeOption> options) {
-		currentObjectBuilder.drawExtrudedShape(material, shape, path, upVectors, scaleFactors, texCoordLists, options);
-	}
-
-	@Override
-	public void drawModel(Model model, VectorXYZ position,
-			double direction, Double height, Double width, Double length) {
-		currentObjectBuilder.drawModel(model, position, direction, height, width, length);
+	private static VectorXZ getCenter(Element element) {
+		if (element instanceof MapNode) {
+			return ((MapNode) element).getPos();
+		} else if (element instanceof MapWay) {
+			PolylineXZ polyline = ((MapWay) element).getPolylineXZ();
+			return polyline.pointAtOffset(polyline.getLength() / 2);
+		} else if (element instanceof MapArea) {
+			return ((MapArea) element).getOuterPolygon().getCenter();
+		} else {
+			throw new Error("Unknown element type " + element.getClass());
+		}
 	}
 
 	private Shape convertShape(ShapeXZ s) {
@@ -757,8 +387,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 		}
 
 		switch (textureLayer.baseColorTexture.wrap) {
-			case CLAMP:
-			case CLAMP_TO_BORDER: layerBuilder.setWrap(Wrap.CLAMP); break;
+			case CLAMP: layerBuilder.setWrap(Wrap.CLAMP); break;
 			case REPEAT: break; //default value – not setting it saves bandwidth in proto2
 			default: throw new Error("unsupported wrap: " + baseColorTexture.wrap);
 		}
@@ -777,55 +406,15 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 	}
 
-	private FrontendPbf.WorldObject convertModel(Model m) {
-
-		WorldObjectBuilder objectBuilder = new WorldObjectBuilder(null);
-
-		m.render(objectBuilder, NULL_VECTOR, 0.0, 1.0, null, null);
-
-		return objectBuilder.build();
-
-	}
-
-	/**
-	 * completes the {@link FrontendPbf.WorldObject} for which information is currently
-	 * being collected in {@link #currentObjectBuilder}
-	 */
-	private void finishCurrentObject() {
-
-		/* check for reasons not to build the object */
-
-		boolean ignoreCurrentObject = currentObjectBuilder.isEmpty();
-
-		if (currentObjectBuilder.worldObject != null
-				&& currentObjectBuilder.worldObject.getPrimaryMapElement() != null) {
-
-			MapElement mapElement = currentObjectBuilder.worldObject.getPrimaryMapElement();
-
-			VectorXZ center = null;
-
-			if (mapElement instanceof MapNode) {
-				center = ((MapNode) mapElement).getPos();
-			} else if (mapElement instanceof MapWaySegment) {
-				center = ((MapWaySegment) mapElement).getCenter();
-			} else if (mapElement instanceof MapArea) {
-				center = ((MapArea) mapElement).getOuterPolygon().getCenter();
-			}
-
-			// ignore objects (mostly) outside the bbox, except forests (which are filtered on a per-tree level)
-			ignoreCurrentObject |= !bbox.contains(center) && !(currentObjectBuilder.worldObject instanceof Forest);
-
-			ignoreCurrentObject |= USE_FLOOR_PLATE
-					&& mapElement.getTags().contains(EMPTY_SURFACE_TAG);
-
+	private FrontendPbf.WorldObject convertModel(Model m, @Nullable TextureAtlasGroup textureAtlasGroup) {
+		InstanceParameters params = new InstanceParameters(NULL_VECTOR, 0.0, 1.0, null, null);
+		List<Mesh> meshes = m.buildMeshes(params);
+		if (textureAtlasGroup != null) {
+			var tempMeshStore = new MeshStore(meshes, null);
+			tempMeshStore = tempMeshStore.process(List.of(new ReplaceTexturesWithAtlas(textureAtlasGroup)));
+			meshes = tempMeshStore.meshes();
 		}
-
-		/* build the current object */
-
-		if (!ignoreCurrentObject) {
-			objects.add(currentObjectBuilder.build());
-		}
-
+		return buildWorldObject(null, meshes, HashMultimap.create());
 	}
 
 	/**
@@ -833,7 +422,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 	 */
 	private FrontendPbf.WorldObject buildFloorPlate() throws InvalidGeometryException {
 
-		WorldObjectBuilder builder = new WorldObjectBuilder(null);
+		MeshTarget target = new MeshTarget();
 
 		Collection<TriangleXZ> triangles = bbox.getTriangulation();
 
@@ -841,30 +430,306 @@ public class FrontendPbfTarget extends AbstractTarget {
 
 		for (TriangleXZ triangle : triangles) {
 			trianglesXYZ.add(triangle.xyz(FLOOR_PLATE_Y));
+		}
+
+		target.drawTriangles(TERRAIN_DEFAULT, trianglesXYZ,
+				triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
+
+		return buildWorldObject(null, target.getMeshes(), HashMultimap.create());
+
+	}
+
+	private List<FrontendPbf.WorldObject> buildWorldObjects(@Nullable MeshMetadata worldObjectMetadata,
+			Collection<Mesh> meshes, Multimap<Model, InstanceParameters> modelInstances) {
+
+		List<FrontendPbf.WorldObject> result = new ArrayList<>();
+
+		for (int minLod = 0; minLod <= 4; minLod++) {
+			for (int maxLod = minLod; maxLod <= 4; maxLod++) {
+
+				List<Mesh> meshesAtLod = new ArrayList<>();
+				for (Mesh m : meshes) {
+					if (m.lodRangeMin == LevelOfDetail.values()[minLod]
+							&& m.lodRangeMax == LevelOfDetail.values()[maxLod]) {
+						meshesAtLod.add(m);
+					}
+				}
+
+				Multimap<Model, InstanceParameters> models = HashMultimap.create();
+
+				if (minLod == 0 && maxLod == 4) {
+					models = modelInstances;
+				}
+
+				if (!meshesAtLod.isEmpty() || !models.isEmpty()) {
+					result.add(buildWorldObject(worldObjectMetadata, meshesAtLod, models));
+				}
+
+			}
+		}
+
+		return result;
+
+	}
+
+	private FrontendPbf.WorldObject buildWorldObject(@Nullable MeshMetadata worldObjectMetadata,
+			Collection<Mesh> meshes, Multimap<Model, InstanceParameters> modelInstances) {
+
+		if (meshes.isEmpty() && modelInstances.isEmpty()) {
+			throw new IllegalStateException("a WorldObject needs geometry");
+		}
+
+		Element element = worldObjectMetadata == null ? null : worldObjectMetadata.mapElement();
+
+		/* check for 3DMR ids */
+
+		String id3DMR = element == null ? null : element.getTags().getValue("3dmr");
+
+		if (id3DMR != null) {
+
+			meshes = emptyList();
+			modelInstances = HashMultimap.create();
+
+			Model model3DMR = new ExternalResourceModel("3dmr:" + id3DMR);
+
+			VectorXZ center = getCenter(element);
+			double direction = parseDirection(element.getTags(), 0);
+
+			modelInstances.put(model3DMR, new InstanceParameters(center.xyz(0), direction));
 
 		}
 
-		builder.drawTriangles(TERRAIN_DEFAULT, trianglesXYZ,
-				triangleTexCoordLists(trianglesXYZ, TERRAIN_DEFAULT, GLOBAL_X_Z));
+		/* build the object's triangle and extrusion geometries */
 
-		return builder.build();
+		List<FrontendPbf.TriangleGeometry> triangleGeometries = new ArrayList<>();
+		List<FrontendPbf.ExtrusionGeometry> extrusionGeometries = new ArrayList<>();
+
+		for (Mesh mesh : meshes) {
+
+			if (mesh.geometry instanceof ExtrusionGeometry) {
+				extrusionGeometries.add(buildExtrusionGeometry(mesh.material, (ExtrusionGeometry) mesh.geometry));
+			} else {
+				triangleGeometries.add(buildTriangleGeometry(mesh.material, mesh.geometry.asTriangles()));
+			}
+
+		}
+
+		/* build the object's instance geometries */
+
+		List<InstanceGeometry> instanceGeometries = new ArrayList<InstanceGeometry>();
+
+		for (Model model : modelInstances.keySet()) {
+
+			InstanceGeometry.Builder geometryBuilder = InstanceGeometry.newBuilder();
+
+			if (model instanceof ExternalResourceModel externalResourceModel) {
+				geometryBuilder.setResourceIdentifier(externalResourceModel.resourceIdentifier());
+			} else {
+				geometryBuilder.setModel(modelBlock.toIndex(model));
+			}
+
+			boolean allUnrotated = true;
+			boolean allUnscaled = true;
+
+			for (InstanceParameters instanceParams : modelInstances.get(model)) {
+
+				geometryBuilder.addPosition(round(instanceParams.position().x * COORD_PRECISION_FACTOR));
+				geometryBuilder.addPosition(round(instanceParams.position().y * COORD_PRECISION_FACTOR));
+				geometryBuilder.addPosition(round(instanceParams.position().z * COORD_PRECISION_FACTOR));
+
+				int direction = (int)round(instanceParams.direction() * 1000.0);
+				geometryBuilder.addDirection(direction);
+				allUnrotated &= (direction == 0);
+
+				// this assumes that 1 is the unscaled height, which is why convertModel passes 1 to Model.render
+				double scaleDouble = instanceParams.height() == null ? 1 : instanceParams.height();
+				int scale = (int)round(scaleDouble * 1000.0);
+				geometryBuilder.addScale(scale);
+				allUnscaled &= (scale == 1000);
+
+			}
+
+			if (allUnrotated) {
+				geometryBuilder.clearDirection();
+			}
+
+			if (allUnscaled) {
+				geometryBuilder.clearScale();
+			}
+
+			if (model == WindTurbine.ROTOR) {
+
+				// hard-coded animation of wind turbine rotors
+				Animation.Builder animationBuilder = Animation.newBuilder();
+				animationBuilder.setType(AnimationType.ROTATION_X);
+				animationBuilder.setRunsPerSecond(0.3);
+				geometryBuilder.setAnimation(animationBuilder );
+
+			}
+
+			instanceGeometries.add(geometryBuilder.build());
+
+		}
+
+		/* build the actual object */
+
+		FrontendPbf.WorldObject.Builder objectBuilder = FrontendPbf.WorldObject.newBuilder();
+
+		if (worldObjectMetadata != null) {
+
+			if (element != null) {
+				objectBuilder.setOsmId(element.toString());
+			}
+
+			objectBuilder.setTypeName(stringBlock.toIndex(worldObjectMetadata.modelClass().getSimpleName()));
+
+			if (LOD_2_FEATURES.contains(worldObjectMetadata.modelClass())) {
+				objectBuilder.setMinLod(2);
+			}
+
+		}
+
+		objectBuilder.addAllTriangleGeometries(triangleGeometries);
+		objectBuilder.addAllExtrusionGeometries(extrusionGeometries);
+		objectBuilder.addAllInstanceGeometries(instanceGeometries);
+
+		return objectBuilder.build();
+
+	}
+
+	private FrontendPbf.TriangleGeometry buildTriangleGeometry(Material material, TriangleGeometry geom) {
+
+		FrontendPbf.TriangleGeometry.Builder geometryBuilder = FrontendPbf.TriangleGeometry.newBuilder();
+
+		geometryBuilder.setMaterial(materialBlock.toIndex(material));
+
+		/* write the vertices */
+
+		for (VectorXYZ v : geom.vertices()) {
+			geometryBuilder.addVertices(vector3dBlock.toIndex(v));
+		}
+
+		/* write the texture coordinates */
+
+		List<VectorXZ> texCoords = new ArrayList<>();
+
+		for (int layer = 0; layer < geom.texCoords.size(); layer++) {
+
+			// check if the tex coords can be calculated in the client
+			if (!(material.getTextureLayers().get(layer).baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction)) {
+
+				// append the texture coordinates for this layer
+				texCoords.addAll(geom.texCoords.get(layer));
+
+			}
+
+		}
+
+		for (VectorXZ v : texCoords) {
+			geometryBuilder.addTexCoords(vector2dBlock.toIndex(v));
+		}
+
+		/* build the geometry */
+
+		return geometryBuilder.build();
+
+	}
+
+	private FrontendPbf.ExtrusionGeometry buildExtrusionGeometry(Material material, ExtrusionGeometry geom) {
+
+		FrontendPbf.ExtrusionGeometry.Builder geometryBuilder = FrontendPbf.ExtrusionGeometry.newBuilder();
+
+		geometryBuilder.setMaterial(materialBlock.toIndex(material));
+
+		geometryBuilder.setShape(shapeBlock.toIndex(geom.shape));
+
+		for (VectorXYZ v : geom.path) {
+			geometryBuilder.addPath(vector3dBlock.toIndex(v));
+		}
+
+		if (geom.upVectors != null) {
+			for (VectorXYZ v : geom.upVectors) {
+				geometryBuilder.addUpVectors(vector3dBlock.toIndex(v));
+			}
+		}
+
+		if (geom.scaleFactors != null) {
+			for (double scaleFactor : geom.scaleFactors) {
+				geometryBuilder.addScaleFactors(round(scaleFactor * 1000));
+			}
+		}
+
+		if (geom.options != null && geom.options.contains(START_CAP)) {
+			geometryBuilder.setStartCap(true);
+		}
+
+		if (geom.options != null && geom.options.contains(END_CAP)) {
+			geometryBuilder.setEndCap(true);
+		}
+
+		return geometryBuilder.build();
 
 	}
 
 	@Override
 	public void finish() {
 
-		/* build the last object */
+		List<FrontendPbf.WorldObject> objects = new ArrayList<>();
 
-		finishCurrentObject();
+		/* create texture atlases */
+
+		MeshStore instanceMeshStore = new MeshStore();
+
+		for (MeshMetadata metadata : modelInstancesByWO.keySet()) {
+			for (java.util.Map.Entry<Model, InstanceParameters> entry : modelInstancesByWO.get(metadata).entries()) {
+				for (Mesh mesh : entry.getKey().buildMeshes(entry.getValue())) {
+					instanceMeshStore.addMesh(mesh, metadata);
+				}
+			}
+		}
+
+		@Nullable TextureAtlasGroup textureAtlasGroup = switch (USE_TEXTURE_ATLAS) {
+			case ALWAYS -> generateTextureAtlasGroup(List.of(this.meshStore, instanceMeshStore), t -> false);
+			case RUNTIME_ONLY -> generateTextureAtlasGroup(List.of(this.meshStore, instanceMeshStore),
+					t -> !(t instanceof RuntimeTexture));
+			case NEVER -> null;
+		};
+
+		/* pre-process meshes */
+
+		List<MeshStore.MeshProcessingStep> processingSteps = new ArrayList<>(List.of(
+				new ClipToBounds(bbox),
+				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
+		));
+
+		if (textureAtlasGroup != null) {
+			processingSteps.add(1, new ReplaceTexturesWithAtlas(textureAtlasGroup));
+		}
+
+		MeshStore meshStore = this.meshStore.process(processingSteps);
+
+		/* convert all WorldObjects */
+
+		Multimap<MeshMetadata, Mesh> meshesByMetadata = meshStore.meshesByMetadata();
+
+		Set<MeshMetadata> knownObjectMetadata = new HashSet<>(modelInstancesByWO.keySet());
+		knownObjectMetadata.addAll(meshesByMetadata.keySet());
+
+		for (MeshMetadata objectMetadata : knownObjectMetadata) {
+
+			objects.addAll(buildWorldObjects(objectMetadata, meshesByMetadata.get(objectMetadata),
+					modelInstancesByWO.getOrDefault(objectMetadata, HashMultimap.create())));
+
+		}
 
 		/* create a floor plate (if that option is active */
 
 		if (USE_FLOOR_PLATE) {
 			try {
 				objects.add(buildFloorPlate());
-			} catch (InvalidGeometryException | IllegalStateException | TopologyException | ConstraintEnforcementException e) {
-				System.err.println("Error while producing the floor plate: " + e);
+			} catch (InvalidGeometryException | IllegalStateException | TopologyException
+					| ConstraintEnforcementException e) {
+				ConversionLog.error("Error while producing the floor plate", e);
 			}
 		}
 
@@ -874,7 +739,7 @@ public class FrontendPbfTarget extends AbstractTarget {
 		ModelBlock.Builder modelBlockBuilder = ModelBlock.newBuilder();
 
 		FaultTolerantIterationUtil.forEach(modelBlock.getElements(), (Model m) -> {
-			modelBlockBuilder.addModels(convertModel(m));
+			modelBlockBuilder.addModels(convertModel(m, textureAtlasGroup));
 		});
 
 		Vector3dBlock.Builder vector3dBlockBuilder = Vector3dBlock.newBuilder();
@@ -932,21 +797,10 @@ public class FrontendPbfTarget extends AbstractTarget {
 	}
 
 	public static void writePbfFile(File outputFile, MapData mapData,
-			AxisAlignedRectangleXZ bbox, MapProjection projection) throws IOException {
+			AxisAlignedRectangleXZ bbox, MapProjection projection, Compression compression) throws IOException {
 
-		FileOutputStream output = null;
-
-		try {
-
-			output = new FileOutputStream(outputFile);
-
-			writePbfStream(output, mapData, bbox, projection);
-
-		} finally {
-			if (output != null) {
-				output.close();
-			}
-		}
+		TargetUtil.writeFileWithCompression(outputFile, compression,
+			it -> writePbfStream(it, mapData, bbox, projection));
 
 	}
 

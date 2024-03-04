@@ -1,15 +1,12 @@
 package org.osm2world.core.target.jogl;
 
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES2.GL_TEXTURE_BORDER_COLOR;
 import static java.lang.Math.min;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.GL2GL3.*;
 import static org.osm2world.core.target.jogl.AbstractJOGLTarget.getFloatBuffer;
 
 import java.awt.Color;
 import java.nio.FloatBuffer;
-
-import javax.media.opengl.GL;
-import javax.media.opengl.GL3;
 
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
@@ -20,6 +17,8 @@ import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.util.color.LColor;
 
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.math.FloatUtil;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.texture.Texture;
@@ -138,7 +137,7 @@ public class DefaultShader extends AbstractPrimitiveShader {
 		gl.glUniformMatrix4fv(this.getProjectionMatrixID(), 1, false, pmvMatrix.glGetPMatrixf());
 		gl.glUniformMatrix4fv(this.getModelViewMatrixID(), 1, false, pmvMatrix.glGetMvMatrixf());
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
-		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
+		FloatUtil.multMatrix(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat.array());
 		gl.glUniformMatrix4fv(this.getModelViewProjectionMatrixID(), 1, false, pmvMat);
 		gl.glUniformMatrix4fv(this.getNormalMatrixID(), 1, false, pmvMatrix.glGetMvitMatrixf());
 	}
@@ -255,16 +254,15 @@ public class DefaultShader extends AbstractPrimitiveShader {
 				int wrap = 0;
 
 				switch (colorTexture.wrap) {
-				case CLAMP: System.out.println("Warning: CLAMP is no longer supported. Using CLAMP_TO_BORDER instead."); wrap = GL_CLAMP_TO_BORDER; break;
 				case REPEAT: wrap = GL_REPEAT; break;
-				case CLAMP_TO_BORDER: wrap = GL_CLAMP_TO_BORDER; break;
+				case CLAMP: wrap = GL_CLAMP_TO_EDGE; break;
 				}
 
 				gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
 
-		        if (colorTexture.wrap == Wrap.CLAMP_TO_BORDER) {
+		        if (colorTexture.wrap == Wrap.CLAMP) {
 
 		        	/* TODO: make the RGB configurable -  for some reason,
 		        	 * it shows up in lowzoom even if fully transparent */
@@ -480,10 +478,10 @@ public class DefaultShader extends AbstractPrimitiveShader {
 
 		// PMV of light source
 		FloatBuffer pmvMat = FloatBuffer.allocate(16);
-		FloatUtil.multMatrixf(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat);
+		FloatUtil.multMatrix(pmvMatrix.glGetPMatrixf(), pmvMatrix.glGetMvMatrixf(), pmvMat.array());
 
 		FloatBuffer shadowMat = FloatBuffer.allocate(16);
-		FloatUtil.multMatrixf(bb, pmvMat, shadowMat);
+		FloatUtil.multMatrix(bb, pmvMat, shadowMat.array());
 
 		gl.glUniformMatrix4fv(this.getShadowMatrixID(), 1, false, shadowMat);
 	}

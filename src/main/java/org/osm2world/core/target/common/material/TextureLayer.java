@@ -2,11 +2,14 @@ package org.osm2world.core.target.common.material;
 
 import static java.lang.Math.min;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 
 import org.apache.commons.lang.StringUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -22,6 +25,22 @@ import org.osm2world.core.util.color.LColor;
  * but at least one texture must be present in each layer.
  */
 public class TextureLayer {
+
+	public static enum TextureType {
+
+		BASE_COLOR, NORMAL, ORM, DISPLACEMENT;
+
+		public String fileNameInfix() {
+			switch (this) {
+			case BASE_COLOR: return "Color";
+			case ORM: return "ORM";
+			case NORMAL: return "Normal";
+			case DISPLACEMENT: return "Displacement";
+			default: throw new Error();
+			}
+		}
+
+	}
 
 	/**
 	 * texture for base color and alpha as in glTF 2.0.
@@ -71,6 +90,16 @@ public class TextureLayer {
 		return result;
 	}
 
+	public @Nullable TextureData getTexture(TextureType type) {
+		switch (type) {
+		case BASE_COLOR: return baseColorTexture;
+		case NORMAL: return normalTexture;
+		case ORM: return ormTexture;
+		case DISPLACEMENT: return displacementTexture;
+		default: throw new Error("Unsupported texture type: " + type);
+		}
+	}
+
 	/**
 	 * calculates the base color factor, a constant factor for the color values of the {@link #baseColorTexture}.
 	 * The factor includes a correction for the color of the {@link #baseColorTexture} in order to get the product
@@ -101,6 +130,30 @@ public class TextureLayer {
 		return new LColor(baseColorFactor(targetBaseColor, 1.0f));
 	}
 
+	/**
+	 * writes this layer's textures to files
+	 *
+	 * @param baseFileName  the file name to use, with an "$INFIX" placeholder to be replaced with "Color", "ORM" etc.
+	 */
+	public void writeToFiles(File baseFileName) throws IOException {
+
+		if (!baseFileName.getAbsolutePath().contains("$INFIX")) {
+			throw new IllegalArgumentException("File path must contain an '$INFIX' placeholder");
+		}
+
+		for (TextureType type : TextureType.values()) {
+
+			TextureData texture = this.getTexture(type);
+
+			if (texture != null) {
+				File file = new File(baseFileName.getAbsolutePath().replace("$INFIX", type.fileNameInfix()));
+				ImageIO.write(texture.getBufferedImage(), "png", file);
+			}
+
+		}
+
+	}
+
 	@Override
 	public String toString() {
 
@@ -110,7 +163,7 @@ public class TextureLayer {
 		int index = commonPrefix.lastIndexOf("_");
 
 		if (textureNames.length == 1) {
-			return textureNames[0].replaceAll("\\.(png|jpg|svg)", "");
+			return textureNames[0].replaceAll("(?i)\\.(png|jpg|svg)", "");
 		} else if (index > 0) {
 			return commonPrefix.subSequence(0, index).toString();
 		} else {

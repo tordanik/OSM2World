@@ -8,15 +8,12 @@ import static org.osm2world.core.math.VectorXZ.*;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineSegment;
+import org.locationtech.jts.geom.*;
 import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.util.color.LColor;
 
 /**
  * utility class for some useful calculations
@@ -420,9 +417,8 @@ public final class GeometryUtil {
 	/**
 	 * performs linear interpolation for elevation along a polyline segment within a another polyline
 	 */
-	public static List<VectorXYZ> interpolateEleOfSegment(List<VectorXZ> lineSegmentString, List<VectorXZ> fullLine, double firstPointEle, double secondPointEle){
-
-		assert(fullLine.size() >= lineSegmentString.size());
+	public static List<VectorXYZ> interpolateEleOfSegment(List<VectorXZ> lineSegmentString, List<VectorXZ> fullLine,
+			double firstPointEle, double secondPointEle) {
 
 		Function<VectorXZ, VectorXYZ> baseEleFunction = (VectorXZ point) -> {
 			PolylineXZ lineXZ = new PolylineXZ(fullLine);
@@ -444,6 +440,43 @@ public final class GeometryUtil {
 	 */
 	public static List<VectorXYZ> interpolateEleOfPolyline(List<VectorXZ> lineString, double firstPointEle, double secondPointEle){
 		return interpolateEleOfSegment(lineString, lineString, firstPointEle, secondPointEle);
+	}
+
+	/** performs interpolation on a triangle with barycentric coordinates */
+	public static double interpolateOnTriangle(VectorXZ point, TriangleXZ t, double val1, double val2, double val3) {
+
+		double denom = (t.v2.z - t.v3.z) * (t.v1.x - t.v3.x) + (t.v3.x - t.v2.x) * (t.v1.z - t.v3.z);
+
+		double weight1 = ((t.v2.z - t.v3.z) * (point.x - t.v3.x) + (t.v3.x - t.v2.x) * (point.z - t.v3.z)) / denom;
+		double weight2 = ((t.v3.z - t.v1.z) * (point.x - t.v3.x) + (t.v1.x - t.v3.x) * (point.z - t.v3.z)) / denom;
+		double weight3 = 1 - weight1 - weight2;
+
+		if (weight1 > 1.0 || weight2 > 1.0) {
+			throw new IllegalArgumentException("point outside the triangle");
+		}
+
+		return weight1 * val1 + weight2 * val2 + weight3 * val3;
+
+	}
+
+	public static VectorXZ interpolateOnTriangle(VectorXZ point, TriangleXZ t, VectorXZ val1, VectorXZ val2, VectorXZ val3) {
+		double x = interpolateOnTriangle(point, t, val1.x, val2.x, val3.x);
+		double z = interpolateOnTriangle(point, t, val1.z, val2.z, val3.z);
+		return new VectorXZ(x, z);
+	}
+
+	public static VectorXYZ interpolateOnTriangle(VectorXZ point, TriangleXZ t, VectorXYZ val1, VectorXYZ val2, VectorXYZ val3) {
+		double x = interpolateOnTriangle(point, t, val1.x, val2.x, val3.x);
+		double y = interpolateOnTriangle(point, t, val1.y, val2.y, val3.y);
+		double z = interpolateOnTriangle(point, t, val1.z, val2.z, val3.z);
+		return new VectorXYZ(x, y, z);
+	}
+
+	public static LColor interpolateOnTriangle(VectorXZ point, TriangleXZ t, LColor val1, LColor val2, LColor val3) {
+		float r = (float) interpolateOnTriangle(point, t, val1.red, val2.red, val3.red);
+		float g = (float) interpolateOnTriangle(point, t, val1.green, val2.green, val3.green);
+		float b = (float) interpolateOnTriangle(point, t, val1.blue, val2.blue, val3.blue);
+		return new LColor(r, g, b);
 	}
 
 	/**
@@ -494,6 +527,16 @@ public final class GeometryUtil {
 
 		return result;
 
+	}
+
+	/**
+	 * 2D version of {@link #equallyDistributePointsAlong(double, boolean, List)}
+	 */
+	public static List<VectorXZ> equallyDistributePointsAlong(
+			double preferredDistance, boolean pointsAtStartAndEnd, PolylineXZ polyline) {
+		List<VectorXYZ> pointsXYZ = polyline.vertices().stream().map(it -> it.xyz(0)).toList();
+		List<VectorXYZ> resultXYZ = equallyDistributePointsAlong(preferredDistance, pointsAtStartAndEnd, pointsXYZ);
+		return resultXYZ.stream().map(VectorXYZ::xz).toList();
 	}
 
 	/**

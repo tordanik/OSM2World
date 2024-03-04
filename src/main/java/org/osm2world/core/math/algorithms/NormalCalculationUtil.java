@@ -162,7 +162,7 @@ public final class NormalCalculationUtil {
 	/** returns the normalized average of a collection of normal vectors */
 	private static VectorXYZ averageNormal(Collection<VectorXYZ> normals) {
 		VectorXYZ averageNormal = normals.stream().reduce(NULL_VECTOR, VectorXYZ::add);
-		return averageNormal.normalize();
+		return (averageNormal.lengthSquared() > 0) ? averageNormal.normalize() : normals.iterator().next();
 	}
 
 }

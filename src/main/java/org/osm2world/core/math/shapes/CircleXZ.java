@@ -93,6 +93,11 @@ public class CircleXZ implements SimpleClosedShapeXZ, RoundShapeXZ {
 	}
 
 	@Override
+	public boolean contains(VectorXZ v) {
+		return v.distanceTo(center) <= radius;
+	}
+
+	@Override
 	public CircleXZ rotatedCW(double angleRad) {
 		return this;
 	}

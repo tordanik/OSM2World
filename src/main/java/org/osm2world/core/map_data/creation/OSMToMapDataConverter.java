@@ -7,50 +7,23 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapAreaSegment;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapRelation;
+import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.MapRelation.Element;
-import org.osm2world.core.map_data.data.MapWay;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapNA;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.map_data.data.overlaps.*;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
-import de.topobyte.osm4j.core.model.iface.OsmEntity;
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmRelationMember;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 import gnu.trove.map.TLongObjectMap;
@@ -74,17 +47,21 @@ public class OSMToMapDataConverter {
 		this.config = config;
 	}
 
-	public MapData createMapData(OSMData osmData) throws IOException, EntityNotFoundException {
+	public MapData createMapData(OSMData osmData, @Nullable MapMetadata metadata) throws EntityNotFoundException {
 
 		final List<MapNode> mapNodes = new ArrayList<>();
 		final List<MapWay> mapWays = new ArrayList<>();
 		final List<MapArea> mapAreas = new ArrayList<>();
 		final List<MapRelation> mapRelations = new ArrayList<>();
 
-		createMapElements(osmData, mapNodes, mapWays, mapAreas, mapRelations);
+		if (metadata == null) {
+			metadata = new MapMetadata(null, null);
+		}
+
+		createMapElements(osmData, metadata, mapNodes, mapWays, mapAreas, mapRelations);
 
 		MapData mapData = new MapData(mapNodes, mapWays, mapAreas, mapRelations,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds()));
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds()), metadata);
 
 		calculateIntersectionsInMapData(mapData);
 
@@ -96,10 +73,8 @@ public class OSMToMapDataConverter {
 	 * creates {@link MapElement}s
 	 * based on OSM data from an {@link OSMData} dataset.
 	 * and adds them to collections
-	 * @param mapRelations
-	 * @throws EntityNotFoundException
 	 */
-	private void createMapElements(final OSMData osmData,
+	private void createMapElements(final OSMData osmData, MapMetadata metadata,
 			final List<MapNode> mapNodes, final List<MapWay> mapWays,
 			final List<MapArea> mapAreas, List<MapRelation> mapRelations) throws EntityNotFoundException {
 
@@ -143,7 +118,7 @@ public class OSMToMapDataConverter {
 				}
 
 			} catch (EntityNotFoundException e) {
-				// TODO: what to do here?
+				// skip this area
 			}
 
 		});
@@ -152,7 +127,8 @@ public class OSMToMapDataConverter {
 
 		mapAreas.addAll(MultipolygonAreaBuilder.createAreasForCoastlines(
 				osmData, nodeIdMap, mapNodes,
-				calculateFileBoundary(osmData.getUnionOfExplicitBounds())));
+				calculateFileBoundary(osmData.getUnionOfExplicitBounds()),
+				metadata.land() == Boolean.FALSE));
 
 		/* ... based on closed ways with certain tags */
 
@@ -162,20 +138,18 @@ public class OSMToMapDataConverter {
 				if (!tags.contains("area", "no")
 						&& tags.stream().anyMatch(ruleset::isAreaTag)) {
 
-					List<MapNode> nodes = new ArrayList<>(way.getNumberOfNodes());
-					for (long id : nodesAsList(way).toArray()) {
-						nodes.add(nodeIdMap.get(id));
-					}
-
 					try {
+
+						List<MapNode> nodes = wayNodes(way, nodeIdMap);
 
 						MapArea mapArea = new MapArea(way.getId(), false, tags, nodes);
 
 						mapAreas.add(mapArea);
 						areaMap.put(way.getId(), mapArea);
 
-					} catch (InvalidGeometryException e) {
-						System.err.println(e);
+					} catch (EntityNotFoundException | InvalidGeometryException e) {
+						ConversionLog.error(e.getMessage());
+						break;
 					}
 
 				}
@@ -209,20 +183,17 @@ public class OSMToMapDataConverter {
 		for (OsmWay osmWay : osmData.getWays()) {
 			boolean hasTags = osmWay.getNumberOfTags() != 0;
 			if (hasTags && !areaMap.containsKey(osmWay.getId())) {
-
-				List<MapNode> nodes = new ArrayList<>(osmWay.getNumberOfNodes());
-
-				for (long id : nodesAsList(osmWay).toArray()) {
-					nodes.add(nodeIdMap.get(id));
+				try {
+					List<MapNode> nodes = wayNodes(osmWay, nodeIdMap);
+					var way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
+					mapWays.add(way);
+				} catch (EntityNotFoundException e) {
+					ConversionLog.error(e.getMessage());
 				}
-
-				MapWay way = new MapWay(osmWay.getId(), tagsOfEntity(osmWay), nodes);
-				mapWays.add(way);
-
 			}
 		}
 
-		/* crate relations from remaining OSM relations */
+		/* create relations from the remaining relevant OSM relations */
 
 		TLongObjectMap<MapRelation.Element> wayIdMap = new TLongObjectHashMap<>();
 		TLongObjectMap<MapRelation.Element> relationIdMap = new TLongObjectHashMap<>();
@@ -244,6 +215,10 @@ public class OSMToMapDataConverter {
 			if (hasTags && !relationIdMap.containsKey(osmRelation.getId())) {
 
 				MapRelation relation = new MapRelation(osmRelation.getId(), tagsOfEntity(osmRelation));
+
+				if (!ruleset.isRelevantRelation(relation.getTags())) {
+					continue;
+				}
 
 				List<OsmRelationMember> incompleteMembers = null;
 
@@ -278,16 +253,12 @@ public class OSMToMapDataConverter {
 
 				}
 
-				if (!ruleset.isWhitelistedRelationType(relation.getTags().getValue("type"))) {
-					continue;
-				}
-
 				if (incompleteMembers != null) {
 
 					StringJoiner memberList = new StringJoiner(", ");
 					incompleteMembers.forEach(m -> memberList.add(
 							"'" + m.getRole() + "': " + m.getType() + " " + m.getId()));
-					System.err.println("Relation " + relation + " is incomplete, missing members: " + memberList);
+					ConversionLog.warn("Relation " + relation + " is incomplete, missing members: " + memberList);
 
 					if (relation.getMemberships().isEmpty()) continue;
 
@@ -300,7 +271,7 @@ public class OSMToMapDataConverter {
 
 	}
 
-	static TagSet tagsOfEntity(OsmEntity entity) {
+	public static TagSet tagsOfEntity(OsmEntity entity) {
 
 		if (entity.getNumberOfTags() == 0) return TagSet.of();
 
@@ -311,6 +282,20 @@ public class OSMToMapDataConverter {
 		}
 		return TagSet.of(tags);
 
+	}
+
+	public static List<MapNode> wayNodes(OsmWay way, TLongObjectMap<MapNode> nodeIdMap) throws EntityNotFoundException {
+		List<MapNode> result = new ArrayList<>(way.getNumberOfNodes());
+		for (long id : nodesAsList(way).toArray()) {
+			MapNode node = nodeIdMap.get(id);
+			if (node != null) {
+				result.add(node);
+			} else {
+				throw new EntityNotFoundException("Invalid input data: Way w" + way.getId()
+						+ " references missing node n" + id);
+			}
+		}
+		return result;
 	}
 
 	/**

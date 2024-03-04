@@ -11,7 +11,10 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+
+import com.google.common.base.Objects;
 
 public class TextTexture extends RuntimeTexture {
 
@@ -44,7 +47,7 @@ public class TextTexture extends RuntimeTexture {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
+	protected BufferedImage createBufferedImage() {
 
 		if (!text.isEmpty()) {
 
@@ -132,6 +135,37 @@ public class TextTexture extends RuntimeTexture {
 	@Override
 	public String toString() {
 		return text;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof TextTexture)) return false;
+		TextTexture other = (TextTexture) obj;
+		return dimensions().equals(other.dimensions())
+				&& Objects.equal(wrap, other.wrap)
+				&& Objects.equal(coordFunction, other.coordFunction)
+				&& Objects.equal(text, other.text)
+				&& Objects.equal(font, other.font)
+				&& topOffset == other.topOffset
+				&& leftOffset == other.leftOffset
+				&& Objects.equal(textColor, other.textColor)
+				&& relativeFontSize == other.relativeFontSize;
+	}
+
+	@Override
+	public int hashCode() {
+		HashCodeBuilder builder = new HashCodeBuilder();
+		builder.append(dimensions());
+		builder.append(wrap);
+		builder.append(coordFunction);
+		builder.append(text);
+		builder.append(font);
+		builder.append(topOffset);
+		builder.append(leftOffset);
+		builder.append(textColor);
+		builder.append(relativeFontSize);
+		return builder.toHashCode();
 	}
 
 }

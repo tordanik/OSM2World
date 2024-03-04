@@ -2,19 +2,18 @@ package org.osm2world.core.world.network;
 
 import static java.lang.Math.PI;
 import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.math.GeometryUtil.getLineIntersection;
+import static org.osm2world.core.math.GeometryUtil.projectPerpendicular;
+import static org.osm2world.core.math.VectorXZ.angleBetween;
+import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.MapNode;
@@ -67,8 +66,8 @@ public class NetworkCalculator {
 					VisibleConnectorNodeWorldObject<?> connector = (VisibleConnectorNodeWorldObject<?>) nodeWorldObject;
 
 					if (connector.getConnectedNetworkSegments().size() != 2) {
-						System.err.println("Illegal number of connected segments for " + node + ": "
-								+ connector.getConnectedNetworkSegments());
+						ConversionLog.warn("Illegal number of connected segments for " + node + ": "
+								+ connector.getConnectedNetworkSegments(), node);
 						continue;
 					}
 

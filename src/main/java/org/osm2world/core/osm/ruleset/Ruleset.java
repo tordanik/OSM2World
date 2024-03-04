@@ -1,8 +1,8 @@
 package org.osm2world.core.osm.ruleset;
 
-import org.osm2world.core.map_data.data.Tag;
-
 import de.topobyte.osm4j.core.model.iface.OsmTag;
+import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.TagSet;
 
 public interface Ruleset {
 
@@ -22,6 +22,6 @@ public interface Ruleset {
 	public boolean isSeaTag(OsmTag tag);
 
 	/** checks if this relation type is considered relevant for OSM2World */
-	public boolean isWhitelistedRelationType(String type);
+	public boolean isRelevantRelation(TagSet tags);
 
 }

@@ -6,33 +6,27 @@ import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.Co
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osm2world.core.map_data.data.MapArea;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.Tag;
+import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
@@ -107,7 +101,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Waterway extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
+	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public Waterway(MapWaySegment line) {
 			super(line);
@@ -238,7 +233,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class RiverJunction extends JunctionNodeWorldObject<Waterway> implements TerrainBoundaryWorldObject {
+	public static class RiverJunction extends JunctionNodeWorldObject<Waterway>
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public RiverJunction(MapNode node) {
 			super(node, Waterway.class);
@@ -260,7 +256,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class Water extends NetworkAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class Water extends NetworkAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
 		// possible algorithm: for each node of the outer polygon, check whether it
@@ -290,7 +287,8 @@ public class WaterModule extends ConfigurableWorldModule {
 
 	}
 
-	public static class AreaFountain extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class AreaFountain extends AbstractAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public AreaFountain(MapArea area) {
 			super(area);

@@ -1,6 +1,6 @@
 package org.osm2world.viewer;
 
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.osm2world.viewer.view.ViewerFrame;
@@ -19,7 +19,7 @@ public class Viewer {
 			System.out.println("Error setting native look and feel: " + e);
 		}
 
-		new ViewerFrame(new BaseConfiguration(), null, null).setVisible(true);
+		new ViewerFrame(new BaseConfiguration(), null, null, null).setVisible(true);
 
 	}
 

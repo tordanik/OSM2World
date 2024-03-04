@@ -1,23 +1,20 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
-import static javax.media.opengl.GL.GL_STATIC_DRAW;
-import static javax.media.opengl.GL.GL_TRIANGLES;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleFan;
-import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
+import static com.jogamp.opengl.GL.*;
+import static org.osm2world.core.math.GeometryUtil.*;
 
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.media.opengl.GL3;
-
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.Primitive.Type;
+
+import com.jogamp.opengl.GL3;
 
 /**
  * class that keeps a VBO id along with associated information for shadow volumes

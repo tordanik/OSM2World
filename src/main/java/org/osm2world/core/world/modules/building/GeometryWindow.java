@@ -2,7 +2,8 @@ package org.osm2world.core.world.modules.building;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
@@ -11,36 +12,17 @@ import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
-import static org.osm2world.core.world.modules.building.WindowParameters.WindowRegion.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.world.modules.building.WindowParameters.WindowRegion.CENTER;
+import static org.osm2world.core.world.modules.building.WindowParameters.WindowRegion.TOP;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.osm2world.core.math.Angle;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.JTSBufferUtil;
-import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.math.shapes.PolylineShapeXZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
@@ -104,26 +86,25 @@ public class GeometryWindow implements Window {
 
 			List<VectorXZ> newOutline = new ArrayList<>();
 
-			for (int i = centerOutline.vertices().indexOf(topSegment.p2);
-					i != centerOutline.vertices().indexOf(topSegment.p1);
-					i = (i + 1) % centerOutline.vertices().size()) {
+			List<VectorXZ> centerVs = centerOutline.verticesNoDup();
+			for (int i = centerVs.indexOf(topSegment.p2);
+					i != centerVs.indexOf(topSegment.p1);
+					i = (i + 1) % centerVs.size()) {
 				newOutline.add(centerOutline.vertices().get(i));
 			}
 
-			VectorXZ start = regionOutlines.get(TOP).vertices().stream().min(
-					Comparator.comparingDouble(topSegment.p1::distanceTo)).get();
-			VectorXZ end = regionOutlines.get(TOP).vertices().stream().min(
-					Comparator.comparingDouble(topSegment.p2::distanceTo)).get();
+			List<VectorXZ> topVs = regionOutlines.get(TOP).verticesNoDup();
 
-			for (int i = regionOutlines.get(TOP) .vertices().indexOf(start);
-					i != regionOutlines.get(TOP).vertices().indexOf(end);
-					i = (i + 1) % regionOutlines.get(TOP).vertices().size()) {
-				newOutline.add(regionOutlines.get(TOP).vertices().get(i));
+			VectorXZ start = topVs.stream().min(Comparator.comparingDouble(topSegment.p1::distanceTo)).get();
+			VectorXZ end = topVs.stream().min(Comparator.comparingDouble(topSegment.p2::distanceTo)).get();
+
+			for (int i = topVs.indexOf(start);
+					i != topVs.indexOf(end);
+					i = (i + 1) % topVs.size()) {
+				newOutline.add(topVs.get(i));
 			}
 
-			newOutline.add(newOutline.get(0));
-
-			outline = new SimplePolygonXZ(newOutline);
+			outline = new SimplePolygonXZ(closeLoop(newOutline));
 
 		}
 
@@ -260,7 +241,7 @@ public class GeometryWindow implements Window {
 	}
 
 	@Override
-	public Double insetDistance() {
+	public double insetDistance() {
 		return DEPTH - OUTER_FRAME_THICKNESS;
 	}
 

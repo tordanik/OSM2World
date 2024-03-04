@@ -18,13 +18,13 @@ public class TriangleGeometryTest {
 	@Test
 	public void testSmoothTriangleStrip() {
 
-		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(RED, Interpolation.SMOOTH);
+		TriangleGeometry.Builder builder = new TriangleGeometry.Builder(0, RED, Interpolation.SMOOTH);
 		builder.addTriangleStrip(asList(
 				new VectorXYZ(0, 1, 0), new VectorXYZ(0, 0, 0),
 				new VectorXYZ(1, 1, 0), new VectorXYZ(1, 0, 0),
 				new VectorXYZ(2, 1, 0), new VectorXYZ(2, 0, 0),
-				new VectorXYZ(2, 1, -1), new VectorXYZ(2, 0, -1)));
-		builder.setTexCoordFunctions(emptyList());
+				new VectorXYZ(2, 1, -1), new VectorXYZ(2, 0, -1)),
+				emptyList());
 		TriangleGeometry geometry = builder.build();
 
 		assertEquals(6, geometry.triangles.size());

@@ -3,15 +3,17 @@ package org.osm2world.core.target.common.material;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import java.awt.Color;
-import java.util.ArrayList;
+import java.awt.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.util.color.LColor;
 
 /**
  * describes the material/surface properties of an object for lighting
@@ -72,7 +74,7 @@ public abstract class Material {
 		this.transparency = transparency;
 		this.shadow = shadow;
 		this.ambientOcclusion = ambientOcclusion;
-		this.textureLayers = textureLayers;
+		this.textureLayers = textureLayers != null ? textureLayers : emptyList();
 
 	}
 
@@ -91,6 +93,10 @@ public abstract class Material {
 
 	public Color getColor() {
 		return color;
+	}
+
+	public LColor getLColor() {
+		return LColor.fromAWT(getColor());
 	}
 
 	public boolean isDoubleSided() {
@@ -149,6 +155,19 @@ public abstract class Material {
 
 		return new ImmutableMaterial(getInterpolation(), color, isDoubleSided(),
 				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
+
+	}
+
+	/**
+	 * returns a material that is the same as this one, except with a different transparency setting.
+	 * @param transparency  the transparency setting to use. Can be null, in which case this material is returned unaltered.
+	 */
+	public Material withTransparency(Transparency transparency) {
+
+		if (transparency == null) return this;
+
+		return new ImmutableMaterial(getInterpolation(), getColor(), isDoubleSided(),
+				transparency, getShadow(), getAmbientOcclusion(), getTextureLayers());
 
 	}
 
@@ -248,7 +267,7 @@ public abstract class Material {
 				} else if (matcher.group(2) != null) {
 					replacement = matcher.group(2);
 				} else {
-					System.err.println("Unknown placeholder key: " + key);
+					ConversionLog.warn("Unknown placeholder key '" + key + "' for texture: " + texture);
 					replacement = "";
 				}
 
@@ -288,19 +307,21 @@ public abstract class Material {
 	}
 
 	public int getNumTextureLayers() {
-		if (textureLayers == null) {
-			return 0;
-		} else {
-			return textureLayers.size();
-		}
+		return textureLayers.size();
 	}
 
 	public List<TextureDataDimensions> getTextureDimensions() {
-		if (textureLayers == null) {
-			return null;
-		} else {
-			return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
-		}
+		return textureLayers.stream().map(l -> l.baseColorTexture.dimensions()).collect(toList());
+	}
+
+	public boolean equals(@Nonnull Material other, boolean ignoreNormalMode, boolean ignoreColor) {
+		return (ignoreNormalMode || interpolation == other.interpolation)
+				&& (ignoreColor || Objects.equals(color, other.color))
+				&& doubleSided == other.doubleSided
+				&& transparency == other.transparency
+				&& shadow == other.shadow
+				&& ambientOcclusion == other.ambientOcclusion
+				&& Objects.equals(textureLayers, other.textureLayers);
 	}
 
 	@Override

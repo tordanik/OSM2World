@@ -13,10 +13,11 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
 
-public class Corridor implements AreaWorldObject {
+public class Corridor implements AreaWorldObject, LegacyWorldObject {
 
     private final IndoorFloor floor;
     private final Ceiling ceiling;

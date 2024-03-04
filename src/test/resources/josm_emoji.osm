@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM' upload='never'>
+  <node id='123123123123' lat='48.56522589534' lon='13.45233874211' timestamp='2023-02-11T15:38:37Z' uid='12345' user='account with emoji 😎' visible='true' version='148' changeset='123456'>
+    <tag k='shop' v='supermarket' />
+    <tag k='name' v='EmojiMart 🛍️' />
+  </node>
+</osm>
+

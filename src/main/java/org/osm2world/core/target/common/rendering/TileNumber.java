@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 
@@ -23,7 +25,7 @@ public class TileNumber {
 	/**
 	 * pattern for parsing constructor
 	 */
-	public static final String PATTERN = "([0-9]{1,2}),([0-9]{1,9}),([0-9]{1,9})";
+	public static final String PATTERN = "([0-9]{1,2})[,/_]([0-9]{1,9})[,/_]([0-9]{1,9})";
 
 	/**
 	 * regular constructor
@@ -70,7 +72,7 @@ public class TileNumber {
 	 * @param arg  string to be parsed; format see {@link #PATTERN}
 	 * @throws IllegalArgumentException  for invalid tile numbers
 	 */
-	public TileNumber(String arg) {
+	public TileNumber(@Nonnull String arg) {
 		Matcher m = Pattern.compile(PATTERN).matcher(arg);
 		if (m.matches()) {
 			zoom = Integer.parseInt(m.group(1));
@@ -105,7 +107,12 @@ public class TileNumber {
 	/** formats this tile number as a string that matches {@link #PATTERN} */
 	@Override
 	public String toString() {
-		return zoom + "," + x + "," + y;
+		return toString(",");
+	}
+
+	/** variant of {@link #toString()} with a custom separator between the components of the tile number */
+	public String toString(String separator) {
+		return zoom + separator + x + separator + y;
 	}
 
 	public LatLonBounds bounds() {

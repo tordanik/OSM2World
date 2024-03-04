@@ -2,37 +2,61 @@ package org.osm2world.viewer.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 
-import org.apache.commons.configuration.BaseConfiguration;
+import javax.annotation.Nonnull;
+
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.osm2world.console.OSM2World;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
+import org.osm2world.core.osm.creation.GeodeskReader;
+import org.osm2world.core.osm.creation.MbtilesReader;
 import org.osm2world.core.osm.creation.OSMDataReader;
 import org.osm2world.core.osm.creation.OSMFileReader;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.functions.Factory;
 
 public class Data extends Observable {
 
-	private Configuration config = new BaseConfiguration();
+	private final @Nonnull List<File> configFiles;
+	private Configuration config;
 	private File osmFile = null;
 	private Results conversionResults = null;
+
+	public Data(List<File> configFiles, Configuration config) {
+		this.configFiles = configFiles;
+		this.config = config;
+	}
 
 	public Configuration getConfig() {
 		return config;
 	}
 
+	/** updates the configuration */
 	public void setConfig(Configuration config) {
 
 		this.config = config;
 
-		this.setChanged();
-		this.notifyObservers();
+		ConfigUtil.parseFonts(config);
 
+		if (conversionResults != null) {
+			this.setChanged();
+			this.notifyObservers();
+		}
+
+	}
+
+	/** reloads the configuration from the config file */
+	public void reloadConfig(RenderOptions options) throws ConfigurationException {
+		Configuration config = OSM2World.loadConfigFiles(options.lod, configFiles.toArray(new File[0]));
+		this.setConfig(config);
 	}
 
 	public void loadOSMData(OSMDataReader reader, boolean failOnLargeBBox,
@@ -43,8 +67,12 @@ public class Data extends Observable {
 
 		try {
 
-			if (reader instanceof OSMFileReader) {
-				this.osmFile = ((OSMFileReader)reader).getFile();
+			if (reader instanceof OSMFileReader r) {
+				this.osmFile = r.getFile();
+			} else if (reader instanceof GeodeskReader r) {
+				this.osmFile = r.getFile();
+			} else if (reader instanceof MbtilesReader r) {
+				this.osmFile = r.getFile();
 			} else {
 				this.osmFile = null;
 			}
@@ -60,7 +88,7 @@ public class Data extends Observable {
 			}
 
 			conversionResults = converter.createRepresentations(
-					reader.getData(), null, config, null);
+					reader.getData(), null, null, config, null);
 
 		} catch (IOException e) {
 

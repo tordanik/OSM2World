@@ -1,28 +1,30 @@
 package org.osm2world.core.world.modules;
 
-import static java.lang.Math.*;
 import static java.lang.Math.max;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.GeometryUtil.*;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
+import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.addYList;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
-import static org.osm2world.core.target.common.ExtrudeOption.*;
+import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
+import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.*;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createVerticalTriangleStrip;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -30,24 +32,24 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
-import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NodeModelInstance;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
@@ -130,7 +132,8 @@ public class BarrierModule extends AbstractModule {
 		}
 	}
 
-	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject {
+	private static abstract class LinearBarrier extends AbstractNetworkWaySegmentWorldObject
+			implements ProceduralWorldObject {
 
 		protected final double height;
 		protected final double width;
@@ -157,7 +160,7 @@ public class BarrierModule extends AbstractModule {
 	 * superclass for linear barriers that are a simple colored or textured "wall"
 	 * (use width and height to create vertical sides and a flat top)
 	 */
-	private static abstract class ColoredWall extends LinearBarrier {
+	private static abstract class ColoredWall extends LinearBarrier implements ProceduralWorldObject {
 
 		private final Material material;
 
@@ -168,7 +171,16 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			LevelOfDetail minLod = LOD2;
+			if (height > 5 || width > 3) {
+				minLod = LOD0;
+			} else if (height > 2 || width > 1) {
+				minLod = LOD1;
+			}
+
+			target.setCurrentLodRange(minLod, LOD4);
 
 			List<VectorXYZ> leftBottomOutline = getOutline(false);
 			List<VectorXYZ> leftTopOutline = addYList(leftBottomOutline, height);
@@ -345,7 +357,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			Material material = METAL_FENCE;
 
@@ -416,7 +430,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			List<VectorXYZ> polePositions = equallyDistributePointsAlong(1.75 * width, false, getCenterline());
 
@@ -481,7 +497,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			/* render fence */
 
@@ -549,7 +567,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			if (material == null) {
 				material = defaultFenceMaterial;
@@ -631,7 +651,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			double distanceBetweenRepetitions = 0.3;
 
@@ -749,13 +771,15 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			List<VectorXYZ> centerline = getCenterline();
 
 			Material material = STEEL.makeSmooth();
 
 			/* draw the rail itself */
+
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			List<VectorXYZ> path = addYList(centerline, this.height - SHAPE_GERMAN_B_HEIGHT);
 
@@ -781,6 +805,7 @@ public class BarrierModule extends AbstractModule {
 				List<VectorXYZ> polePath = asList(base,
 						base.addY(height - SHAPE_GERMAN_B_HEIGHT*0.33));
 
+				target.setCurrentLodRange(LOD3, LOD4);
 				target.drawExtrudedShape(material, SHAPE_POST_DOUBLE_T, polePath,
 						nCopies(polePath.size(), railNormal.xyz(0)), null, null, null);
 
@@ -799,6 +824,7 @@ public class BarrierModule extends AbstractModule {
 					List<VectorXYZ> boltPath = asList(boltPosition,
 							boltPosition.add(railNormal.mult(BOLT_DEPTH)));
 
+					target.setCurrentLodRange(LOD4, LOD4);
 					target.drawExtrudedShape(material, boltShape, boltPath,
 							nCopies(boltPath.size(), Y_UNIT), null, null, EnumSet.of(END_CAP));
 
@@ -838,7 +864,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			/* subdivide the centerline;
 			 * there'll be a jersey barrier element between each pair of successive points */
@@ -879,7 +907,12 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public List<Mesh> buildMeshes() {
+			return emptyList(); // all meshes are in sub-models
+		}
+
+		@Override
+		public List<ModelInstance> getSubModels() {
 
 			//TODO connect the bollards to the ground independently
 
@@ -888,9 +921,9 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> bollardPositions = equallyDistributePointsAlong(2, false, getCenterline());
 
-			for (VectorXYZ base : bollardPositions) {
-				bollardModel.render(target, base, 0, null, null, null);
-			}
+			return bollardPositions.stream()
+					.map(base -> new ModelInstance(bollardModel, new InstanceParameters(base, 0)))
+					.collect(toList());
 
 		}
 
@@ -921,7 +954,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			if (this.poleMaterial == null) {
 				poleMaterial = defaultPoleMaterial;
@@ -933,6 +966,7 @@ public class BarrierModule extends AbstractModule {
 					this.barGap, true, getCenterline());
 
 			for (VectorXYZ base : polePositions) {
+				target.setCurrentLodRange(LOD2, LOD4);
 				target.drawColumn(this.poleMaterial, null, base,
 						this.height, this.barWidth, this.barWidth, false, true);
 			}
@@ -954,6 +988,7 @@ public class BarrierModule extends AbstractModule {
 					chainPath.add(polePositions.get(k).add(offset.normalize().mult(i)).addY(pointDrop));
 				}
 
+				target.setCurrentLodRange(LOD3, LOD4);
 				target.drawExtrudedShape(defaultFenceMaterial, BAR_SHAPE, chainPath, nCopies(DEFAULT_NO_CHAIN_SEGMENTS + 1,
 						Y_UNIT), null, null, null);
 			}
@@ -971,8 +1006,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
-			target.drawColumn(Materials.CONCRETE, null, position, height, width/2, width/2, false, true);
+		public List<Mesh> buildMeshes(InstanceParameters params) {
+			return singletonList(new Mesh(ExtrusionGeometry.createColumn(null, params.position(), height,
+					width/2, width/2, false, true, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
 		}
 
 		@Override
@@ -1016,7 +1052,7 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void render(Target target, VectorXYZ position, double direction, Double h, Double w, Double l) {
+		public List<Mesh> buildMeshes(InstanceParameters params) {
 
 			double radius = width / 2;
 			double splitHeight = max(0, height - radius);
@@ -1048,9 +1084,10 @@ public class BarrierModule extends AbstractModule {
 			}
 
 			List<VectorXYZ> path = new ArrayList<>();
-			heights.forEach(it -> path.add(position.addY(it)));
+			heights.forEach(it -> path.add(params.position().addY(it)));
 
-			target.drawExtrudedShape(CONCRETE, new CircleXZ(NULL_VECTOR, radius), path, null, scaleFactors, null, null);
+			return singletonList(new Mesh(new ExtrusionGeometry(new CircleXZ(NULL_VECTOR, radius),
+					path, null, scaleFactors, null, null, CONCRETE.getTextureDimensions()), CONCRETE, LOD2, LOD4));
 
 		}
 
@@ -1084,7 +1121,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class Chain extends NoOutlineNodeWorldObject implements Renderable {
+	public static class Chain extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static final double DEFAULT_HEIGHT = 1;
 		private final double height;
@@ -1113,7 +1150,9 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			/* render posts */
 
@@ -1155,7 +1194,7 @@ public class BarrierModule extends AbstractModule {
 
 	}
 
-	public static class DenseShrubbery extends AbstractAreaWorldObject {
+	public static class DenseShrubbery extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		/** the shrubbery:shape=* value. Only "box" is supported at the moment. */
 		private static enum ShrubberyShape { BOX }
@@ -1169,9 +1208,10 @@ public class BarrierModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 			switch (shape) {
 			case BOX:
+				target.setCurrentLodRange(LOD2, LOD4);
 				target.drawExtrudedShape(HEDGE, getOutlinePolygonXZ(),
 						asList(new VectorXYZ(0, 0, 0), new VectorXYZ(0, height, 0)),
 						null, null, null, EnumSet.of(END_CAP));

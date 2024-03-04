@@ -1,7 +1,5 @@
 package org.osm2world.core.math;
 
-import static java.lang.Double.isFinite;
-
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -11,9 +9,18 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 	public final VectorXYZ v1, v2, v3;
 
 	public TriangleXYZ(VectorXYZ v1, VectorXYZ v2, VectorXYZ v3) {
+
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
+
+		if (!v1.isFinite() || !v2.isFinite() || !v3.isFinite()) {
+			throw new InvalidGeometryException("Triangle vertex is not finite: " + v1 + ", " + v2 + ", " + v3);
+		} else if (getArea() < 1e-6) {
+			// degenerate triangle: all three points are (almost, to account for floating point arithmetic) in a line
+			throw new InvalidGeometryException("Degenerate triangle: " + v1 + ", " + v2 + ", " + v3);
+		}
+
 	}
 
 	@Override
@@ -68,17 +75,6 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 
 		return 0.5 * (w1.cross(w2)).length();
 
-	}
-
-	/**
-	 * checks if the triangle contains NaN/Infinity values or is degenerate. That is, all three points are
-	 * (almost, to account for floating point arithmetic) in a line.
-	 */
-	public boolean isDegenerateOrNaN() {
-		return getArea() < 1e-5
-				|| !isFinite(v1.x) || !isFinite(v1.y) || !isFinite(v1.z)
-				|| !isFinite(v2.x) || !isFinite(v2.y) || !isFinite(v2.z)
-				|| !isFinite(v3.x) || !isFinite(v3.y) || !isFinite(v3.z);
 	}
 
 	/** creates a new triangle by adding a shift vector to each vertex of this triangle */

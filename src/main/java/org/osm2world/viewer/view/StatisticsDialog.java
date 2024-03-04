@@ -1,23 +1,16 @@
 package org.osm2world.viewer.view;
 
+import static java.util.Map.entry;
 import static org.osm2world.core.target.statistics.StatisticsTarget.Stat.*;
 
 import java.awt.event.KeyEvent;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -29,28 +22,27 @@ import org.osm2world.core.target.statistics.StatisticsTarget.Stat;
 
 public class StatisticsDialog extends JDialog {
 
+	@Serial
 	private static final long serialVersionUID = -2724106939639635472L;
-	private static final Map<Stat, String> statNames = new HashMap<Stat, String>();
-	static {
-		statNames.put(OBJECT_COUNT, "objects");
-		statNames.put(PRIMITIVE_COUNT, "primitives");
-		statNames.put(TOTAL_TRIANGLE_COUNT, "triangles");
-		statNames.put(TRIANGLES_COUNT, "t. groups");
-		statNames.put(TRIANGLE_STRIP_COUNT, "t. strips");
-		statNames.put(TRIANGLE_FAN_COUNT, "t. fans");
-		statNames.put(CONVEX_POLYGON_COUNT, "polygons");
-		statNames.put(VBO_VALUE_COUNT, "vbo values");
-	}
+
+	private static final Map<Stat, String> statNames = Map.ofEntries(
+			entry(OBJECT_COUNT, "objects"),
+			entry(PRIMITIVE_COUNT, "primitives"),
+			entry(TOTAL_TRIANGLE_COUNT, "triangles"),
+			entry(TRIANGLES_COUNT, "t. groups"),
+			entry(TRIANGLE_STRIP_COUNT, "t. strips"),
+			entry(TRIANGLE_FAN_COUNT, "t. fans"),
+			entry(CONVEX_POLYGON_COUNT, "polygons"),
+			entry(VBO_VALUE_COUNT, "vbo values")
+	);
 
 	public StatisticsDialog(JFrame owner, StatisticsTarget stats) {
 		super(owner, "Statistics");
 
 		/* collect content for tables */
 
-		List<Material> materialList =
-				new ArrayList<Material>(stats.getKnownMaterials());
-		List<Class<?>> classList =
-				new ArrayList<Class<?>>(stats.getKnownRenderableClasses());
+		List<Material> materialList = new ArrayList<>(stats.getKnownMaterials());
+		List<Class<?>> classList = new ArrayList<>(stats.getKnownRenderableClasses());
 
 		int numColumns = Stat.values().length + 1;
 		int numMaterials = materialList.size();
@@ -58,10 +50,8 @@ public class StatisticsDialog extends JDialog {
 
 		String[] columnNames = new String[numColumns];
 
-		Object[][] perMaterialData =
-				new Object[numMaterials + 1][numColumns];
-		Object[][] perClassData =
-				new Object[numClasses + 1][numColumns];
+		Object[][] perMaterialData = new Object[numMaterials + 1][numColumns];
+		Object[][] perClassData = new Object[numClasses + 1][numColumns];
 
 		Comparator<?>[] comparators = new Comparator<?>[numColumns];
 
@@ -76,7 +66,7 @@ public class StatisticsDialog extends JDialog {
 
 			if (col != 0) {
 				columnNames[col] = statNames.get(stat);
-				comparators[col] = LONG_COMPARATOR;
+				comparators[col] = Comparator.comparing(o -> ((Long) o));
 			}
 
 			for (int row = 0; row < numMaterials; ++row) {
@@ -121,6 +111,7 @@ public class StatisticsDialog extends JDialog {
 			JPanel panel = new JPanel();
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
+			panel.add(new JLabel("Level of detail: " + stats.lod));
 			panel.add(new JLabel("object types: " + classList.size()));
 			panel.add(new JLabel("materials: " + materialList.size()));
 
@@ -158,22 +149,13 @@ public class StatisticsDialog extends JDialog {
 
 	}
 
-
-
-	private static final Comparator<?> LONG_COMPARATOR = new Comparator<Object>() {
-		@Override public int compare(Object o1, Object o2) {
-			return ((Long)o1).compareTo((Long)o2);
-		}
-	};
-
 	private static JComponent createTableComponent(String[] columnNames,
 			Object[][] perMaterialData, Comparator<?>[] comparators) {
 
 		JTable table = new JTable(perMaterialData, columnNames);
 		table.setFillsViewportHeight(true);
 
-		TableRowSorter<TableModel> sorter =
-				new TableRowSorter<TableModel>(table.getModel());
+		TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
 
 		for (int col = 0; col < columnNames.length; ++col) {
 			sorter.setComparator(col, comparators[col]);

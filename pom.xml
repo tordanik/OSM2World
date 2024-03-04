@@ -5,11 +5,11 @@
 
 	<groupId>org.osm2world</groupId>
 	<artifactId>osm2world</artifactId>
-	<version>0.3.0-SNAPSHOT</version>
+	<version>0.4.0-SNAPSHOT</version>
 
 	<name>OSM2World</name>
 	<description>OSM2World creates three-dimensional models of the world from OpenStreetMap data</description>
-	<url>http://osm2world.org</url>
+	<url>https://osm2world.org</url>
 	<inceptionYear>2010</inceptionYear>
 
 	<licenses>
@@ -26,8 +26,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<repositories>
@@ -38,6 +38,16 @@
 		<repository>
 			<id>slimjars-repo</id>
 			<url>https://mvn.slimjars.com</url>
+		</repository>
+		<repository>
+			<id>jzy3d-snapshots</id>
+			<name>Jzy3d Snapshots</name>
+			<url>https://maven.jzy3d.org/snapshots/</url>
+		</repository>
+		<repository>
+			<id>jzy3d-releases</id>
+			<name>Jzy3d Releases</name>
+			<url>https://maven.jzy3d.org/releases/</url>
 		</repository>
 	</repositories>
 
@@ -67,17 +77,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jogamp.jogl</groupId>
-			<artifactId>jogl-all-main</artifactId>
-			<version>2.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jogamp.gluegen</groupId>
-			<artifactId>gluegen-rt-main</artifactId>
-			<version>2.0.2</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.lexicalscope.jewelcli</groupId>
 			<artifactId>jewelcli</artifactId>
 			<version>0.8.9</version>
@@ -86,7 +85,7 @@
 		<dependency>
 			<groupId>org.locationtech.jts</groupId>
 			<artifactId>jts-core</artifactId>
-			<version>1.18.1</version>
+			<version>1.19.0</version>
 		</dependency>
 
 		<dependency>
@@ -108,7 +107,7 @@
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
-			<version>3.9.1</version>
+			<version>3.22.2</version>
 		</dependency>
 
 		<dependency>
@@ -120,7 +119,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>30.1.1-jre</version>
+			<version>32.0.1-jre</version>
 		</dependency>
 
 		<dependency>
@@ -168,13 +167,119 @@
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<version>3.0.0</version>
+			<version>4.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.8.6</version>
+			<version>2.10.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.geodesk</groupId>
+			<artifactId>geodesk</artifactId>
+			<version>0.1.9</version>
+		</dependency>
+
+		<!-- JOGL -->
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-linux-aarch64</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-linux-amd64</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-linux-armv6hf</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-linux-i586</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-macosx-universal</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-windows-amd64</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all-natives-windows-i586 </artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<!-- GLUEGEN -->
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-linux-aarch64</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-linux-amd64</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-linux-armv6hf</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-linux-i586</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-macosx-universal</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-windows-amd64</artifactId>
+			<version>v2.4.0-rc-20210111</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-natives-windows-i586 </artifactId>
+			<version>v2.4.0-rc-20210111</version>
 		</dependency>
 
 	</dependencies>

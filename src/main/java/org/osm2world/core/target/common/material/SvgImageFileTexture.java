@@ -31,12 +31,12 @@ public class SvgImageFileTexture extends ImageFileTexture {
 	}
 
 	@Override
-	public BufferedImage getBufferedImage() {
-		return getBufferedImage(DEFAULT_SVG_RESOLUTION);
+	protected BufferedImage createBufferedImage() {
+		return createBufferedImage(DEFAULT_SVG_RESOLUTION);
 	}
 
 	@Override
-	public BufferedImage getBufferedImage(Resolution resolution) {
+	protected BufferedImage createBufferedImage(Resolution resolution) {
 		try {
 			return svgToBufferedImage(this.file);
 		} catch (IOException e) {

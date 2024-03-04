@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
@@ -8,11 +9,7 @@ import static org.osm2world.core.map_elevation.data.GroundState.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.osm2world.core.map_data.creation.EmptyTerrainBuilder;
 import org.osm2world.core.map_data.data.MapArea;
@@ -23,12 +20,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorGridXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
@@ -36,6 +28,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -91,7 +84,8 @@ public class SurfaceAreaModule extends AbstractModule {
 
 	}
 
-	public static class SurfaceArea extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class SurfaceArea extends AbstractAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		private final String surface;
 
@@ -116,8 +110,11 @@ public class SurfaceAreaModule extends AbstractModule {
 			if (material != null) {
 
 				List<TriangleXYZ> triangles = getTriangulation();
-				target.drawTriangles(material, triangles,
-						triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+
+				if (!triangles.isEmpty()) {
+					target.drawTriangles(material, triangles,
+							triangleTexCoordLists(triangles, material, GLOBAL_X_Z));
+				}
 
 			}
 

@@ -54,6 +54,11 @@ public class MbtilesReader implements OSMDataReader {
 		this.tile = tile;
 	}
 
+	/** returns the MBTiles file this reader is obtaining data from */
+	public File getFile() {
+		return mbtilesFile;
+	}
+
 	@Override
 	public OSMData getData() throws IOException {
 

@@ -3,30 +3,23 @@ package org.osm2world.core.world.modules.building.indoor;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.modules.building.Door;
 import org.osm2world.core.world.modules.building.DoorParameters;
 import org.osm2world.core.world.modules.building.WallSurface;
@@ -41,7 +34,7 @@ public class IndoorModule extends AbstractModule {
 		}
 	}
 
-	private static class Elevator extends AbstractAreaWorldObject {
+	private static class Elevator extends AbstractAreaWorldObject implements LegacyWorldObject {
 
 		private final double carHeight = 2.2;
 
@@ -221,8 +214,8 @@ public class IndoorModule extends AbstractModule {
 						}
 					}
 
-					frontSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, 0, true);
-					backSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, 0, true);
+					frontSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, null, true);
+					backSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, null, true);
 
 				}
 
@@ -237,8 +230,10 @@ public class IndoorModule extends AbstractModule {
 				List<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon, emptyList())
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle - 0.0001)).collect(toList());
 
-				target.drawTriangles(Materials.STEEL, trianglesBottomDown, null);
-				target.drawTriangles(Materials.STEEL, trianglesBottomUp, null);
+				target.drawTriangles(Materials.STEEL, trianglesBottomDown,
+						triangleTexCoordLists(trianglesBottomDown, Materials.STEEL, GLOBAL_X_Z));
+				target.drawTriangles(Materials.STEEL, trianglesBottomUp,
+						triangleTexCoordLists(trianglesBottomUp, Materials.STEEL, GLOBAL_X_Z));
 
 
 				/* draw ceiling */
@@ -249,8 +244,10 @@ public class IndoorModule extends AbstractModule {
 				List<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon, emptyList())
 						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle + carHeight)).collect(toList());
 
-				target.drawTriangles(Materials.STEEL, trianglesTopDown, null);
-				target.drawTriangles(Materials.STEEL, trianglesTopUp, null);
+				target.drawTriangles(Materials.STEEL, trianglesTopDown,
+						triangleTexCoordLists(trianglesTopDown, Materials.STEEL, GLOBAL_X_Z));
+				target.drawTriangles(Materials.STEEL, trianglesTopUp,
+						triangleTexCoordLists(trianglesTopUp, Materials.STEEL, GLOBAL_X_Z));
 
 
 				/* draw cable */

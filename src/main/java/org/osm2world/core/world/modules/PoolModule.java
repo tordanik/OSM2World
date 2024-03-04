@@ -11,7 +11,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +32,7 @@ import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -43,8 +44,7 @@ public class PoolModule extends AbstractModule {
 
 	@Override
 	protected void applyToArea(MapArea area) {
-		if (area.getTags().contains("amenity", "swimming_pool")
-				|| area.getTags().contains("leisure", "swimming_pool")) {
+		if (area.getTags().contains("leisure", "swimming_pool")) {
 			area.addRepresentation(new Pool(area));
 		}
 	}
@@ -67,7 +67,8 @@ public class PoolModule extends AbstractModule {
 
 	}
 
-	public static class Pool extends AbstractAreaWorldObject implements TerrainBoundaryWorldObject {
+	public static class Pool extends AbstractAreaWorldObject
+			implements TerrainBoundaryWorldObject, LegacyWorldObject {
 
 		public Pool(MapArea area) {
 			super(area);
@@ -103,7 +104,7 @@ public class PoolModule extends AbstractModule {
 		}
 	}
 
-	private static class WaterSlide implements WaySegmentWorldObject {
+	private static class WaterSlide implements WaySegmentWorldObject, LegacyWorldObject {
 
 		private static final Color DEFAULT_COLOR = ORANGE;
 

@@ -1,9 +1,9 @@
 package org.osm2world.core.target.jogl;
 
-import javax.media.opengl.GL3;
-
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
+
+import com.jogamp.opengl.GL3;
 
 /**
  * Base class for shaders that render primitives with materials. Is used by {@link JOGLRendererVBOShader}.

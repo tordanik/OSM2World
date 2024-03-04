@@ -1,13 +1,12 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.Cursor;
+import java.awt.*;
 import java.io.IOException;
-import java.lang.Thread.UncaughtExceptionHandler;
+import java.io.Serial;
 
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
@@ -24,6 +23,7 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public abstract class AbstractLoadOSMAction extends AbstractAction {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	protected ViewerFrame viewerFrame;
@@ -42,10 +42,44 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 
 	protected void loadOSMData(OSMDataReader dataReader, boolean resetCamera) {
 
+		try {
+			data.reloadConfig(renderOptions);
+		} catch (ConfigurationException e) {
+
+			JOptionPane.showMessageDialog(viewerFrame,
+					"Could not reload the properties configuration file:\n"
+							+ e.getMessage(),
+					"Error reloading configuration",
+					JOptionPane.WARNING_MESSAGE);
+
+			System.err.println(e);
+
+		}
+
 		LoadOSMThread thread = new LoadOSMThread(dataReader, resetCamera);
-		thread.setUncaughtExceptionHandler(
-				new ConversionExceptionHandler(viewerFrame));
+
+		thread.setUncaughtExceptionHandler((Thread t, Throwable e) -> {
+			if (SwingUtilities.isEventDispatchThread()) {
+				showExceptionAndQuit(viewerFrame, t, e);
+			} else {
+				SwingUtilities.invokeLater(() -> showExceptionAndQuit(viewerFrame, t, e));
+			}
+		});
+
 		thread.start();
+
+	}
+
+	private static void showExceptionAndQuit(ViewerFrame viewerFrame, Thread t, Throwable e) {
+
+		e.printStackTrace();
+
+		String msg = String.format("Unexpected problem on thread %s:\n%s\n\n"
+						+ "OSM2World will be closed now.\n\nLocation:\n%s\n%s",
+				t.getName(), e, e.getStackTrace()[0], e.getStackTrace()[1]);
+		JOptionPane.showMessageDialog(viewerFrame, msg, "Error", JOptionPane.ERROR_MESSAGE);
+
+		System.exit(1);
 
 	}
 
@@ -95,8 +129,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 				} catch (IOException e) {
 
 					JOptionPane.showMessageDialog(viewerFrame,
-							e.toString() + "\nCause: " +
-							(e.getCause() == null ? "unknown" : e.getCause()),
+							e + "\nCause: " + (e.getCause() == null ? "unknown" : e.getCause()),
 							"Could not open OSM file", JOptionPane.ERROR_MESSAGE);
 					e.printStackTrace();
 
@@ -140,71 +173,31 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 		@Override
 		public void updatePhase(Phase newPhase) {
 			switch (newPhase) {
-			case MAP_DATA:
-				progressDialog.setProgress(0);
-				progressDialog.setText("1/5: Organize information from .osm file...");
-				break;
-			case REPRESENTATION:
-				progressDialog.setProgress(20);
-				progressDialog.setText("2/5: Choose visual representations for OSM objects...");
-				break;
-			case ELEVATION:
-				progressDialog.setProgress(40);
-				progressDialog.setText("3/5: Guess elevations from available information...");
-				break;
-			case TERRAIN:
-				progressDialog.setProgress(60);
-				progressDialog.setText("4/5: Generate terrain...");
-				break;
-			case FINISHED:
-				progressDialog.setProgress(80);
-				progressDialog.setText("5/5: Represent objects by 3D primitives...");
-				break;
+				case MAP_DATA -> {
+					progressDialog.setProgress(0);
+					progressDialog.setText("1/5: Organize information from .osm file...");
+				}
+				case REPRESENTATION -> {
+					progressDialog.setProgress(20);
+					progressDialog.setText("2/5: Choose visual representations for OSM objects...");
+				}
+				case ELEVATION -> {
+					progressDialog.setProgress(40);
+					progressDialog.setText("3/5: Guess elevations from available information...");
+				}
+				case TERRAIN -> {
+					progressDialog.setProgress(60);
+					progressDialog.setText("4/5: Generate terrain...");
+				}
+				case TARGET -> {
+					progressDialog.setProgress(80);
+					progressDialog.setText("5/5: Represent objects by 3D primitives...");
+				}
+				case FINISHED -> {
+					progressDialog.setProgress(99);
+					progressDialog.setText("Conversion complete");
+				}
 			}
-
-		}
-
-	}
-
-	private static class ConversionExceptionHandler
-			implements UncaughtExceptionHandler {
-
-		private final ViewerFrame viewerFrame;
-
-		public ConversionExceptionHandler(ViewerFrame viewerFrame) {
-			this.viewerFrame = viewerFrame;
-		}
-
-		@Override
-		public void uncaughtException(final Thread t, final Throwable e) {
-			if (SwingUtilities.isEventDispatchThread()) {
-				showException(t, e);
-			} else {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						showException(t, e);
-					}
-				});
-			}
-
-		}
-
-		private void showException(Thread t, Throwable e) {
-
-			// TODO log
-			e.printStackTrace();
-
-			String msg = String.format(
-					"Unexpected problem on thread %s:\n%s\n\n"
-					+ "OSM2World will be closed now.\n\nLocation:\n%s\n%s",
-					t.getName(), e.toString(),
-					e.getStackTrace()[0], e.getStackTrace()[1]);
-
-			JOptionPane.showMessageDialog(viewerFrame, msg,
-					"Error", JOptionPane.ERROR_MESSAGE);
-
-			System.exit(1);
-
 		}
 
 	}

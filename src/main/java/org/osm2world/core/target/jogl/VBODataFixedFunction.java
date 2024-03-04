@@ -1,16 +1,15 @@
 package org.osm2world.core.target.jogl;
 
-import static javax.media.opengl.GL.GL_ARRAY_BUFFER;
-import static javax.media.opengl.GL.GL_TRIANGLES;
-import static javax.media.opengl.fixedfunc.GLPointerFunc.GL_TEXTURE_COORD_ARRAY;
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.fixedfunc.GLPointerFunc.GL_TEXTURE_COORD_ARRAY;
 
 import java.nio.Buffer;
 import java.util.Collection;
 
-import javax.media.opengl.GL2;
-
 import org.osm2world.core.target.common.Primitive;
 import org.osm2world.core.target.common.material.Material;
+
+import com.jogamp.opengl.GL2;
 
 /**
  * class that keeps a VBO id along with associated information for the fixed function OpenGL pipeline
@@ -20,7 +19,7 @@ abstract class VBODataFixedFunction<BufferT extends Buffer> extends VBOData<Buff
 	protected GL2 gl;
 
 	/**
-	 * @see VBOData#VBOData(javax.media.opengl.GL, JOGLTextureManager, Material, Collection)
+	 * @see VBOData#VBOData(com.jogamp.opengl.GL, JOGLTextureManager, Material, Collection)
 	 */
 	public VBODataFixedFunction(GL2 gl, JOGLTextureManager textureManager, Material material, Collection<Primitive> primitives) {
 		super(gl, textureManager, material, primitives);

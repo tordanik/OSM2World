@@ -1,21 +1,31 @@
 package org.osm2world.core.target.common.material;
 
+import static java.lang.Math.floor;
 import static java.lang.Math.max;
 import static java.util.Arrays.stream;
 import static org.apache.commons.lang3.math.NumberUtils.min;
+import static org.osm2world.core.target.common.material.RasterImageFormat.JPEG;
+import static org.osm2world.core.target.common.material.RasterImageFormat.PNG;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
 import org.osm2world.core.util.color.LColor;
@@ -27,7 +37,29 @@ import jakarta.xml.bind.DatatypeConverter;
  */
 public abstract class TextureData {
 
-	public static enum Wrap { REPEAT, CLAMP, CLAMP_TO_BORDER }
+	public static enum Wrap {
+
+		/** should behave like glTF's "repeat" */
+		REPEAT,
+
+		/** should behave like glTF's "clamp to edge" */
+		CLAMP;
+
+		public double apply(double d) {
+			if (this == REPEAT) {
+				double result = d % 1;
+				while (result < 0) result += 1.0;
+				return result;
+			} else {
+				return min(max(0.0, d), 1.0);
+			}
+		}
+
+		public VectorXZ apply(VectorXZ v) {
+			return new VectorXZ(apply(v.x), apply(v.z));
+		}
+
+	}
 
 	/** width of a single tile of the texture in meters, greater than 0 */
 	public final double width;
@@ -52,6 +84,12 @@ public abstract class TextureData {
 
 	/** cached result of {@link #getAverageColor()} */
 	private LColor averageColor = null;
+
+	/** cached result of {@link #getBufferedImage()} */
+	private BufferedImage bufferedImage = null;
+
+	/** cached result of {@link #getBufferedImage(Resolution)} */
+	private final Map<Resolution, BufferedImage> bufferedImageByResolution = new HashMap<>();
 
 	protected TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
 			Wrap wrap, @Nullable  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
@@ -82,18 +120,85 @@ public abstract class TextureData {
 	 *
 	 * @param resolution  parameter to request a specific resolution
 	 */
-	public BufferedImage getBufferedImage(Resolution resolution) {
-		return getScaledImage(getBufferedImage(), resolution);
+	public final BufferedImage getBufferedImage(Resolution resolution) {
+		if (!bufferedImageByResolution.containsKey(resolution)) {
+			bufferedImageByResolution.put(resolution, createBufferedImage(resolution));
+		}
+		return bufferedImageByResolution.get(resolution);
 	}
 
 	/** see {@link #getBufferedImage(Resolution)} */
-	public abstract BufferedImage getBufferedImage();
+	public final BufferedImage getBufferedImage() {
+		if (bufferedImage == null) {
+			bufferedImage = createBufferedImage();
+			bufferedImageByResolution.put(Resolution.of(bufferedImage), bufferedImage);
+		}
+		return bufferedImage;
+	}
+
+	protected BufferedImage createBufferedImage(Resolution resolution) {
+		return getScaledImage(getBufferedImage(), resolution);
+	}
+
+	protected abstract BufferedImage createBufferedImage();
 
 	/**
 	 * returns the texture as a data URI containing a raster image.
 	 */
 	public String getDataUri() {
-		return imageToDataUri(getBufferedImage(), "png");
+		RasterImageFormat format = getRasterImageFormat();
+		try (var stream = new ByteArrayOutputStream()) {
+		    writeRasterImageToStream(stream);
+		    return "data:" + format.mimeType() + ";base64," + DatatypeConverter.printBase64Binary(stream.toByteArray());
+		} catch (IOException e) {
+		    throw new Error(e);
+		}
+	}
+
+	/**
+	 * returns the format this texture should have when written as a raster image,
+	 * e.g. with {@link #getDataUri()} or {@link #writeRasterImageToStream(OutputStream, float)}
+	 */
+	public RasterImageFormat getRasterImageFormat() {
+		return getBufferedImage().getColorModel().hasAlpha() ? PNG : JPEG;
+	}
+
+	/**
+	 * writes this texture as a raster image to the output stream.
+	 * Uses the format returned by {@link #getRasterImageFormat()}
+	 *
+	 * @param compressionQuality  value between 0 and 1 indicating the desired quality
+	 */
+	public void writeRasterImageToStream(OutputStream stream, float compressionQuality) throws IOException {
+
+		BufferedImage bufferedImage = getBufferedImage();
+		RasterImageFormat format = getRasterImageFormat();
+
+		if (format == JPEG) {
+
+			/* use an implementation which allows setting JPEG compression quality */
+
+			ImageWriter jpegWriter = ImageIO.getImageWritersByMIMEType(JPEG.mimeType()).next();
+			ImageWriteParam jpegWriteParam = jpegWriter.getDefaultWriteParam();
+			jpegWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			jpegWriteParam.setCompressionQuality(compressionQuality);
+
+			try (var imageOutputStream = new MemoryCacheImageOutputStream(stream)) {
+				jpegWriter.setOutput(imageOutputStream);
+				var outputImage = new IIOImage(bufferedImage, null, null);
+				jpegWriter.write(null, outputImage, jpegWriteParam);
+				jpegWriter.dispose();
+			}
+
+		} else {
+			ImageIO.write(bufferedImage, format.imageIOFormatName(), stream);
+		}
+
+	}
+
+	/** variant of {@link #writeRasterImageToStream(OutputStream, float)} with default compression quality */
+	public void writeRasterImageToStream(OutputStream stream) throws IOException {
+		writeRasterImageToStream(stream, 0.75f);
 	}
 
 	/** averages the color values (in linear color space) */
@@ -127,15 +232,15 @@ public abstract class TextureData {
 
 	}
 
-	protected static final String imageToDataUri(BufferedImage image, String format) {
-		try {
-			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		    ImageIO.write(image, format, byteArrayOutputStream);
-		    return "data:image/" + format + ";base64,"
-		    		+ DatatypeConverter.printBase64Binary(byteArrayOutputStream.toByteArray());
-		} catch (IOException e) {
-		    throw new Error(e);
-		}
+	public LColor getColorAt(VectorXZ texCoord, Wrap wrap) {
+
+		texCoord = wrap.apply(texCoord);
+
+		BufferedImage image = getBufferedImage();
+		int x = min((int)floor(image.getWidth() * texCoord.x), image.getWidth() - 1);
+		int y = min((int)floor(image.getHeight() * texCoord.z), image.getHeight() - 1);
+		return LColor.fromAWT(new Color(image.getRGB(x, y)));
+
 	}
 
 	protected static final BufferedImage getScaledImage(BufferedImage originalImage, Resolution newResolution) {

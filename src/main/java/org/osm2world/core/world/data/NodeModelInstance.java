@@ -2,10 +2,12 @@ package org.osm2world.core.world.data;
 
 import static java.lang.Math.PI;
 
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.target.Target;
-import org.osm2world.core.target.common.model.Model;
+import java.util.List;
 
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.target.common.mesh.Mesh;
+import org.osm2world.core.target.common.model.InstanceParameters;
+import org.osm2world.core.target.common.model.Model;
 
 public class NodeModelInstance extends NoOutlineNodeWorldObject {
 
@@ -29,8 +31,8 @@ public class NodeModelInstance extends NoOutlineNodeWorldObject {
 	}
 
 	@Override
-	public void renderTo(Target target) {
-		target.drawModel(model, getBase(), direction, null, null, null);
+	public List<Mesh> buildMeshes() {
+		return model.buildMeshes(new InstanceParameters(getBase(), direction));
 	}
 
 	@Override

@@ -1,20 +1,18 @@
 package org.osm2world.core.math.algorithms;
 
-import static java.util.Collections.emptyList;
+import com.google.common.primitives.Ints;
+import earcut4j.Earcut;
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-
-import com.google.common.primitives.Ints;
-
-import earcut4j.Earcut;
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.hash.TIntIntHashMap;
+import static java.util.Collections.emptyList;
 
 /**
  * uses the earcut4j library for triangulation.
@@ -41,6 +39,9 @@ public class Earcut4JTriangulationUtil {
 			SimplePolygonShapeXZ polygon,
 			Collection<? extends SimplePolygonShapeXZ> holes,
 			Collection<VectorXZ> points) {
+
+		// FIXME: points are currently disabled - not only do they not work properly, they cause OutOfMemory errors
+		points = List.of();
 
 		/* convert input data to the required format */
 
@@ -113,7 +114,9 @@ public class Earcut4JTriangulationUtil {
 					&& !triangle.v2.equals(triangle.v3)
 					&& !triangle.v3.equals(triangle.v1)) {  // check required due to workaround for individual points
 
-				result.add(triangle);
+				if (!triangle.isDegenerateOrNaN()) {
+					result.add(triangle);
+				}
 
 			}
 

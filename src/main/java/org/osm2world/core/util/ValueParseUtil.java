@@ -1,14 +1,13 @@
 package org.osm2world.core.util;
 
-import java.awt.Color;
+import org.osm2world.core.util.color.ColorNameDefinition;
+
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.osm2world.core.util.color.ColorNameDefinition;
 
 /** parses the syntax of typical OSM tag values */
 public final class ValueParseUtil {
@@ -396,6 +395,12 @@ public final class ValueParseUtil {
 		} catch (NumberFormatException e) {
 			return null;
 		}
+	}
+
+	/** variant of {@link #parseColor(String)} with a default value */
+	public static final @Nullable Color parseColor(@Nullable String value, Color defaultValue) {
+		Color result = parseColor(value);
+		return result == null ? defaultValue : result;
 	}
 
 	private static final Pattern LEVEL_RANGE_PATTERN = Pattern.compile("([-]?\\d+)-([-]?\\d+)");

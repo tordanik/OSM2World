@@ -2,85 +2,29 @@ package org.osm2world.viewer.view;
 
 import static java.awt.event.KeyEvent.*;
 import static java.util.Arrays.asList;
+import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLB;
+import static org.osm2world.core.target.gltf.GltfTarget.GltfFlavor.GLTF;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JRadioButtonMenuItem;
+import javax.annotation.Nullable;
+import javax.swing.*;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.InverseDistanceWeightingInterpolator;
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
-import org.osm2world.core.map_elevation.creation.LinearInterpolator;
-import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
-import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
-import org.osm2world.viewer.control.actions.AboutAction;
-import org.osm2world.viewer.control.actions.DownloadOverpassAction;
-import org.osm2world.viewer.control.actions.ExitAction;
-import org.osm2world.viewer.control.actions.ExportGltfAction;
-import org.osm2world.viewer.control.actions.ExportObjAction;
-import org.osm2world.viewer.control.actions.ExportObjDirAction;
-import org.osm2world.viewer.control.actions.ExportPOVRayAction;
-import org.osm2world.viewer.control.actions.ExportScreenshotAction;
-import org.osm2world.viewer.control.actions.HelpControlsAction;
-import org.osm2world.viewer.control.actions.OpenOSMAction;
-import org.osm2world.viewer.control.actions.OrthoBoundsAction;
-import org.osm2world.viewer.control.actions.OrthoTileAction;
-import org.osm2world.viewer.control.actions.ReloadOSMAction;
-import org.osm2world.viewer.control.actions.ResetCameraAction;
-import org.osm2world.viewer.control.actions.SetCameraToCoordinateAction;
-import org.osm2world.viewer.control.actions.SetEleConstraintEnforcerAction;
-import org.osm2world.viewer.control.actions.SetTerrainInterpolatorAction;
-import org.osm2world.viewer.control.actions.ShowCameraConfigurationAction;
-import org.osm2world.viewer.control.actions.StatisticsAction;
-import org.osm2world.viewer.control.actions.ToggleBackfaceCullingAction;
-import org.osm2world.viewer.control.actions.ToggleDebugViewAction;
-import org.osm2world.viewer.control.actions.ToggleOrthographicProjectionAction;
-import org.osm2world.viewer.control.actions.ToggleWireframeAction;
+import org.osm2world.core.map_elevation.creation.*;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.viewer.control.actions.*;
 import org.osm2world.viewer.control.navigation.DefaultNavigation;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
-import org.osm2world.viewer.view.debug.AttachmentConnectorDebugView;
-import org.osm2world.viewer.view.debug.AttachmentSurfaceDebugView;
-import org.osm2world.viewer.view.debug.DebugView;
-import org.osm2world.viewer.view.debug.EleConnectorDebugView;
-import org.osm2world.viewer.view.debug.EleConstraintDebugView;
-import org.osm2world.viewer.view.debug.FaceDebugView;
-import org.osm2world.viewer.view.debug.InternalCoordsDebugView;
-import org.osm2world.viewer.view.debug.InverseDistanceWeightingInterpolatorDebugView;
-import org.osm2world.viewer.view.debug.LatLonDebugView;
-import org.osm2world.viewer.view.debug.LeastSquaresInterpolatorDebugView;
-import org.osm2world.viewer.view.debug.LinearInterpolatorDebugView;
-import org.osm2world.viewer.view.debug.Map2dTreeDebugView;
-import org.osm2world.viewer.view.debug.MapDataBoundsDebugView;
-import org.osm2world.viewer.view.debug.MapDataDebugView;
-import org.osm2world.viewer.view.debug.NaturalNeighborInterpolatorDebugView;
-import org.osm2world.viewer.view.debug.OrthoBoundsDebugView;
-import org.osm2world.viewer.view.debug.QuadtreeDebugView;
-import org.osm2world.viewer.view.debug.RoofDataDebugView;
-import org.osm2world.viewer.view.debug.ShadowView;
-import org.osm2world.viewer.view.debug.SkyboxView;
-import org.osm2world.viewer.view.debug.TerrainBoundaryDebugView;
-import org.osm2world.viewer.view.debug.WorldObjectNormalsDebugView;
-import org.osm2world.viewer.view.debug.WorldObjectView;
+import org.osm2world.viewer.view.debug.*;
 
-import com.google.common.base.Function;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLProfile;
 
 public class ViewerFrame extends JFrame {
 
@@ -93,26 +37,28 @@ public class ViewerFrame extends JFrame {
 
 	public ViewerGLCanvas glCanvas;
 
-	private final Data data = new Data();
+	private final Data data;
 	private final RenderOptions renderOptions = new RenderOptions();
 	private final MessageManager messageManager = new MessageManager();
 	private final List<DebugView> debugViews = new ArrayList<DebugView>();
 
-	private final File configFile;
-
 	/**
 	 *
 	 * @param config  configuration object, != null
-	 * @param configFile  properties (where config was loaded from), can be null
+	 * @param lod  initial {@link LevelOfDetail} setting
+	 * @param configFiles  properties (where config was loaded from), can be null
 	 * @param inputFile  osm data file to be loaded at viewer start, can be null
 	 */
-	public ViewerFrame(final Configuration config,
-			final File configFile, File inputFile) {
+	public ViewerFrame(final Configuration config, @Nullable LevelOfDetail lod,
+			final List<File> configFiles, File inputFile) {
 
 		super("OSM2World Viewer");
 
-		this.configFile = configFile;
-		data.setConfig(config);
+		data = new Data(configFiles, config);
+
+		if (lod != null) {
+			renderOptions.setLod(lod);
+		}
 
 		createMenuBar();
 
@@ -128,22 +74,6 @@ public class ViewerFrame extends JFrame {
 
 	}
 
-	private final Function<File, ActionListener> actionForFileFunction =
-			new Function<File, ActionListener>() {
-
-		public ActionListener apply(final File file) {
-
-			return new ActionListener() {
-				@Override public void actionPerformed(ActionEvent e) {
-					new OpenOSMAction(ViewerFrame.this, data,
-							renderOptions).openOSMFile(file, true);
-				}
-			};
-
-		}
-
-	};
-
 	private void createMenuBar() {
 
 		JMenuBar menu = new JMenuBar();
@@ -152,15 +82,17 @@ public class ViewerFrame extends JFrame {
 
 			JMenu recentFilesMenu = new JMenu("Recent files");
 
-			new RecentFilesUpdater(recentFilesMenu, actionForFileFunction);
+			new RecentFilesUpdater(recentFilesMenu, (File file) -> new OpenOSMAction(
+					ViewerFrame.this, data, renderOptions).openOSMFile(file, true));
 
 			JMenu subMenu = new JMenu("File");
 			subMenu.setMnemonic(VK_F);
 			subMenu.add(new OpenOSMAction(this, data, renderOptions));
-			subMenu.add(new ReloadOSMAction(this, data, renderOptions, configFile));
+			subMenu.add(new ReloadOSMAction(this, data, renderOptions));
 			subMenu.add(recentFilesMenu);
 			subMenu.add(new DownloadOverpassAction(this, data, renderOptions));
-			subMenu.add(new ExportGltfAction(this, data, messageManager, renderOptions));
+			subMenu.add(new ExportGltfAction(this, data, messageManager, renderOptions, GLTF));
+			subMenu.add(new ExportGltfAction(this, data, messageManager, renderOptions, GLB));
 			subMenu.add(new ExportObjAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportObjDirAction(this, data, messageManager, renderOptions));
 			subMenu.add(new ExportPOVRayAction(this, data, messageManager, renderOptions));
@@ -246,6 +178,17 @@ public class ViewerFrame extends JFrame {
 
 			JMenu subMenu = new JMenu("Options");
 			subMenu.setMnemonic(VK_O);
+
+			JMenu lodMenu = new JMenu("Level of Detail");
+			subMenu.add(lodMenu);
+
+			var lodGroup = new ButtonGroup();
+
+			for (LevelOfDetail lod : LevelOfDetail.values()) {
+				var item = new JRadioButtonMenuItem(new SetLodAction(lod, this, data, renderOptions));
+				lodGroup.add(item);
+				lodMenu.add(item);
+			}
 
 			JMenu interpolatorMenu = new JMenu("TerrainInterpolator");
 			subMenu.add(interpolatorMenu);
@@ -353,16 +296,13 @@ public class ViewerFrame extends JFrame {
 				caps.setStencilBits(STENCIL_BITS);
 		}
 
-		glCanvas = new ViewerGLCanvas(data, messageManager, renderOptions, caps);
+		glCanvas = new ViewerGLCanvas(this, data, messageManager, renderOptions, caps);
 		add(glCanvas, BorderLayout.CENTER);
 
-		new FileDrop(glCanvas, new FileDrop.Listener() {
-			@Override
-			public void filesDropped(File[] files) {
-				if (files.length >= 1) {
-					new OpenOSMAction(ViewerFrame.this, data, renderOptions)
-						.openOSMFile(files[0], true);
-				}
+		new FileDrop(glCanvas, files -> {
+			if (files.length >= 1) {
+				new OpenOSMAction(ViewerFrame.this, data, renderOptions)
+					.openOSMFile(files[0], true);
 			}
 		});
 

@@ -1,11 +1,10 @@
 package org.osm2world.core.map_data.data;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /**
  * connection between two {@link MapNode}s that's part of a polyline or polygon.
@@ -113,11 +112,6 @@ public abstract class MapSegment {
 				&& startNode == other.getEndNode())
 			|| (endNode == other.getEndNode()
 				&& startNode == other.getStartNode());
-	}
-
-	@Override
-	public String toString() {
-		return startNode + "->" + endNode;
 	}
 
 }

@@ -4,10 +4,12 @@ import static java.util.Arrays.asList;
 import static org.osm2world.core.math.GeometryUtil.interpolateBetween;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_FIT;
-import static org.osm2world.core.target.common.texcoord.TexCoordUtil.*;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.mirroredHorizontally;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 
 import java.util.List;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -40,7 +42,7 @@ public class Door implements WallElement {
 	}
 
 	@Override
-	public Double insetDistance() {
+	public double insetDistance() {
 		return 0.10;
 	}
 
@@ -82,7 +84,7 @@ public class Door implements WallElement {
 		} else {
 
 			if (parameters.numberOfWings > 2) {
-				System.err.println("Warning: Unsupported number of door wings: " + parameters.numberOfWings);
+				ConversionLog.warn("Unsupported number of door wings: " + parameters.numberOfWings);
 			}
 
 			VectorXYZ bottomCenter = interpolateBetween(bottomLeft, bottomRight, 0.5);

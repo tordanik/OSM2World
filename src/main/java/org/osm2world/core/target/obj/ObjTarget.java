@@ -3,32 +3,24 @@ package org.osm2world.core.target.obj;
 import static java.awt.Color.WHITE;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
-import static org.apache.commons.io.FilenameUtils.getBaseName;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
+import java.util.*;
 
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.FaceTarget;
-import org.osm2world.core.target.common.material.ImageFileTexture;
+import org.osm2world.core.target.common.ResourceOutputSettings;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.RasterImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.material.TextureLayer;
@@ -64,14 +56,13 @@ public class ObjTarget extends FaceTarget {
 	 * @param objDirectory  the directory in which the obj is located.
 	 * Other files (such as textures) may be written to this directory as well.
 	 */
-	public ObjTarget(PrintStream objStream, PrintStream mtlStream, File objDirectory) {
+	public ObjTarget(PrintStream objStream, PrintStream mtlStream, File objDirectory, String objName) {
 
 		this.objStream = objStream;
 		this.mtlStream = mtlStream;
 		this.objDirectory = objDirectory;
 
-		this.textureDirectory = new File(objDirectory, "textures");
-		textureDirectory.mkdir();
+		this.textureDirectory = new File(objDirectory, objName + "_textures");
 
 	}
 
@@ -221,24 +212,13 @@ public class ObjTarget extends FaceTarget {
 
 		if (!textureMap.containsKey(texture)) {
 
-			String path;
+			ResourceOutputSettings resourceOutputSettings = ResourceOutputSettings.fromConfig(config, textureDirectory.toURI(), false);
 
-			if (config != null && !config.getBoolean("alwaysCopyTextureFiles", true)
-					&& texture instanceof RasterImageFileTexture) {
-
-				path = ((ImageFileTexture)texture).getFile().getAbsolutePath();
-
-			} else {
-
-				String prefix = "tex-" + ((texture instanceof ImageFileTexture)
-						? getBaseName(((ImageFileTexture)texture).getFile().getName()) + "-" : "");
-				File textureFile = File.createTempFile(prefix, ".png", textureDirectory);
-				ImageIO.write(texture.getBufferedImage(), "png", textureFile);
-
-				// construct a relative path
-				path = objDirectory.toURI().relativize(textureFile.toURI()).getPath();
-
-			}
+			String path = switch (resourceOutputSettings.modeForTexture(texture)) {
+				case REFERENCE -> resourceOutputSettings.buildTextureReference(texture);
+				case STORE_SEPARATELY_AND_REFERENCE -> resourceOutputSettings.storeTexture(texture, objDirectory.toURI());
+				case EMBED -> throw new UnsupportedOperationException("unsupported output mode");
+			};
 
 			textureMap.put(texture, path);
 
@@ -321,7 +301,8 @@ public class ObjTarget extends FaceTarget {
 					}
 
 				} catch (IOException e) {
-					System.err.println("Unable to export material " + name + ": " + e);
+					System.err.println("Unable to export material " + name + ": ");
+					e.printStackTrace();
 				}
 			}
 

@@ -1,28 +1,20 @@
 package org.osm2world.core.target.povray;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.AbstractTarget;
-import org.osm2world.core.target.common.material.ImageFileTexture;
-import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.material.TextTexture;
-import org.osm2world.core.target.common.material.TextureData;
-import org.osm2world.core.target.common.material.TextureLayer;
+import org.osm2world.core.target.common.material.*;
+
+import javax.annotation.Nonnull;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.*;
 
 public class POVRayTarget extends AbstractTarget {
 
@@ -141,9 +133,9 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 	@Override
-	public void drawTriangles(Material material,
-			List<? extends TriangleXYZ> triangles,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawTriangles(@Nonnull Material material,
+							  @Nonnull List<? extends TriangleXYZ> triangles,
+							  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		if (!checkMeshValidity(triangles))
 			return;
@@ -280,8 +272,8 @@ public class POVRayTarget extends AbstractTarget {
 //	}
 
 	@Override
-	public void drawConvexPolygon(Material material, List<VectorXYZ> vs,
-			List<List<VectorXZ>> texCoordLists) {
+	public void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
+								  @Nonnull List<List<VectorXZ>> texCoordLists) {
 
 		for (VectorXYZ vector : vs) {
 			performNaNCheck(vector);
@@ -301,9 +293,9 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 	@Override
-	public void drawColumn(Material material, Integer corners, VectorXYZ base,
-			double height, double radiusBottom, double radiusTop,
-			boolean drawBottom, boolean drawTop) {
+	public void drawColumn(@Nonnull Material material, Integer corners, @Nonnull VectorXYZ base,
+						   double height, double radiusBottom, double radiusTop,
+						   boolean drawBottom, boolean drawTop) {
 
 		performNaNCheck(base);
 
@@ -400,40 +392,8 @@ public class POVRayTarget extends AbstractTarget {
 	}
 
 	private boolean checkMeshValidity(Collection<? extends TriangleXYZ> triangles) {
-
-		if (triangles.size() == 0)
-			return false;
-
-		boolean result = false;
-		for (TriangleXYZ triangle : triangles) {
-
-			result |= !isDegenerated(triangle);
-		}
-
-		return result;
+		return (triangles.size() >= 0);
 	}
-
-	private boolean isDegenerated(TriangleXYZ triangle) {
-
-		VectorXYZ a = triangle.v1;
-		VectorXYZ b = triangle.v2;
-		VectorXYZ c = triangle.v3;
-
-		if (a.equals(b) || a.equals(c) || b.equals(c)) {
-			return true;
-		} else if (a.x == b.x && b.x == c.x
-				&& a.y == b.y && b.y == c.y) {
-			return true;
-		} else if (a.x == b.x && b.x == c.x
-				&& a.z == b.z && b.z == c.z) {
-			return true;
-		} else if (a.y == b.y && b.y == c.y
-				&& a.z == b.z && b.z == c.z) {
-			return true;
-		}
-		return false;
-	}
-
 
 	public void appendTriangle(VectorXYZ a, VectorXYZ b, VectorXYZ c) {
 
@@ -585,11 +545,11 @@ public class POVRayTarget extends AbstractTarget {
 			append("        image_map {\n");
 
 			try {
-				if (!(textureData instanceof ImageFileTexture)
-						|| ((ImageFileTexture)textureData).getFile().getName().toLowerCase().endsWith("png")) {
-					append("             png \"" + getTextureFile(textureData) + "\"\n");
+				File textureFile = getTextureFile(textureData);
+				if (textureFile.getName().toLowerCase().endsWith("png")) {
+					append("             png \"" + textureFile + "\"\n");
 				} else {
-					append("             jpeg \"" + getTextureFile(textureData) + "\"\n");
+					append("             jpeg \"" + textureFile + "\"\n");
 				}
 
 				if (colorable) {

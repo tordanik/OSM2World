@@ -1,36 +1,43 @@
 package org.osm2world.console;
 
+import static java.time.Instant.now;
 import static java.util.Collections.singletonList;
+import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.ConversionFacade.Phase.*;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
+import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
-import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
-import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.map_data.data.MapMetadata;
+import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.osm.creation.MbtilesReader;
-import org.osm2world.core.osm.creation.OSMDataReader;
-import org.osm2world.core.osm.creation.OSMFileReader;
-import org.osm2world.core.osm.creation.OverpassReader;
+import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.target.TargetUtil;
+import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
@@ -40,6 +47,9 @@ import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+
 public final class Output {
 
 	private Output() {}
@@ -48,41 +58,62 @@ public final class Output {
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
 
-		long start = System.currentTimeMillis();
+		CLIArguments sharedArgs = argumentsGroup.getRepresentative();
+
+		var perfListener = new PerformanceListener(sharedArgs.getPerformancePrint());
+
+		if (sharedArgs.isLogDir()) {
+			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
+		}
 
 		OSMDataReader dataReader = null;
 
-		switch (argumentsGroup.getRepresentative().getInputMode()) {
+		switch (sharedArgs.getInputMode()) {
 
-		case FILE:
-			File inputFile = argumentsGroup.getRepresentative().getInput();
-			if (inputFile.getName().endsWith(".mbtiles")) {
-				dataReader = new MbtilesReader(inputFile, argumentsGroup.getRepresentative().getTile());
-			} else {
-				dataReader = new OSMFileReader(inputFile);
-			}
-			break;
+			case FILE:
+				File inputFile = sharedArgs.getInput();
+				dataReader = switch (CLIArgumentsUtil.getInputFileType(sharedArgs)) {
+					case SIMPLE_FILE -> new OSMFileReader(inputFile);
+					case MBTILES -> new MbtilesReader(inputFile, sharedArgs.getTile());
+					case GEODESK -> new GeodeskReader(inputFile, sharedArgs.getTile().bounds());
+				};
+				break;
 
-		case OVERPASS:
-			if (argumentsGroup.getRepresentative().isInputBoundingBox()) {
-				LatLonBounds bounds = LatLonBounds.ofPoints(argumentsGroup.getRepresentative().getInputBoundingBox());
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), bounds);
-			} else if (argumentsGroup.getRepresentative().isTile()) {
-				LatLonBounds bounds = argumentsGroup.getRepresentative().getTile().bounds();
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), bounds);
-			} else {
-				assert argumentsGroup.getRepresentative().isInputQuery(); // can be assumed due to input validation
-				String query = argumentsGroup.getRepresentative().getInputQuery();
-				dataReader = new OverpassReader(argumentsGroup.getRepresentative().getOverpassURL(), query);
-			}
-			break;
+			case OVERPASS:
+				if (sharedArgs.isInputBoundingBox()) {
+					LatLonBounds bounds = LatLonBounds.ofPoints(sharedArgs.getInputBoundingBox());
+					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
+				} else if (sharedArgs.isTile()) {
+					LatLonBounds bounds = sharedArgs.getTile().bounds();
+					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
+				} else {
+					assert sharedArgs.isInputQuery(); // can be assumed due to input validation
+					String query = sharedArgs.getInputQuery();
+					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), query);
+				}
+				break;
 
 		}
 
 
+		MapMetadata metadata = null;
+
+		if (sharedArgs.isMetadataFile()) {
+			if (sharedArgs.getMetadataFile().getName().endsWith(".mbtiles")) {
+				if (sharedArgs.isMetadataFile() && sharedArgs.isTile()) {
+					try {
+						metadata = MapMetadata.metadataForTile(sharedArgs.getTile(), sharedArgs.getMetadataFile());
+					} catch(MBTilesReadException e){
+						System.err.println("Cannot read tile metadata: " + e);
+					}
+				}
+			} else {
+				metadata = MapMetadata.metadataFromJson(sharedArgs.getMetadataFile());
+			}
+		}
+
+
 		ConversionFacade cf = new ConversionFacade();
-		PerformanceListener perfListener =
-			new PerformanceListener(argumentsGroup.getRepresentative());
 		cf.addProgressListener(perfListener);
 
 		String interpolatorType = config.getString("terrainInterpolator");
@@ -101,7 +132,7 @@ public final class Output {
 			cf.setEleConstraintEnforcerFactory(SimpleEleConstraintEnforcer::new);
 		}
 
-		Results results = cf.createRepresentations(dataReader.getData(), null, config, null);
+		Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
 
 		ImageExporter exporter = null;
 
@@ -176,35 +207,47 @@ public final class Output {
 						boolean underground = config.getBoolean("renderUnderground", true);
 
 						ObjWriter.writeObjFile(outputFile,
-								results.getMapData(), results.getMapProjection(),
+								results.getMapData(), results.getMapProjection(), config,
 								camera, projection, underground);
 					} else {
 						ObjWriter.writeObjFiles(outputFile,
-								results.getMapData(), results.getMapProjection(),
+								results.getMapData(), results.getMapProjection(), config,
 								camera, projection, primitiveThresholdOBJ);
 					}
 					break;
 
-				case GLTF:
-					GltfTarget gltfTarget = new GltfTarget(outputFile);
+				case GLTF, GLB, GLTF_GZ, GLB_GZ: {
+					AxisAlignedRectangleXZ bounds = null;
+					if (args.isTile()) {
+						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+					} else {
+						bounds = results.getMapData().getBoundary();
+					}
+					GltfTarget.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
+							? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
+					Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
+							? Compression.GZ : Compression.NONE;
+					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
+					gltfTarget.setConfiguration(config);
 					boolean underground = config.getBoolean("renderUnderground", true);
 					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
 					gltfTarget.finish();
-					break;
+				} break;
 
 				case POV:
 					POVRayWriter.writePOVInstructionFile(outputFile,
 							results.getMapData(), camera, projection);
 					break;
 
-				case WEB_PBF:
+				case WEB_PBF, WEB_PBF_GZ: {
 					AxisAlignedRectangleXZ bbox = null;
 					if (args.isTile()) {
 						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
 					}
+					Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
 					FrontendPbfTarget.writePbfFile(
-							outputFile, results.getMapData(), bbox, results.getMapProjection());
-					break;
+							outputFile, results.getMapData(), bbox, results.getMapProjection(), compression);
+				} break;
 
 				case PNG:
 				case PPM:
@@ -232,70 +275,121 @@ public final class Output {
 			exporter = null;
 		}
 
-		if (argumentsGroup.getRepresentative().getPerformancePrint()) {
-			long timeSec = (System.currentTimeMillis() - start) / 1000;
+		if (sharedArgs.getPerformancePrint()) {
+			long timeSec = Duration.between(perfListener.startTime, now()).getSeconds();
 			System.out.println("finished after " + timeSec + " s");
 		}
 
-		if (argumentsGroup.getRepresentative().isPerformanceTable()) {
-			try (PrintWriter w = new PrintWriter(new FileWriter(
-					argumentsGroup.getRepresentative().getPerformanceTable(), true), true)) {
-				w.printf("|%6d |%6d |%6d |%6d |%6d |%6d |\n",
-					(perfListener.getPhaseDuration(Phase.MAP_DATA) + 500) / 1000,
-					(perfListener.getPhaseDuration(Phase.REPRESENTATION) + 500) / 1000,
-					(perfListener.getPhaseDuration(Phase.ELEVATION) + 500) / 1000,
-					(perfListener.getPhaseDuration(Phase.TERRAIN) + 500) / 1000,
-					(System.currentTimeMillis() - perfListener.getPhaseEnd(Phase.TERRAIN) + 500) / 1000,
-					(System.currentTimeMillis() - start + 500) / 1000);
+		if (sharedArgs.isLogDir()) {
+
+			File logDir = sharedArgs.getLogDir();
+			logDir.mkdirs();
+
+			String fileNameBase = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm_ss"));
+			if (sharedArgs.isTile()) {
+				fileNameBase = sharedArgs.getTile().toString("_");
 			}
+			fileNameBase = "osm2world_log_" + fileNameBase;
+
+			writeLogFiles(logDir, fileNameBase, perfListener);
+
 		}
+
+	}
+
+	private static void writeLogFiles(File logDir, String fileNameBase, PerformanceListener perfListener) {
+
+		double totalTime = Duration.between(perfListener.startTime, now()).toMillis() / 1000.0;
+		Map<Phase, Double> timePerPhase = Map.ofEntries(
+				entry(MAP_DATA, perfListener.getPhaseDuration(MAP_DATA).toMillis() / 1000.0),
+				entry(REPRESENTATION, perfListener.getPhaseDuration(REPRESENTATION).toMillis() / 1000.0),
+				entry(ELEVATION, perfListener.getPhaseDuration(ELEVATION).toMillis() / 1000.0),
+				entry(TERRAIN, perfListener.getPhaseDuration(TERRAIN).toMillis() / 1000.0),
+				entry(TARGET, Duration.between(perfListener.getPhaseEnd(TERRAIN), now()).toMillis() / 1000.0)
+		);
+
+		/* write a json file with performance stats */
+
+		try (FileWriter writer = new FileWriter(logDir.toPath().resolve(fileNameBase + ".json").toFile())) {
+
+			Map<String, Object> jsonRoot = Map.of(
+					"startTime", perfListener.startTime.toString(),
+					"totalTime", totalTime,
+					"timePerPhase", timePerPhase
+			);
+
+			new GsonBuilder().setPrettyPrinting().create().toJson(jsonRoot, writer);
+
+		} catch (JsonIOException | IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		/* write a gz-compressed text file with the error log */
+
+		Compression compression = Compression.GZ;
+		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
+		TargetUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
+			try (var printStream = new PrintStream(outputStream)) {
+				printStream.println("Runtime (seconds):\nTotal: " + totalTime);
+				for (Phase phase : Phase.values()) {
+					if (timePerPhase.containsKey(phase)) {
+						printStream.println(phase + ": " + timePerPhase.get(phase));
+					}
+				}
+				printStream.println();
+				ConversionLog.getLog().forEach(printStream::println);
+			}
+		});
 
 	}
 
 	private static class PerformanceListener implements ProgressListener {
 
-		private final CLIArguments args;
-		public PerformanceListener(CLIArguments args) {
-			this.args = args;
+		public final Instant startTime = Instant.now();
+		private final boolean printToSysout;
+
+		public PerformanceListener(boolean printToSysout) {
+			this.printToSysout = printToSysout;
 		}
 
-		private Phase currentPhase = null;
-		private long currentPhaseStart;
+		private @Nullable Phase currentPhase = null;
+		private @Nullable Instant currentPhaseStart;
 
-		private Map<Phase, Long> phaseStarts = new HashMap<Phase, Long>();
-		private Map<Phase, Long> phaseEnds = new HashMap<Phase, Long>();
+		private final Map<Phase, Instant> phaseStarts = new HashMap<>();
+		private final Map<Phase, Instant> phaseEnds = new HashMap<>();
 
-		public Long getPhaseStart(Phase phase) {
+		public Instant getPhaseStart(Phase phase) {
+			if (!phaseStarts.containsKey(phase)) throw new IllegalStateException();
 			return phaseStarts.get(phase);
 		}
 
-		public Long getPhaseEnd(Phase phase) {
+		public Instant getPhaseEnd(Phase phase) {
+			if (!phaseEnds.containsKey(phase)) throw new IllegalStateException();
 			return phaseEnds.get(phase);
 		}
 
-		public Long getPhaseDuration(Phase phase) {
-			return getPhaseEnd(phase) - getPhaseStart(phase);
+		public Duration getPhaseDuration(Phase phase) {
+			return Duration.between(getPhaseStart(phase), getPhaseEnd(phase));
 		}
 
 		@Override
 		public void updatePhase(Phase newPhase) {
 
-			phaseStarts.put(newPhase, System.currentTimeMillis());
+			phaseStarts.put(newPhase, now());
 
 			if (currentPhase != null) {
 
-				phaseEnds.put(currentPhase, System.currentTimeMillis());
+				phaseEnds.put(currentPhase, now());
 
-				if (args.getPerformancePrint()) {
-					long ms = System.currentTimeMillis() - currentPhaseStart;
-					System.out.println("phase " + currentPhase
-						+  " finished after " + ms + " ms");
+				if (printToSysout) {
+					long ms = Duration.between(currentPhaseStart, now()).toMillis();
+					System.out.println("phase " + currentPhase + " finished after " + ms + " ms");
 				}
 
 			}
 
 			currentPhase = newPhase;
-			currentPhaseStart = System.currentTimeMillis();
+			currentPhaseStart = now();
 
 		}
 

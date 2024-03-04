@@ -3,14 +3,9 @@ package org.osm2world.core.world.modules.building;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.roughlyContains;
+import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
@@ -30,13 +25,14 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
  */
-public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
+public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, LegacyWorldObject {
 
 	private final MapArea area;
 
@@ -61,7 +57,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 		if (buildingRelation.isPresent()) {
 
-			/** find building parts based on the relation */
+			/* find building parts based on the relation */
 
 			for (Membership membership : buildingRelation.get().getMemberships()) {
 				if ("part".equals(membership.getRole()) && membership.getElement() instanceof MapArea) {
@@ -71,14 +67,12 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 		} else {
 
-			/** find building part areas geometrically contained within the building outline */
+			/* find building part areas geometrically contained within the building outline */
 
 			FaultTolerantIterationUtil.forEach(area.getOverlaps(), (MapOverlap<?,?> overlap) -> {
 				MapElement other = overlap.getOther(area);
-				if (other instanceof MapArea
+				if (other instanceof MapArea otherArea
 						&& other.getTags().containsKey("building:part")) {
-
-					MapArea otherArea = (MapArea)other;
 
 					if (otherArea.getMemberships().stream().anyMatch(m -> "part".equals(m.getRole())
 							&& m.getRelation().getTags().contains("type", "building"))) {
@@ -94,12 +88,25 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject {
 
 		}
 
-		/* use the building itself as a part if no parts exist,
-		 * or if it's explicitly tagged as a building part at the same time (non-standard mapping) */
+		/* use the building itself as a part if no parts exist, or in certain cases of non-standard mapping */
+
+		boolean useBuildingAsPart = parts.isEmpty();
 
 		String buildingPartValue = area.getTags().getValue("building:part");
+		if (buildingPartValue != null && !"no".equals(buildingPartValue)) {
+			// building is also tagged as a building part (non-standard mapping)
+			useBuildingAsPart = true;
+		}
 
-		if (parts.isEmpty() || buildingPartValue != null && !"no".equals(buildingPartValue)) {
+		if (parts.stream().mapToDouble(p -> p.area.getPolygon().getArea()).sum() < 0.9 * area.getPolygon().getArea()) {
+			var remainder = subtractPolygons(area.getPolygon(), parts.stream().map(p -> p.area.getPolygon()).toList());
+			if (remainder.stream().mapToDouble(PolygonShapeXZ::getArea).sum() < 0.9 * area.getPolygon().getArea()) {
+				// less than 90% of the building polygon is covered by building parts (non-standard mapping)
+				useBuildingAsPart = true;
+			}
+		}
+
+		if (useBuildingAsPart) {
 			parts.add(new BuildingPart(this, area, config));
 		}
 

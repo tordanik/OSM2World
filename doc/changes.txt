@@ -1,4 +1,33 @@
 --------------------------------------------------------------------------------
+ OSM2World 0.3.1                                                     2022-12-29 
+--------------------------------------------------------------------------------
+
+ * use JOGL 2.4.0-rc-20210111 instead of 2.0.2
+ * compatible with modern Java versions
+
+
+--------------------------------------------------------------------------------
+ OSM2World 0.3.0                                                     2022-12-27 
+--------------------------------------------------------------------------------
+
+ * upgrade to Java 1.8
+ * new output format: glTF
+ * new input format: mbtiles
+ * PBR materials
+ * SVG textures and text textures
+ * texture atlas generation
+ * initial LOD support
+ * experimental Simple Indoor Tagging support
+ * country-dependent traffic signs and properties
+ * window and door geometry
+ * attachment connectors and rooftop objects
+ * numerous new and improved object types and attributes
+ * automatic loading of a default style
+ * slightly improved command line parameters
+ * maven build
+
+
+--------------------------------------------------------------------------------
  OSM2World 0.2.0                                                     2019-06-23 
 --------------------------------------------------------------------------------
  

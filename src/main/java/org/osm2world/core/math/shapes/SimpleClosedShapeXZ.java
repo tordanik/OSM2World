@@ -41,6 +41,11 @@ public interface SimpleClosedShapeXZ extends ClosedShapeXZ {
 	/** returns the largest distance between any pair of vertices of this shape */
 	public double getDiameter();
 
+	/** returns true if the shape contains a given position */
+	public default boolean contains(VectorXZ v) {
+		return asSimplePolygon(this).contains(v);
+	}
+
 	@Override
 	public default SimpleClosedShapeXZ transform(Function<VectorXZ, VectorXZ> operation) {
 		return asSimplePolygon(this).transform(operation);
