@@ -6,6 +6,7 @@ import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * a group of {@link CLIArguments} that represent conversions
@@ -87,6 +88,8 @@ public class CLIArgumentsGroup {
 			&& (args1.isOverpassURL()
 				? args2.isOverpassURL() && args1.getOverpassURL().equals(args2.getOverpassURL())
 				: !args2.isOverpassURL())
+
+			&& Objects.equals(args1.getLod(), args2.getLod()) // TODO: in theory, LOD could share _some_ calculations
 
 			&& args1.getConfig().equals(args2.getConfig());
 
