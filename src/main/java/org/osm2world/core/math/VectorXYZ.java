@@ -99,6 +99,14 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 	 * same result as calling {@link #normalize()} after
 	 * {@link #cross(VectorXYZ)}, but avoids creating a temporary vector
 	 */
+
+
+	private VectorXYZ normalize(double x, double y, double z) {
+		//normalize
+		double length = sqrt(x * x + y * y + z * z);
+		return new VectorXYZ(x / length, y / length, z / length);
+	}
+
 	public VectorXYZ crossNormalized(VectorXYZ other) {
 
 		//cross
@@ -106,9 +114,7 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 		double y = this.z * other.x - this.x * other.z;
 		double z = this.x * other.y - this.y * other.x;
 
-		//normalize
-		double length = sqrt(x*x + y*y + z*z);
-		return new VectorXYZ(x / length, y / length, z / length);
+		return normalize(x, y, z);
 
 	}
 

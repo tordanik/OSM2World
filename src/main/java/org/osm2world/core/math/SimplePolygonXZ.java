@@ -511,6 +511,40 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 
 	}
 
+
+	private static boolean handleStartEvent(TreeSet<LineSegmentXZ> sweepLine, LineSegmentXZ line) {
+		LineSegmentXZ lower = sweepLine.lower(line);
+		LineSegmentXZ higher = sweepLine.higher(line);
+
+		sweepLine.add(line);
+
+		if (lower != null && lower.intersects(line.p1, line.p2)) {
+			return true;
+		}
+
+		if (higher != null && higher.intersects(line.p1, line.p2)) {
+			return true;
+		}
+		return false;
+	}
+
+	private static boolean handleEndEvent(TreeSet<LineSegmentXZ> sweepLine, LineSegmentXZ line) {
+		LineSegmentXZ lower = sweepLine.lower(line);
+		LineSegmentXZ higher = sweepLine.higher(line);
+
+		sweepLine.remove(line);
+
+		if ((lower == null) || (higher == null)) {
+            return false;
+        }
+
+		if (lower.intersects(higher.p1, higher.p2)) {
+			return true;
+		}
+		return false;
+	}
+
+
 	@Override
 	public String toString() {
 		return vertexLoop.toString();
@@ -596,39 +630,10 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		// start the algorithm by visiting every event
 		for (Event event : events) {
 			LineSegmentXZ line = event.line;
-
-			if (event.start) { // if it is a startpoint
-
-				LineSegmentXZ lower = sweepLine.lower(line);
-				LineSegmentXZ higher = sweepLine.higher(line);
-
-				sweepLine.add(line);
-
-				if (lower != null) {
-					if (lower.intersects(line.p1, line.p2)) {
-						return true;
-					}
-				}
-
-				if (higher != null) {
-					if (higher.intersects(line.p1, line.p2)) {
-						return true;
-					}
-				}
-			} else { // if it is an endpoint
-
-				LineSegmentXZ lower = sweepLine.lower(line);
-				LineSegmentXZ higher = sweepLine.higher(line);
-
-				sweepLine.remove(line);
-
-				if ((lower == null) || (higher == null)) {
-					continue;
-				}
-
-				if (lower.intersects(higher.p1, higher.p2)) {
-					return true;
-				}
+			if (event.start) {
+				handleStartEvent(sweepLine, line);
+			} else {
+				handleEndEvent(sweepLine, line);
 			}
 		}
 		return false;
