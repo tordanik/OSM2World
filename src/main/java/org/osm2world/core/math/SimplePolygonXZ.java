@@ -1,5 +1,5 @@
 package org.osm2world.core.math;
-
+import org.osm2world.core.math.PolygonXZ;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.*;
 import static java.util.Collections.emptyList;
@@ -23,7 +23,7 @@ import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 /**
  * a non-self-intersecting polygon in the XZ plane
  */
-public class SimplePolygonXZ implements SimplePolygonShapeXZ {
+public class SimplePolygonXZ extends PolygonXZ implements SimplePolygonShapeXZ {
 
 	/** polygon vertices; first and last vertex are equal */
 	protected final List<VectorXZ> vertexLoop;
@@ -42,14 +42,8 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 * @throws InvalidGeometryException  if the polygon self-intersects or produces invalid area calculation results
 	 */
 	public SimplePolygonXZ(List<VectorXZ> vertexLoop) {
-
-		this.vertexLoop = vertexLoop;
-
-		assertLoopProperty(vertexLoop);
-		assertLoopLength(vertexLoop);
-		assertNotSelfIntersecting(vertexLoop);
-		assertNoDuplicates(vertexLoop);
-
+		this.vertexLoop = new ArrayList<>(vertexLoop);
+		validatePolygon();
 	}
 
 	public static final SimplePolygonXZ asSimplePolygon(SimpleClosedShapeXZ shape) {
@@ -60,11 +54,40 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		}
 	}
 
-	/**
-	 * returns the number of vertices in this polygon.
-	 * The duplicated first/last vertex is <em>not</em> counted twice,
-	 * so the result is equivalent to {@link #getVertices()}.size().
-	 */
+	private void validatePolygon() {
+		if (vertexLoop.size() < 4 || !vertexLoop.get(0).equals(vertexLoop.get(vertexLoop.size() - 1))) {
+			throw new IllegalArgumentException("Polygon must be closed and have at least 3 distinct vertices.");
+		}
+		if (PolygonUtils.isSelfIntersecting(vertexLoop)) {
+			throw new InvalidGeometryException("Polygon must not be self-intersecting.");
+		}
+	}
+
+	@Override
+	public List<VectorXZ> vertices() {
+		return vertexLoop.subList(0, vertexLoop.size() - 1);
+	}
+
+	@Override
+	public double getArea() {
+		return Math.abs(PolygonUtils.calculateSignedArea(vertexLoop));
+	}
+
+	@Override
+	public boolean isClockwise() {
+		return PolygonUtils.isClockwise(vertexLoop);
+	}
+
+	@Override
+	public VectorXZ getCentroid() {
+		return PolygonUtils.calculateCentroid(vertexLoop);
+	}
+
+	@Override
+	public List<TriangleXZ> getTriangulation() {
+		return TriangulationUtil.triangulate(this, emptyList());
+	}
+
 	@Override
 	public int size() {
 		return vertexLoop.size()-1;
@@ -75,19 +98,11 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 * Unlike {@link #vertices()}, there is no duplication
 	 * of the first/last vertex.
 	 */
+	@Override
 	public List<VectorXZ> getVertices() {
 		return vertexLoop.subList(0, vertexLoop.size()-1);
 	}
 
-	/**
-	 * returns the polygon's vertices. First and last vertex are equal.
-	 *
-	 * @return list of vertices, not empty, not null
-	 */
-	@Override
-	public List<VectorXZ> vertices() {
-		return vertexLoop;
-	}
 
 	/**
 	 * returns a collection that contains all vertices of this polygon
@@ -136,14 +151,6 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		this.clockwise = signedArea < 0;
 
 		assertNonzeroArea();
-	}
-
-	@Override
-	public double getArea() {
-		if (area == null) {
-			calculateArea();
-		}
-		return area;
 	}
 
 	/**
@@ -197,38 +204,6 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		return vertexLoop.hashCode();
 	}
 
-	/** returns the centroid (or "barycenter") of the polygon */
-	@Override
-	public VectorXZ getCentroid() {
-
-		if (signedArea == null) { calculateArea(); }
-
-		double xSum = 0, zSum = 0;
-
-		int numVertices = vertexLoop.size() - 1;
-		for (int i = 0; i < numVertices; i++) {
-
-			double factor = vertexLoop.get(i).x * vertexLoop.get(i+1).z
-				- vertexLoop.get(i+1).x * vertexLoop.get(i).z;
-
-			xSum += (vertexLoop.get(i).x + vertexLoop.get(i+1).x) * factor;
-			zSum += (vertexLoop.get(i).z + vertexLoop.get(i+1).z) * factor;
-
-		}
-
-		double areaFactor = 1 / (6 * signedArea);
-		return new VectorXZ(areaFactor * xSum, areaFactor * zSum);
-
-	}
-
-	/** returns true if the polygon has clockwise orientation */
-	@Override
-	public boolean isClockwise() {
-		if (area == null) {
-			calculateArea();
-		}
-		return clockwise;
-	}
 
 
 	/**
@@ -289,23 +264,8 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		return new PolygonWithHolesXZ(this, Collections.<SimplePolygonXZ>emptyList());
 	}
 
-	/**
-	 * returns this polygon if it is counterclockwise,
-	 * or the reversed polygon if it is clockwise.
-	 */
-	public SimplePolygonXZ makeClockwise() {
-		return makeRotationSense(true);
-	}
-
-	/**
-	 * returns this polygon if it is clockwise,
-	 * or the reversed polygon if it is counterclockwise.
-	 */
-	public SimplePolygonXZ makeCounterclockwise() {
-		return makeRotationSense(false);
-	}
-
-	private SimplePolygonXZ makeRotationSense(boolean clockwise) {
+    @Override
+	protected SimplePolygonXZ makeRotationSense(boolean clockwise) {
 		if (this.isClockwise() ^ clockwise) {
 			return this.reverse();
 		} else {
@@ -396,24 +356,6 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 			}
 
 		}
-
-	}
-
-	@Override
-	public List<TriangleXZ> getTriangulation() {
-
-		List<TriangleXZ> result = TriangulationUtil.triangulate(this, emptyList());
-
-		//ensure that the triangles have the same winding as this shape
-		for (int i = 0; i < result.size(); i++) {
-			if (this.isClockwise()) {
-				result.set(i, result.get(i).makeClockwise());
-			} else {
-				result.set(i, result.get(i).makeCounterclockwise());
-			}
-		}
-
-		return result;
 
 	}
 
@@ -512,132 +454,11 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	}
 
 
-	private static boolean handleStartEvent(TreeSet<LineSegmentXZ> sweepLine, LineSegmentXZ line) {
-		LineSegmentXZ lower = sweepLine.lower(line);
-		LineSegmentXZ higher = sweepLine.higher(line);
-
-		sweepLine.add(line);
-
-		if (lower != null && lower.intersects(line.p1, line.p2)) {
-			return true;
-		}
-
-		if (higher != null && higher.intersects(line.p1, line.p2)) {
-			return true;
-		}
-		return false;
-	}
-
-	private static boolean handleEndEvent(TreeSet<LineSegmentXZ> sweepLine, LineSegmentXZ line) {
-		LineSegmentXZ lower = sweepLine.lower(line);
-		LineSegmentXZ higher = sweepLine.higher(line);
-
-		sweepLine.remove(line);
-
-		if ((lower == null) || (higher == null)) {
-            return false;
-        }
-
-		if (lower.intersects(higher.p1, higher.p2)) {
-			return true;
-		}
-		return false;
-	}
-
-
 	@Override
 	public String toString() {
 		return vertexLoop.toString();
 	}
 
-	/**
-	 * returns true if the polygon defined by the polygonVertexLoop parameter
-	 * is self-intersecting.<br>
-	 * The Code is based on Shamos-Hoey's algorithm
-	 *
-	 * TODO: if the end vertex of two line segments are the same the
-	 *       polygon is never considered as self intersecting on purpose.
-	 *       This behavior should probably be reconsidered, but currently
-	 *       left as is due to frequent cases of such polygons.
-	 */
-	public static boolean isSelfIntersecting(List<VectorXZ> polygonVertexLoop) {
-
-		final class Event {
-			boolean start;
-			LineSegmentXZ line;
-
-			Event(LineSegmentXZ l, boolean s) {
-				this.line = l;
-				this.start = s;
-			}
-		}
-
-		// we have n-1 vertices as the first and last vertex are the same
-		final int segments = polygonVertexLoop.size()-1;
-
-		// generate an array of input events associated with their line segments
-		Event[] events = new Event[segments*2];
-		for (int i = 0; i < segments; i++) {
-			VectorXZ v1 = polygonVertexLoop.get(i);
-			VectorXZ v2 = polygonVertexLoop.get(i+1);
-
-			// Create a line where the first vertex is left (or above) the second vertex
-			LineSegmentXZ line;
-			if ((v1.x < v2.x) || ((v1.x == v2.x) && (v1.z < v2.z))) {
-				line = new LineSegmentXZ(v1, v2);
-			} else {
-				line = new LineSegmentXZ(v2, v1);
-			}
-
-			events[2*i] = new Event(line, true);
-			events[2*i+1] = new Event(line, false);
-		}
-
-		// sort the input events according to the x-coordinate, then z-coordinate
-		Arrays.sort(events, (Event e1, Event e2) -> {
-
-				VectorXZ v1 = e1.start? e1.line.p1 : e1.line.p2;
-				VectorXZ v2 = e2.start? e2.line.p1 : e2.line.p2;
-
-				if (v1.x < v2.x) return -1;
-				else if (v1.x == v2.x) {
-					if (v1.z < v2.z) return -1;
-					else if (v1.z == v2.z) return 0;
-				}
-				return 1;
-			});
-
-		// A TreeSet, used for the sweepline algorithm
-		TreeSet<LineSegmentXZ> sweepLine = new TreeSet<LineSegmentXZ>((LineSegmentXZ l1, LineSegmentXZ l2) -> {
-
-				VectorXZ v1 = l1.p1;
-				VectorXZ v2 = l2.p1;
-
-				if (v1.z < v2.z) return -1;
-				else if (v1.z == v2.z) {
-					if (v1.x < v2.x) return -1;
-					else if (v1.x == v2.x) {
-						if (l1.p2.z < l2.p2.z) return -1;
-						else if (l1.p2.z == l2.p2.z) {
-							if (l1.p2.x < l2.p2.x) return -1;
-							else if (l1.p2.x == l2.p2.x) return 0;
-						}
-					}
-				}
-				return 1;
-			});
-
-		// start the algorithm by visiting every event
-		for (Event event : events) {
-			LineSegmentXZ line = event.line;
-			if (event.start) {
-				handleStartEvent(sweepLine, line);
-			} else {
-				handleEndEvent(sweepLine, line);
-			}
-		}
-		return false;
-	}
 
 	/**
 	 * calculates the area of a planar non-self-intersecting polygon.
@@ -683,7 +504,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	 * @throws InvalidGeometryException  if the vertex loop is self-intersecting
 	 */
 	private static void assertNotSelfIntersecting(List<VectorXZ> vertexLoop) {
-		if (isSelfIntersecting(vertexLoop)) {
+		if (PolygonUtils.isSelfIntersecting(vertexLoop)) {
 			throw new InvalidGeometryException(
 					"polygon must not be self-intersecting\n"
 					+ "Polygon vertices: " + vertexLoop);

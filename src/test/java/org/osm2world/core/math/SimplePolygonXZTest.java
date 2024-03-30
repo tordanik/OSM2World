@@ -3,7 +3,7 @@ package org.osm2world.core.math;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.math.SimplePolygonXZ.isSelfIntersecting;
+import static org.osm2world.core.math.PolygonUtils.isSelfIntersecting;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.test.TestUtil.*;
 
