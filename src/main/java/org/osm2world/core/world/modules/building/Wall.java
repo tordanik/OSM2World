@@ -142,9 +142,9 @@ public class Wall implements Renderable {
 
 		for (SimplePolygonXZ rawPolygon : buildingPart.roof.getPolygon().getRings()) {
 
-			SimplePolygonXZ polygon = buildingPart.roof.getPolygon().getHoles().contains(rawPolygon)
-					? rawPolygon.makeClockwise()
-					: rawPolygon.makeCounterclockwise();
+			SimplePolygonXZ polygon = (SimplePolygonXZ) (buildingPart.roof.getPolygon().getHoles().contains(rawPolygon)
+                                ? rawPolygon.makeClockwise()
+                                : rawPolygon.makeCounterclockwise());
 
 			VectorXZ firstBottomPoint = bottomPoints.get(0).xz();
 			VectorXZ lastBottomPoint = bottomPoints.get(bottomPoints.size() - 1).xz();

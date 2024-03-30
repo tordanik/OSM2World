@@ -212,7 +212,7 @@ public class ExtrusionGeometry implements Geometry {
 			for (SimpleClosedShapeXZ hole : ((ClosedShapeXZ) shape).getHoles()) {
 				// inner rings need to be the opposite winding compared to the outer ring
 				SimplePolygonXZ inner = asSimplePolygon(hole);
-				inner = outerIsClockwise ? inner.makeCounterclockwise() : inner.makeClockwise();
+				inner = (SimplePolygonXZ) (outerIsClockwise ? inner.makeCounterclockwise() : inner.makeClockwise());
 				rings.add(inner);
 			}
 

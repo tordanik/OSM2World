@@ -89,14 +89,11 @@ public class TriangleXZ implements SimplePolygonShapeXZ {
 	 */
 	@Override
 	public double getArea() {
+		double sum1 = v1.x * v2.z - v2.x * v1.z;
+		double sum2 = v2.x * v3.z - v3.x * v2.z;
+		double sum3 = v3.x * v1.z - v1.x * v3.z;
 
-		double sum =
-				+ v1.x * v2.z
-				- v2.x * v1.z
-				+ v2.x * v3.z
-				- v3.x * v2.z
-				+ v3.x * v1.z
-				- v1.x * v3.z;
+		double sum = sum1 + sum2 + sum3;
 
 		return Math.abs(sum / 2);
 

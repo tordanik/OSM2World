@@ -144,7 +144,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, Le
 
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
-		return area.getPolygon().getOuter().makeCounterclockwise();
+		return (SimplePolygonXZ) area.getPolygon().getOuter().makeCounterclockwise();
 	}
 
 	public double getGroundLevelEle() {

@@ -272,7 +272,7 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 				floors.add(new Floor(this, materialWall, polygon, polygonFloorHeightMap.get(polygon)));
 
 				for (SimplePolygonXZ ring : polygon.getRings()) {
-					ring = polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise();
+					ring = (SimplePolygonXZ) (polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise());
 					ring = ring.getSimplifiedPolygon();
 					for (int i = 0; i < ring.size(); i++) {
 						walls.add(new Wall(null, this,

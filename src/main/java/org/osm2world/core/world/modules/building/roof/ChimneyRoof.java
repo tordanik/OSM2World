@@ -47,7 +47,7 @@ public class ChimneyRoof extends Roof {
 		double chimneyHoleEle = baseEle - 3.0;
 
 		SimplePolygonXZ outerPolygon = originalPolygon.getOuter();
-		SimplePolygonXZ chimneyHole = asSimplePolygon(outerPolygon.scale(0.8)).makeCounterclockwise();
+		SimplePolygonXZ chimneyHole = (SimplePolygonXZ) asSimplePolygon(outerPolygon.scale(0.8)).makeCounterclockwise();
 
 		/* draw the area around the hole */
 

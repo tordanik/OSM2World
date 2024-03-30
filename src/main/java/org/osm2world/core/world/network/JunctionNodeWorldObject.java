@@ -59,6 +59,8 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 		this.pointsBetween = pointsBetween;
 	}
 
+
+
 	@Override
 	public SimplePolygonXZ getOutlinePolygonXZ() {
 
@@ -91,7 +93,7 @@ public abstract class JunctionNodeWorldObject<S extends NetworkWaySegmentWorldOb
 
 		SimplePolygonXZ simplePoly = new SimplePolygonXZ(vectors);
 
-		return simplePoly.makeCounterclockwise();
+		return (SimplePolygonXZ) simplePoly.makeCounterclockwise();
 
 	}
 
