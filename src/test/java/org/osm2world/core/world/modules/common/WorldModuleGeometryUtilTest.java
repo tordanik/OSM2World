@@ -2,7 +2,9 @@ package org.osm2world.core.world.modules.common;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.osm2world.core.math.GeometryUtil.trianglesFromTriangleStrip;
 import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.transformShape;
 
 import java.util.List;
@@ -35,6 +37,19 @@ public class WorldModuleGeometryUtilTest {
 
 		assertEquals(asList(new VectorXYZ(-1, 5, 6), new VectorXYZ(1, 5, 3)),
 				transformShape(vs, new VectorXYZ(0, 5, 5), X_UNIT, Y_UNIT));
+
+	}
+
+	@Test
+	public void testCreateTriangleStripBetween() {
+
+		List<VectorXYZ> left = List.of(new VectorXYZ(-1, 0, 0), new VectorXYZ(-1, 0, 5), new VectorXYZ(-1, 1, 15));
+		List<VectorXYZ> right = List.of(new VectorXYZ(1, 0, 0), new VectorXYZ(1, 0, 6), new VectorXYZ(1, 1, 15));
+
+		List<VectorXYZ> result = createTriangleStripBetween(left, right);
+
+		assertEquals(List.of(left.get(0), right.get(0), left.get(1), right.get(1), left.get(2), right.get(2)), result);
+		assertEquals(4, trianglesFromTriangleStrip(result).size());
 
 	}
 
