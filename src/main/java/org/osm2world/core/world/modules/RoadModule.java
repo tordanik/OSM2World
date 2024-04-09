@@ -9,8 +9,7 @@ import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
-import static org.osm2world.core.math.GeometryUtil.interpolateEleOfPolyline;
-import static org.osm2world.core.math.GeometryUtil.interpolateElevation;
+import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXYZ.addYList;
 import static org.osm2world.core.target.common.material.Materials.*;
@@ -33,6 +32,7 @@ import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
+import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
@@ -529,17 +529,15 @@ public class RoadModule extends ConfigurableWorldModule {
 			Lane lane1, Lane lane2, RoadPart roadPart,
 			boolean atLane1Start, boolean atLane2Start) {
 
-		List<VectorXYZ> leftLaneBorder = new ArrayList<VectorXYZ>();
-		leftLaneBorder.add(lane1.getBorderNode(
-				atLane1Start, atLane1Start));
-		leftLaneBorder.add(lane2.getBorderNode(
-				atLane2Start, !atLane2Start));
+		VectorXYZ left0 = lane1.getBorderNode(atLane1Start, atLane1Start);
+		VectorXYZ left1 = lane2.getBorderNode(atLane2Start, !atLane2Start);
+		List<VectorXYZ> leftLaneBorder = left0.distanceTo(left1) < 1e-6
+				? List.of(left0) : List.of(left0, left1);
 
-		List<VectorXYZ> rightLaneBorder = new ArrayList<VectorXYZ>();
-		rightLaneBorder.add(lane1.getBorderNode(
-				atLane1Start, !atLane1Start));
-		rightLaneBorder.add(lane2.getBorderNode(
-				atLane2Start, atLane2Start));
+		VectorXYZ right0 = lane1.getBorderNode(atLane1Start, !atLane1Start);
+		VectorXYZ right1 = lane2.getBorderNode(atLane2Start, atLane2Start);
+		List<VectorXYZ> rightLaneBorder = right0.distanceTo(right1) < 1e-6
+				? List.of(right0) : List.of(right0, right1);
 
 		return new LaneConnection(lane1.type, RoadPart.LEFT,
 				lane1.road.rightHandTraffic,
@@ -1924,51 +1922,87 @@ public class RoadModule extends ConfigurableWorldModule {
 			Material surface = getSurface(roadTags, laneTags);
 			Material surfaceMiddle = getSurfaceMiddle(roadTags, laneTags);
 
-			/* draw lane triangle strips */
+			boolean outlinesShareStart = leftLaneBorder.get(0).distanceToXZ(rightLaneBorder.get(0)) < 0.01;
+			boolean outlinesShareEnd = leftLaneBorder.get(leftLaneBorder.size() - 1).distanceToXZ(
+					rightLaneBorder.get(rightLaneBorder.size() - 1)) < 0.01;
 
-			if (surfaceMiddle == null || surfaceMiddle.equals(surface)) {
+			boolean stripPossible = leftLaneBorder.size() == rightLaneBorder.size()
+					&& !outlinesShareStart && !outlinesShareEnd;
 
-				List<VectorXYZ> vs = createTriangleStripBetween(
-						leftLaneBorder, rightLaneBorder);
+			if (stripPossible) {
 
-				boolean mirrorLeftRight = laneTags.containsKey("turn")
-						&& laneTags.getValue("turn").contains("left");
+				/* draw lane triangle strips */
+
+				if (surfaceMiddle == null || surfaceMiddle.equals(surface)) {
+
+					List<VectorXYZ> vs = createTriangleStripBetween(
+							leftLaneBorder, rightLaneBorder);
+
+					boolean mirrorLeftRight = laneTags.containsKey("turn")
+							&& laneTags.getValue("turn").contains("left");
 
 
-				if (!roadTags.contains("highway", "motorway")) {
+					if (!roadTags.contains("highway", "motorway")) {
 
-					// add turn arrows only if the lane section is long enough (rough rule of thumb)
-					double length = leftLaneBorder.get(0).distanceToXZ(leftLaneBorder.get(leftLaneBorder.size() - 1));
-					if (length > 4.0) {
-						surface = addTurnArrows(surface, laneTags);
+						// add turn arrows only if the lane section is long enough (rough rule of thumb)
+						double length = leftLaneBorder.get(0).distanceToXZ(leftLaneBorder.get(leftLaneBorder.size() - 1));
+						if (length > 4.0) {
+							surface = addTurnArrows(surface, laneTags);
+						}
+
 					}
+
+					target.drawTriangleStrip(surface, vs,
+							texCoordLists(vs, surface, textureDimensions -> new ArrowTexCoordFunction(
+									roadPart, rightHandTraffic, mirrorLeftRight, textureDimensions)));
+
+				} else {
+
+					List<VectorXYZ> leftMiddleBorder =
+							createLineBetween(leftLaneBorder, rightLaneBorder, 0.3f);
+					List<VectorXYZ> rightMiddleBorder =
+							createLineBetween(leftLaneBorder, rightLaneBorder, 0.7f);
+
+					List<VectorXYZ> vsLeft = createTriangleStripBetween(
+							leftLaneBorder, leftMiddleBorder);
+					List<VectorXYZ> vsMiddle = createTriangleStripBetween(
+							leftMiddleBorder, rightMiddleBorder);
+					List<VectorXYZ> vsRight = createTriangleStripBetween(
+							rightMiddleBorder, rightLaneBorder);
+
+					target.drawTriangleStrip(surface, vsLeft,
+							texCoordLists(vsLeft, surface, GLOBAL_X_Z));
+					target.drawTriangleStrip(surfaceMiddle, vsMiddle,
+							texCoordLists(vsMiddle, surfaceMiddle, GLOBAL_X_Z));
+					target.drawTriangleStrip(surface, vsRight,
+							texCoordLists(vsRight, surface, GLOBAL_X_Z));
 
 				}
 
-				target.drawTriangleStrip(surface, vs,
-						texCoordLists(vs, surface, textureDimensions -> new ArrowTexCoordFunction(
-								roadPart, rightHandTraffic, mirrorLeftRight, textureDimensions)));
-
 			} else {
 
-				List<VectorXYZ> leftMiddleBorder =
-					createLineBetween(leftLaneBorder, rightLaneBorder, 0.3f);
-				List<VectorXYZ> rightMiddleBorder =
-					createLineBetween(leftLaneBorder, rightLaneBorder, 0.7f);
+				/* draw a triangulated surface */
 
-				List<VectorXYZ> vsLeft = createTriangleStripBetween(
-						leftLaneBorder, leftMiddleBorder);
-				List<VectorXYZ> vsMiddle = createTriangleStripBetween(
-						leftMiddleBorder, rightMiddleBorder);
-				List<VectorXYZ> vsRight = createTriangleStripBetween(
-						rightMiddleBorder, rightLaneBorder);
+				List<VectorXYZ> outline = new ArrayList<>(leftLaneBorder);
 
-				target.drawTriangleStrip(surface, vsLeft,
-						texCoordLists(vsLeft, surface, GLOBAL_X_Z));
-				target.drawTriangleStrip(surfaceMiddle, vsMiddle,
-						texCoordLists(vsMiddle, surfaceMiddle, GLOBAL_X_Z));
-				target.drawTriangleStrip(surface, vsRight,
-						texCoordLists(vsRight, surface, GLOBAL_X_Z));
+				if (!outlinesShareEnd) {
+					outline.add(rightLaneBorder.get(rightLaneBorder.size() - 1));
+				}
+
+				for (int i = rightLaneBorder.size() - 2; i > 0; i--) {
+					outline.add(rightLaneBorder.get(i));
+				}
+
+				if (!outlinesShareStart) {
+					outline.add(rightLaneBorder.get(0));
+				}
+
+
+				List<TriangleXYZ> triangles = TriangulationUtil.triangulateXYZ(
+						new PolygonXYZ(closeLoop(outline)));
+
+				target.drawTriangles(surface, triangles,
+						triangleTexCoordLists(triangles, surface, GLOBAL_X_Z));
 
 			}
 
