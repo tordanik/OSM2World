@@ -8,6 +8,7 @@ import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
@@ -158,7 +159,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 				/* render surface area */
 				var builder = new TriangleGeometry.Builder(texCoordFunctions(surfaceMaterial, GLOBAL_X_Z), null, SMOOTH);
-				builder.addTriangles(eleConnectors.getTriangulationXYZ(area.getTriangulation()));
+				builder.addTriangles(triangulationXZtoXYZ(area.getTriangulation(), eleConnectors::getPosXYZ));
 				return List.of(new Mesh(builder.build(), surfaceMaterial));
 
 			} else {

@@ -7,6 +7,7 @@ import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 import static org.osm2world.core.target.common.material.Materials.SAND;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -262,7 +263,7 @@ public class GolfModule extends AbstractModule {
 			}
 
 			List<TriangleXZ> trianglesXZ = getGreenTriangulation();
-			List<TriangleXYZ> triangles = getEleConnectors().getTriangulationXYZ(trianglesXZ);
+			List<TriangleXYZ> triangles = triangulationXZtoXYZ(trianglesXZ, getEleConnectors()::getPosXYZ);
 
 			target.drawTriangles(material, triangles,
 					triangleTexCoordLists(triangles , material, GLOBAL_X_Z));

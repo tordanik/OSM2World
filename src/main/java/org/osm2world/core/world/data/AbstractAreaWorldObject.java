@@ -1,10 +1,11 @@
 package org.osm2world.core.world.data;
 
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -12,13 +13,7 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
@@ -175,13 +170,13 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	 * Only available after elevation calculation.
 	 */
 	protected List<TriangleXYZ> getTriangulation() {
-		if (getConnectorIfAttached() != null) {
-			return getTriangulationXZ().stream()
-					.map(t -> t.makeCounterclockwise().xyz(attachmentConnector.getAttachedPos().getY()))
-					.collect(toList());
-		} else {
-			return connectors.getTriangulationXYZ(getTriangulationXZ());
-		}
+
+		Function<VectorXZ, VectorXYZ> xzToXYZ = getConnectorIfAttached() != null
+				? v -> v.xyz(getConnectorIfAttached().getAttachedPos().getY())
+				: connectors::getPosXYZ;
+
+		return TriangulationUtil.triangulationXZtoXYZ(getTriangulationXZ(), xzToXYZ);
+
 	}
 
 	@Override

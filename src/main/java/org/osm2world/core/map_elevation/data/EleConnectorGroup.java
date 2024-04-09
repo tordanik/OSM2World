@@ -1,20 +1,8 @@
 package org.osm2world.core.map_elevation.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 
 
 /**
@@ -147,28 +135,6 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 
 	public PolygonXYZ getPosXYZ(SimplePolygonXZ polygon) {
 		return new PolygonXYZ(getPosXYZ(polygon.vertices()));
-	}
-
-	public List<TriangleXYZ> getTriangulationXYZ(List<? extends TriangleXZ> trianglesXZ) {
-
-		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(trianglesXZ.size());
-
-		for (TriangleXZ triangleXZ : trianglesXZ) {
-
-			VectorXYZ v1 = getPosXYZ(triangleXZ.v1);
-			VectorXYZ v2 = getPosXYZ(triangleXZ.v2);
-			VectorXYZ v3 = getPosXYZ(triangleXZ.v3);
-
-			if (triangleXZ.isClockwise()) { //TODO: ccw test should not be in here, but maybe in triangulation util
-				trianglesXYZ.add(new TriangleXYZ(v3, v2, v1));
-			} else  {
-				trianglesXYZ.add(new TriangleXYZ(v1, v2, v3));
-			}
-
-		}
-
-		return trianglesXYZ;
-
 	}
 
 	@Override
