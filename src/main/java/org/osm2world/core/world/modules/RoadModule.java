@@ -128,9 +128,9 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	public static boolean isRoad(TagSet tags) {
 		if (tags.containsKey("highway")
-				&& !tags.contains("highway", "construction")
-				&& !tags.contains("highway", "proposed")
-				&& !tags.contains("highway", "elevator")) {
+				&& !tags.contains("highway", "elevator")
+				&& !tags.containsAny(List.of("highway"), List.of("proposed", "planned", "construction",
+						"ruins", "demolished", "removed", "razed", "destroyed"))) {
 			return true;
 		} else {
 			return tags.contains("railway", "platform")
