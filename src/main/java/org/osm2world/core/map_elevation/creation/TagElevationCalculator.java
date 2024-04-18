@@ -2,6 +2,8 @@ package org.osm2world.core.map_elevation.creation;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapSegment;
@@ -30,8 +32,7 @@ public abstract class TagElevationCalculator implements ElevationCalculator {
 	}
 
 	@Override
-	public void calculateElevations(MapData mapData,
-			TerrainElevationData eleData) {
+	public void calculateElevations(@Nonnull MapData mapData) {
 
 //		//TODO replace old ElevationProfile stuff
 //

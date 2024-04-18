@@ -428,38 +428,18 @@ public class ConversionFacade {
 
 		}
 
-		/* interpolate connectors' elevations */
-
-		final List<EleConnector> connectors = new ArrayList<EleConnector>();
+		/* interpolate terrain elevation for each connector */
 
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
-
 			for (EleConnector conn : worldObject.getEleConnectors()) {
 				conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
-				connectors.add(conn);
 			}
-
 		});
 
-		/* enforce constraints defined by WorldObjects */
+		/* refine terrain-based elevation with information from map data */
 
-		boolean debugConstraints = config.getBoolean("debugConstraints", false);
-
-		final EleConstraintEnforcer enforcer = debugConstraints
-				? new EleConstraintValidator(mapData,
-						eleConstraintEnforcerFactory.get())
-				: eleConstraintEnforcerFactory.get();
-
-		enforcer.addConnectors(connectors);
-
-		if (!(enforcer instanceof NoneEleConstraintEnforcer)) {
-
-			FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(),
-					(WorldObject o) -> o.defineEleConstraints(enforcer));
-
-		}
-
-		enforcer.enforceConstraints();
+		ElevationCalculator eleCalculator = new ConstraintElevationCalculator(eleConstraintEnforcerFactory.get());
+		eleCalculator.calculateElevations(mapData);
 
 	}
 

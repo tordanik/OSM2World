@@ -17,8 +17,7 @@ import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 public class ZeroElevationCalculator implements ElevationCalculator {
 
 	@Override
-	public void calculateElevations(MapData mapData,
-			TerrainElevationData eleData) {
+	public void calculateElevations(MapData mapData) {
 
 		for (MapNode node : mapData.getMapNodes()) {
 
