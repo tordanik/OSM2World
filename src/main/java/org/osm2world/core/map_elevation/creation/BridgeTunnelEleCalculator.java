@@ -11,14 +11,16 @@ public class BridgeTunnelEleCalculator extends TagEleCalculator {
 
 	final double eleBridge;
 	final double eleTunnel;
+	final Double eleTerrain;
 
-	private BridgeTunnelEleCalculator(double eleBridge, double eleTunnel) {
+	private BridgeTunnelEleCalculator(double eleBridge, double eleTunnel, Double eleTerrain) {
 		this.eleBridge = eleBridge;
 		this.eleTunnel = eleTunnel;
+		this.eleTerrain = eleTerrain;
 	}
 
 	public BridgeTunnelEleCalculator() {
-		this(1, 0);
+		this(0.1, 0.0, 0.0);
 	}
 
 	@Override
@@ -29,7 +31,7 @@ public class BridgeTunnelEleCalculator extends TagEleCalculator {
 		} else if (TunnelModule.isTunnel(tags)) {
 			return eleTunnel;
 		} else {
-			return null;
+			return eleTerrain;
 		}
 
 	}

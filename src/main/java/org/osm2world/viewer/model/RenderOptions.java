@@ -5,8 +5,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.map_elevation.creation.BridgeTunnelEleCalculator;
 import org.osm2world.core.map_elevation.creation.EleCalculator;
-import org.osm2world.core.map_elevation.creation.NoOpEleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
@@ -28,7 +28,7 @@ public class RenderOptions {
 	private boolean backfaceCulling = true;
 
 	Class<? extends TerrainInterpolator> interpolatorClass = ZeroInterpolator.class;
-	Class<? extends EleCalculator> eleCalculatorClass = NoOpEleCalculator.class;
+	Class<? extends EleCalculator> eleCalculatorClass = BridgeTunnelEleCalculator.class;
 
 	public boolean isShowWorldObjects() {
 		return showWorldObjects;
