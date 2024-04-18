@@ -1,30 +1,5 @@
 package org.osm2world.core.world.network;
 
-import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
-import org.osm2world.core.math.*;
-import org.osm2world.core.world.attachment.AttachmentConnector;
-import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.WorldObject;
-import org.osm2world.core.world.modules.BridgeModule;
-import org.osm2world.core.world.modules.TunnelModule;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.util.Arrays.asList;
@@ -40,6 +15,31 @@ import static org.osm2world.core.math.VectorXZ.distance;
 import static org.osm2world.core.math.VectorXZ.distanceSquared;
 import static org.osm2world.core.util.ValueParseUtil.parseIncline;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapWaySegment;
+import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
+import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.map_elevation.data.EleConnectorGroup;
+import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.*;
+import org.osm2world.core.world.attachment.AttachmentConnector;
+import org.osm2world.core.world.data.AbstractAreaWorldObject;
+import org.osm2world.core.world.data.WorldObject;
+import org.osm2world.core.world.modules.BridgeModule;
+import org.osm2world.core.world.modules.TunnelModule;
 
 public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWaySegmentWorldObject, BoundedObject {
 
@@ -456,8 +456,6 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	/**
 	 * returns a sequence of node running along the center of the
 	 * line from start to end (each with offset).
-	 * Uses the {@link WaySegmentElevationProfile} for adding
-	 * elevation information.
 	 */
 	public List<VectorXZ> getCenterlineXZ() {
 
@@ -519,10 +517,6 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 	 * elevation information.
 	 * Available after cut vectors, offsets and elevation information
 	 * have been calculated.
-	 *
-	 * Left and right border have the same number of nodes as the elevation
-	 * profile's {@link WaySegmentElevationProfile#getPointsWithEle()}.
-	 * //TODO: compatible with future offset/clearing influences?
 	 */
 	public List<VectorXYZ> getOutline(boolean right) {
 		return connectors.getPosXYZ(getOutlineXZ(right));

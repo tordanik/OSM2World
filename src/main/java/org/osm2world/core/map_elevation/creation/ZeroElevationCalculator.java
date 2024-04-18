@@ -1,14 +1,11 @@
 package org.osm2world.core.map_elevation.creation;
 
-import java.util.List;
+import javax.annotation.Nonnull;
 
-import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_data.data.MapWaySegment;
-import org.osm2world.core.map_elevation.data.AreaElevationProfile;
-import org.osm2world.core.map_elevation.data.NodeElevationProfile;
-import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
+import org.osm2world.core.map_elevation.data.EleConnector;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
+import org.osm2world.core.world.data.WorldObject;
 
 /**
  * assigns an elevation of 0 to everything.
@@ -17,61 +14,13 @@ import org.osm2world.core.map_elevation.data.WaySegmentElevationProfile;
 public class ZeroElevationCalculator implements ElevationCalculator {
 
 	@Override
-	public void calculateElevations(MapData mapData) {
+	public void calculateElevations(@Nonnull MapData mapData) {
 
-		for (MapNode node : mapData.getMapNodes()) {
-
-			NodeElevationProfile profile = new NodeElevationProfile(node);
-			profile.setEle(0);
-			//TODO replace old ElevationProfile stuff
-//			node.setElevationProfile(profile);
-
-		}
-
-		for (MapWaySegment segment : mapData.getMapWaySegments()) {
-
-			if (segment.getPrimaryRepresentation() == null) continue;
-
-			WaySegmentElevationProfile profile =
-				new WaySegmentElevationProfile(segment);
-
-			//TODO replace old ElevationProfile stuff
-//			profile.addPointWithEle(
-//				segment.getStartNode().getElevationProfile().getPointWithEle());
-//			profile.addPointWithEle(
-//				segment.getEndNode().getElevationProfile().getPointWithEle());
-//
-//			segment.setElevationProfile(profile);
-
-		}
-
-		/* set areas' elevation profiles (based on nodes' elevations) */
-
-		for (MapArea area : mapData.getMapAreas()) {
-
-			if (area.getPrimaryRepresentation() == null) continue;
-
-			AreaElevationProfile profile =
-				new AreaElevationProfile(area);
-
-			for (MapNode node : area.getBoundaryNodes()) {
-				//TODO replace old ElevationProfile stuff
-//				profile.addPointWithEle(
-//					node.getElevationProfile().getPointWithEle());
+		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
+			for (EleConnector conn : worldObject.getEleConnectors()) {
+				conn.setPosXYZ(conn.pos.xyz(0));
 			}
-
-			for (List<MapNode> holeOutline : area.getHoles()) {
-				for (MapNode node : holeOutline) {
-					//TODO replace old ElevationProfile stuff
-//					profile.addPointWithEle(
-//						node.getElevationProfile().getPointWithEle());
-				}
-			}
-
-			//TODO replace old ElevationProfile stuff
-//			area.setElevationProfile(profile);
-
-		}
+		});
 
 	}
 

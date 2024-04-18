@@ -12,7 +12,6 @@ public class LevelTagElevationCalculator extends TagElevationCalculator {
 	final double elePerLevel;
 
 	public LevelTagElevationCalculator(double elePerLevel) {
-		super(0.0, true);
 		this.elePerLevel = elePerLevel;
 	}
 
