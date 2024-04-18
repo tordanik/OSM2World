@@ -7,17 +7,17 @@ import org.osm2world.core.world.modules.TunnelModule;
 /**
  * sets elevations to zero, except for bridges and tunnels
  */
-public class BridgeTunnelElevationCalculator extends TagElevationCalculator {
+public class BridgeTunnelEleCalculator extends TagEleCalculator {
 
 	final double eleBridge;
 	final double eleTunnel;
 
-	private BridgeTunnelElevationCalculator(double eleBridge, double eleTunnel) {
+	private BridgeTunnelEleCalculator(double eleBridge, double eleTunnel) {
 		this.eleBridge = eleBridge;
 		this.eleTunnel = eleTunnel;
 	}
 
-	public BridgeTunnelElevationCalculator() {
+	public BridgeTunnelEleCalculator() {
 		this(1, 0);
 	}
 

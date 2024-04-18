@@ -12,7 +12,7 @@ import org.osm2world.core.world.data.WorldObject;
  * relies on tags that explicitly set elevation.
  * Subclasses determine the tag(s) to be used for this purpose.
  */
-public abstract class TagElevationCalculator implements ElevationCalculator {
+public abstract class TagEleCalculator implements EleCalculator {
 
 	@Override
 	public void calculateElevations(@Nonnull MapData mapData) {

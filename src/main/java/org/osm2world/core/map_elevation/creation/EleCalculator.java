@@ -7,7 +7,8 @@ import org.osm2world.core.map_data.data.MapData;
 /**
  * calculates elevations using terrain elevation and information from {@link MapData}
  */
-public interface ElevationCalculator {
+public interface
+EleCalculator {
 
 	/**
 	 * provides elevation information for all elements in the {@link MapData}.

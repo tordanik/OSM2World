@@ -438,7 +438,7 @@ public class ConversionFacade {
 
 		/* refine terrain-based elevation with information from map data */
 
-		ElevationCalculator eleCalculator = new ConstraintElevationCalculator(eleConstraintEnforcerFactory.get());
+		EleCalculator eleCalculator = new ConstraintEleCalculator(eleConstraintEnforcerFactory.get());
 		eleCalculator.calculateElevations(mapData);
 
 	}

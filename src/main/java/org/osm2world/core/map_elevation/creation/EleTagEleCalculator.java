@@ -7,7 +7,7 @@ import org.osm2world.core.map_data.data.TagSet;
 /**
  * sets elevations based on ele tags
  */
-public class EleTagElevationCalculator extends TagElevationCalculator {
+public class EleTagEleCalculator extends TagEleCalculator {
 
 	@Override
 	protected Double getEleForTags(TagSet tags) {

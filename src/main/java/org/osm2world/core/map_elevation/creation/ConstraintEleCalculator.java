@@ -13,13 +13,13 @@ import org.osm2world.core.world.data.WorldObject;
 /**
  * Attempts to improve elevations by applying an {@link EleConstraintEnforcer}
  */
-public class ConstraintElevationCalculator implements ElevationCalculator {
+public class ConstraintEleCalculator implements EleCalculator {
 
 	private final boolean DEBUG_CONSTRAINTS = false;
 
 	private final EleConstraintEnforcer eleConstraintEnforcer;
 
-	public ConstraintElevationCalculator(EleConstraintEnforcer eleConstraintEnforcer) {
+	public ConstraintEleCalculator(EleConstraintEnforcer eleConstraintEnforcer) {
 		this.eleConstraintEnforcer = eleConstraintEnforcer;
 	}
 

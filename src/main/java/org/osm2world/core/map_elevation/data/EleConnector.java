@@ -3,14 +3,14 @@ package org.osm2world.core.map_elevation.data;
 import static org.osm2world.core.map_elevation.data.GroundState.ON;
 
 import org.osm2world.core.map_data.data.MapNode;
-import org.osm2world.core.map_elevation.creation.ElevationCalculator;
+import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.WorldObject;
 
 /**
  * a point referenced by one or more {@link WorldObject}s, with known xz coords
- * and an elevation to be assigned by an {@link ElevationCalculator}.
+ * and an elevation to be assigned by an {@link EleCalculator}.
  *
  * This class is a core concept of elevation calculation:
  * Because there is no injective mapping from xz coords to elevation (that
@@ -49,7 +49,7 @@ public class EleConnector {
 
 	/**
 	 * assigns the elevation that has been calculated for this connector.
-	 * Only for use by an {@link ElevationCalculator}.
+	 * Only for use by an {@link EleCalculator}.
 	 *
 	 * TODO make package-visible
 	 */
