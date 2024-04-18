@@ -40,7 +40,7 @@ public class ViewerFrame extends JFrame {
 	private final Data data;
 	private final RenderOptions renderOptions = new RenderOptions();
 	private final MessageManager messageManager = new MessageManager();
-	private final List<DebugView> debugViews = new ArrayList<DebugView>();
+	private final List<DebugView> debugViews = new ArrayList<>();
 
 	/**
 	 *
@@ -213,23 +213,25 @@ public class ViewerFrame extends JFrame {
 
 			}
 
-			JMenu enforcerMenu = new JMenu("EleConstraintEnforcer");
-			subMenu.add(enforcerMenu);
+			JMenu eleCalculatorMenu = new JMenu("EleCalculator");
+			subMenu.add(eleCalculatorMenu);
 
-			ButtonGroup enforcerGroup = new ButtonGroup();
+			ButtonGroup eleCalculatorGroup = new ButtonGroup();
 
-			List<Class<? extends EleConstraintEnforcer>> enforcerClasses = asList(
-					NoneEleConstraintEnforcer.class,
-					SimpleEleConstraintEnforcer.class);
+			List<Class<? extends EleCalculator>> enforcerClasses = asList(
+					NoOpEleCalculator.class,
+					EleTagEleCalculator.class,
+					BridgeTunnelEleCalculator.class,
+					ConstraintEleCalculator.class);
 
-			for (Class<? extends EleConstraintEnforcer> c : enforcerClasses) {
+			for (Class<? extends EleCalculator> c : enforcerClasses) {
 
 				JRadioButtonMenuItem item = new JRadioButtonMenuItem(
-						new SetEleConstraintEnforcerAction(c,
+						new SetEleCalculatorAction(c,
 								this, data, renderOptions));
 
-				enforcerGroup.add(item);
-				enforcerMenu.add(item);
+				eleCalculatorGroup.add(item);
+				eleCalculatorMenu.add(item);
 
 			}
 

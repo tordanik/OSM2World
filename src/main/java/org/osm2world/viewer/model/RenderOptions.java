@@ -5,8 +5,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.NoneEleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.EleCalculator;
+import org.osm2world.core.map_elevation.creation.NoOpEleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
@@ -28,7 +28,7 @@ public class RenderOptions {
 	private boolean backfaceCulling = true;
 
 	Class<? extends TerrainInterpolator> interpolatorClass = ZeroInterpolator.class;
-	Class<? extends EleConstraintEnforcer> enforcerClass = NoneEleConstraintEnforcer.class;
+	Class<? extends EleCalculator> eleCalculatorClass = NoOpEleCalculator.class;
 
 	public boolean isShowWorldObjects() {
 		return showWorldObjects;
@@ -64,12 +64,12 @@ public class RenderOptions {
 		this.interpolatorClass = interpolatorClass;
 	}
 
-	public Class<? extends EleConstraintEnforcer> getEnforcerClass() {
-		return enforcerClass;
+	public Class<? extends EleCalculator> getEleCalculatorClass() {
+		return eleCalculatorClass;
 	}
 
-	public void setEnforcerClass(Class<? extends EleConstraintEnforcer> enforcerClass) {
-		this.enforcerClass = enforcerClass;
+	public void setEleCalculatorClass(Class<? extends EleCalculator> eleCalculatorClass) {
+		this.eleCalculatorClass = eleCalculatorClass;
 	}
 
 }

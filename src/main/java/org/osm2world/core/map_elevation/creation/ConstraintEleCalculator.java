@@ -23,6 +23,10 @@ public class ConstraintEleCalculator implements EleCalculator {
 		this.eleConstraintEnforcer = eleConstraintEnforcer;
 	}
 
+	public ConstraintEleCalculator() {
+		this(new SimpleEleConstraintEnforcer());
+	}
+
 	@Override
 	public void calculateElevations(@Nonnull MapData mapData) {
 

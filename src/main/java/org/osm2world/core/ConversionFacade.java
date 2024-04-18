@@ -122,7 +122,7 @@ public class ConversionFacade {
 
 	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = ZeroInterpolator::new;
 
-	private Factory<? extends EleConstraintEnforcer> eleConstraintEnforcerFactory = NoneEleConstraintEnforcer::new;
+	private Factory<? extends EleCalculator> eleCalculatorFactory = NoOpEleCalculator::new;
 
 	/**
 	 * sets the factory that will make {@link MapProjection}
@@ -134,13 +134,12 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * sets the factory that will make {@link EleConstraintEnforcer}
+	 * sets the factory that will make {@link EleCalculator}
 	 * instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
 	 */
-	public void setEleConstraintEnforcerFactory(
-			Factory<? extends EleConstraintEnforcer> interpolatorFactory) {
-		this.eleConstraintEnforcerFactory = interpolatorFactory;
+	public void setEleCalculatorFactory(Factory<? extends EleCalculator> eleCalculatorFactory) {
+		this.eleCalculatorFactory = eleCalculatorFactory;
 	}
 
 	/**
@@ -438,7 +437,7 @@ public class ConversionFacade {
 
 		/* refine terrain-based elevation with information from map data */
 
-		EleCalculator eleCalculator = new ConstraintEleCalculator(eleConstraintEnforcerFactory.get());
+		EleCalculator eleCalculator = eleCalculatorFactory.get();
 		eleCalculator.calculateElevations(mapData);
 
 	}

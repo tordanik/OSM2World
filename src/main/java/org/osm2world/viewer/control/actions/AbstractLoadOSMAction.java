@@ -10,7 +10,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.osm2world.core.ConversionFacade.BoundingBoxSizeException;
 import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
+import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.osm.creation.OSMDataReader;
@@ -118,8 +118,8 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 					data.loadOSMData(dataReader, failOnLargeBBox,
 							new DefaultFactory<TerrainInterpolator>(
 									renderOptions.getInterpolatorClass()),
-							new DefaultFactory<EleConstraintEnforcer>(
-									renderOptions.getEnforcerClass()),
+							new DefaultFactory<EleCalculator>(
+									renderOptions.getEleCalculatorClass()),
 							this);
 
 					if (resetCamera) {
