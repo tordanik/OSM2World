@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.osm2world.core.math.*;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 
 /**
@@ -42,7 +43,7 @@ public class TriangulationUtil {
 	 * @see #triangulate(SimplePolygonShapeXZ, Collection)
 	 */
 	public static final List<TriangleXZ> triangulate(
-			PolygonWithHolesXZ polygon,
+			PolygonShapeXZ polygon,
 			Collection<VectorXZ> points) {
 
 		return triangulate(polygon.getOuter(), polygon.getHoles(), points);
@@ -53,7 +54,7 @@ public class TriangulationUtil {
 	 * @see #triangulate(SimplePolygonShapeXZ, Collection)
 	 */
 	public static final List<TriangleXZ> triangulate(
-			PolygonWithHolesXZ polygon) {
+			PolygonShapeXZ polygon) {
 
 		return triangulate(polygon.getOuter(), polygon.getHoles());
 
@@ -67,7 +68,7 @@ public class TriangulationUtil {
 
 		SimplePolygonXZ xzPolygon = polygon.getSimpleXZPolygon();
 
-		List<TriangleXZ> resultXZ = triangulate(xzPolygon, List.of());
+		List<TriangleXZ> resultXZ = triangulate(xzPolygon);
 
 		Map<VectorXZ, VectorXYZ> eleMap = new HashMap<>();
 		polygon.vertices().forEach(v -> eleMap.put(v.xz(), v));

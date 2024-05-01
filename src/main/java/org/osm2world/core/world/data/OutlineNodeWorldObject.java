@@ -4,19 +4,12 @@ import static java.util.Collections.emptyList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.PolygonXYZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 
 /**
@@ -96,9 +89,7 @@ public abstract class OutlineNodeWorldObject implements NodeWorldObject, Bounded
 
 		if (getOutlinePolygonXZ() == null) return emptyList();
 
-		Collection<TriangleXZ> trianglesXZ = TriangulationUtil.triangulate(
-				getOutlinePolygonXZ(),
-				Collections.<SimplePolygonXZ>emptyList());
+		Collection<TriangleXZ> trianglesXZ = TriangulationUtil.triangulate(getOutlinePolygonXZ());
 
 		List<TriangleXYZ> trianglesXYZ = new ArrayList<>(trianglesXZ.size());
 

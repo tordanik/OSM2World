@@ -763,7 +763,7 @@ public class IndoorWall implements Renderable {
 
 					SimplePolygonXZ polygon = new SimplePolygonXZ(vertices).makeCounterclockwise();
 
-					Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon, emptyList());
+					Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
 					List<TriangleXYZ> trianglesXYZBottom = triangles.stream()
 							.map(t -> t.makeClockwise().xyz(nodeAndLevel.getHeightAboveGround()))

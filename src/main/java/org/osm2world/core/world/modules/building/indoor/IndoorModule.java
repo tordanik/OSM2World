@@ -222,13 +222,13 @@ public class IndoorModule extends AbstractModule {
 
 				/* draw floor */
 
-				PolygonWithHolesXZ carPolygon = new PolygonWithHolesXZ(new SimplePolygonXZ(carOuterPoints), emptyList());
+				SimplePolygonXZ carPolygon = new SimplePolygonXZ(carOuterPoints);
 
-				List<TriangleXYZ> trianglesBottomDown = TriangulationUtil.triangulate(carPolygon, emptyList())
-						.stream().map(t -> t.makeClockwise().xyz(carBaseEle - 0.0001)).collect(toList());
+				List<TriangleXYZ> trianglesBottomDown = TriangulationUtil.triangulate(carPolygon)
+						.stream().map(t -> t.makeClockwise().xyz(carBaseEle - 0.0001)).toList();
 
-				List<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon, emptyList())
-						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle - 0.0001)).collect(toList());
+				List<TriangleXYZ> trianglesBottomUp = TriangulationUtil.triangulate(carPolygon)
+						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle - 0.0001)).toList();
 
 				target.drawTriangles(Materials.STEEL, trianglesBottomDown,
 						triangleTexCoordLists(trianglesBottomDown, Materials.STEEL, GLOBAL_X_Z));
@@ -238,11 +238,11 @@ public class IndoorModule extends AbstractModule {
 
 				/* draw ceiling */
 
-				List<TriangleXYZ> trianglesTopDown = TriangulationUtil.triangulate(carPolygon, emptyList())
-						.stream().map(t -> t.makeClockwise().xyz(carBaseEle + carHeight)).collect(toList());
+				List<TriangleXYZ> trianglesTopDown = TriangulationUtil.triangulate(carPolygon)
+						.stream().map(t -> t.makeClockwise().xyz(carBaseEle + carHeight)).toList();
 
-				List<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon, emptyList())
-						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle + carHeight)).collect(toList());
+				List<TriangleXYZ> trianglesTopUp = TriangulationUtil.triangulate(carPolygon)
+						.stream().map(t -> t.makeCounterclockwise().xyz(carBaseEle + carHeight)).toList();
 
 				target.drawTriangles(Materials.STEEL, trianglesTopDown,
 						triangleTexCoordLists(trianglesTopDown, Materials.STEEL, GLOBAL_X_Z));
