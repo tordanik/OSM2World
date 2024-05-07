@@ -1,8 +1,5 @@
 package org.osm2world.core.world.modules;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
 import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
 import static org.osm2world.core.map_elevation.data.GroundState.*;
@@ -16,12 +13,13 @@ import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.Tag;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
-import org.osm2world.core.math.*;
-import org.osm2world.core.math.algorithms.CAGUtil;
+import org.osm2world.core.math.TriangleXYZ;
+import org.osm2world.core.math.TriangleXZ;
+import org.osm2world.core.math.VectorGridXZ;
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
@@ -99,7 +97,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		@Override
 		public void renderTo(Target target) {
 
-			Material material = null;
+			Material material;
 
 			if (surface.equals(EMPTY_SURFACE_VALUE)) {
 				material = Materials.TERRAIN_DEFAULT;
@@ -132,83 +130,36 @@ public class SurfaceAreaModule extends AbstractModule {
 				return triangulationXZ;
 			}
 
-			boolean isEmptyTerrain = surface.equals(EMPTY_SURFACE_VALUE);
+			Collection<PolygonShapeXZ> footprint = getGroundFootprint();
 
-			/* collect the outlines of overlapping ground polygons and other polygons,
+			/* collect the outlines of overlapping polygons,
 			 * and EleConnectors within the area */
 
-			List<PolygonShapeXZ> subtractPolys = new ArrayList<>();
 			List<PolygonShapeXZ> allPolys = new ArrayList<>();
-
 			List<VectorXZ> eleConnectorPoints = new ArrayList<>();
 
-			if (this.getGroundState() == ON) { // do not, e.g., subtract ground level objects if this is a rooftop lawn
+			if (this.getGroundState() == ON) {
 
 				for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 					for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
 
-						// TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way)
+						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
 
-						if (otherWO.getGroundState() == GroundState.ON) {
-
-							if (otherWO instanceof SurfaceArea && !isEmptyTerrain) {
-								// empty terrain has lowest priority
+							if (eleConnector.reference == null) {
+								/* workaround to avoid using connectors at intersections,
+								 * which might fall on area segments
+								 * //TODO cleaner solution
+								 */
 								continue;
 							}
 
-							if (overlap.type == MapOverlapType.CONTAIN
-									&& overlap.e1 == this.area) {
-								// completely within other element, no ground area left
-								return emptyList();
-							}
-
-							if (otherWO instanceof TerrainBoundaryWorldObject) {
-
-								TerrainBoundaryWorldObject terrainBoundary = (TerrainBoundaryWorldObject)otherWO;
-
-								Collection<PolygonShapeXZ> outlinePolygons = terrainBoundary.getTerrainBoundariesXZ();
-
-								for (PolygonShapeXZ outlinePolygon : outlinePolygons) {
-
-									subtractPolys.add(outlinePolygon);
-									allPolys.add(outlinePolygon);
-
-									for (EleConnector eleConnector : otherWO.getEleConnectors()) {
-
-										if (!outlinePolygon.getRings().stream().anyMatch(
-												p-> p.vertices().contains(eleConnector.pos))) {
-											eleConnectorPoints.add(eleConnector.pos);
-										}
-
-									}
-
-								}
-
-							} else {
-								for (EleConnector eleConnector : otherWO.getEleConnectors()) {
-									eleConnectorPoints.add(eleConnector.pos);
-								}
-							}
-
-						} else {
-
-							for (EleConnector eleConnector : otherWO.getEleConnectors()) {
-
-								if (eleConnector.reference == null) {
-									/* workaround to avoid using connectors at intersections,
-									 * which might fall on area segments
-									 * //TODO cleaner solution
-									 */
-									continue;
-								}
-
+							if (footprint.stream().anyMatch(p -> p.contains(eleConnector.pos))) {
 								eleConnectorPoints.add(eleConnector.pos);
 							}
+						}
 
-							if (otherWO.getOutlinePolygonXZ() != null) {
-								allPolys.add(otherWO.getOutlinePolygonXZ());
-							}
-
+						if (otherWO.getOutlinePolygonXZ() != null) {
+							allPolys.add(otherWO.getOutlinePolygonXZ());
 						}
 
 					}
@@ -227,47 +178,15 @@ public class SurfaceAreaModule extends AbstractModule {
 				//don't insert if it is e.g. on top of a tunnel;
 				//otherwise there would be no minimum vertical distance
 
-				boolean safe = true;
-
-				for (PolygonShapeXZ polygon : allPolys) {
-					if (polygon.contains(point)) {
-						safe = false;
-						break;
-					}
-				}
-
-				if (safe) {
+				if (allPolys.stream().noneMatch(it -> it.contains(point))) {
 					eleConnectorPoints.add(point);
 				}
 
 			}
 
-			/* create "leftover" polygons by subtracting the existing ones */
-
-			Collection<PolygonWithHolesXZ> polygons;
-
-			if (subtractPolys.isEmpty()) {
-
-				/* SUGGEST (performance) handle the common "empty terrain cell"
-				 * special case more efficiently, also regarding point raster? */
-
-				polygons = singleton(area.getPolygon());
-
-			} else {
-
-				polygons = CAGUtil.subtractPolygons(
-						area.getOuterPolygon(), subtractPolys);
-
-			}
-
 			/* triangulate, using elevation information from all participants */
 
-			triangulationXZ = new ArrayList<TriangleXZ>();
-
-			for (PolygonWithHolesXZ polygon : polygons) {
-				List<VectorXZ> points = eleConnectorPoints.stream().filter(polygon::contains).collect(toList());
-				triangulationXZ.addAll(TriangulationUtil.triangulate(polygon, points));
-			}
+			triangulationXZ = TriangulationUtil.triangulate(footprint, eleConnectorPoints);
 
 			return triangulationXZ;
 
@@ -278,7 +197,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 			super.defineEleConstraints(enforcer);
 
-			/** add vertical distance to connectors above and below */
+			/* add vertical distance to connectors above and below */
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
@@ -311,26 +230,6 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
-		public PolygonXYZ getOutlinePolygon() {
-			if (surface.equals(EMPTY_SURFACE_VALUE)) {
-				// avoid interfering with e.g. tree placement
-				return null;
-			} else {
-				return super.getOutlinePolygon();
-			}
-		}
-
-		@Override
-		public PolygonWithHolesXZ getOutlinePolygonXZ() {
-			if (surface.equals(EMPTY_SURFACE_VALUE)) {
-				// avoid interfering with e.g. tree placement
-				return null;
-			} else {
-				return super.getOutlinePolygonXZ();
-			}
-		}
-
-		@Override
 		public GroundState getGroundState() {
 			if (BridgeModule.isBridge(area.getTags())) {
 				return GroundState.ABOVE;
@@ -339,6 +238,11 @@ public class SurfaceAreaModule extends AbstractModule {
 			} else {
 				return super.getGroundState();
 			}
+		}
+
+		@Override
+		public int getOverlapPriority() {
+			return surface.equals(EMPTY_SURFACE_VALUE) ? Integer.MIN_VALUE : 20;
 		}
 
 	}

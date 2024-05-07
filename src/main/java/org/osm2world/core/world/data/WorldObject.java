@@ -1,6 +1,7 @@
 package org.osm2world.core.world.data;
 
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,10 +10,14 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapElement;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.Model;
@@ -106,6 +111,91 @@ public interface WorldObject {
 	 */
 	public default @Nullable PolygonShapeXZ getOutlinePolygonXZ() {
 		return null;
+	}
+
+	/**
+	 * returns a list of polygons defining an object's ground footprint in the xz plane.
+	 * This area will not be covered by terrain (i.e. it will be a "hole" in the terrain surface)
+	 * or by other objects with a lower {@link #getOverlapPriority()}
+	 *
+	 * @return collection of outline polygons, empty list if the world object doesn't cover any area
+	 */
+	public default Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+		return emptyList();
+	}
+
+	/**
+	 * priority relative to other objects when it comes to resolving overlaps.
+	 * This is relevant when the same area would otherwise be covered by multiple objects,
+	 * and the objects are both on the ground (according to {@link #getGroundState()}),
+	 * or otherwise directly in conflict (e.g. both attached to the same roof).
+	 *
+	 * Typical values:
+	 * - MAX_VALUE: will always be left intact (e.g. linear roads); this is the default
+	 * - 50: highway polygons
+	 * - 30: surface areas with a distinct physical representation (e.g. car parking)
+	 * - 20: areas with explicitly mapped surface, landcover and similar features (
+	 * - 10: areas with implied surface (e.g. parks)
+	 * - MIN_VALUE: default terrain that is used to fill gaps where nothing has been mapped
+	 */
+	public default int getOverlapPriority() {
+		return Integer.MAX_VALUE;
+	}
+
+	/**
+	 * calculates the true ground footprint of this area by removing area covered by overlapping features
+	 * with a higher {@link #getOverlapPriority()}.
+	 *
+	 * TODO: move to {@link ProceduralWorldObject} once all procedural objects use that interface
+	 */
+	default Collection<PolygonShapeXZ> getGroundFootprint() {
+
+		if (getOutlinePolygonXZ() == null) {
+			return emptyList();
+		} else if (getOverlapPriority() == Integer.MAX_VALUE) {
+			// this has the highest possible priority, nothing will be subtracted
+			return getTerrainBoundariesXZ();
+		}
+
+		SimplePolygonShapeXZ outerPoly = getOutlinePolygonXZ().getOuter();
+		List<PolygonShapeXZ> subtractPolys = new ArrayList<>(getOutlinePolygonXZ().getHoles());
+
+		/* collect the outlines of overlapping objects */
+
+		for (MapOverlap<?, ?> overlap : getPrimaryMapElement().getOverlaps()) {
+			for (WorldObject otherWO : overlap.getOther(getPrimaryMapElement()).getRepresentations()) {
+
+				/* TODO: A world object might overlap even if the OSM element does not (e.g. a wide highway=* way).
+				 * Perhaps overlaps should be calculated on world objects, not elements. */
+
+				// check that both are on the ground, otherwise there is usually no conflict
+				// TODO: there can also be a conflict if both are attached to the same AttachmentSurface (e.g. the same roof)
+				boolean bothOnGround = this.getGroundState() == ON && otherWO.getGroundState() == ON;
+
+				if (bothOnGround && otherWO.getOverlapPriority() > this.getOverlapPriority()) {
+
+					if (overlap.type == MapOverlapType.CONTAIN
+							&& overlap.e1 == getPrimaryMapElement()) {
+						// completely within other element, no ground area left
+						return emptyList();
+					}
+
+					subtractPolys.addAll(otherWO.getTerrainBoundariesXZ());
+
+				}
+
+			}
+
+		}
+
+		/* create "leftover" polygons by subtracting the existing ones */
+
+		if (subtractPolys.isEmpty()) {
+			return getTerrainBoundariesXZ();
+		} else {
+			return new ArrayList<>(CAGUtil.subtractPolygons(outerPoly, subtractPolys));
+		}
+
 	}
 
 }

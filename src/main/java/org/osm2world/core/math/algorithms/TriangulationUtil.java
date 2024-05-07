@@ -39,15 +39,22 @@ public class TriangulationUtil {
 
 	}
 
-	/**
-	 * @see #triangulate(SimplePolygonShapeXZ, Collection)
-	 */
+	/** triangulates multiple polygons with holes and unconnected points */
 	public static final List<TriangleXZ> triangulate(
-			PolygonShapeXZ polygon,
+			Collection<PolygonShapeXZ> polygons,
 			Collection<VectorXZ> points) {
 
-		return triangulate(polygon.getOuter(), polygon.getHoles(), points);
+		return polygons.stream()
+				.map(p -> triangulate(p.getOuter(), p.getHoles(), points.stream().filter(p::contains).toList()))
+				.flatMap(List::stream)
+				.toList();
 
+	}
+
+	/** variant of {@link #triangulate(Collection, Collection)} with no unconnected points */
+	public static final List<TriangleXZ> triangulate(
+			Collection<PolygonShapeXZ> polygons) {
+		return triangulate(polygons, List.of());
 	}
 
 	/**

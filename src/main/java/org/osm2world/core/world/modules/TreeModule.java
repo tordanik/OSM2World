@@ -539,7 +539,8 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
 				for (WorldObject otherRep : overlap.getOther(area).getRepresentations()) {
-					if (otherRep.getGroundState() == GroundState.ON) {
+					if (otherRep.getGroundState() == GroundState.ON
+							&& otherRep.getOverlapPriority() >= 20) {
 						avoidedObjects.add(otherRep);
 					}
 				}

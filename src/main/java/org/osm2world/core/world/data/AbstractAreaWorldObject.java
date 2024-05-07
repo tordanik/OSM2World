@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -15,6 +16,7 @@ import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -31,23 +33,18 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 	protected final MapArea area;
 
-	private final PolygonWithHolesXZ outlinePolygonXZ;
+	private PolygonWithHolesXZ outlinePolygonXZ;
 
 	private final @Nullable AttachmentConnector attachmentConnector;
 
 	private EleConnectorGroup connectors;
 
+	/** cached result of {@link #getGroundFootprint()} */
+	private @Nullable Collection<PolygonShapeXZ> groundFootprint = null;
+
 	protected AbstractAreaWorldObject(MapArea area) {
 
 		this.area = area;
-
-		if (!area.getPolygon().getOuter().isClockwise()) {
-			outlinePolygonXZ = area.getPolygon();
-		} else {
-			outlinePolygonXZ = new PolygonWithHolesXZ(
-					area.getPolygon().getOuter().makeCounterclockwise(),
-					area.getPolygon().getHoles());
-		}
 
 		List<String> types = new ArrayList<>();
 
@@ -137,6 +134,10 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 	@Override
 	public PolygonWithHolesXZ getOutlinePolygonXZ() {
+		// cache the otherwise unchanged result
+		if (outlinePolygonXZ == null) {
+			this.outlinePolygonXZ = (PolygonWithHolesXZ) AreaWorldObject.super.getOutlinePolygonXZ();
+		}
 		return outlinePolygonXZ;
 	}
 
@@ -162,7 +163,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	 * decompose this area into counterclockwise triangles.
 	 */
 	protected List<TriangleXZ> getTriangulationXZ() {
-		return TriangulationUtil.triangulate(area.getPolygon());
+		return TriangulationUtil.triangulate(getGroundFootprint(), List.of());
 	}
 
 	/**
@@ -177,6 +178,15 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 		return TriangulationUtil.triangulationXZtoXYZ(getTriangulationXZ(), xzToXYZ);
 
+	}
+
+	@Override
+	public Collection<PolygonShapeXZ> getGroundFootprint() {
+		// cache the otherwise unchanged result
+		if (groundFootprint == null) {
+			groundFootprint = AreaWorldObject.super.getGroundFootprint();
+		}
+		return groundFootprint;
 	}
 
 	@Override

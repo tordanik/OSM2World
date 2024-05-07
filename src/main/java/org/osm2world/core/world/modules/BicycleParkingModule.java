@@ -8,6 +8,7 @@ import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
+import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
 import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
 import static org.osm2world.core.target.common.material.Materials.STEEL;
@@ -92,10 +93,10 @@ public class BicycleParkingModule extends AbstractModule {
 		protected abstract PolylineShapeXZ lineThroughStandCenters();
 
 		/**
-		 * the area of the bicycle parking facility (if any).
+		 * the footprint area of the bicycle parking facility (if any).
 		 * Used to avoid placing stands in holes of multipolygons and to draw the surface material below the stands.
 		 */
-		protected @Nullable PolygonShapeXZ area() {
+		protected @Nullable Collection<PolygonShapeXZ> area() {
 			return null;
 		}
 
@@ -119,8 +120,8 @@ public class BicycleParkingModule extends AbstractModule {
 
 				/* create connectors for the area */
 
-				if (area() != null) {
-					eleConnectors.addConnectorsForTriangulation(area().getTriangulation(), null, getGroundState());
+				if (area() != null && !area().isEmpty()) {
+					eleConnectors.addConnectorsForTriangulation(triangulate(area()), null, getGroundState());
 				}
 
 				/* create a connector for each stand */
@@ -137,7 +138,7 @@ public class BicycleParkingModule extends AbstractModule {
 						: equallyDistributePointsAlong(distanceBetweenStands, true,listXYZ(centerline.vertices(), 0));
 
 				for (VectorXYZ standLocation : standLocations) {
-					if (area() == null || area().contains(standLocation.xz())) {
+					if (area() == null || area().stream().anyMatch(it -> it.contains(standLocation.xz()))) {
 						EleConnector connector = new EleConnector(standLocation.xz(), null, getGroundState());
 						standEleConnectors.add(connector);
 						eleConnectors.add(connector);
@@ -153,13 +154,13 @@ public class BicycleParkingModule extends AbstractModule {
 		public List<Mesh> buildMeshes() {
 
 			@Nullable Material surfaceMaterial = getSurfaceMaterial();
-			@Nullable PolygonShapeXZ area = area();
+			@Nullable Collection<PolygonShapeXZ> area = area();
 
-			if (area != null && surfaceMaterial != null) {
+			if (area != null && !area.isEmpty() && surfaceMaterial != null) {
 
 				/* render surface area */
 				var builder = new TriangleGeometry.Builder(texCoordFunctions(surfaceMaterial, GLOBAL_X_Z), null, SMOOTH);
-				builder.addTriangles(triangulationXZtoXYZ(area.getTriangulation(), eleConnectors::getPosXYZ));
+				builder.addTriangles(triangulationXZtoXYZ(triangulate(area), eleConnectors::getPosXYZ));
 				return List.of(new Mesh(builder.build(), surfaceMaterial));
 
 			} else {
@@ -205,8 +206,8 @@ public class BicycleParkingModule extends AbstractModule {
 
 		@Override
 		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
-			if (area() != null && getSurfaceMaterial() != null) {
-				return singletonList(area());
+			if (getSurfaceMaterial() != null) {
+				return TerrainBoundaryWorldObject.super.getTerrainBoundariesXZ();
 			} else {
 				return emptyList();
 			}
@@ -216,6 +217,10 @@ public class BicycleParkingModule extends AbstractModule {
 			return Materials.getSurfaceMaterial(getPrimaryMapElement().getTags().getValue("surface"));
 		}
 
+		@Override
+		public int getOverlapPriority() {
+			return 30;
+		}
 	}
 
 	public static final class BicycleStandsArea extends BicycleStands implements AreaWorldObject {
@@ -252,8 +257,8 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		protected PolygonShapeXZ area() {
-			return area.getPolygon();
+		protected Collection<PolygonShapeXZ> area() {
+			return getGroundFootprint();
 		}
 
 	}

@@ -1552,6 +1552,11 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
+		public int getOverlapPriority() {
+			return 50;
+		}
+
+		@Override
 		public GroundState getGroundState() {
 			if (BridgeModule.isBridge(area.getTags())) {
 				return GroundState.ABOVE;
