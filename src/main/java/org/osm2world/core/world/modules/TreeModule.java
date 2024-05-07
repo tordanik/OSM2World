@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
@@ -132,7 +133,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	private double defaultTreeHeightForest = 20;
 
 	@Override
-	public void setConfiguration(Configuration config) {
+	public void setConfiguration(@Nonnull Configuration config) {
 		super.setConfiguration(config);
 		useBillboards = config.getBoolean("useBillboards", false);
 		defaultTreeHeight = config.getDouble("defaultTreeHeight", 10);

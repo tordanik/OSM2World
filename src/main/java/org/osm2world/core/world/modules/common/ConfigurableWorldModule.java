@@ -1,6 +1,9 @@
 package org.osm2world.core.world.modules.common;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -9,10 +12,10 @@ import org.osm2world.core.world.creation.WorldModule;
  */
 public abstract class ConfigurableWorldModule implements WorldModule {
 
-	protected Configuration config;
+	protected @Nonnull Configuration config = new PropertiesConfiguration();
 
 	@Override
-	public void setConfiguration(Configuration config) {
+	public void setConfiguration(@Nonnull Configuration config) {
 		this.config = config;
 	}
 
