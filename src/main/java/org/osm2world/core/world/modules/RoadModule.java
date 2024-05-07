@@ -53,6 +53,9 @@ import org.osm2world.core.world.network.JunctionNodeWorldObject;
 import org.osm2world.core.world.network.NetworkAreaWorldObject;
 import org.osm2world.core.world.network.VisibleConnectorNodeWorldObject;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
+
 /**
  * adds roads to the world
  */
@@ -182,7 +185,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * If the node has an explicit surface tag, this is evaluated.
 	 * Otherwise, the result depends on the surface values of adjacent roads.
 	 */
-	private static Material getSurfaceForNode(MapNode node) {
+	static Material getSurfaceForNode(MapNode node) {
 
 		Material surface = getSurfaceMaterial(
 				node.getTags().getValue("surface"), null);
@@ -191,13 +194,29 @@ public class RoadModule extends ConfigurableWorldModule {
 			return surface;
 		} else {
 
-			/* choose the surface of any adjacent road */
+			/* Pick the most common surface among adjacent roads (low priority for service roads, lowest for paths) */
+
+			TObjectIntMap<Material> scoreMap = new TObjectIntHashMap<>();
 
 			for (Road road : getConnectedRoads(node, false)) {
-				return road.getSurface();
+				int score;
+				if (isPath(road.tags)) {
+					score = 1;
+				} else if (road.tags.contains("highway", "service")) {
+					score = 10;
+				} else {
+					score = 100;
+				}
+				scoreMap.adjustOrPutValue(road.getSurface(), score, score);
 			}
 
-			throw new IllegalStateException("node " + node + " has no connected roads");
+			Optional<Material> result = scoreMap.keySet().stream().max(Comparator.comparingInt(it -> scoreMap.get(it)));
+
+			if (result.isPresent()) {
+				return result.get();
+			} else {
+				throw new IllegalStateException("Cannot determine surface for node " + node);
+			}
 
 		}
 
