@@ -68,6 +68,11 @@ public class ParkingModule extends AbstractModule {
 		}
 
 		@Override
+		public int getOverlapPriority() {
+			return 30;
+		}
+
+		@Override
 		public void renderTo(Target target) {
 
 			String surface = area.getTags().getValue("surface");
