@@ -122,7 +122,7 @@ public class ConversionFacade {
 
 	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = ZeroInterpolator::new;
 
-	private Factory<? extends EleCalculator> eleCalculatorFactory = NoOpEleCalculator::new;
+	private Factory<? extends EleCalculator> eleCalculatorFactory = BridgeTunnelEleCalculator::new;
 
 	/**
 	 * sets the factory that will make {@link MapProjection}

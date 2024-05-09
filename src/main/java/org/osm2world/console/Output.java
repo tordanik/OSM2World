@@ -125,11 +125,14 @@ public final class Output {
 			cf.setTerrainEleInterpolatorFactory(NaturalNeighborInterpolator::new);
 		}
 
-		switch (config.getString("eleCalculator")) {
-			case "NoOpEleCalculator" -> cf.setEleCalculatorFactory(NoOpEleCalculator::new);
-			case "EleTagEleCalculator" -> cf.setEleCalculatorFactory(EleTagEleCalculator::new);
-			case "BridgeTunnelEleCalculator" -> cf.setEleCalculatorFactory(BridgeTunnelEleCalculator::new);
-			case "ConstraintEleCalculator" -> cf.setEleCalculatorFactory(() -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer()));
+		String eleCalculatorName = config.getString("eleCalculator");
+		if (eleCalculatorName != null) {
+			switch (eleCalculatorName) {
+				case "NoOpEleCalculator" -> cf.setEleCalculatorFactory(NoOpEleCalculator::new);
+				case "EleTagEleCalculator" -> cf.setEleCalculatorFactory(EleTagEleCalculator::new);
+				case "BridgeTunnelEleCalculator" -> cf.setEleCalculatorFactory(BridgeTunnelEleCalculator::new);
+				case "ConstraintEleCalculator" -> cf.setEleCalculatorFactory(() -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer()));
+			}
 		}
 
 		Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
