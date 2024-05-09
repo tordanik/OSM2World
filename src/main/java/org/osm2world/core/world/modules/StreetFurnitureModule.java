@@ -1500,19 +1500,14 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* determine material */
 
-			Material material = null;
-
-			//TODO parse color
-
-			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("material"));
+			Color color = parseColor(node.getTags().getValue("colour"), CSS_COLORS);
+			if (color == null) {
+				color = new Color(0.3f, 0.5f, 0.4f);
 			}
 
-			if (material == null) {
-				material = Materials.getSurfaceMaterial(
-						node.getTags().getValue("surface"), Materials.GRITBIN_DEFAULT);
-			}
+			Material material = Materials.getSurfaceMaterial(node.getTags().getValue("material"),
+					Materials.getSurfaceMaterial(node.getTags().getValue("surface"), PLASTIC))
+					.withColor(color);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 
@@ -1524,13 +1519,13 @@ public class StreetFurnitureModule extends AbstractModule {
 					faceVector, height, width, depth);
 
 			/* draw lid */
-			List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-			vs.add(getBase().addY(height + 0.2));
-			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
-			vs.add(getBase().add(boardVector.mult(-width / 2)).add(faceVector.mult(depth / 2)).addY(height));
-			vs.add(getBase().add(boardVector.mult(-width / 2)).add(faceVector.mult(-depth / 2)).addY(height));
-			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(-depth / 2)).addY(height));
-			vs.add(getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
+			List<VectorXYZ> vs = List.of(
+					getBase().addY(height + 0.2),
+					getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height),
+					getBase().add(boardVector.mult(-width / 2)).add(faceVector.mult(depth / 2)).addY(height),
+					getBase().add(boardVector.mult(-width / 2)).add(faceVector.mult(-depth / 2)).addY(height),
+					getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(-depth / 2)).addY(height),
+					getBase().add(boardVector.mult(width / 2)).add(faceVector.mult(depth / 2)).addY(height));
 
 			Material lidMaterial = material.withColor(material.getColor().brighter());
 			target.drawTriangleFan(lidMaterial, vs, texCoordLists(vs, lidMaterial, SLOPED_TRIANGLES));

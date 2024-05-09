@@ -3,17 +3,11 @@ package org.osm2world.core.target.common.material;
 import static java.awt.Color.*;
 import static java.util.Collections.emptyList;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -217,9 +211,6 @@ public final class Materials {
 
 	public static final ConfMaterial BUS_STOP_SIGN =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.98f, 0.90f, 0.05f));
-
-	public static final ConfMaterial GRITBIN_DEFAULT =
-			new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.5f, 0.4f));
 
 	public static final ConfMaterial POSTBOX_DEUTSCHEPOST =
 			new ConfMaterial(Interpolation.FLAT, new Color(1f, 0.8f, 0f));
