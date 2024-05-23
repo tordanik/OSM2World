@@ -659,6 +659,8 @@ public final class Materials {
 		Double widthPerEntity = config.getDouble(keyPrefix + "_widthPerEntity", null);
 		Double heightPerEntity = config.getDouble(keyPrefix + "_heightPerEntity", null);
 
+		double padding = config.getDouble(keyPrefix + "_padding", 0);
+
 		if (width <= 0) {
 			System.err.println("Error: illegal width for texture " + keyPrefix);
 			width = 1;
@@ -669,7 +671,7 @@ public final class Materials {
 			height = 1;
 		}
 
-		return new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity);
+		return new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity, padding);
 
 	}
 

@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.texcoord;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -118,6 +119,22 @@ public final class TexCoordUtil {
 	public static final Function<TextureDataDimensions, TexCoordFunction> mirroredHorizontally(
 			Function<TextureDataDimensions, ? extends TexCoordFunction> generator) {
 		return (TextureDataDimensions textureDimensions) -> mirroredHorizontally(generator.apply(textureDimensions));
+	}
+
+	/**
+	 * modifies a calculated texture coordinate to account for {@link TextureDataDimensions#padding()}.
+	 * This is helpful when implementing {@link TexCoordFunction}s, not when using them.
+	 */
+	static VectorXZ applyPadding(VectorXZ texCoord, TextureDataDimensions dimensions) {
+		double padding = dimensions.padding();
+		if (padding == 0) {
+			return texCoord;
+		} else {
+			return new VectorXZ(
+					padding + texCoord.x * (1 - 2 * padding),
+					padding + texCoord.z * (1 - 2 * padding)
+			);
+		}
 	}
 
 }
