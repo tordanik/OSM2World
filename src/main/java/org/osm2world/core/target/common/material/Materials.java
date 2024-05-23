@@ -544,22 +544,15 @@ public final class Materials {
 	private static @Nullable TextureData createTextureData(Configuration config, String keyPrefix,
 			@Nullable File defaultFile) {
 
-		Double widthPerEntity = config.getDouble(keyPrefix + "_widthPerEntity", null);
-		Double heightPerEntity = config.getDouble(keyPrefix + "_heightPerEntity", null);
-
-		String widthKey = keyPrefix + "_width";
-		String heightKey = keyPrefix + "_height";
-		String wrapKey = keyPrefix + "_wrap";
-		String coordFunctionKey = keyPrefix + "_coord_function";
+		TextureDataDimensions dimensions = createTextureDataDimensions(config, keyPrefix);
+		Wrap wrap = getWrap(config.getString(keyPrefix + "_wrap"));
+		@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
+				getCoordFunction(config.getString(keyPrefix + "_coord_function"));
 
 		//get texture layer type
-		String typeKey = keyPrefix + "_type";
-		String type = config.getString(typeKey, "image");
+		String type = config.getString(keyPrefix + "_type", "image");
 
 		if ("text".equals(type)) {
-
-			double defaultWidth = 0.5;
-			double defaultHeight = 0.5;
 
 			String fontKey = keyPrefix + "_font";
 			String textKey = keyPrefix + "_text";
@@ -592,12 +585,6 @@ public final class Materials {
 					font = new Font("Dialog", Font.PLAIN, 100);
 				}
 			}
-
-			double width = config.getDouble(widthKey, defaultWidth);
-			double height = config.getDouble(heightKey, defaultHeight);
-			Wrap wrap = getWrap(config.getString(wrapKey));
-			@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
-					getCoordFunction(config.getString(coordFunctionKey));
 
 			//get top/left offset configuration
 			String topOffset = config.getString(topOffsetKey);
@@ -632,7 +619,7 @@ public final class Materials {
 			//get relative font size
 			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
 
-			return new TextTexture(text, font, new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity),
+			return new TextTexture(text, font, dimensions,
 					Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
 					relativeFontSize, wrap, coordFunction);
 
@@ -652,28 +639,37 @@ public final class Materials {
 			if (file == null) { file = defaultFile; }
 			if (file == null) { return null; }
 
-			double width = config.getDouble(widthKey, 1);
-			double height = config.getDouble(heightKey, 1);
-			Wrap wrap = getWrap(config.getString(wrapKey));
-			@Nullable Function<TextureDataDimensions, TexCoordFunction> coordFunction =
-					getCoordFunction(config.getString(coordFunctionKey));
-
-			if (width <= 0) {
-				System.err.println("Error: illegal width for texture " + keyPrefix);
-				width = 1;
-			}
-
-			if (height <= 0) {
-				System.err.println("Error: illegal height for texture " + keyPrefix);
-				height = 1;
-			}
-
-			return ImageFileTexture.create(file, new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity), wrap, coordFunction);
+			return ImageFileTexture.create(file, dimensions, wrap, coordFunction);
 
 		} else {
 			System.err.println("unknown type value: " + type);
 			return null;
 		}
+
+	}
+
+	/**
+	 * @return  valid {@link TextureDataDimensions} extracted from the config file, possibly using default values
+	 */
+	private static TextureDataDimensions createTextureDataDimensions(Configuration config, String keyPrefix) {
+
+		double width = config.getDouble(keyPrefix + "_width", 1.0);
+		double height = config.getDouble(keyPrefix + "_height", 1.0);
+
+		Double widthPerEntity = config.getDouble(keyPrefix + "_widthPerEntity", null);
+		Double heightPerEntity = config.getDouble(keyPrefix + "_heightPerEntity", null);
+
+		if (width <= 0) {
+			System.err.println("Error: illegal width for texture " + keyPrefix);
+			width = 1;
+		}
+
+		if (height <= 0) {
+			System.err.println("Error: illegal height for texture " + keyPrefix);
+			height = 1;
+		}
+
+		return new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity);
 
 	}
 
