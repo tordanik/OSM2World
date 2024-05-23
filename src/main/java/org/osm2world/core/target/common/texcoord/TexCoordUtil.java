@@ -125,7 +125,7 @@ public final class TexCoordUtil {
 	 * modifies a calculated texture coordinate to account for {@link TextureDataDimensions#padding()}.
 	 * This is helpful when implementing {@link TexCoordFunction}s, not when using them.
 	 */
-	static VectorXZ applyPadding(VectorXZ texCoord, TextureDataDimensions dimensions) {
+	public static VectorXZ applyPadding(VectorXZ texCoord, TextureDataDimensions dimensions) {
 		double padding = dimensions.padding();
 		if (padding == 0) {
 			return texCoord;
