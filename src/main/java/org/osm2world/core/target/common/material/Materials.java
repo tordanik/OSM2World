@@ -632,7 +632,7 @@ public final class Materials {
 			//get relative font size
 			double relativeFontSize = config.getDouble(relativeFontSizeKey, 60);
 
-			return new TextTexture(text, font, width, height, widthPerEntity, heightPerEntity,
+			return new TextTexture(text, font, new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity),
 					Double.parseDouble(topOffset), Double.parseDouble(leftOffset), color,
 					relativeFontSize, wrap, coordFunction);
 
@@ -668,7 +668,7 @@ public final class Materials {
 				height = 1;
 			}
 
-			return ImageFileTexture.create(file, width, height, widthPerEntity, heightPerEntity, wrap, coordFunction);
+			return ImageFileTexture.create(file, new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity), wrap, coordFunction);
 
 		} else {
 			System.err.println("unknown type value: " + type);

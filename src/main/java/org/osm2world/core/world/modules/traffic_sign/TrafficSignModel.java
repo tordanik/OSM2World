@@ -92,7 +92,7 @@ public class TrafficSignModel implements Model {
 
 	public double getSignHeight() {
 		if (material.getNumTextureLayers() > 0) {
-			return material.getTextureLayers().get(0).baseColorTexture.height;
+			return material.getTextureLayers().get(0).baseColorTexture.dimensions().height();
 		} else {
 			return 0.6;
 		}
@@ -100,7 +100,7 @@ public class TrafficSignModel implements Model {
 
 	public double getSignWidth() {
 		if (material.getNumTextureLayers() > 0) {
-			return material.getTextureLayers().get(0).baseColorTexture.width;
+			return material.getTextureLayers().get(0).baseColorTexture.dimensions().width();
 		} else {
 			return 0.6;
 		}

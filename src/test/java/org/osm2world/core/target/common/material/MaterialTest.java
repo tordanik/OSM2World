@@ -3,10 +3,11 @@ package org.osm2world.core.target.common.material;
 import static java.awt.Color.BLACK;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +80,7 @@ public class MaterialTest {
 	private static Material createTextTestMaterial(String text) {
 		return new ImmutableMaterial(Interpolation.FLAT, Color.WHITE, Transparency.TRUE, asList(new TextureLayer(
 				new TextTexture(text,
-				null, 1.0, 1.0, null, null, 50.0, 50.0, BLACK, 50.0,
+				null, new TextureDataDimensions(1.0, 1.0), 50.0, 50.0, BLACK, 50.0,
 				Wrap.CLAMP, GLOBAL_X_Z), null, null, null, false)));
 	}
 

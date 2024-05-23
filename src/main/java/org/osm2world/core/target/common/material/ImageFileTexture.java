@@ -17,20 +17,18 @@ public abstract class ImageFileTexture extends TextureData {
 	 */
 	protected final File file;
 
-	protected ImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity,
-			@Nullable Double heightPerEntity, Wrap wrap,
+	protected ImageFileTexture(File file, TextureDataDimensions dimensions, Wrap wrap,
 			Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
-		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+		super(dimensions, wrap, texCoordFunction);
 		this.file = file;
 	}
 
-	public static ImageFileTexture create(File file, double width, double height, @Nullable Double widthPerEntity,
-			@Nullable Double heightPerEntity, Wrap wrap,
+	public static ImageFileTexture create(File file, TextureDataDimensions dimensions, Wrap wrap,
 			@Nullable Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 		if (file.getName().endsWith(".svg")) {
-			return new SvgImageFileTexture(file, width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+			return new SvgImageFileTexture(file, dimensions, wrap, texCoordFunction);
 		} else {
-			return new RasterImageFileTexture(file, width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+			return new RasterImageFileTexture(file, dimensions, wrap, texCoordFunction);
 		}
 	}
 

@@ -502,8 +502,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			 * instead of an explicit heightWidthRatio parameter. Only works for textured materials.
 			 */
 			public TexturedFlag(Material material) {
-				this(material.getTextureLayers().get(0).baseColorTexture.height
-						/ material.getTextureLayers().get(0).baseColorTexture.width, material);
+				this(material.getTextureLayers().get(0).baseColorTexture.dimensions().height()
+						/ material.getTextureLayers().get(0).baseColorTexture.dimensions().width(), material);
 			}
 
 		}

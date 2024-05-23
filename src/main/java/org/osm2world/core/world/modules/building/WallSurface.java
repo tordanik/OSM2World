@@ -343,23 +343,23 @@ public class WallSurface {
 
 		for (int i = 0; i < vs.size(); i++) {
 
-			double height = textureDimensions.height;
-			double width = textureDimensions.width;
+			double height = textureDimensions.height();
+			double width = textureDimensions.width();
 
 			if (fixedHeight != null) {
 				height = fixedHeight;
-				if (textureDimensions.heightPerEntity != null) {
-					height /= (textureDimensions.heightPerEntity / textureDimensions.height);
+				if (textureDimensions.heightPerEntity() != null) {
+					height /= (textureDimensions.heightPerEntity() / textureDimensions.height());
 				}
-			} else if (textureDimensions.heightPerEntity != null) {
-				long entities = max(1, round(getHeight() / textureDimensions.heightPerEntity));
-				double textureRepeats = entities / (textureDimensions.height / textureDimensions.heightPerEntity);
+			} else if (textureDimensions.heightPerEntity() != null) {
+				long entities = max(1, round(getHeight() / textureDimensions.heightPerEntity()));
+				double textureRepeats = entities / (textureDimensions.height() / textureDimensions.heightPerEntity());
 				height = getHeight() / textureRepeats;
 			}
 
-			if (textureDimensions.widthPerEntity != null) {
-				long entities = max(1, round(getLength() / textureDimensions.widthPerEntity));
-				double textureRepeats = entities / (textureDimensions.width / textureDimensions.widthPerEntity);
+			if (textureDimensions.widthPerEntity() != null) {
+				long entities = max(1, round(getLength() / textureDimensions.widthPerEntity()));
+				double textureRepeats = entities / (textureDimensions.width() / textureDimensions.widthPerEntity());
 				width = getLength() / textureRepeats;
 			}
 

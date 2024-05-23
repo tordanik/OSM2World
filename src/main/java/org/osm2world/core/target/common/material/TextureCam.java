@@ -2,12 +2,13 @@ package org.osm2world.core.target.common.material;
 
 import static java.lang.Double.isFinite;
 import static java.lang.Math.PI;
-import static java.util.Arrays.*;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.nCopies;
 import static org.osm2world.core.math.GeometryUtil.interpolateOnTriangle;
 import static org.osm2world.core.math.VectorXYZ.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -69,8 +70,7 @@ public class TextureCam {
 	}
 
 	public static final TextureLayer renderTextures(List<Mesh> meshes, ViewDirection viewDirection, String name,
-			double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap,
-			@Nullable VectorXYZ center, double displacementScale) {
+			TextureDataDimensions dimensions, Wrap wrap, @Nullable VectorXYZ center, double displacementScale) {
 
 		List<TriangleWithAttributes> triangles = new ArrayList<>();
 
@@ -154,8 +154,8 @@ public class TextureCam {
 			for (int x = 0; x < res.width; x++) {
 
 				VectorXZ point = new VectorXZ(
-						width * ((x / (double)res.width) - 0.5),
-						height * ((y / (double)res.height) - 0.5) * -1);
+						dimensions.width() * ((x / (double)res.width) - 0.5),
+						dimensions.height() * ((y / (double)res.height) - 0.5) * -1);
 
 				intersectedTriangles.clear();
 
@@ -259,13 +259,13 @@ public class TextureCam {
 
 		return new TextureLayer(
 				new RenderedTexture(colorImage, name + " color",
-						width, height, widthPerEntity, heightPerEntity, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
+						dimensions, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
 				new RenderedTexture(normalImage, name + " normal",
-						width, height, widthPerEntity, heightPerEntity, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
+						dimensions, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
 				new RenderedTexture(ormImage, name + " orm",
-						width, height, widthPerEntity, heightPerEntity, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
+						dimensions, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
 				displacementImage == null ? null : new RenderedTexture(displacementImage, name + " displacement",
-						width, height, widthPerEntity, heightPerEntity, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
+						dimensions, wrap, NamedTexCoordFunction.GLOBAL_X_Z),
 				false);
 
 	}
@@ -325,9 +325,9 @@ public class TextureCam {
 		private final BufferedImage image;
 		private final String name;
 
-		public RenderedTexture(BufferedImage image, String name, double width, double height, Double widthPerEntity,
-				Double heightPerEntity, Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
-			super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+		public RenderedTexture(BufferedImage image, String name, TextureDataDimensions dimensions, Wrap wrap,
+							   Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
+			super(dimensions, wrap, texCoordFunction);
 			this.image = image;
 			this.name = name;
 		}

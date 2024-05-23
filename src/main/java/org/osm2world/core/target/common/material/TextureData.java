@@ -61,20 +61,7 @@ public abstract class TextureData {
 
 	}
 
-	/** width of a single tile of the texture in meters, greater than 0 */
-	public final double width;
-
-	/** height of a single tile of the texture in meters, greater than 0 */
-	public final double height;
-
-	/**
-	 * for textures that contain distinct, repeating objects (e.g. tiles), this describes the width of one such object.
-	 * Some calculations for texture coords will use this to fit an integer number of such objects onto a surface.
-	 */
-	public final @Nullable Double widthPerEntity;
-
-	/** see {@link #widthPerEntity} */
-	public final @Nullable Double heightPerEntity;
+	public final TextureDataDimensions dimensions;
 
 	/** wrap style of the texture */
 	public final Wrap wrap;
@@ -91,26 +78,15 @@ public abstract class TextureData {
 	/** cached result of {@link #getBufferedImage(Resolution)} */
 	private final Map<Resolution, BufferedImage> bufferedImageByResolution = new HashMap<>();
 
-	protected TextureData(double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+	protected TextureData(TextureDataDimensions dimensions,
 			Wrap wrap, @Nullable  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
-
-		if (width <= 0 || height <= 0) {
-			throw new IllegalArgumentException("Illegal texture dimensions. Width: " + width + ", height: " + height);
-		} else if (widthPerEntity != null && widthPerEntity <= 0 || heightPerEntity != null && heightPerEntity <= 0) {
-			throw new IllegalArgumentException("Illegal per-entity texture dimensions.");
-		}
-
-		this.width = width;
-		this.height = height;
-		this.widthPerEntity = widthPerEntity;
-		this.heightPerEntity = heightPerEntity;
+		this.dimensions = dimensions;
 		this.wrap = wrap;
 		this.coordFunction = texCoordFunction == null ? null : texCoordFunction.apply(this.dimensions());
-
 	}
 
 	public TextureDataDimensions dimensions() {
-		return new TextureDataDimensions(width, height, widthPerEntity, heightPerEntity);
+		return dimensions;
 	}
 
 	/**

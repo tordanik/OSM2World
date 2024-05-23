@@ -2352,10 +2352,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 				double s, t;
 
-				s = accumulatedLength / textureDimensions.width;
+				s = accumulatedLength / textureDimensions.width();
 
-				if (width > textureDimensions.height) {
-					double padding = ((width / textureDimensions.height) - 1)  / 2;
+				if (width > textureDimensions.height()) {
+					double padding = ((width / textureDimensions.height()) - 1)  / 2;
 					t = higher ? 0 - padding : 1 + padding;
 				} else {
 					t = higher ? 0 : 1;

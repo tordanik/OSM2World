@@ -394,8 +394,8 @@ public class FrontendPbfTarget extends MeshTarget {
 
 		layerBuilder.setColorable(textureLayer.colorable);
 
-		layerBuilder.setTextureHeight((int)round(textureLayer.baseColorTexture.height * 1000));
-		layerBuilder.setTextureWidth((int)round(textureLayer.baseColorTexture.width * 1000));
+		layerBuilder.setTextureHeight((int)round(textureLayer.baseColorTexture.dimensions().height() * 1000));
+		layerBuilder.setTextureWidth((int)round(textureLayer.baseColorTexture.dimensions().width() * 1000));
 
 		if (textureLayer.baseColorTexture.coordFunction instanceof GlobalXZTexCoordFunction) {
 			//TODO: GLOBAL_X_Z could also be the module's default rather than a config setting

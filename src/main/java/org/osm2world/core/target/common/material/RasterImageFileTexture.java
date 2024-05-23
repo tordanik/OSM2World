@@ -8,17 +8,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
 public class RasterImageFileTexture extends ImageFileTexture {
 
-	public RasterImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity,
-								  @Nullable Double heightPerEntity, Wrap wrap,
+	public RasterImageFileTexture(File file, TextureDataDimensions dimensions, Wrap wrap,
 								  Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
-		super(file, width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+		super(file, dimensions, wrap, texCoordFunction);
 	}
 
 	@Override

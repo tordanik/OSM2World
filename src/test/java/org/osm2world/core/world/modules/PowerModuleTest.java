@@ -77,7 +77,7 @@ public class PowerModuleTest {
 	@Test
 	public void testPanelTexCoords() {
 
-		TextureDataDimensions d = new TextureDataDimensions(1, 1, null, null);
+		TextureDataDimensions d = new TextureDataDimensions(1, 1);
 
 		PanelTexCoordFunction t1 = new PanelTexCoordFunction(new VectorXZ(100, 100), Angle.ofDegrees(0), 5, 10, 1, 1, d);
 

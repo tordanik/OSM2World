@@ -1,9 +1,10 @@
 package org.osm2world.core.target.common.material;
 
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.sqrt;
 import static java.util.stream.Collectors.toList;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class TextureAtlas extends RuntimeTexture {
 
 	public TextureAtlas(List<TextureData> textures) {
 
-		super(1, 1, null, null, Wrap.CLAMP, null);
+		super(new TextureDataDimensions(1, 1), Wrap.CLAMP, null);
 
 		if (textures.isEmpty()) {
 			throw new IllegalArgumentException("empty texture atlas");

@@ -1,11 +1,11 @@
 package org.osm2world.core.target.common.texcoord;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * like {@link GlobalXZTexCoordFunction}, but uses y instead of x dimension.
@@ -26,8 +26,8 @@ public class GlobalZYTexCoordFunction implements TexCoordFunction {
 
 		for (VectorXYZ v : vs) {
 			result.add(new VectorXZ(
-					v.z / textureDimensions.width,
-					v.y / textureDimensions.height));
+					v.z / textureDimensions.width(),
+					v.y / textureDimensions.height()));
 		}
 
 		return result;

@@ -43,7 +43,7 @@ public class StripWallTexCoordFunction implements TexCoordFunction {
 
 		double totalLength = 0;
 
-		if (fitWidth || textureDimensions.widthPerEntity != null) {
+		if (fitWidth || textureDimensions.widthPerEntity() != null) {
 			for (int i = 0; i+1 < vs.size(); i++) {
 				totalLength += vs.get(i).distanceToXZ(vs.get(i+1));
 			}
@@ -55,23 +55,23 @@ public class StripWallTexCoordFunction implements TexCoordFunction {
 
 		if (fitWidth) {
 			width = totalLength;
-		} else if (textureDimensions.widthPerEntity != null) {
-			long entities = Long.max(1, round(totalLength / textureDimensions.widthPerEntity));
-			double textureRepeats = entities / (textureDimensions.width / textureDimensions.widthPerEntity);
+		} else if (textureDimensions.widthPerEntity() != null) {
+			long entities = Long.max(1, round(totalLength / textureDimensions.widthPerEntity()));
+			double textureRepeats = entities / (textureDimensions.width() / textureDimensions.widthPerEntity());
 			width = totalLength / textureRepeats;
 		} else {
-			width = textureDimensions.width;
+			width = textureDimensions.width();
 		}
 
-		if (textureDimensions.heightPerEntity != null) {
+		if (textureDimensions.heightPerEntity() != null) {
 			double totalHeight = IntStream.range(0, vs.size() / 2)
 					.mapToDouble(i -> vs.get(2 * i).distanceTo(vs.get(2 * i + 1)))
 					.max().getAsDouble();
-			long entities = Long.max(1, round(totalHeight / textureDimensions.heightPerEntity));
-			double textureRepeats = entities / (textureDimensions.height / textureDimensions.heightPerEntity);
+			long entities = Long.max(1, round(totalHeight / textureDimensions.heightPerEntity()));
+			double textureRepeats = entities / (textureDimensions.height() / textureDimensions.heightPerEntity());
 			height = totalHeight / textureRepeats;
 		} else {
-			height = textureDimensions.height;
+			height = textureDimensions.height();
 		}
 
 		/* calculate texture coordinate list */

@@ -1,15 +1,10 @@
 package org.osm2world.core.target.common.material;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
@@ -30,12 +25,11 @@ public class TextTexture extends RuntimeTexture {
 	 */
 	public final double relativeFontSize;
 
-	public TextTexture(String text, Font font, double width, double height,
-			@Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+	public TextTexture(String text, Font font, TextureDataDimensions dimensions,
 			double topOffset, double leftOffset, Color textColor, double relativeFontSize,
 			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
 
-		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+		super(dimensions, wrap, texCoordFunction);
 
 		this.text = text;
 		this.font = font;
@@ -67,7 +61,7 @@ public class TextTexture extends RuntimeTexture {
 			//image with actual size and text
 			int imageHeight = (int) (stringHeight/(relativeFontSize/100));
 
-			double signAspectRatio = this.width/this.height;
+			double signAspectRatio = this.dimensions.width()/this.dimensions.height();
 			int imageWidth = (int) (imageHeight*signAspectRatio);
 
 			image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);

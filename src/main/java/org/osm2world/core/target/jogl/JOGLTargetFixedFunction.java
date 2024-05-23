@@ -2,17 +2,13 @@ package org.osm2world.core.target.jogl;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2.*;
-import static com.jogamp.opengl.GL2ES1.*;
-import static com.jogamp.opengl.GL2ES2.*;
 import static com.jogamp.opengl.GL2ES3.GL_QUADS;
-import static com.jogamp.opengl.GL2GL3.*;
-import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
-import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.*;
 import static java.awt.Color.WHITE;
+import static org.osm2world.core.target.common.material.Material.Transparency.BINARY;
+import static org.osm2world.core.target.common.material.Material.Transparency.TRUE;
 import static org.osm2world.core.target.common.material.Material.multiplyColor;
-import static org.osm2world.core.target.common.material.Material.Transparency.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 import java.util.List;
 
@@ -28,6 +24,7 @@ import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
@@ -547,7 +544,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		gl.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 		Texture backgroundTexture = textureManager.getTextureForTextureData(ImageFileTexture.create(
-				backgroundImage, 1, 1, null, null, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
+				backgroundImage, new TextureDataDimensions(1, 1), Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
 
 		backgroundTexture.enable(gl);
 		backgroundTexture.bind(gl);

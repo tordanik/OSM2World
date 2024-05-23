@@ -4,7 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,11 +13,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
@@ -150,11 +147,11 @@ abstract public class SpindleRoof extends Roof {
 	private List<VectorXZ> spindleTexCoordListForRing(int shapeVertexCount, double polygonLength,
 			double accumulatedTexHeight, TextureData textureData) {
 
-		double textureRepeats = max(1, round(polygonLength / textureData.width));
+		double textureRepeats = max(1, round(polygonLength / textureData.dimensions().width()));
 
 		double texWidthSteps = textureRepeats / (shapeVertexCount - 1);
 
-		double texZ = accumulatedTexHeight / textureData.height;
+		double texZ = accumulatedTexHeight / textureData.dimensions.height();
 
 		VectorXZ[] texCoords = new VectorXZ[shapeVertexCount];
 

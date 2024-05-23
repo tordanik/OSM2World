@@ -1,9 +1,9 @@
 package org.osm2world.core.target.common.material;
 
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.max;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -31,8 +31,7 @@ public class CompositeTexture extends RuntimeTexture {
 	private final TextureData textureB;
 
 	public CompositeTexture(CompositeMode mode, boolean rescale, TextureData textureA, TextureData textureB) {
-		super(textureA.width, textureA.height, textureA.widthPerEntity, textureA.heightPerEntity,
-				textureA.wrap, t -> textureA.coordFunction);
+		super(textureA.dimensions(), textureA.wrap, t -> textureA.coordFunction);
 		this.mode = mode;
 		this.rescale = rescale;
 		this.textureA = textureA;

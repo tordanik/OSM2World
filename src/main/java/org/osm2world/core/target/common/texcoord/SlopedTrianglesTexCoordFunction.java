@@ -70,8 +70,8 @@ public class SlopedTrianglesTexCoordFunction implements TexCoordFunction {
 			for (VectorXYZ v : triangle.verticesNoDup()) {
 				VectorXZ baseTexCoord = v.rotateY(-downAngle).xz();
 				result.add(new VectorXZ(
-						-baseTexCoord.x / textureDimensions.width,
-						-baseTexCoord.z / textureDimensions.height));
+						-baseTexCoord.x / textureDimensions.width(),
+						-baseTexCoord.z / textureDimensions.height()));
 			}
 
 		}

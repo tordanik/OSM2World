@@ -9,9 +9,9 @@ import org.osm2world.core.target.common.texcoord.TexCoordFunction;
  */
 public abstract class RuntimeTexture extends TextureData {
 
-	protected RuntimeTexture(double width, double height, Double widthPerEntity, Double heightPerEntity, Wrap wrap,
+	protected RuntimeTexture(TextureDataDimensions dimensions, Wrap wrap,
 			Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
-		super(width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+		super(dimensions, wrap, texCoordFunction);
 	}
 
 }

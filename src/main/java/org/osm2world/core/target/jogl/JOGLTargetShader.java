@@ -1,11 +1,13 @@
 package org.osm2world.core.target.jogl;
 
 import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2GL3.*;
-import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.*;
+import static com.jogamp.opengl.GL2GL3.GL_FILL;
+import static com.jogamp.opengl.GL2GL3.GL_LINE;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 import static java.util.Arrays.asList;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 import java.nio.FloatBuffer;
 
@@ -16,6 +18,7 @@ import org.osm2world.core.math.VectorXYZW;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.material.ImageFileTexture;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
+import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
@@ -87,7 +90,7 @@ public class JOGLTargetShader extends AbstractJOGLTarget implements JOGLTarget {
 		gl.glActiveTexture(GL_TEXTURE0);
 
 		Texture backgroundTexture = textureManager.getTextureForTextureData(ImageFileTexture.create(
-				backgroundImage, 1, 1, null, null, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
+				backgroundImage, new TextureDataDimensions(1, 1), Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z));
 
 		backgroundTexture.bind(gl);
 

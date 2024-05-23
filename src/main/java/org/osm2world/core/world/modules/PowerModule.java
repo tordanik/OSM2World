@@ -1206,11 +1206,11 @@ public final class PowerModule extends AbstractModule {
 
 			VectorXZ apply(VectorXYZ v) {
 
-				double defaultEntityWidth = texDim.widthPerEntity != null ? texDim.widthPerEntity : texDim.width;
-				double defaultEntityHeight = texDim.heightPerEntity != null ? texDim.heightPerEntity : texDim.height;
+				double defaultEntityWidth = texDim.widthPerEntity() != null ? texDim.widthPerEntity() : texDim.width();
+				double defaultEntityHeight = texDim.heightPerEntity() != null ? texDim.heightPerEntity() : texDim.height();
 
-				double wFactor = defaultEntityWidth / texDim.width;
-				double hFactor = defaultEntityHeight / texDim.height;
+				double wFactor = defaultEntityWidth / texDim.width();
+				double hFactor = defaultEntityHeight / texDim.height();
 
 				double panelWidth, panelHeight;
 

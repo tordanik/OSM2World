@@ -1,6 +1,7 @@
 package org.osm2world.core.target.common.material;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -10,7 +11,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 import org.apache.batik.transcoder.TranscoderException;
@@ -25,9 +25,9 @@ public class SvgImageFileTexture extends ImageFileTexture {
 
 	public static final Resolution DEFAULT_SVG_RESOLUTION = new Resolution(512, 512);
 
-	public SvgImageFileTexture(File file, double width, double height, @Nullable Double widthPerEntity, @Nullable Double heightPerEntity,
+	public SvgImageFileTexture(File file, TextureDataDimensions dimensions,
 			Wrap wrap, Function<TextureDataDimensions, TexCoordFunction> texCoordFunction) {
-		super(file, width, height, widthPerEntity, heightPerEntity, wrap, texCoordFunction);
+		super(file, dimensions, wrap, texCoordFunction);
 	}
 
 	@Override

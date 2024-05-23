@@ -26,8 +26,8 @@ public class GlobalXYTexCoordFunction implements TexCoordFunction {
 
 		for (VectorXYZ v : vs) {
 			result.add(new VectorXZ(
-					v.x / textureDimensions.width,
-					v.y / textureDimensions.height));
+					v.x / textureDimensions.width(),
+					v.y / textureDimensions.height()));
 		}
 
 		return result;

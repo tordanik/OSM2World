@@ -193,8 +193,7 @@ public abstract class Material {
 				if(counter==numberOfTextLayer) {
 
 					//create a new TextTextureData instance with different textColor
-					TextTexture newTextTexture = new TextTexture(texture.text, texture.font, texture.width,
-							texture.height, texture.widthPerEntity, texture.heightPerEntity,
+					TextTexture newTextTexture = new TextTexture(texture.text, texture.font, texture.dimensions,
 							texture.topOffset, texture.leftOffset,
 							color, texture.relativeFontSize,
 							texture.wrap, t -> texture.coordFunction);
@@ -277,8 +276,7 @@ public abstract class Material {
 
 			if (!newText.equals(textTexture.text)) {
 				return new TextTexture(newText,
-						textTexture.font, textTexture.width, textTexture.height,
-						textTexture.widthPerEntity, textTexture.heightPerEntity,
+						textTexture.font, textTexture.dimensions,
 						textTexture.topOffset, textTexture.leftOffset,
 						textTexture.textColor, textTexture.relativeFontSize,
 						textTexture.wrap, t -> textTexture.coordFunction);

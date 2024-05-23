@@ -40,8 +40,8 @@ public class MapBasedTexCoordFunction implements TexCoordFunction {
 		VectorXZ result = texCoordMap.get(v);
 		if (textureDimensionsForScaling != null) {
 			result = new VectorXZ(
-					result.x / textureDimensionsForScaling.width,
-					result.z / textureDimensionsForScaling.height);
+					result.x / textureDimensionsForScaling.width(),
+					result.z / textureDimensionsForScaling.height());
 		}
 		return result;
 	}

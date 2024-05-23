@@ -4,7 +4,8 @@ import static java.awt.Color.*;
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.target.common.material.TextureCam.*;
+import static org.osm2world.core.target.common.material.TextureCam.colorFromNormal;
+import static org.osm2world.core.target.common.material.TextureCam.normalFromColor;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.io.File;
@@ -49,7 +50,8 @@ public class TextureCamTest {
 
 		List<Mesh> meshes = asList(new Mesh(geometryBuilder.build(), new ImmutableMaterial(Interpolation.FLAT, WHITE)));
 
-		TextureLayer result = TextureCam.renderTextures(meshes, ViewDirection.FROM_FRONT, "test", 1.0, 1.0, null, null,
+		TextureLayer result = TextureCam.renderTextures(meshes, ViewDirection.FROM_FRONT, "test",
+				new TextureDataDimensions(1.0, 1.0),
 				Wrap.CLAMP, new VectorXYZ(0.5, 0.5, 0), 0.0);
 
 		String tmpDir = System. getProperty("java.io.tmpdir");
