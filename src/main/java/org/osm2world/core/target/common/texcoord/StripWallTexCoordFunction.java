@@ -18,17 +18,8 @@ import org.osm2world.core.target.common.material.TextureDataDimensions;
  * This only works for vertices forming a triangle strip,
  * alternating between upper and lower vertex.
  */
-public class StripWallTexCoordFunction implements TexCoordFunction {
-
-	public final TextureDataDimensions textureDimensions;
-	public final boolean fitWidth;
-	public final boolean fitHeight;
-
-	public StripWallTexCoordFunction(TextureDataDimensions textureDimensions, boolean fitWidth, boolean fitHeight) {
-		this.textureDimensions = textureDimensions;
-		this.fitWidth = fitWidth;
-		this.fitHeight = fitHeight;
-	}
+public record StripWallTexCoordFunction(TextureDataDimensions textureDimensions, boolean fitWidth, boolean fitHeight)
+		implements TexCoordFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {
@@ -100,7 +91,8 @@ public class StripWallTexCoordFunction implements TexCoordFunction {
 				t = (i % 2 == 0) ? (v.distanceTo(vs.get(i+1))) / height : 0;
 			}
 
-			result.add(new VectorXZ(s, t));
+			VectorXZ rawTexCoord = new VectorXZ(s, t);
+			result.add(TexCoordUtil.applyPadding(rawTexCoord, textureDimensions));
 
 		}
 

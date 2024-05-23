@@ -11,13 +11,7 @@ import org.osm2world.core.target.common.material.TextureDataDimensions;
  * like {@link GlobalXZTexCoordFunction}, but uses y instead of x dimension.
  * Better suited for certain vertical surfaces.
  */
-public class GlobalZYTexCoordFunction implements TexCoordFunction {
-
-	public final TextureDataDimensions textureDimensions;
-
-	public GlobalZYTexCoordFunction(TextureDataDimensions textureDimensions) {
-		this.textureDimensions = textureDimensions;
-	}
+public record GlobalZYTexCoordFunction(TextureDataDimensions textureDimensions) implements TexCoordFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {
@@ -25,9 +19,10 @@ public class GlobalZYTexCoordFunction implements TexCoordFunction {
 		List<VectorXZ> result = new ArrayList<>(vs.size());
 
 		for (VectorXYZ v : vs) {
-			result.add(new VectorXZ(
-					v.z / textureDimensions.width(),
-					v.y / textureDimensions.height()));
+			result.add(TexCoordUtil.applyPadding(new VectorXZ(
+						v.z / textureDimensions.width(),
+						v.y / textureDimensions.height()),
+					textureDimensions));
 		}
 
 		return result;

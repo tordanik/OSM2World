@@ -16,13 +16,7 @@ import org.osm2world.core.target.common.material.TextureDataDimensions;
  *
  * TODO: introduce face requirement?
  */
-public class SlopedTrianglesTexCoordFunction implements TexCoordFunction {
-
-	public final TextureDataDimensions textureDimensions;
-
-	public SlopedTrianglesTexCoordFunction(TextureDataDimensions textureDimensions) {
-		this.textureDimensions = textureDimensions;
-	}
+public record SlopedTrianglesTexCoordFunction(TextureDataDimensions textureDimensions) implements TexCoordFunction {
 
 	@Override
 	public List<VectorXZ> apply(List<VectorXYZ> vs) {
@@ -33,7 +27,7 @@ public class SlopedTrianglesTexCoordFunction implements TexCoordFunction {
 
 		List<VectorXZ> result = new ArrayList<>(vs.size());
 
-		List<Double> knownAngles = new ArrayList<Double>();
+		List<Double> knownAngles = new ArrayList<>();
 
 		for (int i = 0; i < vs.size() / 3; i++) {
 
@@ -69,9 +63,10 @@ public class SlopedTrianglesTexCoordFunction implements TexCoordFunction {
 
 			for (VectorXYZ v : triangle.verticesNoDup()) {
 				VectorXZ baseTexCoord = v.rotateY(-downAngle).xz();
-				result.add(new VectorXZ(
+				VectorXZ texCoord = new VectorXZ(
 						-baseTexCoord.x / textureDimensions.width(),
-						-baseTexCoord.z / textureDimensions.height()));
+						-baseTexCoord.z / textureDimensions.height());
+				result.add(TexCoordUtil.applyPadding(texCoord, textureDimensions));
 			}
 
 		}

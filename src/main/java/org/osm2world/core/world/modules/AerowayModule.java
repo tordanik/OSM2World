@@ -1,7 +1,6 @@
 package org.osm2world.core.world.modules;
 
 import static java.lang.Math.min;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
@@ -107,11 +106,11 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 			Function<TextureDataDimensions, TexCoordFunction> localXZTexCoordFunction = (TextureDataDimensions textureDimensions) -> {
 				return (List<VectorXYZ> vs) -> {
-					TexCoordFunction globalXZ = new GlobalXZTexCoordFunction(textureDimensions);
+					var globalXZ = new GlobalXZTexCoordFunction(textureDimensions);
 					VectorXZ center = area.getOuterPolygon().getCentroid();
-					List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(center)).collect(toList());
-					List<VectorXZ> result = globalXZ.apply(localCoords);
-					return result.stream().map(v -> v.add(new VectorXZ(0.5, 0.5))).collect(toList());
+					VectorXZ shift = center.add(-textureDimensions.width() / 2, -textureDimensions.height() / 2);
+					List<VectorXYZ> localCoords = vs.stream().map(v -> v.subtract(shift)).toList();
+					return globalXZ.apply(localCoords);
 				};
 			};
 

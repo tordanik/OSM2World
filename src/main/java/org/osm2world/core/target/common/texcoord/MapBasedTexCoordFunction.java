@@ -39,9 +39,10 @@ public class MapBasedTexCoordFunction implements TexCoordFunction {
 	public VectorXZ apply(VectorXYZ v) {
 		VectorXZ result = texCoordMap.get(v);
 		if (textureDimensionsForScaling != null) {
-			result = new VectorXZ(
-					result.x / textureDimensionsForScaling.width(),
-					result.z / textureDimensionsForScaling.height());
+			result = TexCoordUtil.applyPadding(new VectorXZ(
+						result.x / textureDimensionsForScaling.width(),
+						result.z / textureDimensionsForScaling.height()),
+					textureDimensionsForScaling);
 		}
 		return result;
 	}

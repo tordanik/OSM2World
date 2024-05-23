@@ -1,9 +1,9 @@
 package org.osm2world.core.target.common.texcoord;
 
+import java.util.function.Function;
+
 import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
-
-import java.util.function.Function;
 
 /**
  * offers generators for several useful {@link TexCoordFunction} implementations.
@@ -82,7 +82,7 @@ public enum NamedTexCoordFunction implements Function<TextureDataDimensions, Tex
 			case SLOPED_TRIANGLES -> new SlopedTrianglesTexCoordFunction(dimensions);
 			case STRIP_WALL, STRIP_FIT_HEIGHT, STRIP_FIT ->
 					new StripWallTexCoordFunction(dimensions, this == STRIP_FIT, this != STRIP_WALL);
-			case FACE_FIT -> new FaceFitTexCoordFunction();
+			case FACE_FIT -> new FaceFitTexCoordFunction(dimensions);
 		};
 	}
 
