@@ -43,6 +43,7 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.target.common.texcoord.TexCoordUtil;
 import org.osm2world.core.util.enums.LeftRight;
 import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;
@@ -2271,22 +2272,12 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * To reduce the number of necessary textures, it uses mirrored versions of
 	 * the various right-pointing arrows for left-pointing arrows.
 	 */
-	private static class ArrowTexCoordFunction implements TexCoordFunction {
-
-		private final RoadPart roadPart;
-		private final boolean rightHandTraffic;
-		private final boolean mirrorLeftRight;
-		private final TextureDataDimensions textureDimensions;
-
-		private ArrowTexCoordFunction(RoadPart roadPart,
-				boolean rightHandTraffic, boolean mirrorLeftRight, TextureDataDimensions textureDimensions) {
-
-			this.roadPart = roadPart;
-			this.rightHandTraffic = rightHandTraffic;
-			this.mirrorLeftRight = mirrorLeftRight;
-			this.textureDimensions = textureDimensions;
-
-		}
+	private record ArrowTexCoordFunction (
+		RoadPart roadPart,
+		boolean rightHandTraffic,
+		boolean mirrorLeftRight,
+		TextureDataDimensions textureDimensions
+	) implements TexCoordFunction {
 
 		@Override
 		public List<VectorXZ> apply(List<VectorXYZ> vs) {
@@ -2295,7 +2286,7 @@ public class RoadModule extends ConfigurableWorldModule {
 				throw new IllegalArgumentException("not a triangle strip lane");
 			}
 
-			List<VectorXZ> result = new ArrayList<VectorXZ>(vs.size());
+			List<VectorXZ> result = new ArrayList<>(vs.size());
 
 			boolean forward = roadPart == RoadPart.LEFT ^ rightHandTraffic;
 
@@ -2361,7 +2352,8 @@ public class RoadModule extends ConfigurableWorldModule {
 					t = higher ? 0 : 1;
 				}
 
-				result.add(new VectorXZ(s, t));
+				VectorXZ rawTexCoord = new VectorXZ(s, t);
+				result.add(TexCoordUtil.applyPadding(rawTexCoord, textureDimensions));
 
 			}
 
