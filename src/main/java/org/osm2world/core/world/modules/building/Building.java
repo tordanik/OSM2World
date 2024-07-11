@@ -79,7 +79,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, Le
 						return; // belongs to another building's relation
 					}
 
-					if (roughlyContains(area.getPolygon(), otherArea.getPolygon().getOuter())) {
+					if (roughlyContains(area.getPolygon(), otherArea.getPolygon())) {
 						parts.add(new BuildingPart(this, otherArea, config));
 					}
 

@@ -2,16 +2,23 @@ package org.osm2world.core.math;
 
 import static java.lang.Math.sqrt;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.VectorXZ.*;
+import static org.osm2world.core.math.VectorXZ.distance;
+import static org.osm2world.core.math.VectorXZ.distanceSquared;
 import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
 import java.awt.geom.Line2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 import java.util.function.Function;
 
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineSegment;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.util.color.LColor;
 
@@ -270,7 +277,7 @@ public final class GeometryUtil {
 	 * This can be used to prevent small mapping inaccuracies from causing problems,
 	 * e.g. when checking if building parts are contained in a building outline.
 	 */
-	public static final boolean roughlyContains(PolygonWithHolesXZ p1, SimplePolygonXZ p2) {
+	public static final boolean roughlyContains(PolygonShapeXZ p1, PolygonShapeXZ p2) {
 
 		if (p1.contains(p2)) {
 			return true;
