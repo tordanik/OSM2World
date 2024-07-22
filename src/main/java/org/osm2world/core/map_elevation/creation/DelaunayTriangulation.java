@@ -14,6 +14,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.annotation.Nonnull;
+
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.TriangleXYZ;
@@ -62,22 +64,22 @@ public class DelaunayTriangulation {
 		}
 
 		public VectorXYZ getPoint(int i) {
-			switch (i) {
-				case 0: return p0;
-				case 1: return p1;
-				case 2: return p2;
-				default: throw new Error("invalid index " + i);
-			}
+			return switch (i) {
+				case 0 -> p0;
+				case 1 -> p1;
+				case 2 -> p2;
+				default -> throw new Error("invalid index " + i);
+			};
 		}
 
 
 		public DelaunayTriangle getNeighbor(int i) {
-			switch (i) {
-				case 0: return neighbor0;
-				case 1: return neighbor1;
-				case 2: return neighbor2;
-				default: throw new Error("invalid index " + i);
-			}
+			return switch (i) {
+				case 0 -> neighbor0;
+				case 1 -> neighbor1;
+				case 2 -> neighbor2;
+				default -> throw new Error("invalid index " + i);
+			};
 		}
 
 		public DelaunayTriangle getLeftNeighbor(VectorXYZ atPoint) {
@@ -90,10 +92,10 @@ public class DelaunayTriangulation {
 
 		public void setNeighbor(int i, DelaunayTriangle neighbor) {
 			switch (i) {
-				case 0: neighbor0 = neighbor; break;
-				case 1: neighbor1 = neighbor; break;
-				case 2: neighbor2 = neighbor; break;
-				default: throw new Error("invalid index " + i);
+				case 0 -> neighbor0 = neighbor;
+				case 1 -> neighbor1 = neighbor;
+				case 2 -> neighbor2 = neighbor;
+				default -> throw new Error("invalid index " + i);
 			}
 		}
 
@@ -204,7 +206,7 @@ public class DelaunayTriangulation {
 
 	}
 
-	private class Flip13 implements Flip {
+	private static class Flip13 implements Flip {
 
 		DelaunayTriangle originalTriangle;
 		VectorXYZ point;
@@ -296,7 +298,7 @@ public class DelaunayTriangulation {
 
 	}
 
-	private class Flip22 implements Flip {
+	private static class Flip22 implements Flip {
 
 		DelaunayTriangle[] originalTriangles;
 		DelaunayTriangle[] createdTriangles;
@@ -389,7 +391,7 @@ public class DelaunayTriangulation {
 
 	}
 
-	public class NaturalNeighbors {
+	public static class NaturalNeighbors {
 
 		public final VectorXYZ[] neighbors;
 		public final double[] relativeWeights;
@@ -409,11 +411,10 @@ public class DelaunayTriangulation {
 	 * produces iterables for iterating over all the triangles in this
 	 * triangulation via depth-first search
 	 */
-	private final Iterable<DelaunayTriangle> ITERABLE =
-			new Iterable<DelaunayTriangle>() {
+	private final Iterable<DelaunayTriangle> ITERABLE = new Iterable<>() {
 
 		@Override
-		public Iterator<DelaunayTriangle> iterator() {
+		public @Nonnull Iterator<DelaunayTriangle> iterator() {
 
 			final DelaunayTriangle start = handleTriangle.getNeighbor(0);
 
@@ -486,7 +487,7 @@ public class DelaunayTriangulation {
 	};
 
 	/**
-	 * a fake triangle outside of the bounds that is used as a start
+	 * a fake triangle outside the bounds that is used as a start
 	 * for iterating/walking through the triangulation along neighborships
 	 */
 	public final DelaunayTriangle handleTriangle;
@@ -519,9 +520,9 @@ public class DelaunayTriangulation {
 		return ITERABLE;
 	}
 
-	public Stack<Flip> insert(VectorXYZ point) { //TODO: should use <T extends Has(Immutable)Position>
+	public Stack<Flip> insert(VectorXYZ point) {
 
-		DelaunayTriangle triangleEnclosingPoint = getEnlosingTriangle(point.xz());
+		DelaunayTriangle triangleEnclosingPoint = getEnclosingTriangle(point.xz());
 
 		if (triangleEnclosingPoint == null) {
 			System.out.println("null");
@@ -802,7 +803,7 @@ public class DelaunayTriangulation {
 	 *
 	 * @param point  must lie within the triangulation; != null
 	 */
-	public DelaunayTriangle getEnlosingTriangle(VectorXZ point) {
+	public DelaunayTriangle getEnclosingTriangle(VectorXZ point) {
 
 		/* use a 'visibility walk' through the triangulation,
 		 * starting at the handleTriangle */

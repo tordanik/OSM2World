@@ -39,7 +39,7 @@ public class LinearInterpolator implements TerrainInterpolator {
 	@Override
 	public VectorXYZ interpolateEle(VectorXZ pos) {
 
-		DelaunayTriangle triangle = triangulation.getEnlosingTriangle(pos);
+		DelaunayTriangle triangle = triangulation.getEnclosingTriangle(pos);
 
 		double ele = triangle.asTriangleXYZ().getYAt(pos);
 
