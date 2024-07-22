@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLon;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
@@ -406,10 +407,11 @@ public class ConversionFacade {
 	private void calculateElevations(MapData mapData,
 			TerrainElevationData eleData, Configuration config) {
 
-		final TerrainInterpolator interpolator =
-				(eleData != null)
-				? terrainEleInterpolatorFactory.get()
-				: new ZeroInterpolator();
+		TerrainInterpolator interpolator = terrainEleInterpolatorFactory.get();
+
+		if (eleData == null) {
+			interpolator = new ZeroInterpolator();
+		}
 
 		/* provide known elevations from eleData to the interpolator */
 
@@ -423,15 +425,22 @@ public class ConversionFacade {
 				e.printStackTrace();
 			}
 
-			interpolator.setKnownSites(sites);
+			if (!sites.isEmpty()) {
+				interpolator.setKnownSites(sites);
+			} else {
+				ConversionLog.error("No sites with known elevation available");
+				interpolator = new ZeroInterpolator();
+			}
 
 		}
 
 		/* interpolate terrain elevation for each connector */
 
+		final TerrainInterpolator finalInterpolator = interpolator;
+
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 			for (EleConnector conn : worldObject.getEleConnectors()) {
-				conn.setPosXYZ(interpolator.interpolateEle(conn.pos));
+				conn.setPosXYZ(finalInterpolator.interpolateEle(conn.pos));
 			}
 		});
 

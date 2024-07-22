@@ -36,10 +36,14 @@ public class LeastSquaresInterpolator implements TerrainInterpolator {
 	private static final int SITES_FOR_INTERPOL = 29;
 
 	private Collection<SiteWithPolynomial> sites;
-	private IndexGrid<SiteWithPolynomial> siteGrid; //TODO: rename IntersectionGrid to something more generic
+	private IndexGrid<SiteWithPolynomial> siteGrid;
 
 	@Override
 	public void setKnownSites(Collection<VectorXYZ> siteVectors) {
+
+		if (siteVectors.isEmpty()) {
+			throw new IllegalArgumentException("No sites with elevation available");
+		}
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();

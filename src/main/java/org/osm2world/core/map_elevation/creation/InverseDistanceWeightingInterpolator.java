@@ -16,7 +16,7 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 
 	private final double negExp;
 	private Collection<VectorXYZ> sites;
-	private IndexGrid<VectorXYZ> siteGrid; //TODO: rename IntersectionGrid to something more generic
+	private IndexGrid<VectorXYZ> siteGrid;
 
 	public InverseDistanceWeightingInterpolator() {
 		this(2);
@@ -28,6 +28,10 @@ public class InverseDistanceWeightingInterpolator implements TerrainInterpolator
 
 	@Override
 	public void setKnownSites(Collection<VectorXYZ> sites) {
+
+		if (sites.isEmpty()) {
+			throw new IllegalArgumentException("No sites with elevation available");
+		}
 
 		this.sites = sites;
 

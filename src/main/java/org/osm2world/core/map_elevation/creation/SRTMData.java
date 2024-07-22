@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -127,7 +128,7 @@ public class SRTMData implements TerrainElevationData {
 			if (file.exists()) {
 				setTile(lon, lat, new SRTMTile(file));
 			} else {
-				System.err.println("warning: missing SRTM tile " + file.getName());
+				ConversionLog.error("Missing SRTM tile " + file.getName());
 			}
 
 		}

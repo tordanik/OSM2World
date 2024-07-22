@@ -21,6 +21,10 @@ public class LinearInterpolator implements TerrainInterpolator {
 	@Override
 	public void setKnownSites(Collection<VectorXYZ> sites) {
 
+		if (sites.isEmpty()) {
+			throw new IllegalArgumentException("No sites with elevation available");
+		}
+
 		AxisAlignedRectangleXZ boundingBox = bbox(sites);
 		boundingBox = boundingBox.pad(100);
 

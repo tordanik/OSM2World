@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import static java.lang.Double.isFinite;
 import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 
@@ -17,17 +18,24 @@ public class AxisAlignedRectangleXZ implements SimplePolygonShapeXZ {
 	public final double minX, minZ, maxX, maxZ;
 
 	public AxisAlignedRectangleXZ(double minX, double minZ, double maxX, double maxZ) {
+
+		if (!(isFinite(minX) && isFinite(minZ) && isFinite(maxX) && isFinite(maxZ))) {
+			throw new IllegalArgumentException("Bounds must be finite");
+		}
+
 		this.minX = minX;
 		this.minZ = minZ;
 		this.maxX = maxX;
 		this.maxZ = maxZ;
+
 	}
 
 	public AxisAlignedRectangleXZ(VectorXZ center, double sizeX, double sizeZ) {
-		this.minX = center.x - sizeX / 2;
-		this.minZ = center.z - sizeZ / 2;
-		this.maxX = center.x + sizeX / 2;
-		this.maxZ = center.z + sizeZ / 2;
+		this(
+			center.x - sizeX / 2,
+			center.z - sizeZ / 2,
+			center.x + sizeX / 2,
+			center.z + sizeZ / 2);
 	}
 
 	/**

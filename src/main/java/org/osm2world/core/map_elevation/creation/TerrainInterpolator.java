@@ -10,6 +10,9 @@ import org.osm2world.core.math.VectorXZ;
  */
 public interface TerrainInterpolator {
 
+	/**
+	 * @param sites  non-empty collection of points with known elevation
+	 */
 	void setKnownSites(Collection<VectorXYZ> sites);
 
 	VectorXYZ interpolateEle(VectorXZ pos);
