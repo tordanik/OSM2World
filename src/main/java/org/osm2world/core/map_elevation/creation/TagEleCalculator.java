@@ -20,7 +20,7 @@ public abstract class TagEleCalculator implements EleCalculator {
 		FaultTolerantIterationUtil.forEach(mapData.getWorldObjects(), (WorldObject worldObject) -> {
 
 			for (EleConnector conn : worldObject.getEleConnectors()) {
-				Double ele = getEleForTags(worldObject.getPrimaryMapElement().getTags());
+				Double ele = getEleForTags(worldObject.getPrimaryMapElement().getTags(), conn.getPosXYZ().y);
 				if (ele != null) {
 					conn.setPosXYZ(conn.pos.xyz(ele));
 				}
@@ -33,8 +33,9 @@ public abstract class TagEleCalculator implements EleCalculator {
 	/**
 	 * returns the elevation as set explicitly by the tags
 	 *
+	 * @param terrainEle  initial elevation value derived from terrain data, or 0 if no terrain data is available
 	 * @return  elevation; null if the tags don't define the elevation
 	 */
-	protected abstract Double getEleForTags(TagSet tags);
+	protected abstract Double getEleForTags(TagSet tags, double terrainEle);
 
 }

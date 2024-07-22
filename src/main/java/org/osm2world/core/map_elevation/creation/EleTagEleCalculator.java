@@ -10,7 +10,7 @@ import org.osm2world.core.map_data.data.TagSet;
 public class EleTagEleCalculator extends TagEleCalculator {
 
 	@Override
-	protected Double getEleForTags(TagSet tags) {
+	protected Double getEleForTags(TagSet tags, double terrainEle) {
 		if (tags.containsKey("ele")) {
 			return parseOsmDecimal(tags.getValue("ele"), true);
 		} else {

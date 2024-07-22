@@ -5,33 +5,31 @@ import org.osm2world.core.world.modules.BridgeModule;
 import org.osm2world.core.world.modules.TunnelModule;
 
 /**
- * sets elevations to zero, except for bridges and tunnels
+ * sets elevations to zero (or terrain elevation if available), except for bridges and tunnels
  */
 public class BridgeTunnelEleCalculator extends TagEleCalculator {
 
-	final double eleBridge;
-	final double eleTunnel;
-	final Double eleTerrain;
+	final double eleOffsetBridge;
+	final double eleOffsetTunnel;
 
-	private BridgeTunnelEleCalculator(double eleBridge, double eleTunnel, Double eleTerrain) {
-		this.eleBridge = eleBridge;
-		this.eleTunnel = eleTunnel;
-		this.eleTerrain = eleTerrain;
+	private BridgeTunnelEleCalculator(double eleOffsetBridge, double eleOffsetTunnel) {
+		this.eleOffsetBridge = eleOffsetBridge;
+		this.eleOffsetTunnel = eleOffsetTunnel;
 	}
 
 	public BridgeTunnelEleCalculator() {
-		this(0.1, 0.0, 0.0);
+		this(0.1, 0.0);
 	}
 
 	@Override
-	protected Double getEleForTags(TagSet tags) {
+	protected Double getEleForTags(TagSet tags, double terrainEle) {
 
 		if (BridgeModule.isBridge(tags)) {
-			return eleBridge;
+			return terrainEle + eleOffsetBridge;
 		} else if (TunnelModule.isTunnel(tags)) {
-			return eleTunnel;
+			return terrainEle + eleOffsetTunnel;
 		} else {
-			return eleTerrain;
+			return terrainEle;
 		}
 
 	}
