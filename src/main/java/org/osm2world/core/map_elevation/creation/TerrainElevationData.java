@@ -3,7 +3,7 @@ package org.osm2world.core.map_elevation.creation;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.osm2world.core.map_data.data.MapData;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 
 /**
@@ -12,9 +12,9 @@ import org.osm2world.core.math.VectorXYZ;
  */
 public interface TerrainElevationData {
 
-	Collection<VectorXYZ> getSites(double minLon, double minLat,
-			double maxLon, double maxLat) throws IOException;
-
-	Collection<VectorXYZ> getSites(MapData mapData) throws IOException;
+	/**
+	 * returns all points with known elevation within the bounds
+	 */
+	Collection<VectorXYZ> getSites(AxisAlignedRectangleXZ bounds) throws IOException;
 
 }

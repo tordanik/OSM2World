@@ -1,6 +1,5 @@
 package org.osm2world.core.map_elevation.creation;
 
-import static java.lang.Double.isNaN;
 import static java.lang.Math.*;
 
 import java.io.File;
@@ -9,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -30,11 +29,10 @@ public class SRTMData implements TerrainElevationData {
 		this.tiles = new SRTMTile[360][180];
 	}
 
-	@Override
 	public Collection<VectorXYZ> getSites(double minLon, double minLat,
 			double maxLon, double maxLat) throws IOException {
 
-		Collection<VectorXYZ> result = new ArrayList<VectorXYZ>();
+		Collection<VectorXYZ> result = new ArrayList<>();
 
 		int minLonInt = (int)floor(minLon);
 		int minLatInt = (int)floor(minLat);
@@ -56,48 +54,21 @@ public class SRTMData implements TerrainElevationData {
 
 	}
 
-	/**
-	 * variant of getSites which calculates minimum and maximum lat/lon
-	 * from the bounds of a {@link MapData} instance
-	 *
-	 * TODO: make projection reversible, then replace both getSites methods
-	 *       with a single getSite(AxisAlignedBoundingBox dataBounds) method
-	 */
 	@Override
-	public Collection<VectorXYZ> getSites(MapData mapData) throws IOException {
+	public Collection<VectorXYZ> getSites(AxisAlignedRectangleXZ bounds) throws IOException {
 
-		double minLon = Double.POSITIVE_INFINITY;
-		double minLat = Double.POSITIVE_INFINITY;
-		double maxLon = Double.NEGATIVE_INFINITY;
-		double maxLat = Double.NEGATIVE_INFINITY;
+		var latLonBounds = new LatLonBounds(
+				projection.toLatLon(bounds.bottomLeft()),
+				projection.toLatLon(bounds.topRight()));
 
-		/* find the minimum and maximum lat/lon in the data */
+		double minLon = latLonBounds.minlon;
+		double minLat = latLonBounds.minlat;
+		double maxLon = latLonBounds.maxlon;
+		double maxLat = latLonBounds.maxlat;
 
-		for (MapNode mapNode : mapData.getMapNodes()) {
-
-			double lon = projection.toLon(mapNode.getPos());
-			double lat = projection.toLat(mapNode.getPos());
-
-			if (!isNaN(lat) && !isNaN(lon)) {
-				minLon = min(minLon, lon);
-				minLat = min(minLat, lat);
-				maxLon = max(maxLon, lon);
-				maxLat = max(maxLat, lat);
-			}
-
-		}
-
-		/* add a small seam for robustness */
-
-		minLon -= 0.02; minLat -= 0.02;
-		maxLon += 0.02; maxLat += 0.02;
-
-		/* TODO: the seam could be smaller - such as this - if empty terrain nodes did have lat/lon
+		// add a small seam for robustness
 		minLon -= 0.005; minLat -= 0.005;
 		maxLon += 0.005; maxLat += 0.005;
-		*/
-
-		/* retrieve the sites for the query */
 
 		return getSites(minLon, minLat, maxLon, maxLat);
 

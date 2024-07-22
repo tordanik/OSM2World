@@ -420,7 +420,7 @@ public class ConversionFacade {
 			Collection<VectorXYZ> sites = emptyList();
 
 			try {
-				sites = eleData.getSites(mapData);
+				sites = eleData.getSites(mapData.getDataBoundary().pad(10));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

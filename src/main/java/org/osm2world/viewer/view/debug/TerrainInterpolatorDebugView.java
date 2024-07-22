@@ -1,5 +1,12 @@
 package org.osm2world.viewer.view.debug;
 
+import static java.util.Arrays.asList;
+
+import java.awt.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
@@ -13,13 +20,6 @@ import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLRenderingParameters;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.viewer.model.RenderOptions;
-
-import java.awt.*;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public abstract class TerrainInterpolatorDebugView extends DebugView {
 
@@ -65,12 +65,12 @@ public abstract class TerrainInterpolatorDebugView extends DebugView {
 
 		try {
 
-			Collection<VectorXYZ> sites = eleData.getSites(map);
+			AxisAlignedRectangleXZ bound = map.getDataBoundary();
+
+			Collection<VectorXYZ> sites = eleData.getSites(map.getDataBoundary().pad(10));
 
 			TerrainInterpolator strategy = buildInterpolator();
 			strategy.setKnownSites(sites);
-
-			AxisAlignedRectangleXZ bound = map.getDataBoundary();
 
 			VectorGridXZ sampleGrid = new VectorGridXZ(bound, SAMPLE_DIST);
 
