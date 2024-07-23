@@ -1,6 +1,12 @@
 package org.osm2world.viewer.view;
 
-import java.awt.Color;
+import static jogamp.nativewindow.awt.AWTMisc.getWindow;
+import static org.osm2world.core.util.ConfigUtil.BG_COLOR_KEY;
+import static org.osm2world.core.util.ConfigUtil.parseColor;
+
+import java.awt.*;
+
+import javax.swing.*;
 
 import org.osm2world.core.target.jogl.AbstractJOGLTarget;
 import org.osm2world.viewer.model.Data;
@@ -17,10 +23,6 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
-
-import javax.swing.*;
-
-import static jogamp.nativewindow.awt.AWTMisc.getWindow;
 
 public class ViewerGLCanvas extends GLCanvas {
 
@@ -66,7 +68,8 @@ public class ViewerGLCanvas extends GLCanvas {
 
 	        final GL gl = glDrawable.getGL();
 
-	        AbstractJOGLTarget.clearGL(gl, new Color(0, 0, 0, 0));
+			Color clearColor = parseColor(data.getConfig().getString(BG_COLOR_KEY), Color.BLACK);
+			AbstractJOGLTarget.clearGL(gl, clearColor);
 
 	        if (renderOptions.camera == null) {
 	        	helpView.renderTo(gl, null, null);

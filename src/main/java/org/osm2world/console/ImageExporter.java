@@ -1,12 +1,11 @@
 package org.osm2world.console;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 import static org.osm2world.core.util.ConfigUtil.*;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
@@ -25,20 +24,9 @@ import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.target.jogl.AbstractJOGLTarget;
-import org.osm2world.core.target.jogl.JOGLRenderingParameters;
-import org.osm2world.core.target.jogl.JOGLTarget;
-import org.osm2world.core.target.jogl.JOGLTargetFixedFunction;
-import org.osm2world.core.target.jogl.JOGLTargetShader;
-import org.osm2world.core.target.jogl.JOGLTextureManager;
+import org.osm2world.core.target.jogl.*;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLDrawableFactory;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLOffscreenAutoDrawable;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 
 import ar.com.hjg.pngj.ImageInfo;
@@ -95,17 +83,7 @@ public class ImageExporter {
 
 		/* parse background color/image and other configuration options */
 
-		clearColor = new Color(0, 0, 0, 0);
-
-		if (config.containsKey(BG_COLOR_KEY)) {
-			Color confClearColor = parseColor(config.getString(BG_COLOR_KEY));
-			if (confClearColor != null) {
-				clearColor = confClearColor;
-			} else {
-				System.err.println("incorrect color value: "
-						+ config.getString(BG_COLOR_KEY));
-			}
-		}
+		clearColor = parseColor(config.getString(BG_COLOR_KEY), Color.BLACK);
 
 		if (config.containsKey(BG_IMAGE_KEY)) {
 			String fileString = config.getString(BG_IMAGE_KEY);

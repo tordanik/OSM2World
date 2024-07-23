@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 
@@ -33,7 +35,12 @@ final public class ConfigUtil {
 		};
 	}
 
-	public static final Color parseColor(String colorString) {
+	public static final Color parseColor(@Nullable String colorString, Color defaultValue) {
+		Color result = parseColor(colorString);
+		return result != null ? result : defaultValue;
+	}
+
+	public static final @Nullable Color parseColor(@Nullable String colorString) {
 
 		if (colorString == null) {
 			return null;
