@@ -49,7 +49,7 @@ public class Resolution {
 	}
 
 	public float getAspectRatio() {
-		return width / height;
+		return width / (float) height;
 	}
 
 	@Override
