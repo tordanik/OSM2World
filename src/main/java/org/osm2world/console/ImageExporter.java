@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
@@ -74,9 +77,10 @@ public class ImageExporter {
 	 * @param expectedGroup  group that should contain at least the arguments
 	 *                       for the files that will later be requested.
 	 *                       Basis for optimization preparations.
+	 *                       If null, this ImageExporter will be (possibly poorly) optimized for one-time use.
 	 */
 	public ImageExporter(Configuration config, Results results,
-			CLIArgumentsGroup expectedGroup) {
+			@Nullable CLIArgumentsGroup expectedGroup) {
 
 		this.results = results;
 		this.config = config;
@@ -107,7 +111,17 @@ public class ImageExporter {
 		int expectedMaxSizeX = 1;
 		int expectedMaxSizeY = 1;
 
-		for (CLIArguments args : expectedGroup.getCLIArgumentsList()) {
+		List<CLIArguments> argsList;
+
+		if (expectedGroup != null) {
+			argsList = expectedGroup.getCLIArgumentsList();
+		} else {
+			argsList = List.of();
+			expectedMaxSizeX = canvasLimit;
+			expectedMaxSizeY = canvasLimit;
+		}
+
+		for (CLIArguments args : argsList) {
 
 			for (File outputFile : args.getOutput()) {
 				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
