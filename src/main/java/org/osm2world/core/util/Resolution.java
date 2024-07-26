@@ -44,10 +44,12 @@ public class Resolution {
 		}
 	}
 
+	/** returns the resolution of the image parameter */
 	public static Resolution of(BufferedImage image) {
 		return new Resolution(image.getWidth(), image.getHeight());
 	}
 
+	/** returns the ratio of width to height for this resolution */
 	public float getAspectRatio() {
 		return width / (float) height;
 	}
