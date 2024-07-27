@@ -11,6 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osm2world.console.CLIArgumentsUtil;
 import org.osm2world.console.ImageExporter;
+import org.osm2world.core.util.Resolution;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.MessageManager;
 import org.osm2world.viewer.model.RenderOptions;
@@ -40,7 +41,10 @@ public class ExportPngAction extends AbstractExportAction {
 
 			/* write the file */
 
-			var exporter = new ImageExporter(data.getConfig(), data.getConversionResults(), null);
+			ImageExporter exporter = ImageExporter.create(
+					data.getConfig(),
+					data.getConversionResults(),
+					new Resolution(width, height));
 
 			exporter.writeImageFile(file, CLIArgumentsUtil.OutputMode.PNG,
 					width, height,

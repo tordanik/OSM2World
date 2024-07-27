@@ -259,7 +259,7 @@ public final class Output {
 						System.err.println("camera or projection missing");
 					}
 					if (exporter == null) {
-						exporter = new ImageExporter(
+						exporter = ImageExporter.create(
 								config, results, argumentsGroup);
 					}
 					exporter.writeImageFile(outputFile, outputMode,
