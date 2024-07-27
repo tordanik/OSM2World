@@ -81,6 +81,14 @@ public class ImageExporter {
 		this.pBufferSizeY = pBufferSizeY;
 		this.unbufferedRendering = unbufferedRendering;
 
+		/* warn about potentially oversized canvas dimensions */
+
+		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
+
+		if (pBufferSizeX > canvasLimit || pBufferSizeY > canvasLimit) {
+			System.err.println("Warning: Canvas for image export may be too large for the system's capabilities");
+		}
+
 		/* parse background color/image and other configuration options */
 
 		this.clearColor = parseColor(config.getString(BG_COLOR_KEY), Color.BLACK);
@@ -98,8 +106,6 @@ public class ImageExporter {
 		}
 
 		this.exportAlpha = config.getBoolean("exportAlpha", false);
-
-		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
 
 		/* create GL canvas and set rendering parameters */
 
@@ -164,6 +170,7 @@ public class ImageExporter {
 		int expectedFileCalls = 0;
 		int expectedMaxSizeX = 1;
 		int expectedMaxSizeY = 1;
+		boolean perspectiveProjection = false;
 
 		for (CLIArguments args : expectedGroup.getCLIArgumentsList()) {
 
@@ -173,6 +180,7 @@ public class ImageExporter {
 					expectedFileCalls += 1;
 					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().width);
 					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().height);
+					perspectiveProjection |= args.isPviewPos();
 				}
 			}
 
@@ -187,8 +195,15 @@ public class ImageExporter {
 		boolean unbufferedRendering = onlyOneRenderPass
 				|| config.getBoolean("forceUnbufferedPNGRendering", false);
 
-		int pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
-		int pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
+		int pBufferSizeX, pBufferSizeY;
+
+		if (perspectiveProjection) {
+			pBufferSizeX = expectedMaxSizeX;
+			pBufferSizeY = expectedMaxSizeY;
+		} else {
+			pBufferSizeX = min(canvasLimit, expectedMaxSizeX);
+			pBufferSizeY = min(canvasLimit, expectedMaxSizeY);
+		}
 
 		return new ImageExporter(config, results, pBufferSizeX, pBufferSizeY, unbufferedRendering);
 
@@ -206,14 +221,6 @@ public class ImageExporter {
 	 */
 	public static ImageExporter create(Configuration config, Results results,
 									   Resolution canvasResolution) {
-
-		int canvasLimit = config.getInt(CANVAS_LIMIT_KEY, DEFAULT_CANVAS_LIMIT);
-
-		if (canvasResolution.height > canvasLimit || canvasResolution.width > canvasLimit) {
-			System.err.println("Warning: Canvas for image export may be too large for the system's capabilities");
-		}
-
-		/* call the constructor */
 
 		boolean unbufferedRendering = true;
 
