@@ -52,9 +52,9 @@ public class ImageExporter {
 
 	private File backgroundImage;
 	private JOGLTextureManager backgroundTextureManager;
-	private Color clearColor;
 
-	private boolean exportAlpha = false;
+	private final Color clearColor;
+	private final boolean exportAlpha;
 
 	private GLOffscreenAutoDrawable drawable;
 	private ImageExporterGLEventListener listener;
@@ -91,7 +91,14 @@ public class ImageExporter {
 
 		/* parse background color/image and other configuration options */
 
-		this.clearColor = parseColor(config.getString(BG_COLOR_KEY), Color.BLACK);
+		this.exportAlpha = config.getBoolean("exportAlpha", false);
+
+		Color bgColor = parseColor(config.getString(BG_COLOR_KEY), Color.BLACK);
+		if (exportAlpha) {
+			this.clearColor = new Color(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), 0);
+		} else {
+			this.clearColor = bgColor;
+		}
 
 		if (config.containsKey(BG_IMAGE_KEY)) {
 			String fileString = config.getString(BG_IMAGE_KEY);
@@ -104,8 +111,6 @@ public class ImageExporter {
 				}
 			}
 		}
-
-		this.exportAlpha = config.getBoolean("exportAlpha", false);
 
 		/* create GL canvas and set rendering parameters */
 
