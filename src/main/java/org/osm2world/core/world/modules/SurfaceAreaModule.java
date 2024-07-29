@@ -25,10 +25,10 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
-import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -141,7 +141,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			if (this.getGroundState() == ON) {
 
 				for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-					for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+					FaultTolerantIterationUtil.forEach(overlap.getOther(area).getRepresentations(), otherWO -> {
 
 						for (EleConnector eleConnector : otherWO.getEleConnectors()) {
 
@@ -162,7 +162,7 @@ public class SurfaceAreaModule extends AbstractModule {
 							allPolys.add(otherWO.getOutlinePolygonXZ());
 						}
 
-					}
+					});
 				}
 
 			}
@@ -200,7 +200,7 @@ public class SurfaceAreaModule extends AbstractModule {
 			/* add vertical distance to connectors above and below */
 
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-			for (WorldObject otherWO : overlap.getOther(area).getRepresentations()) {
+			FaultTolerantIterationUtil.forEach(overlap.getOther(area).getRepresentations(),  otherWO -> {
 
 				for (EleConnector eleConnector : otherWO.getEleConnectors()) {
 
@@ -224,7 +224,7 @@ public class SurfaceAreaModule extends AbstractModule {
 
 				}
 
-			}
+			});
 			}
 
 		}

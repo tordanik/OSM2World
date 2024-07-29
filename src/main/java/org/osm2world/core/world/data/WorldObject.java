@@ -15,6 +15,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
@@ -180,7 +181,11 @@ public interface WorldObject {
 						return emptyList();
 					}
 
-					subtractPolys.addAll(otherWO.getTerrainBoundariesXZ());
+					try {
+						subtractPolys.addAll(otherWO.getTerrainBoundariesXZ());
+					} catch (InvalidGeometryException ignored) {
+						// Prevent errors in other objects from affecting this object
+					}
 
 				}
 
