@@ -313,18 +313,20 @@ public class WaterModule extends ConfigurableWorldModule {
 			double width=0.1;
 			double height=0.5;
 
-			ShapeXZ wallShape = new PolylineXZ(
-					new VectorXZ(+width/2, 0),
-					new VectorXZ(+width/2, height),
-					new VectorXZ(-width/2, height),
-					new VectorXZ(-width/2, 0)
-			);
+			for (PolygonXYZ ring : getOutlinePolygon().rings()) {
 
-			List<VectorXYZ> path = getOutlinePolygon().outer().vertices();
+				ShapeXZ wallShape = new PolylineXZ(
+						new VectorXZ(+width / 2, 0),
+						new VectorXZ(+width / 2, height),
+						new VectorXZ(-width / 2, height),
+						new VectorXZ(-width / 2, 0)
+				);
 
-			target.drawExtrudedShape(CONCRETE, wallShape, path,
-					nCopies(path.size(), Y_UNIT), null, null, null);
+				target.drawExtrudedShape(CONCRETE, wallShape, ring.vertices(),
+						nCopies(ring.vertices().size(), Y_UNIT), null, null, null);
 
+			}
+			
 		}
 
 	}
