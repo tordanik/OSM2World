@@ -141,11 +141,11 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 		return outlinePolygonXZ;
 	}
 
-	public PolygonXYZ getOutlinePolygon() {
+	public PolygonWithHolesXYZ getOutlinePolygon() {
 		if (getConnectorIfAttached() != null) {
-			return outlinePolygonXZ.getOuter().xyz(attachmentConnector.getAttachedPos().getY());
+			return outlinePolygonXZ.xyz(attachmentConnector.getAttachedPos().getY());
 		} else {
-			return connectors.getPosXYZ(outlinePolygonXZ.getOuter());
+			return connectors.getPosXYZ(outlinePolygonXZ);
 		}
 	}
 

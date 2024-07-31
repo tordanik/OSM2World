@@ -137,6 +137,12 @@ public class EleConnectorGroup implements Iterable<EleConnector> {
 		return new PolygonXYZ(getPosXYZ(polygon.vertices()));
 	}
 
+	public PolygonWithHolesXYZ getPosXYZ(PolygonWithHolesXZ polygon) {
+		return new PolygonWithHolesXYZ(
+				getPosXYZ(polygon.getOuter()),
+				polygon.getRings().stream().map(this::getPosXYZ).toList());
+	}
+
 	@Override
 	public Iterator<EleConnector> iterator() {
 		return eleConnectors.iterator();

@@ -14,8 +14,10 @@ import static org.osm2world.core.target.common.ExtrudeOption.END_CAP;
 import static org.osm2world.core.target.common.ExtrudeOption.START_CAP;
 import static org.osm2world.core.target.common.material.Materials.*;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
+import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
@@ -1212,9 +1214,15 @@ public class BarrierModule extends AbstractModule {
 			switch (shape) {
 			case BOX:
 				target.setCurrentLodRange(LOD2, LOD4);
-				target.drawExtrudedShape(HEDGE, getOutlinePolygonXZ(),
-						asList(new VectorXYZ(0, 0, 0), new VectorXYZ(0, height, 0)),
-						null, null, null, EnumSet.of(END_CAP));
+				List<TriangleXYZ> topTriangles = getTriangulation().stream()
+						.map(t -> t.shift(new VectorXYZ(0, height, 0)))
+						.toList();
+				target.drawTriangles(HEDGE, topTriangles, triangleTexCoordLists(topTriangles, HEDGE, GLOBAL_X_Z));
+				for (PolygonXYZ ring : getOutlinePolygon().rings()) {
+					List<VectorXYZ> outerStrip = createTriangleStripBetween(
+							addYList(ring.vertices(), height), ring.vertices());
+					target.drawTriangleStrip(HEDGE, outerStrip, texCoordLists(outerStrip, HEDGE, STRIP_WALL));
+				}
 				break;
 			}
 		}

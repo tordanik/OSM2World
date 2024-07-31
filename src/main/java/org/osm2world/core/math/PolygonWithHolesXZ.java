@@ -71,6 +71,11 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 				getHoles().stream().map(it -> asSimplePolygon(it.transform(operation))).collect(toList()));
 	}
 
+	public PolygonWithHolesXYZ xyz(double y) {
+		return new PolygonWithHolesXYZ(getOuter().xyz(y),
+				getHoles().stream().map(it -> it.xyz(y)).toList());
+	}
+
 	@Override
 	public String toString() {
 		return getRings().toString();
