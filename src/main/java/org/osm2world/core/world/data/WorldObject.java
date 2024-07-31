@@ -155,7 +155,7 @@ public interface WorldObject {
 			return emptyList();
 		} else if (getOverlapPriority() == Integer.MAX_VALUE) {
 			// this has the highest possible priority, nothing will be subtracted
-			return getTerrainBoundariesXZ();
+			return List.of(getOutlinePolygonXZ());
 		}
 
 		SimplePolygonShapeXZ outerPoly = getOutlinePolygonXZ().getOuter();
