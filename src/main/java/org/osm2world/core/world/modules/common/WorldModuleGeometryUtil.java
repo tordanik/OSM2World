@@ -10,12 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.GeometryUtil;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.world.creation.WorldModule;
@@ -220,7 +215,7 @@ public final class WorldModuleGeometryUtil {
 
 	}
 
-	public static final Collection<TriangleXZ> trianguateAreaBetween(PolygonShapeXZ large, List<? extends PolygonShapeXZ> small) {
+	public static final Collection<TriangleXZ> triangulateAreaBetween(PolygonShapeXZ large, List<? extends PolygonShapeXZ> small) {
 
 		List<TriangleXZ> result = new ArrayList<>();
 

@@ -15,7 +15,7 @@ import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.ST
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
-import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.trianguateAreaBetween;
+import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.triangulateAreaBetween;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -147,7 +147,7 @@ public class GolfModule extends AbstractModule {
 
 					};
 
-					Collection<TriangleXZ> triangulationXZ = trianguateAreaBetween(large, small);
+					Collection<TriangleXZ> triangulationXZ = triangulateAreaBetween(large, small);
 
 					triangulationXZ.stream()
 							.map(t -> t.xyz(xyzFunction))
