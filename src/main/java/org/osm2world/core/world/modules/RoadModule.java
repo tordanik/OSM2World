@@ -26,6 +26,8 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.osm2world.core.map_data.data.*;
@@ -700,17 +702,10 @@ public class RoadModule extends ConfigurableWorldModule {
 
 			Material surface = getSurfaceForNode(node);
 
-			if (node.getTags().contains("crossing", "zebra")
-					|| node.getTags().contains("crossing_ref", "zebra")) {
+			Material markingMaterial = getMarkingMaterial(node.getTags());
 
-				surface = surface.withAddedLayers(
-						ROAD_MARKING_ZEBRA.getTextureLayers());
-
-			} else if (!node.getTags().contains("crossing", "unmarked")) {
-
-				surface = surface.withAddedLayers(
-						ROAD_MARKING_CROSSING.getTextureLayers());
-
+			if (markingMaterial != null) {
+				surface = surface.withAddedLayers(markingMaterial.getTextureLayers());
 			}
 
 			/* draw crossing */
@@ -730,6 +725,28 @@ public class RoadModule extends ConfigurableWorldModule {
 			for (LaneConnection connection : connections) {
 				connection.renderTo(target);
 			}
+
+		}
+
+		private static @Nullable Material getMarkingMaterial(TagSet tags) {
+
+			String markingType = tags.getValue("crossing:markings");
+
+			if (markingType == null) {
+				if (tags.contains("crossing", "zebra") || tags.contains("crossing_ref", "zebra")) {
+					markingType = "zebra";
+				} else if (tags.contains("crossing", "unmarked")) {
+					markingType = "no";
+				} else {
+					markingType = "yes";
+				}
+			}
+
+			return switch (markingType) {
+				case "zebra" -> ROAD_MARKING_ZEBRA;
+				case "surface", "no" -> null;
+				default -> ROAD_MARKING_CROSSING;
+			};
 
 		}
 
