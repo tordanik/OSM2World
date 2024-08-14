@@ -17,6 +17,7 @@ import static org.osm2world.core.util.ValueParseUtil.parseIncline;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -545,6 +547,15 @@ public abstract class AbstractNetworkWaySegmentWorldObject implements NetworkWay
 			return connectors.getPosXYZ(outlinePolygonXZ);
 		}
 
+	}
+
+	@Override
+	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		if (getOutlinePolygonXZ() == null) {
+			return List.of();
+		} else {
+			return List.of(getOutlinePolygonXZ());
+		}
 	}
 
 	/**

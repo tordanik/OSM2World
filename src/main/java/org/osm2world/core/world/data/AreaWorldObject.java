@@ -1,6 +1,6 @@
 package org.osm2world.core.world.data;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -16,7 +16,7 @@ public interface AreaWorldObject extends WorldObject {
 	 * @return the {@link PolygonWithHolesXZ} covered by {@link #getPrimaryMapElement()}
 	 */
 	@Override
-	default	@Nullable PolygonShapeXZ getOutlinePolygonXZ() {
+	default	@Nonnull PolygonShapeXZ getOutlinePolygonXZ() {
 		MapArea area = getPrimaryMapElement();
 		if (!area.getPolygon().getOuter().isClockwise()) {
 			return area.getPolygon();

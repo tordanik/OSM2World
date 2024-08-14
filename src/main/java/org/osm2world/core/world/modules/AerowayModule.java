@@ -10,6 +10,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parse
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -20,6 +21,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
@@ -27,7 +29,6 @@ import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -95,10 +96,15 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class Helipad extends AbstractAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		protected Helipad(MapArea area) {
 			super(area);
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return List.of(getOutlinePolygonXZ());
 		}
 
 		@Override
@@ -130,7 +136,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class Apron extends NetworkAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		public Apron(MapArea area) {
 			super(area);
@@ -151,7 +157,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 
 	/** some linear "road" on an airport, e.g. a runway or taxiway */
 	public static abstract class AerowaySegment extends AbstractNetworkWaySegmentWorldObject
-		implements TerrainBoundaryWorldObject, LegacyWorldObject {
+		implements LegacyWorldObject {
 
 		final float centerlineWidthMeters;
 
@@ -240,7 +246,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class AerowayJunction extends JunctionNodeWorldObject<AerowaySegment>
-		implements TerrainBoundaryWorldObject, LegacyWorldObject {
+		implements LegacyWorldObject {
 
 		public AerowayJunction(MapNode node) {
 			super(node, AerowaySegment.class);
@@ -260,7 +266,7 @@ public class AerowayModule extends ConfigurableWorldModule {
 	}
 
 	public static class AerowayConnector extends VisibleConnectorNodeWorldObject<AerowaySegment>
-		implements TerrainBoundaryWorldObject, LegacyWorldObject {
+		implements LegacyWorldObject {
 
 		public AerowayConnector(MapNode node) {
 			super(node, AerowaySegment.class);

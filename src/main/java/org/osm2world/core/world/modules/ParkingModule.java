@@ -6,6 +6,7 @@ import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GL
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -14,6 +15,7 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
@@ -21,7 +23,6 @@ import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -44,7 +45,7 @@ public class ParkingModule extends AbstractModule {
 	}
 
 	private static class SurfaceParking extends AbstractAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		private final List<MapArea> parkingSpaces = new ArrayList<MapArea>();
 
@@ -70,6 +71,11 @@ public class ParkingModule extends AbstractModule {
 		@Override
 		public int getOverlapPriority() {
 			return 30;
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return List.of(getOutlinePolygonXZ());
 		}
 
 		@Override

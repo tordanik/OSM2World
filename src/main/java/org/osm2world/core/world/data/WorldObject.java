@@ -115,13 +115,14 @@ public interface WorldObject {
 	}
 
 	/**
-	 * returns a list of polygons defining an object's ground footprint in the xz plane.
-	 * This area will not be covered by terrain (i.e. it will be a "hole" in the terrain surface)
-	 * or by other objects with a lower {@link #getOverlapPriority()}
+	 * returns a list of polygons defining an object's raw ground footprint in the xz plane.
+	 * The "ground" is most commonly the terrain, but could also be a different surface, such as a roof or bridge.
+	 * The true ground footprint, {@link #getGroundFootprint()}, may be smaller if other areas have a higher
+	 * {@link #getOverlapPriority()}.
 	 *
-	 * @return collection of outline polygons, empty list if the world object doesn't cover any area
+	 * @return collection of outline polygons, empty if the world object doesn't cover any area
 	 */
-	public default Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+	public default Collection<PolygonShapeXZ> getRawGroundFootprint() {
 		return emptyList();
 	}
 
@@ -182,7 +183,7 @@ public interface WorldObject {
 					}
 
 					try {
-						subtractPolys.addAll(otherWO.getTerrainBoundariesXZ());
+						subtractPolys.addAll(otherWO.getRawGroundFootprint());
 					} catch (InvalidGeometryException ignored) {
 						// Prevent errors in other objects from affecting this object
 					}
@@ -196,7 +197,7 @@ public interface WorldObject {
 		/* create "leftover" polygons by subtracting the existing ones */
 
 		if (subtractPolys.isEmpty()) {
-			return getTerrainBoundariesXZ();
+			return getRawGroundFootprint();
 		} else {
 			return new ArrayList<>(CAGUtil.subtractPolygons(outerPoly, subtractPolys));
 		}

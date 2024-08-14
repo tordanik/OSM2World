@@ -12,6 +12,7 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTex
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -20,6 +21,7 @@ import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.material.TextureLayer;
@@ -34,7 +36,6 @@ import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordUtil;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -65,7 +66,7 @@ public class SportsModule extends AbstractModule {
 	 * a pitch with markings for any sport
 	 */
 	static abstract class Pitch extends AbstractAreaWorldObject
-			implements TerrainBoundaryWorldObject, ProceduralWorldObject {
+			implements ProceduralWorldObject {
 
 		public Pitch(MapArea area) {
 
@@ -94,6 +95,11 @@ public class SportsModule extends AbstractModule {
 		 * This is usually just the base material (such as grass) without the markings.
 		 */
 		protected abstract Material getFallbackPitchMaterial();
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return List.of(getOutlinePolygonXZ());
+		}
 
 		@Override
 		public void buildMeshesAndModels(Target target) {

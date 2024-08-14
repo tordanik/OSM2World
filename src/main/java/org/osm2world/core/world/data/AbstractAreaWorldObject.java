@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapArea;
@@ -133,7 +134,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 	public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
 
 	@Override
-	public PolygonWithHolesXZ getOutlinePolygonXZ() {
+	public @Nonnull PolygonWithHolesXZ getOutlinePolygonXZ() {
 		// cache the otherwise unchanged result
 		if (outlinePolygonXZ == null) {
 			this.outlinePolygonXZ = (PolygonWithHolesXZ) AreaWorldObject.super.getOutlinePolygonXZ();

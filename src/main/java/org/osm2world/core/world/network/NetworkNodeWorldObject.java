@@ -2,12 +2,14 @@ package org.osm2world.core.world.network;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.data.OutlineNodeWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -49,6 +51,15 @@ public abstract class NetworkNodeWorldObject<S extends NetworkWaySegmentWorldObj
 			return GroundState.ON;
 		}
 
+	}
+
+	@Override
+	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		if (getOutlinePolygonXZ() == null) {
+			return List.of();
+		} else {
+			return List.of(getOutlinePolygonXZ());
+		}
 	}
 
 }

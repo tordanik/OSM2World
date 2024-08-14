@@ -24,7 +24,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 
 /**
  * superclass for roofs that have exactly one height value
@@ -129,8 +128,8 @@ abstract public class HeightfieldRoof extends Roof {
 
 		if (attachmentSurface != null) {
 			for (AttachmentConnector connector : attachmentSurface.getAttachedConnectors()) {
-				if (connector.object instanceof TerrainBoundaryWorldObject) {
-					subtractPolys.addAll(((TerrainBoundaryWorldObject)connector.object).getTerrainBoundariesXZ());
+				if (connector.object != null) {
+					subtractPolys.addAll(connector.object.getRawGroundFootprint());
 				}
 			}
 		}

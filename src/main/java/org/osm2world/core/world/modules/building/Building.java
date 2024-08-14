@@ -26,13 +26,12 @@ import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
  */
-public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, LegacyWorldObject {
+public class Building implements AreaWorldObject, LegacyWorldObject {
 
 	private final MapArea area;
 
@@ -168,7 +167,7 @@ public class Building implements AreaWorldObject, TerrainBoundaryWorldObject, Le
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getTerrainBoundariesXZ(){
+	public Collection<PolygonShapeXZ> getRawGroundFootprint(){
 		Collection<PolygonShapeXZ> shapes = new ArrayList<>();
 
 		for (BuildingPart part : parts) {

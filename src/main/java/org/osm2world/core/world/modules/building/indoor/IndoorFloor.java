@@ -1,6 +1,7 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
@@ -17,7 +18,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
 public class IndoorFloor {
@@ -80,8 +80,8 @@ public class IndoorFloor {
 
     		if (!attachmentSurfaceBool && attachmentSurface != null) {
     			for (AttachmentConnector connector : attachmentSurface.getAttachedConnectors()) {
-    				if (connector.object instanceof TerrainBoundaryWorldObject) {
-    					subtractPolys.addAll(((TerrainBoundaryWorldObject)connector.object).getTerrainBoundariesXZ());
+					if (connector.object != null) {
+    					subtractPolys.addAll(connector.object.getRawGroundFootprint());
     				}
     			}
     		}

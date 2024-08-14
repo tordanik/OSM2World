@@ -3,7 +3,6 @@ package org.osm2world.core.world.modules.building;
 import static com.google.common.collect.Iterables.getLast;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
@@ -33,7 +32,10 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.data.*;
+import org.osm2world.core.world.data.AreaWorldObject;
+import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
 import org.osm2world.core.world.modules.building.indoor.BuildingPartInterior;
@@ -148,15 +150,14 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 
 		double clearingAbovePassage = 2.5;
 
-		List<TerrainBoundaryWorldObject> buildingPassages = area.getOverlaps().stream()
+		List<WorldObject> buildingPassages = area.getOverlaps().stream()
 				.map(o -> o.getOther(area))
-				.filter(o -> o.getTags().containsAny(asList("tunnel"), asList("building_passage", "passage")))
-				.filter(o -> o.getPrimaryRepresentation() instanceof TerrainBoundaryWorldObject)
-				.map(o -> (TerrainBoundaryWorldObject)o.getPrimaryRepresentation())
-				.filter(o -> o.getOutlinePolygonXZ() != null)
+				.filter(o -> o.getTags().containsAny(List.of("tunnel"), asList("building_passage", "passage")))
+				.map(MapElement::getPrimaryRepresentation)
+				.filter(o -> !o.getRawGroundFootprint().isEmpty())
 				.filter(o -> o.getGroundState() == GroundState.ON)
 				.filter(o -> clearingAbovePassage > floorHeight)
-				.collect(toList());
+				.toList();
 
 		if (buildingPassages.isEmpty()) {
 
@@ -178,39 +179,43 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 
 			List<SimplePolygonShapeXZ> subtractPolygons = new ArrayList<>();
 
-			for (TerrainBoundaryWorldObject o : buildingPassages) {
+			for (WorldObject o : buildingPassages) {
 
-				SimplePolygonShapeXZ subtractPoly = o.getOutlinePolygonXZ().getOuter();
+				for (PolygonShapeXZ subtractPolyShape : o.getRawGroundFootprint()) {
 
-				subtractPolygons.add(subtractPoly);
+					SimplePolygonShapeXZ subtractPoly = subtractPolyShape.getOuter();
 
-				if (o instanceof WaySegmentWorldObject) {
+					subtractPolygons.add(subtractPoly);
 
-					// extend the subtract polygon for segments that end
-					// at a common node with this building part's outline.
-					// (otherwise, the subtract polygon will probably
-					// not exactly line up with the polygon boundary)
+					if (o instanceof WaySegmentWorldObject) {
 
-					WaySegmentWorldObject waySegmentWO = (WaySegmentWorldObject)o;
-					VectorXZ start = waySegmentWO.getStartPosition();
-					VectorXZ end = waySegmentWO.getEndPosition();
+						// extend the subtract polygon for segments that end
+						// at a common node with this building part's outline.
+						// (otherwise, the subtract polygon will probably
+						// not exactly line up with the polygon boundary)
 
-					boolean startCommonNode = false;
-					boolean endCommonNode = false;
+						WaySegmentWorldObject waySegmentWO = (WaySegmentWorldObject) o;
+						VectorXZ start = waySegmentWO.getStartPosition();
+						VectorXZ end = waySegmentWO.getEndPosition();
 
-					for (SimplePolygonXZ p : polygon.getRings()) {
-						startCommonNode |= p.getVertexCollection().contains(start);
-						endCommonNode |= p.getVertexCollection().contains(end);
-					}
+						boolean startCommonNode = false;
+						boolean endCommonNode = false;
 
-					VectorXZ direction = end.subtract(start).normalize();
+						for (SimplePolygonXZ p : polygon.getRings()) {
+							startCommonNode |= p.getVertexCollection().contains(start);
+							endCommonNode |= p.getVertexCollection().contains(end);
+						}
 
-					if (startCommonNode) {
-						subtractPolygons.add(subtractPoly.shift(direction));
-					}
+						VectorXZ direction = end.subtract(start).normalize();
 
-					if (endCommonNode) {
-						subtractPolygons.add(subtractPoly.shift(direction.invert()));
+						if (startCommonNode) {
+							subtractPolygons.add(subtractPoly.shift(direction));
+						}
+
+						if (endCommonNode) {
+							subtractPolygons.add(subtractPoly.shift(direction.invert()));
+						}
+
 					}
 
 				}
@@ -230,8 +235,8 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 
 			/* construct the polygons directly above the passages */
 
-			for (TerrainBoundaryWorldObject o : buildingPassages) {
-				for (PolygonShapeXZ b : o.getTerrainBoundariesXZ()) {
+			for (WorldObject o : buildingPassages) {
+				for (PolygonShapeXZ b : o.getRawGroundFootprint()) {
 
 					Collection<PolygonWithHolesXZ> raisedBuildingPartPolys;
 

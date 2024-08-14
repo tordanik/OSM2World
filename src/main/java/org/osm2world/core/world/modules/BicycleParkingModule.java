@@ -48,8 +48,8 @@ import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
+import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -80,7 +80,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 	}
 
-	public static abstract class BicycleStands implements TerrainBoundaryWorldObject {
+	public static abstract class BicycleStands implements WorldObject {
 
 		protected static final double DEFAULT_DISTANCE_BETWEEN_STANDS = 1.0;
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
@@ -205,9 +205,9 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
-			if (getSurfaceMaterial() != null) {
-				return TerrainBoundaryWorldObject.super.getTerrainBoundariesXZ();
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			if (getSurfaceMaterial() != null && getOutlinePolygonXZ() != null) {
+				return List.of(getOutlinePolygonXZ());
 			} else {
 				return emptyList();
 			}

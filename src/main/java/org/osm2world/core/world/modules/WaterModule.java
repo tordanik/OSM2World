@@ -12,6 +12,7 @@ import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.cr
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createTriangleStripBetween;
 import static org.osm2world.core.world.network.NetworkUtil.getConnectedNetworkSegments;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +23,12 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
+import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -102,7 +103,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		public Waterway(MapWaySegment line) {
 			super(line);
@@ -234,7 +235,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class RiverJunction extends JunctionNodeWorldObject<Waterway>
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		public RiverJunction(MapNode node) {
 			super(node, Waterway.class);
@@ -257,7 +258,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class Water extends NetworkAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
 		// possible algorithm: for each node of the outer polygon, check whether it
@@ -288,7 +289,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class AreaFountain extends AbstractAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		public AreaFountain(MapArea area) {
 			super(area);
@@ -297,6 +298,11 @@ public class WaterModule extends ConfigurableWorldModule {
 		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return List.of(getOutlinePolygonXZ());
 		}
 
 		@Override

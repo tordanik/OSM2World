@@ -46,7 +46,6 @@ import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -154,7 +153,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 	}
 
-	public class Rail extends AbstractNetworkWaySegmentWorldObject implements TerrainBoundaryWorldObject {
+	public class Rail extends AbstractNetworkWaySegmentWorldObject {
 
 		final double gaugeMeters;
 		final double railDist;
@@ -282,7 +281,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
 			if (!ownGround || getOutlinePolygonXZ() == null) {
 				return emptyList();
 			} else {
@@ -299,7 +298,7 @@ public class RailwayModule extends ConfigurableWorldModule {
 	}
 
 	public static class RailJunction extends JunctionNodeWorldObject<Rail>
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		public RailJunction(MapNode node) {
 			super(node, Rail.class);

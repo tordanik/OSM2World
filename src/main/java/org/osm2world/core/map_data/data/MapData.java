@@ -8,7 +8,6 @@ import java.util.List;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
 import com.google.common.base.Function;
@@ -164,8 +163,6 @@ public class MapData {
 	/**
 	 * returns all {@link WorldObject}s from elements in this data set
 	 * that are instances of a certain type.
-	 * Can be used, for example, to access all
-	 * {@link TerrainBoundaryWorldObject}s.
 	 */
 	public <T> Iterable<T> getWorldObjects(Class<T> type) {
 		return Iterables.filter(getWorldObjects(), type);

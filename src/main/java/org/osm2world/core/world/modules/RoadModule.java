@@ -49,7 +49,6 @@ import org.osm2world.core.target.common.texcoord.TexCoordUtil;
 import org.osm2world.core.util.enums.LeftRight;
 import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 import org.osm2world.core.world.network.JunctionNodeWorldObject;
@@ -571,7 +570,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 * representation for junctions between roads.
 	 */
 	public static class RoadJunction extends JunctionNodeWorldObject<Road>
-			implements TerrainBoundaryWorldObject, ProceduralWorldObject {
+			implements ProceduralWorldObject {
 
 		public RoadJunction(MapNode node) {
 			super(node, Road.class);
@@ -614,7 +613,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements TerrainBoundaryWorldObject, ProceduralWorldObject {
+		implements ProceduralWorldObject {
 
 		private static final double MAX_CONNECTOR_LENGTH = 5;
 
@@ -672,7 +671,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	 */
 	public static class RoadCrossingAtConnector
 		extends VisibleConnectorNodeWorldObject<Road>
-		implements TerrainBoundaryWorldObject, ProceduralWorldObject {
+		implements ProceduralWorldObject {
 
 		private static final double CROSSING_WIDTH = 3.0;
 
@@ -754,7 +753,7 @@ public class RoadModule extends ConfigurableWorldModule {
 
 	/** representation of a road */
 	public static class Road extends AbstractNetworkWaySegmentWorldObject
-			implements TerrainBoundaryWorldObject, ProceduralWorldObject {
+			implements ProceduralWorldObject {
 
 		protected static final double DEFAULT_LANE_WIDTH = 3.5f;
 
@@ -1301,7 +1300,7 @@ public class RoadModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public Collection<PolygonShapeXZ> getTerrainBoundariesXZ() {
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
 			if (isBroken() || getOutlinePolygonXZ() == null) {
 				return emptyList();
 			} else if (steps && attachmentConnectorList.stream().allMatch(c -> c.isAttached())
@@ -1570,7 +1569,7 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	public static class RoadArea extends NetworkAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		public RoadArea(MapArea area) {
 			super(area);

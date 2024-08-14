@@ -136,7 +136,7 @@ public class ViewerFrame extends JFrame {
 			initAndAddDebugView(subMenu, -1, false,
 					new Map2dTreeDebugView());
 			initAndAddDebugView(subMenu, VK_B, false,
-					new TerrainBoundaryDebugView());
+					new GroundFootprintDebugView());
 			initAndAddDebugView(subMenu, -1, false,
 					new WorldObjectNormalsDebugView());
 			initAndAddDebugView(subMenu, -1, false,

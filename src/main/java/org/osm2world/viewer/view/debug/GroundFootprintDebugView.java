@@ -1,21 +1,21 @@
 package org.osm2world.viewer.view.debug;
 
 import static org.osm2world.core.math.VectorXZ.listXYZ;
+import static org.osm2world.core.util.FaultTolerantIterationUtil.forEach;
 
-import java.awt.Color;
+import java.awt.*;
 
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.jogl.JOGLTarget;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 
 /**
- * draws terrain boundaries defined by world objects
+ * draws ground footprints defined by world objects
  */
-public class TerrainBoundaryDebugView extends DebugView {
+public class GroundFootprintDebugView extends DebugView {
 
 	private static final Color NODE_BOUNDARY_COLOR = Color.YELLOW;
 	private static final Color WAY_BOUNDARY_COLOR = Color.GREEN;
@@ -36,20 +36,19 @@ public class TerrainBoundaryDebugView extends DebugView {
 
 		/* draw terrain boundaries */
 
-		for (TerrainBoundaryWorldObject terrainBoundary :
-			map.getWorldObjects(TerrainBoundaryWorldObject.class)) {
+		forEach(map.getWorldObjects(), o -> {
 
-			if (terrainBoundary.getGroundState() == GroundState.ON) {
+			if (o.getGroundState() == GroundState.ON) {
 
 				Color color = NODE_BOUNDARY_COLOR;
 
-				if (terrainBoundary instanceof WaySegmentWorldObject) {
+				if (o instanceof WaySegmentWorldObject) {
 					color = WAY_BOUNDARY_COLOR;
-				} else if (terrainBoundary instanceof AreaWorldObject) {
+				} else if (o instanceof AreaWorldObject) {
 					color = AREA_BOUNDARY_COLOR;
 				}
 
-				for (PolygonShapeXZ p : terrainBoundary.getTerrainBoundariesXZ()) {
+				for (PolygonShapeXZ p : o.getRawGroundFootprint()) {
 					for (SimplePolygonShapeXZ ring : p.getRings()) {
 						target.drawLineLoop(color, 1, listXYZ(ring.vertices(), 0));
 					}
@@ -57,7 +56,7 @@ public class TerrainBoundaryDebugView extends DebugView {
 
 			}
 
-		}
+		});
 
 	}
 

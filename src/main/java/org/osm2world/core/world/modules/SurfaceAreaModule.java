@@ -29,7 +29,6 @@ import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.TerrainBoundaryWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -84,7 +83,7 @@ public class SurfaceAreaModule extends AbstractModule {
 	}
 
 	public static class SurfaceArea extends AbstractAreaWorldObject
-			implements TerrainBoundaryWorldObject, LegacyWorldObject {
+			implements LegacyWorldObject {
 
 		private final String surface;
 
@@ -199,6 +198,11 @@ public class SurfaceAreaModule extends AbstractModule {
 			} else {
 				return super.getGroundState();
 			}
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return List.of(getOutlinePolygonXZ());
 		}
 
 		@Override
