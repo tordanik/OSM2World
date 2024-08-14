@@ -81,8 +81,8 @@ public class PoolModule extends AbstractModule {
 
 			List<TriangleXYZ> triangles = getTriangulation();
 
-			target.drawTriangles(PURIFIED_WATER, triangles,
-					triangleTexCoordLists(triangles, PURIFIED_WATER, GLOBAL_X_Z));
+			target.drawTriangles(WATER, triangles,
+					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
 
 			/* draw a small area around the pool */
 

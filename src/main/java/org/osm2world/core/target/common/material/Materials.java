@@ -44,8 +44,6 @@ public final class Materials {
 
 	public static final ConfMaterial WATER =
 		new ConfMaterial(Interpolation.SMOOTH, Color.BLUE);
-	public static final ConfMaterial PURIFIED_WATER =
-			new ConfMaterial(Interpolation.SMOOTH, Color.BLUE);
 
 	public static final ConfMaterial ASPHALT =
 		new ConfMaterial(Interpolation.FLAT, new Color(0.3f, 0.3f, 0.3f));
