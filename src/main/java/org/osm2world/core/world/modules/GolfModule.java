@@ -227,7 +227,9 @@ public class GolfModule extends AbstractModule {
 
 			/* create circle around the hole */
 
-			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS).vertices(HOLE_CIRCLE_VERTICES));
+			pinHoleLoop = new SimplePolygonXZ(new CircleXZ(pinPosition, HOLE_RADIUS)
+					.vertices(HOLE_CIRCLE_VERTICES))
+					.makeCounterclockwise();
 
 			pinConnectors = new EleConnectorGroup();
 			pinConnectors.addConnectorsFor(pinHoleLoop.getVertexCollection(), area, GroundState.ON);
@@ -300,7 +302,7 @@ public class GolfModule extends AbstractModule {
 
 			List<VectorXYZ> lowerHoleRing = upperHoleRing.stream().map(v -> v.y(holeBottomEle)).collect(toList());
 
-			List<VectorXYZ> vs = createTriangleStripBetween(upperHoleRing, lowerHoleRing);
+			List<VectorXYZ> vs = createTriangleStripBetween(lowerHoleRing, upperHoleRing);
 
 			Material groundMaterial = Materials.EARTH.makeSmooth();
 
@@ -316,7 +318,7 @@ public class GolfModule extends AbstractModule {
 			target.drawColumn(flagPoleMaterial, null,
 					pos.xyz(holeBottomEle), 1.5, 0.007, 0.007, false, true);
 
-			StripedFlag flag = new StripedFlag(3 / 4, asList(YELLOW), true);
+			var flag = new StripedFlag(3.0 / 4, List.of(YELLOW), true);
 			flag.renderFlag(target, pos.xyz(holeBottomEle + 1.5), 0.3, 0.4);
 
 		}

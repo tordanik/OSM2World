@@ -93,6 +93,9 @@ public interface CommonTarget {
 	 */
 	default void drawConvexPolygon(@Nonnull Material material, @Nonnull List<VectorXYZ> vs,
 								   @Nonnull List<List<VectorXZ>> texCoordLists) {
+		if (Objects.equals(vs.get(0), vs.get(vs.size() - 1))) {
+			vs = vs.subList(0, vs.size() - 1);
+		}
 		drawTriangleFan(material, vs, texCoordLists);
 	}
 
