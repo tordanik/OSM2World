@@ -2,14 +2,7 @@ package org.osm2world.core.map_elevation.creation;
 
 import static java.util.Arrays.asList;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.osm2world.core.map_elevation.data.EleConnector;
 
@@ -158,13 +151,10 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 		for (StiffConnectorSet stiffSet : stiffSetMap.values()) {
 
-			double averageEle = 0;
-
-			for (EleConnector connector : stiffSet) {
-				averageEle += connector.getPosXYZ().y;
-			}
-
-			averageEle /= stiffSet.size();
+			double averageEle = stiffSet.connectors.stream()
+					.filter(it -> it.getPosXYZ() != null)
+					.mapToDouble(it -> it.getPosXYZ().y)
+					.average().orElse(0.0);
 
 			for (EleConnector connector : stiffSet) {
 				connector.setPosXYZ(connector.pos.xyz(averageEle));
@@ -181,10 +171,12 @@ public final class SimpleEleConstraintEnforcer implements EleConstraintEnforcer 
 
 			//TODO use clearing
 
-			switch (c.groundState) {
-			case ABOVE: c.setPosXYZ(c.getPosXYZ().addY(5)); break;
-			case BELOW: c.setPosXYZ(c.getPosXYZ().addY(-5)); break;
-			default: //stay at ground elevation
+			if (c.getPosXYZ() != null) {
+				switch (c.groundState) {
+					case ABOVE -> c.setPosXYZ(c.getPosXYZ().addY(5));
+					case BELOW -> c.setPosXYZ(c.getPosXYZ().addY(-5));
+					default -> { /* stay at ground elevation */ }
+				}
 			}
 
 		}
