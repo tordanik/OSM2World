@@ -4,8 +4,12 @@ import static java.lang.Math.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
@@ -78,28 +82,32 @@ public class SRTMData implements TerrainElevationData {
 
 		if (getTile(lon, lat) == null) {
 
-			String fileName = tileDirectory.getPath() + File.separator;
+			String fileNameRegex = "";
 
 			if (lat >= 0) {
-				fileName += String.format("N%02d", lat);
+				fileNameRegex += String.format("N%02d", lat);
 			} else {
-				fileName += String.format("S%02d", -lat);
+				fileNameRegex += String.format("S%02d", -lat);
 			}
 
 			if (lon >= 0) {
-				fileName += String.format("E%03d", lon);
+				fileNameRegex += String.format("E%03d", lon);
 			} else {
-				fileName += String.format("W%03d", -lon);
+				fileNameRegex += String.format("W%03d", -lon);
 			}
 
-			fileName += ".hgt";
+			fileNameRegex += "(?:\\.SRTMGL3)?\\.hgt(?:\\.zip)?";
 
-			File file = new File(fileName);
+			Pattern pattern = Pattern.compile(fileNameRegex);
 
-			if (file.exists()) {
-				setTile(lon, lat, new SRTMTile(file));
+			Optional<Path> path = Files.list(tileDirectory.toPath())
+					.filter(it -> pattern.matcher(it.getFileName().toString()).matches())
+					.findFirst();
+
+			if (path.isPresent()) {
+				setTile(lon, lat, new SRTMTile(path.get().toFile()));
 			} else {
-				ConversionLog.error("Missing SRTM tile " + file.getName());
+				ConversionLog.error("Missing SRTM tile " + fileNameRegex);
 			}
 
 		}

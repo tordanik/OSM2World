@@ -1,13 +1,15 @@
 package org.osm2world.core.map_elevation.creation;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.annotation.Nonnull;
 
 /**
  * a single SRTM data tile.
@@ -36,20 +38,74 @@ class SRTMTile {
 
 	private static ShortBuffer loadDataFromFile(File file) throws IOException {
 
-		try (
-			FileInputStream fis = new FileInputStream(file);
-			FileChannel fc = fis.getChannel();
-		) {
+		if (file.getName().endsWith(".zip")) {
 
-			ByteBuffer bb = ByteBuffer.allocateDirect((int) fc.size());
-			while (bb.remaining() > 0) fc.read(bb);
+			try (
+				var inputStream = new FileInputStream(file);
+				var bufferedInputStream = new BufferedInputStream(inputStream);
+				var zipInputStream = new ZipInputStream(bufferedInputStream)
+			) {
 
-			((Buffer)bb).flip();
+				ByteBuffer payloadData = null;
 
-			// choose the right endianness
-			return bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+				ZipEntry zipEntry;
+				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+					if (!zipEntry.isDirectory()) {
+
+						byte[] buffer = new byte[2048];
+						var bos = new ByteArrayOutputStream();
+						int len;
+						while ((len = zipInputStream.read(buffer)) > 0) {
+							bos.write(buffer,0, len);
+						}
+						// convert bytes to string
+						byte[] zipFileBytes = bos.toByteArray();
+						payloadData = ByteBuffer.wrap(zipFileBytes);
+						payloadData.position(zipFileBytes.length);
+
+						break;
+
+					}
+				}
+
+				if (payloadData == null) {
+					throw new IOException("No hgt payload file found in zip archive " + file);
+				} else {
+					return loadDataFromByteBuffer(payloadData);
+				}
+
+			}
+
+		} else {
+
+			try (
+				FileInputStream fis = new FileInputStream(file);
+				FileChannel fc = fis.getChannel()
+			) {
+
+				ByteBuffer bb = ByteBuffer.allocateDirect((int) fc.size());
+				while (bb.remaining() > 0) fc.read(bb);
+
+				return loadDataFromByteBuffer(bb);
+
+			}
 
 		}
+
+	}
+
+	private static ShortBuffer loadDataFromByteBuffer(@Nonnull ByteBuffer data) throws IOException {
+
+		((Buffer)data).flip();
+
+		// choose the right endianness
+		ShortBuffer shortBuffer = data.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+
+		if (shortBuffer.capacity() < 1201 * 1201) {
+			throw new IOException("Too few elevation values read from SRTM tile: " + shortBuffer.capacity());
+		}
+
+		return shortBuffer;
 
 	}
 

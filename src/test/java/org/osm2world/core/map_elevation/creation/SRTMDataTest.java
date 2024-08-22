@@ -25,6 +25,9 @@ public class SRTMDataTest {
 		var bounds1 = new LatLonBounds(4.1, 33.1, 4.2, 33.2);
 		Assert.assertFalse(srtmData.getSites(projectBounds(projection, bounds1)).isEmpty());
 
+		var bounds2 = new LatLonBounds(4.1, 34.1, 4.2, 34.2);
+		Assert.assertFalse(srtmData.getSites(projectBounds(projection, bounds2)).isEmpty());
+
 	}
 
 	private static AxisAlignedRectangleXZ projectBounds(OrthographicAzimuthalMapProjection projection, LatLonBounds latLonBounds) {
