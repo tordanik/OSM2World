@@ -2,8 +2,7 @@ package org.osm2world.viewer.control.actions;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 public class HelpControlsAction extends AbstractAction {
 
@@ -18,8 +17,8 @@ public class HelpControlsAction extends AbstractAction {
 		JOptionPane.showMessageDialog(null, "OSM2World GUI Controls:\n"
 				+ "* left mouse button moves the camera position\n"
 				+ "* right mouse button rotates the camera direction\n"
-				+ "* mouse wheel moves the camera closer to" +
-						" or away from the ground\n",
+				+ "* mouse wheel or touchpad zoom moves the camera closer to or away from the ground\n"
+				+ "* various forms of keyboard input are supported",
 				"About OSM2World", JOptionPane.INFORMATION_MESSAGE);
 	}
 
