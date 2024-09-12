@@ -394,7 +394,7 @@ public class GltfTarget extends MeshTarget {
 				new MergeMeshes(mergeOptions)));
 
 		if (clipToBounds && bounds != null) {
-			processingSteps.add(1, new ClipToBounds(bounds));
+			processingSteps.add(1, new ClipToBounds(bounds, true));
 		}
 
 		MeshStore processedMeshStore = meshStore.process(processingSteps);

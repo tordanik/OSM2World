@@ -183,7 +183,7 @@ public final class GeometryUtil {
 
 	/**
 	 * returns the position vector where two line segments intersect.
-	 * The lines are given by a point on the line and a direction vector each.
+	 * The line segments are defined by two points each.
 	 * Result is null if the lines are parallel or have more than one common point.
 	 */
 	public static final VectorXZ getLineSegmentIntersection(

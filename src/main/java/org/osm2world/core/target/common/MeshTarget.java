@@ -3,8 +3,10 @@ package org.osm2world.core.target.common;
 import static java.awt.Color.WHITE;
 import static java.lang.Math.min;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.math.GeometryUtil.isRightOf;
 
 import java.awt.*;
 import java.util.List;
@@ -13,9 +15,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
@@ -24,6 +24,7 @@ import org.osm2world.core.target.common.MeshStore.MeshWithMetadata;
 import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.material.TextureLayer.TextureType;
 import org.osm2world.core.target.common.mesh.*;
+import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -478,13 +479,7 @@ public class MeshTarget extends AbstractTarget {
 	}
 
 	/** removes all geometry outside a bounding shape */
-	public static class ClipToBounds implements MeshProcessingStep {
-
-		private final SimpleClosedShapeXZ bounds;
-
-		public ClipToBounds(SimpleClosedShapeXZ bounds) {
-			this.bounds = bounds;
-		}
+	public record ClipToBounds(SimpleClosedShapeXZ bounds, boolean splitTriangles) implements MeshProcessingStep {
 
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
@@ -496,21 +491,38 @@ public class MeshTarget extends AbstractTarget {
 				Mesh mesh = meshWithMetadata.mesh();
 				TriangleGeometry tg = mesh.geometry.asTriangles();
 
-				/* mark triangles outside the bounds for removal */
+				Map<TriangleXYZ, Collection<TriangleXYZ>> trianglesToReplace = new HashMap<>();
 
-				Set<TriangleXYZ> trianglesToRemove = new HashSet<>();
+				if (!splitTriangles) {
 
-				for (TriangleXYZ t : tg.triangles) {
-					if (!bounds.contains(t.getCenter().xz())) {
-						trianglesToRemove.add(t);
+					/* mark triangles outside the bounds for removal */
+
+					for (TriangleXYZ t : tg.triangles) {
+						if (!bounds.contains(t.getCenter().xz())) {
+							trianglesToReplace.put(t, emptyList());
+						}
 					}
+
+				} else {
+
+					List<LineSegmentXZ> boundingSegments = getSegmentsCCW(bounds);
+
+					// TODO: speed up by calculating an inner box for bounds
+					// -> if it contains tBbox, the triangle is safely inside the bounds
+					// var tBbox = AxisAlignedRectangleXZ.bbox(t.vertices());
+
+					for (TriangleXYZ originalTriangle : tg.triangles) {
+						Collection<TriangleXYZ> splitTriangles = clipToBounds(originalTriangle, boundingSegments);
+						if (splitTriangles.size() != 1 || !splitTriangles.contains(originalTriangle)) {
+							trianglesToReplace.put(originalTriangle, splitTriangles);
+						}
+					}
+
 				}
 
 				/* build a new mesh without the triangles outside the bounds */
 
-				if (trianglesToRemove.size() == tg.triangles.size()) {
-					// entire mesh has been removed
-				} else if (trianglesToRemove.isEmpty()) {
+				if (trianglesToReplace.isEmpty()) {
 					result.add(meshWithMetadata);
 				} else {
 
@@ -526,9 +538,12 @@ public class MeshTarget extends AbstractTarget {
 					}
 
 					for (int i = 0; i < tg.triangles.size(); i++) {
-						if (!trianglesToRemove.contains(tg.triangles.get(i))) {
 
-							newTriangles.add(tg.triangles.get(i));
+						TriangleXYZ triangle = tg.triangles.get(i);
+
+						if (!trianglesToReplace.containsKey(triangle)) {
+
+							newTriangles.add(triangle);
 
 							for (int j = 0; j <= 2; j++) {
 
@@ -544,18 +559,114 @@ public class MeshTarget extends AbstractTarget {
 
 							}
 
+						} else if (!trianglesToReplace.get(triangle).isEmpty()) {
+
+							/* get the triangle's original vertex attributes */
+
+							LColor[] origColors = newColors == null ? null : new LColor[3];
+							VectorXYZ[] origNormals = new VectorXYZ[3];
+							List<VectorXZ[]> origTexCoords = new ArrayList<>(tg.texCoords.size());
+
+							for (int layer = 0; layer < tg.texCoords.size(); layer++) {
+								origTexCoords.add(new VectorXZ[3]);
+							}
+
+							for (int j = 0; j <= 2; j++) {
+
+								if (origColors != null) {
+									origColors[j] = LColor.fromAWT(tg.colors.get(3 * i + j));
+								}
+
+								origNormals[j] = normals.get(3 * i + j);
+
+								for (int layer = 0; layer < tg.texCoords.size(); layer ++) {
+									origTexCoords.get(layer)[j] = tg.texCoords.get(layer).get(3 * i + j);
+								}
+
+							}
+
+							/* determine the new triangles' vertex attributes by interpolating on the original triangle */
+
+							TriangleXZ projectedTriangle = new TriangleXZ(
+									triangle.toFacePlane(triangle.v1),
+									triangle.toFacePlane(triangle.v2),
+									triangle.toFacePlane(triangle.v3)
+							);
+
+							for (TriangleXYZ newTriangle : trianglesToReplace.get(triangle)) {
+
+								newTriangles.add(newTriangle);
+
+								for (int j = 0; j <= 2; j++) {
+
+									VectorXZ projectedV = triangle.toFacePlane(newTriangle.vertices().get(j));
+
+									if (origColors != null) {
+										newColors.add(GeometryUtil.interpolateOnTriangle(projectedV, projectedTriangle,
+												origColors[0], origColors[1], origColors[2]).toAWT());
+									}
+
+									newNormals.add(GeometryUtil.interpolateOnTriangle(projectedV, projectedTriangle,
+											origNormals[0], origNormals[1], origNormals[2]));
+
+									for (int layer = 0; layer < tg.texCoords.size(); layer ++) {
+										newTexCoords.get(layer).add(
+												GeometryUtil.interpolateOnTriangle(projectedV, projectedTriangle,
+														origTexCoords.get(layer)[0],
+														origTexCoords.get(layer)[1],
+														origTexCoords.get(layer)[2])
+										);
+									}
+
+								}
+
+							}
+
 						}
+
 					}
 
-					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(newTexCoords.size(), null, null);
-					builder.addTriangles(newTriangles, newTexCoords, newColors, newNormals);
-					result.add(new MeshWithMetadata(new Mesh(builder.build(), mesh.material), meshWithMetadata.metadata()));
+					if (!newTriangles.isEmpty()) {
+						TriangleGeometry.Builder builder = new TriangleGeometry.Builder(newTexCoords.size(), null, null);
+						builder.addTriangles(newTriangles, newTexCoords, newColors, newNormals);
+						result.add(new MeshWithMetadata(new Mesh(builder.build(), mesh.material), meshWithMetadata.metadata()));
+					}
 
 				}
 
 			}
 
 			return new MeshStore(result);
+
+		}
+
+		static List<LineSegmentXZ> getSegmentsCCW(SimpleClosedShapeXZ bounds) {
+			List<LineSegmentXZ> boundingSegments = bounds.getSegments();
+			if (bounds.isClockwise()) {
+				boundingSegments = boundingSegments.stream().map(LineSegmentXZ::reverse).toList();
+			}
+			return boundingSegments;
+		}
+
+		static Collection<TriangleXYZ> clipToBounds(TriangleXYZ triangle, List<LineSegmentXZ> boundingSegments) {
+
+			Collection<TriangleXYZ> splitTriangles = List.of(triangle);
+
+			for (LineSegmentXZ segment : boundingSegments) {
+
+				Collection<TriangleXYZ> newSplitTriangles = new ArrayList<>();
+
+				FaultTolerantIterationUtil.forEach(splitTriangles, t -> {
+					newSplitTriangles.addAll(t.split(segment.toLineXZ()));
+				});
+
+				newSplitTriangles.removeIf(it -> isRightOf(it.getCenter().xz(), segment.p1, segment.p2));
+
+				splitTriangles = newSplitTriangles;
+
+			}
+
+			return splitTriangles;
 
 		}
 

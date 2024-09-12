@@ -3,10 +3,13 @@ package org.osm2world.core.math;
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.osm2world.core.math.JTSConversionUtil.*;
+import static org.osm2world.core.math.JTSConversionUtil.fromJTS;
+import static org.osm2world.core.math.JTSConversionUtil.toJTS;
 
 import java.util.List;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineSegment;
@@ -50,9 +53,6 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	 * the line segment defined by the parameters
 	 */
 	public boolean intersects(VectorXZ segmentP1, VectorXZ segmentP2) {
-		// TODO: (performance): passing "vector TO second point", rather than
-		// point2, would avoid having to calc it here - and that information
-		// could be reused for all comparisons involving the segment
 		return getIntersection(segmentP1, segmentP2) != null;
 	}
 
@@ -61,11 +61,7 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	 * the line segment defined by the parameters;
 	 * null if none exists.
 	 */
-	public VectorXZ getIntersection(VectorXZ segmentP1, VectorXZ segmentP2) {
-		// TODO: (performance): passing "vector TO second point", rather than
-		// point2, would avoid having to calc it here - and that information
-		// could be reused for all comparisons involving the segment
-
+	public @Nullable VectorXZ getIntersection(VectorXZ segmentP1, VectorXZ segmentP2) {
 		return GeometryUtil.getTrueLineSegmentIntersection(
 				segmentP1, segmentP2, p1, p2);
 	}
@@ -117,6 +113,10 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 		}
 	}
 
+	public LineXZ toLineXZ() {
+		return new LineXZ(p1, p2);
+	}
+
 	@Override
 	public String toString() {
 		return "[" + p1 + ", " + p2 + "]";
@@ -134,8 +134,7 @@ public class LineSegmentXZ implements PolylineShapeXZ {
 	@Override
 	public final boolean equals(Object obj) {
 
-		if (obj instanceof LineSegmentXZ) {
-			LineSegmentXZ other = (LineSegmentXZ) obj;
+		if (obj instanceof LineSegmentXZ other) {
 			return p1.equals(other.p1) && p2.equals(other.p2);
 		} else {
 			return false;

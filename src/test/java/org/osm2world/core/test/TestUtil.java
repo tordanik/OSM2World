@@ -2,16 +2,15 @@ package org.osm2world.core.test;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.awt.*;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
@@ -136,6 +135,10 @@ public final class TestUtil {
 
 	public static final void assertAlmostEquals(SimplePolygonShapeXZ expected, SimplePolygonShapeXZ actual) {
 		assertAlmostEquals(expected.verticesNoDup(), actual.verticesNoDup());
+	}
+
+	public static final void assertAlmostEquals(TriangleXYZ expected, TriangleXYZ actual) {
+		assertAlmostEqualsXYZ(expected.verticesNoDup(), actual.verticesNoDup());
 	}
 
 	public static final void assertAlmostEquals(PolygonXYZ expected, PolygonXYZ actual) {

@@ -1,5 +1,6 @@
 package org.osm2world.core.math;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -31,6 +32,18 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 	@Override
 	public List<VectorXYZ> vertices() {
 		return ImmutableList.of(v1, v2, v3, v1);
+	}
+
+	/**
+	 * returns the line segments connecting each successive pair of vertices.
+	 * The order is always (v1, v2), (v2, v3), (v3, v1).
+	 */
+	public List<LineSegmentXYZ> segments() {
+		return List.of(
+				new LineSegmentXYZ(v1, v2),
+				new LineSegmentXYZ(v2, v3),
+				new LineSegmentXYZ(v3, v1)
+		);
 	}
 
 	/**
@@ -85,6 +98,85 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 	@Override
 	public String toString() {
 		return "[" + v1 + ", " + v2 + ", " + v3 + "]";
+	}
+
+	/**
+	 * splits this triangle where it intersects a plane.
+	 * The splitting plane is defined by a line in the XZ plane and expands vertically up and down from it.
+	 * If the line does not split this triangle, the unaltered triangle is returned.
+	 */
+	public Collection<TriangleXYZ> split(LineXZ l) {
+
+		/* find intersections between the line and each of the triangle's sides */
+
+		List<LineSegmentXYZ> segments = this.segments();
+		VectorXYZ[] intersections = new VectorXYZ[3];
+		int numIntersections = 0;
+
+		for (int i = 0; i < 3; i++) {
+			LineSegmentXYZ segment = segments.get(i);
+			if (!segment.p1.xz().equals(segment.p2.xz())) {
+				VectorXZ intersectionXZ = l.getIntersection(segment.getSegmentXZ());
+				if (intersectionXZ != null) {
+					double ratio = segment.p1.distanceToXZ(intersectionXZ) / segment.getSegmentXZ().getLength();
+					intersections[i] = GeometryUtil.interpolateBetween(segment.p1, segment.p2, ratio);
+					numIntersections++;
+				}
+			}
+		}
+
+		/* check if any points are (almost) exactly on the line and handle those special cases */
+
+		boolean v1OnLine = l.distanceToXZ(v1) < 0.001;
+		boolean v2OnLine = l.distanceToXZ(v2) < 0.001;
+		boolean v3OnLine = l.distanceToXZ(v3) < 0.001;
+
+		if (v1OnLine && intersections[1] != null) {
+			return List.of(
+					new TriangleXYZ(v1, v2, intersections[1]),
+					new TriangleXYZ(v3, v1, intersections[1])
+			);
+		} if (v2OnLine && intersections[2] != null) {
+			return List.of(
+					new TriangleXYZ(v2, v3, intersections[2]),
+					new TriangleXYZ(v1, v2, intersections[2])
+			);
+		} else if (v3OnLine && intersections[0] != null) {
+			return List.of(
+					new TriangleXYZ(v3, v1, intersections[0]),
+					new TriangleXYZ(v2, v3, intersections[0])
+			);
+		}
+
+		/* handle cases where the line only touches the triangle or passes by it entirely */
+
+		if (numIntersections != 2) {
+			return List.of(this);
+		}
+
+		/* common case where the line intersects two sides: split the triangle at the two intersections */
+
+		if (intersections[0] == null) {
+			return List.of(
+					new TriangleXYZ(v3, intersections[2], intersections[1]),
+					new TriangleXYZ(v1, intersections[1], intersections[2]),
+					new TriangleXYZ(v2, intersections[1], v1)
+			);
+		} else if (intersections[1] == null) {
+			return List.of(
+					new TriangleXYZ(v1, intersections[0], intersections[2]),
+					new TriangleXYZ(v2, intersections[2], intersections[0]),
+					new TriangleXYZ(v3, intersections[2], v2)
+			);
+		} else {
+			assert intersections[2] == null;
+			return List.of(
+					new TriangleXYZ(v2, intersections[1], intersections[0]),
+					new TriangleXYZ(v3, intersections[0], intersections[1]),
+					new TriangleXYZ(v1, intersections[0], v3)
+			);
+		}
+
 	}
 
 }

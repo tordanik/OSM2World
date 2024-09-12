@@ -5,13 +5,24 @@ import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
 import static org.osm2world.core.math.GeometryUtil.*;
 import static org.osm2world.core.math.VectorXZ.*;
-import static org.osm2world.core.test.TestUtil.*;
+import static org.osm2world.core.test.TestUtil.anyVectorXZ;
+import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
 import java.util.List;
 
 import org.junit.Test;
 
 public class GeometryUtilTest {
+
+	@Test
+	public void testGetLineSegmentIntersection() {
+
+		var l1 = new LineSegmentXZ(new VectorXZ(-1, -1), new VectorXZ(1, 1));
+		var l2 = new LineSegmentXZ(new VectorXZ(1, -1), new VectorXZ(-1, 1));
+
+		assertEquals(new VectorXZ(0, 0), getLineSegmentIntersection(l1.p1, l1.p2, l2.p1, l2.p2));
+
+	}
 
 	@Test
 	public void testIsRightOf() {

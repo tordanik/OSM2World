@@ -698,7 +698,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		/* pre-process meshes */
 
 		List<MeshStore.MeshProcessingStep> processingSteps = new ArrayList<>(List.of(
-				new ClipToBounds(bbox),
+				new ClipToBounds(bbox, true),
 				new MergeMeshes(EnumSet.of(SEPARATE_NORMAL_MODES, SINGLE_COLOR_MESHES, PRESERVE_GEOMETRY_TYPES))
 		));
 

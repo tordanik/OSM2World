@@ -1,7 +1,10 @@
 package org.osm2world.core.math;
 
+import static org.junit.Assert.assertEquals;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
+
+import java.util.List;
 
 import org.junit.Test;
 
@@ -61,6 +64,32 @@ public class TriangleXYZTest {
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(0, 0, 0),
 				new VectorXYZ(1, 2, 3));
+
+	}
+
+	@Test
+	public void testSplitTriangleOnLine() {
+
+		var l = new LineXZ(new VectorXZ(0, -10), new VectorXZ(0, +10));
+
+		var t0 = new TriangleXYZ(new VectorXYZ(-2, 0, 0), new VectorXYZ(-1, 0, 0), new VectorXYZ(-1.5, 1, 0));
+		assertEquals(List.of(t0), t0.split(l).stream().toList());
+
+		var t1 = new TriangleXYZ(new VectorXYZ(-1, 0, 0), new VectorXYZ(2, 0, 0), new VectorXYZ(0.5, 1, 0));
+		var result1 = t1.split(l);
+		assertEquals(3, result1.size());
+
+		var t2 = t1.shift(new VectorXYZ(0, 42, 0));
+		var result2 = t2.split(l);
+		assertEquals(3, result2.size());
+
+		var t3 = new TriangleXYZ(new VectorXYZ(-1, 0, 0), new VectorXYZ(+1, 0, 0), new VectorXYZ(0, -1, 0));
+		var result3 = t3.split(l);
+		assertEquals(2, result3.size());
+
+		var t4 = new TriangleXYZ(new VectorXYZ(-1, 0, 0), new VectorXYZ(+1, 0, 0), new VectorXYZ(+1, 10, 0));
+		var result4 = t4.split(l);
+		assertEquals(3, result4.size());
 
 	}
 
