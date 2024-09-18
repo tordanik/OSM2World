@@ -529,7 +529,7 @@ public class TrafficSignModule extends AbstractModule {
 	static boolean isInHighway(MapNode node) {
 		for (MapWaySegment way : node.getConnectedWaySegments()) {
 			if (way.getTags().containsKey("highway")
-					&& !asList("path", "footway", "platform").contains(way.getTags().getValue("highway"))) {
+					&& !"platform".equals(way.getTags().getValue("highway"))) {
 				return true;
 			}
 		}
