@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -306,23 +304,28 @@ public class TrafficSignModule extends AbstractModule {
 	private void createSignFromHighwayNode(MapNode node) {
 
 		String tagValue = "";
-		ForwardBackward signDirection;
+		@Nullable ForwardBackward relativeSignDirection;
 
 		// TODO: allow traffic_sign:forward and traffic_sign:backward to be tagged at the same time
 
 		if (node.getTags().containsKey("traffic_sign:forward")) {
 			tagValue = node.getTags().getValue("traffic_sign:forward");
-			signDirection = FORWARD;
+			relativeSignDirection = FORWARD;
 		} else if (node.getTags().containsKey("traffic_sign:backward")) {
 			tagValue = node.getTags().getValue("traffic_sign:backward");
-			signDirection = BACKWARD;
-		} else if (node.getTags().containsKey("traffic_sign")) {
-			tagValue = node.getTags().getValue("traffic_sign");
-			signDirection = FORWARD;
+			relativeSignDirection = BACKWARD;
 		} else {
-			//in case of highway=give_way/stop, treat sign as if it was mapped as forward:
-			//affect vehicles moving in the way's direction if no explicit direction tag is defined
-			signDirection = FORWARD;
+			if (node.getTags().containsKey("traffic_sign")) {
+				tagValue = node.getTags().getValue("traffic_sign");
+			}
+			// sign direction is relevant even if no traffic_sign is present (for highway=give_way/stop)
+			if (node.getTags().containsAny(List.of("direction", "traffic_sign:direction"), List.of("forward"))) {
+				relativeSignDirection = FORWARD;
+			} else if (node.getTags().containsAny(List.of("direction", "traffic_sign:direction"), List.of("backward"))) {
+				relativeSignDirection = BACKWARD;
+			} else {
+				relativeSignDirection = null;
+			}
 		}
 
 		/* get the list of traffic signs from the tag's value */
@@ -343,14 +346,14 @@ public class TrafficSignModule extends AbstractModule {
 
 		MapWaySegment segment = node.getConnectedWaySegments().get(0);
 		LeftRight side = RoadModule.getDrivingSide(segment, config);
-		double direction = calculateDirection(node);
+		double direction = calculateDirection(node, relativeSignDirection);
 
 		List<VectorXZ> positions = new ArrayList<>();
 
-		positions.add(calculateSignPosition(node, segment, side, signDirection, true));
+		positions.add(calculateSignPosition(node, segment, side, relativeSignDirection, true));
 
 		if (node.getTags().contains("side", "both")) {
-			positions.add(calculateSignPosition(node, segment, side.invert(), signDirection, true));
+			positions.add(calculateSignPosition(node, segment, side.invert(), relativeSignDirection, true));
 		}
 
 		/* create a visual representation of the group of signs at each position */
@@ -724,11 +727,12 @@ public class TrafficSignModule extends AbstractModule {
 	}
 
 	/**
+	 * Calculates the direction for traffic sign nodes that are part of ways.
 	 * Same as {@link #calculateDirection(MapWaySegment, ForwardBackward)} but also parses the node's
 	 * tags for the direction specification and takes into account the
-	 * highway=give_way/stop special case. To be used on nodes that are part of ways.
+	 * highway=give_way/stop special case.
 	 */
-	private static double calculateDirection(MapNode node) {
+	private static double calculateDirection(MapNode node, @Nullable ForwardBackward relativeDirection) {
 
 		if (node.getConnectedWaySegments().isEmpty()) {
 			ConversionLog.warn("Node " + node + " is not part of a way.");
@@ -740,32 +744,16 @@ public class TrafficSignModule extends AbstractModule {
 		//Direction the way the node is part of, is facing
 		VectorXZ wayDir = node.getConnectedWaySegments().get(0).getDirection();
 
-		if (nodeTags.containsKey("direction")) {
+		//Explicit direction mapped as angle or cardinal direction (if any)
+		Double direction = parseDirection(nodeTags);
 
-			if (!nodeTags.containsAny(List.of("direction"), List.of("forward", "backward"))) {
-				//get direction mapped as angle or cardinal direction
-				return parseDirection(nodeTags, PI);
-			} else if (nodeTags.contains("direction", "backward")) {
-				return wayDir.angle();
-			}
-
-		} else if (nodeTags.containsKey("traffic_sign:forward") || nodeTags.containsKey("traffic_sign:backward")) {
-
-			String regex = "traffic_sign:(forward|backward)";
-			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher;
-
-			for (Tag tag : nodeTags) {
-
-				matcher = pattern.matcher(tag.key);
-
-				if (matcher.matches()) {
-
-					if (matcher.group(1).equals("backward")) {
-						return wayDir.angle();
-					}
-				}
-			}
+		if (direction != null) {
+			return direction;
+		} else if (relativeDirection != null) {
+			return switch (relativeDirection) {
+				case FORWARD -> wayDir.invert().angle();
+				case BACKWARD -> wayDir.angle();
+			};
 		} else if (nodeTags.containsAny(List.of("highway"), List.of("give_way", "stop"))) {
 
 			/*

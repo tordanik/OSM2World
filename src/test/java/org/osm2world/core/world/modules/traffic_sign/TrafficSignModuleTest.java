@@ -1,14 +1,21 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
+import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.osm2world.core.world.modules.traffic_sign.TrafficSignModule.findClosestJunction;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.configuration.MapConfiguration;
 import org.junit.Test;
+import org.osm2world.core.ConversionFacade;
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
@@ -16,6 +23,66 @@ import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.RoadModule.Road;
 
 public class TrafficSignModuleTest {
+
+	@Test
+	public void testSignFromHighwayNode() throws IOException {
+
+		List<TagSet> inputs = List.of(
+				TagSet.of("traffic_sign", "DE:240", "direction", "backward"),
+				TagSet.of("traffic_sign", "DE:240", "traffic_sign:direction", "backward"),
+				TagSet.of("traffic_sign:backward", "DE:240"),
+				TagSet.of("traffic_sign", "DE:240", "direction", "forward"),
+				TagSet.of("traffic_sign", "DE:240", "traffic_sign:direction", "forward"),
+				TagSet.of("traffic_sign:forward", "DE:240"),
+				TagSet.of("traffic_sign", "DE:240", "direction", "NW"),
+				TagSet.of("traffic_sign", "DE:240", "direction", "backward", "side", "both")
+
+		);
+
+		List<List<TrafficSignGroup>> results = new ArrayList<>();
+
+		for (TagSet signTags : inputs) {
+
+			/* prepare fake map data */
+
+			TestMapDataGenerator generator = new TestMapDataGenerator();
+
+			MapNode nodeBefore = generator.createNode(0, 0);
+			MapNode nodeSign = generator.createNode(1, 1, signTags);
+			MapNode nodeAfter = generator.createNode(2, 2);
+
+			generator.createWay(List.of(nodeBefore, nodeSign, nodeAfter), TagSet.of("highway", "tertiary"));
+
+			/* generate models */
+
+			var proj = new MetricMapProjection(new LatLon(0, 0));
+			var result = new ConversionFacade().createRepresentations(
+					proj, generator.createMapData(), null, null, null);
+
+			/* extract results */
+
+			results.add(nodeSign.getRepresentations().stream()
+					.filter(it -> it instanceof TrafficSignGroup)
+					.map(TrafficSignGroup.class::cast)
+					.toList());
+
+		}
+
+		/* check the results */
+
+		assertEquals(PI * 0.25, results.get(0).get(0).direction, 0.01);
+		assertEquals(PI * 0.25, results.get(1).get(0).direction, 0.01);
+		assertEquals(PI * 0.25, results.get(2).get(0).direction, 0.01);
+		assertEquals(PI * 1.25, results.get(3).get(0).direction, 0.01);
+		assertEquals(PI * 1.25, results.get(4).get(0).direction, 0.01);
+		assertEquals(PI * 1.25, results.get(5).get(0).direction, 0.01);
+		assertEquals(PI * 1.75, results.get(6).get(0).direction, 0.01);
+
+		assertEquals(2, results.get(7).size());
+		assertEquals(PI * 0.25, results.get(7).get(0).direction, 0.01);
+		assertEquals(PI * 0.25, results.get(7).get(1).direction, 0.01);
+
+	}
 
 	@Test
 	public void zeroConnectedJunctions() throws Exception {
