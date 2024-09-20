@@ -132,10 +132,6 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 			buildingPartInterior = null;
 		}
 
-		for (Level level : levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND))) {
-			getBuilding().addListWindowNodes(area.getBoundaryNodes(), level.level);
-		}
-
 	}
 
 	/** creates the walls, floors etc. making up this part */

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.math.IntRange;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.target.Target;
@@ -42,10 +43,6 @@ public class IndoorRoom implements AreaWorldObject, LegacyWorldObject {
                 data.getPolygon(),
                 data.getTopOfTopLevelHeightAboveBase(),
                 data.getRenderableLevels().contains(data.getMaxLevel()), data.getMaxLevel());
-
-        if (data.getMapElement() instanceof MapArea) {
-            data.getLevels().forEach(l ->  data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), l));
-        }
 
     }
 
@@ -89,6 +86,10 @@ public class IndoorRoom implements AreaWorldObject, LegacyWorldObject {
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
 		return emptyList();
+	}
+
+	public IntRange getLevelRange() {
+		return new IntRange(floor.level, ceiling.level);
 	}
 
 }

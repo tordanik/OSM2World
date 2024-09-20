@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.MapNode;
+import org.osm2world.core.map_data.data.MapSegment;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.*;
@@ -28,8 +29,12 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
+import org.osm2world.core.world.modules.building.indoor.Corridor;
+import org.osm2world.core.world.modules.building.indoor.IndoorArea;
+import org.osm2world.core.world.modules.building.indoor.IndoorRoom;
 
 import com.google.common.collect.Streams;
 
@@ -260,7 +265,7 @@ public class Wall implements Renderable {
 					} else if (node.getTags().containsKey("window")
 							&& !node.getTags().contains("window", "no")) {
 
-						boolean transparent = buildingPart.getBuilding().queryWindowSegments(node, level);
+						boolean transparent = determineWindowTransparency(node, level);
 
 						TagSet windowTags = inheritTags(node.getTags(), tags);
 						WindowParameters params = new WindowParameters(windowTags, buildingPart.levelStructure.level(level).height);
@@ -389,6 +394,37 @@ public class Wall implements Renderable {
 		for (int i = 0; i < numDoors; i++) {
 			VectorXZ pos = new VectorXZ(surface.getLength() / numDoors * (i + 0.5), 0);
 			surface.addElementIfSpaceFree(new Door(pos, DoorParameters.fromTags(doorTags, TagSet.of())));
+		}
+
+	}
+
+	/**
+	 * checks if a window should be transparent.
+	 * For windows in an outer wall, this is the case if the indoor space behind the window has been mapped.
+	 */
+	public static boolean determineWindowTransparency(MapNode node, int level) {
+
+		List<? extends WorldObject> connectedFeatures = node.getConnectedSegments().stream()
+				.map(MapSegment::getElement)
+				.flatMap(it -> it.getRepresentations().stream())
+				.toList();
+
+		if (connectedFeatures.stream().anyMatch(it -> it instanceof BuildingPart)) {
+			// window in the outer wall, check if indoor space behind it is mapped
+			return connectedFeatures.stream().anyMatch(it -> {
+				if (it instanceof IndoorRoom r) {
+					return r.getLevelRange().containsInteger(level);
+				} else if (it instanceof Corridor c) {
+					return c.getLevelRange().containsInteger(level);
+				} else if (it instanceof IndoorArea a) {
+					return a.getFloorLevel() == level;
+				} else {
+					return false;
+				}
+			});
+		} else {
+			return true;
+			// TODO check if both sides are mapped. Indoor mapping might be incomplete.
 		}
 
 	}

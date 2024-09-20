@@ -1,10 +1,11 @@
 package org.osm2world.core.map_data.data;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
+
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
 
 /**
  * connection between two {@link MapNode}s that's part of a polyline or polygon.
@@ -112,6 +113,17 @@ public abstract class MapSegment {
 				&& startNode == other.getEndNode())
 			|| (endNode == other.getEndNode()
 				&& startNode == other.getStartNode());
+	}
+
+	/** returns the {@link MapElement} a segment is part of */
+	public static MapElement getElement(MapSegment s) {
+		if (s instanceof MapWaySegment w) {
+			return w;
+		} else if (s instanceof MapAreaSegment a) {
+			return a.getArea();
+		} else {
+			throw new Error("segment must be part of a way or area");
+		}
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.math.IntRange;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.PolygonWithHolesXZ;
@@ -33,11 +34,6 @@ public class Corridor implements AreaWorldObject, LegacyWorldObject {
         Material material = data.getMaterial(BuildingDefaults.getDefaultsFor(data.getBuildingPart().getTags()).materialWall);
         PolygonWithHolesXZ polygon = data.getPolygon();
         double floorHeight = data.getLevelHeightAboveBase();
-
-        /* allow for transparent windows for adjacent objects */
-        if (data.getMapElement() instanceof MapArea) {
-            data.getLevels().forEach(l -> data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), l));
-        }
 
         floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight,
                 data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
@@ -80,6 +76,10 @@ public class Corridor implements AreaWorldObject, LegacyWorldObject {
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
 		return emptyList();
+	}
+
+	public IntRange getLevelRange() {
+		return new IntRange(floor.level, ceiling.level);
 	}
 
 }

@@ -9,6 +9,7 @@ import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
+import static org.osm2world.core.world.modules.building.Building.NodeWithLevelAndHeights;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
 import java.util.*;
@@ -22,7 +23,6 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.modules.building.Building.NodeLevelPair;
 import org.osm2world.core.world.modules.building.*;
 import org.osm2world.core.world.modules.building.roof.Roof;
 
@@ -697,10 +697,10 @@ public class IndoorWall implements Renderable {
     	return v1.subtract(v2).lengthSquared() < 0.00001;
 	}
 
-	public static void renderNodePolygons(Target target, Map<NodeLevelPair, List<LineSegmentXZ>> nodeToLineSegments){
-		for (Map.Entry<NodeLevelPair, List<LineSegmentXZ>> entry : nodeToLineSegments.entrySet()) {
+	public static void renderNodePolygons(Target target, Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> nodeToLineSegments){
+		for (Map.Entry<NodeWithLevelAndHeights, List<LineSegmentXZ>> entry : nodeToLineSegments.entrySet()) {
 
-			NodeLevelPair nodeAndLevel = entry.getKey();
+			NodeWithLevelAndHeights nodeAndLevel = entry.getKey();
 			List<LineSegmentXZ> lineSegments = entry.getValue();
 
 			/* deduplicate line segments */
@@ -766,15 +766,15 @@ public class IndoorWall implements Renderable {
 					Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
 					List<TriangleXYZ> trianglesXYZBottom = triangles.stream()
-							.map(t -> t.makeClockwise().xyz(nodeAndLevel.getHeightAboveGround()))
+							.map(t -> t.makeClockwise().xyz(nodeAndLevel.heightAboveGround()))
 							.collect(toList());
 
 					List<TriangleXYZ> trianglesXYZTop = triangles.stream()
-							.map(t -> t.makeCounterclockwise().xyz(nodeAndLevel.getCeilingHeightAboveGround() - 0.0001))
+							.map(t -> t.makeCounterclockwise().xyz(nodeAndLevel.ceilingHeightAboveGround() - 0.0001))
 							.collect(toList());
 
-					VectorXYZ bottom = new VectorXYZ(0, nodeAndLevel.getHeightAboveGround(),0);
-					VectorXYZ top = new VectorXYZ(0, nodeAndLevel.getCeilingHeightAboveGround() - 0.0001,0);
+					VectorXYZ bottom = new VectorXYZ(0, nodeAndLevel.heightAboveGround(),0);
+					VectorXYZ top = new VectorXYZ(0, nodeAndLevel.ceilingHeightAboveGround() - 0.0001,0);
 
 					List<VectorXYZ> path = new ArrayList<>();
 					path.add(bottom);
@@ -915,7 +915,7 @@ public class IndoorWall implements Renderable {
 								if (node.getTags().containsKey("window")
 										&& !node.getTags().contains("window", "no")) {
 
-									boolean transparent = data.getBuildingPart().getBuilding().queryWindowSegments(node, level);
+									boolean transparent = Wall.determineWindowTransparency(node, level);
 
 									TagSet windowTags = inheritTags(node.getTags(), data.getTags());
 									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().levelStructure.level(level).height);

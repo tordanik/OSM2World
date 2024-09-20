@@ -27,7 +27,7 @@ public class IndoorFloor {
     private final PolygonWithHolesXZ polygon;
     private final double floorHeight;
     private Boolean render;
-    private final int level;
+    final int level;
     private final Ceiling ceiling;
 
     private AttachmentSurface attachmentSurface;

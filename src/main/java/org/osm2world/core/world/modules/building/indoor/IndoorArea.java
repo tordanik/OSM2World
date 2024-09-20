@@ -28,11 +28,6 @@ public class IndoorArea implements AreaWorldObject, LegacyWorldObject {
         PolygonWithHolesXZ polygon = data.getPolygon();
         double floorHeight = data.getLevelHeightAboveBase();
 
-        /* allow for transparent windows for adjacent objects */
-        if (data.getMapElement() instanceof MapArea) {
-            data.getLevels().forEach(l -> data.getBuildingPart().getBuilding().addListWindowNodes(((MapArea) data.getMapElement()).getBoundaryNodes(), l));
-        }
-
         floor = new IndoorFloor(data.getBuildingPart(), data.getSurface(), polygon, floorHeight,
                 data.getRenderableLevels().contains(data.getMinLevel()), data.getMinLevel());
     }
@@ -59,6 +54,10 @@ public class IndoorArea implements AreaWorldObject, LegacyWorldObject {
 	@Override
 	public Iterable<EleConnector> getEleConnectors() {
 		return emptyList();
+	}
+
+	public int getFloorLevel() {
+		return floor.level;
 	}
 
 }

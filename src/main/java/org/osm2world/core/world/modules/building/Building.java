@@ -39,8 +39,7 @@ public class Building implements AreaWorldObject, LegacyWorldObject {
 
 	private final EleConnectorGroup outlineConnectors;
 
-	private Map<NodeLevelPair, Boolean> windowNodes = new HashMap<>();
-	private Map<NodeLevelPair, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
+	private Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
 	private Collection<AttachmentSurface> attachmentSurfaces = null;
 
@@ -192,70 +191,16 @@ public class Building implements AreaWorldObject, LegacyWorldObject {
 		return attachmentSurfaces;
 	}
 
-	public class NodeLevelPair{
-
-		private final MapNode node;
-		private final Integer level;
-		private final double heightAboveGround;
-		private final double ceilingHeightAboveGround;
-
-		NodeLevelPair(MapNode node, Integer level, double heightAboveGround, double ceilingHeightAboveGround) {
-			this.node = node;
-			this.level = level;
-			this.heightAboveGround = heightAboveGround;
-			this.ceilingHeightAboveGround = ceilingHeightAboveGround;
-		}
-
-		public double getHeightAboveGround() { return heightAboveGround; }
-
-		public double getCeilingHeightAboveGround() { return ceilingHeightAboveGround; }
-
-		@Override
-		public boolean equals(Object anObject){
-			if (anObject instanceof NodeLevelPair) {
-				NodeLevelPair temp = (NodeLevelPair) anObject;
-				if (temp.level.equals(this.level) && temp.node.equals(this.node)) {
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			return  Long.hashCode(node.getId()) / ((level * 2) + 1);
-		}
-
-	}
-
-	public void addWindowNode(MapNode node, Integer level){
-		if (windowNodes.get(new NodeLevelPair(node, level, 0, 0)) != null) {
-			windowNodes.replace(new NodeLevelPair(node, level, 0, 0), true);
-		} else {
-			windowNodes.put(new NodeLevelPair(node, level, 0, 0), false);
-		}
-	}
-
-	public void addListWindowNodes(List<MapNode> nodes, Integer level) {
-		nodes.forEach(n -> addWindowNode(n, level));
-	}
-
-	public Boolean queryWindowSegments(MapNode node, Integer level){
-		return Boolean.TRUE.equals(windowNodes.get(new NodeLevelPair(node, level, 0, 0)));
-	}
-
+	public record NodeWithLevelAndHeights(
+		MapNode node, Integer level, double heightAboveGround, double ceilingHeightAboveGround
+	) {}
 
 	public void addLineSegmentToPolygonMap(MapNode node, Integer level, LineSegmentXZ line, double heightAboveGround, double ceilingHeightAboveGround){
-		if (wallNodePolygonSegments.get(new NodeLevelPair(node, level, heightAboveGround, ceilingHeightAboveGround)) != null) {
-			wallNodePolygonSegments.get(new NodeLevelPair(node, level, heightAboveGround, ceilingHeightAboveGround)).add(line);
+		if (wallNodePolygonSegments.get(new NodeWithLevelAndHeights(node, level, heightAboveGround, ceilingHeightAboveGround)) != null) {
+			wallNodePolygonSegments.get(new NodeWithLevelAndHeights(node, level, heightAboveGround, ceilingHeightAboveGround)).add(line);
 		} else {
-			wallNodePolygonSegments.put(new NodeLevelPair(node, level, heightAboveGround, ceilingHeightAboveGround), new ArrayList<>(Arrays.asList(line)));
+			wallNodePolygonSegments.put(new NodeWithLevelAndHeights(node, level, heightAboveGround, ceilingHeightAboveGround), new ArrayList<>(Arrays.asList(line)));
 		}
-	}
-
-	public List<LineSegmentXZ> queryPolygonMap(MapNode node, Integer level){
-		return wallNodePolygonSegments.get(new NodeLevelPair(node, level, 0, 0));
 	}
 
 }
