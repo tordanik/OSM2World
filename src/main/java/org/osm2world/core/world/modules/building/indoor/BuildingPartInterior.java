@@ -20,7 +20,6 @@ public class BuildingPartInterior implements Renderable {
 	private final List<IndoorWall> walls = new ArrayList<>();
 	private final List<IndoorRoom> rooms = new ArrayList<>();
 	private final List<IndoorArea> areas = new ArrayList<>();
-	private final List<Corridor> corridors = new ArrayList<>();
 
 	private List<AttachmentSurface> surfaces = null;
 
@@ -28,30 +27,12 @@ public class BuildingPartInterior implements Renderable {
 
 		for (MapElement element : elements) {
 
-			IndoorObjectData data = new IndoorObjectData(buildingPart, element);
+			var data = new IndoorObjectData(buildingPart, element);
 
 			switch (element.getTags().getValue("indoor")) {
-
-			case "wall":
-
-				walls.add(new IndoorWall(data));
-				break;
-
-			case "room":
-
-				rooms.add(new IndoorRoom(data));
-				break;
-
-			case "area":
-
-				areas.add(new IndoorArea(data));
-				break;
-
-			case "corridor":
-
-				corridors.add(new Corridor(data));
-				break;
-
+			case "wall" -> walls.add(new IndoorWall(data));
+			case "room", "corridor" -> rooms.add(new IndoorRoom(data));
+			case "area" -> areas.add(new IndoorArea(data));
 			}
 
 		}
@@ -70,10 +51,6 @@ public class BuildingPartInterior implements Renderable {
 
 			for (IndoorArea area : areas) {
 				surfaces.addAll(area.getAttachmentSurfaces());
-			}
-
-			for (Corridor corridor : corridors) {
-				surfaces.addAll(corridor.getAttachmentSurfaces());
 			}
 
 			for (IndoorWall wall : walls) {
@@ -96,8 +73,6 @@ public class BuildingPartInterior implements Renderable {
 		rooms.forEach(r -> r.renderTo(target));
 
 		areas.forEach(a -> a.renderTo(target));
-
-		corridors.forEach(c -> c.renderTo(target));
 
 	}
 }

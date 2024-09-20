@@ -48,15 +48,11 @@ public class IndoorRoom implements AreaWorldObject, LegacyWorldObject {
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
 
-        Collection<AttachmentSurface> floorSurfaces = floor.getAttachmentSurfaces();
-        Collection<AttachmentSurface> ceilingSurfaces = ceiling.getAttachmentSurfaces();
-        Collection<AttachmentSurface> wallSurfaces = wall.getAttachmentSurfaces();
+		List<AttachmentSurface> surfaces = new ArrayList<>();
 
-        List<AttachmentSurface> surfaces = new ArrayList<>();
-
-        surfaces.addAll(floorSurfaces);
-        surfaces.addAll(ceilingSurfaces);
-        surfaces.addAll(wallSurfaces);
+        surfaces.addAll(floor.getAttachmentSurfaces());
+        surfaces.addAll(ceiling.getAttachmentSurfaces());
+        surfaces.addAll(wall.getAttachmentSurfaces());
 
         return surfaces;
 

@@ -32,7 +32,6 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
-import org.osm2world.core.world.modules.building.indoor.Corridor;
 import org.osm2world.core.world.modules.building.indoor.IndoorArea;
 import org.osm2world.core.world.modules.building.indoor.IndoorRoom;
 
@@ -414,8 +413,6 @@ public class Wall implements Renderable {
 			return connectedFeatures.stream().anyMatch(it -> {
 				if (it instanceof IndoorRoom r) {
 					return r.getLevelRange().containsInteger(level);
-				} else if (it instanceof Corridor c) {
-					return c.getLevelRange().containsInteger(level);
 				} else if (it instanceof IndoorArea a) {
 					return a.getFloorLevel() == level;
 				} else {
