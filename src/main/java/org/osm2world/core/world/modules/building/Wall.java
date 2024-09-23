@@ -216,9 +216,12 @@ public class Wall implements Renderable {
 
 			// using window textures. Need to separate the bit of wall "in the roof" which should not have windows.
 
+			double middlePointsHeight = Math.min(heightWithoutRoof - floorHeight,
+					min(topPoints, comparingDouble(v -> v.y)).y - floorEle);
+
 			List<VectorXYZ> middlePoints = asList(
-					bottomPoints.get(0).addY(heightWithoutRoof - floorHeight),
-					bottomPoints.get(bottomPoints.size() - 1).addY(heightWithoutRoof - floorHeight));
+					bottomPoints.get(0).addY(middlePointsHeight),
+					bottomPoints.get(bottomPoints.size() - 1).addY(middlePointsHeight));
 
 			try {
 				mainSurface = new WallSurface(material, bottomPoints, middlePoints);
