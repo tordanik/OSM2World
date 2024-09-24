@@ -581,15 +581,17 @@ public class GltfTarget extends MeshTarget {
 		}
 	}
 
-	private @Nullable String getMaterialName(Material m, TextureLayer textureLayer) {
+	private @Nullable String getMaterialName(Material m, @Nullable TextureLayer textureLayer) {
 
 		String name = Materials.getUniqueName(m);
 
 		if (name == null) {
-			if (textureLayer.toString().startsWith("TextureAtlas")) {
-				name = "TextureAtlas " + Integer.toHexString(m.hashCode());
-			} else if (!textureLayer.toString().contains(",")) {
-				name = textureLayer.toString();
+			if (textureLayer != null) {
+				if (textureLayer.toString().startsWith("TextureAtlas")) {
+					name = "TextureAtlas " + Integer.toHexString(m.hashCode());
+				} else if (!textureLayer.toString().contains(",")) {
+					name = textureLayer.toString();
+				}
 			}
 		} else if (textureLayer != null && m.getNumTextureLayers() > 1) {
 			name += "_layer" + m.getTextureLayers().indexOf(textureLayer);
