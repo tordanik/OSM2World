@@ -7,10 +7,6 @@ import org.osm2world.viewer.view.ViewerFrame;
 
 public class Viewer {
 
-	public static void main(String[] args) {
-		new Viewer(args);
-	}
-
 	private Viewer(String[] args) {
 
 		try {
