@@ -255,6 +255,36 @@ public class TextureCam {
 
 		}
 
+		/* tweak normals by adding very steep slopes at displacement jumps (currently only vertical+horizontal edges) */
+
+		double jumpThreshold = (maxHeight - minHeight) / 4; //10;
+
+		for (int y = 0; y < res.height; y++) {
+			for (int x = 0; x < res.width; x++) {
+
+				if (x > 0 && displacementHeights[x][y] != null && displacementHeights[x - 1][y] != null) {
+					if (displacementHeights[x][y] - displacementHeights[x - 1][y] > jumpThreshold) {
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(-1, 0, 0)).toAWT().getRGB());
+						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(-1, 0, 0)).toAWT().getRGB());
+					} else if (displacementHeights[x][y] - displacementHeights[x - 1][y] < -jumpThreshold) {
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(+1, 0, 0)).toAWT().getRGB());
+						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(+1, 0, 0)).toAWT().getRGB());
+					}
+				}
+
+				if (y > 0 && displacementHeights[x][y] != null && displacementHeights[x][y - 1] != null) {
+					if (displacementHeights[x][y] - displacementHeights[x][y - 1] > jumpThreshold) {
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, 0, -1)).toAWT().getRGB());
+						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 0, -1)).toAWT().getRGB());
+					} else if (displacementHeights[x][y] - displacementHeights[x][y - 1] < -jumpThreshold) {
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, 0, 1)).toAWT().getRGB());
+						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 0, 1)).toAWT().getRGB());
+					}
+				}
+
+			}
+		}
+
 		/* build and return the result */
 
 		return new TextureLayer(
