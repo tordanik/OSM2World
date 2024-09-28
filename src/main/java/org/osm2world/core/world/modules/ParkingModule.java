@@ -36,8 +36,7 @@ public class ParkingModule extends AbstractModule {
 
 			String parkingValue = area.getTags().getValue("parking");
 
-			if ("surface".equals(parkingValue) || "lane".equals(parkingValue)
-					|| "street_side".equals(parkingValue) || parkingValue == null) {
+			if (parkingValue == null || List.of("surface", "lane", "street_side", "rooftop").contains(parkingValue)) {
 				area.addRepresentation(new SurfaceParking(area));
 			}
 

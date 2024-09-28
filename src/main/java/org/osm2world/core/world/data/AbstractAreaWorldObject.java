@@ -49,7 +49,7 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 
 		List<String> types = new ArrayList<>();
 
-		if (area.getTags().contains("location", "roof")) {
+		if (area.getTags().contains("location", "roof") || area.getTags().contains("parking", "rooftop")) {
 			if (area.getTags().containsKey("level")) {
 				List<Integer> levels = ValueParseUtil.parseLevels(area.getTags().getValue("level"));
 				if (levels != null) {
