@@ -16,6 +16,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
+import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
@@ -229,6 +230,7 @@ public class GltfTarget extends MeshTarget {
 
 				String dataUri = "data:application/gltf-buffer;base64,"
 						+ DatatypeConverter.printBase64Binary(byteBuffer.array());
+				// TODO: replace with java.util.Base64?
 
 				GltfBuffer buffer = new GltfBuffer(byteBuffer.capacity());
 				buffer.uri = dataUri;
@@ -404,6 +406,8 @@ public class GltfTarget extends MeshTarget {
 		/* create the basic structure of the glTF */
 
 		gltf.asset = new GltfAsset();
+		gltf.asset.version = "2.0";
+		gltf.asset.generator = "OSM2World " + GlobalValues.VERSION_STRING;
 
 		gltf.scene = 0;
 		gltf.scenes = List.of(new GltfScene());
