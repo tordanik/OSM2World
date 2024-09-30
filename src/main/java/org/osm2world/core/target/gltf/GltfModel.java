@@ -3,6 +3,7 @@ package org.osm2world.core.target.gltf;
 import static java.lang.Boolean.TRUE;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,9 +11,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.TriangleXYZ;
@@ -20,13 +22,12 @@ import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.core.target.gltf.data.*;
+import org.osm2world.core.util.color.LColor;
 
 import com.google.gson.Gson;
 
@@ -100,35 +101,60 @@ public class GltfModel implements Model {
 
 				// construct the mesh geometry
 
-				var geometryBuilder = new TriangleGeometry.Builder(
-						Collections.nCopies(material.getNumTextureLayers(), new GlobalXZTexCoordFunction(
-								new TextureDataDimensions(1, 1))),
-						null, Material.Interpolation.FLAT);
-
 				if (primitive.mode == GltfMesh.TRIANGLES) {
 					// TODO support strips and fans as well
 
-					// TODO extract other attributes besides position (color, normals, texcoords)
 					GltfAccessor positionAccessor = gltf.accessors.get(primitive.attributes.get("POSITION"));
+					List<VectorXYZ> positions = readVectorsFromAccessor(VectorXYZ.class, positionAccessor);
+
+					@Nullable List<Color> colors = null;
+					if (primitive.attributes.containsKey("COLOR_0")) {
+						GltfAccessor colorAccessor = gltf.accessors.get(primitive.attributes.get("COLOR_0"));
+						List<VectorXYZ> colorsXYZ = readVectorsFromAccessor(VectorXYZ.class, colorAccessor);
+						colors = colorsXYZ.stream().map(c -> new LColor((float)c.x, (float)c.y, (float)-c.z).toAWT()).toList();
+					}
+
+					@Nullable List<VectorXYZ> normals = null;
+					if (primitive.attributes.containsKey("NORMAL")) {
+						GltfAccessor normalAccessor = gltf.accessors.get(primitive.attributes.get("NORMAL"));
+						normals = readVectorsFromAccessor(VectorXYZ.class, normalAccessor);
+					}
+
+					@Nullable List<VectorXZ> texCoords = null;
+					if (primitive.attributes.containsKey("TEXCOORD_0")) {
+						GltfAccessor texCoordAccessor = gltf.accessors.get(primitive.attributes.get("TEXCOORD_0"));
+						texCoords = readVectorsFromAccessor(VectorXZ.class, texCoordAccessor);
+					}
 
 					if (primitive.indices != null) {
 						GltfAccessor indexAccessor = gltf.accessors.get(primitive.indices);
 						throw new UnsupportedOperationException("Indexed geometry not supported");
 					}
 
-					List<VectorXYZ> positions = readVectorsFromAccessor(VectorXYZ.class, positionAccessor);
 					assert positions.size() % 3 == 0;
+					assert colors == null || colors.size() == positions.size();
+					assert normals == null || normals.size() == positions.size();
+					assert texCoords == null || texCoords.size() == positions.size();
 
+					var geometryBuilder = new TriangleGeometry.Builder(
+							material.getNumTextureLayers(),
+							null,
+							normals == null ? Material.Interpolation.FLAT : null);
+
+					List<TriangleXYZ> triangles = new ArrayList<>(positions.size() / 3);
 					for (int i = 0; i < positions.size(); i += 3) {
-						geometryBuilder.addTriangles(List.of(new TriangleXYZ(positions.get(i), positions.get(i + 1), positions.get(i + 2))));
+						triangles.add(new TriangleXYZ(positions.get(i), positions.get(i + 1), positions.get(i + 2)));
 					}
+
+					geometryBuilder.addTriangles(triangles,
+							texCoords == null ? null : List.of(texCoords),
+							colors, normals);
+
+					result.add(new Mesh(geometryBuilder.build(), material));
 
 				} else {
 					ConversionLog.warn("Unsupported mode " + primitive.mode);
-					continue;
 				}
-
-				result.add(new Mesh(geometryBuilder.build(), material));
 
 			}
 
