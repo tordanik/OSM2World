@@ -50,8 +50,6 @@ import com.google.common.collect.Multimap;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 
-import jakarta.xml.bind.DatatypeConverter;
-
 /**
  * builds a glTF or glb (binary glTF) output file
  */
@@ -229,8 +227,7 @@ public class GltfTarget extends MeshTarget {
 			case GLTF -> {
 
 				String dataUri = "data:application/gltf-buffer;base64,"
-						+ DatatypeConverter.printBase64Binary(byteBuffer.array());
-				// TODO: replace with java.util.Base64?
+						+ Base64.getEncoder().encodeToString(byteBuffer.array());
 
 				GltfBuffer buffer = new GltfBuffer(byteBuffer.capacity());
 				buffer.uri = dataUri;

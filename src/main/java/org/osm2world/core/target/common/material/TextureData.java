@@ -14,6 +14,7 @@ import java.awt.image.ColorConvertOp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,8 +30,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.Resolution;
 import org.osm2world.core.util.color.LColor;
-
-import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * a texture with metadata necessary for calculating texture coordinates.
@@ -125,7 +124,7 @@ public abstract class TextureData {
 		RasterImageFormat format = getRasterImageFormat();
 		try (var stream = new ByteArrayOutputStream()) {
 		    writeRasterImageToStream(stream);
-		    return "data:" + format.mimeType() + ";base64," + DatatypeConverter.printBase64Binary(stream.toByteArray());
+		    return "data:" + format.mimeType() + ";base64," + Base64.getEncoder().encodeToString(stream.toByteArray());
 		} catch (IOException e) {
 		    throw new Error(e);
 		}
