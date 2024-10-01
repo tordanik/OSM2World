@@ -319,6 +319,8 @@ public class GltfTarget extends MeshTarget {
 		if (textureIndexMap.containsKey(textureData)) return textureIndexMap.get(textureData);
 
 		GltfSampler sampler = new GltfSampler();
+		sampler.magFilter = GltfSampler.LINEAR;
+		sampler.minFilter = GltfSampler.LINEAR_MIPMAP_LINEAR;
 		switch (textureData.wrap) {
 			case CLAMP -> {
 				sampler.wrapS = GltfSampler.WRAP_CLAMP_TO_EDGE;
