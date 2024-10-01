@@ -15,15 +15,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
@@ -43,6 +42,8 @@ public class GltfModel implements Model {
 
 	private final Gltf gltf;
 	private final @Nullable File source;
+
+	private final Map<Pair<GltfImage, Wrap>, TextureData> imageCache = new HashMap<>();
 
 	public GltfModel(Gltf gltf, @Nullable File source) {
 
@@ -359,34 +360,44 @@ public class GltfModel implements Model {
 
 	private TextureData readImage(GltfImage image, Wrap wrap) throws IOException {
 
-		if ((image.uri == null) == (image.bufferView == null)) {
-			throw new IllegalArgumentException("Image must use either uri or bufferView");
-		} else if (image.bufferView != null && image.mimeType == null) {
-			throw new IllegalArgumentException("Image with bufferView requires mimeType");
-		}
+		if (!imageCache.containsKey(Pair.of(image, wrap))) {
 
-		var dimensions = new TextureDataDimensions(1, 1);
-
-		requireOrUnsupported(image.uri != null);
-
-		if (image.uri.startsWith("data:")) {
-			return new DataUriTexture(image.uri, dimensions, wrap, GLOBAL_X_Z);
-		} else {
-			try {
-				URI imageUri = new URI(image.uri);
-				if (source != null) {
-					imageUri = source.toURI().resolve(imageUri);
-				}
-				BufferedImage i = ImageIO.read(imageUri.toURL());
-				return new RuntimeTexture(dimensions, wrap, GLOBAL_X_Z) {
-					@Override protected BufferedImage createBufferedImage() {
-						return i;
-					}
-				};
-			} catch (MalformedURLException | URISyntaxException e) {
-				throw new IOException(e);
+			if ((image.uri == null) == (image.bufferView == null)) {
+				throw new IllegalArgumentException("Image must use either uri or bufferView");
+			} else if (image.bufferView != null && image.mimeType == null) {
+				throw new IllegalArgumentException("Image with bufferView requires mimeType");
 			}
+
+			var dimensions = new TextureDataDimensions(1, 1);
+
+			requireOrUnsupported(image.uri != null);
+
+			TextureData textureData;
+
+			if (image.uri.startsWith("data:")) {
+				textureData = new DataUriTexture(image.uri, dimensions, wrap, GLOBAL_X_Z);
+			} else {
+				try {
+					URI imageUri = new URI(image.uri);
+					if (source != null) {
+						imageUri = source.toURI().resolve(imageUri);
+					}
+					BufferedImage i = ImageIO.read(imageUri.toURL());
+					textureData = new RuntimeTexture(dimensions, wrap, GLOBAL_X_Z) {
+						@Override protected BufferedImage createBufferedImage() {
+							return i;
+						}
+					};
+				} catch (MalformedURLException | URISyntaxException e) {
+					throw new IOException(e);
+				}
+			}
+
+			imageCache.put(Pair.of(image, wrap), textureData);
+
 		}
+
+		return imageCache.get(Pair.of(image, wrap));
 
 	}
 
