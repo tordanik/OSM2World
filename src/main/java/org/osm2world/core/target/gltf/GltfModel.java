@@ -2,26 +2,34 @@ package org.osm2world.core.target.gltf;
 
 import static java.lang.Boolean.TRUE;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
+import static org.osm2world.core.target.common.material.TextureData.Wrap;
+import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.common.material.Material;
+import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
@@ -34,9 +42,9 @@ import com.google.gson.Gson;
 public class GltfModel implements Model {
 
 	private final Gltf gltf;
-	private final String source;
+	private final @Nullable File source;
 
-	public GltfModel(Gltf gltf, String source) {
+	public GltfModel(Gltf gltf, @Nullable File source) {
 
 		this.gltf = gltf;
 		this.source = source;
@@ -48,7 +56,7 @@ public class GltfModel implements Model {
 	}
 
 	public String toString() {
-		return source;
+		return source != null ? source.getName() : super.toString();
 	}
 
 	@Override
@@ -74,7 +82,7 @@ public class GltfModel implements Model {
 
 	}
 
-	private List<? extends Mesh> buildMeshesForNode(GltfNode node) {
+	private List<? extends Mesh> buildMeshesForNode(GltfNode node) throws IOException {
 
 		List<Mesh> result = new ArrayList<>();
 
@@ -139,7 +147,7 @@ public class GltfModel implements Model {
 					var geometryBuilder = new TriangleGeometry.Builder(
 							material.getNumTextureLayers(),
 							null,
-							normals == null ? Material.Interpolation.FLAT : null);
+							normals == null ? material.getInterpolation() : null);
 
 					List<TriangleXYZ> triangles = new ArrayList<>(positions.size() / 3);
 					for (int i = 0; i < positions.size(); i += 3) {
@@ -247,9 +255,145 @@ public class GltfModel implements Model {
 
 	}
 
-	private Material convertMaterial(GltfMaterial gltfMaterial) {
-		// TODO implement
-		return PLASTIC;
+	private Material convertMaterial(GltfMaterial m) throws IOException {
+
+		// TODO factors other than baseColorFactor, e.g. emissiveFactor
+
+		/* check for unsupported features */
+
+		if (m.emissiveTexture != null) {
+			ConversionLog.warn("Unsupported emissive texture option present in glTF asset " + this);
+		}
+		if (m.occlusionTexture != null && m.occlusionTexture.strength != null && m.occlusionTexture.strength != 1) {
+			ConversionLog.warn("Unsupported occlusion strength option present in glTF asset " + this);
+		}
+
+		/* read the textures */
+
+		Color color = Color.WHITE;
+		@Nullable TextureLayer textureLayer;
+
+		if (m.pbrMetallicRoughness != null) {
+
+			float[] c = m.pbrMetallicRoughness.baseColorFactor;
+			if (c != null) {
+				color = new LColor(c[0], c[1], c[2]).toAWT();
+			}
+
+			@Nullable TextureData baseColorTexture = readTexture(m.pbrMetallicRoughness.baseColorTexture);
+
+			@Nullable TextureData mrTexture = readTexture(m.pbrMetallicRoughness.metallicRoughnessTexture);
+			@Nullable TextureData oTexture = readTexture(m.occlusionTexture);
+
+			@Nullable TextureData ormTexture = (mrTexture != null) ? mrTexture : oTexture;
+			if (mrTexture != null && oTexture != null && !mrTexture.equals(oTexture)) {
+				ConversionLog.warn("Separate occlusion texture is ignored for glTF asset " + this);
+			}
+
+			@Nullable TextureData normalTexture = readTexture(m.normalTexture);
+			requireOrUnsupported(m.normalTexture == null || m.normalTexture.scale == null || m.normalTexture.scale == 1);
+
+			if (baseColorTexture == null) {
+				textureLayer = null;
+			} else {
+				textureLayer = new TextureLayer(baseColorTexture, normalTexture, ormTexture, null, true);
+			}
+
+		} else {
+			textureLayer = null;
+		}
+
+		/* build the material */
+
+		Material.Transparency transparency = switch (m.alphaMode != null ? m.alphaMode : "OPAQUE") {
+			case "OPAQUE" -> Material.Transparency.FALSE;
+			case "MASK" -> Material.Transparency.BINARY;
+			case "BLEND" -> Material.Transparency.TRUE;
+			default -> throw new IllegalArgumentException("Unsupported alphaMode " + m.alphaMode);
+		};
+
+		return new ImmutableMaterial(
+				Material.Interpolation.FLAT,
+				color,
+				m.doubleSided != null && m.doubleSided,
+				transparency,
+				Material.Shadow.TRUE,
+				Material.AmbientOcclusion.TRUE,
+				textureLayer == null ? List.of() : List.of(textureLayer));
+
+	}
+
+	private @Nullable TextureData readTexture(@Nullable GltfMaterial.TextureInfo textureInfo) throws IOException {
+
+		if (textureInfo == null) {
+			return null;
+		}
+
+		/* read the texture sampler parameters */
+
+		requireOrUnsupported(textureInfo.texCoord == null || textureInfo.texCoord == 0);
+
+		GltfTexture texture = gltf.textures.get(textureInfo.index);
+
+		Wrap wrap = Wrap.REPEAT;
+		if (texture.sampler != null) {
+			GltfSampler sampler = gltf.samplers.get(texture.sampler);
+			requireOrUnsupported(Objects.equals(sampler.wrapS, sampler.wrapT));
+			if (sampler.wrapS != null) {
+				wrap = switch (sampler.wrapS) {
+					case GltfSampler.WRAP_CLAMP_TO_EDGE -> Wrap.CLAMP;
+					case GltfSampler.WRAP_REPEAT -> Wrap.REPEAT;
+					default -> throw new UnsupportedOperationException("Wrap mode " + sampler.wrapS);
+				};
+			}
+		}
+
+		/* read and return the actual texture image */
+
+		requireOrUnsupported(texture.source != null);
+		GltfImage image = gltf.images.get(texture.source);
+
+		return readImage(image, wrap);
+
+	}
+
+	private TextureData readImage(GltfImage image, Wrap wrap) throws IOException {
+
+		if ((image.uri == null) == (image.bufferView == null)) {
+			throw new IllegalArgumentException("Image must use either uri or bufferView");
+		} else if (image.bufferView != null && image.mimeType == null) {
+			throw new IllegalArgumentException("Image with bufferView requires mimeType");
+		}
+
+		var dimensions = new TextureDataDimensions(1, 1);
+
+		requireOrUnsupported(image.uri != null);
+
+		if (image.uri.startsWith("data:")) {
+			return new DataUriTexture(image.uri, dimensions, wrap, GLOBAL_X_Z);
+		} else {
+			try {
+				URI imageUri = new URI(image.uri);
+				if (source != null) {
+					imageUri = source.toURI().resolve(imageUri);
+				}
+				BufferedImage i = ImageIO.read(imageUri.toURL());
+				return new RuntimeTexture(dimensions, wrap, GLOBAL_X_Z) {
+					@Override protected BufferedImage createBufferedImage() {
+						return i;
+					}
+				};
+			} catch (MalformedURLException | URISyntaxException e) {
+				throw new IOException(e);
+			}
+		}
+
+	}
+
+	private static void requireOrUnsupported(boolean b) {
+		if (!b) {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	public static GltfModel loadFromFile(File gltfFile) throws IOException {
@@ -258,7 +402,7 @@ public class GltfModel implements Model {
 
 			Gltf gltf = new Gson().fromJson(reader, Gltf.class);
 
-			return new GltfModel(gltf, gltfFile.getName());
+			return new GltfModel(gltf, gltfFile);
 
 		} catch (Exception e) {
 			throw new IOException("Could not read glTF model at " + gltfFile, e);
