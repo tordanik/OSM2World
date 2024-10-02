@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 
-public class DataUriTexture extends TextureData {
+public class DataUriTexture extends RuntimeTexture {
 
 	private final String dataUri;
 

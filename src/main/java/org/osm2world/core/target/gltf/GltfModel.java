@@ -6,11 +6,9 @@ import static org.osm2world.core.target.common.material.TextureData.Wrap;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -20,7 +18,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.conversion.ConversionLog;
@@ -382,13 +379,9 @@ public class GltfModel implements Model {
 					if (source != null) {
 						imageUri = source.toURI().resolve(imageUri);
 					}
-					BufferedImage i = ImageIO.read(imageUri.toURL());
-					textureData = new RuntimeTexture(dimensions, wrap, GLOBAL_X_Z) {
-						@Override protected BufferedImage createBufferedImage() {
-							return i;
-						}
-					};
-				} catch (MalformedURLException | URISyntaxException e) {
+					textureData = new UriTexture(imageUri, dimensions, wrap, GLOBAL_X_Z);
+					textureData.getBufferedImage();
+				} catch (URISyntaxException e) {
 					throw new IOException(e);
 				}
 			}
