@@ -9,6 +9,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -21,8 +22,8 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.*;
@@ -113,55 +114,86 @@ public class GltfModel implements Model {
 					// TODO support strips and fans as well
 
 					GltfAccessor positionAccessor = gltf.accessors.get(primitive.attributes.get("POSITION"));
-					List<VectorXYZ> positions = readVectorsFromAccessor(VectorXYZ.class, positionAccessor);
+					List<VectorXYZ> positions = readDataFromAccessor(VectorXYZ.class, positionAccessor);
 
 					@Nullable List<Color> colors = null;
 					if (primitive.attributes.containsKey("COLOR_0")) {
 						GltfAccessor colorAccessor = gltf.accessors.get(primitive.attributes.get("COLOR_0"));
-						List<VectorXYZ> colorsXYZ = readVectorsFromAccessor(VectorXYZ.class, colorAccessor);
+						List<VectorXYZ> colorsXYZ = readDataFromAccessor(VectorXYZ.class, colorAccessor);
 						colors = colorsXYZ.stream().map(c -> new LColor((float)c.x, (float)c.y, (float)-c.z).toAWT()).toList();
 					}
 
 					@Nullable List<VectorXYZ> normals = null;
 					if (primitive.attributes.containsKey("NORMAL")) {
 						GltfAccessor normalAccessor = gltf.accessors.get(primitive.attributes.get("NORMAL"));
-						normals = readVectorsFromAccessor(VectorXYZ.class, normalAccessor);
+						normals = readDataFromAccessor(VectorXYZ.class, normalAccessor);
 					}
 
 					@Nullable List<VectorXZ> texCoords = null;
 					if (primitive.attributes.containsKey("TEXCOORD_0")) {
 						GltfAccessor texCoordAccessor = gltf.accessors.get(primitive.attributes.get("TEXCOORD_0"));
-						texCoords = readVectorsFromAccessor(VectorXZ.class, texCoordAccessor);
+						texCoords = readDataFromAccessor(VectorXZ.class, texCoordAccessor);
 					}
 
+					@Nullable List<Integer> indices = null;
 					if (primitive.indices != null) {
 						GltfAccessor indexAccessor = gltf.accessors.get(primitive.indices);
-						throw new UnsupportedOperationException("Indexed geometry not supported");
+						indices = readDataFromAccessor(Integer.class, indexAccessor);
 					}
 
-					assert positions.size() % 3 == 0;
 					assert colors == null || colors.size() == positions.size();
 					assert normals == null || normals.size() == positions.size();
 					assert texCoords == null || texCoords.size() == positions.size();
+
+					/* build the geometry */
 
 					var geometryBuilder = new TriangleGeometry.Builder(
 							material.getNumTextureLayers(),
 							null,
 							normals == null ? material.getInterpolation() : null);
 
-					List<TriangleXYZ> triangles = new ArrayList<>(positions.size() / 3);
-					for (int i = 0; i < positions.size(); i += 3) {
-						triangles.add(new TriangleXYZ(positions.get(i), positions.get(i + 1), positions.get(i + 2)));
-					}
+					if (indices == null) {
 
-					geometryBuilder.addTriangles(triangles,
-							texCoords == null ? null : List.of(texCoords),
-							colors, normals);
+						assert positions.size() % 3 == 0;
+
+						List<TriangleXYZ> triangles = new ArrayList<>(positions.size() / 3);
+						for (int i = 0; i < positions.size(); i += 3) {
+							triangles.add(new TriangleXYZ(positions.get(i), positions.get(i + 1), positions.get(i + 2)));
+						}
+
+						geometryBuilder.addTriangles(triangles,
+								texCoords == null ? null : List.of(texCoords),
+								colors, normals);
+
+					} else {
+
+						assert indices.size() % 3 == 0;
+
+						for (int i = 0; i < indices.size(); i += 3) {
+
+							int i0 = indices.get(i);
+							int i1 = indices.get(i + 1);
+							int i2 = indices.get(i + 2);
+
+							try {
+								geometryBuilder.addTriangles(
+										List.of(new TriangleXYZ(positions.get(i0), positions.get(i1), positions.get(i2))),
+										texCoords == null ? null : List.of(List.of(texCoords.get(i0), texCoords.get(i1), texCoords.get(i2))),
+										colors == null ? null : List.of(colors.get(i0), colors.get(i1), colors.get(i2)),
+										normals == null ? null : List.of(normals.get(i0), normals.get(i1), normals.get(i2))
+								);
+							} catch (InvalidGeometryException e) {
+								ConversionLog.warn("Invalid geometry in glTF asset " + this, e);
+							}
+
+						}
+
+					}
 
 					result.add(new Mesh(geometryBuilder.build(), material));
 
 				} else {
-					ConversionLog.warn("Unsupported mode " + mode);
+					ConversionLog.error("Unsupported mode " + mode + " in glTF asset " + this);
 				}
 
 			}
@@ -180,58 +212,90 @@ public class GltfModel implements Model {
 
 	}
 
-	private <T extends Vector3D> List<T> readVectorsFromAccessor(Class<T> type, GltfAccessor accessor) {
+	/**
+	 * reads scalars or vectors from a {@link GltfAccessor}
+	 *
+	 * @param type  can be {@link Integer}, {@link Float}, {@link VectorXZ} or {@link VectorXYZ}
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> List<T> readDataFromAccessor(Class<T> type, GltfAccessor accessor) {
 
-		switch (accessor.type) {
-			case "VEC2" -> {
-				if (!type.equals(VectorXZ.class)) throw new IllegalArgumentException("Incorrect vector type " + type);
-			}
-			case "VEC3" -> {
-				if (!type.equals(VectorXYZ.class)) throw new IllegalArgumentException("Incorrect vector type " + type);
-			}
-			default -> throw new UnsupportedOperationException("Unsupported accessor type " + accessor.type);
-		}
-
-		if (accessor.componentType != GltfAccessor.TYPE_FLOAT) {
-			throw new UnsupportedOperationException("Unsupported component type " + accessor.componentType);
-		} else if (accessor.normalized == TRUE || accessor.sparse == TRUE
-				|| (accessor.byteOffset != null && accessor.byteOffset != 0)) {
+		if (accessor.sparse == TRUE  || (accessor.byteOffset != null && accessor.byteOffset != 0)) {
 			throw new UnsupportedOperationException("Unsupported accessor option present");
 		}
 
 		GltfBufferView bufferView = gltf.bufferViews.get(accessor.bufferView);
-
 		ByteBuffer byteBuffer = readBufferView(bufferView);
 
-		List<Vector3D> result = new ArrayList<>(accessor.count);
+		boolean normalized = accessor.normalized == TRUE;
 
-		for (int i = 0; i < accessor.count; i++) {
-			if ("VEC2".equals(accessor.type)) {
-				result.add(new VectorXZ(
-						byteBuffer.getFloat(),
-						byteBuffer.getFloat()));
-			} else {
-				result.add(new VectorXYZ(
-						byteBuffer.getFloat(),
-						byteBuffer.getFloat(),
-						-1 * byteBuffer.getFloat()));
+		switch (accessor.type) {
+
+			case "SCALAR" -> {
+				if (!type.equals(Float.class) && !type.equals(Integer.class)) throw new IllegalArgumentException("Incorrect accessor type " + type);
+				List<Float> result = new ArrayList<>(accessor.count);
+				for (int i = 0; i < accessor.count; i++) {
+					result.add(readComponent(byteBuffer, accessor.componentType, normalized));
+				}
+				if (type.equals(Integer.class)) {
+					return (List<T>) result.stream().map(f -> f.intValue()).toList();
+				} else {
+					return (List<T>) result;
+				}
 			}
+
+			case "VEC2" -> {
+				if (!type.equals(VectorXZ.class)) throw new IllegalArgumentException("Incorrect accessor type " + type);
+				List<VectorXZ> result = new ArrayList<>(accessor.count);
+				for (int i = 0; i < accessor.count; i++) {
+					result.add(new VectorXZ(
+							readComponent(byteBuffer, accessor.componentType, normalized),
+							readComponent(byteBuffer, accessor.componentType, normalized)));
+				}
+				return (List<T>) result;
+			}
+
+			case "VEC3" -> {
+				if (!type.equals(VectorXYZ.class)) throw new IllegalArgumentException("Incorrect accessor type " + type);
+				List<VectorXYZ> result = new ArrayList<>(accessor.count);
+				for (int i = 0; i < accessor.count; i++) {
+					result.add(new VectorXYZ(
+							readComponent(byteBuffer, accessor.componentType, normalized),
+							readComponent(byteBuffer, accessor.componentType, normalized),
+							-1 * readComponent(byteBuffer, accessor.componentType, normalized)));
+				}
+				return (List<T>) result;
+			}
+
+			default -> throw new UnsupportedOperationException("Unsupported accessor type " + accessor.type);
+
 		}
 
-		return (List<T>) result;
+	}
 
+	static float readComponent(ByteBuffer b, int componentType, boolean normalized) {
+		if (normalized) throw new UnsupportedOperationException("Unsupported normalized option present");
+		return switch (componentType) {
+			case GltfAccessor.TYPE_BYTE -> b.get();
+			case GltfAccessor.TYPE_UNSIGNED_BYTE -> b.get() & 0xff;
+			case GltfAccessor.TYPE_SHORT -> b.getShort();
+			case GltfAccessor.TYPE_UNSIGNED_SHORT -> b.getShort() & 0xffff;
+			case GltfAccessor.TYPE_UNSIGNED_INT -> b.getInt() & 0xffffffffL;
+			case GltfAccessor.TYPE_FLOAT -> b.getFloat();
+			default -> throw new UnsupportedOperationException("Unsupported component type " + componentType);
+		};
 	}
 
 	private ByteBuffer readBufferView(GltfBufferView bufferView) {
 
+		GltfBuffer buffer = gltf.buffers.get(bufferView.buffer);
+		ByteBuffer result;
+
 		if (bufferView.byteStride != null) {
 			throw new UnsupportedOperationException("Unsupported bufferView option present");
+		} else if (buffer.uri == null) {
+			throw new UnsupportedOperationException("No uri present in bufferView");
 		}
-
-		int byteOffset = bufferView.byteOffset == null ? 0 : bufferView.byteOffset;
-		int byteLength = bufferView.byteLength;
-
-		GltfBuffer buffer = gltf.buffers.get(bufferView.buffer);
 
 		var pattern = Pattern.compile("data:application/gltf-buffer;base64,(.+)");
 		var matcher = pattern.matcher(buffer.uri);
@@ -241,17 +305,32 @@ public class GltfModel implements Model {
 			// load data URI
 			String encodedData = matcher.group(1);
 			byte[] data = Base64.getDecoder().decode(encodedData);
-			ByteBuffer byteBuffer = ByteBuffer.wrap(data);
-			byteBuffer.slice(byteOffset, byteLength);
-			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-			return byteBuffer;
+			result = ByteBuffer.wrap(data);
 
 		} else {
 
-			// TODO implement
-			throw new IllegalArgumentException("Only data uris supported");
+			// load external .bin file
+			try {
+				URI bufferUri = new URI(buffer.uri);
+				if (source != null) {
+					bufferUri = source.toURI().resolve(bufferUri);
+				}
+				try (InputStream inputStream = bufferUri.toURL().openStream()) {
+					result = ByteBuffer.wrap(inputStream.readAllBytes());
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 
 		}
+
+		int byteOffset = bufferView.byteOffset == null ? 0 : bufferView.byteOffset;
+		int byteLength = bufferView.byteLength;
+		result = result.slice(byteOffset, byteLength);
+
+		result.order(ByteOrder.LITTLE_ENDIAN);
+
+		return result;
 
 	}
 
