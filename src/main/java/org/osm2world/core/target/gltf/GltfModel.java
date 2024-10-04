@@ -107,7 +107,9 @@ public class GltfModel implements Model {
 
 				// construct the mesh geometry
 
-				if (primitive.mode == GltfMesh.TRIANGLES) {
+				int mode = primitive.mode != null ? primitive.mode : GltfMesh.TRIANGLES;
+
+				if (mode == GltfMesh.TRIANGLES) {
 					// TODO support strips and fans as well
 
 					GltfAccessor positionAccessor = gltf.accessors.get(primitive.attributes.get("POSITION"));
@@ -159,7 +161,7 @@ public class GltfModel implements Model {
 					result.add(new Mesh(geometryBuilder.build(), material));
 
 				} else {
-					ConversionLog.warn("Unsupported mode " + primitive.mode);
+					ConversionLog.warn("Unsupported mode " + mode);
 				}
 
 			}
