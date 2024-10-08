@@ -1,6 +1,8 @@
 package org.osm2world.core.target.gltf;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 import static org.osm2world.core.target.common.material.TextureData.Wrap;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -120,7 +122,13 @@ public class GltfModel implements Model {
 					if (primitive.attributes.containsKey("COLOR_0")) {
 						GltfAccessor colorAccessor = gltf.accessors.get(primitive.attributes.get("COLOR_0"));
 						List<VectorXYZ> colorsXYZ = readDataFromAccessor(VectorXYZ.class, colorAccessor);
-						colors = colorsXYZ.stream().map(c -> new LColor((float)c.x, (float)c.y, (float)-c.z).toAWT()).toList();
+						colors = colorsXYZ.stream()
+								.map(c -> new LColor(
+										min(max(0f, (float)c.x), 1f),
+										min(max(0f, (float)c.y), 1f),
+										min(max(0f, (float)-c.z), 1f))
+										.toAWT())
+								.toList();
 					}
 
 					@Nullable List<VectorXYZ> normals = null;
@@ -220,22 +228,54 @@ public class GltfModel implements Model {
 	@SuppressWarnings("unchecked")
 	private <T> List<T> readDataFromAccessor(Class<T> type, GltfAccessor accessor) {
 
-		if (accessor.sparse == TRUE  || (accessor.byteOffset != null && accessor.byteOffset != 0)) {
+		if (accessor.sparse == TRUE) {
 			throw new UnsupportedOperationException("Unsupported accessor option present");
 		}
+
+		int numComponents = switch (accessor.type) {
+			case "SCALAR" -> 1;
+			case "VEC2" -> 2;
+			case "VEC3" -> 3;
+			default -> throw new UnsupportedOperationException("Unsupported accessor type " + accessor.type);
+		};
+
+		boolean normalized = accessor.normalized == TRUE;
+
+		/* read the buffer view */
 
 		GltfBufferView bufferView = gltf.bufferViews.get(accessor.bufferView);
 		ByteBuffer byteBuffer = readBufferView(bufferView);
 
-		boolean normalized = accessor.normalized == TRUE;
+		int accessorByteOffset = accessor.byteOffset != null ? accessor.byteOffset : 0;
+		byteBuffer.position(accessorByteOffset);
+
+		int byteStride = bufferView.byteStride == null ? 0 : bufferView.byteStride;
+
+		/* read the components, taking into account byteOffset and byteStride */
+
+		int totalComponents = accessor.count * numComponents;
+		List<Float> components = new ArrayList<>(totalComponents);
+
+		for (int i = 0; i < accessor.count; i++) {
+			int previousPosition = byteBuffer.position();
+			for (int j = 0; j < numComponents; j++) {
+				components.add(readComponent(byteBuffer, accessor.componentType, normalized));
+			}
+			if (bufferView.byteStride != null && i + 1 < totalComponents && (i + 1) % numComponents == 0) {
+				byteBuffer.position(previousPosition + byteStride);
+			}
+		}
+
+		/* build the result from the components depending on accessor type */
 
 		switch (accessor.type) {
 
 			case "SCALAR" -> {
 				if (!type.equals(Float.class) && !type.equals(Integer.class)) throw new IllegalArgumentException("Incorrect accessor type " + type);
+				assert components.size() == accessor.count;
 				List<Float> result = new ArrayList<>(accessor.count);
 				for (int i = 0; i < accessor.count; i++) {
-					result.add(readComponent(byteBuffer, accessor.componentType, normalized));
+					result.add(components.get(i));
 				}
 				if (type.equals(Integer.class)) {
 					return (List<T>) result.stream().map(f -> f.intValue()).toList();
@@ -246,23 +286,25 @@ public class GltfModel implements Model {
 
 			case "VEC2" -> {
 				if (!type.equals(VectorXZ.class)) throw new IllegalArgumentException("Incorrect accessor type " + type);
+				assert components.size() == 2 * accessor.count;
 				List<VectorXZ> result = new ArrayList<>(accessor.count);
 				for (int i = 0; i < accessor.count; i++) {
 					result.add(new VectorXZ(
-							readComponent(byteBuffer, accessor.componentType, normalized),
-							readComponent(byteBuffer, accessor.componentType, normalized)));
+							components.get(2 * i),
+							components.get(2 * i + 1)));
 				}
 				return (List<T>) result;
 			}
 
 			case "VEC3" -> {
 				if (!type.equals(VectorXYZ.class)) throw new IllegalArgumentException("Incorrect accessor type " + type);
+				assert components.size() == 3 * accessor.count;
 				List<VectorXYZ> result = new ArrayList<>(accessor.count);
 				for (int i = 0; i < accessor.count; i++) {
 					result.add(new VectorXYZ(
-							readComponent(byteBuffer, accessor.componentType, normalized),
-							readComponent(byteBuffer, accessor.componentType, normalized),
-							-1 * readComponent(byteBuffer, accessor.componentType, normalized)));
+							components.get(3 * i),
+							components.get(3 * i + 1),
+							-1 * components.get(3 * i + 2)));
 				}
 				return (List<T>) result;
 			}
@@ -291,9 +333,7 @@ public class GltfModel implements Model {
 		GltfBuffer buffer = gltf.buffers.get(bufferView.buffer);
 		ByteBuffer result;
 
-		if (bufferView.byteStride != null) {
-			throw new UnsupportedOperationException("Unsupported bufferView option present");
-		} else if (buffer.uri == null) {
+		if (buffer.uri == null) {
 			throw new UnsupportedOperationException("No uri present in bufferView");
 		}
 
