@@ -1,11 +1,12 @@
 package org.osm2world.core.target.common.mesh;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -312,7 +313,7 @@ public class TriangleGeometry implements Geometry {
 			}
 
 			if (defaultTexCoordFunctions == null) {
-				throw new IllegalStateException("No default functions for calulating tex coords are available");
+				throw new IllegalStateException("No default functions for calculating tex coords are available");
 			}
 
 			return defaultTexCoordFunctions.stream()

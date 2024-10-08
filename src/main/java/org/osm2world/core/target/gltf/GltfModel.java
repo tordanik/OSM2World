@@ -162,7 +162,7 @@ public class GltfModel implements Model {
 						}
 
 						geometryBuilder.addTriangles(triangles,
-								texCoords == null ? null : List.of(texCoords),
+								texCoords == null ? List.of() : List.of(texCoords),
 								colors, normals);
 
 					} else {
@@ -178,7 +178,7 @@ public class GltfModel implements Model {
 							try {
 								geometryBuilder.addTriangles(
 										List.of(new TriangleXYZ(positions.get(i0), positions.get(i1), positions.get(i2))),
-										texCoords == null ? null : List.of(List.of(texCoords.get(i0), texCoords.get(i1), texCoords.get(i2))),
+										texCoords == null ? List.of() : List.of(List.of(texCoords.get(i0), texCoords.get(i1), texCoords.get(i2))),
 										colors == null ? null : List.of(colors.get(i0), colors.get(i1), colors.get(i2)),
 										normals == null ? null : List.of(normals.get(i0), normals.get(i1), normals.get(i2))
 								);
