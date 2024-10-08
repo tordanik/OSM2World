@@ -3,7 +3,6 @@ package org.osm2world.core.target.gltf;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 import static org.osm2world.core.target.common.material.TextureData.Wrap;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
@@ -99,14 +98,15 @@ public class GltfModel implements Model {
 
 				// construct the mesh material
 
-				Material material;
+				GltfMaterial gltfMaterial;
 				if (primitive.material == null) {
-					// spec: "If material is undefined, then a default material MUST be used."
-					material = PLASTIC;
+					// spec: "The default material [...] is defined to be a material with no properties specified"
+					gltfMaterial = new GltfMaterial();
 				} else {
-					var gltfMaterial = gltf.materials.get(primitive.material);
-					material = convertMaterial(gltfMaterial);
+					gltfMaterial = gltf.materials.get(primitive.material);
 				}
+
+				Material material = convertMaterial(gltfMaterial);
 
 				// construct the mesh geometry
 
