@@ -337,7 +337,7 @@ public class GltfModel implements Model {
 			throw new UnsupportedOperationException("No uri present in bufferView");
 		}
 
-		var pattern = Pattern.compile("data:application/gltf-buffer;base64,(.+)");
+		var pattern = Pattern.compile("data:application/(?:gltf-buffer|octet-stream);base64,(.+)");
 		var matcher = pattern.matcher(buffer.uri);
 
 		if (matcher.matches()) {
