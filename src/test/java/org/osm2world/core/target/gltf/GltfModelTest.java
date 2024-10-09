@@ -53,6 +53,23 @@ public class GltfModelTest {
 
 	}
 
+	@Test
+	public void testLoadFromFile_Triangle() throws IOException {
+
+		for (String assetName : List.of("Triangle", "TriangleWithoutIndices")) {
+			for (String extension : List.of(".gltf", "_embedded.gltf")) {
+
+				var model = loadGltfTestModel(assetName, extension);
+				var meshes = model.buildMeshes(new InstanceParameters(VectorXYZ.NULL_VECTOR, 0));
+
+				assertEquals(1, meshes.size());
+				assertEquals(1, meshes.get(0).geometry.asTriangles().triangles.size());
+
+			}
+		}
+
+	}
+
 	private static GltfModel loadGltfTestModel(String assetName, String extension) throws IOException {
 
 		String fileName = "gltf" + File.separator + assetName + File.separator + assetName + extension;
