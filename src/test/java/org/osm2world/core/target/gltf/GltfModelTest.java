@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.gltf.data.GltfAccessor;
@@ -70,6 +71,24 @@ public class GltfModelTest {
 
 	}
 
+	@Test
+	public void testLoadFromFile_SimpleMeshes() throws IOException {
+
+		var model = loadGltfTestModel("SimpleMeshes", ".gltf");
+		var meshes = model.buildMeshes(new InstanceParameters(VectorXYZ.NULL_VECTOR, 0));
+
+		assertEquals(2, meshes.size());
+
+		List<TriangleXYZ> triangles1 = meshes.get(0).geometry.asTriangles().triangles;
+		List<TriangleXYZ> triangles2 = meshes.get(1).geometry.asTriangles().triangles;
+
+		assertEquals(1, triangles1.size());
+		assertEquals(1, triangles2.size());
+
+		assertEquals(1.0, triangles1.get(0).getCenter().distanceTo(triangles2.get(0).getCenter()), 0.001);
+
+	}
+
 	private static GltfModel loadGltfTestModel(String assetName, String extension) throws IOException {
 
 		String fileName = "gltf" + File.separator + assetName + File.separator + assetName + extension;
@@ -77,8 +96,7 @@ public class GltfModelTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource(fileName).getFile());
 
-		var model = GltfModel.loadFromFile(testFile);
-		return model;
+		return GltfModel.loadFromFile(testFile);
 
 	}
 
