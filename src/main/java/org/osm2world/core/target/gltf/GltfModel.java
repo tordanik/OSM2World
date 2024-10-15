@@ -64,13 +64,19 @@ public class GltfModel implements Model {
 
 		try {
 
+			TransformationMatrix rootTransform = TransformationMatrix.forTRS(
+					new float[] { (float)params.position().x, (float)params.position().y, (float)params.position().z },
+					new float[] { 0, 0, 0, 1 }, // TODO provide rotation
+					new float[] { 1, 1, 1 } // TODO provide scale
+			);
+
 			/* collect meshes from all nodes */
 
 			List<Mesh> result = new ArrayList<>();
 
 			GltfScene scene = gltf.scenes.get(gltf.scene);
 			for (int n : scene.nodes) {
-				result.addAll(buildMeshesForNode(gltf.nodes.get(n)));
+				result.addAll(buildMeshesForNode(gltf.nodes.get(n), rootTransform));
 			}
 
 			return result;
@@ -82,11 +88,14 @@ public class GltfModel implements Model {
 
 	}
 
-	private List<? extends Mesh> buildMeshesForNode(GltfNode node) throws IOException {
+	private List<? extends Mesh> buildMeshesForNode(GltfNode node, TransformationMatrix parentTransform) throws IOException {
 
 		List<Mesh> result = new ArrayList<>();
 
-		// TODO consider nodes' transform properties
+		/* handle transformation matrices */
+
+		TransformationMatrix localTransform = node.getLocalTransform();
+		TransformationMatrix globalTransform = parentTransform.times(localTransform);
 
 		/* build this node's mesh */
 
@@ -117,6 +126,8 @@ public class GltfModel implements Model {
 
 					GltfAccessor positionAccessor = gltf.accessors.get(primitive.attributes.get("POSITION"));
 					List<VectorXYZ> positions = readDataFromAccessor(VectorXYZ.class, positionAccessor);
+
+					positions = positions.stream().map(globalTransform::applyTo).toList();
 
 					@Nullable List<Color> colors = null;
 					if (primitive.attributes.containsKey("COLOR_0")) {
@@ -212,7 +223,7 @@ public class GltfModel implements Model {
 
 		if (node.children != null) {
 			for (int child : node.children) {
-				result.addAll(buildMeshesForNode(gltf.nodes.get(child)));
+				result.addAll(buildMeshesForNode(gltf.nodes.get(child), globalTransform));
 			}
 		}
 

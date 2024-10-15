@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.osm2world.core.math.VectorXYZ;
 
 public class TransformationMatrixTest {
 
@@ -96,6 +97,13 @@ public class TransformationMatrixTest {
 	@Test
 	public void testForScale() {
 		assertEquals(S, TransformationMatrix.forScale(new float[] {2, 1, 0.5f}));
+	}
+
+	@Test
+	public void testApplyTo() {
+		var v = new VectorXYZ(1, 2, 3);
+		var m = TransformationMatrix.forTranslation(new float[]{10f, 20f, 30f});
+		assertEquals(new VectorXYZ(11, 22, 33), m.applyTo(v));
 	}
 
 }

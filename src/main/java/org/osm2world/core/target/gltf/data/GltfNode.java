@@ -21,4 +21,20 @@ public class GltfNode {
 	public @Nullable Map<String, Object> extensions;
 	public @Nullable Object extras;
 
+	public TransformationMatrix getLocalTransform() {
+
+		if (matrix != null) {
+			return new TransformationMatrix(matrix);
+		} else {
+
+			float[] translation = this.translation != null ? this.translation : new float[] {0, 0, 0};
+			float[] rotation = this.rotation != null ? this.rotation : new float[] {0, 0, 0, 1};
+			float[] scale = this.scale != null ? this.scale : new float[] {1, 1, 1};
+
+			return TransformationMatrix.forTRS(translation, rotation, scale);
+
+		}
+
+	}
+
 }

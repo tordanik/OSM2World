@@ -125,7 +125,14 @@ public record TransformationMatrix (float[] values) {
 	}
 
 	public VectorXYZ applyTo(VectorXYZ v) {
-		throw new UnsupportedOperationException();
+
+		var x = get(0, 0) * v.x + get(1, 0) * v.y + get(2, 0) * v.z + get(3, 0) * 1;
+		var y = get(0, 1) * v.x + get(1, 1) * v.y + get(2, 1) * v.z + get(3, 1) * 1;
+		var z = get(0, 2) * v.x + get(1, 2) * v.y + get(2, 2) * v.z + get(3, 2) * 1;
+		var w = get(0, 3) * v.x + get(1, 3) * v.y + get(2, 3) * v.z + get(3, 3) * 1;
+
+		return new VectorXYZ(x, y, z);
+
 	}
 
 }
