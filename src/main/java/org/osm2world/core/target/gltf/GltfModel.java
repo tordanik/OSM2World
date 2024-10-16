@@ -1,8 +1,7 @@
 package org.osm2world.core.target.gltf;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static org.osm2world.core.target.common.material.TextureData.Wrap;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 
@@ -23,10 +22,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.TriangleXYZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.target.common.material.*;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
@@ -64,9 +60,10 @@ public class GltfModel implements Model {
 
 		try {
 
+			float rotAngle = (float) Angle.ofRadians(params.direction()).plus(Angle.ofDegrees(180)).radians;
 			TransformationMatrix rootTransform = TransformationMatrix.forTRS(
 					new float[] { (float)params.position().x, (float)params.position().y, (float)params.position().z },
-					new float[] { 0, 0, 0, 1 }, // TODO provide rotation
+					new float[] { 0, (float)sin(rotAngle/2), 0, (float)cos(rotAngle/2) },
 					new float[] { 1, 1, 1 } // TODO provide scale
 			);
 
@@ -126,7 +123,6 @@ public class GltfModel implements Model {
 
 					GltfAccessor positionAccessor = gltf.accessors.get(primitive.attributes.get("POSITION"));
 					List<VectorXYZ> positions = readDataFromAccessor(VectorXYZ.class, positionAccessor);
-
 					positions = positions.stream().map(globalTransform::applyTo).toList();
 
 					@Nullable List<Color> colors = null;
@@ -146,6 +142,7 @@ public class GltfModel implements Model {
 					if (primitive.attributes.containsKey("NORMAL")) {
 						GltfAccessor normalAccessor = gltf.accessors.get(primitive.attributes.get("NORMAL"));
 						normals = readDataFromAccessor(VectorXYZ.class, normalAccessor);
+						normals = normals.stream().map(globalTransform::applyToNormal).toList();
 					}
 
 					@Nullable List<VectorXZ> texCoords = null;

@@ -135,4 +135,43 @@ public record TransformationMatrix (float[] values) {
 
 	}
 
+	public VectorXYZ applyToNormal(VectorXYZ n) {
+
+		float[][] ti = transposedInverse3x3();
+
+		var x = ti[0][0] * n.x + ti[1][0] * n.y + ti[2][0] * n.z;
+		var y = ti[0][1] * n.x + ti[1][1] * n.y + ti[2][1] * n.z;
+		var z = ti[0][2] * n.x + ti[1][2] * n.y + ti[2][2] * n.z;
+
+		return new VectorXYZ(x, y, z);
+
+	}
+
+	private float[][] transposedInverse3x3() {
+
+		// TODO cache result
+
+		double det =
+				+get(0,0)*(get(1,1)*get(2,2)-get(2,1)*get(1,2))
+				-get(0,1)*(get(1,0)*get(2,2)-get(1,2)*get(2,0))
+				+get(0,2)*(get(1,0)*get(2,1)-get(1,1)*get(2,0));
+
+		double invdet = 1/det;
+
+		float[][] result = new float[3][3];
+
+		result[0][0] = (float) ((get(1,1)*get(2,2)-get(2,1)*get(1,2))*invdet);
+		result[1][0] = (float) (-(get(0,1)*get(2,2)-get(0,2)*get(2,1))*invdet);
+		result[2][0] = (float) ((get(0,1)*get(1,2)-get(0,2)*get(1,1))*invdet);
+		result[0][1] = (float) (-(get(1,0)*get(2,2)-get(1,2)*get(2,0))*invdet);
+		result[1][1] = (float) ((get(0,0)*get(2,2)-get(0,2)*get(2,0))*invdet);
+		result[2][1] = (float) (-(get(0,0)*get(1,2)-get(1,0)*get(0,2))*invdet);
+		result[0][2] = (float) ((get(1,0)*get(2,1)-get(2,0)*get(1,1))*invdet);
+		result[1][2] = (float) (-(get(0,0)*get(2,1)-get(2,0)*get(0,1))*invdet);
+		result[2][2] = (float) ((get(0,0)*get(1,1)-get(1,0)*get(0,1))*invdet);
+
+		return result;
+
+	}
+
 }
