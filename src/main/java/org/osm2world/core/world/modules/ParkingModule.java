@@ -2,12 +2,15 @@ package org.osm2world.core.world.modules;
 
 import static org.osm2world.core.target.common.material.Materials.ASPHALT;
 import static org.osm2world.core.target.common.material.Materials.getSurfaceMaterial;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
@@ -18,9 +21,10 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.target.common.model.ExternalResourceModel;
+import org.osm2world.core.target.common.mesh.LODRange;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.Models;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
 import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -43,10 +47,10 @@ public class ParkingModule extends AbstractModule {
 		}
 	}
 
-	private static class SurfaceParking extends AbstractAreaWorldObject
+	private class SurfaceParking extends AbstractAreaWorldObject
 			implements LegacyWorldObject {
 
-		private final List<MapArea> parkingSpaces = new ArrayList<MapArea>();
+		private final List<MapArea> parkingSpaces = new ArrayList<>();
 
 		public SurfaceParking(MapArea area) {
 
@@ -98,21 +102,29 @@ public class ParkingModule extends AbstractModule {
 				//TODO add elevation support
 			}
 
-			Model carModel = new ExternalResourceModel("car");
+			double carDensity = config.getDouble("carDensity", 0.3);
+			var random = new Random(area.getId());
 
-			for (MapArea parkingSpace : parkingSpaces) {
+			Model carModel = Models.getModel("CAR");
 
-				SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
+			if (carModel != null) {
+				for (MapArea parkingSpace : parkingSpaces) {
 
-				// determine the car's facing direction based on  which side of the box is longer
-				VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
-				if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > direction.length()) {
-					direction = bbox.getVertex(2).subtract(bbox.getVertex(1));
+					if (random.nextDouble() > carDensity) continue;
+
+					SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
+
+					// determine the car's facing direction based on which side of the box is longer
+					VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
+					if (bbox.getVertex(2).distanceTo(bbox.getVertex(1)) > direction.length()) {
+						direction = bbox.getVertex(2).subtract(bbox.getVertex(1));
+					}
+					direction = direction.normalize();
+
+					target.drawModel(carModel, new InstanceParameters(
+							bbox.getCenter().xyz(ele), direction.angle(), new LODRange(LOD3, LOD4)));
+
 				}
-				direction = direction.normalize();
-
-				target.drawModel(carModel, new InstanceParameters(bbox.getCenter().xyz(ele), direction.angle()));
-
 			}
 
 		}
