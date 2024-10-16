@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.awt.Color.*;
 import static org.osm2world.core.target.common.material.Materials.ASPHALT;
 import static org.osm2world.core.target.common.material.Materials.getSurfaceMaterial;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
@@ -7,6 +8,7 @@ import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +35,13 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * adds parking spaces to the world
  */
 public class ParkingModule extends AbstractModule {
+
+	private static final List<Color> CAR_COLORS = List.of(
+			WHITE, WHITE, WHITE, WHITE, WHITE,
+			BLACK, BLACK, BLACK, BLACK,
+			GRAY, GRAY, GRAY, GRAY,
+			LIGHT_GRAY, LIGHT_GRAY, // silver
+			RED, GREEN, BLUE, YELLOW, CYAN);
 
 	@Override
 	protected void applyToArea(MapArea area) {
@@ -112,6 +121,8 @@ public class ParkingModule extends AbstractModule {
 
 					if (random.nextDouble() > carDensity) continue;
 
+					Color carColor = CAR_COLORS.get(random.nextInt(CAR_COLORS.size()));
+
 					SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
 
 					// determine the car's facing direction based on which side of the box is longer
@@ -122,7 +133,7 @@ public class ParkingModule extends AbstractModule {
 					direction = direction.normalize();
 
 					target.drawModel(carModel, new InstanceParameters(
-							bbox.getCenter().xyz(ele), direction.angle(), new LODRange(LOD3, LOD4)));
+							bbox.getCenter().xyz(ele), direction.angle(), carColor, new LODRange(LOD3, LOD4)));
 
 				}
 			}

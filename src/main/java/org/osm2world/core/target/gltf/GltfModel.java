@@ -36,6 +36,12 @@ import com.google.gson.Gson;
 
 public class GltfModel implements Model {
 
+	/**
+	 * placeholder color to be replaced with a color specific to this instance
+	 * TODO: support this replacement in vertex colors, not just material base color
+	 */
+	private static final LColor PLACEHOLDER_COLOR = new LColor(1f, 0f, 1f);
+
 	private final Gltf gltf;
 	private final @Nullable File source;
 
@@ -61,6 +67,8 @@ public class GltfModel implements Model {
 
 		try {
 
+			@Nullable Color instanceColor = params.color();
+
 			float rotAngle = (float) Angle.ofRadians(params.direction()).plus(Angle.ofDegrees(180)).radians;
 			TransformationMatrix rootTransform = TransformationMatrix.forTRS(
 					new float[] { (float)params.position().x, (float)params.position().y, (float)params.position().z },
@@ -74,7 +82,7 @@ public class GltfModel implements Model {
 
 			GltfScene scene = gltf.scenes.get(gltf.scene);
 			for (int n : scene.nodes) {
-				result.addAll(buildMeshesForNode(gltf.nodes.get(n), rootTransform, params.lodRange()));
+				result.addAll(buildMeshesForNode(gltf.nodes.get(n), rootTransform, params.lodRange(), instanceColor));
 			}
 
 			return result;
@@ -87,7 +95,7 @@ public class GltfModel implements Model {
 	}
 
 	private List<? extends Mesh> buildMeshesForNode(GltfNode node, TransformationMatrix parentTransform,
-				LODRange lodRange) throws IOException {
+				LODRange lodRange, @Nullable Color instanceColor) throws IOException {
 
 		List<Mesh> result = new ArrayList<>();
 
@@ -114,7 +122,7 @@ public class GltfModel implements Model {
 					gltfMaterial = gltf.materials.get(primitive.material);
 				}
 
-				Material material = convertMaterial(gltfMaterial);
+				Material material = convertMaterial(gltfMaterial, instanceColor);
 
 				// construct the mesh geometry
 
@@ -222,7 +230,7 @@ public class GltfModel implements Model {
 
 		if (node.children != null) {
 			for (int child : node.children) {
-				result.addAll(buildMeshesForNode(gltf.nodes.get(child), globalTransform, lodRange));
+				result.addAll(buildMeshesForNode(gltf.nodes.get(child), globalTransform, lodRange, instanceColor));
 			}
 		}
 
@@ -384,7 +392,7 @@ public class GltfModel implements Model {
 
 	}
 
-	private Material convertMaterial(GltfMaterial m) throws IOException {
+	private Material convertMaterial(GltfMaterial m, @Nullable Color instanceColor) throws IOException {
 
 		// TODO factors other than baseColorFactor, e.g. emissiveFactor
 
@@ -406,7 +414,12 @@ public class GltfModel implements Model {
 
 			float[] c = m.pbrMetallicRoughness.baseColorFactor;
 			if (c != null) {
-				color = new LColor(c[0], c[1], c[2]).toAWT();
+				var lColor = new LColor(c[0], c[1], c[2]);
+				if (PLACEHOLDER_COLOR.equals(lColor) && instanceColor != null) {
+					color = instanceColor;
+				} else {
+					color = lColor.toAWT();
+				}
 			}
 
 			@Nullable TextureData baseColorTexture = readTexture(m.pbrMetallicRoughness.baseColorTexture);

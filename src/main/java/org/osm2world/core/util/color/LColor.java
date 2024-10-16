@@ -2,7 +2,7 @@ package org.osm2world.core.util.color;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 
 /**
@@ -63,4 +63,19 @@ public class LColor {
 		return "(" + red + ", " + green + ", " + blue + ")";
 	}
 
+	@Override
+	public final boolean equals(Object o) {
+		return this == o || o instanceof LColor other
+				&& Float.compare(red, other.red) == 0
+				&& Float.compare(green, other.green) == 0
+				&& Float.compare(blue, other.blue) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Float.hashCode(red);
+		result = 31 * result + Float.hashCode(green);
+		result = 31 * result + Float.hashCode(blue);
+		return result;
+	}
 }
