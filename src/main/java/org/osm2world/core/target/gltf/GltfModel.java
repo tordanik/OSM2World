@@ -24,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.*;
 import org.osm2world.core.target.common.material.*;
+import org.osm2world.core.target.common.mesh.LODRange;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
@@ -73,7 +74,7 @@ public class GltfModel implements Model {
 
 			GltfScene scene = gltf.scenes.get(gltf.scene);
 			for (int n : scene.nodes) {
-				result.addAll(buildMeshesForNode(gltf.nodes.get(n), rootTransform));
+				result.addAll(buildMeshesForNode(gltf.nodes.get(n), rootTransform, params.lodRange()));
 			}
 
 			return result;
@@ -85,7 +86,8 @@ public class GltfModel implements Model {
 
 	}
 
-	private List<? extends Mesh> buildMeshesForNode(GltfNode node, TransformationMatrix parentTransform) throws IOException {
+	private List<? extends Mesh> buildMeshesForNode(GltfNode node, TransformationMatrix parentTransform,
+				LODRange lodRange) throws IOException {
 
 		List<Mesh> result = new ArrayList<>();
 
@@ -206,7 +208,7 @@ public class GltfModel implements Model {
 
 					}
 
-					result.add(new Mesh(geometryBuilder.build(), material));
+					result.add(new Mesh(geometryBuilder.build(), material, lodRange.min(), lodRange.max()));
 
 				} else {
 					ConversionLog.error("Unsupported mode " + mode + " in glTF asset " + this);
@@ -220,7 +222,7 @@ public class GltfModel implements Model {
 
 		if (node.children != null) {
 			for (int child : node.children) {
-				result.addAll(buildMeshesForNode(gltf.nodes.get(child), globalTransform));
+				result.addAll(buildMeshesForNode(gltf.nodes.get(child), globalTransform, lodRange));
 			}
 		}
 
