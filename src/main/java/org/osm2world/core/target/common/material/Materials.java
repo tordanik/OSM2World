@@ -373,6 +373,8 @@ public final class Materials {
 	 */
 	public static final void configureMaterials(Configuration config) {
 
+		externalMaterials.clear();
+
 		Map<String, ConfMaterial> texturePrefixMap = new HashMap<>();
 
 		Iterator<String> keyIterator = config.getKeys();
