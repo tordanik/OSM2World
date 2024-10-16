@@ -36,6 +36,7 @@ import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.model.Models;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.attachment.AttachmentConnector;
@@ -269,6 +270,7 @@ public class ConversionFacade {
 		}
 
 		Materials.configureMaterials(config);
+		Models.configureModels(config);
 			//this will cause problems if multiple conversions are run
 			//at the same time, because global variables are being modified
 
