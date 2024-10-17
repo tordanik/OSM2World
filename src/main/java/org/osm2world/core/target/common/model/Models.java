@@ -2,9 +2,7 @@ package org.osm2world.core.target.common.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,10 +21,11 @@ public class Models {
 	/** prevents instantiation */
 	private Models() {}
 
-	private static final Map<String, Model> models = new HashMap<>();
+	/** map with all known models; keys are in lower case */
+	private static final Map<String, List<Model>> models = new HashMap<>();
 
 	/**
-	 * returns a model based on its name
+	 * returns a model based on its name, if one is available
 	 *
 	 * @param name  case-insensitive name of the material
 	 */
@@ -34,13 +33,28 @@ public class Models {
 
 		if (name == null) return null;
 
-		for (String key : models.keySet()) {
-			if (name.equalsIgnoreCase(key)) {
-				return models.get(name);
-			}
+		List<Model> knownModels = models.get(name.toLowerCase(Locale.ROOT));
+		if (knownModels != null && !knownModels.isEmpty()) {
+			return knownModels.get(0);
+		} else {
+			return null;
 		}
 
-		return null;
+	}
+
+	/**
+	 * variant of {@link #getModel(String)} which picks one of several available models randomly.
+	 */
+	public static @Nullable Model getModel(@Nullable String name, Random random) {
+
+		if (name == null) return null;
+
+		List<Model> knownModels = models.get(name.toLowerCase(Locale.ROOT));
+		if (knownModels != null && !knownModels.isEmpty()) {
+			return knownModels.get(random.nextInt(knownModels.size()));
+		} else {
+			return null;
+		}
 
 	}
 
@@ -59,11 +73,14 @@ public class Models {
 			if (matcher.matches()) {
 
 				String modelName = matcher.group(1);
-				String fileName = config.getString(key);
+				List<Object> fileNames = config.getList(key);
 
 				try {
-					Model model = GltfModel.loadFromFile(new File(fileName));
-					models.put(modelName, model);
+					List<Model> ms = new ArrayList<>(fileNames.size());
+					for (Object fileName : fileNames) {
+						ms.add(GltfModel.loadFromFile(new File(fileName.toString())));
+					}
+					models.put(modelName.toLowerCase(Locale.ROOT), ms);
 				} catch (IOException e) {
 					System.err.println("Unable to load model " + modelName + ":");
 					e.printStackTrace();

@@ -114,14 +114,14 @@ public class ParkingModule extends AbstractModule {
 			double carDensity = config.getDouble("carDensity", 0.3);
 			var random = new Random(area.getId());
 
-			Model carModel = Models.getModel("CAR");
+			for (MapArea parkingSpace : parkingSpaces) {
 
-			if (carModel != null) {
-				for (MapArea parkingSpace : parkingSpaces) {
+				if (random.nextDouble() > carDensity) continue;
 
-					if (random.nextDouble() > carDensity) continue;
+				Model carModel = Models.getModel("CAR", random);
+				Color carColor = CAR_COLORS.get(random.nextInt(CAR_COLORS.size()));
 
-					Color carColor = CAR_COLORS.get(random.nextInt(CAR_COLORS.size()));
+				if (carModel != null) {
 
 					SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
 
