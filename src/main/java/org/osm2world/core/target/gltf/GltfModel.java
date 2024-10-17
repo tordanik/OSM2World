@@ -309,7 +309,7 @@ public class GltfModel implements Model {
 				for (int i = 0; i < accessor.count; i++) {
 					result.add(new VectorXZ(
 							components.get(2 * i),
-							components.get(2 * i + 1)));
+							-1 * components.get(2 * i + 1)));
 				}
 				return (List<T>) result;
 			}
