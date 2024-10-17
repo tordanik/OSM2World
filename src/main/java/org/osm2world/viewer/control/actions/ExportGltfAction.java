@@ -1,14 +1,15 @@
 package org.osm2world.viewer.control.actions;
 
-import java.awt.*;
+import java.awt.HeadlessException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.Serial;
 import java.util.Locale;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.gltf.GltfTarget;
@@ -46,12 +47,17 @@ public class ExportGltfAction extends AbstractExportAction {
 
 		try {
 
-			boolean underground = data.getConfig() == null || data.getConfig().getBoolean("renderUnderground", true);
+			boolean underground = data.getConfig() == null ||
+				data.getConfig().getBoolean("renderUnderground", true);
+
+			Results conversionResults = data.getConversionResults();
 
 			/* write the file */
-			GltfTarget gltfTarget = new GltfTarget(file, flavor, Compression.NONE,null);
+			GltfTarget gltfTarget = new GltfTarget(file, flavor, Compression.NONE, conversionResults.getMapProjection(), null);
 			gltfTarget.setConfiguration(data.getConfig());
-			TargetUtil.renderWorldObjects(gltfTarget, data.getConversionResults().getMapData(), underground);
+
+			TargetUtil.renderWorldObjects(gltfTarget, conversionResults.getMapData(), underground);
+			
 			gltfTarget.finish();
 
 			messageManager.addMessage("exported glTF file " + file);

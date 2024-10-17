@@ -1,32 +1,50 @@
 package org.osm2world.core.target.gltf;
 
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.algorithms.NormalCalculationUtil.calculateTriangleNormals;
+import static java.util.Arrays.*;
+import static java.util.stream.Collectors.*;
+import static org.osm2world.core.math.algorithms.NormalCalculationUtil.*;
 import static org.osm2world.core.target.TargetUtil.*;
-import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.EMBED;
-import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.REFERENCE;
-import static org.osm2world.core.target.common.material.Material.Interpolation.SMOOTH;
+import static org.osm2world.core.target.common.ResourceOutputSettings.ResourceOutputMode.*;
+import static org.osm2world.core.target.common.material.Material.Interpolation.*;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
+import org.cesiumjs.WGS84Util;
 import org.osm2world.core.GlobalValues;
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.MeshStore;
 import org.osm2world.core.target.common.MeshStore.MeshMetadata;
 import org.osm2world.core.target.common.MeshStore.MeshProcessingStep;
+import org.osm2world.core.target.common.MeshStore.MeshWithMetadata;
 import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.MeshTarget.MergeMeshes.MergeOption;
 import org.osm2world.core.target.common.ResourceOutputSettings;
@@ -37,16 +55,31 @@ import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
-import org.osm2world.core.target.gltf.data.*;
+import org.osm2world.core.target.gltf.data.Gltf;
+import org.osm2world.core.target.gltf.data.GltfAccessor;
+import org.osm2world.core.target.gltf.data.GltfAsset;
+import org.osm2world.core.target.gltf.data.GltfBuffer;
+import org.osm2world.core.target.gltf.data.GltfBufferView;
+import org.osm2world.core.target.gltf.data.GltfImage;
+import org.osm2world.core.target.gltf.data.GltfMaterial;
 import org.osm2world.core.target.gltf.data.GltfMaterial.NormalTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.OcclusionTextureInfo;
 import org.osm2world.core.target.gltf.data.GltfMaterial.PbrMetallicRoughness;
 import org.osm2world.core.target.gltf.data.GltfMaterial.TextureInfo;
+import org.osm2world.core.target.gltf.data.GltfMesh;
+import org.osm2world.core.target.gltf.data.GltfNode;
+import org.osm2world.core.target.gltf.data.GltfSampler;
+import org.osm2world.core.target.gltf.data.GltfScene;
+import org.osm2world.core.target.gltf.data.GltfTexture;
+import org.osm2world.core.target.gltf.tiles_data.TilesetAsset;
+import org.osm2world.core.target.gltf.tiles_data.TilesetParentEntry;
+import org.osm2world.core.target.gltf.tiles_data.TilesetRoot;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.color.LColor;
 
 import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 
@@ -55,11 +88,15 @@ import com.google.gson.JsonIOException;
  */
 public class GltfTarget extends MeshTarget {
 
+	//TODO: Make configurable
+	private static final int NUM_MESHES_FOR_SUBDIVISION_TOP = 100;
+
 	public enum GltfFlavor { GLTF, GLB }
 
 	private final File outputFile;
 	private final GltfFlavor flavor;
 	private final Compression compression;
+	private final MapProjection mapProjection;
 	private final @Nullable SimpleClosedShapeXZ bounds;
 
 	/** the gltf asset under construction */
@@ -72,11 +109,18 @@ public class GltfTarget extends MeshTarget {
 	private final List<ByteBuffer> binChunkData = new ArrayList<>();
 
 	public GltfTarget(File outputFile, GltfFlavor flavor, Compression compression,
+					  MapProjection mapProjection,
 					  @Nullable SimpleClosedShapeXZ bounds) {
 		this.outputFile = outputFile;
 		this.flavor = flavor;
 		this.compression = compression;
+		this.mapProjection = mapProjection;
 		this.bounds = bounds;
+	}
+
+	public static final class MinMax {
+		public double min = Double.MAX_VALUE;
+		public double max = Double.MIN_VALUE;
 	}
 
 	public File outputDir() {
@@ -90,15 +134,79 @@ public class GltfTarget extends MeshTarget {
 
 	@Override
 	public void finish() {
+		MeshStore processedMeshStore = processMeshStore();
 
+		List<MeshWithMetadata> meshesWithMetadata = processedMeshStore.meshesWithMetadata();
+		meshesWithMetadata.sort(new MeshHeightAndSizeComparator());
+
+		MinMax ymm = new MinMax();
+		meshesWithMetadata.forEach(m -> {
+			m.mesh().geometry.asTriangles().vertices().forEach(v -> {
+				ymm.min = Double.min(ymm.min, v.y);
+				ymm.max = Double.max(ymm.max, v.y);
+			});
+		});
+
+		List<File> writtenFiles = new ArrayList<>();
+
+		if (config.getBoolean("subdivideTiles", false)) {
+			List<MeshWithMetadata> topMeshes = meshesWithMetadata.subList(0, Math.min(meshesWithMetadata.size(), NUM_MESHES_FOR_SUBDIVISION_TOP));
+			File p = this.outputFile.getParentFile();
+
+			String fname = this.outputFile.getName();
+			String ext = getExt(fname);
+			String baseName = fname.replace(ext, "");
+
+			File out = new File(p, baseName + "_0" + ext);
+			writeToFile(out, this.compression, new MeshStore(topMeshes));
+
+			writtenFiles.add(out);
+
+			List<MeshWithMetadata> restMeshes = meshesWithMetadata.subList(Math.min(meshesWithMetadata.size(), 100), meshesWithMetadata.size());
+			writeToFile(this.outputFile, this.compression, new MeshStore(restMeshes));
+			writtenFiles.add(this.outputFile);
+		}
+		else {
+			writeToFile(this.outputFile, this.compression, processedMeshStore);
+		}
+
+		if (config.getBoolean("writeTilesetJson", false)) {
+			File p = this.outputFile.getParentFile();
+			String fname = this.outputFile.getName();
+			String ext = getExt(fname);
+			String baseName = fname.replace(ext, "");
+			writeTileset(new File(p, baseName + ".tileset.json"), writtenFiles, mapProjection.getOrigin(), bounds, ymm.min, ymm.max);
+		}
+	}
+
+	private String getExt(String fname) {
+		String ext = "";
+
+		if (fname.endsWith(".gz")) {
+			ext = ".gz";
+		}
+		if (fname.endsWith(".zip")) {
+			ext = ".zip";
+		}
+
+		if (fname.endsWith(".gltf" + ext)) {
+			ext = ".gltf" + ext;
+		}
+		if (fname.endsWith(".glb" + ext)) {
+			ext = ".glb" + ext;
+		}
+
+		return ext;
+	}
+
+	private void writeToFile(File outputFile, Compression compression, MeshStore processedMeshStore) {
 		writeFileWithCompression(outputFile, compression, outputStream -> {
-
 			try {
 				if (flavor == GltfFlavor.GLTF) {
-					writeJson(outputStream);
+					writeJson(processedMeshStore, outputStream);
 				} else {
 					try (var jsonChunkOutputStream = new ByteArrayOutputStream()) {
-						writeJson(jsonChunkOutputStream);
+						writeJson(processedMeshStore, jsonChunkOutputStream);
 						ByteBuffer jsonChunkData = asPaddedByteBuffer(jsonChunkOutputStream.toByteArray(), (byte) 0x20);
 						writeGlb(outputStream, jsonChunkData, binChunkData);
 					}
@@ -106,9 +214,120 @@ public class GltfTarget extends MeshTarget {
 			} catch (IOException | JsonIOException e) {
 				throw new RuntimeException(e);
 			}
-
 		});
+	}
 
+	private MeshStore processMeshStore() {
+		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
+		boolean clipToBounds = config.getBoolean("clipToBounds", false);
+
+		/* process the meshes */
+
+		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
+
+		if (!keepOsmElements) {
+			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
+		}
+
+		LevelOfDetail lod = ConfigUtil.readLOD(config);
+
+		// TODO: split into subtiles eighter here as one step
+		// (good option save tile in meta),
+		// or one step up by calling processMeshStore
+		// multiple times with different bboxes (bad option)
+
+		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
+				new FilterLod(lod),
+				new EmulateTextureLayers(lod.ordinal() <= 1 ? 1 : Integer.MAX_VALUE),
+				new MoveColorsToVertices(), // after EmulateTextureLayers because colorable is per layer
+				new ReplaceTexturesWithAtlas(t -> getResourceOutputSettings().modeForTexture(t) == REFERENCE),
+				new MergeMeshes(mergeOptions)));
+
+		if (clipToBounds && bounds != null) {
+			processingSteps.add(1, new ClipToBounds(bounds, true));
+		}
+
+		return meshStore.process(processingSteps);
+	}
+
+	/*
+	Working example for tileset
+	{
+		"asset" : {
+			"version": "1.0"
+		},
+		"root": {
+			"content": {
+				"uri": "14_5298_5916_0.glb"
+			},
+			"refine": "ADD",
+			"geometricError": 25,
+			"boundingVolume": {
+				"region": [-1.1098350999480917,0.7790694465970149,-1.1094516048185785,0.779342292568195,0.0,100]
+			},
+			"transform": [
+				0.895540041198885,    0.4449809373551852,  0.0,                0.0,
+				-0.31269461895546163, 0.6293090971636892,  0.7114718093525005, 0.0,
+				0.3165913926274654,   -0.6371514934593837, 0.7027146394495273, 0.0,
+				2022609.150078308,    -4070573.2078238726, 4459382.83869308,   1.0
+			],
+			"children": [{
+				"boundingVolume": {
+					"region": [-1.1098350999480917,0.7790694465970149,-1.1094516048185785,0.779342292568195,0.0,97.49999999999997]
+				},
+				"geometricError": 0,
+				"content": {
+					"uri": "14_5298_5916.glb"
+				}
+			}]
+		}
+	}*/
+	private void writeTileset(File outFile, List<File> tileContentFiles, LatLon origin, SimpleClosedShapeXZ fullBBOX, double minY, double maxY) {
+
+		AxisAlignedRectangleXZ bbox = fullBBOX.boundingBox();
+		
+		VectorXYZ cartesianOrigin = WGS84Util.cartesianFromLatLon(origin, 0.0);
+		double[] transform = WGS84Util.eastNorthUpToFixedFrame(cartesianOrigin);
+
+		// left top
+		LatLon westNorth = this.mapProjection.toLatLon(new VectorXZ(bbox.minX, bbox.maxZ));
+		// right bottom
+		LatLon eastSouth = this.mapProjection.toLatLon(new VectorXZ(bbox.maxX, bbox.minZ));
+
+		double[] boundingRegion = new double[] {
+			Math.toRadians(westNorth.lon), // west
+			Math.toRadians(eastSouth.lat), // south
+			Math.toRadians(eastSouth.lon), // east
+			Math.toRadians(westNorth.lat), // north
+			minY,
+			maxY
+		};
+
+		TilesetRoot tileset = new TilesetRoot();
+		tileset.setAsset(new TilesetAsset("1.0"));
+
+		TilesetParentEntry root = new TilesetParentEntry();
+		tileset.setRoot(root);
+
+		root.setTransform(transform);
+		root.setGeometricError(25);
+		root.setBoundingVolume(boundingRegion);
+		root.setContent(tileContentFiles.get(0).getName());
+
+		if (tileContentFiles.size() > 1) {
+			root.addChild(tileContentFiles.get(1).getName());
+		}
+
+		Gson gson = new GsonBuilder().create();
+		String out = gson.toJson(tileset);
+
+		try (PrintWriter metaWriter = new PrintWriter(new FileOutputStream(outFile))) {
+			metaWriter.println(out);
+			metaWriter.flush();
+		}
+		catch (FileNotFoundException fnfe) {
+			fnfe.printStackTrace();
+		}
 	}
 
 	/** creates a {@link GltfNode} and returns its index in {@link Gltf#nodes} */
@@ -371,36 +590,10 @@ public class GltfTarget extends MeshTarget {
 	/**
 	 * constructs the JSON document after all parts of the glTF have been created
 	 * and outputs it to an {@link OutputStream}
+	 * @param processedMeshStore
 	 */
-	private void writeJson(OutputStream outputStream) throws IOException {
-
+	private void writeJson(MeshStore processedMeshStore, OutputStream outputStream) throws IOException {
 		boolean keepOsmElements = config.getBoolean("keepOsmElements", true);
-		boolean clipToBounds = config.getBoolean("clipToBounds", false);
-
-		/* process the meshes */
-
-		EnumSet<MergeOption> mergeOptions = EnumSet.noneOf(MergeOption.class);
-
-		if (!keepOsmElements) {
-			mergeOptions.add(MergeOption.MERGE_ELEMENTS);
-		}
-
-		LevelOfDetail lod = ConfigUtil.readLOD(config);
-
-		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
-				new FilterLod(lod),
-				new EmulateTextureLayers(lod.ordinal() <= 1 ? 1 : Integer.MAX_VALUE),
-				new MoveColorsToVertices(), // after EmulateTextureLayers because colorable is per layer
-				new ReplaceTexturesWithAtlas(t -> getResourceOutputSettings().modeForTexture(t) == REFERENCE),
-				new MergeMeshes(mergeOptions)));
-
-		if (clipToBounds && bounds != null) {
-			processingSteps.add(1, new ClipToBounds(bounds, true));
-		}
-
-		MeshStore processedMeshStore = meshStore.process(processingSteps);
-
-		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
 
 		/* create the basic structure of the glTF */
 
@@ -431,6 +624,9 @@ public class GltfTarget extends MeshTarget {
 
 		rootNode.children = new ArrayList<>();
 
+		Multimap<MeshMetadata, Mesh> meshesByMetadata = processedMeshStore.meshesByMetadata();
+		// int top = 100;
+
 		for (MeshMetadata objectMetadata : meshesByMetadata.keySet()) {
 
 			List<Integer> meshNodeIndizes = new ArrayList<>(meshesByMetadata.size());
@@ -459,6 +655,9 @@ public class GltfTarget extends MeshTarget {
 
 			rootNode.children.addAll(meshNodeIndizes);
 
+			// if (top-- == 0) {
+			// 	break;
+			// }
 		}
 
 		/* add a buffer for the BIN chunk */
