@@ -31,7 +31,11 @@ nbactions.xml
 nbbuild.xml
 nb-configuration.xml
 
+# Vscode
+.vscode/
+
 # Miscellaneous
 *~
 *.swp
+*.tileset.json
 .DS_Store
