@@ -168,6 +168,7 @@ public class GltfTarget extends MeshTarget {
 		}
 		else {
 			writeToFile(this.outputFile, this.compression, processedMeshStore);
+			writtenFiles.add(this.outputFile);
 		}
 
 		if (config.getBoolean("writeTilesetJson", false)) {
