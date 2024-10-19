@@ -1,5 +1,7 @@
 package org.osm2world.core.math;
 
+import static java.lang.Double.doubleToLongBits;
+import static java.lang.Double.isFinite;
 import static java.lang.Math.*;
 
 import java.util.ArrayList;
@@ -13,7 +15,9 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		assert isFinite();
+		if (!(isFinite(x) && isFinite(y) && isFinite(z))) {
+			throw new InvalidGeometryException("Vector not finite: (" + x + ", " + y + ", " + z + ")");
+		}
 	}
 
 	@Override
@@ -29,10 +33,6 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 	@Override
 	public double getZ() {
 		return z;
-	}
-
-	public boolean isFinite() {
-		return Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z);
 	}
 
 	public double length() {
@@ -253,11 +253,11 @@ public class VectorXYZ implements Vector3D, BoundedObject {
 		final int prime = 31;
 		int result = 1;
 		long temp;
-		temp = Double.doubleToLongBits(x);
+		temp = doubleToLongBits(x);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(y);
+		temp = doubleToLongBits(y);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(z);
+		temp = doubleToLongBits(z);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}

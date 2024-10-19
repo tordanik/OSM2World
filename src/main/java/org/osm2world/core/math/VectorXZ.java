@@ -34,7 +34,9 @@ public class VectorXZ implements Vector3D {
 	public VectorXZ(double x, double z) {
 		this.x = x;
 		this.z = z;
-		assert isFinite(x) && isFinite(z);
+		if (!(isFinite(x) && isFinite(z))) {
+			throw new InvalidGeometryException("Vector not finite: (" + x + ", " + z + ")");
+		}
 	}
 
 	@Override

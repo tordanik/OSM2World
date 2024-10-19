@@ -15,9 +15,7 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 		this.v2 = v2;
 		this.v3 = v3;
 
-		if (!v1.isFinite() || !v2.isFinite() || !v3.isFinite()) {
-			throw new InvalidGeometryException("Triangle vertex is not finite: " + v1 + ", " + v2 + ", " + v3);
-		} else if (getArea() < 1e-6) {
+		if (getArea() < 1e-6) {
 			// degenerate triangle: all three points are (almost, to account for floating point arithmetic) in a line
 			throw new InvalidGeometryException("Degenerate triangle: " + v1 + ", " + v2 + ", " + v3);
 		}
