@@ -251,7 +251,8 @@ public class MeshTarget extends AbstractTarget {
 
 			for (MeshWithMetadata meshWithMetadata : meshStore.meshesWithMetadata()) {
 
-				if (meshWithMetadata.mesh().material.getTextureLayers().stream().noneMatch(it -> it.colorable)) {
+				if (!meshWithMetadata.mesh().material.getTextureLayers().isEmpty()
+						&& meshWithMetadata.mesh().material.getTextureLayers().stream().noneMatch(it -> it.colorable)) {
 					result.add(meshWithMetadata);
 					continue;
 				}
