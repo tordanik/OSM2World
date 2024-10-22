@@ -109,7 +109,7 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 		/* determine the level structure */
 
 		levelStructure = new LevelAndHeightData(building.getPrimaryMapElement().getTags(),
-				area.getTags(), levelTagSets, roofShape, this.area.getPolygon());
+				area.getTags(), levelTagSets, roofShape, this.area.getPolygon(), this.area);
 
 		/* build the roof */
 

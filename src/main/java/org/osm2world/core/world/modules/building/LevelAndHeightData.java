@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.map_data.data.MapRelation;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
@@ -98,7 +99,7 @@ public class LevelAndHeightData {
 	 * If available, explicitly tagged data is used, with tags on indoor=level elements having the highest priority.
 	 */
 	public LevelAndHeightData(TagSet buildingTags, TagSet buildingPartTags, Map<Integer, TagSet> levelTagSets,
-			String roofShape, PolygonShapeXZ outline) {
+							  String roofShape, PolygonShapeXZ outline, MapRelation.Element element) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(inheritTags(buildingPartTags, buildingTags));
 
@@ -179,7 +180,7 @@ public class LevelAndHeightData {
 		}
 
 		if (minHeight > heightWithoutRoof) {
-			ConversionLog.warn("min_height exceeds building (part) height without roof");
+			ConversionLog.warn("min_height exceeds building (part) height without roof", element);
 			minHeight = heightWithoutRoof - 0.1;
 		}
 
@@ -213,10 +214,10 @@ public class LevelAndHeightData {
 
 		if (minLevel != null && maxLevel != null) {
 			if (minLevel > maxLevel) {
-				ConversionLog.warn("min_level is larger than max_level");
+				ConversionLog.warn("min_level is larger than max_level", element);
 				ignoreIndoorLevelNumbers = true;
 			} else if ((maxLevel - minLevel) + 1 - nonExistentLevels.size() != totalLevels) {
-				ConversionLog.warn("min_level, max_level and non_existent_levels do not match S3DB levels");
+				ConversionLog.warn("min_level, max_level and non_existent_levels do not match S3DB levels", element);
 				ignoreIndoorLevelNumbers = true;
 			}
 		} else if (minLevel != null && maxLevel == null) {
@@ -270,7 +271,7 @@ public class LevelAndHeightData {
 			defaultLevelHeights.put(LevelType.UNDERGROUND, defaults.heightPerLevel);
 
 			if (defaultLevelHeights.values().stream().anyMatch(it -> it < 0)) {
-				ConversionLog.warn("Sum of explicit level heights exceeds total available height, ignoring them.");
+				ConversionLog.warn("Sum of explicit level heights exceeds total available height, ignoring them.", element);
 				explicitLevelHeights.clear();
 				defaultLevelHeights.clear();
 			}
