@@ -110,23 +110,30 @@ public class LevelAndHeightData {
 
 		/* determine level information from Simple 3D Buildings tagging */
 
-		Double parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
-
-		int buildingLevels;
-		if (parsedLevels != null) {
-			buildingLevels = max(0, (int)(double)parsedLevels);
-		} else if (parseHeight(tags, -1) > 0) {
-			buildingLevels = max(1, (int) (parseHeight(tags, -1) / defaults.heightPerLevel));
-		} else {
-			buildingLevels = defaults.levels;
-		}
-
 		final int buildingMinLevel = parseInt(tags.getValue("building:min_level"), 0);
 		final int buildingUndergroundLevels = parseUInt(tags.getValue("building:levels:underground"), 0);
 
 		final int buildingMinLevelWithUnderground = (buildingMinLevel > 0)
 				? buildingMinLevel
 				: min(buildingMinLevel, -1 * buildingUndergroundLevels);
+
+		Double parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
+
+		int buildingLevels;
+		if (parsedLevels != null) {
+			buildingLevels = max(0, (int)(double)parsedLevels);
+		} else if (parseHeight(tags, -1) > 0) {
+			buildingLevels = max(buildingMinLevelWithUnderground + 1,
+					max(1, (int) (parseHeight(tags, -1) / defaults.heightPerLevel)));
+		} else if (buildingMinLevelWithUnderground > 0) {
+			buildingLevels = buildingMinLevelWithUnderground + 1;
+		} else {
+			buildingLevels = defaults.levels;
+		}
+
+		if (buildingLevels < buildingMinLevelWithUnderground + 1) {
+			throw new IllegalArgumentException("Min level exceeds total building levels for " + element);
+		}
 
 		/* determine roof height and roof levels */
 
