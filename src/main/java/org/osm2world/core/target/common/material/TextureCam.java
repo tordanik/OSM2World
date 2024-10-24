@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import static java.lang.Double.isFinite;
-import static java.lang.Math.PI;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.nCopies;
@@ -255,29 +255,41 @@ public class TextureCam {
 
 		}
 
-		/* tweak normals by adding very steep slopes at displacement jumps (currently only vertical+horizontal edges) */
+		/* increase occlusion and tweak normals at displacement jumps (currently only vertical+horizontal edges) */
 
-		double jumpThreshold = (maxHeight - minHeight) / 4; //10;
+		double jumpThreshold = (maxHeight - minHeight) / 4;
 
 		for (int y = 0; y < res.height; y++) {
 			for (int x = 0; x < res.width; x++) {
 
 				if (x > 0 && displacementHeights[x][y] != null && displacementHeights[x - 1][y] != null) {
-					if (displacementHeights[x][y] - displacementHeights[x - 1][y] > jumpThreshold) {
+					double jumpHeight = displacementHeights[x][y] - displacementHeights[x - 1][y];
+					double baseStrength = 0.5 + abs(jumpHeight) * 0.5;
+					if (jumpHeight > jumpThreshold) {
+						for (int i = 1; i <= 4; i++) {
+							increaseOcclusion(ormImage, x - i, y, baseStrength - 0.1 * i);
+						}
 						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(-1, 0, 0)).toAWT().getRGB());
-						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(-1, 0, 0)).toAWT().getRGB());
-					} else if (displacementHeights[x][y] - displacementHeights[x - 1][y] < -jumpThreshold) {
-						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(+1, 0, 0)).toAWT().getRGB());
+					} else if (jumpHeight < -jumpThreshold) {
+						for (int i = 1; i <= 4; i++) {
+							increaseOcclusion(ormImage, x - 1 + i, y, baseStrength - 0.1 * i);
+						}
 						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(+1, 0, 0)).toAWT().getRGB());
 					}
 				}
 
 				if (y > 0 && displacementHeights[x][y] != null && displacementHeights[x][y - 1] != null) {
-					if (displacementHeights[x][y] - displacementHeights[x][y - 1] > jumpThreshold) {
+					double jumpHeight = displacementHeights[x][y] - displacementHeights[x][y - 1];
+					double baseStrength = 0.5 + abs(jumpHeight) * 0.5;
+					if (jumpHeight > jumpThreshold) {
+						for (int i = 1; i <= 4; i++) {
+							increaseOcclusion(ormImage, x, y - i, baseStrength - 0.1 * i);
+						}
 						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, 0, -1)).toAWT().getRGB());
-						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 0, -1)).toAWT().getRGB());
-					} else if (displacementHeights[x][y] - displacementHeights[x][y - 1] < -jumpThreshold) {
-						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, 0, 1)).toAWT().getRGB());
+					} else if (jumpHeight < -jumpThreshold) {
+						for (int i = 1; i <= 4; i++) {
+							increaseOcclusion(ormImage, x, y - 1 + i, baseStrength - 0.1 * i);
+						}
 						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 0, 1)).toAWT().getRGB());
 					}
 				}
@@ -348,6 +360,14 @@ public class TextureCam {
 				(float)(normal.x + 1.0) / 2,
 				(float)(normal.y + 1.0) / 2,
 				(float)(normal.z + 1.0) / 2);
+	}
+
+	/** increases the occlusion (red) value in an ORM map unless it's already high */
+	private static void increaseOcclusion(BufferedImage ormImage, int x, int y, double strength) {
+		if (x < 0 || x >= ormImage.getWidth() || y < 0 || y >= ormImage.getHeight()) return;
+		Color c = new Color(ormImage.getRGB(x, y));
+		c = new Color(min((int)(255 * (1 - strength)), c.getRed()), c.getGreen(), c.getBlue());
+		ormImage.setRGB(x, y, c.getRGB());
 	}
 
 	private static final class RenderedTexture extends RuntimeTexture {
