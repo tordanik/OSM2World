@@ -196,9 +196,11 @@ public class TextureCam {
 					}
 					VectorXYZ geometryNormal = interpolateOnTriangle(point, t.triangle,
 							t.normals.get(0), t.normals.get(1), t.normals.get(2));
-					geometryNormal = new VectorXYZ(geometryNormal.x, geometryNormal.y, -geometryNormal.z);
 					if (viewDirection == ViewDirection.FROM_TOP) {
-						geometryNormal = geometryNormal.rotateVec(PI / 2, NULL_VECTOR, X_UNIT);
+						geometryNormal = geometryNormal.rotateVec(-PI / 2, NULL_VECTOR, X_UNIT);
+						geometryNormal = new VectorXYZ(geometryNormal.x, -geometryNormal.y, -geometryNormal.z);
+					} else {
+						geometryNormal = new VectorXYZ(geometryNormal.x, geometryNormal.y, -geometryNormal.z);
 					}
 					if (geometryNormal.distanceTo(Z_UNIT) > 0.1) {
 						// overwrite texture normal with geometry normal unless it's almost directly facing the camera
@@ -269,12 +271,12 @@ public class TextureCam {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x - i, y, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(-1, 0, 0)).toAWT().getRGB());
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(-1, 0, 0.01).normalize()).toAWT().getRGB());
 					} else if (jumpHeight < -jumpThreshold) {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x - 1 + i, y, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(+1, 0, 0)).toAWT().getRGB());
+						normalImage.setRGB(x - 1, y, colorFromNormal(new VectorXYZ(+1, 0, 0.01).normalize()).toAWT().getRGB());
 					}
 				}
 
@@ -285,12 +287,12 @@ public class TextureCam {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x, y - i, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, 0, -1)).toAWT().getRGB());
+						normalImage.setRGB(x, y, colorFromNormal(new VectorXYZ(0, -1, 0.01).normalize()).toAWT().getRGB());
 					} else if (jumpHeight < -jumpThreshold) {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x, y - 1 + i, baseStrength - 0.1 * i);
 						}
-						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 0, 1)).toAWT().getRGB());
+						normalImage.setRGB(x, y - 1, colorFromNormal(new VectorXYZ(0, 1, 0.01).normalize()).toAWT().getRGB());
 					}
 				}
 
