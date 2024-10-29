@@ -1,4 +1,4 @@
-package org.osm2world.core.target.gltf;
+package org.osm2world.core.target.tileset;
 
 import java.util.Comparator;
 

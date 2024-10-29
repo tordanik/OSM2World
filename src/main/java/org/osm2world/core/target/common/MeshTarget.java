@@ -53,12 +53,20 @@ public class MeshTarget extends AbstractTarget {
 						currentWorldObject.getClass())
 				: new MeshMetadata(null, null);
 
-		meshStore.addMesh(mesh, metadata);
+		drawMesh(mesh, metadata);
 
+	}
+
+	public void drawMesh(Mesh mesh, MeshMetadata metadata) {
+		meshStore.addMesh(mesh, metadata);
 	}
 
 	public List<Mesh> getMeshes() {
 		return meshStore.meshes();
+	}
+
+	public MeshStore getMeshStore() {
+		return meshStore;
 	}
 
 	public static class FilterLod implements MeshProcessingStep {

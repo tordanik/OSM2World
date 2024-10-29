@@ -16,7 +16,8 @@ import com.lexicalscope.jewel.cli.Option;
 
 public interface CLIArguments {
 
-	public static final String OUTPUT_PATTERN = "(.*)\\.(?:obj|gltf(?:.gz)?|glb(?:.gz)?|pov|o2w.pbf(?:.gz)?|png|ppm|gd)";
+	public static final String OUTPUT_PATTERN =
+			"(.*)\\.(?:obj|gltf(?:.gz)?|glb(?:.gz)?|pov|tileset.json|o2w.pbf(?:.gz)?|png|ppm|gd)";
 
 	/* input and output files */
 

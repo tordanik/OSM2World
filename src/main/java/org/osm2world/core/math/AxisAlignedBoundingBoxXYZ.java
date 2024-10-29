@@ -1,9 +1,10 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * immutable representation of an axis-aligned bounding box
@@ -52,14 +53,15 @@ public class AxisAlignedBoundingBoxXYZ {
 	}
 
 	public Collection<VectorXYZ> corners() {
-		return Arrays.asList(new VectorXYZ[]{new VectorXYZ(minX, minY, minZ),
+		return List.of(
+				new VectorXYZ(minX, minY, minZ),
 				new VectorXYZ(minX, minY, maxZ),
 				new VectorXYZ(minX, maxY, minZ),
 				new VectorXYZ(minX, maxY, maxZ),
 				new VectorXYZ(maxX, minY, minZ),
 				new VectorXYZ(maxX, minY, maxZ),
 				new VectorXYZ(maxX, maxY, minZ),
-				new VectorXYZ(maxX, maxY, maxZ)});
+				new VectorXYZ(maxX, maxY, maxZ));
 	}
 
 	/**
@@ -95,6 +97,10 @@ public class AxisAlignedBoundingBoxXYZ {
 
 	public boolean contains(VectorXYZ v) {
 		return v.x >= minX && v.x <= maxX && v.y >= minY && v.y <= maxY && v.z >= minZ && v.z <= maxZ;
+	}
+
+	public AxisAlignedRectangleXZ xz() {
+		return new AxisAlignedRectangleXZ(minX, minZ, maxX, maxZ);
 	}
 
 	public static final AxisAlignedBoundingBoxXYZ union(

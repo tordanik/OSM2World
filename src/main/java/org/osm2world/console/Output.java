@@ -1,11 +1,11 @@
 package org.osm2world.console;
 
-import static java.time.Instant.*;
-import static java.util.Collections.*;
-import static java.util.Map.*;
-import static java.util.stream.Collectors.*;
+import static java.time.Instant.now;
+import static java.util.Collections.singletonList;
+import static java.util.Map.entry;
+import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.ConversionFacade.Phase.*;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,21 +32,10 @@ import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapMetadata;
-import org.osm2world.core.map_elevation.creation.BridgeTunnelEleCalculator;
-import org.osm2world.core.map_elevation.creation.ConstraintEleCalculator;
-import org.osm2world.core.map_elevation.creation.EleTagEleCalculator;
-import org.osm2world.core.map_elevation.creation.LeastSquaresInterpolator;
-import org.osm2world.core.map_elevation.creation.NaturalNeighborInterpolator;
-import org.osm2world.core.map_elevation.creation.NoOpEleCalculator;
-import org.osm2world.core.map_elevation.creation.SimpleEleConstraintEnforcer;
-import org.osm2world.core.map_elevation.creation.ZeroInterpolator;
+import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.osm.creation.GeodeskReader;
-import org.osm2world.core.osm.creation.MbtilesReader;
-import org.osm2world.core.osm.creation.OSMDataReader;
-import org.osm2world.core.osm.creation.OSMFileReader;
-import org.osm2world.core.osm.creation.OverpassReader;
+import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -57,6 +46,8 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
+import org.osm2world.core.target.tileset.TilesetCreator;
+import org.osm2world.core.target.tileset.TilesetTarget;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
@@ -241,7 +232,7 @@ public final class Output {
 							? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
 					Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
 							? Compression.GZ : Compression.NONE;
-					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, results.getMapProjection(), bounds);
+					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
 					gltfTarget.setConfiguration(config);
 					boolean underground = config.getBoolean("renderUnderground", true);
 					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
@@ -252,6 +243,22 @@ public final class Output {
 					POVRayWriter.writePOVInstructionFile(outputFile,
 							results.getMapData(), camera, projection);
 					break;
+
+				case TILESET: {
+					AxisAlignedRectangleXZ bounds = null;
+					if (args.isTile()) {
+						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+					} else {
+						bounds = results.getMapData().getBoundary();
+					}
+					var creator = new TilesetCreator(config, GltfTarget.GltfFlavor.GLB, Compression.NONE,
+							results.getMapProjection());
+					var target = new TilesetTarget(creator, outputFile, bounds);
+					target.setConfiguration(config);
+					boolean underground = config.getBoolean("renderUnderground", true);
+					TargetUtil.renderWorldObjects(target, results.getMapData(), underground);
+					target.finish();
+				} break;
 
 				case WEB_PBF, WEB_PBF_GZ: {
 					AxisAlignedRectangleXZ bbox = null;

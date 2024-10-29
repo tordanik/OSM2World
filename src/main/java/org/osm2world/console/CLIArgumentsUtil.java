@@ -19,7 +19,7 @@ import com.lexicalscope.jewel.cli.CliFactory;
 public final class CLIArgumentsUtil {
 
 	public static enum ProgramMode {GUI, CONVERT, HELP, VERSION, PARAMFILE, PARAMFILEDIR}
-	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, WEB_PBF, WEB_PBF_GZ, PNG, PPM, GD}
+	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, TILESET, WEB_PBF, WEB_PBF_GZ, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
 	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
 
@@ -153,6 +153,8 @@ public final class CLIArgumentsUtil {
 			return OutputMode.GLB_GZ;
 		} else if (outputFile.getName().toLowerCase().endsWith(".pov")) {
 			return OutputMode.POV;
+		} else if (outputFile.getName().toLowerCase().endsWith(".tileset.json")) {
+			return OutputMode.TILESET;
 		} else if (outputFile.getName().toLowerCase().endsWith(".o2w.pbf")) {
 			return OutputMode.WEB_PBF;
 		} else if (outputFile.getName().toLowerCase().endsWith(".o2w.pbf.gz")) {
