@@ -264,7 +264,7 @@ public class TextureCam {
 
 				if (x > 0 && displacementHeights[x][y] != null && displacementHeights[x - 1][y] != null) {
 					double jumpHeight = displacementHeights[x][y] - displacementHeights[x - 1][y];
-					double baseStrength = 0.5 + abs(jumpHeight) * 0.5;
+					double baseStrength = min(0.5 + abs(jumpHeight) * 0.5, 1.0);
 					if (jumpHeight > jumpThreshold) {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x - i, y, baseStrength - 0.1 * i);
@@ -280,7 +280,7 @@ public class TextureCam {
 
 				if (y > 0 && displacementHeights[x][y] != null && displacementHeights[x][y - 1] != null) {
 					double jumpHeight = displacementHeights[x][y] - displacementHeights[x][y - 1];
-					double baseStrength = 0.5 + abs(jumpHeight) * 0.5;
+					double baseStrength = min(0.5 + abs(jumpHeight) * 0.5, 1.0);
 					if (jumpHeight > jumpThreshold) {
 						for (int i = 1; i <= 4; i++) {
 							increaseOcclusion(ormImage, x, y - i, baseStrength - 0.1 * i);
@@ -364,6 +364,7 @@ public class TextureCam {
 
 	/** increases the occlusion (red) value in an ORM map unless it's already high */
 	private static void increaseOcclusion(BufferedImage ormImage, int x, int y, double strength) {
+		if (strength < 0 || strength > 1) throw new IllegalArgumentException("invalid strength: " + strength);
 		if (x < 0 || x >= ormImage.getWidth() || y < 0 || y >= ormImage.getHeight()) return;
 		Color c = new Color(ormImage.getRGB(x, y));
 		c = new Color(min((int)(255 * (1 - strength)), c.getRed()), c.getGreen(), c.getBlue());
