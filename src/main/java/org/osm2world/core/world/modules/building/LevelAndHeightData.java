@@ -131,10 +131,6 @@ public class LevelAndHeightData {
 			buildingLevels = defaults.levels;
 		}
 
-		if (buildingLevels < buildingMinLevelWithUnderground + 1) {
-			throw new IllegalArgumentException("Min level exceeds total building levels for " + element);
-		}
-
 		/* determine roof height and roof levels */
 
 		int roofLevels = parseUInt(tags.getValue("roof:levels"), 1);
@@ -166,6 +162,11 @@ public class LevelAndHeightData {
 
 		if (roofHeight == 0) {
 			roofLevels = 0;
+		}
+
+
+		if (buildingLevels + roofLevels < buildingMinLevelWithUnderground + 1) {
+			throw new IllegalArgumentException("Min level exceeds total building levels for " + element);
 		}
 
 		/* determine building height */
