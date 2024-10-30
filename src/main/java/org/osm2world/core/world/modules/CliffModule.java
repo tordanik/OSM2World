@@ -16,10 +16,9 @@ import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
@@ -59,7 +58,7 @@ public class CliffModule extends ConfigurableWorldModule {
 	}
 
 	private abstract static class AbstractCliff extends AbstractNetworkWaySegmentWorldObject
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		protected AbstractCliff(MapWaySegment segment) {
 			super(segment);
@@ -108,7 +107,7 @@ public class CliffModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			List<VectorXYZ> groundVs = createTriangleStripBetween(
 					getOutline(false), getOutline(true));

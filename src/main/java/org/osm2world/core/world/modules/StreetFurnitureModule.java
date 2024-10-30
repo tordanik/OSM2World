@@ -59,10 +59,7 @@ import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
-import org.osm2world.core.world.data.LegacyWorldObject;
-import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
-import org.osm2world.core.world.data.NodeModelInstance;
-import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.data.*;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -201,7 +198,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Flagpole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Flagpole extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Flagpole(MapNode node) {
 			super(node);
@@ -213,12 +210,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD2, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			/* draw the pole */
 
@@ -548,7 +542,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class AdvertisingColumn extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public AdvertisingColumn(MapNode node) {
 			super(node);
@@ -560,12 +554,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double height = parseHeight(node.getTags(), 3.0);
 
@@ -590,7 +581,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Billboard extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Billboard extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private final double width;
 		/** the height of the billboard itself, i.e. height minus minHeight */
@@ -627,11 +618,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD2, LOD4);
-		}
-
-		@Override
 		public Iterable<AttachmentConnector> getAttachmentConnectors() {
 			if (connector == null) {
 				return emptyList();
@@ -641,7 +627,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			VectorXZ faceVector;
 			VectorXYZ bottomCenter;
@@ -725,7 +713,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Swing extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Swing extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Swing(MapNode node) {
 			super(node);
@@ -737,12 +725,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			// determine width and height of the swing structure
 			final double swingHeight = parseHeight(node.getTags(), 1.5);
@@ -843,7 +828,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 	}
 
-	public static final class Bench extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Bench extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -865,12 +850,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			/* determine elevation from connector */
 
@@ -948,7 +930,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	}
 
 
-	public static final class Table extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Table extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private final ConfMaterial defaultMaterial;
 
@@ -968,12 +950,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			int seats = parseInt(node.getTags(), 4, "seats");
 
@@ -1085,7 +1064,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a summit cross or wayside cross
 	 */
-	public static final class Cross extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Cross extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Cross(MapNode node) {
 			super(node);
@@ -1097,12 +1076,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD2, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			boolean summit = node.getTags().containsKey("summit:cross")
 					|| node.getTags().contains("natural", "peak");
@@ -1146,7 +1122,7 @@ public class StreetFurnitureModule extends AbstractModule {
 	/**
 	 * a clock. Currently only clocks attached to walls are supported.
 	 */
-	public static final class Clock implements NodeWorldObject, LegacyWorldObject {
+	public static final class Clock implements NodeWorldObject, ProceduralWorldObject {
 
 		private static final LocalTime TIME = LocalTime.parse("12:25");
 
@@ -1173,11 +1149,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD2, LOD4);
-		}
-
-		@Override
 		public Iterable<EleConnector> getEleConnectors() {
 			return emptyList();
 		}
@@ -1191,9 +1162,11 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			if (!connector.isAttached()) return;
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			double diameter = parseWidth(node.getTags(), 1f);
 			new ClockFace(TIME).render(target, new InstanceParameters(connector.getAttachedPos(),
@@ -1266,7 +1239,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class RecyclingContainer extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class RecyclingContainer extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		double directionAngle = parseDirection(node.getTags(), PI);
 		VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1281,12 +1254,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD2, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			float distanceX = 3f;
 			float distanceZ = 1.6f;
@@ -1366,7 +1336,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class WasteBasket extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class WasteBasket extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private final AttachmentConnector connector;
 
@@ -1394,11 +1364,6 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
-
-		@Override
 		public Iterable<AttachmentConnector> getAttachmentConnectors() {
 			if (connector == null) {
 				return emptyList();
@@ -1408,7 +1373,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
+
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			/* determine material */
 
@@ -1475,7 +1442,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class GritBin extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class GritBin extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public GritBin(MapNode node) {
 			super(node);
@@ -1487,12 +1454,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double height = parseHeight(node.getTags(), 0.5f);
 			double width = parseWidth(node.getTags(), 1);
@@ -1534,7 +1498,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Phone extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Phone extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static enum Type {WALL, PILLAR, CELL, HALFCELL}
 
@@ -1548,12 +1512,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1619,7 +1580,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class VendingMachineVice extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class VendingMachineVice extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1633,12 +1594,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1691,7 +1649,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class PostBox extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class PostBox extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private static enum Type {WALL, PILLAR}
 
@@ -1705,12 +1663,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -1900,7 +1855,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class FireHydrant extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class FireHydrant extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public FireHydrant(MapNode node) {
 			super(node);
@@ -1912,12 +1867,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double height = parseHeight(node.getTags(), 1.0);
 
@@ -2021,7 +1973,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class Board extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class Board extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Board(MapNode node) {
 			super(node);
@@ -2033,12 +1985,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);

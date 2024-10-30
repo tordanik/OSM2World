@@ -33,7 +33,6 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
@@ -45,7 +44,7 @@ import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleGeometryUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -298,14 +297,14 @@ public class RailwayModule extends ConfigurableWorldModule {
 	}
 
 	public static class RailJunction extends JunctionNodeWorldObject<Rail>
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		public RailJunction(MapNode node) {
 			super(node, Rail.class);
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			if (getOutlinePolygon() == null) return;
 

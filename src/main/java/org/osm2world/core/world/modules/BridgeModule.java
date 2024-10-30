@@ -29,7 +29,6 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.ClosedShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -97,7 +96,7 @@ public class BridgeModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			drawBridgeUnderside(target);
 

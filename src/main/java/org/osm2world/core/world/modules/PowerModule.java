@@ -38,7 +38,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
@@ -49,14 +48,15 @@ import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.ValueParseUtil;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
 import org.osm2world.core.world.data.NoOutlineWaySegmentWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -148,7 +148,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PowerCabinet extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	private static final class PowerCabinet extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public PowerCabinet(MapNode node) {
 			super(node);
@@ -160,7 +160,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			double directionAngle = parseDirection(node.getTags(), PI);
 			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
@@ -191,7 +191,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class Powerpole extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	private static final class Powerpole extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public Powerpole(MapNode node) {
 			super(node);
@@ -203,7 +203,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			/* determine material */
 
@@ -228,7 +228,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	public static final class WindTurbine extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class WindTurbine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
 		public static final Model ROTOR = new LegacyModel() {
@@ -297,7 +297,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			double poleHeight = parseHeight(node.getTags(),
 					parseMeasure(node.getTags().getValue("height:hub"), 100.0));
@@ -344,9 +344,9 @@ public final class PowerModule extends AbstractModule {
 					nacelleVector, nacelleHeight, nacelleHeight, nacelleDepth);
 
 			/* draw rotor blades */
-			target.drawModel(ROTOR, new InstanceParameters(
+			target.addSubModel(new ModelInstance(ROTOR, new InstanceParameters(
 					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
-					0, rotorDiameter, rotorDiameter, rotorDiameter));
+					0, rotorDiameter, rotorDiameter, rotorDiameter)));
 
 		}
 
@@ -581,7 +581,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class PowerTower extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	private static final class PowerTower extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private TowerConfig config;
 
@@ -598,7 +598,7 @@ public final class PowerModule extends AbstractModule {
 		// TODO we're missing the ceramics to hold the power lines
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			VectorXYZ base = getBase().addY(-0.5);
 			double height = parseHeight(node.getTags(), 14);
@@ -629,7 +629,7 @@ public final class PowerModule extends AbstractModule {
 	}
 
 
-	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	private static final class HighVoltagePowerTower extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private TowerConfig config;
 		private VectorXZ direction;
@@ -795,7 +795,7 @@ public final class PowerModule extends AbstractModule {
 		// TODO we're missing the ceramics to hold the power lines
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			float pole_width = config.voltage > 150000 ? 16 : 13;
 			float[] tower_width = config.voltage > 150000 ? new float[]{11,6,4f,0} : new float[]{8,5,3,0};
@@ -820,7 +820,7 @@ public final class PowerModule extends AbstractModule {
 		}
 	}
 
-	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject implements LegacyWorldObject {
+	private static final class PhotovoltaicPlant extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		/** compares vectors by x coordinate */
 		private static final Comparator<VectorXZ> X_COMPARATOR = comparingDouble(v -> v.x);
@@ -917,7 +917,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			for (PolylineXZ panelRow : panelRows) {
 
@@ -985,7 +985,7 @@ public final class PowerModule extends AbstractModule {
 
 	}
 
-	static final class RooftopSolarPanels extends AbstractAreaWorldObject implements LegacyWorldObject {
+	static final class RooftopSolarPanels extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		private static final double DISTANCE_FROM_ROOF = 0.05;
 
@@ -1014,7 +1014,7 @@ public final class PowerModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			if (connector.isAttached()) {
 

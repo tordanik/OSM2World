@@ -23,12 +23,11 @@ import org.osm2world.core.math.VectorGridXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -83,7 +82,7 @@ public class SurfaceAreaModule extends AbstractModule {
 	}
 
 	public static class SurfaceArea extends AbstractAreaWorldObject
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		private final String surface;
 
@@ -95,7 +94,7 @@ public class SurfaceAreaModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			Material material;
 

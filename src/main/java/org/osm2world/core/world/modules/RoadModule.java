@@ -39,7 +39,6 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
@@ -47,7 +46,6 @@ import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordUtil;
 import org.osm2world.core.util.enums.LeftRight;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -1569,14 +1567,14 @@ public class RoadModule extends ConfigurableWorldModule {
 	}
 
 	public static class RoadArea extends NetworkAreaWorldObject
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		public RoadArea(MapArea area) {
 			super(area);
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			String surface = area.getTags().getValue("surface");
 			Material material = getSurfaceMaterial(surface, ASPHALT);

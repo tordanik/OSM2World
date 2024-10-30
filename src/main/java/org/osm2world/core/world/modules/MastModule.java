@@ -18,12 +18,12 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /** places various towers and masts (currently only freestanding mobile phone communication masts) */
@@ -40,7 +40,7 @@ public class MastModule extends AbstractModule {
 
 	}
 
-	public static class MobilePhoneMast extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static class MobilePhoneMast extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public MobilePhoneMast(MapNode node) {
 			super(node);
@@ -52,7 +52,7 @@ public class MastModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			double height = parseHeight(node.getTags(), 7);
 			double radiusBottom = height / 40;
@@ -66,7 +66,7 @@ public class MastModule extends AbstractModule {
 			for (double angleRad : asList(PI, 0.3 * PI, 1.5 * PI)) {
 				VectorXYZ pos = getBase().addY(height - 0.6);
 				pos = pos.add(VectorXZ.fromAngle(angleRad).mult(radiusTop));
-				MOBILE_PHONE_ANTENNA_MODEL.render(target, new InstanceParameters(pos, angleRad));
+				target.addSubModel(new ModelInstance(MOBILE_PHONE_ANTENNA_MODEL, new InstanceParameters(pos, angleRad)));
 			}
 
 		}

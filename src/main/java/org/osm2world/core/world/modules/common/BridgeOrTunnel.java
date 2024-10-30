@@ -2,8 +2,10 @@ package org.osm2world.core.world.modules.common;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.*;
-import static org.osm2world.core.map_elevation.data.GroundState.*;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MAX;
+import static org.osm2world.core.map_elevation.creation.EleConstraintEnforcer.ConstraintType.MIN;
+import static org.osm2world.core.map_elevation.data.GroundState.ABOVE;
+import static org.osm2world.core.map_elevation.data.GroundState.ON;
 import static org.osm2world.core.math.GeometryUtil.isBetween;
 
 import java.util.List;
@@ -20,7 +22,7 @@ import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.TreeModule.Forest;
@@ -29,7 +31,7 @@ import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 /**
  * common superclass for bridges and tunnels
  */
-public abstract class BridgeOrTunnel implements WaySegmentWorldObject, LegacyWorldObject {
+public abstract class BridgeOrTunnel implements WaySegmentWorldObject, ProceduralWorldObject {
 
 	protected final MapWaySegment segment;
 	protected final AbstractNetworkWaySegmentWorldObject primaryRep;

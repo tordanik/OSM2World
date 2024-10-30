@@ -34,11 +34,10 @@ import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.StreetFurnitureModule.Flagpole.StripedFlag;
 import org.osm2world.core.world.modules.SurfaceAreaModule.SurfaceArea;
 import org.osm2world.core.world.modules.common.AbstractModule;
@@ -95,7 +94,7 @@ public class GolfModule extends AbstractModule {
 
 	}
 
-	private static class Bunker extends AbstractAreaWorldObject implements LegacyWorldObject {
+	private static class Bunker extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		public Bunker(MapArea area) {
 			super(area);
@@ -112,7 +111,7 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			/* draw the bunker as a depression by shrinking the outline polygon and lowering it at each step.
 			 *
@@ -184,7 +183,7 @@ public class GolfModule extends AbstractModule {
 
 	}
 
-	private static class Green extends AbstractAreaWorldObject implements LegacyWorldObject {
+	private static class Green extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		private final VectorXZ pinPosition;
 		private final SimplePolygonXZ pinHoleLoop;
@@ -260,7 +259,7 @@ public class GolfModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			/* render green surface */
 

@@ -26,9 +26,8 @@ import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleParseUtil;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
@@ -103,7 +102,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class Waterway extends AbstractNetworkWaySegmentWorldObject
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		public Waterway(MapWaySegment line) {
 			super(line);
@@ -146,7 +145,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			//note: simply "extending" a river cannot work - unlike streets -
 			//      because there can be islands within the riverbank polygon.
@@ -235,14 +234,14 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class RiverJunction extends JunctionNodeWorldObject<Waterway>
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		public RiverJunction(MapNode node) {
 			super(node, Waterway.class);
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			//TODO: check whether it's within a riverbank (as with Waterway)
 
@@ -258,7 +257,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class Water extends NetworkAreaWorldObject
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		//TODO: only cover with water to 0.95 * distance to center; add land below.
 		// possible algorithm: for each node of the outer polygon, check whether it
@@ -280,7 +279,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 			List<TriangleXYZ> triangles = getTriangulation();
 			target.drawTriangles(WATER, triangles,
 					triangleTexCoordLists(triangles, WATER, GLOBAL_X_Z));
@@ -289,7 +288,7 @@ public class WaterModule extends ConfigurableWorldModule {
 	}
 
 	public static class AreaFountain extends AbstractAreaWorldObject
-			implements LegacyWorldObject {
+			implements ProceduralWorldObject {
 
 		public AreaFountain(MapArea area) {
 			super(area);
@@ -306,7 +305,7 @@ public class WaterModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			/* render water */
 

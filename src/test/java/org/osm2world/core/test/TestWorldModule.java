@@ -8,10 +8,9 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.WorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -24,7 +23,7 @@ public class TestWorldModule extends AbstractModule {
 		node.addRepresentation(new TestNodeWorldObject(node));
 	}
 
-	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static class TestNodeWorldObject extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public TestNodeWorldObject(MapNode node) {
 			super(node);
@@ -36,7 +35,7 @@ public class TestWorldModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			VectorXYZ base = node.getPos().xyz(0);
 
