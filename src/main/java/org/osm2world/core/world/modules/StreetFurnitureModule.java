@@ -31,7 +31,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
@@ -42,7 +41,6 @@ import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.ConfMaterial;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -50,7 +48,6 @@ import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
-import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.LegacyModel;
@@ -58,8 +55,10 @@ import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
-import org.osm2world.core.world.attachment.AttachmentSurface.Builder;
-import org.osm2world.core.world.data.*;
+import org.osm2world.core.world.data.NoOutlineNodeWorldObject;
+import org.osm2world.core.world.data.NodeModelInstance;
+import org.osm2world.core.world.data.NodeWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 
 /**
@@ -1726,7 +1725,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class BusStop extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class BusStop extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public BusStop(MapNode node) {
 			super(node);
@@ -1738,16 +1737,17 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD3, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			double height = parseHeight(node.getTags(), 3.0);
 			double signHeight = 0.7;
 			double signWidth = 0.4;
+
+			/* draw pole */
+
+			target.setCurrentAttachmentTypes("bus_stop", "pole");
 
 			Material poleMaterial = STEEL;
 
@@ -1759,7 +1759,7 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase(),
 					height - signHeight, 0.05, 0.05, false, true);
 
-			if (target instanceof AttachmentSurface.Builder) return;
+			target.setCurrentAttachmentTypes();
 
 			/* draw sign */
 			target.drawBox(BUS_STOP_SIGN,
@@ -1770,13 +1770,6 @@ public class StreetFurnitureModule extends AbstractModule {
 					getBase().addY(1.2f).add(new VectorXYZ(0.055f, 0, 0f).rotateY(directionAngle)),
 					faceVector, 0.31, 0.01, 0.43);
 
-		}
-
-		@Override
-		public Collection<AttachmentSurface> getAttachmentSurfaces() {
-			Builder builder = new AttachmentSurface.Builder("bus_stop", "pole");
-			this.renderTo(builder);
-			return singleton(builder.build());
 		}
 
 	}
@@ -1894,7 +1887,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class StreetLamp extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public static final class StreetLamp extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		public StreetLamp(MapNode node) {
 			super(node);
@@ -1906,12 +1899,9 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 
 		@Override
-		public Pair<LevelOfDetail, LevelOfDetail> getLodRange() {
-			return Pair.of(LOD2, LOD4);
-		}
+		public void buildMeshesAndModels(Target target) {
 
-		@Override
-		public void renderTo(Target target) {
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			double lampHeight = 0.8;
 			double lampHalfWidth = 0.4;
@@ -1933,11 +1923,13 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* draw pole */
 
+			target.setCurrentAttachmentTypes("street_lamp");
+
 			target.drawExtrudedShape(material, new CircleXZ(NULL_VECTOR, 1),
 					asList(getBase(), getBase().addY(0.5), getBase().addY(0.5 + poleHeight)),
 					null, asList(0.16, 0.08, 0.08), null, null);
 
-			if (target instanceof AttachmentSurface.Builder) return;
+			target.setCurrentAttachmentTypes();
 
 			/* draw lamp */
 
@@ -1962,13 +1954,6 @@ public class StreetFurnitureModule extends AbstractModule {
 			vs.add(getBase().addY(poleHeight + lampHeight * 0.8).add(lampHalfWidth, 0, lampHalfWidth));
 
 			target.drawTriangleFan(material, vs, texCoordLists(vs, material, GLOBAL_X_Z));
-		}
-
-		@Override
-		public Collection<AttachmentSurface> getAttachmentSurfaces() {
-			Builder builder = new AttachmentSurface.Builder("street_lamp");
-			this.renderTo(builder);
-			return singleton(builder.build());
 		}
 
 	}
