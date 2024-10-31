@@ -91,7 +91,7 @@ public class FrontendPbfTarget extends MeshTarget {
 	private enum TextureAtlasMode { ALWAYS, RUNTIME_ONLY, NEVER };
 
 	private final List<Class<? extends WorldObject>> LOD_2_FEATURES = asList(HandRail.class, WasteBasket.class,
-			VendingMachineVice.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
+			VendingMachine.class, PostBox.class, Bench.class, GritBin.class, BollardRow.class);
 
 	/**
 	 * materials which default to being shadowless

@@ -128,7 +128,7 @@ public class StreetFurnitureModule extends AbstractModule {
 		}
 		if (node.getTags().contains("amenity", "vending_machine")
 				&& (node.getTags().containsAny(asList("vending"), asList("bicycle_tube", "cigarettes", "condoms")))) {
-			node.addRepresentation(new VendingMachineVice(node));
+			node.addRepresentation(new VendingMachine(node));
 		}
 		if (node.getTags().contains("amenity", "recycling")
 				&& (node.getTags().contains("recycling_type", "container"))) {
@@ -1579,17 +1579,49 @@ public class StreetFurnitureModule extends AbstractModule {
 
 	}
 
-	public static final class VendingMachineVice extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
+	public static final class VendingMachine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
-		private static enum Type {WALL, PILLAR}
+		private final AttachmentConnector connector;
 
-		public VendingMachineVice(MapNode node) {
+		public VendingMachine(MapNode node) {
+
 			super(node);
+
+			String support = node.getTags().getValue("support");
+
+			List<String> attachmentTypes = List.of();
+
+			if (support != null && !"ground".equals(support)) {
+				attachmentTypes = List.of(support);
+			} else if (isInWall(node) && !"ground".equals(support)) {
+				attachmentTypes = List.of("wall");
+			}
+
+			if (attachmentTypes.isEmpty()) {
+				connector = null;
+			} else {
+				connector = new AttachmentConnector(attachmentTypes,
+						node.getPos().xyz(0), this, 0.83, true);
+			}
+
 		}
 
 		@Override
 		public GroundState getGroundState() {
-			return GroundState.ON;
+			if (connector != null && connector.isAttached()) {
+				return GroundState.ATTACHED;
+			} else {
+				return GroundState.ON;
+			}
+		}
+
+		@Override
+		public Iterable<AttachmentConnector> getAttachmentConnectors() {
+			if (connector == null) {
+				return emptyList();
+			} else {
+				return singleton(connector);
+			}
 		}
 
 		@Override
@@ -1597,12 +1629,7 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			target.setCurrentLodRange(LOD3, LOD4);
 
-			double directionAngle = parseDirection(node.getTags(), PI);
-			VectorXZ faceVector = VectorXZ.fromAngle(directionAngle);
-
-			Material machineMaterial = null;
-			Material poleMaterial = STEEL;
-			Type type = null;
+			Material machineMaterial;
 
 			if (node.getTags().contains("vending", "bicycle_tube")
 					&& node.getTags().containsAny(asList("operator"), asList("Continental", "continental"))) {
@@ -1613,36 +1640,30 @@ public class StreetFurnitureModule extends AbstractModule {
 				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, new Color(0.8f, 0.73f, 0.5f));
 			} else if (node.getTags().contains("vending", "condoms")) {
 				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, new Color(0.39f, 0.15f, 0.11f));
-			}
-
-			// get Type of vending machine
-			if (isInWall(node)) {
-				type = Type.WALL;
 			} else {
-				type = Type.PILLAR;
+				machineMaterial = new ImmutableMaterial(Interpolation.FLAT, LIGHT_GRAY);
 			}
 
-			// default dimensions will differ depending on the post box type
-			double height = 0f;
+			double height = parseHeight(node.getTags(), 1.8f);
 
-			switch (type) {
-				case WALL:
+			VectorXYZ pos;
+			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
 
-					break;
-				case PILLAR:
-					height = parseHeight(node.getTags(), 1.8f);
+			if (connector != null && connector.isAttached()) {
 
-					target.drawBox(poleMaterial,
-							getBase().add(new VectorXYZ(0, 0, -0.05).rotateY(faceVector.angle())),
-							faceVector, height - 0.3, 0.1, 0.1);
-					target.drawBox(machineMaterial,
-							getBase().addY(height - 1).add(new VectorXYZ(0, 0, 0.1).rotateY(directionAngle)),
-							faceVector, 1, 1, 0.2);
+				pos = connector.getAttachedPos();
+				direction = connector.getAttachedSurfaceNormal();
 
-					break;
-				default:
-					assert false : "unknown or unsupported Vending machine Type";
+			} else {
+
+				pos = getBase().addY(0.8).add(direction.mult(0.05));
+
+				/* draw pole */
+				target.drawBox(STEEL, getBase(), direction.xz(), height - 0.3, 0.1, 0.1);
+
 			}
+
+			target.drawBox(machineMaterial, pos.add(direction.mult(0.1)), direction.xz(), height - 0.8, 1, 0.2);
 
 		}
 
