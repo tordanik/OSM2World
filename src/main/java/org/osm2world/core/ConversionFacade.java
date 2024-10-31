@@ -1,27 +1,25 @@
 package org.osm2world.core;
 
-import static java.lang.Math.abs;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.Comparator.comparingDouble;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static java.lang.Math.*;
+import static java.util.Arrays.*;
+import static java.util.Collections.*;
+import static java.util.Comparator.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.map_data.creation.LatLon;
-import org.osm2world.core.map_data.creation.MapProjection;
-import org.osm2world.core.map_data.creation.MetricMapProjection;
-import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
+import org.osm2world.core.map_data.creation.*;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.map_elevation.creation.*;
@@ -91,33 +89,37 @@ public class ConversionFacade {
 	/**
 	 * generates a default list of modules for the conversion
 	 */
-	static final List<WorldModule> createDefaultModuleList() {
+	static final List<WorldModule> createDefaultModuleList(Configuration config) {
 
-		return Arrays.asList((WorldModule)
-				new RoadModule(),
-				new RailwayModule(),
-				new AerowayModule(),
-				new BuildingModule(),
-				new ParkingModule(),
-				new TreeModule(),
-				new StreetFurnitureModule(),
-				new TrafficSignModule(),
-				new BicycleParkingModule(),
-				new WaterModule(),
-				new PoolModule(),
-				new GolfModule(),
-				new SportsModule(),
-				new CliffModule(),
-				new BarrierModule(),
-				new PowerModule(),
-				new MastModule(),
-				new BridgeModule(),
-				new TunnelModule(),
-				new SurfaceAreaModule(),
-				new InvisibleModule(),
-				new IndoorModule()
-		);
+		List<String> excludedModules = config.getList("excludeWorldModule")
+			.stream().map(m -> m.toString()).toList();
 
+		return Stream.of((WorldModule)
+			new RoadModule(),
+			new RailwayModule(),
+			new AerowayModule(),
+			new BuildingModule(),
+			new ParkingModule(),
+			new TreeModule(),
+			new StreetFurnitureModule(),
+			new TrafficSignModule(),
+			new BicycleParkingModule(),
+			new WaterModule(),
+			new PoolModule(),
+			new GolfModule(),
+			new SportsModule(),
+			new CliffModule(),
+			new BarrierModule(),
+			new PowerModule(),
+			new MastModule(),
+			new BridgeModule(),
+			new TunnelModule(),
+			new SurfaceAreaModule(),
+			new InvisibleModule(),
+			new IndoorModule()
+		)
+		.filter(m -> !excludedModules.contains(m.getClass().getSimpleName()))
+		.toList();
 	}
 
 	private Function<LatLon, ? extends MapProjection> mapProjectionFactory = MetricMapProjection::new;
@@ -266,7 +268,7 @@ public class ConversionFacade {
 		updatePhase(Phase.REPRESENTATION);
 
 		if (worldModules == null) {
-			worldModules = createDefaultModuleList();
+			worldModules = createDefaultModuleList(config);
 		}
 
 		Materials.configureMaterials(config);
