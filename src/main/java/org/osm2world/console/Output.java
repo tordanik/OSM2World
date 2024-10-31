@@ -5,7 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.ConversionFacade.Phase.*;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
@@ -57,6 +58,11 @@ public final class Output {
 	public static void output(Configuration config,
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
+
+		if (config instanceof PropertiesConfiguration) {
+			config.addProperty("configPath",
+				new File(((PropertiesConfiguration)config).getPath()).getParent());
+		}
 
 		CLIArguments sharedArgs = argumentsGroup.getRepresentative();
 
