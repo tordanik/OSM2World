@@ -53,6 +53,7 @@ import org.osm2world.core.target.common.mesh.TriangleGeometry;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.target.common.texcoord.GlobalXZTexCoordFunction;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.*;
 import org.osm2world.core.target.frontend_pbf.FrontendPbf.Animation.AnimationType;
@@ -255,9 +256,9 @@ public class FrontendPbfTarget extends MeshTarget {
 	}
 
 	@Override
-	public void drawModel(Model model, InstanceParameters params) {
+	public void drawModel(ModelInstance modelInstance) {
 
-		if (!bbox.contains(params.position().xz())) return;
+		if (!bbox.contains(modelInstance.params().position().xz())) return;
 
 		MeshMetadata worldObjectMetadata = new MeshMetadata(currentWorldObject.getPrimaryMapElement().getElementWithId(),
 				currentWorldObject.getClass());
@@ -267,7 +268,7 @@ public class FrontendPbfTarget extends MeshTarget {
 		}
 
 		Multimap<Model, InstanceParameters> map = modelInstancesByWO.get(worldObjectMetadata);
-		map.put(model, params);
+		map.put(modelInstance.model(), modelInstance.params());
 
 	}
 

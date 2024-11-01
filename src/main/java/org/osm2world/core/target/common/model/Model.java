@@ -1,9 +1,9 @@
 package org.osm2world.core.target.common.model;
 
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
+
 import java.util.List;
 
-import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.mesh.Mesh;
 
 /**
@@ -12,17 +12,15 @@ import org.osm2world.core.target.common.mesh.Mesh;
 public interface Model {
 
 	/**
-	 * returns the meshes making up an instance of this {@link Model}.
+	 * returns the meshes making up this {@link Model}
 	 */
-	public List<Mesh> buildMeshes(InstanceParameters params);
+	default List<Mesh> getMeshes() {
+		return buildMeshes(new InstanceParameters(NULL_VECTOR, 0));
+	}
 
 	/**
-	 * draws an instance of the model to any {@link Target}
-	 *
-	 * @param target target for the model; != null
+	 * returns the meshes making up an instance of this {@link Model}.
 	 */
-	public default void render(CommonTarget target, InstanceParameters params) {
-		buildMeshes(params).forEach(target::drawMesh);
-	}
+	List<Mesh> buildMeshes(InstanceParameters params);
 
 }

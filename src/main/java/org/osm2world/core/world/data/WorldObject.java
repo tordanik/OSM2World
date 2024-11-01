@@ -38,7 +38,7 @@ public interface WorldObject {
 	 */
 	public default List<Mesh> buildMeshesForModelHierarchy() {
 		List<Mesh> result = new ArrayList<>(buildMeshes());
-		getSubModels().forEach(it -> result.addAll(it.model.buildMeshes(it.params)));
+		getSubModels().forEach(it -> result.addAll(it.getMeshes()));
 		return result;
 	}
 

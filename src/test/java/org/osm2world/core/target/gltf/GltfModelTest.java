@@ -45,7 +45,7 @@ public class GltfModelTest {
 		for (String extension : List.of(".gltf", "_embedded.gltf")) {
 
 			var model = loadGltfTestModel("BoxVertexColors", extension);
-			var meshes = model.buildMeshes(new InstanceParameters(VectorXYZ.NULL_VECTOR, 0));
+			var meshes = model.getMeshes();
 
 			assertEquals(1, meshes.size());
 			assertEquals(12, meshes.get(0).geometry.asTriangles().triangles.size());
@@ -61,7 +61,7 @@ public class GltfModelTest {
 			for (String extension : List.of(".gltf", "_embedded.gltf")) {
 
 				var model = loadGltfTestModel(assetName, extension);
-				var meshes = model.buildMeshes(new InstanceParameters(VectorXYZ.NULL_VECTOR, 0));
+				var meshes = model.getMeshes();
 
 				assertEquals(1, meshes.size());
 				assertEquals(1, meshes.get(0).geometry.asTriangles().triangles.size());

@@ -31,6 +31,7 @@ import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.target.povray.POVRayTarget;
 import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.*;
@@ -205,14 +206,14 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			target.append("#ifndef (broad_leaved_tree)\n");
 			target.append("#declare broad_leaved_tree = object { union {\n");
-			target.drawModel(new TreeGeometryModel(LeafType.BROADLEAVED, LeafCycle.DECIDUOUS, null),
-					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null));
+			target.drawModel(new ModelInstance(new TreeGeometryModel(LeafType.BROADLEAVED, LeafCycle.DECIDUOUS, null),
+					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null)));
 			target.append("} }\n#end\n\n");
 
 			target.append("#ifndef (coniferous_tree)\n");
 			target.append("#declare coniferous_tree = object { union {\n");
-			target.drawModel(new TreeGeometryModel(LeafType.NEEDLELEAVED, LeafCycle.EVERGREEN, null),
-					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null));
+			target.drawModel(new ModelInstance(new TreeGeometryModel(LeafType.NEEDLELEAVED, LeafCycle.EVERGREEN, null),
+					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null)));
 			target.append("} }\n#end\n\n");
 
 		}
@@ -281,7 +282,8 @@ public class TreeModule extends ConfigurableWorldModule {
 			existingModels.add(model);
 		}
 
-		target.drawModel(model, new InstanceParameters(base, 0, height, null, null));
+		target.drawModel(new ModelInstance(model,
+				new InstanceParameters(base, 0, height, null, null)));
 
 	}
 

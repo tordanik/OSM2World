@@ -8,6 +8,7 @@ import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
+import org.osm2world.core.target.common.model.ModelInstance;
 
 public class NodeModelInstance extends NoOutlineNodeWorldObject {
 
@@ -32,7 +33,7 @@ public class NodeModelInstance extends NoOutlineNodeWorldObject {
 
 	@Override
 	public List<Mesh> buildMeshes() {
-		return model.buildMeshes(new InstanceParameters(getBase(), direction));
+		return new ModelInstance(model, new InstanceParameters(getBase(), direction)).getMeshes();
 	}
 
 	@Override

@@ -46,9 +46,9 @@ import org.osm2world.core.target.common.mesh.LODRange;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
-import org.osm2world.core.target.common.model.LegacyModel;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
+import org.osm2world.core.target.common.model.ProceduralModel;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.ValueParseUtil;
@@ -231,7 +231,7 @@ public final class PowerModule extends AbstractModule {
 	public static final class WindTurbine extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		/** model of a rotor with 1 m rotor diameter */
-		public static final Model ROTOR = new LegacyModel() {
+		public static final Model ROTOR = new ProceduralModel() {
 
 			@Override
 			public void render(CommonTarget target, InstanceParameters params) {

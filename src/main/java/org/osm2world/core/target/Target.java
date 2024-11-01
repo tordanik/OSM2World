@@ -6,8 +6,6 @@ import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
-import org.osm2world.core.target.common.model.InstanceParameters;
-import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.data.WorldObject;
 
@@ -31,13 +29,6 @@ public interface Target extends CommonTarget {
 	 * @param object  the object that all draw method calls until the next beginObject belong to; can be null
 	 */
 	default void beginObject(@Nullable WorldObject object) {}
-
-	/**
-	 * draws an instanced model.
-	 */
-	public default void drawModel(Model model, InstanceParameters params) {
-		model.render(this, params);
-	}
 
 	public default void drawMesh(Mesh mesh) {
 		if (mesh.lodRangeContains(getLod())) {

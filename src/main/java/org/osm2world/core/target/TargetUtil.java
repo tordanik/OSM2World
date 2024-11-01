@@ -89,7 +89,7 @@ public final class TargetUtil {
 			((LegacyWorldObject)object).renderTo(target);
 		} else {
 			object.buildMeshes().forEach(target::drawMesh);
-			object.getSubModels().forEach(it -> target.drawModel(it.model, it.params));
+			object.getSubModels().forEach(it -> it.render(target));
 		}
 	}
 
