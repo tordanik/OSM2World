@@ -1,12 +1,12 @@
 package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -17,10 +17,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
-import org.osm2world.core.target.common.material.Material.Interpolation;
-import org.osm2world.core.target.common.material.Material.Shadow;
-import org.osm2world.core.target.common.material.Material.Transparency;
+import org.osm2world.core.target.common.material.Material.*;
 import org.osm2world.core.target.common.material.TextTexture.FontStyle;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
@@ -496,7 +493,7 @@ public final class Materials {
 
 		if (config.containsKey(keyPrefix + "_dir")) {
 
-			File textureDir = resolveFileConfigProperty(config, config.getString(keyPrefix + "_dir"));
+			File textureDir = ConfigUtil.resolveFileConfigProperty(config, config.getString(keyPrefix + "_dir"));
 			if (textureDir!= null && textureDir.exists() && textureDir.isDirectory()) {
 				for (File file : textureDir.listFiles()) {
 					if (file.getName().contains("_Color.")) {
@@ -625,7 +622,7 @@ public final class Materials {
 					relativeFontSize, wrap, coordFunction);
 
 		} else if ("image".equals(type)) {
-			File file = resolveFileConfigProperty(config, config.getString(keyPrefix + "_file"));
+			File file = ConfigUtil.resolveFileConfigProperty(config, config.getString(keyPrefix + "_file"));
 			
 			if (file == null || file.isDirectory()) {
 				file = null;
@@ -641,26 +638,6 @@ public final class Materials {
 			return null;
 		}
 
-	}
-
-	/**
-	 * If config references some files by path i.e. textures
-	 * resolve file paths relative to config location
-	 */
-	private static File resolveFileConfigProperty(Configuration config, String fileName) {
-		if (fileName == null) {
-			return null;
-		}
-
-		String basePath = config.getString("configPath", null);
-		File file = new File(basePath, fileName);
-
-		if (!file.exists()) {
-			System.err.println("File referenced in config does not exist: " + file);
-			return null;
-		}
-
-		return file;
 	}
 
 	/**

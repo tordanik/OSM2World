@@ -35,6 +35,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Models;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.attachment.AttachmentConnector;
@@ -283,11 +284,11 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 
-		String srtmDir = config.getString("srtmDir", null);
+		File srtmDir = ConfigUtil.resolveFileConfigProperty(config, config.getString("srtmDir", null));
 		TerrainElevationData eleData = null;
 
 		if (srtmDir != null) {
-			eleData = new SRTMData(new File(srtmDir), mapProjection);
+			eleData = new SRTMData(srtmDir, mapProjection);
 		}
 
 		/* create terrain and attach connectors */
