@@ -1,15 +1,18 @@
 package org.osm2world.core;
 
-import static java.lang.Math.*;
-import static java.util.Arrays.*;
-import static java.util.Collections.*;
-import static java.util.Comparator.*;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
+import static java.lang.Math.abs;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.Comparator.comparingDouble;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -19,7 +22,10 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.map_data.creation.*;
+import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.MapProjection;
+import org.osm2world.core.map_data.creation.MetricMapProjection;
+import org.osm2world.core.map_data.creation.OSMToMapDataConverter;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.map_elevation.creation.*;
