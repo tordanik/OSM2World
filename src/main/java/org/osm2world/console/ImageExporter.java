@@ -1,12 +1,20 @@
 package org.osm2world.console;
 
-import static java.lang.Math.*;
-import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 import static org.osm2world.core.util.ConfigUtil.*;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferInt;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -25,7 +33,9 @@ import org.osm2world.core.util.Resolution;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.awt.AWTGLReadBufferUtil;
 
-import ar.com.hjg.pngj.*;
+import ar.com.hjg.pngj.ImageInfo;
+import ar.com.hjg.pngj.ImageLineByte;
+import ar.com.hjg.pngj.PngWriter;
 import ar.com.hjg.pngj.chunks.PngChunkTextVar;
 import ar.com.hjg.pngj.chunks.PngMetadata;
 

@@ -1,7 +1,7 @@
 package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -17,7 +17,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.osm2world.core.target.common.material.Material.*;
+import org.osm2world.core.target.common.material.Material.AmbientOcclusion;
+import org.osm2world.core.target.common.material.Material.Interpolation;
+import org.osm2world.core.target.common.material.Material.Shadow;
+import org.osm2world.core.target.common.material.Material.Transparency;
 import org.osm2world.core.target.common.material.TextTexture.FontStyle;
 import org.osm2world.core.target.common.material.TextureData.Wrap;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
