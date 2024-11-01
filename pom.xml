@@ -332,7 +332,7 @@
 			<plugin>  <!-- Create javadoc.jar -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.10.1</version>
 				<configuration>
 					<doclint>all,-missing</doclint>
 				</configuration>
