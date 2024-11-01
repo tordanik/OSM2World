@@ -2,7 +2,10 @@ package org.osm2world.core.util;
 
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -128,6 +131,26 @@ final public class ConfigUtil {
 				}
 		    }
 		}
+	}
+
+	/**
+	 * If config references some files by path i.e. textures
+	 * resolve file paths relative to config location
+	 */
+	public static File resolveFileConfigProperty(Configuration config, String fileName) {
+		if (fileName == null) {
+			return null;
+		}
+
+		String basePath = config.getString("configPath", null);
+		File file = new File(basePath, fileName);
+
+		if (!file.exists()) {
+			System.err.println("File referenced in config does not exist: " + file);
+			return null;
+		}
+
+		return file;
 	}
 
 }

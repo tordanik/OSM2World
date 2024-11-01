@@ -9,9 +9,13 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +41,7 @@ import org.osm2world.core.target.Target;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.model.Models;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.util.functions.Factory;
 import org.osm2world.core.world.attachment.AttachmentConnector;
@@ -91,33 +96,37 @@ public class ConversionFacade {
 	/**
 	 * generates a default list of modules for the conversion
 	 */
-	static final List<WorldModule> createDefaultModuleList() {
+	static final List<WorldModule> createDefaultModuleList(Configuration config) {
 
-		return Arrays.asList((WorldModule)
-				new RoadModule(),
-				new RailwayModule(),
-				new AerowayModule(),
-				new BuildingModule(),
-				new ParkingModule(),
-				new TreeModule(),
-				new StreetFurnitureModule(),
-				new TrafficSignModule(),
-				new BicycleParkingModule(),
-				new WaterModule(),
-				new PoolModule(),
-				new GolfModule(),
-				new SportsModule(),
-				new CliffModule(),
-				new BarrierModule(),
-				new PowerModule(),
-				new MastModule(),
-				new BridgeModule(),
-				new TunnelModule(),
-				new SurfaceAreaModule(),
-				new InvisibleModule(),
-				new IndoorModule()
-		);
+		List<String> excludedModules = config.getList("excludeWorldModule")
+			.stream().map(m -> m.toString()).toList();
 
+		return Stream.of((WorldModule)
+			new RoadModule(),
+			new RailwayModule(),
+			new AerowayModule(),
+			new BuildingModule(),
+			new ParkingModule(),
+			new TreeModule(),
+			new StreetFurnitureModule(),
+			new TrafficSignModule(),
+			new BicycleParkingModule(),
+			new WaterModule(),
+			new PoolModule(),
+			new GolfModule(),
+			new SportsModule(),
+			new CliffModule(),
+			new BarrierModule(),
+			new PowerModule(),
+			new MastModule(),
+			new BridgeModule(),
+			new TunnelModule(),
+			new SurfaceAreaModule(),
+			new InvisibleModule(),
+			new IndoorModule()
+		)
+		.filter(m -> !excludedModules.contains(m.getClass().getSimpleName()))
+		.toList();
 	}
 
 	private Function<LatLon, ? extends MapProjection> mapProjectionFactory = MetricMapProjection::new;
@@ -266,7 +275,7 @@ public class ConversionFacade {
 		updatePhase(Phase.REPRESENTATION);
 
 		if (worldModules == null) {
-			worldModules = createDefaultModuleList();
+			worldModules = createDefaultModuleList(config);
 		}
 
 		Materials.configureMaterials(config);
@@ -281,11 +290,11 @@ public class ConversionFacade {
 		/* determine elevations */
 		updatePhase(Phase.ELEVATION);
 
-		String srtmDir = config.getString("srtmDir", null);
+		File srtmDir = ConfigUtil.resolveFileConfigProperty(config, config.getString("srtmDir", null));
 		TerrainElevationData eleData = null;
 
 		if (srtmDir != null) {
-			eleData = new SRTMData(new File(srtmDir), mapProjection);
+			eleData = new SRTMData(srtmDir, mapProjection);
 		}
 
 		/* create terrain and attach connectors */

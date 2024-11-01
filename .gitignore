@@ -31,6 +31,9 @@ nbactions.xml
 nbbuild.xml
 nb-configuration.xml
 
+# VSCode
+.vscode
+
 # Miscellaneous
 *~
 *.swp

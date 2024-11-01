@@ -3,10 +3,10 @@ package org.osm2world.core.target.common.material;
 import static java.awt.Color.*;
 import static java.util.Collections.emptyList;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -495,8 +495,9 @@ public final class Materials {
 		File displacementTexture = null;
 
 		if (config.containsKey(keyPrefix + "_dir")) {
-			File textureDir = new File(config.getString(keyPrefix + "_dir"));
-			if (textureDir.exists() && textureDir.isDirectory()) {
+
+			File textureDir = ConfigUtil.resolveFileConfigProperty(config, config.getString(keyPrefix + "_dir"));
+			if (textureDir!= null && textureDir.exists() && textureDir.isDirectory()) {
 				for (File file : textureDir.listFiles()) {
 					if (file.getName().contains("_Color.")) {
 						baseColorTexture = file;
@@ -624,16 +625,10 @@ public final class Materials {
 					relativeFontSize, wrap, coordFunction);
 
 		} else if ("image".equals(type)) {
-
-			File file = null;
-
-			String fileName = config.getString(keyPrefix + "_file");
-			if (fileName != null) {
-				file = new File(fileName);
-				if (!file.exists() || file.isDirectory()) {
-					System.err.println("File referenced in config does not exist: " + file);
-					file = null;
-				}
+			File file = ConfigUtil.resolveFileConfigProperty(config, config.getString(keyPrefix + "_file"));
+			
+			if (file == null || file.isDirectory()) {
+				file = null;
 			}
 
 			if (file == null) { file = defaultFile; }
