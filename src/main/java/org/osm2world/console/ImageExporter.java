@@ -94,7 +94,7 @@ public class ImageExporter {
 		}
 
 		if (config.containsKey(BG_IMAGE_KEY)) {
-			backgroundImage = ConfigUtil.resolveFileConfigProperty(config, BG_IMAGE_KEY);
+			backgroundImage = ConfigUtil.resolveFileConfigProperty(config, config.getString(BG_IMAGE_KEY));
 			if (backgroundImage == null || !backgroundImage.exists()) {
 				System.err.println("background image file doesn't exist: "
 						+ backgroundImage);
