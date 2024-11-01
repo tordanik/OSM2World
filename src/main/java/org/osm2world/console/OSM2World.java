@@ -1,26 +1,20 @@
 package org.osm2world.console;
 
-import static java.util.Arrays.asList;
-import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
-import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.GUI;
-import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
-import static org.osm2world.core.GlobalValues.VERSION_STRING;
+import static java.util.Arrays.*;
+import static org.osm2world.console.CLIArgumentsUtil.*;
+import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
+import static org.osm2world.core.GlobalValues.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-import javax.swing.*;
+import javax.swing.UIManager;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.*;
 import org.osm2world.console.CLIArgumentsUtil.ProgramMode;
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
@@ -237,6 +231,13 @@ public class OSM2World {
 		for (File it : configFiles) {
 			config.load(it);
 		}
+
+		Arrays.stream(configFiles)
+			.filter(f -> f.exists())
+			.findFirst()
+			.ifPresent(f -> {
+				config.addProperty("configPath", f.getParent());
+			});
 
 		if (lod != null) {
 			config.clearProperty("lod");

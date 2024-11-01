@@ -1,34 +1,24 @@
 package org.osm2world.console;
 
-import static java.time.Instant.now;
-import static java.util.Collections.singletonList;
-import static java.util.Map.entry;
-import static java.util.stream.Collectors.toList;
+import static java.time.Instant.*;
+import static java.util.Collections.*;
+import static java.util.Map.*;
+import static java.util.stream.Collectors.*;
 import static org.osm2world.core.ConversionFacade.Phase.*;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.io.*;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.osm2world.console.CLIArgumentsUtil.OutputMode;
 import org.osm2world.core.ConversionFacade;
-import org.osm2world.core.ConversionFacade.Phase;
-import org.osm2world.core.ConversionFacade.ProgressListener;
-import org.osm2world.core.ConversionFacade.Results;
+import org.osm2world.core.ConversionFacade.*;
 import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
@@ -39,10 +29,8 @@ import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;
-import org.osm2world.core.target.common.rendering.Camera;
-import org.osm2world.core.target.common.rendering.OrthoTilesUtil;
+import org.osm2world.core.target.common.rendering.*;
 import org.osm2world.core.target.common.rendering.OrthoTilesUtil.CardinalDirection;
-import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
@@ -58,11 +46,6 @@ public final class Output {
 	public static void output(Configuration config,
 			CLIArgumentsGroup argumentsGroup)
 		throws IOException {
-
-		if (config instanceof PropertiesConfiguration) {
-			config.addProperty("configPath",
-				new File(((PropertiesConfiguration)config).getPath()).getParent());
-		}
 
 		CLIArguments sharedArgs = argumentsGroup.getRepresentative();
 
