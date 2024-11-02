@@ -8,6 +8,7 @@ import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -142,8 +143,13 @@ final public class ConfigUtil {
 			return null;
 		}
 
-		String basePath = config.getString("configPath", null);
-		File file = new File(basePath, fileName);
+		File file = new File(fileName);
+
+		if (config.containsKey("configPath")) {
+			String basePath = config.getString("configPath");
+			file = Path.of(basePath).normalize()
+				.resolve(Path.of(fileName).normalize()).toFile();
+		}
 
 		if (!file.exists()) {
 			System.err.println("File referenced in config does not exist: " + file);
