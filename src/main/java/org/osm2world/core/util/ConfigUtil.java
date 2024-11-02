@@ -135,7 +135,7 @@ final public class ConfigUtil {
 	}
 
 	/**
-	 * If config references some files by path i.e. textures
+	 * If config references some files by path e.g. textures
 	 * resolve file paths relative to config location
 	 */
 	public static File resolveFileConfigProperty(Configuration config, String fileName) {
