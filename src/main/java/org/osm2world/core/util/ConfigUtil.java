@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.FileConfiguration;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 
 /**
@@ -144,11 +145,19 @@ final public class ConfigUtil {
 		}
 
 		File file = new File(fileName);
-
+		
+		String basePath = null;
 		if (config.containsKey("configPath")) {
-			String basePath = config.getString("configPath");
+			basePath = config.getString("configPath");
+		}
+
+		if (basePath == null && config instanceof FileConfiguration) {
+			basePath = ((FileConfiguration)config).getBasePath();
+		}
+
+		if (basePath != null) {
 			file = Path.of(basePath).normalize()
-				.resolve(Path.of(fileName).normalize()).toFile();
+					.resolve(Path.of(fileName).normalize()).toFile();
 		}
 
 		if (!file.exists()) {
