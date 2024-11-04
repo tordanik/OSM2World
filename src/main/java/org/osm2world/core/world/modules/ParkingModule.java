@@ -103,14 +103,6 @@ public class ParkingModule extends AbstractModule {
 
 			/* draw cars on the parking spaces */
 
-			double ele = 0;
-
-			if (getConnectorIfAttached() != null) {
-				ele = getConnectorIfAttached().getAttachedPos().getY();
-			} else {
-				//TODO add elevation support
-			}
-
 			double carDensity = config.getDouble("carDensity", 0.3);
 			var random = new Random(area.getId());
 
@@ -124,6 +116,10 @@ public class ParkingModule extends AbstractModule {
 				if (carModel != null) {
 
 					SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
+					VectorXZ pos = bbox.getCenter();
+
+					// determine elevation
+					double ele = getEleAt(pos);
 
 					// determine the car's facing direction based on which side of the box is longer
 					VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
@@ -133,7 +129,7 @@ public class ParkingModule extends AbstractModule {
 					direction = direction.normalize();
 
 					target.addSubModel(new ModelInstance(carModel, new InstanceParameters(
-							bbox.getCenter().xyz(ele), direction.angle(), carColor, new LODRange(LOD3, LOD4))));
+							pos.xyz(ele), direction.angle(), carColor, new LODRange(LOD3, LOD4))));
 
 				}
 			}

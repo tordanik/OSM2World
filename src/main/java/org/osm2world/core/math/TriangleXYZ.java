@@ -93,6 +93,14 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 		return new TriangleXYZ(v1.add(v), v2.add(v), v3.add(v));
 	}
 
+	/**
+	 * returns the projection of this triangle into XZ plane.
+	 * Fails if this triangle is vertical.
+	 */
+	public TriangleXZ xz() {
+		return new TriangleXZ(v1.xz(), v2.xz(), v3.xz());
+	}
+
 	@Override
 	public String toString() {
 		return "[" + v1 + ", " + v2 + ", " + v3 + "]";

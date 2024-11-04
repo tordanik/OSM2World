@@ -2,6 +2,7 @@ package org.osm2world.core.world.data;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static org.osm2world.core.math.GeometryUtil.interpolateOnTriangle;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -178,6 +179,29 @@ public abstract class AbstractAreaWorldObject implements AreaWorldObject, Bounde
 				: connectors::getPosXYZ;
 
 		return TriangulationUtil.triangulationXZtoXYZ(getTriangulationXZ(), xzToXYZ);
+
+	}
+
+	/**
+	 * returns elevation at any point within the triangulation of this area
+	 */
+	public double getEleAt(VectorXZ pos) {
+
+		if (getConnectorIfAttached() != null) {
+			return getConnectorIfAttached().getAttachedPos().getY();
+		} else if (getEleConnectors().eleConnectors.stream().allMatch(it -> it.getPosXYZ().y == 0.0)) {
+			// fast case for disabled elevation
+			return 0.0;
+		}
+
+		var containingTriangle = getTriangulation().stream().filter(t -> t.xz().contains(pos)).findFirst();
+
+		if (containingTriangle.isPresent()) {
+			TriangleXYZ t = containingTriangle.get();
+			return interpolateOnTriangle(pos, t.xz(), t.v1.y, t.v2.y, t.v3.y);
+		} else {
+			throw new IllegalArgumentException(pos + " is not within the triangulation of " + this);
+		}
 
 	}
 
