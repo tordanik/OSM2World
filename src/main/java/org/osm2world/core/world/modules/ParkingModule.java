@@ -116,10 +116,6 @@ public class ParkingModule extends AbstractModule {
 				if (carModel != null) {
 
 					SimplePolygonXZ bbox = parkingSpace.getOuterPolygon().minimumRotatedBoundingBox();
-					VectorXZ pos = bbox.getCenter();
-
-					// determine elevation
-					double ele = getEleAt(pos);
 
 					// determine the car's facing direction based on which side of the box is longer
 					VectorXZ direction = bbox.getVertex(1).subtract(bbox.getVertex(0));
@@ -127,6 +123,12 @@ public class ParkingModule extends AbstractModule {
 						direction = bbox.getVertex(2).subtract(bbox.getVertex(1));
 					}
 					direction = direction.normalize();
+
+					// determine direction (with some randomness)
+					VectorXZ pos = bbox.getCenter().add(direction.mult(-0.2 + random.nextDouble(0.4)));
+
+					// determine elevation
+					double ele = getEleAt(pos);
 
 					target.addSubModel(new ModelInstance(carModel, new InstanceParameters(
 							pos.xyz(ele), direction.angle(), carColor, new LODRange(LOD3, LOD4))));
