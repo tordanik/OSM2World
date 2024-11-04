@@ -151,9 +151,8 @@ final public class ConfigUtil {
 			basePath = config.getString("configPath");
 		}
 
-		if (basePath == null && config instanceof FileConfiguration) {
-			basePath = Path.of(((FileConfiguration)config).getBasePath())
-				.toAbsolutePath().getParent().toString();
+		if (basePath == null && config instanceof FileConfiguration fc && fc.getFile() != null) {
+			basePath = fc.getFile().getAbsoluteFile().getParent();
 		}
 
 		if (basePath != null) {
