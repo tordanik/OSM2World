@@ -1,5 +1,6 @@
 package org.osm2world.core.world.modules;
 
+import static java.awt.Color.*;
 import static java.lang.Math.max;
 import static java.lang.Math.toRadians;
 import static java.util.Collections.emptyList;
@@ -20,32 +21,29 @@ import static org.osm2world.core.util.ValueParseUtil.parseAngle;
 import static org.osm2world.core.util.ValueParseUtil.parseUInt;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.EleConnectorGroup;
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.CircleXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
-import org.osm2world.core.target.common.mesh.Geometry;
-import org.osm2world.core.target.common.mesh.Mesh;
-import org.osm2world.core.target.common.mesh.TriangleGeometry;
+import org.osm2world.core.target.common.mesh.*;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
+import org.osm2world.core.target.common.model.Models;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.NodeWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
@@ -56,6 +54,9 @@ import org.osm2world.core.world.modules.common.AbstractModule;
  * places bicycle parking facilities in the world
  */
 public class BicycleParkingModule extends AbstractModule {
+
+	private static final List<Color> BIKE_COLORS = List.of(
+			BLACK, BLACK, BLUE, RED, LIGHT_GRAY, WHITE, GREEN, YELLOW, ORANGE, PINK);
 
 	@Override
 	protected void applyToElement(MapElement element) {
@@ -80,7 +81,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 	}
 
-	public static abstract class BicycleStands implements WorldObject {
+	public abstract class BicycleStands implements WorldObject {
 
 		protected static final double DEFAULT_DISTANCE_BETWEEN_STANDS = 1.0;
 		private static final double STAND_DEFAULT_LENGTH = 1.0;
@@ -172,6 +173,9 @@ public class BicycleParkingModule extends AbstractModule {
 		@Override
 		public List<ModelInstance> getSubModels() {
 
+			double bikeDensity = config.getDouble("parkedVehicleDensity", 1.0); // 0.3);
+			var random = new Random(getPrimaryMapElement().getElementWithId().getId());
+
 			/* place models for the stands */
 
 			TagSet tags = getPrimaryMapElement().getTags();
@@ -198,6 +202,26 @@ public class BicycleParkingModule extends AbstractModule {
 
 				result.add(new ModelInstance(model, new InstanceParameters(standConnector.getPosXYZ(), localDirection)));
 
+				// maybe add a bike model next to it
+
+				if (random.nextDouble() > bikeDensity) continue;
+
+				Model bikeModel = Models.getModel("BIKE", random);
+				Color bikeColor = BIKE_COLORS.get(random.nextInt(BIKE_COLORS.size()));
+
+				double bikeDirection = random.nextBoolean()
+						? localDirection
+						: Angle.ofRadians(localDirection).plus(Angle.ofDegrees(180)).radians;
+
+				VectorXYZ bikePos = standConnector.getPosXYZ()
+						.add(VectorXZ.fromAngle(bikeDirection).mult(-0.1 + random.nextDouble(0.2)))
+						.add(VectorXZ.fromAngle(localDirection).rightNormal().mult(random.nextBoolean() ? 0.2 : -0.2));
+
+				if (bikeModel != null) {
+					result.add(new ModelInstance(bikeModel,
+							new InstanceParameters(bikePos, bikeDirection, bikeColor, new LODRange(LOD3, LOD4))));
+				}
+
 			}
 
 			return result;
@@ -223,7 +247,7 @@ public class BicycleParkingModule extends AbstractModule {
 		}
 	}
 
-	public static final class BicycleStandsArea extends BicycleStands implements AreaWorldObject {
+	public final class BicycleStandsArea extends BicycleStands implements AreaWorldObject {
 
 		private final MapArea area;
 
@@ -263,7 +287,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	public static final class BicycleStandsWay extends BicycleStands implements WaySegmentWorldObject {
+	public final class BicycleStandsWay extends BicycleStands implements WaySegmentWorldObject {
 
 		private final MapWay way;
 		private final MapWaySegment waySegment;
@@ -285,7 +309,7 @@ public class BicycleParkingModule extends AbstractModule {
 
 	}
 
-	public static final class BicycleStandsNode extends BicycleStands implements NodeWorldObject {
+	public final class BicycleStandsNode extends BicycleStands implements NodeWorldObject {
 
 		private final MapNode node;
 		private final double direction;

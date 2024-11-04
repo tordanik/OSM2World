@@ -103,7 +103,7 @@ public class ParkingModule extends AbstractModule {
 
 			/* draw cars on the parking spaces */
 
-			double carDensity = config.getDouble("carDensity", 0.3);
+			double carDensity = config.getDouble("parkedVehicleDensity", 0.3);
 			var random = new Random(area.getId());
 
 			for (MapArea parkingSpace : parkingSpaces) {
