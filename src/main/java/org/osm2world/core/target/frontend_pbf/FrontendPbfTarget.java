@@ -408,7 +408,7 @@ public class FrontendPbfTarget extends MeshTarget {
 	}
 
 	private FrontendPbf.WorldObject convertModel(Model m, @Nullable TextureAtlasGroup textureAtlasGroup) {
-		InstanceParameters params = new InstanceParameters(NULL_VECTOR, 0.0, 1.0, null, null);
+		InstanceParameters params = new InstanceParameters(NULL_VECTOR, 0.0, 1.0);
 		List<Mesh> meshes = m.buildMeshes(params);
 		if (textureAtlasGroup != null) {
 			var tempMeshStore = new MeshStore(meshes, null);

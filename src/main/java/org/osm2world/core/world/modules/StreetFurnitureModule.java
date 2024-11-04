@@ -1172,7 +1172,7 @@ public class StreetFurnitureModule extends AbstractModule {
 			var instance = new ModelInstance(new ClockFace(TIME), new InstanceParameters(
 					connector.getAttachedPos(),
 					connector.getAttachedSurfaceNormal().xz().angle(),
-					null, diameter, null));
+					diameter));
 			instance.render(target);
 
 		}
@@ -1188,8 +1188,8 @@ public class StreetFurnitureModule extends AbstractModule {
 			@Override
 			public void render(CommonTarget target, InstanceParameters params) {
 
-				double diameter = params.width() != null ? params.width() : 1.0;
-				double thickness = params.length() != null ? params.length() : 0.08;
+				double diameter = params.height() != null ? params.height() : 1.0;
+				double thickness = 0.08;
 
 				VectorXZ faceNormal = VectorXZ.fromAngle(params.direction());
 

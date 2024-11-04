@@ -346,7 +346,7 @@ public final class PowerModule extends AbstractModule {
 			/* draw rotor blades */
 			target.addSubModel(new ModelInstance(ROTOR, new InstanceParameters(
 					position.addY(poleHeight).add(-poleRadiusTop*2.5, nacelleHeight/2, 0),
-					0, rotorDiameter, rotorDiameter, rotorDiameter)));
+					0, rotorDiameter)));
 
 		}
 

@@ -2,7 +2,6 @@ package org.osm2world.core.world.modules;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import static org.osm2world.core.math.GeometryUtil.equallyDistributePointsAlong;
 import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
@@ -109,24 +108,11 @@ public class RailwayModule extends ConfigurableWorldModule {
 		public List<Mesh> buildMeshes(InstanceParameters params) {
 
 			VectorXYZ position = params.position();
-			Double height = params.height();
-			Double width = params.width();
-			Double length = params.length();
 
-			if (height == null) {
-				height = SLEEPER_HEIGHT;
-			}
-			if (length == null) {
-				length = SLEEPER_LENGTH;
-			}
-			if (width == null) {
-				width = sleeperWidth;
-			}
-
-			SimplePolygonShapeXZ box = new AxisAlignedRectangleXZ(NULL_VECTOR, width, length);
+			SimplePolygonShapeXZ box = new AxisAlignedRectangleXZ(NULL_VECTOR, sleeperWidth, SLEEPER_LENGTH);
 			box = box.rotatedCW(params.direction());
 
-			return singletonList(new Mesh(new ExtrusionGeometry(box, asList(position, position.addY(height)),
+			return singletonList(new Mesh(new ExtrusionGeometry(box, asList(position, position.addY(SLEEPER_HEIGHT)),
 					null, null, null, EnumSet.of(END_CAP), WOOD.getTextureDimensions()), WOOD, LOD4));
 
 		}
@@ -269,8 +255,8 @@ public class RailwayModule extends ConfigurableWorldModule {
 
 			return sleeperPositions.stream()
 					.map(it -> new ModelInstance(sleeperModel,
-								new InstanceParameters(it, segment.getDirection().angle(), null, sleeperWidth, null)))
-					.collect(toList());
+								new InstanceParameters(it, segment.getDirection().angle())))
+					.toList();
 
 		}
 

@@ -207,13 +207,13 @@ public class TreeModule extends ConfigurableWorldModule {
 			target.append("#ifndef (broad_leaved_tree)\n");
 			target.append("#declare broad_leaved_tree = object { union {\n");
 			target.drawModel(new ModelInstance(new TreeGeometryModel(LeafType.BROADLEAVED, LeafCycle.DECIDUOUS, null),
-					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null)));
+					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0)));
 			target.append("} }\n#end\n\n");
 
 			target.append("#ifndef (coniferous_tree)\n");
 			target.append("#declare coniferous_tree = object { union {\n");
 			target.drawModel(new ModelInstance(new TreeGeometryModel(LeafType.NEEDLELEAVED, LeafCycle.EVERGREEN, null),
-					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0, null, null)));
+					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0)));
 			target.append("} }\n#end\n\n");
 
 		}
@@ -283,7 +283,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		target.drawModel(new ModelInstance(model,
-				new InstanceParameters(base, 0, height, null, null)));
+				new InstanceParameters(base, 0, height)));
 
 	}
 
