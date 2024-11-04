@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.*;
+import static org.osm2world.core.math.VectorXYZ.NULL_VECTOR;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
@@ -320,6 +322,33 @@ public class TriangleGeometry implements Geometry {
 					.map(texCoordFunction -> texCoordFunction.apply(vertices))
 					.collect(toList());
 
+		}
+
+	}
+
+	public TriangleGeometry transform(@Nullable VectorXYZ translation, @Nullable Angle rotation, @Nullable Double scale) {
+
+		VectorXYZ t = (translation != null) ? translation : NULL_VECTOR;
+		Angle r = (rotation != null) ? rotation : Angle.ofRadians(0);
+		double s = (scale != null) ? scale : 1.0;
+
+		if (s <= 0) throw new IllegalArgumentException("Illegal scale: " + scale);
+
+		if (t.equals(NULL_VECTOR) && r.radians == 0.0 && s == 1.0) return this;
+
+		List<TriangleXYZ> newTriangles = triangles.stream()
+				.map(it -> it.shift(t))
+				.map(it -> it.rotateY(r.radians))
+				.map(it -> it.scale(NULL_VECTOR, s))
+				.toList();
+
+		if (normalData instanceof CalculatedNormals calculatedNormals) {
+			return new TriangleGeometry(newTriangles, calculatedNormals.normalMode, texCoords, colors);
+		} else {
+			List<VectorXYZ> newNormals = normalData.normals().stream()
+					.map(it -> it.rotateY(r.radians))
+					.toList();
+			return new TriangleGeometry(newTriangles, newNormals, texCoords, colors);
 		}
 
 	}

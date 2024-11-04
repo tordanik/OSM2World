@@ -93,6 +93,16 @@ public class TriangleXYZ implements FlatSimplePolygonShapeXYZ {
 		return new TriangleXYZ(v1.add(v), v2.add(v), v3.add(v));
 	}
 
+	public TriangleXYZ rotateY(double angleRad) {
+		return new TriangleXYZ(v1.rotateY(angleRad), v2.rotateY(angleRad), v3.rotateY(angleRad));
+	}
+
+	public TriangleXYZ scale(VectorXYZ scaleOrigin, double scaleFactor) {
+		TriangleXYZ t = this.shift(scaleOrigin.invert());
+		t = new TriangleXYZ(t.v1.mult(scaleFactor), t.v2.mult(scaleFactor), t.v3.mult(scaleFactor));
+		return t.shift(scaleOrigin);
+	}
+
 	/**
 	 * returns the projection of this triangle into XZ plane.
 	 * Fails if this triangle is vertical.

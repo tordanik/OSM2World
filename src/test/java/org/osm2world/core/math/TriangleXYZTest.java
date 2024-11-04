@@ -1,6 +1,7 @@
 package org.osm2world.core.math;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.osm2world.core.math.VectorXYZ.*;
 import static org.osm2world.core.test.TestUtil.assertAlmostEquals;
 
@@ -90,6 +91,34 @@ public class TriangleXYZTest {
 		var t4 = new TriangleXYZ(new VectorXYZ(-1, 0, 0), new VectorXYZ(+1, 0, 0), new VectorXYZ(+1, 10, 0));
 		var result4 = t4.split(l);
 		assertEquals(3, result4.size());
+
+	}
+
+	@Test
+	public void testRotateY_ZeroAngle() {
+		TriangleXYZ triangle = new TriangleXYZ(new VectorXYZ(0, 0, 0), new VectorXYZ(1, 2, 3), new VectorXYZ(4, 5, 6));
+		assertAlmostEquals(triangle, triangle.rotateY(0));
+	}
+
+	@Test
+	public void testRotateY_NonZeroAngle() {
+		var triangle = new TriangleXYZ(new VectorXYZ(0, 0, 0), new VectorXYZ(1, 0, 0), new VectorXYZ(0, 0, 1));
+		var result = triangle.rotateY(Math.PI);
+		assertAlmostEquals(new TriangleXYZ(new VectorXYZ(0, 0, 0), new VectorXYZ(-1, 0, 0), new VectorXYZ(0, 0, -1)), result);
+	}
+
+	@Test
+	public void testRotateY_NegativeAngle() {
+		TriangleXYZ triangle = new TriangleXYZ(new VectorXYZ(0, 0, 0), new VectorXYZ(1, 2, 3), new VectorXYZ(4, 5, 6));
+		var resultTriangle = triangle.rotateY(-Math.PI / 4);
+		assertNotEquals(triangle, resultTriangle);
+	}
+
+	@Test
+	public void testScale() {
+		var triangle = new TriangleXYZ(new VectorXYZ(9, 0, 0), new VectorXYZ(11, 0, 0), new VectorXYZ(10, 1, 1));
+		var result = triangle.scale(new VectorXYZ(10, 0, 0), 2.0);
+		assertAlmostEquals(new TriangleXYZ(new VectorXYZ(8, 0, 0), new VectorXYZ(12, 0, 0), new VectorXYZ(10, 2, 2)), result);
 
 	}
 

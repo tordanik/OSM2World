@@ -1,10 +1,15 @@
 package org.osm2world.core.target.common.mesh;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.osm2world.core.math.Angle;
+import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.common.mesh.TriangleGeometry.CalculatedNormals;
 
@@ -77,6 +82,18 @@ public interface Geometry {
 
 		return builder.build();
 
+	}
+
+	/**
+	 * Transforms this geometry (first translate, then rotate, then scale).
+	 *
+	 * @param translation  vector to shift this geometry by
+	 * @param rotation  clockwise rotation around y-axis
+	 * @param scale  scaling factor, greater than 0
+	 * @return  a {@link Geometry} with the transformations applied
+	 */
+	default Geometry transform(@Nullable VectorXYZ translation, @Nullable Angle rotation, @Nullable Double scale) {
+		return asTriangles().transform(translation, rotation, scale);
 	}
 
 }
