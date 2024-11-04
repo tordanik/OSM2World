@@ -242,7 +242,7 @@ public class OSM2World {
 			.filter(f -> f.exists())
 			.findFirst()
 			.ifPresent(f -> {
-				config.addProperty("configPath", f.getParent());
+				config.addProperty("configPath", f.getAbsoluteFile().getParent());
 			});
 
 		if (lod != null) {
