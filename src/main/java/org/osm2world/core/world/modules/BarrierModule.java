@@ -35,10 +35,7 @@ import org.osm2world.core.map_data.data.MapWaySegment;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
-import org.osm2world.core.math.shapes.CircleXZ;
-import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.math.shapes.SimpleClosedShapeXZ;
+import org.osm2world.core.math.shapes.*;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
@@ -412,6 +409,11 @@ public class BarrierModule extends AbstractModule {
 
 		}
 
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
+		}
+
 	}
 
 	public static class Balustrade extends LinearBarrier {
@@ -537,6 +539,12 @@ public class BarrierModule extends AbstractModule {
 			}
 
 		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
+		}
+
 	}
 
 	public static class PoleFence extends LinearBarrier {
@@ -617,6 +625,12 @@ public class BarrierModule extends AbstractModule {
 			}
 
 		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
+		}
+
 	}
 
 	public static class TrellisWorkFence extends LinearBarrier {
@@ -683,6 +697,11 @@ public class BarrierModule extends AbstractModule {
 
 			}
 
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
 		}
 
 	}
@@ -836,6 +855,11 @@ public class BarrierModule extends AbstractModule {
 
 		}
 
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
+		}
+
 	}
 
 	public static class JerseyBarrier extends LinearBarrier {
@@ -891,6 +915,11 @@ public class BarrierModule extends AbstractModule {
 
 			}
 
+		}
+
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
 		}
 
 	}
