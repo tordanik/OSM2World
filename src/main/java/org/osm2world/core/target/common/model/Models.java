@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.target.gltf.GltfModel;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.creation.WorldModule;
 
 /**
@@ -73,12 +74,16 @@ public class Models {
 			if (matcher.matches()) {
 
 				String modelName = matcher.group(1);
-				List<Object> fileNames = config.getList(key);
+				List<String> fileNames = config.getList(key).stream().map(f -> f.toString()).toList();
 
 				try {
 					List<Model> ms = new ArrayList<>(fileNames.size());
-					for (Object fileName : fileNames) {
-						ms.add(GltfModel.loadFromFile(new File(fileName.toString())));
+					for (String fileName : fileNames) {
+						File modelFile = ConfigUtil.resolveFileConfigProperty(config, fileName);
+						if (modelFile == null) {
+							System.err.println("Can't read model file " + fileName);
+						}
+						ms.add(GltfModel.loadFromFile(modelFile));
 					}
 					models.put(modelName.toLowerCase(Locale.ROOT), ms);
 				} catch (IOException e) {

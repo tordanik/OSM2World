@@ -1,9 +1,9 @@
 package org.osm2world.console;
 
 import static java.util.Arrays.asList;
+import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.CONVERT;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.GUI;
-import static org.osm2world.console.CLIArgumentsUtil.getProgramMode;
 import static org.osm2world.core.GlobalValues.VERSION_STRING;
 
 import java.io.File;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-import javax.swing.*;
+import javax.swing.UIManager;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -237,6 +237,13 @@ public class OSM2World {
 		for (File it : configFiles) {
 			config.load(it);
 		}
+
+		Arrays.stream(configFiles)
+			.filter(f -> f.exists())
+			.findFirst()
+			.ifPresent(f -> {
+				config.addProperty("configPath", f.getAbsoluteFile().getParent());
+			});
 
 		if (lod != null) {
 			config.clearProperty("lod");

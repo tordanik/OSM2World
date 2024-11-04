@@ -5,7 +5,9 @@ import static java.lang.Math.min;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 import static org.osm2world.core.util.ConfigUtil.*;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
@@ -25,6 +27,7 @@ import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
 import org.osm2world.core.target.jogl.*;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.Resolution;
 
 import com.jogamp.opengl.*;
@@ -101,14 +104,11 @@ public class ImageExporter {
 		}
 
 		if (config.containsKey(BG_IMAGE_KEY)) {
-			String fileString = config.getString(BG_IMAGE_KEY);
-			if (fileString != null) {
-				backgroundImage = new File(fileString);
-				if (!backgroundImage.exists()) {
-					System.err.println("background image file doesn't exist: "
-							+ backgroundImage);
-					backgroundImage = null;
-				}
+			backgroundImage = ConfigUtil.resolveFileConfigProperty(config, config.getString(BG_IMAGE_KEY));
+			if (backgroundImage == null || !backgroundImage.exists()) {
+				System.err.println("background image file doesn't exist: "
+						+ backgroundImage);
+				backgroundImage = null;
 			}
 		}
 
