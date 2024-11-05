@@ -13,4 +13,13 @@ public record LODRange(LevelOfDetail min, LevelOfDetail max) {
 		this(lod, lod);
 	}
 
+	@Override
+	public String toString() {
+		return "LOD " + min.ordinal() + "-" + max.ordinal();
+	}
+
+	public boolean contains(LevelOfDetail lod) {
+		return min.ordinal() <= lod.ordinal() && lod.ordinal() <= max.ordinal();
+	}
+
 }

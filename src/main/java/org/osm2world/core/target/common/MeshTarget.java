@@ -72,8 +72,8 @@ public class MeshTarget extends AbstractTarget {
 		@Override
 		public MeshStore apply(MeshStore meshStore) {
 			return new MeshStore(meshStore.meshesWithMetadata().stream()
-					.filter(m -> m.mesh().lodRangeContains(targetLod))
-					.collect(toList()));
+					.filter(m -> m.mesh().lodRange.contains(targetLod))
+					.toList());
 		}
 
 	}
@@ -112,8 +112,8 @@ public class MeshTarget extends AbstractTarget {
 		/** checks if two meshes should be merged according to the MergeOptions */
 		public boolean shouldBeMerged(MeshWithMetadata m1, MeshWithMetadata m2) {
 
-			if (m1.mesh().lodRangeMin != m2.mesh().lodRangeMin
-					|| m1.mesh().lodRangeMax != m2.mesh().lodRangeMax) {
+			if (m1.mesh().lodRange.min() != m2.mesh().lodRange.min()
+					|| m1.mesh().lodRange.max() != m2.mesh().lodRange.max()) {
 				return false;
 			}
 
@@ -226,7 +226,7 @@ public class MeshTarget extends AbstractTarget {
 								.withTransparency(layer > 0 ? Material.Transparency.BINARY : null)
 								.withLayers(List.of(mesh.material.getTextureLayers().get(layer)));
 
-						Mesh newMesh = new Mesh(newGeometry, singleLayerMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
+						Mesh newMesh = new Mesh(newGeometry, singleLayerMaterial, mesh.lodRange);
 
 						result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata()));
 
@@ -466,7 +466,7 @@ public class MeshTarget extends AbstractTarget {
 					builder.addTriangles(tg.triangles, newTexCoords, tg.colors, tg.normalData.normals());
 
 					Material newMaterial = mesh.material.withLayers(newTextureLayers);
-					Mesh newMesh = new Mesh(builder.build(), newMaterial, mesh.lodRangeMin, mesh.lodRangeMax);
+					Mesh newMesh = new Mesh(builder.build(), newMaterial, mesh.lodRange);
 
 					result.add(new MeshWithMetadata(newMesh, meshWithMetadata.metadata()));
 

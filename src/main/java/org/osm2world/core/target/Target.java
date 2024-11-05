@@ -31,7 +31,7 @@ public interface Target extends CommonTarget {
 	default void beginObject(@Nullable WorldObject object) {}
 
 	public default void drawMesh(Mesh mesh) {
-		if (mesh.lodRangeContains(getLod())) {
+		if (mesh.lodRange.contains(getLod())) {
 			TriangleGeometry tg = mesh.geometry.asTriangles();
 			drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords);
 		}
