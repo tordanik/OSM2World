@@ -14,7 +14,7 @@ import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -64,7 +64,7 @@ public class IndoorFloor {
 
     }
 
-    private void renderTo(Target target, boolean attachmentSurfaceBool) {
+    private void renderTo(CommonTarget target, boolean attachmentSurfaceBool) {
 
         if (!attachmentSurfaceBool && level != buildingPart.levelStructure.levels.get(0).level) {
             ceiling.renderTo(target);
@@ -108,7 +108,7 @@ public class IndoorFloor {
         }
     }
 
-    public void renderTo(Target target) {
+    public void renderTo(CommonTarget target) {
         renderTo(target, false);
     }
 }

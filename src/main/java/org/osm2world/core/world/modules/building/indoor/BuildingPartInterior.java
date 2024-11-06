@@ -5,9 +5,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.osm2world.core.map_data.data.MapElement;
-import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
 /**
@@ -15,7 +14,7 @@ import org.osm2world.core.world.modules.building.BuildingPart;
  * This could be merged into {@link BuildingPart}, but is kept separate for now
  * as it might be helpful to eventually allow interiors spanning entire buildings.
  */
-public class BuildingPartInterior implements Renderable {
+public class BuildingPartInterior {
 
 	private final List<IndoorWall> walls = new ArrayList<>();
 	private final List<IndoorRoom> rooms = new ArrayList<>();
@@ -63,16 +62,15 @@ public class BuildingPartInterior implements Renderable {
 
 	}
 
-	@Override
-	public void renderTo(Target target) {
+	public void buildMeshesAndModels(ProceduralWorldObject.Target target) {
 
 		IndoorWall.allRenderedWallSegments = new ArrayList<>(); //FIXME this is not thread-safe!
 
 		walls.forEach(w -> w.renderTo(target));
 
-		rooms.forEach(r -> r.renderTo(target));
+		rooms.forEach(r -> r.buildMeshesAndModels(target));
 
-		areas.forEach(a -> a.renderTo(target));
+		areas.forEach(a -> a.buildMeshesAndModels(target));
 
 	}
 }

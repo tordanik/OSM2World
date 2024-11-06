@@ -15,7 +15,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureData;
 import org.osm2world.core.target.common.material.TextureLayer;
@@ -43,7 +43,7 @@ abstract public class SpindleRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(Target target, double baseEle) {
+	public void renderTo(CommonTarget target, double baseEle) {
 
 		List<Double> heights = new ArrayList<>();
 		List<Double> scaleFactors = new ArrayList<>();
@@ -63,7 +63,7 @@ abstract public class SpindleRoof extends Roof {
 	 */
 	abstract protected List<Pair<Double, Double>> getSpindleSteps();
 
-	private void renderSpindle(Target target, Material material, SimplePolygonXZ polygon,
+	private void renderSpindle(CommonTarget target, Material material, SimplePolygonXZ polygon,
 			List<Double> heights, List<Double> scaleFactors) {
 
 		checkArgument(heights.size() == scaleFactors.size(), "heights and scaleFactors must have same size");

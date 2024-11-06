@@ -9,14 +9,13 @@ import java.util.List;
 import org.apache.commons.lang.math.IntRange;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.BuildingDefaults;
 
-public class IndoorRoom implements AreaWorldObject, LegacyWorldObject {
+public class IndoorRoom implements AreaWorldObject, ProceduralWorldObject {
 
     private final IndoorWall wall;
     private final IndoorFloor floor;
@@ -58,8 +57,8 @@ public class IndoorRoom implements AreaWorldObject, LegacyWorldObject {
 
     }
 
-    @Override
-    public void renderTo(Target target) {
+	@Override
+	public void buildMeshesAndModels(Target target) {
 
         wall.renderTo(target);
 

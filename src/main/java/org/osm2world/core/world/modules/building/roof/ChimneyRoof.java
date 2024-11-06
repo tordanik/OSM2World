@@ -13,7 +13,7 @@ import java.util.List;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.model.ExternalResourceModel;
 import org.osm2world.core.target.common.model.InstanceParameters;
@@ -43,7 +43,7 @@ public class ChimneyRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(Target target, double baseEle) {
+	public void renderTo(CommonTarget target, double baseEle) {
 
 		double chimneyHoleEle = baseEle - 3.0;
 

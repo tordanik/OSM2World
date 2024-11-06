@@ -10,6 +10,6 @@ public interface Renderable {
 	 * Most objects will use the same code for all {@link Target} implementations,
 	 * but some may use special-case handling with instanceof checks.
 	 */
-	public void renderTo(Target target);
+	public void renderTo(CommonTarget target);
 
 }

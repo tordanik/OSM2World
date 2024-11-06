@@ -1,7 +1,7 @@
 package org.osm2world.core.world.modules.building;
 
 import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 
 /**
  * something that can be placed into a wall, such as a window or door
@@ -20,6 +20,6 @@ interface WallElement {
 	 */
 	public double insetDistance();
 
-	public void renderTo(Target target, WallSurface surface);
+	public void renderTo(CommonTarget target, WallSurface surface);
 
 }

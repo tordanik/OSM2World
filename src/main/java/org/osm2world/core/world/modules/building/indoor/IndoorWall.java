@@ -18,8 +18,8 @@ import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -697,7 +697,7 @@ public class IndoorWall implements Renderable {
     	return v1.subtract(v2).lengthSquared() < 0.00001;
 	}
 
-	public static void renderNodePolygons(Target target, Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> nodeToLineSegments){
+	public static void renderNodePolygons(CommonTarget target, Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> nodeToLineSegments){
 		for (Map.Entry<NodeWithLevelAndHeights, List<LineSegmentXZ>> entry : nodeToLineSegments.entrySet()) {
 
 			NodeWithLevelAndHeights nodeAndLevel = entry.getKey();
@@ -794,7 +794,7 @@ public class IndoorWall implements Renderable {
 		}
 	}
 
-	private void renderTo(Target target, Boolean renderSides, Boolean attachmentSurfaces) {
+	private void renderTo(CommonTarget target, Boolean renderSides, Boolean attachmentSurfaces) {
 
 		double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
@@ -962,7 +962,7 @@ public class IndoorWall implements Renderable {
 	}
 
     @Override
-    public void renderTo(Target target) {
+    public void renderTo(CommonTarget target) {
     	renderTo(target, true, false);
     }
 

@@ -15,11 +15,10 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.data.AbstractAreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.building.Door;
 import org.osm2world.core.world.modules.building.DoorParameters;
 import org.osm2world.core.world.modules.building.WallSurface;
@@ -34,7 +33,7 @@ public class IndoorModule extends AbstractModule {
 		}
 	}
 
-	private static class Elevator extends AbstractAreaWorldObject implements LegacyWorldObject {
+	private static class Elevator extends AbstractAreaWorldObject implements ProceduralWorldObject {
 
 		private final double carHeight = 2.2;
 
@@ -94,7 +93,7 @@ public class IndoorModule extends AbstractModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void buildMeshesAndModels(Target target) {
 
 			List<LineSegmentXZ> outerLineSegments = area.getOuterPolygon().makeClockwise().getSegments();
 			List<MapNode> doorNodes = area.getBoundaryNodes().stream().filter(n -> n.getTags().containsKey("door")).collect(toList());

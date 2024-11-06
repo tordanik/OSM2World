@@ -18,8 +18,8 @@ import org.osm2world.core.math.Angle;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
@@ -62,7 +62,7 @@ abstract public class Roof {
 	/**
 	 * returns the attachment surfaces for this roof
 	 *
-	 * @param baseEle  the lower elevation of the roof, as in {@link #renderTo(Target, double)}
+	 * @param baseEle  the lower elevation of the roof, as in {@link #renderTo(CommonTarget, double)}
 	 * @param level  the roof's level number. This allows distinction between multiple vertically stacked roofs
 	 * when attaching objects to the roofs' {@link AttachmentSurface}s.
 	 */
@@ -71,10 +71,10 @@ abstract public class Roof {
 	}
 
 	/**
-	 * renders the roof. The same as {@link Renderable#renderTo(Target)},
+	 * renders the roof. The same as {@link Renderable#renderTo(CommonTarget)},
 	 * but it also needs the lower elevation of the roof (which is not yet known at construction time).
 	 */
-	public abstract void renderTo(Target target, double baseEle);
+	public abstract void renderTo(CommonTarget target, double baseEle);
 
 	/**
 	 * creates the correct roof for the given roof:shape value

@@ -14,7 +14,7 @@ import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 
 public class Door implements WallElement {
@@ -47,7 +47,7 @@ public class Door implements WallElement {
 	}
 
 	@Override
-	public void renderTo(Target target, WallSurface surface) {
+	public void renderTo(CommonTarget target, WallSurface surface) {
 
 		Material doorMaterial = ENTRANCE_DEFAULT;
 

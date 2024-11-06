@@ -21,17 +21,16 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
  */
-public class Building implements AreaWorldObject, LegacyWorldObject {
+public class Building implements AreaWorldObject, ProceduralWorldObject {
 
 	private final MapArea area;
 
@@ -160,8 +159,8 @@ public class Building implements AreaWorldObject, LegacyWorldObject {
 	}
 
 	@Override
-	public void renderTo(Target target) {
-		FaultTolerantIterationUtil.forEach(parts, part -> part.renderTo(target));
+	public void buildMeshesAndModels(Target target) {
+		FaultTolerantIterationUtil.forEach(parts, part -> part.buildMeshesAndModels(target));
 		IndoorWall.renderNodePolygons(target, wallNodePolygonSegments);
 	}
 

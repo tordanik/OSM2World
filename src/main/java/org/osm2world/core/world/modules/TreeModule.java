@@ -23,7 +23,7 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
@@ -245,7 +245,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private void renderTreeModel(Target target, MapElement element, VectorXYZ base,
+	private void renderTreeModel(CommonTarget target, MapElement element, VectorXYZ base,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
 		// "random" decision to flip the tree texture based on z coord
@@ -394,7 +394,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(CommonTarget target) {
 			if (target instanceof POVRayTarget) {
 				renderTreePovrayModel((POVRayTarget)target, node, getBase(), leafType, leafCycle, species);
 			} else {
@@ -487,7 +487,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(CommonTarget target) {
 
 			for (EleConnector treeConnector : treeConnectors) {
 
@@ -596,7 +596,7 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(Target target) {
+		public void renderTo(CommonTarget target) {
 
 			for (EleConnector treeConnector : treeConnectors) {
 

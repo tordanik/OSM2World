@@ -24,8 +24,8 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Renderable;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -81,11 +81,11 @@ public class Wall implements Renderable {
 	}
 
 	@Override
-	public void renderTo(Target target) {
+	public void renderTo(CommonTarget target) {
 		renderTo(target, true);
 	}
 
-	public void renderTo(Target target, boolean renderElements) {
+	public void renderTo(CommonTarget target, boolean renderElements) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 

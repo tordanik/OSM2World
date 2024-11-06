@@ -23,7 +23,7 @@ import java.util.*;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.JTSBufferUtil;
 import org.osm2world.core.math.shapes.*;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.ExtrudeOption;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.util.enums.LeftRightBoth;
@@ -246,7 +246,7 @@ public class GeometryWindow implements Window {
 	}
 
 	@Override
-	public void renderTo(Target target, WallSurface surface) {
+	public void renderTo(CommonTarget target, WallSurface surface) {
 
 		VectorXYZ windowNormal = surface.normalAt(outline().getCentroid());
 

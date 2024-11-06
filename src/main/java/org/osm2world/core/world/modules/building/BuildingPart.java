@@ -28,12 +28,11 @@ import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.Target;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.LegacyWorldObject;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WaySegmentWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
@@ -47,7 +46,7 @@ import org.osm2world.core.world.modules.building.roof.Roof;
  * Consists of {@link Wall}s, a {@link Roof}, and maybe a {@link Floor}.
  * This is the core class of the {@link BuildingModule}.
  */
-public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
+public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	static final double DEFAULT_RIDGE_HEIGHT = 5;
 
@@ -434,7 +433,7 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 	}
 
 	@Override
-	public void renderTo(Target target) {
+	public void buildMeshesAndModels(Target target) {
 
 		if (walls == null) {
 			// the reason why this is called here rather than the constructor is tunnel=building_passage:
@@ -456,7 +455,7 @@ public class BuildingPart implements AreaWorldObject, LegacyWorldObject {
 		floors.forEach(f -> f.renderTo(target));
 
 		if (buildingPartInterior != null){
-			buildingPartInterior.renderTo(target);
+			buildingPartInterior.buildMeshesAndModels(target);
 		}
 
 	}

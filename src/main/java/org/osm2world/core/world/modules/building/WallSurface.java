@@ -27,7 +27,7 @@ import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.material.TextureLayer;
@@ -160,7 +160,7 @@ public class WallSurface {
 	 * @param windowHeight  the height for window textures will be replaced with this value if it's non-null
 	 * @param renderElements  whether the {@link WallElement}s inserted into this surface should also be rendered
 	 */
-	public void renderTo(Target target, VectorXZ textureOrigin,
+	public void renderTo(CommonTarget target, VectorXZ textureOrigin,
 			boolean applyWindowTexture, Double windowHeight, boolean renderElements) {
 
 		/* render the elements on the wall */

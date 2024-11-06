@@ -14,7 +14,7 @@ import java.util.List;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
@@ -55,7 +55,7 @@ public class Ceiling {
 
     }
 
-    public void renderTo(Target target) {
+    public void renderTo(CommonTarget target) {
 
         if (render && polygon != null) {
 
@@ -71,7 +71,7 @@ public class Ceiling {
         }
     }
 
-    private void renderSurface(Target target, double floorEle){
+    private void renderSurface(CommonTarget target, double floorEle){
         Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
         List<TriangleXYZ> trianglesXYZ = triangles.stream()
@@ -82,7 +82,7 @@ public class Ceiling {
                 triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
     }
 
-    private void renderSides(Target target, List<ShapeXZ> sides, double floorEle) {
+    private void renderSides(CommonTarget target, List<ShapeXZ> sides, double floorEle) {
         VectorXYZ bottom = new VectorXYZ(0, floorEle - 0.2, 0);
         VectorXYZ top = new VectorXYZ(0, floorEle, 0);
 

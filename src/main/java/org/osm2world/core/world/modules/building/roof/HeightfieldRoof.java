@@ -20,7 +20,7 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.JTSTriangulationUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
-import org.osm2world.core.target.Target;
+import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -120,7 +120,7 @@ abstract public class HeightfieldRoof extends Roof {
 	}
 
 	@Override
-	public void renderTo(Target target, double baseEle) {
+	public void renderTo(CommonTarget target, double baseEle) {
 
 		/* subtract attached rooftop areas (parking, helipads, pools, etc.) from the roof polygon */
 
