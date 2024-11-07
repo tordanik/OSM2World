@@ -676,9 +676,10 @@ public class TrafficSignModule extends AbstractModule {
 		}
 
 		//get the rendered segment's width
-		Road r = (Road) segment.getPrimaryRepresentation();
-
-		double roadWidth = r.getWidth();
+		double roadWidth = 2;
+		if (segment.getPrimaryRepresentation() instanceof Road r) {
+			roadWidth = r.getWidth();
+		}
 
 		//rightNormal() vector will always be orthogonal to the segment, no matter its direction,
 		//so we use that to place the signs to the left/right of the way
