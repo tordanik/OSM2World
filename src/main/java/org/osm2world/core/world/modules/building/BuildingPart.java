@@ -4,6 +4,8 @@ import static com.google.common.collect.Iterables.getLast;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.osm2world.core.math.SimplePolygonXZ.asSimplePolygon;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD3;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.LOD4;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
@@ -30,6 +32,7 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
 import org.osm2world.core.world.data.ProceduralWorldObject;
@@ -49,6 +52,7 @@ import org.osm2world.core.world.modules.building.roof.Roof;
 public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	static final double DEFAULT_RIDGE_HEIGHT = 5;
+	static final LevelOfDetail INDOOR_MIN_LOD = LOD3;
 
 	final Building building;
 	final MapArea area;
@@ -454,7 +458,9 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 		floors.forEach(f -> f.renderTo(target));
 
-		if (buildingPartInterior != null){
+		target.setCurrentLodRange(INDOOR_MIN_LOD, LOD4);
+
+		if (buildingPartInterior != null) {
 			buildingPartInterior.buildMeshesAndModels(target);
 		}
 

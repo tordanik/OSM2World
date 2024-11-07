@@ -30,8 +30,16 @@ public interface ProceduralWorldObject extends WorldObject {
 		private @Nullable LODRange currentLodRange = null;
 		private List<String> currentAttachmentTypes = List.of();
 
+		public @Nullable LODRange getCurrentLodRange() {
+			return currentLodRange;
+		}
+
+		public void setCurrentLodRange(@Nullable LODRange lodRange) {
+			this.currentLodRange = lodRange;
+		}
+
 		public void setCurrentLodRange(LevelOfDetail minLod, LevelOfDetail maxLod) {
-			this.currentLodRange = new LODRange(minLod, maxLod);
+			this.setCurrentLodRange(new LODRange(minLod, maxLod));
 		}
 
 		public void setCurrentAttachmentTypes(String... attachmentTypes) {

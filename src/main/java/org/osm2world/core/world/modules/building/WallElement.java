@@ -2,6 +2,7 @@ package org.osm2world.core.world.modules.building;
 
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.target.CommonTarget;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 
 /**
  * something that can be placed into a wall, such as a window or door
