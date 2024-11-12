@@ -266,13 +266,18 @@ public class GeometryWindow implements Window {
 
 		if (transparent) {
 			LODRange previousLodRange = null;
+			boolean skip = false;
 			if (target instanceof ProceduralWorldObject.Target t) {
 				previousLodRange = t.getCurrentLodRange();
-				t.setCurrentLodRange(BuildingPart.INDOOR_MIN_LOD, LOD4);
+				// intersect with previousLodRange to avoid loosening LOD, e.g. if GeometryWindow is only used at LOD4
+				var lodRange = LODRange.intersection(previousLodRange, new LODRange(BuildingPart.INDOOR_MIN_LOD, LOD4));
+				t.setCurrentLodRange(lodRange);
+				skip = (lodRange == null);
 			}
-			// TODO: intersect previous lod range with target to avoid loosening LOD, e.g. if GeometryWindow is only used at LOD4
-			target.drawTriangles(params.transparentWindowMaterial, paneTriangles,
-					triangleTexCoordLists(paneTriangles, params.transparentWindowMaterial, surface::texCoordFunction));
+			if (!skip) {
+				target.drawTriangles(params.transparentWindowMaterial, paneTriangles,
+						triangleTexCoordLists(paneTriangles, params.transparentWindowMaterial, surface::texCoordFunction));
+			}
 			if (target instanceof ProceduralWorldObject.Target t) {
 				t.setCurrentLodRange(LOD0, BuildingPart.INDOOR_MIN_LOD);
 				t.drawTriangles(params.opaqueWindowMaterial, paneTriangles,
