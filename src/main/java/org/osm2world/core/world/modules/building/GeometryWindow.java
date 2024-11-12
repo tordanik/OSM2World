@@ -217,7 +217,7 @@ public class GeometryWindow implements Window {
 
 		if (regionBorderSegment == null) {
 			minAngle = Angle.ofDegrees(0);
-			step = Angle.ofDegrees(360 / panesHorizontal);
+			step = Angle.ofDegrees(360.0 / panesHorizontal);
 		} else {
 			// TODO: to support other regions than TOP, use regionBorderSegment's direction
 			minAngle = Angle.ofDegrees(270);
