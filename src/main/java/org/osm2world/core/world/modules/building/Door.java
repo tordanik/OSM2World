@@ -10,6 +10,7 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLis
 import java.util.List;
 
 import org.osm2world.core.conversion.ConversionLog;
+import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.math.PolygonXYZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -100,6 +101,10 @@ public class Door implements WallElement {
 
 		}
 
+	}
+
+	public static boolean isDoorNode(MapNode n) {
+		return n.getTags().containsKey("entrance") || n.getTags().containsKey("door");
 	}
 
 }
