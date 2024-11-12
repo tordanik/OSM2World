@@ -294,7 +294,10 @@ public class Wall {
 
 			if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
 				if (!buildingPart.area.getBoundaryNodes().stream().anyMatch(Door::isDoorNode)) {
-					placeDefaultGarageDoors(mainSurface);
+					if (points.getLength() > buildingPart.area.getOuterPolygon().getOutlineLength() / 8) {
+						// not the narrow side of a long building with several garages
+						placeDefaultGarageDoors(mainSurface);
+					}
 				}
 			}
 
