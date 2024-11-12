@@ -165,18 +165,8 @@ public class Building implements AreaWorldObject, ProceduralWorldObject {
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getRawGroundFootprint(){
-		Collection<PolygonShapeXZ> shapes = new ArrayList<>();
-
-		for (BuildingPart part : parts) {
-
-			if (part.levelStructure.bottomHeight() <= 0 && part.getIndoor() != null) {
-				shapes.add(part.getPolygon());
-			}
-
-		}
-
-		return shapes;
+	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		return List.of(); // BuildingParts return their own footprint if necessary
 	}
 
 	@Override

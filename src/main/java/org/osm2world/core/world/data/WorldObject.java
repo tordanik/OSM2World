@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_data.data.overlaps.MapOverlapType;
 import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
@@ -175,12 +174,6 @@ public interface WorldObject {
 				boolean bothOnGround = this.getGroundState() == ON && otherWO.getGroundState() == ON;
 
 				if (bothOnGround && otherWO.getOverlapPriority() > this.getOverlapPriority()) {
-
-					if (overlap.type == MapOverlapType.CONTAIN
-							&& overlap.e1 == getPrimaryMapElement()) {
-						// completely within other element, no ground area left
-						return emptyList();
-					}
 
 					try {
 						subtractPolys.addAll(otherWO.getRawGroundFootprint());

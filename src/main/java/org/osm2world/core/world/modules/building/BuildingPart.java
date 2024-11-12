@@ -497,6 +497,15 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		return polygon;
 	}
 
+	@Override
+	public Collection<PolygonShapeXZ> getRawGroundFootprint(){
+		if (levelStructure.bottomHeight() <= 0 && getIndoor() != null) {
+			return List.of(getPolygon());
+		} else {
+			return emptyList();
+		}
+	}
+
 	public Roof getRoof() {
 		return roof;
 	}
