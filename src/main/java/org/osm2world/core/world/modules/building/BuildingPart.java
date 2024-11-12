@@ -46,7 +46,7 @@ import org.osm2world.core.world.modules.building.roof.Roof;
 
 /**
  * part of a building, as defined by the Simple 3D Buildings standard.
- * Consists of {@link Wall}s, a {@link Roof}, and maybe a {@link Floor}.
+ * Consists of {@link ExteriorBuildingWall}s, a {@link Roof}, and maybe a {@link BuildingBottom}.
  * This is the core class of the {@link BuildingModule}.
  */
 public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
@@ -67,8 +67,8 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 	Roof roof;
 
-	private List<Wall> walls = null;
-	private List<Floor> floors = null;
+	private List<ExteriorBuildingWall> walls = null;
+	private List<BuildingBottom> bottoms = null;
 
 	private final @Nullable BuildingPartInterior buildingPartInterior;
 
@@ -165,16 +165,16 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 			walls = splitIntoWalls(area, this);
 
 			if (floorHeight > 0) {
-				floors = singletonList(new Floor(this, materialWall, polygon, floorHeight));
+				bottoms = singletonList(new BuildingBottom(this, materialWall, polygon, floorHeight));
 			} else {
-				floors = emptyList();
+				bottoms = emptyList();
 			}
 
 		} else {
 
 			Map<PolygonWithHolesXZ, Double> polygonFloorHeightMap = new HashMap<>();
 
-			/* construct those polygons where the area does not overlap with terrain boundaries */
+			/* construct those polygons where the area does not overlap with the footprint of buildingPassages */
 
 			List<SimplePolygonShapeXZ> subtractPolygons = new ArrayList<>();
 
@@ -268,18 +268,18 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 			/* create the walls and floors */
 
-			floors = new ArrayList<>();
+			bottoms = new ArrayList<>();
 			walls = new ArrayList<>();
 
 			for (PolygonWithHolesXZ polygon : polygonFloorHeightMap.keySet()) {
 
-				floors.add(new Floor(this, materialWall, polygon, polygonFloorHeightMap.get(polygon)));
+				bottoms.add(new BuildingBottom(this, materialWall, polygon, polygonFloorHeightMap.get(polygon)));
 
 				for (SimplePolygonXZ ring : polygon.getRings()) {
 					ring = polygon.getOuter().equals(ring) ? ring.makeCounterclockwise() : ring.makeClockwise();
 					ring = ring.getSimplifiedPolygon();
 					for (int i = 0; i < ring.size(); i++) {
-						walls.add(new Wall(null, this,
+						walls.add(new ExteriorBuildingWall(null, this,
 								asList(ring.getVertex(i), ring.getVertexAfter(i)),
 								emptyMap(),
 								polygonFloorHeightMap.get(polygon)));
@@ -340,9 +340,9 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 	 * @return list of walls, each represented as a list of nodes.
 	 *   The list of nodes is ordered such that the building part's outside is to the right.
 	 */
-	static List<Wall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
+	static List<ExteriorBuildingWall> splitIntoWalls(MapArea buildingPartArea, BuildingPart buildingPart) {
 
-		List<Wall> result = new ArrayList<>();
+		List<ExteriorBuildingWall> result = new ArrayList<>();
 
 		for (List<MapNode> nodeRing : buildingPartArea.getRings()) {
 
@@ -420,7 +420,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 							}
 						}
 
-						result.add(new Wall(wallWay, buildingPart, currentWallNodes));
+						result.add(new ExteriorBuildingWall(wallWay, buildingPart, currentWallNodes));
 
 					}
 					currentWallNodes = new ArrayList<>();
@@ -456,7 +456,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 
 		// TODO don't render floors inside building
 
-		floors.forEach(f -> f.renderTo(target));
+		bottoms.forEach(f -> f.renderTo(target));
 
 		target.setCurrentLodRange(INDOOR_MIN_LOD, LOD4);
 
@@ -486,7 +486,7 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		surfaces.addAll(roof.getAttachmentSurfaces(
 				building.getGroundLevelEle() + levelStructure.heightWithoutRoof(), roofAttachmentLevel));
 
-		for (Wall wall : walls) {
+		for (ExteriorBuildingWall wall : walls) {
 			surfaces.addAll(wall.getAttachmentSurfaces());
 		}
 

@@ -1,7 +1,8 @@
 package org.osm2world.core.world.modules.building;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class BuildingPartTest {
 
 		/* test the basic case */
 
-		List<Wall> result = BuildingPart.splitIntoWalls(buildingPartArea, null);
+		List<ExteriorBuildingWall> result = BuildingPart.splitIntoWalls(buildingPartArea, null);
 
 		assertEquals(4, result.size());
 

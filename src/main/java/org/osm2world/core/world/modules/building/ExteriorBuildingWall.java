@@ -41,7 +41,10 @@ import org.osm2world.core.world.modules.building.indoor.IndoorRoom;
 
 import com.google.common.collect.Streams;
 
-public class Wall {
+/**
+ * an outer wall of a {@link BuildingPart}
+ */
+public class ExteriorBuildingWall {
 
 	final @Nullable MapWay wallWay;
 
@@ -58,7 +61,7 @@ public class Wall {
 	/** the tags for this part, including tags inherited from {@link #buildingPart} and its {@link Building} */
 	private final TagSet tags;
 
-	public Wall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<VectorXZ> points,
+	public ExteriorBuildingWall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<VectorXZ> points,
 			Map<VectorXZ, MapNode> pointNodeMap, double floorHeight) {
 
 		this.wallWay = wallWay;
@@ -77,7 +80,7 @@ public class Wall {
 
 	}
 
-	public Wall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<MapNode> nodes) {
+	public ExteriorBuildingWall(@Nullable MapWay wallWay, BuildingPart buildingPart, List<MapNode> nodes) {
 		this(wallWay, buildingPart,
 				nodes.stream().map(MapNode::getPos).collect(toList()),
 				nodes.stream().collect(toMap(MapNode::getPos, n -> n)),

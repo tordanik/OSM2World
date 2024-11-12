@@ -915,7 +915,7 @@ public class IndoorWall implements Renderable {
 								if (node.getTags().containsKey("window")
 										&& !node.getTags().contains("window", "no")) {
 
-									boolean transparent = Wall.determineWindowTransparency(node, level);
+									boolean transparent = ExteriorBuildingWall.determineWindowTransparency(node, level);
 
 									TagSet windowTags = inheritTags(node.getTags(), data.getTags());
 									WindowParameters params = new WindowParameters(windowTags, data.getBuildingPart().levelStructure.level(level).height);

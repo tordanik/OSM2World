@@ -15,14 +15,15 @@ import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 
-class Floor implements Renderable {
+/** the underside of a {@link BuildingPart} */
+class BuildingBottom implements Renderable {
 
 	private final BuildingPart buildingPart;
 	private final Material material;
 	private final PolygonWithHolesXZ polygon;
 	private final double floorHeight;
 
-	public Floor(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeight) {
+	public BuildingBottom(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeight) {
 		this.buildingPart = buildingPart;
 		this.material = material;
 		this.polygon = polygon;
