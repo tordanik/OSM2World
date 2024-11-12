@@ -257,8 +257,7 @@ public class Wall implements Renderable {
 							buildingPart.levelStructure.level(level).relativeEle
 									- buildingPart.levelStructure.bottomHeight());
 
-					if ((node.getTags().contains("building", "entrance")
-							|| node.getTags().containsKey("entrance")
+					if ((node.getTags().containsKey("entrance")
 							|| node.getTags().containsKey("door"))) {
 
 						DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
