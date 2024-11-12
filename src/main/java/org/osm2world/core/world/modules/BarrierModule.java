@@ -963,6 +963,11 @@ public class BarrierModule extends AbstractModule {
 			return 0.15;
 		}
 
+		@Override
+		public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+			return emptyList();
+		}
+
 	}
 
 	public static class ChainRow extends PoleFence{
