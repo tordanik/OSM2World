@@ -30,6 +30,7 @@ import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.LODRange;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WorldObject;
@@ -193,8 +194,10 @@ public class Wall {
 
 		for (WindowImplementation windowImplementation : windowImplementations.keySet()) {
 
+			LODRange lodRange = windowImplementations.get(windowImplementation);
+
 			if (target instanceof ProceduralWorldObject.Target pt) {
-				pt.setCurrentLodRange(windowImplementations.get(windowImplementation));
+				pt.setCurrentLodRange(lodRange);
 			}
 
 			/* construct the surface(s) */
@@ -264,6 +267,10 @@ public class Wall {
 							if (Door.isDoorNode(node)) {
 
 								DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
+								if (lodRange.max().ordinal() < 3
+										|| ConfigUtil.readLOD(buildingPart.config).ordinal() < 3) {
+									params = params.withInset(0.0);
+								}
 								mainSurface.addElementIfSpaceFree(new Door(pos, params));
 
 							} else if (node.getTags().containsKey("window")
@@ -283,20 +290,20 @@ public class Wall {
 					}
 				}
 
-				if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
-					if (!buildingPart.area.getBoundaryNodes().stream().anyMatch(Door::isDoorNode)) {
-						placeDefaultGarageDoors(mainSurface);
-					}
+			}
+
+			if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
+				if (!buildingPart.area.getBoundaryNodes().stream().anyMatch(Door::isDoorNode)) {
+					placeDefaultGarageDoors(mainSurface);
 				}
+			}
 
-				/* add windows (after doors, because default windows should be displaced by them) */
+			/* add windows (after doors, because default windows should be displaced by them) */
 
-				if (hasWindows && !individuallyMappedWindows
-						&& (windowImplementation == WindowImplementation.INSET_TEXTURES
-						|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
-					placeDefaultWindows(mainSurface, windowImplementation);
-				}
-
+			if (hasWindows && !individuallyMappedWindows
+					&& (windowImplementation == WindowImplementation.INSET_TEXTURES
+					|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
+				placeDefaultWindows(mainSurface, windowImplementation);
 			}
 
 			/* draw the wall */
@@ -428,13 +435,18 @@ public class Wall {
 	private void placeDefaultGarageDoors(WallSurface surface) {
 
 		TagSet doorTags = TagSet.of("door", "overhead");
+		DoorParameters params = DoorParameters.fromTags(doorTags, this.tags);
 
-		double doorDistance = 1.25 * DoorParameters.fromTags(doorTags, this.tags).width;
+		if (ConfigUtil.readLOD(buildingPart.config).ordinal() < 3) {
+			params = params.withInset(0.0);
+		}
+
+		double doorDistance = 1.25 * params.width;
 		int numDoors = (int) round(surface.getLength() / doorDistance);
 
 		for (int i = 0; i < numDoors; i++) {
 			VectorXZ pos = new VectorXZ(surface.getLength() / numDoors * (i + 0.5), 0);
-			surface.addElementIfSpaceFree(new Door(pos, DoorParameters.fromTags(doorTags, TagSet.of())));
+			surface.addElementIfSpaceFree(new Door(pos, params));
 		}
 
 	}

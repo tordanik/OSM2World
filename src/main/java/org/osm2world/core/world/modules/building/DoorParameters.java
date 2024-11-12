@@ -3,9 +3,10 @@ package org.osm2world.core.world.modules.building;
 import static java.util.Arrays.asList;
 import static org.osm2world.core.util.ValueParseUtil.parseColor;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
-import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.*;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
+import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseWidth;
 
-import java.awt.Color;
+import java.awt.*;
 
 import javax.annotation.Nullable;
 
@@ -24,16 +25,18 @@ public class DoorParameters {
 
 	public final double width;
 	public final double height;
+	public final double inset;
 
 	public final int numberOfWings;
 
 	private DoorParameters(String type, String materialName, Color color,
-			double width, double height, int numberOfWings) {
+			double width, double height, double inset, int numberOfWings) {
 		this.type = type;
 		this.materialName = materialName;
 		this.color = color;
 		this.width = width;
 		this.height = height;
+		this.inset = inset;
 		this.numberOfWings = numberOfWings;
 	}
 
@@ -74,6 +77,7 @@ public class DoorParameters {
 
 		double defaultWidth = 1.0;
 		double defaultHeight = 2.0;
+		double defaultInset = 0.1;
 
 		switch (type) {
 		case "overhead":
@@ -92,8 +96,12 @@ public class DoorParameters {
 
 		/* return the result */
 
-		return new DoorParameters(type, materialName, color, width, height, numberOfWings);
+		return new DoorParameters(type, materialName, color, width, height, defaultInset, numberOfWings);
 
+	}
+
+	public DoorParameters withInset(double inset) {
+		return new DoorParameters(type, materialName, color, width, height, inset, numberOfWings);
 	}
 
 }

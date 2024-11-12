@@ -44,7 +44,7 @@ public class Door implements WallElement {
 
 	@Override
 	public double insetDistance() {
-		return 0.10;
+		return parameters.inset;
 	}
 
 	@Override
