@@ -355,7 +355,7 @@ public final class JOGLTargetFixedFunction extends AbstractJOGLTarget implements
 		}
 
 		//TODO: glMaterialfv could be redundant if color was used for ambient and diffuse
-		gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue());
+		gl.glColor3f(c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f);
 
 		gl.glMaterialfv(GL_FRONT, GL_AMBIENT,
 				getFloatBuffer(multiplyColor(c, AMBIENT_FACTOR)));
