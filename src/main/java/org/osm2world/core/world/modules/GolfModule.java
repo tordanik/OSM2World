@@ -10,6 +10,7 @@ import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulate;
 import static org.osm2world.core.math.algorithms.TriangulationUtil.triangulationXZtoXYZ;
 import static org.osm2world.core.target.common.material.Materials.PLASTIC;
 import static org.osm2world.core.target.common.material.Materials.SAND;
+import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.STRIP_WALL;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
@@ -113,11 +114,21 @@ public class GolfModule extends AbstractModule {
 		@Override
 		public void buildMeshesAndModels(Target target) {
 
+			/* triangulate the bunker's area normally at low LOD */
+
+			target.setCurrentLodRange(LOD0, LOD1);
+
+			List<TriangleXYZ> basicTriangulation = getTriangulation();
+			target.drawTriangles(SAND, basicTriangulation,
+					triangleTexCoordLists(basicTriangulation, SAND, GLOBAL_X_Z));
+
 			/* draw the bunker as a depression by shrinking the outline polygon and lowering it at each step.
 			 *
 			 * The first step gets special handling and is primarily intended for bunkers in uneven terrain.
 			 * It involves an almost vertical drop towards the lowest point of the bunker outline
 			 * that is textured with ground, not sand. */
+
+			target.setCurrentLodRange(LOD2, LOD4);
 
 			List<TriangleXYZ> resultingTriangulation = new ArrayList<>();
 
@@ -278,6 +289,8 @@ public class GolfModule extends AbstractModule {
 					triangleTexCoordLists(triangles , material, GLOBAL_X_Z));
 
 			/* render pin */
+
+			target.setCurrentLodRange(LOD3, LOD4);
 
 			PolygonXYZ upperHoleRing = pinConnectors.getPosXYZ(pinHoleLoop);
 
