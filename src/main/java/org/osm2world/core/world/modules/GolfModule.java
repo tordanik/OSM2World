@@ -309,7 +309,7 @@ public class GolfModule extends AbstractModule {
 					texCoordLists(vs, groundMaterial, STRIP_WALL));
 
 			target.drawConvexPolygon(groundMaterial, lowerHoleRing,
-					texCoordLists(vs, groundMaterial, GLOBAL_X_Z));
+					texCoordLists(lowerHoleRing, groundMaterial, GLOBAL_X_Z));
 
 			/* draw pole and flag */
 

@@ -94,6 +94,9 @@ public interface CommonTarget {
 								   @Nonnull List<List<VectorXZ>> texCoordLists) {
 		if (Objects.equals(vs.get(0), vs.get(vs.size() - 1))) {
 			vs = vs.subList(0, vs.size() - 1);
+			texCoordLists = texCoordLists.stream()
+					.map(tcl -> tcl.subList(0, tcl.size() - 1))
+					.toList();
 		}
 		drawTriangleFan(material, vs, texCoordLists);
 	}
