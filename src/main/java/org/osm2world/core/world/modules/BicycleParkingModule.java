@@ -139,11 +139,11 @@ public class BicycleParkingModule extends AbstractModule {
 						: equallyDistributePointsAlong(distanceBetweenStands, true,listXYZ(centerline.vertices(), 0));
 
 				for (VectorXYZ standLocation : standLocations) {
-					if (area() == null || area().stream().anyMatch(it -> it.contains(standLocation.xz()))) {
-						EleConnector connector = new EleConnector(standLocation.xz(), null, getGroundState());
-						standEleConnectors.add(connector);
-						eleConnectors.add(connector);
-					}
+					// no longer check for overlaps: would prevent stands without surface=* even on empty terrain, and any stands on sidewalks etc.
+					// if (area() == null || area().stream().anyMatch(it -> it.contains(standLocation.xz()))) {
+					EleConnector connector = new EleConnector(standLocation.xz(), null, getGroundState());
+					standEleConnectors.add(connector);
+					eleConnectors.add(connector);
 				}
 			}
 
