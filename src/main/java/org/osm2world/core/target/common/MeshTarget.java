@@ -264,10 +264,7 @@ public class MeshTarget extends AbstractTarget {
 				if (mesh.geometry instanceof TriangleGeometry tg) {
 
 					List<Color> colors = (tg.colors != null) ? tg.colors
-							: new ArrayList<>(nCopies(tg.vertices().size(), WHITE));
-					for (int i = 0; i < colors.size(); i++) {
-						colors.set(i, LColor.fromAWT(colors.get(i)).multiply(mesh.material.getLColor()).toAWT());
-					}
+							: nCopies(tg.vertices().size(), mesh.material.getColor());
 
 					TriangleGeometry.Builder builder = new TriangleGeometry.Builder(tg.texCoords.size(), null, null);
 					builder.addTriangles(tg.triangles, tg.texCoords, colors, tg.normalData.normals());
