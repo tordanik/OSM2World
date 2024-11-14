@@ -6,10 +6,7 @@ import static org.osm2world.core.target.common.material.Materials.TREE_TRUNK;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,14 +14,11 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.map_elevation.creation.EleConstraintEnforcer;
 import org.osm2world.core.map_elevation.data.EleConnector;
 import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.GeometryUtil;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.ExtrusionGeometry;
@@ -193,22 +187,22 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private void renderTreeModel(CommonTarget target, MapElement element, VectorXYZ base,
-			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
+	/**
+	 * retrieves a suitable {@link TreeModel} from {@link #existingModels}, or creates it if necessary
+	 *
+	 * @param seed  an object to be used as the seed for random decisions
+	 */
+	private TreeModel getTreeModel(VectorXYZ seed, LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
-		// "random" decision to flip the tree texture based on z coord
-		boolean mirrored = (long)(base.getZ() * 1000) % 2 == 0;
+		var r = new Random((long)(seed.getX() * 10) + (long)(seed.getZ() * 10000));
 
-		// if leaf type is unknown, make another "random" decision based on x coord
+		// "random" decision to flip the tree texture
+		boolean mirrored = r.nextBoolean();
+
+		// if leaf type is unknown, make another random decision
 		if (leafType == null) {
-			if ((long)(base.getX() * 1000) % 2 == 0) {
-				leafType = LeafType.NEEDLELEAVED;
-			} else {
-				leafType = LeafType.BROADLEAVED;
-			}
+			leafType = r.nextBoolean() ? LeafType.NEEDLELEAVED : LeafType.BROADLEAVED;
 		}
-
-		double height = getTreeHeight(element, leafType == LeafType.NEEDLELEAVED, species != null);
 
 		TreeModel model = null;
 
@@ -230,8 +224,7 @@ public class TreeModule extends ConfigurableWorldModule {
 			existingModels.add(model);
 		}
 
-		target.drawModel(new ModelInstance(model,
-				new InstanceParameters(base, 0, height)));
+		return model;
 
 	}
 
@@ -308,7 +301,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private final List<TreeModel> existingModels = new ArrayList<>();
 
-	public class Tree extends NoOutlineNodeWorldObject implements LegacyWorldObject {
+	public class Tree extends NoOutlineNodeWorldObject implements ProceduralWorldObject {
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -342,13 +335,15 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void renderTo(CommonTarget target) {
-			renderTreeModel(target, node, getBase(), leafType, leafCycle, species);
+		public void buildMeshesAndModels(Target target) {
+			TreeModel treeModel = getTreeModel(getBase(), leafType, leafCycle, species);
+			double height = getTreeHeight(node, leafType == LeafType.NEEDLELEAVED, species != null);
+			target.addSubModel(new ModelInstance(treeModel, new InstanceParameters(getBase(), 0, height)));
 		}
 
 	}
 
-	public class TreeRow implements WaySegmentWorldObject, LegacyWorldObject {
+	public class TreeRow implements WaySegmentWorldObject, ProceduralWorldObject {
 
 		private final MapWaySegment segment;
 
@@ -413,25 +408,18 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 
 		@Override
-		public void renderTo(CommonTarget target) {
+		public void buildMeshesAndModels(Target target) {
 
 			for (EleConnector treeConnector : treeConnectors) {
-
-				renderTreeModel(target, segment, treeConnector.getPosXYZ(),
-						leafType, leafCycle, species);
-
-				if (target instanceof FaceTarget ft) {
-					ft.flushReconstructedFaces();
-				}
-
+				VectorXYZ pos = treeConnector.getPosXYZ();
+				TreeModel treeModel = getTreeModel(pos, leafType, leafCycle, species);
+				double height = getTreeHeight(segment, leafType == LeafType.NEEDLELEAVED, species != null);
+				target.addSubModel(new ModelInstance(treeModel, new InstanceParameters(pos, 0, height)));
 			}
 
 		}
@@ -441,7 +429,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 
 
-	public class Forest implements AreaWorldObject, LegacyWorldObject {
+	public class Forest implements AreaWorldObject, ProceduralWorldObject {
 
 		private final MapArea area;
 		private final MapData mapData;
@@ -512,25 +500,18 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void defineEleConstraints(EleConstraintEnforcer enforcer) {}
-
-		@Override
 		public GroundState getGroundState() {
 			return GroundState.ON;
 		}
 
 		@Override
-		public void renderTo(CommonTarget target) {
+		public void buildMeshesAndModels(Target target) {
 
 			for (EleConnector treeConnector : treeConnectors) {
-
-				renderTreeModel(target, area, treeConnector.getPosXYZ(),
-							leafType, leafCycle, species);
-
-				if (target instanceof FaceTarget ft) {
-					ft.flushReconstructedFaces();
-				}
-
+				VectorXYZ pos = treeConnector.getPosXYZ();
+				TreeModel treeModel = getTreeModel(pos, leafType, leafCycle, species);
+				double height = getTreeHeight(area, leafType == LeafType.NEEDLELEAVED, species != null);
+				target.addSubModel(new ModelInstance(treeModel, new InstanceParameters(pos, 0, height)));
 			}
 
 		}
