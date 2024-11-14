@@ -7,13 +7,11 @@ import java.util.Locale;
 
 import org.osm2world.core.GlobalValues;
 import org.osm2world.core.map_data.data.MapData;
-import org.osm2world.core.map_data.data.MapElement;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.common.lighting.GlobalLightingParameters;
 import org.osm2world.core.target.common.rendering.Camera;
 import org.osm2world.core.target.common.rendering.Projection;
-import org.osm2world.core.world.data.WorldObject;
 
 /**
  * utility class for creating a POVRay file
@@ -69,14 +67,6 @@ public final class POVRayWriter {
 		target.append("sky_sphere {sky_sphere_def}\n\n");
 
 		target.appendMaterialDefinitions();
-
-		for (MapElement element : mapData.getMapElements()) {
-			for (WorldObject r : element.getRepresentations()) {
-				if (r instanceof RenderableToPOVRay) {
-					((RenderableToPOVRay)r).addDeclarationsTo(target);
-				}
-			}
-		}
 
 		//TODO get terrain boundary elsewhere
 //		if (terrain != null) {

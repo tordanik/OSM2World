@@ -32,8 +32,6 @@ import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.InstanceParameters;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
-import org.osm2world.core.target.povray.POVRayTarget;
-import org.osm2world.core.target.povray.RenderableToPOVRay;
 import org.osm2world.core.world.data.*;
 import org.osm2world.core.world.modules.common.ConfigurableWorldModule;
 import org.osm2world.core.world.modules.common.WorldModuleBillboardUtil;
@@ -195,56 +193,6 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	}
 
-	private POVRayTarget previousDeclarationTarget = null;
-
-	private void addTreeDeclarationsTo(POVRayTarget target) {
-		if (target != previousDeclarationTarget) {
-
-			//TODO support any combination of leaf type and leaf cycle
-
-			previousDeclarationTarget = target;
-
-			target.append("#ifndef (broad_leaved_tree)\n");
-			target.append("#declare broad_leaved_tree = object { union {\n");
-			target.drawModel(new ModelInstance(new TreeGeometryModel(LeafType.BROADLEAVED, LeafCycle.DECIDUOUS, null),
-					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0)));
-			target.append("} }\n#end\n\n");
-
-			target.append("#ifndef (coniferous_tree)\n");
-			target.append("#declare coniferous_tree = object { union {\n");
-			target.drawModel(new ModelInstance(new TreeGeometryModel(LeafType.NEEDLELEAVED, LeafCycle.EVERGREEN, null),
-					new InstanceParameters(VectorXYZ.NULL_VECTOR, 0, 1.0)));
-			target.append("} }\n#end\n\n");
-
-		}
-	}
-
-	private void renderTreePovrayModel(POVRayTarget target, MapElement element, VectorXYZ pos,
-			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
-
-		boolean isConiferousTree = (leafType == LeafType.NEEDLELEAVED);
-
-		double height = getTreeHeight(element, isConiferousTree, false);
-
-		//rotate randomly for variation
-		float yRotation = (float) Math.random() * 360;
-
-		//add union of stem and leaves
-		if (isConiferousTree) {
-			target.append("object { coniferous_tree rotate ");
-		} else {
-			target.append("object { broad_leaved_tree rotate ");
-		}
-
-		target.append(Float.toString(yRotation));
-		target.append("*y scale ");
-		target.append(height);
-		target.append(" translate ");
-		target.appendVector(pos.x, 0, pos.z);
-		target.append(" }\n");
-
-	}
-
 	private void renderTreeModel(CommonTarget target, MapElement element, VectorXYZ base,
 			LeafType leafType, LeafCycle leafCycle, TreeSpecies species) {
 
@@ -360,7 +308,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 	private final List<TreeModel> existingModels = new ArrayList<>();
 
-	public class Tree extends NoOutlineNodeWorldObject implements RenderableToPOVRay, LegacyWorldObject {
+	public class Tree extends NoOutlineNodeWorldObject implements LegacyWorldObject {
 
 		private final LeafType leafType;
 		private final LeafCycle leafCycle;
@@ -395,21 +343,12 @@ public class TreeModule extends ConfigurableWorldModule {
 
 		@Override
 		public void renderTo(CommonTarget target) {
-			if (target instanceof POVRayTarget) {
-				renderTreePovrayModel((POVRayTarget)target, node, getBase(), leafType, leafCycle, species);
-			} else {
-				renderTreeModel(target, node, getBase(), leafType, leafCycle, species);
-			}
-		}
-
-		@Override
-		public void addDeclarationsTo(POVRayTarget target) {
-			addTreeDeclarationsTo(target);
+			renderTreeModel(target, node, getBase(), leafType, leafCycle, species);
 		}
 
 	}
 
-	public class TreeRow implements WaySegmentWorldObject, RenderableToPOVRay, LegacyWorldObject {
+	public class TreeRow implements WaySegmentWorldObject, LegacyWorldObject {
 
 		private final MapWaySegment segment;
 
@@ -482,25 +421,15 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void addDeclarationsTo(POVRayTarget target) {
-			addTreeDeclarationsTo(target);
-		}
-
-		@Override
 		public void renderTo(CommonTarget target) {
 
 			for (EleConnector treeConnector : treeConnectors) {
 
-				if (target instanceof POVRayTarget) {
-					renderTreePovrayModel((POVRayTarget)target, segment, treeConnector.getPosXYZ(),
-							leafType, leafCycle, species);
-				} else {
-					renderTreeModel(target, segment, treeConnector.getPosXYZ(),
-							leafType, leafCycle, species);
-				}
+				renderTreeModel(target, segment, treeConnector.getPosXYZ(),
+						leafType, leafCycle, species);
 
-				if (target instanceof FaceTarget) {
-					((FaceTarget)target).flushReconstructedFaces();
+				if (target instanceof FaceTarget ft) {
+					ft.flushReconstructedFaces();
 				}
 
 			}
@@ -512,7 +441,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 
 
-	public class Forest implements AreaWorldObject, RenderableToPOVRay, LegacyWorldObject {
+	public class Forest implements AreaWorldObject, LegacyWorldObject {
 
 		private final MapArea area;
 		private final MapData mapData;
@@ -591,25 +520,15 @@ public class TreeModule extends ConfigurableWorldModule {
 		}
 
 		@Override
-		public void addDeclarationsTo(POVRayTarget target) {
-			addTreeDeclarationsTo(target);
-		}
-
-		@Override
 		public void renderTo(CommonTarget target) {
 
 			for (EleConnector treeConnector : treeConnectors) {
 
-				if (target instanceof POVRayTarget) {
-					renderTreePovrayModel((POVRayTarget)target, area, treeConnector.getPosXYZ(),
+				renderTreeModel(target, area, treeConnector.getPosXYZ(),
 							leafType, leafCycle, species);
-				} else {
-					renderTreeModel(target, area, treeConnector.getPosXYZ(),
-							leafType, leafCycle, species);
-				}
 
-				if (target instanceof FaceTarget) {
-					((FaceTarget)target).flushReconstructedFaces();
+				if (target instanceof FaceTarget ft) {
+					ft.flushReconstructedFaces();
 				}
 
 			}
