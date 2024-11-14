@@ -51,8 +51,7 @@ public class TextureAtlas extends RuntimeTexture {
 	@Override
 	protected BufferedImage createBufferedImage() {
 
-		BufferedImage result = new BufferedImage(numTexturesX * TEXTURE_RESOLUTION.width,
-				numTexturesZ * TEXTURE_RESOLUTION.height, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage result = new BufferedImage(getResolution().width, getResolution().height, BufferedImage.TYPE_INT_ARGB);
 
 		Graphics2D g2d = result.createGraphics();
 
@@ -96,6 +95,16 @@ public class TextureAtlas extends RuntimeTexture {
 				slotX / (double) numTexturesX + texCoord.x / numTexturesX,
 				(numTexturesZ - 1 - slotZ) / (double) numTexturesZ + texCoord.z / numTexturesZ); // lower left origin
 
+	}
+
+	private Resolution getResolution() {
+		return new Resolution(numTexturesX * TEXTURE_RESOLUTION.width,
+				numTexturesZ * TEXTURE_RESOLUTION.height);
+	}
+
+	@Override
+	public float getAspectRatio() {
+		return getResolution().getAspectRatio();
 	}
 
 	@Override

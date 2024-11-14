@@ -9,6 +9,7 @@ import org.osm2world.core.util.Resolution;
 public final class BlankTexture extends RuntimeTexture {
 
 	public static final BlankTexture INSTANCE = new BlankTexture();
+	private static final Resolution RESOLUTION = new Resolution(128, 128);
 
 	private BlankTexture(TextureDataDimensions dimensions) {
 		super(dimensions, Wrap.REPEAT, NamedTexCoordFunction.GLOBAL_X_Z);
@@ -25,7 +26,12 @@ public final class BlankTexture extends RuntimeTexture {
 
 	@Override
 	protected BufferedImage createBufferedImage() {
-		return getBufferedImage(new Resolution(128, 128));
+		return getBufferedImage(RESOLUTION);
+	}
+
+	@Override
+	public float getAspectRatio() {
+		return RESOLUTION.getAspectRatio();
 	}
 
 	@Override

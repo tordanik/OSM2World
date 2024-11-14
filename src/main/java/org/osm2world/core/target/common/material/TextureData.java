@@ -176,6 +176,11 @@ public abstract class TextureData {
 		writeRasterImageToStream(stream, 0.75f);
 	}
 
+	/** returns this texture's aspect ratio (same definition as {@link Resolution#getAspectRatio()}) */
+	public float getAspectRatio() {
+		return Resolution.of(getBufferedImage()).getAspectRatio();
+	}
+
 	/** averages the color values (in linear color space) */
 	public LColor getAverageColor() {
 
