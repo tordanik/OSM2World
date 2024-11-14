@@ -21,7 +21,6 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.statistics.StatisticsTarget;
 import org.osm2world.core.util.functions.CheckedConsumer;
-import org.osm2world.core.world.data.LegacyWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 
 import com.google.gson.JsonIOException;
@@ -85,12 +84,8 @@ public final class TargetUtil {
 	 */
 	public static final void renderObject(Target target, WorldObject object) {
 		target.beginObject(object);
-		if (object instanceof LegacyWorldObject) {
-			((LegacyWorldObject)object).renderTo(target);
-		} else {
-			object.buildMeshes().forEach(target::drawMesh);
-			object.getSubModels().forEach(it -> it.render(target));
-		}
+		object.buildMeshes().forEach(target::drawMesh);
+		object.getSubModels().forEach(it -> it.render(target));
 	}
 
 	public static final List<List<VectorXZ>> flipTexCoordsVertically(List<List<VectorXZ>> texCoordLists) {
