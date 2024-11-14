@@ -12,11 +12,10 @@ import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.TriangleXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 
 /** the underside of a {@link BuildingPart} */
-class BuildingBottom implements Renderable {
+class BuildingBottom {
 
 	private final BuildingPart buildingPart;
 	private final Material material;
@@ -30,7 +29,6 @@ class BuildingBottom implements Renderable {
 		this.floorHeight = floorHeight;
 	}
 
-	@Override
 	public void renderTo(CommonTarget target) {
 
 		double floorEle = buildingPart.building.getGroundLevelEle() + floorHeight - 0.01;

@@ -19,7 +19,6 @@ import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.modules.building.BuildingPart;
@@ -71,8 +70,7 @@ abstract public class Roof {
 	}
 
 	/**
-	 * renders the roof. The same as {@link Renderable#renderTo(CommonTarget)},
-	 * but it also needs the lower elevation of the roof (which is not yet known at construction time).
+	 * renders the roof. Needs the lower elevation of the roof (which is not yet known at construction time).
 	 */
 	public abstract void renderTo(CommonTarget target, double baseEle);
 

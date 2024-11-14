@@ -18,7 +18,6 @@ import org.osm2world.core.math.InvalidGeometryException;
 import org.osm2world.core.math.algorithms.CAGUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.SimplePolygonShapeXZ;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.Model;
 import org.osm2world.core.target.common.model.ModelInstance;
@@ -51,7 +50,7 @@ public interface WorldObject {
 	/**
 	 * returns another world object this is part of, if any (e.g. a room is part of a building).
 	 * Parents are responsible for rendering their children, so only root objects (those returning null here)
-	 * will have their {@link Renderable#renderTo(org.osm2world.core.target.Target)} methods called.
+	 * will have their {@link #buildMeshes()} and {@link #getSubModels()} methods called directly.
 	 */
 	public default @Nullable WorldObject getParent() { return null; }
 

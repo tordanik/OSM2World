@@ -19,7 +19,6 @@ import org.osm2world.core.map_data.data.*;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.CommonTarget;
-import org.osm2world.core.target.Renderable;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -28,7 +27,7 @@ import org.osm2world.core.world.modules.building.roof.Roof;
 
 import com.google.common.collect.Sets;
 
-public class IndoorWall implements Renderable {
+public class IndoorWall {
 
 	private final double straightnessTolerance = 0.001;
 	private final double wallThickness = 0.1;
@@ -961,7 +960,6 @@ public class IndoorWall implements Renderable {
 		}
 	}
 
-    @Override
     public void renderTo(CommonTarget target) {
     	renderTo(target, true, false);
     }
