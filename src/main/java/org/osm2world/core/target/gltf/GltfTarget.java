@@ -389,6 +389,7 @@ public class GltfTarget extends MeshTarget {
 
 		List<MeshProcessingStep> processingSteps = new ArrayList<>(asList(
 				new FilterLod(lod),
+				new ConvertToTriangles(lod),
 				new EmulateTextureLayers(lod.ordinal() <= 1 ? 1 : Integer.MAX_VALUE),
 				new MoveColorsToVertices(), // after EmulateTextureLayers because colorable is per layer
 				new ReplaceTexturesWithAtlas(t -> getResourceOutputSettings().modeForTexture(t) == REFERENCE),

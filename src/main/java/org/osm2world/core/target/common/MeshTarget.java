@@ -78,6 +78,43 @@ public class MeshTarget extends AbstractTarget {
 
 	}
 
+	/** converts all geometry to {@link TriangleGeometry} */
+	public record ConvertToTriangles(double desiredMaxError) implements MeshProcessingStep {
+
+		public ConvertToTriangles {
+			if (!Double.isFinite(desiredMaxError)) {
+				throw new IllegalArgumentException("invalid parameter: " + desiredMaxError);
+			}
+		}
+
+		public ConvertToTriangles(LevelOfDetail lod) {
+			this(switch (lod) {
+				case LOD4 -> 0.01;
+				case LOD3 -> 0.05;
+				case LOD2 -> 0.20;
+				case LOD1 -> 1.0;
+				case LOD0 -> 4.0;
+			});
+		}
+
+		@Override
+		public MeshStore apply(MeshStore meshStore) {
+			return new MeshStore(meshStore.meshesWithMetadata().stream()
+					.map(m -> new MeshWithMetadata(new Mesh(applyToGeometry(m.mesh().geometry),
+							m.mesh().material, m.mesh().lodRange), m.metadata()))
+					.toList());
+		}
+
+		public TriangleGeometry applyToGeometry(Geometry g) {
+			if (g instanceof ExtrusionGeometry eg) {
+				return eg.asTriangles(desiredMaxError);
+			} else {
+				return g.asTriangles();
+			}
+		}
+
+	}
+
 	public static class MergeMeshes implements MeshProcessingStep {
 
 		/** options that alter the behavior away from the default */

@@ -1,8 +1,8 @@
 package org.osm2world.core.target.common.mesh;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.ceil;
+import static java.lang.Math.*;
 import static java.util.Arrays.asList;
+import static java.util.Collections.max;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.triangleVertexListFromTriangleStrip;
@@ -134,6 +134,14 @@ public class ExtrusionGeometry implements Geometry {
 
 	@Override
 	public TriangleGeometry asTriangles() {
+		return asTriangles(0.01);
+	}
+
+	/**
+	 * @param desiredMaxError  when approximating round shapes such as circles for the conversion to triangles,
+	 *                          this controls how coarsely the shape will be approximated
+	 */
+	public TriangleGeometry asTriangles(double desiredMaxError) {
 
 		/* provide defaults for optional parameters */
 
@@ -182,12 +190,11 @@ public class ExtrusionGeometry implements Geometry {
 
 		ShapeXZ shape = this.shape;
 
-		if (shape instanceof CircleXZ) {
+		if (shape instanceof CircleXZ circle) {
 
-			double desiredMinDetail = 0.03;
-			CircleXZ circle = (CircleXZ)shape;
-			double maxCircumference = max(scaleFactors) * 2 * circle.getRadius() * PI;
-			int numPoints = Integer.max(4, (int) ceil(maxCircumference / desiredMinDetail));
+			double maxRadius = max(scaleFactors) * circle.getRadius();
+			double minPointsForError = PI / sqrt (2 * desiredMaxError / maxRadius);
+			int numPoints = Integer.max(4, (int) ceil(minPointsForError));
 
 			if (!options.contains(START_CAP) && !options.contains(END_CAP)) {
 				// if the ends aren't visible, it's a lot easier to fake roundness with smooth shading
@@ -202,14 +209,14 @@ public class ExtrusionGeometry implements Geometry {
 
 		Collection<ShapeXZ> rings = singleton(shape);
 
-		if (shape instanceof ClosedShapeXZ) {
+		if (shape instanceof ClosedShapeXZ closedShape) {
 
 			rings = new ArrayList<>();
-			rings.add(((ClosedShapeXZ) shape).getOuter());
+			rings.add(closedShape.getOuter());
 
-			boolean outerIsClockwise = ((ClosedShapeXZ) shape).getOuter().isClockwise();
+			boolean outerIsClockwise = closedShape.getOuter().isClockwise();
 
-			for (SimpleClosedShapeXZ hole : ((ClosedShapeXZ) shape).getHoles()) {
+			for (SimpleClosedShapeXZ hole : closedShape.getHoles()) {
 				// inner rings need to be the opposite winding compared to the outer ring
 				SimplePolygonXZ inner = asSimplePolygon(hole);
 				inner = outerIsClockwise ? inner.makeCounterclockwise() : inner.makeClockwise();

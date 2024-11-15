@@ -3,6 +3,7 @@ package org.osm2world.core.target;
 import javax.annotation.Nullable;
 
 import org.apache.commons.configuration.Configuration;
+import org.osm2world.core.target.common.MeshTarget;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.mesh.TriangleGeometry;
@@ -32,7 +33,8 @@ public interface Target extends CommonTarget {
 
 	public default void drawMesh(Mesh mesh) {
 		if (mesh.lodRange.contains(getLod())) {
-			TriangleGeometry tg = mesh.geometry.asTriangles();
+			var converter = new MeshTarget.ConvertToTriangles(getLod());
+			TriangleGeometry tg = converter.applyToGeometry(mesh.geometry);
 			drawTriangles(mesh.material, tg.triangles, tg.normalData.normals(), tg.texCoords);
 		}
 	}
