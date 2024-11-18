@@ -248,7 +248,7 @@ public class TreeModule extends ConfigurableWorldModule {
 					&& existingModel.leafCycle() == leafCycle
 					&& existingModel.species() == species
 					&& existingModel.mirrored() == mirrored
-					&& existingModel.dimensions() == dimensions
+					&& Objects.equals(existingModel.dimensions(), dimensions)
 					&& (existingModel instanceof TreeBillboardModel) == useBillboards) {
 				model = existingModel;
 				break;
