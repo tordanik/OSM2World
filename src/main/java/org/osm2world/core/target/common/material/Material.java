@@ -118,6 +118,11 @@ public abstract class Material {
 				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
 	}
 
+	public Material makeDoubleSided() {
+		return new ImmutableMaterial(getInterpolation(), getColor(), true,
+				getTransparency(), getShadow(), getAmbientOcclusion(), getTextureLayers());
+	}
+
 	/**
 	 * returns a material that is like this one,
 	 * except with a different list of {@link TextureLayer}s

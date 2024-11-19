@@ -52,8 +52,6 @@ import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.common.AbstractModule;
 import org.osm2world.core.world.network.AbstractNetworkWaySegmentWorldObject;
 
-import com.google.common.collect.Lists;
-
 /**
  * adds barriers to the world
  */
@@ -804,12 +802,7 @@ public class BarrierModule extends AbstractModule {
 
 			List<VectorXYZ> path = addYList(centerline, this.height - SHAPE_GERMAN_B_HEIGHT);
 
-			//front
-			target.drawExtrudedShape(material, SHAPE_GERMAN_B,
-					path, nCopies(path.size(), Y_UNIT), null, null, null);
-
-			//back
-			target.drawExtrudedShape(material, new PolylineXZ(Lists.reverse(SHAPE_GERMAN_B.vertices())),
+			target.drawExtrudedShape(material.makeDoubleSided(), SHAPE_GERMAN_B,
 					path, nCopies(path.size(), Y_UNIT), null, null, null);
 
 			/* add posts */
