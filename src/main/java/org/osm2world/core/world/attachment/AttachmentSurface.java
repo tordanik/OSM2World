@@ -10,12 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.math.BoundedObject;
-import org.osm2world.core.math.FaceXYZ;
-import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.math.VectorXZ;
+import javax.annotation.Nullable;
+
+import org.osm2world.core.math.*;
 import org.osm2world.core.target.common.FaceTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.mesh.Geometry;
@@ -107,11 +104,23 @@ public class AttachmentSurface implements BoundedObject {
 	}
 
 	public static AttachmentSurface fromMeshes(Collection<String> types, Iterable<Mesh> meshes) {
+		return fromMeshes(types, meshes, null);
+	}
+
+	public static AttachmentSurface fromMeshes(Collection<String> types, Iterable<Mesh> meshes,
+			@Nullable Function<VectorXZ, Double> baseEleFunction) {
+
 		List<FaceXYZ> faces = new ArrayList<>();
 		for (Mesh mesh : meshes) {
 			mesh.geometry.asTriangles().triangles.forEach(t -> faces.add(new FaceXYZ(t.vertices())));
 		}
-		return new AttachmentSurface(types, faces);
+
+		if (baseEleFunction != null) {
+			return new AttachmentSurface(types, faces, baseEleFunction);
+		} else {
+			return new AttachmentSurface(types, faces);
+		}
+
 	}
 
 	public static class Builder extends FaceTarget {

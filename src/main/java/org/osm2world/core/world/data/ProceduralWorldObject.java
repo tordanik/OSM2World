@@ -3,9 +3,11 @@ package org.osm2world.core.world.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.mesh.LODRange;
 import org.osm2world.core.target.common.mesh.LevelOfDetail;
@@ -29,6 +31,7 @@ public interface ProceduralWorldObject extends WorldObject {
 
 		private @Nullable LODRange currentLodRange = null;
 		private List<String> currentAttachmentTypes = List.of();
+		private Function<VectorXZ, Double> currentBaseEleFunction = null;
 
 		public @Nullable LODRange getCurrentLodRange() {
 			return currentLodRange;
@@ -43,6 +46,12 @@ public interface ProceduralWorldObject extends WorldObject {
 		}
 
 		public void setCurrentAttachmentTypes(String... attachmentTypes) {
+			setCurrentAttachmentTypes(null, attachmentTypes);
+		}
+
+		public void setCurrentAttachmentTypes(@Nullable Function<VectorXZ, Double> baseEleFunction,
+				String... attachmentTypes) {
+			this.currentBaseEleFunction = baseEleFunction;
 			this.currentAttachmentTypes = List.of(attachmentTypes);
 		}
 
@@ -56,7 +65,7 @@ public interface ProceduralWorldObject extends WorldObject {
 			}
 
 			if (!currentAttachmentTypes.isEmpty()) {
-				attachmentSurfaces.add(AttachmentSurface.fromMeshes(currentAttachmentTypes, List.of(mesh)));
+				attachmentSurfaces.add(AttachmentSurface.fromMeshes(currentAttachmentTypes, List.of(mesh), currentBaseEleFunction));
 			}
 
 		}
