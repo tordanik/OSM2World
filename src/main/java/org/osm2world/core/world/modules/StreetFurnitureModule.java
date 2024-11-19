@@ -1346,10 +1346,14 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			super(node);
 
-			if (node.getTags().containsKey("support") &&
-					!node.getTags().contains("support", "ground")) {
-				connector = new AttachmentConnector(singletonList(node.getTags().getValue("support")),
+			String support = node.getTags().getValue("support");
+
+			if (support != null && !"ground".equals(support)) {
+				connector = new AttachmentConnector(List.of(support),
 						node.getPos().xyz(0), this, 0.6, true);
+			} else if (node.getTags().containsKey("level")) {
+				connector = new AttachmentConnector(List.of("floor" + node.getTags().getValue("level")),
+						node.getPos().xyz(0), this, 0, false);
 			} else {
 				connector = null;
 			}
@@ -1395,20 +1399,28 @@ public class StreetFurnitureModule extends AbstractModule {
 
 			/* determine position */
 
-			VectorXYZ pos;
+			VectorXYZ pos = getBase();
 			VectorXYZ direction = VectorXZ.fromAngle(parseDirection(node.getTags(), PI)).xyz(0);
+
+			boolean onGround = true;
 
 			if (connector != null && connector.isAttached()) {
 
 				pos = connector.getAttachedPos();
-				direction = connector.getAttachedSurfaceNormal();
 
-			} else {
+				if (!connector.compatibleSurfaceTypes.get(0).startsWith("floor")) {
+					onGround = false;
+					direction = connector.getAttachedSurfaceNormal();
+				}
 
-				pos = getBase().addY(0.6).add(direction.mult(0.05));
+			}
+
+			if (onGround) {
 
 				/* draw pole */
-				target.drawColumn(material, null, getBase(), 1.2, 0.06, 0.06, false, true);
+				target.drawColumn(material, null, pos, 1.2, 0.06, 0.06, false, true);
+
+				pos = pos.addY(0.6).add(direction.mult(0.05));
 
 			}
 
