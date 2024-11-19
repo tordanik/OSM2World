@@ -4,11 +4,13 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import java.awt.*;
+import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_elevation.creation.TerrainElevationData;
+import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
@@ -198,23 +200,21 @@ public abstract class DebugView {
 		} else {
 			endDirXZ = endDirXZ.normalize();
 		}
-		VectorXZ endNormalXZ = endDirXZ.rightNormal();
+		VectorXYZ endNormal = endDirXZ.rightNormal().xyz(0);
+		VectorXYZ endNormal2 = endDir.crossNormalized(endNormal);
 
+		var colorMaterial = new ImmutableMaterial(Interpolation.FLAT, color);
 
-		ImmutableMaterial colorMaterial =
-				new ImmutableMaterial(Interpolation.FLAT, color);
-
-		target.drawTriangleStrip(colorMaterial, asList(
-				lastV,
-				headStart.subtract(endDirXZ.mult(headLength/2)),
-				headStart.add(endDirXZ.mult(headLength/2))),
-				emptyList());
-
-		target.drawTriangleStrip(colorMaterial, asList(
-				lastV,
-				headStart.subtract(endNormalXZ.mult(headLength/2)),
-				headStart.add(endNormalXZ.mult(headLength/2))),
-				emptyList());
+		target.drawTriangles(colorMaterial, List.of(
+				new TriangleXYZ(
+						lastV,
+						headStart.subtract(endNormal.mult(headLength / 2)),
+						headStart.add(endNormal.mult(headLength / 2))),
+				new TriangleXYZ(
+						lastV,
+						headStart.subtract(endNormal2.mult(headLength / 2)),
+						headStart.add(endNormal2.mult(headLength / 2)))
+		), emptyList());
 
 	}
 
