@@ -2,10 +2,7 @@ package org.osm2world.core.util;
 
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -133,6 +130,16 @@ final public class ConfigUtil {
 				}
 		    }
 		}
+	}
+
+	public static <T extends Enum<T>> @Nullable T readEnum(Class<T> enumClass, Configuration config, String key) {
+		String value = config.getString(key);
+		if (value != null) {
+			try {
+				return Enum.valueOf(enumClass, value.toUpperCase());
+			} catch (IllegalArgumentException ignored) {}
+		}
+		return null;
 	}
 
 	/**

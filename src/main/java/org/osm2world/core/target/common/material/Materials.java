@@ -2,6 +2,7 @@ package org.osm2world.core.target.common.material;
 
 import static java.awt.Color.*;
 import static java.util.Collections.emptyList;
+import static org.osm2world.core.util.ConfigUtil.readEnum;
 
 import java.awt.*;
 import java.io.File;
@@ -410,59 +411,40 @@ public final class Materials {
 
 				String key = keyPrefix + attribute;
 
-				if ("interpolation".equals(attribute)) {
-
-					String value = config.getString(key).toUpperCase();
-					Interpolation interpolation = Interpolation.valueOf(value);
-
-					if (interpolation != null) {
-						material.setInterpolation(interpolation);
+				switch (attribute) {
+					case "doubleSided" -> {
+						boolean doubleSided = config.getBoolean(key);
+						material.setDoubleSided(doubleSided);
 					}
-
-				} else if ("color".equals(attribute)) {
-
-					Color color = ConfigUtil.parseColor(config.getString(key));
-
-					if (color != null) {
-						material.setColor(color);
-					} else {
-						System.err.println("incorrect color value: " + config.getString(key));
+					case "interpolation" -> {
+						Interpolation interpolation = readEnum(Interpolation.class, config, key);
+						if (interpolation != null) { material.setInterpolation(interpolation); }
 					}
-
-				} else if ("doubleSided".equals(attribute)) {
-
-					boolean doubleSided = config.getBoolean(key);
-					material.setDoubleSided(doubleSided);
-
-				} else if ("shadow".equals(attribute)) {
-
-					String value = config.getString(key).toUpperCase();
-					Material.Shadow shadow = Material.Shadow.valueOf(value);
-
-					if (shadow != null) {
-						material.setShadow(shadow);
+					case "shadow" -> {
+						Material.Shadow shadow = readEnum(Material.Shadow.class, config, key);
+						if (shadow != null) { material.setShadow(shadow); }
 					}
-
-				} else if ("ssao".equals(attribute)) {
-
-					String value = config.getString(key).toUpperCase();
-					Material.AmbientOcclusion ao = Material.AmbientOcclusion.valueOf(value);
-
-					if (ao != null) {
-						material.setAmbientOcclusion(ao);
+					case "ssao" -> {
+						Material.AmbientOcclusion ao = readEnum(Material.AmbientOcclusion.class, config, key);
+						if (ao != null) { material.setAmbientOcclusion(ao); }
 					}
-
-				} else if ("transparency".equals(attribute)) {
-
-					String value = config.getString(key).toUpperCase();
-					Transparency transparency = Transparency.valueOf(value);
-
-					if (transparency != null) {
-						material.setTransparency(transparency);
+					case "transparency" -> {
+						Transparency transparency = readEnum(Transparency.class, config, key);
+						if (transparency != null) { material.setTransparency(transparency); }
 					}
-
-				} else if (!attribute.startsWith("texture")) {
-					System.err.println("unknown material attribute '" + attribute + "' for material " + materialName);
+					case "color" -> {
+						Color color = ConfigUtil.parseColor(config.getString(key));
+						if (color != null) {
+							material.setColor(color);
+						} else {
+							System.err.println("incorrect color value: " + config.getString(key));
+						}
+					}
+					default -> {
+						if (!attribute.startsWith("texture")) {
+							System.err.println("unknown material attribute '" + attribute + "' for material " + materialName);
+						}
+					}
 				}
 
 			}
