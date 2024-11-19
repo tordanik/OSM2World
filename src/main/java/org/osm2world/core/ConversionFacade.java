@@ -30,7 +30,7 @@ import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.map_elevation.data.EleConnector;
-import org.osm2world.core.math.FaceXYZ;
+import org.osm2world.core.math.FlatSimplePolygonShapeXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
@@ -372,7 +372,7 @@ public class ConversionFacade {
 
 		for (boolean requirePreferredHeight : asList(true, false)) {
 
-			Predicate<FaceXYZ> matchesPreferredHeight = (FaceXYZ f) -> {
+			Predicate<FlatSimplePolygonShapeXYZ> matchesPreferredHeight = f -> {
 				if (!requirePreferredHeight) {
 					return true;
 				} else {
@@ -382,12 +382,12 @@ public class ConversionFacade {
 				}
 			};
 
-			Optional<FaceXYZ> closestFace = surface.getFaces().stream()
+			Optional<? extends FlatSimplePolygonShapeXYZ> closestFace = surface.getFaces().stream()
 					.filter(matchesPreferredHeight)
 					.filter(f -> connector.isAcceptableNormal.test(f.getNormal()))
 					.min(comparingDouble(f -> connector.changeXZ ? f.distanceTo(posAtEle) : f.distanceToXZ(posAtEle)));
 
-			if (!closestFace.isPresent()) continue; // try again without enforcing the preferred height
+			if (closestFace.isEmpty()) continue; // try again without enforcing the preferred height
 
 			VectorXYZ closestPoint = null;
 

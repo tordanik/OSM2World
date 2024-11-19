@@ -1,8 +1,11 @@
 package org.osm2world.core.math;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import static java.util.stream.Collectors.toList;
-import static org.osm2world.core.math.VectorXYZ.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.VectorXYZ.Y_UNIT;
+import static org.osm2world.core.math.VectorXYZ.Z_UNIT;
 
 import java.util.List;
 
@@ -12,7 +15,7 @@ import org.apache.commons.lang.NotImplementedException;
  * a simple 3D polygon where all vertices are in the same plane.
  * {@link FaceXYZ} is the most general implementation.
  */
-public interface FlatSimplePolygonShapeXYZ {
+public interface FlatSimplePolygonShapeXYZ extends BoundedObject {
 
 	/**
 	 * returns the polygon's vertices. First and last vertex are equal.
@@ -44,6 +47,11 @@ public interface FlatSimplePolygonShapeXYZ {
 			 * but might cause numbers to get too large */
 		}
 		return new VectorXYZ(x, y, z);
+	}
+
+	@Override
+	public default AxisAlignedRectangleXZ boundingBox() {
+		return bbox(vertices());
 	}
 
 	/** returns the closest point on this face to a given point in 3D space */

@@ -3,12 +3,12 @@ package org.osm2world.viewer.view.debug;
 import static java.awt.Color.ORANGE;
 import static java.util.Collections.emptyList;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import org.osm2world.core.math.PolygonXYZ;
+import org.osm2world.core.math.FlatSimplePolygonShapeXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material;
@@ -51,13 +51,13 @@ public class AttachmentSurfaceDebugView extends DebugView {
 				String type = surface.getTypes().iterator().next();
 				Color color = getOrCreateColor(type);
 
-				for (PolygonXYZ face : surface.getFaces()) {
+				for (FlatSimplePolygonShapeXYZ face : surface.getFaces()) {
 
 					Material material = new ImmutableMaterial(Interpolation.FLAT, color);
 					target.drawConvexPolygon(material, face.vertices(), emptyList());
 
 					//draw base ele
-					for (int i = 0; i < face.size(); i++) {
+					for (int i = 0; i < face.vertices().size() - 1; i++) {
 						VectorXYZ v1 = face.vertices().get(i);
 						VectorXYZ v2 = face.vertices().get(i + 1);
 						v1 = v1.y(surface.getBaseEleAt(v1.xz()));

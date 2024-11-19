@@ -1,6 +1,5 @@
 package org.osm2world.core.world.modules.building.indoor;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.GLOBAL_X_Z;
@@ -8,7 +7,6 @@ import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTex
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.osm2world.core.math.*;
@@ -16,7 +14,7 @@ import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
-import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.building.BuildingPart;
 
 public class Ceiling {
@@ -28,8 +26,6 @@ public class Ceiling {
     private Boolean render;
     final int level;
 
-    private AttachmentSurface attachmentSurface;
-
     Ceiling(BuildingPart buildingPart, Material material, PolygonWithHolesXZ polygon, double floorHeightAboveBase, Boolean renderable, int level){
         this.buildingPart = buildingPart;
         this.material = material;
@@ -39,23 +35,7 @@ public class Ceiling {
         this.level = level;
     }
 
-    public Collection<AttachmentSurface> getAttachmentSurfaces() {
-
-        if (polygon == null) {
-            return emptyList();
-        }
-
-        if (attachmentSurface == null) {
-            AttachmentSurface.Builder builder = new AttachmentSurface.Builder("ceiling" + this.level);
-            this.renderSurface(builder, buildingPart.getBuilding().getGroundLevelEle() + floorHeight);
-            attachmentSurface = builder.build();
-        }
-
-        return Collections.singleton(attachmentSurface);
-
-    }
-
-    public void renderTo(CommonTarget target) {
+    void renderTo(ProceduralWorldObject.Target target) {
 
         if (render && polygon != null) {
 
@@ -71,15 +51,17 @@ public class Ceiling {
         }
     }
 
-    private void renderSurface(CommonTarget target, double floorEle){
+    private void renderSurface(ProceduralWorldObject.Target target, double floorEle){
         Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(polygon);
 
         List<TriangleXYZ> trianglesXYZ = triangles.stream()
                 .map(t -> t.makeClockwise().xyz(floorEle - 0.2))
                 .collect(toList());
 
+        target.setCurrentAttachmentTypes("ceiling" + this.level);
         target.drawTriangles(material, trianglesXYZ,
                 triangleTexCoordLists(trianglesXYZ, material, GLOBAL_X_Z));
+        target.setCurrentAttachmentTypes();
     }
 
     private void renderSides(CommonTarget target, List<ShapeXZ> sides, double floorEle) {

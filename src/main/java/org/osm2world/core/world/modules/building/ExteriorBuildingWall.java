@@ -26,12 +26,10 @@ import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.shapes.PolylineShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.LODRange;
 import org.osm2world.core.util.ConfigUtil;
-import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
@@ -88,10 +86,6 @@ public class ExteriorBuildingWall {
 	}
 
 	public void renderTo(ProceduralWorldObject.Target target) {
-		renderTo(target, true);
-	}
-
-	public void renderTo(CommonTarget target, boolean renderElements) {
 
 		BuildingDefaults defaults = BuildingDefaults.getDefaultsFor(tags);
 
@@ -198,10 +192,7 @@ public class ExteriorBuildingWall {
 		for (WindowImplementation windowImplementation : windowImplementations.keySet()) {
 
 			LODRange lodRange = windowImplementations.get(windowImplementation);
-
-			if (target instanceof ProceduralWorldObject.Target pt) {
-				pt.setCurrentLodRange(lodRange);
-			}
+			target.setCurrentLodRange(lodRange);
 
 			/* construct the surface(s) */
 
@@ -327,30 +318,19 @@ public class ExteriorBuildingWall {
 				mainSurface.renderTo(target, new VectorXZ(0, -floorHeight),
 						hasWindows && !individuallyMappedWindows
 								&& windowImplementation == WindowImplementation.FLAT_TEXTURES,
-						windowHeight, renderElements);
+						windowHeight,
+						"wall", "wall_mounted");
 			}
 
 			if (roofSurface != null) {
-				roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight, renderElements);
+				roofSurface.renderTo(target, NULL_VECTOR, false, windowHeight,
+						"wall", "wall_mounted");
 			}
 
 		}
 
-		if (target instanceof ProceduralWorldObject.Target pt) {
-			pt.setCurrentLodRange(null);
-		}
+		target.setCurrentLodRange(null);
 
-	}
-
-	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-		try {
-			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall", "wall_mounted");
-			this.renderTo(builder, false);
-			return singleton(builder.build());
-		} catch (Exception e) {
-			ConversionLog.error("Could not create wall attachment surface for an element", e, wallWay);
-			return emptyList();
-		}
 	}
 
 	@Override

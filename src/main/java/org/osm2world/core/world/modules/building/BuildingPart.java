@@ -486,10 +486,6 @@ public class BuildingPart implements AreaWorldObject, ProceduralWorldObject {
 		surfaces.addAll(roof.getAttachmentSurfaces(
 				building.getGroundLevelEle() + levelStructure.heightWithoutRoof(), roofAttachmentLevel));
 
-		for (ExteriorBuildingWall wall : walls) {
-			surfaces.addAll(wall.getAttachmentSurfaces());
-		}
-
 		return surfaces;
 	}
 

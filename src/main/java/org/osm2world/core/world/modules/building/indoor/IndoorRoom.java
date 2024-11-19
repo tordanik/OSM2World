@@ -2,9 +2,7 @@ package org.osm2world.core.world.modules.building.indoor;
 
 import static java.util.Collections.emptyList;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.lang.math.IntRange;
 import org.osm2world.core.map_data.data.MapArea;
@@ -46,15 +44,7 @@ public class IndoorRoom implements AreaWorldObject, ProceduralWorldObject {
     }
 
     public Collection<AttachmentSurface> getAttachmentSurfaces() {
-
-		List<AttachmentSurface> surfaces = new ArrayList<>();
-
-        surfaces.addAll(floor.getAttachmentSurfaces());
-        surfaces.addAll(ceiling.getAttachmentSurfaces());
-        surfaces.addAll(wall.getAttachmentSurfaces());
-
-        return surfaces;
-
+        return floor.getAttachmentSurfaces();
     }
 
 	@Override

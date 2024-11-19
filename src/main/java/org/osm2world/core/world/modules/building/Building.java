@@ -40,8 +40,6 @@ public class Building implements AreaWorldObject, ProceduralWorldObject {
 
 	private Map<NodeWithLevelAndHeights, List<LineSegmentXZ>> wallNodePolygonSegments = new HashMap<>();
 
-	private Collection<AttachmentSurface> attachmentSurfaces = null;
-
 	public Building(MapArea area, Configuration config) {
 
 		this.area = area;
@@ -165,19 +163,17 @@ public class Building implements AreaWorldObject, ProceduralWorldObject {
 	}
 
 	@Override
-	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
-		return List.of(); // BuildingParts return their own footprint if necessary
+	public Collection<AttachmentSurface> getAttachmentSurfaces() {
+		List<AttachmentSurface> result = new ArrayList<>(ProceduralWorldObject.super.getAttachmentSurfaces());
+		for (BuildingPart part : parts) {
+			result.addAll(part.getAttachmentSurfaces());
+		}
+		return result;
 	}
 
 	@Override
-	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-		if (attachmentSurfaces == null) {
-			attachmentSurfaces = new ArrayList<>();
-			for (BuildingPart part : parts) {
-				attachmentSurfaces.addAll(part.getAttachmentSurfaces());
-			}
-		}
-		return attachmentSurfaces;
+	public Collection<PolygonShapeXZ> getRawGroundFootprint() {
+		return List.of(); // BuildingParts return their own footprint if necessary
 	}
 
 	public record NodeWithLevelAndHeights(

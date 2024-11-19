@@ -52,10 +52,6 @@ public class BuildingPartInterior {
 				surfaces.addAll(area.getAttachmentSurfaces());
 			}
 
-			for (IndoorWall wall : walls) {
-				surfaces.addAll(wall.getAttachmentSurfaces());
-			}
-
 		}
 
 		return surfaces;

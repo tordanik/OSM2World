@@ -213,8 +213,8 @@ public class IndoorModule extends AbstractModule {
 						}
 					}
 
-					frontSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, null, true);
-					backSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, null, true);
+					frontSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, null);
+					backSurface.renderTo(target, new VectorXZ(0, carBaseEle), false, null);
 
 				}
 

@@ -21,7 +21,7 @@ import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
-import org.osm2world.core.world.attachment.AttachmentSurface;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.modules.building.*;
 import org.osm2world.core.world.modules.building.roof.Roof;
 
@@ -42,8 +42,6 @@ public class IndoorWall {
     static List<SegmentLevelPair> allRenderedWallSegments = new ArrayList<>();
 
     private final IndoorObjectData data;
-
-    private List<AttachmentSurface> attachmentSurfacesList;
 
     private static final Material defaultInnerMaterial = Materials.CONCRETE;
 
@@ -138,16 +136,6 @@ public class IndoorWall {
 
     	}
     }
-
-	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-
-		if (attachmentSurfacesList == null) {
-			attachmentSurfacesList = new ArrayList<>();
-			this.renderTo(null, false, true);
-		}
-
-		return attachmentSurfacesList;
-	}
 
 	public class SegmentNodes {
 
@@ -793,20 +781,13 @@ public class IndoorWall {
 		}
 	}
 
-	private void renderTo(CommonTarget target, Boolean renderSides, Boolean attachmentSurfaces) {
+	void renderTo(ProceduralWorldObject.Target target) {
 
 		double baseEle = data.getBuildingPart().getBuilding().getGroundLevelEle();
 
 		Material material = BuildingPart.buildMaterial(data.getTags().getValue("material"), null, Materials.BRICK, false);
 
 		for (Integer level : data.getRenderableLevels()) {
-
-			AttachmentSurface.Builder builder = new AttachmentSurface.Builder("wall" + level, "wall");
-			boolean somethingRendered = false;
-
-			if (attachmentSurfaces) {
-				target = builder;
-			}
 
 			double ceilingHeight = baseEle + data.getBuildingPart().levelStructure.level(level).relativeEleTop();
 			double floorHeight = baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle;
@@ -815,13 +796,11 @@ public class IndoorWall {
 
 				SegmentLevelPair pair = new SegmentLevelPair(wallSegData.getSegment(), level, wallSegData.getStartNode(), wallSegData.getEndNode());
 
-				if (!allRenderedWallSegments.contains(pair) || attachmentSurfaces) {
+				if (!allRenderedWallSegments.contains(pair)) {
 
 					if (floorHeight < ceilingHeight) {
 
-						if (!attachmentSurfaces) {
-							allRenderedWallSegments.add(pair);
-						}
+						allRenderedWallSegments.add(pair);
 
 						List<VectorXZ> endPoints = getNewEndPoints(wallSegData, level, baseEle
 								+ data.getBuildingPart().levelStructure.level(level).relativeEle, ceilingHeight);
@@ -850,49 +829,44 @@ public class IndoorWall {
 
 						WallSurface backSurface = new WallSurface(material, backBottomPoints, backTopPoints);
 
-
 						/* generate wall edges */
 
 						WallSurface rightSurface = null;
 						WallSurface leftSurface = null;
 
-						if (renderSides) {
+						// TODO avoid needing a try
 
-							// TODO avoid needing a try
+						try {
 
-							try {
+							List<VectorXZ> bottomVertexLoop = new ArrayList<>(endPoints);
+							bottomVertexLoop.add(endPoints.get(0));
 
-								List<VectorXZ> bottomVertexLoop = new ArrayList<>(endPoints);
-								bottomVertexLoop.add(endPoints.get(0));
+							SimplePolygonXZ bottomPolygonXZ = new SimplePolygonXZ(bottomVertexLoop);
+							List<TriangleXYZ> bottomTriangles = TriangulationUtil.
+									triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
+									.stream()
+									.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle))
+									.collect(toList());
 
-								SimplePolygonXZ bottomPolygonXZ = new SimplePolygonXZ(bottomVertexLoop);
-								List<TriangleXYZ> bottomTriangles = TriangulationUtil.
-										triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
-										.stream()
-										.map(t -> t.makeClockwise().xyz(baseEle + data.getBuildingPart().levelStructure.level(level).relativeEle))
-										.collect(toList());
+							List<TriangleXYZ> tempTopTriangles = TriangulationUtil.
+									triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
+									.stream()
+									.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - topOffset))
+									.collect(toList());
 
-								List<TriangleXYZ> tempTopTriangles = TriangulationUtil.
-										triangulate(bottomPolygonXZ.asPolygonWithHolesXZ())
-										.stream()
-										.map(t -> t.makeCounterclockwise().xyz(ceilingHeight - topOffset))
-										.collect(toList());
-
-								target.drawTriangles(defaultInnerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
-								target.drawTriangles(defaultInnerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(defaultInnerMaterial, bottomTriangles, triangleTexCoordLists(bottomTriangles, material, GLOBAL_X_Z));
+							target.drawTriangles(defaultInnerMaterial, tempTopTriangles, triangleTexCoordLists(tempTopTriangles, material, GLOBAL_X_Z));
 
 
-								rightSurface = new WallSurface(material,
-										asList(bottomPoints.get(1), backBottomPoints.get(0)),
-										asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
+							rightSurface = new WallSurface(material,
+									asList(bottomPoints.get(1), backBottomPoints.get(0)),
+									asList(topPoints.get(0), backTopPoints.get(backBottomPoints.size() - 1)));
 
-								leftSurface = new WallSurface(material,
-										asList(backBottomPoints.get(1), bottomPoints.get(0)),
-										asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
+							leftSurface = new WallSurface(material,
+									asList(backBottomPoints.get(1), bottomPoints.get(0)),
+									asList(backTopPoints.get(0), topPoints.get(topPoints.size() - 1)));
 
-							} catch (InvalidGeometryException e) {
-							}
-
+						} catch (InvalidGeometryException e) {
 						}
 
 						/* add windows that aren't on vertices */
@@ -939,12 +913,12 @@ public class IndoorWall {
 						/* draw wall */
 
 						if (mainSurface != null && backSurface != null) {
-							somethingRendered = true;
-							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, !attachmentSurfaces);
-							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, !attachmentSurfaces);
+							String[] attachmentTypes = new String[] {"wall" + level, "wall"};
+							mainSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, attachmentTypes);
+							backSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, attachmentTypes);
 							if (leftSurface != null && rightSurface != null) {
-								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, true);
-								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null, true);
+								rightSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null);
+								leftSurface.renderTo(target, new VectorXZ(0, -floorHeight), false, null);
 							}
 						}
 					} else {
@@ -953,15 +927,7 @@ public class IndoorWall {
 				}
 			}
 
-			if (attachmentSurfaces && somethingRendered) {
-				attachmentSurfacesList.add(builder.build());
-			}
-
 		}
 	}
-
-    public void renderTo(CommonTarget target) {
-    	renderTo(target, true, false);
-    }
 
 }

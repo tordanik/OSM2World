@@ -1,6 +1,5 @@
 package org.osm2world.core.world.modules.building.roof;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.math.GeometryUtil.distanceFromLineSegment;
@@ -101,16 +100,14 @@ abstract public class HeightfieldRoof extends Roof {
 
 		if (attachmentSurface == null) {
 
-			String[] types = new String[] {"roof" + level, "roof", "floor" + level};
+			List<String> types = List.of("roof" + level, "roof", "floor" + level);
 
 			try {
-				AttachmentSurface.Builder builder = new AttachmentSurface.Builder(types);
-				this.renderTo(builder, baseEle);
-				attachmentSurface = builder.build();
+				attachmentSurface = new AttachmentSurface(types, getRoofTriangles(baseEle));
 			} catch (Exception e) {
 				ConversionLog.error("Suppressed exception in HeightfieldRoof attachment surface generation", e);
 				PolygonXYZ flatPolygon = getPolygon().getOuter().xyz(baseEle);
-				attachmentSurface = new AttachmentSurface(asList(types), asList(new FaceXYZ(flatPolygon.vertices())));
+				attachmentSurface = new AttachmentSurface(types, List.of(new FaceXYZ(flatPolygon.vertices())));
 			}
 
 		}
@@ -121,6 +118,17 @@ abstract public class HeightfieldRoof extends Roof {
 
 	@Override
 	public void renderTo(CommonTarget target, double baseEle) {
+
+		List<TriangleXYZ> trianglesXYZ = getRoofTriangles(baseEle);
+
+		/* draw triangles */
+
+		target.drawTriangles(material, trianglesXYZ,
+				triangleTexCoordLists(trianglesXYZ, material, SLOPED_TRIANGLES));
+
+	}
+
+	private List<TriangleXYZ> getRoofTriangles(double baseEle) {
 
 		/* subtract attached rooftop areas (parking, helipads, pools, etc.) from the roof polygon */
 
@@ -153,10 +161,7 @@ abstract public class HeightfieldRoof extends Roof {
 			trianglesXYZ.add(tCCW.xyz(v -> v.xyz(baseEle + getRoofHeightAt(v))));
 		}
 
-		/* draw triangles */
-
-		target.drawTriangles(material, trianglesXYZ,
-				triangleTexCoordLists(trianglesXYZ, material, SLOPED_TRIANGLES));
+		return trianglesXYZ;
 
 	}
 

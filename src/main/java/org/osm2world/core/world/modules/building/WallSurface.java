@@ -27,12 +27,12 @@ import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
-import org.osm2world.core.target.CommonTarget;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
+import org.osm2world.core.world.data.ProceduralWorldObject;
 
 /**
  * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
@@ -158,38 +158,33 @@ public class WallSurface {
 	 *
 	 * @param textureOrigin  the origin of the texture coordinates on the wall surface
 	 * @param windowHeight  the height for window textures will be replaced with this value if it's non-null
-	 * @param renderElements  whether the {@link WallElement}s inserted into this surface should also be rendered
 	 */
-	public void renderTo(CommonTarget target, VectorXZ textureOrigin,
-			boolean applyWindowTexture, Double windowHeight, boolean renderElements) {
+	public void renderTo(ProceduralWorldObject.Target target, VectorXZ textureOrigin,
+			boolean applyWindowTexture, Double windowHeight, String... attachmentTypes) {
 
 		/* render the elements on the wall */
 
-		if (renderElements) {
-			for (WallElement e : elements) {
-				e.renderTo(target, this);
-			}
+		for (WallElement e : elements) {
+			e.renderTo(target, this);
 		}
 
 		/* draw insets around the elements */
 
-		if (renderElements) {
-			for (WallElement e : elements) {
-				if (e.insetDistance() > 0) {
+		for (WallElement e : elements) {
+			if (e.insetDistance() > 0) {
 
-					PolygonXYZ frontOutline = convertTo3D(e.outline());
-					PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
+				PolygonXYZ frontOutline = convertTo3D(e.outline());
+				PolygonXYZ backOutline = frontOutline.add(normalAt(e.outline().getCentroid()).mult(-e.insetDistance()));
 
-					List<VectorXYZ> vsWall = createTriangleStripBetween(
-							backOutline.vertices(), frontOutline.vertices());
+				List<VectorXYZ> vsWall = createTriangleStripBetween(
+						backOutline.vertices(), frontOutline.vertices());
 
-					Material material = this.material;
-					// TODO attempt to simulate ambient occlusion with a different baked ao texture?
+				Material material = this.material;
+				// TODO attempt to simulate ambient occlusion with a different baked ao texture?
 
-					target.drawTriangleStrip(material, vsWall,
-							texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
+				target.drawTriangleStrip(material, vsWall,
+						texCoordLists(vsWall, material, NamedTexCoordFunction.STRIP_WALL));
 
-				}
 			}
 		}
 		
@@ -257,7 +252,9 @@ public class WallSurface {
 
 		/* render the wall */
 
+		target.setCurrentAttachmentTypes(attachmentTypes);
 		target.drawTriangles(material, trianglesXYZ, texCoordLists);
+		target.setCurrentAttachmentTypes();
 
 	}
 
