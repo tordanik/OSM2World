@@ -25,9 +25,9 @@ public interface ProceduralWorldObject extends WorldObject {
 
 	class Target implements CommonTarget {
 
-		private final List<Mesh> meshes = new ArrayList<>();
-		private final List<ModelInstance> subModels = new ArrayList<>();
-		private final List<AttachmentSurface> attachmentSurfaces = new ArrayList<>();
+		protected final List<Mesh> meshes = new ArrayList<>();
+		protected final List<ModelInstance> subModels = new ArrayList<>();
+		protected final List<AttachmentSurface> attachmentSurfaces = new ArrayList<>();
 
 		private @Nullable LODRange currentLodRange = null;
 		private List<String> currentAttachmentTypes = List.of();

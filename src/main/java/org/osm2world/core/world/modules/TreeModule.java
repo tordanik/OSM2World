@@ -501,7 +501,7 @@ public class TreeModule extends ConfigurableWorldModule {
 	}
 
 
-	public class Forest implements AreaWorldObject, ProceduralWorldObject {
+	public class Forest extends CachingProceduralWorldObject implements AreaWorldObject {
 
 		private final MapArea area;
 		private final MapData mapData;

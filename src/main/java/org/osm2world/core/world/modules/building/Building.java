@@ -24,13 +24,13 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
-import org.osm2world.core.world.data.ProceduralWorldObject;
+import org.osm2world.core.world.data.CachingProceduralWorldObject;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 
 /**
  * a building. Rendering a building is implemented as rendering all of its {@link BuildingPart}s.
  */
-public class Building implements AreaWorldObject, ProceduralWorldObject {
+public class Building extends CachingProceduralWorldObject implements AreaWorldObject {
 
 	private final MapArea area;
 
@@ -164,7 +164,7 @@ public class Building implements AreaWorldObject, ProceduralWorldObject {
 
 	@Override
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
-		List<AttachmentSurface> result = new ArrayList<>(ProceduralWorldObject.super.getAttachmentSurfaces());
+		List<AttachmentSurface> result = new ArrayList<>(super.getAttachmentSurfaces());
 		for (BuildingPart part : parts) {
 			result.addAll(part.getAttachmentSurfaces());
 		}
