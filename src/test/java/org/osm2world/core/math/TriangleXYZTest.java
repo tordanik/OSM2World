@@ -40,6 +40,13 @@ public class TriangleXYZTest {
 
 		assertAlmostEquals(0.5, t1.getArea());
 
+		TriangleXYZ t2 = new TriangleXYZ(
+				new VectorXYZ(0, 0, 0),
+				new VectorXYZ(1, 0, 0),
+				new VectorXYZ(0, 0, 5));
+
+		assertAlmostEquals(2.5, t2.getArea());
+
 	}
 
 	@Test
