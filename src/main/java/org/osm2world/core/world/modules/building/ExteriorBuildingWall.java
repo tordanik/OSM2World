@@ -205,7 +205,7 @@ public class ExteriorBuildingWall {
 
 			/* construct the surface(s) */
 
-			WallSurface mainSurface, roofSurface;
+			@Nullable WallSurface mainSurface, roofSurface;
 
 			double maxHeight = max(topPoints, comparingDouble(v -> v.y)).y - floorEle;
 
@@ -247,7 +247,7 @@ public class ExteriorBuildingWall {
 
 			boolean individuallyMappedWindows = false;
 
-			if (windowImplementation != WindowImplementation.NONE) {
+			if (mainSurface != null && windowImplementation != WindowImplementation.NONE) {
 
 				/* add individually mapped doors and windows (if any) */
 				//TODO: doors at corners of the building (or boundaries between building:wall=yes ways) do not work yet
@@ -295,21 +295,27 @@ public class ExteriorBuildingWall {
 
 			}
 
-			if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
-				if (!buildingPart.area.getBoundaryNodes().stream().anyMatch(Door::isDoorNode)) {
-					if (points.getLength() > buildingPart.area.getOuterPolygon().getOutlineLength() / 8) {
-						// not the narrow side of a long building with several garages
-						placeDefaultGarageDoors(mainSurface);
+			if (mainSurface != null) {
+
+				/* add garage doors */
+
+				if (tags.containsAny(asList("building", "building:part"), asList("garage", "garages"))) {
+					if (buildingPart.area.getBoundaryNodes().stream().noneMatch(Door::isDoorNode)) {
+						if (points.getLength() > buildingPart.area.getOuterPolygon().getOutlineLength() / 8) {
+							// not the narrow side of a long building with several garages
+							placeDefaultGarageDoors(mainSurface);
+						}
 					}
 				}
-			}
 
-			/* add windows (after doors, because default windows should be displaced by them) */
+				/* add windows (after doors, because default windows should be displaced by them) */
 
-			if (hasWindows && !individuallyMappedWindows
-					&& (windowImplementation == WindowImplementation.INSET_TEXTURES
-					|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
-				placeDefaultWindows(mainSurface, windowImplementation);
+				if (hasWindows && !individuallyMappedWindows
+						&& (windowImplementation == WindowImplementation.INSET_TEXTURES
+						|| windowImplementation == WindowImplementation.FULL_GEOMETRY)) {
+					placeDefaultWindows(mainSurface, windowImplementation);
+				}
+
 			}
 
 			/* draw the wall */
