@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.ConversionFacade.Phase.*;
+import static org.osm2world.core.conversion.ConversionLog.LogLevel.FATAL;
 import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
 
 import java.io.File;
@@ -66,235 +67,247 @@ public final class Output {
 			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
 		}
 
-		OSMDataReader dataReader = null;
+		try {
 
-		switch (sharedArgs.getInputMode()) {
+			OSMDataReader dataReader = null;
 
-			case FILE:
-				File inputFile = sharedArgs.getInput();
-				dataReader = switch (CLIArgumentsUtil.getInputFileType(sharedArgs)) {
-					case SIMPLE_FILE -> new OSMFileReader(inputFile);
-					case MBTILES -> new MbtilesReader(inputFile, sharedArgs.getTile());
-					case GEODESK -> new GeodeskReader(inputFile, sharedArgs.getTile().bounds());
-				};
-				break;
+			switch (sharedArgs.getInputMode()) {
 
-			case OVERPASS:
-				if (sharedArgs.isInputBoundingBox()) {
-					LatLonBounds bounds = LatLonBounds.ofPoints(sharedArgs.getInputBoundingBox());
-					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
-				} else if (sharedArgs.isTile()) {
-					LatLonBounds bounds = sharedArgs.getTile().bounds();
-					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
-				} else {
-					assert sharedArgs.isInputQuery(); // can be assumed due to input validation
-					String query = sharedArgs.getInputQuery();
-					dataReader = new OverpassReader(sharedArgs.getOverpassURL(), query);
-				}
-				break;
+				case FILE:
+					File inputFile = sharedArgs.getInput();
+					dataReader = switch (CLIArgumentsUtil.getInputFileType(sharedArgs)) {
+						case SIMPLE_FILE -> new OSMFileReader(inputFile);
+						case MBTILES -> new MbtilesReader(inputFile, sharedArgs.getTile());
+						case GEODESK -> new GeodeskReader(inputFile, sharedArgs.getTile().bounds());
+					};
+					break;
 
-		}
-
-
-		MapMetadata metadata = null;
-
-		if (sharedArgs.isMetadataFile()) {
-			if (sharedArgs.getMetadataFile().getName().endsWith(".mbtiles")) {
-				if (sharedArgs.isMetadataFile() && sharedArgs.isTile()) {
-					try {
-						metadata = MapMetadata.metadataForTile(sharedArgs.getTile(), sharedArgs.getMetadataFile());
-					} catch(MBTilesReadException e){
-						System.err.println("Cannot read tile metadata: " + e);
-					}
-				}
-			} else {
-				metadata = MapMetadata.metadataFromJson(sharedArgs.getMetadataFile());
-			}
-		}
-
-
-		ConversionFacade cf = new ConversionFacade();
-		cf.addProgressListener(perfListener);
-
-		String interpolatorType = config.getString("terrainInterpolator");
-		if ("ZeroInterpolator".equals(interpolatorType)) {
-			cf.setTerrainEleInterpolatorFactory(ZeroInterpolator::new);
-		} else if ("LeastSquaresInterpolator".equals(interpolatorType)) {
-			cf.setTerrainEleInterpolatorFactory(LeastSquaresInterpolator::new);
-		} else if ("NaturalNeighborInterpolator".equals(interpolatorType)) {
-			cf.setTerrainEleInterpolatorFactory(NaturalNeighborInterpolator::new);
-		}
-
-		String eleCalculatorName = config.getString("eleCalculator");
-		if (eleCalculatorName != null) {
-			switch (eleCalculatorName) {
-				case "NoOpEleCalculator" -> cf.setEleCalculatorFactory(NoOpEleCalculator::new);
-				case "EleTagEleCalculator" -> cf.setEleCalculatorFactory(EleTagEleCalculator::new);
-				case "BridgeTunnelEleCalculator" -> cf.setEleCalculatorFactory(BridgeTunnelEleCalculator::new);
-				case "ConstraintEleCalculator" -> cf.setEleCalculatorFactory(() -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer()));
-			}
-		}
-
-		Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
-
-		ImageExporter exporter = null;
-
-		for (CLIArguments args : argumentsGroup.getCLIArgumentsList()) {
-
-			/* set camera and projection */
-
-			Camera camera = null;
-			Projection projection = null;
-
-			if (args.isPviewPos()) {
-
-				/* perspective projection */
-
-				MapProjection proj = results.getMapProjection();
-
-				LatLonEle pos = args.getPviewPos();
-				LatLonEle lookAt = args.getPviewLookat();
-
-				camera = new Camera();
-				VectorXYZ posV = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
-				VectorXYZ laV =	proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
-				camera.setCamera(posV.x, posV.y, posV.z, laV.x, laV.y, laV.z);
-
-				projection = new Projection(false,
-						args.isPviewAspect() ? args.getPviewAspect() :
-							(double)args.getResolution().getAspectRatio(),
-							args.getPviewFovy(),
-						0,
-						1, 50000);
-
-			} else {
-
-				/* orthographic projection */
-
-				double angle = args.getOviewAngle();
-				CardinalDirection from = args.getOviewFrom();
-
-				AxisAlignedRectangleXZ bounds;
-
-				if (args.isOviewBoundingBox()) {
-					bounds = bbox(args.getOviewBoundingBox().stream()
-							.map(results.getMapProjection()::toXZ)
-							.collect(toList()));
-				} else if (args.isOviewTiles()) {
-					bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
-				} else if (args.isTile()) {
-					bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
-				} else {
-					bounds = results.getMapData().getBoundary();
-				}
-
-				camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
-				projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
-
-			}
-
-			/* perform the actual output */
-
-			for (File outputFile : args.getOutput()) {
-
-				outputFile.getAbsoluteFile().getParentFile().mkdirs();
-
-				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
-
-				switch (outputMode) {
-
-				case OBJ:
-					Integer primitiveThresholdOBJ =
-						config.getInteger("primitiveThresholdOBJ", null);
-					if (primitiveThresholdOBJ == null) {
-						boolean underground = config.getBoolean("renderUnderground", true);
-
-						ObjWriter.writeObjFile(outputFile,
-								results.getMapData(), results.getMapProjection(), config,
-								camera, projection, underground);
+				case OVERPASS:
+					if (sharedArgs.isInputBoundingBox()) {
+						LatLonBounds bounds = LatLonBounds.ofPoints(sharedArgs.getInputBoundingBox());
+						dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
+					} else if (sharedArgs.isTile()) {
+						LatLonBounds bounds = sharedArgs.getTile().bounds();
+						dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
 					} else {
-						ObjWriter.writeObjFiles(outputFile,
-								results.getMapData(), results.getMapProjection(), config,
-								camera, projection, primitiveThresholdOBJ);
+						assert sharedArgs.isInputQuery(); // can be assumed due to input validation
+						String query = sharedArgs.getInputQuery();
+						dataReader = new OverpassReader(sharedArgs.getOverpassURL(), query);
 					}
 					break;
 
-				case GLTF, GLB, GLTF_GZ, GLB_GZ: {
-					AxisAlignedRectangleXZ bounds = null;
-					if (args.isTile()) {
+			}
+
+
+			MapMetadata metadata = null;
+
+			if (sharedArgs.isMetadataFile()) {
+				if (sharedArgs.getMetadataFile().getName().endsWith(".mbtiles")) {
+					if (sharedArgs.isMetadataFile() && sharedArgs.isTile()) {
+						try {
+							metadata = MapMetadata.metadataForTile(sharedArgs.getTile(), sharedArgs.getMetadataFile());
+						} catch (MBTilesReadException e) {
+							System.err.println("Cannot read tile metadata: " + e);
+						}
+					}
+				} else {
+					metadata = MapMetadata.metadataFromJson(sharedArgs.getMetadataFile());
+				}
+			}
+
+
+			ConversionFacade cf = new ConversionFacade();
+			cf.addProgressListener(perfListener);
+
+			String interpolatorType = config.getString("terrainInterpolator");
+			if ("ZeroInterpolator".equals(interpolatorType)) {
+				cf.setTerrainEleInterpolatorFactory(ZeroInterpolator::new);
+			} else if ("LeastSquaresInterpolator".equals(interpolatorType)) {
+				cf.setTerrainEleInterpolatorFactory(LeastSquaresInterpolator::new);
+			} else if ("NaturalNeighborInterpolator".equals(interpolatorType)) {
+				cf.setTerrainEleInterpolatorFactory(NaturalNeighborInterpolator::new);
+			}
+
+			String eleCalculatorName = config.getString("eleCalculator");
+			if (eleCalculatorName != null) {
+				switch (eleCalculatorName) {
+					case "NoOpEleCalculator" -> cf.setEleCalculatorFactory(NoOpEleCalculator::new);
+					case "EleTagEleCalculator" -> cf.setEleCalculatorFactory(EleTagEleCalculator::new);
+					case "BridgeTunnelEleCalculator" -> cf.setEleCalculatorFactory(BridgeTunnelEleCalculator::new);
+					case "ConstraintEleCalculator" ->
+							cf.setEleCalculatorFactory(() -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer()));
+				}
+			}
+
+			Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
+
+			ImageExporter exporter = null;
+
+			for (CLIArguments args : argumentsGroup.getCLIArgumentsList()) {
+
+				/* set camera and projection */
+
+				Camera camera = null;
+				Projection projection = null;
+
+				if (args.isPviewPos()) {
+
+					/* perspective projection */
+
+					MapProjection proj = results.getMapProjection();
+
+					LatLonEle pos = args.getPviewPos();
+					LatLonEle lookAt = args.getPviewLookat();
+
+					camera = new Camera();
+					VectorXYZ posV = proj.toXZ(pos.lat, pos.lon).xyz(pos.ele);
+					VectorXYZ laV = proj.toXZ(lookAt.lat, lookAt.lon).xyz(lookAt.ele);
+					camera.setCamera(posV.x, posV.y, posV.z, laV.x, laV.y, laV.z);
+
+					projection = new Projection(false,
+							args.isPviewAspect() ? args.getPviewAspect() :
+									(double) args.getResolution().getAspectRatio(),
+							args.getPviewFovy(),
+							0,
+							1, 50000);
+
+				} else {
+
+					/* orthographic projection */
+
+					double angle = args.getOviewAngle();
+					CardinalDirection from = args.getOviewFrom();
+
+					AxisAlignedRectangleXZ bounds;
+
+					if (args.isOviewBoundingBox()) {
+						bounds = bbox(args.getOviewBoundingBox().stream()
+								.map(results.getMapProjection()::toXZ)
+								.collect(toList()));
+					} else if (args.isOviewTiles()) {
+						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
+					} else if (args.isTile()) {
 						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
 					} else {
 						bounds = results.getMapData().getBoundary();
 					}
-					GltfTarget.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
-							? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
-					Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
-							? Compression.GZ : Compression.NONE;
-					GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
-					gltfTarget.setConfiguration(config);
-					boolean underground = config.getBoolean("renderUnderground", true);
-					TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
-					gltfTarget.finish();
-				} break;
 
-				case POV:
-					POVRayWriter.writePOVInstructionFile(outputFile,
-							results.getMapData(), camera, projection);
-					break;
+					camera = OrthoTilesUtil.cameraForBounds(bounds, angle, from);
+					projection = OrthoTilesUtil.projectionForBounds(bounds, angle, from);
 
-				case WEB_PBF, WEB_PBF_GZ: {
-					AxisAlignedRectangleXZ bbox = null;
-					if (args.isTile()) {
-						bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
-					}
-					Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
-					FrontendPbfTarget.writePbfFile(
-							outputFile, results.getMapData(), bbox, results.getMapProjection(), compression);
-				} break;
+				}
 
-				case PNG:
-				case PPM:
-				case GD:
-					if (camera == null || projection == null) {
-						System.err.println("camera or projection missing");
+				/* perform the actual output */
+
+				for (File outputFile : args.getOutput()) {
+
+					outputFile.getAbsoluteFile().getParentFile().mkdirs();
+
+					OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
+
+					switch (outputMode) {
+
+						case OBJ:
+							Integer primitiveThresholdOBJ =
+									config.getInteger("primitiveThresholdOBJ", null);
+							if (primitiveThresholdOBJ == null) {
+								boolean underground = config.getBoolean("renderUnderground", true);
+
+								ObjWriter.writeObjFile(outputFile,
+										results.getMapData(), results.getMapProjection(), config,
+										camera, projection, underground);
+							} else {
+								ObjWriter.writeObjFiles(outputFile,
+										results.getMapData(), results.getMapProjection(), config,
+										camera, projection, primitiveThresholdOBJ);
+							}
+							break;
+
+						case GLTF, GLB, GLTF_GZ, GLB_GZ: {
+							AxisAlignedRectangleXZ bounds = null;
+							if (args.isTile()) {
+								bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+							} else {
+								bounds = results.getMapData().getBoundary();
+							}
+							GltfTarget.GltfFlavor gltfFlavor = EnumSet.of(OutputMode.GLB, OutputMode.GLB_GZ).contains(outputMode)
+									? GltfTarget.GltfFlavor.GLB : GltfTarget.GltfFlavor.GLTF;
+							Compression compression = EnumSet.of(OutputMode.GLTF_GZ, OutputMode.GLB_GZ).contains(outputMode)
+									? Compression.GZ : Compression.NONE;
+							GltfTarget gltfTarget = new GltfTarget(outputFile, gltfFlavor, compression, bounds);
+							gltfTarget.setConfiguration(config);
+							boolean underground = config.getBoolean("renderUnderground", true);
+							TargetUtil.renderWorldObjects(gltfTarget, results.getMapData(), underground);
+							gltfTarget.finish();
+						}
+						break;
+
+						case POV:
+							POVRayWriter.writePOVInstructionFile(outputFile,
+									results.getMapData(), camera, projection);
+							break;
+
+						case WEB_PBF, WEB_PBF_GZ: {
+							AxisAlignedRectangleXZ bbox = null;
+							if (args.isTile()) {
+								bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+							}
+							Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
+							FrontendPbfTarget.writePbfFile(
+									outputFile, results.getMapData(), bbox, results.getMapProjection(), compression);
+						}
+						break;
+
+						case PNG:
+						case PPM:
+						case GD:
+							if (camera == null || projection == null) {
+								System.err.println("camera or projection missing");
+							}
+							if (exporter == null) {
+								exporter = ImageExporter.create(
+										config, results, argumentsGroup);
+							}
+							exporter.writeImageFile(outputFile, outputMode,
+									args.getResolution().width, args.getResolution().height,
+									camera, projection);
+							break;
+
 					}
-					if (exporter == null) {
-						exporter = ImageExporter.create(
-								config, results, argumentsGroup);
-					}
-					exporter.writeImageFile(outputFile, outputMode,
-							args.getResolution().width, args.getResolution().height,
-							camera, projection);
-					break;
 
 				}
 
 			}
 
-		}
-
-		if (exporter != null) {
-			exporter.freeResources();
-			exporter = null;
-		}
-
-		if (sharedArgs.getPerformancePrint()) {
-			long timeSec = Duration.between(perfListener.startTime, now()).getSeconds();
-			System.out.println("finished after " + timeSec + " s");
-		}
-
-		if (sharedArgs.isLogDir()) {
-
-			File logDir = sharedArgs.getLogDir();
-			logDir.mkdirs();
-
-			String fileNameBase = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm_ss"));
-			if (sharedArgs.isTile()) {
-				fileNameBase = sharedArgs.getTile().toString("_");
+			if (exporter != null) {
+				exporter.freeResources();
+				exporter = null;
 			}
-			fileNameBase = "osm2world_log_" + fileNameBase;
 
-			writeLogFiles(logDir, fileNameBase, perfListener);
+		} catch (Exception e) {
+			ConversionLog.log(FATAL, "Conversion failed", e, null);
+			throw e;
+		} finally {
+
+			if (sharedArgs.getPerformancePrint()) {
+				long timeSec = Duration.between(perfListener.startTime, now()).getSeconds();
+				System.out.println("finished after " + timeSec + " s");
+			}
+
+			if (sharedArgs.isLogDir()) {
+
+				File logDir = sharedArgs.getLogDir();
+				logDir.mkdirs();
+
+				String fileNameBase = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm_ss"));
+				if (sharedArgs.isTile()) {
+					fileNameBase = sharedArgs.getTile().toString("_");
+				}
+				fileNameBase = "osm2world_log_" + fileNameBase;
+
+				writeLogFiles(logDir, fileNameBase, perfListener);
+
+			}
 
 		}
 
