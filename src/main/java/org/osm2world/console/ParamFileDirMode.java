@@ -1,6 +1,7 @@
 package org.osm2world.console;
 
 import static java.util.Arrays.sort;
+import static org.osm2world.core.conversion.ConversionLog.LogLevel.FATAL;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.osm2world.core.conversion.ConversionLog;
 
 /**
  * implementation of the mode triggered by {@link CLIArguments#isParameterFileDir()}.
@@ -63,7 +66,12 @@ public class ParamFileDirMode {
 					executor.submit(() -> {
 
 						System.out.println(tempFilePath);
-						OSM2World.main(new String[] {"--parameterFile", tempFilePath.toString()});
+
+						try {
+							OSM2World.main(new String[]{"--parameterFile", tempFilePath.toString()});
+						} catch (Exception e) {
+							ConversionLog.log(FATAL, "Run failed for " + tempFilePath, e, null);
+						}
 
 						try {
 							Files.delete(tempFilePath);
