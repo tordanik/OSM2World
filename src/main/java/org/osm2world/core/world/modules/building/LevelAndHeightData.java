@@ -7,6 +7,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static org.osm2world.core.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.parseHeight;
@@ -117,7 +118,7 @@ public class LevelAndHeightData {
 				? buildingMinLevel
 				: min(buildingMinLevel, -1 * buildingUndergroundLevels);
 
-		Double parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), false);
+		Double parsedLevels = parseOsmDecimal(tags.getValue("building:levels"), NONNEGATIVE);
 
 		int buildingLevels;
 		if (parsedLevels != null) {

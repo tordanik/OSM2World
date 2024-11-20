@@ -1,19 +1,35 @@
 package org.osm2world.core.util;
 
-import org.osm2world.core.util.color.ColorNameDefinition;
+import static org.osm2world.core.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
+import static org.osm2world.core.util.ValueParseUtil.ValueConstraint.POSITIVE;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.osm2world.core.util.color.ColorNameDefinition;
 
 /** parses the syntax of typical OSM tag values */
 public final class ValueParseUtil {
 
 	/** prevents instantiation */
 	private ValueParseUtil() { }
+
+	public enum ValueConstraint implements Predicate<Double> {
+		POSITIVE, NONNEGATIVE;
+		@Override
+		public boolean test(Double value) {
+			return switch (this) {
+			case POSITIVE -> value > 0;
+			case NONNEGATIVE -> value >= 0;
+			};
+		}
+	}
 
 	/** pattern that splits into a part before and after a decimal point */
 	private static final Pattern DEC_POINT_PATTERN = Pattern.compile("^(\\-?\\d+)\\.(\\d+)$");
@@ -68,7 +84,7 @@ public final class ValueParseUtil {
 	 *
 	 * @return  the parsed value as a floating point number; null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Double parseOsmDecimal(@Nullable String value, boolean allowNegative) {
+	public static final @Nullable Double parseOsmDecimal(@Nullable String value, @Nullable Predicate<Double> constraint) {
 
 		if (value == null) return null;
 
@@ -76,12 +92,12 @@ public final class ValueParseUtil {
 
 		try {
 
-			int weight = Integer.parseInt(value);
-			if (weight >= 0 || allowNegative) {
-				return (double)weight;
+			double result = Integer.parseInt(value);
+			if (constraint == null || constraint.test(result)) {
+				return result;
 			}
 
-		} catch (NumberFormatException nfe) {}
+		} catch (NumberFormatException ignored) {}
 
 		/* positive number with decimal point */
 
@@ -92,7 +108,7 @@ public final class ValueParseUtil {
 			String stringBeforePoint = matcher.group(1);
 			String stringAfterPoint = matcher.group(2);
 
-			if (stringBeforePoint.length() > 0 || stringAfterPoint.length() > 0) {
+			if (!stringBeforePoint.isEmpty() || !stringAfterPoint.isEmpty()) {
 
 				try {
 
@@ -105,11 +121,11 @@ public final class ValueParseUtil {
 							+ Math.pow(10, -stringAfterPoint.length()) * afterPoint;
 					if (negative) { result = - result; }
 
-					if (result >= 0 || allowNegative) {
+					if (constraint == null || constraint.test(result)) {
 						return result;
 					}
 
-				} catch (NumberFormatException nfe) {}
+				} catch (NumberFormatException ignored) {}
 
 			}
 		}
@@ -117,9 +133,9 @@ public final class ValueParseUtil {
 		return null;
 	}
 
-	/** variant of {@link #parseOsmDecimal(String, boolean)} with a default value */
-	public static final double parseOsmDecimal(@Nullable String value, boolean allowNegative, double defaultValue) {
-		Double result = parseOsmDecimal(value, allowNegative);
+	/** variant of {@link #parseOsmDecimal(String, Predicate)} with a default value */
+	public static double parseOsmDecimal(@Nullable String value, Predicate<Double> constraint, double defaultValue) {
+		Double result = parseOsmDecimal(value, constraint);
 		return result == null ? defaultValue : result;
 	}
 
@@ -140,7 +156,7 @@ public final class ValueParseUtil {
 
 		/* try numeric speed (implied km/h) */
 
-		Double speed = parseOsmDecimal(value, false);
+		Double speed = parseOsmDecimal(value, POSITIVE);
 		if (speed != null) {
 			return speed;
 		}
@@ -190,13 +206,13 @@ public final class ValueParseUtil {
 	 *
 	 * @return  measure in m; null if value is null or has syntax errors.
 	 */
-	public static final @Nullable Double parseMeasure(@Nullable String value) {
+	public static @Nullable Double parseMeasure(@Nullable String value) {
 
 		if (value == null) return null;
 
 		/* try numeric measure (implied m) */
 
-		Double measure = parseOsmDecimal(value, false);
+		Double measure = parseOsmDecimal(value, POSITIVE);
 		if (measure != null) {
 			return measure;
 		}
@@ -206,7 +222,7 @@ public final class ValueParseUtil {
 		Matcher mMatcher = M_PATTERN.matcher(value);
 		if (mMatcher.matches()) {
 			String mString = mMatcher.group(1);
-			return parseOsmDecimal(mString, false);
+			return parseOsmDecimal(mString, POSITIVE);
 		}
 
 		/* try km measure */
@@ -214,7 +230,7 @@ public final class ValueParseUtil {
 		Matcher kmMatcher = KM_PATTERN.matcher(value);
 		if (kmMatcher.matches()) {
 			String kmString = kmMatcher.group(1);
-			double km = parseOsmDecimal(kmString, false);
+			double km = parseOsmDecimal(kmString, POSITIVE);
 			return 1000 * km;
 		}
 
@@ -223,7 +239,7 @@ public final class ValueParseUtil {
 		Matcher miMatcher = MI_PATTERN.matcher(value);
 		if (miMatcher.matches()) {
 			String miString = miMatcher.group(1);
-			double mi = parseOsmDecimal(miString, false);
+			double mi = parseOsmDecimal(miString, POSITIVE);
 			return M_PER_MI * mi;
 		}
 
@@ -266,7 +282,7 @@ public final class ValueParseUtil {
 
 		/* try numeric weight (implied t) */
 
-		Double weight = parseOsmDecimal(value, false);
+		Double weight = parseOsmDecimal(value, POSITIVE);
 		if (weight != null) {
 			return weight;
 		}
@@ -276,7 +292,7 @@ public final class ValueParseUtil {
 		Matcher tMatcher = T_PATTERN.matcher(value);
 		if (tMatcher.matches()) {
 			String tString = tMatcher.group(1);
-			return parseOsmDecimal(tString, false);
+			return parseOsmDecimal(tString, POSITIVE);
 		}
 
 		/* all possibilities failed */
@@ -305,7 +321,7 @@ public final class ValueParseUtil {
 		Matcher inclineMatcher = INCLINE_PATTERN.matcher(value);
 		if (inclineMatcher.matches()) {
 			String inclineString = inclineMatcher.group(1);
-			return parseOsmDecimal(inclineString, true);
+			return parseOsmDecimal(inclineString, null);
 		}
 
 		return null;
@@ -329,33 +345,33 @@ public final class ValueParseUtil {
 
 		/* try numeric angle */
 
-		Double measure = parseOsmDecimal(value, false);
+		Double measure = parseOsmDecimal(value, NONNEGATIVE);
 		if (measure != null) {
 			return measure % 360;
 		}
 
 		/* try cardinal directions (represented by letters) */
 
-		switch (value) {
-		case "N"  : return   0.0;
-		case "NNE": return  22.5;
-		case "NE" : return  45.0;
-		case "ENE": return  67.5;
-		case "E"  : return  90.0;
-		case "ESE": return 112.5;
-		case "SE" : return 135.0;
-		case "SSE": return 157.5;
-		case "S"  : return 180.0;
-		case "SSW": return 202.5;
-		case "SW" : return 225.0;
-		case "WSW": return 247.5;
-		case "W"  : return 270.0;
-		case "WNW": return 292.5;
-		case "NW" : return 315.0;
-		case "NNW": return 337.5;
-		}
+		return switch (value) {
+			case "N"   -> 0.0;
+			case "NNE" -> 22.5;
+			case "NE"  -> 45.0;
+			case "ENE" -> 67.5;
+			case "E"   -> 90.0;
+			case "ESE" -> 112.5;
+			case "SE"  -> 135.0;
+			case "SSE" -> 157.5;
+			case "S"   -> 180.0;
+			case "SSW" -> 202.5;
+			case "SW"  -> 225.0;
+			case "WSW" -> 247.5;
+			case "W"   -> 270.0;
+			case "WNW" -> 292.5;
+			case "NW"  -> 315.0;
+			case "NNW" -> 337.5;
+			default    -> null;
+		};
 
-		return null;
 	}
 
 	/** variant of {@link #parseAngle(String)} with a default value */

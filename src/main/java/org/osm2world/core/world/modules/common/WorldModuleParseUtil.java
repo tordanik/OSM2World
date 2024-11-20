@@ -1,9 +1,12 @@
 package org.osm2world.core.world.modules.common;
 
 import static java.lang.Math.toRadians;
-import static org.osm2world.core.util.ValueParseUtil.*;
+import static org.osm2world.core.util.ValueParseUtil.ValueConstraint.NONNEGATIVE;
+import static org.osm2world.core.util.ValueParseUtil.parseAngle;
+import static org.osm2world.core.util.ValueParseUtil.parseOsmDecimal;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -106,8 +109,12 @@ public class WorldModuleParseUtil {
 	}
 
 	public static final int parseInt(TagSet tags, int defaultValue, String key) {
+		return parseInt(tags, defaultValue, key, NONNEGATIVE);
+	}
+
+	public static final int parseInt(TagSet tags, int defaultValue, String key, Predicate<Double> constraint) {
 		if(tags.containsKey(key)) {
-			Double value = parseOsmDecimal(tags.getValue(key), false);
+			Double value = parseOsmDecimal(tags.getValue(key), constraint);
 			if (value != null) {
 				return(int) (double) value;
 			}

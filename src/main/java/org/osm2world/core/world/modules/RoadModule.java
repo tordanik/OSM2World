@@ -17,6 +17,7 @@ import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
 import static org.osm2world.core.target.common.texcoord.NamedTexCoordFunction.*;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.texCoordLists;
 import static org.osm2world.core.target.common.texcoord.TexCoordUtil.triangleTexCoordLists;
+import static org.osm2world.core.util.ValueParseUtil.ValueConstraint.POSITIVE;
 import static org.osm2world.core.util.ValueParseUtil.*;
 import static org.osm2world.core.util.color.ColorNameDefinitions.CSS_COLORS;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.createLineBetween;
@@ -833,7 +834,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			Double lanes = null;
 
 			if (tags.containsKey("lanes")) {
-				lanes = parseOsmDecimal(tags.getValue("lanes"), false);
+				lanes = parseOsmDecimal(tags.getValue("lanes"), POSITIVE);
 			}
 
 			Double lanesRight = null;
@@ -846,7 +847,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (laneTagsRight != null) {
 				lanesRight = (double)laneTagsRight.length;
 			} else if (tags.containsKey(rightKey)) {
-				lanesRight = parseOsmDecimal(tags.getValue(rightKey), false);
+				lanesRight = parseOsmDecimal(tags.getValue(rightKey), POSITIVE);
 			}
 
 			String leftKey = rightHandTraffic ? "lanes:backward" : "lanes:forward";
@@ -854,7 +855,7 @@ public class RoadModule extends ConfigurableWorldModule {
 			if (laneTagsLeft != null) {
 				lanesLeft = (double)laneTagsLeft.length;
 			} else if (tags.containsKey(leftKey)) {
-				lanesLeft = parseOsmDecimal(tags.getValue(leftKey), false);
+				lanesLeft = parseOsmDecimal(tags.getValue(leftKey), POSITIVE);
 			}
 
 			int vehicleLaneCount;
