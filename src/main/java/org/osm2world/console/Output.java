@@ -316,13 +316,19 @@ public final class Output {
 	private static void writeLogFiles(File logDir, String fileNameBase, PerformanceListener perfListener) {
 
 		double totalTime = Duration.between(perfListener.startTime, now()).toMillis() / 1000.0;
-		Map<Phase, Double> timePerPhase = Map.ofEntries(
-				entry(MAP_DATA, perfListener.getPhaseDuration(MAP_DATA).toMillis() / 1000.0),
-				entry(REPRESENTATION, perfListener.getPhaseDuration(REPRESENTATION).toMillis() / 1000.0),
-				entry(ELEVATION, perfListener.getPhaseDuration(ELEVATION).toMillis() / 1000.0),
-				entry(TERRAIN, perfListener.getPhaseDuration(TERRAIN).toMillis() / 1000.0),
-				entry(TARGET, Duration.between(perfListener.getPhaseEnd(TERRAIN), now()).toMillis() / 1000.0)
-		);
+
+		Map<Phase, Double> timePerPhase;
+		if (perfListener.currentPhase == FINISHED) {
+			timePerPhase = Map.ofEntries(
+					entry(MAP_DATA, perfListener.getPhaseDuration(MAP_DATA).toMillis() / 1000.0),
+					entry(REPRESENTATION, perfListener.getPhaseDuration(REPRESENTATION).toMillis() / 1000.0),
+					entry(ELEVATION, perfListener.getPhaseDuration(ELEVATION).toMillis() / 1000.0),
+					entry(TERRAIN, perfListener.getPhaseDuration(TERRAIN).toMillis() / 1000.0),
+					entry(TARGET, Duration.between(perfListener.getPhaseEnd(TERRAIN), now()).toMillis() / 1000.0)
+			);
+		} else {
+			timePerPhase = Map.of();
+		}
 
 		/* write a json file with performance stats */
 
@@ -347,9 +353,11 @@ public final class Output {
 		TargetUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
 			try (var printStream = new PrintStream(outputStream)) {
 				printStream.println("Runtime (seconds):\nTotal: " + totalTime);
-				for (Phase phase : Phase.values()) {
-					if (timePerPhase.containsKey(phase)) {
-						printStream.println(phase + ": " + timePerPhase.get(phase));
+				if (!timePerPhase.isEmpty()) {
+					for (Phase phase : Phase.values()) {
+						if (timePerPhase.containsKey(phase)) {
+							printStream.println(phase + ": " + timePerPhase.get(phase));
+						}
 					}
 				}
 				printStream.println();
