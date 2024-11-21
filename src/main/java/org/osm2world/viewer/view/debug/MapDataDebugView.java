@@ -1,5 +1,12 @@
 package org.osm2world.viewer.view.debug;
 
+import static java.util.Collections.emptyList;
+import static org.osm2world.core.map_data.creation.EmptyTerrainBuilder.EMPTY_SURFACE_VALUE;
+
+import java.awt.*;
+import java.util.Collection;
+import java.util.function.Predicate;
+
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
@@ -10,18 +17,11 @@ import org.osm2world.core.map_data.data.overlaps.MapOverlapAA;
 import org.osm2world.core.map_data.data.overlaps.MapOverlapWA;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.TriangleXZ;
-import org.osm2world.core.math.Vector3D;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.TriangulationUtil;
 import org.osm2world.core.target.common.material.ImmutableMaterial;
 import org.osm2world.core.target.common.material.Material.Interpolation;
 import org.osm2world.core.target.jogl.JOGLTarget;
-
-import java.awt.*;
-import java.util.Collection;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 /**
  * shows the plain {@link MapData} as a network of nodes, lines and areas
@@ -49,21 +49,18 @@ public class MapDataDebugView extends DebugView {
 	@Override
 	public void fillTarget(JOGLTarget target) {
 
+		Predicate<MapArea> isEmptyTerrain = it -> it.getTags().contains("surface", EMPTY_SURFACE_VALUE);
+
 		for (MapArea area : map.getMapAreas()) {
-			Vector3D[] vs = new Vector3D[area.getBoundaryNodes().size()];
-			for (int i=0; i < area.getBoundaryNodes().size(); i++) {
-				vs[i] = area.getBoundaryNodes().get(i).getPos();
-			}
 
-			Collection<TriangleXZ> triangles =
-				TriangulationUtil.triangulate(area.getPolygon());
+			if (isEmptyTerrain.test(area)) continue;
 
-			for (TriangleXZ t : triangles) {
-				target.drawTriangles(
-						new ImmutableMaterial(Interpolation.FLAT, AREA_COLOR),
-						singletonList(t.xyz(-0.1)),
-						emptyList());
-			}
+			Collection<TriangleXZ> triangles = TriangulationUtil.triangulate(area.getPolygon());
+
+			target.drawTriangles(
+					new ImmutableMaterial(Interpolation.FLAT, AREA_COLOR),
+					triangles.stream().map(t -> t.xyz(-0.1)).toList(),
+					emptyList());
 
 		}
 
@@ -74,8 +71,8 @@ public class MapDataDebugView extends DebugView {
 		}
 
 		for (MapNode node : map.getMapNodes()) {
-			drawBoxAround(target, node.getPos(),
-					NODE_COLOR, HALF_NODE_WIDTH);
+			if (node.getId() < 0 && node.getAdjacentAreas().stream().allMatch(isEmptyTerrain)) continue;
+			drawBoxAround(target, node.getPos(), NODE_COLOR, HALF_NODE_WIDTH);
 		}
 
 		for (MapWaySegment line : map.getMapWaySegments()) {
@@ -86,22 +83,22 @@ public class MapDataDebugView extends DebugView {
 		}
 
 		for (MapArea area : map.getMapAreas()) {
+			if (isEmptyTerrain.test(area)) continue;
 			for (MapOverlap<?, ?> overlap : area.getOverlaps()) {
-				if (overlap instanceof MapOverlapWA) {
-					for (VectorXZ pos : ((MapOverlapWA)overlap).getIntersectionPositions()) {
-						drawBoxAround(target, pos,
-								INTERSECTION_COLOR, HALF_NODE_WIDTH);
+				if (overlap instanceof MapOverlapWA overlapWA) {
+					for (VectorXZ pos : overlapWA.getIntersectionPositions()) {
+						drawBoxAround(target, pos, INTERSECTION_COLOR, HALF_NODE_WIDTH);
 					}
-					for (LineSegmentXZ seg : ((MapOverlapWA)overlap).getSharedSegments()) {
+					for (LineSegmentXZ seg : overlapWA.getSharedSegments()) {
 						target.drawLineStrip(SHARED_SEGMENT_COLOR, 3, seg.p1.xyz(0), seg.p2.xyz(0));
 					}
-					for (LineSegmentXZ seg : ((MapOverlapWA)overlap).getOverlappedSegments()) {
+					for (LineSegmentXZ seg : overlapWA.getOverlappedSegments()) {
 						target.drawLineStrip(INTERSECTION_COLOR, 3, seg.p1.xyz(0), seg.p2.xyz(0));
 					}
-				} else if (overlap instanceof MapOverlapAA) {
-					for (VectorXZ pos : ((MapOverlapAA)overlap).getIntersectionPositions()) {
-						drawBoxAround(target, pos,
-								INTERSECTION_COLOR, HALF_NODE_WIDTH);
+				} else if (overlap instanceof MapOverlapAA overlapAA) {
+					if (isEmptyTerrain.test(overlapAA.getOther(area))) continue;
+					for (VectorXZ pos : overlapAA.getIntersectionPositions()) {
+						drawBoxAround(target, pos, INTERSECTION_COLOR, HALF_NODE_WIDTH);
 					}
 				}
 			}
