@@ -676,18 +676,24 @@ public final class PowerModule extends AbstractModule {
 
 			for (int a = 0; a < 4; a++) {
 
-				List<VectorXYZ> vs = new ArrayList<VectorXYZ>();
-				List<VectorXZ> tex = new ArrayList<VectorXZ>();
+				List<VectorXYZ> vs = new ArrayList<>();
+				List<VectorXZ> tex = new ArrayList<>();
 				List<List<VectorXZ>> texList =
 					nCopies(Materials.POWER_TOWER_VERTICAL.getNumTextureLayers(), tex);
 
-				for (int i = 0; i < 2; i++) {
-					int idx = (a+i)%4;
-					vs.add(high[idx].xyz(height));
-					vs.add(low[idx].xyz(base));
-					tex.add(new VectorXZ(i, 1));
-					tex.add(new VectorXZ(i, 0));
+				vs.add(high[a].xyz(height));
+				tex.add(new VectorXZ(0, 1));
+
+				vs.add(low[a].xyz(base));
+				tex.add(new VectorXZ(0, 0));
+
+				if (high[a].distanceTo(high[(a + 1) % 4]) > 0.001) {
+					vs.add(high[(a + 1) % 4].xyz(height));
+					tex.add(new VectorXZ(1, 1));
 				}
+
+				vs.add(low[(a + 1) % 4].xyz(base));
+				tex.add(new VectorXZ(1, 0));
 
 				target.drawTriangleStrip(Materials.POWER_TOWER_VERTICAL, vs, texList);
 			}
