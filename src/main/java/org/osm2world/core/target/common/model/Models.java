@@ -30,7 +30,7 @@ public class Models {
 	 *
 	 * @param name  case-insensitive name of the material
 	 */
-	public static @Nullable Model getModel(@Nullable String name) {
+	synchronized public static @Nullable Model getModel(@Nullable String name) {
 
 		if (name == null) return null;
 
@@ -46,7 +46,7 @@ public class Models {
 	/**
 	 * variant of {@link #getModel(String)} which picks one of several available models randomly.
 	 */
-	public static @Nullable Model getModel(@Nullable String name, Random random) {
+	synchronized public static @Nullable Model getModel(@Nullable String name, Random random) {
 
 		if (name == null) return null;
 
@@ -59,7 +59,7 @@ public class Models {
 
 	}
 
-	public static void configureModels(Configuration config) {
+	synchronized public static void configureModels(Configuration config) {
 
 		models.clear();
 

@@ -296,7 +296,7 @@ public final class Materials {
 	}
 
 	/** returns all materials defined here */
-	public static final Collection<ConfMaterial> getMaterials() {
+	synchronized public static final Collection<ConfMaterial> getMaterials() {
 		return fieldNameMap.keySet();
 	}
 
@@ -305,7 +305,7 @@ public final class Materials {
 	 *
 	 * @param name  case-insensitive name of the material
 	 */
-	public static final @Nullable ConfMaterial getMaterial(@Nullable String name) {
+	synchronized public static final @Nullable ConfMaterial getMaterial(@Nullable String name) {
 
 		if (name == null) return null;
 
@@ -332,18 +332,18 @@ public final class Materials {
 	}
 
 	/** variant of {@link #getMaterial(String)} with a default value */
-	public static final Material getMaterial(@Nullable String name, Material defaultValue) {
+	synchronized public static final Material getMaterial(@Nullable String name, Material defaultValue) {
 		Material result = getMaterial(name);
 		return result == null ? defaultValue : result;
 	}
 
 	/** returns a material for a surface value; null if none is found */
-	public static final Material getSurfaceMaterial(String value) {
+	synchronized public static final Material getSurfaceMaterial(String value) {
 		return getSurfaceMaterial(value, null);
 	}
 
 	/** same as {@link #getSurfaceMaterial(String)}, but with fallback value */
-	public static final Material getSurfaceMaterial(String value, Material fallback) {
+	synchronized public static final Material getSurfaceMaterial(String value, Material fallback) {
 		Material material = value == null ? null : surfaceMaterialMap.get(value);
 		if (material != null) {
 			return material;
@@ -356,7 +356,7 @@ public final class Materials {
 	 * returns a human-readable, unique name for a material defined
 	 * within this class, null for all other materials.
 	 */
-	public static final String getUniqueName(Material material) {
+	synchronized public static final String getUniqueName(Material material) {
 		return fieldNameMap.get(material);
 	}
 
@@ -367,7 +367,7 @@ public final class Materials {
 	 * configures the attributes of the materials within this class
 	 * based on external configuration settings
 	 */
-	public static final void configureMaterials(Configuration config) {
+	synchronized public static final void configureMaterials(Configuration config) {
 
 		externalMaterials.clear();
 
