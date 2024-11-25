@@ -185,7 +185,7 @@ public class ConversionFacade {
 			throw new IllegalArgumentException("osmFile must not be null");
 		}
 
-		OSMData osmData = new OSMFileReader(osmFile).getData();
+		OSMData osmData = new OSMFileReader(osmFile).getAllData();
 
 		return createRepresentations(osmData, metadata, worldModules, config, targets);
 

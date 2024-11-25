@@ -32,13 +32,12 @@ import org.osm2world.core.ConversionFacade.Phase;
 import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.ConversionFacade.Results;
 import org.osm2world.core.conversion.ConversionLog;
-import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.LatLonEle;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapMetadata;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
-import org.osm2world.core.osm.creation.*;
+import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.TargetUtil;
 import org.osm2world.core.target.TargetUtil.Compression;
 import org.osm2world.core.target.common.rendering.Camera;
@@ -72,36 +71,6 @@ public final class Output {
 
 		try {
 
-			OSMDataReader dataReader = null;
-
-			switch (sharedArgs.getInputMode()) {
-
-				case FILE:
-					File inputFile = sharedArgs.getInput();
-					dataReader = switch (CLIArgumentsUtil.getInputFileType(sharedArgs)) {
-						case SIMPLE_FILE -> new OSMFileReader(inputFile);
-						case MBTILES -> new MbtilesReader(inputFile, sharedArgs.getTile());
-						case GEODESK -> new GeodeskReader(inputFile, sharedArgs.getTile().bounds());
-					};
-					break;
-
-				case OVERPASS:
-					if (sharedArgs.isInputBoundingBox()) {
-						LatLonBounds bounds = LatLonBounds.ofPoints(sharedArgs.getInputBoundingBox());
-						dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
-					} else if (sharedArgs.isTile()) {
-						LatLonBounds bounds = sharedArgs.getTile().bounds();
-						dataReader = new OverpassReader(sharedArgs.getOverpassURL(), bounds);
-					} else {
-						assert sharedArgs.isInputQuery(); // can be assumed due to input validation
-						String query = sharedArgs.getInputQuery();
-						dataReader = new OverpassReader(sharedArgs.getOverpassURL(), query);
-					}
-					break;
-
-			}
-
-
 			MapMetadata metadata = null;
 
 			if (sharedArgs.isMetadataFile()) {
@@ -118,11 +87,12 @@ public final class Output {
 				}
 			}
 
-
 			ConversionFacade cf = new ConversionFacade();
 			cf.addProgressListener(perfListener);
 
-			Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
+			OSMData osmData = CLIArgumentsUtil.getOsmData(sharedArgs);
+
+			Results results = cf.createRepresentations(osmData, metadata, null, config, null);
 
 			ImageExporter exporter = null;
 

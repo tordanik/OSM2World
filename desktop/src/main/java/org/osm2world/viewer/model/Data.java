@@ -18,7 +18,7 @@ import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.osm.creation.GeodeskReader;
 import org.osm2world.core.osm.creation.MbtilesReader;
-import org.osm2world.core.osm.creation.OSMDataReader;
+import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.osm.creation.OSMFileReader;
 import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.functions.Factory;
@@ -59,7 +59,7 @@ public class Data extends Observable {
 		this.setConfig(config);
 	}
 
-	public void loadOSMData(OSMDataReader reader, boolean failOnLargeBBox,
+	public void loadOSMData(OSMDataReaderView reader, boolean failOnLargeBBox,
 			Factory<? extends TerrainInterpolator> interpolatorFactory,
 			Factory<? extends EleCalculator> eleCalculatorFactory,
 			ProgressListener listener)
@@ -67,12 +67,12 @@ public class Data extends Observable {
 
 		try {
 
-			if (reader instanceof OSMFileReader r) {
-				this.osmFile = r.getFile();
-			} else if (reader instanceof GeodeskReader r) {
-				this.osmFile = r.getFile();
-			} else if (reader instanceof MbtilesReader r) {
-				this.osmFile = r.getFile();
+			if (reader.reader instanceof OSMFileReader r) {
+				this.osmFile = r.file();
+			} else if (reader.reader instanceof GeodeskReader r) {
+				this.osmFile = r.file();
+			} else if (reader.reader instanceof MbtilesReader r) {
+				this.osmFile = r.file();
 			} else {
 				this.osmFile = null;
 			}
@@ -88,7 +88,7 @@ public class Data extends Observable {
 			}
 
 			conversionResults = converter.createRepresentations(
-					reader.getData(), null, null, config, null);
+					reader.getAllData(), null, null, config, null);
 
 		} catch (IOException e) {
 

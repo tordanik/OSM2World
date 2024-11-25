@@ -15,6 +15,9 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.osm.creation.*;
+import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.util.Resolution;
 
 import com.lexicalscope.jewel.cli.CliFactory;
@@ -222,6 +225,45 @@ public final class CLIArgumentsUtil {
 
 			return result;
 
+		}
+
+	}
+
+	public static OSMDataReader getOsmDataReader(CLIArguments args) {
+
+		switch (args.getInputMode()) {
+
+			case FILE -> {
+				File inputFile = args.getInput();
+				return switch (CLIArgumentsUtil.getInputFileType(args)) {
+					case SIMPLE_FILE -> new OSMFileReader(inputFile);
+					case MBTILES -> new MbtilesReader(inputFile);
+					case GEODESK -> new GeodeskReader(inputFile);
+				};
+			}
+
+			case OVERPASS -> {
+				return new OverpassReader(args.getOverpassURL());
+			}
+
+			default -> throw new IllegalStateException("unknown input mode " + args.getInputMode());
+
+		}
+
+	}
+
+	public static OSMData getOsmData(CLIArguments args) throws IOException {
+
+		OSMDataReader dataReader = CLIArgumentsUtil.getOsmDataReader(args);
+
+		if (args.isInputBoundingBox()) {
+			return dataReader.getData(LatLonBounds.ofPoints(args.getInputBoundingBox()));
+		} else if (args.isTile()) {
+			return dataReader.getData(args.getTile());
+		} else if (args.isInputQuery() && dataReader instanceof OverpassReader overpassReader) {
+			return overpassReader.getData(args.getInputQuery());
+		} else {
+			return dataReader.getAllData();
 		}
 
 	}

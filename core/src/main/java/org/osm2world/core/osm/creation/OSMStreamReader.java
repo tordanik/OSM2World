@@ -1,18 +1,16 @@
 package org.osm2world.core.osm.creation;
 
-import de.topobyte.osm4j.core.access.OsmIterator;
-import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
-import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
-import de.topobyte.osm4j.pbf.seq.PbfIterator;
-import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.osm2world.core.osm.data.OSMData;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import static java.lang.Double.parseDouble;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,17 +21,21 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
-import static java.lang.Double.parseDouble;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.osm2world.core.osm.data.OSMData;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import de.topobyte.osm4j.core.access.OsmIterator;
+import de.topobyte.osm4j.core.dataset.InMemoryMapDataSet;
+import de.topobyte.osm4j.core.dataset.MapDataSetLoader;
+import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 
 /**
  * {@link OSMDataReader} providing information from a stream of OSM data (such as a {@link FileInputStream}).
@@ -73,7 +75,7 @@ public class OSMStreamReader implements OSMDataReader {
 	}
 
 	@Override
-	public OSMData getData() throws IOException {
+	public OSMData getAllData() throws IOException {
 		if (!useJosmWorkaround) {
 			return getDataFromStream(inputStream, compressionMethod);
 		} else {
@@ -81,22 +83,13 @@ public class OSMStreamReader implements OSMDataReader {
 		}
 	}
 
-	protected static OSMData getDataFromStream(InputStream inputStream, CompressionMethod compressionMethod)
-			throws IOException {
+	protected static OSMData getDataFromStream(InputStream inputStream, CompressionMethod compressionMethod) {
 
-		OsmIterator iterator;
-
-		switch (compressionMethod) {
-		case PBF:
-			iterator = new PbfIterator(inputStream, true);
-			break;
-		case None:
-			iterator = new OsmXmlIterator(inputStream, true);
-			break;
-		default:
-			// TODO: handle compression with GZip or BZip2!
-			throw new NotImplementedException();
-		}
+		OsmIterator iterator = switch (compressionMethod) {
+			case PBF -> new PbfIterator(inputStream, true);
+			case None -> new OsmXmlIterator(inputStream, true);
+			default -> throw new NotImplementedException("Compression method " + compressionMethod); // TODO: handle compression with GZip or BZip2!
+		};
 
 		InMemoryMapDataSet data = MapDataSetLoader.read(iterator, true, true, true);
 		return new OSMData(data);
@@ -127,8 +120,7 @@ public class OSMStreamReader implements OSMDataReader {
 			List<Element> boundsElements = new ArrayList<>();
 
 			for (int i = 0; i < nodes.getLength(); i++) {
-				if (nodes.item(i) instanceof Element) {
-					Element element = (Element) nodes.item(i);
+				if (nodes.item(i) instanceof Element element) {
 					if ("node".equals(element.getNodeName())
 							|| "way".equals(element.getNodeName())
 							|| "relation".equals(element.getNodeName())) {

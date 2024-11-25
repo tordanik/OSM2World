@@ -14,10 +14,10 @@ public class OverpassReaderTest {
 	@Test
 	public void testBoundingBox() throws IOException {
 
-		OverpassReader reader = new OverpassReader(new LatLonBounds(
-				new LatLon(50.746, 7.154), new LatLon(50.748, 7.157)));
+		var reader = new OverpassReader();
 
-		OSMData data = reader.getData();
+		OSMData data = reader.getData(new LatLonBounds(
+				new LatLon(50.746, 7.154), new LatLon(50.748, 7.157)));
 
 		assertFalse(data.getNodes().isEmpty());
 		assertFalse(data.getWays().isEmpty());

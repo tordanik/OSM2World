@@ -1,18 +1,19 @@
 package org.osm2world.core.osm.creation;
 
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmRelation;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
-import org.junit.Test;
-import org.osm2world.core.osm.data.OSMData;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
+import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.getTagsAsMap;
-import static de.topobyte.osm4j.core.model.util.OsmModelUtil.nodesAsList;
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.osm2world.core.osm.data.OSMData;
+
+import de.topobyte.osm4j.core.model.iface.OsmNode;
+import de.topobyte.osm4j.core.model.iface.OsmRelation;
+import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 
 
 public class OSMFileReaderTest {
@@ -22,7 +23,7 @@ public class OSMFileReaderTest {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource("validFile.osm").getFile());
-		OSMData osmData = new OSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getAllData();
 
 		assertSame(4, osmData.getNodes().size());
 		assertSame(1, osmData.getWays().size());
@@ -45,7 +46,7 @@ public class OSMFileReaderTest {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource("josmTest01.osm").getFile());
-		OSMData osmData = new OSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getAllData();
 
 		assertSame(5, osmData.getNodes().size());
 		assertSame(1, osmData.getWays().size());
@@ -58,7 +59,7 @@ public class OSMFileReaderTest {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource("josm_emoji.osm").getFile());
-		OSMData osmData = new OSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getAllData();
 
 		assertSame(1, osmData.getNodes().size());
 		assertNotNull(osmData.getNode(123123123123L));

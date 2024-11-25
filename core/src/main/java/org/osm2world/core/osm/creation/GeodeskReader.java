@@ -31,8 +31,10 @@ import gnu.trove.map.hash.TObjectLongHashMap;
 
 /**
  * {@link OSMDataReader} fetching data from a GeoDesk database (.gol file)
+ *
+ * @param file  the gol file this reader is obtaining data from
  */
-public class GeodeskReader implements OSMDataReader {
+public record GeodeskReader(File file) implements OSMDataReader {
 
 	private static final long ANONYMOUS_NODE_ID_OFFSET = 100_000_000_000L;
 
@@ -42,36 +44,21 @@ public class GeodeskReader implements OSMDataReader {
 	 */
 	private static final Object synchronizationObject = new Object();
 
-	private final File golFile;
-	private final LatLonBounds bounds;
-
-	private final TObjectLongMap<LatLon> anonymousNodeIdMap = new TObjectLongHashMap<>();
-
-	public GeodeskReader(File golFile, LatLonBounds bounds) {
-		this.golFile = golFile;
-		this.bounds = bounds;
-	}
-
-	/** returns the gol file this reader is obtaining data from */
-	public File getFile() {
-		return golFile;
-	}
-
 	@Override
-	public OSMData getData() throws IOException {
+	public OSMData getData(LatLonBounds bounds) throws IOException {
 
-		if (!golFile.exists()) {
-			throw new FileNotFoundException("Geodesk file does not exist: " + golFile);
+		if (!file.exists()) {
+			throw new FileNotFoundException("Geodesk file does not exist: " + file);
 		}
 
 		synchronized (synchronizationObject) {
 
-			try (FeatureLibrary library = new FeatureLibrary(golFile.getPath())) {
+			try (FeatureLibrary library = new FeatureLibrary(file.getPath())) {
 
 				Box bbox = Box.ofWSEN(bounds.minlon, bounds.minlat, bounds.maxlon, bounds.maxlat);
 				Features<Feature> features = library.in(bbox);
 
-				InMemoryMapDataSet data = geodeskToOsm4j(features);
+				InMemoryMapDataSet data = geodeskToOsm4j(features, bounds);
 
 				return new OSMData(data);
 
@@ -84,7 +71,9 @@ public class GeodeskReader implements OSMDataReader {
 	}
 
 	/** converts OSM data in GeoDesk's representation to osm4j's */
-	private InMemoryMapDataSet geodeskToOsm4j(Features<Feature> features) {
+	private InMemoryMapDataSet geodeskToOsm4j(Features<Feature> features, LatLonBounds bounds) {
+
+		NodeIdProvider nodeIdProvider = new NodeIdProvider();
 
 		/* collect all features to convert (including way nodes and relation members) */
 
@@ -119,7 +108,7 @@ public class GeodeskReader implements OSMDataReader {
 
 		for (Way way : golWayMap.valueCollection()) {
 			for (Node wayNode : way.nodes()) {
-				golNodeMap.put(nodeId(wayNode), wayNode);
+				golNodeMap.put(nodeIdProvider.nodeId(wayNode), wayNode);
 			}
 		}
 
@@ -138,7 +127,7 @@ public class GeodeskReader implements OSMDataReader {
 
 		for (Way way : golWayMap.valueCollection()) {
 			TLongArrayList nodeIds = new TLongArrayList();
-			way.nodes().forEach(n -> nodeIds.add(nodeId(n)));
+			way.nodes().forEach(n -> nodeIds.add(nodeIdProvider.nodeId(n)));
 			assert(stream(nodeIds.toArray()).allMatch(osm4jNodeMap::containsKey));
 			var golWay = new de.topobyte.osm4j.core.model.impl.Way(way.id(), nodeIds);
 			golWay.setTags(geodeskTagsToOsm4j(way.tags()));
@@ -194,19 +183,25 @@ public class GeodeskReader implements OSMDataReader {
 				.collect(toList()));
 	}
 
-	/** returns the id non-anonymous nodes, or else a fake id based on the coords */
-	private long nodeId(Node node) {
-		if (node.id() >= ANONYMOUS_NODE_ID_OFFSET) {
-			throw new Error("Node id too large: " + node.id());
-		} else if (node.id() != 0) {
-			return node.id();
-		} else {
-			LatLon pos = new LatLon(node.lat(), node.lon());
-			if (!anonymousNodeIdMap.containsKey(pos)) {
-				anonymousNodeIdMap.put(pos, ANONYMOUS_NODE_ID_OFFSET + anonymousNodeIdMap.size());
+	private static class NodeIdProvider {
+
+		private final TObjectLongMap<LatLon> anonymousNodeIdMap = new TObjectLongHashMap<>();
+
+		/** returns the id non-anonymous nodes, or else a fake id based on the coords */
+		private long nodeId(Node node) {
+			if (node.id() >= ANONYMOUS_NODE_ID_OFFSET) {
+				throw new Error("Node id too large: " + node.id());
+			} else if (node.id() != 0) {
+				return node.id();
+			} else {
+				LatLon pos = new LatLon(node.lat(), node.lon());
+				if (!anonymousNodeIdMap.containsKey(pos)) {
+					anonymousNodeIdMap.put(pos, ANONYMOUS_NODE_ID_OFFSET + anonymousNodeIdMap.size());
+				}
+				return anonymousNodeIdMap.get(pos);
 			}
-			return anonymousNodeIdMap.get(pos);
 		}
+
 	}
 
 }

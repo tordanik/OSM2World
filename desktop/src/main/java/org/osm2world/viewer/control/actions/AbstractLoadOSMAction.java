@@ -13,7 +13,7 @@ import org.osm2world.core.ConversionFacade.ProgressListener;
 import org.osm2world.core.map_elevation.creation.EleCalculator;
 import org.osm2world.core.map_elevation.creation.TerrainInterpolator;
 import org.osm2world.core.math.InvalidGeometryException;
-import org.osm2world.core.osm.creation.OSMDataReader;
+import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.util.functions.DefaultFactory;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
@@ -40,7 +40,7 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 
 	}
 
-	protected void loadOSMData(OSMDataReader dataReader, boolean resetCamera) {
+	protected void loadOSMData(OSMDataReaderView dataReader, boolean resetCamera) {
 
 		try {
 			data.reloadConfig(renderOptions);
@@ -85,12 +85,12 @@ public abstract class AbstractLoadOSMAction extends AbstractAction {
 
 	private class LoadOSMThread extends Thread implements ProgressListener {
 
-		private final OSMDataReader dataReader;
+		private final OSMDataReaderView dataReader;
 		private final boolean resetCamera;
 
 		private ProgressDialog progressDialog;
 
-		public LoadOSMThread(OSMDataReader dataReader, boolean resetCamera) {
+		public LoadOSMThread(OSMDataReaderView dataReader, boolean resetCamera) {
 			super("OpenOSMThread");
 			this.dataReader = dataReader;
 			this.resetCamera = resetCamera;

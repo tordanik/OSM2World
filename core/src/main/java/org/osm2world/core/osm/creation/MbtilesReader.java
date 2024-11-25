@@ -10,6 +10,7 @@ import java.util.Map;
 import org.imintel.mbtiles4j.MBTilesReadException;
 import org.imintel.mbtiles4j.MBTilesReader;
 import org.imintel.mbtiles4j.Tile;
+import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.osm.data.OSMData;
 import org.osm2world.core.target.common.rendering.TileNumber;
 
@@ -20,8 +21,10 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
 
 /**
  * {@link OSMDataReader} fetching a single tile from a MBTiles sqlite database which contains .osm.pbf data.
+ *
+ * @param file  the MBTiles file this reader is obtaining data from
  */
-public class MbtilesReader implements OSMDataReader {
+public record MbtilesReader(File file) implements OSMDataReader {
 
 	/**
 	 * map of existing readers.
@@ -29,7 +32,7 @@ public class MbtilesReader implements OSMDataReader {
 	 * Access through {@link #getReader(File)}!
 	 * //TODO move into a separate MbtilesReaderPool class so I can enforce access restrictions?
 	 */
-	private static Map<File, MBTilesReader> readerMap = new HashMap<>();
+	private static final Map<File, MBTilesReader> readerMap = new HashMap<>();
 	//TODO reference counter, closing it
 
 	private static synchronized MBTilesReader getReader(File mbtilesFile)
@@ -46,29 +49,14 @@ public class MbtilesReader implements OSMDataReader {
 
 	}
 
-	private final File mbtilesFile;
-	private final TileNumber tile;
-
-	public MbtilesReader(File mbtilesFile, TileNumber tile) {
-		this.mbtilesFile = mbtilesFile;
-		this.tile = tile;
-	}
-
-	/** returns the MBTiles file this reader is obtaining data from */
-	public File getFile() {
-		return mbtilesFile;
-	}
-
 	@Override
-	public OSMData getData() throws IOException {
-
-		MBTilesReader r = null;
+	public OSMData getData(TileNumber tile) throws IOException {
 
 		try {
 
-			r = getReader(mbtilesFile);
+			MBTilesReader r = getReader(file);
 
-			// get the tile; note that mbtiles is using TMS tile coords, which have a flipped y axis
+			// get the tile; note that mbtiles is using TMS tile coords, which have a flipped y-axis
 			Tile t = r.getTile(tile.zoom, tile.x, tile.flippedY());
 
 			try (InputStream is = t.getData()) {
@@ -84,6 +72,11 @@ public class MbtilesReader implements OSMDataReader {
 			throw new IOException(e);
 		}
 
+	}
+
+	@Override
+	public OSMData getData(LatLonBounds bounds) throws IOException {
+		throw new UnsupportedOperationException("MbtilesReader does not support accessing data for arbitrary bounds");
 	}
 
 }

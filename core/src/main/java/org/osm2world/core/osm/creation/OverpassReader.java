@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.osm.data.OSMData;
@@ -17,35 +18,23 @@ import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 /**
  * {@link OSMDataReader} fetching information from Overpass API.
  */
-public class OverpassReader implements OSMDataReader {
+public record OverpassReader(String apiURL) implements OSMDataReader {
 
 	public static final String DEFAULT_API_URL = "http://www.overpass-api.de/api/interpreter";
-	private String apiURL;
-	private String queryString;
 
-	/** fetches data within a bounding box from Overpass API */
-	public OverpassReader(LatLonBounds bounds) {
-		this(DEFAULT_API_URL, bounds);
+	/** accesses data from the default API at {@link #DEFAULT_API_URL} */
+	public OverpassReader() {
+		this(DEFAULT_API_URL);
 	}
 
-	/** fetches data within a bounding box from any Overpass API instance */
-	public OverpassReader(String apiURL, LatLonBounds bounds) {
-		this(apiURL, "[bbox:"+bounds.minlat+","+bounds.minlon+","+bounds.maxlat+","+bounds.maxlon+"];"
+	@Override
+	public OSMData getData(LatLonBounds bounds) throws IOException {
+		return getData( "[bbox:"+bounds.minlat+","+bounds.minlon+","+bounds.maxlat+","+bounds.maxlon+"];"
 				+ "(node;rel(bn)->.x;way;node(w)->.x;rel(bw););out meta;");
 	}
 
-	/** fetches data from Overpass API according to an arbitrary query */
-	public OverpassReader(String queryString) {
-		this(DEFAULT_API_URL, queryString);
-	}
-
-	/** fetches data from any Overpass API instance according to an arbitrary query. */
-	public OverpassReader(String apiURL, String queryString) {
-		this.apiURL = apiURL;
-		this.queryString = queryString;
-	}
-
-	public OSMData getData() throws IOException {
+	/** fetches data according to an arbitrary query. */
+	public OSMData getData(String queryString) throws IOException {
 
 		try {
 
@@ -58,7 +47,7 @@ public class OverpassReader implements OSMDataReader {
 
 			try (DataOutputStream printout = new DataOutputStream(connection.getOutputStream())) {
 
-				printout.writeBytes("data=" + URLEncoder.encode(queryString, "utf-8"));
+				printout.writeBytes("data=" + URLEncoder.encode(queryString, StandardCharsets.UTF_8));
 				printout.flush();
 
 			}

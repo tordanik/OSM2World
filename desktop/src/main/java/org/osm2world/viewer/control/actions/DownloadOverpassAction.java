@@ -3,9 +3,11 @@ package org.osm2world.viewer.control.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JOptionPane;
+import javax.annotation.Nullable;
+import javax.swing.*;
 
 import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.osm.creation.OSMDataReaderView;
 import org.osm2world.core.osm.creation.OverpassReader;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
@@ -33,12 +35,12 @@ public class DownloadOverpassAction extends AbstractLoadOSMAction {
 		LatLonBounds bounds = askLatLonBounds();
 
 		if (bounds != null) {
-			loadOSMData(new OverpassReader(bounds), true);
+			loadOSMData(new OSMDataReaderView(new OverpassReader(), bounds), true);
 		}
 
 	}
 
-	private LatLonBounds askLatLonBounds() {
+	private @Nullable LatLonBounds askLatLonBounds() {
 
 		double minLat = Double.parseDouble(
 				JOptionPane.showInputDialog(viewerFrame, "minLat"));

@@ -1,21 +1,18 @@
 package org.osm2world.viewer.control.actions;
 
-import org.osm2world.core.osm.creation.GeodeskReader;
-import org.osm2world.core.osm.creation.MbtilesReader;
-import org.osm2world.core.osm.creation.OSMDataReader;
-import org.osm2world.core.osm.creation.OSMFileReader;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.osm2world.core.osm.creation.*;
 import org.osm2world.core.target.common.rendering.TileNumber;
 import org.osm2world.viewer.model.Data;
 import org.osm2world.viewer.model.RenderOptions;
 import org.osm2world.viewer.view.RecentFilesUpdater;
 import org.osm2world.viewer.view.ViewerFrame;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
 
 public class OpenOSMAction extends AbstractLoadOSMAction {
 
@@ -72,16 +69,7 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 
 			}
 
-			try {
-				loadOSMData(new OSMFileReader(osmFile), resetCamera);
-			} catch (IOException e) {
-
-				String msg = "File not found:\n" + osmFile;
-
-				JOptionPane.showMessageDialog(viewerFrame, msg,
-						"Error", JOptionPane.ERROR_MESSAGE);
-
-			}
+			loadOSMData(new OSMDataReaderView(new OSMFileReader(osmFile)), resetCamera);
 
 		} else {
 
@@ -91,9 +79,9 @@ public class OpenOSMAction extends AbstractLoadOSMAction {
 				if (tileString == null) return;
 				TileNumber tileNumber = new TileNumber(tileString);
 				OSMDataReader reader = mbtiles
-						? new MbtilesReader(osmFile, tileNumber)
-						: new GeodeskReader(osmFile, tileNumber.bounds());
-				loadOSMData(reader, true);
+						? new MbtilesReader(osmFile)
+						: new GeodeskReader(osmFile);
+				loadOSMData(new OSMDataReaderView(reader, tileNumber), true);
 
 			} catch (IllegalArgumentException e) {
 				JOptionPane.showMessageDialog(viewerFrame, "Invalid input: " + e.getMessage(),

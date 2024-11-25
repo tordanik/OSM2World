@@ -1,9 +1,7 @@
 package org.osm2world.core.osm.creation;
 
-import org.junit.Test;
-import org.osm2world.core.map_data.creation.LatLonBounds;
-import org.osm2world.core.osm.data.OSMData;
-import org.osm2world.core.target.common.rendering.TileNumber;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +11,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+import org.osm2world.core.map_data.creation.LatLonBounds;
+import org.osm2world.core.osm.data.OSMData;
+import org.osm2world.core.target.common.rendering.TileNumber;
 
 public class GeodeskReaderTest {
 
@@ -26,9 +26,9 @@ public class GeodeskReaderTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		URL testFile = classLoader.getResource("simpleTest01.gol");
 		assertNotNull(testFile);
-		GeodeskReader reader = new GeodeskReader(new File(testFile.getFile()), globalBounds);
+		var reader = new GeodeskReader(new File(testFile.getFile()));
 
-		OSMData data = reader.getData();
+		OSMData data = reader.getData(globalBounds);
 
 		assertFalse(data.getNodes().isEmpty());
 		assertFalse(data.getWays().isEmpty());
@@ -42,10 +42,9 @@ public class GeodeskReaderTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		URL testFile = classLoader.getResource("simpleTest01.gol");
 		assertNotNull(testFile);
-		GeodeskReader reader = new GeodeskReader(new File(testFile.getFile()),
-				new TileNumber(13, 4402, 2828).bounds());
+		var reader = new GeodeskReader(new File(testFile.getFile()));
 
-		OSMData data = reader.getData();
+		OSMData data = reader.getData(new TileNumber(13, 4402, 2828).bounds());
 
 		assertFalse(data.getNodes().isEmpty());
 		assertFalse(data.getWays().isEmpty());
@@ -55,8 +54,8 @@ public class GeodeskReaderTest {
 
 	@Test(expected = IOException.class)
 	public void testMissingFile() throws IOException {
-		GeodeskReader reader = new GeodeskReader(new File("noSuchFile.gol"), globalBounds);
-		reader.getData();
+		var reader = new GeodeskReader(new File("noSuchFile.gol"));
+		reader.getData(globalBounds);
 	}
 
 	@Test

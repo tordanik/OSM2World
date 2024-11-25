@@ -30,7 +30,7 @@ public class OSMToMapDataConverterTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
-		OSMData osmData = new OSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getAllData();
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
@@ -93,7 +93,7 @@ public class OSMToMapDataConverterTest {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		File testFile = new File(classLoader.getResource(filename).getFile());
 
-		OSMData osmData = new OSMFileReader(testFile).getData();
+		OSMData osmData = new OSMFileReader(testFile).getAllData();
 		MapProjection mapProjection = new MetricMapProjection(osmData.getCenter());
 
 		OSMToMapDataConverter converter = new OSMToMapDataConverter(mapProjection);
