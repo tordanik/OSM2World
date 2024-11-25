@@ -33,7 +33,6 @@ import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.creation.LatLonBounds;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.data.MapMetadata;
-import org.osm2world.core.map_elevation.creation.*;
 import org.osm2world.core.math.AxisAlignedRectangleXZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.osm.creation.*;
@@ -118,26 +117,6 @@ public final class Output {
 
 			ConversionFacade cf = new ConversionFacade();
 			cf.addProgressListener(perfListener);
-
-			String interpolatorType = config.getString("terrainInterpolator");
-			if ("ZeroInterpolator".equals(interpolatorType)) {
-				cf.setTerrainEleInterpolatorFactory(ZeroInterpolator::new);
-			} else if ("LeastSquaresInterpolator".equals(interpolatorType)) {
-				cf.setTerrainEleInterpolatorFactory(LeastSquaresInterpolator::new);
-			} else if ("NaturalNeighborInterpolator".equals(interpolatorType)) {
-				cf.setTerrainEleInterpolatorFactory(NaturalNeighborInterpolator::new);
-			}
-
-			String eleCalculatorName = config.getString("eleCalculator");
-			if (eleCalculatorName != null) {
-				switch (eleCalculatorName) {
-					case "NoOpEleCalculator" -> cf.setEleCalculatorFactory(NoOpEleCalculator::new);
-					case "EleTagEleCalculator" -> cf.setEleCalculatorFactory(EleTagEleCalculator::new);
-					case "BridgeTunnelEleCalculator" -> cf.setEleCalculatorFactory(BridgeTunnelEleCalculator::new);
-					case "ConstraintEleCalculator" ->
-							cf.setEleCalculatorFactory(() -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer()));
-				}
-			}
 
 			Results results = cf.createRepresentations(dataReader.getData(), metadata, null, config, null);
 

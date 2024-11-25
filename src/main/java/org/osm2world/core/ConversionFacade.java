@@ -131,9 +131,8 @@ public class ConversionFacade {
 
 	private Function<LatLon, ? extends MapProjection> mapProjectionFactory = MetricMapProjection::new;
 
-	private Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = ZeroInterpolator::new;
-
-	private Factory<? extends EleCalculator> eleCalculatorFactory = BridgeTunnelEleCalculator::new;
+	private @Nullable Factory<? extends TerrainInterpolator> terrainEleInterpolatorFactory = null;
+	private @Nullable Factory<? extends EleCalculator> eleCalculatorFactory = null;
 
 	/**
 	 * sets the factory that will make {@link MapProjection}
@@ -145,21 +144,20 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * sets the factory that will make {@link EleCalculator}
-	 * instances during subsequent calls to
+	 * sets the factory that will make {@link EleCalculator} instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
+	 * Can be set to null, in which case there will be an attempt to parse the configuration for this.
 	 */
-	public void setEleCalculatorFactory(Factory<? extends EleCalculator> eleCalculatorFactory) {
+	public void setEleCalculatorFactory(@Nullable Factory<? extends EleCalculator> eleCalculatorFactory) {
 		this.eleCalculatorFactory = eleCalculatorFactory;
 	}
 
 	/**
-	 * sets the factory that will make {@link TerrainInterpolator}
-	 * instances during subsequent calls to
+	 * sets the factory that will make {@link TerrainInterpolator} instances during subsequent calls to
 	 * {@link #createRepresentations(OSMData, MapMetadata, List, Configuration, List)}.
+	 *  Can be set to null, in which case there will be an attempt to parse the configuration for this.
 	 */
-	public void setTerrainEleInterpolatorFactory(
-			Factory<? extends TerrainInterpolator> enforcerFactory) {
+	public void setTerrainEleInterpolatorFactory(@Nullable Factory<? extends TerrainInterpolator> enforcerFactory) {
 		this.terrainEleInterpolatorFactory = enforcerFactory;
 	}
 
@@ -411,14 +409,14 @@ public class ConversionFacade {
 	}
 
 	/**
-	 * uses OSM data and an terrain elevation data (usually from an external
+	 * uses OSM data and a terrain elevation data (usually from an external
 	 * source) to calculate elevations for all {@link EleConnector}s of the
 	 * {@link WorldObject}s
 	 */
 	private void calculateElevations(MapData mapData,
 			TerrainElevationData eleData, Configuration config) {
 
-		TerrainInterpolator interpolator = terrainEleInterpolatorFactory.get();
+		TerrainInterpolator interpolator = createTerrainInterpolator(config);
 
 		if (eleData == null) {
 			interpolator = new ZeroInterpolator();
@@ -457,8 +455,39 @@ public class ConversionFacade {
 
 		/* refine terrain-based elevation with information from map data */
 
-		EleCalculator eleCalculator = eleCalculatorFactory.get();
+		EleCalculator eleCalculator = createEleCalculator(config);
 		eleCalculator.calculateElevations(mapData);
+
+	}
+
+	private EleCalculator createEleCalculator(Configuration config) {
+
+		if (eleCalculatorFactory != null) {
+			return eleCalculatorFactory.get();
+		} else {
+			return switch (config.getString("eleCalculator", "")) {
+				case "NoOpEleCalculator" -> new NoOpEleCalculator();
+				case "EleTagEleCalculator" -> new EleTagEleCalculator();
+				case "ConstraintEleCalculator" -> new ConstraintEleCalculator(new SimpleEleConstraintEnforcer());
+				default -> new BridgeTunnelEleCalculator();
+			};
+		}
+
+	}
+
+	private TerrainInterpolator createTerrainInterpolator(Configuration config) {
+
+		if (terrainEleInterpolatorFactory != null) {
+			return terrainEleInterpolatorFactory.get();
+		} else {
+			return switch (config.getString("terrainInterpolator", "")) {
+				case "LinearInterpolator" -> new LinearInterpolator();
+				case "LeastSquaresInterpolator" -> new LeastSquaresInterpolator();
+				case "NaturalNeighborInterpolator" -> new NaturalNeighborInterpolator();
+				case "InverseDistanceWeightingInterpolator" -> new InverseDistanceWeightingInterpolator();
+				default -> new ZeroInterpolator();
+			};
+		}
 
 	}
 
