@@ -433,7 +433,7 @@ public class ConversionFacade {
 			try {
 				sites = eleData.getSites(mapData.getDataBoundary().pad(10));
 			} catch (IOException e) {
-				e.printStackTrace();
+				ConversionLog.error("Could not read elevation data: " + e.getMessage(), e);
 			}
 
 			if (!sites.isEmpty()) {

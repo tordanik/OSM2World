@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.*;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.TriangleXYZ;
 import org.osm2world.core.math.VectorXYZ;
@@ -301,8 +302,7 @@ public class ObjTarget extends FaceTarget {
 					}
 
 				} catch (IOException e) {
-					System.err.println("Unable to export material " + name + ": ");
-					e.printStackTrace();
+					ConversionLog.error("Unable to export material " + name + ": ", e);
 				}
 			}
 
