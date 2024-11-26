@@ -170,10 +170,7 @@ public class OSM2World {
 
 		CLIArguments representativeArgs = argumentsGroup.getRepresentative();
 
-		LevelOfDetail lod = null;
-		if (representativeArgs.getLod() != null) {
-			lod = LevelOfDetail.values()[representativeArgs.getLod()];
-		}
+		LevelOfDetail lod = LevelOfDetail.fromInt(representativeArgs.getLod());
 
 		/* load configuration file */
 

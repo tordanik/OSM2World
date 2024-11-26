@@ -450,8 +450,8 @@ public class FrontendPbfTarget extends MeshTarget {
 
 				List<Mesh> meshesAtLod = new ArrayList<>();
 				for (Mesh m : meshes) {
-					if (m.lodRange.min() == LevelOfDetail.values()[minLod]
-							&& m.lodRange.max() == LevelOfDetail.values()[maxLod]) {
+					if (m.lodRange.min() == LevelOfDetail.fromInt(minLod)
+							&& m.lodRange.max() == LevelOfDetail.fromInt(maxLod)) {
 						meshesAtLod.add(m);
 					}
 				}
