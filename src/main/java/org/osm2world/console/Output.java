@@ -1,7 +1,6 @@
 package org.osm2world.console;
 
 import static java.time.Instant.now;
-import static java.util.Collections.singletonList;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
 import static org.osm2world.core.ConversionFacade.Phase.*;
@@ -166,7 +165,7 @@ public final class Output {
 					} else if (args.isOviewTiles()) {
 						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), args.getOviewTiles());
 					} else if (args.isTile()) {
-						bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+						bounds = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
 					} else {
 						bounds = results.getMapData().getBoundary();
 					}
@@ -205,7 +204,7 @@ public final class Output {
 						case GLTF, GLB, GLTF_GZ, GLB_GZ: {
 							AxisAlignedRectangleXZ bounds = null;
 							if (args.isTile()) {
-								bounds = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+								bounds = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
 							} else {
 								bounds = results.getMapData().getBoundary();
 							}
@@ -229,7 +228,7 @@ public final class Output {
 						case WEB_PBF, WEB_PBF_GZ: {
 							AxisAlignedRectangleXZ bbox = null;
 							if (args.isTile()) {
-								bbox = OrthoTilesUtil.boundsForTiles(results.getMapProjection(), singletonList(args.getTile()));
+								bbox = OrthoTilesUtil.boundsForTile(results.getMapProjection(), args.getTile());
 							}
 							Compression compression = outputMode == OutputMode.WEB_PBF_GZ ? Compression.GZ : Compression.NONE;
 							FrontendPbfTarget.writePbfFile(

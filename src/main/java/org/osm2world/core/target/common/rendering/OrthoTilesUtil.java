@@ -2,7 +2,8 @@ package org.osm2world.core.target.common.rendering;
 
 import static java.lang.Math.PI;
 import static java.util.Arrays.asList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.*;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.union;
 
 import java.util.List;
 
@@ -143,7 +144,7 @@ public final class OrthoTilesUtil {
 
 	}
 
-	private static final AxisAlignedRectangleXZ boundsForTile(MapProjection mapProjection, TileNumber tile) {
+	public static final AxisAlignedRectangleXZ boundsForTile(MapProjection mapProjection, TileNumber tile) {
 		LatLonBounds bounds = tile.bounds();
 		return bbox(asList(mapProjection.toXZ(bounds.getMin()), mapProjection.toXZ(bounds.getMax())));
 	}
