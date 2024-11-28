@@ -10,6 +10,7 @@ import static org.osm2world.core.math.GeometryUtil.insertIntoPolygon;
 import static org.osm2world.core.math.VectorXZ.NULL_VECTOR;
 import static org.osm2world.core.math.VectorXZ.listXYZ;
 import static org.osm2world.core.target.common.mesh.LevelOfDetail.*;
+import static org.osm2world.core.util.ConfigUtil.readLOD;
 import static org.osm2world.core.util.ValueParseUtil.parseLevels;
 import static org.osm2world.core.world.modules.common.WorldModuleParseUtil.inheritTags;
 
@@ -29,7 +30,6 @@ import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.Materials;
 import org.osm2world.core.target.common.mesh.LODRange;
-import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.world.data.ProceduralWorldObject;
 import org.osm2world.core.world.data.WorldObject;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level;
@@ -192,6 +192,8 @@ public class ExteriorBuildingWall {
 		for (WindowImplementation windowImplementation : windowImplementations.keySet()) {
 
 			LODRange lodRange = windowImplementations.get(windowImplementation);
+			if (buildingPart.config.containsKey("lod") &&
+					!lodRange.contains(readLOD(buildingPart.config))) continue;
 			target.setCurrentLodRange(lodRange);
 
 			/* construct the surface(s) */
@@ -262,7 +264,7 @@ public class ExteriorBuildingWall {
 
 								DoorParameters params = DoorParameters.fromTags(node.getTags(), this.tags);
 								if (lodRange.max().ordinal() < 3
-										|| ConfigUtil.readLOD(buildingPart.config).ordinal() < 3) {
+										|| readLOD(buildingPart.config).ordinal() < 3) {
 									params = params.withInset(0.0);
 								}
 								mainSurface.addElementIfSpaceFree(new Door(pos, params));
@@ -433,7 +435,7 @@ public class ExteriorBuildingWall {
 		TagSet doorTags = TagSet.of("door", "overhead");
 		DoorParameters params = DoorParameters.fromTags(doorTags, this.tags);
 
-		if (ConfigUtil.readLOD(buildingPart.config).ordinal() < 3) {
+		if (readLOD(buildingPart.config).ordinal() < 3) {
 			params = params.withInset(0.0);
 		}
 

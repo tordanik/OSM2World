@@ -3,6 +3,9 @@ package org.osm2world.core.world.data;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
 import org.osm2world.core.target.common.mesh.Mesh;
 import org.osm2world.core.target.common.model.ModelInstance;
 import org.osm2world.core.world.attachment.AttachmentSurface;
@@ -13,9 +16,11 @@ import org.osm2world.core.world.attachment.AttachmentSurface;
 abstract public class CachingProceduralWorldObject implements ProceduralWorldObject {
 
 	private ProceduralWorldObject.Target target = null;
+	private @Nullable LevelOfDetail lod;
 
 	private void fillTargetIfNecessary() {
-		if (target == null) {
+		if (target == null || (lod != null && getConfiguredLod() != null && lod != getConfiguredLod())) {
+			lod = getConfiguredLod();
 			target = new ProceduralWorldObject.Target();
 			buildMeshesAndModels(target);
 		}
@@ -37,6 +42,14 @@ abstract public class CachingProceduralWorldObject implements ProceduralWorldObj
 	public Collection<AttachmentSurface> getAttachmentSurfaces() {
 		fillTargetIfNecessary();
 		return target.attachmentSurfaces;
+	}
+
+	/**
+	 * if results depend on LOD, returns the currently configured LOD.
+	 * Can be null if this {@link ProceduralWorldObject} always produces geometry for all LOD.
+	 */
+	protected @Nullable LevelOfDetail getConfiguredLod() {
+		return null;
 	}
 
 }

@@ -7,6 +7,8 @@ import static org.osm2world.core.math.algorithms.CAGUtil.subtractPolygons;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.configuration.Configuration;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapElement;
@@ -21,6 +23,8 @@ import org.osm2world.core.map_elevation.data.GroundState;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
+import org.osm2world.core.target.common.mesh.LevelOfDetail;
+import org.osm2world.core.util.ConfigUtil;
 import org.osm2world.core.util.FaultTolerantIterationUtil;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 import org.osm2world.core.world.data.AreaWorldObject;
@@ -33,6 +37,7 @@ import org.osm2world.core.world.modules.building.indoor.IndoorWall;
 public class Building extends CachingProceduralWorldObject implements AreaWorldObject {
 
 	private final MapArea area;
+	private final Configuration config;
 
 	private final List<BuildingPart> parts = new ArrayList<>();
 
@@ -43,6 +48,7 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 	public Building(MapArea area, Configuration config) {
 
 		this.area = area;
+		this.config = config;
 
 		Optional<MapRelation> buildingRelation = area.getMemberships().stream()
 				.filter(it -> "outline".equals(it.getRole()))
@@ -154,6 +160,11 @@ public class Building extends CachingProceduralWorldObject implements AreaWorldO
 
 		return minEle;
 
+	}
+
+	@Override
+	protected @Nullable LevelOfDetail getConfiguredLod() {
+		return ConfigUtil.readLOD(config);
 	}
 
 	@Override
