@@ -398,6 +398,10 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	@Override
 	public List<TriangleXZ> getTriangulation() {
 
+		if (vertexLoop.size() == 4) {
+			return List.of(new TriangleXZ(vertexLoop.get(0), vertexLoop.get(1), vertexLoop.get(2)));
+		}
+
 		List<TriangleXZ> result = TriangulationUtil.triangulate(this);
 
 		//ensure that the triangles have the same winding as this shape

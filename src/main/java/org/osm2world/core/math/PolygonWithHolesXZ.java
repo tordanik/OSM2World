@@ -55,7 +55,11 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 
 	@Override
 	public List<TriangleXZ> getTriangulation() {
-		return TriangulationUtil.triangulate(this);
+		if (holes.isEmpty()) {
+			return outerPolygon.getTriangulation();
+		} else {
+			return TriangulationUtil.triangulate(this);
+		}
 	}
 
 	@Override
