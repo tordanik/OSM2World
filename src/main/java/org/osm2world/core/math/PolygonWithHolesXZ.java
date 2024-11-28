@@ -19,13 +19,7 @@ public class PolygonWithHolesXZ implements PolygonShapeXZ {
 			List<SimplePolygonXZ> holes) {
 		this.outerPolygon = outerPolygon;
 		this.holes = holes;
-		/**
-		 * forces the early computation of the area to avoid the creation of an invalid one. This is a temporary kludge as
-		 * calling a method that can be overridden in a constructor is a bad practice. Moreover, the late call of the method
-		 * calculateArea() was originally intended to avoid unnecessary computations but as it is necessary for intersection
-		 * tests even before any rendering attempts, it no longer makes sense. A better solution would consist in running the
-		 * computation of the area as soon as possible
-		 * */
+		// calculate the area in the constructor to catch degenerate polygons early
 		this.getArea();
 	}
 

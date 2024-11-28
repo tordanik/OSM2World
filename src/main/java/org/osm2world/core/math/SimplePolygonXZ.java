@@ -46,6 +46,7 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		assertLoopLength(vertexLoop);
 		assertNotSelfIntersecting(vertexLoop);
 		assertNoDuplicates(vertexLoop);
+		assertNontrivialArea();
 
 	}
 
@@ -131,8 +132,6 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 		this.signedArea = calculateSignedArea(vertexLoop);
 		this.area = Math.abs(signedArea);
 		this.clockwise = signedArea < 0;
-
-		assertNonzeroArea();
 	}
 
 	@Override
@@ -698,13 +697,15 @@ public class SimplePolygonXZ implements SimplePolygonShapeXZ {
 	/**
 	 * @throws InvalidGeometryException  if area is 0
 	 */
-	private void assertNonzeroArea() {
-		if (area == 0) {
+	private void assertNontrivialArea() {
+		if (getArea() == 0) {
 			throw new InvalidGeometryException(
 					"a polygon's area must be positive, but it's "
 					+ area + " for this polygon.\nThis problem can be caused "
 					+ "by broken polygon data or imprecise calculations"
 					+ "\nPolygon vertices: " + vertexLoop);
+		} else if (getArea() < 1e-6) {
+			throw new InvalidGeometryException("Very small polygon area: " + area);
 		}
 	}
 

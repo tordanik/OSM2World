@@ -8,10 +8,7 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
 
 import java.util.*;
 
-import org.osm2world.core.math.LineSegmentXZ;
-import org.osm2world.core.math.PolygonWithHolesXZ;
-import org.osm2world.core.math.SimplePolygonXZ;
-import org.osm2world.core.math.VectorXZ;
+import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
 import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.datastructures.SpatialIndex;
@@ -195,7 +192,9 @@ public final class FaceDecompositionUtil {
 			remainingEdges.removeAll(currentPath);
 
 			List<VectorXZ> vertexLoop = currentPath.stream().map(e -> e.p1).collect(toList());
-			faces.add(new SimplePolygonXZ(vertexLoop));
+			try {
+				faces.add(new SimplePolygonXZ(vertexLoop));
+			} catch (InvalidGeometryException ignored) { /* skip tiny or degenerate face */ }
 
 		}
 
