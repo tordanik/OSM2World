@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
+import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
@@ -33,6 +34,8 @@ import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.ProceduralWorldObject;
+
+import com.google.common.collect.Streams;
 
 /**
  * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
@@ -72,7 +75,7 @@ public class WallSurface {
 		if (lowerBoundaryXYZ.size() < 2)
 			throw new IllegalArgumentException("need at least two points in the lower boundary");
 		if (upperBoundaryXYZ.size() < 2)
-			throw new IllegalArgumentException("need at least two ponts in the upper boundary");
+			throw new IllegalArgumentException("need at least two points in the upper boundary");
 
 		/* TODO: check for other problems, e.g. intersecting lower and upper boundary,
 		   last points of the boundaries having different x values in wall surface coords, ... */
@@ -139,17 +142,26 @@ public class WallSurface {
 
 	/** adds an element to the wall, unless the necessary space on the wall is already occupied */
 	public void addElementIfSpaceFree(WallElement element) {
+		addElementsIfSpaceFree(List.of(element));
+	}
 
-		if (!wallOutline.contains(element.outline())) {
-			return;
+	/**
+	 * performs the equivalent of {@link #addElementIfSpaceFree(WallElement)} for multiple elements.
+	 * Assumes that the new elements do not intersect with each other.
+	 */
+	public void addElementsIfSpaceFree(Collection<? extends WallElement> elements) {
+
+		List<WallElement> elementsToAdd = new ArrayList<>(elements.size());
+
+		for (WallElement element : elements) {
+			if (wallOutline.contains(element.outline())
+				&& this.elements.stream().noneMatch(e ->
+					e.outline().intersects(element.outline()) || e.outline().contains(element.outline()))) {
+				elementsToAdd.add(element);
+			}
 		}
 
-		boolean spaceOccupied = elements.stream().anyMatch(e ->
-				e.outline().intersects(element.outline()) || e.outline().contains(element.outline()));
-
-		if (!spaceOccupied) {
-			elements.add(element);
-		}
+		this.elements.addAll(elementsToAdd);
 
 	}
 
@@ -190,7 +202,7 @@ public class WallSurface {
 		
 		/* decompose and triangulate the empty wall surface */
 
-		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).collect(toList());
+		List<SimplePolygonXZ> holes = elements.stream().map(WallElement::outline).toList();
 
 		AxisAlignedRectangleXZ bbox = wallOutline.boundingBox();
 		double minZ = bbox.minZ;
@@ -198,7 +210,7 @@ public class WallSurface {
 		List<LineSegmentXZ> verticalLines = lowerBoundary.stream()
 				.limit(lowerBoundary.size() - 1).skip(1) // omit first and last point
 				.map(p -> new LineSegmentXZ(new VectorXZ(p.x, minZ - 1.0), new VectorXZ(p.x, maxZ + 1.0)))
-				.collect(toList());
+				.toList();
 
 		List<ShapeXZ> shapes = new ArrayList<>(holes);
 		shapes.addAll(verticalLines);
@@ -208,10 +220,22 @@ public class WallSurface {
 				: FaceDecompositionUtil.splitPolygonIntoFaces(wallOutline, shapes);
 
 		if (!holes.isEmpty()) {
-			faces.removeIf(f -> holes.stream().anyMatch(hole -> hole.contains(f.getPointInside())));
+
+			IndexGrid<SimplePolygonXZ> index = (wallOutline.getArea() > 500.0)
+					? new IndexGrid<>(wallOutline.boundingBox(), 10.0, 10.0)
+					: null;
+
+			if (index != null) { holes.forEach(index::insert); }
+
+			faces.removeIf(f -> {
+				Iterable<SimplePolygonXZ> nearbyHoles = index == null ? holes : index.probe(f);
+				VectorXZ faceCenter = f.getPointInside();
+				return Streams.stream(nearbyHoles).anyMatch(hole -> hole.contains(faceCenter));
+			});
+
 		}
 
-		List<TriangleXZ> triangles = faces.stream().flatMap(f -> f.getTriangulation().stream()).collect(toList());
+		List<TriangleXZ> triangles = faces.stream().flatMap(f -> f.getTriangulation().stream()).toList();
 		List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t)).collect(toList());
 
 		/* determine the material depending on whether a window texture should be applied */

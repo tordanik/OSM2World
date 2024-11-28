@@ -397,6 +397,8 @@ public class ExteriorBuildingWall {
 	/** places the default (i.e. not explicitly mapped) windows rows onto a wall surface */
 	private void placeDefaultWindows(WallSurface surface, WindowImplementation implementation) {
 
+		List<Window> windows = new ArrayList<>();
+
 		for (Level level : buildingPart.levelStructure.levels(EnumSet.of(LevelType.ABOVEGROUND))) {
 
 			WindowParameters windowParams = new WindowParameters(tags, level.height);
@@ -415,11 +417,13 @@ public class ExteriorBuildingWall {
 				Window window = implementation == WindowImplementation.FULL_GEOMETRY
 						? new GeometryWindow(pos, windowParams, false)
 						: new TexturedWindow(pos, windowParams);
-				surface.addElementIfSpaceFree(window);
+				windows.add(window);
 
 			}
 
 		}
+
+		surface.addElementsIfSpaceFree(windows);
 
 	}
 
