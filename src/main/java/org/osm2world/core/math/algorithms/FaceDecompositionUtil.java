@@ -2,29 +2,25 @@ package org.osm2world.core.math.algorithms;
 
 import static java.util.Collections.min;
 import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.PolygonWithHolesXZ;
 import org.osm2world.core.math.SimplePolygonXZ;
 import org.osm2world.core.math.VectorXZ;
 import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
+import org.osm2world.core.math.datastructures.IndexGrid;
+import org.osm2world.core.math.datastructures.SpatialIndex;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.ShapeXZ;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Streams;
 
 /** utilities for finding the faces in a graph of line segments */
 public final class FaceDecompositionUtil {
@@ -35,15 +31,38 @@ public final class FaceDecompositionUtil {
 	private FaceDecompositionUtil() {}
 
 	public static final Collection<PolygonWithHolesXZ> splitPolygonIntoFaces(PolygonShapeXZ polygon,
-			Iterable<? extends ShapeXZ> otherShapes) {
+			Collection<? extends PolygonShapeXZ> holes, Collection<? extends ShapeXZ> otherShapes) {
 
 		List<LineSegmentXZ> segments = new ArrayList<>();
 		polygon.getRings().forEach(r -> segments.addAll(r.getSegments()));
+		holes.forEach(s -> segments.addAll(s.getSegments()));
 		otherShapes.forEach(s -> segments.addAll(s.getSegments()));
 
 		Collection<PolygonWithHolesXZ> result = facesFromGraph(segments);
 		result.removeIf(p -> !polygon.contains(p.getPointInside()));
+		removeFacesInHoles(result, holes);
 		return result;
+
+	}
+
+	private static void removeFacesInHoles(Collection<PolygonWithHolesXZ> faces,
+			Collection<? extends PolygonShapeXZ> holes) {
+
+		if (!holes.isEmpty()) {
+
+			SpatialIndex<PolygonShapeXZ> index = (holes.size() > 40)
+					? new IndexGrid<>(bboxUnion(holes), 20.0, 20.0)
+					: null;
+
+			if (index != null) { holes.forEach(index::insert); }
+
+			faces.removeIf(f -> {
+				Iterable<? extends PolygonShapeXZ> nearbyHoles = index == null ? holes : index.probe(f);
+				VectorXZ faceCenter = f.getPointInside();
+				return Streams.stream(nearbyHoles).anyMatch(hole -> hole.contains(faceCenter));
+			});
+
+		}
 
 	}
 

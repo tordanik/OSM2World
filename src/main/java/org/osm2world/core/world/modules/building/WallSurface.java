@@ -24,18 +24,14 @@ import javax.annotation.Nullable;
 
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.FaceDecompositionUtil;
-import org.osm2world.core.math.datastructures.IndexGrid;
 import org.osm2world.core.math.shapes.PolygonShapeXZ;
 import org.osm2world.core.math.shapes.PolylineXZ;
-import org.osm2world.core.math.shapes.ShapeXZ;
 import org.osm2world.core.target.common.material.Material;
 import org.osm2world.core.target.common.material.TextureDataDimensions;
 import org.osm2world.core.target.common.material.TextureLayer;
 import org.osm2world.core.target.common.texcoord.NamedTexCoordFunction;
 import org.osm2world.core.target.common.texcoord.TexCoordFunction;
 import org.osm2world.core.world.data.ProceduralWorldObject;
-
-import com.google.common.collect.Streams;
 
 /**
  * a simplified representation of a wall as a 2D plane, with its origin in the bottom left corner.
@@ -212,28 +208,9 @@ public class WallSurface {
 				.map(p -> new LineSegmentXZ(new VectorXZ(p.x, minZ - 1.0), new VectorXZ(p.x, maxZ + 1.0)))
 				.toList();
 
-		List<ShapeXZ> shapes = new ArrayList<>(holes);
-		shapes.addAll(verticalLines);
-
-		Collection<? extends PolygonShapeXZ> faces = shapes.isEmpty()
+		Collection<? extends PolygonShapeXZ> faces = holes.isEmpty() && verticalLines.isEmpty()
 				? singletonList(wallOutline)
-				: FaceDecompositionUtil.splitPolygonIntoFaces(wallOutline, shapes);
-
-		if (!holes.isEmpty()) {
-
-			IndexGrid<SimplePolygonXZ> index = (wallOutline.getArea() > 500.0)
-					? new IndexGrid<>(wallOutline.boundingBox(), 10.0, 10.0)
-					: null;
-
-			if (index != null) { holes.forEach(index::insert); }
-
-			faces.removeIf(f -> {
-				Iterable<SimplePolygonXZ> nearbyHoles = index == null ? holes : index.probe(f);
-				VectorXZ faceCenter = f.getPointInside();
-				return Streams.stream(nearbyHoles).anyMatch(hole -> hole.contains(faceCenter));
-			});
-
-		}
+				: FaceDecompositionUtil.splitPolygonIntoFaces(wallOutline, holes, verticalLines);
 
 		List<TriangleXZ> triangles = faces.stream().flatMap(f -> f.getTriangulation().stream()).toList();
 		List<TriangleXYZ> trianglesXYZ = triangles.stream().map(t -> convertTo3D(t)).collect(toList());

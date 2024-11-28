@@ -345,7 +345,7 @@ public class GeometryWindow implements Window {
 					outline.getCentroid().add(0, -outline.getDiameter()),
 					outline.getCentroid().add(0, +outline.getDiameter()));
 
-			Collection<PolygonWithHolesXZ> outlineParts = splitPolygonIntoFaces(asSimplePolygon(outline), asList(splitLine));
+			Collection<PolygonWithHolesXZ> outlineParts = splitPolygonIntoFaces(asSimplePolygon(outline), List.of(), List.of(splitLine));
 
 			double hingeSpace = 0.03;
 
