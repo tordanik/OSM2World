@@ -35,8 +35,12 @@ public final class FaceDecompositionUtil {
 
 		List<LineSegmentXZ> segments = new ArrayList<>();
 		polygon.getRings().forEach(r -> segments.addAll(r.getSegments()));
-		holes.forEach(s -> segments.addAll(s.getSegments()));
-		otherShapes.forEach(s -> segments.addAll(s.getSegments()));
+		holes.forEach(it -> it.getRings().forEach(r -> segments.addAll(r.getSegments())));
+		otherShapes.forEach(s -> { if (s instanceof PolygonShapeXZ p) {
+			p.getRings().forEach(r -> segments.addAll(r.getSegments()));
+		} else {
+			segments.addAll(s.getSegments());
+		}});
 
 		Collection<PolygonWithHolesXZ> result = facesFromGraph(segments);
 		result.removeIf(p -> !polygon.contains(p.getPointInside()));
