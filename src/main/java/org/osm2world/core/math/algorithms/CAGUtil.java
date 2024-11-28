@@ -2,6 +2,7 @@ package org.osm2world.core.math.algorithms;
 
 import static org.osm2world.core.math.JTSConversionUtil.polygonsFromJTS;
 import static org.osm2world.core.math.JTSConversionUtil.toJTS;
+import static org.osm2world.core.math.algorithms.FaceDecompositionUtil.splitPolygonIntoFaces;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,18 +22,24 @@ import org.osm2world.core.math.shapes.PolygonShapeXZ;
  */
 public final class CAGUtil {
 
-	private CAGUtil() { }
+	private CAGUtil() {
+	}
 
 	/**
 	 * takes a polygon outline, "subtracts" a collection of other polygons (which may themselves have holes),
 	 * and returns a collection of polygons that covers the difference area.
-	 *
+	 * <p>
 	 * The result polygons should cover the area that was within the original polygon,
 	 * but not within a subtracted polygon.
 	 *
-	 * @return  polygons without self-intersections, but maybe with holes
+	 * @return polygons without self-intersections, but maybe with holes
 	 */
 	public static final Collection<PolygonWithHolesXZ> subtractPolygons(
+			PolygonShapeXZ basePolygon, List<? extends PolygonShapeXZ> subtractPolygons) {
+		return splitPolygonIntoFaces(basePolygon, subtractPolygons, List.of());
+	}
+
+	private static final Collection<PolygonWithHolesXZ> subtractPolygonsWithJTS(
 			PolygonShapeXZ basePolygon, List<? extends PolygonShapeXZ> subtractPolygons) {
 
 		List<Geometry> remainingGeometry = Collections.singletonList(
@@ -44,15 +51,15 @@ public final class CAGUtil {
 
 			if (!jtsSubtractPolygon.isValid()) continue;
 
-			List<Geometry> newRemainingGeometry = new ArrayList<Geometry>(1);
+			List<Geometry> newRemainingGeometry = new ArrayList<>(1);
 
 			for (Geometry g : remainingGeometry) {
 
 				Geometry newG = g.difference(jtsSubtractPolygon);
 
 				if (newG instanceof GeometryCollection) {
-					for (int i = 0; i < ((GeometryCollection)newG).getNumGeometries(); i++) {
-						newRemainingGeometry.add(((GeometryCollection)newG).getGeometryN(i));
+					for (int i = 0; i < newG.getNumGeometries(); i++) {
+						newRemainingGeometry.add(newG.getGeometryN(i));
 					}
 				} else {
 					newRemainingGeometry.add(newG);
@@ -64,8 +71,7 @@ public final class CAGUtil {
 
 		}
 
-		Collection<PolygonWithHolesXZ> result =
-			new ArrayList<PolygonWithHolesXZ>();
+		Collection<PolygonWithHolesXZ> result = new ArrayList<>();
 
 		for (Geometry g : remainingGeometry) {
 			result.addAll(polygonsFromJTS(g));
