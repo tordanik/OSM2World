@@ -1,19 +1,16 @@
 package org.osm2world.core.map_data.data;
 
-import com.google.common.collect.Iterables;
-import org.osm2world.core.map_data.data.MapRelation.Element;
-import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
-import org.osm2world.core.map_data.data.overlaps.MapOverlap;
-import org.osm2world.core.math.AxisAlignedRectangleXZ;
-import org.osm2world.core.world.data.WaySegmentWorldObject;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+import org.osm2world.core.map_data.data.MapRelation.Element;
+import org.osm2world.core.map_data.data.overlaps.MapIntersectionWW;
+import org.osm2world.core.map_data.data.overlaps.MapOverlap;
+import org.osm2world.core.world.data.WaySegmentWorldObject;
+
+import com.google.common.collect.Iterables;
 
 
 /**
@@ -66,11 +63,6 @@ public class MapWaySegment extends MapSegment implements MapElement {
 
 	public Iterable<MapIntersectionWW> getIntersectionsWW() {
 		return Iterables.filter(overlaps, MapIntersectionWW.class);
-	}
-
-	@Override
-	public AxisAlignedRectangleXZ boundingBox() {
-		return bbox(asList(startNode.getPos(), endNode.getPos()));
 	}
 
 	@Override

@@ -1,7 +1,11 @@
 package org.osm2world.core.map_data.data;
 
+import static org.osm2world.core.math.AxisAlignedRectangleXZ.bbox;
+
 import java.util.List;
 
+import org.osm2world.core.math.AxisAlignedRectangleXZ;
+import org.osm2world.core.math.BoundedObject;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
 
@@ -12,7 +16,7 @@ import com.google.common.collect.ImmutableList;
  *
  * @see MapData
  */
-public abstract class MapSegment {
+public abstract class MapSegment implements BoundedObject {
 
 	protected final MapNode startNode;
 	protected final MapNode endNode;
@@ -124,6 +128,11 @@ public abstract class MapSegment {
 		} else {
 			throw new Error("segment must be part of a way or area");
 		}
+	}
+
+	@Override
+	public AxisAlignedRectangleXZ boundingBox() {
+		return bbox(List.of(getStartNode().getPos(), getEndNode().getPos()));
 	}
 
 }
