@@ -8,6 +8,7 @@ import static org.osm2world.core.math.AxisAlignedRectangleXZ.bboxUnion;
 
 import java.util.*;
 
+import org.osm2world.core.conversion.ConversionLog;
 import org.osm2world.core.math.*;
 import org.osm2world.core.math.algorithms.LineSegmentIntersectionFinder.Intersection;
 import org.osm2world.core.math.datastructures.IndexGrid;
@@ -171,6 +172,7 @@ public final class FaceDecompositionUtil {
 		Set<LineSegmentXZ> remainingEdges = new HashSet<>(directedEdges);
 		List<SimplePolygonXZ> faces = new ArrayList<>();
 
+		outer:
 		while (!remainingEdges.isEmpty()) {
 
 			LinkedList<LineSegmentXZ> currentPath = new LinkedList<>();
@@ -186,6 +188,13 @@ public final class FaceDecompositionUtil {
 				int outgoingIndex = (incomingIndex + 1) % outgoingEdges.size();
 
 				currentPath.add(outgoingEdges.get(outgoingIndex));
+
+				if (currentPath.size() > 10000) {
+					// likely an infinite loop
+					// FIXME: debug the causes of this kind of problem
+					ConversionLog.error("Path too long while attempting to build a face");
+					break outer;
+				}
 
 			}
 
