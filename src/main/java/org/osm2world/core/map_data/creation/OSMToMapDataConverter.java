@@ -24,7 +24,6 @@ import org.osm2world.core.osm.ruleset.HardcodedRuleset;
 import org.osm2world.core.osm.ruleset.Ruleset;
 
 import de.topobyte.osm4j.core.model.iface.*;
-import de.topobyte.osm4j.core.model.impl.Tag;
 import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
@@ -80,7 +79,7 @@ public class OSMToMapDataConverter {
 
 		/* create MapNode for each OSM node */
 
-		final TLongObjectMap<MapNode> nodeIdMap = new TLongObjectHashMap<MapNode>();
+		final TLongObjectMap<MapNode> nodeIdMap = new TLongObjectHashMap<>();
 
 		for (OsmNode node : osmData.getNodes()) {
 			VectorXZ nodePos = mapProjection.toXZ(node.getLatitude(), node.getLongitude());
@@ -95,12 +94,11 @@ public class OSMToMapDataConverter {
 
 		/* ... based on multipolygons */
 
-		forEach(osmData.getRelations(), (OsmRelation relation ) -> {
+		forEach(osmData.getRelations(), (OsmRelation relation) -> {
 
-			Map<String, String> tags = getTagsAsMap(relation);
+			TagSet tags = TagSet.of(getTagsAsMap(relation));
 
-			String value = tags.get(MULTIPOLYON_TAG.getKey());
-			if (!MULTIPOLYON_TAG.getValue().equals(value)) {
+			if (!tags.contains(MULTIPOLYON_TAG)) {
 				return;
 			}
 
@@ -275,10 +273,10 @@ public class OSMToMapDataConverter {
 
 		if (entity.getNumberOfTags() == 0) return TagSet.of();
 
-		org.osm2world.core.map_data.data.Tag[] tags =
-				new org.osm2world.core.map_data.data.Tag[entity.getNumberOfTags()];
+		Tag[] tags =
+				new Tag[entity.getNumberOfTags()];
 		for (int i = 0; i < entity.getNumberOfTags(); i++) {
-			tags[i] = new org.osm2world.core.map_data.data.Tag(entity.getTag(i).getKey(), entity.getTag(i).getValue());
+			tags[i] = new Tag(entity.getTag(i).getKey(), entity.getTag(i).getValue());
 		}
 		return TagSet.of(tags);
 

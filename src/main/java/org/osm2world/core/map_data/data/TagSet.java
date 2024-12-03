@@ -2,10 +2,7 @@ package org.osm2world.core.map_data.data;
 
 import static java.util.Arrays.sort;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -48,10 +45,10 @@ public final class TagSet implements Iterable<Tag> {
 	 * @throws IllegalArgumentException  if keys are not unique
 	 */
 	public static final TagSet of(Collection<Tag> tags) {
-		switch (tags.size()) {
-		case 0: return EMPTY_SET;
-		default: return new TagSet(tags.toArray(new Tag[0]));
-		}
+		return switch (tags.size()) {
+			case 0 -> EMPTY_SET;
+			default -> new TagSet(tags.toArray(new Tag[0]));
+		};
 	}
 
 	/**
@@ -59,10 +56,10 @@ public final class TagSet implements Iterable<Tag> {
 	 * @throws IllegalArgumentException  if keys are not unique
 	 */
 	public static final TagSet of(Tag... tags) {
-		switch (tags.length) {
-		case 0: return EMPTY_SET;
-		default: return new TagSet(tags.clone());
-		}
+		return switch (tags.length) {
+			case 0 -> EMPTY_SET;
+			default -> new TagSet(tags.clone());
+		};
 	}
 
 	/**
@@ -84,6 +81,19 @@ public final class TagSet implements Iterable<Tag> {
 		}
 		return new TagSet(tags);
 
+	}
+
+	/**
+	 * creates a {@link TagSet} from a {@link Map} mapping keys to values
+	 */
+	public static final TagSet of(Map<String, String> keyValueMap) {
+		if (keyValueMap.isEmpty()) {
+			return EMPTY_SET;
+		} else {
+			return new TagSet(keyValueMap.entrySet().stream()
+					.map(e -> new Tag(e.getKey(), e.getValue()))
+					.toArray(Tag[]::new));
+		}
 	}
 
 	/** returns true if this set contains any tags */
@@ -212,16 +222,12 @@ public final class TagSet implements Iterable<Tag> {
 	/** two {@link TagSet}s are equal iff they contain the same tags */
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof TagSet) {
-			return Arrays.equals(this.tags, ((TagSet) obj).tags);
-		} else {
-			return false;
-		}
+		return obj instanceof TagSet otherSet && Arrays.equals(this.tags, otherSet.tags);
 	}
 
 	@Override
 	public int hashCode() {
-		return tags.hashCode();
+		return Arrays.hashCode(tags);
 	}
 
 	@Override
