@@ -1,5 +1,6 @@
 package org.osm2world.console;
 
+import static java.lang.Math.ceil;
 import static java.time.Instant.now;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
@@ -17,7 +18,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 
@@ -283,7 +286,7 @@ public final class Output {
 				}
 				fileNameBase = "osm2world_log_" + fileNameBase;
 
-				writeLogFiles(logDir, fileNameBase, perfListener);
+				writeLogFiles(logDir, fileNameBase, perfListener, config);
 
 			}
 
@@ -291,7 +294,8 @@ public final class Output {
 
 	}
 
-	private static void writeLogFiles(File logDir, String fileNameBase, PerformanceListener perfListener) {
+	private static void writeLogFiles(File logDir, String fileNameBase, PerformanceListener perfListener,
+			Configuration config) {
 
 		double totalTime = Duration.between(perfListener.startTime, now()).toMillis() / 1000.0;
 
@@ -330,7 +334,9 @@ public final class Output {
 		File outputFile = logDir.toPath().resolve(fileNameBase + ".txt.gz").toFile();
 		TargetUtil.writeFileWithCompression(outputFile, compression, outputStream -> {
 			try (var printStream = new PrintStream(outputStream)) {
+
 				printStream.println("Runtime (seconds):\nTotal: " + totalTime);
+
 				if (!timePerPhase.isEmpty()) {
 					for (Phase phase : Phase.values()) {
 						if (timePerPhase.containsKey(phase)) {
@@ -338,8 +344,22 @@ public final class Output {
 						}
 					}
 				}
+
 				printStream.println();
-				ConversionLog.getLog().forEach(printStream::println);
+
+				List<ConversionLog.Entry> entries = ConversionLog.getLog();
+				int maxLogEntries = config.getInt("maxLogEntries", 100);
+
+				if (entries.size() <= maxLogEntries) {
+					entries.forEach(printStream::println);
+				} else {
+					IntStream.range(0, maxLogEntries / 2)
+							.mapToObj(entries::get).forEach(printStream::println);
+					printStream.println("\n...\n");
+					IntStream.range(entries.size() - (int)ceil(maxLogEntries / 2.0), entries.size())
+							.mapToObj(entries::get).forEach(printStream::println);
+				}
+
 			}
 		});
 
