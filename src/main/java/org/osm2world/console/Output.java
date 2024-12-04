@@ -62,7 +62,7 @@ public final class Output {
 
 		CLIArguments sharedArgs = argumentsGroup.getRepresentative();
 
-		var perfListener = new PerformanceListener(sharedArgs.getPerformancePrint());
+		var perfListener = new PerformanceListener();
 
 		if (sharedArgs.isLogDir()) {
 			ConversionLog.setConsoleLogLevels(EnumSet.of(ConversionLog.LogLevel.FATAL));
@@ -270,11 +270,6 @@ public final class Output {
 			throw e;
 		} finally {
 
-			if (sharedArgs.getPerformancePrint()) {
-				long timeSec = Duration.between(perfListener.startTime, now()).getSeconds();
-				System.out.println("finished after " + timeSec + " s");
-			}
-
 			if (sharedArgs.isLogDir()) {
 
 				File logDir = sharedArgs.getLogDir();
@@ -368,14 +363,8 @@ public final class Output {
 	private static class PerformanceListener implements ProgressListener {
 
 		public final Instant startTime = Instant.now();
-		private final boolean printToSysout;
-
-		public PerformanceListener(boolean printToSysout) {
-			this.printToSysout = printToSysout;
-		}
 
 		private @Nullable Phase currentPhase = null;
-		private @Nullable Instant currentPhaseStart;
 
 		private final Map<Phase, Instant> phaseStarts = new HashMap<>();
 		private final Map<Phase, Instant> phaseEnds = new HashMap<>();
@@ -400,18 +389,10 @@ public final class Output {
 			phaseStarts.put(newPhase, now());
 
 			if (currentPhase != null) {
-
 				phaseEnds.put(currentPhase, now());
-
-				if (printToSysout) {
-					long ms = Duration.between(currentPhaseStart, now()).toMillis();
-					System.out.println("phase " + currentPhase + " finished after " + ms + " ms");
-				}
-
 			}
 
 			currentPhase = newPhase;
-			currentPhaseStart = now();
 
 		}
 

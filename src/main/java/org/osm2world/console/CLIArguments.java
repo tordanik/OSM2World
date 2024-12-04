@@ -113,9 +113,6 @@ public interface CLIArguments {
 
 	/* logging */
 
-	@Option(description="writes execution times to the command line")
-	boolean getPerformancePrint();
-
 	@Option(description="output directory for log files")
 	File getLogDir();
 	boolean isLogDir();

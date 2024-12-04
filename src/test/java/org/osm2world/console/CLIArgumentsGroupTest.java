@@ -31,9 +31,9 @@ public class CLIArgumentsGroupTest {
 		/* test tileserver-style commands */
 
 		CLIArguments cliArgsA1 = CliFactory.parseArguments(CLIArguments.class,
-				"--config", "osm2world.config", "-i", "/o2wmaps/input/old/13_4231_2777.pbf", "-o", "/tmp/n_ogltile_4231_2777.ppm", "--resolution", "8192,4096", "--oview.tiles", "13,4231,2777", "--oview.from", "S", "--performancePrint", "--logDir", "/tmp/logs/");
+				"--config", "osm2world.config", "-i", "/o2wmaps/input/old/13_4231_2777.pbf", "-o", "/tmp/n_ogltile_4231_2777.ppm", "--resolution", "8192,4096", "--oview.tiles", "13,4231,2777", "--oview.from", "S", "--logDir", "/tmp/logs/");
 		CLIArguments cliArgsA2 = CliFactory.parseArguments(CLIArguments.class,
-				"--config", "osm2world.config", "-i", "/o2wmaps/input/old/13_4231_2777.pbf", "-o", "/tmp/n_ogltile_4231_2777.ppm", "--resolution", "8192,4096", "--oview.tiles", "13,4231,2777", "--oview.from", "N", "--performancePrint", "--logDir", "/tmp/logs/");
+				"--config", "osm2world.config", "-i", "/o2wmaps/input/old/13_4231_2777.pbf", "-o", "/tmp/n_ogltile_4231_2777.ppm", "--resolution", "8192,4096", "--oview.tiles", "13,4231,2777", "--oview.from", "N", "--logDir", "/tmp/logs/");
 
 		assertTrue(CLIArgumentsGroup.isCompatible(cliArgsA1, cliArgsA2));
 
