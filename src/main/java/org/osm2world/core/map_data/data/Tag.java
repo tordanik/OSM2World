@@ -19,17 +19,12 @@ public class Tag {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Tag)) {
-			return false;
-		} else {
-			Tag otherTag = (Tag)obj;
-			return key.equals(otherTag.key) && value.equals(otherTag.value);
-		}
+		return obj instanceof Tag otherTag && key.equals(otherTag.key) && value.equals(otherTag.value);
 	}
 
 	@Override
 	public int hashCode() {
-		return key.hashCode() + value.hashCode(); //TODO: might be a less than optimal hash function
+		return 31 * key.hashCode() + value.hashCode();
 	}
 
 	@Override
