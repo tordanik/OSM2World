@@ -2,9 +2,7 @@ package org.osm2world.core.world.modules.building;
 
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.*;
-import static org.osm2world.core.map_data.data.overlaps.MapOverlapType.SHARE_SEGMENT;
 import static org.osm2world.core.math.GeometryUtil.closeLoop;
-import static org.osm2world.core.test.TestMapDataGenerator.addOverlapAA;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -12,27 +10,31 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Test;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.building.LevelAndHeightData.Level.LevelType;
 
 public class LevelAndHeightDataTest {
 
+	private static List<MapNode> createTestBuildingOutline(MapDataBuilder builder) {
+		return closeLoop(
+				builder.createNode(-10, -5),
+				builder.createNode(0, -5),
+				builder.createNode(+10, -5),
+				builder.createNode(+10, +5),
+				builder.createNode(-10, +5));
+	}
+
 	@Test
 	public void testLevelBasics() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "5",
 				"height", "12.5"));
@@ -64,16 +66,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testMinLevel() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "5",
 				"height", "12.5",
@@ -100,16 +97,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testSITLevelsAndRoof() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "5",
 				"building:levels:underground", "3",
@@ -121,13 +113,9 @@ public class LevelAndHeightDataTest {
 				"max_level", "16",
 				"non_existent_levels", "8"));
 
-		MapArea levelA = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "7", "height", "1"));
-		MapArea levelB = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "10", "height", "5"));
-		MapArea levelC = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "11", "ref", "L11"));
-
-		addOverlapAA(buildingArea, levelA, SHARE_SEGMENT);
-		addOverlapAA(buildingArea, levelB, SHARE_SEGMENT);
-		addOverlapAA(buildingArea, levelC, SHARE_SEGMENT);
+		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "7", "height", "1"));
+		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "10", "height", "5"));
+		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "11", "ref", "L11"));
 
 		Building building = new Building(buildingArea, new BaseConfiguration());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
@@ -160,16 +148,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testSingleLevel() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "1",
 				"min_level", "42",
@@ -186,16 +169,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testRoofLevelsOnly() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "0",
 				"roof:levels", "2",
@@ -213,13 +191,13 @@ public class LevelAndHeightDataTest {
 		assertEquals(2, levelStructure.levels(EnumSet.of(LevelType.ROOF)).size());
 
 		IntStream.range(0, 2).forEach(it -> assertTrue(levelStructure.hasLevel(it)));
-		IntStream.range(0, 2).forEach(it -> assertTrue(levelStructure.level(it).type == LevelType.ROOF));
+		IntStream.range(0, 2).forEach(it -> assertSame(LevelType.ROOF, levelStructure.level(it).type));
 
 		assertEquals(4, levelStructure.level(1).height, 0);
 
 		// same as above, but with no tagged height
 
-		buildingArea = generator.createWayArea(nodes, TagSet.of(
+		buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "0",
 				"roof:levels", "2",
@@ -235,7 +213,7 @@ public class LevelAndHeightDataTest {
 		assertEquals(2, result2.levels(EnumSet.of(LevelType.ROOF)).size());
 
 		IntStream.range(0, 2).forEach(it -> assertTrue(result2.hasLevel(it)));
-		IntStream.range(0, 2).forEach(it -> assertTrue(result2.level(it).type == LevelType.ROOF));
+		IntStream.range(0, 2).forEach(it -> assertSame(LevelType.ROOF, result2.level(it).type));
 
 		assertEquals(result2.height() / 2, result2.level(1).height, 0);
 
@@ -244,16 +222,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testUndergroundLevelsOnly() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "0",
 				"building:levels:underground", "2",
@@ -276,16 +249,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testSITMinLevelWithoutMaxLevel() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingPartArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingPartArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "3",
 				"building:levels:underground", "1",
@@ -307,26 +275,18 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testExplicitLevelHeightsDoNotMatchTotalHeight() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "2",
 				"height", "5"));
 
 		// explicit heights conflict with total height, should therefore be ignored
-		MapArea level0 = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "0", "height", "4"));
-		MapArea level1 = generator.createWayArea(nodes, TagSet.of("indoor", "level", "level", "1", "height", "6"));
-
-		addOverlapAA(buildingArea, level0, SHARE_SEGMENT);
-		addOverlapAA(buildingArea, level1, SHARE_SEGMENT);
+		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "0", "height", "4"));
+		builder.createWayArea(nodes, TagSet.of("indoor", "level", "level", "1", "height", "6"));
 
 		Building building = new Building(buildingArea, new BaseConfiguration());
 		LevelAndHeightData levelStructure = building.getParts().get(0).levelStructure;
@@ -345,16 +305,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testInvalidMinHeight() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"height", "5",
 				"roof:height", "2",
@@ -372,16 +327,11 @@ public class LevelAndHeightDataTest {
 	@Test
 	public void testRoofLevelAndMinLevel() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
-		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+		List<MapNode> nodes = createTestBuildingOutline(builder);
 
-		MapArea buildingArea = generator.createWayArea(nodes, TagSet.of(
+		MapArea buildingArea = builder.createWayArea(nodes, TagSet.of(
 				"building", "yes",
 				"building:levels", "3",
 				"building:min_level", "2",

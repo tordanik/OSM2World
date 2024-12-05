@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapData;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.RoadModule.Lane;
 import org.osm2world.core.world.modules.RoadModule.RoadPart;
 
@@ -24,14 +24,14 @@ public class RoadModuleTest {
 
 	/** returns a test dataset representing a star-shaped junction of ways all meeting in a central shared node */
 	private MapData createStarJunction(TagSet nodeTags, List<TagSet> wayTagSets) {
-		var generator = new TestMapDataGenerator();
-		MapNode centerNode = generator.createNode(0, 0, nodeTags);
+		var builder = new MapDataBuilder();
+		MapNode centerNode = builder.createNode(0, 0, nodeTags);
 		for (TagSet wayTags : wayTagSets) {
 			var outerPos = VectorXZ.fromAngle(2 * PI * wayTagSets.indexOf(wayTags) / wayTagSets.size());
-			MapNode outerNode = generator.createNode(outerPos.x, outerPos.z);
-			generator.createWay(List.of(outerNode, centerNode), wayTags);
+			MapNode outerNode = builder.createNode(outerPos.x, outerPos.z);
+			builder.createWay(List.of(outerNode, centerNode), wayTags);
 		}
-		return generator.createMapData();
+		return builder.build();
 	}
 
 	@Test

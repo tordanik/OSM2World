@@ -8,27 +8,27 @@ import static org.osm2world.core.math.GeometryUtil.closeLoop;
 import java.util.List;
 
 import org.junit.Test;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.test.TestMapDataGenerator;
 
 public class BuildingPartTest {
 
 	@Test
 	public void testSplitIntoWalls() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
 		List<MapNode> nodes = closeLoop(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5));
+				builder.createNode(-10, -5),
+				builder.createNode(  0, -5),
+				builder.createNode(+10, -5),
+				builder.createNode(+10, +5),
+				builder.createNode(-10, +5));
 
-		MapArea buildingPartArea = generator.createWayArea(nodes, TagSet.of("building", "yes"));
+		MapArea buildingPartArea = builder.createWayArea(nodes, TagSet.of("building", "yes"));
 
 		/* test the basic case */
 
@@ -43,7 +43,7 @@ public class BuildingPartTest {
 
 		/* add a building:wall=yes way and test again */
 
-		MapWay wallWay = generator.createWay(asList(nodes.get(1), nodes.get(0), nodes.get(4)),
+		MapWay wallWay = builder.createWay(asList(nodes.get(1), nodes.get(0), nodes.get(4)),
 				TagSet.of("building:wall", "yes"));
 
 		result = BuildingPart.splitIntoWalls(buildingPartArea, null);

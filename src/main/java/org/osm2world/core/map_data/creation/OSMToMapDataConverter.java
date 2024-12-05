@@ -328,37 +328,37 @@ public class OSMToMapDataConverter {
 	 * to both, if it exists. It calls the appropriate
 	 * subtype-specific addOverlapBetween method
 	 */
-	private static void addOverlapBetween(MapElement e1, MapElement e2) {
+	static void addOverlapBetween(MapElement e1, MapElement e2) {
 
-		if (e1 instanceof MapWaySegment
-				&& e2 instanceof MapWaySegment) {
+		if (e1 instanceof MapWaySegment s1
+				&& e2 instanceof MapWaySegment s2) {
 
-			addOverlapBetween((MapWaySegment) e1, (MapWaySegment) e2);
+			addOverlapBetween(s1, s2);
 
-		} else if (e1 instanceof MapWaySegment
-				&& e2 instanceof MapArea) {
+		} else if (e1 instanceof MapWaySegment s
+				&& e2 instanceof MapArea area) {
 
-			addOverlapBetween((MapWaySegment) e1, (MapArea) e2);
+			addOverlapBetween(s, area);
 
-		} else if (e1 instanceof MapArea
-				&& e2 instanceof MapWaySegment) {
+		} else if (e1 instanceof MapArea area
+				&& e2 instanceof MapWaySegment s) {
 
-			addOverlapBetween((MapWaySegment) e2, (MapArea) e1);
+			addOverlapBetween(s, area);
 
-		} else if (e1 instanceof MapArea
-				&& e2 instanceof MapArea) {
+		} else if (e1 instanceof MapArea area1
+				&& e2 instanceof MapArea area2) {
 
-			addOverlapBetween((MapArea) e1, (MapArea) e2);
+			addOverlapBetween(area1, area2);
 
-		} else if (e1 instanceof MapNode
-				&& e2 instanceof MapArea) {
+		} else if (e1 instanceof MapNode node
+				&& e2 instanceof MapArea area) {
 
-			addOverlapBetween((MapNode) e1, (MapArea) e2);
+			addOverlapBetween(node, area);
 
-		} else if (e1 instanceof MapArea
-				&& e2 instanceof MapNode) {
+		} else if (e1 instanceof MapArea area
+				&& e2 instanceof MapNode node) {
 
-			addOverlapBetween((MapNode) e2, (MapArea) e1);
+			addOverlapBetween(node, area);
 
 		}
 

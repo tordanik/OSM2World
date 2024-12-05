@@ -1,7 +1,6 @@
 package org.osm2world.core.world.modules.traffic_sign;
 
 import static java.lang.Math.PI;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -15,11 +14,11 @@ import org.apache.commons.configuration.MapConfiguration;
 import org.junit.Test;
 import org.osm2world.core.ConversionFacade;
 import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
-import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.RoadModule.Road;
 
 public class TrafficSignModuleTest {
@@ -45,19 +44,19 @@ public class TrafficSignModuleTest {
 
 			/* prepare fake map data */
 
-			TestMapDataGenerator generator = new TestMapDataGenerator();
+			var builder = new MapDataBuilder();
 
-			MapNode nodeBefore = generator.createNode(0, 0);
-			MapNode nodeSign = generator.createNode(1, 1, signTags);
-			MapNode nodeAfter = generator.createNode(2, 2);
+			MapNode nodeBefore = builder.createNode(0, 0);
+			MapNode nodeSign = builder.createNode(1, 1, signTags);
+			MapNode nodeAfter = builder.createNode(2, 2);
 
-			generator.createWay(List.of(nodeBefore, nodeSign, nodeAfter), TagSet.of("highway", "tertiary"));
+			builder.createWay(List.of(nodeBefore, nodeSign, nodeAfter), TagSet.of("highway", "tertiary"));
 
 			/* generate models */
 
 			var proj = new MetricMapProjection(new LatLon(0, 0));
 			var result = new ConversionFacade().createRepresentations(
-					proj, generator.createMapData(), null, null, null);
+					proj, builder.build(), null, null, null);
 
 			/* extract results */
 
@@ -87,19 +86,19 @@ public class TrafficSignModuleTest {
 	@Test
 	public void zeroConnectedJunctions() throws Exception {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
 		/* prepare fake map data */
 
-		MapNode node00 = generator.createNode(0, 0);
-		MapNode node01 = generator.createNode(1, 1);
-		MapNode node02 = generator.createNode(2, 2);
-		MapNode node03 = generator.createNode(3, 3);
+		MapNode node00 = builder.createNode(0, 0);
+		MapNode node01 = builder.createNode(1, 1);
+		MapNode node02 = builder.createNode(2, 2);
+		MapNode node03 = builder.createNode(3, 3);
 
 		/* create a way and roads objects */
 
-		List<MapNode> wayNodes = asList(node00, node01, node02, node03);
-		MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
+		List<MapNode> wayNodes = List.of(node00, node01, node02, node03);
+		MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
 		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 
 		/* check that no junction is found for any starting node */
@@ -114,27 +113,27 @@ public class TrafficSignModuleTest {
 	@Test
 	public void oneConnectedJunction() throws Exception {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
 		/* prepare fake map data */
 
-		MapNode node00 = generator.createNode(0, 0);
-		MapNode node01 = generator.createNode(1, 1);
-		MapNode node02 = generator.createNode(2, 2);
-		MapNode intersectionNode = generator.createNode(3, 3);
+		MapNode node00 = builder.createNode(0, 0);
+		MapNode node01 = builder.createNode(1, 1);
+		MapNode node02 = builder.createNode(2, 2);
+		MapNode intersectionNode = builder.createNode(3, 3);
 
-		MapNode node10 = generator.createNode(3, 1);
-		MapNode node20 = generator.createNode(4, 3);
+		MapNode node10 = builder.createNode(3, 1);
+		MapNode node20 = builder.createNode(4, 3);
 
-		List<List<MapNode>> wayNodeLists = asList(
-				asList(node00, node01, node02, intersectionNode),
-				asList(intersectionNode, node10),
-				asList(intersectionNode, node20));
+		List<List<MapNode>> wayNodeLists = List.of(
+				List.of(node00, node01, node02, intersectionNode),
+				List.of(intersectionNode, node10),
+				List.of(intersectionNode, node20));
 
 		/* create ways and roads objects */
 
 		for (List<MapNode> wayNodes : wayNodeLists) {
-			MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
+			MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
 			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 		}
 
@@ -151,31 +150,31 @@ public class TrafficSignModuleTest {
 	@Test
 	public void twoConnectedJunctions() throws Exception {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
 		/* prepare fake map data */
 
-		MapNode intersectionNodeA = generator.createNode(0, 0);
-		MapNode node01 = generator.createNode(1, 1);
-		MapNode node02 = generator.createNode(2, 2);
-		MapNode intersectionNodeB = generator.createNode(3, 3);
+		MapNode intersectionNodeA = builder.createNode(0, 0);
+		MapNode node01 = builder.createNode(1, 1);
+		MapNode node02 = builder.createNode(2, 2);
+		MapNode intersectionNodeB = builder.createNode(3, 3);
 
-		MapNode node10 = generator.createNode(0, 1);
-		MapNode node20 = generator.createNode(-1, 0);
-		MapNode node30 = generator.createNode(3, 1);
-		MapNode node40 = generator.createNode(4, 3);
+		MapNode node10 = builder.createNode(0, 1);
+		MapNode node20 = builder.createNode(-1, 0);
+		MapNode node30 = builder.createNode(3, 1);
+		MapNode node40 = builder.createNode(4, 3);
 
-		List<List<MapNode>> wayNodeLists = asList(
-				asList(intersectionNodeA, node01, node02, intersectionNodeB),
-				asList(intersectionNodeA, node10),
-				asList(node20, intersectionNodeA),
-				asList(intersectionNodeB, node30),
-				asList(node40, intersectionNodeB));
+		List<List<MapNode>> wayNodeLists = List.of(
+				List.of(intersectionNodeA, node01, node02, intersectionNodeB),
+				List.of(intersectionNodeA, node10),
+				List.of(node20, intersectionNodeA),
+				List.of(intersectionNodeB, node30),
+				List.of(node40, intersectionNodeB));
 
 		/* create ways and roads objects */
 
 		for (List<MapNode> wayNodes : wayNodeLists) {
-			MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
+			MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
 			way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 		}
 
@@ -194,19 +193,19 @@ public class TrafficSignModuleTest {
 	@Test
 	public void zeroConnectedJunctionsWithLoop() {
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
 		/* prepare fake map data */
 
-		MapNode node00 = generator.createNode(0, 0);
-		MapNode node01 = generator.createNode(1, 1);
-		MapNode node02 = generator.createNode(2, 2);
-		MapNode node03 = generator.createNode(3, 0);
+		MapNode node00 = builder.createNode(0, 0);
+		MapNode node01 = builder.createNode(1, 1);
+		MapNode node02 = builder.createNode(2, 2);
+		MapNode node03 = builder.createNode(3, 0);
 
 		/* create a way and roads objects */
 
-		List<MapNode> wayNodes = asList(node00, node01, node02, node03, node00);
-		MapWay way = generator.createWay(wayNodes, TagSet.of("highway", "tertiary"));
+		List<MapNode> wayNodes = List.of(node00, node01, node02, node03, node00);
+		MapWay way = builder.createWay(wayNodes, TagSet.of("highway", "tertiary"));
 		way.getWaySegments().forEach(s -> s.addRepresentation(new Road(s, new MapConfiguration(emptyMap()))));
 
 		/* check that there is no infinite loop and that no junction is reported */

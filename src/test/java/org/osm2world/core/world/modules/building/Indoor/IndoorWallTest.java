@@ -1,57 +1,55 @@
 package org.osm2world.core.world.modules.building.Indoor;
 
+import static java.lang.Math.PI;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.osm2world.core.math.GeometryUtil.closeLoop;
+
+import java.util.List;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.junit.Test;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.data.MapArea;
 import org.osm2world.core.map_data.data.MapNode;
 import org.osm2world.core.map_data.data.MapWay;
 import org.osm2world.core.map_data.data.TagSet;
 import org.osm2world.core.math.LineSegmentXZ;
 import org.osm2world.core.math.VectorXZ;
-import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.modules.building.Building;
 import org.osm2world.core.world.modules.building.BuildingPart;
 import org.osm2world.core.world.modules.building.indoor.IndoorObjectData;
 import org.osm2world.core.world.modules.building.indoor.IndoorWall;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.lang.Math.PI;
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
 
 public class IndoorWallTest {
 
 	@Test
 	public void testGetNewEndPoints(){
 
-		TestMapDataGenerator generator = new TestMapDataGenerator();
+		var builder = new MapDataBuilder();
 
 		/* generate building part */
 
-		List<MapNode> buildingNodes = new ArrayList<>(asList(
-				generator.createNode(-10, -5),
-				generator.createNode(  0, -5),
-				generator.createNode(+10, -5),
-				generator.createNode(+10, +5),
-				generator.createNode(-10, +5)));
+		List<MapNode> buildingNodes = closeLoop(
+				builder.createNode(-10, -5),
+				builder.createNode(  0, -5),
+				builder.createNode(+10, -5),
+				builder.createNode(+10, +5),
+				builder.createNode(-10, +5));
 
-		buildingNodes.add(buildingNodes.get(0));
-
-		MapArea buildingPartArea = generator.createWayArea(buildingNodes, TagSet.of("building", "yes", "building:levels", "5", "height", "12.5"));
+		MapArea buildingPartArea = builder.createWayArea(buildingNodes, TagSet.of("building", "yes", "building:levels", "5", "height", "12.5"));
 		Building building = new Building(buildingPartArea, new BaseConfiguration());
 		BuildingPart buildingPart = building.getParts().get(0);
 
 		/* generate wall */
 
-		List<MapNode> wallNodes = new ArrayList<>(asList(
-				generator.createNode(-9, -4),
-				generator.createNode(+9, -4),
-				generator.createNode( 0, 4),
-				generator.createNode( 0, -3)));
+		List<MapNode> wallNodes = List.of(
+				builder.createNode(-9, -4),
+				builder.createNode(+9, -4),
+				builder.createNode( 0, 4),
+				builder.createNode( 0, -3));
 
-		MapWay wallWay = generator.createWay(asList(wallNodes.get(0), wallNodes.get(2)), TagSet.of("indoor", "wall", "level", "2"));
+		MapWay wallWay = builder.createWay(List.of(wallNodes.get(0), wallNodes.get(2)), TagSet.of("indoor", "wall", "level", "2"));
 		LineSegmentXZ wallWayLineSegment = new LineSegmentXZ(wallNodes.get(0).getPos(), wallNodes.get(2).getPos());
 
 		VectorXZ startNodePos = wallNodes.get(0).getPos();
@@ -72,7 +70,7 @@ public class IndoorWallTest {
 
 		/* test intersection of 2 line segments */
 
-		MapWay secondWallWay =  generator.createWay(asList(wallNodes.get(2), wallNodes.get(1)), TagSet.of("indoor", "wall", "level", "2"));
+		MapWay secondWallWay = builder.createWay(asList(wallNodes.get(2), wallNodes.get(1)), TagSet.of("indoor", "wall", "level", "2"));
 		LineSegmentXZ secondWallWayLineSegment = new LineSegmentXZ(wallNodes.get(2).getPos(), wallNodes.get(1).getPos());
 
 		VectorXZ secondStartNodePos = wallNodes.get(2).getPos();
@@ -98,7 +96,7 @@ public class IndoorWallTest {
 
 		/* test intersections for line not on the same level */
 
-		MapWay thirdWallWay =  generator.createWay(asList(wallNodes.get(2), wallNodes.get(3)), TagSet.of("indoor", "wall", "level", "3"));
+		MapWay thirdWallWay = builder.createWay(asList(wallNodes.get(2), wallNodes.get(3)), TagSet.of("indoor", "wall", "level", "3"));
 		LineSegmentXZ thirdWallWayLineSegment = new LineSegmentXZ(wallNodes.get(2).getPos(), wallNodes.get(3).getPos());
 
 		VectorXZ thirdStartNodePos = wallNodes.get(2).getPos();

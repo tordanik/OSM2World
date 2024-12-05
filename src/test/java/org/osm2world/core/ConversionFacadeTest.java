@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.osm2world.core.map_data.creation.LatLon;
+import org.osm2world.core.map_data.creation.MapDataBuilder;
 import org.osm2world.core.map_data.creation.MapProjection;
 import org.osm2world.core.map_data.creation.MetricMapProjection;
 import org.osm2world.core.map_data.data.MapData;
@@ -26,7 +27,6 @@ import org.osm2world.core.math.FaceXYZ;
 import org.osm2world.core.math.VectorXYZ;
 import org.osm2world.core.target.Target;
 import org.osm2world.core.target.gltf.GltfTarget;
-import org.osm2world.core.test.TestMapDataGenerator;
 import org.osm2world.core.world.attachment.AttachmentConnector;
 import org.osm2world.core.world.attachment.AttachmentSurface;
 
@@ -111,22 +111,22 @@ public class ConversionFacadeTest {
 	@Test
 	public void testAreasWithDuplicateNodes() {
 
-		List<TagSet> tagSets = asList(TagSet.of("building", "yes"));
+		List<TagSet> tagSets = List.of(TagSet.of("building", "yes"));
 
 		for (TagSet tagSet : tagSets) {
 
-			TestMapDataGenerator generator = new TestMapDataGenerator();
+			var builder = new MapDataBuilder();
 
-			List<MapNode> nodes = asList(
-					generator.createNode(0, 0),
-					generator.createNode(10, 0),
-					generator.createNode(10, 5),
-					generator.createNode(10, 5),
-					generator.createNode(10, 10),
-					generator.createNode(0, 10));
-			generator.createWayArea(nodes, tagSet);
+			List<MapNode> nodes = List.of(
+					builder.createNode(0, 0),
+					builder.createNode(10, 0),
+					builder.createNode(10, 5),
+					builder.createNode(10, 5),
+					builder.createNode(10, 10),
+					builder.createNode(0, 10));
+			builder.createWayArea(nodes, tagSet);
 
-			MapData mapData = generator.createMapData();
+			MapData mapData = builder.build();
 
 			try {
 
