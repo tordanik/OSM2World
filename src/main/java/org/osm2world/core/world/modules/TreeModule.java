@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static org.osm2world.core.target.common.material.Materials.TREE_CROWN;
 import static org.osm2world.core.target.common.material.Materials.TREE_TRUNK;
 import static org.osm2world.core.util.ValueParseUtil.parseMeasure;
+import static org.osm2world.core.util.ValueParseUtil.parseMeasureWithSpecialDefaultUnit;
 import static org.osm2world.core.world.modules.common.WorldModuleGeometryUtil.filterWorldObjectCollisions;
 
 import java.util.*;
@@ -144,7 +145,7 @@ public class TreeModule extends ConfigurableWorldModule {
 
 			double scaleFactor = random != null ? 0.5 + 0.75 * random.nextDouble() : 1.0;
 
-			Double trunkDiameter = parseMeasure(tags.getValue("diameter"));
+			Double trunkDiameter = parseMeasureWithSpecialDefaultUnit(tags.getValue("diameter"), 1e-3);
 
 			if (trunkDiameter == null) {
 				Double trunkCircumference = parseMeasure(tags.getValue("circumference"));

@@ -203,18 +203,20 @@ public final class ValueParseUtil {
 
 	/**
 	 * parses a measure value given e.g. for the "width" or "length" key.
+	 * This method is used if the implied default unit is not meters.
 	 *
+	 * @param unitlessFactor  factor for values without a unit
 	 * @return  measure in m; null if value is null or has syntax errors.
 	 */
-	public static @Nullable Double parseMeasure(@Nullable String value) {
+	public static @Nullable Double parseMeasureWithSpecialDefaultUnit(@Nullable String value, double unitlessFactor) {
 
 		if (value == null) return null;
 
-		/* try numeric measure (implied m) */
+		/* try numeric measure (without unit) */
 
 		Double measure = parseOsmDecimal(value, POSITIVE);
 		if (measure != null) {
-			return measure;
+			return measure * unitlessFactor;
 		}
 
 		/* try m measure */
@@ -261,6 +263,16 @@ public final class ValueParseUtil {
 		/* all possibilities failed */
 
 		return null;
+	}
+
+	/**
+	 * parses a measure value given e.g. for the "width" or "length" key.
+	 * Assumes that values without units are in meters.
+	 *
+	 * @return  measure in m; null if value is null or has syntax errors.
+	 */
+	public static @Nullable Double parseMeasure(@Nullable String value) {
+		return parseMeasureWithSpecialDefaultUnit(value, 1.0);
 	}
 
 	/** variant of {@link #parseMeasure(String)} with a default value */
