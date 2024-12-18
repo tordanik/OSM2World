@@ -48,6 +48,7 @@ import org.osm2world.core.target.frontend_pbf.FrontendPbfTarget;
 import org.osm2world.core.target.gltf.GltfTarget;
 import org.osm2world.core.target.obj.ObjWriter;
 import org.osm2world.core.target.povray.POVRayWriter;
+import org.osm2world.core.util.Resolution;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
@@ -147,7 +148,8 @@ public final class Output {
 
 					projection = new Projection(false,
 							args.isPviewAspect() ? args.getPviewAspect() :
-									(double) args.getResolution().getAspectRatio(),
+									args.isResolution() ? (double) args.getResolution().getAspectRatio()
+											: CLIArgumentsUtil.DEFAULT_ASPECT_RATIO,
 							args.getPviewFovy(),
 							0,
 							1, 50000);
@@ -249,8 +251,9 @@ public final class Output {
 								exporter = ImageExporter.create(
 										config, results, argumentsGroup);
 							}
+							Resolution resolution = CLIArgumentsUtil.getResolution(args);
 							exporter.writeImageFile(outputFile, outputMode,
-									args.getResolution().width, args.getResolution().height,
+									resolution.width, resolution.height,
 									camera, projection);
 							break;
 

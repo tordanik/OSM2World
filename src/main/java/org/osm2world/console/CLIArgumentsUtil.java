@@ -1,5 +1,6 @@
 package org.osm2world.console;
 
+import static java.lang.Math.*;
 import static org.osm2world.console.CLIArgumentsUtil.ProgramMode.*;
 
 import java.io.BufferedReader;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.osm2world.core.util.Resolution;
+
 import com.lexicalscope.jewel.cli.CliFactory;
 
 public final class CLIArgumentsUtil {
@@ -22,6 +25,8 @@ public final class CLIArgumentsUtil {
 	public static enum OutputMode {OBJ, GLTF, GLB, GLTF_GZ, GLB_GZ, POV, WEB_PBF, WEB_PBF_GZ, PNG, PPM, GD}
 	public static enum InputMode {FILE, OVERPASS}
 	public static enum InputFileType {SIMPLE_FILE, MBTILES, GEODESK}
+
+	public static final double DEFAULT_ASPECT_RATIO = 4 / 3.0;
 
 	private CLIArgumentsUtil() { }
 
@@ -166,6 +171,17 @@ public final class CLIArgumentsUtil {
 		} else {
 			return null;
 		}
+	}
+
+	public static Resolution getResolution(CLIArguments args) {
+
+		double aspectRatio = hasPerspectiveArg(args)
+				? args.isPviewAspect() ? args.getPviewAspect() : DEFAULT_ASPECT_RATIO
+				: 1.0 / sin(toRadians(args.getOviewAngle()));
+
+		return args.isResolution() ? args.getResolution()
+				: new Resolution(800, (int) round(800 / aspectRatio));
+
 	}
 
 	public static final List<String[]> getUnparsedParameterGroups(

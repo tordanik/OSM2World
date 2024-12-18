@@ -2,12 +2,12 @@ package org.osm2world.console;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.osm2world.console.CLIArgumentsUtil.getOutputMode;
+import static org.osm2world.console.CLIArgumentsUtil.getResolution;
 import static org.osm2world.core.target.jogl.JOGLRenderingParameters.Winding.CCW;
 import static org.osm2world.core.util.ConfigUtil.*;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
@@ -180,11 +180,11 @@ public class ImageExporter {
 		for (CLIArguments args : expectedGroup.getCLIArgumentsList()) {
 
 			for (File outputFile : args.getOutput()) {
-				OutputMode outputMode = CLIArgumentsUtil.getOutputMode(outputFile);
+				OutputMode outputMode = getOutputMode(outputFile);
 				if (outputMode == OutputMode.PNG || outputMode == OutputMode.PPM || outputMode == OutputMode.GD) {
 					expectedFileCalls += 1;
-					expectedMaxSizeX = max(expectedMaxSizeX, args.getResolution().width);
-					expectedMaxSizeY = max(expectedMaxSizeY, args.getResolution().height);
+					expectedMaxSizeX = max(expectedMaxSizeX, getResolution(args).width);
+					expectedMaxSizeY = max(expectedMaxSizeY, getResolution(args).height);
 					perspectiveProjection |= args.isPviewPos();
 				}
 			}
